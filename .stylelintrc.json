@@ -1,0 +1,51 @@
+{
+  "plugins": [
+    "stylelint-scss",
+    "stylelint-order"
+  ],
+  "extends": [
+    "stylelint-config-standard"
+  ],
+  "rules": {
+    "order/order": [
+      "custom-properties",
+      "declarations"
+    ],
+    "indentation": [
+      2
+    ],
+    "at-rule-empty-line-before": [
+      "always",
+      {
+        "ignore": [
+          "inside-block"
+        ],
+        "ignoreAtRules": [
+          "import"
+        ]
+      }
+    ],
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": [
+          "mixin",
+          "include",
+          "charset",
+          "function",
+          "for",
+          "each",
+          "if",
+          "else",
+          "error",
+          "warn",
+          "return",
+          "extend"
+        ]
+      }
+    ],
+    "max-nesting-depth": 2,
+    "value-keyword-case": null,
+    "declaration-empty-line-before": "never"
+  }
+}

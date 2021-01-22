@@ -1,0 +1,65 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react/hooks",
+    "plugin:jsx-a11y/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "react",
+    "jsx-a11y",
+    "prettier",
+    "@typescript-eslint"
+  ],
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "prettier/prettier": [
+      "warn",
+      {},
+      {
+        "usePrettierrc": true
+      }
+    ],
+    "jsx-a11y/no-noninteractive-tabindex": [
+      "error",
+      {
+        "tags": [
+          "div"
+        ],
+        "roles": [
+          "tabpanel"
+        ]
+      }
+    ],
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/ban-types": "off",
+    "react/prop-types": 0,
+    "react/react-in-jsx-scope": "off",
+    "jsx-a11y/accessible-emoji": "off",
+    "jsx-a11y/anchor-is-valid": "off"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
+}
