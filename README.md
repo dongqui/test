@@ -21,9 +21,9 @@ yarn create next-app --example with-electron-typescript with-electron-typescript
 ```
 
 Available commands:
+추가 작성 진행 중: jgpark
 
 ```bash
-추가 작성 진행 중: jgpark
 "build-renderer": build and transpile Next.js layer
 "build-electron": transpile electron layer
 "build": build both layers
