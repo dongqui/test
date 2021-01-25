@@ -1,16 +1,13 @@
 import { useMemo } from 'react';
-import {
-  ApolloClient, createHttpLink, InMemoryCache, makeVar,
-} from '@apollo/client';
+import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import merge from 'deepmerge';
 import isEqual from 'lodash/isEqual';
-import { persistCache, LocalStorageWrapper } from 'apollo3-cache-persist';
-import { SCREEN_SIZE, IS_LOGIN } from './store';
+import { SCREEN_SIZE } from './store';
 
 export const APOLLO_STATE_PROP_NAME = '__APOLLO_STATE__';
 
-let apolloClient : any;
+let apolloClient: any;
 const httpLink = createHttpLink({
   uri: process.env.NEXT_PUBLIC_FAUNADB_GRAPHQL_ENDPOINT || '',
 });
@@ -57,10 +54,7 @@ export function initializeApollo(initialState: any = null) {
     // Merge the existing cache into data passed from getStaticProps/getServerSideProps
     const data = merge(initialState, existingCache, {
       // combine arrays using object equality (like in sets)
-      arrayMerge: (destinationArray, sourceArray) => [
-        ...sourceArray,
-        ...destinationArray.filter((d) => sourceArray.every((s) => !isEqual(d, s))),
-      ],
+      arrayMerge: (destinationArray, sourceArray) => [...sourceArray, ...destinationArray.filter((d) => sourceArray.every((s) => !isEqual(d, s)))],
     });
 
     // Restore the cache with the merged data
