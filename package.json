@@ -9,6 +9,7 @@
     "start": "next start renderer",
     "electron": "npm run build-electron && electron .",
     "storybook": "start-storybook",
+    "build-storybook": "build-storybook",
     "build-renderer": "next build renderer && next export renderer",
     "build-electron": "tsc -p electron-src",
     "build": "npm run build-renderer && npm run build-electron",
