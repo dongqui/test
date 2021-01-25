@@ -1,3 +1,7 @@
+# plask homepage
+
+plask homepage with nextjs, typescript, graphql, apollo client, faunadb
+
 ## install Dependencies
 npx yarn
 
@@ -13,19 +17,11 @@ npx vercel env add
 ## 환경 변수 삭제
 npx vercel env remove
 
-## 데이터 관련 타입 생성
+## 스키마 업로드
+npx yarn setup
+
+## 타입 생성
 npx yarn codegen
 
 ## 개발 환경 기동
 npx yarn dev
-
-```bash
-추가 작성 진행 중: jgpark
-"build-renderer": build and transpile Next.js layer
-"build-electron": transpile electron layer
-"build": build both layers
-"dev": start dev version
-"dist": create production electron build
-"type-check": check TypeScript in project
-```
-
