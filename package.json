@@ -16,7 +16,10 @@
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
     "clean": "rimraf dist main renderer/out renderer/.next",
-    "type-check": "tsc"
+    "type-check": "tsc",
+    "precodegen": "node ./scripts/precodegen.js",
+    "codegen": "graphql-codegen --config codegen.yml",
+    "postcodegen": "node ./scripts/postcodegen.js"
   },
   "dependencies": {
     "@apollo/client": "^3.3.6",
