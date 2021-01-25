@@ -37,3 +37,6 @@ _next
 
 # storybook
 storybook-static
+
+# env
+.env
