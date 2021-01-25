@@ -28,4 +28,3 @@ npx yarn dev
 "dist": create production electron build
 "type-check": check TypeScript in project
 ```
-
