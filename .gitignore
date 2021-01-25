@@ -34,3 +34,6 @@ yarn-error.log*
 
 # _next
 _next
+
+# storybook
+storybook-static
