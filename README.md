@@ -18,3 +18,13 @@ npx yarn codegen
 
 ## 개발 환경 기동
 npx yarn dev
+
+```bash
+추가 작성 진행 중: jgpark
+"build-renderer": build and transpile Next.js layer
+"build-electron": transpile electron layer
+"build": build both layers
+"dev": start dev version
+"dist": create production electron build
+"type-check": check TypeScript in project
+```
