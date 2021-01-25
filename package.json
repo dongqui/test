@@ -4,9 +4,9 @@
   "main": "main/index.js",
   "productName": "mocap",
   "scripts": {
-    "dev": "next dev renderer",
-    "prod": "next build renderer",
-    "start": "next start renderer",
+    "dev": "next dev",
+    "prod": "next build",
+    "start": "next start",
     "electron": "npm run build-electron && electron .",
     "storybook": "start-storybook",
     "build-storybook": "build-storybook",

@@ -9,6 +9,8 @@
 # next.js
 /renderer/.next/
 /renderer/out/
+/.next/
+/out/
 
 # production
 /main
