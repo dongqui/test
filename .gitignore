@@ -9,6 +9,8 @@
 # next.js
 /renderer/.next/
 /renderer/out/
+/.next/
+/out/
 
 # production
 /main
@@ -37,3 +39,6 @@ _next
 
 # storybook
 storybook-static
+
+# env
+.env
