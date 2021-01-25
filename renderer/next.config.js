@@ -13,7 +13,7 @@ module.exports = withPWA({
     // !! WARN !!
     ignoreBuildErrors: true,
   },
-  distDir: '_next',
+  distDir: '../_next',
 //   webpack(config, options) {
 //     const { dev, isServer } = options;
 //     // Do not run type checking twice:
