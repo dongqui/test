@@ -1,6 +1,6 @@
-# plask homepage
+# plask shoot
 
-plask homepage with nextjs, typescript, graphql, apollo client, faunadb
+plask homepage with nextjs, typescript, webgl, d3.js, apollo client
 
 ## install Dependencies
 npx yarn

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { BLUE } from '../../styles/common';
 import { FacebookLogo } from '../Icon/FacebookLogo';
 import { GoogleLogo } from '../Icon/GoogleLogo';
-import { ButtonWrapper } from './styles';
+import { ButtonWrapper } from './style';
 
 export interface ButtonProps {
   buttonText: string;
