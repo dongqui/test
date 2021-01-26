@@ -4,7 +4,7 @@ const withPWA = require('next-pwa');
 module.exports = withPWA({
   pwa: {
     disable: process.env.NEXT_PUBLIC_IS_DEV === 'true',
-    dest: 'public',
+    dest: 'pwa',
   },
   typescript: {
     // !! WARN !!
