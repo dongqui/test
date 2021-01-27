@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import * as BABYLON from 'babylonjs';
 import 'babylonjs-loaders';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { WrapperRenderingPanel } from './style';
 
 export interface RenderingPanelProps {}
@@ -61,19 +61,19 @@ const RenderingPanelComponent: React.FC<RenderingPanelProps> = ({}) => {
     });
     return scene;
   };
-  const asyncEngineCreation = async () => {
+  const asyncEngineCreation = useCallback(async () => {
     try {
       return createDefaultEngine();
     } catch (e) {
       console.log('the available createEngine function failed. Creating the default engine instead');
       return createDefaultEngine();
     }
-  };
-  const initFunction = async () => {
+  }, []);
+  const initFunction = useCallback(async () => {
     engine = await asyncEngineCreation();
     if (!engine) throw 'engine should not be null.';
     scene = createScene();
-  };
+  }, [asyncEngineCreation]);
   useEffect(() => {
     initFunction().then(() => {
       sceneToRender = scene;
@@ -87,7 +87,7 @@ const RenderingPanelComponent: React.FC<RenderingPanelProps> = ({}) => {
     window.addEventListener('resize', function () {
       engine.resize();
     });
-  }, []);
+  }, [initFunction]);
   return (
     <WrapperRenderingPanel>
       <canvas id="renderCanvas" style={{ width: '100%', height: '100%' }} ref={canvas}></canvas>
