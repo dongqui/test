@@ -6,11 +6,10 @@ import { ApolloProvider } from '@apollo/client';
 import { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { cache, useApollo } from '../lib/apolloClient';
-import { useTheme } from '../hooks';
 
 const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({ Component, pageProps }) => {
-  const { isTheme, changeMode } = useTheme();
-  const theme = isTheme === 'light' ? '' : '';
+  // const { isTheme, changeMode } = useTheme();
+  // const theme = isTheme === 'light' ? '' : '';
 
   const apolloClient = useApollo(pageProps);
   const initialAction = async () => {
