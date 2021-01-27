@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="12px" height="13px" viewBox="0 0 12 13" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>arrow_down</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="A0" transform="translate(-798.000000, -1447.000000)" fill="#000000" fill-rule="nonzero">
+            <g id="arrow_down" transform="translate(798.000000, 1447.000000)">
+                <path d="M5.4697,12.5303 C5.7626,12.8232 6.2374,12.8232 6.5303,12.5303 L11.3033,7.7574 C11.5962,7.4645 11.5962,6.9896 11.3033,6.6967 C11.0104,6.4038 10.5355,6.4038 10.2426,6.6967 L6,10.9393 L1.75736,6.6967 C1.46447,6.4038 0.98959,6.4038 0.6967,6.6967 C0.40381,6.9896 0.40381,7.4645 0.6967,7.7574 L5.4697,12.5303 Z M5.25,0 L5.25,12 L6.75,12 L6.75,0 L5.25,0 Z" id="Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>
