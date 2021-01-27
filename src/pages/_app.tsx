@@ -28,9 +28,7 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({ Compone
         <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
       </Head>
       <ApolloProvider client={apolloClient}>
-        <ThemeProvider theme={theme}>
-          <Component {...pageProps} />
-        </ThemeProvider>
+        <Component {...pageProps} />
       </ApolloProvider>
     </>
   );
