@@ -1,0 +1,9 @@
+{
+  "version": 3,
+  "name": "shoot",
+  "scope": "plask-public",
+  "build": [
+    { "src": "package.json", "use": "@now/static-build", "config": { "distDir": "_next" } },
+    { "src": "_next/*", "use": "@now/static"}
+  ]
+}
