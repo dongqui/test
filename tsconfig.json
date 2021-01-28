@@ -8,6 +8,7 @@
     "jsx": "preserve",
     "lib": ["dom", "es2017"],
     "module": "esnext",
+    "jsxImportSource": "@emotion/react",
     "moduleResolution": "node",
     "noEmit": true,
     "noFallthroughCasesInSwitch": false,
