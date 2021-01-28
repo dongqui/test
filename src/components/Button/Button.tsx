@@ -1,8 +1,6 @@
 import _ from 'lodash';
 import React, { useMemo } from 'react';
 import { BLUE } from '../../styles/common';
-import { FacebookLogo } from '../Icon/FacebookLogo';
-import { GoogleLogo } from '../Icon/GoogleLogo';
 import { ButtonWrapper } from './style';
 
 export interface ButtonProps {
@@ -58,8 +56,6 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       pcHeightRate={pcHeightRate}
       borderRadius={borderRadius}
     >
-      {_.isEqual(icon, 'google') && <GoogleLogo width={15} height={15} style={{ marginRight: '5%' }} />}
-      {_.isEqual(icon, 'facebook') && <FacebookLogo width={15} height={15} style={{ marginRight: '5%' }} />}
       {filteredButtonText}
     </ButtonWrapper>
   );
