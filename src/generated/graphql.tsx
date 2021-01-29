@@ -95,21 +95,34 @@ export type UserEntryPage = {
 export type UsersQueryVariables = Exact<{ [key: string]: never }>;
 
 export type UsersQuery = { __typename?: 'Query' } & {
-  users: { __typename?: 'UserEntryPage' } & { data: Array<Maybe<{ __typename?: 'UserEntry' } & Pick<UserEntry, '_id' | 'name' | 'email' | 'password'>>> };
+  users: { __typename?: 'UserEntryPage' } & {
+    data: Array<
+      Maybe<{ __typename?: 'UserEntry' } & Pick<UserEntry, '_id' | 'name' | 'email' | 'password'>>
+    >;
+  };
 };
 
 export type FindUserEntryByIdQueryVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
-export type FindUserEntryByIdQuery = { __typename?: 'Query' } & { findUserEntryByID?: Maybe<{ __typename?: 'UserEntry' } & Pick<UserEntry, '_id' | 'name' | 'email' | 'password' | '_ts'>> };
+export type FindUserEntryByIdQuery = { __typename?: 'Query' } & {
+  findUserEntryByID?: Maybe<
+    { __typename?: 'UserEntry' } & Pick<UserEntry, '_id' | 'name' | 'email' | 'password' | '_ts'>
+  >;
+};
 
 export type FindUserEntryByEmailQueryVariables = Exact<{
   email: Scalars['String'];
 }>;
 
 export type FindUserEntryByEmailQuery = { __typename?: 'Query' } & {
-  findUserEntryByEmail?: Maybe<{ __typename?: 'UserEntry' } & Pick<UserEntry, '_id' | 'email' | 'name' | 'password' | 'isVerifiedEmail' | '_ts'>>;
+  findUserEntryByEmail?: Maybe<
+    { __typename?: 'UserEntry' } & Pick<
+      UserEntry,
+      '_id' | 'email' | 'name' | 'password' | 'isVerifiedEmail' | '_ts'
+    >
+  >;
 };
 
 export type CreateUserEntryMutationVariables = Exact<{
@@ -119,7 +132,12 @@ export type CreateUserEntryMutationVariables = Exact<{
   isVerifiedEmail: Scalars['Boolean'];
 }>;
 
-export type CreateUserEntryMutation = { __typename?: 'Mutation' } & { createUserEntry: { __typename?: 'UserEntry' } & Pick<UserEntry, '_id' | 'email' | 'name' | 'isVerifiedEmail'> };
+export type CreateUserEntryMutation = { __typename?: 'Mutation' } & {
+  createUserEntry: { __typename?: 'UserEntry' } & Pick<
+    UserEntry,
+    '_id' | 'email' | 'name' | 'isVerifiedEmail'
+  >;
+};
 
 export type UpdateIsVerifiedEmailUserEntryMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -127,7 +145,9 @@ export type UpdateIsVerifiedEmailUserEntryMutationVariables = Exact<{
 }>;
 
 export type UpdateIsVerifiedEmailUserEntryMutation = { __typename?: 'Mutation' } & {
-  updateUserEntry?: Maybe<{ __typename?: 'UserEntry' } & Pick<UserEntry, '_id' | 'email' | 'name' | 'isVerifiedEmail'>>;
+  updateUserEntry?: Maybe<
+    { __typename?: 'UserEntry' } & Pick<UserEntry, '_id' | 'email' | 'name' | 'isVerifiedEmail'>
+  >;
 };
 
 export type UpdatePasswordUserEntryMutationVariables = Exact<{
@@ -135,7 +155,11 @@ export type UpdatePasswordUserEntryMutationVariables = Exact<{
   password: Scalars['String'];
 }>;
 
-export type UpdatePasswordUserEntryMutation = { __typename?: 'Mutation' } & { updateUserEntry?: Maybe<{ __typename?: 'UserEntry' } & Pick<UserEntry, '_id' | 'email' | 'name' | 'isVerifiedEmail'>> };
+export type UpdatePasswordUserEntryMutation = { __typename?: 'Mutation' } & {
+  updateUserEntry?: Maybe<
+    { __typename?: 'UserEntry' } & Pick<UserEntry, '_id' | 'email' | 'name' | 'isVerifiedEmail'>
+  >;
+};
 
 export const UsersDocument = gql`
   query users {
@@ -165,10 +189,14 @@ export const UsersDocument = gql`
  *   },
  * });
  */
-export function useUsersQuery(baseOptions?: Apollo.QueryHookOptions<UsersQuery, UsersQueryVariables>) {
+export function useUsersQuery(
+  baseOptions?: Apollo.QueryHookOptions<UsersQuery, UsersQueryVariables>,
+) {
   return Apollo.useQuery<UsersQuery, UsersQueryVariables>(UsersDocument, baseOptions);
 }
-export function useUsersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<UsersQuery, UsersQueryVariables>) {
+export function useUsersLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<UsersQuery, UsersQueryVariables>,
+) {
   return Apollo.useLazyQuery<UsersQuery, UsersQueryVariables>(UsersDocument, baseOptions);
 }
 export type UsersQueryHookResult = ReturnType<typeof useUsersQuery>;
@@ -202,15 +230,31 @@ export const FindUserEntryByIdDocument = gql`
  *   },
  * });
  */
-export function useFindUserEntryByIdQuery(baseOptions: Apollo.QueryHookOptions<FindUserEntryByIdQuery, FindUserEntryByIdQueryVariables>) {
-  return Apollo.useQuery<FindUserEntryByIdQuery, FindUserEntryByIdQueryVariables>(FindUserEntryByIdDocument, baseOptions);
+export function useFindUserEntryByIdQuery(
+  baseOptions: Apollo.QueryHookOptions<FindUserEntryByIdQuery, FindUserEntryByIdQueryVariables>,
+) {
+  return Apollo.useQuery<FindUserEntryByIdQuery, FindUserEntryByIdQueryVariables>(
+    FindUserEntryByIdDocument,
+    baseOptions,
+  );
 }
-export function useFindUserEntryByIdLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FindUserEntryByIdQuery, FindUserEntryByIdQueryVariables>) {
-  return Apollo.useLazyQuery<FindUserEntryByIdQuery, FindUserEntryByIdQueryVariables>(FindUserEntryByIdDocument, baseOptions);
+export function useFindUserEntryByIdLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    FindUserEntryByIdQuery,
+    FindUserEntryByIdQueryVariables
+  >,
+) {
+  return Apollo.useLazyQuery<FindUserEntryByIdQuery, FindUserEntryByIdQueryVariables>(
+    FindUserEntryByIdDocument,
+    baseOptions,
+  );
 }
 export type FindUserEntryByIdQueryHookResult = ReturnType<typeof useFindUserEntryByIdQuery>;
 export type FindUserEntryByIdLazyQueryHookResult = ReturnType<typeof useFindUserEntryByIdLazyQuery>;
-export type FindUserEntryByIdQueryResult = Apollo.QueryResult<FindUserEntryByIdQuery, FindUserEntryByIdQueryVariables>;
+export type FindUserEntryByIdQueryResult = Apollo.QueryResult<
+  FindUserEntryByIdQuery,
+  FindUserEntryByIdQueryVariables
+>;
 export const FindUserEntryByEmailDocument = gql`
   query findUserEntryByEmail($email: String!) {
     findUserEntryByEmail(email: $email) {
@@ -240,18 +284,46 @@ export const FindUserEntryByEmailDocument = gql`
  *   },
  * });
  */
-export function useFindUserEntryByEmailQuery(baseOptions: Apollo.QueryHookOptions<FindUserEntryByEmailQuery, FindUserEntryByEmailQueryVariables>) {
-  return Apollo.useQuery<FindUserEntryByEmailQuery, FindUserEntryByEmailQueryVariables>(FindUserEntryByEmailDocument, baseOptions);
+export function useFindUserEntryByEmailQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    FindUserEntryByEmailQuery,
+    FindUserEntryByEmailQueryVariables
+  >,
+) {
+  return Apollo.useQuery<FindUserEntryByEmailQuery, FindUserEntryByEmailQueryVariables>(
+    FindUserEntryByEmailDocument,
+    baseOptions,
+  );
 }
-export function useFindUserEntryByEmailLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FindUserEntryByEmailQuery, FindUserEntryByEmailQueryVariables>) {
-  return Apollo.useLazyQuery<FindUserEntryByEmailQuery, FindUserEntryByEmailQueryVariables>(FindUserEntryByEmailDocument, baseOptions);
+export function useFindUserEntryByEmailLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    FindUserEntryByEmailQuery,
+    FindUserEntryByEmailQueryVariables
+  >,
+) {
+  return Apollo.useLazyQuery<FindUserEntryByEmailQuery, FindUserEntryByEmailQueryVariables>(
+    FindUserEntryByEmailDocument,
+    baseOptions,
+  );
 }
 export type FindUserEntryByEmailQueryHookResult = ReturnType<typeof useFindUserEntryByEmailQuery>;
-export type FindUserEntryByEmailLazyQueryHookResult = ReturnType<typeof useFindUserEntryByEmailLazyQuery>;
-export type FindUserEntryByEmailQueryResult = Apollo.QueryResult<FindUserEntryByEmailQuery, FindUserEntryByEmailQueryVariables>;
+export type FindUserEntryByEmailLazyQueryHookResult = ReturnType<
+  typeof useFindUserEntryByEmailLazyQuery
+>;
+export type FindUserEntryByEmailQueryResult = Apollo.QueryResult<
+  FindUserEntryByEmailQuery,
+  FindUserEntryByEmailQueryVariables
+>;
 export const CreateUserEntryDocument = gql`
-  mutation createUserEntry($email: String!, $name: String, $password: String!, $isVerifiedEmail: Boolean!) {
-    createUserEntry(data: { email: $email, name: $name, password: $password, isVerifiedEmail: $isVerifiedEmail }) {
+  mutation createUserEntry(
+    $email: String!
+    $name: String
+    $password: String!
+    $isVerifiedEmail: Boolean!
+  ) {
+    createUserEntry(
+      data: { email: $email, name: $name, password: $password, isVerifiedEmail: $isVerifiedEmail }
+    ) {
       _id
       email
       name
@@ -259,7 +331,10 @@ export const CreateUserEntryDocument = gql`
     }
   }
 `;
-export type CreateUserEntryMutationFn = Apollo.MutationFunction<CreateUserEntryMutation, CreateUserEntryMutationVariables>;
+export type CreateUserEntryMutationFn = Apollo.MutationFunction<
+  CreateUserEntryMutation,
+  CreateUserEntryMutationVariables
+>;
 
 /**
  * __useCreateUserEntryMutation__
@@ -281,12 +356,23 @@ export type CreateUserEntryMutationFn = Apollo.MutationFunction<CreateUserEntryM
  *   },
  * });
  */
-export function useCreateUserEntryMutation(baseOptions?: Apollo.MutationHookOptions<CreateUserEntryMutation, CreateUserEntryMutationVariables>) {
-  return Apollo.useMutation<CreateUserEntryMutation, CreateUserEntryMutationVariables>(CreateUserEntryDocument, baseOptions);
+export function useCreateUserEntryMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CreateUserEntryMutation,
+    CreateUserEntryMutationVariables
+  >,
+) {
+  return Apollo.useMutation<CreateUserEntryMutation, CreateUserEntryMutationVariables>(
+    CreateUserEntryDocument,
+    baseOptions,
+  );
 }
 export type CreateUserEntryMutationHookResult = ReturnType<typeof useCreateUserEntryMutation>;
 export type CreateUserEntryMutationResult = Apollo.MutationResult<CreateUserEntryMutation>;
-export type CreateUserEntryMutationOptions = Apollo.BaseMutationOptions<CreateUserEntryMutation, CreateUserEntryMutationVariables>;
+export type CreateUserEntryMutationOptions = Apollo.BaseMutationOptions<
+  CreateUserEntryMutation,
+  CreateUserEntryMutationVariables
+>;
 export const UpdateIsVerifiedEmailUserEntryDocument = gql`
   mutation updateIsVerifiedEmailUserEntry($id: ID!, $isVerifiedEmail: Boolean!) {
     updateUserEntry(id: $id, data: { isVerifiedEmail: $isVerifiedEmail }) {
@@ -297,7 +383,10 @@ export const UpdateIsVerifiedEmailUserEntryDocument = gql`
     }
   }
 `;
-export type UpdateIsVerifiedEmailUserEntryMutationFn = Apollo.MutationFunction<UpdateIsVerifiedEmailUserEntryMutation, UpdateIsVerifiedEmailUserEntryMutationVariables>;
+export type UpdateIsVerifiedEmailUserEntryMutationFn = Apollo.MutationFunction<
+  UpdateIsVerifiedEmailUserEntryMutation,
+  UpdateIsVerifiedEmailUserEntryMutationVariables
+>;
 
 /**
  * __useUpdateIsVerifiedEmailUserEntryMutation__
@@ -317,12 +406,25 @@ export type UpdateIsVerifiedEmailUserEntryMutationFn = Apollo.MutationFunction<U
  *   },
  * });
  */
-export function useUpdateIsVerifiedEmailUserEntryMutation(baseOptions?: Apollo.MutationHookOptions<UpdateIsVerifiedEmailUserEntryMutation, UpdateIsVerifiedEmailUserEntryMutationVariables>) {
-  return Apollo.useMutation<UpdateIsVerifiedEmailUserEntryMutation, UpdateIsVerifiedEmailUserEntryMutationVariables>(UpdateIsVerifiedEmailUserEntryDocument, baseOptions);
+export function useUpdateIsVerifiedEmailUserEntryMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    UpdateIsVerifiedEmailUserEntryMutation,
+    UpdateIsVerifiedEmailUserEntryMutationVariables
+  >,
+) {
+  return Apollo.useMutation<
+    UpdateIsVerifiedEmailUserEntryMutation,
+    UpdateIsVerifiedEmailUserEntryMutationVariables
+  >(UpdateIsVerifiedEmailUserEntryDocument, baseOptions);
 }
-export type UpdateIsVerifiedEmailUserEntryMutationHookResult = ReturnType<typeof useUpdateIsVerifiedEmailUserEntryMutation>;
+export type UpdateIsVerifiedEmailUserEntryMutationHookResult = ReturnType<
+  typeof useUpdateIsVerifiedEmailUserEntryMutation
+>;
 export type UpdateIsVerifiedEmailUserEntryMutationResult = Apollo.MutationResult<UpdateIsVerifiedEmailUserEntryMutation>;
-export type UpdateIsVerifiedEmailUserEntryMutationOptions = Apollo.BaseMutationOptions<UpdateIsVerifiedEmailUserEntryMutation, UpdateIsVerifiedEmailUserEntryMutationVariables>;
+export type UpdateIsVerifiedEmailUserEntryMutationOptions = Apollo.BaseMutationOptions<
+  UpdateIsVerifiedEmailUserEntryMutation,
+  UpdateIsVerifiedEmailUserEntryMutationVariables
+>;
 export const UpdatePasswordUserEntryDocument = gql`
   mutation updatePasswordUserEntry($id: ID!, $password: String!) {
     updateUserEntry(id: $id, data: { password: $password }) {
@@ -333,7 +435,10 @@ export const UpdatePasswordUserEntryDocument = gql`
     }
   }
 `;
-export type UpdatePasswordUserEntryMutationFn = Apollo.MutationFunction<UpdatePasswordUserEntryMutation, UpdatePasswordUserEntryMutationVariables>;
+export type UpdatePasswordUserEntryMutationFn = Apollo.MutationFunction<
+  UpdatePasswordUserEntryMutation,
+  UpdatePasswordUserEntryMutationVariables
+>;
 
 /**
  * __useUpdatePasswordUserEntryMutation__
@@ -353,9 +458,22 @@ export type UpdatePasswordUserEntryMutationFn = Apollo.MutationFunction<UpdatePa
  *   },
  * });
  */
-export function useUpdatePasswordUserEntryMutation(baseOptions?: Apollo.MutationHookOptions<UpdatePasswordUserEntryMutation, UpdatePasswordUserEntryMutationVariables>) {
-  return Apollo.useMutation<UpdatePasswordUserEntryMutation, UpdatePasswordUserEntryMutationVariables>(UpdatePasswordUserEntryDocument, baseOptions);
+export function useUpdatePasswordUserEntryMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    UpdatePasswordUserEntryMutation,
+    UpdatePasswordUserEntryMutationVariables
+  >,
+) {
+  return Apollo.useMutation<
+    UpdatePasswordUserEntryMutation,
+    UpdatePasswordUserEntryMutationVariables
+  >(UpdatePasswordUserEntryDocument, baseOptions);
 }
-export type UpdatePasswordUserEntryMutationHookResult = ReturnType<typeof useUpdatePasswordUserEntryMutation>;
+export type UpdatePasswordUserEntryMutationHookResult = ReturnType<
+  typeof useUpdatePasswordUserEntryMutation
+>;
 export type UpdatePasswordUserEntryMutationResult = Apollo.MutationResult<UpdatePasswordUserEntryMutation>;
-export type UpdatePasswordUserEntryMutationOptions = Apollo.BaseMutationOptions<UpdatePasswordUserEntryMutation, UpdatePasswordUserEntryMutationVariables>;
+export type UpdatePasswordUserEntryMutationOptions = Apollo.BaseMutationOptions<
+  UpdatePasswordUserEntryMutation,
+  UpdatePasswordUserEntryMutationVariables
+>;

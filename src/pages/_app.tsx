@@ -7,7 +7,10 @@ import { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { cache, useApollo } from '../lib/apolloClient';
 
-const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({ Component, pageProps }) => {
+const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
+  Component,
+  pageProps,
+}) => {
   // const { isTheme, changeMode } = useTheme();
   // const theme = isTheme === 'light' ? '' : '';
 
@@ -25,7 +28,10 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({ Compone
     <>
       <Head>
         <title>shoot</title>
-        <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+        <meta
+          name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
+        />
       </Head>
       <ApolloProvider client={apolloClient}>
         <Component {...pageProps} />

@@ -1,6 +1,6 @@
 function FormatTemplate({ template }, _, { componentName, jsx }) {
   const IconComponentName = componentName.name.slice(3);
-  const typeScriptTpl = template.smart({ plugins: ["jsx", "typescript"] });
+  const typeScriptTpl = template.smart({ plugins: ['jsx', 'typescript'] });
 
   return typeScriptTpl.ast`
     import React from 'react';
