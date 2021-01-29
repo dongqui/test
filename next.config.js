@@ -1,26 +1,73 @@
 const withPWA = require('next-pwa');
-// const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const withPlugins = require('next-compose-plugins');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({ enabled: false });
+const withSass = require('@zeit/next-sass');
 
-module.exports = withPWA({
-  pwa: {
-    disable: process.env.NEXT_PUBLIC_IS_DEV === 'true',
-    dest: 'public',
-  },
-  typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true,
-  },
-  distDir: '_next',
+module.exports = withPlugins([
+  [
+    withBundleAnalyzer,
+    withPWA({
+      distDir: '_next',
+      pwa: {
+        disable: process.env.NEXT_PUBLIC_IS_DEV === 'true',
+        dest: 'pwa',
+      },
+      typescript: {
+        // ignoreBuildErrors: true,
+      },
+      webpack(config, options) {
+        const { dev, isServer } = options;
+
+        if (dev && isServer) {
+          config.plugins.push(
+            new ForkTsCheckerWebpackPlugin({
+              logger: {
+                infrastructure: 'console',
+              },
+              eslint: {
+                enabled: true,
+                files: './src/**/*.{js,jsx,ts,tsx}',
+              },
+            }),
+          );
+        }
+        return config;
+      },
+    }),
+  ],
+  [
+    withSass,
+    {
+      cssModules: true,
+    },
+  ],
+]);
+
+// module.exports = withBundleAnalyzer(withPWA({
+//   distDir: '_next',
+//   pwa: {
+//     disable: process.env.NEXT_PUBLIC_IS_DEV === 'true',
+//     dest: 'pwa',
+//   },
+//   typescript: {
+//     // ignoreBuildErrors: true,
+//   },
 //   webpack(config, options) {
 //     const { dev, isServer } = options;
-//     // Do not run type checking twice:
+
 //     if (dev && isServer) {
-//       config.plugins.push(new ForkTsCheckerWebpackPlugin());
+//       config.plugins.push(new ForkTsCheckerWebpackPlugin({
+//         logger: {
+//           infrastructure: 'console',
+//         },
+//         eslint: {
+//           enabled: true,
+//           files: './src/**/*.{js,jsx,ts,tsx}'
+//         },
+//       }));
 //     }
+
 //     return config;
 //   },
-  trailingSlash: true,
-});
+// }));

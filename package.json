@@ -7,31 +7,37 @@
     "dev": "next dev",
     "prod": "next build",
     "start": "next start",
-    "electron": "npm run build-electron && electron .",
     "storybook": "start-storybook",
     "build-storybook": "build-storybook",
-    "build-renderer": "next build renderer && next export renderer",
+    "build-src": "next build && next export",
     "build-electron": "tsc -p electron-src",
-    "build": "npm run build-renderer && npm run build-electron",
+    "build": "npm run build-src && npm run build-electron",
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
-    "clean": "rimraf dist main renderer/out renderer/.next",
+    "clean": "rimraf dist main out pwa _next storybook-static",
     "type-check": "tsc",
-    "precodegen": "node ./scripts/precodegen.js",
+    "precodegen": "node ./src/scripts/precodegen.js",
     "codegen": "graphql-codegen --config codegen.yml",
-    "postcodegen": "node ./scripts/postcodegen.js"
+    "postcodegen": "node ./src/scripts/postcodegen.js",
+    "generated:svgs": "cd ./src/components/Icons/svg && npx @svgr/cli --template ../format-template.js --config-file ../.svgrrc  *.svg --out-dir ../generated --ext tsx && node ../generated-option.js && yarn generated:format",
+    "generated:format": "prettier --write ./src/components/Icons/generated"
   },
   "dependencies": {
     "@apollo/client": "^3.3.6",
+    "@emotion/react": "^11.1.4",
+    "@emotion/styled": "^11.0.0",
     "apollo3-cache-persist": "^0.9.1",
+    "babylonjs": "^4.2.0",
+    "babylonjs-loaders": "^4.2.0",
     "classnames": "^2.2.6",
-    "dotenv": "^8.2.0",
     "electron-is-dev": "^1.1.0",
     "electron-next": "^3.1.5",
     "fs": "^0.0.1-security",
     "graphql": "^15.4.0",
+    "husky": "^4.3.8",
     "lodash": "^4.17.20",
     "next": "^10.0.5",
+    "next-compose-plugins": "^2.2.1",
     "next-pwa": "^5.0.4",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
@@ -39,15 +45,18 @@
     "styled-components": "^5.2.1"
   },
   "devDependencies": {
+    "@emotion/babel-preset-css-prop": "^11.0.0",
     "@graphql-codegen/cli": "1.20.0",
     "@graphql-codegen/introspection": "1.18.1",
     "@graphql-codegen/typescript": "1.20.0",
     "@graphql-codegen/typescript-operations": "1.17.13",
     "@graphql-codegen/typescript-react-apollo": "2.2.1",
+    "@next/bundle-analyzer": "^10.0.5",
     "@storybook/addon-actions": "^6.1.15",
     "@storybook/addon-essentials": "^6.1.15",
     "@storybook/addon-links": "^6.1.15",
     "@storybook/react": "^6.1.15",
+    "@types/babylonjs": "^2.4.1",
     "@types/classnames": "^2.2.11",
     "@types/graphql": "^14.5.0",
     "@types/lodash": "^4.14.168",
@@ -57,6 +66,8 @@
     "@types/styled-components": "^5.1.7",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
+    "@zeit/next-sass": "^1.0.1",
+    "css-loader": "^5.0.1",
     "electron": "^10.1.5",
     "electron-builder": "^22.9.1",
     "eslint": "^7.18.0",
@@ -65,19 +76,29 @@
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "fork-ts-checker-webpack-plugin": "^6.1.0",
+    "node-sass": "^5.0.0",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.0",
+    "sass-loader": "^10.1.1",
+    "style-loader": "^2.0.0",
     "stylelint": "^13.9.0",
     "stylelint-config-standard": "^20.0.0",
     "stylelint-order": "^4.1.0",
     "stylelint-scss": "^3.18.0",
+    "ts-loader": "^8.0.14",
     "typescript": "^4.0.5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npx yarn prod"
+    }
   },
   "build": {
     "asar": true,
     "files": [
       "main",
-      "renderer/out"
+      "out"
     ]
   }
 }

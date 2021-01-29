@@ -1,0 +1,46 @@
+@import './libraries/reset';
+@import './libraries/grid';
+
+:root {
+  // gray
+  --gray100: #151515;
+  --gray200: #242424;
+  --gray300: #303030;
+  --gray400: #454545;
+  --gray500: #a7a7a7;
+  --gray600: #e2e2e2;
+  --gray700: #ffffff;
+  // vivid
+  --vivid-red: #e85757;
+  --vivid-orange: #ed8539;
+  --vivid-yellow: #fcdd3e;
+  --vivid-shoot: #afe755;
+  --vivid-green: #38ce59;
+  --vivid-teal: #67c5fa;
+  --vivid-blue: #3785f7;
+  --vivid-purple: #a15afd;
+  --vivid-pink: #ed6cc9;
+  // pastel
+  --pastel-red: #f08a8a;
+  --pastel-orange: #f8ac8b;
+  --pastel-yellow: #fddc89;
+  --pastel-shoot: #cdec8b;
+  --pastel-green: #82dea2;
+  --pastel-teal: #a4ecfc;
+  --pastel-blue: #7ea1f9;
+  --pastel-purple: #ae9afd;
+  --pastel-pink: #ffa3d9;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+#__next,
+body {
+  width: 100%;
+  height: 100%;
+  font-family: 'Noto Sans KR', sans-serif;
+}

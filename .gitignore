@@ -42,3 +42,6 @@ storybook-static
 
 # env
 .env
+
+# pwa
+pwa
