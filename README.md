@@ -1,27 +1,50 @@
-# plask shoot
+# Shoot 💫
 
 plask homepage with nextjs, typescript, webgl, d3.js, apollo client
 
-## install Dependencies
+### Installation ⚙️
+
+```bash
+# 의존성 설치
 npx yarn
 
-## vercel 연동
+# 배포 환경 연동
 npx vercel link
 
-## 환경 변수 받기
+# 환경 변수 로드
 npx vercel env pull
 
-## 환경 변수 추가
-npx vercel env add
-
-## 환경 변수 삭제
-npx vercel env remove
-
-## 스키마 업로드
-npx yarn setup
-
-## 타입 생성
-npx yarn codegen
-
-## 개발 환경 기동
+# 개발 환경 기동
 npx yarn dev
+```
+
+### Build Script 🔗
+
+```json
+// Next
+"dev": "개발 버전 시작",
+"prod": "Next.js 정적 빌드",
+"start": "프로덕션 버전 시작",
+
+// Storybook
+"storybook": "스토리북 시작",
+"build-storybook": "스토리북 빌드",
+
+// Build
+"build-src": "라우팅 경로로 정적 빌드",
+"build-electron": "일렉트론 빌드",
+"build": "Next.js 정적 빌드 후 일렉트론도 함께 빌드",
+"pack-app": "일렉트론 빌드 후 데스크탑 앱 생성",
+"dist": "Next.js 정적 빌드 후 일렉트론 데스크탑 앱 생성",
+"clean": "필요없는 dist 파일 삭제",
+"type-check": "타입스크립트 타입 체크",
+
+// svgs
+"generated:svgs": "지정된 경로에 아이콘 컴포넌트화",
+"generated:format": "지정된 경로에 아이콘 prettier로 코드 정렬"
+
+// Gql
+"precodegen": "node ./scripts/precodegen.js",
+"codegen": "graphql-codegen --config codegen.yml",
+"postcodegen": "node ./scripts/postcodegen.js",
+```
