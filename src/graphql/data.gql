@@ -1,6 +1,6 @@
-query users{
-  users{
-    data{
+query users {
+  users {
+    data {
       _id
       name
       email
@@ -8,8 +8,8 @@ query users{
     }
   }
 }
-query findUserEntryByID($id: ID!){
-  findUserEntryByID(id: $id){
+query findUserEntryByID($id: ID!) {
+  findUserEntryByID(id: $id) {
     _id
     name
     email
@@ -17,8 +17,8 @@ query findUserEntryByID($id: ID!){
     _ts
   }
 }
-query findUserEntryByEmail($email: String!){
-  findUserEntryByEmail(email: $email){
+query findUserEntryByEmail($email: String!) {
+  findUserEntryByEmail(email: $email) {
     _id
     email
     name
@@ -27,41 +27,31 @@ query findUserEntryByEmail($email: String!){
     _ts
   }
 }
-mutation createUserEntry($email: String!, $name: String, $password: String!, $isVerifiedEmail: Boolean!){
+mutation createUserEntry(
+  $email: String!
+  $name: String
+  $password: String!
+  $isVerifiedEmail: Boolean!
+) {
   createUserEntry(
-    data: {
-      email: $email
-      name: $name
-      password: $password
-      isVerifiedEmail: $isVerifiedEmail
-    }
-  ){
+    data: { email: $email, name: $name, password: $password, isVerifiedEmail: $isVerifiedEmail }
+  ) {
     _id
     email
     name
     isVerifiedEmail
   }
 }
-mutation updateIsVerifiedEmailUserEntry($id: ID!, $isVerifiedEmail: Boolean!){
-  updateUserEntry(
-    id: $id,
-    data: {
-      isVerifiedEmail: $isVerifiedEmail
-    }
-  ){
+mutation updateIsVerifiedEmailUserEntry($id: ID!, $isVerifiedEmail: Boolean!) {
+  updateUserEntry(id: $id, data: { isVerifiedEmail: $isVerifiedEmail }) {
     _id
     email
     name
     isVerifiedEmail
   }
 }
-mutation updatePasswordUserEntry($id: ID!, $password: String!){
-  updateUserEntry(
-    id: $id,
-    data: {
-      password: $password
-    }
-  ){
+mutation updatePasswordUserEntry($id: ID!, $password: String!) {
+  updateUserEntry(id: $id, data: { password: $password }) {
     _id
     email
     name

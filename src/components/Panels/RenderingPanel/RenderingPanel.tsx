@@ -12,13 +12,24 @@ let sceneToRender: any = null;
 const RenderingPanelComponent: React.FC<RenderingPanelProps> = ({}) => {
   const canvas = useRef(null);
   const createDefaultEngine = () => {
-    return new BABYLON.Engine(canvas.current, true, { preserveDrawingBuffer: true, stencil: true, disableWebGL2Support: false });
+    return new BABYLON.Engine(canvas.current, true, {
+      preserveDrawingBuffer: true,
+      stencil: true,
+      disableWebGL2Support: false,
+    });
   };
   const createScene = () => {
     engine.enableOfflineSupport = false;
     // Scene and Camera
     scene = new BABYLON.Scene(engine);
-    const camera1: any = new BABYLON.ArcRotateCamera('camera1', Math.PI / 2, Math.PI / 4, 10, new BABYLON.Vector3(0, -5, 0), scene);
+    const camera1: any = new BABYLON.ArcRotateCamera(
+      'camera1',
+      Math.PI / 2,
+      Math.PI / 4,
+      10,
+      new BABYLON.Vector3(0, -5, 0),
+      scene,
+    );
     scene.activeCamera = camera1;
     scene.activeCamera.attachControl(canvas, true);
     camera1.lowerRadiusLimit = 2;
@@ -40,7 +51,11 @@ const RenderingPanelComponent: React.FC<RenderingPanelProps> = ({}) => {
     skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
     skybox.material = skyboxMaterial;
     // Ground
-    const ground = BABYLON.MeshBuilder.CreateGround('ground', { height: 50, width: 50, subdivisions: 4 }, scene);
+    const ground = BABYLON.MeshBuilder.CreateGround(
+      'ground',
+      { height: 50, width: 50, subdivisions: 4 },
+      scene,
+    );
     const groundMaterial: any = new BABYLON.StandardMaterial('groundMaterial', scene);
     groundMaterial.diffuseTexture = new BABYLON.Texture('/textures/wood.jpg', scene);
     groundMaterial.diffuseTexture.uScale = 30;
@@ -48,24 +63,32 @@ const RenderingPanelComponent: React.FC<RenderingPanelProps> = ({}) => {
     groundMaterial.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
     ground.material = groundMaterial;
     // Load hero character and play animation
-    BABYLON.SceneLoader.ImportMesh('', 'https://assets.babylonjs.com/meshes/', 'HVGirl.glb', scene, (newMeshes, particleSystems, skeletons, animationGroups) => {
-      const hero = newMeshes[0];
-      //Scale the model down
-      hero.scaling.scaleInPlace(0.1);
-      //Lock camera on the character
-      camera1.target = hero;
-      //Get the Samba animation Group
-      const sambaAnim = scene.getAnimationGroupByName('Samba');
-      //Play the Samba animation
-      sambaAnim.start(true, 1.0, sambaAnim.from, sambaAnim.to, false);
-    });
+    BABYLON.SceneLoader.ImportMesh(
+      '',
+      'https://assets.babylonjs.com/meshes/',
+      'HVGirl.glb',
+      scene,
+      (newMeshes, particleSystems, skeletons, animationGroups) => {
+        const hero = newMeshes[0];
+        //Scale the model down
+        hero.scaling.scaleInPlace(0.1);
+        //Lock camera on the character
+        camera1.target = hero;
+        //Get the Samba animation Group
+        const sambaAnim = scene.getAnimationGroupByName('Samba');
+        //Play the Samba animation
+        sambaAnim.start(true, 1.0, sambaAnim.from, sambaAnim.to, false);
+      },
+    );
     return scene;
   };
   const asyncEngineCreation = useCallback(async () => {
     try {
       return createDefaultEngine();
     } catch (e) {
-      console.log('the available createEngine function failed. Creating the default engine instead');
+      console.log(
+        'the available createEngine function failed. Creating the default engine instead',
+      );
       return createDefaultEngine();
     }
   }, []);

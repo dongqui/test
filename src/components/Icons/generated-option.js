@@ -15,14 +15,18 @@ export interface SvgIconProps {
 `;
 
 const generatedForExportIconCode = files
-  .filter(f => f.includes('tsx'))
-  .map(f => {
+  .filter((f) => f.includes('tsx'))
+  .map((f) => {
     const fileName = f.split('.')[0];
     return `export * from './generated/${fileName}';`;
   })
   .join('\n');
 
-fs.writeFile(path.join(__dirname, 'index.ts'), [prependCode, generatedForExportIconCode].join('\n'), err => {
-  if (err) throw err;
-  console.log('The file has been saved!');
-});
+fs.writeFile(
+  path.join(__dirname, 'index.ts'),
+  [prependCode, generatedForExportIconCode].join('\n'),
+  (err) => {
+    if (err) throw err;
+    console.log('The file has been saved!');
+  },
+);
