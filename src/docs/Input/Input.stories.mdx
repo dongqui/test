@@ -1,0 +1,44 @@
+import { Meta, Preview, Story, Props } from '@storybook/addon-docs/blocks';
+import { Input } from '../../components/Input';
+
+<Meta title="Component API/Component/Input" />
+
+<style>
+  {`
+.elemTitle {
+    --mediumdark: '#999999';
+    font-weight: 900;
+    font-size: 36px;
+    color: #212121;
+    letter-spacing: 6px;
+    line-height: 24px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    margin-top: 20px;
+}
+.description {
+  margin-top: 20px;
+  color: #555;
+}
+.sectionTitle {
+  color: #212121;
+  font-size: 24px;
+  font-weight: 900;
+}
+.section {
+  margin-top: 20px;
+}
+`}
+</style>
+
+<div className="elemTitle">Input</div>
+<div className="description">존재하고 있는 모든 패널에 사용되는 인풋 컴포넌트입니다.</div>
+
+<Preview>
+  <Input />
+</Preview>
+
+<div className="sectionTitle">Props ⚙️</div>
+<div className="section">
+  <Props of={Input} />
+</div>
