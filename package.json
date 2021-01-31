@@ -16,9 +16,9 @@
     "dist": "npm run build && electron-builder",
     "clean": "rimraf dist main out pwa _next storybook-static",
     "type-check": "tsc",
-    "precodegen": "node ./scripts/precodegen.js",
+    "precodegen": "node ./src/scripts/precodegen.js",
     "codegen": "graphql-codegen --config codegen.yml",
-    "postcodegen": "node ./scripts/postcodegen.js",
+    "postcodegen": "node ./src/scripts/postcodegen.js",
     "generated:svgs": "cd ./src/components/Icons/svg && npx @svgr/cli --template ../format-template.js --config-file ../.svgrrc  *.svg --out-dir ../generated --ext tsx && node ../generated-option.js && yarn generated:format",
     "generated:format": "prettier --write ./src/components/Icons/generated"
   },
@@ -41,10 +41,12 @@
     "next-pwa": "^5.0.4",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
+    "react-rnd": "^10.2.4",
     "sass": "^1.32.5",
     "styled-components": "^5.2.1"
   },
   "devDependencies": {
+    "@types/react-rnd": "^8.0.0",
     "@emotion/babel-preset-css-prop": "^11.0.0",
     "@graphql-codegen/cli": "1.20.0",
     "@graphql-codegen/introspection": "1.18.1",

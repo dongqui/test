@@ -3,7 +3,7 @@ schema:
   - https://graphql.fauna.com/graphql:
       headers:
         Authorization: Basic NEXT_PUBLIC_TOKEN
-documents: "graphql/*.gql"
+documents: "src/graphql/*.gql"
 generates:
   generated/graphql.tsx:
     plugins:

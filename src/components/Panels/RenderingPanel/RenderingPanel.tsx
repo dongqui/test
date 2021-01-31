@@ -4,12 +4,14 @@ import 'babylonjs-loaders';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { WrapperRenderingPanel } from './style';
 
-export interface RenderingPanelProps {}
+export interface RenderingPanelProps {
+  test: boolean;
+}
 
 let engine: any = null;
 let scene: any = null;
 let sceneToRender: any = null;
-const RenderingPanelComponent: React.FC<RenderingPanelProps> = ({}) => {
+const RenderingPanelComponent: React.FC<RenderingPanelProps> = ({ test = true }) => {
   const canvas = useRef(null);
   const createDefaultEngine = () => {
     return new BABYLON.Engine(canvas.current, true, {

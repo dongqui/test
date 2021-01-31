@@ -4,8 +4,6 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const withBundleAnalyzer = require('@next/bundle-analyzer')({ enabled: false });
 const withSass = require('@zeit/next-sass');
 
-const isDev = process.env.NODE_ENV !== 'production';
-
 module.exports = withPlugins([
   [
     withBundleAnalyzer,
