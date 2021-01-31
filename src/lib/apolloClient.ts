@@ -9,7 +9,7 @@ export const APOLLO_STATE_PROP_NAME = '__APOLLO_STATE__';
 
 let apolloClient: any;
 const httpLink = createHttpLink({
-  uri: process.env.NEXT_PUBLIC_FAUNADB_GRAPHQL_ENDPOINT || '',
+  uri: 'https://graphql.fauna.com/graphql',
 });
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists

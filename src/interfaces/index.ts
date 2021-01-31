@@ -19,3 +19,7 @@ export type User = {
   id: number;
   name: string;
 };
+export interface screenSizeTypes {
+  width: number;
+  height: number;
+}
