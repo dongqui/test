@@ -6,6 +6,7 @@ import { ApolloProvider } from '@apollo/client';
 import { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { cache, useApollo } from '../lib/apolloClient';
+import '../styles/core.scss';
 
 const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   Component,

@@ -1,5 +1,6 @@
 import { addParameters } from '@storybook/react';
 import { themes } from '@storybook/theming';
+import '../src/styles/core.scss';
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
