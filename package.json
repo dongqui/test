@@ -41,10 +41,12 @@
     "next-pwa": "^5.0.4",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
+    "react-rnd": "^10.2.4",
     "sass": "^1.32.5",
     "styled-components": "^5.2.1"
   },
   "devDependencies": {
+    "@types/react-rnd": "^8.0.0",
     "@emotion/babel-preset-css-prop": "^11.0.0",
     "@graphql-codegen/cli": "1.20.0",
     "@graphql-codegen/introspection": "1.18.1",

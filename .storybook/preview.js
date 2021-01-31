@@ -12,11 +12,11 @@ export const parameters = {
 addParameters({
   previewTabs: {
     canvas: {
-      hidden: true,
+      // hidden: true,
     }
   },
   options: {
-    showPanel: true,
+    showPanel: false,
     isFullscreen: false,
     storySort: undefined,
     isToolshown: true,
