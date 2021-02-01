@@ -8,6 +8,7 @@ import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { cache, useApollo } from '../lib/apolloClient';
 import { isClient } from '../utils';
 import { SCREEN_SIZE } from '../lib/store';
+import '../styles/core.scss';
 
 const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   Component,
