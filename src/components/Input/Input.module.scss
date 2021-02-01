@@ -18,9 +18,11 @@
   font-weight: normal;
   text-align: left;
   color: var(--gray700);
+
   ::placeholder {
     color: var(--gray600);
   }
+
   ::-webkit-outer-spin-button,
   ::-webkit-inner-spin-button {
     -webkit-appearance: none;
