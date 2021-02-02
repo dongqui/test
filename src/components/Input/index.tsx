@@ -1,14 +1,10 @@
 import styled from '@emotion/styled';
 import React from 'react';
-import classNames from 'classnames';
 import styles from './Input.module.scss';
-import { SizeType, UnionType, Omit } from '../utils/types';
-
-const cx = classNames.bind(styles);
+import { UnionType, Omit } from '../utils/types';
 
 export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix' | 'type'> {
-  size?: SizeType;
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'prefix' | 'type'> {
   cursor?: UnionType<
     | 'auto'
     | 'crosshair'
@@ -69,25 +65,32 @@ export interface InputProps
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void | undefined;
 }
 
-interface InputStyleProps {
-  size?: SizeType;
+export interface InputStyleProps {
+  width?: string;
+  height?: string;
+  backgroundColor?: string;
+  borderRadius?: number;
 }
 
 const InputWrap = styled.div<InputStyleProps>`
   position: relative;
   display: inline-flex;
   flex-direction: row;
-  width: 2.5rem;
-  height: 1.25rem;
-  background-color: var(--gray400);
-  border-radius: 4px;
+  width: ${(props) => props.width};
+  height: ${(props) => props.height};
+  background-color: ${(props) => props.backgroundColor};
+  border-radius: ${(props) => props.borderRadius}px;
   margin-right: 0.5rem;
 `;
 
-export const Input: React.FC<InputProps> = ({
-  size,
-  cursor,
-  type,
+export const Input: React.FC<InputProps & InputStyleProps> = ({
+  // Box
+  width = '2.5rem',
+  height = '1.25rem',
+  backgroundColor = `var(--gray400)`,
+  borderRadius = 4,
+  // Input
+  type = 'text',
   id,
   key,
   prefix = 'X',
@@ -104,7 +107,12 @@ export const Input: React.FC<InputProps> = ({
   onChange,
 }) => {
   return (
-    <InputWrap size={size}>
+    <InputWrap
+      width={width}
+      height={height}
+      backgroundColor={backgroundColor}
+      borderRadius={borderRadius}
+    >
       <div className={styles.prefixText}>{prefix}</div>
       <input
         className={styles.Input}
