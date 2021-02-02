@@ -1,8 +1,8 @@
 {
-  "name": "mocap",
+  "name": "shoot",
   "version": "1.0.0",
   "main": "main/index.js",
-  "productName": "mocap",
+  "productName": "shoot",
   "scripts": {
     "dev": "next dev",
     "prod": "next build",
