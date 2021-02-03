@@ -50,9 +50,11 @@ export interface InputProps
   id: string;
   key: string | number;
   prefix?: React.ReactNode | string;
+  isPrefix?: boolean;
   maxLength?: number;
   min?: number;
   max?: number;
+  fontSize?: number;
   disabled?: boolean;
   readOnly?: boolean;
   placeholder?: string;
@@ -65,14 +67,17 @@ export interface InputProps
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void | undefined;
 }
 
-export interface InputStyleProps {
+export interface InputWrapperProps {
   width?: string;
   height?: string;
   backgroundColor?: string;
   borderRadius?: number;
 }
+export interface InputChildProps {
+  fontSize: number;
+}
 
-const InputWrap = styled.div<InputStyleProps>`
+const InputWrap = styled.div<InputWrapperProps>`
   position: relative;
   display: inline-flex;
   flex-direction: row;
@@ -82,8 +87,29 @@ const InputWrap = styled.div<InputStyleProps>`
   border-radius: ${(props) => props.borderRadius}px;
   margin-right: 0.5rem;
 `;
+const InputChild = styled.input<InputChildProps>`
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: ${(props) => props.fontSize}rem;
+  font-weight: normal;
+  text-align: left;
+  color: var(--gray700);
 
-export const Input: React.FC<InputProps & InputStyleProps> = ({
+  ::placeholder {
+    color: var(--gray600);
+  }
+
+  ::-webkit-outer-spin-button,
+  ::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+`;
+
+export const Input: React.FC<InputProps & InputWrapperProps & InputChildProps> = ({
   // Box
   width = '2.5rem',
   height = '1.25rem',
@@ -94,9 +120,11 @@ export const Input: React.FC<InputProps & InputStyleProps> = ({
   id,
   key,
   prefix = 'X',
+  isPrefix = true,
   maxLength,
   min,
   max,
+  fontSize = 1,
   disabled,
   readOnly,
   placeholder,
@@ -113,9 +141,9 @@ export const Input: React.FC<InputProps & InputStyleProps> = ({
       backgroundColor={backgroundColor}
       borderRadius={borderRadius}
     >
-      <div className={styles.prefixText}>{prefix}</div>
-      <input
-        className={styles.Input}
+      {isPrefix && <div className={styles.prefixText}>{prefix}</div>}
+      <InputChild
+        fontSize={fontSize}
         ref={ref}
         type={type}
         id={id}
