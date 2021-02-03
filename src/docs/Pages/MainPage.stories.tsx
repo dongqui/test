@@ -5,7 +5,7 @@ import { Story, Meta } from '@storybook/react/types-6-0';
 import { MainPage, MainPageProps } from '../../components/Pages/MainPage';
 
 export default {
-  title: 'Component/Pages/MainPage',
+  title: 'Pages/MainPage',
   component: MainPage,
   argTypes: {},
   args: {},

@@ -14,7 +14,7 @@ module.exports = withPlugins([
         dest: 'pwa',
       },
       typescript: {
-        // ignoreBuildErrors: true,
+        ignoreBuildErrors: true,
       },
       webpack(config, options) {
         const { dev, isServer } = options;

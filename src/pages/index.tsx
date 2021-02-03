@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import React, { useCallback, useEffect } from 'react';
-import { MainPage } from '../components/Pages/MainPage';
+import { RealtimePage } from '../components/Pages/RealtimePage';
 import { SCREEN_SIZE } from '../lib/store';
 import { isClient } from '../utils';
 
@@ -18,7 +18,7 @@ const IndexPage = () => {
   return (
     <>
       {isClient ? (
-        <MainPage
+        <RealtimePage
           width={`${screenSizeInfo.width}px`}
           height={`${screenSizeInfo.height}px`}
           screenSizeInfo={screenSizeInfo}

@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const WrapperRenderingPanel = styled.div`
-  width: 100%;
-  height: 100rem;
+export const WrapperRenderingPanel = styled.div<{ width: string; height: string }>`
+  width: ${(props) => props.width};
+  height: ${(props) => props.height};
 `;

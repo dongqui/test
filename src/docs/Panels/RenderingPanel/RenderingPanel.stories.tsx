@@ -8,7 +8,7 @@ import {
 } from '../../../components/Panels/RenderingPanel/RenderingPanel';
 
 export default {
-  title: 'Component/Panels/RenderingPanel',
+  title: 'Panels/RenderingPanel',
   component: RenderingPanel,
   argTypes: {},
   args: {},
@@ -17,4 +17,7 @@ export default {
 const Template: Story<RenderingPanelProps> = (args) => <RenderingPanel {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {};
+Default.args = {
+  width: '100%',
+  height: '30rem',
+};
