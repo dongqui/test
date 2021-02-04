@@ -1,3 +1,4 @@
 **/*.js
 /node_modules/**
 src/components/Icons/generated/*.tsx
+src/three/**
