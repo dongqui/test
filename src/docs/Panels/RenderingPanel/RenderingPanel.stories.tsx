@@ -3,21 +3,21 @@ import '../../common.css';
 // also exported from '@storybook/react' if you can deal with breaking changes in 6.1
 import { Story, Meta } from '@storybook/react/types-6-0';
 import {
-  RenderingPanel,
-  RenderingPanelProps,
-} from '../../../components/Panels/RenderingPanel/RenderingPanel';
+  RenderingController,
+  RenderingControllerProps,
+} from '../../../components/Panels/RenderingPanel/RenderingController';
 
 export default {
   title: 'Panels/RenderingPanel',
-  component: RenderingPanel,
+  component: RenderingController,
   argTypes: {},
   args: {},
 } as Meta;
 
-const Template: Story<RenderingPanelProps> = (args) => <RenderingPanel {...args} />;
+const Template: Story<RenderingControllerProps> = (args) => <RenderingController {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
   width: '100%',
-  height: '30rem',
+  height: '50rem',
 };

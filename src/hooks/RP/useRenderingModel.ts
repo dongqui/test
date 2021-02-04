@@ -1,92 +1,15 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-param-reassign */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import _ from 'lodash';
-// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { GLTFLoader } from '../../three/examples/jsm/loaders/GLTFLoader';
-// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { FBXLoader } from '../../three/examples/jsm/loaders/FBXLoader';
 import { OrbitControls } from '../../three/examples/jsm/controls/OrbitControls';
-// import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { TransformControls } from '../../three/examples/jsm/controls/TransformControls';
-// import { DragControls } from 'three/examples/jsm/controls/DragControls';
 import { DragControls } from '../../three/examples/jsm/controls/DragControls';
-import { isClient } from '../../utils';
-
-const CONFIG_INFOS = [
-  {
-    key: 'sceneYUp',
-    value: true,
-    type: 'boolean',
-    configType: 'scene',
-  },
-  {
-    key: 'sceneFogPower',
-    value: false,
-    type: 'boolean',
-    configType: 'scene',
-  },
-  {
-    key: 'sceneFogNear',
-    value: 10,
-    type: 'number',
-    configType: 'scene',
-  },
-  {
-    key: 'sceneFogFar',
-    value: 80,
-    type: 'number',
-    configType: 'scene',
-  },
-  {
-    key: 'cameraDefaultPosition',
-    value: { x: -10, y: 10, z: 2 },
-    type: 'object',
-    configType: 'camera',
-  },
-  {
-    key: 'cameraFbxPosition',
-    value: { x: -20, y: 20, z: 2 },
-    type: 'object',
-    configType: 'camera',
-  },
-  {
-    key: 'cameraLookAt',
-    value: { x: 0, y: 0, z: 0 },
-    type: 'object',
-    configType: 'camera',
-  },
-  {
-    key: 'dirLightCastShadow',
-    value: true,
-    type: 'boolean',
-    configType: 'light',
-  },
-  {
-    key: 'modelMeshPower',
-    value: true,
-    type: 'boolean',
-    configType: 'visualization',
-  },
-  {
-    key: 'skeletonBonesPower',
-    value: true,
-    type: 'boolean',
-    configType: 'visualization',
-  },
-  {
-    key: 'skeletonJointMeshesPower',
-    value: true,
-    type: 'boolean',
-    configType: 'visualization',
-  },
-  {
-    key: 'skeletonJointMeshesRadius',
-    value: 1,
-    type: 'number',
-    configType: 'visualization',
-  },
-];
+import { useHistory } from './useHistory';
+import { CONFIG_INFO, FORMAT_TYPES } from '../../interfaces';
 
 const MAP_TYPES = [
   'map',
@@ -106,7 +29,7 @@ const RENDERING_OPTION = {
   },
   camera: {
     fov: 50,
-    aspect: 1092 / 1080,
+    aspect: 1920 / 1080,
     near: 0.1,
     value: 500,
   },
@@ -183,7 +106,7 @@ const RENDERING_OPTION = {
     },
     enabled: true,
     enablePan: true,
-    maxDistance: 100,
+    maxDistance: 300,
     minZoom: 1.0001,
   },
   skeletonJoint: {
@@ -209,7 +132,23 @@ const defaultMaterial = new THREE.MeshPhongMaterial({
   skinning: true,
 });
 
-export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) => {
+export const useRenderingModel = ({
+  id,
+  fileUrl,
+  format,
+  setMixer,
+  CONFIG_INFOS,
+  setSkeletonHelper,
+  setAnimations,
+}: {
+  id: string;
+  fileUrl?: string;
+  format: FORMAT_TYPES;
+  setMixer: Function;
+  CONFIG_INFOS: CONFIG_INFO[] | undefined;
+  setSkeletonHelper: Function;
+  setAnimations: Function;
+}) => {
   const [currentBone, setCurrentBone] = useState(null); // 현재 드래그한 Bone
   const [contents, setContents] = useState<any[]>([]); // clear하기 위해 content 담아놓은 array
   const [theScene, setTheScene] = useState<THREE.Scene | null>(null); // clear 함수에서 사용하기 위해 component state로 관리
@@ -233,18 +172,20 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
     [],
   );
 
+  const { pushToUndoArray, popFromUndoArray, resetRedoArray, popFromRedoArray } = useHistory();
+
   const createScene = useCallback(() => {
     const scene = new THREE.Scene(); // scene 생성
     scene.background = new THREE.Color(RENDERING_OPTION.scene.backgroundColor); // scene 배경색
     if (_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneFogPower'))?.value) {
-      // scene.fog = new THREE.Fog(
-      //   RENDERING_OPTION.scene.fogColor,
-      //   _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneFogNear'))?.value,
-      //   _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneFogFar'))?.value,
-      // ); // scene 안개 (color, near, far)
+      scene.fog = new THREE.Fog(
+        RENDERING_OPTION.scene.fogColor,
+        _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneFogNear'))?.value,
+        _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneFogFar'))?.value,
+      ); // scene 안개 (color, near, far)
     }
     return scene;
-  }, []);
+  }, [CONFIG_INFOS]);
 
   const createCamera = useCallback(() => {
     const camera = new THREE.PerspectiveCamera(
@@ -257,22 +198,21 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
       camera.up.set(0, 0, 1); // z-up
     }
     // camera 위치 (default)
-    const cameraPosition: any = _.find(CONFIG_INFOS, (item, index) =>
+    let cameraPosition = _.find(CONFIG_INFOS, (item, index) =>
       _.isEqual(item.key, 'cameraDefaultPosition'),
     )?.value;
-    // if (_.isEqual(format, FORMAT_TYPES.fbx)) {
-    //   // camera 위치 (fbx)
-    //   cameraPosition = _.find(CONFIG_INFOS, (item, index) =>
-    //     _.isEqual(item.key, 'cameraFbxPosition'),
-    //   )?.value;
-    // }
+    if (_.isEqual(format, FORMAT_TYPES.fbx)) {
+      // camera 위치 (fbx)
+      cameraPosition = _.find(CONFIG_INFOS, (item, index) =>
+        _.isEqual(item.key, 'cameraFbxPosition'),
+      )?.value;
+    }
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    const cameraLookAt: any = _.find(CONFIG_INFOS, (item, index) =>
-      _.isEqual(item.key, 'cameraLookAt'),
-    )?.value;
+    const cameraLookAt = _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'cameraLookAt'))
+      ?.value;
     camera.lookAt(cameraLookAt.x, cameraLookAt.y, cameraLookAt.z); // camera 방향
     return camera;
-  }, []);
+  }, [CONFIG_INFOS, format]);
 
   const createRenderer = useCallback(
     ({ renderingDiv }: { renderingDiv: HTMLDivElement | undefined }) => {
@@ -286,40 +226,43 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
     [],
   );
 
-  const addLights = useCallback(({ scene }: { scene: THREE.Scene }) => {
-    // 반구형 조명
-    const hemiLight = new THREE.HemisphereLight(RENDERING_OPTION.light.hemiLight.color); // 반구형 조명
-    hemiLight.position.set(
-      RENDERING_OPTION.light.hemiLight.position.x,
-      RENDERING_OPTION.light.hemiLight.position.y,
-      RENDERING_OPTION.light.hemiLight.position.z,
-    );
-    scene.add(hemiLight);
+  const addLights = useCallback(
+    ({ scene }: { scene: THREE.Scene }) => {
+      // 반구형 조명
+      const hemiLight = new THREE.HemisphereLight(RENDERING_OPTION.light.hemiLight.color); // 반구형 조명
+      hemiLight.position.set(
+        RENDERING_OPTION.light.hemiLight.position.x,
+        RENDERING_OPTION.light.hemiLight.position.y,
+        RENDERING_OPTION.light.hemiLight.position.z,
+      );
+      scene.add(hemiLight);
 
-    // 방향 조명
-    const dirLight: any = new THREE.DirectionalLight(
-      RENDERING_OPTION.light.dirLight.color,
-      RENDERING_OPTION.light.dirLight.intensity,
-    );
-    dirLight.position.set(
-      RENDERING_OPTION.light.dirLight.position.x,
-      RENDERING_OPTION.light.dirLight.position.y,
-      RENDERING_OPTION.light.dirLight.position.z,
-    );
-    dirLight.castShadow = _.find(CONFIG_INFOS, (item, index) =>
-      _.isEqual(item.key, 'dirLightCastShadow'),
-    )?.value;
-    if (_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'dirLightCastShadow'))?.value) {
-      dirLight.shadow.mapSize = RENDERING_OPTION.light.dirLight.shadow.mapSize;
-      dirLight.shadow.camera.near = RENDERING_OPTION.light.dirLight.shadow.camera.near;
-      dirLight.shadow.camera.far = RENDERING_OPTION.light.dirLight.shadow.camera.far;
-      dirLight.shadow.camera.left = RENDERING_OPTION.light.dirLight.shadow.camera.left;
-      dirLight.shadow.camera.right = RENDERING_OPTION.light.dirLight.shadow.camera.right;
-      dirLight.shadow.camera.top = RENDERING_OPTION.light.dirLight.shadow.camera.top;
-      dirLight.shadow.camera.bottom = RENDERING_OPTION.light.dirLight.shadow.camera.bottom;
-    }
-    scene.add(dirLight);
-  }, []);
+      // 방향 조명
+      const dirLight = new THREE.DirectionalLight(
+        RENDERING_OPTION.light.dirLight.color,
+        RENDERING_OPTION.light.dirLight.intensity,
+      );
+      dirLight.position.set(
+        RENDERING_OPTION.light.dirLight.position.x,
+        RENDERING_OPTION.light.dirLight.position.y,
+        RENDERING_OPTION.light.dirLight.position.z,
+      );
+      dirLight.castShadow = _.find(CONFIG_INFOS, (item, index) =>
+        _.isEqual(item.key, 'dirLightCastShadow'),
+      )?.value;
+      if (_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'dirLightCastShadow'))?.value) {
+        dirLight.shadow.mapSize = RENDERING_OPTION.light.dirLight.shadow.mapSize;
+        dirLight.shadow.camera.near = RENDERING_OPTION.light.dirLight.shadow.camera.near;
+        dirLight.shadow.camera.far = RENDERING_OPTION.light.dirLight.shadow.camera.far;
+        dirLight.shadow.camera.left = RENDERING_OPTION.light.dirLight.shadow.camera.left;
+        dirLight.shadow.camera.right = RENDERING_OPTION.light.dirLight.shadow.camera.right;
+        dirLight.shadow.camera.top = RENDERING_OPTION.light.dirLight.shadow.camera.top;
+        dirLight.shadow.camera.bottom = RENDERING_OPTION.light.dirLight.shadow.camera.bottom;
+      }
+      scene.add(dirLight);
+    },
+    [CONFIG_INFOS],
+  );
 
   const addGround = useCallback(
     ({
@@ -384,7 +327,7 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
       scene.add(yAxis);
       return { groundMesh, axesArray: [xAxis, yAxis] };
     },
-    [],
+    [CONFIG_INFOS],
   );
 
   const createCameraControls = useCallback(
@@ -393,9 +336,11 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
       const cameraControls = new OrbitControls(camera, renderer.domElement);
       // cameraControls에서 마우스 컨트롤 관련 preventDefault를 한 상태.. 우선 막는거는 했는데, 결국에는 cameraControls 커스텀 필요할 듯..
       cameraControls.mouseButtons = {
-        LEFT: THREE.MOUSE.DOLLY,
+        // @ts-ignore
+        LEFT: THREE.MOUSE.NONE,
         MIDDLE: THREE.MOUSE.PAN,
-        RIGHT: THREE.MOUSE.DOLLY,
+        // @ts-ignore
+        RIGHT: THREE.MOUSE.NONE,
       };
       cameraControls.target.set(
         RENDERING_OPTION.cameraControls.target.x,
@@ -471,6 +416,8 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
             default:
               break;
           }
+          pushToUndoArray({ bone, mode, value });
+          resetRedoArray();
         }
       });
       // 트랜스폼 컨트롤러 scene에 추가
@@ -478,7 +425,7 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
       // setTheTransformControls(transformControls);
       return transformControls;
     },
-    [],
+    [pushToUndoArray, resetRedoArray],
   );
 
   const handleTransformControlsShortcutDown = useCallback(
@@ -494,6 +441,7 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
           // 현재 transformControl 붙어 있는 것 제거
           if (transformControls) {
             transformControls.detach();
+            // setCurrentBoneIndex(undefined);
           }
           break;
         case 'q': // q
@@ -578,43 +526,49 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
     [],
   );
 
-  const createMixer = useCallback(({ object }: { object: any }) => {
-    // if (_.isEqual('glb', FORMAT_TYPES.glb) || _.isEqual(format, FORMAT_TYPES.gltf)) {
-    //   innerMixer = new THREE.AnimationMixer(object.scene);
-    // } else if (_.isEqual(format, FORMAT_TYPES.fbx)) {
-    //   innerMixer = new THREE.AnimationMixer(object);
-    // }
-    innerMixer = new THREE.AnimationMixer(object.scene);
-  }, []);
-
-  const addModel = useCallback(({ scene, object }: { scene: THREE.Scene; object: any }) => {
-    // if (_.isEqual(format, FORMAT_TYPES.glb) || _.isEqual(format, FORMAT_TYPES.gltf)) {
-    //   model = object.scene || object.scenes[0];
-    // } else if (_.isEqual(format, FORMAT_TYPES.fbx)) {
-    //   object.scale.multiplyScalar(0.05);
-    //   object.traverse((child: any) => {
-    //     if (child.isMesh) {
-    //       child.castShadow = true;
-    //       child.receiveShadow = true;
-    //     }
-    //   });
-    //   model = object;
-    // }
-    const model = object.scene || object.scenes[0];
-    // load 후 model을 scene에 추가
-    setTimeout(() => {
-      scene.add(model);
-    }, SKIN_CHECK_DURATION);
-    // object.scene 내에 mesh가 존재한다면 그림자 추가
-    model.traverse((obj: any) => {
-      if (obj.isMesh) {
-        // 아래는 회색 입히기
-        // eslint-disable-next-line no-param-reassign
-        obj.castShadow = true;
+  const createMixer = useCallback(
+    ({ object }: { object: any }) => {
+      if (_.isEqual(format, FORMAT_TYPES.glb) || _.isEqual(format, FORMAT_TYPES.gltf)) {
+        innerMixer = new THREE.AnimationMixer(object.scene);
+      } else if (_.isEqual(format, FORMAT_TYPES.fbx)) {
+        innerMixer = new THREE.AnimationMixer(object);
       }
-    });
-    return model;
-  }, []);
+      setMixer(innerMixer);
+    },
+    [format, setMixer],
+  );
+
+  const addModel = useCallback(
+    ({ scene, object }: { scene: THREE.Scene; object: any }) => {
+      let model: any;
+      if (_.isEqual(format, FORMAT_TYPES.glb) || _.isEqual(format, FORMAT_TYPES.gltf)) {
+        model = object.scene || object.scenes[0];
+      } else if (_.isEqual(format, FORMAT_TYPES.fbx)) {
+        object.scale.multiplyScalar(0.05);
+        object.traverse((child: any) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+        model = object;
+      }
+      // load 후 model을 scene에 추가
+      setTimeout(() => {
+        scene.add(model);
+      }, SKIN_CHECK_DURATION);
+      // object.scene 내에 mesh가 존재한다면 그림자 추가
+      model.traverse((obj: any) => {
+        if (obj.isMesh) {
+          // 아래는 회색 입히기
+          // eslint-disable-next-line no-param-reassign
+          obj.castShadow = true;
+        }
+      });
+      return model;
+    },
+    [format],
+  );
 
   const applyDefaultSkin = useCallback(({ model }: { model: any }) => {
     const skinnedMeshes = _.filter(model.children, (child) => child.type === 'SkinnedMesh');
@@ -655,16 +609,17 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
 
   const addSkeletonHelper = useCallback(
     ({ scene, model }: { scene: THREE.Scene; model: THREE.Object3D }) => {
-      const skeletonHelper: any = new THREE.SkeletonHelper(model);
+      const skeletonHelper = new THREE.SkeletonHelper(model);
       skeletonHelper.visible = _.find(CONFIG_INFOS, (item, index) =>
         _.isEqual(item.key, 'skeletonBonesPower'),
       )?.value;
       setTimeout(() => {
         scene.add(skeletonHelper);
       }, SKIN_CHECK_DURATION);
+      setSkeletonHelper(skeletonHelper);
       return skeletonHelper;
     },
-    [],
+    [CONFIG_INFOS, setSkeletonHelper],
   );
 
   const addJointMeshes = useCallback(
@@ -694,7 +649,7 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
         boneMaterial.depthTest = false;
 
         const boneGeometry = new THREE.SphereBufferGeometry(
-          _.find(CONFIG_INFOS as any, (item, index) =>
+          _.find(CONFIG_INFOS, (item, index) =>
             _.isEqual(item.key, 'skeletonJointMeshesRadius'),
           )?.value,
           RENDERING_OPTION.skeletonJoint.segments.width,
@@ -709,7 +664,7 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
       // skeleton bones를 모두 담았을 때
       if (innerBones.length === skeletonHelper.bones.length) {
         // bones를 param에 넣어서 드래그 컨트롤러 생성
-        const dragControls: any = new DragControls(innerBones, camera, renderer.domElement);
+        const dragControls = new DragControls(innerBones, camera, renderer.domElement);
         // 드래그 컨트롤러 이벤트 리스너 추가
         dragControls.addEventListener('hoveron', () => {
           cameraControls.enabled = false;
@@ -717,22 +672,25 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
         dragControls.addEventListener('hoveroff', () => {
           cameraControls.enabled = true;
         });
-        dragControls.addEventListener('dragstart', (event: any) => {
+        dragControls.addEventListener('dragstart', (event) => {
           if (currentBone !== event.object.parent) {
             transformControls.attach(event.object.parent);
             setCurrentBone(event.object.parent);
+            // setCurrentBoneIndex(
+            //   _.findIndex(skeletonHelper.bones, (bone) => _.isEqual(bone, event.object.parent)),
+            // );
             dragControls.enabled = false;
           }
           if (innerMixer) {
             innerMixer.timeScale = 0; // 드래그하면 애니메이션 일시정지
           }
         });
-        dragControls.addEventListener('dragend', (event: any) => {
+        dragControls.addEventListener('dragend', (event) => {
           dragControls.enabled = true;
         });
       }
     },
-    [currentBone],
+    [CONFIG_INFOS, currentBone],
   );
 
   const handleCameraControlsShortcutDown = useCallback(
@@ -869,7 +827,7 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
           break;
       }
     },
-    [multiKeyController],
+    [CONFIG_INFOS, multiKeyController],
   );
 
   const handleCameraControlsShortcutUp = useCallback(
@@ -913,45 +871,48 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
     [multiKeyController],
   );
 
-  const handleHistoryShortcutDown = useCallback(({ event }: { event: KeyboardEvent }) => {
-    let info;
-    switch (event.key) {
-      case 'z':
-      case 'Z':
-      case 'ㅋ':
-        // redo
-        // if (event.ctrlKey && event.shiftKey) {
-        //   info = popFromRedoArray();
-        //   if (info) {
-        //     const { bone, mode, value } = info;
-        //     if (mode === 'translate') {
-        //       bone.position.set(value.x, value.y, value.z);
-        //     } else if (mode === 'rotate') {
-        //       bone.quaternion.set(value.x, value.y, value.z, value.w);
-        //     } else {
-        //       bone.scale.set(value.x, value.y, value.z);
-        //     }
-        //   }
-        // }
-        // undo
-        // if (event.ctrlKey && !event.shiftKey) {
-        //   info = popFromUndoArray();
-        //   if (info) {
-        //     const { bone, mode, value } = info;
-        //     if (mode === 'translate') {
-        //       bone.position.set(value.x, value.y, value.z);
-        //     } else if (mode === 'rotate') {
-        //       bone.quaternion.set(value.x, value.y, value.z, value.w);
-        //     } else {
-        //       bone.scale.set(value.x, value.y, value.z);
-        //     }
-        //   }
-        // }
-        break;
-      default:
-        break;
-    }
-  }, []);
+  const handleHistoryShortcutDown = useCallback(
+    ({ event }: { event: KeyboardEvent }) => {
+      let info;
+      switch (event.key) {
+        case 'z':
+        case 'Z':
+        case 'ㅋ':
+          // redo
+          if (event.ctrlKey && event.shiftKey) {
+            info = popFromRedoArray();
+            if (info) {
+              const { bone, mode, value } = info;
+              if (mode === 'translate') {
+                bone.position.set(value.x, value.y, value.z);
+              } else if (mode === 'rotate') {
+                bone.quaternion.set(value.x, value.y, value.z, value.w);
+              } else {
+                bone.scale.set(value.x, value.y, value.z);
+              }
+            }
+          }
+          // undo
+          if (event.ctrlKey && !event.shiftKey) {
+            info = popFromUndoArray();
+            if (info) {
+              const { bone, mode, value } = info;
+              if (mode === 'translate') {
+                bone.position.set(value.x, value.y, value.z);
+              } else if (mode === 'rotate') {
+                bone.quaternion.set(value.x, value.y, value.z, value.w);
+              } else {
+                bone.scale.set(value.x, value.y, value.z);
+              }
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    [popFromRedoArray, popFromUndoArray],
+  );
 
   const clearRendering = useCallback(
     ({ renderingDiv }: { renderingDiv: any }) => {
@@ -1035,141 +996,143 @@ export const useRendering = ({ id, blobUrl }: { id: string; blobUrl?: string }) 
   };
 
   useEffect(() => {
-    if (isClient) {
-      // rendering할 div요소 선택
-      const renderingDiv: any = document.getElementById(id);
-      clearRendering({ renderingDiv });
+    // rendering할 div요소 선택
+    const renderingDiv: any = document.getElementById(id);
+    clearRendering({ renderingDiv });
 
-      // scene 생성 및 설정
-      const scene: THREE.Scene = createScene();
-      setTheScene(scene);
+    // scene 생성 및 설정
+    const scene: THREE.Scene = createScene();
+    setTheScene(scene);
 
-      // camera 생성 및 설정
-      const camera = createCamera();
+    // camera 생성 및 설정
+    const camera = createCamera();
 
-      // renderer 생성 및 설정
-      const renderer = createRenderer({ renderingDiv });
+    // renderer 생성 및 설정
+    const renderer = createRenderer({ renderingDiv });
 
-      // scene에 조명 추가
-      addLights({ scene });
+    // scene에 조명 추가
+    addLights({ scene });
 
-      // scene에 바닥 추가
-      const { groundMesh, axesArray } = addGround({ scene, camera, renderer });
-      setContents((prevContents) => [...prevContents, groundMesh]);
-      _.forEach(axesArray, (axis) => setContents([...contents, axis]));
+    // scene에 바닥 추가
+    const { groundMesh, axesArray } = addGround({ scene, camera, renderer });
+    setContents((prevContents) => [...prevContents, groundMesh]);
+    _.forEach(axesArray, (axis) => setContents([...contents, axis]));
 
-      // cameraControls 생성 및 설정
-      const cameraControls = createCameraControls({ camera, renderer });
-      setTheCameraControls(cameraControls);
-      // setContents((prevContents) => ([...prevContents, cameraControls]));
+    // cameraControls 생성 및 설정
+    const cameraControls = createCameraControls({ camera, renderer });
+    setTheCameraControls(cameraControls);
+    // setContents((prevContents) => ([...prevContents, cameraControls]));
 
-      // scene에 transformControls 추가
-      const transformControls = createTransformControls({
-        scene,
-        camera,
-        renderer,
-        cameraControls,
-      });
-      setContents((prevContents) => [...prevContents, transformControls]);
+    // scene에 transformControls 추가
+    const transformControls = createTransformControls({
+      scene,
+      camera,
+      renderer,
+      cameraControls,
+    });
+    setContents((prevContents) => [...prevContents, transformControls]);
 
-      const handleKeyDown = (event: any) => {
-        handleTransformControlsShortcutDown({ event, transformControls });
-        handleCameraControlsShortcutDown({ event, cameraControls });
-        handleHistoryShortcutDown({ event });
-      };
+    const handleKeyDown = (event: any) => {
+      handleTransformControlsShortcutDown({ event, transformControls });
+      handleCameraControlsShortcutDown({ event, cameraControls });
+      handleHistoryShortcutDown({ event });
+    };
 
-      const handleKeyUp = (event: any) => {
-        handleTransformControlsShortcutUp({ event, transformControls });
-        handleCameraControlsShortcutUp({ event, cameraControls });
-      };
+    const handleKeyUp = (event: any) => {
+      handleTransformControlsShortcutUp({ event, transformControls });
+      handleCameraControlsShortcutUp({ event, cameraControls });
+    };
 
-      renderingDiv.addEventListener('keydown', handleKeyDown);
-      renderingDiv.addEventListener('keyup', handleKeyUp);
+    renderingDiv.addEventListener('keydown', handleKeyDown);
+    renderingDiv.addEventListener('keyup', handleKeyUp);
 
-      // 파일 업로드를 통해 blobURL이 생성되었다면
-      if (blobUrl) {
-        // .glb 파일 load
-        // if (_.isEqual(format, FORMAT_TYPES.glb) || _.isEqual(format, FORMAT_TYPES.gltf)) {
-        //   loader = new GLTFLoader(); // loader 생성
-        //   // .fbx 파일 load
-        // } else if (_.isEqual(format, FORMAT_TYPES.fbx)) {
-        //   loader = new FBXLoader();
-        // }
-        const loader = new GLTFLoader(); // loader 생성
-        loader?.load(
-          blobUrl,
-          (object: any) => {
-            // eslint-disable-next-line no-console
-            console.log('object: ', object);
-            // animation mixer 생성 및 set
-            createMixer({ object });
-            // animations set
-            // store mainData 업데이트
-            // scene에 model 추가
-            const model = addModel({ scene, object });
-            applyDefaultSkin({ model });
-            setContents((prevContents) => [...prevContents, model]);
-            // skeleton helper 생성 및 scene에 추가
-            const skeletonHelper = addSkeletonHelper({ scene, model });
-            // ml 팀 bones 전달용
-            // exportBonesJson({ skeletonHelper });
-            if (
-              !_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'modelMeshPower'))?.value
-            ) {
-              eraseSkinnedMeshes({ skeletonHelper });
-            }
-            setContents((prevContents) => [...prevContents, skeletonHelper]);
-            if (
-              _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'skeletonJointMeshesPower'))
-                ?.value
-            ) {
-              // skeleton bone에 mesh 추가, 현재 리타겟팅 문제로 임시 주석처리
-              addJointMeshes({
-                skeletonHelper,
-                camera,
-                renderer,
-                cameraControls,
-                transformControls,
-              });
-            }
-          },
-          () => {},
-          (error: any) => {
-            // eslint-disable-next-line no-console
-            console.log(error);
-          },
-        );
+    // 파일 업로드를 통해 blobURL이 생성되었다면
+    if (fileUrl) {
+      let loader;
+      // .glb 파일 load
+      if (_.isEqual(format, FORMAT_TYPES.glb) || _.isEqual(format, FORMAT_TYPES.gltf)) {
+        loader = new GLTFLoader(); // loader 생성
+        // .fbx 파일 load
+      } else if (_.isEqual(format, FORMAT_TYPES.fbx)) {
+        loader = new FBXLoader();
       }
-      // RenderingDiv 아래에 새로운 canvas를 생성하고, scene과 camera를 추가
-      renderingDiv.appendChild(renderer.domElement);
-
-      const animate = () => {
-        // mixer 에 의해 화면 자체 업데이트
-        if (innerMixer) {
-          innerMixer.update(clock.getDelta());
-        }
-        if (resizeRendererToDisplaySize({ renderer, renderingDiv })) {
-          const canvas = renderer.domElement;
-          camera.aspect = canvas.clientWidth / canvas.clientHeight;
-          camera.updateProjectionMatrix();
-        }
-        // animate loop를 통해 렌더링
-        renderer.render(scene, camera);
-        requestAnimationFrame(animate);
-      };
-      animate();
-
-      return () => {
-        // 단축키 제거
-        renderingDiv.removeEventListener('keydown', handleKeyDown);
-        renderingDiv.removeEventListener('keyup', handleKeyUp);
-
-        // clear
-        clearRendering({ renderingDiv });
-      };
+      loader?.load(
+        fileUrl,
+        (object: any) => {
+          // eslint-disable-next-line no-console
+          console.log('object: ', object);
+          // animation mixer 생성 및 set
+          createMixer({ object });
+          // animations set
+          setAnimations(object.animations);
+          // store mainData 업데이트
+          // if (!_.isUndefined(fnUpdateMainData) && !_.isEmpty(object.animations)) {
+          //   fnUpdateMainData({ animations: _.cloneDeep(object.animations) });
+          // }
+          // scene에 model 추가
+          const model = addModel({ scene, object });
+          applyDefaultSkin({ model });
+          setContents((prevContents) => [...prevContents, model]);
+          // skeleton helper 생성 및 scene에 추가
+          const skeletonHelper = addSkeletonHelper({ scene, model });
+          // ml 팀 bones 전달용
+          // exportBonesJson({ skeletonHelper });
+          if (
+            !_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'modelMeshPower'))?.value
+          ) {
+            eraseSkinnedMeshes({ skeletonHelper });
+          }
+          setContents((prevContents) => [...prevContents, skeletonHelper]);
+          if (
+            _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'skeletonJointMeshesPower'))
+              ?.value
+          ) {
+            // skeleton bone에 mesh 추가, 현재 리타겟팅 문제로 임시 주석처리
+            addJointMeshes({
+              skeletonHelper,
+              camera,
+              renderer,
+              cameraControls,
+              transformControls,
+            });
+          }
+        },
+        () => {},
+        (error: any) => {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        },
+      );
     }
+    // RenderingDiv 아래에 새로운 canvas를 생성하고, scene과 camera를 추가
+    renderingDiv.appendChild(renderer.domElement);
+
+    const animate = () => {
+      // mixer 에 의해 화면 자체 업데이트
+      if (innerMixer) {
+        innerMixer.update(clock.getDelta());
+      }
+      if (resizeRendererToDisplaySize({ renderer, renderingDiv })) {
+        const canvas = renderer.domElement;
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+      }
+      // animate loop를 통해 렌더링
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    };
+    animate();
+
+    return () => {
+      // 단축키 제거
+      renderingDiv.removeEventListener('keydown', handleKeyDown);
+      renderingDiv.removeEventListener('keyup', handleKeyUp);
+
+      // clear
+      clearRendering({ renderingDiv });
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blobUrl, CONFIG_INFOS]);
+  }, [fileUrl, CONFIG_INFOS]);
   return {
     theCameraControls,
   };

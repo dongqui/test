@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Rnd } from 'react-rnd';
 import _ from 'lodash';
 import { screenSizeTypes } from '../../interfaces';
-import { RenderingPanel } from '../Panels/RenderingPanel/RenderingPanel';
+import { RenderingController } from '../Panels/RenderingPanel/RenderingController';
 
 const STANDARD_PANEL_WIDTH = 50;
 export interface RealtimePageProps {
@@ -47,7 +47,7 @@ const RealtimePageComponent: React.FC<RealtimePageProps> = ({
         enableResizing={{ left: true }}
         disableDragging={true}
       >
-        <RenderingPanel width="100%" height="100%" />
+        <RenderingController width="100%" height="100%" />
       </Rnd>
     </div>
   );
