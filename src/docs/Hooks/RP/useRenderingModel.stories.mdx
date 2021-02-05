@@ -1,0 +1,38 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Hooks/RP/useRenderingModel" />
+
+# useRenderingModel
+
+모델을 화면에 랜더링 시켜주는 hook. RP에서만 한번 쓰일듯
+
+#### example
+
+```javascript
+  useRenderingModel({
+    id,
+    fileUrl,
+    CONFIG_INFOS,
+    format: FORMAT_TYPES.glb,
+    setMixer,
+    setSkeletonHelper,
+    setAnimations,
+  });
+```
+
+## Props
+
+| Prop                | Description            |
+| ------------------- | ---------------------- |
+| **id(string)**        | 랜더링 DOM의 id값        |
+| **fileUrl(string)** | 로드시키고 싶은 모델파일의 url |
+| **format(glb , fbx)** | 모델파일의 포맷 |
+| **setMixer(Function)** | 애니메이션 데이터를 가지고 있는 mixer는 따로 관리해줘야함 |
+| **CONFIG_INFOS(json)** | 화면에 대한 각종 설정값을 담은 정보들 |
+| **setSkeletonHelper(Function)** | 한 프레임을 랜더링 시킬때는 skeletonHelper로 하기 때문에 따로 관리 필요 |
+| **setAnimations(Function)** | 애니메이션들 데이터도 따로 관리해야 편함 |
+
+## Return
+
+| Return | Description |
+| ------ | ----------- |
