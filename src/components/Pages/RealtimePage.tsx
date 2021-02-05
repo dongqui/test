@@ -3,6 +3,7 @@ import { Rnd } from 'react-rnd';
 import _ from 'lodash';
 import { screenSizeTypes } from '../../interfaces';
 import { RenderingController } from '../Panels/RenderingPanel/RenderingController';
+import { WebcamPanel } from '../Panels/WebcamPanel/WebcamPanel';
 
 const STANDARD_PANEL_WIDTH = 50;
 export interface RealtimePageProps {
@@ -32,7 +33,9 @@ const RealtimePageComponent: React.FC<RealtimePageProps> = ({
         }}
         enableResizing={{ right: true }}
         disableDragging={true}
-      ></Rnd>
+      >
+        <WebcamPanel width="100%" height="100%" />
+      </Rnd>
       <Rnd
         style={{
           border: '1px solid white',
