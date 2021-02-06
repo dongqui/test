@@ -14,20 +14,9 @@ declare global {
     }
   }
 }
-
-export type User = {
-  id: number;
-  name: string;
-};
 export interface screenSizeTypes {
   width: number;
   height: number;
-}
-export interface CONFIG_INFO {
-  key: string;
-  value: any;
-  type: string;
-  configType: string;
 }
 export enum FORMAT_TYPES {
   glb = 'glb',

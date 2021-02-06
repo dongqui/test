@@ -1,14 +1,12 @@
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
-import { GLTFLoader } from '../../../three/examples/jsm/loaders/GLTFLoader';
-import { OrbitControls } from '../../../three/examples/jsm/controls/OrbitControls';
-import { TransformControls } from '../../../three/examples/jsm/controls/TransformControls';
-import { DragControls } from '../../../three/examples/jsm/controls/DragControls';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
 import { FORMAT_TYPES } from '../../../interfaces';
 import { CONFIG_INFOS } from './const';
+import { motionDataTypes } from '../../../interfaces/RP';
+import { useTensorflowMotion } from '../../../hooks/RP/useTensorflowMotion';
 
 export interface RenderingControllerProps {
   width: string;
@@ -17,10 +15,7 @@ export interface RenderingControllerProps {
   fileUrl?: string;
   isPlay?: boolean;
   animationIndex?: number;
-  quaternionW?: number;
-  quaternionX?: number;
-  quaternionY?: number;
-  quaternionZ?: number;
+  motionData?: motionDataTypes[];
 }
 
 const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
@@ -30,13 +25,10 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   fileUrl = 'https://assets.babylonjs.com/meshes/HVGirl.glb',
   isPlay = false,
   animationIndex = 1,
-  quaternionW = 0.6816797852516174,
-  quaternionX = -0.7265116572380066,
-  quaternionY = -0.07618393003940582,
-  quaternionZ = -0.04110367223620415,
+  motionData = [],
 }) => {
   const [mixer, setMixer] = useState<THREE.AnimationMixer>();
-  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper>();
+  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>();
   const [animations, setAnimations] = useState<THREE.AnimationClip[]>();
   const currentAnimationClip = useMemo(() => animations?.[animationIndex], [
     animationIndex,
@@ -58,6 +50,7 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
     setSkeletonHelper,
     setAnimations,
   });
+  const { changeMotion } = useTensorflowMotion({ motionData, skeletonHelper });
   useEffect(() => {
     if (isPlay) {
       currentAction?.play();
@@ -67,12 +60,9 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   }, [animationIndex, animations, currentAction, isPlay, mixer]);
   useEffect(() => {
     if (skeletonHelper) {
-      skeletonHelper.bones[0].quaternion.w = quaternionW;
-      skeletonHelper.bones[0].quaternion.x = quaternionX;
-      skeletonHelper.bones[0].quaternion.y = quaternionY;
-      skeletonHelper.bones[0].quaternion.z = quaternionZ;
+      changeMotion();
     }
-  }, [quaternionW, quaternionX, quaternionY, quaternionZ, skeletonHelper]);
+  }, [changeMotion, skeletonHelper]);
   return <RenderingPresenter id={id} height={height} width={width} />;
 };
 

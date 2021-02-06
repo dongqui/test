@@ -12,11 +12,11 @@ const WebcamPanelComponent: React.FC<WebcamPanelProps> = ({ width = '100%', heig
   const videoRef: any = useRef(null);
   useWebcam({ videoRef });
   useEffect(() => {
-    setInterval(() => {
-      const video: any = document.getElementById('video');
-      const captureStream = video.captureStream();
-      console.log('captureStream', captureStream);
-    }, 1000);
+    // setInterval(() => {
+    //   const video: any = document.getElementById('video');
+    //   const captureStream = video.captureStream();
+    //   console.log('captureStream', captureStream);
+    // }, 1000);
   }, []);
   return (
     <div style={{ width, height }}>
