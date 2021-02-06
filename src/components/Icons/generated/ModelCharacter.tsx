@@ -1,6 +1,6 @@
 import React from 'react';
 import { SvgIconProps } from '../index';
-export const Character = React.memo<SvgIconProps>(
+export const ModelCharacter = React.memo<SvgIconProps>(
   ({ size = 24, fillColor = '#000', viewBox = '0 0 24 24', style }) => (
     <svg
       width={size}
@@ -10,11 +10,12 @@ export const Character = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <circle cx={12} cy={9} r={2} fill={fillColor} />
+      <circle cx={10} cy={7.4} r={2.4} fill="#fff" />
       <path
-        d="M11.584 11.624a.5.5 0 01.832 0l3.066 4.599a.5.5 0 01-.416.777H8.934a.5.5 0 01-.416-.777l3.066-4.599z"
-        fill={fillColor}
+        d="M9.646 11.354a.5.5 0 01.708 0l4.792 4.792a.5.5 0 01-.353.854H5.207a.5.5 0 01-.353-.854l4.792-4.792z"
+        fill="#fff"
       />
+      <circle cx={16} cy={15} r={3.5} fill="#fff" stroke="#151515" />
     </svg>
   ),
 );

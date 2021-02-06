@@ -17,7 +17,7 @@ addParameters({
     }
   },
   options: {
-    showPanel: false,
+    showPanel: true,
     isFullscreen: false,
     storySort: undefined,
     isToolshown: true,
