@@ -27,6 +27,7 @@
     "@apollo/client": "^3.3.6",
     "@emotion/react": "^11.1.4",
     "@emotion/styled": "^11.0.0",
+    "@tensorflow/tfjs": "^3.0.0",
     "apollo3-cache-persist": "^0.9.1",
     "babylonjs": "^4.2.0",
     "babylonjs-loaders": "^4.2.0",
