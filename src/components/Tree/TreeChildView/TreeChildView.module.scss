@@ -1,11 +1,10 @@
-@mixin Wrapper {
+.Wrapper {
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 2rem;
   border-radius: 0.5rem;
-  padding: 4px 0 4px 0;
   background-color: var(--gray100);
   transform: translate(0, 0);
   transition: background 0.2s ease, color 0.1s ease, box-shadow 0.2s ease;
@@ -16,19 +15,21 @@
   user-select: none;
 }
 
-.wrapper-clicked {
-  @include Wrapper;
+.clicked {
+  @extend .Wrapper;
   background-color: var(--gray400);
   border-radius: 0;
 }
 
-.wrapper-visible {
-  @include Wrapper;
+.visible {
+  @extend .Wrapper;
   background-color: var(--vivid-blue);
 }
 
 .file-info {
-  display: inline-block;
+  width: 100%;
+  display: inline-flex;
+  padding: 3.5px 0 3.5px 0;
   .file-icon {
     margin-left: 21%;  
   }
