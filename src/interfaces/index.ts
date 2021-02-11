@@ -23,3 +23,7 @@ export enum FORMAT_TYPES {
   fbx = 'fbx',
   gltf = 'gltf',
 }
+export interface shortcutTypes {
+  key: string;
+  event: Function;
+}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export interface SvgIconProps {
@@ -55,6 +54,7 @@ export * from './generated/MagnifyingGlass';
 export * from './generated/MagnifyingGlassSquare';
 export * from './generated/ModelCharacter';
 export * from './generated/ModelCircle';
+export * from './generated/ModelIcon';
 export * from './generated/Pause';
 export * from './generated/PlayArrow';
 export * from './generated/Plus';

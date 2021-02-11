@@ -3,9 +3,10 @@ import styled from '@emotion/styled';
 interface TreeRowStyleProps {
   clicked?: boolean;
   visible?: boolean;
+  width?: string;
 }
 
-const handleBackgroundColor = (clicked: boolean | undefined, visible: boolean | undefined) => {
+const handlebackgroundcolor = (clicked: boolean | undefined, visible: boolean | undefined) => {
   if (clicked) {
     switch (clicked) {
       case true:
@@ -25,13 +26,14 @@ export const Wrapper = styled.div<TreeRowStyleProps>`
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: ${(props) => props.width ?? '100%'};
   height: 2rem;
   border-radius: ${(props) => (props.clicked ? `` : '0.5rem')};
   padding: 4px 0 4px 0;
-  background-color: ${(props) => handleBackgroundColor(props.clicked, props.visible)};
+  background-color: ${(props) => handlebackgroundcolor(props.clicked, props.visible)};
   transform: translate(0, 0);
   transition: background 0.2s ease, color 0.1s ease, box-shadow 0.2s ease;
+
   :hover {
     box-shadow: inset 0 0 0 2px var(--vivid-blue);
     transition: background 0.2s ease, color 0.1s ease, box-shadow 0.2s ease;
