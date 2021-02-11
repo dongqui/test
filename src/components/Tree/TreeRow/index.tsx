@@ -10,6 +10,7 @@ export interface TreeRowProps {
   dragging?: boolean;
   visible?: boolean;
   onClick?: any;
+  width?: string;
 }
 
 export const TreeRow: React.FC<TreeRowProps> = ({
@@ -21,9 +22,11 @@ export const TreeRow: React.FC<TreeRowProps> = ({
   dragging = true,
   visible,
   onClick,
+  width,
 }) => {
   return (
     <S.Wrapper
+      width={width}
       key={key}
       id={id}
       draggable={dragging}

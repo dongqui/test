@@ -17,4 +17,5 @@ Row.args = {
   prefix: <ModelCircle fillColor="#fff" />,
   fileName: 'motion5',
   clicked: true,
+  width: '10%',
 };
