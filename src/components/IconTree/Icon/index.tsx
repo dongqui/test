@@ -3,6 +3,7 @@ import React, { ChangeEvent, useCallback, useMemo, useRef, useState } from 'reac
 import { useOutsideClick } from '../../../hooks/common/useOutsideClick';
 import { useShortcut } from '../../../hooks/common/useShortcut';
 import { ModelIcon } from '../../Icons';
+import { onChangeFileNameTypes } from '../IconView';
 import * as S from './IconStyles';
 
 export interface IconProps {
@@ -11,8 +12,10 @@ export interface IconProps {
   fileName?: string;
   isClicked?: boolean;
   onClick?: ((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void) | undefined | any;
-  maxFileName?: number;
-  onEnterFileName?: Function;
+  maxFileNameLength?: number;
+  onChangeFileName?: onChangeFileNameTypes;
+  mode?: 'icon' | 'folder';
+  iconKey: string;
 }
 
 export const Icon: React.FC<IconProps> = ({
@@ -21,21 +24,25 @@ export const Icon: React.FC<IconProps> = ({
   fileName = 'Model',
   isClicked = false,
   onClick = () => {},
-  maxFileName = 15,
-  onEnterFileName = () => {},
+  maxFileNameLength = 15,
+  onChangeFileName = () => {},
+  mode = 'icon',
+  iconKey,
 }) => {
   const [currentIsClicked, setCurrentIsClicked] = useState(isClicked);
-  const [currentFileName, setCurrentFileName] = useState(fileName);
   const filteredFileName = useMemo(() => {
-    return _.gt(_.size(currentFileName), maxFileName)
-      ? `${currentFileName.substring(0, maxFileName)}...`
-      : currentFileName;
-  }, [currentFileName, maxFileName]);
+    return _.gt(_.size(fileName), maxFileNameLength)
+      ? `${fileName.substring(0, maxFileNameLength)}...`
+      : fileName;
+  }, [fileName, maxFileNameLength]);
   const [isModifying, setIsModifying] = useState(false);
   const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
-  const onChangeInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentFileName(e.target.value);
-  }, []);
+  const onChangeInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChangeFileName({ key: iconKey, value: e.target.value });
+    },
+    [iconKey, onChangeFileName],
+  );
   useOutsideClick({
     ref: iconRef,
     event: () => {
@@ -67,19 +74,22 @@ export const Icon: React.FC<IconProps> = ({
       }}
       isClicked={currentIsClicked}
     >
-      <S.TopWrapper>
-        <ModelIcon size={40} style={{ position: 'absolute', left: '42%', top: '37.5%' }} />
-      </S.TopWrapper>
+      {_.isEqual(mode, 'icon') ? (
+        <S.TopWrapper>
+          <ModelIcon size={40} style={{ position: 'absolute', left: '42%', top: '37.5%' }} />
+        </S.TopWrapper>
+      ) : (
+        <S.FolderIcon></S.FolderIcon>
+      )}
       {isModifying ? (
         <S.BottomInput
-          value={currentFileName}
+          value={fileName}
           autoFocus
           onFocus={(e) => e.target.select()}
           onChange={onChangeInput}
           onKeyPress={(e) => {
             if (_.isEqual(e.key, 'Enter')) {
               setIsModifying(false);
-              onEnterFileName();
             }
           }}
         ></S.BottomInput>

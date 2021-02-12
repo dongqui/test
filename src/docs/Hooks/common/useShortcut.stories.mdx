@@ -1,0 +1,37 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Hooks/common/useShortcut" />
+
+# useShortcut
+
+단축키를 넣고 싶을때 사용하는 hook.
+
+#### example
+
+```javascript
+  useShortcut({
+    ref: iconRef,
+    data: [
+      {
+        key: 'Enter',
+        event: () => {
+          if (currentIsClicked) {
+            setIsModifying(!isModifying);
+          }
+        },
+      },
+    ],
+  });
+```
+
+## Props
+
+| Prop                | Description            |
+| ------------------- | ---------------------- |
+| **ref(DOM)**        | 타겟이 되는 DOM        |
+| **data({ key: string, event: Function })** | key: 단축키이름, event: 해당 단축키를 눌렀을때 실행시킬 이벤트 |
+
+## Return
+
+| Return | Description |
+| ------ | ----------- |
