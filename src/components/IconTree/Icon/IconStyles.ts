@@ -7,7 +7,6 @@ const TOP_HEIGHT_RATE = 60;
 const TOP_BACKGROUND_COLOR = 'rgba(36, 36, 36, 1)';
 const FONT_SIZE = 1;
 const BORDER_RADIUS = 0.375;
-
 interface IconStyleProps {
   width?: string;
   height?: string;
