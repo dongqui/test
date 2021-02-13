@@ -18,7 +18,7 @@ export interface IconProps {
   iconKey: string;
 }
 
-export const Icon: React.FC<IconProps> = ({
+const IconComponent: React.FC<IconProps> = ({
   width = '100%',
   height = '8rem',
   fileName = 'Model',
@@ -99,3 +99,4 @@ export const Icon: React.FC<IconProps> = ({
     </S.IconWrapper>
   );
 };
+export const Icon = React.memo(IconComponent);

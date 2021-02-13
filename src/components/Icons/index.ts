@@ -7,9 +7,11 @@ export interface SvgIconProps {
   style?: React.CSSProperties;
 }
 
+export * from './generated/ArrowBack';
 export * from './generated/ArrowDown';
 export * from './generated/ArrowDownCircle';
 export * from './generated/ArrowExpand';
+export * from './generated/ArrowForward';
 export * from './generated/ArrowLeft';
 export * from './generated/ArrowLeftCircle';
 export * from './generated/ArrowRight';
