@@ -4,7 +4,7 @@ import { Story, Meta } from '@storybook/react/types-6-0';
 import { Icon as IconComponent, IconProps } from '../../components/IconTree/Icon';
 
 export default {
-  title: 'Component API/Component/IconTree',
+  title: 'Component API/Component/IconTree/Icon',
   component: IconComponent,
   argTypes: {
     maxFileNameLength: {
@@ -23,8 +23,8 @@ const Template: Story<IconProps> = (args) => (
   </div>
 );
 
-export const Icon = Template.bind({});
-Icon.args = {
+export const Default = Template.bind({});
+Default.args = {
   width: '8%',
   height: '8rem',
 };

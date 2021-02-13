@@ -1,6 +1,7 @@
 import _ from 'lodash';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Rnd } from 'react-rnd';
+import { PagesTypes } from '../../Panels/LibraryPanel';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
 import { DUMMY_DATA } from './IconViewStyles';
@@ -16,29 +17,35 @@ export interface IconViewProps {
   width: string;
   height: string;
   backgroundColor?: string;
+  pages?: PagesTypes[];
+  setPages?: Function;
+  data?: dataTypes[];
+  setData?: Function;
 }
 export interface onChangeFileNameTypes {
   ({ key, value }: { key: string; value: string }): void;
 }
 
-export const IconView: React.FC<IconViewProps> = ({ width, height, backgroundColor = 'black' }) => {
-  const [data, setData] = useState<dataTypes[]>(DUMMY_DATA);
+const IconViewComponent: React.FC<IconViewProps> = ({
+  width,
+  height,
+  backgroundColor = 'black',
+  pages = [{ key: 'root', name: 'root' }],
+  setPages = () => {},
+  data = DUMMY_DATA,
+  setData = () => {},
+}) => {
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
-  const [pageKeyArray, setPagekeyArray] = useState<string[]>(['root']);
-  const filteredData = useMemo(() => {
-    let result = _.clone(data);
-    if (!_.isEmpty(pageKeyArray)) {
-      result = _.filter(result, (o) => _.isEqual(o.parentKey, _.last(pageKeyArray)));
-    }
-    return result;
-  }, [data, pageKeyArray]);
+  const filteredData: dataTypes[] = useMemo(() => {
+    return _.filter(data, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
+  }, [data, pages]);
   const onDoubleClickIcon = useCallback(
-    ({ key, isChild }: { key: string; isChild: boolean }) => {
+    ({ key, isChild, name }: { key: string; isChild: boolean; name: string }) => {
       if (!isChild) {
-        setPagekeyArray(_.concat(pageKeyArray, key));
+        setPages(_.concat(pages, { key, name }));
       }
     },
-    [pageKeyArray],
+    [pages, setPages],
   );
   const onChangeFileName: onChangeFileNameTypes = useCallback(
     ({ key, value }) => {
@@ -47,7 +54,7 @@ export const IconView: React.FC<IconViewProps> = ({ width, height, backgroundCol
       );
       setData(newData);
     },
-    [data],
+    [data, setData],
   );
   return (
     <S.IconViewWrapper
@@ -60,7 +67,9 @@ export const IconView: React.FC<IconViewProps> = ({ width, height, backgroundCol
         <Rnd key={index}>
           <S.IconWrapper
             index={index}
-            onDoubleClick={() => onDoubleClickIcon({ key: item.key, isChild: item.isChild })}
+            onDoubleClick={() =>
+              onDoubleClickIcon({ key: item.key, isChild: item.isChild, name: item.name })
+            }
           >
             <Icon
               iconKey={item.key}
@@ -76,3 +85,4 @@ export const IconView: React.FC<IconViewProps> = ({ width, height, backgroundCol
     </S.IconViewWrapper>
   );
 };
+export const IconView = React.memo(IconViewComponent);
