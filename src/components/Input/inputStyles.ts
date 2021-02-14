@@ -24,7 +24,7 @@ export const InputLPWrapper = styled.div<InputLPWrapperProps>`
 export const InputLP = styled.input<InputLPProps>`
   width: 75%;
   height: 100%;
-  font-size: 1.5rem;
+  font-size: 1rem;
   border-width: 0;
   color: ${GRAY500};
   background-color: inherit;
@@ -41,7 +41,7 @@ export const IconWrapper = styled.div`
   left: 1.5rem;
 `;
 export const SearchIcon = styled(BsSearch)`
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1rem;
+  height: 1rem;
   color: ${GRAY500};
 `;

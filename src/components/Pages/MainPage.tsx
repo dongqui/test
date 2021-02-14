@@ -7,6 +7,7 @@ import {
   TIMELINE_PANEL_HEIGHT_RATE,
 } from '../../styles/common';
 import { screenSizeTypes } from '../../interfaces';
+import { LibraryPanel } from '../Panels/LibraryPanel';
 
 export interface MainPageProps {
   width: string;
@@ -31,7 +32,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
     <div style={{ width, height, backgroundColor, position: 'relative' }}>
       <Rnd
         style={{
-          backgroundColor: 'red',
+          border: '1px solid white',
           zIndex: 100,
         }}
         size={{
@@ -47,7 +48,9 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         }}
         enableResizing={{ right: true }}
         disableDragging={true}
-      ></Rnd>
+      >
+        <LibraryPanel height="100%" width="100%" />
+      </Rnd>
       <div
         style={{
           width: '100%',
@@ -55,12 +58,12 @@ const MainPageComponent: React.FC<MainPageProps> = ({
           position: 'absolute',
           left: 0,
           top: 0,
-          backgroundColor: 'yellow',
+          border: '1px solid white',
         }}
       ></div>
       <Rnd
         style={{
-          backgroundColor: 'green',
+          border: '1px solid white',
           zIndex: 200,
         }}
         default={{
@@ -74,7 +77,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         style={{
           position: 'absolute',
           bottom: 0,
-          backgroundColor: 'blue',
+          border: '1px solid white',
           zIndex: 100,
         }}
         size={{

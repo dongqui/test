@@ -1,6 +1,9 @@
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Rnd } from 'react-rnd';
+import { useContextmenu } from '../../../hooks/common/useContextmenu';
+import { CONTEXTMENU_INFO } from '../../../lib/store';
+import { Contextmenu } from '../../Contextmenu';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
@@ -56,6 +59,20 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     },
     [data, setData],
   );
+  const onContextMenu = useCallback(({ top, left }: { top: number; left: number }) => {
+    CONTEXTMENU_INFO({
+      isShow: true,
+      top,
+      left,
+      data: [
+        { key: '0', name: 'Copy' },
+        { key: '1', name: 'Paste' },
+        { key: '2', name: 'Visualization' },
+        { key: '3', name: 'Edit name' },
+      ],
+    });
+  }, []);
+  useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
   return (
     <S.IconViewWrapper
       ref={iconViewWrapperRef}

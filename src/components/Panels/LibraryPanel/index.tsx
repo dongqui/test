@@ -3,7 +3,6 @@ import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { IconPage } from '../../IconTree/IconPage';
 import { dataTypes, IconView } from '../../IconTree/IconView';
 import { DUMMY_DATA } from '../../IconTree/IconView/IconViewStyles';
-import { Input } from '../../Input';
 import { InputLP } from '../../Input/InputLP';
 import * as S from './LibraryPanelStyles';
 
@@ -52,7 +51,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
       <S.TitleWrapper>Library</S.TitleWrapper>
       <S.SearchWrapper>
         <InputLP
-          borderRadius={0.8}
+          borderRadius={0.5}
           height="100%"
           onChange={onChangeSearchText}
           placeholder="Search Projects"

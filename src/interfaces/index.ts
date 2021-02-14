@@ -5,6 +5,8 @@
 // import User from 'path/to/interfaces';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { IpcRenderer } from 'electron';
+import { BooleanValueNode } from 'graphql';
+import { ContextmenuDataTypes } from '../components/Contextmenu';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -26,4 +28,10 @@ export enum FORMAT_TYPES {
 export interface shortcutTypes {
   key: string;
   event: Function;
+}
+export interface contextmenuTypes {
+  data?: ContextmenuDataTypes[];
+  isShow: boolean;
+  top: number;
+  left: number;
 }

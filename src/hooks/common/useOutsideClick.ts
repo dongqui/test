@@ -9,7 +9,7 @@ export const useOutsideClick = ({
 }) => {
   const onClick = useCallback(
     (e) => {
-      if (!ref.current.contains(e.target as Node)) {
+      if (!ref?.current?.contains(e.target as Node)) {
         event();
       }
     },
