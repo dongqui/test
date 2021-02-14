@@ -22,7 +22,7 @@ export const TitleWrapper = styled.div`
 `;
 export const SearchWrapper = styled.div`
   width: 100%;
-  height: 8%;
+  height: 5%;
   display: flex;
   justify-content: center;
   align-items: center;

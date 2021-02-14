@@ -9,8 +9,8 @@ interface IconViewStyleProps {
 interface IconStyleProps {
   index: number;
 }
-const INTERVAL = 2;
-const ICON_SIZE = 6;
+const INTERVAL = 1;
+const ICON_SIZE = 4;
 const ICONCNT_ONEROW = 3;
 const makelocation = ({ index }: { index: number }) => {
   const top = Math.floor(index / ICONCNT_ONEROW) * (ICON_SIZE + INTERVAL) + INTERVAL;
