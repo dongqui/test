@@ -4,7 +4,7 @@ import { Story, Meta } from '@storybook/react/types-6-0';
 import { Input, InputChildProps, InputProps, InputWrapperProps } from '../../components/Input';
 
 export default {
-  title: 'Component API/Component/Input',
+  title: 'Component API/Component/Input/Default',
   component: Input,
   argTypes: {
     backgroundColor: {

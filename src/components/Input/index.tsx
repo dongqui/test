@@ -47,8 +47,8 @@ export interface InputProps
     | 'week',
     string
   >;
-  id: string;
-  key: string | number;
+  id?: string;
+  key?: string | number;
   prefix?: React.ReactNode | string;
   isPrefix?: boolean;
   maxLength?: number;

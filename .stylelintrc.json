@@ -46,6 +46,7 @@
     ],
     "max-nesting-depth": 2,
     "value-keyword-case": null,
-    "declaration-empty-line-before": "never"
+    "declaration-empty-line-before": "never",
+    "function-whitespace-after": "never"
   }
 }
