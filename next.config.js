@@ -2,9 +2,8 @@ const withPWA = require('next-pwa');
 const withPlugins = require('next-compose-plugins');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const withBundleAnalyzer = require('@next/bundle-analyzer')({ enabled: false });
-const withSass = require('@zeit/next-sass');
 
-module.exports = withPlugins([
+module.exports = [
   [
     withBundleAnalyzer,
     withPWA({
@@ -36,13 +35,7 @@ module.exports = withPlugins([
       },
     }),
   ],
-  [
-    withSass,
-    {
-      cssModules: true,
-    },
-  ],
-]);
+];
 
 // module.exports = withBundleAnalyzer(withPWA({
 //   distDir: '_next',
