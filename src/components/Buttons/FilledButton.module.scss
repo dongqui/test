@@ -1,0 +1,37 @@
+@import './common';
+
+.filled {
+  @include reset-button-style();
+  border-radius: 6px;
+  font-weight: 300;
+
+  .fullSize {
+    width: 100%;
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+    background-color: #a7a7a7; // GRAY500
+    color: #fff;
+
+    &:hover {
+      color: #fff;
+      background-color: #a7a7a7;
+    }
+  }
+}
+
+.small {
+  min-width: 64px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.primary {
+  background-color: #3785f7; // primary
+  color: #fff;
+
+  &:hover {
+    background-color: lighten($color: #3785f7, $amount: 4%);
+  }
+}
