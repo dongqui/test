@@ -1,5 +1,4 @@
 const withPWA = require('next-pwa');
-const withPlugins = require('next-compose-plugins');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const withBundleAnalyzer = require('@next/bundle-analyzer')({ enabled: false });
 
