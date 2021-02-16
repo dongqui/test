@@ -18,6 +18,6 @@ const Template: Story<TimelinePanelProps> = (args) => <TimelinePanelComponent {.
 
 export const Default = Template.bind({});
 Default.args = {
-  width: '100%',
-  height: '50rem',
+  width: 1920,
+  height: 1080,
 };
