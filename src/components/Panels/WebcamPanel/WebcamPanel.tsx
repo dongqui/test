@@ -11,18 +11,7 @@ export interface WebcamPanelProps {
 
 const WebcamPanelComponent: React.FC<WebcamPanelProps> = ({ width = '100%', height = '100%' }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-
   useWebcam({ videoRef });
-
-  useEffect(() => {
-    const video = videoRef.current;
-    // setInterval(() => {
-    //   const video: any = document.getElementById('video');
-    //   const captureStream = video.captureStream();
-    //   console.log('captureStream', captureStream);
-    // }, 1000);
-  }, []);
-
   const handleClick = useCallback(async () => {
     const video = document.getElementById('video') as HTMLVideoElement;
     // video?.captureStream();
