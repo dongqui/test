@@ -1,4 +1,4 @@
-@import './common';
+@import 'utils/_mixins';
 
 .filled {
   @include reset-button-style();
@@ -6,7 +6,7 @@
   font-weight: 300;
   transition: background-color 0.25s;
 
-  .fullSize {
+  &.fullSize {
     width: 100%;
   }
 
