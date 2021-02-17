@@ -1,4 +1,5 @@
 const withPWA = require('next-pwa');
+const path = require('path');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const withBundleAnalyzer = require('@next/bundle-analyzer')({ enabled: false });
 
@@ -10,6 +11,9 @@ module.exports = withBundleAnalyzer(withPWA({
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  sassLoader: {
+    includePaths: path.join(__dirname, 'src'),
   },
   webpack(config, options) {
     const { dev, isServer } = options;

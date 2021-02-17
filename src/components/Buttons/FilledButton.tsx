@@ -1,4 +1,4 @@
-import React, { ButtonHTMLAttributes } from 'react';
+import React, { memo, ButtonHTMLAttributes } from 'react';
 import classNames from 'classnames/bind';
 import styles from './FilledButton.module.scss';
 
@@ -41,4 +41,4 @@ const FilledButton: React.FC<Props> = ({
 
 FilledButton.defaultProps = defaultProps;
 
-export default FilledButton;
+export default memo(FilledButton);
