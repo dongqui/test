@@ -13,7 +13,7 @@ module.exports = withBundleAnalyzer(withPWA({
     ignoreBuildErrors: true,
   },
   sassLoader: {
-    includePaths: [path.join(__dirname, 'src')]
+    includePaths: path.join(__dirname, 'src'),
   },
   webpack(config, options) {
     const { dev, isServer } = options;
