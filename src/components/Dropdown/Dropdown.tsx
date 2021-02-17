@@ -30,17 +30,21 @@ const Dropdown: React.FC<Props> = ({ list, ...rest }) => {
 
   const defaultValue = _.find(list, { isSelected: true })?.name;
 
+  const handleToggle = useCallback(() => {
+    setIsOpen(!isOpen);
+  }, [isOpen]);
+
+  const handleClose = useCallback(() => {
+    isOpen && setIsOpen(false);
+  }, [isOpen]);
+
+  const handleSelect = useCallback(() => {}, []);
+
   useEffect(() => {
     if (buttonRef && buttonRef.current) {
       setTransform(`translate3d(0px, ${buttonRef.current.offsetHeight}px, 0px)`);
     }
   }, []);
-
-  const handleToggle = useCallback(() => {
-    setIsOpen(!isOpen);
-  }, [isOpen]);
-
-  const handleSelect = useCallback(() => {}, []);
 
   useEffect(() => {
     const currentRef = wrapperRef?.current;
@@ -93,15 +97,26 @@ const Dropdown: React.FC<Props> = ({ list, ...rest }) => {
         }
       };
 
+      const handleOutSideClick = (e: MouseEvent) => {
+        const target = e.target as Node;
+        const isContains = wrapperRef.current?.contains(target);
+
+        if (!isContains) {
+          handleClose();
+        }
+      };
+
       window.addEventListener('keydown', handleTrapTabKey);
       window.addEventListener('focusin', handleFocusin);
+      window.addEventListener('click', handleOutSideClick);
 
       return () => {
         window.removeEventListener('keydown', handleTrapTabKey);
         window.removeEventListener('focusin', handleFocusin);
+        window.removeEventListener('click', handleOutSideClick);
       };
     }
-  }, [handleToggle, isOpen]);
+  }, [handleClose, handleToggle, isOpen]);
 
   const classes = cx('button-toggle', {
     open: isOpen,
