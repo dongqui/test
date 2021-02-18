@@ -1,10 +1,11 @@
+import { useReactiveVar } from '@apollo/client';
 import { mainDataTypes } from 'interfaces';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import { INITIAL_MAIN_DATA } from 'utils';
 import { useContextmenu } from '../../../hooks/common/useContextmenu';
-import { CONTEXTMENU_INFO } from '../../../lib/store';
+import { CONTEXTMENU_INFO, MAIN_DATA } from '../../../lib/store';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
@@ -16,7 +17,6 @@ export interface IconViewProps {
   pages?: PagesTypes[];
   setPages?: Function;
   data?: mainDataTypes[];
-  setData?: Function;
   onClickContextMenu?: ({
     key,
     selectedItemKeys,
@@ -37,12 +37,13 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   pages = [{ key: 'root', name: 'root' }],
   setPages = () => {},
   data = INITIAL_MAIN_DATA,
-  setData = () => {},
-  onClickContextMenu = () => {},
   onDoubleClickFile = () => {},
 }) => {
+  const mainData = useReactiveVar(MAIN_DATA);
+  const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
   const [isDraggingItemKeys, setIsDraggingItemKeys] = useState<string[]>([]);
   const [selectedItemKeys, setSelectedItemKeys] = useState<string[]>([]);
+  const [modifyingKey, setModifyingKey] = useState<string | undefined>();
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
   const filteredData: mainDataTypes[] = useMemo(() => {
     return _.filter(data, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
@@ -57,15 +58,6 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     },
     [onDoubleClickFile, pages, setPages],
   );
-  const onChangeFileName: onChangeFileNameTypes = useCallback(
-    ({ key, value }) => {
-      const newData: mainDataTypes[] = _.map(data, (item) =>
-        _.isEqual(key, item.key) ? { ...item, name: value } : item,
-      );
-      setData(newData);
-    },
-    [data, setData],
-  );
   const onContextMenu = useCallback(
     ({ top, left }: { top: number; left: number }) => {
       CONTEXTMENU_INFO({
@@ -79,11 +71,26 @@ const IconViewComponent: React.FC<IconViewProps> = ({
           { key: '3', name: 'Edit name' },
         ],
         onClick: ({ key }) => {
-          onClickContextMenu({ key, selectedItemKeys });
+          let newMainData;
+          CONTEXTMENU_INFO({ ...contextmenuInfo, isShow: false });
+          switch (key) {
+            case '2':
+              newMainData = _.map(mainData, (item) => ({
+                ...item,
+                isSelected: _.includes(selectedItemKeys, item.key),
+              }));
+              MAIN_DATA(newMainData);
+              break;
+            case '3':
+              setModifyingKey(selectedItemKeys?.[0]);
+              break;
+            default:
+              break;
+          }
         },
       });
     },
-    [onClickContextMenu, selectedItemKeys],
+    [contextmenuInfo, mainData, selectedItemKeys],
   );
   useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
   const onDragStart = useCallback(
@@ -118,7 +125,6 @@ const IconViewComponent: React.FC<IconViewProps> = ({
               iconKey={item.key}
               mode={item.isChild ? 'icon' : 'folder'}
               fileName={item.name}
-              onChangeFileName={onChangeFileName}
               onClick={() => {
                 if (_.includes(selectedItemKeys, item.key)) {
                   setSelectedItemKeys(_.pull(selectedItemKeys, item.key));
@@ -127,6 +133,10 @@ const IconViewComponent: React.FC<IconViewProps> = ({
                 }
               }}
               isDragging={_.includes(isDraggingItemKeys, item.key)}
+              isClicked={_.includes(selectedItemKeys, item.key)}
+              outSideClick={() => setSelectedItemKeys([])}
+              isModifying={_.isEqual(modifyingKey, item.key)}
+              onCompleteModifying={() => setModifyingKey(undefined)}
             />
           </S.IconWrapper>
         </Rnd>

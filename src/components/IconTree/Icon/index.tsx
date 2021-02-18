@@ -1,10 +1,10 @@
+import { useReactiveVar } from '@apollo/client';
+import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { rem } from 'utils';
 import { useOutsideClick } from '../../../hooks/common/useOutsideClick';
-import { useShortcut } from '../../../hooks/common/useShortcut';
 import { ModelIcon } from '../../Icons';
-import { onChangeFileNameTypes } from '../IconView';
 import * as S from './IconStyles';
 
 export interface IconProps {
@@ -14,10 +14,12 @@ export interface IconProps {
   isClicked?: boolean;
   onClick?: ((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void) | undefined | any;
   maxFileNameLength?: number;
-  onChangeFileName?: onChangeFileNameTypes;
   mode?: 'icon' | 'folder';
   iconKey: string;
   isDragging?: boolean;
+  outSideClick?: Function;
+  isModifying?: boolean;
+  onCompleteModifying?: Function;
 }
 
 const IconComponent: React.FC<IconProps> = ({
@@ -27,44 +29,29 @@ const IconComponent: React.FC<IconProps> = ({
   isClicked = false,
   onClick = () => {},
   maxFileNameLength = 15,
-  onChangeFileName = () => {},
   mode = 'icon',
   iconKey,
   isDragging = false,
+  outSideClick = () => {},
+  isModifying = false,
+  onCompleteModifying = () => {},
 }) => {
-  const [currentIsClicked, setCurrentIsClicked] = useState(isClicked);
+  const mainData = useReactiveVar(MAIN_DATA);
+  const [value, setValue] = useState(fileName);
   const filteredFileName = useMemo(() => {
     return _.gt(_.size(fileName), maxFileNameLength)
       ? `${fileName.substring(0, maxFileNameLength)}...`
       : fileName;
   }, [fileName, maxFileNameLength]);
-  const [isModifying, setIsModifying] = useState(false);
   const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
-  const onChangeInput = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChangeFileName({ key: iconKey, value: e.target.value });
-    },
-    [iconKey, onChangeFileName],
-  );
+  const onChangeInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value);
+  }, []);
   useOutsideClick({
     ref: iconRef,
     event: () => {
-      setCurrentIsClicked(false);
-      setIsModifying(false);
+      outSideClick();
     },
-  });
-  useShortcut({
-    ref: iconRef,
-    data: [
-      {
-        key: 'Enter',
-        event: () => {
-          if (currentIsClicked) {
-            setIsModifying(!isModifying);
-          }
-        },
-      },
-    ],
   });
   return (
     <S.IconWrapper
@@ -72,10 +59,9 @@ const IconComponent: React.FC<IconProps> = ({
       width={width}
       height={height}
       onClick={() => {
-        setCurrentIsClicked(true);
         onClick();
       }}
-      isClicked={currentIsClicked}
+      isClicked={isClicked}
       opacity={isDragging ? 0.5 : 1}
     >
       {_.isEqual(mode, 'icon') ? (
@@ -87,13 +73,19 @@ const IconComponent: React.FC<IconProps> = ({
       )}
       {isModifying ? (
         <S.BottomInput
-          value={fileName}
+          value={value}
           autoFocus
           onFocus={(e) => e.target.select()}
           onChange={onChangeInput}
           onKeyPress={(e) => {
             if (_.isEqual(e.key, 'Enter')) {
-              setIsModifying(false);
+              MAIN_DATA(
+                _.map(mainData, (item) => ({
+                  ...item,
+                  name: _.isEqual(item.key, iconKey) ? value : item.name,
+                })),
+              );
+              onCompleteModifying();
             }
           }}
         ></S.BottomInput>
