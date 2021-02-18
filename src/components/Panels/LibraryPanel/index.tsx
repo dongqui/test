@@ -4,6 +4,7 @@ import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { LIBRARYPANEL_INFO } from 'styles/common';
 import { rem } from 'utils';
 import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
@@ -21,8 +22,8 @@ export interface LibraryPanelProps {
 }
 
 const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
-  width = rem(230),
-  height = rem(540),
+  width = LIBRARYPANEL_INFO.widthRem,
+  height = LIBRARYPANEL_INFO.heightRem,
   backgroundColor = 'black',
 }) => {
   const [pages, setPages] = useState<PagesTypes[]>([{ key: 'root', name: 'root' }]);
@@ -67,6 +68,16 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
     },
     [mainData],
   );
+  const onClickContextMenu = useCallback(
+    ({ key, selectedItemKeys }) => {
+      const newMainData = _.map(mainData, (item) => ({
+        ...item,
+        isSelected: _.includes(selectedItemKeys, item.key),
+      }));
+      MAIN_DATA(newMainData);
+    },
+    [mainData],
+  );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
     <S.LibraryPanelWrapper
@@ -87,6 +98,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
         setPages={setPages}
         data={mainData}
         setData={setData}
+        onClickContextMenu={onClickContextMenu}
       />
     </S.LibraryPanelWrapper>
   );

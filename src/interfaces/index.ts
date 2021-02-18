@@ -34,6 +34,16 @@ export interface contextmenuTypes {
   isShow: boolean;
   top: number;
   left: number;
+  onClick: ({ key }: { key: string }) => void;
+}
+export interface mainDataTypes {
+  key: string;
+  name: string;
+  isChild: boolean;
+  parentKey?: string;
+  isExpanded?: boolean;
+  url?: string;
+  isSelected?: boolean;
 }
 export interface mainDataTypes {
   key: string;

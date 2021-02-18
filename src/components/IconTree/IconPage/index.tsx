@@ -1,6 +1,7 @@
 import { ArrowBack, ArrowForward } from 'components/Icons';
 import _ from 'lodash';
 import React from 'react';
+import { LIBRARYPANEL_INFO } from 'styles/common';
 import { rem } from 'utils';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import * as S from './IconPageStyles';
@@ -14,7 +15,7 @@ export interface IconPageProps {
   onClickPage?: ({ key }: { key: string }) => void;
 }
 const IconPageComponent: React.FC<IconPageProps> = ({
-  width = rem(230),
+  width = LIBRARYPANEL_INFO.widthRem,
   height = rem(48),
   backgroundColor = 'black',
   data = [
