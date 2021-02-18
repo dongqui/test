@@ -29,7 +29,7 @@ const IconPageComponent: React.FC<IconPageProps> = ({
       <div
         style={{
           marginLeft: `${rem(22)}rem`,
-          marginTop: `${rem(20)}rem`,
+          marginTop: `${rem(15)}rem`,
         }}
       >
         <ArrowBack />

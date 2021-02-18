@@ -24,6 +24,7 @@ export interface IconViewProps {
     key: string;
     selectedItemKeys: string[];
   }) => void;
+  onDoubleClickFile?: ({ key }: { key: string }) => void;
 }
 export interface onChangeFileNameTypes {
   ({ key, value }: { key: string; value: string }): void;
@@ -38,6 +39,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   data = INITIAL_MAIN_DATA,
   setData = () => {},
   onClickContextMenu = () => {},
+  onDoubleClickFile = () => {},
 }) => {
   const [isDraggingItemKeys, setIsDraggingItemKeys] = useState<string[]>([]);
   const [selectedItemKeys, setSelectedItemKeys] = useState<string[]>([]);
@@ -45,13 +47,15 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   const filteredData: mainDataTypes[] = useMemo(() => {
     return _.filter(data, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
   }, [data, pages]);
-  const onDoubleClickIcon = useCallback(
+  const onDoubleClick = useCallback(
     ({ key, isChild, name }: { key: string; isChild: boolean; name: string }) => {
-      if (!isChild) {
+      if (isChild) {
+        onDoubleClickFile({ key });
+      } else {
         setPages(_.concat(pages, { key, name }));
       }
     },
-    [pages, setPages],
+    [onDoubleClickFile, pages, setPages],
   );
   const onChangeFileName: onChangeFileNameTypes = useCallback(
     ({ key, value }) => {
@@ -88,12 +92,9 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     },
     [isDraggingItemKeys],
   );
-  const onDragStop = useCallback(
-    ({ key }) => {
-      setIsDraggingItemKeys(_.pull(isDraggingItemKeys, key));
-    },
-    [isDraggingItemKeys],
-  );
+  const onDragStop = useCallback(({ key }) => {
+    setIsDraggingItemKeys([]);
+  }, []);
   return (
     <S.IconViewWrapper
       ref={iconViewWrapperRef}
@@ -110,7 +111,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
           <S.IconWrapper
             index={index}
             onDoubleClick={() =>
-              onDoubleClickIcon({ key: item.key, isChild: item.isChild, name: item.name })
+              onDoubleClick({ key: item.key, isChild: item.isChild, name: item.name })
             }
           >
             <Icon

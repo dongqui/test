@@ -78,6 +78,16 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
     },
     [mainData],
   );
+  const onDoubleClickFile = useCallback(
+    ({ key }) => {
+      const newMainData = _.map(mainData, (item) => ({
+        ...item,
+        isSelected: _.isEqual(item.key, key),
+      }));
+      MAIN_DATA(newMainData);
+    },
+    [mainData],
+  );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
     <S.LibraryPanelWrapper
@@ -99,6 +109,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
         data={mainData}
         setData={setData}
         onClickContextMenu={onClickContextMenu}
+        onDoubleClickFile={onDoubleClickFile}
       />
     </S.LibraryPanelWrapper>
   );
