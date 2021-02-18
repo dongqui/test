@@ -1,34 +1,35 @@
 import { mainDataTypes } from 'interfaces';
 
 export const isClient = typeof window !== 'undefined';
+export const DEFAULT_MODEL_URL = 'https://assets.babylonjs.com/meshes/HVGirl.glb';
 export const INITIAL_MAIN_DATA: mainDataTypes[] = [
   {
     key: '0',
     name: '모델0',
     isChild: true,
     parentKey: 'root',
-    url: 'https://assets.babylonjs.com/meshes/HVGirl.glb',
+    url: DEFAULT_MODEL_URL,
   },
   {
     key: '1',
     name: '모델1',
     isChild: true,
     parentKey: 'root',
-    url: 'https://assets.babylonjs.com/meshes/HVGirl.glb',
+    url: DEFAULT_MODEL_URL,
   },
   {
     key: '2',
     name: '모델2',
     isChild: true,
     parentKey: 'root',
-    url: 'https://assets.babylonjs.com/meshes/HVGirl.glb',
+    url: DEFAULT_MODEL_URL,
   },
   {
     key: '3',
     name: '모델3',
     isChild: true,
     parentKey: 'root',
-    url: 'https://assets.babylonjs.com/meshes/HVGirl.glb',
+    url: DEFAULT_MODEL_URL,
   },
   {
     key: '4',
@@ -42,20 +43,20 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
     name: '모델4-0',
     isChild: true,
     parentKey: '4',
-    url: 'https://assets.babylonjs.com/meshes/HVGirl.glb',
+    url: DEFAULT_MODEL_URL,
   },
   {
     key: '4-1',
     name: '모델4-1',
     isChild: true,
     parentKey: '4',
-    url: 'https://assets.babylonjs.com/meshes/HVGirl.glb',
+    url: DEFAULT_MODEL_URL,
   },
   {
     key: '4-2',
     name: '모델4-2',
     isChild: true,
     parentKey: '4',
-    url: 'https://assets.babylonjs.com/meshes/HVGirl.glb',
+    url: DEFAULT_MODEL_URL,
   },
 ];

@@ -18,6 +18,13 @@ export interface IconViewProps {
   setPages?: Function;
   data?: mainDataTypes[];
   setData?: Function;
+  onClickContextMenu?: ({
+    key,
+    selectedItemKeys,
+  }: {
+    key: string;
+    selectedItemKeys: string[];
+  }) => void;
 }
 export interface onChangeFileNameTypes {
   ({ key, value }: { key: string; value: string }): void;
@@ -31,7 +38,9 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   setPages = () => {},
   data = INITIAL_MAIN_DATA,
   setData = () => {},
+  onClickContextMenu = () => {},
 }) => {
+  const [selectedItemKeys, setSelectedItemKeys] = useState<string[]>([]);
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
   const filteredData: mainDataTypes[] = useMemo(() => {
     return _.filter(data, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
@@ -53,19 +62,25 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     },
     [data, setData],
   );
-  const onContextMenu = useCallback(({ top, left }: { top: number; left: number }) => {
-    CONTEXTMENU_INFO({
-      isShow: true,
-      top,
-      left,
-      data: [
-        { key: '0', name: 'Copy' },
-        { key: '1', name: 'Paste' },
-        { key: '2', name: 'Visualization' },
-        { key: '3', name: 'Edit name' },
-      ],
-    });
-  }, []);
+  const onContextMenu = useCallback(
+    ({ top, left }: { top: number; left: number }) => {
+      CONTEXTMENU_INFO({
+        isShow: true,
+        top,
+        left,
+        data: [
+          { key: '0', name: 'Copy' },
+          { key: '1', name: 'Paste' },
+          { key: '2', name: 'Visualization' },
+          { key: '3', name: 'Edit name' },
+        ],
+        onClick: ({ key }) => {
+          onClickContextMenu({ key, selectedItemKeys });
+        },
+      });
+    },
+    [onClickContextMenu, selectedItemKeys],
+  );
   useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
   return (
     <S.IconViewWrapper
@@ -87,6 +102,13 @@ const IconViewComponent: React.FC<IconViewProps> = ({
               mode={item.isChild ? 'icon' : 'folder'}
               fileName={item.name}
               onChangeFileName={onChangeFileName}
+              onClick={() => {
+                if (_.includes(selectedItemKeys, item.key)) {
+                  setSelectedItemKeys(_.pull(selectedItemKeys, item.key));
+                } else {
+                  setSelectedItemKeys(_.concat(selectedItemKeys, item.key));
+                }
+              }}
             />
           </S.IconWrapper>
         </Rnd>

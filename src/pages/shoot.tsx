@@ -41,15 +41,12 @@ const ShootPage = () => {
             height="3rem"
             backgroundColor={GRAY200}
             data={contextmenuInfo.data}
+            onClick={contextmenuInfo.onClick}
           />
         </ContextmenuWrapper>
       )}
       {isClient ? (
-        <MainPage
-          width={`${screenSizeInfo.width}px`}
-          height={`${screenSizeInfo.height}px`}
-          screenSizeInfo={screenSizeInfo}
-        />
+        <MainPage width={`${screenSizeInfo.width}px`} height={`${screenSizeInfo.height}px`} />
       ) : (
         <div>로딩중...</div>
       )}
