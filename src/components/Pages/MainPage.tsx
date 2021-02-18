@@ -52,16 +52,6 @@ const MainPageComponent: React.FC<MainPageProps> = ({
       >
         <LibraryPanel />
       </Rnd>
-      <div
-        style={{
-          width: '100%',
-          height: `${100 - TIMELINE_PANEL_HEIGHT_RATE}%`,
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          border: '1px solid white',
-        }}
-      ></div>
       <Rnd
         style={{
           border: '1px solid white',
