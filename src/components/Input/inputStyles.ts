@@ -1,10 +1,11 @@
 import styled from '@emotion/styled';
 import { BsSearch } from 'react-icons/bs';
+import { rem } from 'utils';
 import { GRAY500 } from '../../styles/common';
 
 interface InputLPWrapperProps {
-  width: string;
-  height: string;
+  width: number;
+  height: number;
   backgroundColor: string;
   borderRadius?: number;
 }
@@ -12,8 +13,8 @@ interface InputLPProps {
   borderRadius?: number;
 }
 export const InputLPWrapper = styled.div<InputLPWrapperProps>`
-  width: ${(props) => props.width};
-  height: ${(props) => props.height};
+  width: ${(props) => props.width}rem;
+  height: ${(props) => props.height}rem;
   background-color: ${(props) => props.backgroundColor};
   border-radius: ${(props) => props.borderRadius ?? 0}rem;
   display: flex;
@@ -22,9 +23,9 @@ export const InputLPWrapper = styled.div<InputLPWrapperProps>`
   position: relative;
 `;
 export const InputLP = styled.input<InputLPProps>`
-  width: 75%;
+  width: 78%;
   height: 100%;
-  font-size: 1rem;
+  font-size: ${rem(12)}rem;
   border-width: 0;
   color: ${GRAY500};
   background-color: inherit;
@@ -38,10 +39,10 @@ export const InputLP = styled.input<InputLPProps>`
 `;
 export const IconWrapper = styled.div`
   position: absolute;
-  left: 1.5rem;
+  left: 11.3%;
 `;
 export const SearchIcon = styled(BsSearch)`
-  width: 1rem;
-  height: 1rem;
+  width: ${rem(10.64)}rem;
+  height: ${rem(10.64)}rem;
   color: ${GRAY500};
 `;

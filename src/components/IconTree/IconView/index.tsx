@@ -1,28 +1,22 @@
+import { mainDataTypes } from 'interfaces';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Rnd } from 'react-rnd';
+import { INITIAL_MAIN_DATA } from 'utils';
 import { useContextmenu } from '../../../hooks/common/useContextmenu';
 import { CONTEXTMENU_INFO } from '../../../lib/store';
 import { Contextmenu } from '../../Contextmenu';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
-import { DUMMY_DATA } from './IconViewStyles';
 
-export interface dataTypes {
-  key: string;
-  name: string;
-  isChild: boolean;
-  parentKey?: string;
-  isExpanded?: boolean;
-}
 export interface IconViewProps {
   width: string;
   height: string;
   backgroundColor?: string;
   pages?: PagesTypes[];
   setPages?: Function;
-  data?: dataTypes[];
+  data?: mainDataTypes[];
   setData?: Function;
 }
 export interface onChangeFileNameTypes {
@@ -35,11 +29,11 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   backgroundColor = 'black',
   pages = [{ key: 'root', name: 'root' }],
   setPages = () => {},
-  data = DUMMY_DATA,
+  data = INITIAL_MAIN_DATA,
   setData = () => {},
 }) => {
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
-  const filteredData: dataTypes[] = useMemo(() => {
+  const filteredData: mainDataTypes[] = useMemo(() => {
     return _.filter(data, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
   }, [data, pages]);
   const onDoubleClickIcon = useCallback(
@@ -52,7 +46,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   );
   const onChangeFileName: onChangeFileNameTypes = useCallback(
     ({ key, value }) => {
-      const newData: dataTypes[] = _.map(data, (item) =>
+      const newData: mainDataTypes[] = _.map(data, (item) =>
         _.isEqual(key, item.key) ? { ...item, name: value } : item,
       );
       setData(newData);
@@ -90,8 +84,6 @@ const IconViewComponent: React.FC<IconViewProps> = ({
           >
             <Icon
               iconKey={item.key}
-              width="100%"
-              height="100%"
               mode={item.isChild ? 'icon' : 'folder'}
               fileName={item.name}
               onChangeFileName={onChangeFileName}

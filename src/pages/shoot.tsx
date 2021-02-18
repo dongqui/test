@@ -21,7 +21,7 @@ const ContextmenuWrapper = styled.div<ContextmenuProps>`
 const ShootPage = () => {
   const screenSizeInfo = useReactiveVar(SCREEN_SIZE);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
-  const contextmenuRef: any = useRef(null);
+  const contextmenuRef = useRef<HTMLDivElement | any>(null);
   useOutsideClick({
     ref: contextmenuRef,
     event: () => {

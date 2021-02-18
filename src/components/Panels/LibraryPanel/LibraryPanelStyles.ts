@@ -1,37 +1,28 @@
 import styled from '@emotion/styled';
+import { rem } from 'utils';
 
+const MARGIN_LEFT = rem(12);
 interface LibraryPanelStyleProps {
-  width: string;
-  height: string;
+  width: number;
+  height: number;
   backgroundColor: string;
 }
 export const LibraryPanelWrapper = styled.div<LibraryPanelStyleProps>`
-  width: ${(props) => props.width};
-  height: ${(props) => props.height};
+  width: ${(props) => props.width}rem;
+  height: ${(props) => props.height}rem;
   background-color: ${(props) => props.backgroundColor};
 `;
 export const TitleWrapper = styled.div`
-  width: 100%;
-  height: 10%;
+  height: ${rem(48)}rem;
   color: white;
   font-weight: bold;
   display: flex;
   align-items: center;
-  margin-left: 1rem;
-  font-size: 1.5rem;
+  font-size: ${rem(14)}rem;
+  margin-left: ${MARGIN_LEFT}rem;
 `;
 export const SearchWrapper = styled.div`
-  width: 100%;
-  height: 5%;
+  margin-left: ${MARGIN_LEFT}rem;
   display: flex;
-  justify-content: center;
   align-items: center;
-`;
-export const PageWrapper = styled.div`
-  width: 100%;
-  height: 10%;
-`;
-export const IconViewWrapper = styled.div`
-  width: 100%;
-  height: 72%;
 `;

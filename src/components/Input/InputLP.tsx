@@ -1,12 +1,13 @@
 import _ from 'lodash';
 import React from 'react';
+import { rem } from 'utils';
 import { GRAY300, GRAY500 } from '../../styles/common';
 import { Search } from '../Icons/generated/Search';
 import * as S from './inputStyles';
 
 export interface InputLPProps {
-  width: string;
-  height: string;
+  width?: number;
+  height?: number;
   backgroundColor?: string;
   borderRadius?: number;
   icon?: React.ReactNode;
@@ -15,10 +16,10 @@ export interface InputLPProps {
 }
 
 const IconLPComponent: React.FC<InputLPProps> = ({
-  width,
-  height,
+  width = rem(206),
+  height = rem(32),
   backgroundColor = GRAY300,
-  borderRadius = 0.8,
+  borderRadius = 0.4,
   placeholder = 'Search Projects',
   onChange = () => {},
 }) => {
