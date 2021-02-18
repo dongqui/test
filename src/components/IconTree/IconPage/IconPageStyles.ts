@@ -1,17 +1,18 @@
 import styled from '@emotion/styled';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
+import { rem } from 'utils';
 import { GRAY500 } from '../../../styles/common';
 
 interface IconPageStyleProps {
-  width: string;
-  height: string;
+  width: number;
+  height: number;
   backgroundColor: string;
 }
 export const MARGIN_TOP = '2rem';
-export const MARGIN_LEFT = '1rem';
+export const MARGIN_LEFT = rem(22);
 export const IconPageWrapper = styled.div<IconPageStyleProps>`
-  width: ${(props) => props.width};
-  height: ${(props) => props.height};
+  width: ${(props) => props.width}rem;
+  height: ${(props) => props.height}rem;
   background-color: ${(props) => props.backgroundColor};
   display: flex;
   align-items: center;
@@ -25,7 +26,8 @@ export const IconPageWrapper = styled.div<IconPageStyleProps>`
 export const PageText = styled.span`
   color: white;
   font-weight: bold;
-  margin-left: ${MARGIN_LEFT};
+  margin-left: ${MARGIN_LEFT}rem;
+  font-size: ${rem(12)};
   cursor: pointer;
 `;
 export const ArrowBack = styled(IoIosArrowBack)`

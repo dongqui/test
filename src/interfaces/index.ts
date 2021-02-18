@@ -35,3 +35,11 @@ export interface contextmenuTypes {
   top: number;
   left: number;
 }
+export interface mainDataTypes {
+  key: string;
+  name: string;
+  isChild: boolean;
+  parentKey?: string;
+  isExpanded?: boolean;
+  url?: string;
+}

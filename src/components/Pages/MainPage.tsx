@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import _ from 'lodash';
 import {
@@ -28,6 +28,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
   const [timelinePanelHeight, setTimelinePanelHeight] = useState<number | string>(
     `${TIMELINE_PANEL_HEIGHT_RATE}%`,
   );
+  const onDropFiles = useCallback((files: File[]) => {}, []);
   return (
     <div style={{ width, height, backgroundColor, position: 'relative' }}>
       <Rnd
@@ -49,7 +50,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         enableResizing={{ right: true }}
         disableDragging={true}
       >
-        <LibraryPanel height="100%" width="100%" />
+        <LibraryPanel />
       </Rnd>
       <div
         style={{

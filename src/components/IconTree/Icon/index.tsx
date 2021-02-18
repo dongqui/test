@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import React, { ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
+import { rem } from 'utils';
 import { useOutsideClick } from '../../../hooks/common/useOutsideClick';
 import { useShortcut } from '../../../hooks/common/useShortcut';
 import { ModelIcon } from '../../Icons';
@@ -7,8 +8,8 @@ import { onChangeFileNameTypes } from '../IconView';
 import * as S from './IconStyles';
 
 export interface IconProps {
-  width?: string;
-  height?: string;
+  width?: number;
+  height?: number;
   fileName?: string;
   isClicked?: boolean;
   onClick?: ((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void) | undefined | any;
@@ -19,8 +20,8 @@ export interface IconProps {
 }
 
 const IconComponent: React.FC<IconProps> = ({
-  width = '100%',
-  height = '8rem',
+  width = rem(48),
+  height = rem(68),
   fileName = 'Model',
   isClicked = false,
   onClick = () => {},
@@ -76,7 +77,7 @@ const IconComponent: React.FC<IconProps> = ({
     >
       {_.isEqual(mode, 'icon') ? (
         <S.TopWrapper>
-          <ModelIcon size={40} style={{ position: 'absolute', left: '42%', top: '37.5%' }} />
+          <ModelIcon style={{ position: 'absolute', left: 18, top: 18 }} />
         </S.TopWrapper>
       ) : (
         <S.FolderIcon></S.FolderIcon>

@@ -2,6 +2,7 @@ import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
 import { Icon as IconComponent, IconProps } from '../../components/IconTree/Icon';
+import { rem } from 'utils';
 
 export default {
   title: 'Component API/Component/IconTree/Icon',
@@ -24,7 +25,13 @@ const Template: Story<IconProps> = (args) => (
 );
 
 export const Default = Template.bind({});
+export const Folder = Template.bind({});
 Default.args = {
-  width: '8%',
-  height: '8rem',
+  width: rem(48),
+  height: rem(68),
+};
+Folder.args = {
+  width: rem(48),
+  height: rem(68),
+  mode: 'folder',
 };
