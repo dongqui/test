@@ -31,21 +31,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
   const onDropFiles = useCallback((files: File[]) => {}, []);
   return (
     <div style={{ width, height, backgroundColor, position: 'relative' }}>
-      <Rnd
-        style={{
-          border: '1px solid white',
-          zIndex: 200,
-        }}
-        default={{
-          x: 0,
-          y: 0,
-          width: window.innerWidth * LIBRARYPANEL_INFO.widthRate,
-          height: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
-        }}
-        disableDragging
-      >
-        <LibraryPanel />
-      </Rnd>
+      <LibraryPanel />
       <Rnd
         style={{
           border: '1px solid white',
@@ -69,7 +55,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
           width="100%"
         />
       </Rnd>
-      <Rnd
+      {/* <Rnd
         style={{
           border: '1px solid white',
           zIndex: 200,
@@ -80,7 +66,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
           width: window.innerWidth * LIBRARYPANEL_INFO.widthRate,
           height: innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
         }}
-      ></Rnd>
+      ></Rnd> */}
       <Rnd
         style={{
           position: 'absolute',

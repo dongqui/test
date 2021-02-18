@@ -5,7 +5,6 @@ import { Rnd } from 'react-rnd';
 import { INITIAL_MAIN_DATA } from 'utils';
 import { useContextmenu } from '../../../hooks/common/useContextmenu';
 import { CONTEXTMENU_INFO } from '../../../lib/store';
-import { Contextmenu } from '../../Contextmenu';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
@@ -40,6 +39,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   setData = () => {},
   onClickContextMenu = () => {},
 }) => {
+  const [isDraggingItemKeys, setIsDraggingItemKeys] = useState<string[]>([]);
   const [selectedItemKeys, setSelectedItemKeys] = useState<string[]>([]);
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
   const filteredData: mainDataTypes[] = useMemo(() => {
@@ -82,6 +82,18 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     [onClickContextMenu, selectedItemKeys],
   );
   useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
+  const onDragStart = useCallback(
+    ({ key }) => {
+      setIsDraggingItemKeys(_.concat(isDraggingItemKeys, key));
+    },
+    [isDraggingItemKeys],
+  );
+  const onDragStop = useCallback(
+    ({ key }) => {
+      setIsDraggingItemKeys(_.pull(isDraggingItemKeys, key));
+    },
+    [isDraggingItemKeys],
+  );
   return (
     <S.IconViewWrapper
       ref={iconViewWrapperRef}
@@ -90,7 +102,11 @@ const IconViewComponent: React.FC<IconViewProps> = ({
       backgroundColor={backgroundColor}
     >
       {_.map(filteredData, (item, index) => (
-        <Rnd key={index}>
+        <Rnd
+          key={index}
+          onDragStart={() => onDragStart({ key: item.key })}
+          onDragStop={() => onDragStop({ key: item.key })}
+        >
           <S.IconWrapper
             index={index}
             onDoubleClick={() =>
@@ -109,6 +125,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
                   setSelectedItemKeys(_.concat(selectedItemKeys, item.key));
                 }
               }}
+              isDragging={_.includes(isDraggingItemKeys, item.key)}
             />
           </S.IconWrapper>
         </Rnd>

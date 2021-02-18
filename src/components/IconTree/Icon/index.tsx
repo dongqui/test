@@ -17,6 +17,7 @@ export interface IconProps {
   onChangeFileName?: onChangeFileNameTypes;
   mode?: 'icon' | 'folder';
   iconKey: string;
+  isDragging?: boolean;
 }
 
 const IconComponent: React.FC<IconProps> = ({
@@ -29,6 +30,7 @@ const IconComponent: React.FC<IconProps> = ({
   onChangeFileName = () => {},
   mode = 'icon',
   iconKey,
+  isDragging = false,
 }) => {
   const [currentIsClicked, setCurrentIsClicked] = useState(isClicked);
   const filteredFileName = useMemo(() => {
@@ -74,6 +76,7 @@ const IconComponent: React.FC<IconProps> = ({
         onClick();
       }}
       isClicked={currentIsClicked}
+      opacity={isDragging ? 0.5 : 1}
     >
       {_.isEqual(mode, 'icon') ? (
         <S.TopWrapper>
