@@ -18,9 +18,10 @@ const IconPageComponent: React.FC<IconPageProps> = ({
   height = rem(48),
   backgroundColor = 'black',
   data = [
-    { key: 'root', name: 'root' },
-    { key: '0', name: 'folder1' },
-    { key: '1', name: 'folder2' },
+    { key: 'root', name: 'root222' },
+    { key: '0', name: 'folder1222' },
+    { key: '1', name: 'folder2222' },
+    { key: '3', name: 'folder2222' },
   ],
   onClickPage = () => {},
 }) => {
