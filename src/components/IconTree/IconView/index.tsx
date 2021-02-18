@@ -5,7 +5,6 @@ import { Rnd } from 'react-rnd';
 import { INITIAL_MAIN_DATA } from 'utils';
 import { useContextmenu } from '../../../hooks/common/useContextmenu';
 import { CONTEXTMENU_INFO } from '../../../lib/store';
-import { Contextmenu } from '../../Contextmenu';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
@@ -25,6 +24,7 @@ export interface IconViewProps {
     key: string;
     selectedItemKeys: string[];
   }) => void;
+  onDoubleClickFile?: ({ key }: { key: string }) => void;
 }
 export interface onChangeFileNameTypes {
   ({ key, value }: { key: string; value: string }): void;
@@ -39,19 +39,23 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   data = INITIAL_MAIN_DATA,
   setData = () => {},
   onClickContextMenu = () => {},
+  onDoubleClickFile = () => {},
 }) => {
+  const [isDraggingItemKeys, setIsDraggingItemKeys] = useState<string[]>([]);
   const [selectedItemKeys, setSelectedItemKeys] = useState<string[]>([]);
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
   const filteredData: mainDataTypes[] = useMemo(() => {
     return _.filter(data, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
   }, [data, pages]);
-  const onDoubleClickIcon = useCallback(
+  const onDoubleClick = useCallback(
     ({ key, isChild, name }: { key: string; isChild: boolean; name: string }) => {
-      if (!isChild) {
+      if (isChild) {
+        onDoubleClickFile({ key });
+      } else {
         setPages(_.concat(pages, { key, name }));
       }
     },
-    [pages, setPages],
+    [onDoubleClickFile, pages, setPages],
   );
   const onChangeFileName: onChangeFileNameTypes = useCallback(
     ({ key, value }) => {
@@ -82,6 +86,15 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     [onClickContextMenu, selectedItemKeys],
   );
   useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
+  const onDragStart = useCallback(
+    ({ key }) => {
+      setIsDraggingItemKeys(_.concat(isDraggingItemKeys, key));
+    },
+    [isDraggingItemKeys],
+  );
+  const onDragStop = useCallback(({ key }) => {
+    setIsDraggingItemKeys([]);
+  }, []);
   return (
     <S.IconViewWrapper
       ref={iconViewWrapperRef}
@@ -90,11 +103,15 @@ const IconViewComponent: React.FC<IconViewProps> = ({
       backgroundColor={backgroundColor}
     >
       {_.map(filteredData, (item, index) => (
-        <Rnd key={index}>
+        <Rnd
+          key={index}
+          onDragStart={() => onDragStart({ key: item.key })}
+          onDragStop={() => onDragStop({ key: item.key })}
+        >
           <S.IconWrapper
             index={index}
             onDoubleClick={() =>
-              onDoubleClickIcon({ key: item.key, isChild: item.isChild, name: item.name })
+              onDoubleClick({ key: item.key, isChild: item.isChild, name: item.name })
             }
           >
             <Icon
@@ -109,6 +126,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
                   setSelectedItemKeys(_.concat(selectedItemKeys, item.key));
                 }
               }}
+              isDragging={_.includes(isDraggingItemKeys, item.key)}
             />
           </S.IconWrapper>
         </Rnd>

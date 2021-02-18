@@ -11,6 +11,10 @@ export const LibraryPanelWrapper = styled.div<LibraryPanelStyleProps>`
   width: ${(props) => props.width}rem;
   height: ${(props) => props.height}rem;
   background-color: ${(props) => props.backgroundColor};
+
+  :focus {
+    outline: none;
+  }
 `;
 export const TitleWrapper = styled.div`
   height: ${rem(48)}rem;

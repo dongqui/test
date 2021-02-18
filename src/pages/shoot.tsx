@@ -46,7 +46,7 @@ const ShootPage = () => {
         </ContextmenuWrapper>
       )}
       {isClient ? (
-        <MainPage width={`${screenSizeInfo.width}px`} height={`${screenSizeInfo.height}px`} />
+        <MainPage width={`${window.innerWidth}px`} height={`${window.innerHeight}px`} />
       ) : (
         <div>로딩중...</div>
       )}

@@ -12,12 +12,14 @@ interface IconStyleProps {
   width?: number;
   height?: number;
   isClicked: boolean;
+  opacity?: number;
 }
 export const IconWrapper = styled.div<IconStyleProps>`
   width: ${(props) => props.width}rem;
   height: ${(props) => props.height}rem;
   border-radius: ${BORDER_RADIUS}rem;
   cursor: pointer;
+  opacity: ${(props) => props.opacity ?? 1};
   /* stylelint-disable */
   ${(props) =>
     props.isClicked &&

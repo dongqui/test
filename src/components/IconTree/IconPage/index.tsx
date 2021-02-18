@@ -5,7 +5,6 @@ import { LIBRARYPANEL_INFO } from 'styles/common';
 import { rem } from 'utils';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import * as S from './IconPageStyles';
-import { MARGIN_TOP } from './IconPageStyles';
 
 export interface IconPageProps {
   width?: number;
@@ -30,7 +29,7 @@ const IconPageComponent: React.FC<IconPageProps> = ({
       <div
         style={{
           marginLeft: `${rem(22)}rem`,
-          marginTop: `${rem(20)}rem`,
+          marginTop: `${rem(15)}rem`,
         }}
       >
         <ArrowBack />

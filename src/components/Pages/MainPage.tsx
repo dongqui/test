@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import _ from 'lodash';
 import {
@@ -28,27 +28,11 @@ const MainPageComponent: React.FC<MainPageProps> = ({
   const [timelinePanelHeight, setTimelinePanelHeight] = useState<number>(
     window.innerHeight * TIMELINEPANEL_INFO.heightRate,
   );
-  const onDropFiles = useCallback((files: File[]) => {}, []);
   return (
     <div style={{ width, height, backgroundColor, position: 'relative' }}>
+      <LibraryPanel />
       <Rnd
         style={{
-          border: '1px solid white',
-          zIndex: 200,
-        }}
-        default={{
-          x: 0,
-          y: 0,
-          width: window.innerWidth * LIBRARYPANEL_INFO.widthRate,
-          height: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
-        }}
-        disableDragging
-      >
-        <LibraryPanel />
-      </Rnd>
-      <Rnd
-        style={{
-          border: '1px solid white',
           zIndex: 200,
         }}
         default={{
@@ -62,25 +46,13 @@ const MainPageComponent: React.FC<MainPageProps> = ({
       >
         <RenderingController
           animationIndex={1}
-          fileUrl={_.find(mainData, ['isSelected', true])?.url ?? DEFAULT_MODEL_URL}
+          fileUrl={_.find(mainData, ['isSelected', true])?.url}
           height={`${window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate)}px`}
           id="container"
           motionData={[]}
           width="100%"
         />
       </Rnd>
-      <Rnd
-        style={{
-          border: '1px solid white',
-          zIndex: 200,
-        }}
-        default={{
-          x: window.innerWidth - (1 - LIBRARYPANEL_INFO.widthRate),
-          y: 0,
-          width: window.innerWidth * LIBRARYPANEL_INFO.widthRate,
-          height: innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
-        }}
-      ></Rnd>
       <Rnd
         style={{
           position: 'absolute',
