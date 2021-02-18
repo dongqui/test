@@ -5,7 +5,6 @@ import { LIBRARYPANEL_INFO } from 'styles/common';
 import { rem } from 'utils';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import * as S from './IconPageStyles';
-import { MARGIN_TOP } from './IconPageStyles';
 
 export interface IconPageProps {
   width?: number;
