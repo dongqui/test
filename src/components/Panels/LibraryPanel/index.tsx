@@ -68,16 +68,6 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
     },
     [mainData],
   );
-  const onClickContextMenu = useCallback(
-    ({ key, selectedItemKeys }) => {
-      const newMainData = _.map(mainData, (item) => ({
-        ...item,
-        isSelected: _.includes(selectedItemKeys, item.key),
-      }));
-      MAIN_DATA(newMainData);
-    },
-    [mainData],
-  );
   const onDoubleClickFile = useCallback(
     ({ key }) => {
       const newMainData = _.map(mainData, (item) => ({
@@ -107,12 +97,9 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
         pages={pages}
         setPages={setPages}
         data={mainData}
-        setData={setData}
-        onClickContextMenu={onClickContextMenu}
         onDoubleClickFile={onDoubleClickFile}
       />
     </S.LibraryPanelWrapper>
   );
 };
-
 export const LibraryPanel = React.memo(LibraryPanelComponent);
