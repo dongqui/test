@@ -1,22 +1,25 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { FaFolder } from 'react-icons/fa';
+import { rem } from 'utils';
 import { PRIMARY_BLUE } from '../../../styles/common';
 
-const TOP_HEIGHT_RATE = 60;
+const TOP_HEIGHT = rem(48);
 const TOP_BACKGROUND_COLOR = 'rgba(36, 36, 36, 1)';
-const FONT_SIZE = 0.8;
+const FONT_SIZE = rem(12);
 const BORDER_RADIUS = 0.375;
 interface IconStyleProps {
-  width?: string;
-  height?: string;
+  width?: number;
+  height?: number;
   isClicked: boolean;
+  opacity?: number;
 }
 export const IconWrapper = styled.div<IconStyleProps>`
-  width: ${(props) => props.width};
-  height: ${(props) => props.height};
+  width: ${(props) => props.width}rem;
+  height: ${(props) => props.height}rem;
   border-radius: ${BORDER_RADIUS}rem;
   cursor: pointer;
+  opacity: ${(props) => props.opacity ?? 1};
   /* stylelint-disable */
   ${(props) =>
     props.isClicked &&
@@ -29,14 +32,14 @@ export const IconWrapper = styled.div<IconStyleProps>`
 `;
 export const TopWrapper = styled.div`
   width: 100%;
-  height: ${TOP_HEIGHT_RATE}%;
+  height: ${TOP_HEIGHT}rem;
   background-color: ${TOP_BACKGROUND_COLOR};
   border-radius: ${BORDER_RADIUS}rem;
   position: relative;
 `;
 export const BottomWrapper = styled.div`
   width: 100%;
-  height: ${100 - TOP_HEIGHT_RATE}%;
+  height: ${rem(20)}rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -56,7 +59,7 @@ export const BottomInput = styled.input`
   }
 `;
 export const FolderIcon = styled(FaFolder)`
-  width: 100%;
-  height: ${TOP_HEIGHT_RATE}%;
+  width: ${TOP_HEIGHT}rem;
+  height: ${TOP_HEIGHT}rem;
   color: ${TOP_BACKGROUND_COLOR};
 `;

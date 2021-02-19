@@ -2,6 +2,7 @@ import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
 import { InputLP, InputLPProps } from '../../components/Input/InputLP';
+import { rem } from 'utils';
 
 export default {
   title: 'Component API/Component/Input/InputLP',
@@ -13,8 +14,8 @@ const Template: Story<InputLPProps> = (args) => <InputLP {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
-  width: '20rem',
-  height: '4rem',
+  width: rem(206),
+  height: rem(32),
 };
 Default.parameters = {
   docs: {

@@ -7,6 +7,7 @@ import { FORMAT_TYPES } from '../../../interfaces';
 import { CONFIG_INFOS } from './const';
 import { motionDataTypes } from '../../../interfaces/RP';
 import { useTensorflowMotion } from '../../../hooks/RP/useTensorflowMotion';
+import { DEFAULT_MODEL_URL } from 'utils';
 
 export interface RenderingControllerProps {
   width: string;
@@ -22,7 +23,7 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   width,
   height,
   id = 'container',
-  fileUrl = 'https://assets.babylonjs.com/meshes/HVGirl.glb',
+  fileUrl = DEFAULT_MODEL_URL,
   isPlay = false,
   animationIndex = 1,
   motionData = [],

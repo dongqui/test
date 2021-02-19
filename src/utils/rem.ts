@@ -1,3 +1,3 @@
 export const rem = (value: number) => {
-  return value * 0.065 + `rem`;
+  return value * 0.065;
 };

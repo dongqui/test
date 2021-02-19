@@ -1,19 +1,21 @@
+import { ArrowBack, ArrowForward } from 'components/Icons';
 import _ from 'lodash';
 import React from 'react';
+import { LIBRARYPANEL_INFO } from 'styles/common';
+import { rem } from 'utils';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import * as S from './IconPageStyles';
-import { MARGIN_TOP } from './IconPageStyles';
 
 export interface IconPageProps {
-  width: string;
-  height: string;
+  width?: number;
+  height?: number;
   backgroundColor?: string;
   data?: PagesTypes[];
   onClickPage?: ({ key }: { key: string }) => void;
 }
 const IconPageComponent: React.FC<IconPageProps> = ({
-  width,
-  height,
+  width = LIBRARYPANEL_INFO.widthRem,
+  height = rem(48),
   backgroundColor = 'black',
   data = [
     { key: 'root', name: 'root' },
@@ -24,6 +26,14 @@ const IconPageComponent: React.FC<IconPageProps> = ({
 }) => {
   return (
     <S.IconPageWrapper width={width} height={height} backgroundColor={backgroundColor}>
+      <div
+        style={{
+          marginLeft: `${rem(22)}rem`,
+          marginTop: `${rem(15)}rem`,
+        }}
+      >
+        <ArrowBack />
+      </div>
       {_.map(data, (item: PagesTypes, index) => (
         <S.PageText key={index} onClick={() => onClickPage({ key: item.key })}>
           {item.name}

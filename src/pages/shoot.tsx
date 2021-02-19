@@ -21,7 +21,7 @@ const ContextmenuWrapper = styled.div<ContextmenuProps>`
 const ShootPage = () => {
   const screenSizeInfo = useReactiveVar(SCREEN_SIZE);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
-  const contextmenuRef: any = useRef(null);
+  const contextmenuRef = useRef<HTMLDivElement | any>(null);
   useOutsideClick({
     ref: contextmenuRef,
     event: () => {
@@ -41,15 +41,12 @@ const ShootPage = () => {
             height="3rem"
             backgroundColor={GRAY200}
             data={contextmenuInfo.data}
+            onClick={contextmenuInfo.onClick}
           />
         </ContextmenuWrapper>
       )}
       {isClient ? (
-        <MainPage
-          width={`${screenSizeInfo.width}px`}
-          height={`${screenSizeInfo.height}px`}
-          screenSizeInfo={screenSizeInfo}
-        />
+        <MainPage width={`${window.innerWidth}px`} height={`${window.innerHeight}px`} />
       ) : (
         <div>로딩중...</div>
       )}

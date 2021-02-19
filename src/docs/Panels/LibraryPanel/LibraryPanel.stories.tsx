@@ -6,6 +6,8 @@ import {
   LibraryPanel as LibraryPanelComponent,
   LibraryPanelProps,
 } from '../../../components/Panels/LibraryPanel';
+import { rem } from 'utils';
+import { LIBRARYPANEL_INFO } from 'styles/common';
 
 export default {
   title: 'Panels/LibraryPanel',
@@ -18,6 +20,6 @@ const Template: Story<LibraryPanelProps> = (args) => <LibraryPanelComponent {...
 
 export const Default = Template.bind({});
 Default.args = {
-  width: '30%',
-  height: '50rem',
+  width: LIBRARYPANEL_INFO.widthRem,
+  height: LIBRARYPANEL_INFO.heightRem,
 };
