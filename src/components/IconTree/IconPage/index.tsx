@@ -1,6 +1,8 @@
+import { useReactiveVar } from '@apollo/client';
 import { ArrowBack, ArrowForward } from 'components/Icons';
+import { PAGES } from 'lib/store';
 import _ from 'lodash';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { LIBRARYPANEL_INFO } from 'styles/common';
 import { rem } from 'utils';
 import { PagesTypes } from '../../Panels/LibraryPanel';
@@ -10,34 +12,25 @@ export interface IconPageProps {
   width?: number;
   height?: number;
   backgroundColor?: string;
-  data?: PagesTypes[];
-  onClickPage?: ({ key }: { key: string }) => void;
 }
 const IconPageComponent: React.FC<IconPageProps> = ({
   width = LIBRARYPANEL_INFO.widthRem,
   height = rem(48),
   backgroundColor = 'black',
-  data = [
-    { key: 'root', name: 'root' },
-    { key: '0', name: 'folder1' },
-    { key: '1', name: 'folder2' },
-  ],
-  onClickPage = () => {},
 }) => {
+  const pages = useReactiveVar(PAGES);
+  const onClick = useCallback(() => {
+    if (_.gt(_.size(pages), 1)) {
+      PAGES(_.filter(pages, (o) => !_.isEqual(o.key, _.last(pages)?.key)));
+    }
+  }, [pages]);
   return (
     <S.IconPageWrapper width={width} height={height} backgroundColor={backgroundColor}>
-      <div
-        style={{
-          marginLeft: `${rem(22)}rem`,
-          marginTop: `${rem(15)}rem`,
-        }}
-      >
+      <S.ArrowBoackWrapper onClick={onClick}>
         <ArrowBack />
-      </div>
-      {_.map(data, (item: PagesTypes, index) => (
-        <S.PageText key={index} onClick={() => onClickPage({ key: item.key })}>
-          {item.name}
-        </S.PageText>
+      </S.ArrowBoackWrapper>
+      {_.map(pages, (item: PagesTypes, index) => (
+        <S.PageText key={index}>{item.name}</S.PageText>
       ))}
     </S.IconPageWrapper>
   );

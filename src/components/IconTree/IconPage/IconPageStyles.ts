@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { style } from 'd3';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 import { rem } from 'utils';
 import { GRAY500 } from '../../../styles/common';
@@ -28,6 +29,11 @@ export const PageText = styled.span`
   font-weight: bold;
   margin-left: ${MARGIN_LEFT}rem;
   font-size: ${rem(12)};
+  cursor: pointer;
+`;
+export const ArrowBoackWrapper = styled.div`
+  margin-left: ${rem(22)}rem;
+  margin-top: ${rem(15)}rem;
   cursor: pointer;
 `;
 export const ArrowBack = styled(IoIosArrowBack)`

@@ -1,7 +1,7 @@
 import { useReactiveVar } from '@apollo/client';
 import { useContextmenu } from 'hooks/common/useContextmenu';
 import { useShortcut } from 'hooks/common/useShortcut';
-import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
+import { CONTEXTMENU_INFO, MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { rem } from 'utils';
@@ -27,31 +27,53 @@ const IconComponent: React.FC<IconProps> = ({
   isDragging = false,
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
+  const pages = useReactiveVar(PAGES);
+  const isClicked =
+    useMemo(() => _.find(mainData, ['key', iconKey])?.isSelected, [iconKey, mainData]) ?? false;
   const isModifying = useMemo(() => _.find(mainData, ['key', iconKey])?.isModifying, [
     iconKey,
     mainData,
   ]);
-  const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
-  const [isClicked, setIsClicked] = useState(false);
   const fileName =
-    useMemo(() => _.find(mainData, ['key', iconKey])?.name, [iconKey, mainData]) ?? '';
-  const [value, setValue] = useState(fileName);
+    useMemo(() => _.find(mainData, ['key', iconKey])?.name, [iconKey, mainData]) ?? 'Model';
   const filteredFileName = useMemo(() => {
-    return _.gt(_.size(value), maxFileNameLength)
-      ? `${value.substring(0, maxFileNameLength)}...`
-      : value;
-  }, [value, maxFileNameLength]);
+    return _.gt(_.size(fileName), maxFileNameLength)
+      ? `${fileName.substring(0, maxFileNameLength)}...`
+      : fileName;
+  }, [fileName, maxFileNameLength]);
   const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
-  const onChangeInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-  }, []);
-  const onDoubleClick = useCallback(() => {
+  const onChangeInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      MAIN_DATA(
+        _.map(mainData, (item) => ({
+          ...item,
+          name: _.isEqual(item.key, iconKey) ? e.target.value : item.name,
+        })),
+      );
+    },
+    [iconKey, mainData],
+  );
+  const onClick = useCallback(() => {
     MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: _.isEqual(item.key, iconKey) })));
   }, [iconKey, mainData]);
+  const onDoubleClick = useCallback(() => {
+    if (_.find(mainData, ['key', iconKey])?.isChild) {
+      MAIN_DATA(
+        _.map(mainData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, iconKey) })),
+      );
+    } else {
+      PAGES(
+        _.concat(pages, {
+          key: iconKey,
+          name: _.find(mainData, ['key', iconKey])?.name ?? 'Folder',
+        }),
+      );
+    }
+  }, [iconKey, mainData, pages]);
   useOutsideClick({
     ref: iconRef,
     event: () => {
-      setIsClicked(false);
+      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: false })));
     },
   });
   useShortcut({
@@ -63,53 +85,18 @@ const IconComponent: React.FC<IconProps> = ({
             _.map(mainData, (item) => ({
               ...item,
               isModifying: false,
-              name: _.isEqual(item.key, iconKey) ? value : item.name,
             })),
           );
         },
       },
     ],
   });
-  const onContextMenu = useCallback(
-    ({ top, left }: { top: number; left: number }) => {
-      CONTEXTMENU_INFO({
-        isShow: true,
-        top,
-        left,
-        data: [
-          { key: '0', name: 'Copy' },
-          { key: '1', name: 'Paste' },
-          { key: '2', name: 'Visualization' },
-          { key: '3', name: 'Edit name' },
-        ],
-        onClick: ({ key }) => {
-          CONTEXTMENU_INFO({ ...contextmenuInfo, isShow: false });
-          switch (key) {
-            case '2':
-              MAIN_DATA(
-                _.map(mainData, (item) => ({ ...item, isSelected: _.isEqual(item.key, iconKey) })),
-              );
-              break;
-            case '3':
-              MAIN_DATA(
-                _.map(mainData, (item) => ({ ...item, isModifying: _.isEqual(item.key, iconKey) })),
-              );
-              break;
-            default:
-              break;
-          }
-        },
-      });
-    },
-    [contextmenuInfo, iconKey, mainData],
-  );
-  useContextmenu({ targetRef: iconRef, event: onContextMenu });
   return (
     <S.IconWrapper
       ref={iconRef}
       width={width}
       height={height}
-      onClick={() => setIsClicked(true)}
+      onClick={onClick}
       isClicked={isClicked}
       opacity={isDragging ? 0.5 : 1}
       onDoubleClick={onDoubleClick}
@@ -123,7 +110,7 @@ const IconComponent: React.FC<IconProps> = ({
       )}
       {isModifying ? (
         <S.BottomInput
-          value={value}
+          value={fileName}
           autoFocus
           onFocus={(e) => e.target.select()}
           onChange={onChangeInput}

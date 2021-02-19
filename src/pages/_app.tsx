@@ -7,7 +7,6 @@ import { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { cache, useApollo } from '../lib/apolloClient';
 import { isClient } from '../utils';
-import { SCREEN_SIZE } from '../lib/store';
 import '../styles/core.scss';
 
 const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
@@ -23,9 +22,6 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
       cache,
       storage: new LocalStorageWrapper(window.localStorage),
     });
-    if (isClient) {
-      SCREEN_SIZE({ width: window.innerWidth, height: window.innerHeight });
-    }
   };
   useEffect(() => {
     initialAction();

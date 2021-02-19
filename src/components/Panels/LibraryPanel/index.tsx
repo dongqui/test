@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { mainDataTypes } from 'interfaces';
-import { MAIN_DATA } from 'lib/store';
+import { MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -26,21 +26,9 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
   height = LIBRARYPANEL_INFO.heightRem,
   backgroundColor = 'black',
 }) => {
-  const [pages, setPages] = useState<PagesTypes[]>([{ key: 'root', name: 'root' }]);
   const mainData = useReactiveVar(MAIN_DATA);
+  const pages = useReactiveVar(PAGES);
   const [data, setData] = useState<mainDataTypes[]>(mainData);
-  const onClickPage = useCallback(
-    ({ key }: { key: string }) => {
-      const newPages = _.filter(pages, (item, index) =>
-        _.lte(
-          index,
-          _.findIndex(pages, (o) => _.isEqual(o.key, key)),
-        ),
-      );
-      setPages(newPages);
-    },
-    [pages],
-  );
   const onChangeSearchText = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       let newData = _.filter(data, (item) => _.includes(item.name, e.target.value));
@@ -60,13 +48,13 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
           isChild: true,
           name: file.name,
           url: URL.createObjectURL(file),
-          parentKey: 'root',
+          parentKey: _.last(pages)?.key,
         };
         newMainData = _.concat(newMainData, newData);
       });
       MAIN_DATA(newMainData);
     },
-    [mainData],
+    [mainData, pages],
   );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
@@ -80,8 +68,8 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
       <S.SearchWrapper>
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
-      <IconPage data={pages} onClickPage={onClickPage} />
-      <IconView height="100%" width="100%" pages={pages} />
+      <IconPage />
+      <IconView height="100%" width="100%" />
     </S.LibraryPanelWrapper>
   );
 };

@@ -4,7 +4,7 @@ import React, { useCallback, useRef } from 'react';
 import { Contextmenu } from '../components/Contextmenu';
 import { MainPage } from '../components/Pages/MainPage';
 import { useOutsideClick } from '../hooks/common/useOutsideClick';
-import { CONTEXTMENU_INFO, SCREEN_SIZE } from '../lib/store';
+import { CONTEXTMENU_INFO } from '../lib/store';
 import { GRAY200 } from '../styles/common';
 import { isClient } from '../utils';
 
@@ -19,7 +19,6 @@ const ContextmenuWrapper = styled.div<ContextmenuProps>`
   z-index: 1000;
 `;
 const ShootPage = () => {
-  const screenSizeInfo = useReactiveVar(SCREEN_SIZE);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
   const contextmenuRef = useRef<HTMLDivElement | any>(null);
   useOutsideClick({

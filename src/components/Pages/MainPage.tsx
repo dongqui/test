@@ -46,7 +46,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
       >
         <RenderingController
           animationIndex={1}
-          fileUrl={_.find(mainData, ['isSelected', true])?.url}
+          fileUrl={_.find(mainData, ['isVisualized', true])?.url}
           height={`${window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate)}px`}
           id="container"
           motionData={[]}

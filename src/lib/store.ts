@@ -1,10 +1,9 @@
 import { makeVar } from '@apollo/client';
+import { PagesTypes } from 'components/Panels/LibraryPanel';
 import { INITIAL_MAIN_DATA } from 'utils';
 import { contextmenuTypes, mainDataTypes, screenSizeTypes } from '../interfaces';
 import { motionDataTypes } from '../interfaces/RP';
 
-export const SCREEN_SIZE = makeVar<screenSizeTypes>({ width: 0, height: 0 });
-export const IS_LOGIN = makeVar<boolean>(false);
 export const MOTION_DATA = makeVar<motionDataTypes[]>([]);
 export const CONTEXTMENU_INFO = makeVar<contextmenuTypes>({
   isShow: false,
@@ -13,3 +12,4 @@ export const CONTEXTMENU_INFO = makeVar<contextmenuTypes>({
   onClick: () => {},
 });
 export const MAIN_DATA = makeVar<mainDataTypes[]>(INITIAL_MAIN_DATA);
+export const PAGES = makeVar<PagesTypes[]>([{ key: 'root', name: 'root' }]);

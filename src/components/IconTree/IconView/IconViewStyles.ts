@@ -33,4 +33,5 @@ export const IconWrapper = styled.div<IconStyleProps>`
   left: ${(props) => makelocation({ index: props.index }).left}rem;
   width: ${ICON_SIZE}rem;
   height: ${ICON_SIZE}rem;
+  z-index: 100;
 `;

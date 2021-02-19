@@ -15,13 +15,11 @@ export interface RealtimePageProps {
   width: string;
   height: string;
   backgroundColor?: string;
-  screenSizeInfo: screenSizeTypes;
 }
 const RealtimePageComponent: React.FC<RealtimePageProps> = ({
   width,
   height,
   backgroundColor = 'black',
-  screenSizeInfo,
 }) => {
   const motionData = useReactiveVar(MOTION_DATA);
   const changeMotionData = useCallback(() => {

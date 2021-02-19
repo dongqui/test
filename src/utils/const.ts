@@ -9,6 +9,6 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
     isChild: true,
     parentKey: 'root',
     url: DEFAULT_MODEL_URL,
-    isSelected: true,
+    isVisualized: true,
   },
 ];
