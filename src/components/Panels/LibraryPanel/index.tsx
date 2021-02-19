@@ -68,16 +68,6 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
     },
     [mainData],
   );
-  const onDoubleClickFile = useCallback(
-    ({ key }) => {
-      const newMainData = _.map(mainData, (item) => ({
-        ...item,
-        isSelected: _.isEqual(item.key, key),
-      }));
-      MAIN_DATA(newMainData);
-    },
-    [mainData],
-  );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
     <S.LibraryPanelWrapper
@@ -91,14 +81,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
       <IconPage data={pages} onClickPage={onClickPage} />
-      <IconView
-        height="100%"
-        width="100%"
-        pages={pages}
-        setPages={setPages}
-        data={mainData}
-        onDoubleClickFile={onDoubleClickFile}
-      />
+      <IconView height="100%" width="100%" pages={pages} />
     </S.LibraryPanelWrapper>
   );
 };

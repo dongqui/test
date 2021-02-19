@@ -44,6 +44,7 @@ export interface mainDataTypes {
   isExpanded?: boolean;
   url?: string;
   isSelected?: boolean;
+  isModifying?: boolean;
 }
 export interface mainDataTypes {
   key: string;
