@@ -2,6 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import { dummyData } from 'utils/dummyData';
+import classNames from 'classnames/bind';
+// import styles from './index.module.scss';
+import './curve.scss';
+
+// const cx = classNames.bind(styles);
+
 interface Data {
   d: string;
   v: number;
@@ -28,12 +34,24 @@ const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
 
     if (currentRef) {
       const currentRefWidth = currentRef.offsetWidth;
+      const currentRefHeight = currentRef.offsetHeight;
 
       const documentElement = d3
         .select(currentRef)
         .call((g) => g.select('svg').remove())
         .append('svg')
-        .attr('viewBox', `0,0,${currentRefWidth},${height}`);
+        .attr('viewBox', `0, 0, ${currentRefWidth}, ${height}`);
+      // .attr('clip-path', 'url(#area)');
+
+      documentElement
+        .append('defs')
+        .append('clipPath')
+        .attr('id', 'area')
+        .append('svg:rect')
+        .attr('x', margin.left)
+        .attr('y', 0)
+        .attr('width', currentRefWidth)
+        .attr('height', currentRefHeight);
 
       const parseDate: any = d3.timeParse('%Y-%m-%d');
 
@@ -52,7 +70,8 @@ const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
       const x = d3
         .scaleUtc()
         .domain(xDomain)
-        .range([margin.left, currentRefWidth - margin.right]);
+        // .range([margin.left, currentRefWidth - margin.right]);
+        .range([margin.left, currentRefWidth]);
 
       const yMax = d3.max(newData, (d) => d.v) as number;
 
@@ -60,15 +79,35 @@ const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
         .scaleLinear()
         .domain([0, yMax])
         .nice()
+        // .range([height - margin.bottom, margin.top]);
         .range([height - margin.bottom, margin.top]);
 
       const xAxis = (g: any) =>
-        g.attr('transform', `translate(0,${height - margin.bottom})`).call(
-          d3
-            .axisBottom(x)
-            .ticks(currentRefWidth / 80)
-            .tickSizeOuter(0),
-        );
+        g
+          .attr('transform', `translate(0, ${height - margin.bottom})`)
+          .call(
+            d3
+              .axisBottom(x)
+              .ticks(currentRefWidth / 80)
+              .tickSizeOuter(0),
+          )
+          .attr('class', 'grid')
+          // .attr('transform', `translate(0, ${height - margin.bottom})`)
+          .call(createGridLineX());
+
+      const createGridLineX = () => {
+        return d3
+          .axisBottom(x)
+          .ticks(currentRefWidth / 80)
+          .tickSize(-height);
+      };
+
+      const createGridLineY = () => {
+        return d3
+          .axisLeft(y)
+          .ticks(currentRefHeight / 80)
+          .tickSize(-width);
+      };
 
       if (zoomTransform) {
         const newXScale = zoomTransform.rescaleX(x);
@@ -78,7 +117,11 @@ const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
       documentElement.append<SVGGElement>('g').call(xAxis);
 
       const yAxis = (g: any) =>
-        g.attr('transform', `translate(${margin.left},0)`).call(d3.axisLeft(y));
+        g
+          .attr('transform', `translate(${margin.left}, 0)`)
+          .call(d3.axisLeft(y))
+          .attr('class', 'grid')
+          .call(createGridLineY());
 
       documentElement
         .append<SVGGElement>('g')
@@ -93,7 +136,8 @@ const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
         .attr('stroke-width', 1.5)
         .attr('stroke-linejoin', 'round')
         .attr('stroke-linecap', 'round')
-        .attr('d', (newData) => d3Type(newData));
+        .attr('d', (newData) => d3Type(newData))
+        .attr('clip-path', 'url(#area)');
 
       const zoomBehavior: any = d3
         .zoom()
@@ -110,7 +154,7 @@ const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
     }
   }, [zoomTransform, data, height, width]);
 
-  return <div ref={divRef} style={{ width, height }} />;
+  return <div className="curve" ref={divRef} style={{ width, height }} />;
 };
 
 export const TimelinePanel = TimelinePanelComponent;
