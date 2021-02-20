@@ -5,7 +5,7 @@ import { mainDataTypes } from 'interfaces';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Rnd } from 'react-rnd';
-import { CONTEXTMENU_INFO, MAIN_DATA, PAGES } from '../../../lib/store';
+import { CONTEXTMENU_INFO, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/store';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
@@ -26,12 +26,26 @@ const IconViewComponent: React.FC<IconViewProps> = ({
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
+  const searchWord = useReactiveVar(SEARCH_WORD);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
   const [isDraggingItemKeys, setIsDraggingItemKeys] = useState<string[]>([]);
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
   const filteredData: mainDataTypes[] = useMemo(() => {
-    return _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
-  }, [mainData, pages]);
+    let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
+    if (!_.isEmpty(searchWord)) {
+      result = _.filter(mainData, (o) => _.includes(o.name, searchWord));
+    }
+    return result;
+  }, [mainData, pages, searchWord]);
+  const onClick = useCallback(
+    (e) => {
+      const icons = document.getElementsByClassName('icon');
+      if (!_.some(icons, (icon) => icon.contains(e?.target as any))) {
+        MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: false })));
+      }
+    },
+    [mainData],
+  );
   const onDragStart = useCallback(
     ({ key }) => {
       setIsDraggingItemKeys(_.concat(isDraggingItemKeys, key));
@@ -42,19 +56,24 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     setIsDraggingItemKeys([]);
   }, []);
   const onContextMenu = useCallback(
-    ({ top, left }: { top: number; left: number }) => {
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      const icons = document.getElementsByClassName('icon');
+      const data = _.some(icons, (icon) => icon.contains(e?.target as any))
+        ? [
+            { key: '1', name: 'Copy' },
+            { key: '2', name: 'Delete' },
+            { key: '4', name: 'Visualization' },
+            { key: '5', name: 'Edit name' },
+          ]
+        : [
+            { key: '0', name: 'New Group' },
+            { key: '3', name: 'Paste' },
+          ];
       CONTEXTMENU_INFO({
         isShow: true,
         top,
         left,
-        data: [
-          { key: '0', name: 'New Group' },
-          { key: '1', name: 'Copy' },
-          { key: '2', name: 'Delete' },
-          { key: '3', name: 'Paste' },
-          { key: '4', name: 'Visualization' },
-          { key: '5', name: 'Edit name' },
-        ],
+        data,
         onClick: ({ key }) => {
           CONTEXTMENU_INFO({ ...contextmenuInfo, isShow: false });
           switch (key) {
@@ -69,8 +88,25 @@ const IconViewComponent: React.FC<IconViewProps> = ({
                 }),
               );
               break;
+            case '1':
+              MAIN_DATA(
+                _.map(mainData, (item) => ({ ...item, isCopied: item.isSelected ? true : false })),
+              );
+              break;
             case '2':
               MAIN_DATA(_.filter(mainData, (item) => !item.isSelected));
+              break;
+            case '3':
+              if (_.some(mainData, ['isCopied', true])) {
+                MAIN_DATA(
+                  _.concat(mainData, {
+                    key: uuidv4(),
+                    isChild: true,
+                    name: `${_.find(mainData, ['isCopied', true])?.name} (2)`,
+                    parentKey: _.last(pages)?.key,
+                  }),
+                );
+              }
               break;
             case '4':
               MAIN_DATA(
@@ -103,6 +139,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
       width={width}
       height={height}
       backgroundColor={backgroundColor}
+      onClick={onClick}
     >
       {_.map(filteredData, (item, index) => (
         <Rnd
@@ -110,7 +147,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
           onDragStart={() => onDragStart({ key: item.key })}
           onDragStop={() => onDragStop({ key: item.key })}
         >
-          <S.IconWrapper index={index}>
+          <S.IconWrapper className="icon" index={index}>
             <Icon
               iconKey={item.key}
               mode={item.isChild ? 'icon' : 'folder'}

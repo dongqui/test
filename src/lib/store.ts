@@ -13,3 +13,4 @@ export const CONTEXTMENU_INFO = makeVar<contextmenuTypes>({
 });
 export const MAIN_DATA = makeVar<mainDataTypes[]>(INITIAL_MAIN_DATA);
 export const PAGES = makeVar<PagesTypes[]>([{ key: 'root', name: 'root' }]);
+export const SEARCH_WORD = makeVar<string>('');

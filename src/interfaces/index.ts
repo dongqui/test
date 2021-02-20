@@ -46,12 +46,5 @@ export interface mainDataTypes {
   isSelected?: boolean;
   isVisualized?: boolean;
   isModifying?: boolean;
-}
-export interface mainDataTypes {
-  key: string;
-  name: string;
-  isChild: boolean;
-  parentKey?: string;
-  isExpanded?: boolean;
-  url?: string;
+  isCopied?: boolean;
 }
