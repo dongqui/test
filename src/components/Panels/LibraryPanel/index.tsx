@@ -1,11 +1,11 @@
 import { useReactiveVar } from '@apollo/client';
+import { useShortcut } from 'hooks/common/useShortcut';
 import { mainDataTypes } from 'interfaces';
-import { MAIN_DATA, PAGES } from 'lib/store';
+import { MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { LIBRARYPANEL_INFO } from 'styles/common';
-import { rem } from 'utils';
 import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
 import { InputLP } from '../../Input/InputLP';
@@ -27,17 +27,9 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
-  const [data, setData] = useState<mainDataTypes[]>(mainData);
-  const onChangeSearchText = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      let newData = _.filter(data, (item) => _.includes(item.name, e.target.value));
-      if (_.isEmpty(e.target.value)) {
-        newData = _.clone(mainData);
-      }
-      setData(newData);
-    },
-    [data, mainData],
-  );
+  const onChangeSearchText = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    SEARCH_WORD(e.target.value);
+  }, []);
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       let newMainData = _.clone(mainData);
