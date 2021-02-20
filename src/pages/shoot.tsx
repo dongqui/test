@@ -1,10 +1,11 @@
 import { useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
+import _ from 'lodash';
 import React, { useCallback, useRef } from 'react';
 import { Contextmenu } from '../components/Contextmenu';
 import { MainPage } from '../components/Pages/MainPage';
 import { useOutsideClick } from '../hooks/common/useOutsideClick';
-import { CONTEXTMENU_INFO } from '../lib/store';
+import { CONTEXTMENU_INFO, MAIN_DATA } from '../lib/store';
 import { GRAY200 } from '../styles/common';
 import { isClient } from '../utils';
 
@@ -20,6 +21,7 @@ const ContextmenuWrapper = styled.div<ContextmenuProps>`
 `;
 const ShootPage = () => {
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
+  const mainData = useReactiveVar(MAIN_DATA);
   const contextmenuRef = useRef<HTMLDivElement | any>(null);
   useOutsideClick({
     ref: contextmenuRef,

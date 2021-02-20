@@ -70,27 +70,27 @@ const IconComponent: React.FC<IconProps> = ({
       );
     }
   }, [iconKey, mainData, pages]);
-  useOutsideClick({
-    ref: iconRef,
-    event: () => {
-      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: false })));
+  const onKeyPress = useCallback(
+    (e) => {
+      if (_.isEqual(e.key, 'Enter')) {
+        MAIN_DATA(
+          _.map(mainData, (item) => ({
+            ...item,
+            isModifying: false,
+          })),
+        );
+      }
     },
-  });
-  useShortcut({
-    data: [
-      {
-        key: 'Enter',
-        event: () => {
-          MAIN_DATA(
-            _.map(mainData, (item) => ({
-              ...item,
-              isModifying: false,
-            })),
-          );
-        },
-      },
-    ],
-  });
+    [mainData],
+  );
+  const onBlur = useCallback(() => {
+    MAIN_DATA(
+      _.map(mainData, (item) => ({
+        ...item,
+        isModifying: _.isEqual(item.key, iconKey) ? false : item.isModifying,
+      })),
+    );
+  }, [iconKey, mainData]);
   return (
     <S.IconWrapper
       ref={iconRef}
@@ -114,7 +114,8 @@ const IconComponent: React.FC<IconProps> = ({
           autoFocus
           onFocus={(e) => e.target.select()}
           onChange={onChangeInput}
-          onKeyPress={(e) => {}}
+          onKeyPress={onKeyPress}
+          onBlur={onBlur}
         ></S.BottomInput>
       ) : (
         <S.BottomWrapper>{filteredFileName}</S.BottomWrapper>
