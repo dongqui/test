@@ -12,6 +12,7 @@ import { RenderingController } from 'components/Panels/RenderingPanel/RenderingC
 import { MAIN_DATA } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { DEFAULT_MODEL_URL } from 'utils';
+import { TimelinePanel } from 'components/Panels/TimelinePanel';
 
 export interface MainPageProps {
   width: string;
@@ -38,9 +39,8 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         default={{
           x: window.innerWidth * LIBRARYPANEL_INFO.widthRate,
           y: 0,
-          width:
-            window.innerWidth * (1 - LIBRARYPANEL_INFO.widthRate - LIBRARYPANEL_INFO.widthRate),
-          height: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
+          width: `${(1 - LIBRARYPANEL_INFO.widthRate - LIBRARYPANEL_INFO.widthRate) * 100}%`,
+          height: `${(1 - TIMELINEPANEL_INFO.heightRate) * 100}%`,
         }}
         disableDragging
       >
@@ -68,12 +68,12 @@ const MainPageComponent: React.FC<MainPageProps> = ({
           x: 0,
           y: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
         }}
-        onResize={(e, direction, ref, delta, position) => {
-          setTimelinePanelHeight(window.innerHeight - ref.offsetHeight / window.innerHeight);
-        }}
+        onResize={(e, direction, ref, delta, position) => {}}
         enableResizing={{ top: true }}
         disableDragging={true}
-      ></Rnd>
+      >
+        {/* <TimelinePanel width={window.innerWidth} height={window.innerHeight} /> */}
+      </Rnd>
     </div>
   );
 };
