@@ -4,9 +4,7 @@ import { useContextmenu } from 'hooks/common/useContextmenu';
 import { mainDataTypes } from 'interfaces';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Rnd } from 'react-rnd';
 import { CONTEXTMENU_INFO, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/store';
-import { PagesTypes } from '../../Panels/LibraryPanel';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
 import { AnyAttrs } from '@tensorflow/tfjs';
@@ -29,7 +27,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   const pages = useReactiveVar(PAGES);
   const searchWord = useReactiveVar(SEARCH_WORD);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
-  const [isDraggingItemKeys, setIsDraggingItemKeys] = useState<string[]>([]);
+  // const [isDraggingItemKeys, setIsDraggingItemKeys] = useState<string[]>([]);
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
   const filteredData: mainDataTypes[] = useMemo(() => {
     let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
@@ -49,25 +47,28 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   );
   const onDragStart = useCallback(
     ({ key }) => {
-      setIsDraggingItemKeys(_.concat(isDraggingItemKeys, key));
+      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isDragging: _.isEqual(item.key, key) })));
     },
-    [isDraggingItemKeys],
+    [mainData],
   );
-  const onDragStop = useCallback((e) => {
-    setIsDraggingItemKeys([]);
-  }, []);
+  const onDragStop = useCallback(
+    (e) => {
+      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isDragging: false })));
+    },
+    [mainData],
+  );
   const onDrop = useCallback(
     ({ key }) => {
-      if (!_.includes(isDraggingItemKeys, key) && !_.find(mainData, ['key', key])?.isChild) {
+      if (!_.find(mainData, ['key', key])?.isChild) {
         MAIN_DATA(
           _.map(mainData, (item) => ({
             ...item,
-            parentKey: _.includes(isDraggingItemKeys, item.key) ? key : item.parentKey,
+            parentKey: item.isDragging ? key : item.parentKey,
           })),
         );
       }
     },
-    [isDraggingItemKeys, mainData],
+    [mainData],
   );
   const onContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
@@ -169,7 +170,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
           <Icon
             iconKey={item.key}
             mode={item.isChild ? 'icon' : 'folder'}
-            isDragging={_.includes(isDraggingItemKeys, item.key)}
+            isDragging={item.isDragging}
           />
         </S.IconWrapper>
       ))}
