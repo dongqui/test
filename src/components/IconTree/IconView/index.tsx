@@ -52,9 +52,26 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     },
     [isDraggingItemKeys],
   );
-  const onDragStop = useCallback(({ key }) => {
-    setIsDraggingItemKeys([]);
-  }, []);
+  const onDragStop = useCallback(
+    (e) => {
+      const icons = document.getElementsByClassName('icon');
+      console.log(_.map(icons, (icon) => icon.id));
+      const targetId = _.find(icons, (icon) => icon.contains(e.target))?.id;
+      if (
+        !_.includes(isDraggingItemKeys, targetId) &&
+        !_.find(mainData, ['key', targetId])?.isChild
+      ) {
+        MAIN_DATA(
+          _.map(mainData, (item) => ({
+            ...item,
+            parentKey: _.includes(isDraggingItemKeys, item.key) ? targetId : item.parentKey,
+          })),
+        );
+      }
+      setIsDraggingItemKeys([]);
+    },
+    [isDraggingItemKeys, mainData],
+  );
   const onContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
       const icons = document.getElementsByClassName('icon');
@@ -142,12 +159,8 @@ const IconViewComponent: React.FC<IconViewProps> = ({
       onClick={onClick}
     >
       {_.map(filteredData, (item, index) => (
-        <Rnd
-          key={index}
-          onDragStart={() => onDragStart({ key: item.key })}
-          onDragStop={() => onDragStop({ key: item.key })}
-        >
-          <S.IconWrapper className="icon" index={index}>
+        <Rnd key={index} onDragStart={() => onDragStart({ key: item.key })} onDragStop={onDragStop}>
+          <S.IconWrapper className="icon" id={item.key} index={index}>
             <Icon
               iconKey={item.key}
               mode={item.isChild ? 'icon' : 'folder'}

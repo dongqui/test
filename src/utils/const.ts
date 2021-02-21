@@ -11,4 +11,12 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
     url: DEFAULT_MODEL_URL,
     isVisualized: true,
   },
+  {
+    key: '1',
+    name: '기본모델1',
+    isChild: true,
+    parentKey: 'root',
+    url: DEFAULT_MODEL_URL,
+    isVisualized: false,
+  },
 ];
