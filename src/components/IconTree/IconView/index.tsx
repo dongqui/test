@@ -9,6 +9,7 @@ import { CONTEXTMENU_INFO, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/st
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
+import { AnyAttrs } from '@tensorflow/tfjs';
 
 export interface IconViewProps {
   width: string;
@@ -52,23 +53,19 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     },
     [isDraggingItemKeys],
   );
-  const onDragStop = useCallback(
-    (e) => {
-      const icons = document.getElementsByClassName('icon');
-      console.log(_.map(icons, (icon) => icon.id));
-      const targetId = _.find(icons, (icon) => icon.contains(e.target))?.id;
-      if (
-        !_.includes(isDraggingItemKeys, targetId) &&
-        !_.find(mainData, ['key', targetId])?.isChild
-      ) {
+  const onDragStop = useCallback((e) => {
+    setIsDraggingItemKeys([]);
+  }, []);
+  const onDrop = useCallback(
+    ({ key }) => {
+      if (!_.includes(isDraggingItemKeys, key) && !_.find(mainData, ['key', key])?.isChild) {
         MAIN_DATA(
           _.map(mainData, (item) => ({
             ...item,
-            parentKey: _.includes(isDraggingItemKeys, item.key) ? targetId : item.parentKey,
+            parentKey: _.includes(isDraggingItemKeys, item.key) ? key : item.parentKey,
           })),
         );
       }
-      setIsDraggingItemKeys([]);
     },
     [isDraggingItemKeys, mainData],
   );
@@ -159,15 +156,22 @@ const IconViewComponent: React.FC<IconViewProps> = ({
       onClick={onClick}
     >
       {_.map(filteredData, (item, index) => (
-        <Rnd key={index} onDragStart={() => onDragStart({ key: item.key })} onDragStop={onDragStop}>
-          <S.IconWrapper className="icon" id={item.key} index={index}>
-            <Icon
-              iconKey={item.key}
-              mode={item.isChild ? 'icon' : 'folder'}
-              isDragging={_.includes(isDraggingItemKeys, item.key)}
-            />
-          </S.IconWrapper>
-        </Rnd>
+        <S.IconWrapper
+          key={index}
+          className="icon"
+          id={item.key}
+          index={index}
+          draggable
+          onDragStart={() => onDragStart({ key: item.key })}
+          onDragEnd={onDragStop}
+          onDrop={() => onDrop({ key: item.key })}
+        >
+          <Icon
+            iconKey={item.key}
+            mode={item.isChild ? 'icon' : 'folder'}
+            isDragging={_.includes(isDraggingItemKeys, item.key)}
+          />
+        </S.IconWrapper>
       ))}
     </S.IconViewWrapper>
   );
