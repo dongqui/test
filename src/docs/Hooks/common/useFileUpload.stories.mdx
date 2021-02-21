@@ -1,0 +1,27 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Hooks/common/useFileUpload" />
+
+# useFileUpload
+
+파일 업로드를 위한 hook
+
+#### example
+
+```javascript
+const { url, error, msg } = await fnFileUpload({ file: acceptedFiles[0] });
+```
+
+## Props
+
+| Prop                | Description            |
+| ------------------- | ---------------------- |
+| **file(File)**        | 파일 넣으면 됨        |
+
+## Return
+
+| Return | Description |
+| ------ | ----------- |
+| **url(string)**        | 파일의 url        |
+| **error(boolean)**        | 에러 발생 여부        |
+| **msg(string)**        | 에러 메시지        |

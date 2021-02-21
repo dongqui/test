@@ -5,6 +5,7 @@ import _ from 'lodash';
 const endpoint = new AWS.Endpoint('https://kr.object.ncloudstorage.com');
 const region = 'kr-standard';
 const bucketName = 'shoot-bucket';
+const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/plask/upload';
 
 export const fnFileUpload = async ({ file }: { file: File }) => {
   const formData = new FormData();
@@ -16,7 +17,7 @@ export const fnFileUpload = async ({ file }: { file: File }) => {
   try {
     const {
       data: { secure_url },
-    } = await axios.post('https://api.cloudinary.com/v1_1/plask/upload', formData);
+    } = await axios.post(CLOUDINARY_URL, formData);
     return {
       url: secure_url,
       error: false,
