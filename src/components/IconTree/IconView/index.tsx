@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CONTEXTMENU_INFO, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/store';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
+import { AnyAttrs } from '@tensorflow/tfjs';
 
 export interface IconViewProps {
   width: string;
@@ -26,7 +27,6 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   const pages = useReactiveVar(PAGES);
   const searchWord = useReactiveVar(SEARCH_WORD);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
-  // const [isDraggingItemKeys, setIsDraggingItemKeys] = useState<string[]>([]);
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
   const filteredData: mainDataTypes[] = useMemo(() => {
     let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
