@@ -29,6 +29,14 @@ const MainPageComponent: React.FC<MainPageProps> = ({
   const [timelinePanelHeight, setTimelinePanelHeight] = useState<number>(
     window.innerHeight * TIMELINEPANEL_INFO.heightRate,
   );
+  const onDrop = useCallback(() => {
+    MAIN_DATA(
+      _.map(mainData, (item) => ({
+        ...item,
+        isVisualized: _.isEqual(item.key, _.find(mainData, ['isDragging', true])?.key),
+      })),
+    );
+  }, [mainData]);
   return (
     <div style={{ width, height, backgroundColor, position: 'relative' }}>
       <LibraryPanel />
@@ -43,6 +51,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
           height: `${(1 - TIMELINEPANEL_INFO.heightRate) * 100}%`,
         }}
         disableDragging
+        onDrop={onDrop}
       >
         <RenderingController
           animationIndex={1}

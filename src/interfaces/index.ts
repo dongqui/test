@@ -47,4 +47,5 @@ export interface mainDataTypes {
   isVisualized?: boolean;
   isModifying?: boolean;
   isCopied?: boolean;
+  isDragging?: boolean;
 }
