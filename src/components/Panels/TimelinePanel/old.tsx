@@ -2,26 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import { dummyData } from 'utils/dummyData';
-import { dummy as RealData } from './dummy';
 import classNames from 'classnames/bind';
 // import styles from './index.module.scss';
 import './curve.scss';
 
 // const cx = classNames.bind(styles);
 
-interface DummyData {
+interface Data {
   d: string;
   v: number;
 }
-
-interface Data {
-  name: string;
-  times: number[];
-  values: number[];
-}
-
-// 대소문자 Converter 필요
-type Euler = 'quaternion' | 'position' | 'scale';
 
 export interface TimelinePanelProps {
   width: number;
@@ -31,12 +21,13 @@ export interface TimelinePanelProps {
 
 const margin = { top: 30, right: 30, bottom: 30, left: 30 };
 
-const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = RealData }) => {
+const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
+  width,
+  height,
+  data = dummyData,
+}) => {
   const divRef = useRef<HTMLDivElement>(null);
   const [zoomTransform, setZoomTransform] = useState<d3.ZoomTransform>();
-
-  const currentData = data[0];
-  const currentName = _.split(currentData.name, '.');
 
   useEffect(() => {
     const currentRef = divRef.current;
@@ -50,6 +41,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
         .call((g) => g.select('svg').remove())
         .append('svg')
         .attr('viewBox', `0, 0, ${currentRefWidth}, ${height}`);
+      // .attr('clip-path', 'url(#area)');
 
       documentElement
         .append('defs')
@@ -61,46 +53,33 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
         .attr('width', currentRefWidth)
         .attr('height', currentRefHeight);
 
-      // const newData = data.map((item: Data) => ({
-      //   times: item.times,
-      //   values: item.values,
-      // }));
+      const parseDate: any = d3.timeParse('%Y-%m-%d');
+
+      const newData = data.map(({ d, v }: Data) => ({
+        d: parseDate(d),
+        v,
+      }));
 
       const d3Type: Function = d3
         .line()
-        .x((value: any) => x(value.times))
-        .y((value: any) => y(value.values));
+        .x((value: any) => x(value.d))
+        .y((value: any) => y(value.v));
 
-      // 최소, 최대
-      // const xDomain: any = d3.extent(newData, (d) => d.d);
-      const maxIndex = currentData.times.length - 1;
-      const xDomain = _.isEqual(maxIndex, 0) ? [0, 1] : [0, maxIndex];
+      const xDomain: any = d3.extent(newData, (d) => d.d);
 
       const x = d3
-        // .scaleUtc()
-        .scaleLinear()
+        .scaleUtc()
         .domain(xDomain)
+        // .range([margin.left, currentRefWidth - margin.right]);
         .range([margin.left, currentRefWidth]);
 
-      const quaternionX = _.filter(
-        _.map(currentData.values, (value, i) => {
-          console.log(i, _.isEqual(i % 3, 0), value);
-          const isMultipleOfThree = _.isEqual(i % 3, 0);
-          if (isMultipleOfThree) {
-            // console.log();
-            return String(value);
-          }
-        }),
-      );
-      console.log(quaternionX);
-
-      // const yMax = d3.max(newData, (d) => d.v) as number;
-      const yMax = d3.max(currentData.values) as number;
+      const yMax = d3.max(newData, (d) => d.v) as number;
 
       const y = d3
         .scaleLinear()
         .domain([0, yMax])
         .nice()
+        // .range([height - margin.bottom, margin.top]);
         .range([height - margin.bottom, margin.top]);
 
       const xAxis = (g: any) =>
@@ -113,6 +92,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
               .tickSizeOuter(0),
           )
           .attr('class', 'grid')
+          // .attr('transform', `translate(0, ${height - margin.bottom})`)
           .call(createGridLineX());
 
       const createGridLineX = () => {
@@ -150,17 +130,13 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
 
       documentElement
         .append('path')
-        .datum(currentData)
+        .datum(newData)
         .attr('fill', 'none')
         .attr('stroke', 'steelblue')
         .attr('stroke-width', 1.5)
         .attr('stroke-linejoin', 'round')
         .attr('stroke-linecap', 'round')
-        .attr('d', (newData) => {
-          // d, v
-          console.log(newData);
-          return d3Type(newData);
-        })
+        .attr('d', (newData) => d3Type(newData))
         .attr('clip-path', 'url(#area)');
 
       const zoomBehavior: any = d3
@@ -176,17 +152,9 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
 
       d3.select(currentRef).call(zoomBehavior);
     }
-  }, [
-    zoomTransform,
-    data,
-    height,
-    width,
-    currentData.times.length,
-    currentData.values,
-    currentData,
-  ]);
+  }, [zoomTransform, data, height, width]);
 
   return <div className="curve" ref={divRef} style={{ width, height }} />;
 };
 
-export default TimelinePanel;
+export const TimelinePanel = TimelinePanelComponent;
