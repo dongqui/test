@@ -26,11 +26,28 @@ const IconPageComponent: React.FC<IconPageProps> = ({
   }, [pages]);
   return (
     <S.IconPageWrapper width={width} height={height} backgroundColor={backgroundColor}>
-      <S.ArrowBoackWrapper onClick={onClick}>
-        <ArrowBack />
-      </S.ArrowBoackWrapper>
+      <S.ArrowBackWrapper onClick={onClick}>
+        <ArrowBack
+          style={{ marginLeft: `${rem(22)}rem` }}
+          width={`${rem(6)}rem`}
+          height={`${rem(10)}rem`}
+          viewBox="0 0 6 10"
+        />
+      </S.ArrowBackWrapper>
       {_.map(pages, (item: PagesTypes, index) => (
-        <S.PageText key={index}>{item.name}</S.PageText>
+        <>
+          <S.PageText key={index}>{item.name}</S.PageText>
+          {!_.isEqual(index, _.size(pages) - 1) && (
+            <div style={{ flexBasis: `${rem(5)}rem` }}>
+              <ArrowForward
+                width={`${rem(5)}rem`}
+                height={`${rem(8)}rem`}
+                viewBox="0 0 5 8"
+                style={{ marginRight: `${rem(8)}rem` }}
+              />
+            </div>
+          )}
+        </>
       ))}
     </S.IconPageWrapper>
   );

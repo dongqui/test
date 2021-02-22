@@ -7,8 +7,8 @@
     "0 0 24 24": "{viewBox}",
   },
   "svgProps": {
-    "width": "{size}",
-    "height": "{size}",
+    "width": "{width}",
+    "height": "{height}",
     "style": "{style}",
     "viewBox": "{viewBox}"
   }

@@ -7,7 +7,8 @@ const prependCode = `
 import React from 'react';
 
 export interface SvgIconProps {
-  size?: number;
+  width?: number | string;
+  height?: number | string;
   fillColor?: string;
   viewBox?: string;
   style?: React.CSSProperties;

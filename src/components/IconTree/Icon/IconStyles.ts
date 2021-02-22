@@ -36,6 +36,9 @@ export const TopWrapper = styled.div`
   background-color: ${TOP_BACKGROUND_COLOR};
   border-radius: ${BORDER_RADIUS}rem;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 export const BottomWrapper = styled.div`
   width: 100%;

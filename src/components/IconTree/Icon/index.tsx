@@ -1,11 +1,8 @@
 import { useReactiveVar } from '@apollo/client';
-import { useContextmenu } from 'hooks/common/useContextmenu';
-import { useShortcut } from 'hooks/common/useShortcut';
-import { CONTEXTMENU_INFO, MAIN_DATA, PAGES } from 'lib/store';
+import { MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { rem } from 'utils';
-import { useOutsideClick } from '../../../hooks/common/useOutsideClick';
 import { ModelIcon } from '../../Icons';
 import * as S from './IconStyles';
 
@@ -103,7 +100,7 @@ const IconComponent: React.FC<IconProps> = ({
     >
       {_.isEqual(mode, 'icon') ? (
         <S.TopWrapper>
-          <ModelIcon style={{ position: 'absolute', left: 18, top: 18 }} />
+          <ModelIcon width={`${rem(12)}rem`} height={`${rem(12)}rem`} viewBox="0 0 12 12" />
         </S.TopWrapper>
       ) : (
         <S.FolderIcon></S.FolderIcon>
