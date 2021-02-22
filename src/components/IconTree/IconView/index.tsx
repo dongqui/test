@@ -103,9 +103,16 @@ const IconViewComponent: React.FC<IconViewProps> = ({
               );
               break;
             case '1':
-              MAIN_DATA(
-                _.map(mainData, (item) => ({ ...item, isCopied: item.isSelected ? true : false })),
-              );
+              if (_.find(mainData, ['isSelected', true])?.isChild) {
+                MAIN_DATA(
+                  _.map(mainData, (item) => ({
+                    ...item,
+                    isCopied: item.isSelected ? true : false,
+                  })),
+                );
+              } else {
+                MAIN_DATA(_.map(mainData, (item) => ({ ...item, isCopied: false })));
+              }
               break;
             case '2':
               MAIN_DATA(_.filter(mainData, (item) => !item.isSelected));
@@ -116,7 +123,13 @@ const IconViewComponent: React.FC<IconViewProps> = ({
                   _.concat(mainData, {
                     key: uuidv4(),
                     isChild: true,
-                    name: `${_.find(mainData, ['isCopied', true])?.name} (2)`,
+                    name: `${_.find(mainData, ['isCopied', true])?.name} (${
+                      _.size(
+                        _.filter(mainData, (item) =>
+                          _.includes(item.name, _.find(mainData, ['isCopied', true])?.name),
+                        ),
+                      ) + 1
+                    })`,
                     parentKey: _.last(pages)?.key,
                   }),
                 );

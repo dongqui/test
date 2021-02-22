@@ -10,7 +10,7 @@ interface IconPageStyleProps {
   backgroundColor: string;
 }
 export const MARGIN_TOP = '2rem';
-export const MARGIN_LEFT = rem(22);
+export const MARGIN_RIGHT = rem(8);
 export const IconPageWrapper = styled.div<IconPageStyleProps>`
   width: ${(props) => props.width}rem;
   height: ${(props) => props.height}rem;
@@ -27,13 +27,12 @@ export const IconPageWrapper = styled.div<IconPageStyleProps>`
 export const PageText = styled.span`
   color: white;
   font-weight: bold;
-  margin-left: ${MARGIN_LEFT}rem;
-  font-size: ${rem(12)};
+  margin-right: ${MARGIN_RIGHT}rem;
+  font-size: ${rem(12)}rem;
   cursor: pointer;
 `;
-export const ArrowBoackWrapper = styled.div`
-  margin-left: ${rem(22)}rem;
-  margin-top: ${rem(15)}rem;
+export const ArrowBackWrapper = styled.div`
+  margin-right: ${rem(12)}rem;
   cursor: pointer;
 `;
 export const ArrowBack = styled(IoIosArrowBack)`
@@ -41,10 +40,4 @@ export const ArrowBack = styled(IoIosArrowBack)`
   height: 1.5rem;
   color: ${GRAY500};
   cursor: pointer;
-`;
-export const ArrowForward = styled(IoIosArrowForward)`
-  width: 1.2rem;
-  height: 1.2rem;
-  color: ${GRAY500};
-  margin-left: ${MARGIN_LEFT};
 `;
