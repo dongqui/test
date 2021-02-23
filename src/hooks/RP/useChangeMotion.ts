@@ -3,14 +3,14 @@ import * as THREE from 'three';
 import { useCallback, useEffect, useState } from 'react';
 import { motionDataTypes } from '../../interfaces/RP';
 
-export const useTensorflowMotion = ({
+export const useChangeMotion = ({
   skeletonHelper,
   motionData,
 }: {
   skeletonHelper: THREE.SkeletonHelper | undefined;
   motionData: motionDataTypes[];
 }) => {
-  const changeMotion = () => {
+  const changeMotion = useCallback(() => {
     if (!_.isEmpty(motionData)) {
       _.map(skeletonHelper?.bones, (bone, index) => {
         bone.quaternion.w = bone.quaternion.w + motionData[index].quaternionW;
@@ -19,8 +19,10 @@ export const useTensorflowMotion = ({
         bone.quaternion.z = bone.quaternion.z + motionData[index].quaternionZ;
       });
     }
-  };
-  return {
-    changeMotion,
-  };
+  }, [motionData, skeletonHelper?.bones]);
+  useEffect(() => {
+    if (skeletonHelper) {
+      changeMotion();
+    }
+  }, [changeMotion, skeletonHelper]);
 };
