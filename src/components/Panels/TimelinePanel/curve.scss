@@ -1,7 +1,15 @@
 .grid {
   .tick {
     line {
-      color: lightgray;
+      color: #303030;
+    }
+
+    text {
+      color: #fff;
     }
   }
+}
+
+.area {
+  background-color: #151515;
 }

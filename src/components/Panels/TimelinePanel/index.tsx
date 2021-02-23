@@ -35,23 +35,32 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
   const divRef = useRef<HTMLDivElement>(null);
   const [zoomTransform, setZoomTransform] = useState<d3.ZoomTransform>();
 
-  const currentData = data[0];
-  const currentName = _.split(currentData.name, '.');
-
   useEffect(() => {
     const currentRef = divRef.current;
 
     if (currentRef) {
-      const currentRefWidth = currentRef.offsetWidth;
-      const currentRefHeight = currentRef.offsetHeight;
+      const { offsetWidth: currentRefWidth, offsetHeight: currentRefHeight } = currentRef;
 
-      const documentElement = d3
+      const curveCreator: Function = d3
+        .line()
+        .x((value: any) => {
+          // console.log('value');
+          // console.log(value);
+          return x(value.valueX);
+        })
+        .y((value: any) => {
+          return y(value.valueY);
+        });
+
+      const curveSVG = d3
         .select(currentRef)
         .call((g) => g.select('svg').remove())
         .append('svg')
-        .attr('viewBox', `0, 0, ${currentRefWidth}, ${height}`);
+        .attr('class', 'area')
+        // .attr('viewBox', `0, 0, ${currentRefWidth}, ${height}`);
+        .attr('viewBox', `0, 0, ${currentRefWidth}, ${currentRefHeight}`);
 
-      documentElement
+      curveSVG
         .append('defs')
         .append('clipPath')
         .attr('id', 'area')
@@ -61,47 +70,207 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
         .attr('width', currentRefWidth)
         .attr('height', currentRefHeight);
 
-      // const newData = data.map((item: Data) => ({
-      //   times: item.times,
-      //   values: item.values,
-      // }));
-
-      const d3Type: Function = d3
-        .line()
-        .x((value: any) => x(value.times))
-        .y((value: any) => y(value.values));
-
-      // 최소, 최대
-      // const xDomain: any = d3.extent(newData, (d) => d.d);
-      const maxIndex = currentData.times.length - 1;
-      const xDomain = _.isEqual(maxIndex, 0) ? [0, 1] : [0, maxIndex];
-
-      const x = d3
-        // .scaleUtc()
-        .scaleLinear()
-        .domain(xDomain)
-        .range([margin.left, currentRefWidth]);
-
-      const quaternionX = _.filter(
-        _.map(currentData.values, (value, i) => {
-          console.log(i, _.isEqual(i % 3, 0), value);
-          const isMultipleOfThree = _.isEqual(i % 3, 0);
-          if (isMultipleOfThree) {
-            // console.log();
-            return String(value);
-          }
-        }),
+      const xMax = _.max(
+        _.reduce(data, (total, current) => total.concat(current.times.length - 1), [] as number[]),
       );
-      console.log(quaternionX);
 
-      // const yMax = d3.max(newData, (d) => d.v) as number;
-      const yMax = d3.max(currentData.values) as number;
+      const xDomain = [0, xMax || 1];
+
+      const x = d3.scaleLinear().domain(xDomain).range([margin.left, currentRefWidth]);
+
+      const yMax = _.max(
+        _.reduce(
+          data,
+          (total, current) => total.concat(_.max(current.values) as number),
+          [] as number[],
+        ),
+      );
+
+      const yDomaix = [-1, yMax || 1];
 
       const y = d3
         .scaleLinear()
-        .domain([0, yMax])
+        .domain(yDomaix)
         .nice()
         .range([height - margin.bottom, margin.top]);
+
+      if (zoomTransform) {
+        const newXScale = zoomTransform.rescaleX(x);
+        const newYScale = zoomTransform.rescaleX(y);
+        x.domain(newXScale.domain());
+        y.domain(newYScale.domain());
+      }
+
+      _.map(data, (item, i) => {
+        const currentData = data[i];
+        const currentName = _.split(currentData.name, '.');
+
+        const isQuaternion = _.isEqual(currentName[1], 'quaternion');
+        const isPosition = _.isEqual(currentName[1], 'position');
+        const isScale = _.isEqual(currentName[1], 'scale');
+
+        const count = isQuaternion ? 4 : 3;
+
+        if (isQuaternion) {
+          const quaternionX = _.filter(
+            _.map(item.values, (value, i) => {
+              const isValueX = _.isEqual(i % count, 0);
+              if (isValueX) {
+                return String(value);
+              }
+            }),
+          );
+
+          const injectedQuaternionX = _.map(quaternionX, (quaternion, i) => {
+            return {
+              valueX: i,
+              valueY: Number(quaternion),
+            };
+          });
+
+          curveSVG
+            .append('path')
+            .datum(injectedQuaternionX)
+            .attr('class', 'quaternion')
+            .attr('fill', 'none')
+            .attr('stroke', '#E85757')
+            .attr('stroke-width', 1.5)
+            .attr('stroke-linejoin', 'round')
+            .attr('stroke-linecap', 'round')
+            .attr('d', (newData) => {
+              return curveCreator(newData);
+            })
+            .attr('clip-path', 'url(#area)');
+
+          curveSVG
+            .append('text')
+            // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
+            .attr('text-anchor', 'start')
+            .style('fill', '#E85757')
+            .text(currentName[0] + currentName[1] + 'X');
+
+          ///
+
+          const quaternionY = _.filter(
+            _.map(item.values, (value, i) => {
+              const isValueX = _.isEqual(i % count, 1);
+              if (isValueX) {
+                return String(value);
+              }
+            }),
+          );
+
+          const injectedQuaternionY = _.map(quaternionY, (quaternion, i) => {
+            return {
+              valueX: i,
+              valueY: Number(quaternion),
+            };
+          });
+
+          curveSVG
+            .append('path')
+            .datum(injectedQuaternionY)
+            .attr('class', 'quaternion')
+            .attr('fill', 'none')
+            .attr('stroke', '#059B00')
+            .attr('stroke-width', 1.5)
+            .attr('stroke-linejoin', 'round')
+            .attr('stroke-linecap', 'round')
+            .attr('d', (newData) => {
+              return curveCreator(newData);
+            })
+            .attr('clip-path', 'url(#area)');
+
+          curveSVG
+            .append('text')
+            // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
+            .attr('text-anchor', 'start')
+            .style('fill', '#059B00')
+            .text(currentName[0] + currentName[1] + 'Y');
+
+          ///
+          const quaternionZ = _.filter(
+            _.map(item.values, (value, i) => {
+              const isValueX = _.isEqual(i % count, 2);
+              if (isValueX) {
+                return String(value);
+              }
+            }),
+          );
+
+          const injectedQuaternionZ = _.map(quaternionZ, (quaternion, i) => {
+            return {
+              valueX: i,
+              valueY: Number(quaternion),
+            };
+          });
+
+          curveSVG
+            .append('path')
+            .datum(injectedQuaternionZ)
+            .attr('class', 'quaternion')
+            .attr('fill', 'none')
+            .attr('stroke', '#5A57E8')
+            .attr('stroke-width', 1.5)
+            .attr('stroke-linejoin', 'round')
+            .attr('stroke-linecap', 'round')
+            .attr('d', (newData) => {
+              return curveCreator(newData);
+            })
+            .attr('clip-path', 'url(#area)');
+
+          curveSVG
+            .append('text')
+            // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
+            .attr('text-anchor', 'start')
+            .style('fill', '#5A57E8')
+            .text(currentName[0] + currentName[1] + 'Z');
+
+          ///
+          const quaternionW = _.filter(
+            _.map(item.values, (value, i) => {
+              const isValueX = _.isEqual(i % count, 3);
+              if (isValueX) {
+                return String(value);
+              }
+            }),
+          );
+
+          const injectedQuaternionW = _.map(quaternionW, (quaternion, i) => {
+            return {
+              valueX: i,
+              valueY: Number(quaternion),
+            };
+          });
+
+          curveSVG
+            .append('path')
+            .datum(injectedQuaternionW)
+            .attr('class', 'quaternion')
+            .attr('fill', 'none')
+            .attr('stroke', '#E5E857')
+            .attr('stroke-width', 1.5)
+            .attr('stroke-linejoin', 'round')
+            .attr('stroke-linecap', 'round')
+            .attr('d', (newData) => {
+              return curveCreator(newData);
+            })
+            .attr('clip-path', 'url(#area)');
+
+          curveSVG
+            .append('text')
+            // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
+            .attr('text-anchor', 'start')
+            .style('fill', '#E5E857')
+            .text(currentName[0] + currentName[1] + 'Z');
+        }
+      });
+
+      // 최소, 최대
+      // const xDomain: any = d3.extent(newData, (d) => d.d);
+      // const maxIndex = data[0].times.length - 1;
+
+      // const yMax = d3.max(newData, (d) => d.v) as number;
 
       const xAxis = (g: any) =>
         g
@@ -118,23 +287,23 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
       const createGridLineX = () => {
         return d3
           .axisBottom(x)
-          .ticks(currentRefWidth / 80)
+          .ticks(currentRefWidth / 50)
           .tickSize(-height);
       };
 
       const createGridLineY = () => {
         return d3
           .axisLeft(y)
-          .ticks(currentRefHeight / 80)
+          .ticks(currentRefHeight / 50)
           .tickSize(-width);
       };
 
-      if (zoomTransform) {
-        const newXScale = zoomTransform.rescaleX(x);
-        x.domain(newXScale.domain());
-      }
+      // if (zoomTransform) {
+      //   const newXScale = zoomTransform.rescaleX(x);
+      //   x.domain(newXScale.domain());
+      // }
 
-      documentElement.append<SVGGElement>('g').call(xAxis);
+      curveSVG.append<SVGGElement>('g').call(xAxis);
 
       const yAxis = (g: any) =>
         g
@@ -143,48 +312,38 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
           .attr('class', 'grid')
           .call(createGridLineY());
 
-      documentElement
+      curveSVG
         .append<SVGGElement>('g')
         .call(yAxis)
         .call((g) => g.select('.domain').remove());
 
-      documentElement
-        .append('path')
-        .datum(currentData)
-        .attr('fill', 'none')
-        .attr('stroke', 'steelblue')
-        .attr('stroke-width', 1.5)
-        .attr('stroke-linejoin', 'round')
-        .attr('stroke-linecap', 'round')
-        .attr('d', (newData) => {
-          // d, v
-          console.log(newData);
-          return d3Type(newData);
-        })
-        .attr('clip-path', 'url(#area)');
+      // const d3Type: Function = d3
+      //   .line()
+      //   .x((value: any) => x(value.valueX))
+      //   .y((value: any) => y(value.valueY));
 
       const zoomBehavior: any = d3
         .zoom()
-        .scaleExtent([1, 50])
+        .scaleExtent([1, 10])
         .translateExtent([
           [0, 0],
           [width, height],
         ])
+        .filter((e: WheelEvent, _data: any) => {
+          // zoom을 ctrl + mousewheel로 변경
+          if (_.isEqual(e.type, 'wheel')) {
+            return e.ctrlKey;
+          }
+
+          return true;
+        })
         .on('zoom', (e: d3.D3ZoomEvent<HTMLDivElement, Data>) => {
           setZoomTransform(e.transform);
         });
 
       d3.select(currentRef).call(zoomBehavior);
     }
-  }, [
-    zoomTransform,
-    data,
-    height,
-    width,
-    currentData.times.length,
-    currentData.values,
-    currentData,
-  ]);
+  }, [zoomTransform, data, height, width]);
 
   return <div className="curve" ref={divRef} style={{ width, height }} />;
 };
