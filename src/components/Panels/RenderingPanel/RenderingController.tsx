@@ -8,6 +8,7 @@ import { CONFIG_INFOS } from './const';
 import { motionDataTypes } from '../../../interfaces/RP';
 import { useChangeMotion } from '../../../hooks/RP/useChangeMotion';
 import { DEFAULT_MODEL_URL } from 'utils';
+import { convertClipToSkeletonHelpers } from 'hooks/RP/useConvertClipToSkeletonHelpers';
 
 export interface RenderingControllerProps {
   width: string;
@@ -52,6 +53,9 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
     setAnimations,
   });
   useChangeMotion({ motionData, skeletonHelper });
+  useEffect(() => {
+    convertClipToSkeletonHelpers({ animationClip: currentAnimationClip });
+  }, [currentAnimationClip]);
   useEffect(() => {
     if (isPlay) {
       currentAction?.play();

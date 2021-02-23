@@ -27,9 +27,7 @@ export const cache = new InMemoryCache({
     Query: {
       fields: {
         mainData: {
-          read(value, test) {
-            console.log('value', value);
-            console.log('test', test);
+          read() {
             return MAIN_DATA();
           },
         },

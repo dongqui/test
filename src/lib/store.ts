@@ -1,11 +1,29 @@
 import { makeVar } from '@apollo/client';
 import { PagesTypes } from 'components/Panels/LibraryPanel';
+import _ from 'lodash';
 import { INITIAL_MAIN_DATA, isClient } from 'utils';
-import { contextmenuTypes, mainDataTypes, screenSizeTypes } from '../interfaces';
+import {
+  contextmenuTypes,
+  mainDataTypes,
+  screenSizeTypes,
+  skeletonHelperTypes,
+} from '../interfaces';
 import { motionDataTypes } from '../interfaces/RP';
 
+const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
+  let result = _.clone(initialData);
+  if (isClient) {
+    try {
+      result = JSON.parse(localStorage.getItem(`${name}`) ?? '');
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  return result;
+};
 export enum STORE_DATA_NAMES {
   mainData = 'mainData',
+  skeletonHelpers = 'skeletonHelpers',
 }
 export const MOTION_DATA = makeVar<motionDataTypes[]>([]);
 export const CONTEXTMENU_INFO = makeVar<contextmenuTypes>({
@@ -15,11 +33,10 @@ export const CONTEXTMENU_INFO = makeVar<contextmenuTypes>({
   onClick: () => {},
 });
 export const MAIN_DATA = makeVar<mainDataTypes[]>(
-  isClient
-    ? JSON.parse(
-        localStorage.getItem(`${STORE_DATA_NAMES.mainData}`) ?? JSON.stringify(INITIAL_MAIN_DATA),
-      ) ?? INITIAL_MAIN_DATA
-    : INITIAL_MAIN_DATA,
+  makeInitialData({ name: `${STORE_DATA_NAMES.mainData}`, initialData: INITIAL_MAIN_DATA }),
+);
+export const SKELETON_HELPERS = makeVar<skeletonHelperTypes[]>(
+  makeInitialData({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, initialData: undefined }),
 );
 export const PAGES = makeVar<PagesTypes[]>([{ key: 'root', name: 'root' }]);
 export const SEARCH_WORD = makeVar<string>('');

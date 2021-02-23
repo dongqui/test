@@ -1,11 +1,12 @@
 import { useQuery, useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
+import { useSaveLocalStorage } from 'hooks/common/useSaveLocalStorage';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Contextmenu } from '../components/Contextmenu';
 import { MainPage } from '../components/Pages/MainPage';
 import { useOutsideClick } from '../hooks/common/useOutsideClick';
-import { CONTEXTMENU_INFO, MAIN_DATA, STORE_DATA_NAMES } from '../lib/store';
+import { CONTEXTMENU_INFO, MAIN_DATA, SKELETON_HELPERS, STORE_DATA_NAMES } from '../lib/store';
 import { GRAY200 } from '../styles/common';
 import { isClient } from '../utils';
 
@@ -21,19 +22,17 @@ const ContextmenuWrapper = styled.div<ContextmenuProps>`
 `;
 const ShootPage = () => {
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
-  const contextmenuRef = useRef<HTMLDivElement | any>(null);
   const mainData = useReactiveVar(MAIN_DATA);
+  const skeletonHelpers = useReactiveVar(SKELETON_HELPERS);
+  const contextmenuRef = useRef<HTMLDivElement | any>(null);
   useOutsideClick({
     ref: contextmenuRef,
     event: () => {
       CONTEXTMENU_INFO({ ...contextmenuInfo, isShow: false });
     },
   });
-  useEffect(() => {
-    if (isClient) {
-      localStorage.setItem(`${STORE_DATA_NAMES.mainData}`, JSON.stringify(mainData));
-    }
-  }, [mainData]);
+  useSaveLocalStorage({ name: `${STORE_DATA_NAMES.mainData}`, state: mainData });
+  useSaveLocalStorage({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, state: skeletonHelpers });
   return (
     <div style={{ position: 'relative' }}>
       {contextmenuInfo.isShow && (
