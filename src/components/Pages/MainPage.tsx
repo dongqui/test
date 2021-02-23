@@ -11,8 +11,6 @@ import { LibraryPanel } from '../Panels/LibraryPanel';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
 import { MAIN_DATA } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
-import { DEFAULT_MODEL_URL } from 'utils';
-import { TimelinePanel } from 'components/Panels/TimelinePanel';
 
 export interface MainPageProps {
   width: string;
