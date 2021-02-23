@@ -22,13 +22,9 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
       cache,
       storage: new LocalStorageWrapper(window.localStorage),
     });
-    if (isClient) {
-      console.log('mainData', mainData);
-    }
   };
   useEffect(() => {
     initialAction();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <>

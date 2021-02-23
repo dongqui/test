@@ -1,0 +1,25 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Hooks/common/useSaveLocalStorage" />
+
+# useSaveLocalStorage
+
+상태값이 변화할때마다 해당 상태값을 localstorage 에 저장켜주는 hook
+
+#### example
+
+```javascript
+useSaveLocalStorage({ name: `${STORE_DATA_NAMES.mainData}`, state: mainData });
+```
+
+## Props
+
+| Prop                | Description            |
+| ------------------- | ---------------------- |
+| **name(string)**        | 저장할 상태값의 key 값        |
+| **state(any)**        | 저장할 상태값        |
+
+## Return
+
+| Return | Description |
+| ------ | ----------- |
