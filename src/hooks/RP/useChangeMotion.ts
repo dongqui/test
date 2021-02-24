@@ -11,15 +11,24 @@ export const useChangeMotion = ({
   motionData: motionDataTypes[];
 }) => {
   const changeMotion = useCallback(() => {
-    if (!_.isEmpty(motionData)) {
+    if (!_.isEmpty(motionData) && !_.isUndefined(skeletonHelper)) {
       _.map(skeletonHelper?.bones, (bone, index) => {
-        bone.quaternion.w = bone.quaternion.w + motionData[index].quaternionW;
-        bone.quaternion.x = bone.quaternion.x + motionData[index].quaternionX;
-        bone.quaternion.y = bone.quaternion.y + motionData[index].quaternionY;
-        bone.quaternion.z = bone.quaternion.z + motionData[index].quaternionZ;
+        skeletonHelper.bones[index].position.x = motionData[index].positionX;
+        skeletonHelper.bones[index].position.y = motionData[index].positionY;
+        skeletonHelper.bones[index].position.z = motionData[index].positionZ;
+        // bone.rotation.x = motionData[index].eulerX;
+        // bone.rotation.y = motionData[index].eulerY;
+        // bone.rotation.z = motionData[index].eulerZ;
+        skeletonHelper.bones[index].quaternion.x = motionData[index].quaternionX;
+        skeletonHelper.bones[index].quaternion.y = motionData[index].quaternionY;
+        skeletonHelper.bones[index].quaternion.z = motionData[index].quaternionZ;
+        skeletonHelper.bones[index].quaternion.w = motionData[index].quaternionW;
+        skeletonHelper.bones[index].scale.x = motionData[index].scaleX;
+        skeletonHelper.bones[index].scale.y = motionData[index].scaleY;
+        skeletonHelper.bones[index].scale.z = motionData[index].scaleZ;
       });
     }
-  }, [motionData, skeletonHelper?.bones]);
+  }, [motionData, skeletonHelper]);
   useEffect(() => {
     if (skeletonHelper) {
       changeMotion();

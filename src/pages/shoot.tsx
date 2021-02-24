@@ -32,7 +32,7 @@ const ShootPage = () => {
     },
   });
   useSaveLocalStorage({ name: `${STORE_DATA_NAMES.mainData}`, state: mainData });
-  useSaveLocalStorage({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, state: skeletonHelpers });
+  // useSaveLocalStorage({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, state: skeletonHelpers });
   return (
     <div style={{ position: 'relative' }}>
       {contextmenuInfo.isShow && (

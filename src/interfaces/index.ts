@@ -72,3 +72,7 @@ export interface skeletonHelperTypes {
   scaleY: number;
   scaleZ: number;
 }
+export interface skeletonHelpersTypes {
+  time?: string;
+  bones?: skeletonHelperTypes[];
+}

@@ -5,7 +5,7 @@ export interface CONFIG_INFO {
   configType: string;
 }
 export interface motionDataTypes {
-  boneName: string;
+  name: string;
   positionX: number;
   positionY: number;
   positionZ: number;
@@ -13,6 +13,9 @@ export interface motionDataTypes {
   quaternionX: number;
   quaternionY: number;
   quaternionZ: number;
+  // eulerX: number;
+  // eulerY: number;
+  // eulerZ: number;
   scaleX: number;
   scaleY: number;
   scaleZ: number;
