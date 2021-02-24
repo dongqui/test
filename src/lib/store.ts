@@ -6,6 +6,7 @@ import {
   contextmenuTypes,
   mainDataTypes,
   screenSizeTypes,
+  skeletonHelpersTypes,
   skeletonHelperTypes,
 } from '../interfaces';
 import { motionDataTypes } from '../interfaces/RP';
@@ -35,7 +36,7 @@ export const CONTEXTMENU_INFO = makeVar<contextmenuTypes>({
 export const MAIN_DATA = makeVar<mainDataTypes[]>(
   makeInitialData({ name: `${STORE_DATA_NAMES.mainData}`, initialData: INITIAL_MAIN_DATA }),
 );
-export const SKELETON_HELPERS = makeVar<skeletonHelperTypes[]>(
+export const SKELETON_HELPERS = makeVar<skeletonHelpersTypes[]>(
   makeInitialData({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, initialData: undefined }),
 );
 export const PAGES = makeVar<PagesTypes[]>([{ key: 'root', name: 'root' }]);

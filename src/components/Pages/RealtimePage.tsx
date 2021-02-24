@@ -25,14 +25,17 @@ const RealtimePageComponent: React.FC<RealtimePageProps> = ({
   const changeMotionData = useCallback(() => {
     const newMotionData: motionDataTypes[] = _.map(Array(50), (item) => {
       return {
-        boneName: `${item}`,
+        name: `${item}`,
         positionX: Math.random() * 0.01,
         positionY: Math.random() * 0.01,
         positionZ: Math.random() * 0.01,
-        quaternionW: Math.random() * 0.01,
+        // eulerX: Math.random() * 0.01,
+        // eulerY: Math.random() * 0.01,
+        // eulerZ: Math.random() * 0.01,
         quaternionX: Math.random() * 0.01,
         quaternionY: Math.random() * 0.01,
         quaternionZ: Math.random() * 0.01,
+        quaternionW: Math.random() * 0.01,
         scaleX: Math.random() * 0.01,
         scaleY: Math.random() * 0.01,
         scaleZ: Math.random() * 0.01,

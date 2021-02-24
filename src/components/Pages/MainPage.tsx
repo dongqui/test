@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { useCallback, useMemo, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import _ from 'lodash';
@@ -9,21 +11,23 @@ import {
 import { screenSizeTypes } from '../../interfaces';
 import { LibraryPanel } from '../Panels/LibraryPanel';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
-import { MAIN_DATA } from 'lib/store';
+import { MAIN_DATA, SKELETON_HELPERS } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
+import { motionDataTypes } from 'interfaces/RP';
 
 export interface MainPageProps {
   width: string;
   height: string;
   backgroundColor?: string;
 }
-
+const tempIndex = 0;
 const MainPageComponent: React.FC<MainPageProps> = ({
   width,
   height,
   backgroundColor = 'black',
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
+  const [isPlay, setIsPlay] = useState(false);
   const [timelinePanelHeight, setTimelinePanelHeight] = useState<number>(
     window.innerHeight * TIMELINEPANEL_INFO.heightRate,
   );
@@ -35,8 +39,11 @@ const MainPageComponent: React.FC<MainPageProps> = ({
       })),
     );
   }, [mainData]);
+  const onClickTest = useCallback(() => {
+    setIsPlay(true);
+  }, []);
   return (
-    <div style={{ width, height, backgroundColor, position: 'relative' }}>
+    <div style={{ width, height, backgroundColor, position: 'relative' }} onClick={onClickTest}>
       <LibraryPanel />
       <Rnd
         style={{
@@ -50,6 +57,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         }}
         disableDragging
         onDrop={onDrop}
+        onClick={onClickTest}
       >
         <RenderingController
           animationIndex={1}
@@ -58,6 +66,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
           id="container"
           motionData={[]}
           width="100%"
+          isPlay={isPlay}
         />
       </Rnd>
       <Rnd
