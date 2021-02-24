@@ -10,9 +10,9 @@ export const useShortcut = ({ data }: { data: shortcutTypes[] }) => {
     [data],
   );
   useEffect(() => {
-    document.addEventListener('keypress', onKeyPress);
+    document.addEventListener('keyup', onKeyPress);
     return () => {
-      document.removeEventListener('keypress', onKeyPress);
+      document.removeEventListener('keyup', onKeyPress);
     };
   }, [onKeyPress]);
 };

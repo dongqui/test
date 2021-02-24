@@ -1,15 +1,19 @@
 import { useReactiveVar } from '@apollo/client';
-import { mainDataTypes } from 'interfaces';
-import { MAIN_DATA } from 'lib/store';
+import { v4 as uuidv4 } from 'uuid';
+import { FORMAT_TYPES, mainDataTypes } from 'interfaces';
+import { MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { LIBRARYPANEL_INFO } from 'styles/common';
-import { rem } from 'utils';
 import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
 import { InputLP } from '../../Input/InputLP';
 import * as S from './LibraryPanelStyles';
+import { Loading } from 'components/Loading';
+import { DEFAULT_MODEL_URL } from 'utils';
+import { fnFileDelete, fnFileUpload } from 'hooks/common/useFileUpload';
+import { fnApi } from 'hooks/common/useApi';
 
 export interface PagesTypes {
   key: string;
@@ -20,63 +24,76 @@ export interface LibraryPanelProps {
   height?: number;
   backgroundColor?: string;
 }
-
 const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
   width = LIBRARYPANEL_INFO.widthRem,
   height = LIBRARYPANEL_INFO.heightRem,
   backgroundColor = 'black',
 }) => {
-  const [pages, setPages] = useState<PagesTypes[]>([{ key: 'root', name: 'root' }]);
   const mainData = useReactiveVar(MAIN_DATA);
-  const [data, setData] = useState<mainDataTypes[]>(mainData);
-  const onClickPage = useCallback(
-    ({ key }: { key: string }) => {
-      const newPages = _.filter(pages, (item, index) =>
-        _.lte(
-          index,
-          _.findIndex(pages, (o) => _.isEqual(o.key, key)),
-        ),
-      );
-      setPages(newPages);
-    },
-    [pages],
-  );
-  const onChangeSearchText = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      let newData = _.filter(data, (item) => _.includes(item.name, e.target.value));
-      if (_.isEmpty(e.target.value)) {
-        newData = _.clone(mainData);
-      }
-      setData(newData);
-    },
-    [data, mainData],
-  );
+  const pages = useReactiveVar(PAGES);
+  const [loading, setLoading] = useState(false);
+  const onChangeSearchText = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    SEARCH_WORD(e.target.value);
+  }, []);
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      let newMainData = _.clone(mainData);
-      _.forEach(acceptedFiles, (file: File) => {
-        const newData: mainDataTypes = {
-          key: file.name,
-          isChild: true,
-          name: file.name,
-          url: URL.createObjectURL(file),
-          parentKey: 'root',
-        };
-        newMainData = _.concat(newMainData, newData);
-      });
-      MAIN_DATA(newMainData);
+    async (acceptedFiles: File[]) => {
+      if (_.isEmpty(acceptedFiles)) {
+        alert('파일이 존재하지 않습니다.');
+        return false;
+      }
+      setLoading(true);
+      const extension = _.last(_.split(acceptedFiles[0].name, '.'));
+      let convertedFileUrl = DEFAULT_MODEL_URL;
+      if (
+        _.some(
+          acceptedFiles,
+          (file) => !_.includes([FORMAT_TYPES.glb, FORMAT_TYPES.fbx], extension),
+        )
+      ) {
+        alert('파일 형식이 올바르지 않습니다.');
+        setLoading(false);
+        return false;
+      }
+      if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
+        // fbx 파일 업로드
+        const { url, error, msg, token } = await fnFileUpload({ file: acceptedFiles[0] });
+        if (error) {
+          alert(msg);
+          setLoading(false);
+          return false;
+        }
+        // glb로 변환
+        const { result, error: error2, msg: msg2 } = await fnApi({
+          action: 'upload',
+          payload: { data: url, type: 'fbx' },
+        });
+        if (error2) {
+          alert(msg2);
+          setLoading(false);
+          return false;
+        }
+        convertedFileUrl = result?.data?.result ?? DEFAULT_MODEL_URL;
+        // 업로드한 fbx 삭제
+        const { error: error3, msg: msg3 } = await fnFileDelete({ token });
+        if (error3) {
+          alert(msg3);
+          setLoading(false);
+          return false;
+        }
+      }
+      const newData: mainDataTypes = {
+        key: uuidv4(),
+        isChild: true,
+        name: acceptedFiles[0].name,
+        url: _.isEqual(extension, FORMAT_TYPES.glb)
+          ? URL.createObjectURL(acceptedFiles[0])
+          : convertedFileUrl,
+        parentKey: _.last(pages)?.key,
+      };
+      MAIN_DATA(_.concat(mainData, newData));
+      setLoading(false);
     },
-    [mainData],
-  );
-  const onDoubleClickFile = useCallback(
-    ({ key }) => {
-      const newMainData = _.map(mainData, (item) => ({
-        ...item,
-        isSelected: _.isEqual(item.key, key),
-      }));
-      MAIN_DATA(newMainData);
-    },
-    [mainData],
+    [mainData, pages],
   );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
@@ -86,19 +103,17 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
       backgroundColor={backgroundColor}
       {...getRootProps()}
     >
+      {loading && (
+        <S.LoadingWrapper>
+          <Loading />
+        </S.LoadingWrapper>
+      )}
       <S.TitleWrapper>Library</S.TitleWrapper>
       <S.SearchWrapper>
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
-      <IconPage data={pages} onClickPage={onClickPage} />
-      <IconView
-        height="100%"
-        width="100%"
-        pages={pages}
-        setPages={setPages}
-        data={mainData}
-        onDoubleClickFile={onDoubleClickFile}
-      />
+      <IconPage />
+      <IconView height="100%" width="100%" />
     </S.LibraryPanelWrapper>
   );
 };

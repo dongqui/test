@@ -1,10 +1,12 @@
-import { useReactiveVar } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client';
 import styled from '@emotion/styled';
-import React, { useCallback, useRef } from 'react';
+import { useSaveLocalStorage } from 'hooks/common/useSaveLocalStorage';
+import _ from 'lodash';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Contextmenu } from '../components/Contextmenu';
 import { MainPage } from '../components/Pages/MainPage';
 import { useOutsideClick } from '../hooks/common/useOutsideClick';
-import { CONTEXTMENU_INFO, SCREEN_SIZE } from '../lib/store';
+import { CONTEXTMENU_INFO, MAIN_DATA, SKELETON_HELPERS, STORE_DATA_NAMES } from '../lib/store';
 import { GRAY200 } from '../styles/common';
 import { isClient } from '../utils';
 
@@ -19,8 +21,9 @@ const ContextmenuWrapper = styled.div<ContextmenuProps>`
   z-index: 1000;
 `;
 const ShootPage = () => {
-  const screenSizeInfo = useReactiveVar(SCREEN_SIZE);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
+  const mainData = useReactiveVar(MAIN_DATA);
+  const skeletonHelpers = useReactiveVar(SKELETON_HELPERS);
   const contextmenuRef = useRef<HTMLDivElement | any>(null);
   useOutsideClick({
     ref: contextmenuRef,
@@ -28,6 +31,8 @@ const ShootPage = () => {
       CONTEXTMENU_INFO({ ...contextmenuInfo, isShow: false });
     },
   });
+  useSaveLocalStorage({ name: `${STORE_DATA_NAMES.mainData}`, state: mainData });
+  // useSaveLocalStorage({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, state: skeletonHelpers });
   return (
     <div style={{ position: 'relative' }}>
       {contextmenuInfo.isShow && (

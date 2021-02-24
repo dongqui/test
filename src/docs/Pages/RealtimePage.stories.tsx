@@ -17,5 +17,4 @@ export const Default = Template.bind({});
 Default.args = {
   width: '100%',
   height: '60rem',
-  screenSizeInfo: { width: window.innerWidth, height: window.innerHeight },
 };

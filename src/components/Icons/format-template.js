@@ -6,7 +6,7 @@ function FormatTemplate({ template }, _, { componentName, jsx }) {
     import React from 'react';
     import { SvgIconProps } from '../index';
     
-    export const ${IconComponentName} = React.memo<SvgIconProps>(({size = 24, fillColor = '#000', viewBox='0 0 24 24', style}) => ${jsx})
+    export const ${IconComponentName} = React.memo<SvgIconProps>(({width = 10, height = 10, fillColor = '#000', viewBox='0 0 24 24', style}) => ${jsx})
   `;
 }
 

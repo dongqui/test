@@ -1,31 +1,27 @@
 import React, { useEffect } from 'react';
-import { ThemeProvider } from '@emotion/react';
 import { NextComponentType } from 'next';
 import Head from 'next/head';
 import { ApolloProvider } from '@apollo/client';
 import { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { cache, useApollo } from '../lib/apolloClient';
-import { isClient } from '../utils';
-import { SCREEN_SIZE } from '../lib/store';
 import '../styles/core.scss';
+import '../styles/curve.scss';
+import { isClient } from 'utils';
+import { MAIN_DATA, STORE_DATA_NAMES } from 'lib/store';
+import _ from 'lodash';
 
 const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   Component,
   pageProps,
 }) => {
-  // const { isTheme, changeMode } = useTheme();
-  // const theme = isTheme === 'light' ? '' : '';
-
   const apolloClient = useApollo(pageProps);
+  const mainData = MAIN_DATA();
   const initialAction = async () => {
     await persistCache({
       cache,
       storage: new LocalStorageWrapper(window.localStorage),
     });
-    if (isClient) {
-      SCREEN_SIZE({ width: window.innerWidth, height: window.innerHeight });
-    }
   };
   useEffect(() => {
     initialAction();

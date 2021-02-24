@@ -1,30 +1,18 @@
 import { useReactiveVar } from '@apollo/client';
+import { v4 as uuidv4 } from 'uuid';
+import { useContextmenu } from 'hooks/common/useContextmenu';
 import { mainDataTypes } from 'interfaces';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Rnd } from 'react-rnd';
-import { INITIAL_MAIN_DATA } from 'utils';
-import { useContextmenu } from '../../../hooks/common/useContextmenu';
-import { CONTEXTMENU_INFO, MAIN_DATA } from '../../../lib/store';
-import { PagesTypes } from '../../Panels/LibraryPanel';
+import { CONTEXTMENU_INFO, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/store';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
+import { AnyAttrs } from '@tensorflow/tfjs';
 
 export interface IconViewProps {
   width: string;
   height: string;
   backgroundColor?: string;
-  pages?: PagesTypes[];
-  setPages?: Function;
-  data?: mainDataTypes[];
-  onClickContextMenu?: ({
-    key,
-    selectedItemKeys,
-  }: {
-    key: string;
-    selectedItemKeys: string[];
-  }) => void;
-  onDoubleClickFile?: ({ key }: { key: string }) => void;
 }
 export interface onChangeFileNameTypes {
   ({ key, value }: { key: string; value: string }): void;
@@ -34,55 +22,134 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   width,
   height,
   backgroundColor = 'black',
-  pages = [{ key: 'root', name: 'root' }],
-  setPages = () => {},
-  data = INITIAL_MAIN_DATA,
-  onDoubleClickFile = () => {},
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
+  const pages = useReactiveVar(PAGES);
+  const searchWord = useReactiveVar(SEARCH_WORD);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
-  const [isDraggingItemKeys, setIsDraggingItemKeys] = useState<string[]>([]);
-  const [selectedItemKeys, setSelectedItemKeys] = useState<string[]>([]);
-  const [modifyingKey, setModifyingKey] = useState<string | undefined>();
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
   const filteredData: mainDataTypes[] = useMemo(() => {
-    return _.filter(data, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
-  }, [data, pages]);
-  const onDoubleClick = useCallback(
-    ({ key, isChild, name }: { key: string; isChild: boolean; name: string }) => {
-      if (isChild) {
-        onDoubleClickFile({ key });
-      } else {
-        setPages(_.concat(pages, { key, name }));
+    let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
+    if (!_.isEmpty(searchWord)) {
+      result = _.filter(mainData, (o) => _.includes(o.name, searchWord));
+    }
+    return result;
+  }, [mainData, pages, searchWord]);
+  const onClick = useCallback(
+    (e) => {
+      const icons = document.getElementsByClassName('icon');
+      if (!_.some(icons, (icon) => icon.contains(e?.target as any))) {
+        MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: false })));
       }
     },
-    [onDoubleClickFile, pages, setPages],
+    [mainData],
+  );
+  const onDragStart = useCallback(
+    ({ key }) => {
+      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isDragging: _.isEqual(item.key, key) })));
+    },
+    [mainData],
+  );
+  const onDragStop = useCallback(
+    (e) => {
+      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isDragging: false })));
+    },
+    [mainData],
+  );
+  const onDrop = useCallback(
+    ({ key }) => {
+      if (!_.find(mainData, ['key', key])?.isChild) {
+        MAIN_DATA(
+          _.map(mainData, (item) => ({
+            ...item,
+            parentKey: item.isDragging ? key : item.parentKey,
+          })),
+        );
+      }
+    },
+    [mainData],
   );
   const onContextMenu = useCallback(
-    ({ top, left }: { top: number; left: number }) => {
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      const icons = document.getElementsByClassName('icon');
+      const data = _.some(icons, (icon) => icon.contains(e?.target as any))
+        ? [
+            { key: '1', name: 'Copy' },
+            { key: '2', name: 'Delete' },
+            { key: '4', name: 'Visualization' },
+            { key: '5', name: 'Edit name' },
+          ]
+        : [
+            { key: '0', name: 'New Group' },
+            { key: '3', name: 'Paste' },
+          ];
       CONTEXTMENU_INFO({
         isShow: true,
         top,
         left,
-        data: [
-          { key: '0', name: 'Copy' },
-          { key: '1', name: 'Paste' },
-          { key: '2', name: 'Visualization' },
-          { key: '3', name: 'Edit name' },
-        ],
+        data,
         onClick: ({ key }) => {
-          let newMainData;
           CONTEXTMENU_INFO({ ...contextmenuInfo, isShow: false });
           switch (key) {
+            case '0':
+              MAIN_DATA(
+                _.concat(mainData, {
+                  key: uuidv4(),
+                  isChild: false,
+                  name: 'Folder',
+                  parentKey: _.last(pages)?.key,
+                  isModifying: true,
+                }),
+              );
+              break;
+            case '1':
+              if (_.find(mainData, ['isSelected', true])?.isChild) {
+                MAIN_DATA(
+                  _.map(mainData, (item) => ({
+                    ...item,
+                    isCopied: item.isSelected ? true : false,
+                  })),
+                );
+              } else {
+                MAIN_DATA(_.map(mainData, (item) => ({ ...item, isCopied: false })));
+              }
+              break;
             case '2':
-              newMainData = _.map(mainData, (item) => ({
-                ...item,
-                isSelected: _.includes(selectedItemKeys, item.key),
-              }));
-              MAIN_DATA(newMainData);
+              MAIN_DATA(_.filter(mainData, (item) => !item.isSelected));
               break;
             case '3':
-              setModifyingKey(selectedItemKeys?.[0]);
+              if (_.some(mainData, ['isCopied', true])) {
+                MAIN_DATA(
+                  _.concat(mainData, {
+                    key: uuidv4(),
+                    isChild: true,
+                    name: `${_.find(mainData, ['isCopied', true])?.name} (${
+                      _.size(
+                        _.filter(mainData, (item) =>
+                          _.includes(item.name, _.find(mainData, ['isCopied', true])?.name),
+                        ),
+                      ) + 1
+                    })`,
+                    parentKey: _.last(pages)?.key,
+                  }),
+                );
+              }
+              break;
+            case '4':
+              MAIN_DATA(
+                _.map(mainData, (item) => ({
+                  ...item,
+                  isVisualized: _.isEqual(item.key, _.find(mainData, ['isSelected', true])?.key),
+                })),
+              );
+              break;
+            case '5':
+              MAIN_DATA(
+                _.map(mainData, (item) => ({
+                  ...item,
+                  isModifying: _.isEqual(item.key, _.find(mainData, ['isSelected', true])?.key),
+                })),
+              );
               break;
             default:
               break;
@@ -90,56 +157,34 @@ const IconViewComponent: React.FC<IconViewProps> = ({
         },
       });
     },
-    [contextmenuInfo, mainData, selectedItemKeys],
+    [contextmenuInfo, mainData, pages],
   );
   useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
-  const onDragStart = useCallback(
-    ({ key }) => {
-      setIsDraggingItemKeys(_.concat(isDraggingItemKeys, key));
-    },
-    [isDraggingItemKeys],
-  );
-  const onDragStop = useCallback(({ key }) => {
-    setIsDraggingItemKeys([]);
-  }, []);
   return (
     <S.IconViewWrapper
       ref={iconViewWrapperRef}
       width={width}
       height={height}
       backgroundColor={backgroundColor}
+      onClick={onClick}
     >
       {_.map(filteredData, (item, index) => (
-        <Rnd
+        <S.IconWrapper
           key={index}
+          className="icon"
+          id={item.key}
+          index={index}
+          draggable
           onDragStart={() => onDragStart({ key: item.key })}
-          onDragStop={() => onDragStop({ key: item.key })}
+          onDragEnd={onDragStop}
+          onDrop={() => onDrop({ key: item.key })}
         >
-          <S.IconWrapper
-            index={index}
-            onDoubleClick={() =>
-              onDoubleClick({ key: item.key, isChild: item.isChild, name: item.name })
-            }
-          >
-            <Icon
-              iconKey={item.key}
-              mode={item.isChild ? 'icon' : 'folder'}
-              fileName={item.name}
-              onClick={() => {
-                if (_.includes(selectedItemKeys, item.key)) {
-                  setSelectedItemKeys(_.pull(selectedItemKeys, item.key));
-                } else {
-                  setSelectedItemKeys(_.concat(selectedItemKeys, item.key));
-                }
-              }}
-              isDragging={_.includes(isDraggingItemKeys, item.key)}
-              isClicked={_.includes(selectedItemKeys, item.key)}
-              outSideClick={() => setSelectedItemKeys([])}
-              isModifying={_.isEqual(modifyingKey, item.key)}
-              onCompleteModifying={() => setModifyingKey(undefined)}
-            />
-          </S.IconWrapper>
-        </Rnd>
+          <Icon
+            iconKey={item.key}
+            mode={item.isChild ? 'icon' : 'folder'}
+            isDragging={item.isDragging}
+          />
+        </S.IconWrapper>
       ))}
     </S.IconViewWrapper>
   );

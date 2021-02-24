@@ -3,7 +3,7 @@ import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import merge from 'deepmerge';
 import isEqual from 'lodash/isEqual';
-import { SCREEN_SIZE } from './store';
+import { MAIN_DATA } from './store';
 
 export const APOLLO_STATE_PROP_NAME = '__APOLLO_STATE__';
 
@@ -26,9 +26,9 @@ export const cache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
-        selectScreenSize: {
+        mainData: {
           read() {
-            return SCREEN_SIZE();
+            return MAIN_DATA();
           },
         },
       },

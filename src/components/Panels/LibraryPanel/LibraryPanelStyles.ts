@@ -11,6 +11,7 @@ export const LibraryPanelWrapper = styled.div<LibraryPanelStyleProps>`
   width: ${(props) => props.width}rem;
   height: ${(props) => props.height}rem;
   background-color: ${(props) => props.backgroundColor};
+  position: relative;
 
   :focus {
     outline: none;
@@ -29,4 +30,12 @@ export const SearchWrapper = styled.div`
   margin-left: ${MARGIN_LEFT}rem;
   display: flex;
   align-items: center;
+`;
+export const LoadingWrapper = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%), translateY(-50%);
+  z-index: 100;
+  color: white;
 `;

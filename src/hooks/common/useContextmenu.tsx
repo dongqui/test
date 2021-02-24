@@ -1,14 +1,15 @@
+import _ from 'lodash';
 import React, { RefObject, useCallback, useEffect } from 'react';
 
 interface useContextmenuProps {
   targetRef: RefObject<HTMLElement>;
-  event: ({ top, left }: { top: number; left: number }) => void;
+  event: ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => void;
 }
 export const useContextmenu = ({ targetRef, event }: useContextmenuProps) => {
   const handleContextmenu = useCallback(
     (e: MouseEvent) => {
       e.preventDefault();
-      event({ top: e.pageY, left: e.pageX });
+      event({ top: e.pageY, left: e.pageX, e });
     },
     [event],
   );
