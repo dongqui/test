@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { dummyData } from 'utils/dummyData';
 import { dummy as RealData } from './dummy';
 import classNames from 'classnames/bind';
+import './curve.scss';
 // import styles from './index.module.scss';
 
 // const cx = classNames.bind(styles);
