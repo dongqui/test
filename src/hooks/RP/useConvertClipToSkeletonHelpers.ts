@@ -4,6 +4,7 @@ import * as THREE from 'three';
 
 interface convertClipToSkeletonHelpersProps {
   animationClip: THREE.AnimationClip | undefined;
+  test?: string;
 }
 interface animationClip2Types {
   name: string;
