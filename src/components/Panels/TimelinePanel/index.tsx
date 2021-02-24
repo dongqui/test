@@ -1,29 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
-import { dummyData } from 'utils/dummyData';
-import { dummy as RealData } from './dummy';
-import classNames from 'classnames/bind';
+import { dummy } from './dummy';
 import './curve.scss';
-// import styles from './index.module.scss';
-
-// const cx = classNames.bind(styles);
-
-interface DummyData {
-  d: string;
-  v: number;
-}
-
-interface Data {
-  name: string;
-  times: number[];
-  values: number[];
-}
 
 enum Euler {
   QUATERNION = 'QUATERNION',
   SCALE = 'SCALE',
   POSITION = 'POSITION',
+}
+
+interface Datum {
+  name: string;
+  times: number[];
+  values: number[];
 }
 
 interface EulerValue {
@@ -34,12 +24,16 @@ interface EulerValue {
 export interface TimelinePanelProps {
   width: number;
   height: number;
-  data?: Data[];
+  data?: Datum[];
 }
+
+const defaultProps: Partial<TimelinePanelProps> = {
+  data: dummy,
+};
 
 const margin = { top: 30, right: 30, bottom: 30, left: 30 };
 
-const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = RealData }) => {
+const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) => {
   const divRef = useRef<HTMLDivElement>(null);
   const [zoomTransform, setZoomTransform] = useState<d3.ZoomTransform>();
 
@@ -99,7 +93,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
       }
 
       const d3Generator = (
-        item: Data,
+        item: Datum,
         name: string,
         d3Element: d3.Selection<SVGSVGElement, unknown, null, undefined>,
         x: d3.ScaleLinear<number, number, never>,
@@ -120,7 +114,6 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
 
         switch (lowerCaseEuler) {
           case _.lowerCase(Euler.QUATERNION): {
-            // 몫
             const QUOTIENT = 4;
 
             const quaternionList = sliceModuler(item.values, QUOTIENT);
@@ -156,6 +149,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
                 .attr('d', (data) => lineGenerator(data))
                 .attr('clip-path', 'url(#area)');
 
+              // 라벨
               // element
               //   .append('text')
               //   // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
@@ -172,19 +166,11 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
       };
 
       _.map(data, (item, i) => {
-        const currentData = data[i];
-        const currentName = _.split(currentData.name, '.');
-
-        const isQuaternion = _.isEqual(currentName[1], 'quaternion');
-
-        d3Generator(item, currentData.name, curveSVG, x, y);
+        if (data) {
+          const currentData = data[i];
+          d3Generator(item, currentData.name, curveSVG, x, y);
+        }
       });
-
-      // 최소, 최대
-      // const xDomain: any = d3.extent(newData, (d) => d.d);
-      // const maxIndex = data[0].times.length - 1;
-
-      // const yMax = d3.max(newData, (d) => d.v) as number;
 
       const xAxis = (g: any) =>
         g
@@ -212,11 +198,6 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
           .tickSize(-width);
       };
 
-      // if (zoomTransform) {
-      //   const newXScale = zoomTransform.rescaleX(x);
-      //   x.domain(newXScale.domain());
-      // }
-
       curveSVG.append<SVGGElement>('g').call(xAxis);
 
       const yAxis = (g: any) =>
@@ -230,11 +211,6 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
         .append<SVGGElement>('g')
         .call(yAxis)
         .call((g) => g.select('.domain').remove());
-
-      // const d3Type: Function = d3
-      //   .line()
-      //   .x((value: any) => x(value.valueX))
-      //   .y((value: any) => y(value.valueY));
 
       const zoomBehavior: any = d3
         .zoom()
@@ -251,7 +227,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
 
           return true;
         })
-        .on('zoom', (e: d3.D3ZoomEvent<HTMLDivElement, Data>) => {
+        .on('zoom', (e: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
           setZoomTransform(e.transform);
         });
 
@@ -261,5 +237,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
 
   return <div className="curve" ref={divRef} style={{ width, height }} />;
 };
+
+TimelinePanel.defaultProps = defaultProps;
 
 export default TimelinePanel;
