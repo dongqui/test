@@ -20,8 +20,16 @@ interface Data {
   values: number[];
 }
 
-// 대소문자 Converter 필요
-type Euler = 'quaternion' | 'position' | 'scale';
+enum Euler {
+  QUATERNION = 'QUATERNION',
+  SCALE = 'SCALE',
+  POSITION = 'POSITION',
+}
+
+interface EulerValue {
+  valueX: number;
+  valueY: number;
+}
 
 export interface TimelinePanelProps {
   width: number;
@@ -40,17 +48,6 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
 
     if (currentRef) {
       const { offsetWidth: currentRefWidth, offsetHeight: currentRefHeight } = currentRef;
-
-      const curveCreator: Function = d3
-        .line()
-        .x((value: any) => {
-          // console.log('value');
-          // console.log(value);
-          return x(value.valueX);
-        })
-        .y((value: any) => {
-          return y(value.valueY);
-        });
 
       const curveSVG = d3
         .select(currentRef)
@@ -101,169 +98,86 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
         y.domain(newYScale.domain());
       }
 
+      const d3Generator = (
+        item: Data,
+        name: string,
+        d3Element: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+        x: d3.ScaleLinear<number, number, never>,
+        y: d3.ScaleLinear<number, number, never>,
+      ) => {
+        const separated = _.split(name, '.');
+        const boneName = separated[0];
+        const euler = separated[1];
+
+        const lowerCaseEuler = _.lowerCase(euler);
+
+        const sliceModuler = (arr: number[], moduler: number) => {
+          const result = Array.from(Array(moduler), () => new Array(0));
+          _.map(arr, (value, i) => result[i % moduler].push(value));
+
+          return result;
+        };
+
+        switch (lowerCaseEuler) {
+          case _.lowerCase(Euler.QUATERNION): {
+            // 몫
+            const QUOTIENT = 4;
+
+            const quaternionList = sliceModuler(item.values, QUOTIENT);
+
+            const converted = _.map(quaternionList, (quaternion, i) => {
+              return _.map(quaternion, (q, j) => {
+                return {
+                  valueX: j,
+                  valueY: Number(q),
+                };
+              });
+            });
+
+            const lineGenerator = d3
+              .line<EulerValue>()
+              .x((value) => x(value.valueX))
+              .y((value) => y(value.valueY));
+
+            const pathCreator = (
+              element: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+              eulerValue: EulerValue[],
+              color: string,
+            ) => {
+              element
+                .append('path')
+                .datum(eulerValue)
+                .attr('class', 'quaternion')
+                .attr('fill', 'none')
+                .attr('stroke', color)
+                .attr('stroke-width', 1.5)
+                .attr('stroke-linejoin', 'round')
+                .attr('stroke-linecap', 'round')
+                .attr('d', (data) => lineGenerator(data))
+                .attr('clip-path', 'url(#area)');
+
+              // element
+              //   .append('text')
+              //   // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
+              //   .attr('text-anchor', 'start')
+              //   .style('fill', '#E85757')
+              //   .text(currentName[0] + currentName[1] + 'X');
+            };
+
+            const colors = ['#E85757', '#059B00', '#5A57E8', '#E5E857'];
+
+            _.map(converted, (quaternion, i) => pathCreator(d3Element, quaternion, colors[i]));
+          }
+        }
+      };
+
       _.map(data, (item, i) => {
         const currentData = data[i];
         const currentName = _.split(currentData.name, '.');
 
         const isQuaternion = _.isEqual(currentName[1], 'quaternion');
-        const isPosition = _.isEqual(currentName[1], 'position');
-        const isScale = _.isEqual(currentName[1], 'scale');
 
-        const count = isQuaternion ? 4 : 3;
-
-        if (isQuaternion) {
-          const quaternionX = _.filter(
-            _.map(item.values, (value, i) => {
-              const isValueX = _.isEqual(i % count, 0);
-              if (isValueX) {
-                return String(value);
-              }
-            }),
-          );
-
-          const injectedQuaternionX = _.map(quaternionX, (quaternion, i) => {
-            return {
-              valueX: i,
-              valueY: Number(quaternion),
-            };
-          });
-
-          curveSVG
-            .append('path')
-            .datum(injectedQuaternionX)
-            .attr('class', 'quaternion')
-            .attr('fill', 'none')
-            .attr('stroke', '#E85757')
-            .attr('stroke-width', 1.5)
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('d', (newData) => {
-              return curveCreator(newData);
-            })
-            .attr('clip-path', 'url(#area)');
-
-          curveSVG
-            .append('text')
-            // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
-            .attr('text-anchor', 'start')
-            .style('fill', '#E85757')
-            .text(currentName[0] + currentName[1] + 'X');
-
-          ///
-
-          const quaternionY = _.filter(
-            _.map(item.values, (value, i) => {
-              const isValueX = _.isEqual(i % count, 1);
-              if (isValueX) {
-                return String(value);
-              }
-            }),
-          );
-
-          const injectedQuaternionY = _.map(quaternionY, (quaternion, i) => {
-            return {
-              valueX: i,
-              valueY: Number(quaternion),
-            };
-          });
-
-          curveSVG
-            .append('path')
-            .datum(injectedQuaternionY)
-            .attr('class', 'quaternion')
-            .attr('fill', 'none')
-            .attr('stroke', '#059B00')
-            .attr('stroke-width', 1.5)
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('d', (newData) => {
-              return curveCreator(newData);
-            })
-            .attr('clip-path', 'url(#area)');
-
-          curveSVG
-            .append('text')
-            // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
-            .attr('text-anchor', 'start')
-            .style('fill', '#059B00')
-            .text(currentName[0] + currentName[1] + 'Y');
-
-          ///
-          const quaternionZ = _.filter(
-            _.map(item.values, (value, i) => {
-              const isValueX = _.isEqual(i % count, 2);
-              if (isValueX) {
-                return String(value);
-              }
-            }),
-          );
-
-          const injectedQuaternionZ = _.map(quaternionZ, (quaternion, i) => {
-            return {
-              valueX: i,
-              valueY: Number(quaternion),
-            };
-          });
-
-          curveSVG
-            .append('path')
-            .datum(injectedQuaternionZ)
-            .attr('class', 'quaternion')
-            .attr('fill', 'none')
-            .attr('stroke', '#5A57E8')
-            .attr('stroke-width', 1.5)
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('d', (newData) => {
-              return curveCreator(newData);
-            })
-            .attr('clip-path', 'url(#area)');
-
-          curveSVG
-            .append('text')
-            // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
-            .attr('text-anchor', 'start')
-            .style('fill', '#5A57E8')
-            .text(currentName[0] + currentName[1] + 'Z');
-
-          ///
-          const quaternionW = _.filter(
-            _.map(item.values, (value, i) => {
-              const isValueX = _.isEqual(i % count, 3);
-              if (isValueX) {
-                return String(value);
-              }
-            }),
-          );
-
-          const injectedQuaternionW = _.map(quaternionW, (quaternion, i) => {
-            return {
-              valueX: i,
-              valueY: Number(quaternion),
-            };
-          });
-
-          curveSVG
-            .append('path')
-            .datum(injectedQuaternionW)
-            .attr('class', 'quaternion')
-            .attr('fill', 'none')
-            .attr('stroke', '#E5E857')
-            .attr('stroke-width', 1.5)
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('d', (newData) => {
-              return curveCreator(newData);
-            })
-            .attr('clip-path', 'url(#area)');
-
-          curveSVG
-            .append('text')
-            // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
-            .attr('text-anchor', 'start')
-            .style('fill', '#E5E857')
-            .text(currentName[0] + currentName[1] + 'Z');
-        }
+        d3Generator(item, currentData.name, curveSVG, x, y);
       });
 
       // 최소, 최대
@@ -330,9 +244,9 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data = Rea
           [width, height],
         ])
         .filter((e: WheelEvent, _data: any) => {
-          // zoom을 ctrl + mousewheel로 변경
+          // zoom을 alt + mousewheel로 변경
           if (_.isEqual(e.type, 'wheel')) {
-            return e.ctrlKey;
+            return e.altKey;
           }
 
           return true;
