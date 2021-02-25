@@ -7,15 +7,16 @@ import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { cache, useApollo } from '../lib/apolloClient';
 import '../styles/core.scss';
 import '../styles/curve.scss';
+import { isClient } from 'utils';
+import { MAIN_DATA, STORE_DATA_NAMES } from 'lib/store';
+import _ from 'lodash';
 
 const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   Component,
   pageProps,
 }) => {
-  // const { isTheme, changeMode } = useTheme();
-  // const theme = isTheme === 'light' ? '' : '';
-
   const apolloClient = useApollo(pageProps);
+  const mainData = MAIN_DATA();
   const initialAction = async () => {
     await persistCache({
       cache,

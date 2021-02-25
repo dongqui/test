@@ -9,26 +9,29 @@ import {
 import { screenSizeTypes } from '../../interfaces';
 import { LibraryPanel } from '../Panels/LibraryPanel';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
-import { MAIN_DATA } from 'lib/store';
+import { MAIN_DATA, SKELETON_HELPERS } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
-import { DEFAULT_MODEL_URL } from 'utils';
-import { TimelinePanel } from 'components/Panels/TimelinePanel';
 
 export interface MainPageProps {
   width: string;
   height: string;
   backgroundColor?: string;
 }
-
+const index = 0;
 const MainPageComponent: React.FC<MainPageProps> = ({
   width,
   height,
   backgroundColor = 'black',
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
-  const [timelinePanelHeight, setTimelinePanelHeight] = useState<number>(
-    window.innerHeight * TIMELINEPANEL_INFO.heightRate,
-  );
+  const onClick = useCallback(() => {
+    MAIN_DATA(
+      _.map(mainData, (item) => ({
+        ...item,
+        isPlay: item.isVisualized ? !item.isPlay : item.isPlay,
+      })),
+    );
+  }, [mainData]);
   const onDrop = useCallback(() => {
     MAIN_DATA(
       _.map(mainData, (item) => ({
@@ -52,14 +55,16 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         }}
         disableDragging
         onDrop={onDrop}
+        onClick={onClick}
       >
         <RenderingController
           animationIndex={1}
           fileUrl={_.find(mainData, ['isVisualized', true])?.url}
           height={`${window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate)}px`}
           id="container"
-          motionData={[]}
           width="100%"
+          isPlay={_.find(mainData, ['isVisualized', true])?.isPlay}
+          motionData={[]}
         />
       </Rnd>
       <Rnd
@@ -71,13 +76,12 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         }}
         size={{
           width: '100%',
-          height: timelinePanelHeight,
+          height: window.innerHeight * TIMELINEPANEL_INFO.heightRate,
         }}
         position={{
           x: 0,
           y: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
         }}
-        onResize={(e, direction, ref, delta, position) => {}}
         enableResizing={{ top: true }}
         disableDragging={true}
       >

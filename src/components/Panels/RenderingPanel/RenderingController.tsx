@@ -3,11 +3,12 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
-import { FORMAT_TYPES } from '../../../interfaces';
+import { bonesTypes, FORMAT_TYPES, skeletonHelpersTypes } from '../../../interfaces';
 import { CONFIG_INFOS } from './const';
-import { motionDataTypes } from '../../../interfaces/RP';
-import { useTensorflowMotion } from '../../../hooks/RP/useTensorflowMotion';
 import { DEFAULT_MODEL_URL } from 'utils';
+import { useMakeSkeletonHelpers } from 'hooks/RP/useMakeSkeletonHelpers';
+import { SKELETON_HELPERS } from 'lib/store';
+import { useChangeMotion } from 'hooks/RP/useChangeMotion';
 
 export interface RenderingControllerProps {
   width: string;
@@ -16,9 +17,8 @@ export interface RenderingControllerProps {
   fileUrl?: string;
   isPlay?: boolean;
   animationIndex?: number;
-  motionData?: motionDataTypes[];
+  motionData?: bonesTypes[];
 }
-
 const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   width,
   height,
@@ -51,19 +51,14 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
     setSkeletonHelper,
     setAnimations,
   });
-  const { changeMotion } = useTensorflowMotion({ motionData, skeletonHelper });
+  useChangeMotion({ skeletonHelper, motionData });
   useEffect(() => {
     if (isPlay) {
       currentAction?.play();
     } else {
       currentAction?.stop();
     }
-  }, [animationIndex, animations, currentAction, isPlay, mixer]);
-  useEffect(() => {
-    if (skeletonHelper) {
-      changeMotion();
-    }
-  }, [changeMotion, skeletonHelper]);
+  }, [currentAction, isPlay]);
   return <RenderingPresenter id={id} height={height} width={width} />;
 };
 
