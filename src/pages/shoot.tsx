@@ -34,7 +34,7 @@ const ShootPage = () => {
   useSaveLocalStorage({ name: `${STORE_DATA_NAMES.mainData}`, state: mainData });
   // useSaveLocalStorage({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, state: skeletonHelpers });
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       {contextmenuInfo.isShow && (
         <ContextmenuWrapper
           ref={contextmenuRef}

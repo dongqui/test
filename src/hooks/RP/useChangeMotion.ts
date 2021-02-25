@@ -1,37 +1,30 @@
+import { bonesTypes, skeletonHelpersTypes } from 'interfaces';
 import _ from 'lodash';
-import * as THREE from 'three';
-import { useCallback, useEffect, useState } from 'react';
-import { motionDataTypes } from '../../interfaces/RP';
+import { useCallback, useEffect } from 'react';
 
-export const useChangeMotion = ({
-  skeletonHelper,
-  motionData,
-}: {
-  skeletonHelper: THREE.SkeletonHelper | undefined;
-  motionData: motionDataTypes[];
-}) => {
-  const changeMotion = useCallback(() => {
-    if (!_.isEmpty(motionData) && !_.isUndefined(skeletonHelper)) {
-      _.map(skeletonHelper?.bones, (bone, index) => {
-        skeletonHelper.bones[index].position.x = motionData[index].positionX;
-        skeletonHelper.bones[index].position.y = motionData[index].positionY;
-        skeletonHelper.bones[index].position.z = motionData[index].positionZ;
-        // bone.rotation.x = motionData[index].eulerX;
-        // bone.rotation.y = motionData[index].eulerY;
-        // bone.rotation.z = motionData[index].eulerZ;
-        skeletonHelper.bones[index].quaternion.x = motionData[index].quaternionX;
-        skeletonHelper.bones[index].quaternion.y = motionData[index].quaternionY;
-        skeletonHelper.bones[index].quaternion.z = motionData[index].quaternionZ;
-        skeletonHelper.bones[index].quaternion.w = motionData[index].quaternionW;
-        skeletonHelper.bones[index].scale.x = motionData[index].scaleX;
-        skeletonHelper.bones[index].scale.y = motionData[index].scaleY;
-        skeletonHelper.bones[index].scale.z = motionData[index].scaleZ;
+interface useChangeMotionProps {
+  skeletonHelper?: THREE.SkeletonHelper;
+  motionData: bonesTypes[];
+}
+export const useChangeMotion = ({ skeletonHelper, motionData }: useChangeMotionProps) => {
+  useEffect(() => {
+    if (!_.isUndefined(skeletonHelper)) {
+      _.forEach(motionData, (item, index) => {
+        try {
+          skeletonHelper.bones[index].position.x = item.positionX;
+          skeletonHelper.bones[index].position.y = item.positionY;
+          skeletonHelper.bones[index].position.z = item.positionZ;
+          skeletonHelper.bones[index].quaternion.w = item.quaternionW;
+          skeletonHelper.bones[index].quaternion.x = item.quaternionX;
+          skeletonHelper.bones[index].quaternion.y = item.quaternionY;
+          skeletonHelper.bones[index].quaternion.z = item.quaternionZ;
+          skeletonHelper.bones[index].scale.x = item.scaleX;
+          skeletonHelper.bones[index].scale.y = item.scaleY;
+          skeletonHelper.bones[index].scale.z = item.scaleZ;
+        } catch (error) {
+          console.log('error', error);
+        }
       });
     }
   }, [motionData, skeletonHelper]);
-  useEffect(() => {
-    if (skeletonHelper) {
-      changeMotion();
-    }
-  }, [changeMotion, skeletonHelper]);
 };

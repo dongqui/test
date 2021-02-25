@@ -4,19 +4,3 @@ export interface CONFIG_INFO {
   type: string;
   configType: string;
 }
-export interface motionDataTypes {
-  name: string;
-  positionX: number;
-  positionY: number;
-  positionZ: number;
-  quaternionW: number;
-  quaternionX: number;
-  quaternionY: number;
-  quaternionZ: number;
-  // eulerX: number;
-  // eulerY: number;
-  // eulerZ: number;
-  scaleX: number;
-  scaleY: number;
-  scaleZ: number;
-}

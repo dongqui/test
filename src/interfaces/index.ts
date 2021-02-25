@@ -58,8 +58,9 @@ export interface mainDataTypes {
   isModifying?: boolean;
   isCopied?: boolean;
   isDragging?: boolean;
+  isPlay?: boolean;
 }
-export interface skeletonHelperTypes {
+export interface bonesTypes {
   name: string;
   positionX: number;
   positionY: number;
@@ -74,5 +75,5 @@ export interface skeletonHelperTypes {
 }
 export interface skeletonHelpersTypes {
   time?: string;
-  bones?: skeletonHelperTypes[];
+  bones?: bonesTypes[];
 }

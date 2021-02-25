@@ -2,14 +2,7 @@ import { makeVar } from '@apollo/client';
 import { PagesTypes } from 'components/Panels/LibraryPanel';
 import _ from 'lodash';
 import { INITIAL_MAIN_DATA, isClient } from 'utils';
-import {
-  contextmenuTypes,
-  mainDataTypes,
-  screenSizeTypes,
-  skeletonHelpersTypes,
-  skeletonHelperTypes,
-} from '../interfaces';
-import { motionDataTypes } from '../interfaces/RP';
+import { contextmenuTypes, mainDataTypes, skeletonHelpersTypes } from '../interfaces';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
   let result = _.clone(initialData);
@@ -26,7 +19,6 @@ export enum STORE_DATA_NAMES {
   mainData = 'mainData',
   skeletonHelpers = 'skeletonHelpers',
 }
-export const MOTION_DATA = makeVar<motionDataTypes[]>([]);
 export const CONTEXTMENU_INFO = makeVar<contextmenuTypes>({
   isShow: false,
   top: 0,
