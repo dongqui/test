@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import { dummy } from './dummy';
-import './curve.scss';
+// import './curve.scss';
 
 enum Euler {
   QUATERNION = 'QUATERNION',
@@ -31,6 +31,8 @@ const defaultProps: Partial<TimelinePanelProps> = {
   data: dummy,
 };
 
+const colors = ['#E85757', '#059B00', '#5A57E8', '#E5E857'];
+
 const margin = { top: 30, right: 30, bottom: 30, left: 30 };
 
 const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) => {
@@ -41,15 +43,15 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
     const currentRef = divRef.current;
 
     if (currentRef) {
-      const { offsetWidth: currentRefWidth, offsetHeight: currentRefHeight } = currentRef;
+      const { offsetWidth, offsetHeight } = currentRef;
 
       const curveSVG = d3
         .select(currentRef)
         .call((g) => g.select('svg').remove())
         .append('svg')
-        .attr('class', 'area')
-        // .attr('viewBox', `0, 0, ${currentRefWidth}, ${height}`);
-        .attr('viewBox', `0, 0, ${currentRefWidth}, ${currentRefHeight}`);
+        .attr('class', 'wrapper-curve')
+        // .attr('viewBox', `0, 0, ${offsetWidth}, ${height}`);
+        .attr('viewBox', `0, 0, ${offsetWidth}, ${offsetHeight}`);
 
       curveSVG
         .append('defs')
@@ -58,8 +60,8 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
         .append('svg:rect')
         .attr('x', margin.left)
         .attr('y', 0)
-        .attr('width', currentRefWidth)
-        .attr('height', currentRefHeight);
+        .attr('width', offsetWidth)
+        .attr('height', offsetHeight);
 
       const xMax = _.max(
         _.reduce(data, (total, current) => total.concat(current.times.length - 1), [] as number[]),
@@ -67,7 +69,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
 
       const xDomain = [0, xMax || 1];
 
-      const x = d3.scaleLinear().domain(xDomain).range([margin.left, currentRefWidth]);
+      const x = d3.scaleLinear().domain(xDomain).range([margin.left, offsetWidth]);
 
       const yMax = _.max(
         _.reduce(
@@ -158,8 +160,6 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
               //   .text(currentName[0] + currentName[1] + 'X');
             };
 
-            const colors = ['#E85757', '#059B00', '#5A57E8', '#E5E857'];
-
             _.map(converted, (quaternion, i) => pathCreator(d3Element, quaternion, colors[i]));
           }
         }
@@ -178,7 +178,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
           .call(
             d3
               .axisBottom(x)
-              .ticks(currentRefWidth / 80)
+              .ticks(offsetWidth / 80)
               .tickSizeOuter(0),
           )
           .attr('class', 'grid')
@@ -187,14 +187,14 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
       const createGridLineX = () => {
         return d3
           .axisBottom(x)
-          .ticks(currentRefWidth / 50)
+          .ticks(offsetWidth / 50)
           .tickSize(-height);
       };
 
       const createGridLineY = () => {
         return d3
           .axisLeft(y)
-          .ticks(currentRefHeight / 50)
+          .ticks(offsetHeight / 50)
           .tickSize(-width);
       };
 
@@ -219,7 +219,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
           [0, 0],
           [width, height],
         ])
-        .filter((e: WheelEvent, _data: any) => {
+        .filter((e: WheelEvent) => {
           // zoom을 alt + mousewheel로 변경
           if (_.isEqual(e.type, 'wheel')) {
             return e.altKey;
@@ -231,6 +231,19 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
           setZoomTransform(e.transform);
         });
 
+      const dragBehavior: any = d3
+        .drag()
+        .on('start', (e) => {
+          console.log('START');
+        })
+        .on('drag', (e) => {
+          console.log('DRAG');
+        })
+        .on('end', (e) => {
+          console.log('END');
+        });
+
+      d3.select(currentRef).call(dragBehavior);
       d3.select(currentRef).call(zoomBehavior);
     }
   }, [zoomTransform, data, height, width]);
