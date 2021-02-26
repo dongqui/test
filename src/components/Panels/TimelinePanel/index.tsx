@@ -24,7 +24,7 @@ interface EulerValue {
 export interface TimelinePanelProps {
   width: number;
   height: number;
-  data?: Datum[];
+  data?: any;
 }
 
 const defaultProps: Partial<TimelinePanelProps> = {
@@ -38,7 +38,6 @@ const margin = { top: 30, right: 30, bottom: 30, left: 30 };
 const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) => {
   const divRef = useRef<HTMLDivElement>(null);
   const [zoomTransform, setZoomTransform] = useState<d3.ZoomTransform>();
-
   useEffect(() => {
     const currentRef = divRef.current;
 
