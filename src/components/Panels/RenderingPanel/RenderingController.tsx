@@ -6,9 +6,8 @@ import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
 import { bonesTypes, FORMAT_TYPES, skeletonHelpersTypes } from '../../../interfaces';
 import { CONFIG_INFOS } from './const';
 import { DEFAULT_MODEL_URL } from 'utils';
-import { useMakeSkeletonHelpers } from 'hooks/RP/useMakeSkeletonHelpers';
-import { SKELETON_HELPERS } from 'lib/store';
 import { useChangeMotion } from 'hooks/RP/useChangeMotion';
+import { ANIMATION_CLIP } from 'lib/store';
 
 export interface RenderingControllerProps {
   width: string;
@@ -59,6 +58,11 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
       currentAction?.stop();
     }
   }, [currentAction, isPlay]);
+  useEffect(() => {
+    if (!_.isUndefined(currentAnimationClip)) {
+      ANIMATION_CLIP(currentAnimationClip);
+    }
+  }, [currentAnimationClip]);
   return <RenderingPresenter id={id} height={height} width={width} />;
 };
 
