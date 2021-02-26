@@ -7,6 +7,7 @@ import { RenderingController } from 'components/Panels/RenderingPanel/RenderingC
 import { ANIMATION_CLIP, MAIN_DATA, SKELETON_HELPERS } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import TimelinePanel from 'components/Panels/TimelinePanel';
+import { useWindowResize } from 'hooks/common/useWindowResize';
 
 export interface MainPageProps {
   width: string;
@@ -20,6 +21,10 @@ const MainPageComponent: React.FC<MainPageProps> = ({
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const animationClip = useReactiveVar(ANIMATION_CLIP);
+  const [tpSize, setTpSize] = useState<{ width: number; height: number }>({
+    width: window.innerWidth,
+    height: window.innerHeight * TIMELINEPANEL_INFO.heightRate,
+  });
   const onClick = useCallback(() => {
     MAIN_DATA(
       _.map(mainData, (item) => ({
@@ -36,13 +41,17 @@ const MainPageComponent: React.FC<MainPageProps> = ({
       })),
     );
   }, [mainData]);
+  useWindowResize({
+    event: ({ width, height }) => {
+      setTpSize({ width, height: height * TIMELINEPANEL_INFO.heightRate });
+    },
+  });
   return (
     <div style={{ width, height, backgroundColor, position: 'relative' }}>
       <LibraryPanel />
       <Rnd
         style={{
           zIndex: 200,
-          border: '1px solid white',
         }}
         default={{
           x: window.innerWidth * LIBRARYPANEL_INFO.widthRate,
@@ -70,23 +79,25 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         style={{
           position: 'absolute',
           bottom: 0,
-          border: '1px solid white',
           zIndex: 300,
         }}
         size={{
-          width: '100%',
-          height: window.innerHeight * TIMELINEPANEL_INFO.heightRate,
+          width: tpSize.width,
+          height: tpSize.height,
         }}
         position={{
           x: 0,
-          y: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
+          y: window.innerHeight - tpSize.height,
         }}
         enableResizing={{ top: true }}
         disableDragging={true}
+        onResize={(e, direction, ref, delta, position) => {
+          setTpSize({ ...tpSize, height: ref.offsetHeight });
+        }}
       >
         <TimelinePanel
-          width={window.innerWidth}
-          height={window.innerHeight * TIMELINEPANEL_INFO.heightRate}
+          width={tpSize.width}
+          height={tpSize.height}
           data={animationClip?.tracks ?? []}
         />
       </Rnd>
