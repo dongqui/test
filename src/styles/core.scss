@@ -1,5 +1,6 @@
 @import 'styles/libraries/_reset';
 @import 'styles/libraries/_grid';
+@import 'styles/timeline/_curve';
 
 :root {
   // gray
@@ -43,4 +44,9 @@ body {
   width: 100%;
   height: 100%;
   font-family: 'Noto Sans KR', sans-serif;
+}
+
+main {
+  width: 100%;
+  height: 100%;
 }

@@ -1,30 +1,27 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { Rnd } from 'react-rnd';
+import React, { useCallback } from 'react';
 import _ from 'lodash';
-import {
-  CONTROLLER_PANEL_WIDTH_RATE,
-  LIBRARYPANEL_INFO,
-  TIMELINEPANEL_INFO,
-} from '../../styles/common';
-import { screenSizeTypes } from '../../interfaces';
-import { LibraryPanel } from '../Panels/LibraryPanel';
-import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
-import { MAIN_DATA, SKELETON_HELPERS } from 'lib/store';
+import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
+import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
+import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from 'styles/common';
+import { LibraryPanel } from 'components/Panels/LibraryPanel';
+import TimelinePanel from 'components/Panels/TimelinePanel';
+import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
+import classNames from 'classnames/bind';
+import styles from './MainPage.module.scss';
+
+const cx = classNames.bind(styles);
 
 export interface MainPageProps {
   width: string;
   height: string;
   backgroundColor?: string;
 }
-const index = 0;
-const MainPageComponent: React.FC<MainPageProps> = ({
-  width,
-  height,
-  backgroundColor = 'black',
-}) => {
+
+const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'black' }) => {
   const mainData = useReactiveVar(MAIN_DATA);
-  const onClick = useCallback(() => {
+
+  const handleClick = useCallback(() => {
     MAIN_DATA(
       _.map(mainData, (item) => ({
         ...item,
@@ -32,7 +29,8 @@ const MainPageComponent: React.FC<MainPageProps> = ({
       })),
     );
   }, [mainData]);
-  const onDrop = useCallback(() => {
+
+  const handleDrop = useCallback(() => {
     MAIN_DATA(
       _.map(mainData, (item) => ({
         ...item,
@@ -40,13 +38,12 @@ const MainPageComponent: React.FC<MainPageProps> = ({
       })),
     );
   }, [mainData]);
+
   return (
     <div style={{ width, height, backgroundColor, position: 'relative' }}>
       <LibraryPanel />
       <Rnd
-        style={{
-          zIndex: 200,
-        }}
+        className={cx('rendering')}
         default={{
           x: window.innerWidth * LIBRARYPANEL_INFO.widthRate,
           y: 0,
@@ -54,8 +51,8 @@ const MainPageComponent: React.FC<MainPageProps> = ({
           height: `${(1 - TIMELINEPANEL_INFO.heightRate) * 100}%`,
         }}
         disableDragging
-        onDrop={onDrop}
-        onClick={onClick}
+        onDrop={handleDrop}
+        onClick={handleClick}
       >
         <RenderingController
           animationIndex={1}
@@ -68,12 +65,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         />
       </Rnd>
       <Rnd
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          border: '1px solid white',
-          zIndex: 300,
-        }}
+        className={cx('timeline')}
         size={{
           width: '100%',
           height: window.innerHeight * TIMELINEPANEL_INFO.heightRate,
@@ -91,4 +83,4 @@ const MainPageComponent: React.FC<MainPageProps> = ({
   );
 };
 
-export const MainPage = React.memo(MainPageComponent);
+export default React.memo(MainPage);
