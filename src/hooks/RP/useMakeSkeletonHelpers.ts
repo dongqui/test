@@ -2,7 +2,7 @@ import { skeletonHelpersTypes } from 'interfaces';
 import _ from 'lodash';
 import { useCallback, useEffect } from 'react';
 
-const STANDARD_TIME_INTERVAL = 0.01;
+const STANDARD_TIME_INTERVAL = 0.03;
 let skeletonHelpers: skeletonHelpersTypes[] = [];
 export const useMakeSkeletonHelpers = ({
   mixer,
