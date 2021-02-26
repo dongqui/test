@@ -1,85 +1,175 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
-import { dummyData } from 'utils/dummyData';
-import classNames from 'classnames/bind';
-// import styles from './index.module.scss';
+import { dummy } from './dummy';
+// import './curve.scss';
 
-// const cx = classNames.bind(styles);
+enum Euler {
+  QUATERNION = 'QUATERNION',
+  SCALE = 'SCALE',
+  POSITION = 'POSITION',
+}
 
-interface Data {
-  d: string;
-  v: number;
+interface Datum {
+  name: string;
+  times: number[];
+  values: number[];
+}
+
+interface EulerValue {
+  valueX: number;
+  valueY: number;
 }
 
 export interface TimelinePanelProps {
   width: number;
   height: number;
-  data?: Data[];
+  data?: any;
 }
+
+const defaultProps: Partial<TimelinePanelProps> = {
+  data: dummy,
+};
+
+const colors = ['#E85757', '#059B00', '#5A57E8', '#E5E857'];
 
 const margin = { top: 30, right: 30, bottom: 30, left: 30 };
 
-const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
-  width,
-  height,
-  data = dummyData,
-}) => {
+const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) => {
   const divRef = useRef<HTMLDivElement>(null);
   const [zoomTransform, setZoomTransform] = useState<d3.ZoomTransform>();
-
   useEffect(() => {
     const currentRef = divRef.current;
 
     if (currentRef) {
-      const currentRefWidth = currentRef.offsetWidth;
-      const currentRefHeight = currentRef.offsetHeight;
+      const { offsetWidth, offsetHeight } = currentRef;
 
-      const documentElement = d3
+      const curveSVG = d3
         .select(currentRef)
         .call((g) => g.select('svg').remove())
         .append('svg')
-        .attr('viewBox', `0, 0, ${currentRefWidth}, ${height}`);
-      // .attr('clip-path', 'url(#area)');
+        .attr('class', 'wrapper-curve')
+        // .attr('viewBox', `0, 0, ${offsetWidth}, ${height}`);
+        .attr('viewBox', `0, 0, ${offsetWidth}, ${offsetHeight}`);
 
-      documentElement
+      curveSVG
         .append('defs')
         .append('clipPath')
         .attr('id', 'area')
         .append('svg:rect')
         .attr('x', margin.left)
         .attr('y', 0)
-        .attr('width', currentRefWidth)
-        .attr('height', currentRefHeight);
+        .attr('width', offsetWidth)
+        .attr('height', offsetHeight);
 
-      const parseDate: any = d3.timeParse('%Y-%m-%d');
+      const xMax = _.max(
+        _.reduce(data, (total, current) => total.concat(current.times.length - 1), [] as number[]),
+      );
 
-      const newData = data.map(({ d, v }: Data) => ({
-        d: parseDate(d),
-        v,
-      }));
+      const xDomain = [0, xMax || 1];
 
-      const d3Type: Function = d3
-        .line()
-        .x((value: any) => x(value.d))
-        .y((value: any) => y(value.v));
+      const x = d3.scaleLinear().domain(xDomain).range([margin.left, offsetWidth]);
 
-      const xDomain: any = d3.extent(newData, (d) => d.d);
+      const yMax = _.max(
+        _.reduce(
+          data,
+          (total, current) => total.concat(_.max(current.values) as number),
+          [] as number[],
+        ),
+      );
 
-      const x = d3
-        .scaleUtc()
-        .domain(xDomain)
-        // .range([margin.left, currentRefWidth - margin.right]);
-        .range([margin.left, currentRefWidth]);
-
-      const yMax = d3.max(newData, (d) => d.v) as number;
+      const yDomaix = [-1, yMax || 1];
 
       const y = d3
         .scaleLinear()
-        .domain([0, yMax])
+        .domain(yDomaix)
         .nice()
-        // .range([height - margin.bottom, margin.top]);
         .range([height - margin.bottom, margin.top]);
+
+      if (zoomTransform) {
+        const newXScale = zoomTransform.rescaleX(x);
+        const newYScale = zoomTransform.rescaleX(y);
+        x.domain(newXScale.domain());
+        y.domain(newYScale.domain());
+      }
+
+      const d3Generator = (
+        item: Datum,
+        name: string,
+        d3Element: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+        x: d3.ScaleLinear<number, number, never>,
+        y: d3.ScaleLinear<number, number, never>,
+      ) => {
+        const separated = _.split(name, '.');
+        const boneName = separated[0];
+        const euler = separated[1];
+
+        const lowerCaseEuler = _.lowerCase(euler);
+
+        const sliceModuler = (arr: number[], moduler: number) => {
+          const result = Array.from(Array(moduler), () => new Array(0));
+          _.map(arr, (value, i) => result[i % moduler].push(value));
+
+          return result;
+        };
+
+        switch (lowerCaseEuler) {
+          case _.lowerCase(Euler.QUATERNION): {
+            const QUOTIENT = 4;
+
+            const quaternionList = sliceModuler(item.values, QUOTIENT);
+
+            const converted = _.map(quaternionList, (quaternion, i) => {
+              return _.map(quaternion, (q, j) => {
+                return {
+                  valueX: j,
+                  valueY: Number(q),
+                };
+              });
+            });
+
+            const lineGenerator = d3
+              .line<EulerValue>()
+              .x((value) => x(value.valueX))
+              .y((value) => y(value.valueY));
+
+            const pathCreator = (
+              element: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+              eulerValue: EulerValue[],
+              color: string,
+            ) => {
+              element
+                .append('path')
+                .datum(eulerValue)
+                .attr('class', 'quaternion')
+                .attr('fill', 'none')
+                .attr('stroke', color)
+                .attr('stroke-width', 1.5)
+                .attr('stroke-linejoin', 'round')
+                .attr('stroke-linecap', 'round')
+                .attr('d', (data) => lineGenerator(data))
+                .attr('clip-path', 'url(#area)');
+
+              // 라벨
+              // element
+              //   .append('text')
+              //   // .attr('transform', 'translate(' + (width - 3) + ',' + y(3) + ')')
+              //   .attr('text-anchor', 'start')
+              //   .style('fill', '#E85757')
+              //   .text(currentName[0] + currentName[1] + 'X');
+            };
+
+            _.map(converted, (quaternion, i) => pathCreator(d3Element, quaternion, colors[i]));
+          }
+        }
+      };
+
+      _.map(data, (item, i) => {
+        if (data) {
+          const currentData = data[i];
+          d3Generator(item, currentData.name, curveSVG, x, y);
+        }
+      });
 
       const xAxis = (g: any) =>
         g
@@ -87,33 +177,27 @@ const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
           .call(
             d3
               .axisBottom(x)
-              .ticks(currentRefWidth / 80)
+              .ticks(offsetWidth / 80)
               .tickSizeOuter(0),
           )
           .attr('class', 'grid')
-          // .attr('transform', `translate(0, ${height - margin.bottom})`)
           .call(createGridLineX());
 
       const createGridLineX = () => {
         return d3
           .axisBottom(x)
-          .ticks(currentRefWidth / 80)
+          .ticks(offsetWidth / 50)
           .tickSize(-height);
       };
 
       const createGridLineY = () => {
         return d3
           .axisLeft(y)
-          .ticks(currentRefHeight / 80)
+          .ticks(offsetHeight / 50)
           .tickSize(-width);
       };
 
-      if (zoomTransform) {
-        const newXScale = zoomTransform.rescaleX(x);
-        x.domain(newXScale.domain());
-      }
-
-      documentElement.append<SVGGElement>('g').call(xAxis);
+      curveSVG.append<SVGGElement>('g').call(xAxis);
 
       const yAxis = (g: any) =>
         g
@@ -122,33 +206,43 @@ const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
           .attr('class', 'grid')
           .call(createGridLineY());
 
-      documentElement
+      curveSVG
         .append<SVGGElement>('g')
         .call(yAxis)
         .call((g) => g.select('.domain').remove());
 
-      documentElement
-        .append('path')
-        .datum(newData)
-        .attr('fill', 'none')
-        .attr('stroke', 'steelblue')
-        .attr('stroke-width', 1.5)
-        .attr('stroke-linejoin', 'round')
-        .attr('stroke-linecap', 'round')
-        .attr('d', (newData) => d3Type(newData))
-        .attr('clip-path', 'url(#area)');
-
       const zoomBehavior: any = d3
         .zoom()
-        .scaleExtent([1, 50])
+        .scaleExtent([1, 10])
         .translateExtent([
           [0, 0],
           [width, height],
         ])
-        .on('zoom', (e: d3.D3ZoomEvent<HTMLDivElement, Data>) => {
+        .filter((e: WheelEvent) => {
+          // zoom을 alt + mousewheel로 변경
+          if (_.isEqual(e.type, 'wheel')) {
+            return e.altKey;
+          }
+
+          return true;
+        })
+        .on('zoom', (e: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
           setZoomTransform(e.transform);
         });
 
+      const dragBehavior: any = d3
+        .drag()
+        .on('start', (e) => {
+          console.log('START');
+        })
+        .on('drag', (e) => {
+          console.log('DRAG');
+        })
+        .on('end', (e) => {
+          console.log('END');
+        });
+
+      d3.select(currentRef).call(dragBehavior);
       d3.select(currentRef).call(zoomBehavior);
     }
   }, [zoomTransform, data, height, width]);
@@ -156,4 +250,6 @@ const TimelinePanelComponent: React.FC<TimelinePanelProps> = ({
   return <div className="curve" ref={divRef} style={{ width, height }} />;
 };
 
-export const TimelinePanel = TimelinePanelComponent;
+TimelinePanel.defaultProps = defaultProps;
+
+export default TimelinePanel;

@@ -1,29 +1,25 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import _ from 'lodash';
-import {
-  CONTROLLER_PANEL_WIDTH_RATE,
-  LIBRARYPANEL_INFO,
-  TIMELINEPANEL_INFO,
-} from '../../styles/common';
-import { screenSizeTypes } from '../../interfaces';
+import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from '../../styles/common';
 import { LibraryPanel } from '../Panels/LibraryPanel';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
-import { MAIN_DATA, SKELETON_HELPERS } from 'lib/store';
+import { ANIMATION_CLIP, MAIN_DATA, SKELETON_HELPERS } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
+import TimelinePanel from 'components/Panels/TimelinePanel';
 
 export interface MainPageProps {
   width: string;
   height: string;
   backgroundColor?: string;
 }
-const index = 0;
 const MainPageComponent: React.FC<MainPageProps> = ({
   width,
   height,
   backgroundColor = 'black',
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
+  const animationClip = useReactiveVar(ANIMATION_CLIP);
   const onClick = useCallback(() => {
     MAIN_DATA(
       _.map(mainData, (item) => ({
@@ -46,6 +42,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
       <Rnd
         style={{
           zIndex: 200,
+          border: '1px solid white',
         }}
         default={{
           x: window.innerWidth * LIBRARYPANEL_INFO.widthRate,
@@ -61,7 +58,9 @@ const MainPageComponent: React.FC<MainPageProps> = ({
           animationIndex={1}
           fileUrl={_.find(mainData, ['isVisualized', true])?.url}
           height={`${window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate)}px`}
-          id="container"
+          id={`${_.find(mainData, ['isVisualized', true])?.key}${
+            _.find(mainData, ['isVisualized', true])?.url
+          }`}
           width="100%"
           isPlay={_.find(mainData, ['isVisualized', true])?.isPlay}
           motionData={[]}
@@ -85,7 +84,11 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         enableResizing={{ top: true }}
         disableDragging={true}
       >
-        {/* <TimelinePanel width={window.innerWidth} height={window.innerHeight} /> */}
+        <TimelinePanel
+          width={window.innerWidth}
+          height={window.innerHeight * TIMELINEPANEL_INFO.heightRate}
+          data={animationClip?.tracks ?? []}
+        />
       </Rnd>
     </div>
   );
