@@ -11,7 +11,7 @@ export const Close = React.memo<SvgIconProps>(
     >
       <path
         d="M1 1l12 12m0-12L1 13"
-        stroke={fillColor}
+        stroke="#000"
         strokeWidth={2}
         fill="none"
         fillRule="evenodd"

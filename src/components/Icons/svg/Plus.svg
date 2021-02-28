@@ -1,11 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>Plus</title>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round">
-        <g id="A0" transform="translate(-794.000000, -1443.000000)" stroke="#000000" stroke-width="2">
-            <g id="Plus" transform="translate(795.000000, 1444.000000)">
-                <path d="M9,0.51465 L9,17.4852 M17.4853,8.9999 L0.51472,8.9999" id="Shape"></path>
-            </g>
-        </g>
-    </g>
+<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<line x1="5.95459" y1="0.5" x2="5.95459" y2="11.5" stroke="#A7A7A7" stroke-linecap="round"/>
+<line x1="11.5" y1="5.95459" x2="0.5" y2="5.95459" stroke="#A7A7A7" stroke-linecap="round"/>
 </svg>

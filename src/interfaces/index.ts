@@ -37,6 +37,7 @@ export interface screenSizeTypes {
 }
 export interface shortcutTypes {
   key: string;
+  ctrlKey?: boolean;
   event: Function;
 }
 export interface contextmenuTypes {
@@ -58,7 +59,6 @@ export interface mainDataTypes {
   isModifying?: boolean;
   isCopied?: boolean;
   isDragging?: boolean;
-  isPlay?: boolean;
 }
 export interface bonesTypes {
   name: string;

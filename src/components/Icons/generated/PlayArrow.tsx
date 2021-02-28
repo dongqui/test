@@ -11,7 +11,7 @@ export const Playarrow = React.memo<SvgIconProps>(
     >
       <path
         d="M10.52 6.136a1 1 0 010 1.728l-9.016 5.259A1 1 0 010 12.259V1.741A1 1 0 011.504.877l9.015 5.26z"
-        fill={fillColor}
+        fill="#000"
         fillRule="nonzero"
       />
     </svg>

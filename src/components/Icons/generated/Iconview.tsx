@@ -5,16 +5,15 @@ export const Iconview = React.memo<SvgIconProps>(
     <svg
       width={width}
       height={height}
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       style={style}
       viewBox={viewBox}
     >
-      <g fill={fillColor} fillRule="nonzero">
-        <rect width={5.455} height={5.455} rx={1} />
-        <rect x={6.545} width={5.455} height={5.455} rx={1} />
-        <rect y={6.545} width={5.455} height={5.455} rx={1} />
-        <rect x={6.545} y={6.545} width={5.455} height={5.455} rx={1} />
-      </g>
+      <rect width={5.455} height={5.455} rx={1} fill="#A7A7A7" />
+      <rect x={6.545} width={5.455} height={5.455} rx={1} fill="#A7A7A7" />
+      <rect y={6.545} width={5.455} height={5.455} rx={1} fill="#A7A7A7" />
+      <rect x={6.545} y={6.545} width={5.455} height={5.455} rx={1} fill="#A7A7A7" />
     </svg>
   ),
 );

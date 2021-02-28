@@ -15,6 +15,8 @@ export interface RenderingControllerProps {
   id?: string;
   fileUrl?: string;
   isPlay?: boolean;
+  playSpeed?: number;
+  playDirection?: -1 | 1;
   animationIndex?: number;
   motionData?: bonesTypes[];
 }
@@ -24,6 +26,8 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   id = 'container',
   fileUrl = DEFAULT_MODEL_URL,
   isPlay = false,
+  playDirection = 1,
+  playSpeed = 1,
   animationIndex = 1,
   motionData = [],
 }) => {
@@ -53,11 +57,16 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   useChangeMotion({ skeletonHelper, motionData });
   useEffect(() => {
     if (isPlay) {
+      if (!_.isUndefined(mixer)) {
+        mixer.timeScale = 1 * playSpeed * playDirection;
+      }
       currentAction?.play();
     } else {
-      currentAction?.stop();
+      if (!_.isUndefined(mixer)) {
+        mixer.timeScale = 0;
+      }
     }
-  }, [currentAction, isPlay]);
+  }, [currentAction, isPlay, mixer, playDirection, playSpeed]);
   useEffect(() => {
     if (!_.isUndefined(currentAnimationClip)) {
       ANIMATION_CLIP(currentAnimationClip);

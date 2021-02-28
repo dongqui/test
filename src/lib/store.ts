@@ -1,5 +1,6 @@
 import { makeVar } from '@apollo/client';
 import { PagesTypes } from 'components/Panels/LibraryPanel';
+import { RENDERING_DATA_TYPES } from 'interfaces/RP';
 import _ from 'lodash';
 import { INITIAL_MAIN_DATA, isClient } from 'utils';
 import { contextmenuTypes, mainDataTypes, skeletonHelpersTypes } from '../interfaces';
@@ -37,3 +38,8 @@ export const SKELETON_HELPERS = makeVar<skeletonHelpersTypes[]>(
   makeInitialData({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, initialData: undefined }),
 );
 export const ANIMATION_CLIP = makeVar<THREE.AnimationClip | undefined>(undefined);
+export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>({
+  isPlay: false,
+  playDirection: 1,
+  playSpeed: 1,
+});

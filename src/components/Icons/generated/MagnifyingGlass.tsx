@@ -10,16 +10,10 @@ export const Magnifyingglass = React.memo<SvgIconProps>(
       viewBox={viewBox}
     >
       <g transform="translate(1 1)" fill="none" fillRule="evenodd">
-        <circle
-          stroke={fillColor}
-          transform="rotate(-45 7.232 7.232)"
-          cx={7.232}
-          cy={7.232}
-          r={5}
-        />
-        <path d="M9.708 9.707a3.5 3.5 0 01-4.95 0" stroke={fillColor} strokeLinecap="round" />
+        <circle stroke="#000" transform="rotate(-45 7.232 7.232)" cx={7.232} cy={7.232} r={5} />
+        <path d="M9.708 9.707a3.5 3.5 0 01-4.95 0" stroke="#000" strokeLinecap="round" />
         <rect
-          fill={fillColor}
+          fill="#000"
           fillRule="nonzero"
           transform="rotate(-45 12.535 12.536)"
           x={11.535}

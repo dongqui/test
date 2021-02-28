@@ -11,7 +11,7 @@ export const Cursor = React.memo<SvgIconProps>(
     >
       <path
         d="M1.783 1.048l10.275 3.425-4.761 1.415a1 1 0 00-.674.674l-1.415 4.76L1.783 1.048z"
-        stroke={fillColor}
+        stroke="#000"
         fill="none"
         fillRule="evenodd"
       />
