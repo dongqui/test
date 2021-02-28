@@ -1,6 +1,6 @@
 import React from 'react';
 import { SvgIconProps } from '../index';
-export const Pause = React.memo<SvgIconProps>(
+export const PlayBack = React.memo<SvgIconProps>(
   ({ width = 10, height = 10, fillColor = '#000', viewBox = '0 0 24 24', style }) => (
     <svg
       width={width}
@@ -10,8 +10,10 @@ export const Pause = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <rect x={29} y={8} width={4} height={20} rx={1} fill="#fff" />
-      <rect x={39} y={8} width={4} height={20} rx={1} fill="#fff" />
+      <path
+        d="M1.357 9.152a1 1 0 000 1.696l13.113 8.196a1 1 0 001.53-.848V1.804a1 1 0 00-1.53-.848L1.357 9.152z"
+        fill="#fff"
+      />
     </svg>
   ),
 );
