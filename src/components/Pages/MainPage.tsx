@@ -1,15 +1,16 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import _ from 'lodash';
-import { BACKGROUND_COLOR, LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from '../../styles/common';
+import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from '../../styles/common';
 import { LibraryPanel } from '../Panels/LibraryPanel';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
-import { ANIMATION_CLIP, MAIN_DATA, SKELETON_HELPERS } from 'lib/store';
+import { ANIMATION_CLIP, RENDERING_DATA, MAIN_DATA, SKELETON_HELPERS } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import TimelinePanel from 'components/Panels/TimelinePanel';
 import { useWindowResize } from 'hooks/common/useWindowResize';
 import { PlayBack } from 'components/Icons';
 import { PlayBar } from 'components/PlayBar';
+import { LPSelect } from 'components/LPSelect';
 
 export interface MainPageProps {
   width: string;
@@ -23,18 +24,11 @@ const MainPageComponent: React.FC<MainPageProps> = ({
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const animationClip = useReactiveVar(ANIMATION_CLIP);
+  const renderingData = useReactiveVar(RENDERING_DATA);
   const [tpSize, setTpSize] = useState<{ width: number; height: number }>({
     width: window.innerWidth,
     height: window.innerHeight * TIMELINEPANEL_INFO.heightRate,
   });
-  const onClick = useCallback(() => {
-    MAIN_DATA(
-      _.map(mainData, (item) => ({
-        ...item,
-        isPlay: item.isVisualized ? !item.isPlay : item.isPlay,
-      })),
-    );
-  }, [mainData]);
   const onDrop = useCallback(() => {
     MAIN_DATA(
       _.map(mainData, (item) => ({
@@ -50,7 +44,18 @@ const MainPageComponent: React.FC<MainPageProps> = ({
   });
   return (
     <div style={{ width, height, backgroundColor, position: 'relative' }}>
-      <LibraryPanel />
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          height: `${(1 - TIMELINEPANEL_INFO.heightRate) * 100}%`,
+        }}
+      >
+        <LibraryPanel />
+        <div style={{ position: 'absolute', bottom: 0 }}>
+          <LPSelect />
+        </div>
+      </div>
       <Rnd
         style={{
           zIndex: 200,
@@ -63,7 +68,6 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         }}
         disableDragging
         onDrop={onDrop}
-        onClick={onClick}
       >
         <RenderingController
           animationIndex={1}
@@ -73,7 +77,9 @@ const MainPageComponent: React.FC<MainPageProps> = ({
             _.find(mainData, ['isVisualized', true])?.url
           }`}
           width="100%"
-          isPlay={_.find(mainData, ['isVisualized', true])?.isPlay}
+          isPlay={renderingData.isPlay}
+          playDirection={renderingData.playDirection}
+          playSpeed={renderingData.playSpeed}
           motionData={[]}
         />
       </Rnd>

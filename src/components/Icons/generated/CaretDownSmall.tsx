@@ -11,7 +11,7 @@ export const CaretDownSmall = React.memo<SvgIconProps>(
     >
       <path
         d="M2.846 3.316a.2.2 0 00.308 0L5.227.828A.2.2 0 005.073.5H.927a.2.2 0 00-.154.328l2.073 2.488z"
-        fill={fillColor}
+        fill="#000"
         fillRule="nonzero"
       />
     </svg>

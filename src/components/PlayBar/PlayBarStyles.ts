@@ -2,7 +2,7 @@ import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { NumberArray } from 'd3';
 import { rem } from 'utils';
-import { BACKGROUND_COLOR, GRAY200, GRAY500, GRAY600 } from '../../styles/common';
+import { PLAYBAR_BACKGROUND_COLOR, GRAY200, GRAY500, GRAY600 } from '../../styles/common';
 
 interface IndicatorTextProps {
   marginLeft?: number;
@@ -25,7 +25,7 @@ export const IndicatorWrapper = styled.div`
   display: flex;
   align-items: center;
   flex-direction: row;
-  background-color: ${BACKGROUND_COLOR};
+  background-color: ${PLAYBAR_BACKGROUND_COLOR};
 `;
 export const IndicatorText = styled.span<IndicatorTextProps>`
   font-size: ${FONT_SIZE}rem;
@@ -57,7 +57,7 @@ export const DropdownWrapper = styled.div<DropdownWrapperProps>`
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: ${BACKGROUND_COLOR};
+  background-color: ${PLAYBAR_BACKGROUND_COLOR};
   position: relative;
   ${(props) =>
     (props.isSelected ?? false) &&
@@ -90,7 +90,7 @@ export const DropdownWrapper = styled.div<DropdownWrapperProps>`
 export const ModeSelectWrapper = styled.div`
   width: ${rem(73)}rem;
   height: ${rem(36)}rem;
-  background-color: ${BACKGROUND_COLOR};
+  background-color: ${PLAYBAR_BACKGROUND_COLOR};
   border-radius: ${BORDER_RADIUS}rem;
   display: flex;
   flex-direction: row;
@@ -116,14 +116,10 @@ export const ModeSelectIconWrapper = styled.div<ModeSelectIconWrapperProps>`
 export const PlayBoxWrapper = styled.div`
   width: ${rem(180)}rem;
   height: ${rem(36)}rem;
-  background-color: ${BACKGROUND_COLOR};
+  background-color: ${PLAYBAR_BACKGROUND_COLOR};
   border-radius: ${BORDER_RADIUS}rem;
   display: flex;
   flex-direction: row;
-
-  :hover {
-    background-color: ${HOVER_COLOR};
-  }
 `;
 export const PlayBoxIconWrapper = styled.div`
   width: ${rem(36)}rem;
@@ -132,6 +128,10 @@ export const PlayBoxIconWrapper = styled.div`
   justify-content: center;
   align-items: center;
   cursor: pointer;
+
+  :hover {
+    background-color: ${HOVER_COLOR};
+  }
 `;
 export const PlayBoxIconDoubleWrapper = styled.div`
   width: ${rem(72)}rem;
@@ -143,7 +143,7 @@ export const PlayBoxIconDoubleWrapper = styled.div`
 `;
 export const PlayBarWrapper = styled.div`
   width: 100%;
-  background-color: ${BACKGROUND_COLOR};
+  background-color: ${PLAYBAR_BACKGROUND_COLOR};
   display: flex;
   flex-direction: row;
   align-items: center;

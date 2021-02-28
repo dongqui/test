@@ -6,36 +6,24 @@ import { rem } from 'utils';
 import * as S from './PlayBarStyles';
 
 export interface DropdownProps {
-  data: { key: string; name: string; isSelected: boolean }[];
-  onSelect: ({ key }: { key: string }) => void;
+  data: { key: number; name: string; isSelected: boolean }[];
+  onSelect: ({ key }: { key: number }) => void;
 }
 
 const DropdownComponent: React.FC<DropdownProps> = ({
   data = [
-    { key: '0.25x', name: '0.25x', isSelected: false },
-    { key: '0.5x', name: '0.5x', isSelected: false },
-    { key: '1x', name: '1x', isSelected: true },
-    { key: '1.25x', name: '1.25x', isSelected: false },
-    { key: '1.75x', name: '1.75x', isSelected: false },
-    { key: '2x', name: '2x', isSelected: false },
+    { key: 0.25, name: '0.25x', isSelected: false },
+    { key: 0.5, name: '0.5x', isSelected: false },
+    { key: 1, name: '1x', isSelected: true },
+    { key: 1.25, name: '1.25x', isSelected: false },
+    { key: 11.75, name: '1.75x', isSelected: false },
+    { key: 2, name: '2x', isSelected: false },
   ],
   onSelect = () => {},
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const handleOutSideClick = (e: MouseEvent) => {
-      const target = e.target as Node;
-      const isContains = wrapperRef.current?.contains(target);
-      if (!isContains) {
-        setIsOpen(false);
-      }
-    };
-    window.addEventListener('click', handleOutSideClick);
-    return () => {
-      window.removeEventListener('click', handleOutSideClick);
-    };
-  }, []);
+  const wrapperRef = useRef<HTMLDivElement | any>(null);
+  useOutsideClick({ ref: wrapperRef, event: () => setIsOpen(false) });
   return (
     <div ref={wrapperRef}>
       {isOpen ? (

@@ -14,6 +14,7 @@ import { Loading } from 'components/Loading';
 import { DEFAULT_MODEL_URL } from 'utils';
 import { fnFileDelete, fnFileUpload } from 'hooks/common/useFileUpload';
 import { fnApi } from 'hooks/common/useApi';
+import { LPSelect } from 'components/LPSelect';
 
 export interface PagesTypes {
   key: string;

@@ -11,7 +11,7 @@ export const ArrowDown = React.memo<SvgIconProps>(
     >
       <path
         d="M5.47 12.53a.75.75 0 001.06 0l4.773-4.773a.75.75 0 00-1.06-1.06L6 10.939 1.757 6.697a.75.75 0 10-1.06 1.06L5.47 12.53zM5.25 0v12h1.5V0h-1.5z"
-        fill={fillColor}
+        fill="#000"
         fillRule="nonzero"
       />
     </svg>

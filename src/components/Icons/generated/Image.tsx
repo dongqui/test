@@ -10,7 +10,7 @@ export const Image = React.memo<SvgIconProps>(
       viewBox={viewBox}
     >
       <g fillRule="nonzero" fill="none">
-        <rect fill={fillColor} width={10} height={10} rx={1} />
+        <rect fill="#000" width={10} height={10} rx={1} />
         <path fill="#E7E7E7" d="M4.968 3.636L8.117 8.41H1.818z" />
         <circle fill="#E7E7E7" cx={7.272} cy={2.727} r={1} />
       </g>

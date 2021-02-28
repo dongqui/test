@@ -9,7 +9,7 @@ export const CheckSquare = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <rect width={12} height={12} rx={2} fill={fillColor} fillRule="nonzero" />
+      <rect width={12} height={12} rx={2} fill="#000" fillRule="nonzero" />
     </svg>
   ),
 );
