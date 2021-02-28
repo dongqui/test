@@ -9,7 +9,7 @@ export const Record = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <circle cx={6} cy={6} r={6} fill={fillColor} fillRule="nonzero" />
+      <circle cx={6} cy={6} r={6} fill="#000" fillRule="nonzero" />
     </svg>
   ),
 );

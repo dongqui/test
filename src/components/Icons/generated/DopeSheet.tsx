@@ -25,7 +25,7 @@ export const Dopesheet = React.memo<SvgIconProps>(
         />
       </defs>
       <g fill="none" fillRule="evenodd">
-        <path stroke={fillColor} d="M4.25 2.5h5M11.25 2.5h5" />
+        <path stroke="#000" d="M4.25 2.5h5M11.25 2.5h5" />
         <path d="M2.75 4.5a2 2 0 100-4 2 2 0 000 4zm0-1a1 1 0 100-2 1 1 0 000 2z" fill="#398BFF" />
         <g>
           <mask id="Dope_sheet_svg__b" fill="#fff">
@@ -33,7 +33,7 @@ export const Dopesheet = React.memo<SvgIconProps>(
           </mask>
           <path
             d="M3.75 2.5a1 1 0 01-1 1v2a3 3 0 003-3h-2zm-1-1a1 1 0 011 1h2a3 3 0 00-3-3v2zm-1 1a1 1 0 011-1v-2a3 3 0 00-3 3h2zm1 1a1 1 0 01-1-1h-2a3 3 0 003 3v-2zm0-1v2a2 2 0 002-2h-2zm0 0h2a2 2 0 00-2-2v2zm0 0v-2a2 2 0 00-2 2h2zm0 0h-2a2 2 0 002 2v-2z"
-            fill={fillColor}
+            fill="#000"
             fillRule="nonzero"
             mask="url(#Dope_sheet_svg__b)"
           />
@@ -45,7 +45,7 @@ export const Dopesheet = React.memo<SvgIconProps>(
           </mask>
           <path
             d="M3.25 2.5a1 1 0 01-1 1v2a3 3 0 003-3h-2zm-1-1a1 1 0 011 1h2a3 3 0 00-3-3v2zm-1 1a1 1 0 011-1v-2a3 3 0 00-3 3h2zm1 1a1 1 0 01-1-1h-2a3 3 0 003 3v-2zm0-1v2a2 2 0 002-2h-2zm0 0h2a2 2 0 00-2-2v2zm0 0v-2a2 2 0 00-2 2h2zm0 0h-2a2 2 0 002 2v-2z"
-            fill={fillColor}
+            fill="#000"
             fillRule="nonzero"
             mask="url(#Dope_sheet_svg__d)"
           />
@@ -57,7 +57,7 @@ export const Dopesheet = React.memo<SvgIconProps>(
           </mask>
           <path
             d="M3.25 2.5a1 1 0 01-1 1v2a3 3 0 003-3h-2zm-1-1a1 1 0 011 1h2a3 3 0 00-3-3v2zm-1 1a1 1 0 011-1v-2a3 3 0 00-3 3h2zm1 1a1 1 0 01-1-1h-2a3 3 0 003 3v-2zm0-1v2a2 2 0 002-2h-2zm0 0h2a2 2 0 00-2-2v2zm0 0v-2a2 2 0 00-2 2h2zm0 0h-2a2 2 0 002 2v-2z"
-            fill={fillColor}
+            fill="#000"
             fillRule="nonzero"
             mask="url(#Dope_sheet_svg__f)"
           />

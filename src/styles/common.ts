@@ -10,7 +10,7 @@ export const TIMELINEPANEL_INFO = {
 export const LIBRARYPANEL_INFO = {
   widthRem: rem(230),
   widthPx: 230,
-  widthRate: 0.15,
+  widthRate: 0.14,
   heightRem: rem(540),
   heightPx: 540,
 };
@@ -25,4 +25,5 @@ export const GRAY200 = 'rgba(36, 36, 36, 1)';
 export const GRAY300 = 'rgba(48, 48, 48, 1)';
 export const GRAY500 = 'rgba(167, 167, 167, 1)';
 export const GRAY600 = 'rgba(226, 226, 226, 1)';
-export const BACKGROUND_COLOR = GRAY300;
+export const PLAYBAR_BACKGROUND_COLOR = GRAY300;
+export const BACKGROUND_COLOR = 'black';

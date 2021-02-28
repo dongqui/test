@@ -1,24 +1,15 @@
+import { useReactiveVar } from '@apollo/client';
 import { Pause, Play, PlayBack, Range, Rectangle } from 'components/Icons';
 import { Circle } from 'components/Icons/generated/Circle';
+import { RENDERING_DATA } from 'lib/store';
 import _ from 'lodash';
 import React from 'react';
 import * as S from './PlayBarStyles';
 
-export interface PlayBoxProps {
-  isPlay: boolean;
-  isRange: boolean;
-  onClickPlay: () => void;
-  onClickStop: () => void;
-  onClickRange: () => void;
-}
+export interface PlayBoxProps {}
 
-const PlayBoxComponent: React.FC<PlayBoxProps> = ({
-  isPlay = false,
-  isRange = false,
-  onClickPlay = () => {},
-  onClickStop = () => {},
-  onClickRange = () => {},
-}) => {
+const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
+  const renderingData = useReactiveVar(RENDERING_DATA);
   return (
     <S.PlayBoxWrapper>
       <S.PlayBoxIconWrapper>
@@ -27,16 +18,22 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({
       <S.PlayBoxIconWrapper>
         <Rectangle width={18} height={18} viewBox="0 0 18 18" />
       </S.PlayBoxIconWrapper>
-      {isPlay ? (
-        <S.PlayBoxIconDoubleWrapper>
+      {renderingData.isPlay ? (
+        <S.PlayBoxIconDoubleWrapper
+          onClick={() => RENDERING_DATA({ ...renderingData, isPlay: false })}
+        >
           <Pause width={72} height={36} viewBox="0 0 72 36" />
         </S.PlayBoxIconDoubleWrapper>
       ) : (
         <>
-          <S.PlayBoxIconWrapper>
+          <S.PlayBoxIconWrapper
+            onClick={() => RENDERING_DATA({ ...renderingData, playDirection: -1, isPlay: true })}
+          >
             <PlayBack width={20} height={16} viewBox="0 0 16 20" />
           </S.PlayBoxIconWrapper>
-          <S.PlayBoxIconWrapper>
+          <S.PlayBoxIconWrapper
+            onClick={() => RENDERING_DATA({ ...renderingData, playDirection: 1, isPlay: true })}
+          >
             <Play width={20} height={16} viewBox="0 0 16 20" />
           </S.PlayBoxIconWrapper>
         </>

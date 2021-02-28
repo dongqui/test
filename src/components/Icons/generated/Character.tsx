@@ -10,10 +10,10 @@ export const Character = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <circle cx={12} cy={9} r={2} fill={fillColor} />
+      <circle cx={12} cy={9} r={2} fill="#000" />
       <path
         d="M11.584 11.624a.5.5 0 01.832 0l3.066 4.599a.5.5 0 01-.416.777H8.934a.5.5 0 01-.416-.777l3.066-4.599z"
-        fill={fillColor}
+        fill="#000"
       />
     </svg>
   ),

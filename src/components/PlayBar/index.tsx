@@ -1,3 +1,5 @@
+import { useReactiveVar } from '@apollo/client';
+import { RENDERING_DATA } from 'lib/store';
 import _ from 'lodash';
 import React from 'react';
 import { rem } from 'utils';
@@ -11,6 +13,7 @@ import { PlayBox } from './PlayBox';
 export interface PlayBarProps {}
 
 const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
+  const renderingData = useReactiveVar(RENDERING_DATA);
   return (
     <S.PlayBarWrapper>
       <LayerSelect
@@ -31,50 +34,55 @@ const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
       <div style={{ position: 'absolute', left: '15%' }}>
         <Indicator end={300} now={100} start={100} />
       </div>
-      <div style={{ position: 'absolute', left: '45%', display: 'flex', flexDirection: 'row' }}>
-        <PlayBox
-          isPlay={false}
-          isRange={false}
-          onClickPlay={() => {}}
-          onClickRange={function noRefCheck() {}}
-          onClickStop={function noRefCheck() {}}
-        />
-
-        <Dropdown
-          data={[
-            {
-              isSelected: false,
-              key: '0.25x',
-              name: '0.25x',
-            },
-            {
-              isSelected: false,
-              key: '0.5x',
-              name: '0.5x',
-            },
-            {
-              isSelected: true,
-              key: '1x',
-              name: '1x',
-            },
-            {
-              isSelected: false,
-              key: '1.25x',
-              name: '1.25x',
-            },
-            {
-              isSelected: false,
-              key: '1.75x',
-              name: '1.75x',
-            },
-            {
-              isSelected: false,
-              key: '2x',
-              name: '2x',
-            },
-          ]}
-          onSelect={() => {}}
-        />
+      <div
+        style={{
+          position: 'absolute',
+          left: '45%',
+          display: 'flex',
+          flexDirection: 'row',
+          paddingRight: '5%',
+        }}
+      >
+        <PlayBox />
+        <div style={{ position: 'absolute', right: 0 }}>
+          <Dropdown
+            data={[
+              {
+                isSelected: _.isEqual(renderingData.playSpeed, 0.25),
+                key: 0.25,
+                name: '0.25x',
+              },
+              {
+                isSelected: _.isEqual(renderingData.playSpeed, 0.5),
+                key: 0.5,
+                name: '0.5x',
+              },
+              {
+                isSelected: _.isEqual(renderingData.playSpeed, 1),
+                key: 1,
+                name: '1x',
+              },
+              {
+                isSelected: _.isEqual(renderingData.playSpeed, 1.25),
+                key: 1.25,
+                name: '1.25x',
+              },
+              {
+                isSelected: _.isEqual(renderingData.playSpeed, 1.75),
+                key: 1.75,
+                name: '1.75x',
+              },
+              {
+                isSelected: _.isEqual(renderingData.playSpeed, 2),
+                key: 2,
+                name: '2x',
+              },
+            ]}
+            onSelect={({ key }) => {
+              RENDERING_DATA({ ...renderingData, playSpeed: key });
+            }}
+          />
+        </div>
       </div>
       <ModeSelect
         data={[

@@ -11,7 +11,7 @@ export const CaretLeftMedium = React.memo<SvgIconProps>(
     >
       <path
         d="M.783 3.717a.4.4 0 000 .566l3.034 3.034a.4.4 0 00.683-.283V.966a.4.4 0 00-.683-.283L.783 3.717z"
-        fill={fillColor}
+        fill="#000"
         fillRule="nonzero"
       />
     </svg>

@@ -9,7 +9,7 @@ export const ArrowShrink = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <g stroke={fillColor} strokeWidth={2} fill="none" fillRule="evenodd" strokeLinecap="round">
+      <g stroke="#000" strokeWidth={2} fill="none" fillRule="evenodd" strokeLinecap="round">
         <path d="M15 6h-5V1M1 10h5v5" />
       </g>
     </svg>

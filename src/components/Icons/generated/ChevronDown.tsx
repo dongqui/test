@@ -9,7 +9,7 @@ export const ChevronDown = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <path d="M9 1L5 5 1 1" stroke={fillColor} fill="none" fillRule="evenodd" />
+      <path d="M9 1L5 5 1 1" stroke="#000" fill="none" fillRule="evenodd" />
     </svg>
   ),
 );
