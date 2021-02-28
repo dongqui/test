@@ -1,13 +1,15 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import _ from 'lodash';
-import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from '../../styles/common';
+import { BACKGROUND_COLOR, LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from '../../styles/common';
 import { LibraryPanel } from '../Panels/LibraryPanel';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
 import { ANIMATION_CLIP, MAIN_DATA, SKELETON_HELPERS } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import TimelinePanel from 'components/Panels/TimelinePanel';
 import { useWindowResize } from 'hooks/common/useWindowResize';
+import { PlayBack } from 'components/Icons';
+import { PlayBar } from 'components/PlayBar';
 
 export interface MainPageProps {
   width: string;
@@ -95,6 +97,9 @@ const MainPageComponent: React.FC<MainPageProps> = ({
           setTpSize({ ...tpSize, height: ref.offsetHeight });
         }}
       >
+        <div style={{ width: '100%', position: 'absolute', top: 0 }}>
+          <PlayBar />
+        </div>
         <TimelinePanel
           width={tpSize.width}
           height={tpSize.height}

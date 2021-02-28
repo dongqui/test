@@ -1,6 +1,6 @@
 import React from 'react';
 import { SvgIconProps } from '../index';
-export const Camera = React.memo<SvgIconProps>(
+export const Layer = React.memo<SvgIconProps>(
   ({ width = 10, height = 10, fillColor = '#000', viewBox = '0 0 24 24', style }) => (
     <svg
       width={width}
@@ -11,15 +11,8 @@ export const Camera = React.memo<SvgIconProps>(
       viewBox={viewBox}
     >
       <path
-        d="M23 17a2 2 0 01-2 2H3a2 2 0 01-2-2V6a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z"
-        stroke="#A7A7A7"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 15a4 4 0 100-8 4 4 0 000 8z"
-        stroke="#A7A7A7"
+        d="M11 1L1 6l10 5 10-5-10-5zM1 16l10 5 10-5M1 11l10 5 10-5"
+        stroke="#fff"
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
