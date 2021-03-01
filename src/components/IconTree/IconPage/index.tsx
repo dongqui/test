@@ -35,8 +35,8 @@ const IconPageComponent: React.FC<IconPageProps> = ({
         />
       </S.ArrowBackWrapper>
       {_.map(pages, (item: PagesTypes, index) => (
-        <>
-          <S.PageText key={index}>{item.name}</S.PageText>
+        <div key={index}>
+          <S.PageText>{item.name}</S.PageText>
           {!_.isEqual(index, _.size(pages) - 1) && (
             <div style={{ flexBasis: `${rem(5)}rem` }}>
               <ArrowForward
@@ -47,7 +47,7 @@ const IconPageComponent: React.FC<IconPageProps> = ({
               />
             </div>
           )}
-        </>
+        </div>
       ))}
     </S.IconPageWrapper>
   );

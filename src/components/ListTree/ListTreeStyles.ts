@@ -26,6 +26,7 @@ export const ListRowWrapper = styled.div<ListRowWrapperProps>`
   flex-direction: row;
   align-items: center;
   padding-left: ${(props) => props.paddingLeft ?? 0}rem;
+  cursor: pointer;
 
   :hover {
     border: 1px solid ${PRIMARY_BLUE};
@@ -54,3 +55,4 @@ export const ListViewWrapper = styled.div<ListViewWrapperProps>`
   -webkit-user-select: none;
   user-select: none;
 `;
+export const ArrowWrapper = styled.div``;

@@ -17,8 +17,9 @@ const LayerSelectComponent: React.FC<LayerSelectProps> = ({
 }) => {
   return (
     <S.ModeSelectWrapper>
-      {_.map(data, (item) => (
+      {_.map(data, (item, index) => (
         <S.ModeSelectIconWrapper
+          key={index}
           isSelected={item.isSelected}
           onClick={() => onSelect({ key: item.key })}
         >
