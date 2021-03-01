@@ -1,6 +1,6 @@
 import React from 'react';
 import { SvgIconProps } from '../index';
-export const ArrowRight = React.memo<SvgIconProps>(
+export const Motion = React.memo<SvgIconProps>(
   ({ width = 10, height = 10, fillColor = '#000', viewBox = '0 0 24 24', style }) => (
     <svg
       width={width}
@@ -10,10 +10,8 @@ export const ArrowRight = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <path
-        d="M3.717 3.717a.4.4 0 010 .566L.683 7.317A.4.4 0 010 7.034V.966A.4.4 0 01.683.683l3.034 3.034z"
-        fill="#fff"
-      />
+      <circle cx={13} cy={12} transform="rotate(180 13 12)" fill="#fff" r={4} />
+      <path d="M8 9s-1 1.125-1 3 1 3 1 3" stroke="#fff" strokeLinecap="round" />
     </svg>
   ),
 );

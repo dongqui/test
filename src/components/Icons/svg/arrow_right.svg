@@ -1,11 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="13px" height="12px" viewBox="0 0 13 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>arrow_right</title>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="A0" transform="translate(-798.000000, -1447.000000)" fill="#000000" fill-rule="nonzero">
-            <g id="arrow_right" transform="translate(798.000000, 1447.000000)">
-                <path d="M12.5303,6.5303 C12.8232,6.2374 12.8232,5.7626 12.5303,5.4697 L7.7574,0.6967 C7.4645,0.40381 6.9896,0.40381 6.6967,0.6967 C6.4038,0.98959 6.4038,1.46447 6.6967,1.75736 L10.9393,6 L6.6967,10.2426 C6.4038,10.5355 6.4038,11.0104 6.6967,11.3033 C6.9896,11.5962 7.4645,11.5962 7.7574,11.3033 L12.5303,6.5303 Z M0,6.75 L12,6.75 L12,5.25 L0,5.25 L0,6.75 Z" id="Shape"></path>
-            </g>
-        </g>
-    </g>
+<svg width="4" height="8" viewBox="0 0 4 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3.71728 3.71716C3.87349 3.87337 3.87349 4.12663 3.71728 4.28284L0.682965 7.31716C0.43098 7.56914 0.000123457 7.39068 0.000123425 7.03431L0.000122158 0.965686C0.000122126 0.609324 0.430979 0.430857 0.682965 0.682843L3.71728 3.71716Z" fill="white"/>
 </svg>
