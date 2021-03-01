@@ -10,5 +10,7 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
     parentKey: 'root',
     url: DEFAULT_MODEL_URL,
     isVisualized: true,
+    isExpanded: true,
+    motions: [{ name: 'motion1' }, { name: 'motion2' }, { name: 'motion2' }],
   },
 ];

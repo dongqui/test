@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from '../../styles/common';
 import { LibraryPanel } from '../Panels/LibraryPanel';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
-import { ANIMATION_CLIP, RENDERING_DATA, MAIN_DATA, SKELETON_HELPERS } from 'lib/store';
+import { ANIMATION_CLIP, RENDERING_DATA, MAIN_DATA, SKELETON_HELPERS, LP_MODE } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import TimelinePanel from 'components/Panels/TimelinePanel';
 import { useWindowResize } from 'hooks/common/useWindowResize';
@@ -25,6 +25,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
   const mainData = useReactiveVar(MAIN_DATA);
   const animationClip = useReactiveVar(ANIMATION_CLIP);
   const renderingData = useReactiveVar(RENDERING_DATA);
+  const lpmode = useReactiveVar(LP_MODE);
   const [tpSize, setTpSize] = useState<{ width: number; height: number }>({
     width: window.innerWidth,
     height: window.innerHeight * TIMELINEPANEL_INFO.heightRate,
