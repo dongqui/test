@@ -1,7 +1,7 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
 import { FORMAT_TYPES, mainDataTypes } from 'interfaces';
-import { MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
+import { LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -15,6 +15,7 @@ import { DEFAULT_MODEL_URL } from 'utils';
 import { fnFileDelete, fnFileUpload } from 'hooks/common/useFileUpload';
 import { fnApi } from 'hooks/common/useApi';
 import { LPSelect } from 'components/LPSelect';
+import { ListView } from 'components/ListTree/ListView';
 
 export interface PagesTypes {
   key: string;
@@ -32,6 +33,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
+  const lpmode = useReactiveVar(LP_MODE);
   const [loading, setLoading] = useState(false);
   const onChangeSearchText = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     SEARCH_WORD(e.target.value);
@@ -114,7 +116,11 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
       <IconPage />
-      <IconView height="100%" width="100%" />
+      {_.isEqual(lpmode, 'iconview') ? (
+        <IconView height="100%" width="100%" />
+      ) : (
+        <ListView height="100%" width="100%" />
+      )}
     </S.LibraryPanelWrapper>
   );
 };
