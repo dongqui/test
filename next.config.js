@@ -6,7 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({ enabled: false });
 module.exports = withBundleAnalyzer(withPWA({
   distDir: '_next',
   pwa: {
-    disable: process.env.NEXT_PUBLIC_IS_DEV === 'true',
+    disable: process.env.NODE_ENV === 'development',
     dest: 'pwa',
   },
   typescript: {
