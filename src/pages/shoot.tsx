@@ -3,12 +3,12 @@ import styled from '@emotion/styled';
 import { useSaveLocalStorage } from 'hooks/common/useSaveLocalStorage';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useRef } from 'react';
+import { isClient } from 'utils/const';
 import { Contextmenu } from '../components/Contextmenu';
 import { MainPage } from '../components/Pages/MainPage';
 import { useOutsideClick } from '../hooks/common/useOutsideClick';
 import { CONTEXTMENU_INFO, MAIN_DATA, SKELETON_HELPERS, STORE_DATA_NAMES } from '../lib/store';
 import { GRAY200 } from '../styles/common';
-import { isClient } from '../utils';
 
 interface ContextmenuProps {
   top: string;

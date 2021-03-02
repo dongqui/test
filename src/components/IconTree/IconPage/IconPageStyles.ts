@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { style } from 'd3';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 import { GRAY500 } from '../../../styles/common';
 
 interface IconPageStyleProps {

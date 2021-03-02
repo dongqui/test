@@ -5,9 +5,9 @@ import { RenderingPresenter } from './RenderingPresenter';
 import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
 import { bonesTypes, FORMAT_TYPES, skeletonHelpersTypes } from '../../../interfaces';
 import { CONFIG_INFOS } from './const';
-import { DEFAULT_MODEL_URL } from 'utils';
 import { useChangeMotion } from 'hooks/RP/useChangeMotion';
 import { ANIMATION_CLIP } from 'lib/store';
+import { DEFAULT_MODEL_URL } from 'utils/const';
 
 export interface RenderingControllerProps {
   width: string;

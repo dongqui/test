@@ -2,7 +2,6 @@ import { useReactiveVar } from '@apollo/client';
 import { RENDERING_DATA } from 'lib/store';
 import _ from 'lodash';
 import React from 'react';
-import { rem } from 'utils';
 import { Dropdown } from './Dropdown';
 import { Indicator } from './Indicator';
 import { LayerSelect } from './LayerSelect';

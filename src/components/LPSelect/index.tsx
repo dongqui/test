@@ -8,7 +8,7 @@ import { LP_MODE } from 'lib/store';
 import _ from 'lodash';
 import React from 'react';
 import { GRAY500, PRIMARY_BLUE } from 'styles/common';
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 import * as S from './LPSelectStyles';
 
 export interface LPSelectProps {}

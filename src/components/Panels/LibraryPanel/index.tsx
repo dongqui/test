@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FORMAT_TYPES, mainDataTypes } from 'interfaces';
+import { FORMAT_TYPES, mainDataTypes, motionTypes } from 'interfaces';
 import { LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
@@ -11,11 +11,12 @@ import { IconView } from '../../IconTree/IconView';
 import { InputLP } from '../../Input/InputLP';
 import * as S from './LibraryPanelStyles';
 import { Loading } from 'components/Loading';
-import { DEFAULT_MODEL_URL } from 'utils';
 import { fnFileDelete, fnFileUpload } from 'hooks/common/useFileUpload';
 import { fnApi } from 'hooks/common/useApi';
 import { LPSelect } from 'components/LPSelect';
 import { ListView } from 'components/ListTree/ListView';
+import { DEFAULT_MODEL_URL } from 'utils/const';
+import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
 
 export interface PagesTypes {
   key: string;
@@ -84,14 +85,30 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
           return false;
         }
       }
+      const url = _.isEqual(extension, FORMAT_TYPES.glb)
+        ? URL.createObjectURL(acceptedFiles[0])
+        : convertedFileUrl;
+      const { result, error, msg } = await fnGetAnimationData({ url });
+      if (error) {
+        alert(msg);
+        setLoading(false);
+        return false;
+      }
+      const motions: motionTypes[] = [];
+      _.forEach(result, (item) => {
+        motions.push({
+          key: item?.uuid,
+          name: item?.name,
+          tracks: _.cloneDeep(item?.tracks),
+        });
+      });
       const newData: mainDataTypes = {
         key: uuidv4(),
         isChild: true,
         name: acceptedFiles[0].name,
-        url: _.isEqual(extension, FORMAT_TYPES.glb)
-          ? URL.createObjectURL(acceptedFiles[0])
-          : convertedFileUrl,
+        url,
         parentKey: _.last(pages)?.key,
+        motions,
       };
       MAIN_DATA(_.concat(mainData, newData));
       setLoading(false);

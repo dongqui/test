@@ -3,7 +3,7 @@ import { ArrowDown, ArrowRight, ModelIcon, Motion } from 'components/Icons';
 import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 import * as S from './ListTreeStyles';
 
 export interface ListRowProps {

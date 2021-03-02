@@ -7,7 +7,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CONTEXTMENU_INFO, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/store';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
-import { AnyAttrs } from '@tensorflow/tfjs';
 import { useShortcut } from 'hooks/common/useShortcut';
 
 export interface IconViewProps {

@@ -11,6 +11,10 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
     url: DEFAULT_MODEL_URL,
     isVisualized: true,
     isExpanded: true,
-    motions: [{ name: 'motion1' }, { name: 'motion2' }, { name: 'motion2' }],
+    motions: [
+      { key: '0', name: 'motion1', tracks: [] },
+      { key: '1', name: 'motion2', tracks: [] },
+      { key: '2', name: 'motion2', tracks: [] },
+    ],
   },
 ];

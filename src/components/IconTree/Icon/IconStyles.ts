@@ -1,7 +1,7 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { FaFolder } from 'react-icons/fa';
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 import { PRIMARY_BLUE } from '../../../styles/common';
 
 const TOP_HEIGHT = rem(48);

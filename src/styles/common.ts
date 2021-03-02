@@ -1,4 +1,4 @@
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 
 /*
     패널 비율
