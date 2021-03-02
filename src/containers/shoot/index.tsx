@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NextPage } from 'next';
 import _ from 'lodash';
 import styled from '@emotion/styled';
@@ -37,6 +37,14 @@ const ShootPage: NextPage<Props> = () => {
     },
   });
 
+  const [isServer, setIsServer] = useState(true);
+
+  useEffect(() => {
+    if (window) {
+      setIsServer(false);
+    }
+  }, []);
+
   useSaveLocalStorage({ name: `${STORE_DATA_NAMES.mainData}`, state: mainData });
   // useSaveLocalStorage({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, state: skeletonHelpers });
 
@@ -57,6 +65,9 @@ const ShootPage: NextPage<Props> = () => {
           />
         </ContextMenuWrapper>
       )}
+      {/* {!isServer && (
+        <MainPage width={`${window.innerWidth}px`} height={`${window.innerHeight}px`} />
+      )} */}
       {isClient && <MainPage width={`${window.innerWidth}px`} height={`${window.innerHeight}px`} />}
     </main>
   );
