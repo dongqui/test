@@ -1,9 +1,26 @@
-.rendering {
-  z-index: 200;
-}
+// $base: 0;
+// $above: 1;
+// $below: -1;
 
-.timeline {
-  position: absolute;
-  bottom: 0;
-  z-index: 300;
-}
+// $panelZIndex: (
+//   'library': $base + $above,
+//   'rendering': $base  + $above,
+//   'control': $base + $above,
+//   'timeline': $base + $above,
+// );
+
+// .library {
+//   z-index: map-get($panelZIndex, 'library');
+// }
+
+// .rendering {
+//   z-index: map-get($panelZIndex, 'rendering');
+// }
+
+// .control {
+//   z-index: map-get($panelZIndex, 'control');
+// }
+
+// .timeline {
+//   z-index: map-get($panelZIndex, 'timeline');
+// }

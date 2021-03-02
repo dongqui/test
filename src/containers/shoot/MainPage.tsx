@@ -75,8 +75,6 @@ const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'b
   });
 
   const handleResizeStop = (e: any, direction: any, ref: any, delta: any, position: any) => {
-    console.log('ref');
-    console.log(ref.id);
     const panelRefId = _.split(ref.id, '_')[1];
 
     switch (panelRefId) {
@@ -113,12 +111,23 @@ const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'b
       }
 
       case 'control': {
-        console.log('control');
+        const startUnitIndex = ref.style.width.indexOf('px');
+        const controlWidth = ref.style.width.substr(0, startUnitIndex);
+
+        setRenderingPanel({
+          ...renderingPanel,
+          width: window.innerWidth - libraryPanel.width - controlWidth,
+        });
+
+        setControlPanel({
+          ...controlPanel,
+          width: ref.style.width,
+          x: position.x,
+        });
         break;
       }
 
       default: {
-        console.log(panelRefId);
         break;
       }
     }
@@ -132,6 +141,9 @@ const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'b
     });
   };
 
+  // 브라우저 Resize에 대한 Panel Resize
+  useEffect(() => {}, []);
+
   return (
     <>
       <Rnd
@@ -144,6 +156,7 @@ const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'b
         enableResizing={false}
       >
         <Rnd
+          className={cx('library')}
           disableDragging
           id="wrapper_library"
           onResizeStop={handleResizeStop}
@@ -155,11 +168,11 @@ const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'b
         >
           <div
             style={{
-              backgroundColor: 'black',
+              backgroundColor: 'blue',
               height: '100%',
             }}
           >
-            a
+            aassssssssssssssssssssssssssssss
           </div>
         </Rnd>
         <Rnd
@@ -196,8 +209,10 @@ const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'b
           />
         </Rnd>
         <Rnd
+          className={cx('control')}
           id="wrapper_control"
           disableDragging
+          enableResizing={{ left: true }}
           onResizeStop={handleResizeStop}
           onDrop={handleDrop}
           onClick={handleClick}
@@ -252,8 +267,9 @@ const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'b
         enableResizing={{ top: true }}
         disableDragging={true}
       >
+        <div style={{ height: '40px', backgroundColor: 'cyan' }}>Middle Bar</div>
         {/* <TimelinePanel width={window.innerWidth} height={window.innerHeight} /> */}
-        <div style={{ backgroundColor: 'yellow', height: '100%' }}></div>
+        <div style={{ backgroundColor: 'yellow', height: `calc(100% - 40px)` }}></div>
       </Rnd>
     </>
   );
