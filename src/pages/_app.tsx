@@ -7,7 +7,6 @@ import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { cache, useApollo } from '../lib/apolloClient';
 import 'styles/core.scss';
 import 'styles/timeline/curve.scss';
-import { isClient } from 'utils';
 import { MAIN_DATA, STORE_DATA_NAMES } from 'lib/store';
 import _ from 'lodash';
 

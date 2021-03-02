@@ -2,7 +2,7 @@ import { makeVar } from '@apollo/client';
 import { PagesTypes } from 'components/Panels/LibraryPanel';
 import { RENDERING_DATA_TYPES } from 'interfaces/RP';
 import _ from 'lodash';
-import { INITIAL_MAIN_DATA, isClient } from 'utils';
+import { INITIAL_MAIN_DATA, isClient } from 'utils/const';
 import { contextmenuTypes, mainDataTypes, skeletonHelpersTypes } from '../interfaces';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {

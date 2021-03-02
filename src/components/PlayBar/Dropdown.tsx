@@ -2,7 +2,7 @@ import { ArrowDown, ArrowDownCircle, ArrowDropdownDown, ArrowExpand } from 'comp
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 import * as S from './PlayBarStyles';
 
 export interface DropdownProps {

@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { BACKGROUND_COLOR } from 'styles/common';
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 
 export const LPSelectWrapper = styled.div`
   width: ${rem(230)}rem;

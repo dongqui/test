@@ -47,6 +47,11 @@ export interface contextmenuTypes {
   left: number;
   onClick: ({ key }: { key: string }) => void;
 }
+export interface motionTypes {
+  key: string;
+  name: string;
+  tracks: any;
+}
 export interface mainDataTypes {
   key: string;
   name: string;
@@ -59,7 +64,7 @@ export interface mainDataTypes {
   isModifying?: boolean;
   isCopied?: boolean;
   isDragging?: boolean;
-  motions?: { name: string }[];
+  motions?: motionTypes[];
 }
 export interface bonesTypes {
   name: string;

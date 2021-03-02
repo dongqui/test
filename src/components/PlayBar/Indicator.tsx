@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 import * as S from './PlayBarStyles';
 
 export interface IndicatorProps {

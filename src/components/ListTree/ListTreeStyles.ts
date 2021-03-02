@@ -1,7 +1,7 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { BACKGROUND_COLOR, PRIMARY_BLUE } from 'styles/common';
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 
 interface ListRowWrapperProps {
   paddingLeft?: number;
@@ -26,6 +26,7 @@ export const ListRowWrapper = styled.div<ListRowWrapperProps>`
   flex-direction: row;
   align-items: center;
   padding-left: ${(props) => props.paddingLeft ?? 0}rem;
+  cursor: pointer;
 
   :hover {
     border: 1px solid ${PRIMARY_BLUE};
@@ -54,3 +55,4 @@ export const ListViewWrapper = styled.div<ListViewWrapperProps>`
   -webkit-user-select: none;
   user-select: none;
 `;
+export const ArrowWrapper = styled.div``;
