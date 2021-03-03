@@ -16,10 +16,15 @@ const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
     <S.ListViewWrapper width={width} height={height}>
       {_.map(mainData, (item, index) => (
         <div key={index}>
-          <ListRow listKey={item.key} mode={item.isChild ? 'file' : 'folder'} name="Model" />
+          <ListRow
+            listKey={item.key}
+            mode={item.isChild ? 'file' : 'folder'}
+            name={item.name}
+            motionKey=""
+          />
           {item.isExpanded &&
             _.map(item?.motions ?? [], (motion) => (
-              <ListRow listKey={item.key} mode="motion" name={motion.name} />
+              <ListRow listKey={item.key} mode="motion" name={motion.name} motionKey={motion.key} />
             ))}
         </div>
       ))}

@@ -15,7 +15,6 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   pageProps,
 }) => {
   const apolloClient = useApollo(pageProps);
-  const mainData = MAIN_DATA();
   const initialAction = async () => {
     await persistCache({
       cache,

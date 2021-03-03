@@ -1,11 +1,15 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { BACKGROUND_COLOR, PRIMARY_BLUE } from 'styles/common';
+import { BACKGROUND_COLOR, GRAY200, PRIMARY_BLUE } from 'styles/common';
 import { rem } from 'utils/rem';
+import { GRAY400 } from '../../styles/common';
 
 interface ListRowWrapperProps {
   paddingLeft?: number;
   isSelected?: boolean;
+  isSelectedClicked?: boolean;
+  isVisualized?: boolean;
+  isVisualizedSelected?: boolean;
 }
 interface ListRowTextProps {
   marginLeft?: number;
@@ -20,7 +24,6 @@ const FONT_SIZE = rem(12);
 export const ListRowWrapper = styled.div<ListRowWrapperProps>`
   width: ${rem(206)}rem;
   height: ${rem(32)}rem;
-  border-radius: ${BORDER_RADIUS}rem;
   background-color: ${BACKGROUND_COLOR};
   display: flex;
   flex-direction: row;
@@ -33,6 +36,21 @@ export const ListRowWrapper = styled.div<ListRowWrapperProps>`
   }
   ${(props) =>
     props.isSelected &&
+    css`
+      background-color: ${GRAY200};
+    `}
+  ${(props) =>
+    props.isSelectedClicked &&
+    css`
+      background-color: ${GRAY400};
+    `}
+  ${(props) =>
+    props.isVisualized &&
+    css`
+      background-color: rgba(55, 133, 247, 0.2);
+    `}
+    ${(props) =>
+    props.isVisualizedSelected &&
     css`
       background-color: ${PRIMARY_BLUE};
     `}

@@ -32,7 +32,7 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   motionData = [],
 }) => {
   const [mixer, setMixer] = useState<THREE.AnimationMixer>();
-  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>();
+  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper>();
   const [animations, setAnimations] = useState<THREE.AnimationClip[]>();
   const currentAnimationClip = useMemo(() => animations?.[animationIndex], [
     animationIndex,
