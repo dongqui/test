@@ -218,8 +218,8 @@ const MainContainer: React.FC = () => {
    */
   useEffect(() => {
     const handleResize = _.debounce(() => {
-      const upperSectionRate = 1 - TIMELINE_RATE.height;
-      const timelinePanelHeight = window.innerHeight * TIMELINE_RATE.height;
+      // const upperSectionRate = 1 - TIMELINE_RATE.height;
+      // const timelinePanelHeight = window.innerHeight * TIMELINE_RATE.height;
 
       // LP min-width, max-width로 인한 RP width계산을 위한 값
       const libraryPanelWidth =
@@ -245,12 +245,14 @@ const MainContainer: React.FC = () => {
       const nextState: State = {
         upper: {
           ...state.upper,
-          height: window.innerHeight - timelinePanelHeight,
+          // height: window.innerHeight - timelinePanelHeight,
+          height: window.innerHeight - Number(state.lower.height),
         },
         lower: {
           ...state.lower,
-          height: timelinePanelHeight,
-          y: window.innerHeight * upperSectionRate,
+          height: Number(state.lower.height),
+          // y: window.innerHeight * upperSectionRate,
+          y: window.innerHeight - Number(state.lower.height),
         },
         library: {
           ...state.library,
@@ -299,6 +301,7 @@ const MainContainer: React.FC = () => {
       y: state.lower.y,
     },
     minHeight: initialState.lower.height,
+    maxHeight: innerHeight * 0.5,
   };
 
   const libraryPanel = {
@@ -394,6 +397,7 @@ const MainContainer: React.FC = () => {
         enableResizing={{ top: true }}
         onResizeStop={handleResizeStop}
         minHeight={lowerSection.minHeight}
+        maxHeight={lowerSection.maxHeight}
         size={{ ...lowerSection.size }}
         position={{ ...lowerSection.position }}
       >
