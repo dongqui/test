@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useReducer } from 'react';
 import _ from 'lodash';
 import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
@@ -7,18 +7,57 @@ import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from 'styles/common';
 import { LibraryPanel } from 'components/Panels/LibraryPanel';
 import TimelinePanel from 'components/Panels/TimelinePanel';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
-import classNames from 'classnames/bind';
-import styles from './MainPage.module.scss';
 
-const cx = classNames.bind(styles);
+/**
+ * | ------- | ------------------------- | ------- |
+ * | Library | ------- Rendering ------- | Control |
+ * | ------- | ------------------------- | ------- |
+ * | ----------------- MiddleBar ----------------- |
+ * | --------------------------------------------- |
+ * | ----------------- Timeline ------------------ |
+ * | --------------------------------------------- |
+ *
+ * UpperSection: Library, Rendering, Control
+ * LowerSection: MiddlBar, Timeline
+ */
+type Section = 'upper' | 'lower' | 'library' | 'rendering' | 'control';
 
-export interface MainPageProps {
-  width: string;
-  height: string;
-  backgroundColor?: string;
+type Action =
+  | { type: 'RESIZE'; position: 'BROWSER'; nextState: State }
+  | { type: 'RESIZE'; position: 'LOWER'; nextState: State }
+  | { type: 'RESIZE'; position: 'LIBRARY'; nextState: State }
+  | { type: 'RESIZE'; position: 'CONTROL'; nextState: State };
+
+interface Panel {
+  x: number;
+  y: number;
+  width: string | number;
+  height: string | number;
 }
 
-const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'black' }) => {
+type State = {
+  [key in Section]: Panel;
+};
+
+const reducer = (state: State, action: Action): State => {
+  switch (action.position) {
+    case 'BROWSER':
+    case 'LOWER':
+    case 'LIBRARY':
+    case 'CONTROL': {
+      return {
+        ...state,
+        ...action.nextState,
+      };
+    }
+
+    default: {
+      throw new Error('Develop Error: unexpected action type');
+    }
+  }
+};
+
+const MainContainer: React.FC = () => {
   const mainData = useReactiveVar(MAIN_DATA);
 
   const handleClick = useCallback(() => {
@@ -39,91 +78,124 @@ const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'b
     );
   }, [mainData]);
 
-  const [lowerSection, setLowerSection] = useState({
-    width: '100%',
-    height: window.innerHeight * TIMELINEPANEL_INFO.heightRate,
-    x: 0,
-    y: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
+  const [initialState] = useState<State>({
+    upper: {
+      width: '100%',
+      height: window.innerHeight - window.innerHeight * TIMELINEPANEL_INFO.heightRate,
+      x: 0,
+      y: 0,
+    },
+
+    lower: {
+      width: '100%',
+      height: window.innerHeight * TIMELINEPANEL_INFO.heightRate,
+      x: 0,
+      y: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
+    },
+
+    library: {
+      width: 230,
+      height: '100%',
+      x: 0,
+      y: 0,
+    },
+
+    rendering: {
+      width: window.innerWidth - 230 * 2,
+      height: '100%',
+      x: 230,
+      y: 0,
+    },
+
+    control: {
+      width: 230,
+      height: '100%',
+      x: window.innerWidth - 230,
+      y: 0,
+    },
   });
 
-  const [upperSection, setUpperSection] = useState({
-    width: '100%',
-    height: window.innerHeight - lowerSection.height,
-    x: 0,
-    y: 0,
-  });
-
-  const [libraryPanel, setLibraryPanel] = useState({
-    width: Math.round(window.innerWidth * LIBRARYPANEL_INFO.widthRate),
-    height: '100%',
-    x: 0,
-    y: 0,
-  });
-
-  const [renderingPanel, setRenderingPanel] = useState({
-    width: window.innerWidth - window.innerWidth * LIBRARYPANEL_INFO.widthRate * 2,
-    height: '100%',
-    x: Math.round(window.innerWidth * LIBRARYPANEL_INFO.widthRate),
-    y: 0,
-  });
-
-  const [controlPanel, setControlPanel] = useState({
-    width: Math.round(window.innerWidth * LIBRARYPANEL_INFO.widthRate),
-    height: '100%',
-    x: Math.round(window.innerWidth - libraryPanel.width),
-    y: 0,
-  });
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const handleResizeStop = (e: any, direction: any, ref: any, delta: any, position: any) => {
-    const panelRefId = _.split(ref.id, '_')[1];
+    const panelRefId = _.upperCase(_.split(ref.id, '_')[1]) as Action['position'];
 
     switch (panelRefId) {
-      case 'lower': {
+      case 'LOWER': {
         const startUnitIndex = ref.style.height.indexOf('px');
         const timelineHeight = ref.style.height.substr(0, startUnitIndex);
 
-        setLowerSection({
-          width: ref.style.width,
-          height: ref.style.height,
-          ...position,
-        });
+        const nextState: State = {
+          ...state,
+          lower: {
+            ...state.lower,
+            ...position,
+            height: timelineHeight,
+          },
+          upper: {
+            ...state.upper,
+            height: window.innerHeight - timelineHeight,
+          },
+        };
 
-        setUpperSection({
-          ...upperSection,
-          height: window.innerHeight - timelineHeight,
-        });
-        break;
-      }
-
-      case 'rendering': {
-        setLibraryPanel({
-          ...libraryPanel,
-          width: position.x,
-        });
-
-        setRenderingPanel({
-          ...renderingPanel,
-          width: ref.style.width,
-          x: position.x,
+        dispatch({
+          type: 'RESIZE',
+          position: 'LOWER',
+          nextState,
         });
 
         break;
       }
 
-      case 'control': {
+      case 'LIBRARY': {
+        const startUnitIndex = ref.style.width.indexOf('px');
+        const libraryWidth = ref.style.width.substr(0, startUnitIndex);
+
+        const nextState: State = {
+          ...state,
+          library: {
+            ...state.library,
+            width: libraryWidth,
+          },
+          rendering: {
+            ...state.rendering,
+            width: window.innerWidth - Number(state.control.width) - libraryWidth,
+            x: libraryWidth,
+          },
+        };
+
+        dispatch({
+          type: 'RESIZE',
+          position: 'LIBRARY',
+          nextState,
+        });
+
+        break;
+      }
+
+      case 'CONTROL': {
         const startUnitIndex = ref.style.width.indexOf('px');
         const controlWidth = ref.style.width.substr(0, startUnitIndex);
 
-        setRenderingPanel({
-          ...renderingPanel,
-          width: window.innerWidth - libraryPanel.width - controlWidth,
+        const nextState: State = {
+          ...state,
+          rendering: {
+            ...state.rendering,
+            width: window.innerWidth - Number(state.library.width) - controlWidth,
+          },
+          control: {
+            ...state.control,
+            width: controlWidth,
+            x: position.x,
+          },
+        };
+
+        dispatch({
+          type: 'RESIZE',
+          position: 'CONTROL',
+          nextState,
         });
 
-        setControlPanel({
-          ...controlPanel,
-          width: ref.style.width,
-          x: position.x,
-        });
         break;
       }
 
@@ -133,69 +205,93 @@ const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'b
     }
   };
 
-  const handleDragStop = (e: any, d: any) => {
-    setLowerSection({
-      ...lowerSection,
-      x: d.x,
-      y: d.y,
-    });
-  };
+  useEffect(() => {
+    // 브라우저 Resize event에 대한 Panel resize handler(delay: 100ms)
+    const handleResize = _.debounce(() => {
+      const renderingPanelWidth = Math.round(
+        window.innerWidth - Number(state.library.width) - Number(state.control.width),
+      );
 
-  // 브라우저 Resize에 대한 Panel Resize
-  useEffect(() => {}, []);
+      const timelinePanelHeight = window.innerHeight * TIMELINEPANEL_INFO.heightRate;
+
+      const nextState: State = {
+        upper: {
+          ...state.upper,
+          height: window.innerHeight - timelinePanelHeight,
+        },
+        lower: {
+          ...state.lower,
+          height: timelinePanelHeight,
+          y: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
+        },
+        library: {
+          ...state.library,
+        },
+        rendering: {
+          ...state.rendering,
+          width: renderingPanelWidth,
+        },
+        control: {
+          ...state.control,
+          x: Number(state.library.width) + Number(renderingPanelWidth),
+        },
+      };
+
+      dispatch({
+        type: 'RESIZE',
+        position: 'BROWSER',
+        nextState,
+      });
+    }, 100);
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [state.control, state.library, state.lower, state.rendering, state.upper]);
+
+  const { upper, lower, library, rendering, control } = state;
 
   return (
     <>
       <Rnd
         id="wrapper_upper"
         size={{
-          width: upperSection.width,
-          height: upperSection.height,
+          width: upper.width,
+          height: upper.height,
         }}
         disableDragging
         enableResizing={false}
       >
         <Rnd
-          className={cx('library')}
-          disableDragging
           id="wrapper_library"
+          disableDragging
+          minWidth={initialState.library.width}
+          enableResizing={{
+            right: true,
+          }}
           onResizeStop={handleResizeStop}
-          enableResizing={false}
           size={{
-            width: libraryPanel.width,
-            height: libraryPanel.height,
+            width: library.width,
+            height: library.height,
           }}
         >
-          <div
-            style={{
-              backgroundColor: 'blue',
-              height: '100%',
-            }}
-          >
-            aassssssssssssssssssssssssssssss
-          </div>
+          <LibraryPanel />
         </Rnd>
         <Rnd
-          className={cx('rendering')}
-          enableResizing={{ left: true }}
           id="wrapper_rendering"
-          // default={{
-          //   x: window.innerWidth * LIBRARYPANEL_INFO.widthRate,
-          //   y: 0,
-          //   width: `${(1 - LIBRARYPANEL_INFO.widthRate - LIBRARYPANEL_INFO.widthRate) * 100}%`,
-          //   height: '100%',
-          // }}
           size={{
-            width: renderingPanel.width,
-            height: renderingPanel.height,
+            width: rendering.width,
+            height: rendering.height,
           }}
+          enableResizing={false}
           disableDragging
-          onResizeStop={handleResizeStop}
           onDrop={handleDrop}
           onClick={handleClick}
           position={{
-            x: renderingPanel.x,
-            y: renderingPanel.y,
+            x: rendering.x,
+            y: rendering.y,
           }}
         >
           <RenderingController
@@ -209,70 +305,46 @@ const MainPage: React.FC<MainPageProps> = ({ width, height, backgroundColor = 'b
           />
         </Rnd>
         <Rnd
-          className={cx('control')}
           id="wrapper_control"
           disableDragging
+          minWidth={initialState.control.width}
           enableResizing={{ left: true }}
           onResizeStop={handleResizeStop}
           onDrop={handleDrop}
           onClick={handleClick}
           size={{
-            width: controlPanel.width,
-            height: controlPanel.height,
+            width: control.width,
+            height: control.height,
           }}
           position={{
-            x: controlPanel.x,
-            y: controlPanel.y,
+            x: control.x,
+            y: control.y,
           }}
         >
           <div style={{ backgroundColor: 'green', height: '100%' }}>asdasasd</div>
         </Rnd>
       </Rnd>
-      {/* <LibraryPanel /> */}
-      {/* <Rnd
-        className={cx('rendering')}
-        default={{
-          x: window.innerWidth * LIBRARYPANEL_INFO.widthRate,
-          y: 0,
-          width: `${(1 - LIBRARYPANEL_INFO.widthRate - LIBRARYPANEL_INFO.widthRate) * 100}%`,
-          height: `${(1 - TIMELINEPANEL_INFO.heightRate) * 100}%`,
-        }}
-        disableDragging
-        onDrop={handleDrop}
-        onClick={handleClick}
-      >
-        <RenderingController
-          animationIndex={1}
-          fileUrl={_.find(mainData, ['isVisualized', true])?.url}
-          height={`${window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate)}px`}
-          id="container"
-          width="100%"
-          isPlay={_.find(mainData, ['isVisualized', true])?.isPlay}
-          motionData={[]}
-        />
-      </Rnd> */}
       <Rnd
-        className={cx('timeline')}
         id="wrapper_lower"
         size={{
-          width: lowerSection.width,
-          height: lowerSection.height,
+          width: lower.width,
+          height: lower.height,
         }}
-        onDragStop={handleDragStop}
+        minHeight={initialState.lower.height}
         onResizeStop={handleResizeStop}
         position={{
-          x: lowerSection.x,
-          y: lowerSection.y,
+          x: lower.x,
+          y: lower.y,
         }}
         enableResizing={{ top: true }}
         disableDragging={true}
       >
-        <div style={{ height: '40px', backgroundColor: 'cyan' }}>Middle Bar</div>
+        <div style={{ height: '48px', backgroundColor: 'cyan' }}>Middle Bar</div>
         {/* <TimelinePanel width={window.innerWidth} height={window.innerHeight} /> */}
-        <div style={{ backgroundColor: 'yellow', height: `calc(100% - 40px)` }}></div>
+        <div style={{ backgroundColor: 'yellow', height: `calc(100% - 48px)` }}></div>
       </Rnd>
     </>
   );
 };
 
-export default React.memo(MainPage);
+export default React.memo(MainContainer);

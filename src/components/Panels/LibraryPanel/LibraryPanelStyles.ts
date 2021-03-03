@@ -3,13 +3,11 @@ import { rem } from 'utils';
 
 const MARGIN_LEFT = rem(12);
 interface LibraryPanelStyleProps {
-  width: number;
-  height: number;
   backgroundColor: string;
 }
 export const LibraryPanelWrapper = styled.div<LibraryPanelStyleProps>`
-  width: ${(props) => props.width}rem;
-  height: ${(props) => props.height}rem;
+  width: 100%;
+  height: 100%;
   background-color: ${(props) => props.backgroundColor};
   position: relative;
 

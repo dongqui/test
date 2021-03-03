@@ -68,7 +68,7 @@ const ShootPage: NextPage<Props> = () => {
       {/* {!isServer && (
         <MainPage width={`${window.innerWidth}px`} height={`${window.innerHeight}px`} />
       )} */}
-      {isClient && <MainPage width={`${window.innerWidth}px`} height={`${window.innerHeight}px`} />}
+      {isClient && <MainPage />}
     </main>
   );
 };
