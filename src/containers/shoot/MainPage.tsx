@@ -7,6 +7,10 @@ import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from 'styles/common';
 import { LibraryPanel } from 'components/Panels/LibraryPanel';
 import TimelinePanel from 'components/Panels/TimelinePanel';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
+import classNames from 'classnames/bind';
+import styles from './MainPage.module.scss';
+
+const cx = classNames.bind(styles);
 
 /**
  * | ------- | ------------------------- | ------- |
@@ -266,6 +270,7 @@ const MainContainer: React.FC = () => {
       >
         <Rnd
           id="wrapper_library"
+          className={cx('library')}
           disableDragging
           minWidth={initialState.library.width}
           enableResizing={{
