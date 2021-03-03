@@ -2,37 +2,38 @@ import React, { useCallback, useEffect, useState, useReducer } from 'react';
 import _ from 'lodash';
 import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
-import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
-import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from 'styles/common';
+import { MAIN_DATA } from 'lib/store';
 import { LibraryPanel } from 'components/Panels/LibraryPanel';
 import TimelinePanel from 'components/Panels/TimelinePanel';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
+import { TIMELINE_RATE, MIN_WIDTH } from 'styles/constants/panels';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
 
 const cx = classNames.bind(styles);
 
 /**
- * | ------- | ------------------------- | ------- |
- * | Library | ------- Rendering ------- | Control |
- * | ------- | ------------------------- | ------- |
- * | ----------------- MiddleBar ----------------- |
- * | --------------------------------------------- |
- * | ----------------- Timeline ------------------ |
- * | --------------------------------------------- |
+ * | ------- | ------------------------- | ------- | ----
+ * | Library | ------- Rendering ------- | Control |    | -> UpperSection
+ * | ------- | ------------------------- | ------- | ----
+ * | ----------------- MiddleBar ----------------- | ----
+ * | --------------------------------------------- |    |
+ * | ----------------- Timeline ------------------ |    | -> LowerSection
+ * | --------------------------------------------- | ----
  *
  * UpperSection: Library, Rendering, Control
  * LowerSection: MiddlBar, Timeline
  */
-type Section = 'upper' | 'lower' | 'library' | 'rendering' | 'control';
+type Section = 'upper' | 'lower';
+type Panel = 'library' | 'rendering' | 'control' | 'timeline';
 
 type Action =
-  | { type: 'RESIZE'; position: 'BROWSER'; nextState: State }
   | { type: 'RESIZE'; position: 'LOWER'; nextState: State }
+  | { type: 'RESIZE'; position: 'BROWSER'; nextState: State }
   | { type: 'RESIZE'; position: 'LIBRARY'; nextState: State }
   | { type: 'RESIZE'; position: 'CONTROL'; nextState: State };
 
-interface Panel {
+interface PanelSpec {
   x: number;
   y: number;
   width: string | number;
@@ -40,15 +41,15 @@ interface Panel {
 }
 
 type State = {
-  [key in Section]: Panel;
+  [key in Section | Exclude<Panel, 'timeline'>]: PanelSpec;
 };
 
-const reducer = (state: State, action: Action): State => {
+const reducer = (state: State, action: Action) => {
   switch (action.position) {
     case 'BROWSER':
-    case 'LOWER':
+    case 'CONTROL':
     case 'LIBRARY':
-    case 'CONTROL': {
+    case 'LOWER': {
       return {
         ...state,
         ...action.nextState,
@@ -56,7 +57,8 @@ const reducer = (state: State, action: Action): State => {
     }
 
     default: {
-      throw new Error('Develop Error: unexpected action type');
+      const message = 'Develop Error: unexpected action type';
+      throw new Error(message);
     }
   }
 };
@@ -85,36 +87,32 @@ const MainContainer: React.FC = () => {
   const [initialState] = useState<State>({
     upper: {
       width: '100%',
-      height: window.innerHeight - window.innerHeight * TIMELINEPANEL_INFO.heightRate,
+      height: window.innerHeight - window.innerHeight * TIMELINE_RATE.height,
       x: 0,
       y: 0,
     },
-
     lower: {
       width: '100%',
-      height: window.innerHeight * TIMELINEPANEL_INFO.heightRate,
+      height: window.innerHeight * TIMELINE_RATE.height,
       x: 0,
-      y: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
+      y: window.innerHeight * (1 - TIMELINE_RATE.height),
     },
-
     library: {
-      width: 230,
+      width: MIN_WIDTH.library,
       height: '100%',
       x: 0,
       y: 0,
     },
-
     rendering: {
-      width: window.innerWidth - 230 * 2,
+      width: window.innerWidth - MIN_WIDTH.library - MIN_WIDTH.control,
       height: '100%',
-      x: 230,
+      x: MIN_WIDTH.library,
       y: 0,
     },
-
     control: {
-      width: 230,
+      width: MIN_WIDTH.control,
       height: '100%',
-      x: window.innerWidth - 230,
+      x: window.innerWidth - MIN_WIDTH.control,
       y: 0,
     },
   });
@@ -209,14 +207,40 @@ const MainContainer: React.FC = () => {
     }
   };
 
+  /**
+   * 브라우저 Resize event에 대한 Panel resize handler(delay: 100ms)
+   *
+   * ===WARN===
+   * React-rnd에서 resize를 통한 width 계산 시, min-width와 max-width를 무시하는 문제가 있어서
+   * 이를 고려한 resize width를 계산하여 처리함
+   *
+   * @todo 하위 계산식이 이해하기 난해하여 변수로 분리한 정리가 필요함
+   */
   useEffect(() => {
-    // 브라우저 Resize event에 대한 Panel resize handler(delay: 100ms)
     const handleResize = _.debounce(() => {
-      const renderingPanelWidth = Math.round(
-        window.innerWidth - Number(state.library.width) - Number(state.control.width),
-      );
+      const upperSectionRate = 1 - TIMELINE_RATE.height;
+      const timelinePanelHeight = window.innerHeight * TIMELINE_RATE.height;
 
-      const timelinePanelHeight = window.innerHeight * TIMELINEPANEL_INFO.heightRate;
+      // LP min-width, max-width로 인한 RP width계산을 위한 값
+      const libraryPanelWidth =
+        Number(state.library.width) >= MIN_WIDTH.library
+          ? MIN_WIDTH.library
+          : Number(state.library.width) > window.innerWidth * 0.4
+          ? window.innerWidth * 0.4
+          : Number(state.library.width);
+
+      // CP min-width, max-width로 인한 RP width계산을 위한 값
+      const controlPanelWidth =
+        Number(state.control.width) >= MIN_WIDTH.control
+          ? MIN_WIDTH.control
+          : Number(state.control.width) > window.innerWidth * 0.4
+          ? window.innerWidth * 0.4
+          : Number(state.control.width);
+
+      // LP, CP min-width, max-width를 감안한 RP width
+      const renderingPanelWidth = Math.round(
+        window.innerWidth - libraryPanelWidth - controlPanelWidth,
+      );
 
       const nextState: State = {
         upper: {
@@ -226,18 +250,21 @@ const MainContainer: React.FC = () => {
         lower: {
           ...state.lower,
           height: timelinePanelHeight,
-          y: window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate),
+          y: window.innerHeight * upperSectionRate,
         },
         library: {
           ...state.library,
+          width: libraryPanelWidth,
         },
         rendering: {
           ...state.rendering,
           width: renderingPanelWidth,
+          x: libraryPanelWidth,
         },
         control: {
           ...state.control,
-          x: Number(state.library.width) + Number(renderingPanelWidth),
+          width: controlPanelWidth,
+          x: libraryPanelWidth + renderingPanelWidth,
         },
       };
 
@@ -255,49 +282,86 @@ const MainContainer: React.FC = () => {
     };
   }, [state.control, state.library, state.lower, state.rendering, state.upper]);
 
-  const { upper, lower, library, rendering, control } = state;
+  const upperSection = {
+    size: {
+      width: state.upper.width,
+      height: state.upper.height,
+    },
+  };
+
+  const lowerSection = {
+    size: {
+      width: state.lower.width,
+      height: state.lower.height,
+    },
+    position: {
+      x: state.lower.x,
+      y: state.lower.y,
+    },
+    minHeight: initialState.lower.height,
+  };
+
+  const libraryPanel = {
+    size: {
+      width: state.library.width,
+      height: state.library.height,
+    },
+    maxWidth:
+      window.innerWidth * 0.4 > MIN_WIDTH.library ? window.innerWidth * 0.4 : MIN_WIDTH.library,
+  };
+
+  const renderingPanel = {
+    size: {
+      width: state.rendering.width,
+      height: state.rendering.height,
+    },
+    position: {
+      x: state.rendering.x,
+      y: state.rendering.y,
+    },
+  };
+
+  const controlPanel = {
+    size: {
+      width: state.control.width,
+      height: state.control.height,
+    },
+    position: {
+      x: state.control.x,
+      y: state.control.y,
+    },
+    maxWidth:
+      window.innerWidth * 0.4 > MIN_WIDTH.control ? window.innerWidth * 0.4 : MIN_WIDTH.control,
+  };
 
   return (
     <>
       <Rnd
         id="wrapper_upper"
-        size={{
-          width: upper.width,
-          height: upper.height,
-        }}
         disableDragging
         enableResizing={false}
+        size={{ ...upperSection.size }}
       >
         <Rnd
           id="wrapper_library"
           className={cx('library')}
           disableDragging
-          minWidth={initialState.library.width}
-          enableResizing={{
-            right: true,
-          }}
+          enableResizing={{ right: true }}
           onResizeStop={handleResizeStop}
-          size={{
-            width: library.width,
-            height: library.height,
-          }}
+          minWidth={MIN_WIDTH.library}
+          maxWidth={libraryPanel.maxWidth}
+          size={{ ...libraryPanel.size }}
         >
           <LibraryPanel />
         </Rnd>
         <Rnd
           id="wrapper_rendering"
-          size={{
-            width: rendering.width,
-            height: rendering.height,
-          }}
-          enableResizing={false}
           disableDragging
+          enableResizing={false}
           onDrop={handleDrop}
           onClick={handleClick}
-          position={{
-            x: rendering.x,
-            y: rendering.y,
-          }}
+          size={{ ...renderingPanel.size }}
+          position={{ ...renderingPanel.position }}
         >
           <RenderingController
             animationIndex={1}
@@ -312,41 +376,30 @@ const MainContainer: React.FC = () => {
         <Rnd
           id="wrapper_control"
           disableDragging
-          minWidth={initialState.control.width}
           enableResizing={{ left: true }}
           onResizeStop={handleResizeStop}
           onDrop={handleDrop}
           onClick={handleClick}
-          size={{
-            width: control.width,
-            height: control.height,
-          }}
-          position={{
-            x: control.x,
-            y: control.y,
-          }}
+          minWidth={MIN_WIDTH.control}
+          maxWidth={controlPanel.maxWidth}
+          size={{ ...controlPanel.size }}
+          position={{ ...controlPanel.position }}
         >
-          <div style={{ backgroundColor: 'green', height: '100%' }}>asdasasd</div>
+          <div style={{ backgroundColor: 'green', height: '100%' }}>Control Panel</div>
         </Rnd>
       </Rnd>
       <Rnd
         id="wrapper_lower"
-        size={{
-          width: lower.width,
-          height: lower.height,
-        }}
-        minHeight={initialState.lower.height}
-        onResizeStop={handleResizeStop}
-        position={{
-          x: lower.x,
-          y: lower.y,
-        }}
+        disableDragging
         enableResizing={{ top: true }}
-        disableDragging={true}
+        onResizeStop={handleResizeStop}
+        minHeight={lowerSection.minHeight}
+        size={{ ...lowerSection.size }}
+        position={{ ...lowerSection.position }}
       >
         <div style={{ height: '48px', backgroundColor: 'cyan' }}>Middle Bar</div>
         {/* <TimelinePanel width={window.innerWidth} height={window.innerHeight} /> */}
-        <div style={{ backgroundColor: 'yellow', height: `calc(100% - 48px)` }}></div>
+        <div style={{ backgroundColor: 'yellow', height: `calc(100% - 48px)` }}>Timeline Panel</div>
       </Rnd>
     </>
   );
