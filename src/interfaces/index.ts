@@ -65,6 +65,8 @@ export interface mainDataTypes {
   isCopied?: boolean;
   isDragging?: boolean;
   motions?: motionTypes[];
+  selectedMotionKey?: string;
+  visualizedMotionKey?: string;
 }
 export interface bonesTypes {
   name: string;

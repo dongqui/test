@@ -11,7 +11,7 @@ import { IconView } from '../../IconTree/IconView';
 import { InputLP } from '../../Input/InputLP';
 import * as S from './LibraryPanelStyles';
 import { Loading } from 'components/Loading';
-import { fnFileDelete, fnFileUpload } from 'hooks/common/useFileUpload';
+import { fnFileUpload } from 'hooks/common/useFileUpload';
 import { fnApi } from 'hooks/common/useApi';
 import { LPSelect } from 'components/LPSelect';
 import { ListView } from 'components/ListTree/ListView';
@@ -59,31 +59,17 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
         return false;
       }
       if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
-        // fbx 파일 업로드
-        const { url, error, msg, token } = await fnFileUpload({ file: acceptedFiles[0] });
+        // fbx 파일 업로드 및 변환
+        const { url, error, msg } = await fnFileUpload({
+          file: acceptedFiles[0],
+          type: FORMAT_TYPES.glb,
+        });
         if (error) {
           alert(msg);
           setLoading(false);
           return false;
         }
-        // glb로 변환
-        const { result, error: error2, msg: msg2 } = await fnApi({
-          action: 'upload',
-          payload: { data: url, type: 'fbx' },
-        });
-        if (error2) {
-          alert(msg2);
-          setLoading(false);
-          return false;
-        }
-        convertedFileUrl = result?.data?.result ?? DEFAULT_MODEL_URL;
-        // 업로드한 fbx 삭제
-        const { error: error3, msg: msg3 } = await fnFileDelete({ token });
-        if (error3) {
-          alert(msg3);
-          setLoading(false);
-          return false;
-        }
+        convertedFileUrl = url;
       }
       const url = _.isEqual(extension, FORMAT_TYPES.glb)
         ? URL.createObjectURL(acceptedFiles[0])
@@ -95,7 +81,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
         return false;
       }
       const motions: motionTypes[] = [];
-      _.forEach(result, (item) => {
+      _.forEach(result, (item, index) => {
         motions.push({
           key: item?.uuid,
           name: item?.name,

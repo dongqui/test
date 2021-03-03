@@ -33,7 +33,7 @@ export const MAIN_DATA = makeVar<mainDataTypes[]>(
 );
 export const PAGES = makeVar<PagesTypes[]>([{ key: 'root', name: 'root' }]);
 export const SEARCH_WORD = makeVar<string>('');
-export const LP_MODE = makeVar<'listview' | 'iconview'>('iconview');
+export const LP_MODE = makeVar<'listview' | 'iconview'>('listview');
 // RP
 export const SKELETON_HELPERS = makeVar<skeletonHelpersTypes[]>(
   makeInitialData({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, initialData: undefined }),
