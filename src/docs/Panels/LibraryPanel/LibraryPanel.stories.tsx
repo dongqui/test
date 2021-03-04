@@ -18,7 +18,3 @@ export default {
 const Template: Story<LibraryPanelProps> = (args) => <LibraryPanelComponent {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {
-  width: LIBRARYPANEL_INFO.widthRem,
-  height: LIBRARYPANEL_INFO.heightRem,
-};

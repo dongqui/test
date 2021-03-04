@@ -51,7 +51,7 @@ const RealtimePageComponent: React.FC<RealtimePageProps> = ({
         enableResizing={{ left: true }}
         disableDragging={true}
       >
-        <RenderingController width="100%" height="100%" />
+        <RenderingController />
       </Rnd>
     </div>
   );

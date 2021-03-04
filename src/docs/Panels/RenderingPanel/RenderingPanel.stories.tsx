@@ -17,7 +17,7 @@ export default {
 const Template: Story<RenderingControllerProps> = (args) => <RenderingController {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {
-  width: '100%',
-  height: '50rem',
-};
+// Default.args = {
+//   width: '100%',
+//   height: '50rem',
+// };

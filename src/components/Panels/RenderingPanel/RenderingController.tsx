@@ -10,8 +10,6 @@ import { ANIMATION_CLIP } from 'lib/store';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 
 export interface RenderingControllerProps {
-  width: string;
-  height: string;
   id?: string;
   fileUrl?: string;
   isPlay?: boolean;
@@ -21,8 +19,6 @@ export interface RenderingControllerProps {
   motionData?: bonesTypes[];
 }
 const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
-  width,
-  height,
   id = 'container',
   fileUrl = DEFAULT_MODEL_URL,
   isPlay = false,
@@ -72,7 +68,7 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
       ANIMATION_CLIP(currentAnimationClip);
     }
   }, [currentAnimationClip]);
-  return <RenderingPresenter id={id} height={height} width={width} />;
+  return <RenderingPresenter id={id} />;
 };
 
 export const RenderingController = React.memo(RenderingControllerComponent);

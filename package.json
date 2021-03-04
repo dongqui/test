@@ -10,7 +10,7 @@
     "start": "next start",
     "storybook": "start-storybook",
     "build-storybook": "build-storybook",
-    "build-src": "next build && next export",
+    "build-src": "next build",
     "build-electron": "tsc -p electron-src",
     "build": "npm run build-src && npm run build-electron",
     "pack-app": "npm run build && electron-builder --dir",

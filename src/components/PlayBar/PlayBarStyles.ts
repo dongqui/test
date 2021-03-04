@@ -143,6 +143,7 @@ export const PlayBoxIconDoubleWrapper = styled.div`
 `;
 export const PlayBarWrapper = styled.div`
   width: 100%;
+  height: 48px;
   background-color: ${PLAYBAR_BACKGROUND_COLOR};
   display: flex;
   flex-direction: row;
