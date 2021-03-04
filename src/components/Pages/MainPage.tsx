@@ -11,6 +11,7 @@ import { useWindowResize } from 'hooks/common/useWindowResize';
 import { PlayBack } from 'components/Icons';
 import { PlayBar } from 'components/PlayBar';
 import { LPSelect } from 'components/LPSelect';
+import { MAINDATA_PROPERTY_TYPES } from 'interfaces';
 
 export interface MainPageProps {
   width: string;
@@ -34,7 +35,10 @@ const MainPageComponent: React.FC<MainPageProps> = ({
     MAIN_DATA(
       _.map(mainData, (item) => ({
         ...item,
-        isVisualized: _.isEqual(item.key, _.find(mainData, ['isDragging', true])?.key),
+        isVisualized: _.isEqual(
+          item.key,
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.key,
+        ),
       })),
     );
   }, [mainData]);
@@ -72,9 +76,10 @@ const MainPageComponent: React.FC<MainPageProps> = ({
       >
         <RenderingController
           animationIndex={1}
-          fileUrl={_.find(mainData, ['isVisualized', true])?.url}
-          id={`${_.find(mainData, ['isVisualized', true])?.key}${
-            _.find(mainData, ['isVisualized', true])?.url
+          fileUrl={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.url}
+          // height={`${window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate)}px`}
+          id={`${_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.key}${
+            _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.url
           }`}
           isPlay={renderingData.isPlay}
           playDirection={renderingData.playDirection}

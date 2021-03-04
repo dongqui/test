@@ -1,4 +1,5 @@
 import { useReactiveVar } from '@apollo/client';
+import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
@@ -10,7 +11,7 @@ export interface IconProps {
   width?: number;
   height?: number;
   maxFileNameLength?: number;
-  mode?: 'icon' | 'folder';
+  mode?: FILE_TYPES;
   iconKey: string;
   isDragging?: boolean;
 }
@@ -19,20 +20,26 @@ const IconComponent: React.FC<IconProps> = ({
   width = rem(48),
   height = rem(68),
   maxFileNameLength = 8,
-  mode = 'icon',
+  mode = FILE_TYPES.file,
   iconKey,
   isDragging = false,
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
   const isClicked =
-    useMemo(() => _.find(mainData, ['key', iconKey])?.isSelected, [iconKey, mainData]) ?? false;
-  const isModifying = useMemo(() => _.find(mainData, ['key', iconKey])?.isModifying, [
-    iconKey,
-    mainData,
-  ]);
+    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.isSelected, [
+      iconKey,
+      mainData,
+    ]) ?? false;
+  const isModifying = useMemo(
+    () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.isModifying,
+    [iconKey, mainData],
+  );
   const fileName =
-    useMemo(() => _.find(mainData, ['key', iconKey])?.name, [iconKey, mainData]) ?? 'Model';
+    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.name, [
+      iconKey,
+      mainData,
+    ]) ?? 'Model';
   const filteredFileName = useMemo(() => {
     return _.gt(_.size(fileName), maxFileNameLength)
       ? `${fileName.substring(0, maxFileNameLength)}...`
@@ -54,7 +61,9 @@ const IconComponent: React.FC<IconProps> = ({
     MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: _.isEqual(item.key, iconKey) })));
   }, [iconKey, mainData]);
   const onDoubleClick = useCallback(() => {
-    if (_.find(mainData, ['key', iconKey])?.isChild) {
+    if (
+      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.type, FILE_TYPES.file)
+    ) {
       MAIN_DATA(
         _.map(mainData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, iconKey) })),
       );
@@ -62,7 +71,7 @@ const IconComponent: React.FC<IconProps> = ({
       PAGES(
         _.concat(pages, {
           key: iconKey,
-          name: _.find(mainData, ['key', iconKey])?.name ?? 'Folder',
+          name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.name ?? 'Folder',
         }),
       );
     }

@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowDownCircle, ArrowDropdownDown, ArrowExpand } from 'components/Icons';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
+import { MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { rem } from 'utils/rem';
@@ -51,7 +52,7 @@ const DropdownComponent: React.FC<DropdownProps> = ({
       ) : (
         <S.DropdownWrapper isBorderRadius={true} onClick={() => setIsOpen(!isOpen)}>
           <S.IndicatorText marginLeft={rem(12)}>
-            {_.find(data, ['isSelected', true])?.name}
+            {_.find(data, [MAINDATA_PROPERTY_TYPES.isSelected, true])?.name}
           </S.IndicatorText>
           <ArrowDropdownDown
             width={10}

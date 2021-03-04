@@ -8,6 +8,7 @@ import { CONTEXTMENU_INFO, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/st
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
 import { useShortcut } from 'hooks/common/useShortcut';
+import { useLPControl } from 'hooks/LP/useLPControl';
 
 export interface IconViewProps {
   width: string;
@@ -35,163 +36,20 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     }
     return result;
   }, [mainData, pages, searchWord]);
-  const onClick = useCallback(
-    (e) => {
-      const icons = document.getElementsByClassName('icon');
-      if (!_.some(icons, (icon) => icon.contains(e?.target as any))) {
-        MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: false })));
-      }
-    },
-    [mainData],
-  );
-  const onDragStart = useCallback(
-    ({ key }) => {
-      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isDragging: _.isEqual(item.key, key) })));
-    },
-    [mainData],
-  );
-  const onDragStop = useCallback(
-    (e) => {
-      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isDragging: false })));
-    },
-    [mainData],
-  );
-  const onDrop = useCallback(
-    ({ key }) => {
-      if (!_.find(mainData, ['key', key])?.isChild) {
-        MAIN_DATA(
-          _.map(mainData, (item) => ({
-            ...item,
-            parentKey: item.isDragging ? key : item.parentKey,
-          })),
-        );
-      }
-    },
-    [mainData],
-  );
-  const onCopy = useCallback(() => {
-    if (_.find(mainData, ['isSelected', true])?.isChild) {
-      MAIN_DATA(
-        _.map(mainData, (item) => ({
-          ...item,
-          isCopied: item.isSelected ? true : false,
-        })),
-      );
-    } else {
-      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isCopied: false })));
-    }
-  }, [mainData]);
-  const onPaste = useCallback(() => {
-    if (_.some(mainData, ['isCopied', true])) {
-      MAIN_DATA(
-        _.concat(mainData, {
-          key: uuidv4(),
-          isChild: true,
-          name: `${_.find(mainData, ['isCopied', true])?.name} (${
-            _.size(
-              _.filter(mainData, (item) =>
-                _.includes(item.name, _.find(mainData, ['isCopied', true])?.name),
-              ),
-            ) + 1
-          })`,
-          parentKey: _.last(pages)?.key,
-        }),
-      );
-    }
-  }, [mainData, pages]);
-  const onEdit = useCallback(() => {
-    MAIN_DATA(
-      _.map(mainData, (item) => ({
-        ...item,
-        isModifying: _.isEqual(item.key, _.find(mainData, ['isSelected', true])?.key),
-      })),
-    );
-  }, [mainData]);
-  const onContextMenu = useCallback(
-    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
-      const icons = document.getElementsByClassName('icon');
-      const data = _.some(icons, (icon) => icon.contains(e?.target as any))
-        ? [
-            { key: '1', name: 'Copy' },
-            { key: '2', name: 'Delete' },
-            { key: '4', name: 'Visualization' },
-            { key: '5', name: 'Edit name' },
-          ]
-        : [
-            { key: '0', name: 'New Group' },
-            { key: '3', name: 'Paste' },
-          ];
-      CONTEXTMENU_INFO({
-        isShow: true,
-        top,
-        left,
-        data,
-        onClick: ({ key }) => {
-          CONTEXTMENU_INFO({ ...contextmenuInfo, isShow: false });
-          switch (key) {
-            case '0':
-              MAIN_DATA(
-                _.concat(mainData, {
-                  key: uuidv4(),
-                  isChild: false,
-                  name: 'Folder',
-                  parentKey: _.last(pages)?.key,
-                  isModifying: true,
-                }),
-              );
-              break;
-            case '1':
-              onCopy();
-              break;
-            case '2':
-              MAIN_DATA(_.filter(mainData, (item) => !item.isSelected));
-              break;
-            case '3':
-              onPaste();
-              break;
-            case '4':
-              MAIN_DATA(
-                _.map(mainData, (item) => ({
-                  ...item,
-                  isVisualized: _.isEqual(item.key, _.find(mainData, ['isSelected', true])?.key),
-                })),
-              );
-              break;
-            case '5':
-              onEdit();
-              break;
-            default:
-              break;
-          }
-        },
-      });
-    },
-    [contextmenuInfo, mainData, onCopy, onEdit, onPaste, pages],
-  );
+  const {
+    onClick,
+    onContextMenu,
+    onCopy,
+    onDragStart,
+    onDragStop,
+    onDrop,
+    onEdit,
+    onPaste,
+    shortcutData,
+  } = useLPControl({ contextmenuInfo, mainData, pages });
   useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
   useShortcut({
-    data: [
-      {
-        key: 'c',
-        ctrlKey: true,
-        event: () => {
-          onCopy();
-        },
-      },
-      {
-        key: 'v',
-        ctrlKey: true,
-        event: () => {
-          onPaste();
-        },
-      },
-      {
-        key: 'Enter',
-        event: () => {
-          onEdit();
-        },
-      },
-    ],
+    data: shortcutData,
   });
   return (
     <S.IconViewWrapper
@@ -212,11 +70,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
           onDragEnd={onDragStop}
           onDrop={() => onDrop({ key: item.key })}
         >
-          <Icon
-            iconKey={item.key}
-            mode={item.isChild ? 'icon' : 'folder'}
-            isDragging={item.isDragging}
-          />
+          <Icon iconKey={item.key} mode={item.type} isDragging={item.isDragging} />
         </S.IconWrapper>
       ))}
     </S.IconViewWrapper>
