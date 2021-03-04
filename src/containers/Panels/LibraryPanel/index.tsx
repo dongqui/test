@@ -5,7 +5,7 @@ import { LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { LIBRARYPANEL_INFO } from 'styles/common';
+import { LIBRARYPANEL_INFO } from 'styles/constants/common';
 import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
 import * as S from './LibraryPanelStyles';
@@ -92,13 +92,14 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           parentKey: _.last(pages)?.key,
         },
       ];
-      _.forEach(motions, (motion) => {
+      _.forEach(motions, (motion, index) => {
         newData.push({
-          key,
-          type: FILE_TYPES.file,
-          name: acceptedFiles[0].name,
+          key: motion.key,
+          motionIndex: parseInt(index),
+          type: FILE_TYPES.motion,
+          name: motion?.name,
           url,
-          parentKey: _.last(pages)?.key,
+          parentKey: key,
         });
       });
       MAIN_DATA(_.concat(mainData, newData));

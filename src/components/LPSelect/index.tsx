@@ -7,7 +7,7 @@ import { ListviewIcon } from 'components/Icons/generated2/Listview';
 import { LP_MODE } from 'lib/store';
 import _ from 'lodash';
 import React from 'react';
-import { GRAY500, PRIMARY_BLUE } from 'styles/common';
+import { GRAY500, PRIMARY_BLUE } from 'styles/constants/common';
 import { rem } from 'utils/rem';
 import * as S from './LPSelectStyles';
 

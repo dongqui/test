@@ -2,7 +2,7 @@ import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { FaFolder } from 'react-icons/fa';
 import { rem } from 'utils/rem';
-import { PRIMARY_BLUE } from '../../../styles/common';
+import { PRIMARY_BLUE } from '../../../styles/constants/common';
 
 const TOP_HEIGHT = rem(48);
 const TOP_BACKGROUND_COLOR = 'rgba(36, 36, 36, 1)';
