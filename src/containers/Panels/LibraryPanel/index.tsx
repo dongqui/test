@@ -8,15 +8,15 @@ import { useDropzone } from 'react-dropzone';
 import { LIBRARYPANEL_INFO } from 'styles/common';
 import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
-import { InputLP } from '../../Input/InputLP';
 import * as S from './LibraryPanelStyles';
 import { Loading } from 'components/Loading';
 import { fnFileUpload } from 'hooks/common/useFileUpload';
 import { fnApi } from 'hooks/common/useApi';
 import { LPSelect } from 'components/LPSelect';
-import { ListView } from 'components/ListTree/ListView';
+import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
+import { InputLP } from 'components/Input/InputLP';
 
 export interface PagesTypes {
   key: string;
@@ -109,6 +109,16 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
     <S.LibraryPanelWrapper backgroundColor={backgroundColor} {...getRootProps()}>
+      <div
+        style={{
+          width: '100%',
+          position: 'absolute',
+          bottom: 0,
+          zIndex: 100,
+        }}
+      >
+        <LPSelect />
+      </div>
       {loading && (
         <S.LoadingWrapper>
           <Loading />

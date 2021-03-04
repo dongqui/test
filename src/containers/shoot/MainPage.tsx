@@ -2,13 +2,12 @@ import React, { useCallback, useEffect, useState, useReducer } from 'react';
 import _ from 'lodash';
 import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
-import { LibraryPanel } from 'components/Panels/LibraryPanel';
-import TimelinePanel from 'components/Panels/TimelinePanel';
-import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from 'styles/common';
+import { LibraryPanel } from 'containers/Panels/LibraryPanel';
+import TimelinePanel from 'containers/Panels/TimelinePanel';
 import { ANIMATION_CLIP, RENDERING_DATA, MAIN_DATA, SKELETON_HELPERS, LP_MODE } from 'lib/store';
-import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
+import { RenderingController } from 'containers/Panels/RenderingPanel/RenderingController';
 import { TIMELINE_RATE, MIN_WIDTH } from 'styles/constants/panels';
-import { PlayBar } from 'components/PlayBar';
+import { PlayBar } from 'containers/PlayBar';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
 

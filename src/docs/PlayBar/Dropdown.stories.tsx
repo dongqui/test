@@ -1,11 +1,10 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { Indicator, IndicatorProps } from 'components/PlayBar/Indicator';
-import { Dropdown, DropdownProps } from 'components/PlayBar/Dropdown';
+import { Dropdown, DropdownProps } from 'containers/PlayBar/Dropdown';
 
 export default {
-  title: 'Component API/Component/PlayBar/Dropdown',
+  title: 'Component API/Container/PlayBar/Dropdown',
   component: Dropdown,
   args: {},
 } as Meta;

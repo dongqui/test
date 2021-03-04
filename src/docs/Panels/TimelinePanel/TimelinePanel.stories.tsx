@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import TimelinePanel, { TimelinePanelProps } from 'components/Panels/TimelinePanel';
+import TimelinePanel, { TimelinePanelProps } from 'containers/Panels/TimelinePanel';
 
 export default {
   title: 'Panels/TimelinePanel',

@@ -1,5 +1,5 @@
 import { makeVar } from '@apollo/client';
-import { PagesTypes } from 'components/Panels/LibraryPanel';
+import { PagesTypes } from 'containers/Panels/LibraryPanel';
 import { RENDERING_DATA_TYPES } from 'interfaces/RP';
 import _ from 'lodash';
 import { INITIAL_MAIN_DATA, isClient } from 'utils/const';

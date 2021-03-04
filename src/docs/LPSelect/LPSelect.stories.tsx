@@ -4,7 +4,7 @@ import { Story, Meta } from '@storybook/react/types-6-0';
 import { LPSelect, LPSelectProps } from 'components/LPSelect';
 
 export default {
-  title: 'Component API/Component/LPSelect',
+  title: 'Component API/Container/LPSelect',
   component: LPSelect,
   args: {},
 } as Meta;

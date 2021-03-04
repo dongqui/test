@@ -36,17 +36,11 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     }
     return result;
   }, [mainData, pages, searchWord]);
-  const {
-    onClick,
-    onContextMenu,
-    onCopy,
-    onDragStart,
-    onDragStop,
-    onDrop,
-    onEdit,
-    onPaste,
-    shortcutData,
-  } = useLPControl({ contextmenuInfo, mainData, pages });
+  const { onClick, onContextMenu, onDragStart, onDragStop, onDrop, shortcutData } = useLPControl({
+    contextmenuInfo,
+    mainData,
+    pages,
+  });
   useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
   useShortcut({
     data: shortcutData,
