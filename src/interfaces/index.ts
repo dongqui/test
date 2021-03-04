@@ -31,6 +31,25 @@ export enum PROPERTY_TYPES {
   scale = 'scale',
   scaleCnt = 3,
 }
+export enum FILE_TYPES {
+  folder = 'folder',
+  file = 'file',
+  motion = 'motion',
+}
+export enum MAINDATA_PROPERTY_TYPES {
+  key = 'key',
+  name = 'name',
+  type = 'type',
+  parentKey = 'parentKey',
+  isExpanded = 'isExpanded',
+  url = 'url',
+  isSelected = 'isSelected',
+  isVisualized = 'isVisualized',
+  isModifying = 'isModifying',
+  isCopied = 'isCopied',
+  isDragging = 'isDragging',
+  tracks = 'tracks',
+}
 export interface screenSizeTypes {
   width: number;
   height: number;
@@ -48,18 +67,18 @@ export interface contextmenuTypes {
   onClick: ({ key }: { key: string }) => void;
 }
 export interface mainDataTypes {
-  key: string;
-  name: string;
-  isChild: boolean;
-  parentKey?: string;
-  isExpanded?: boolean;
-  url?: string;
-  isSelected?: boolean;
-  isVisualized?: boolean;
-  isModifying?: boolean;
-  isCopied?: boolean;
-  isDragging?: boolean;
-  motions?: { name: string }[];
+  [MAINDATA_PROPERTY_TYPES.key]: string;
+  [MAINDATA_PROPERTY_TYPES.name]: string;
+  [MAINDATA_PROPERTY_TYPES.type]: FILE_TYPES;
+  [MAINDATA_PROPERTY_TYPES.parentKey]?: string;
+  [MAINDATA_PROPERTY_TYPES.isExpanded]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.url]?: string;
+  [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isModifying]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isCopied]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isDragging]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.tracks]?: any;
 }
 export interface bonesTypes {
   name: string;

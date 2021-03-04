@@ -1,10 +1,10 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { ListRow, ListRowProps } from 'components/ListTree/ListRow';
+import { ListRow, ListRowProps } from 'containers/ListTree/ListRow';
 
 export default {
-  title: 'Component API/Component/ListView/ListRow',
+  title: 'Component API/Container/ListView/ListRow',
   component: ListRow,
   argTypes: {},
   args: {},

@@ -4,9 +4,9 @@ import React, { useCallback, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import _ from 'lodash';
 import { screenSizeTypes } from '../../interfaces';
-import { RenderingController } from '../Panels/RenderingPanel/RenderingController';
-import { WebcamPanel } from '../Panels/WebcamPanel/WebcamPanel';
 import { useReactiveVar } from '@apollo/client';
+import { WebcamPanel } from 'containers/Panels/WebcamPanel/WebcamPanel';
+import { RenderingController } from 'containers/Panels/RenderingPanel/RenderingController';
 
 const STANDARD_PANEL_WIDTH = 50;
 export interface RealtimePageProps {
@@ -51,7 +51,7 @@ const RealtimePageComponent: React.FC<RealtimePageProps> = ({
         enableResizing={{ left: true }}
         disableDragging={true}
       >
-        <RenderingController width="100%" height="100%" />
+        <RenderingController />
       </Rnd>
     </div>
   );

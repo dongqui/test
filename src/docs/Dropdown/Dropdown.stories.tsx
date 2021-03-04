@@ -1,8 +1,6 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { IconPage as IconPageComponent, IconPageProps } from '../../components/IconTree/IconPage';
-import { rem } from 'utils';
 import { LIBRARYPANEL_INFO } from 'styles/common';
 import { Dropdown } from 'components/Dropdown';
 import { DropDownProps } from '../../components/Dropdown/Dropdown';

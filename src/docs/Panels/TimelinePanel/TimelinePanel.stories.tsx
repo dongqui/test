@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import TimelinePanel, { TimelinePanelProps } from 'components/Panels/TimelinePanel';
+import TimelinePanel, { TimelinePanelProps } from 'containers/Panels/TimelinePanel';
 
 export default {
   title: 'Panels/TimelinePanel',
@@ -13,7 +13,7 @@ export default {
 const Template: Story<TimelinePanelProps> = (args) => <TimelinePanel {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {
-  width: 1920,
-  height: 1080,
-};
+// Default.args = {
+//   width: 1920,
+//   height: 1080,
+// };

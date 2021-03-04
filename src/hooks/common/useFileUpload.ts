@@ -7,27 +7,15 @@ const endpoint = new AWS.Endpoint('https://kr.object.ncloudstorage.com');
 const region = 'kr-standard';
 const bucketName = 'shoot-bucket';
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/plask';
+const baseURL = 'https://blenderapi.myplask.com:5000';
 
-export const fnFileUpload = async ({ file }: { file: File }) => {
+export const fnFileDelete = async ({ token }: { token: string }) => {
   const formData = new FormData();
-  formData.append('file', file);
-  formData.append('api_key', `${process.env.NEXT_PUBLIC_CLOUDINARY_APIKEY}`);
-  formData.append('upload_preset', 'plaskpublic');
-  formData.append('return_delete_token', 'true');
-  const timestamp = String(Date.now() / 1000);
-  formData.append('timestamp', timestamp);
-  const signature = sha1(
-    `return_delete_token=true&timestamp=${timestamp}&upload_preset=plaskpublic${process.env.NEXT_PUBLIC_CLOUDINARY_SECRET}`,
-  );
-  formData.append('signature', signature);
+  formData.append('token', token);
   try {
-    const {
-      data: { secure_url, public_id, delete_token },
-    } = await axios.post(`${CLOUDINARY_URL}/upload`, formData);
+    await axios.post(`${CLOUDINARY_URL}/delete_by_token`, formData);
     return {
-      url: secure_url,
       error: false,
-      token: delete_token,
     };
   } catch (error) {
     return {
@@ -36,12 +24,20 @@ export const fnFileUpload = async ({ file }: { file: File }) => {
     };
   }
 };
-export const fnFileDelete = async ({ token }: { token: string }) => {
+export const fnFileUpload = async ({ file, type }: { file: File; type: string }) => {
   const formData = new FormData();
-  formData.append('token', token);
+  formData.append('file', file);
+  formData.append('type', type);
+  formData.append('id', String(Date.now() / 1000));
   try {
-    await axios.post(`${CLOUDINARY_URL}/delete_by_token`, formData);
+    const result = await axios({
+      method: 'POST',
+      url: `${baseURL}/fbx2glb-upload-api`,
+      data: formData,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return {
+      url: result?.data?.result,
       error: false,
     };
   } catch (error) {

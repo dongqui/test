@@ -72,8 +72,7 @@ export default class MyDocument extends Document {
             padding: 0,
             width: '100%',
             height: '100%',
-            backgroundColor: 'black',
-            overflowY: 'auto',
+            overflow: 'hidden',
           }}
         >
           <Main />

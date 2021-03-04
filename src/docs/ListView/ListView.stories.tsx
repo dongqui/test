@@ -1,10 +1,10 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { ListView, ListViewProps } from 'components/ListTree/ListView';
+import { ListView, ListViewProps } from 'containers/ListTree/ListView';
 
 export default {
-  title: 'Component API/Component/ListView/ListView',
+  title: 'Component API/Container/ListView/ListView',
   component: ListView,
   argTypes: {},
   args: {},

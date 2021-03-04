@@ -5,8 +5,7 @@ import { Story, Meta } from '@storybook/react/types-6-0';
 import {
   LibraryPanel as LibraryPanelComponent,
   LibraryPanelProps,
-} from '../../../components/Panels/LibraryPanel';
-import { rem } from 'utils';
+} from '../../../containers/Panels/LibraryPanel';
 import { LIBRARYPANEL_INFO } from 'styles/common';
 
 export default {
@@ -19,7 +18,3 @@ export default {
 const Template: Story<LibraryPanelProps> = (args) => <LibraryPanelComponent {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {
-  width: LIBRARYPANEL_INFO.widthRem,
-  height: LIBRARYPANEL_INFO.heightRem,
-};

@@ -5,7 +5,7 @@ import { Story, Meta } from '@storybook/react/types-6-0';
 import {
   RenderingController,
   RenderingControllerProps,
-} from '../../../components/Panels/RenderingPanel/RenderingController';
+} from '../../../containers/Panels/RenderingPanel/RenderingController';
 
 export default {
   title: 'Panels/RenderingPanel',
@@ -17,7 +17,7 @@ export default {
 const Template: Story<RenderingControllerProps> = (args) => <RenderingController {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {
-  width: '100%',
-  height: '50rem',
-};
+// Default.args = {
+//   width: '100%',
+//   height: '50rem',
+// };

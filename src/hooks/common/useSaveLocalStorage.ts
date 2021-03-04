@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { isClient } from 'utils';
+import { isClient } from 'utils/const';
 
 interface useSaveLocalStoragePrps {
   name: string;
