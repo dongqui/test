@@ -3,6 +3,7 @@ import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
 import { Icon as IconComponent, IconProps } from '../../components/IconTree/Icon';
 import { rem } from 'utils/rem';
+import { FILE_TYPES } from 'interfaces';
 
 export default {
   title: 'Component API/Component/IconTree/Icon',
@@ -33,5 +34,5 @@ Default.args = {
 Folder.args = {
   width: rem(48),
   height: rem(68),
-  mode: 'folder',
+  mode: FILE_TYPES.folder,
 };

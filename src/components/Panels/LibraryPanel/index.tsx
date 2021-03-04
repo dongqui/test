@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FORMAT_TYPES, mainDataTypes, motionTypes } from 'interfaces';
+import { FILE_TYPES, FORMAT_TYPES, mainDataTypes } from 'interfaces';
 import { LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
@@ -80,7 +80,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
         setLoading(false);
         return false;
       }
-      const motions: motionTypes[] = [];
+      const motions: any = [];
       _.forEach(result, (item, index) => {
         motions.push({
           key: item?.uuid,
@@ -88,14 +88,25 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
           tracks: _.cloneDeep(item?.tracks),
         });
       });
-      const newData: mainDataTypes = {
-        key: uuidv4(),
-        isChild: true,
-        name: acceptedFiles[0].name,
-        url,
-        parentKey: _.last(pages)?.key,
-        motions,
-      };
+      const key = uuidv4();
+      const newData: mainDataTypes[] = [
+        {
+          key,
+          type: FILE_TYPES.file,
+          name: acceptedFiles[0].name,
+          url,
+          parentKey: _.last(pages)?.key,
+        },
+      ];
+      _.forEach(motions, (motion) => {
+        newData.push({
+          key,
+          type: FILE_TYPES.file,
+          name: acceptedFiles[0].name,
+          url,
+          parentKey: _.last(pages)?.key,
+        });
+      });
       MAIN_DATA(_.concat(mainData, newData));
       setLoading(false);
     },
