@@ -2,7 +2,7 @@ import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { NumberArray } from 'd3';
 import { rem } from 'utils/rem';
-import { PLAYBAR_BACKGROUND_COLOR, GRAY200, GRAY500, GRAY600 } from '../../styles/common';
+import { PLAYBAR_BACKGROUND_COLOR, GRAY200, GRAY500, GRAY600 } from '../../styles/constants/common';
 
 interface IndicatorTextProps {
   marginLeft?: number;

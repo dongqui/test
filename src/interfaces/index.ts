@@ -49,6 +49,7 @@ export enum MAINDATA_PROPERTY_TYPES {
   isCopied = 'isCopied',
   isDragging = 'isDragging',
   tracks = 'tracks',
+  motionIndex = 'motionIndex',
 }
 export interface screenSizeTypes {
   width: number;
@@ -79,6 +80,7 @@ export interface mainDataTypes {
   [MAINDATA_PROPERTY_TYPES.isCopied]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isDragging]?: boolean;
   [MAINDATA_PROPERTY_TYPES.tracks]?: any;
+  [MAINDATA_PROPERTY_TYPES.motionIndex]?: number;
 }
 export interface bonesTypes {
   name: string;

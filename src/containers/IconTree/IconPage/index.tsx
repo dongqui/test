@@ -3,7 +3,7 @@ import { ArrowBack, ArrowForward } from 'components/Icons';
 import { PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
-import { BACKGROUND_COLOR, LIBRARYPANEL_INFO } from 'styles/common';
+import { BACKGROUND_COLOR, LIBRARYPANEL_INFO } from 'styles/constants/common';
 import { rem } from 'utils/rem';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import * as S from './IconPageStyles';

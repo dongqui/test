@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { BACKGROUND_COLOR } from 'styles/common';
+import { BACKGROUND_COLOR } from 'styles/constants/common';
 import { rem } from 'utils/rem';
 
 export const LPSelectWrapper = styled.div`
