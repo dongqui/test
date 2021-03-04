@@ -66,15 +66,7 @@ export default class MyDocument extends Document {
           <script src="https://apis.google.com/js/platform.js" async defer />
           <meta name="theme-color" content="#6963f7" />
         </Head>
-        <body
-          style={{
-            margin: 0,
-            padding: 0,
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden',
-          }}
-        >
+        <body>
           <Main />
           <NextScript />
         </body>

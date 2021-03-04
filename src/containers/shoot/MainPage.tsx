@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState, useReducer } from 'react';
 import _ from 'lodash';
-import { Rnd } from 'react-rnd';
+import { Rnd, RndResizeCallback } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
 import TimelinePanel from 'containers/Panels/TimelinePanel';
 import { ANIMATION_CLIP, RENDERING_DATA, MAIN_DATA, SKELETON_HELPERS, LP_MODE } from 'lib/store';
 import { RenderingController } from 'containers/Panels/RenderingPanel/RenderingController';
-import { TIMELINE_RATE, MIN_WIDTH } from 'styles/constants/panels';
+import { LIBRARY_RATE, CONTROL_RATE, TIMELINE_RATE, MIN_WIDTH } from 'styles/constants/panels';
 import { PlayBar } from 'containers/PlayBar';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
@@ -114,13 +114,13 @@ const MainContainer: React.FC = () => {
 
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const handleResizeStop = (e: any, direction: any, ref: any, delta: any, position: any) => {
+  const handleResizeStop: RndResizeCallback = (_e, _dir, ref, _delta, position) => {
     const panelRefId = _.upperCase(_.split(ref.id, '_')[1]) as Action['position'];
 
     switch (panelRefId) {
       case 'LOWER': {
         const startUnitIndex = ref.style.height.indexOf('px');
-        const timelineHeight = ref.style.height.substr(0, startUnitIndex);
+        const timelineHeight = Number(ref.style.height.substr(0, startUnitIndex));
 
         const nextState: State = {
           ...state,
@@ -146,7 +146,7 @@ const MainContainer: React.FC = () => {
 
       case 'LIBRARY': {
         const startUnitIndex = ref.style.width.indexOf('px');
-        const libraryWidth = ref.style.width.substr(0, startUnitIndex);
+        const libraryWidth = Number(ref.style.width.substr(0, startUnitIndex));
 
         const nextState: State = {
           ...state,
@@ -172,7 +172,7 @@ const MainContainer: React.FC = () => {
 
       case 'CONTROL': {
         const startUnitIndex = ref.style.width.indexOf('px');
-        const controlWidth = ref.style.width.substr(0, startUnitIndex);
+        const controlWidth = Number(ref.style.width.substr(0, startUnitIndex));
 
         const nextState: State = {
           ...state,
@@ -220,16 +220,16 @@ const MainContainer: React.FC = () => {
       const libraryPanelWidth =
         Number(state.library.width) >= MIN_WIDTH.library
           ? MIN_WIDTH.library
-          : Number(state.library.width) > window.innerWidth * 0.4
-          ? window.innerWidth * 0.4
+          : Number(state.library.width) > window.innerWidth * LIBRARY_RATE.maxWidth
+          ? window.innerWidth * LIBRARY_RATE.maxWidth
           : Number(state.library.width);
 
       // CP min-width, max-width로 인한 RP width계산을 위한 값
       const controlPanelWidth =
         Number(state.control.width) >= MIN_WIDTH.control
           ? MIN_WIDTH.control
-          : Number(state.control.width) > window.innerWidth * 0.4
-          ? window.innerWidth * 0.4
+          : Number(state.control.width) > window.innerWidth * CONTROL_RATE.maxWidth
+          ? window.innerWidth * CONTROL_RATE.maxWidth
           : Number(state.control.width);
 
       // LP, CP min-width, max-width를 감안한 RP width
@@ -238,11 +238,9 @@ const MainContainer: React.FC = () => {
       );
 
       const timelinePanelHeight =
-        Number(state.lower.height) >= window.innerHeight * 0.5
-          ? window.innerHeight * 0.5
+        Number(state.lower.height) >= window.innerHeight * TIMELINE_RATE.maxHeight
+          ? window.innerHeight * TIMELINE_RATE.maxHeight
           : Number(state.lower.height);
-
-      console.log('state.lower.height > ' + state.lower.height);
 
       const nextState: State = {
         upper: {
@@ -303,7 +301,7 @@ const MainContainer: React.FC = () => {
       y: state.lower.y,
     },
     minHeight: initialState.lower.height,
-    maxHeight: innerHeight * 0.5,
+    maxHeight: window.innerHeight * TIMELINE_RATE.maxHeight,
   };
 
   const libraryPanel = {
@@ -312,7 +310,9 @@ const MainContainer: React.FC = () => {
       height: state.library.height,
     },
     maxWidth:
-      window.innerWidth * 0.4 > MIN_WIDTH.library ? window.innerWidth * 0.4 : MIN_WIDTH.library,
+      window.innerWidth * LIBRARY_RATE.maxWidth > MIN_WIDTH.library
+        ? window.innerWidth * LIBRARY_RATE.maxWidth
+        : MIN_WIDTH.library,
   };
 
   const renderingPanel = {
@@ -336,7 +336,9 @@ const MainContainer: React.FC = () => {
       y: state.control.y,
     },
     maxWidth:
-      window.innerWidth * 0.4 > MIN_WIDTH.control ? window.innerWidth * 0.4 : MIN_WIDTH.control,
+      window.innerWidth * CONTROL_RATE.maxWidth > MIN_WIDTH.control
+        ? window.innerWidth * CONTROL_RATE.maxWidth
+        : MIN_WIDTH.control,
   };
 
   return (
@@ -403,10 +405,8 @@ const MainContainer: React.FC = () => {
         size={{ ...lowerSection.size }}
         position={{ ...lowerSection.position }}
       >
-        {/* <div style={{ height: '48px', backgroundColor: '#303030' }}>Middle Bar</div> */}
         <PlayBar />
         <TimelinePanel data={animationClip?.tracks ?? []} />
-        {/* <div style={{ backgroundColor: 'black', height: '100%' }}>Timeline Panel</div> */}
       </Rnd>
     </>
   );
