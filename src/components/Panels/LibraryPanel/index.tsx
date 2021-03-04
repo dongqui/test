@@ -23,15 +23,9 @@ export interface PagesTypes {
   name: string;
 }
 export interface LibraryPanelProps {
-  width?: number;
-  height?: number;
   backgroundColor?: string;
 }
-const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
-  width = LIBRARYPANEL_INFO.widthRem,
-  height = LIBRARYPANEL_INFO.heightRem,
-  backgroundColor = 'black',
-}) => {
+const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 'black' }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
   const lpmode = useReactiveVar(LP_MODE);
@@ -103,12 +97,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({
   );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
-    <S.LibraryPanelWrapper
-      width={width}
-      height={height}
-      backgroundColor={backgroundColor}
-      {...getRootProps()}
-    >
+    <S.LibraryPanelWrapper backgroundColor={backgroundColor} {...getRootProps()}>
       {loading && (
         <S.LoadingWrapper>
           <Loading />

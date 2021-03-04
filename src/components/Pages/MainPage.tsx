@@ -73,11 +73,9 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         <RenderingController
           animationIndex={1}
           fileUrl={_.find(mainData, ['isVisualized', true])?.url}
-          height={`${window.innerHeight * (1 - TIMELINEPANEL_INFO.heightRate)}px`}
           id={`${_.find(mainData, ['isVisualized', true])?.key}${
             _.find(mainData, ['isVisualized', true])?.url
           }`}
-          width="100%"
           isPlay={renderingData.isPlay}
           playDirection={renderingData.playDirection}
           playSpeed={renderingData.playSpeed}
@@ -107,11 +105,7 @@ const MainPageComponent: React.FC<MainPageProps> = ({
         <div style={{ width: '100%', position: 'absolute', top: 0 }}>
           <PlayBar />
         </div>
-        <TimelinePanel
-          width={tpSize.width}
-          height={tpSize.height}
-          data={animationClip?.tracks ?? []}
-        />
+        <TimelinePanel data={animationClip?.tracks ?? []} />
       </Rnd>
     </div>
   );

@@ -22,8 +22,6 @@ interface EulerValue {
 }
 
 export interface TimelinePanelProps {
-  width: number;
-  height: number;
   data?: any;
 }
 
@@ -35,22 +33,22 @@ const colors = ['#E85757', '#059B00', '#5A57E8', '#E5E857'];
 
 const margin = { top: 30, right: 30, bottom: 30, left: 30 };
 
-const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) => {
+const TimelinePanel: React.FC<TimelinePanelProps> = ({ data }) => {
   const divRef = useRef<HTMLDivElement>(null);
   const [zoomTransform, setZoomTransform] = useState<d3.ZoomTransform>();
   useEffect(() => {
     const currentRef = divRef.current;
 
     if (currentRef) {
-      const { offsetWidth, offsetHeight } = currentRef;
+      const { clientWidth, clientHeight } = currentRef;
 
       const curveSVG = d3
         .select(currentRef)
         .call((g) => g.select('svg').remove())
         .append('svg')
         .attr('class', 'wrapper-curve')
-        // .attr('viewBox', `0, 0, ${offsetWidth}, ${height}`);
-        .attr('viewBox', `0, 0, ${offsetWidth}, ${offsetHeight}`);
+        // .attr('viewBox', `0, 0, ${offsetWidth}, ${offsetHeight}`);
+        .attr('preserveAspectRatio', 'xMinYMin meet');
 
       curveSVG
         .append('defs')
@@ -59,8 +57,10 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
         .append('svg:rect')
         .attr('x', margin.left)
         .attr('y', 0)
-        .attr('width', offsetWidth)
-        .attr('height', offsetHeight);
+        .attr('width', clientWidth)
+        .attr('height', clientHeight);
+      // .attr('width', '100%')
+      // .attr('height', '100%');
 
       const xMax = _.max(
         _.reduce(data, (total, current) => total.concat(current.times.length - 1), [] as number[]),
@@ -68,7 +68,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
 
       const xDomain = [0, xMax || 1];
 
-      const x = d3.scaleLinear().domain(xDomain).range([margin.left, offsetWidth]);
+      const x = d3.scaleLinear().domain(xDomain).range([margin.left, clientWidth]);
 
       const yMax = _.max(
         _.reduce(
@@ -84,7 +84,8 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
         .scaleLinear()
         .domain(yDomaix)
         .nice()
-        .range([height - margin.bottom, margin.top]);
+        .range([currentRef.clientHeight - margin.bottom, margin.top]);
+      // .range([height - margin.bottom, margin.top]);
 
       if (zoomTransform) {
         const newXScale = zoomTransform.rescaleX(x);
@@ -173,11 +174,11 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
 
       const xAxis = (g: any) =>
         g
-          .attr('transform', `translate(0, ${height - margin.bottom})`)
+          .attr('transform', `translate(0, ${currentRef.clientHeight - margin.bottom})`)
           .call(
             d3
               .axisBottom(x)
-              .ticks(offsetWidth / 80)
+              .ticks(clientWidth / 80)
               .tickSizeOuter(0),
           )
           .attr('class', 'grid')
@@ -186,15 +187,15 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
       const createGridLineX = () => {
         return d3
           .axisBottom(x)
-          .ticks(offsetWidth / 50)
-          .tickSize(-height);
+          .ticks(clientWidth / 50)
+          .tickSize(-currentRef.clientHeight);
       };
 
       const createGridLineY = () => {
         return d3
           .axisLeft(y)
-          .ticks(offsetHeight / 50)
-          .tickSize(-width);
+          .ticks(clientHeight / 50)
+          .tickSize(-currentRef.clientWidth);
       };
 
       curveSVG.append<SVGGElement>('g').call(xAxis);
@@ -216,7 +217,7 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
         .scaleExtent([1, 10])
         .translateExtent([
           [0, 0],
-          [width, height],
+          [currentRef.clientWidth, currentRef.clientHeight],
         ])
         .filter((e: WheelEvent) => {
           // zoom을 alt + mousewheel로 변경
@@ -245,9 +246,13 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ width, height, data }) =>
       d3.select(currentRef).call(dragBehavior);
       d3.select(currentRef).call(zoomBehavior);
     }
-  }, [zoomTransform, data, height, width]);
+  }, [zoomTransform, data]);
 
-  return <div className="curve" ref={divRef} style={{ width, height }} />;
+  const currentRef = divRef.current;
+
+  return (
+    <div className="curve" ref={divRef} style={{ width: '100%', height: 'calc(100% - 48px)' }} />
+  );
 };
 
 TimelinePanel.defaultProps = defaultProps;
