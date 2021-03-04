@@ -10,7 +10,7 @@ export const CheckSquareChecked = React.memo<SvgIconProps>(
       viewBox={viewBox}
     >
       <g fill="none" fillRule="evenodd">
-        <rect fill={fillColor} fillRule="nonzero" width={12} height={12} rx={2} />
+        <rect fill="#000" fillRule="nonzero" width={12} height={12} rx={2} />
         <path
           stroke="#FFF"
           strokeLinecap="round"

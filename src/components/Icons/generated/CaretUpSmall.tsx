@@ -11,7 +11,7 @@ export const CaretUpSmall = React.memo<SvgIconProps>(
     >
       <path
         d="M2.846.684a.2.2 0 01.308 0l2.073 2.488a.2.2 0 01-.154.328H.927a.2.2 0 01-.154-.328L2.846.684z"
-        fill={fillColor}
+        fill="#000"
         fillRule="nonzero"
       />
     </svg>

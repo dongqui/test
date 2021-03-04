@@ -2,7 +2,7 @@ import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
 import { Icon as IconComponent, IconProps } from '../../components/IconTree/Icon';
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 
 export default {
   title: 'Component API/Component/IconTree/Icon',

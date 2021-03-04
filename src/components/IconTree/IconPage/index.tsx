@@ -3,21 +3,13 @@ import { ArrowBack, ArrowForward } from 'components/Icons';
 import { PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
-import { LIBRARYPANEL_INFO } from 'styles/common';
-import { rem } from 'utils';
+import { BACKGROUND_COLOR, LIBRARYPANEL_INFO } from 'styles/common';
+import { rem } from 'utils/rem';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import * as S from './IconPageStyles';
 
-export interface IconPageProps {
-  width?: number;
-  height?: number;
-  backgroundColor?: string;
-}
-const IconPageComponent: React.FC<IconPageProps> = ({
-  width = LIBRARYPANEL_INFO.widthRem,
-  height = rem(48),
-  backgroundColor = 'black',
-}) => {
+export interface IconPageProps {}
+const IconPageComponent: React.FC<IconPageProps> = ({}) => {
   const pages = useReactiveVar(PAGES);
   const onClick = useCallback(() => {
     if (_.gt(_.size(pages), 1)) {
@@ -25,7 +17,11 @@ const IconPageComponent: React.FC<IconPageProps> = ({
     }
   }, [pages]);
   return (
-    <S.IconPageWrapper width={width} height={height} backgroundColor={backgroundColor}>
+    <S.IconPageWrapper
+      width={LIBRARYPANEL_INFO.widthRem}
+      height={rem(48)}
+      backgroundColor={BACKGROUND_COLOR}
+    >
       <S.ArrowBackWrapper onClick={onClick}>
         <ArrowBack
           style={{ marginLeft: `${rem(22)}rem` }}
@@ -36,7 +32,7 @@ const IconPageComponent: React.FC<IconPageProps> = ({
       </S.ArrowBackWrapper>
       {_.map(pages, (item: PagesTypes, index) => (
         <>
-          <S.PageText key={index}>{item.name}</S.PageText>
+          <S.PageText>{item.name}</S.PageText>
           {!_.isEqual(index, _.size(pages) - 1) && (
             <div style={{ flexBasis: `${rem(5)}rem` }}>
               <ArrowForward

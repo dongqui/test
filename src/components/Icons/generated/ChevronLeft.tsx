@@ -9,7 +9,7 @@ export const ChevronLeft = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <path d="M5 1L1 5l4 4" stroke={fillColor} fill="none" fillRule="evenodd" />
+      <path d="M5 1L1 5l4 4" stroke="#000" fill="none" fillRule="evenodd" />
     </svg>
   ),
 );

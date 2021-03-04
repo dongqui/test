@@ -9,7 +9,7 @@ export const Listview = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <g stroke={fillColor} fill="none" fillRule="evenodd" strokeLinecap="round">
+      <g stroke="#3785F7" fill="none" fillRule="evenodd" strokeLinecap="round">
         <path d="M.5.5h11M3.5 3.5h8M.5 6.5h11M3.5 9.5h8" />
       </g>
     </svg>

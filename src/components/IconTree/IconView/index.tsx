@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CONTEXTMENU_INFO, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/store';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
-import { AnyAttrs } from '@tensorflow/tfjs';
+import { useShortcut } from 'hooks/common/useShortcut';
 
 export interface IconViewProps {
   width: string;
@@ -69,6 +69,44 @@ const IconViewComponent: React.FC<IconViewProps> = ({
     },
     [mainData],
   );
+  const onCopy = useCallback(() => {
+    if (_.find(mainData, ['isSelected', true])?.isChild) {
+      MAIN_DATA(
+        _.map(mainData, (item) => ({
+          ...item,
+          isCopied: item.isSelected ? true : false,
+        })),
+      );
+    } else {
+      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isCopied: false })));
+    }
+  }, [mainData]);
+  const onPaste = useCallback(() => {
+    if (_.some(mainData, ['isCopied', true])) {
+      MAIN_DATA(
+        _.concat(mainData, {
+          key: uuidv4(),
+          isChild: true,
+          name: `${_.find(mainData, ['isCopied', true])?.name} (${
+            _.size(
+              _.filter(mainData, (item) =>
+                _.includes(item.name, _.find(mainData, ['isCopied', true])?.name),
+              ),
+            ) + 1
+          })`,
+          parentKey: _.last(pages)?.key,
+        }),
+      );
+    }
+  }, [mainData, pages]);
+  const onEdit = useCallback(() => {
+    MAIN_DATA(
+      _.map(mainData, (item) => ({
+        ...item,
+        isModifying: _.isEqual(item.key, _.find(mainData, ['isSelected', true])?.key),
+      })),
+    );
+  }, [mainData]);
   const onContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
       const icons = document.getElementsByClassName('icon');
@@ -103,37 +141,13 @@ const IconViewComponent: React.FC<IconViewProps> = ({
               );
               break;
             case '1':
-              if (_.find(mainData, ['isSelected', true])?.isChild) {
-                MAIN_DATA(
-                  _.map(mainData, (item) => ({
-                    ...item,
-                    isCopied: item.isSelected ? true : false,
-                  })),
-                );
-              } else {
-                MAIN_DATA(_.map(mainData, (item) => ({ ...item, isCopied: false })));
-              }
+              onCopy();
               break;
             case '2':
               MAIN_DATA(_.filter(mainData, (item) => !item.isSelected));
               break;
             case '3':
-              if (_.some(mainData, ['isCopied', true])) {
-                MAIN_DATA(
-                  _.concat(mainData, {
-                    key: uuidv4(),
-                    isChild: true,
-                    name: `${_.find(mainData, ['isCopied', true])?.name} (${
-                      _.size(
-                        _.filter(mainData, (item) =>
-                          _.includes(item.name, _.find(mainData, ['isCopied', true])?.name),
-                        ),
-                      ) + 1
-                    })`,
-                    parentKey: _.last(pages)?.key,
-                  }),
-                );
-              }
+              onPaste();
               break;
             case '4':
               MAIN_DATA(
@@ -144,12 +158,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
               );
               break;
             case '5':
-              MAIN_DATA(
-                _.map(mainData, (item) => ({
-                  ...item,
-                  isModifying: _.isEqual(item.key, _.find(mainData, ['isSelected', true])?.key),
-                })),
-              );
+              onEdit();
               break;
             default:
               break;
@@ -157,9 +166,33 @@ const IconViewComponent: React.FC<IconViewProps> = ({
         },
       });
     },
-    [contextmenuInfo, mainData, pages],
+    [contextmenuInfo, mainData, onCopy, onEdit, onPaste, pages],
   );
   useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
+  useShortcut({
+    data: [
+      {
+        key: 'c',
+        ctrlKey: true,
+        event: () => {
+          onCopy();
+        },
+      },
+      {
+        key: 'v',
+        ctrlKey: true,
+        event: () => {
+          onPaste();
+        },
+      },
+      {
+        key: 'Enter',
+        event: () => {
+          onEdit();
+        },
+      },
+    ],
+  });
   return (
     <S.IconViewWrapper
       ref={iconViewWrapperRef}

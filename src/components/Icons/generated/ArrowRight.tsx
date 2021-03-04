@@ -5,14 +5,14 @@ export const ArrowRight = React.memo<SvgIconProps>(
     <svg
       width={width}
       height={height}
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       style={style}
       viewBox={viewBox}
     >
       <path
-        d="M12.53 6.53a.75.75 0 000-1.06L7.757.697a.75.75 0 00-1.06 1.06L10.939 6l-4.242 4.243a.75.75 0 001.06 1.06L12.53 6.53zM0 6.75h12v-1.5H0v1.5z"
-        fill={fillColor}
-        fillRule="nonzero"
+        d="M3.717 3.717a.4.4 0 010 .566L.683 7.317A.4.4 0 010 7.034V.966A.4.4 0 01.683.683l3.034 3.034z"
+        fill="#fff"
       />
     </svg>
   ),

@@ -1,7 +1,7 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FORMAT_TYPES, mainDataTypes } from 'interfaces';
-import { MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
+import { FORMAT_TYPES, mainDataTypes, motionTypes } from 'interfaces';
+import { LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -11,9 +11,12 @@ import { IconView } from '../../IconTree/IconView';
 import { InputLP } from '../../Input/InputLP';
 import * as S from './LibraryPanelStyles';
 import { Loading } from 'components/Loading';
-import { DEFAULT_MODEL_URL } from 'utils';
-import { fnFileDelete, fnFileUpload } from 'hooks/common/useFileUpload';
+import { fnFileUpload } from 'hooks/common/useFileUpload';
 import { fnApi } from 'hooks/common/useApi';
+import { LPSelect } from 'components/LPSelect';
+import { ListView } from 'components/ListTree/ListView';
+import { DEFAULT_MODEL_URL } from 'utils/const';
+import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
 
 export interface PagesTypes {
   key: string;
@@ -25,6 +28,7 @@ export interface LibraryPanelProps {
 const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 'black' }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
+  const lpmode = useReactiveVar(LP_MODE);
   const [loading, setLoading] = useState(false);
   const onChangeSearchText = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     SEARCH_WORD(e.target.value);
@@ -49,40 +53,42 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         return false;
       }
       if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
-        // fbx 파일 업로드
-        const { url, error, msg, token } = await fnFileUpload({ file: acceptedFiles[0] });
+        // fbx 파일 업로드 및 변환
+        const { url, error, msg } = await fnFileUpload({
+          file: acceptedFiles[0],
+          type: FORMAT_TYPES.glb,
+        });
         if (error) {
           alert(msg);
           setLoading(false);
           return false;
         }
-        // glb로 변환
-        const { result, error: error2, msg: msg2 } = await fnApi({
-          action: 'upload',
-          payload: { data: url, type: 'fbx' },
-        });
-        if (error2) {
-          alert(msg2);
-          setLoading(false);
-          return false;
-        }
-        convertedFileUrl = result?.data?.result ?? DEFAULT_MODEL_URL;
-        // 업로드한 fbx 삭제
-        const { error: error3, msg: msg3 } = await fnFileDelete({ token });
-        if (error3) {
-          alert(msg3);
-          setLoading(false);
-          return false;
-        }
+        convertedFileUrl = url;
       }
+      const url = _.isEqual(extension, FORMAT_TYPES.glb)
+        ? URL.createObjectURL(acceptedFiles[0])
+        : convertedFileUrl;
+      const { result, error, msg } = await fnGetAnimationData({ url });
+      if (error) {
+        alert(msg);
+        setLoading(false);
+        return false;
+      }
+      const motions: motionTypes[] = [];
+      _.forEach(result, (item, index) => {
+        motions.push({
+          key: item?.uuid,
+          name: item?.name,
+          tracks: _.cloneDeep(item?.tracks),
+        });
+      });
       const newData: mainDataTypes = {
         key: uuidv4(),
         isChild: true,
         name: acceptedFiles[0].name,
-        url: _.isEqual(extension, FORMAT_TYPES.glb)
-          ? URL.createObjectURL(acceptedFiles[0])
-          : convertedFileUrl,
+        url,
         parentKey: _.last(pages)?.key,
+        motions,
       };
       MAIN_DATA(_.concat(mainData, newData));
       setLoading(false);
@@ -102,7 +108,11 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
       <IconPage />
-      <IconView height="100%" width="100%" />
+      {_.isEqual(lpmode, 'iconview') ? (
+        <IconView height="100%" width="100%" />
+      ) : (
+        <ListView height="100%" width="100%" />
+      )}
     </S.LibraryPanelWrapper>
   );
 };

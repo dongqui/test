@@ -12,7 +12,7 @@ export const CaretDownMedium = React.memo<SvgIconProps>(
     >
       <path
         d="M11.717 14.217a.4.4 0 00.566 0l3.034-3.034a.4.4 0 00-.283-.683H8.966a.4.4 0 00-.283.683l3.034 3.034z"
-        fill={fillColor}
+        fill="#000"
       />
     </svg>
   ),

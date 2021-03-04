@@ -9,7 +9,7 @@ import MainPage from './MainPage';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import { CONTEXTMENU_INFO, MAIN_DATA, STORE_DATA_NAMES } from 'lib/store';
 import { GRAY200 } from 'styles/common';
-import { isClient } from 'utils';
+import { isClient } from 'utils/const';
 
 interface ContextMenuProps {
   top: string;

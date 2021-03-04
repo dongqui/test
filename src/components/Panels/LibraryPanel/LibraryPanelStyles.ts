@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { rem } from 'utils';
+import { rem } from 'utils/rem';
 
 const MARGIN_LEFT = rem(12);
 interface LibraryPanelStyleProps {

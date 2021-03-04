@@ -5,31 +5,30 @@ import { RenderingPresenter } from './RenderingPresenter';
 import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
 import { bonesTypes, FORMAT_TYPES, skeletonHelpersTypes } from '../../../interfaces';
 import { CONFIG_INFOS } from './const';
-import { DEFAULT_MODEL_URL } from 'utils';
-import { useMakeSkeletonHelpers } from 'hooks/RP/useMakeSkeletonHelpers';
-import { SKELETON_HELPERS } from 'lib/store';
 import { useChangeMotion } from 'hooks/RP/useChangeMotion';
+import { ANIMATION_CLIP } from 'lib/store';
+import { DEFAULT_MODEL_URL } from 'utils/const';
 
 export interface RenderingControllerProps {
-  width: string;
-  height: string;
   id?: string;
   fileUrl?: string;
   isPlay?: boolean;
+  playSpeed?: number;
+  playDirection?: -1 | 1;
   animationIndex?: number;
   motionData?: bonesTypes[];
 }
 const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
-  width,
-  height,
   id = 'container',
   fileUrl = DEFAULT_MODEL_URL,
   isPlay = false,
+  playDirection = 1,
+  playSpeed = 1,
   animationIndex = 1,
   motionData = [],
 }) => {
   const [mixer, setMixer] = useState<THREE.AnimationMixer>();
-  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>();
+  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper>();
   const [animations, setAnimations] = useState<THREE.AnimationClip[]>();
   const currentAnimationClip = useMemo(() => animations?.[animationIndex], [
     animationIndex,
@@ -54,12 +53,22 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   useChangeMotion({ skeletonHelper, motionData });
   useEffect(() => {
     if (isPlay) {
+      if (!_.isUndefined(mixer)) {
+        mixer.timeScale = 1 * playSpeed * playDirection;
+      }
       currentAction?.play();
     } else {
-      currentAction?.stop();
+      if (!_.isUndefined(mixer)) {
+        mixer.timeScale = 0;
+      }
     }
-  }, [currentAction, isPlay]);
-  return <RenderingPresenter id={id} height={height} width={width} />;
+  }, [currentAction, isPlay, mixer, playDirection, playSpeed]);
+  useEffect(() => {
+    if (!_.isUndefined(currentAnimationClip)) {
+      ANIMATION_CLIP(currentAnimationClip);
+    }
+  }, [currentAnimationClip]);
+  return <RenderingPresenter id={id} />;
 };
 
 export const RenderingController = React.memo(RenderingControllerComponent);

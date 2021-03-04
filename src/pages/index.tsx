@@ -1,6 +1,6 @@
 import React from 'react';
+import { isClient } from 'utils/const';
 import { RealtimePage } from '../components/Pages/RealtimePage';
-import { isClient } from '../utils';
 
 const IndexPage = () => {
   return (

@@ -5,18 +5,12 @@ export const Plus = React.memo<SvgIconProps>(
     <svg
       width={width}
       height={height}
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       style={style}
       viewBox={viewBox}
     >
-      <path
-        d="M10 1.515v16.97M18.485 10H1.515"
-        stroke={fillColor}
-        strokeWidth={2}
-        fill="none"
-        fillRule="evenodd"
-        strokeLinecap="round"
-      />
+      <path stroke="#A7A7A7" strokeLinecap="round" d="M5.955.5v11M11.5 5.955H.5" />
     </svg>
   ),
 );

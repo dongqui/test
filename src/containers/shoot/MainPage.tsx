@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useState, useReducer } from 'react';
 import _ from 'lodash';
 import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
-import { MAIN_DATA } from 'lib/store';
 import { LibraryPanel } from 'components/Panels/LibraryPanel';
 import TimelinePanel from 'components/Panels/TimelinePanel';
+import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from 'styles/common';
+import { ANIMATION_CLIP, RENDERING_DATA, MAIN_DATA, SKELETON_HELPERS, LP_MODE } from 'lib/store';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
 import { TIMELINE_RATE, MIN_WIDTH } from 'styles/constants/panels';
+import { PlayBar } from 'components/PlayBar';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
 
@@ -65,15 +67,9 @@ const reducer = (state: State, action: Action) => {
 
 const MainContainer: React.FC = () => {
   const mainData = useReactiveVar(MAIN_DATA);
-
-  const handleClick = useCallback(() => {
-    MAIN_DATA(
-      _.map(mainData, (item) => ({
-        ...item,
-        isPlay: item.isVisualized ? !item.isPlay : item.isPlay,
-      })),
-    );
-  }, [mainData]);
+  const animationClip = useReactiveVar(ANIMATION_CLIP);
+  const renderingData = useReactiveVar(RENDERING_DATA);
+  const lpmode = useReactiveVar(LP_MODE);
 
   const handleDrop = useCallback(() => {
     MAIN_DATA(
@@ -242,17 +238,24 @@ const MainContainer: React.FC = () => {
         window.innerWidth - libraryPanelWidth - controlPanelWidth,
       );
 
+      const timelinePanelHeight =
+        Number(state.lower.height) >= window.innerHeight * 0.5
+          ? window.innerHeight * 0.5
+          : Number(state.lower.height);
+
+      console.log('state.lower.height > ' + state.lower.height);
+
       const nextState: State = {
         upper: {
           ...state.upper,
           // height: window.innerHeight - timelinePanelHeight,
-          height: window.innerHeight - Number(state.lower.height),
+          height: window.innerHeight - timelinePanelHeight,
         },
         lower: {
           ...state.lower,
-          height: Number(state.lower.height),
+          height: timelinePanelHeight,
           // y: window.innerHeight * upperSectionRate,
-          y: window.innerHeight - Number(state.lower.height),
+          y: window.innerHeight - timelinePanelHeight,
         },
         library: {
           ...state.library,
@@ -362,17 +365,18 @@ const MainContainer: React.FC = () => {
           disableDragging
           enableResizing={false}
           onDrop={handleDrop}
-          onClick={handleClick}
           size={{ ...renderingPanel.size }}
           position={{ ...renderingPanel.position }}
         >
           <RenderingController
             animationIndex={1}
             fileUrl={_.find(mainData, ['isVisualized', true])?.url}
-            height="100%"
-            id="container"
-            width="100%"
-            isPlay={_.find(mainData, ['isVisualized', true])?.isPlay}
+            id={`${_.find(mainData, ['isVisualized', true])?.key}${
+              _.find(mainData, ['isVisualized', true])?.url
+            }`}
+            isPlay={renderingData.isPlay}
+            playDirection={renderingData.playDirection}
+            playSpeed={renderingData.playSpeed}
             motionData={[]}
           />
         </Rnd>
@@ -382,13 +386,12 @@ const MainContainer: React.FC = () => {
           enableResizing={{ left: true }}
           onResizeStop={handleResizeStop}
           onDrop={handleDrop}
-          onClick={handleClick}
           minWidth={MIN_WIDTH.control}
           maxWidth={controlPanel.maxWidth}
           size={{ ...controlPanel.size }}
           position={{ ...controlPanel.position }}
         >
-          <div style={{ backgroundColor: 'green', height: '100%' }}>Control Panel</div>
+          <div style={{ backgroundColor: 'black', height: '100%' }}>Control Panel</div>
         </Rnd>
       </Rnd>
       <Rnd
@@ -401,9 +404,10 @@ const MainContainer: React.FC = () => {
         size={{ ...lowerSection.size }}
         position={{ ...lowerSection.position }}
       >
-        <div style={{ height: '48px', backgroundColor: 'cyan' }}>Middle Bar</div>
-        {/* <TimelinePanel width={window.innerWidth} height={window.innerHeight} /> */}
-        <div style={{ backgroundColor: 'yellow', height: `calc(100% - 48px)` }}>Timeline Panel</div>
+        {/* <div style={{ height: '48px', backgroundColor: '#303030' }}>Middle Bar</div> */}
+        <PlayBar />
+        <TimelinePanel data={animationClip?.tracks ?? []} />
+        {/* <div style={{ backgroundColor: 'black', height: '100%' }}>Timeline Panel</div> */}
       </Rnd>
     </>
   );

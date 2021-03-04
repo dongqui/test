@@ -5,14 +5,13 @@ export const Pause = React.memo<SvgIconProps>(
     <svg
       width={width}
       height={height}
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       style={style}
       viewBox={viewBox}
     >
-      <g fill={fillColor} fillRule="nonzero">
-        <rect width={2} height={12} rx={1} />
-        <rect x={6} width={2} height={12} rx={1} />
-      </g>
+      <rect x={29} y={8} width={4} height={20} rx={1} fill="#fff" />
+      <rect x={39} y={8} width={4} height={20} rx={1} fill="#fff" />
     </svg>
   ),
 );

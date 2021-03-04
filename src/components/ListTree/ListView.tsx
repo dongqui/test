@@ -1,0 +1,34 @@
+import { useReactiveVar } from '@apollo/client';
+import { MAIN_DATA } from 'lib/store';
+import _ from 'lodash';
+import React from 'react';
+import { ListRow } from './ListRow';
+import * as S from './ListTreeStyles';
+
+export interface ListViewProps {
+  width: string;
+  height: string;
+}
+
+const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
+  const mainData = useReactiveVar(MAIN_DATA);
+  return (
+    <S.ListViewWrapper width={width} height={height}>
+      {_.map(mainData, (item, index) => (
+        <div key={index}>
+          <ListRow
+            listKey={item.key}
+            mode={item.isChild ? 'file' : 'folder'}
+            name={item.name}
+            motionKey=""
+          />
+          {item.isExpanded &&
+            _.map(item?.motions ?? [], (motion) => (
+              <ListRow listKey={item.key} mode="motion" name={motion.name} motionKey={motion.key} />
+            ))}
+        </div>
+      ))}
+    </S.ListViewWrapper>
+  );
+};
+export const ListView = React.memo(ListViewComponent);

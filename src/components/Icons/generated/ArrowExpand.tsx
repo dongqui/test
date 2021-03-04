@@ -9,7 +9,7 @@ export const ArrowExpand = React.memo<SvgIconProps>(
       style={style}
       viewBox={viewBox}
     >
-      <g stroke={fillColor} strokeWidth={2} fill="none" fillRule="evenodd" strokeLinecap="round">
+      <g stroke="#000" strokeWidth={2} fill="none" fillRule="evenodd" strokeLinecap="round">
         <path d="M10 1h5v5M6 15H1v-5" />
       </g>
     </svg>

@@ -13,7 +13,7 @@ export default {
 const Template: Story<TimelinePanelProps> = (args) => <TimelinePanel {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {
-  width: 1920,
-  height: 1080,
-};
+// Default.args = {
+//   width: 1920,
+//   height: 1080,
+// };

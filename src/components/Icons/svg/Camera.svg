@@ -1,12 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="14px" height="11px" viewBox="0 0 14 11" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>Camera</title>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="A0" transform="translate(-797.000000, -1447.000000)" fill="#000000">
-            <g id="Camera" transform="translate(797.000000, 1447.000000)">
-                <path d="M3,1 C3,0.44772 3.44772,0 4,0 L10,0 C10.5523,0 11,0.44772 11,1 L11,2 C11,2.55229 10.5523,3 10,3 L4,3 C3.44772,3 3,2.55228 3,2 L3,1 Z" id="Path" fill-rule="nonzero"></path>
-                <path d="M1,2 C0.44772,2 0,2.44772 0,3 L0,10 C0,10.5523 0.44772,11 1,11 L13,11 C13.5523,11 14,10.5523 14,10 L14,3 C14,2.44772 13.5523,2 13,2 L1,2 Z M9,6 C9,7.1046 8.1046,8 7,8 C5.8954,8 5,7.1046 5,6 C5,4.8954 5.8954,4 7,4 C8.1046,4 9,4.8954 9,6 Z M10,6 C10,7.6569 8.6569,9 7,9 C5.3431,9 4,7.6569 4,6 C4,4.3431 5.3431,3 7,3 C8.6569,3 10,4.3431 10,6 Z" id="Shape"></path>
-            </g>
-        </g>
-    </g>
+<svg width="24" height="20" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M23 17C23 17.5304 22.7893 18.0391 22.4142 18.4142C22.0391 18.7893 21.5304 19 21 19H3C2.46957 19 1.96086 18.7893 1.58579 18.4142C1.21071 18.0391 1 17.5304 1 17V6C1 5.46957 1.21071 4.96086 1.58579 4.58579C1.96086 4.21071 2.46957 4 3 4H7L9 1H15L17 4H21C21.5304 4 22.0391 4.21071 22.4142 4.58579C22.7893 4.96086 23 5.46957 23 6V17Z" stroke="#A7A7A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 15C14.2091 15 16 13.2091 16 11C16 8.79086 14.2091 7 12 7C9.79086 7 8 8.79086 8 11C8 13.2091 9.79086 15 12 15Z" stroke="#A7A7A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
