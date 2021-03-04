@@ -3,7 +3,8 @@ import _ from 'lodash';
 import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'components/Panels/LibraryPanel';
-import TimelinePanel from 'components/Panels/TimelinePanel';
+// import TimelinePanel from 'components/Panels/TimelinePanel';
+import TimelinePanel from 'containers/panels/timeline';
 import { LIBRARYPANEL_INFO, TIMELINEPANEL_INFO } from 'styles/common';
 import { ANIMATION_CLIP, RENDERING_DATA, MAIN_DATA, SKELETON_HELPERS, LP_MODE } from 'lib/store';
 import { RenderingController } from 'components/Panels/RenderingPanel/RenderingController';
@@ -405,8 +406,9 @@ const MainContainer: React.FC = () => {
         position={{ ...lowerSection.position }}
       >
         {/* <div style={{ height: '48px', backgroundColor: '#303030' }}>Middle Bar</div> */}
-        <PlayBar />
-        <TimelinePanel data={animationClip?.tracks ?? []} />
+        {/* <PlayBar /> */}
+        <TimelinePanel />
+        {/* <TimelinePanel data={animationClip?.tracks ?? []} /> */}
         {/* <div style={{ backgroundColor: 'black', height: '100%' }}>Timeline Panel</div> */}
       </Rnd>
     </>
