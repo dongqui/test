@@ -5,7 +5,7 @@ import { Story, Meta } from '@storybook/react/types-6-0';
 import {
   LibraryPanel as LibraryPanelComponent,
   LibraryPanelProps,
-} from '../../../components/Panels/LibraryPanel';
+} from '../../../containers/Panels/LibraryPanel';
 import { LIBRARYPANEL_INFO } from 'styles/common';
 
 export default {

@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { contextmenuTypes, FILE_TYPES, mainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
-import { PagesTypes } from 'components/Panels/LibraryPanel';
+import { PagesTypes } from 'containers/Panels/LibraryPanel';
 
 interface useLPControlProps {
   mainData: mainDataTypes[];

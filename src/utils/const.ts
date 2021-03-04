@@ -18,6 +18,7 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
     type: FILE_TYPES.motion,
     parentKey: '0',
     tracks: [],
+    isVisualized: true,
   },
   {
     key: 'motion2',

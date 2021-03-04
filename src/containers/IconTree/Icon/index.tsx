@@ -4,7 +4,7 @@ import { MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { rem } from 'utils/rem';
-import { ModelIcon } from '../../Icons';
+import { ModelIcon } from '../../../components/Icons';
 import * as S from './IconStyles';
 
 export interface IconProps {

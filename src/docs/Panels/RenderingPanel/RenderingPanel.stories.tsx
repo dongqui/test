@@ -5,7 +5,7 @@ import { Story, Meta } from '@storybook/react/types-6-0';
 import {
   RenderingController,
   RenderingControllerProps,
-} from '../../../components/Panels/RenderingPanel/RenderingController';
+} from '../../../containers/Panels/RenderingPanel/RenderingController';
 
 export default {
   title: 'Panels/RenderingPanel',

@@ -1,10 +1,10 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { PlayBar, PlayBarProps } from 'components/PlayBar';
+import { PlayBar, PlayBarProps } from 'containers/PlayBar';
 
 export default {
-  title: 'Component API/Component/PlayBar/PlayBar',
+  title: 'Component API/Container/PlayBar/PlayBar',
   component: PlayBar,
   args: {},
 } as Meta;
