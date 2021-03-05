@@ -18,7 +18,7 @@ const cx = classNames.bind(styles);
  * | ------- | ------------------------- | ------- | ----
  * | Library | ------- Rendering ------- | Control |    | -> UpperSection
  * | ------- | ------------------------- | ------- | ----
- * | ----------------- MiddleBar ----------------- | ----
+ * | ----------------- PlayBar ------------------- | ----
  * | --------------------------------------------- |    |
  * | ----------------- Timeline ------------------ |    | -> LowerSection
  * | --------------------------------------------- | ----
@@ -63,6 +63,23 @@ const reducer = (state: State, action: Action) => {
       throw new Error(message);
     }
   }
+};
+
+/**
+ *
+ * @example
+ * ```
+ * # Usage
+ * const value = getNumberValue('358px'); // 358
+ * ```
+ * @param {string} targetValue - 숫자와 px을 분리하기위한 기존값
+ * @returns {number} px을 분리한 값
+ */
+const getNumberValue = (targetValue: string): number => {
+  const startUnitIndex = targetValue.indexOf('px');
+  const resultValue = Number(targetValue.substr(0, startUnitIndex));
+
+  return resultValue;
 };
 
 const MainContainer: React.FC = () => {
@@ -115,13 +132,13 @@ const MainContainer: React.FC = () => {
 
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  // 패널 Resize event에 대한 Panel resize handler
   const handleResizeStop: RndResizeCallback = (_e, _dir, ref, _delta, position) => {
     const panelRefId = _.upperCase(_.split(ref.id, '_')[1]) as Action['position'];
 
     switch (panelRefId) {
       case 'LOWER': {
-        const startUnitIndex = ref.style.height.indexOf('px');
-        const timelineHeight = Number(ref.style.height.substr(0, startUnitIndex));
+        const timelineHeight = getNumberValue(ref.style.height);
 
         const nextState: State = {
           ...state,
@@ -146,8 +163,7 @@ const MainContainer: React.FC = () => {
       }
 
       case 'LIBRARY': {
-        const startUnitIndex = ref.style.width.indexOf('px');
-        const libraryWidth = Number(ref.style.width.substr(0, startUnitIndex));
+        const libraryWidth = getNumberValue(ref.style.width);
 
         const nextState: State = {
           ...state,
@@ -172,8 +188,7 @@ const MainContainer: React.FC = () => {
       }
 
       case 'CONTROL': {
-        const startUnitIndex = ref.style.width.indexOf('px');
-        const controlWidth = Number(ref.style.width.substr(0, startUnitIndex));
+        const controlWidth = getNumberValue(ref.style.width);
 
         const nextState: State = {
           ...state,
@@ -214,23 +229,20 @@ const MainContainer: React.FC = () => {
    */
   useEffect(() => {
     const handleResize = _.debounce(() => {
-      // const upperSectionRate = 1 - TIMELINE_RATE.height;
-      // const timelinePanelHeight = window.innerHeight * TIMELINE_RATE.height;
-
       // LP min-width, max-width로 인한 RP width계산을 위한 값
       const libraryPanelWidth =
-        Number(state.library.width) >= MIN_WIDTH.library
-          ? MIN_WIDTH.library
-          : Number(state.library.width) > window.innerWidth * LIBRARY_RATE.maxWidth
+        Number(state.library.width) > window.innerWidth * LIBRARY_RATE.maxWidth
           ? window.innerWidth * LIBRARY_RATE.maxWidth
+          : Number(state.library.width) <= MIN_WIDTH.library
+          ? MIN_WIDTH.library
           : Number(state.library.width);
 
       // CP min-width, max-width로 인한 RP width계산을 위한 값
       const controlPanelWidth =
-        Number(state.control.width) >= MIN_WIDTH.control
-          ? MIN_WIDTH.control
-          : Number(state.control.width) > window.innerWidth * CONTROL_RATE.maxWidth
+        Number(state.control.width) > window.innerWidth * CONTROL_RATE.maxWidth
           ? window.innerWidth * CONTROL_RATE.maxWidth
+          : Number(state.control.width) <= MIN_WIDTH.control
+          ? MIN_WIDTH.control
           : Number(state.control.width);
 
       // LP, CP min-width, max-width를 감안한 RP width
@@ -239,20 +251,18 @@ const MainContainer: React.FC = () => {
       );
 
       const timelinePanelHeight =
-        Number(state.lower.height) >= window.innerHeight * TIMELINE_RATE.maxHeight
+        Number(state.lower.height) > window.innerHeight * TIMELINE_RATE.maxHeight
           ? window.innerHeight * TIMELINE_RATE.maxHeight
           : Number(state.lower.height);
 
       const nextState: State = {
         upper: {
           ...state.upper,
-          // height: window.innerHeight - timelinePanelHeight,
           height: window.innerHeight - timelinePanelHeight,
         },
         lower: {
           ...state.lower,
           height: timelinePanelHeight,
-          // y: window.innerHeight * upperSectionRate,
           y: window.innerHeight - timelinePanelHeight,
         },
         library: {
@@ -355,7 +365,7 @@ const MainContainer: React.FC = () => {
           className={cx('library')}
           disableDragging
           enableResizing={{ right: true }}
-          onResizeStop={handleResizeStop}
+          onResize={handleResizeStop}
           minWidth={MIN_WIDTH.library}
           maxWidth={libraryPanel.maxWidth}
           size={{ ...libraryPanel.size }}
@@ -392,7 +402,7 @@ const MainContainer: React.FC = () => {
           id="wrapper_control"
           disableDragging
           enableResizing={{ left: true }}
-          onResizeStop={handleResizeStop}
+          onResize={handleResizeStop}
           onDrop={handleDrop}
           minWidth={MIN_WIDTH.control}
           maxWidth={controlPanel.maxWidth}
@@ -406,7 +416,7 @@ const MainContainer: React.FC = () => {
         id="wrapper_lower"
         disableDragging
         enableResizing={{ top: true }}
-        onResizeStop={handleResizeStop}
+        onResize={handleResizeStop}
         minHeight={lowerSection.minHeight}
         maxHeight={lowerSection.maxHeight}
         size={{ ...lowerSection.size }}

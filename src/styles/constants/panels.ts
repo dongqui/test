@@ -4,10 +4,12 @@ export const MIN_WIDTH = {
   control: 230,
 } as const;
 
+// 라이브러리 패널 비율(%)
 export const LIBRARY_RATE = {
   maxWidth: 0.4,
 };
 
+// 컨트롤 패널 비율(%)
 export const CONTROL_RATE = {
   maxWidth: 0.4,
 };
