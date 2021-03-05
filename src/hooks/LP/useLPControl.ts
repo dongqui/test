@@ -197,12 +197,14 @@ export const useLPControl = ({
     [onCopy, onEdit, onPaste],
   );
   const filteredData: mainDataTypes[] = useMemo(() => {
-    let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
+    let result = _.isEqual(lpmode, LPMODE_TYPES.iconview)
+      ? _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key))
+      : _.clone(mainData);
     if (!_.isEmpty(searchWord)) {
       result = _.filter(mainData, (o) => _.includes(o.name, searchWord));
     }
     return result;
-  }, [mainData, pages, searchWord]);
+  }, [lpmode, mainData, pages, searchWord]);
   return {
     onClick,
     onDragStart,

@@ -20,7 +20,14 @@ const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
   const lpmode = useReactiveVar(LP_MODE);
   const listViewWrapperRef = useRef<HTMLDivElement>(null);
-  const { onContextMenu, shortcutData, filteredData } = useLPControl({
+  const {
+    onContextMenu,
+    shortcutData,
+    filteredData,
+    onDragStart,
+    onDragStop,
+    onDrop,
+  } = useLPControl({
     contextmenuInfo,
     mainData,
     pages,
@@ -34,14 +41,21 @@ const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
   return (
     <S.ListViewWrapper ref={listViewWrapperRef} width={width} height={height}>
       {_.map(filteredData, (item, index) => (
-        <div key={index} className="icon">
+        <S.ListViewRowWrapper
+          key={index}
+          className="icon"
+          draggable
+          onDragStart={() => onDragStart({ key: item.key })}
+          onDragEnd={onDragStop}
+          onDrop={() => onDrop({ key: item.key })}
+        >
           <ListRow
             listKey={item.key}
             mode={item.type}
             name={item.name}
             parentKey={item.parentKey}
           />
-        </div>
+        </S.ListViewRowWrapper>
       ))}
     </S.ListViewWrapper>
   );
