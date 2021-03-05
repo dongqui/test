@@ -73,5 +73,16 @@ export const ListViewWrapper = styled.div<ListViewWrapperProps>`
   -webkit-user-select: none;
   user-select: none;
 `;
+export const ListRowInput = styled.input`
+  width: 100%;
+  font-size: ${FONT_SIZE}rem;
+  border-width: 0;
+  color: white;
+  background-color: inherit;
+
+  :focus {
+    outline: none;
+  }
+`;
 export const ListViewRowWrapper = styled.div``;
 export const ArrowWrapper = styled.div``;

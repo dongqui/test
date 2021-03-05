@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { FaFolder } from 'react-icons/fa';
@@ -20,7 +21,7 @@ interface makeBackgroundColorProps {
   isHover?: boolean;
   isModifying?: boolean;
 }
-const makeBackgroundColor = ({
+const makebackgroundcolor = ({
   isClicked = false,
   isModifying = false,
   isHover = false,
@@ -43,16 +44,20 @@ export const IconWrapper = styled.div<IconStyleProps>`
   border-radius: ${BORDER_RADIUS}rem;
   cursor: pointer;
   opacity: ${(props) => props.opacity ?? 1};
-  background-color: ${(props) =>
-    makeBackgroundColor({ isClicked: props.isClicked, isModifying: props.isModifying })};
+  background-color:
+    ${(props) =>
+    makebackgroundcolor({ isClicked: props.isClicked, isModifying: props.isModifying })};
 
   :hover {
-    background-color: ${(props) =>
-      makeBackgroundColor({
-        isHover: true,
-        isModifying: props.isModifying,
-        isClicked: props.isClicked,
-      })};
+    background-color:
+      ${(props) =>
+      makebackgroundcolor(
+        {
+          isHover: true,
+          isModifying: props.isModifying,
+          isClicked: props.isClicked,
+        }
+      )};
   }
 `;
 export const TopWrapper = styled.div`
@@ -77,13 +82,12 @@ export const BottomWrapper = styled.div`
 export const BottomInput = styled.input`
   width: 100%;
   font-size: ${FONT_SIZE}rem;
-  border-width: 0px;
+  border-width: 0;
   color: white;
   background-color: inherit;
+
   :focus {
     outline: none;
-  }
-  ::placeholder {
   }
 `;
 export const FolderIcon = styled(FaFolder)`

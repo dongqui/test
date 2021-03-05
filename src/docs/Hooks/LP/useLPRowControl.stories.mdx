@@ -1,0 +1,33 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Hooks/LP/useLPRowControl" />
+
+# useLPRowControl
+
+LP에서 Row에 해당하는 컴포넌트에 필요한 로직들을 모아놓음
+
+#### example
+
+```javascript
+  const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
+    mainData,
+    rowKey,
+  });
+```
+
+## Props
+
+| Prop                | Description            |
+| ------------------- | ---------------------- |
+| **mainData(mainDataTypes)**        | 메인데이터        |
+| **rowKey(string)**        | row에 해당하는 key값        |
+
+## Return
+
+| Return | Description |
+| ------ | ----------- |
+| **fileName(string)**        | 파일명        |
+| **filteredFileName(string)**        | 검색어 필터가 적용된 파일명        |
+| **isModifying(boolean)**        | 수정중인지        |
+| **onBlur(Function)**        | 인풋 바깥으로 포커스 벗어났을때 이벤트        |
+| **onChangeInput(Function)**        | input 값 바뀔때 이벤트        |
