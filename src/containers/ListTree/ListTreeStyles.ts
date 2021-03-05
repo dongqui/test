@@ -49,7 +49,7 @@ export const ListRowWrapper = styled.div<ListRowWrapperProps>`
     css`
       background-color: rgba(55, 133, 247, 0.2);
     `}
-    ${(props) =>
+  ${(props) =>
     props.isVisualizedSelected &&
     css`
       background-color: ${PRIMARY_BLUE};
@@ -73,4 +73,5 @@ export const ListViewWrapper = styled.div<ListViewWrapperProps>`
   -webkit-user-select: none;
   user-select: none;
 `;
+export const ListViewRowWrapper = styled.div``;
 export const ArrowWrapper = styled.div``;

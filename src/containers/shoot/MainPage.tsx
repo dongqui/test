@@ -69,15 +69,29 @@ const MainContainer: React.FC = () => {
   const mainData = useReactiveVar(MAIN_DATA);
   const animationClip = useReactiveVar(ANIMATION_CLIP);
   const renderingData = useReactiveVar(RENDERING_DATA);
-  const lpmode = useReactiveVar(LP_MODE);
 
   const handleDrop = useCallback(() => {
-    MAIN_DATA(
-      _.map(mainData, (item) => ({
-        ...item,
-        isVisualized: _.isEqual(item.key, _.find(mainData, ['isDragging', true])?.key),
-      })),
-    );
+    if (
+      _.isEqual(
+        _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type,
+        FILE_TYPES.motion,
+      )
+    ) {
+      MAIN_DATA(
+        _.map(mainData, (item) => ({
+          ...item,
+          isVisualized:
+            _.isEqual(
+              item.key,
+              _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.key,
+            ) ||
+            _.isEqual(
+              item.key,
+              _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.parentKey,
+            ),
+        })),
+      );
+    }
   }, [mainData]);
 
   const [initialState] = useState<State>({

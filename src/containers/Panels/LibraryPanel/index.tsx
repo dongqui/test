@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FILE_TYPES, FORMAT_TYPES, mainDataTypes } from 'interfaces';
+import { FILE_TYPES, FORMAT_TYPES, LPMODE_TYPES, mainDataTypes } from 'interfaces';
 import { LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
@@ -130,7 +130,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
       <IconPage />
-      {_.isEqual(lpmode, 'iconview') ? (
+      {_.isEqual(lpmode, LPMODE_TYPES.iconview) ? (
         <IconView height="100%" width="100%" />
       ) : (
         <ListView height="100%" width="100%" />
