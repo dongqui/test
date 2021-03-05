@@ -68,7 +68,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
           onDragEnd={onDragStop}
           onDrop={() => onDrop({ key: item.key })}
         >
-          <Icon iconKey={item.key} mode={item.type} isDragging={item.isDragging} />
+          <Icon rowKey={item.key} mode={item.type} isDragging={item.isDragging} />
         </S.IconWrapper>
       ))}
     </S.IconViewWrapper>

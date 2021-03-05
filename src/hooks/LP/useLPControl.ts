@@ -10,6 +10,7 @@ import {
 } from 'interfaces';
 import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
+import { MAX_FILE_LENGTH } from 'styles/constants/common';
 
 interface useLPControlProps {
   mainData: mainDataTypes[];
@@ -52,7 +53,7 @@ export const useLPControl = ({
         MAIN_DATA(
           _.map(mainData, (item) => ({
             ...item,
-            parentKey: item.isDragging ? key : item.parentKey,
+            parentKeys: item.isDragging ? key : item.parentKey,
           })),
         );
       }
@@ -60,50 +61,85 @@ export const useLPControl = ({
     [mainData],
   );
   const onCopy = useCallback(() => {
-    if (
-      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.isSelected, true])?.type, FILE_TYPES.file)
-    ) {
-      MAIN_DATA(
-        _.map(mainData, (item) => ({
-          ...item,
-          isCopied: item.isSelected ? true : false,
-        })),
-      );
-    } else {
-      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isCopied: false })));
-    }
-  }, [mainData]);
-  const onPaste = useCallback(() => {
-    if (_.some(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])) {
-      MAIN_DATA(
-        _.concat(mainData, {
-          key: uuidv4(),
-          type: FILE_TYPES.file,
-          name: `${_.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name} (${
-            _.size(
-              _.filter(mainData, (item) =>
-                _.includes(
-                  item.name,
-                  _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name,
-                ),
-              ),
-            ) + 1
-          })`,
-          parentKey: _.last(pages)?.key,
-        }),
-      );
-    }
-  }, [mainData, pages]);
-  const onEdit = useCallback(() => {
+    const isMotionSelected = _.some(
+      mainData,
+      (item) => item.isSelected && _.isEqual(item.type, FILE_TYPES.motion),
+    );
+    const targetKey = isMotionSelected
+      ? _.find(
+          mainData,
+          (item) => _.isEqual(item.isSelected, true) && _.isEqual(item.type, FILE_TYPES.motion),
+        )?.key
+      : _.find(
+          mainData,
+          (item) => _.isEqual(item.isSelected, true) && !_.isEqual(item.type, FILE_TYPES.motion),
+        )?.key;
     MAIN_DATA(
       _.map(mainData, (item) => ({
         ...item,
-        isModifying: _.isEqual(
-          item.key,
-          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isSelected, true])?.key,
+        isCopied: _.isEqual(item.key, targetKey),
+      })),
+    );
+  }, [mainData]);
+  const onPaste = useCallback(() => {
+    if (_.some(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])) {
+      const newKey = uuidv4();
+      let newMainData = _.concat(mainData, {
+        key: newKey,
+        type: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.type ?? FILE_TYPES.file,
+        name: `${_.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name} (${
+          _.size(
+            _.filter(mainData, (item) =>
+              _.includes(
+                item.name,
+                _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name,
+              ),
+            ),
+          ) + 1
+        })`,
+        parentKey: _.isEqual(
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.type,
+          FILE_TYPES.motion,
         )
-          ? !item.isModifying
-          : false,
+          ? _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.parentKey
+          : _.last(pages)?.key,
+      });
+      _.forEach(
+        _.filter(mainData, [
+          MAINDATA_PROPERTY_TYPES.parentKey,
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.key,
+        ]),
+        (item) => {
+          newMainData = _.concat(newMainData, {
+            key: uuidv4(),
+            type: item.type,
+            name: item.name,
+            parentKey: newKey,
+            tracks: item.tracks,
+          });
+        },
+      );
+      MAIN_DATA(newMainData);
+    }
+  }, [mainData, pages]);
+  const onEdit = useCallback(() => {
+    const isMotionSelected = _.some(
+      mainData,
+      (item) => item.isSelected && _.isEqual(item.type, FILE_TYPES.motion),
+    );
+    const targetKey = isMotionSelected
+      ? _.find(
+          mainData,
+          (item) => _.isEqual(item.isSelected, true) && _.isEqual(item.type, FILE_TYPES.motion),
+        )?.key
+      : _.find(
+          mainData,
+          (item) => _.isEqual(item.isSelected, true) && !_.isEqual(item.type, FILE_TYPES.motion),
+        )?.key;
+    MAIN_DATA(
+      _.map(mainData, (item) => ({
+        ...item,
+        isModifying: _.isEqual(item.key, targetKey) ? !item.isModifying : false,
       })),
     );
   }, [mainData]);
