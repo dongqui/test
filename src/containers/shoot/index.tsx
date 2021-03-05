@@ -3,12 +3,11 @@ import { NextPage } from 'next';
 import _ from 'lodash';
 import styled from '@emotion/styled';
 import { useReactiveVar } from '@apollo/client';
-import { useSaveLocalStorage } from 'hooks/common/useSaveLocalStorage';
 import { Contextmenu } from 'components/Contextmenu';
 import MainPage from './MainPage';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import { CONTEXTMENU_INFO, MAIN_DATA, STORE_DATA_NAMES } from 'lib/store';
-import { GRAY200 } from 'styles/common';
+import { GRAY200 } from 'styles/constants/common';
 import { isClient } from 'utils/const';
 
 interface ContextMenuProps {
@@ -45,9 +44,6 @@ const ShootPage: NextPage<Props> = () => {
     }
   }, []);
 
-  useSaveLocalStorage({ name: `${STORE_DATA_NAMES.mainData}`, state: mainData });
-  // useSaveLocalStorage({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, state: skeletonHelpers });
-
   return (
     <main>
       {contextMenuInfo.isShow && (
@@ -65,10 +61,7 @@ const ShootPage: NextPage<Props> = () => {
           />
         </ContextMenuWrapper>
       )}
-      {/* {!isServer && (
-        <MainPage width={`${window.innerWidth}px`} height={`${window.innerHeight}px`} />
-      )} */}
-      {isClient && <MainPage />}
+      {!isServer && <MainPage />}
     </main>
   );
 };

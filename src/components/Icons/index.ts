@@ -53,7 +53,6 @@ export * from './generated/HorizontalBar';
 export * from './generated/Iconview';
 export * from './generated/Image';
 export * from './generated/Layer';
-export * from './generated/Listview';
 export * from './generated/Lock';
 export * from './generated/LockSmall';
 export * from './generated/MagnifyingGlass';

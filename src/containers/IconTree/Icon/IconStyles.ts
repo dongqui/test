@@ -1,8 +1,9 @@
+/* eslint-disable prettier/prettier */
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { FaFolder } from 'react-icons/fa';
 import { rem } from 'utils/rem';
-import { PRIMARY_BLUE } from '../../../styles/common';
+import { BACKGROUND_COLOR, PRIMARY_BLUE } from '../../../styles/constants/common';
 
 const TOP_HEIGHT = rem(48);
 const TOP_BACKGROUND_COLOR = 'rgba(36, 36, 36, 1)';
@@ -12,22 +13,51 @@ interface IconStyleProps {
   width?: number;
   height?: number;
   isClicked: boolean;
+  isModifying?: boolean;
   opacity?: number;
 }
+interface makeBackgroundColorProps {
+  isClicked?: boolean;
+  isHover?: boolean;
+  isModifying?: boolean;
+}
+const makebackgroundcolor = ({
+  isClicked = false,
+  isModifying = false,
+  isHover = false,
+}: makeBackgroundColorProps) => {
+  let result = BACKGROUND_COLOR;
+  if (isClicked) {
+    result = PRIMARY_BLUE;
+  }
+  if (isHover) {
+    result = PRIMARY_BLUE;
+  }
+  if (isModifying) {
+    result = BACKGROUND_COLOR;
+  }
+  return result;
+};
 export const IconWrapper = styled.div<IconStyleProps>`
   width: ${(props) => props.width}rem;
   height: ${(props) => props.height}rem;
   border-radius: ${BORDER_RADIUS}rem;
   cursor: pointer;
   opacity: ${(props) => props.opacity ?? 1};
-  /* stylelint-disable */
-  ${(props) =>
-    props.isClicked &&
-    css`
-      background-color: ${PRIMARY_BLUE};
-    `}
+  background-color:
+    ${(props) =>
+    makebackgroundcolor({ isClicked: props.isClicked, isModifying: props.isModifying })};
+
   :hover {
-    background-color: ${PRIMARY_BLUE};
+    background-color:
+      ${(props) =>
+      makebackgroundcolor(
+        {
+          isHover: true,
+          isModifying: props.isModifying,
+          isClicked: props.isClicked,
+        }
+      )};
   }
 `;
 export const TopWrapper = styled.div`
@@ -52,13 +82,12 @@ export const BottomWrapper = styled.div`
 export const BottomInput = styled.input`
   width: 100%;
   font-size: ${FONT_SIZE}rem;
-  border-width: 0px;
+  border-width: 0;
   color: white;
   background-color: inherit;
+
   :focus {
     outline: none;
-  }
-  ::placeholder {
   }
 `;
 export const FolderIcon = styled(FaFolder)`

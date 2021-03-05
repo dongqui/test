@@ -1,16 +1,31 @@
 import _ from 'lodash';
 import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { contextmenuTypes, FILE_TYPES, mainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import {
+  contextmenuTypes,
+  FILE_TYPES,
+  LPMODE_TYPES,
+  mainDataTypes,
+  MAINDATA_PROPERTY_TYPES,
+} from 'interfaces';
 import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
+import { MAX_FILE_LENGTH } from 'styles/constants/common';
 
 interface useLPControlProps {
   mainData: mainDataTypes[];
   pages: PagesTypes[];
   contextmenuInfo: contextmenuTypes;
+  searchWord: string;
+  lpmode: LPMODE_TYPES;
 }
-export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlProps) => {
+export const useLPControl = ({
+  mainData,
+  pages,
+  contextmenuInfo,
+  searchWord,
+  lpmode,
+}: useLPControlProps) => {
   const onClick = useCallback(
     (e) => {
       const icons = document.getElementsByClassName('icon');
@@ -38,7 +53,7 @@ export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlP
         MAIN_DATA(
           _.map(mainData, (item) => ({
             ...item,
-            parentKey: item.isDragging ? key : item.parentKey,
+            parentKeys: item.isDragging ? key : item.parentKey,
           })),
         );
       }
@@ -46,48 +61,85 @@ export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlP
     [mainData],
   );
   const onCopy = useCallback(() => {
-    if (
-      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.isSelected, true])?.type, FILE_TYPES.file)
-    ) {
-      MAIN_DATA(
-        _.map(mainData, (item) => ({
-          ...item,
-          isCopied: item.isSelected ? true : false,
-        })),
-      );
-    } else {
-      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isCopied: false })));
-    }
-  }, [mainData]);
-  const onPaste = useCallback(() => {
-    if (_.some(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])) {
-      MAIN_DATA(
-        _.concat(mainData, {
-          key: uuidv4(),
-          type: FILE_TYPES.file,
-          name: `${_.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name} (${
-            _.size(
-              _.filter(mainData, (item) =>
-                _.includes(
-                  item.name,
-                  _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name,
-                ),
-              ),
-            ) + 1
-          })`,
-          parentKey: _.last(pages)?.key,
-        }),
-      );
-    }
-  }, [mainData, pages]);
-  const onEdit = useCallback(() => {
+    const isMotionSelected = _.some(
+      mainData,
+      (item) => item.isSelected && _.isEqual(item.type, FILE_TYPES.motion),
+    );
+    const targetKey = isMotionSelected
+      ? _.find(
+          mainData,
+          (item) => _.isEqual(item.isSelected, true) && _.isEqual(item.type, FILE_TYPES.motion),
+        )?.key
+      : _.find(
+          mainData,
+          (item) => _.isEqual(item.isSelected, true) && !_.isEqual(item.type, FILE_TYPES.motion),
+        )?.key;
     MAIN_DATA(
       _.map(mainData, (item) => ({
         ...item,
-        isModifying: _.isEqual(
-          item.key,
-          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isSelected, true])?.key,
-        ),
+        isCopied: _.isEqual(item.key, targetKey),
+      })),
+    );
+  }, [mainData]);
+  const onPaste = useCallback(() => {
+    if (_.some(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])) {
+      const newKey = uuidv4();
+      let newMainData = _.concat(mainData, {
+        key: newKey,
+        type: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.type ?? FILE_TYPES.file,
+        name: `${_.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name} (${
+          _.size(
+            _.filter(mainData, (item) =>
+              _.includes(
+                item.name,
+                _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name,
+              ),
+            ),
+          ) + 1
+        })`,
+        parentKey: _.isEqual(
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.type,
+          FILE_TYPES.motion,
+        )
+          ? _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.parentKey
+          : _.last(pages)?.key,
+      });
+      _.forEach(
+        _.filter(mainData, [
+          MAINDATA_PROPERTY_TYPES.parentKey,
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.key,
+        ]),
+        (item) => {
+          newMainData = _.concat(newMainData, {
+            key: uuidv4(),
+            type: item.type,
+            name: item.name,
+            parentKey: newKey,
+            tracks: item.tracks,
+          });
+        },
+      );
+      MAIN_DATA(newMainData);
+    }
+  }, [mainData, pages]);
+  const onEdit = useCallback(() => {
+    const isMotionSelected = _.some(
+      mainData,
+      (item) => item.isSelected && _.isEqual(item.type, FILE_TYPES.motion),
+    );
+    const targetKey = isMotionSelected
+      ? _.find(
+          mainData,
+          (item) => _.isEqual(item.isSelected, true) && _.isEqual(item.type, FILE_TYPES.motion),
+        )?.key
+      : _.find(
+          mainData,
+          (item) => _.isEqual(item.isSelected, true) && !_.isEqual(item.type, FILE_TYPES.motion),
+        )?.key;
+    MAIN_DATA(
+      _.map(mainData, (item) => ({
+        ...item,
+        isModifying: _.isEqual(item.key, targetKey) ? !item.isModifying : false,
       })),
     );
   }, [mainData]);
@@ -117,7 +169,7 @@ export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlP
               MAIN_DATA(
                 _.concat(mainData, {
                   key: uuidv4(),
-                  type: FILE_TYPES.file,
+                  type: FILE_TYPES.folder,
                   name: 'Folder',
                   parentKey: _.last(pages)?.key,
                   isModifying: true,
@@ -180,6 +232,15 @@ export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlP
     ],
     [onCopy, onEdit, onPaste],
   );
+  const filteredData: mainDataTypes[] = useMemo(() => {
+    let result = _.isEqual(lpmode, LPMODE_TYPES.iconview)
+      ? _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key))
+      : _.clone(mainData);
+    if (!_.isEmpty(searchWord)) {
+      result = _.filter(mainData, (o) => _.includes(o.name, searchWord));
+    }
+    return result;
+  }, [lpmode, mainData, pages, searchWord]);
   return {
     onClick,
     onDragStart,
@@ -190,5 +251,6 @@ export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlP
     onContextMenu,
     onEdit,
     shortcutData,
+    filteredData,
   };
 };

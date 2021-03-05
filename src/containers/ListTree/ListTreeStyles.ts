@@ -1,8 +1,8 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { BACKGROUND_COLOR, GRAY200, PRIMARY_BLUE } from 'styles/common';
+import { BACKGROUND_COLOR, GRAY200, PRIMARY_BLUE } from 'styles/constants/common';
 import { rem } from 'utils/rem';
-import { GRAY400 } from '../../styles/common';
+import { GRAY400 } from '../../styles/constants/common';
 
 interface ListRowWrapperProps {
   paddingLeft?: number;
@@ -49,7 +49,7 @@ export const ListRowWrapper = styled.div<ListRowWrapperProps>`
     css`
       background-color: rgba(55, 133, 247, 0.2);
     `}
-    ${(props) =>
+  ${(props) =>
     props.isVisualizedSelected &&
     css`
       background-color: ${PRIMARY_BLUE};
@@ -73,4 +73,16 @@ export const ListViewWrapper = styled.div<ListViewWrapperProps>`
   -webkit-user-select: none;
   user-select: none;
 `;
+export const ListRowInput = styled.input`
+  width: 100%;
+  font-size: ${FONT_SIZE}rem;
+  border-width: 0;
+  color: white;
+  background-color: inherit;
+
+  :focus {
+    outline: none;
+  }
+`;
+export const ListViewRowWrapper = styled.div``;
 export const ArrowWrapper = styled.div``;

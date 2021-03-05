@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 import { rem } from 'utils/rem';
-import { GRAY300, GRAY500 } from '../../styles/common';
+import { GRAY300, GRAY500 } from '../../styles/constants/common';
 import { Search } from '../Icons/generated/Search';
 import * as S from './inputStyles';
 

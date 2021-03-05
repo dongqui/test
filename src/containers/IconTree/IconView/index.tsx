@@ -4,7 +4,7 @@ import { useContextmenu } from 'hooks/common/useContextmenu';
 import { mainDataTypes } from 'interfaces';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CONTEXTMENU_INFO, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/store';
+import { CONTEXTMENU_INFO, LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/store';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
 import { useShortcut } from 'hooks/common/useShortcut';
@@ -28,18 +28,22 @@ const IconViewComponent: React.FC<IconViewProps> = ({
   const pages = useReactiveVar(PAGES);
   const searchWord = useReactiveVar(SEARCH_WORD);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
+  const lpmode = useReactiveVar(LP_MODE);
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
-  const filteredData: mainDataTypes[] = useMemo(() => {
-    let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
-    if (!_.isEmpty(searchWord)) {
-      result = _.filter(mainData, (o) => _.includes(o.name, searchWord));
-    }
-    return result;
-  }, [mainData, pages, searchWord]);
-  const { onClick, onContextMenu, onDragStart, onDragStop, onDrop, shortcutData } = useLPControl({
+  const {
+    onClick,
+    onContextMenu,
+    onDragStart,
+    onDragStop,
+    onDrop,
+    shortcutData,
+    filteredData,
+  } = useLPControl({
     contextmenuInfo,
     mainData,
     pages,
+    searchWord,
+    lpmode,
   });
   useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
   useShortcut({
@@ -64,7 +68,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({
           onDragEnd={onDragStop}
           onDrop={() => onDrop({ key: item.key })}
         >
-          <Icon iconKey={item.key} mode={item.type} isDragging={item.isDragging} />
+          <Icon rowKey={item.key} mode={item.type} isDragging={item.isDragging} />
         </S.IconWrapper>
       ))}
     </S.IconViewWrapper>

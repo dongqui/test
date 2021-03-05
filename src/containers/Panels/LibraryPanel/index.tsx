@@ -1,11 +1,11 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FILE_TYPES, FORMAT_TYPES, mainDataTypes } from 'interfaces';
+import { FILE_TYPES, FORMAT_TYPES, LPMODE_TYPES, mainDataTypes } from 'interfaces';
 import { LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { LIBRARYPANEL_INFO } from 'styles/common';
+import { LIBRARYPANEL_INFO } from 'styles/constants/common';
 import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
 import * as S from './LibraryPanelStyles';
@@ -92,13 +92,14 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           parentKey: _.last(pages)?.key,
         },
       ];
-      _.forEach(motions, (motion) => {
+      _.forEach(motions, (motion, index) => {
         newData.push({
-          key,
-          type: FILE_TYPES.file,
-          name: acceptedFiles[0].name,
+          key: motion.key,
+          motionIndex: parseInt(index),
+          type: FILE_TYPES.motion,
+          name: motion?.name,
           url,
-          parentKey: _.last(pages)?.key,
+          parentKey: key,
         });
       });
       MAIN_DATA(_.concat(mainData, newData));
@@ -129,7 +130,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
       <IconPage />
-      {_.isEqual(lpmode, 'iconview') ? (
+      {_.isEqual(lpmode, LPMODE_TYPES.iconview) ? (
         <IconView height="100%" width="100%" />
       ) : (
         <ListView height="100%" width="100%" />

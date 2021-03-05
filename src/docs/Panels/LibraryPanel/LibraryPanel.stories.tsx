@@ -6,7 +6,7 @@ import {
   LibraryPanel as LibraryPanelComponent,
   LibraryPanelProps,
 } from '../../../containers/Panels/LibraryPanel';
-import { LIBRARYPANEL_INFO } from 'styles/common';
+import { LIBRARYPANEL_INFO } from 'styles/constants/common';
 
 export default {
   title: 'Panels/LibraryPanel',

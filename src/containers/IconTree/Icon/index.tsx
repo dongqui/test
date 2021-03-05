@@ -1,102 +1,61 @@
 import { useReactiveVar } from '@apollo/client';
+import { CircleMotionIcon } from 'components/Icons/generated2/CircleMotion';
+import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { MAX_FILE_LENGTH } from 'styles/constants/common';
 import { rem } from 'utils/rem';
-import { ModelIcon } from '../../../components/Icons';
+import { Circle, ModelIcon, Motion } from '../../../components/Icons';
 import * as S from './IconStyles';
 
 export interface IconProps {
   width?: number;
   height?: number;
-  maxFileNameLength?: number;
   mode?: FILE_TYPES;
-  iconKey: string;
+  rowKey: string;
   isDragging?: boolean;
 }
 
 const IconComponent: React.FC<IconProps> = ({
   width = rem(48),
   height = rem(68),
-  maxFileNameLength = 8,
   mode = FILE_TYPES.file,
-  iconKey,
+  rowKey,
   isDragging = false,
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
   const isClicked =
-    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.isSelected, [
-      iconKey,
+    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isSelected, [
+      rowKey,
       mainData,
     ]) ?? false;
-  const isModifying = useMemo(
-    () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.isModifying,
-    [iconKey, mainData],
-  );
-  const fileName =
-    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.name, [
-      iconKey,
-      mainData,
-    ]) ?? 'Model';
-  const filteredFileName = useMemo(() => {
-    return _.gt(_.size(fileName), maxFileNameLength)
-      ? `${fileName.substring(0, maxFileNameLength)}...`
-      : fileName;
-  }, [fileName, maxFileNameLength]);
   const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
-  const onChangeInput = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      MAIN_DATA(
-        _.map(mainData, (item) => ({
-          ...item,
-          name: _.isEqual(item.key, iconKey) ? e.target.value : item.name,
-        })),
-      );
-    },
-    [iconKey, mainData],
-  );
   const onClick = useCallback(() => {
-    MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: _.isEqual(item.key, iconKey) })));
-  }, [iconKey, mainData]);
+    MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: _.isEqual(item.key, rowKey) })));
+  }, [rowKey, mainData]);
   const onDoubleClick = useCallback(() => {
     if (
-      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.type, FILE_TYPES.file)
+      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type, FILE_TYPES.motion)
     ) {
       MAIN_DATA(
-        _.map(mainData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, iconKey) })),
+        _.map(mainData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, rowKey) })),
       );
     } else {
       PAGES(
         _.concat(pages, {
-          key: iconKey,
-          name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.name ?? 'Folder',
+          key: rowKey,
+          name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.name ?? 'Folder',
         }),
       );
     }
-  }, [iconKey, mainData, pages]);
-  const onKeyPress = useCallback(
-    (e) => {
-      if (_.isEqual(e.key, 'Enter')) {
-        MAIN_DATA(
-          _.map(mainData, (item) => ({
-            ...item,
-            isModifying: false,
-          })),
-        );
-      }
-    },
-    [mainData],
-  );
-  const onBlur = useCallback(() => {
-    MAIN_DATA(
-      _.map(mainData, (item) => ({
-        ...item,
-        isModifying: _.isEqual(item.key, iconKey) ? false : item.isModifying,
-      })),
-    );
-  }, [iconKey, mainData]);
+  }, [rowKey, mainData, pages]);
+  const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
+    mainData,
+    rowKey,
+  });
   return (
     <S.IconWrapper
       ref={iconRef}
@@ -104,15 +63,20 @@ const IconComponent: React.FC<IconProps> = ({
       height={height}
       onClick={onClick}
       isClicked={isClicked}
+      isModifying={isModifying}
       opacity={isDragging ? 0.5 : 1}
       onDoubleClick={onDoubleClick}
     >
-      {_.isEqual(mode, 'icon') ? (
+      {_.isEqual(mode, FILE_TYPES.file) && (
         <S.TopWrapper>
           <ModelIcon width={`${rem(12)}rem`} height={`${rem(12)}rem`} viewBox="0 0 12 12" />
         </S.TopWrapper>
-      ) : (
-        <S.FolderIcon></S.FolderIcon>
+      )}
+      {_.isEqual(mode, FILE_TYPES.folder) && <S.FolderIcon></S.FolderIcon>}
+      {_.isEqual(mode, FILE_TYPES.motion) && (
+        <S.TopWrapper>
+          <CircleMotionIcon></CircleMotionIcon>
+        </S.TopWrapper>
       )}
       {isModifying ? (
         <S.BottomInput
@@ -120,7 +84,6 @@ const IconComponent: React.FC<IconProps> = ({
           autoFocus
           onFocus={(e) => e.target.select()}
           onChange={onChangeInput}
-          onKeyPress={onKeyPress}
           onBlur={onBlur}
         ></S.BottomInput>
       ) : (
