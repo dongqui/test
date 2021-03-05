@@ -50,10 +50,6 @@ App.getInitialProps = async ({ Component, ctx }) => {
     pageProps = await Component.getInitialProps(ctx);
   }
 
-  if (ctx.req) {
-    pageProps.isServer = true;
-  }
-
   return { pageProps };
 };
 

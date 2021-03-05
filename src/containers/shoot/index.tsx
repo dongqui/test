@@ -61,7 +61,7 @@ const ShootPage: NextPage<Props> = () => {
           />
         </ContextMenuWrapper>
       )}
-      {isClient && <MainPage />}
+      {!isServer && <MainPage />}
     </main>
   );
 };
