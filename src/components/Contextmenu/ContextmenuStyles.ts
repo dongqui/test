@@ -1,6 +1,6 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { PRIMARY_BLUE } from '../../styles/common';
+import { PRIMARY_BLUE } from '../../styles/constants/common';
 
 const BORDER_RADIUS = 1;
 interface ContextmenuStyleProps {

@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { BsSearch } from 'react-icons/bs';
 import { rem } from 'utils/rem';
-import { GRAY500 } from '../../styles/common';
+import { GRAY500 } from '../../styles/constants/common';
 
 interface InputLPWrapperProps {
   width: number;

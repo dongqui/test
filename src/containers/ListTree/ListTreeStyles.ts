@@ -1,8 +1,8 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { BACKGROUND_COLOR, GRAY200, PRIMARY_BLUE } from 'styles/common';
+import { BACKGROUND_COLOR, GRAY200, PRIMARY_BLUE } from 'styles/constants/common';
 import { rem } from 'utils/rem';
-import { GRAY400 } from '../../styles/common';
+import { GRAY400 } from '../../styles/constants/common';
 
 interface ListRowWrapperProps {
   paddingLeft?: number;

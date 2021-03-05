@@ -14,21 +14,24 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
   },
   {
     key: 'motion1',
+    motionIndex: 0,
     name: 'motion1',
     type: FILE_TYPES.motion,
     parentKey: '0',
     tracks: [],
-    isVisualized: true,
   },
   {
     key: 'motion2',
+    motionIndex: 1,
     name: 'motion2',
     type: FILE_TYPES.motion,
     parentKey: '0',
+    isVisualized: true,
     tracks: [],
   },
   {
     key: 'motion3',
+    motionIndex: 2,
     name: 'motion3',
     type: FILE_TYPES.motion,
     parentKey: '0',
@@ -44,6 +47,7 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
   },
   {
     key: 'motion4',
+    motionIndex: 0,
     name: 'motion4',
     type: FILE_TYPES.motion,
     parentKey: '1',
@@ -51,6 +55,7 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
   },
   {
     key: 'motion5',
+    motionIndex: 1,
     name: 'motion5',
     type: FILE_TYPES.motion,
     parentKey: '1',
@@ -58,6 +63,7 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
   },
   {
     key: 'motion6',
+    motionIndex: 2,
     name: 'motion6',
     type: FILE_TYPES.motion,
     parentKey: '1',

@@ -10,6 +10,7 @@ import { LIBRARY_RATE, CONTROL_RATE, TIMELINE_RATE, MIN_WIDTH } from 'styles/con
 import { PlayBar } from 'containers/PlayBar';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
+import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 
 const cx = classNames.bind(styles);
 
@@ -370,10 +371,16 @@ const MainContainer: React.FC = () => {
           position={{ ...renderingPanel.position }}
         >
           <RenderingController
-            animationIndex={1}
-            fileUrl={_.find(mainData, ['isVisualized', true])?.url}
-            id={`${_.find(mainData, ['isVisualized', true])?.key}${
-              _.find(mainData, ['isVisualized', true])?.url
+            animationIndex={
+              _.find(
+                mainData,
+                (item) =>
+                  _.isEqual(item.type, FILE_TYPES.motion) && _.isEqual(item.isVisualized, true),
+              )?.motionIndex
+            }
+            fileUrl={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.url}
+            id={`${_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.key}${
+              _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.url
             }`}
             isPlay={renderingData.isPlay}
             playDirection={renderingData.playDirection}

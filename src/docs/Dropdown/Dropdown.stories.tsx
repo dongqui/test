@@ -1,7 +1,7 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { LIBRARYPANEL_INFO } from 'styles/common';
+import { LIBRARYPANEL_INFO } from 'styles/constants/common';
 import { Dropdown } from 'components/Dropdown';
 import { DropDownProps } from '../../components/Dropdown/Dropdown';
 
