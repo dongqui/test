@@ -1,7 +1,13 @@
 import _ from 'lodash';
 import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { contextmenuTypes, FILE_TYPES, mainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import {
+  contextmenuTypes,
+  FILE_TYPES,
+  LPMODE_TYPES,
+  mainDataTypes,
+  MAINDATA_PROPERTY_TYPES,
+} from 'interfaces';
 import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
 
@@ -9,8 +15,16 @@ interface useLPControlProps {
   mainData: mainDataTypes[];
   pages: PagesTypes[];
   contextmenuInfo: contextmenuTypes;
+  searchWord: string;
+  lpmode: LPMODE_TYPES;
 }
-export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlProps) => {
+export const useLPControl = ({
+  mainData,
+  pages,
+  contextmenuInfo,
+  searchWord,
+  lpmode,
+}: useLPControlProps) => {
   const onClick = useCallback(
     (e) => {
       const icons = document.getElementsByClassName('icon');
@@ -87,7 +101,9 @@ export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlP
         isModifying: _.isEqual(
           item.key,
           _.find(mainData, [MAINDATA_PROPERTY_TYPES.isSelected, true])?.key,
-        ),
+        )
+          ? !item.isModifying
+          : false,
       })),
     );
   }, [mainData]);
@@ -117,7 +133,7 @@ export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlP
               MAIN_DATA(
                 _.concat(mainData, {
                   key: uuidv4(),
-                  type: FILE_TYPES.file,
+                  type: FILE_TYPES.folder,
                   name: 'Folder',
                   parentKey: _.last(pages)?.key,
                   isModifying: true,
@@ -180,6 +196,13 @@ export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlP
     ],
     [onCopy, onEdit, onPaste],
   );
+  const filteredData: mainDataTypes[] = useMemo(() => {
+    let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
+    if (!_.isEmpty(searchWord)) {
+      result = _.filter(mainData, (o) => _.includes(o.name, searchWord));
+    }
+    return result;
+  }, [mainData, pages, searchWord]);
   return {
     onClick,
     onDragStart,
@@ -190,5 +213,6 @@ export const useLPControl = ({ mainData, pages, contextmenuInfo }: useLPControlP
     onContextMenu,
     onEdit,
     shortcutData,
+    filteredData,
   };
 };

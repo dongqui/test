@@ -3,7 +3,7 @@ import { PagesTypes } from 'containers/Panels/LibraryPanel';
 import { RENDERING_DATA_TYPES } from 'interfaces/RP';
 import _ from 'lodash';
 import { INITIAL_MAIN_DATA, isClient } from 'utils/const';
-import { contextmenuTypes, mainDataTypes, skeletonHelpersTypes } from '../interfaces';
+import { contextmenuTypes, LPMODE_TYPES, mainDataTypes, skeletonHelpersTypes } from '../interfaces';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
   let result = _.clone(initialData);
@@ -33,7 +33,7 @@ export const MAIN_DATA = makeVar<mainDataTypes[]>(
 );
 export const PAGES = makeVar<PagesTypes[]>([{ key: 'root', name: 'root' }]);
 export const SEARCH_WORD = makeVar<string>('');
-export const LP_MODE = makeVar<'listview' | 'iconview'>('listview');
+export const LP_MODE = makeVar<LPMODE_TYPES>(LPMODE_TYPES.iconview);
 // RP
 export const SKELETON_HELPERS = makeVar<skeletonHelpersTypes[]>(
   makeInitialData({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, initialData: undefined }),

@@ -51,6 +51,10 @@ export enum MAINDATA_PROPERTY_TYPES {
   tracks = 'tracks',
   motionIndex = 'motionIndex',
 }
+export enum LPMODE_TYPES {
+  listview = 'listview',
+  iconview = 'iconview',
+}
 export interface screenSizeTypes {
   width: number;
   height: number;

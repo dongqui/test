@@ -1,10 +1,11 @@
 import { useReactiveVar } from '@apollo/client';
+import { CircleMotionIcon } from 'components/Icons/generated2/CircleMotion';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { rem } from 'utils/rem';
-import { ModelIcon } from '../../../components/Icons';
+import { Circle, ModelIcon, Motion } from '../../../components/Icons';
 import * as S from './IconStyles';
 
 export interface IconProps {
@@ -62,7 +63,7 @@ const IconComponent: React.FC<IconProps> = ({
   }, [iconKey, mainData]);
   const onDoubleClick = useCallback(() => {
     if (
-      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.type, FILE_TYPES.file)
+      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, iconKey])?.type, FILE_TYPES.motion)
     ) {
       MAIN_DATA(
         _.map(mainData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, iconKey) })),
@@ -76,19 +77,6 @@ const IconComponent: React.FC<IconProps> = ({
       );
     }
   }, [iconKey, mainData, pages]);
-  const onKeyPress = useCallback(
-    (e) => {
-      if (_.isEqual(e.key, 'Enter')) {
-        MAIN_DATA(
-          _.map(mainData, (item) => ({
-            ...item,
-            isModifying: false,
-          })),
-        );
-      }
-    },
-    [mainData],
-  );
   const onBlur = useCallback(() => {
     MAIN_DATA(
       _.map(mainData, (item) => ({
@@ -104,15 +92,20 @@ const IconComponent: React.FC<IconProps> = ({
       height={height}
       onClick={onClick}
       isClicked={isClicked}
+      isModifying={isModifying}
       opacity={isDragging ? 0.5 : 1}
       onDoubleClick={onDoubleClick}
     >
-      {_.isEqual(mode, 'icon') ? (
+      {_.isEqual(mode, FILE_TYPES.file) && (
         <S.TopWrapper>
           <ModelIcon width={`${rem(12)}rem`} height={`${rem(12)}rem`} viewBox="0 0 12 12" />
         </S.TopWrapper>
-      ) : (
-        <S.FolderIcon></S.FolderIcon>
+      )}
+      {_.isEqual(mode, FILE_TYPES.folder) && <S.FolderIcon></S.FolderIcon>}
+      {_.isEqual(mode, FILE_TYPES.motion) && (
+        <S.TopWrapper>
+          <CircleMotionIcon></CircleMotionIcon>
+        </S.TopWrapper>
       )}
       {isModifying ? (
         <S.BottomInput
@@ -120,7 +113,6 @@ const IconComponent: React.FC<IconProps> = ({
           autoFocus
           onFocus={(e) => e.target.select()}
           onChange={onChangeInput}
-          onKeyPress={onKeyPress}
           onBlur={onBlur}
         ></S.BottomInput>
       ) : (

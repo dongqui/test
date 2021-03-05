@@ -19,7 +19,8 @@ const {
     onEdit,
     onPaste,
     shortcutData,
-  } = useLPControl({ contextmenuInfo, mainData, pages });
+    filteredData,
+  } = useLPControl({ contextmenuInfo, mainData, pages, searchWord });
 ```
 
 ## Props
@@ -29,6 +30,7 @@ const {
 | **contextmenuInfo(contextmenuTypes)**        | 컨텍스트메뉴정보        |
 | **mainData(mainDataTypes)**        | 메인데이터        |
 | **pages(pagesTypes)**        | 페이지정보        |
+| **searchWord(string)**        | 검색어        |
 
 ## Return
 
@@ -42,3 +44,4 @@ const {
 | **onEdit(Function)** | 이름수정
 | **onPaste(Function)** | 붙여넣기
 | **shortcutData(Function)** | 단축키정보
+| **filteredData(mainDataTypes)** | 검색어로 필터링을 한 메인데이터
