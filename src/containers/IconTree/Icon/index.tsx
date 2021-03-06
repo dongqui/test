@@ -28,13 +28,13 @@ const IconComponent: React.FC<IconProps> = ({
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
   const isClicked =
-    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isSelected, [
+    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isClicked, [
       rowKey,
       mainData,
     ]) ?? false;
   const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
   const onClick = useCallback(() => {
-    MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: _.isEqual(item.key, rowKey) })));
+    MAIN_DATA(_.map(mainData, (item) => ({ ...item, isClicked: _.isEqual(item.key, rowKey) })));
   }, [rowKey, mainData]);
   const onDoubleClick = useCallback(() => {
     if (

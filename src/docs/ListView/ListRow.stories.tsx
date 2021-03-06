@@ -2,6 +2,7 @@ import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
 import { ListRow, ListRowProps } from 'containers/ListTree/ListRow';
+import { FILE_TYPES } from 'interfaces';
 
 export default {
   title: 'Component API/Container/ListView/ListRow',
@@ -13,4 +14,6 @@ export default {
 const Template: Story<ListRowProps> = (args) => <ListRow {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {};
+Default.args = {
+  mode: FILE_TYPES.file,
+};

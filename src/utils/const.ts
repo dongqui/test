@@ -10,7 +10,6 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
     type: FILE_TYPES.file,
     parentKey: ROOT_FOLDER_NAME,
     url: DEFAULT_MODEL_URL,
-    isVisualized: true,
     isExpanded: true,
   },
   {
@@ -45,14 +44,6 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
     parentKey: ROOT_FOLDER_NAME,
   },
   {
-    key: '1',
-    name: '기본모델1',
-    type: FILE_TYPES.file,
-    parentKey: 'abcd',
-    url: DEFAULT_MODEL_URL,
-    isExpanded: true,
-  },
-  {
     key: 'motion4',
     motionIndex: 1,
     name: 'motion4',
@@ -67,5 +58,13 @@ export const INITIAL_MAIN_DATA: mainDataTypes[] = [
     type: FILE_TYPES.motion,
     parentKey: '1',
     tracks: [],
+  },
+  {
+    key: '1',
+    name: '기본모델1',
+    type: FILE_TYPES.file,
+    parentKey: 'abcd',
+    url: DEFAULT_MODEL_URL,
+    isExpanded: true,
   },
 ];
