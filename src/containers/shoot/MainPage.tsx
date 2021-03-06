@@ -97,15 +97,7 @@ const MainContainer: React.FC = () => {
       MAIN_DATA(
         _.map(mainData, (item) => ({
           ...item,
-          isVisualized:
-            _.isEqual(
-              item.key,
-              _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.key,
-            ) ||
-            _.isEqual(
-              item.key,
-              _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.parentKey,
-            ),
+          isVisualized: item.isDragging,
         })),
       );
     }

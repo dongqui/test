@@ -3,6 +3,7 @@ import { ArrowDown, ArrowRight, ModelIcon, Motion } from 'components/Icons';
 import { FILE } from 'dns';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo } from 'react';
@@ -22,23 +23,41 @@ const ListRowComponent: React.FC<ListRowProps> = ({
   parentKey,
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
-  const isSelected = useMemo(
-    () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isSelected,
+  const isClicked = useMemo(
+    () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isClicked,
     [rowKey, mainData],
+  );
+  const isSelected = useMemo(
+    () =>
+      !_.isEqual(parentKey, ROOT_FOLDER_NAME) &&
+      _.some(_.filter(mainData, [MAINDATA_PROPERTY_TYPES.parentKey, parentKey]), [
+        MAINDATA_PROPERTY_TYPES.isClicked,
+        true,
+      ]),
+    [mainData, parentKey],
   );
   const isVisualized = useMemo(
     () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isVisualized,
-    [rowKey, mainData],
+    [mainData, rowKey],
+  );
+  const isVisualizedSelected = useMemo(
+    () =>
+      !_.isEqual(parentKey, ROOT_FOLDER_NAME) &&
+      _.some(_.filter(mainData, [MAINDATA_PROPERTY_TYPES.parentKey, parentKey]), [
+        MAINDATA_PROPERTY_TYPES.isVisualized,
+        true,
+      ]),
+    [mainData, parentKey],
   );
   const onClick = useCallback(() => {
     MAIN_DATA(
       _.map(mainData, (item) => ({
         ...item,
         isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
-        isSelected: _.isEqual(rowKey, item.key) || _.isEqual(parentKey, item.key) ? true : false,
+        isClicked: _.isEqual(rowKey, item.key),
       })),
     );
-  }, [rowKey, mainData, parentKey]);
+  }, [rowKey, mainData]);
   const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
     mainData,
     rowKey,
@@ -46,7 +65,13 @@ const ListRowComponent: React.FC<ListRowProps> = ({
   return (
     <>
       {_.isEqual(mode, FILE_TYPES.folder) && (
-        <S.ListRowWrapper isVisualized={isVisualized} isSelected={isSelected} onClick={onClick}>
+        <S.ListRowWrapper
+          isVisualized={isVisualized}
+          isVisualizedSelected={isVisualizedSelected}
+          isSelected={isSelected}
+          isClicked={isClicked}
+          onClick={onClick}
+        >
           {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isExpanded ? (
             <S.ArrowWrapper>
               <ArrowDown width={`${rem(8)}rem`} height={`${rem(4)}rem`} viewBox="0 0 8 4" />
@@ -72,8 +97,10 @@ const ListRowComponent: React.FC<ListRowProps> = ({
       {_.isEqual(mode, FILE_TYPES.file) && (
         <S.ListRowWrapper
           isVisualized={isVisualized}
-          paddingLeft={rem(10)}
+          isVisualizedSelected={isVisualizedSelected}
           isSelected={isSelected}
+          isClicked={isClicked}
+          paddingLeft={rem(10)}
           onClick={onClick}
         >
           {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isExpanded ? (
@@ -106,10 +133,10 @@ const ListRowComponent: React.FC<ListRowProps> = ({
       )}
       {_.isEqual(mode, FILE_TYPES.motion) && (
         <S.ListRowWrapper
-          isVisualized={_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, parentKey])?.isVisualized}
-          isSelected={_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, parentKey])?.isSelected}
-          isVisualizedSelected={isVisualized}
-          isSelectedClicked={isSelected}
+          isVisualized={isVisualized}
+          isVisualizedSelected={isVisualizedSelected}
+          isSelected={isSelected}
+          isClicked={isClicked}
           onClick={onClick}
         >
           <Motion

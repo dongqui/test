@@ -7,7 +7,7 @@ import { GRAY400 } from '../../styles/constants/common';
 interface ListRowWrapperProps {
   paddingLeft?: number;
   isSelected?: boolean;
-  isSelectedClicked?: boolean;
+  isClicked?: boolean;
   isVisualized?: boolean;
   isVisualizedSelected?: boolean;
 }
@@ -40,17 +40,19 @@ export const ListRowWrapper = styled.div<ListRowWrapperProps>`
       background-color: ${GRAY200};
     `}
   ${(props) =>
-    props.isSelectedClicked &&
+    props.isSelected &&
+    props.isClicked &&
     css`
       background-color: ${GRAY400};
     `}
   ${(props) =>
-    props.isVisualized &&
+    props.isVisualizedSelected &&
     css`
       background-color: rgba(55, 133, 247, 0.2);
     `}
   ${(props) =>
     props.isVisualizedSelected &&
+    props.isVisualized &&
     css`
       background-color: ${PRIMARY_BLUE};
     `}
