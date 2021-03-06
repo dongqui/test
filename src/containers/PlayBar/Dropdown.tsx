@@ -52,7 +52,7 @@ const DropdownComponent: React.FC<DropdownProps> = ({
       ) : (
         <S.DropdownWrapper isBorderRadius={true} onClick={() => setIsOpen(!isOpen)}>
           <S.IndicatorText marginLeft={rem(12)}>
-            {_.find(data, [MAINDATA_PROPERTY_TYPES.isSelected, true])?.name}
+            {_.find(data, ['isSelected', true])?.name}
           </S.IndicatorText>
           <ArrowDropdownDown
             width={10}

@@ -11,6 +11,7 @@ import {
 import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
+import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 
 interface useLPControlProps {
   mainData: mainDataTypes[];
@@ -30,7 +31,7 @@ export const useLPControl = ({
     (e) => {
       const icons = document.getElementsByClassName('icon');
       if (!_.some(icons, (icon) => icon.contains(e?.target as any))) {
-        MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: false })));
+        MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: false, isClicked: false })));
       }
     },
     [mainData],
@@ -41,45 +42,32 @@ export const useLPControl = ({
     },
     [mainData],
   );
-  const onDragStop = useCallback(
-    (e) => {
-      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isDragging: false })));
-    },
-    [mainData],
-  );
   const onDrop = useCallback(
     ({ key }) => {
-      if (_.isEqual(_.find(mainData, ['key', key])?.type, FILE_TYPES.folder)) {
-        MAIN_DATA(
-          _.map(mainData, (item) => ({
-            ...item,
-            parentKeys: item.isDragging ? key : item.parentKey,
-          })),
-        );
-      }
+      MAIN_DATA(
+        _.map(mainData, (item) => ({
+          ...item,
+          parentKey: item.isDragging ? key : item.parentKey,
+          isDragging: false,
+        })),
+      );
     },
     [mainData],
   );
   const onCopy = useCallback(() => {
-    const isMotionSelected = _.some(
-      mainData,
-      (item) => item.isSelected && _.isEqual(item.type, FILE_TYPES.motion),
-    );
-    const targetKey = isMotionSelected
-      ? _.find(
-          mainData,
-          (item) => _.isEqual(item.isSelected, true) && _.isEqual(item.type, FILE_TYPES.motion),
-        )?.key
-      : _.find(
-          mainData,
-          (item) => _.isEqual(item.isSelected, true) && !_.isEqual(item.type, FILE_TYPES.motion),
-        )?.key;
-    MAIN_DATA(
-      _.map(mainData, (item) => ({
-        ...item,
-        isCopied: _.isEqual(item.key, targetKey),
-      })),
-    );
+    if (
+      !_.isEqual(
+        _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.type,
+        FILE_TYPES.folder,
+      )
+    ) {
+      MAIN_DATA(
+        _.map(mainData, (item) => ({
+          ...item,
+          isCopied: item.isClicked,
+        })),
+      );
+    }
   }, [mainData]);
   const onPaste = useCallback(() => {
     if (_.some(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])) {
@@ -123,23 +111,10 @@ export const useLPControl = ({
     }
   }, [mainData, pages]);
   const onEdit = useCallback(() => {
-    const isMotionSelected = _.some(
-      mainData,
-      (item) => item.isSelected && _.isEqual(item.type, FILE_TYPES.motion),
-    );
-    const targetKey = isMotionSelected
-      ? _.find(
-          mainData,
-          (item) => _.isEqual(item.isSelected, true) && _.isEqual(item.type, FILE_TYPES.motion),
-        )?.key
-      : _.find(
-          mainData,
-          (item) => _.isEqual(item.isSelected, true) && !_.isEqual(item.type, FILE_TYPES.motion),
-        )?.key;
     MAIN_DATA(
       _.map(mainData, (item) => ({
         ...item,
-        isModifying: _.isEqual(item.key, targetKey) ? !item.isModifying : false,
+        isModifying: item.isClicked ? !item.isModifying : item.isModifying,
       })),
     );
   }, [mainData]);
@@ -180,7 +155,8 @@ export const useLPControl = ({
               onCopy();
               break;
             case '2':
-              MAIN_DATA(_.filter(mainData, (item) => !item.isSelected));
+              // MAIN_DATA(_.filter(mainData, (item) => !item.isClicked));
+              fnDeleteFile({ mainData });
               break;
             case '3':
               onPaste();
@@ -191,7 +167,7 @@ export const useLPControl = ({
                   ...item,
                   isVisualized: _.isEqual(
                     item.key,
-                    _.find(mainData, [MAINDATA_PROPERTY_TYPES.isSelected, true])?.key,
+                    _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.key,
                   ),
                 })),
               );
@@ -244,7 +220,6 @@ export const useLPControl = ({
   return {
     onClick,
     onDragStart,
-    onDragStop,
     onDrop,
     onCopy,
     onPaste,

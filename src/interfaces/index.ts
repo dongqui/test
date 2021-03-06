@@ -43,7 +43,8 @@ export enum MAINDATA_PROPERTY_TYPES {
   parentKey = 'parentKey',
   isExpanded = 'isExpanded',
   url = 'url',
-  isSelected = 'isSelected',
+  // isSelected = 'isSelected',
+  isClicked = 'isClicked',
   isVisualized = 'isVisualized',
   isModifying = 'isModifying',
   isCopied = 'isCopied',
@@ -78,7 +79,8 @@ export interface mainDataTypes {
   [MAINDATA_PROPERTY_TYPES.parentKey]?: string;
   [MAINDATA_PROPERTY_TYPES.isExpanded]?: boolean;
   [MAINDATA_PROPERTY_TYPES.url]?: string;
-  [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
+  // [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isClicked]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isModifying]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isCopied]?: boolean;
