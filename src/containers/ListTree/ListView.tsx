@@ -7,6 +7,7 @@ import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { CONTEXTMENU_INFO, LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useMemo, useRef } from 'react';
+import { fnMakeSelection } from 'utils/LP/fnMakeSelection';
 import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';
 import { ListRow } from './ListRow';
 import * as S from './ListTreeStyles';
@@ -23,7 +24,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
   const lpmode = useReactiveVar(LP_MODE);
   const listViewWrapperRef = useRef<HTMLDivElement>(null);
-  const { onContextMenu, shortcutData, filteredData, onDragStart, onDrop } = useLPControl({
+  const { onContextMenu, shortcutData, onDragStart, onDrop, getFilteredData } = useLPControl({
     contextmenuInfo,
     mainData,
     pages,
@@ -35,8 +36,9 @@ const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    const result: mainDataTypes[] = [];
-    const data = fnSortArrayByHierarchy({ data: filteredData });
+    let result: mainDataTypes[] = [];
+    let data = fnSortArrayByHierarchy({ data: mainData });
+    data = fnMakeSelection({ data });
     _.forEach(data, (item) => {
       if (_.isEqual(item.parentKey, ROOT_FOLDER_NAME)) {
         result.push(item);
@@ -49,8 +51,9 @@ const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
         result.push(item);
       }
     });
+    result = getFilteredData({ data: result });
     return result;
-  }, [filteredData]);
+  }, [getFilteredData, mainData]);
   return (
     <S.ListViewWrapper ref={listViewWrapperRef} width={width} height={height}>
       {_.map(processedData, (item, index) => (
@@ -64,11 +67,27 @@ const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
           }}
         >
           {_.isEqual(item.parentKey, ROOT_FOLDER_NAME) ? (
-            <ListRow rowKey={item.key} mode={item.type} parentKey={item.parentKey} />
+            <ListRow
+              rowKey={item.key}
+              mode={item.type}
+              isClicked={item.isClicked}
+              isSelected={item.isSelected}
+              isVisualizeSelected={item.isVisualizeSelected}
+              isVisualized={item.isVisualized}
+              data={processedData}
+            />
           ) : (
             <>
               {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, item.parentKey])?.isExpanded && (
-                <ListRow rowKey={item.key} mode={item.type} parentKey={item.parentKey} />
+                <ListRow
+                  rowKey={item.key}
+                  mode={item.type}
+                  isClicked={item.isClicked}
+                  isSelected={item.isSelected}
+                  isVisualizeSelected={item.isVisualizeSelected}
+                  isVisualized={item.isVisualized}
+                  data={processedData}
+                />
               )}
             </>
           )}

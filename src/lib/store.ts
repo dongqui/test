@@ -39,7 +39,7 @@ export const LP_MODE = makeVar<LPMODE_TYPES>(LPMODE_TYPES.listview);
 export const SKELETON_HELPERS = makeVar<skeletonHelpersTypes[]>(
   makeInitialData({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, initialData: undefined }),
 );
-export const ANIMATION_CLIP = makeVar<THREE.AnimationClip | undefined>(undefined);
+// export const ANIMATION_CLIP = makeVar<THREE.AnimationClip | undefined>(undefined);
 export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>({
   isPlay: false,
   playDirection: 1,

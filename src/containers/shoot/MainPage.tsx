@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useState, useReducer } from 'react';
+import React, { useCallback, useEffect, useState, useReducer, useMemo } from 'react';
 import _ from 'lodash';
 import { Rnd, RndResizeCallback } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
 import TimelinePanel from 'containers/Panels/TimelinePanel';
-import { ANIMATION_CLIP, RENDERING_DATA, MAIN_DATA, SKELETON_HELPERS, LP_MODE } from 'lib/store';
+import { RENDERING_DATA, MAIN_DATA, SKELETON_HELPERS, LP_MODE } from 'lib/store';
 import { RenderingController } from 'containers/Panels/RenderingPanel/RenderingController';
 import { LIBRARY_RATE, CONTROL_RATE, TIMELINE_RATE, MIN_WIDTH } from 'styles/constants/panels';
 import { PlayBar } from 'containers/PlayBar';
@@ -84,9 +84,11 @@ const getNumberValue = (targetValue: string): number => {
 
 const MainContainer: React.FC = () => {
   const mainData = useReactiveVar(MAIN_DATA);
-  const animationClip = useReactiveVar(ANIMATION_CLIP);
   const renderingData = useReactiveVar(RENDERING_DATA);
-
+  const fileUrl = useMemo(() => {
+    const visualizedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
+    return _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
+  }, [mainData]);
   const handleDrop = useCallback(() => {
     if (
       _.isEqual(
@@ -357,7 +359,6 @@ const MainContainer: React.FC = () => {
         ? window.innerWidth * CONTROL_RATE.maxWidth
         : MIN_WIDTH.control,
   };
-
   return (
     <>
       <Rnd
@@ -387,17 +388,8 @@ const MainContainer: React.FC = () => {
           position={{ ...renderingPanel.position }}
         >
           <RenderingController
-            animationIndex={
-              _.find(
-                mainData,
-                (item) =>
-                  _.isEqual(item.type, FILE_TYPES.motion) && _.isEqual(item.isVisualized, true),
-              )?.motionIndex
-            }
-            fileUrl={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.url}
-            id={`${_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.key}${
-              _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.url
-            }`}
+            animationIndex={1}
+            fileUrl={fileUrl}
             isPlay={renderingData.isPlay}
             playDirection={renderingData.playDirection}
             playSpeed={renderingData.playSpeed}
@@ -429,7 +421,7 @@ const MainContainer: React.FC = () => {
         position={{ ...lowerSection.position }}
       >
         <PlayBar />
-        <TimelinePanel data={animationClip?.tracks ?? []} />
+        <TimelinePanel />
       </Rnd>
     </>
   );

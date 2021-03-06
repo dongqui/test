@@ -6,7 +6,6 @@ import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
 import { bonesTypes, FORMAT_TYPES, skeletonHelpersTypes } from '../../../interfaces';
 import { CONFIG_INFOS } from './const';
 import { useChangeMotion } from 'hooks/RP/useChangeMotion';
-import { ANIMATION_CLIP } from 'lib/store';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 
 export interface RenderingControllerProps {
@@ -63,11 +62,6 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
       }
     }
   }, [currentAction, isPlay, mixer, playDirection, playSpeed]);
-  useEffect(() => {
-    if (!_.isUndefined(currentAnimationClip)) {
-      ANIMATION_CLIP(currentAnimationClip);
-    }
-  }, [currentAnimationClip]);
   return <RenderingPresenter id={id} />;
 };
 
