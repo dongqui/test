@@ -2,7 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { ArrowDown, ArrowRight, ModelIcon, Motion } from 'components/Icons';
 import { FILE } from 'dns';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { FILE_TYPES, mainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
@@ -14,47 +14,66 @@ import * as S from './ListTreeStyles';
 export interface ListRowProps {
   mode: FILE_TYPES;
   rowKey: string;
-  [MAINDATA_PROPERTY_TYPES.parentKey]?: string;
+  [MAINDATA_PROPERTY_TYPES.isClicked]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
+  data: mainDataTypes[];
 }
 
 const ListRowComponent: React.FC<ListRowProps> = ({
   mode = FILE_TYPES.folder,
   rowKey = '0',
-  parentKey,
+  isClicked,
+  isSelected,
+  isVisualized,
+  isVisualizeSelected,
+  data,
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
-  const isClicked = useMemo(
-    () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isClicked,
-    [rowKey, mainData],
-  );
-  const isSelected = useMemo(
-    () =>
-      !_.isEqual(parentKey, ROOT_FOLDER_NAME) &&
-      _.some(_.filter(mainData, [MAINDATA_PROPERTY_TYPES.parentKey, parentKey]), [
-        MAINDATA_PROPERTY_TYPES.isClicked,
-        true,
-      ]),
-    [mainData, parentKey],
-  );
-  const isVisualized = useMemo(
-    () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isVisualized,
-    [mainData, rowKey],
-  );
-  const isVisualizedSelected = useMemo(
-    () =>
-      !_.isEqual(parentKey, ROOT_FOLDER_NAME) &&
-      _.some(_.filter(mainData, [MAINDATA_PROPERTY_TYPES.parentKey, parentKey]), [
-        MAINDATA_PROPERTY_TYPES.isVisualized,
-        true,
-      ]),
-    [mainData, parentKey],
-  );
+  const isFirst = useMemo(() => {
+    let result = false;
+    if (
+      _.isEqual(data[_.findIndex(data, [MAINDATA_PROPERTY_TYPES.isSelected, true])]?.key, rowKey)
+    ) {
+      result = true;
+    }
+    if (
+      _.isEqual(
+        data[_.findIndex(data, [MAINDATA_PROPERTY_TYPES.isVisualizeSelected, true])]?.key,
+        rowKey,
+      )
+    ) {
+      result = true;
+    }
+    return result;
+  }, [data, rowKey]);
+  const isLast = useMemo(() => {
+    let result = false;
+    if (
+      _.isEqual(
+        data[_.findLastIndex(data, [MAINDATA_PROPERTY_TYPES.isSelected, true])]?.key,
+        rowKey,
+      )
+    ) {
+      result = true;
+    }
+    if (
+      _.isEqual(
+        data[_.findLastIndex(data, [MAINDATA_PROPERTY_TYPES.isVisualizeSelected, true])]?.key,
+        rowKey,
+      )
+    ) {
+      result = true;
+    }
+    return result;
+  }, [data, rowKey]);
   const onClick = useCallback(() => {
     MAIN_DATA(
       _.map(mainData, (item) => ({
         ...item,
         isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
-        isClicked: _.isEqual(rowKey, item.key),
+        isClicked: !_.isEqual(item.type, FILE_TYPES.folder) && _.isEqual(rowKey, item.key),
       })),
     );
   }, [rowKey, mainData]);
@@ -67,9 +86,11 @@ const ListRowComponent: React.FC<ListRowProps> = ({
       {_.isEqual(mode, FILE_TYPES.folder) && (
         <S.ListRowWrapper
           isVisualized={isVisualized}
-          isVisualizedSelected={isVisualizedSelected}
+          isVisualizeSelected={isVisualizeSelected}
           isSelected={isSelected}
           isClicked={isClicked}
+          isFirst={isFirst}
+          isLast={isLast}
           onClick={onClick}
         >
           {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isExpanded ? (
@@ -97,9 +118,11 @@ const ListRowComponent: React.FC<ListRowProps> = ({
       {_.isEqual(mode, FILE_TYPES.file) && (
         <S.ListRowWrapper
           isVisualized={isVisualized}
-          isVisualizedSelected={isVisualizedSelected}
+          isVisualizeSelected={isVisualizeSelected}
           isSelected={isSelected}
           isClicked={isClicked}
+          isFirst={isFirst}
+          isLast={isLast}
           paddingLeft={rem(10)}
           onClick={onClick}
         >
@@ -134,9 +157,11 @@ const ListRowComponent: React.FC<ListRowProps> = ({
       {_.isEqual(mode, FILE_TYPES.motion) && (
         <S.ListRowWrapper
           isVisualized={isVisualized}
-          isVisualizedSelected={isVisualizedSelected}
+          isVisualizeSelected={isVisualizeSelected}
           isSelected={isSelected}
           isClicked={isClicked}
+          isFirst={isFirst}
+          isLast={isLast}
           onClick={onClick}
         >
           <Motion

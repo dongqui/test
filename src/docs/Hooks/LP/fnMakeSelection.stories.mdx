@@ -1,0 +1,26 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Hooks/LP/fnMakeSelection" />
+
+# fnMakeSelection
+
+클릭한 모션 주변에 선택영역으로 색칠이 되어야 하고 visualized 한 모션 주변에 선택영역으로 색칠이 되어야 하기 때문에 
+선택영역을 표시하기 위해 데이터를 좀 가공해주는 작업을 해주는 hook
+
+#### example
+
+```javascript
+const data = fnMakeSelection({ data });
+```
+
+## Props
+
+| Prop                | Description            |
+| ------------------- | ---------------------- |
+| **data(mainDataTypes[])**        | 메인데이터        |
+
+## Return
+
+| Return | Description |
+| ------ | ----------- |
+| **data(mainDataTypes[])**        | 메인데이터        |
