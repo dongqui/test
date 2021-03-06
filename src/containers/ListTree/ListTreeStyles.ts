@@ -9,7 +9,9 @@ interface ListRowWrapperProps {
   isSelected?: boolean;
   isClicked?: boolean;
   isVisualized?: boolean;
-  isVisualizedSelected?: boolean;
+  isVisualizeSelected?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
 }
 interface ListRowTextProps {
   marginLeft?: number;
@@ -46,15 +48,27 @@ export const ListRowWrapper = styled.div<ListRowWrapperProps>`
       background-color: ${GRAY400};
     `}
   ${(props) =>
-    props.isVisualizedSelected &&
+    props.isVisualizeSelected &&
     css`
       background-color: rgba(55, 133, 247, 0.2);
     `}
   ${(props) =>
-    props.isVisualizedSelected &&
+    props.isVisualizeSelected &&
     props.isVisualized &&
     css`
       background-color: ${PRIMARY_BLUE};
+    `}
+  ${(props) =>
+    props.isFirst &&
+    css`
+      border-top-left-radius: ${BORDER_RADIUS}rem;
+      border-top-right-radius: ${BORDER_RADIUS}rem;
+    `}
+  ${(props) =>
+    props.isLast &&
+    css`
+      border-bottom-left-radius: ${BORDER_RADIUS}rem;
+      border-bottom-right-radius: ${BORDER_RADIUS}rem;
     `}
 `;
 export const ListRowText = styled.span<ListRowTextProps>`

@@ -208,15 +208,21 @@ export const useLPControl = ({
     ],
     [onCopy, onEdit, onPaste],
   );
+  const getFilteredData = useCallback(
+    ({ data }) => {
+      let result = _.clone(data);
+      if (!_.isEmpty(searchWord)) {
+        result = _.filter(mainData, (o) => _.includes(o.name, searchWord));
+      }
+      return result;
+    },
+    [mainData, searchWord],
+  );
   const filteredData: mainDataTypes[] = useMemo(() => {
-    let result = _.isEqual(lpmode, LPMODE_TYPES.iconview)
-      ? _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key))
-      : _.clone(mainData);
-    if (!_.isEmpty(searchWord)) {
-      result = _.filter(mainData, (o) => _.includes(o.name, searchWord));
-    }
+    let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
+    result = getFilteredData({ data: result });
     return result;
-  }, [lpmode, mainData, pages, searchWord]);
+  }, [getFilteredData, mainData, pages]);
   return {
     onClick,
     onDragStart,
@@ -227,5 +233,6 @@ export const useLPControl = ({
     onEdit,
     shortcutData,
     filteredData,
+    getFilteredData,
   };
 };
