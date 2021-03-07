@@ -10,6 +10,7 @@ import { CONTEXTMENU_INFO, MAIN_DATA, MODAL_INFO, STORE_DATA_NAMES } from 'lib/s
 import { GRAY200 } from 'styles/constants/common';
 import { Modal } from 'components/Modal';
 import { css } from '@emotion/react';
+import { useCheckIsServer } from 'hooks/common/useCheckIsServer';
 
 interface ContextMenuWrapperProps {
   top: string;
@@ -46,6 +47,7 @@ const ShootPage: NextPage<Props> = () => {
   const contextMenuInfo = useReactiveVar(CONTEXTMENU_INFO);
   const modalInfo = useReactiveVar(MODAL_INFO);
   const contextMenuRef = useRef<HTMLDivElement | any>(null);
+  const modalRef = useRef<HTMLDivElement | any>(null);
 
   useOutsideClick({
     ref: contextMenuRef,
@@ -55,13 +57,7 @@ const ShootPage: NextPage<Props> = () => {
     },
   });
 
-  const [isServer, setIsServer] = useState(true);
-
-  useEffect(() => {
-    if (window) {
-      setIsServer(false);
-    }
-  }, []);
+  const { isServer } = useCheckIsServer();
 
   return (
     <main>
@@ -81,7 +77,7 @@ const ShootPage: NextPage<Props> = () => {
         </ContextMenuWrapper>
       )}
       {modalInfo.isShow && (
-        <ModalWrapper active={modalInfo.isShow}>
+        <ModalWrapper ref={modalRef} active={modalInfo.isShow}>
           <Modal msg={modalInfo.msg} />
         </ModalWrapper>
       )}

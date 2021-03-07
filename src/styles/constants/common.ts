@@ -28,7 +28,6 @@ export const GRAY300 = 'rgba(48, 48, 48, 1)';
 export const GRAY400 = 'rgba(69, 69, 69, 1)';
 export const GRAY500 = 'rgba(167, 167, 167, 1)';
 export const GRAY600 = 'rgba(226, 226, 226, 1)';
-export const PLAYBAR_BACKGROUND_COLOR = GRAY300;
 export const BACKGROUND_COLOR = 'black';
 
 // 파일명 길이
