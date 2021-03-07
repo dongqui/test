@@ -8,6 +8,7 @@ import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo } from 'react';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
+import { INITIAL_MAIN_DATA } from 'utils/const';
 import { rem } from 'utils/rem';
 import * as S from './ListTreeStyles';
 
@@ -28,7 +29,7 @@ const ListRowComponent: React.FC<ListRowProps> = ({
   isSelected,
   isVisualized,
   isVisualizeSelected,
-  data,
+  data = INITIAL_MAIN_DATA,
 }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const isFirst = useMemo(() => {
@@ -73,7 +74,7 @@ const ListRowComponent: React.FC<ListRowProps> = ({
       _.map(mainData, (item) => ({
         ...item,
         isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
-        isClicked: !_.isEqual(item.type, FILE_TYPES.folder) && _.isEqual(rowKey, item.key),
+        isClicked: _.isEqual(rowKey, item.key),
       })),
     );
   }, [rowKey, mainData]);
@@ -87,10 +88,6 @@ const ListRowComponent: React.FC<ListRowProps> = ({
         <S.ListRowWrapper
           isVisualized={isVisualized}
           isVisualizeSelected={isVisualizeSelected}
-          isSelected={isSelected}
-          isClicked={isClicked}
-          isFirst={isFirst}
-          isLast={isLast}
           onClick={onClick}
         >
           {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isExpanded ? (

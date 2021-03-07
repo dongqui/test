@@ -7,7 +7,6 @@ import { ApolloProvider } from '@apollo/client';
 import { cache, useApollo } from 'lib/apolloClient';
 import 'styles/core.scss';
 import 'styles/timeline/_curve.scss';
-import { MAIN_DATA, STORE_DATA_NAMES } from 'lib/store';
 import _ from 'lodash';
 
 const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({

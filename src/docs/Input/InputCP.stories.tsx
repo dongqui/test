@@ -1,10 +1,15 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { Input, InputChildProps, InputProps, InputWrapperProps } from '../../components/Input';
+import {
+  Input,
+  InputChildProps,
+  InputProps,
+  InputWrapperProps,
+} from '../../components/Input/InputCP';
 
 export default {
-  title: 'Component API/Component/Input/Default',
+  title: 'Component API/Component/Input/InputCP',
   component: Input,
   argTypes: {
     backgroundColor: {

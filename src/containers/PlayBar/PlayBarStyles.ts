@@ -2,7 +2,7 @@ import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { NumberArray } from 'd3';
 import { rem } from 'utils/rem';
-import { PLAYBAR_BACKGROUND_COLOR, GRAY200, GRAY500, GRAY600 } from '../../styles/constants/common';
+import { GRAY200, GRAY300, GRAY500, GRAY600 } from '../../styles/constants/common';
 
 interface IndicatorTextProps {
   marginLeft?: number;
@@ -25,7 +25,7 @@ export const IndicatorWrapper = styled.div`
   display: flex;
   align-items: center;
   flex-direction: row;
-  background-color: ${PLAYBAR_BACKGROUND_COLOR};
+  background-color: ${GRAY300};
 `;
 export const IndicatorText = styled.span<IndicatorTextProps>`
   font-size: ${FONT_SIZE}rem;
@@ -57,7 +57,7 @@ export const DropdownWrapper = styled.div<DropdownWrapperProps>`
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: ${PLAYBAR_BACKGROUND_COLOR};
+  background-color: ${GRAY300};
   position: relative;
   ${(props) =>
     (props.isSelected ?? false) &&
@@ -90,7 +90,7 @@ export const DropdownWrapper = styled.div<DropdownWrapperProps>`
 export const ModeSelectWrapper = styled.div`
   width: ${rem(73)}rem;
   height: ${rem(36)}rem;
-  background-color: ${PLAYBAR_BACKGROUND_COLOR};
+  background-color: ${GRAY300};
   border-radius: ${BORDER_RADIUS}rem;
   display: flex;
   flex-direction: row;
@@ -116,7 +116,7 @@ export const ModeSelectIconWrapper = styled.div<ModeSelectIconWrapperProps>`
 export const PlayBoxWrapper = styled.div`
   width: ${rem(180)}rem;
   height: ${rem(36)}rem;
-  background-color: ${PLAYBAR_BACKGROUND_COLOR};
+  background-color: ${GRAY300};
   border-radius: ${BORDER_RADIUS}rem;
   display: flex;
   flex-direction: row;
@@ -144,7 +144,7 @@ export const PlayBoxIconDoubleWrapper = styled.div`
 export const PlayBarWrapper = styled.div`
   width: 100%;
   height: 48px;
-  background-color: ${PLAYBAR_BACKGROUND_COLOR};
+  background-color: ${GRAY300};
   display: flex;
   flex-direction: row;
   align-items: center;
