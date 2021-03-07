@@ -16,4 +16,5 @@ const Template: Story<ListRowProps> = (args) => <ListRow {...args} />;
 export const Default = Template.bind({});
 Default.args = {
   mode: FILE_TYPES.file,
+  rowKey: '0',
 };

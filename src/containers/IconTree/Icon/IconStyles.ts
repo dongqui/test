@@ -10,8 +10,6 @@ const TOP_BACKGROUND_COLOR = 'rgba(36, 36, 36, 1)';
 const FONT_SIZE = rem(12);
 const BORDER_RADIUS = 0.375;
 interface IconStyleProps {
-  width?: number;
-  height?: number;
   isClicked: boolean;
   isModifying?: boolean;
   opacity?: number;
@@ -39,8 +37,8 @@ const makebackgroundcolor = ({
   return result;
 };
 export const IconWrapper = styled.div<IconStyleProps>`
-  width: ${(props) => props.width}rem;
-  height: ${(props) => props.height}rem;
+  width: ${rem(48)}rem;
+  height: ${rem(68)}rem;
   border-radius: ${BORDER_RADIUS}rem;
   cursor: pointer;
   opacity: ${(props) => props.opacity ?? 1};
