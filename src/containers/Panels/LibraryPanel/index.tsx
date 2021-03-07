@@ -1,7 +1,7 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
 import { FILE_TYPES, FORMAT_TYPES, LPMODE_TYPES, mainDataTypes } from 'interfaces';
-import { LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
+import { LP_MODE, MAIN_DATA, MODAL_INFO, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -34,7 +34,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       if (_.isEmpty(acceptedFiles)) {
-        alert('파일이 존재하지 않습니다.');
+        MODAL_INFO({ isShow: true, msg: '파일이 존재하지 않습니다.' });
         return false;
       }
       setLoading(true);
@@ -46,7 +46,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           (file) => !_.includes([FORMAT_TYPES.glb, FORMAT_TYPES.fbx], extension),
         )
       ) {
-        alert('파일 형식이 올바르지 않습니다.');
+        MODAL_INFO({ isShow: true, msg: '파일 형식이 올바르지 않습니다.' });
         setLoading(false);
         return false;
       }
@@ -57,7 +57,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           type: FORMAT_TYPES.glb,
         });
         if (error) {
-          alert(msg);
+          MODAL_INFO({ isShow: true, msg });
           setLoading(false);
           return false;
         }
@@ -68,7 +68,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         : convertedFileUrl;
       const { result, error, msg } = await fnGetAnimationData({ url });
       if (error) {
-        alert(msg);
+        MODAL_INFO({ isShow: true, msg });
         setLoading(false);
         return false;
       }

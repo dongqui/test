@@ -11,16 +11,12 @@ import { Circle, ModelIcon, Motion } from '../../../components/Icons';
 import * as S from './IconStyles';
 
 export interface IconProps {
-  width?: number;
-  height?: number;
   mode?: FILE_TYPES;
   rowKey: string;
   isDragging?: boolean;
 }
 
 const IconComponent: React.FC<IconProps> = ({
-  width = rem(48),
-  height = rem(68),
   mode = FILE_TYPES.file,
   rowKey,
   isDragging = false,
@@ -59,8 +55,6 @@ const IconComponent: React.FC<IconProps> = ({
   return (
     <S.IconWrapper
       ref={iconRef}
-      width={width}
-      height={height}
       onClick={onClick}
       isClicked={isClicked}
       isModifying={isModifying}

@@ -107,3 +107,7 @@ export interface skeletonHelpersTypes {
   time?: string;
   bones?: bonesTypes[];
 }
+export interface modalTypes {
+  msg: string;
+  isShow: boolean;
+}

@@ -4,7 +4,7 @@ import { Rnd, RndResizeCallback } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
 import TimelinePanel from 'containers/Panels/TimelinePanel';
-import { RENDERING_DATA, MAIN_DATA, SKELETON_HELPERS, LP_MODE } from 'lib/store';
+import { RENDERING_DATA, MAIN_DATA, MODAL_INFO } from 'lib/store';
 import { RenderingController } from 'containers/Panels/RenderingPanel/RenderingController';
 import { LIBRARY_RATE, CONTROL_RATE, TIMELINE_RATE, MIN_WIDTH } from 'styles/constants/panels';
 import { PlayBar } from 'containers/PlayBar';
