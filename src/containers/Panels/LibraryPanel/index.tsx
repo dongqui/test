@@ -93,7 +93,6 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       _.forEach(motions, (motion, index) => {
         newData.push({
           key: motion.key,
-          motionIndex: parseInt(index),
           type: FILE_TYPES.motion,
           name: motion?.name,
           url,
@@ -128,11 +127,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
       <IconPage />
-      {_.isEqual(lpmode, LPMODE_TYPES.iconview) ? (
-        <IconView height="100%" width="100%" />
-      ) : (
-        <ListView height="100%" width="100%" />
-      )}
+      {_.isEqual(lpmode, LPMODE_TYPES.iconview) ? <IconView /> : <ListView />}
     </S.LibraryPanelWrapper>
   );
 };

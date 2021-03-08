@@ -4,13 +4,7 @@ import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { RENDERING_DATA_TYPES } from 'interfaces/RP';
 import _ from 'lodash';
 import { INITIAL_MAIN_DATA, isClient } from 'utils/const';
-import {
-  contextmenuTypes,
-  LPMODE_TYPES,
-  mainDataTypes,
-  modalTypes,
-  skeletonHelpersTypes,
-} from '../interfaces';
+import { contextmenuTypes, LPMODE_TYPES, mainDataTypes, modalTypes } from '../interfaces';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
   let result = _.clone(initialData);

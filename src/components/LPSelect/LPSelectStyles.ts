@@ -13,3 +13,14 @@ export const LPSelectWrapper = styled.div`
   padding-left: ${rem(16)}rem;
   padding-right: ${rem(16)}rem;
 `;
+export const ViewWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+export const IconViewIconWrapper = styled.div`
+  cursor: pointer;
+  margin-right: ${rem(8)}rem;
+`;
+export const ListViewIconWrapper = styled.div`
+  cursor: pointer;
+`;

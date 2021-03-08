@@ -1,10 +1,9 @@
 import { useReactiveVar } from '@apollo/client';
-import { ArrowBack, ArrowForward } from 'components/Icons';
+import { ArrowBackIcon } from 'components/Icons/generated2/ArrowBackIcon';
+import { ArrowForwardIcon } from 'components/Icons/generated2/ArrowForwardIcon';
 import { PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
-import { BACKGROUND_COLOR, LIBRARYPANEL_INFO } from 'styles/constants/common';
-import { rem } from 'utils/rem';
 import { PagesTypes } from '../../Panels/LibraryPanel';
 import * as S from './IconPageStyles';
 
@@ -17,31 +16,17 @@ const IconPageComponent: React.FC<IconPageProps> = ({}) => {
     }
   }, [pages]);
   return (
-    <S.IconPageWrapper
-      width={LIBRARYPANEL_INFO.widthRem}
-      height={rem(48)}
-      backgroundColor={BACKGROUND_COLOR}
-    >
+    <S.IconPageWrapper>
       <S.ArrowBackWrapper onClick={onClick}>
-        <ArrowBack
-          style={{ marginLeft: `${rem(22)}rem` }}
-          width={`${rem(6)}rem`}
-          height={`${rem(10)}rem`}
-          viewBox="0 0 6 10"
-        />
+        <ArrowBackIcon />
       </S.ArrowBackWrapper>
       {_.map(pages, (item: PagesTypes, index) => (
         <>
           <S.PageText>{item.name}</S.PageText>
           {!_.isEqual(index, _.size(pages) - 1) && (
-            <div style={{ flexBasis: `${rem(5)}rem` }}>
-              <ArrowForward
-                width={`${rem(5)}rem`}
-                height={`${rem(8)}rem`}
-                viewBox="0 0 5 8"
-                style={{ marginRight: `${rem(8)}rem` }}
-              />
-            </div>
+            <S.ArrowForwardIconWrapper>
+              <ArrowForwardIcon />
+            </S.ArrowForwardIconWrapper>
           )}
         </>
       ))}

@@ -1,6 +1,11 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { BACKGROUND_COLOR, GRAY200, PRIMARY_BLUE } from 'styles/constants/common';
+import {
+  BACKGROUND_COLOR,
+  GRAY200,
+  LIBRARYPANEL_INFO,
+  PRIMARY_BLUE,
+} from 'styles/constants/common';
 import { rem } from 'utils/rem';
 import { GRAY400 } from '../../styles/constants/common';
 
@@ -16,10 +21,7 @@ interface ListRowWrapperProps {
 interface ListRowTextProps {
   marginLeft?: number;
 }
-interface ListViewWrapperProps {
-  width: string;
-  height: string;
-}
+interface ListViewWrapperProps {}
 
 const BORDER_RADIUS = rem(8);
 const FONT_SIZE = rem(12);
@@ -78,8 +80,8 @@ export const ListRowText = styled.span<ListRowTextProps>`
   margin-left: ${(props) => props.marginLeft ?? 0}rem;
 `;
 export const ListViewWrapper = styled.div<ListViewWrapperProps>`
-  width: ${(props) => props.width};
-  height: ${(props) => props.height};
+  width: ${LIBRARYPANEL_INFO.widthRem}rem;
+  height: ${rem(480)}rem;
   background-color: ${BACKGROUND_COLOR};
   padding-left: ${rem(12)}rem;
   position: relative;
@@ -102,3 +104,9 @@ export const ListRowInput = styled.input`
 `;
 export const ListViewRowWrapper = styled.div``;
 export const ArrowWrapper = styled.div``;
+export const ModelIconWrapper = styled.div`
+  margin-left: ${rem(7)}rem;
+`;
+export const MotionIconWrapper = styled.div`
+  margin-left: ${rem(49)}rem;
+`;
