@@ -151,3 +151,22 @@ export const PlayBarWrapper = styled.div`
   justify-content: space-between;
   position: relative;
 `;
+export const PlayBarIndicatorWrapper = styled.div`
+  position: absolute;
+  left: 15%;
+`;
+export const PlayBarPlayBoxWrapper = styled.div`
+  position: absolute;
+  left: 45%;
+  display: flex;
+  flex-direction: row;
+  padding-right: 5%;
+`;
+export const PlayBarDropdownWrapper = styled.div`
+  position: absolute;
+  right: 0;
+`;
+export const DropdownArrowDownIconWrapper = styled.div`
+  position: absolute;
+  right: ${rem(8)}rem;
+`;

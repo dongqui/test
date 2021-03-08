@@ -103,7 +103,7 @@ export const useLPControl = ({
             type: item.type,
             name: item.name,
             parentKey: newKey,
-            tracks: item.tracks,
+            baseLayer: item.baseLayer,
           });
         },
       );

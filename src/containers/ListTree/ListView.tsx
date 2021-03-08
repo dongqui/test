@@ -12,12 +12,9 @@ import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';
 import { ListRow } from './ListRow';
 import * as S from './ListTreeStyles';
 
-export interface ListViewProps {
-  width: string;
-  height: string;
-}
+export interface ListViewProps {}
 
-const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
+const ListViewComponent: React.FC<ListViewProps> = ({}) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
   const searchWord = useReactiveVar(SEARCH_WORD);
@@ -55,7 +52,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
     return result;
   }, [getFilteredData, mainData]);
   return (
-    <S.ListViewWrapper ref={listViewWrapperRef} width={width} height={height}>
+    <S.ListViewWrapper ref={listViewWrapperRef}>
       {_.map(processedData, (item, index) => (
         <S.ListViewRowWrapper
           key={index}

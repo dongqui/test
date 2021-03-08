@@ -1,4 +1,6 @@
 import { Camera, HorizontalBar } from 'components/Icons';
+import { CameraIcon } from 'components/Icons/generated2/CameraIcon';
+import { HorizontalBarIcon } from 'components/Icons/generated2/HorizontalBarIcon';
 import _ from 'lodash';
 import React from 'react';
 import * as S from './PlayBarStyles';
@@ -23,10 +25,8 @@ const ModeSelectComponent: React.FC<ModeSelectProps> = ({
           isSelected={item.isSelected}
           onClick={() => onSelect({ key: item.key })}
         >
-          {_.isEqual(item.key, 'edit') && (
-            <HorizontalBar width={22} height={8} viewBox="0 0 24 10" />
-          )}
-          {_.isEqual(item.key, 'camera') && <Camera width={22} height={18} viewBox="0 0 24 20" />}
+          {_.isEqual(item.key, 'edit') && <HorizontalBarIcon />}
+          {_.isEqual(item.key, 'camera') && <CameraIcon />}
         </S.ModeSelectIconWrapper>
       ))}
     </S.ModeSelectWrapper>

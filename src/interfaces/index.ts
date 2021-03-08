@@ -50,8 +50,7 @@ export enum MAINDATA_PROPERTY_TYPES {
   isModifying = 'isModifying',
   isCopied = 'isCopied',
   isDragging = 'isDragging',
-  tracks = 'tracks',
-  motionIndex = 'motionIndex',
+  baseLayer = 'baseLayer',
 }
 export enum LPMODE_TYPES {
   listview = 'listview',
@@ -87,8 +86,7 @@ export interface mainDataTypes {
   [MAINDATA_PROPERTY_TYPES.isModifying]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isCopied]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isDragging]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.tracks]?: any;
-  [MAINDATA_PROPERTY_TYPES.motionIndex]?: number;
+  [MAINDATA_PROPERTY_TYPES.baseLayer]?: THREE.KeyframeTrack[];
 }
 export interface bonesTypes {
   name: string;
