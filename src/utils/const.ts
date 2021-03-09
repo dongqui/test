@@ -3,6 +3,8 @@ import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 
 export const isClient = typeof window !== 'undefined';
 export const DEFAULT_MODEL_URL = 'https://assets.babylonjs.com/meshes/HVGirl.glb';
+export const STANDARD_TIME_UNIT = 1 / 30;
+export const STANDARD_TIME_CUT_UNIT = 5 / 30;
 export const INITIAL_MAIN_DATA: MainDataTypes[] = [
   {
     key: '0',
