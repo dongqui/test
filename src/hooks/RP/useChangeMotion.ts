@@ -1,10 +1,10 @@
-import { bonesTypes, skeletonHelpersTypes } from 'interfaces';
+import { BonesTypes, skeletonHelpersTypes } from 'interfaces';
 import _ from 'lodash';
 import { useCallback, useEffect } from 'react';
 
 interface useChangeMotionProps {
   skeletonHelper?: THREE.SkeletonHelper;
-  motionDataRT: bonesTypes[];
+  motionDataRT: BonesTypes[];
 }
 export const useChangeMotion = ({ skeletonHelper, motionDataRT }: useChangeMotionProps) => {
   useEffect(() => {

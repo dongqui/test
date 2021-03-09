@@ -2,10 +2,10 @@ import _ from 'lodash';
 import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  contextmenuTypes,
+  ContextmenuTypes,
   FILE_TYPES,
   LPMODE_TYPES,
-  mainDataTypes,
+  MainDataTypes,
   MAINDATA_PROPERTY_TYPES,
 } from 'interfaces';
 import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
@@ -14,9 +14,9 @@ import { MAX_FILE_LENGTH } from 'styles/constants/common';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 
 interface useLPControlProps {
-  mainData: mainDataTypes[];
+  mainData: MainDataTypes[];
   pages: PagesTypes[];
-  contextmenuInfo: contextmenuTypes;
+  contextmenuInfo: ContextmenuTypes;
   searchWord: string;
   lpmode: LPMODE_TYPES;
 }
@@ -218,7 +218,7 @@ export const useLPControl = ({
     },
     [mainData, searchWord],
   );
-  const filteredData: mainDataTypes[] = useMemo(() => {
+  const filteredData: MainDataTypes[] = useMemo(() => {
     let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
     result = getFilteredData({ data: result });
     return result;

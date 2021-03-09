@@ -56,23 +56,23 @@ export enum LPMODE_TYPES {
   listview = 'listview',
   iconview = 'iconview',
 }
-export interface screenSizeTypes {
+export interface ScreenSizeTypes {
   width: number;
   height: number;
 }
-export interface shortcutTypes {
+export interface ShortcutTypes {
   key: string;
   ctrlKey?: boolean;
   event: Function;
 }
-export interface contextmenuTypes {
+export interface ContextmenuTypes {
   data?: ContextmenuDataTypes[];
   isShow: boolean;
   top: number;
   left: number;
   onClick: ({ key }: { key: string }) => void;
 }
-export interface mainDataTypes {
+export interface MainDataTypes {
   [MAINDATA_PROPERTY_TYPES.key]: string;
   [MAINDATA_PROPERTY_TYPES.name]: string;
   [MAINDATA_PROPERTY_TYPES.type]: FILE_TYPES;
@@ -88,7 +88,7 @@ export interface mainDataTypes {
   [MAINDATA_PROPERTY_TYPES.isDragging]?: boolean;
   [MAINDATA_PROPERTY_TYPES.baseLayer]?: THREE.KeyframeTrack[];
 }
-export interface bonesTypes {
+export interface BonesTypes {
   name: string;
   positionX: number;
   positionY: number;
@@ -103,9 +103,9 @@ export interface bonesTypes {
 }
 export interface skeletonHelpersTypes {
   time?: string;
-  bones?: bonesTypes[];
+  bones?: BonesTypes[];
 }
-export interface modalTypes {
+export interface ModalTypes {
   msg: string;
   isShow: boolean;
 }

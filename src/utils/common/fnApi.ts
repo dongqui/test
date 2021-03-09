@@ -4,11 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 const BASE_URL = 'https://shootapi.myplask.com:5000';
 const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:5000/';
-interface useApiProps {
+interface fnApiProps {
   action: 'upload';
   payload: { data?: string; type?: 'glb' | 'fbx' };
 }
-export const fnApi = async ({ action, payload }: useApiProps) => {
+export const fnApi = async ({ action, payload }: fnApiProps) => {
   let result;
   try {
     switch (action) {

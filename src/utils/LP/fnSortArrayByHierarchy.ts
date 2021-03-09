@@ -1,14 +1,14 @@
-import { mainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import _ from 'lodash';
 
 interface fnSortArrayByHierarchyProps {
-  data: mainDataTypes[];
+  data: MainDataTypes[];
 }
 export const fnSortArrayByHierarchy = ({ data }: fnSortArrayByHierarchyProps) => {
   let tempData = _.clone(data);
-  let result: mainDataTypes[] = [];
-  let newData: mainDataTypes[];
+  let result: MainDataTypes[] = [];
+  let newData: MainDataTypes[];
   do {
     if (_.some(tempData, [MAINDATA_PROPERTY_TYPES.parentKey, ROOT_FOLDER_NAME])) {
       newData = _.filter(tempData, [MAINDATA_PROPERTY_TYPES.parentKey, ROOT_FOLDER_NAME]);
@@ -16,7 +16,7 @@ export const fnSortArrayByHierarchy = ({ data }: fnSortArrayByHierarchyProps) =>
       tempData = _.filter(tempData, (item) => !_.isEqual(item.parentKey, ROOT_FOLDER_NAME));
       continue;
     }
-    let tempResult: mainDataTypes[] = [];
+    let tempResult: MainDataTypes[] = [];
     _.forEach(result, (item) => {
       tempResult = _.concat(tempResult, item);
       const mustInclude =

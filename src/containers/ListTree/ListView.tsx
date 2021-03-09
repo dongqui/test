@@ -2,7 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { useContextmenu } from 'hooks/common/useContextmenu';
 import { useShortcut } from 'hooks/common/useShortcut';
 import { useLPControl } from 'hooks/LP/useLPControl';
-import { FILE_TYPES, mainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { CONTEXTMENU_INFO, LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
@@ -33,7 +33,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    let result: mainDataTypes[] = [];
+    let result: MainDataTypes[] = [];
     let data = fnSortArrayByHierarchy({ data: mainData });
     data = fnMakeSelection({ data });
     _.forEach(data, (item) => {

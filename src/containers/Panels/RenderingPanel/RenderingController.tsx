@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
-import { bonesTypes, FORMAT_TYPES } from '../../../interfaces';
+import { BonesTypes, FORMAT_TYPES } from '../../../interfaces';
 import { CONFIG_INFOS } from './const';
 import { useChangeMotion } from 'hooks/RP/useChangeMotion';
 import { DEFAULT_MODEL_URL } from 'utils/const';
@@ -14,7 +14,7 @@ export interface RenderingControllerProps {
   isPlay?: boolean;
   playSpeed?: number;
   playDirection?: -1 | 1;
-  motionDataRT?: bonesTypes[];
+  motionDataRT?: BonesTypes[];
 }
 const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   id = 'container',
