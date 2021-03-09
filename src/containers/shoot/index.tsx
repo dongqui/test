@@ -10,8 +10,6 @@ import { CONTEXTMENU_INFO, MAIN_DATA, MODAL_INFO, STORE_DATA_NAMES } from 'lib/s
 import { GRAY200 } from 'styles/constants/common';
 import { Modal } from 'components/Modal';
 import { css } from '@emotion/react';
-import { useCheckIsServer } from 'hooks/common/useCheckIsServer';
-
 interface ContextMenuWrapperProps {
   top: string;
   left: string;
@@ -57,8 +55,6 @@ const ShootPage: NextPage<Props> = () => {
     },
   });
 
-  const { isServer } = useCheckIsServer();
-
   return (
     <main>
       {contextMenuInfo.isShow && (
@@ -81,7 +77,8 @@ const ShootPage: NextPage<Props> = () => {
           <Modal msg={modalInfo.msg} />
         </ModalWrapper>
       )}
-      {!isServer && <MainPage />}
+      <div>asdasd</div>
+      {/* <MainPage /> */}
     </main>
   );
 };

@@ -9,7 +9,7 @@ import prepareNext from 'electron-next';
 
 // Prepare the renderer once the app is ready
 app.on('ready', async () => {
-  await prepareNext('../src');
+  await prepareNext('.');
 
   const mainWindow = new BrowserWindow({
     width: 800,

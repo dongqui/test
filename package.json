@@ -10,12 +10,12 @@
     "start": "next start",
     "storybook": "start-storybook",
     "build-storybook": "build-storybook",
-    "build-src": "next build",
+    "build-src": "next build && next export",
     "build-electron": "tsc -p electron-src",
     "build": "npm run build-src && npm run build-electron",
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
-    "clean": "rimraf dist main out pwa _next storybook-static",
+    "clean": "rimraf dist main src/out out src/_next pwa _next storybook-static",
     "type-check": "tsc",
     "precodegen": "node ./src/scripts/precodegen.js",
     "codegen": "graphql-codegen --config codegen.yml",
@@ -114,9 +114,15 @@
   },
   "build": {
     "asar": true,
+    "directories": {
+      "buildResources": "src/**/*",
+      "output": "out/",
+      "app": "."
+    },
     "files": [
       "main",
-      "out"
+      "src/**/*",
+      "out/**/*"
     ]
   }
 }
