@@ -4,7 +4,7 @@ import { ArrowRightIcon } from 'components/Icons/generated2/ArrowRightIcon';
 import { ModelIcon } from 'components/Icons/generated2/ModelIcon';
 import { MotionIcon } from 'components/Icons/generated2/MotionIcon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, mainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo } from 'react';
@@ -19,7 +19,7 @@ export interface ListRowProps {
   [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
-  data: mainDataTypes[];
+  data: MainDataTypes[];
 }
 
 const ListRowComponent: React.FC<ListRowProps> = ({

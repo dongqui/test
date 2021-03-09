@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FILE_TYPES, FORMAT_TYPES, LPMODE_TYPES, mainDataTypes } from 'interfaces';
+import { FILE_TYPES, FORMAT_TYPES, LPMODE_TYPES, MainDataTypes } from 'interfaces';
 import { LP_MODE, MAIN_DATA, MODAL_INFO, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
@@ -9,12 +9,12 @@ import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
 import * as S from './LibraryPanelStyles';
 import { Loading } from 'components/Loading';
-import { fnFileUpload } from 'hooks/common/useFileUpload';
 import { LPSelect } from 'components/LPSelect';
 import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
 import { InputLP } from 'components/Input/InputLP';
+import { fnFileUpload } from 'utils/LP/fnFileUpload';
 
 export interface PagesTypes {
   key: string;
@@ -81,7 +81,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         });
       });
       const key = uuidv4();
-      const newData: mainDataTypes[] = [
+      const newData: MainDataTypes[] = [
         {
           key,
           type: FILE_TYPES.file,

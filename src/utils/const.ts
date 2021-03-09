@@ -1,9 +1,9 @@
-import { FILE_TYPES, mainDataTypes } from 'interfaces';
+import { FILE_TYPES, MainDataTypes } from 'interfaces';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 
 export const isClient = typeof window !== 'undefined';
 export const DEFAULT_MODEL_URL = 'https://assets.babylonjs.com/meshes/HVGirl.glb';
-export const INITIAL_MAIN_DATA: mainDataTypes[] = [
+export const INITIAL_MAIN_DATA: MainDataTypes[] = [
   {
     key: '0',
     name: '기본모델',

@@ -1,10 +1,6 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { useCallback, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import _ from 'lodash';
-import { screenSizeTypes } from '../../interfaces';
-import { useReactiveVar } from '@apollo/client';
 import { WebcamPanel } from 'containers/Panels/WebcamPanel/WebcamPanel';
 import { RenderingController } from 'containers/Panels/RenderingPanel/RenderingController';
 
