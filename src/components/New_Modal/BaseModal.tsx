@@ -7,7 +7,7 @@ import styles from './BaseModal.module.scss';
 
 const cx = classnames.bind(styles);
 
-interface Props {
+export interface Props {
   onClose: () => void;
 }
 
