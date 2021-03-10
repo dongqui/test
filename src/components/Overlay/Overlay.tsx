@@ -1,5 +1,5 @@
 import classnames from 'classnames/bind';
-import styles from './overlay.module.scss';
+import styles from './Overlay.module.scss';
 
 const cx = classnames.bind(styles);
 
