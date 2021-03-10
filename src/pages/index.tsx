@@ -1,17 +1,5 @@
-import React from 'react';
-import { isClient } from 'utils/const';
-import { RealtimePage } from '../components/Pages/RealtimePage';
+import dynamic from 'next/dynamic';
 
-const IndexPage = () => {
-  return (
-    <>
-      {isClient ? (
-        <RealtimePage width={`${window.innerWidth}px`} height={`${window.innerHeight}px`} />
-      ) : (
-        <div>로딩중...</div>
-      )}
-    </>
-  );
-};
+const DynamicWithNoSSR = dynamic(() => import('containers/realtime'), { ssr: false });
 
-export default IndexPage;
+export default DynamicWithNoSSR;
