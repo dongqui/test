@@ -19,8 +19,24 @@ declare global {
 export enum FORMAT_TYPES {
   glb = 'glb',
   fbx = 'fbx',
-  gltf = 'gltf',
 }
+export enum VIDEO_FORMAT_TYPES {
+  mp4 = 'mp4',
+  avi = 'avi',
+  mkv = 'mkv',
+  wmv = 'wmv',
+  webm = 'webm',
+  mov = 'mov',
+}
+export const ENABLE_VIDEO_FORMATS = [
+  VIDEO_FORMAT_TYPES.mp4,
+  VIDEO_FORMAT_TYPES.avi,
+  VIDEO_FORMAT_TYPES.mkv,
+  VIDEO_FORMAT_TYPES.wmv,
+  VIDEO_FORMAT_TYPES.webm,
+  VIDEO_FORMAT_TYPES.mov,
+];
+export const ENABLE_FILE_FORMATS = [FORMAT_TYPES.glb, FORMAT_TYPES.fbx, ...ENABLE_VIDEO_FORMATS];
 export enum PROPERTY_TYPES {
   position = 'position',
   positionCnt = 3,

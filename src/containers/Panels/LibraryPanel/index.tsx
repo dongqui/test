@@ -1,6 +1,13 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FILE_TYPES, FORMAT_TYPES, LPMODE_TYPES, MainDataTypes } from 'interfaces';
+import {
+  ENABLE_FILE_FORMATS,
+  ENABLE_VIDEO_FORMATS,
+  FILE_TYPES,
+  FORMAT_TYPES,
+  LPMODE_TYPES,
+  MainDataTypes,
+} from 'interfaces';
 import { LP_MODE, MAIN_DATA, MODAL_INFO, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
@@ -40,12 +47,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       setLoading(true);
       const extension = _.last(_.split(acceptedFiles[0].name, '.'));
       let convertedFileUrl = DEFAULT_MODEL_URL;
-      if (
-        _.some(
-          acceptedFiles,
-          (file) => !_.includes([FORMAT_TYPES.glb, FORMAT_TYPES.fbx], extension),
-        )
-      ) {
+      if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
         MODAL_INFO({ isShow: true, msg: '파일 형식이 올바르지 않습니다.' });
         setLoading(false);
         return false;
@@ -63,7 +65,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         }
         convertedFileUrl = url;
       }
-      const url = _.isEqual(extension, FORMAT_TYPES.glb)
+      const url = _.includes([...ENABLE_VIDEO_FORMATS, FORMAT_TYPES.glb], extension)
         ? URL.createObjectURL(acceptedFiles[0])
         : convertedFileUrl;
       const { result, error, msg } = await fnGetAnimationData({ url });
