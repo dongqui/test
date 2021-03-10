@@ -32,71 +32,68 @@ const BaseModal: React.FC<Props> = ({ onClose, children }) => {
   // Modal Open 전, 기존의 포커스가 활성화된 Element
   const [beforeActiveElement] = useState<HTMLElement>(document.activeElement as HTMLElement);
 
-  const currentModalRef = modalRef?.current;
-
   useEffect(() => {
-    if (currentModalRef) {
-      const focusableNodeList = currentModalRef.querySelectorAll(focusableTargetList.toString());
-      const focusableElementList = Array.prototype.slice.call(focusableNodeList);
+    const focusableNodeList = modalRef?.current?.querySelectorAll(focusableTargetList.toString());
+    const focusableElementList = Array.prototype.slice.call(focusableNodeList);
 
-      const firstFocusTarget = focusableElementList[0];
-      const lastFocusTarget = focusableElementList[focusableElementList.length - 1];
+    const firstFocusTarget = focusableElementList[0];
+    const lastFocusTarget = focusableElementList[focusableElementList.length - 1];
 
-      // 초기 Modal Open시 focus 가능한 element에 기본 focus
-      firstFocusTarget.focus();
+    // 초기 Modal Open시 focus 가능한 element에 기본 focus
+    firstFocusTarget.focus();
 
-      const handleKeyPress = (e: KeyboardEvent) => {
-        // Tab Key: KeyCode 9
-        if (_.isEqual(e.key, 'Tab')) {
-          // Shift + Tab
-          if (e.shiftKey) {
-            if (_.isEqual(document.activeElement, firstFocusTarget)) {
-              e.preventDefault();
-              lastFocusTarget.focus();
-            }
-          }
-
-          // Tab
-          if (!e.shiftKey) {
-            if (_.isEqual(document.activeElement, lastFocusTarget)) {
-              e.preventDefault();
-              firstFocusTarget.focus();
-            }
-          }
-        }
-
-        // ESC Key: KeyCode 9
-        if (_.isEqual(e.key, 'Escape')) {
-          onClose();
-        }
-
-        // Enter Key: Keycode 13
-        if (_.isEqual(e.key, 'Enter')) {
-          e.preventDefault();
-        }
-      };
-
-      const handleFocusin = (e: FocusEvent) => {
-        if (modalRef.current) {
-          if (!modalRef.current.contains(e.target as Node)) {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Trap Tab Key: KeyCode 9
+      if (_.isEqual(e.key, 'Tab')) {
+        // Shift + Tab
+        if (e.shiftKey) {
+          if (_.isEqual(document.activeElement, firstFocusTarget)) {
             e.preventDefault();
+            lastFocusTarget.focus();
+          }
+        }
+
+        // Tab
+        if (!e.shiftKey) {
+          if (_.isEqual(document.activeElement, lastFocusTarget)) {
+            e.preventDefault();
+
             firstFocusTarget.focus();
           }
         }
-      };
+      }
 
-      window.addEventListener('keydown', handleKeyPress);
-      window.addEventListener('focusin', handleFocusin);
+      // ESC Key: KeyCode 27
+      if (_.isEqual(e.key, 'Escape')) {
+        onClose();
+      }
 
-      return () => {
-        window.removeEventListener('keydown', handleKeyPress);
-        window.removeEventListener('focusin', handleFocusin);
+      // Enter Key: Keycode 13
+      if (_.isEqual(e.key, 'Enter')) {
+        e.preventDefault();
+      }
+    };
 
-        // Modal Open 전 focus상태인 element에 다시 focus
-        beforeActiveElement.focus();
-      };
-    }
-  }, [beforeActiveElement, currentModalRef, onClose]);
+    const handleFocusin = (e: FocusEvent) => {
+      if (modalRef.current) {
+        if (!modalRef.current.contains(e.target as Node)) {
+          e.preventDefault();
+          firstFocusTarget.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    window.addEventListener('focusin', handleFocusin);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener('focusin', handleFocusin);
+
+      // Modal Open 전 focus상태인 element에 다시 focus
+      beforeActiveElement.focus();
+    };
+  }, [beforeActiveElement, onClose]);
 
   return (
     <BasePortal container={portalRef}>
