@@ -9,3 +9,7 @@ export interface RENDERING_DATA_TYPES {
   isPlay: boolean;
   playDirection: -1 | 1;
 }
+export interface RECORDING_DATA_TYPES {
+  videoUrl: string;
+  cutImages: string[];
+}

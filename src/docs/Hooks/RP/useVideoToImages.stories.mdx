@@ -1,0 +1,25 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Hooks/RP/useVideoToImages" />
+
+# useVideoToImages
+
+비디오에서 컷 이미지를 추출하는 hook
+
+#### example
+
+```javascript
+  const { images } = useVideoToImages({ videoRef });
+```
+
+## Props
+
+| Prop                | Description            |
+| ------------------- | ---------------------- |
+| **videoRef(DOM)**        | video 태그에 있는 DOM ref값        |
+
+## Return
+
+| Return | Description |
+| ------ | ----------- |
+| **images(string[])**        | 컷이미지 base64값의 배열        |

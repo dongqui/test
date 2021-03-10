@@ -529,7 +529,7 @@ export const useRenderingModel = ({
 
   const createMixer = useCallback(
     ({ object }: { object: any }) => {
-      if (_.isEqual(format, FORMAT_TYPES.glb) || _.isEqual(format, FORMAT_TYPES.gltf)) {
+      if (_.isEqual(format, FORMAT_TYPES.glb)) {
         innerMixer = new THREE.AnimationMixer(object.scene);
       } else if (_.isEqual(format, FORMAT_TYPES.fbx)) {
         innerMixer = new THREE.AnimationMixer(object);
@@ -542,7 +542,7 @@ export const useRenderingModel = ({
   const addModel = useCallback(
     ({ scene, object }: { scene: THREE.Scene; object: any }) => {
       let model: any;
-      if (_.isEqual(format, FORMAT_TYPES.glb) || _.isEqual(format, FORMAT_TYPES.gltf)) {
+      if (_.isEqual(format, FORMAT_TYPES.glb)) {
         model = object.scene || object.scenes[0];
       } else if (_.isEqual(format, FORMAT_TYPES.fbx)) {
         object.scale.multiplyScalar(0.05);
@@ -1051,7 +1051,7 @@ export const useRenderingModel = ({
     if (fileUrl) {
       let loader;
       // .glb 파일 load
-      if (_.isEqual(format, FORMAT_TYPES.glb) || _.isEqual(format, FORMAT_TYPES.gltf)) {
+      if (_.isEqual(format, FORMAT_TYPES.glb)) {
         loader = new GLTFLoader(); // loader 생성
         // .fbx 파일 load
       } else if (_.isEqual(format, FORMAT_TYPES.fbx)) {
