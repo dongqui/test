@@ -1,15 +1,14 @@
 /* eslint-disable jsx-a11y/media-has-caption */
 import _ from 'lodash';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useWebcam } from '../../../hooks/RP/useWebcam';
+import { useWebcam } from 'hooks/RP/useWebcam';
 import * as tf from '@tensorflow/tfjs';
 
-export interface WebcamPanelProps {
-  width: string;
-  height: string;
-}
-
-const WebcamPanelComponent: React.FC<WebcamPanelProps> = ({ width = '100%', height = '100%' }) => {
+/**
+ * ===WARN===
+ * Webcam (getUserMedia) 보안상의 이슈로 HTTPS 또는 Localhost에서만 동작
+ */
+const Webcam: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   useWebcam({ videoRef });
   const handleClick = useCallback(async () => {
@@ -20,20 +19,16 @@ const WebcamPanelComponent: React.FC<WebcamPanelProps> = ({ width = '100%', heig
     const img = await cam.capture();
     img.print();
     cam.capture();
-
-    /**
-     * TODO
-     */
   }, []);
 
   return (
     <>
-      <div style={{ width, height }}>
+      <div>
         <video ref={videoRef} width="100%" height="100%" id="video" autoPlay></video>
       </div>
-      <button onClick={handleClick}>stop</button>
+      {/* <button onClick={handleClick}>stop</button> */}
     </>
   );
 };
 
-export const WebcamPanel = React.memo(WebcamPanelComponent);
+export default React.memo(Webcam);

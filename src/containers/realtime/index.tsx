@@ -1,23 +1,32 @@
 import React, { useCallback, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import _ from 'lodash';
-import { WebcamPanel } from 'containers/Panels/WebcamPanel/WebcamPanel';
-import { RenderingController } from 'containers/Panels/RenderingPanel/RenderingController';
+import WebcamPanel from './Webcam';
+import { RenderingController } from './Model/RenderingController';
+import { BaseModal } from 'components/New_Modal';
+import classnames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classnames.bind(styles);
 
 const STANDARD_PANEL_WIDTH = 50;
-export interface RealtimePageProps {
-  width: string;
-  height: string;
-  backgroundColor?: string;
-}
-const RealtimePageComponent: React.FC<RealtimePageProps> = ({
-  width,
-  height,
-  backgroundColor = 'black',
-}) => {
+
+const RealtimeContainer: React.FC = ({}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const handleOpen = () => {
+    setIsOpen(!isOpen);
+  };
   return (
-    <div style={{ width, height, backgroundColor, position: 'relative' }}>
-      <Rnd
+    <div className={cx('wrapper')}>
+      <div className={cx('model')}>
+        <RenderingController />
+      </div>
+      <div className={cx('webcam')}>
+        <WebcamPanel />
+        {/* <button onClick={handleOpen}>asdasds</button> */}
+      </div>
+      {/* {isOpen && <BaseModal onClose={handleOpen}>asdas</BaseModal>} */}
+      {/* <Rnd
         style={{
           border: '1px solid white',
           zIndex: 100,
@@ -48,9 +57,9 @@ const RealtimePageComponent: React.FC<RealtimePageProps> = ({
         disableDragging={true}
       >
         <RenderingController />
-      </Rnd>
+      </Rnd> */}
     </div>
   );
 };
 
-export const RealtimePage = React.memo(RealtimePageComponent);
+export default React.memo(RealtimeContainer);
