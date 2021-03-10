@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Overlay } from 'components/Overlay';
 import BasePortal from './BasePortal';
 import classnames from 'classnames/bind';
-import styles from './BaseDialog.module.scss';
+import styles from './BaseModal.module.scss';
 
 const cx = classnames.bind(styles);
 
