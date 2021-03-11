@@ -1,8 +1,7 @@
-import { ArrowDown, ArrowDownCircle, ArrowDropdownDown, ArrowExpand } from 'components/Icons';
+import { DropdownArrowDownIcon } from 'components/Icons/generated2/DropdownArrowDownIcon';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
-import { MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import _ from 'lodash';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { rem } from 'utils/rem';
 import * as S from './PlayBarStyles';
 
@@ -40,12 +39,9 @@ const DropdownComponent: React.FC<DropdownProps> = ({
           >
             <S.IndicatorText marginLeft={rem(12)}>{item.name}</S.IndicatorText>
             {_.isEqual(index, 0) && (
-              <ArrowDropdownDown
-                width={10}
-                height={15}
-                viewBox="0 0 10 6"
-                style={{ position: 'absolute', right: `${rem(8)}rem` }}
-              />
+              <S.DropdownArrowDownIconWrapper>
+                <DropdownArrowDownIcon />
+              </S.DropdownArrowDownIconWrapper>
             )}
           </S.DropdownWrapper>
         ))
@@ -54,12 +50,9 @@ const DropdownComponent: React.FC<DropdownProps> = ({
           <S.IndicatorText marginLeft={rem(12)}>
             {_.find(data, ['isSelected', true])?.name}
           </S.IndicatorText>
-          <ArrowDropdownDown
-            width={10}
-            height={15}
-            viewBox="0 0 10 6"
-            style={{ position: 'absolute', right: `${rem(8)}rem` }}
-          />
+          <S.DropdownArrowDownIconWrapper>
+            <DropdownArrowDownIcon />
+          </S.DropdownArrowDownIconWrapper>
         </S.DropdownWrapper>
       )}
     </div>

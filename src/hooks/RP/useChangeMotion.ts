@@ -1,15 +1,15 @@
-import { bonesTypes, skeletonHelpersTypes } from 'interfaces';
+import { BonesTypes, skeletonHelpersTypes } from 'interfaces';
 import _ from 'lodash';
 import { useCallback, useEffect } from 'react';
 
 interface useChangeMotionProps {
   skeletonHelper?: THREE.SkeletonHelper;
-  motionData: bonesTypes[];
+  motionDataRT: BonesTypes[];
 }
-export const useChangeMotion = ({ skeletonHelper, motionData }: useChangeMotionProps) => {
+export const useChangeMotion = ({ skeletonHelper, motionDataRT }: useChangeMotionProps) => {
   useEffect(() => {
     if (!_.isUndefined(skeletonHelper)) {
-      _.forEach(motionData, (item, index) => {
+      _.forEach(motionDataRT, (item, index) => {
         try {
           skeletonHelper.bones[index].position.x = item.positionX;
           skeletonHelper.bones[index].position.y = item.positionY;
@@ -26,5 +26,5 @@ export const useChangeMotion = ({ skeletonHelper, motionData }: useChangeMotionP
         }
       });
     }
-  }, [motionData, skeletonHelper]);
+  }, [motionDataRT, skeletonHelper]);
 };

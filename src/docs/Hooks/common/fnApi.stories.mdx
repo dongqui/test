@@ -1,0 +1,31 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Hooks/common/useApi" />
+
+# useApi
+
+api 통신을 위한 hook
+
+#### example
+
+```javascript
+const { result, error, msg } = await fnApi({
+  action: 'upload',
+  payload: { data: url, type: 'fbx' },
+});
+```
+
+## Props
+
+| Prop                | Description            |
+| ------------------- | ---------------------- |
+| **action(string)**        | 액션별로 분기하여 처리함        |
+| **payload({ data: string, type?: string })** | data는 넣고 싶은 거 넣고 type은 필요할때만 쓰면 됨 |
+
+## Return
+
+| Return | Description |
+| ------ | ----------- |
+| **result(any)**        | api 에서 리턴받은 결과        |
+| **error(boolean)**        | 에러 발생 여부        |
+| **msg(string)**        | 에러 메시지        |

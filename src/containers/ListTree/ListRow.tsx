@@ -1,13 +1,13 @@
 import { useReactiveVar } from '@apollo/client';
-import { ArrowDown, ArrowRight, ModelIcon, Motion } from 'components/Icons';
-import { FILE } from 'dns';
+import { ArrowDownIcon } from 'components/Icons/generated2/ArrowDownIcon';
+import { ArrowRightIcon } from 'components/Icons/generated2/ArrowRightIcon';
+import { ModelIcon } from 'components/Icons/generated2/ModelIcon';
+import { MotionIcon } from 'components/Icons/generated2/MotionIcon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, mainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
-import { ROOT_FOLDER_NAME } from 'interfaces/LP';
+import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo } from 'react';
-import { MAX_FILE_LENGTH } from 'styles/constants/common';
 import { INITIAL_MAIN_DATA } from 'utils/const';
 import { rem } from 'utils/rem';
 import * as S from './ListTreeStyles';
@@ -19,7 +19,7 @@ export interface ListRowProps {
   [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
-  data: mainDataTypes[];
+  data: MainDataTypes[];
 }
 
 const ListRowComponent: React.FC<ListRowProps> = ({
@@ -92,11 +92,11 @@ const ListRowComponent: React.FC<ListRowProps> = ({
         >
           {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isExpanded ? (
             <S.ArrowWrapper>
-              <ArrowDown width={`${rem(8)}rem`} height={`${rem(4)}rem`} viewBox="0 0 8 4" />
+              <ArrowDownIcon />
             </S.ArrowWrapper>
           ) : (
             <S.ArrowWrapper>
-              <ArrowRight width={`${rem(4)}rem`} height={`${rem(8)}rem`} viewBox="0 0 4 8" />
+              <ArrowRightIcon />
             </S.ArrowWrapper>
           )}
           {isModifying ? (
@@ -125,19 +125,16 @@ const ListRowComponent: React.FC<ListRowProps> = ({
         >
           {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isExpanded ? (
             <S.ArrowWrapper>
-              <ArrowDown width={`${rem(8)}rem`} height={`${rem(4)}rem`} viewBox="0 0 8 4" />
+              <ArrowDownIcon />
             </S.ArrowWrapper>
           ) : (
             <S.ArrowWrapper>
-              <ArrowRight width={`${rem(4)}rem`} height={`${rem(8)}rem`} viewBox="0 0 4 8" />
+              <ArrowRightIcon />
             </S.ArrowWrapper>
           )}
-          <ModelIcon
-            width={`${rem(12)}rem`}
-            height={`${rem(12)}rem`}
-            viewBox="0 0 12 12"
-            style={{ marginLeft: `${rem(7)}rem` }}
-          />
+          <S.ModelIconWrapper>
+            <ModelIcon />
+          </S.ModelIconWrapper>
           {isModifying ? (
             <S.ListRowInput
               value={fileName}
@@ -161,12 +158,9 @@ const ListRowComponent: React.FC<ListRowProps> = ({
           isLast={isLast}
           onClick={onClick}
         >
-          <Motion
-            width={24}
-            height={24}
-            viewBox="0 0 24 24"
-            style={{ marginLeft: `${rem(49)}rem` }}
-          />
+          <S.MotionIconWrapper>
+            <MotionIcon />
+          </S.MotionIconWrapper>
           {isModifying ? (
             <S.ListRowInput
               value={fileName}

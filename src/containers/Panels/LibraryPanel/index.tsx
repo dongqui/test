@@ -1,6 +1,13 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FILE_TYPES, FORMAT_TYPES, LPMODE_TYPES, mainDataTypes } from 'interfaces';
+import {
+  ENABLE_FILE_FORMATS,
+  ENABLE_VIDEO_FORMATS,
+  FILE_TYPES,
+  FORMAT_TYPES,
+  LPMODE_TYPES,
+  MainDataTypes,
+} from 'interfaces';
 import { LP_MODE, MAIN_DATA, MODAL_INFO, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
@@ -9,12 +16,12 @@ import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
 import * as S from './LibraryPanelStyles';
 import { Loading } from 'components/Loading';
-import { fnFileUpload } from 'hooks/common/useFileUpload';
 import { LPSelect } from 'components/LPSelect';
 import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
 import { InputLP } from 'components/Input/InputLP';
+import { fnFileUpload } from 'utils/LP/fnFileUpload';
 
 export interface PagesTypes {
   key: string;
@@ -40,12 +47,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       setLoading(true);
       const extension = _.last(_.split(acceptedFiles[0].name, '.'));
       let convertedFileUrl = DEFAULT_MODEL_URL;
-      if (
-        _.some(
-          acceptedFiles,
-          (file) => !_.includes([FORMAT_TYPES.glb, FORMAT_TYPES.fbx], extension),
-        )
-      ) {
+      if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
         MODAL_INFO({ isShow: true, msg: '파일 형식이 올바르지 않습니다.' });
         setLoading(false);
         return false;
@@ -63,7 +65,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         }
         convertedFileUrl = url;
       }
-      const url = _.isEqual(extension, FORMAT_TYPES.glb)
+      const url = _.includes([...ENABLE_VIDEO_FORMATS, FORMAT_TYPES.glb], extension)
         ? URL.createObjectURL(acceptedFiles[0])
         : convertedFileUrl;
       const { result, error, msg } = await fnGetAnimationData({ url });
@@ -81,7 +83,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         });
       });
       const key = uuidv4();
-      const newData: mainDataTypes[] = [
+      const newData: MainDataTypes[] = [
         {
           key,
           type: FILE_TYPES.file,
@@ -93,7 +95,6 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       _.forEach(motions, (motion, index) => {
         newData.push({
           key: motion.key,
-          motionIndex: parseInt(index),
           type: FILE_TYPES.motion,
           name: motion?.name,
           url,
@@ -128,11 +129,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
       <IconPage />
-      {_.isEqual(lpmode, LPMODE_TYPES.iconview) ? (
-        <IconView height="100%" width="100%" />
-      ) : (
-        <ListView height="100%" width="100%" />
-      )}
+      {_.isEqual(lpmode, LPMODE_TYPES.iconview) ? <IconView /> : <ListView />}
     </S.LibraryPanelWrapper>
   );
 };

@@ -1,13 +1,12 @@
 import { useReactiveVar } from '@apollo/client';
 import { CircleMotionIcon } from 'components/Icons/generated2/CircleMotion';
+import { ModelFileIcon } from 'components/Icons/generated2/ModelFileIcon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { MAX_FILE_LENGTH } from 'styles/constants/common';
 import { rem } from 'utils/rem';
-import { Circle, ModelIcon, Motion } from '../../../components/Icons';
 import * as S from './IconStyles';
 
 export interface IconProps {
@@ -63,7 +62,7 @@ const IconComponent: React.FC<IconProps> = ({
     >
       {_.isEqual(mode, FILE_TYPES.file) && (
         <S.TopWrapper>
-          <ModelIcon width={`${rem(12)}rem`} height={`${rem(12)}rem`} viewBox="0 0 12 12" />
+          <ModelFileIcon />
         </S.TopWrapper>
       )}
       {_.isEqual(mode, FILE_TYPES.folder) && <S.FolderIcon></S.FolderIcon>}
