@@ -10,7 +10,7 @@ export default {
   args: {},
 } as Meta;
 
-const Template: Story<Props> = (_args) => {
+const Template: Story<Props> = ({ onClose, ...args }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleToggle = () => {
@@ -22,7 +22,7 @@ const Template: Story<Props> = (_args) => {
       <div id="_next">
         <FilledButton onClick={handleToggle}>Open Modal</FilledButton>
         {isModalOpen && (
-          <Component onClose={handleToggle}>
+          <Component onClose={handleToggle} {...args}>
             <ModalInner>BaseModal</ModalInner>
           </Component>
         )}
@@ -33,6 +33,10 @@ const Template: Story<Props> = (_args) => {
 };
 
 export const BaseModal = Template.bind({});
+
+BaseModal.args = {
+  hasCloseIcon: true,
+};
 
 const ModalInner = styled.div`
   padding: 32px;
