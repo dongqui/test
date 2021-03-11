@@ -2,7 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { useContextmenu } from 'hooks/common/useContextmenu';
 import { useShortcut } from 'hooks/common/useShortcut';
 import { useLPControl } from 'hooks/LP/useLPControl';
-import { FILE_TYPES, mainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { CONTEXTMENU_INFO, LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
@@ -12,12 +12,9 @@ import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';
 import { ListRow } from './ListRow';
 import * as S from './ListTreeStyles';
 
-export interface ListViewProps {
-  width: string;
-  height: string;
-}
+export interface ListViewProps {}
 
-const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
+const ListViewComponent: React.FC<ListViewProps> = ({}) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
   const searchWord = useReactiveVar(SEARCH_WORD);
@@ -36,7 +33,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    let result: mainDataTypes[] = [];
+    let result: MainDataTypes[] = [];
     let data = fnSortArrayByHierarchy({ data: mainData });
     data = fnMakeSelection({ data });
     _.forEach(data, (item) => {
@@ -55,7 +52,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({ width, height }) => {
     return result;
   }, [getFilteredData, mainData]);
   return (
-    <S.ListViewWrapper ref={listViewWrapperRef} width={width} height={height}>
+    <S.ListViewWrapper ref={listViewWrapperRef}>
       {_.map(processedData, (item, index) => (
         <S.ListViewRowWrapper
           key={index}

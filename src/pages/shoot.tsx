@@ -1,14 +1,5 @@
-import ShootContainer from 'containers/shoot';
-import { GetServerSideProps } from 'next';
+import dynamic from 'next/dynamic';
 
-interface Props {}
+const DynamicWithNoSSR = dynamic(() => import('containers/shoot'), { ssr: false });
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({ req }) => {
-  return {
-    props: {
-      name: '테스트',
-    },
-  };
-};
-
-export default ShootContainer;
+export default DynamicWithNoSSR;

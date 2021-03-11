@@ -19,8 +19,24 @@ declare global {
 export enum FORMAT_TYPES {
   glb = 'glb',
   fbx = 'fbx',
-  gltf = 'gltf',
 }
+export enum VIDEO_FORMAT_TYPES {
+  mp4 = 'mp4',
+  avi = 'avi',
+  mkv = 'mkv',
+  wmv = 'wmv',
+  webm = 'webm',
+  mov = 'mov',
+}
+export const ENABLE_VIDEO_FORMATS = [
+  VIDEO_FORMAT_TYPES.mp4,
+  VIDEO_FORMAT_TYPES.avi,
+  VIDEO_FORMAT_TYPES.mkv,
+  VIDEO_FORMAT_TYPES.wmv,
+  VIDEO_FORMAT_TYPES.webm,
+  VIDEO_FORMAT_TYPES.mov,
+];
+export const ENABLE_FILE_FORMATS = [FORMAT_TYPES.glb, FORMAT_TYPES.fbx, ...ENABLE_VIDEO_FORMATS];
 export enum PROPERTY_TYPES {
   position = 'position',
   positionCnt = 3,
@@ -50,30 +66,29 @@ export enum MAINDATA_PROPERTY_TYPES {
   isModifying = 'isModifying',
   isCopied = 'isCopied',
   isDragging = 'isDragging',
-  tracks = 'tracks',
-  motionIndex = 'motionIndex',
+  baseLayer = 'baseLayer',
 }
 export enum LPMODE_TYPES {
   listview = 'listview',
   iconview = 'iconview',
 }
-export interface screenSizeTypes {
+export interface ScreenSizeTypes {
   width: number;
   height: number;
 }
-export interface shortcutTypes {
+export interface ShortcutTypes {
   key: string;
   ctrlKey?: boolean;
   event: Function;
 }
-export interface contextmenuTypes {
+export interface ContextmenuTypes {
   data?: ContextmenuDataTypes[];
   isShow: boolean;
   top: number;
   left: number;
   onClick: ({ key }: { key: string }) => void;
 }
-export interface mainDataTypes {
+export interface MainDataTypes {
   [MAINDATA_PROPERTY_TYPES.key]: string;
   [MAINDATA_PROPERTY_TYPES.name]: string;
   [MAINDATA_PROPERTY_TYPES.type]: FILE_TYPES;
@@ -87,10 +102,9 @@ export interface mainDataTypes {
   [MAINDATA_PROPERTY_TYPES.isModifying]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isCopied]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isDragging]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.tracks]?: any;
-  [MAINDATA_PROPERTY_TYPES.motionIndex]?: number;
+  [MAINDATA_PROPERTY_TYPES.baseLayer]?: THREE.KeyframeTrack[];
 }
-export interface bonesTypes {
+export interface BonesTypes {
   name: string;
   positionX: number;
   positionY: number;
@@ -105,9 +119,9 @@ export interface bonesTypes {
 }
 export interface skeletonHelpersTypes {
   time?: string;
-  bones?: bonesTypes[];
+  bones?: BonesTypes[];
 }
-export interface modalTypes {
+export interface ModalTypes {
   msg: string;
   isShow: boolean;
 }

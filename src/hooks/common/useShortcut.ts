@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import React, { useCallback, useEffect } from 'react';
-import { shortcutTypes } from '../../interfaces';
+import { ShortcutTypes } from '../../interfaces';
 
-export const useShortcut = ({ data }: { data: shortcutTypes[] }) => {
+export const useShortcut = ({ data }: { data: ShortcutTypes[] }) => {
   const onKeyPress = useCallback(
     (e) => {
       if (_.find(data, ['key', e.key])?.ctrlKey) {

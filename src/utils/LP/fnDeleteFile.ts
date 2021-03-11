@@ -1,9 +1,9 @@
-import { mainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
 
 interface fnDeleteFileProps {
-  mainData: mainDataTypes[];
+  mainData: MainDataTypes[];
 }
 
 export const fnDeleteFile = ({ mainData }: fnDeleteFileProps) => {

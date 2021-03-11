@@ -30,20 +30,12 @@ const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
         ]}
         onSelect={() => {}}
       />
-      <div style={{ position: 'absolute', left: '15%' }}>
+      <S.PlayBarIndicatorWrapper>
         <Indicator end={300} now={100} start={100} />
-      </div>
-      <div
-        style={{
-          position: 'absolute',
-          left: '45%',
-          display: 'flex',
-          flexDirection: 'row',
-          paddingRight: '5%',
-        }}
-      >
+      </S.PlayBarIndicatorWrapper>
+      <S.PlayBarPlayBoxWrapper>
         <PlayBox />
-        <div style={{ position: 'absolute', right: 0 }}>
+        <S.PlayBarDropdownWrapper>
           <Dropdown
             data={[
               {
@@ -81,8 +73,8 @@ const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
               RENDERING_DATA({ ...renderingData, playSpeed: key });
             }}
           />
-        </div>
-      </div>
+        </S.PlayBarDropdownWrapper>
+      </S.PlayBarPlayBoxWrapper>
       <ModeSelect
         data={[
           {
