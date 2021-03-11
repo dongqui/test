@@ -35,6 +35,15 @@ const BaseModal: React.FC<Props> = ({ onClose, hasCloseIcon, children }) => {
   const [beforeActiveElement] = useState<HTMLElement>(document.activeElement as HTMLElement);
 
   useEffect(() => {
+    const mainElement = document.getElementById('_next');
+    mainElement?.setAttribute('aria-hidden', 'true');
+
+    return () => {
+      mainElement?.removeAttribute('aria-hidden');
+    };
+  }, []);
+
+  useEffect(() => {
     const focusableNodeList = modalRef?.current?.querySelectorAll(focusableTargetList.toString());
     const focusableElementList = Array.prototype.slice.call(focusableNodeList);
 

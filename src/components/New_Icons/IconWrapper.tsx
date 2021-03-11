@@ -7,18 +7,18 @@ const cx = classnames.bind(styles);
 
 interface Props {
   icon: React.FunctionComponent;
-  hasPadding?: boolean;
+  hasFrame?: boolean;
   className?: string;
   onClick?: () => void;
 }
 
 const defaultProps: Partial<Props> = {
-  hasPadding: true,
+  hasFrame: true,
 };
 
-const IconWrapper: React.FC<Props> = ({ icon, hasPadding, className, onClick }) => {
+const IconWrapper: React.FC<Props> = ({ icon, hasFrame, className, onClick }) => {
   const classes = cx('wrapper', className, {
-    padding: hasPadding,
+    frame: hasFrame,
   });
 
   const Component = icon;

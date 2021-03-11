@@ -10,6 +10,11 @@ export default {
   args: {},
 } as Meta;
 
+/**
+ * ===WARN===
+ * 현재 next dev에서는 정상적으로 Modal이 open 상태인 경우 button의 onClick event가 발생하지 않지만
+ * 스토리북에서는 발생하는 문제가 있음
+ */
 const Template: Story<Props> = ({ onClose, ...args }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
