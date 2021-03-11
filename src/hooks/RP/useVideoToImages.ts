@@ -1,15 +1,21 @@
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { STANDARD_TIME_CUT_UNIT } from '../../utils/const';
 
 interface useVideoToImagesProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   action: ({ images }: { images: string[] }) => void;
+  active: boolean;
+  intervalTime: number;
 }
 
 let tempImages: string[] = [];
 let interval: any;
-export const useVideoToImages = ({ videoRef, action }: useVideoToImagesProps) => {
+export const useVideoToImages = ({
+  videoRef,
+  action,
+  active,
+  intervalTime,
+}: useVideoToImagesProps) => {
   const initialAction = useCallback(async () => {
     tempImages = [];
   }, []);
@@ -20,7 +26,10 @@ export const useVideoToImages = ({ videoRef, action }: useVideoToImagesProps) =>
       tempImages = [];
       await video.pause();
       await video.remove();
-      clearInterval(interval);
+      // clearInterval(interval);
+      for (let i = 0; i < 99999; i++) {
+        window.clearInterval(i);
+      }
     }
     if (video?.paused) {
       await video.play();
@@ -38,6 +47,8 @@ export const useVideoToImages = ({ videoRef, action }: useVideoToImagesProps) =>
   }, [action, videoRef]);
   useEffect(() => {
     initialAction();
-    interval = setInterval(makeImages, 1000 * STANDARD_TIME_CUT_UNIT);
-  }, [initialAction, makeImages]);
+    if (active) {
+      interval = setInterval(makeImages, intervalTime);
+    }
+  }, [active, initialAction, intervalTime, makeImages]);
 };

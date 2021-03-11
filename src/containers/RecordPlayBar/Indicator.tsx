@@ -13,7 +13,7 @@ const IndicatorComponent: React.FC<IndicatorProps> = ({ now = 100, start = 100, 
   return (
     <S.IndicatorWrapper>
       <S.IndicatorText>Now</S.IndicatorText>
-      <S.IndicatorNumberWrapper>{now}</S.IndicatorNumberWrapper>
+      <S.IndicatorNumberWrapper id="now">{now}</S.IndicatorNumberWrapper>
       <S.IndicatorBar></S.IndicatorBar>
       <S.IndicatorText marginLeft={rem(16)}>Start</S.IndicatorText>
       <S.IndicatorNumberWrapper>{start}</S.IndicatorNumberWrapper>

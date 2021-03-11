@@ -48,8 +48,7 @@ export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>({
 });
 // WEBCAM
 export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
-  videoUrl: '/video/sample.mov',
-  cutImages: [],
+  videoUrl: '/video/exo.mp4',
   duration: 10,
   rangeBoxInfo: {
     width: 1700,
@@ -60,3 +59,4 @@ export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
   },
   isPlay: false,
 });
+export const CUT_IMAGES = makeVar<string[]>([]);

@@ -18,7 +18,6 @@ interface RANGEBOX_INFO_TYPES {
 }
 export interface RECORDING_DATA_TYPES {
   videoUrl: string;
-  cutImages: string[];
   duration: number;
   rangeBoxInfo: RANGEBOX_INFO_TYPES;
   isPlay: boolean;
