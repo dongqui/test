@@ -9,7 +9,16 @@ export interface RENDERING_DATA_TYPES {
   isPlay: boolean;
   playDirection: -1 | 1;
 }
+interface RANGEBOX_INFO_TYPES {
+  width: number;
+  height: number;
+  x: number;
+  barX: number;
+  y: number;
+}
 export interface RECORDING_DATA_TYPES {
   videoUrl: string;
-  cutImages: string[];
+  duration: number;
+  rangeBoxInfo: RANGEBOX_INFO_TYPES;
+  isPlay: boolean;
 }
