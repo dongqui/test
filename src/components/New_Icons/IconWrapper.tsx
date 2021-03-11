@@ -1,3 +1,5 @@
+import { KeyboardEventHandler, memo, useCallback } from 'react';
+import _ from 'lodash';
 import classnames from 'classnames/bind';
 import styles from './IconWrapper.module.scss';
 
@@ -23,9 +25,25 @@ const IconWrapper: React.FC<Props> = ({ icon, hasPadding, className, onClick }) 
 
   const isClickable = !!onClick;
 
+  // focus시에, Enter key로 onClick event를 발생
+  const handleKeyDown: KeyboardEventHandler<HTMLSpanElement> = useCallback(
+    (e) => {
+      if (_.isEqual(e.key, 'Enter')) {
+        onClick && onClick();
+      }
+    },
+    [onClick],
+  );
+
   if (isClickable) {
     return (
-      <span className={classes} onClick={onClick} onKeyPress={onClick} role="button" tabIndex={0}>
+      <span
+        className={classes}
+        onClick={onClick}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+      >
         <Component />
       </span>
     );
@@ -40,4 +58,4 @@ const IconWrapper: React.FC<Props> = ({ icon, hasPadding, className, onClick }) 
 
 IconWrapper.defaultProps = defaultProps;
 
-export default IconWrapper;
+export default memo(IconWrapper);
