@@ -1,6 +1,7 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import { Overlay } from 'components/Overlay';
+import { IconWrapper, SvgPath } from 'components/New_Icons';
 import BasePortal from './BasePortal';
 import classnames from 'classnames/bind';
 import styles from './BaseModal.module.scss';
@@ -9,6 +10,7 @@ const cx = classnames.bind(styles);
 
 export interface Props {
   onClose: () => void;
+  hasCloseIcon?: boolean;
 }
 
 const focusableTargetList = [
@@ -25,7 +27,7 @@ const focusableTargetList = [
   '[contenteditable]',
 ];
 
-const BaseModal: React.FC<Props> = ({ onClose, children }) => {
+const BaseModal: React.FC<Props> = ({ onClose, hasCloseIcon, children }) => {
   const portalRef = useRef(document.getElementById('portal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -95,10 +97,17 @@ const BaseModal: React.FC<Props> = ({ onClose, children }) => {
     };
   }, [beforeActiveElement, onClose]);
 
+  const innerClasses = cx('inner', {
+    icon: hasCloseIcon,
+  });
+
   return (
     <BasePortal container={portalRef}>
       <div className={cx('wrapper')} ref={modalRef}>
-        <div className={cx('inner')} tabIndex={0}>
+        <div className={innerClasses} tabIndex={0}>
+          {hasCloseIcon && (
+            <IconWrapper className={cx('close')} icon={SvgPath.Close} onClick={onClose} />
+          )}
           {children}
         </div>
         <Overlay onClose={onClose} />
