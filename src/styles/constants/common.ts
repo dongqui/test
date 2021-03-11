@@ -1,6 +1,10 @@
 import { rem } from 'utils/rem';
 
 /**
+ * 공통 길이
+ */
+export const STANDARD_WIDTH = 1920;
+/**
  * 패널 비율
  */
 export const TIMELINEPANEL_INFO = {

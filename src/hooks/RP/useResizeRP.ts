@@ -64,7 +64,7 @@ const reducer = (state: State, action: Action) => {
  * @param {string} targetValue - 숫자와 px을 분리하기위한 기존값
  * @returns {number} px을 분리한 값
  */
-const getNumberValue = (targetValue: string): number => {
+export const getNumberValue = (targetValue: string): number => {
   const startUnitIndex = targetValue.indexOf('px');
   const resultValue = Number(targetValue.substr(0, startUnitIndex));
 

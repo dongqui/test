@@ -1,4 +1,5 @@
 import { makeVar } from '@apollo/client';
+import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'interfaces/RP';
@@ -45,7 +46,17 @@ export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>({
   playDirection: 1,
   playSpeed: 1,
 });
+// WEBCAM
 export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
   videoUrl: '/video/sample.mov',
   cutImages: [],
+  duration: 10,
+  rangeBoxInfo: {
+    width: 1700,
+    height: CUTIMAGE_HEIGHT,
+    x: 50,
+    barX: 50,
+    y: 0,
+  },
+  isPlay: false,
 });

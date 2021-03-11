@@ -4,18 +4,20 @@ import { STANDARD_TIME_CUT_UNIT } from '../../utils/const';
 
 interface useVideoToImagesProps {
   videoRef: React.RefObject<HTMLVideoElement>;
+  action: ({ images }: { images: string[] }) => void;
 }
 
 let tempImages: string[] = [];
 let interval: any;
-export const useVideoToImages = ({ videoRef }: useVideoToImagesProps) => {
-  const [images, setImages] = useState<string[]>([]);
+export const useVideoToImages = ({ videoRef, action }: useVideoToImagesProps) => {
   const initialAction = useCallback(async () => {
     tempImages = [];
   }, []);
   const makeImages = useCallback(async () => {
     const video = videoRef.current;
     if (video?.ended) {
+      action({ images: tempImages });
+      tempImages = [];
       await video.pause();
       await video.remove();
       clearInterval(interval);
@@ -32,14 +34,10 @@ export const useVideoToImages = ({ videoRef }: useVideoToImagesProps) => {
       ctx.drawImage(video, 0, 0, video.offsetWidth, video.offsetHeight);
       const frameImage = canvas.toDataURL('jpg');
       tempImages = _.concat(tempImages, frameImage);
-      setImages(tempImages);
     }
-  }, [videoRef]);
+  }, [action, videoRef]);
   useEffect(() => {
     initialAction();
     interval = setInterval(makeImages, 1000 * STANDARD_TIME_CUT_UNIT);
   }, [initialAction, makeImages]);
-  return {
-    images,
-  };
 };

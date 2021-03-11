@@ -1,0 +1,128 @@
+import { useReactiveVar } from '@apollo/client';
+import { TimeBar } from 'components/TimeBar';
+import { RECORDING_DATA } from 'lib/store';
+import _ from 'lodash';
+import React, { useCallback, useState } from 'react';
+import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
+import { STANDARD_WIDTH } from 'styles/constants/common';
+import { getNumberValue } from '../../hooks/RP/useResizeRP';
+import * as S from './CutEdit.styles';
+
+export interface CutEditProps {}
+
+const coordinateBarX = ({ barX, x, width }: { barX: number; x: number; width: number }) => {
+  let result = barX;
+  if (_.lt(result, x)) {
+    result = x;
+  }
+  if (_.gt(result, x + width)) {
+    result = x + width;
+  }
+  return result;
+};
+const CutEditComponent: React.FC<CutEditProps> = ({}) => {
+  const recordingData = useReactiveVar(RECORDING_DATA);
+  const handleDrag = useCallback(
+    (e, data) => {
+      RECORDING_DATA({
+        ...recordingData,
+        rangeBoxInfo: {
+          ...recordingData.rangeBoxInfo,
+          x: data.x,
+          barX: coordinateBarX({
+            barX: recordingData.rangeBoxInfo.barX,
+            x: recordingData.rangeBoxInfo.x,
+            width: recordingData.rangeBoxInfo.width,
+          }),
+        },
+      });
+    },
+    [recordingData],
+  );
+  const handleResize: RndResizeCallback = useCallback(
+    (_e, _dir, ref, _delta, position) => {
+      RECORDING_DATA({
+        ...recordingData,
+        rangeBoxInfo: {
+          ...recordingData.rangeBoxInfo,
+          width: getNumberValue(ref.style.width),
+          x: position.x,
+          y: position.y,
+          barX: coordinateBarX({
+            barX: recordingData.rangeBoxInfo.barX,
+            x: recordingData.rangeBoxInfo.x,
+            width: recordingData.rangeBoxInfo.width,
+          }),
+        },
+      });
+    },
+    [recordingData],
+  );
+  const handleDragBar: RndDragCallback = useCallback(
+    (e, data) => {
+      RECORDING_DATA({
+        ...recordingData,
+        rangeBoxInfo: {
+          ...recordingData.rangeBoxInfo,
+          barX: coordinateBarX({
+            barX: data.x,
+            x: recordingData.rangeBoxInfo.x,
+            width: recordingData.rangeBoxInfo.width,
+          }),
+        },
+      });
+    },
+    [recordingData],
+  );
+  return (
+    <S.CutEditWrapper>
+      <S.CutImagesWrapper>
+        <Rnd
+          dragAxis="x"
+          enableResizing={false}
+          position={{ x: recordingData.rangeBoxInfo.barX, y: recordingData.rangeBoxInfo.y }}
+          style={{ zIndex: 100, cursor: 'pointer' }}
+          onDrag={handleDragBar}
+        >
+          <TimeBar />
+        </Rnd>
+        <Rnd
+          disableDragging
+          enableResizing={false}
+          size={{ width: recordingData.rangeBoxInfo.x, height: recordingData.rangeBoxInfo.height }}
+          position={{ x: 0, y: 0 }}
+          style={{ backgroundColor: `rgba(0, 0, 0, ${S.OPACITY})` }}
+        ></Rnd>
+        <Rnd
+          dragAxis="x"
+          enableResizing={{ right: true, left: true }}
+          size={{
+            width: recordingData.rangeBoxInfo.width,
+            height: recordingData.rangeBoxInfo.height,
+          }}
+          position={{ x: recordingData.rangeBoxInfo.x, y: recordingData.rangeBoxInfo.y }}
+          onResize={handleResize}
+          onDrag={handleDrag}
+        ></Rnd>
+        <Rnd
+          disableDragging
+          enableResizing={false}
+          size={{
+            width: STANDARD_WIDTH - recordingData.rangeBoxInfo.x - recordingData.rangeBoxInfo.width,
+            height: recordingData.rangeBoxInfo.height,
+          }}
+          position={{ x: recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width, y: 0 }}
+          style={{ backgroundColor: `rgba(0, 0, 0, ${S.OPACITY})` }}
+        ></Rnd>
+        {_.map(Array(20), (item, index) => (
+          <S.CutImage
+            draggable={false}
+            key={index}
+            src="http://gamefocus.co.kr/wys2/file_attach/2020/04/25/1587766334_47289.png"
+          />
+        ))}
+      </S.CutImagesWrapper>
+    </S.CutEditWrapper>
+  );
+};
+export const CutEdit = React.memo(CutEditComponent);
