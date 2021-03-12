@@ -142,7 +142,7 @@ const BaseModal: FunctionComponent<Props> = ({ theme, onClose, hasCloseIcon, tit
           )}
           <div className={cx('content')}>
             {title && (
-              <Headline bold margin>
+              <Headline level="6" align="center" bold margin>
                 {title}
               </Headline>
             )}
