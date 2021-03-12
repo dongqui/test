@@ -16,17 +16,12 @@ export const useVideoToImages = ({
   active,
   intervalTime,
 }: useVideoToImagesProps) => {
-  const initialAction = useCallback(async () => {
-    tempImages = [];
-  }, []);
   const makeImages = useCallback(async () => {
     const video = videoRef.current;
     if (video?.ended) {
-      action({ images: tempImages });
       tempImages = [];
       await video.pause();
       await video.remove();
-      // clearInterval(interval);
       for (let i = 0; i < 99999; i++) {
         window.clearInterval(i);
       }
@@ -43,12 +38,14 @@ export const useVideoToImages = ({
       ctx.drawImage(video, 0, 0, video.offsetWidth, video.offsetHeight);
       const frameImage = canvas.toDataURL('jpg');
       tempImages = _.concat(tempImages, frameImage);
+      action({ images: tempImages });
     }
   }, [action, videoRef]);
   useEffect(() => {
-    initialAction();
+    tempImages = [];
     if (active) {
       interval = setInterval(makeImages, intervalTime);
     }
-  }, [active, initialAction, intervalTime, makeImages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 };
