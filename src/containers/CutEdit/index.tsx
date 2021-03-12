@@ -129,21 +129,6 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
             flexDirection: 'row',
           }}
         ></Rnd>
-        {/* {_.isEmpty(cutImages) ? (
-          <S.LoadingCutImagesWrapper>
-            {_.map(Array(CUT_IMAGES_CNT), (item, index) => (
-              <S.LoadingCutImageWrapper>
-                <Loading color="white" />
-              </S.LoadingCutImageWrapper>
-            ))}
-          </S.LoadingCutImagesWrapper>
-        ) : (
-          <>
-            {_.map(Array(CUT_IMAGES_CNT), (item, index) => (
-              <S.CutImage draggable={false} key={index} src={cutImages?.[index]} />
-            ))}
-          </>
-        )} */}
         <CutImages />
       </S.CutImagesWrapper>
     </S.CutEditWrapper>
