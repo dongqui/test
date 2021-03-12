@@ -6,7 +6,6 @@ import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
 import { STANDARD_WIDTH } from 'styles/constants/common';
-import { CUT_IMAGES_CNT } from 'utils/const';
 import { getNumberValue } from '../../hooks/RP/useResizeRP';
 import * as S from './CutEdit.styles';
 import { CutImages } from './CutImages';
