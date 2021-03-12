@@ -10,7 +10,6 @@ export interface CutImagesProps {}
 
 const CutImagesComponent: React.FC<CutImagesProps> = ({}) => {
   const cutImages = useReactiveVar(CUT_IMAGES);
-  console.log('cutImages', cutImages);
   return (
     <>
       {_.isEmpty(cutImages) ? (
