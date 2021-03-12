@@ -1,6 +1,15 @@
-import { MutableRefObject, useEffect, useRef, useState } from 'react';
+import {
+  FunctionComponent,
+  memo,
+  ReactNode,
+  MutableRefObject,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import _ from 'lodash';
 import { Overlay } from 'components/Overlay';
+import { Headline } from 'components/New_Typography';
 import { IconWrapper, SvgPath } from 'components/New_Icons';
 import BasePortal from './BasePortal';
 import classnames from 'classnames/bind';
@@ -8,9 +17,18 @@ import styles from './BaseModal.module.scss';
 
 const cx = classnames.bind(styles);
 
+type Theme = 'light' | 'dark';
+
+/**
+ * ===WARN===
+ * React의 memo type정의가 잘못되어있어서 children props를 임의로 명시
+ */
 export interface Props {
   onClose: () => void;
   hasCloseIcon?: boolean;
+  theme?: Theme;
+  title?: string;
+  children?: ReactNode;
 }
 
 const focusableTargetList = [
@@ -27,7 +45,12 @@ const focusableTargetList = [
   '[contenteditable]',
 ];
 
-const BaseModal: React.FC<Props> = ({ onClose, hasCloseIcon, children }) => {
+const defaultProps: Partial<Props> = {
+  theme: 'light',
+  hasCloseIcon: true,
+};
+
+const BaseModal: FunctionComponent<Props> = ({ theme, onClose, hasCloseIcon, title, children }) => {
   const portalRef = useRef(document.getElementById('portal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -106,7 +129,7 @@ const BaseModal: React.FC<Props> = ({ onClose, hasCloseIcon, children }) => {
     };
   }, [beforeActiveElement, onClose]);
 
-  const innerClasses = cx('inner', {
+  const innerClasses = cx('inner', theme, {
     icon: hasCloseIcon,
   });
 
@@ -117,7 +140,14 @@ const BaseModal: React.FC<Props> = ({ onClose, hasCloseIcon, children }) => {
           {hasCloseIcon && (
             <IconWrapper className={cx('close')} icon={SvgPath.Close} onClick={onClose} />
           )}
-          {children}
+          <div className={cx('content')}>
+            {title && (
+              <Headline bold margin>
+                {title}
+              </Headline>
+            )}
+            {children}
+          </div>
         </div>
         <Overlay onClose={onClose} />
       </div>
@@ -125,4 +155,6 @@ const BaseModal: React.FC<Props> = ({ onClose, hasCloseIcon, children }) => {
   );
 };
 
-export default BaseModal;
+BaseModal.defaultProps = defaultProps;
+
+export default memo(BaseModal);

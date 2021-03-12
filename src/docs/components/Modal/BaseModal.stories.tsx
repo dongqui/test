@@ -44,6 +44,5 @@ BaseModal.args = {
 };
 
 const ModalInner = styled.div`
-  padding: 32px;
   text-align: center;
 `;

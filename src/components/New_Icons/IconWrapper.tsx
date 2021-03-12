@@ -1,4 +1,4 @@
-import { KeyboardEventHandler, memo, useCallback } from 'react';
+import { FunctionComponent, KeyboardEventHandler, memo, useCallback } from 'react';
 import _ from 'lodash';
 import classnames from 'classnames/bind';
 import styles from './IconWrapper.module.scss';
@@ -6,7 +6,7 @@ import styles from './IconWrapper.module.scss';
 const cx = classnames.bind(styles);
 
 interface Props {
-  icon: React.FunctionComponent;
+  icon: FunctionComponent;
   hasFrame?: boolean;
   className?: string;
   onClick?: () => void;
@@ -16,7 +16,7 @@ const defaultProps: Partial<Props> = {
   hasFrame: true,
 };
 
-const IconWrapper: React.FC<Props> = ({ icon, hasFrame, className, onClick }) => {
+const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, className, onClick }) => {
   const classes = cx('wrapper', className, {
     frame: hasFrame,
   });
