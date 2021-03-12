@@ -9,6 +9,7 @@ import { STANDARD_WIDTH } from 'styles/constants/common';
 import { CUT_IMAGES_CNT } from 'utils/const';
 import { getNumberValue } from '../../hooks/RP/useResizeRP';
 import * as S from './CutEdit.styles';
+import { CutImages } from './CutImages';
 
 export interface CutEditProps {}
 
@@ -31,12 +32,8 @@ const coordinateX = ({ x }: { x: number }) => {
 };
 const CutEditComponent: React.FC<CutEditProps> = ({}) => {
   const recordingData = useReactiveVar(RECORDING_DATA);
-  const cutImages = useReactiveVar(CUT_IMAGES);
   const handleDrag = useCallback(
     (e, data) => {
-      if (_.isEmpty(cutImages)) {
-        return;
-      }
       RECORDING_DATA({
         ...recordingData,
         rangeBoxInfo: {
@@ -50,13 +47,10 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
         },
       });
     },
-    [cutImages, recordingData],
+    [recordingData],
   );
   const handleResize: RndResizeCallback = useCallback(
     (_e, _dir, ref, _delta, position) => {
-      if (_.isEmpty(cutImages)) {
-        return;
-      }
       RECORDING_DATA({
         ...recordingData,
         rangeBoxInfo: {
@@ -72,13 +66,10 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
         },
       });
     },
-    [cutImages, recordingData],
+    [recordingData],
   );
   const handleDragBar: RndDragCallback = useCallback(
     (e, data) => {
-      if (_.isEmpty(cutImages)) {
-        return;
-      }
       RECORDING_DATA({
         ...recordingData,
         rangeBoxInfo: {
@@ -91,7 +82,7 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
         },
       });
     },
-    [cutImages, recordingData],
+    [recordingData],
   );
   return (
     <S.CutEditWrapper>
@@ -138,7 +129,7 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
             flexDirection: 'row',
           }}
         ></Rnd>
-        {_.isEmpty(cutImages) ? (
+        {/* {_.isEmpty(cutImages) ? (
           <S.LoadingCutImagesWrapper>
             {_.map(Array(CUT_IMAGES_CNT), (item, index) => (
               <S.LoadingCutImageWrapper>
@@ -152,7 +143,8 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
               <S.CutImage draggable={false} key={index} src={cutImages?.[index]} />
             ))}
           </>
-        )}
+        )} */}
+        <CutImages />
       </S.CutImagesWrapper>
     </S.CutEditWrapper>
   );
