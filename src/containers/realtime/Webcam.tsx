@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/media-has-caption */
+import React, { useCallback, useEffect, useRef } from 'react';
 import _ from 'lodash';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useWebcam } from 'hooks/RP/useWebcam';
+import useWebcam from 'hooks/RP/useWebcam';
 import * as tf from '@tensorflow/tfjs';
 
 /**
@@ -10,7 +10,13 @@ import * as tf from '@tensorflow/tfjs';
  */
 const Webcam: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  useWebcam({ videoRef });
+
+  const { handleSetWebcam } = useWebcam(videoRef);
+
+  useEffect(() => {
+    handleSetWebcam();
+  }, [handleSetWebcam]);
+
   const handleClick = useCallback(async () => {
     const video = document.getElementById('video') as HTMLVideoElement;
     // video?.captureStream();
