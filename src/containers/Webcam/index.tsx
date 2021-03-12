@@ -60,9 +60,6 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
     }
   }, [recordingData.duration, recordingData.rangeBoxInfo.barX]);
   useEffect(() => {
-    controlPlay();
-  }, [controlPlay, recordingData.isPlay]);
-  useEffect(() => {
     initialAction();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
