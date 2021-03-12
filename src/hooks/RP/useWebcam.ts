@@ -24,12 +24,20 @@ const useWebcam = (videoRef: RefObject<HTMLVideoElement>) => {
   );
 
   const setWebcam = useCallback(() => {
-    const response = navigator.mediaDevices.getUserMedia(constraints).then((mediaStream) => {
-      setMediaStream(videoRef, mediaStream);
-      return {
-        isError: false,
-      };
-    });
+    const response = navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then((mediaStream) => {
+        setMediaStream(videoRef, mediaStream);
+        return {
+          isError: false,
+        };
+      })
+      .catch((error) => {
+        console.error('useWebcam: ' + error);
+        return {
+          isError: true,
+        };
+      });
 
     return response;
   }, [setMediaStream, videoRef]);
