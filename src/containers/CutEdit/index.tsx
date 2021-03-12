@@ -1,7 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
-import { Loading } from 'components/Loading';
 import { TimeBar } from 'components/TimeBar';
-import { CUT_IMAGES, RECORDING_DATA } from 'lib/store';
+import { RECORDING_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
@@ -126,6 +125,7 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
             backgroundColor: `rgba(0, 0, 0, ${S.OPACITY})`,
             display: 'flex',
             flexDirection: 'row',
+            width: '100%',
           }}
         ></Rnd>
         <CutImages />

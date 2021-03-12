@@ -1,5 +1,4 @@
 import { useReactiveVar } from '@apollo/client';
-import { Loading } from 'components/Loading';
 import { CUT_IMAGES } from 'lib/store';
 import _ from 'lodash';
 import React from 'react';
@@ -13,15 +12,7 @@ const CutImagesComponent: React.FC<CutImagesProps> = ({}) => {
   return (
     <>
       {_.map(Array(CUT_IMAGES_CNT), (item, index) => (
-        <>
-          {_.isEmpty(cutImages?.[index]) ? (
-            <S.LoadingCutImageWrapper>
-              <Loading color="white" />
-            </S.LoadingCutImageWrapper>
-          ) : (
-            <S.CutImage draggable={false} key={index} src={cutImages?.[index]} />
-          )}
-        </>
+        <S.CutImage draggable={false} key={index} src={cutImages?.[index]} />
       ))}
     </>
   );

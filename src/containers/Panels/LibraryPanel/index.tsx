@@ -7,6 +7,7 @@ import {
   FORMAT_TYPES,
   LPMODE_TYPES,
   MainDataTypes,
+  PAGE_NAMES,
 } from 'interfaces';
 import { LP_MODE, MAIN_DATA, MODAL_INFO, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
@@ -22,6 +23,7 @@ import { DEFAULT_MODEL_URL } from 'utils/const';
 import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
 import { InputLP } from 'components/Input/InputLP';
 import { fnFileUpload } from 'utils/LP/fnFileUpload';
+import { useRouter } from 'next/dist/client/router';
 
 export interface PagesTypes {
   key: string;
@@ -31,6 +33,7 @@ export interface LibraryPanelProps {
   backgroundColor?: string;
 }
 const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 'black' }) => {
+  const router = useRouter();
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
   const lpmode = useReactiveVar(LP_MODE);
@@ -65,9 +68,17 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         }
         convertedFileUrl = url;
       }
-      const url = _.includes([...ENABLE_VIDEO_FORMATS, FORMAT_TYPES.glb], extension)
-        ? URL.createObjectURL(acceptedFiles[0])
-        : convertedFileUrl;
+      let url = URL.createObjectURL(acceptedFiles[0]);
+      if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
+        url = convertedFileUrl;
+      }
+      if (_.includes(ENABLE_FILE_FORMATS, extension)) {
+        router.push({
+          pathname: `/${PAGE_NAMES.extract}`,
+          query: { videoUrl: url },
+        });
+        return false;
+      }
       const { result, error, msg } = await fnGetAnimationData({ url });
       if (error) {
         MODAL_INFO({ isShow: true, msg });
@@ -104,7 +115,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       MAIN_DATA(_.concat(mainData, newData));
       setLoading(false);
     },
-    [mainData, pages],
+    [mainData, pages, router],
   );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
