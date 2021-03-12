@@ -12,21 +12,17 @@ const CutImagesComponent: React.FC<CutImagesProps> = ({}) => {
   const cutImages = useReactiveVar(CUT_IMAGES);
   return (
     <>
-      {_.isEmpty(cutImages) ? (
-        <S.LoadingCutImagesWrapper>
-          {_.map(Array(CUT_IMAGES_CNT), (item, index) => (
+      {_.map(Array(CUT_IMAGES_CNT), (item, index) => (
+        <>
+          {_.isEmpty(cutImages?.[index]) ? (
             <S.LoadingCutImageWrapper>
               <Loading color="white" />
             </S.LoadingCutImageWrapper>
-          ))}
-        </S.LoadingCutImagesWrapper>
-      ) : (
-        <>
-          {_.map(Array(CUT_IMAGES_CNT), (item, index) => (
+          ) : (
             <S.CutImage draggable={false} key={index} src={cutImages?.[index]} />
-          ))}
+          )}
         </>
-      )}
+      ))}
     </>
   );
 };
