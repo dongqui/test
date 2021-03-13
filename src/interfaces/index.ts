@@ -18,6 +18,7 @@ declare global {
 }
 export enum PAGE_NAMES {
   extract = 'extract',
+  shoot = 'shoot',
 }
 export enum FORMAT_TYPES {
   glb = 'glb',
@@ -30,6 +31,11 @@ export enum VIDEO_FORMAT_TYPES {
   wmv = 'wmv',
   webm = 'webm',
   mov = 'mov',
+}
+export enum MODAL_TYPES {
+  alert = 'alert',
+  input = 'input',
+  loading = 'loading',
 }
 export const ENABLE_VIDEO_FORMATS = [
   VIDEO_FORMAT_TYPES.mp4,
@@ -127,4 +133,5 @@ export interface skeletonHelpersTypes {
 export interface ModalTypes {
   msg: string;
   isShow: boolean;
+  type?: MODAL_TYPES;
 }

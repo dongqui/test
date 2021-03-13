@@ -13,7 +13,6 @@ export interface WebcamProps {
   videoUrl: string;
 }
 const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
-  const router = useRouter();
   const recordingData = useReactiveVar(RECORDING_DATA);
   const cutImages = useReactiveVar(CUT_IMAGES);
   const videoRef = useRef<HTMLVideoElement>(null);

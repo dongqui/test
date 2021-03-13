@@ -4,22 +4,20 @@ import { rem } from 'utils/rem';
 import { GRAY300 } from '../../styles/constants/common';
 import * as S from './inputStyles';
 
-export interface InputLPProps {
+export interface InputDefaultProps {
   width?: number;
   height?: number;
   backgroundColor?: string;
   borderRadius?: number;
-  icon?: React.ReactNode;
   placeholder?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void | undefined;
 }
 
-const IconLPComponent: React.FC<InputLPProps> = ({
+const InputDeafultComponent: React.FC<InputDefaultProps> = ({
   width = rem(206),
   height = rem(32),
   backgroundColor = GRAY300,
   borderRadius = 0.4,
-  icon,
   placeholder = 'Search Projects',
   onChange = () => {},
 }) => {
@@ -30,12 +28,9 @@ const IconLPComponent: React.FC<InputLPProps> = ({
       backgroundColor={backgroundColor}
       borderRadius={borderRadius}
     >
-      <S.IconWrapper>
-        <S.SearchIcon />
-      </S.IconWrapper>
-      <S.InputLP borderRadius={borderRadius} placeholder={placeholder} onChange={onChange} />
+      <S.InputDefault borderRadius={borderRadius} placeholder={placeholder} onChange={onChange} />
     </S.InputLPWrapper>
   );
 };
 
-export const InputLP = React.memo(IconLPComponent);
+export const InputDefault = React.memo(InputDeafultComponent);

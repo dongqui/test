@@ -20,4 +20,5 @@ export interface RECORDING_DATA_TYPES {
   duration: number;
   rangeBoxInfo: RANGEBOX_INFO_TYPES;
   isPlay: boolean;
+  motionName: string;
 }

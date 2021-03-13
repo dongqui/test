@@ -1,5 +1,4 @@
 import { useReactiveVar } from '@apollo/client';
-import { v4 as uuidv4 } from 'uuid';
 import { useContextmenu } from 'hooks/common/useContextmenu';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
