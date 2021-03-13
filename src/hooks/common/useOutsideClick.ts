@@ -4,7 +4,7 @@ export const useOutsideClick = ({
   ref,
   event,
 }: {
-  ref: React.MutableRefObject<HTMLDivElement>;
+  ref: React.MutableRefObject<any>;
   event: Function;
 }) => {
   const onClick = useCallback(

@@ -22,8 +22,8 @@ import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
 import { InputLP } from 'components/Input/InputLP';
-import { fnFileUpload } from 'utils/LP/fnFileUpload';
 import { useRouter } from 'next/dist/client/router';
+import * as api from 'utils/common/api';
 
 export interface PagesTypes {
   key: string;
@@ -57,7 +57,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       }
       if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
         // fbx 파일 업로드 및 변환
-        const { url, error, msg } = await fnFileUpload({
+        const { url, error, msg } = await api.uploadFbxToGlb({
           file: acceptedFiles[0],
           type: FORMAT_TYPES.glb,
         });
@@ -75,7 +75,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
         router.push({
           pathname: `/${PAGE_NAMES.extract}`,
-          query: { videoUrl: url },
+          query: { videoUrl: url, extension },
         });
         return false;
       }

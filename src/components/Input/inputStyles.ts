@@ -37,6 +37,22 @@ export const InputLP = styled.input<InputLPProps>`
     outline: none;
   }
 `;
+export const InputDefault = styled.input<InputLPProps>`
+  width: 100%;
+  height: 100%;
+  font-size: 13px;
+  border-width: 0;
+  color: ${GRAY500};
+  background-color: inherit;
+  position: absolute;
+  right: 0;
+  border-radius: ${(props) => props.borderRadius ?? 0}rem;
+  text-indent: 24px;
+
+  :focus {
+    outline: none;
+  }
+`;
 export const IconWrapper = styled.div`
   position: absolute;
   left: 11.3%;
