@@ -84,7 +84,7 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
   );
   return (
     <S.CutEditWrapper>
-      <S.CutImagesWrapper>
+      <S.CutEditCutImagesWrapper>
         <Rnd
           dragAxis="x"
           enableResizing={false}
@@ -129,7 +129,7 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
           }}
         ></Rnd>
         <CutImages />
-      </S.CutImagesWrapper>
+      </S.CutEditCutImagesWrapper>
     </S.CutEditWrapper>
   );
 };
