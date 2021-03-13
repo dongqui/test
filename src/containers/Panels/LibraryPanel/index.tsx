@@ -72,7 +72,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
         url = convertedFileUrl;
       }
-      if (_.includes(ENABLE_FILE_FORMATS, extension)) {
+      if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
         router.push({
           pathname: `/${PAGE_NAMES.extract}`,
           query: { videoUrl: url },
