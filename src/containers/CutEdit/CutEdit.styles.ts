@@ -11,7 +11,7 @@ export const CutEditWrapper = styled.div`
   display: flex;
   padding-top: 20px;
 `;
-export const CutImagesWrapper = styled.div`
+export const CutEditCutImagesWrapper = styled.div`
   position: relative;
   width: 100%;
   height: ${CUTIMAGE_HEIGHT}px;
@@ -33,4 +33,10 @@ export const LoadingCutImageWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+`;
+export const CutImagesWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
 `;
