@@ -16,6 +16,9 @@ declare global {
     }
   }
 }
+export enum PAGE_NAMES {
+  extract = 'extract',
+}
 export enum FORMAT_TYPES {
   glb = 'glb',
   fbx = 'fbx',

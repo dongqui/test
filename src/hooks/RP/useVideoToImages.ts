@@ -17,28 +17,32 @@ export const useVideoToImages = ({
   intervalTime,
 }: useVideoToImagesProps) => {
   const makeImages = useCallback(async () => {
-    const video = videoRef.current;
-    if (video?.ended) {
-      tempImages = [];
-      await video.pause();
-      await video.remove();
-      for (let i = 0; i < 99999; i++) {
-        window.clearInterval(i);
+    try {
+      const video = videoRef.current;
+      if (video?.ended) {
+        tempImages = [];
+        await video.pause();
+        await video.remove();
+        for (let i = 0; i < 99999; i++) {
+          window.clearInterval(i);
+        }
       }
-    }
-    if (video?.paused) {
-      await video.play();
-    }
-    document.getElementsByTagName('canvas')?.[0]?.remove();
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!_.isNull(video) && !_.isNull(ctx)) {
-      canvas.setAttribute('width', `${video?.offsetWidth}px`);
-      canvas.setAttribute('height', `${video?.offsetHeight}px`);
-      ctx.drawImage(video, 0, 0, video.offsetWidth, video.offsetHeight);
-      const frameImage = canvas.toDataURL('jpg');
-      tempImages = _.concat(tempImages, frameImage);
-      action({ images: tempImages });
+      if (video?.paused) {
+        await video.play();
+      }
+      document.getElementsByTagName('canvas')?.[0]?.remove();
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!_.isNull(video) && !_.isNull(ctx)) {
+        canvas.setAttribute('width', `${video?.offsetWidth}px`);
+        canvas.setAttribute('height', `${video?.offsetHeight}px`);
+        ctx.drawImage(video, 0, 0, video.offsetWidth, video.offsetHeight);
+        const frameImage = canvas.toDataURL('jpg');
+        tempImages = _.concat(tempImages, frameImage);
+        action({ images: tempImages });
+      }
+    } catch (error) {
+      console.log(error);
     }
   }, [action, videoRef]);
   useEffect(() => {

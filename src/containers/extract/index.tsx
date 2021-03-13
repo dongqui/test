@@ -3,19 +3,18 @@ import { NextPage } from 'next';
 import _ from 'lodash';
 import * as S from './ExtractStyle';
 import { Webcam } from 'containers/Webcam';
-import { useReactiveVar } from '@apollo/client';
-import { RECORDING_DATA } from 'lib/store';
 import { CutEdit } from 'containers/CutEdit';
 import { PlayBar } from 'containers/RecordPlayBar';
+import { useRouter } from 'next/dist/client/router';
 
 interface Props {}
 
-const ExtractPage: NextPage<Props> = () => {
-  const recordingData = useReactiveVar(RECORDING_DATA);
+const ExtractPage: NextPage<Props> = ({}) => {
+  const router = useRouter();
   return (
     <main>
       <S.WebcamWrapper>
-        <Webcam videoUrl={recordingData.videoUrl} />
+        <Webcam videoUrl={`${router.query?.videoUrl ?? '/video/exo.mp4'}`} />
       </S.WebcamWrapper>
       <PlayBar />
       <S.CutEditWrapper>

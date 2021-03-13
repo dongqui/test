@@ -2,6 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { useVideoToImages } from 'hooks/RP/useVideoToImages';
 import { RECORDING_DATA } from 'lib/store';
 import _ from 'lodash';
+import { useRouter } from 'next/dist/client/router';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { STANDARD_WIDTH } from 'styles/constants/common';
 import { CUT_IMAGES_CNT } from 'utils/const';
@@ -12,6 +13,7 @@ export interface WebcamProps {
   videoUrl: string;
 }
 const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
+  const router = useRouter();
   const recordingData = useReactiveVar(RECORDING_DATA);
   const cutImages = useReactiveVar(CUT_IMAGES);
   const videoRef = useRef<HTMLVideoElement>(null);
