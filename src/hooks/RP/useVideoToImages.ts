@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
 
 interface useVideoToImagesProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -23,9 +24,7 @@ export const useVideoToImages = ({
         tempImages = [];
         await video.pause();
         await video.remove();
-        for (let i = 0; i < 99999; i++) {
-          window.clearInterval(i);
-        }
+        fnKillSetInterval();
       }
       if (video?.paused) {
         await video.play();
