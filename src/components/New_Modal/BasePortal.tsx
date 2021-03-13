@@ -1,4 +1,4 @@
-import React, { MutableRefObject } from 'react';
+import React, { FunctionComponent, MutableRefObject } from 'react';
 import ReactDOM from 'react-dom';
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
  * @param {Props} 렌더링시킬 Portal이 되는 DOM Element
  * @returns {React.ReactPortal} children을 Portal에 렌더링
  */
-const BasePortal: React.FC<Props> = ({ container, children }) => {
+const BasePortal: FunctionComponent<Props> = ({ container, children }) => {
   const element = container.current;
   return ReactDOM.createPortal(children, element);
 };

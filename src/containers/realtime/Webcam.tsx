@@ -1,34 +1,84 @@
 /* eslint-disable jsx-a11y/media-has-caption */
-import _ from 'lodash';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useWebcam } from 'hooks/RP/useWebcam';
+import { FunctionComponent, memo, useState, useEffect, useCallback, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
+import _ from 'lodash';
+import { Loading } from 'components/Loading';
+import { FilledButton } from 'components/Buttons';
+import { Headline } from 'components/New_Typography';
+import useWebcam from 'hooks/RP/useWebcam';
+import classnames from 'classnames/bind';
+import styles from './Webcam.module.scss';
+
+const cx = classnames.bind(styles);
 
 /**
  * ===WARN===
  * Webcam (getUserMedia) 보안상의 이슈로 HTTPS 또는 Localhost에서만 동작
  */
-const Webcam: React.FC = () => {
+const Webcam: FunctionComponent = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  useWebcam({ videoRef });
-  const handleClick = useCallback(async () => {
-    const video = document.getElementById('video') as HTMLVideoElement;
-    // video?.captureStream();
-    console.log(video);
-    const cam = await tf.data.webcam(video);
-    const img = await cam.capture();
-    img.print();
-    cam.capture();
+
+  const { handleSetWebcam } = useWebcam(videoRef);
+
+  const [existWebcam, setExistWebcam] = useState({
+    isLoaded: false,
+    isExistWebcam: false,
+  });
+
+  useEffect(() => {
+    handleSetWebcam().then((response) => {
+      setExistWebcam({
+        isLoaded: true,
+        isExistWebcam: !response.isError,
+      });
+
+      return response.isError;
+    });
+  }, [handleSetWebcam]);
+
+  // const handleClick = useCallback(async () => {
+  //   const video = document.getElementById('video') as HTMLVideoElement;
+  //   // video?.captureStream();
+  //   const cam = await tf.data.webcam(video);
+  //   const img = await cam.capture();
+  //   img.print();
+  //   cam.capture();
+  // }, []);
+
+  const handlePageRefresh = useCallback(() => {
+    location.reload();
   }, []);
 
-  return (
-    <>
-      <div>
-        <video ref={videoRef} width="100%" height="100%" id="video" autoPlay></video>
+  const { isLoaded, isExistWebcam } = existWebcam;
+
+  if (!isLoaded) {
+    return (
+      <div className={cx('wrapper')}>
+        <span className={cx('loader')}>
+          <Loading />
+        </span>
       </div>
-      {/* <button onClick={handleClick}>stop</button> */}
-    </>
+    );
+  }
+
+  if (!isExistWebcam) {
+    return (
+      <div className={cx('wrapper')}>
+        <div className={cx('message')}>
+          <Headline level="6" align="center" margin>
+            Please check your webcam
+          </Headline>
+          <FilledButton onClick={handlePageRefresh}>Refresh</FilledButton>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cx('wrapper')}>
+      <video ref={videoRef} width="100%" height="100%" id="video" autoPlay />
+    </div>
   );
 };
 
-export default React.memo(Webcam);
+export default memo(Webcam);

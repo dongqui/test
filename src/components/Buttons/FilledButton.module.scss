@@ -32,6 +32,7 @@
   background-color: #3785f7; // primary
   color: #fff;
 
+  &:focus,
   &:hover {
     background-color: lighten($color: #3785f7, $amount: 4%);
   }
