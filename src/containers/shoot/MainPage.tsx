@@ -10,7 +10,8 @@ import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { useResizeRP } from 'hooks/RP/useResizeRP';
-import TimelineContainer from 'containers/Panels/timeline';
+import TimelinePanel from 'containers/Panels/TimelinePanel';
+import { PlayBar } from 'containers/PlayBar';
 
 const cx = classNames.bind(styles);
 
@@ -104,7 +105,8 @@ const MainContainer: React.FC = () => {
         size={{ ...lowerSection.size }}
         position={{ ...lowerSection.position }}
       >
-        <TimelineContainer />
+        <PlayBar />
+        <TimelinePanel />
       </Rnd>
     </>
   );
