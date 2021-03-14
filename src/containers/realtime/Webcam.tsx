@@ -3,7 +3,7 @@ import { FunctionComponent, memo, useState, useEffect, useCallback, useRef } fro
 import * as tf from '@tensorflow/tfjs';
 import _ from 'lodash';
 import { Loading } from 'components/Loading';
-import { FilledButton } from 'components/Buttons';
+import { FilledButton } from 'components/New_Buttons';
 import { Headline } from 'components/New_Typography';
 import useWebcam from 'hooks/RP/useWebcam';
 import classnames from 'classnames/bind';
