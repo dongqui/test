@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 import _ from 'lodash';
-import { Overlay } from 'components/Overlay';
+import { Overlay } from 'components/New_Overlay';
 import { Headline } from 'components/New_Typography';
 import { IconWrapper, SvgPath } from 'components/New_Icons';
 import BasePortal from './BasePortal';
