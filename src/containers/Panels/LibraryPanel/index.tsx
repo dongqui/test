@@ -85,16 +85,18 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         setLoading(false);
         return false;
       }
-      const motions: any = [];
+      const motions: MainDataTypes[] = [];
+      const key = uuidv4();
       _.forEach(result, (item, index) => {
         motions.push({
           key: item?.uuid,
           name: item?.name,
-          tracks: _.cloneDeep(item?.tracks),
+          baseLayer: _.cloneDeep(item?.tracks),
+          type: FILE_TYPES.motion,
+          parentKey: key,
         });
       });
-      const key = uuidv4();
-      const newData: MainDataTypes[] = [
+      let newData: MainDataTypes[] = [
         {
           key,
           type: FILE_TYPES.file,
@@ -103,15 +105,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           parentKey: _.last(pages)?.key,
         },
       ];
-      _.forEach(motions, (motion, index) => {
-        newData.push({
-          key: motion.key,
-          type: FILE_TYPES.motion,
-          name: motion?.name,
-          url,
-          parentKey: key,
-        });
-      });
+      newData = _.concat(newData, motions);
       MAIN_DATA(_.concat(mainData, newData));
       setLoading(false);
     },

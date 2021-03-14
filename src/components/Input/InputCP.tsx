@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 import React from 'react';
 import styles from './Input.module.scss';
 import { UnionType, Omit } from '../utils/types';

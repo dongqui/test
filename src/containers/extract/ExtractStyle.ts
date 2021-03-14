@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 import { BACKGROUND_COLOR } from 'styles/constants/common';
 
 export const WebcamWrapper = styled.div`

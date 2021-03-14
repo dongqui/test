@@ -1,6 +1,5 @@
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 import { GRAY200, GRAY500, PRIMARY_BLUE } from 'styles/constants/common';
-import { rem } from 'utils/rem';
 
 const BORDER_RADIUS = 24;
 const FONT_SIZE = 18.5;

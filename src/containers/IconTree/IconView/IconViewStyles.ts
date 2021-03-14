@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 import { BACKGROUND_COLOR, LIBRARYPANEL_INFO } from 'styles/constants/common';
 import { rem } from 'utils/rem';
 

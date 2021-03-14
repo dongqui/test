@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 
 interface TreeViewStyleProps {
   clicked?: boolean;
@@ -9,7 +9,7 @@ interface DropDownStyleProps {
   clicked?: boolean;
 }
 
-const handleBackgroundColor = (clicked: boolean | undefined, visible: boolean | undefined) => {
+const handlebackgroundcolor = (clicked: boolean | undefined, visible: boolean | undefined) => {
   if (clicked) {
     switch (clicked) {
       case true:
@@ -35,7 +35,7 @@ export const Wrapper = styled.div<TreeViewStyleProps>`
   height: 100%;
   border-radius: 0.5rem;
   padding: 8px 0 0 0;
-  background-color: ${(props) => handleBackgroundColor(props.clicked, props.visible)};
+  background-color: ${(props) => handlebackgroundcolor(props.clicked, props.visible)};
   transition: background 0.2s ease, color 0.1s ease, box-shadow 0.2s ease;
   user-select: none;
 `;

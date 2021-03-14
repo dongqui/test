@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 import { BsSearch } from 'react-icons/bs';
 import { rem } from 'utils/rem';
 import { GRAY500 } from '../../styles/constants/common';
