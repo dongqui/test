@@ -8,7 +8,7 @@ const cx = classNames.bind(styles);
 const focusableElementListString =
   'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]';
 
-export interface DropDownProps {
+interface BaseProps {
   onSelect: () => void;
   list: {
     key: string;
@@ -17,18 +17,11 @@ export interface DropDownProps {
   }[];
 }
 
-type Props = DropDownProps;
+export type Props = BaseProps;
 
-const defaultProps: Partial<DropDownProps> = {};
+const defaultProps: Partial<BaseProps> = {};
 
-const Dropdown: React.FC<Props> = ({
-  list = [
-    { key: '0', name: 'select1', isSelected: true },
-    { key: '1', name: 'select2', isSelected: false },
-    { key: '2', name: 'select3', isSelected: false },
-  ],
-  ...rest
-}) => {
+const Dropdown: React.FC<Props> = ({ list, onSelect }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
