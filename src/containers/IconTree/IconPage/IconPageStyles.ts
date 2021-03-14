@@ -1,5 +1,4 @@
-import styled from '@emotion/styled';
-import { style } from 'd3';
+import styled from 'styled-components';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 import { rem } from 'utils/rem';
 import { BACKGROUND_COLOR, GRAY500, LIBRARYPANEL_INFO } from '../../../styles/constants/common';

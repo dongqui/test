@@ -8,7 +8,7 @@ export const STANDARD_TIME_UNIT = 1 / 30;
 export const INITIAL_MAIN_DATA: MainDataTypes[] = [
   {
     key: '0',
-    name: '기본모델',
+    name: 'model.glb',
     type: FILE_TYPES.file,
     parentKey: ROOT_FOLDER_NAME,
     url: DEFAULT_MODEL_URL,
@@ -37,30 +37,10 @@ export const INITIAL_MAIN_DATA: MainDataTypes[] = [
     baseLayer: [],
   },
   {
-    key: 'abcd',
-    name: '폴더1',
-    type: FILE_TYPES.folder,
-    parentKey: ROOT_FOLDER_NAME,
-  },
-  {
-    key: 'motion4',
-    name: 'motion4',
-    type: FILE_TYPES.motion,
-    parentKey: '1',
-    baseLayer: [],
-  },
-  {
-    key: 'motion5',
-    name: 'motion5',
-    type: FILE_TYPES.motion,
-    parentKey: '1',
-    baseLayer: [],
-  },
-  {
     key: '1',
-    name: '기본모델1',
+    name: 'model2.glb',
     type: FILE_TYPES.file,
-    parentKey: 'abcd',
+    parentKey: ROOT_FOLDER_NAME,
     url: DEFAULT_MODEL_URL,
     isExpanded: true,
   },

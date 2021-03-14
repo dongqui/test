@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 import { PRIMARY_BLUE } from 'styles/constants/common';
 
 const BORDER_RADIUS = 12;

@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 import { GRAY600 } from 'styles/constants/common';
 
 export const BarWrapper = styled.div`

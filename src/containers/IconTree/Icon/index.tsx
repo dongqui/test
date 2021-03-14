@@ -3,27 +3,36 @@ import { CircleMotionIcon } from 'components/Icons/generated2/CircleMotion';
 import { ModelFileIcon } from 'components/Icons/generated2/ModelFileIcon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
-import { MAIN_DATA, PAGES } from 'lib/store';
+import { MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { rem } from 'utils/rem';
 import * as S from './IconStyles';
 
 export interface IconProps {
-  mode?: FILE_TYPES;
   rowKey: string;
-  isDragging?: boolean;
 }
 
-const IconComponent: React.FC<IconProps> = ({
-  mode = FILE_TYPES.file,
-  rowKey,
-  isDragging = false,
-}) => {
+const IconComponent: React.FC<IconProps> = ({ rowKey }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
+  const searchWord = useReactiveVar(SEARCH_WORD);
+  const fileType = useMemo(
+    () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
+    [rowKey, mainData],
+  );
+  const isDragging =
+    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isDragging, [
+      rowKey,
+      mainData,
+    ]) ?? false;
   const isClicked =
     useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isClicked, [
+      rowKey,
+      mainData,
+    ]) ?? false;
+  const isVisualized =
+    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isVisualized, [
       rowKey,
       mainData,
     ]) ?? false;
@@ -56,18 +65,19 @@ const IconComponent: React.FC<IconProps> = ({
       ref={iconRef}
       onClick={onClick}
       isClicked={isClicked}
+      isVisualized={isVisualized}
       isModifying={isModifying}
       opacity={isDragging ? 0.5 : 1}
       onDoubleClick={onDoubleClick}
     >
-      {_.isEqual(mode, FILE_TYPES.file) && (
-        <S.TopWrapper>
+      {_.isEqual(fileType, FILE_TYPES.file) && (
+        <S.TopWrapper isClicked={isClicked}>
           <ModelFileIcon />
         </S.TopWrapper>
       )}
-      {_.isEqual(mode, FILE_TYPES.folder) && <S.FolderIcon></S.FolderIcon>}
-      {_.isEqual(mode, FILE_TYPES.motion) && (
-        <S.TopWrapper>
+      {_.isEqual(fileType, FILE_TYPES.folder) && <S.FolderIcon></S.FolderIcon>}
+      {_.isEqual(fileType, FILE_TYPES.motion) && (
+        <S.TopWrapper isClicked={isClicked}>
           <CircleMotionIcon></CircleMotionIcon>
         </S.TopWrapper>
       )}
