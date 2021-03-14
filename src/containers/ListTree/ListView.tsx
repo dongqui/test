@@ -7,6 +7,7 @@ import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { CONTEXTMENU_INFO, LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useMemo, useRef } from 'react';
+import { fnFilterArrayByHierarchy } from 'utils/LP/fnFilterArrayByHierarchy';
 import { fnMakeSelection } from 'utils/LP/fnMakeSelection';
 import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';
 import { ListRow } from './ListRow';
@@ -32,8 +33,11 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    let result: MainDataTypes[] = [];
+    const result: MainDataTypes[] = [];
     let data = fnSortArrayByHierarchy({ data: mainData });
+    if (!_.isEmpty(searchWord)) {
+      data = fnFilterArrayByHierarchy({ data, searchWord });
+    }
     data = fnMakeSelection({ data });
     _.forEach(data, (item) => {
       if (_.isEqual(item.parentKey, ROOT_FOLDER_NAME)) {
@@ -47,9 +51,8 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
         result.push(item);
       }
     });
-    result = getFilteredData({ data: result });
     return result;
-  }, [getFilteredData, mainData]);
+  }, [mainData, searchWord]);
   return (
     <S.ListViewWrapper ref={listViewWrapperRef}>
       {_.map(processedData, (item, index) => (

@@ -36,12 +36,4 @@ export const INITIAL_MAIN_DATA: MainDataTypes[] = [
     parentKey: '0',
     baseLayer: [],
   },
-  {
-    key: '1',
-    name: 'model2.glb',
-    type: FILE_TYPES.file,
-    parentKey: ROOT_FOLDER_NAME,
-    url: DEFAULT_MODEL_URL,
-    isExpanded: true,
-  },
 ];
