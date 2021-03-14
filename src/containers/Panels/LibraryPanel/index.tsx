@@ -22,8 +22,8 @@ import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
 import { InputLP } from 'components/Input/InputLP';
-import { fnFileUpload } from 'utils/LP/fnFileUpload';
 import { useRouter } from 'next/dist/client/router';
+import * as api from 'utils/common/api';
 
 export interface PagesTypes {
   key: string;
@@ -57,7 +57,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       }
       if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
         // fbx 파일 업로드 및 변환
-        const { url, error, msg } = await fnFileUpload({
+        const { url, error, msg } = await api.uploadFbxToGlb({
           file: acceptedFiles[0],
           type: FORMAT_TYPES.glb,
         });
@@ -75,7 +75,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
         router.push({
           pathname: `/${PAGE_NAMES.extract}`,
-          query: { videoUrl: url },
+          query: { videoUrl: url, extension },
         });
         return false;
       }
@@ -85,16 +85,18 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         setLoading(false);
         return false;
       }
-      const motions: any = [];
+      const motions: MainDataTypes[] = [];
+      const key = uuidv4();
       _.forEach(result, (item, index) => {
         motions.push({
           key: item?.uuid,
           name: item?.name,
-          tracks: _.cloneDeep(item?.tracks),
+          baseLayer: _.cloneDeep(item?.tracks),
+          type: FILE_TYPES.motion,
+          parentKey: key,
         });
       });
-      const key = uuidv4();
-      const newData: MainDataTypes[] = [
+      let newData: MainDataTypes[] = [
         {
           key,
           type: FILE_TYPES.file,
@@ -103,15 +105,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           parentKey: _.last(pages)?.key,
         },
       ];
-      _.forEach(motions, (motion, index) => {
-        newData.push({
-          key: motion.key,
-          type: FILE_TYPES.motion,
-          name: motion?.name,
-          url,
-          parentKey: key,
-        });
-      });
+      newData = _.concat(newData, motions);
       MAIN_DATA(_.concat(mainData, newData));
       setLoading(false);
     },

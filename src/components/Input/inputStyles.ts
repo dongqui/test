@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 import { BsSearch } from 'react-icons/bs';
 import { rem } from 'utils/rem';
 import { GRAY500 } from '../../styles/constants/common';
@@ -32,6 +32,22 @@ export const InputLP = styled.input<InputLPProps>`
   position: absolute;
   right: 0;
   border-radius: ${(props) => props.borderRadius ?? 0}rem;
+
+  :focus {
+    outline: none;
+  }
+`;
+export const InputDefault = styled.input<InputLPProps>`
+  width: 100%;
+  height: 100%;
+  font-size: 13px;
+  border-width: 0;
+  color: ${GRAY500};
+  background-color: inherit;
+  position: absolute;
+  right: 0;
+  border-radius: ${(props) => props.borderRadius ?? 0}rem;
+  text-indent: 24px;
 
   :focus {
     outline: none;

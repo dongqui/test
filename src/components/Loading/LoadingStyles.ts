@@ -1,5 +1,5 @@
 import { keyframes } from '@emotion/react';
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 import { VscLoading } from 'react-icons/vsc';
 
 const rotationAnimation = keyframes`

@@ -26,7 +26,6 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
     mainData,
     pages,
     searchWord,
-    lpmode,
   });
   useContextmenu({ targetRef: listViewWrapperRef, event: onContextMenu });
   useShortcut({

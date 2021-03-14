@@ -35,4 +35,4 @@ export const GRAY600 = 'rgba(226, 226, 226, 1)';
 export const BACKGROUND_COLOR = 'black';
 
 // 파일명 길이
-export const MAX_FILE_LENGTH = 16;
+export const MAX_FILE_LENGTH = 30;

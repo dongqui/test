@@ -1,5 +1,4 @@
 import { useReactiveVar } from '@apollo/client';
-import { v4 as uuidv4 } from 'uuid';
 import { useContextmenu } from 'hooks/common/useContextmenu';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -21,12 +20,19 @@ const IconViewComponent: React.FC<IconViewProps> = ({}) => {
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
   const lpmode = useReactiveVar(LP_MODE);
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
-  const { onClick, onContextMenu, onDragStart, onDrop, shortcutData, filteredData } = useLPControl({
+  const {
+    onClick,
+    onContextMenu,
+    onDragStart,
+    onDragEnd,
+    onDrop,
+    shortcutData,
+    filteredData,
+  } = useLPControl({
     contextmenuInfo,
     mainData,
     pages,
     searchWord,
-    lpmode,
   });
   useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
   useShortcut({
@@ -42,9 +48,10 @@ const IconViewComponent: React.FC<IconViewProps> = ({}) => {
           index={index}
           draggable
           onDragStart={() => onDragStart({ key: item.key })}
+          onDragEnd={onDragEnd}
           onDrop={() => onDrop({ key: item.key })}
         >
-          <Icon rowKey={item.key} mode={item.type} isDragging={item.isDragging} />
+          <Icon rowKey={item.key} />
         </S.IconWrapper>
       ))}
     </S.IconViewWrapper>

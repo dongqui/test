@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { isEqual } from 'lodash';
 import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -18,14 +18,12 @@ interface useLPControlProps {
   pages: PagesTypes[];
   contextmenuInfo: ContextmenuTypes;
   searchWord: string;
-  lpmode: LPMODE_TYPES;
 }
 export const useLPControl = ({
   mainData,
   pages,
   contextmenuInfo,
   searchWord,
-  lpmode,
 }: useLPControlProps) => {
   const onClick = useCallback(
     (e) => {
@@ -42,6 +40,12 @@ export const useLPControl = ({
     },
     [mainData],
   );
+  const onDragEnd = useCallback(
+    ({ key }) => {
+      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isDragging: false })));
+    },
+    [mainData],
+  );
   const onDrop = useCallback(
     ({ key }) => {
       MAIN_DATA(
@@ -54,7 +58,7 @@ export const useLPControl = ({
     },
     [mainData],
   );
-  const onCopy = useCallback(() => {
+  const onCopy = useCallback(({ mainData }) => {
     if (
       !_.isEqual(
         _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.type,
@@ -68,7 +72,7 @@ export const useLPControl = ({
         })),
       );
     }
-  }, [mainData]);
+  }, []);
   const onPaste = useCallback(() => {
     if (_.some(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])) {
       const newKey = uuidv4();
@@ -110,27 +114,32 @@ export const useLPControl = ({
       MAIN_DATA(newMainData);
     }
   }, [mainData, pages]);
-  const onEdit = useCallback(() => {
+  const onEdit = useCallback(({ mainData }) => {
     MAIN_DATA(
       _.map(mainData, (item) => ({
         ...item,
         isModifying: item.isClicked ? !item.isModifying : item.isModifying,
       })),
     );
-  }, [mainData]);
+  }, []);
   const onContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
       const icons = document.getElementsByClassName('icon');
-      const data = _.some(icons, (icon) => icon.contains(e?.target as any))
+      const targetIcon = _.find(icons, (icon) => icon.contains(e?.target as any));
+      const newMainData = _.map(mainData, (item) => ({
+        ...item,
+        isClicked: _.isEqual(item.key, targetIcon?.id),
+      }));
+      const data = _.isEmpty(targetIcon)
         ? [
+            { key: '0', name: 'New Group' },
+            { key: '3', name: 'Paste' },
+          ]
+        : [
             { key: '1', name: 'Copy' },
             { key: '2', name: 'Delete' },
             { key: '4', name: 'Visualization' },
             { key: '5', name: 'Edit name' },
-          ]
-        : [
-            { key: '0', name: 'New Group' },
-            { key: '3', name: 'Paste' },
           ];
       CONTEXTMENU_INFO({
         isShow: true,
@@ -152,11 +161,10 @@ export const useLPControl = ({
               );
               break;
             case '1':
-              onCopy();
+              onCopy({ mainData: newMainData });
               break;
             case '2':
-              // MAIN_DATA(_.filter(mainData, (item) => !item.isClicked));
-              fnDeleteFile({ mainData });
+              fnDeleteFile({ mainData: newMainData });
               break;
             case '3':
               onPaste();
@@ -173,7 +181,7 @@ export const useLPControl = ({
               );
               break;
             case '5':
-              onEdit();
+              onEdit({ mainData: newMainData });
               break;
             default:
               break;
@@ -189,7 +197,7 @@ export const useLPControl = ({
         key: 'c',
         ctrlKey: true,
         event: () => {
-          onCopy();
+          onCopy({ mainData });
         },
       },
       {
@@ -202,11 +210,11 @@ export const useLPControl = ({
       {
         key: 'Enter',
         event: () => {
-          onEdit();
+          onEdit({ mainData });
         },
       },
     ],
-    [onCopy, onEdit, onPaste],
+    [mainData, onCopy, onEdit, onPaste],
   );
   const getFilteredData = useCallback(
     ({ data }) => {
@@ -226,6 +234,7 @@ export const useLPControl = ({
   return {
     onClick,
     onDragStart,
+    onDragEnd,
     onDrop,
     onCopy,
     onPaste,

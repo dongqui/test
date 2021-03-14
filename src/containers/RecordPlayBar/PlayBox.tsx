@@ -4,7 +4,8 @@ import { PauseIcon } from 'components/Icons/generated2/PauseIcon';
 import { PlayForwardIcon } from 'components/Icons/generated2/PlayForwardIcon';
 import { PlayIcon } from 'components/Icons/generated2/PlayIcon';
 import { SquareIcon } from 'components/Icons/generated2/SquareIcon';
-import { RECORDING_DATA } from 'lib/store';
+import { MODAL_TYPES } from 'interfaces';
+import { MODAL_INFO, RECORDING_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { ExtractIcon } from '../../components/Icons/generated2/ExtractIcon';
@@ -20,6 +21,13 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
   const pause = useCallback(() => {
     RECORDING_DATA({ ...recordingData, isPlay: false });
   }, [recordingData]);
+  const extractVideo = useCallback(() => {
+    MODAL_INFO({
+      isShow: true,
+      type: MODAL_TYPES.input,
+      msg: '모션의 이름을 입력해주세요.',
+    });
+  }, []);
   return (
     <S.PlayBoxWrapper>
       <S.PlayBoxIconWrapper>
@@ -42,7 +50,7 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
           </S.PlayBoxIconWrapper>
         </>
       )}
-      <S.PlayBoxIconWrapper>
+      <S.PlayBoxIconWrapper onClick={extractVideo}>
         <ExtractIcon />
       </S.PlayBoxIconWrapper>
     </S.PlayBoxWrapper>
