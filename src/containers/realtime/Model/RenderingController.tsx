@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
 import { BonesTypes, FORMAT_TYPES } from '../../../interfaces';
-import { CONFIG_INFOS } from './const';
+import { renderingOptions } from './const';
 import { useChangeMotion } from 'hooks/RP/useChangeMotion';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 
@@ -38,7 +38,7 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   useRenderingModel({
     id,
     fileUrl,
-    CONFIG_INFOS,
+    renderingOptions,
     format: FORMAT_TYPES.glb,
     setMixer,
     setSkeletonHelper,

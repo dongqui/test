@@ -1,4 +1,4 @@
-export const CONFIG_INFOS = [
+export const renderingOptions = [
   {
     key: 'sceneYUp',
     value: true,
