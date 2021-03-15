@@ -1,8 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 import { rem } from 'utils/rem';
-import { GRAY300, GRAY500 } from '../../styles/constants/common';
-import { Search } from '../Icons/generated/Search';
+import { GRAY300 } from '../../styles/constants/common';
 import * as S from './inputStyles';
 
 export interface InputLPProps {
@@ -20,6 +19,7 @@ const IconLPComponent: React.FC<InputLPProps> = ({
   height = rem(32),
   backgroundColor = GRAY300,
   borderRadius = 0.4,
+  icon,
   placeholder = 'Search Projects',
   onChange = () => {},
 }) => {
@@ -37,7 +37,5 @@ const IconLPComponent: React.FC<InputLPProps> = ({
     </S.InputLPWrapper>
   );
 };
-/**
- * LP TP에 쓸 인풋으로 따로 하나 만들었음
- */
+
 export const InputLP = React.memo(IconLPComponent);

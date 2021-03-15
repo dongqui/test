@@ -1,7 +1,7 @@
 import React from 'react';
 import { SvgIconProps } from '../index';
 export const ListviewIcon = React.memo<SvgIconProps>(
-  ({ width = 10, height = 10, fillColor = '#000', viewBox = '0 0 24 24', style }) => (
+  ({ width = 12, height = 12, fillColor = '#000', viewBox = '0 0 12 12', style }) => (
     <svg
       width={width}
       height={height}

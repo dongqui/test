@@ -1,5 +1,5 @@
 import { keyframes } from '@emotion/react';
-import styled from '@emotion/styled';
+import styled from 'styled-components';
 import { VscLoading } from 'react-icons/vsc';
 
 const rotationAnimation = keyframes`
@@ -10,8 +10,12 @@ const rotationAnimation = keyframes`
     -webkit-transform: rotate(359deg);
   }
 `;
-export const LoadingIcon = styled(VscLoading)`
+interface LoadingIconProps {
+  color?: string;
+}
+export const LoadingIcon = styled(VscLoading)<LoadingIconProps>`
   width: 1.5rem;
   height: 1.5rem;
   animation: ${rotationAnimation} 2s infinite linear;
+  color: ${(props) => props.color ?? 'black'};
 `;

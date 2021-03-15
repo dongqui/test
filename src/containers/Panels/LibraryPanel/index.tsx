@@ -1,6 +1,14 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FILE_TYPES, FORMAT_TYPES, LPMODE_TYPES, mainDataTypes } from 'interfaces';
+import {
+  ENABLE_FILE_FORMATS,
+  ENABLE_VIDEO_FORMATS,
+  FILE_TYPES,
+  FORMAT_TYPES,
+  LPMODE_TYPES,
+  MainDataTypes,
+  PAGE_NAMES,
+} from 'interfaces';
 import { LP_MODE, MAIN_DATA, MODAL_INFO, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
@@ -9,12 +17,13 @@ import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
 import * as S from './LibraryPanelStyles';
 import { Loading } from 'components/Loading';
-import { fnFileUpload } from 'hooks/common/useFileUpload';
 import { LPSelect } from 'components/LPSelect';
 import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
 import { InputLP } from 'components/Input/InputLP';
+import { useRouter } from 'next/dist/client/router';
+import * as api from 'utils/common/api';
 
 export interface PagesTypes {
   key: string;
@@ -24,6 +33,7 @@ export interface LibraryPanelProps {
   backgroundColor?: string;
 }
 const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 'black' }) => {
+  const router = useRouter();
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
   const lpmode = useReactiveVar(LP_MODE);
@@ -40,19 +50,14 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       setLoading(true);
       const extension = _.last(_.split(acceptedFiles[0].name, '.'));
       let convertedFileUrl = DEFAULT_MODEL_URL;
-      if (
-        _.some(
-          acceptedFiles,
-          (file) => !_.includes([FORMAT_TYPES.glb, FORMAT_TYPES.fbx], extension),
-        )
-      ) {
+      if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
         MODAL_INFO({ isShow: true, msg: '파일 형식이 올바르지 않습니다.' });
         setLoading(false);
         return false;
       }
       if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
         // fbx 파일 업로드 및 변환
-        const { url, error, msg } = await fnFileUpload({
+        const { url, error, msg } = await api.uploadFbxToGlb({
           file: acceptedFiles[0],
           type: FORMAT_TYPES.glb,
         });
@@ -63,25 +68,35 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         }
         convertedFileUrl = url;
       }
-      const url = _.isEqual(extension, FORMAT_TYPES.glb)
-        ? URL.createObjectURL(acceptedFiles[0])
-        : convertedFileUrl;
+      let url = URL.createObjectURL(acceptedFiles[0]);
+      if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
+        url = convertedFileUrl;
+      }
+      if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
+        router.push({
+          pathname: `/${PAGE_NAMES.extract}`,
+          query: { videoUrl: url, extension },
+        });
+        return false;
+      }
       const { result, error, msg } = await fnGetAnimationData({ url });
       if (error) {
         MODAL_INFO({ isShow: true, msg });
         setLoading(false);
         return false;
       }
-      const motions: any = [];
+      const motions: MainDataTypes[] = [];
+      const key = uuidv4();
       _.forEach(result, (item, index) => {
         motions.push({
           key: item?.uuid,
           name: item?.name,
-          tracks: _.cloneDeep(item?.tracks),
+          baseLayer: _.cloneDeep(item?.tracks),
+          type: FILE_TYPES.motion,
+          parentKey: key,
         });
       });
-      const key = uuidv4();
-      const newData: mainDataTypes[] = [
+      let newData: MainDataTypes[] = [
         {
           key,
           type: FILE_TYPES.file,
@@ -90,20 +105,11 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           parentKey: _.last(pages)?.key,
         },
       ];
-      _.forEach(motions, (motion, index) => {
-        newData.push({
-          key: motion.key,
-          motionIndex: parseInt(index),
-          type: FILE_TYPES.motion,
-          name: motion?.name,
-          url,
-          parentKey: key,
-        });
-      });
+      newData = _.concat(newData, motions);
       MAIN_DATA(_.concat(mainData, newData));
       setLoading(false);
     },
-    [mainData, pages],
+    [mainData, pages, router],
   );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
@@ -128,11 +134,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
       <IconPage />
-      {_.isEqual(lpmode, LPMODE_TYPES.iconview) ? (
-        <IconView height="100%" width="100%" />
-      ) : (
-        <ListView height="100%" width="100%" />
-      )}
+      {_.isEqual(lpmode, LPMODE_TYPES.iconview) ? <IconView /> : <ListView />}
     </S.LibraryPanelWrapper>
   );
 };

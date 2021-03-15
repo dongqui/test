@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
-import { bonesTypes, FORMAT_TYPES, skeletonHelpersTypes } from '../../../interfaces';
+import { BonesTypes, FORMAT_TYPES } from '../../../interfaces';
 import { renderingOptions } from './const';
 import { useChangeMotion } from 'hooks/RP/useChangeMotion';
 import { DEFAULT_MODEL_URL } from 'utils/const';
@@ -14,8 +14,7 @@ export interface RenderingControllerProps {
   isPlay?: boolean;
   playSpeed?: number;
   playDirection?: -1 | 1;
-  animationIndex?: number;
-  motionData?: bonesTypes[];
+  motionDataRT?: BonesTypes[];
 }
 const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   id = 'container',
@@ -23,16 +22,12 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   isPlay = false,
   playDirection = 1,
   playSpeed = 1,
-  animationIndex = 1,
-  motionData = [],
+  motionDataRT = [],
 }) => {
   const [mixer, setMixer] = useState<THREE.AnimationMixer>();
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper>();
   const [animations, setAnimations] = useState<THREE.AnimationClip[]>();
-  const currentAnimationClip = useMemo(() => animations?.[animationIndex], [
-    animationIndex,
-    animations,
-  ]);
+  const currentAnimationClip = useMemo(() => animations?.[1], [animations]);
   const currentAction = useMemo(() => {
     let action;
     if (currentAnimationClip) {
@@ -49,7 +44,7 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
     setSkeletonHelper,
     setAnimations,
   });
-  useChangeMotion({ skeletonHelper, motionData });
+  useChangeMotion({ skeletonHelper, motionDataRT });
   useEffect(() => {
     if (isPlay) {
       if (!_.isUndefined(mixer)) {

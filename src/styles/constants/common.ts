@@ -1,6 +1,10 @@
 import { rem } from 'utils/rem';
 
 /**
+ * 공통 길이
+ */
+export const STANDARD_WIDTH = 1920;
+/**
  * 패널 비율
  */
 export const TIMELINEPANEL_INFO = {
@@ -31,4 +35,4 @@ export const GRAY600 = 'rgba(226, 226, 226, 1)';
 export const BACKGROUND_COLOR = 'black';
 
 // 파일명 길이
-export const MAX_FILE_LENGTH = 16;
+export const MAX_FILE_LENGTH = 30;

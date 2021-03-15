@@ -1,4 +1,5 @@
-import { Camera, HorizontalBar, Layer, Trash } from 'components/Icons';
+import { LayerIcon } from 'components/Icons/generated2/LayerIcon';
+import { TrashIcon } from 'components/Icons/generated2/TrashIcon';
 import _ from 'lodash';
 import React from 'react';
 import * as S from './PlayBarStyles';
@@ -23,8 +24,8 @@ const LayerSelectComponent: React.FC<LayerSelectProps> = ({
           isSelected={item.isSelected}
           onClick={() => onSelect({ key: item.key })}
         >
-          {_.isEqual(item.key, 'layer') && <Layer width={20} height={20} viewBox="0 0 22 22" />}
-          {_.isEqual(item.key, 'trash') && <Trash width={18} height={20} viewBox="0 0 20 22" />}
+          {_.isEqual(item.key, 'layer') && <LayerIcon />}
+          {_.isEqual(item.key, 'trash') && <TrashIcon />}
         </S.ModeSelectIconWrapper>
       ))}
     </S.ModeSelectWrapper>

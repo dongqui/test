@@ -1,10 +1,8 @@
-import styled from '@emotion/styled';
+import styled from 'styled-components';
+import { BACKGROUND_COLOR, LIBRARYPANEL_INFO } from 'styles/constants/common';
+import { rem } from 'utils/rem';
 
-interface IconViewStyleProps {
-  width: string;
-  height: string;
-  backgroundColor: string;
-}
+interface IconViewStyleProps {}
 interface IconStyleProps {
   index: number;
 }
@@ -17,9 +15,9 @@ const makelocation = ({ index }: { index: number }) => {
   return { top, left };
 };
 export const IconViewWrapper = styled.div<IconViewStyleProps>`
-  width: ${(props) => props.width};
-  height: ${(props) => props.height};
-  background-color: ${(props) => props.backgroundColor};
+  width: ${LIBRARYPANEL_INFO.widthRem}rem;
+  height: ${rem(480)}rem;
+  background-color: ${BACKGROUND_COLOR};
   position: relative;
   -ms-user-select: none;
   -moz-user-select: -moz-none;

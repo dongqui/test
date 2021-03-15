@@ -20,9 +20,5 @@ const Template: Story<IconProps> = (args) => (
 
 export const Default = Template.bind({});
 export const Folder = Template.bind({});
-Default.args = {
-  mode: FILE_TYPES.file,
-};
-Folder.args = {
-  mode: FILE_TYPES.folder,
-};
+Default.args = {};
+Folder.args = {};

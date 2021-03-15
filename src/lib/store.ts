@@ -1,10 +1,11 @@
 import { makeVar } from '@apollo/client';
+import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
-import { RENDERING_DATA_TYPES } from 'interfaces/RP';
+import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'interfaces/RP';
 import _ from 'lodash';
 import { INITIAL_MAIN_DATA, isClient } from 'utils/const';
-import { contextmenuTypes, LPMODE_TYPES, mainDataTypes, modalTypes } from '../interfaces';
+import { ContextmenuTypes, LPMODE_TYPES, MainDataTypes, ModalTypes } from '../interfaces';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
   let result = _.clone(initialData);
@@ -21,18 +22,18 @@ export enum STORE_DATA_NAMES {
   mainData = 'mainData',
 }
 // common
-export const CONTEXTMENU_INFO = makeVar<contextmenuTypes>({
+export const CONTEXTMENU_INFO = makeVar<ContextmenuTypes>({
   isShow: false,
   top: 0,
   left: 0,
   onClick: () => {},
 });
-export const MODAL_INFO = makeVar<modalTypes>({
+export const MODAL_INFO = makeVar<ModalTypes>({
   msg: '',
   isShow: false,
 });
 // LP
-export const MAIN_DATA = makeVar<mainDataTypes[]>(
+export const MAIN_DATA = makeVar<MainDataTypes[]>(
   makeInitialData({ name: `${STORE_DATA_NAMES.mainData}`, initialData: INITIAL_MAIN_DATA }),
 );
 export const PAGES = makeVar<PagesTypes[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }]);
@@ -44,3 +45,17 @@ export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>({
   playDirection: 1,
   playSpeed: 1,
 });
+// WEBCAM
+export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
+  duration: 10,
+  rangeBoxInfo: {
+    width: 1700,
+    height: CUTIMAGE_HEIGHT,
+    x: 50,
+    barX: 50,
+    y: 0,
+  },
+  isPlay: false,
+  motionName: '',
+});
+export const CUT_IMAGES = makeVar<string[]>([]);
