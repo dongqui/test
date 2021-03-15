@@ -21,10 +21,8 @@ const RealtimeContainer: React.FC = ({}) => {
       <div className={cx('model')}>
         <RenderingController />
       </div>
-      <div className={cx('webcam')}>
-        <WebcamPanel />
-        {/* <button onClick={handleOpen}>asdasds</button> */}
-      </div>
+      <WebcamPanel />
+      {/* <button onClick={handleOpen}>asdasds</button> */}
       {/* {isOpen && <BaseModal onClose={handleOpen}>asdas</BaseModal>} */}
       {/* <Rnd
         style={{
