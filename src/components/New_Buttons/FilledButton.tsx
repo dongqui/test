@@ -24,10 +24,11 @@ const FilledButton: React.FC<Props> = ({
   color,
   fullSize,
   disabled,
+  className,
   children,
   ...rest
 }) => {
-  const classes = cx('filled', size, color, {
+  const classes = cx('filled', className, size, color, {
     disabled,
     fullSize,
   });
