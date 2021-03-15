@@ -1,11 +1,6 @@
-import { FunctionComponent, memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { useRenderingModel } from 'hooks/RP/useRenderingModel';
+import { FunctionComponent, memo, useEffect, useCallback, RefObject } from 'react';
 import _ from 'lodash';
-import { DEFAULT_MODEL_URL } from 'utils/const';
-import useDropzone from '../utils/useDropzone';
-import { FilledButton } from 'components/New_Buttons';
-import { CONFIG_INFOS } from './const';
-import { FORMAT_TYPES } from 'interfaces';
+import { AnimationAction } from 'three/src/animation/AnimationAction';
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -15,6 +10,9 @@ interface Props {
   isStart?: boolean;
   // 추후 타입 재정의
   data?: any[];
+  innerRef?: RefObject<HTMLDivElement>;
+  skeletonHelper?: THREE.SkeletonHelper;
+  currentAction?: AnimationAction;
 }
 
 const properties = [
@@ -30,46 +28,13 @@ const properties = [
   'scaleZ',
 ];
 
-const Model: FunctionComponent<Props> = ({ isStart, data }) => {
-  const [mixer, setMixer] = useState<THREE.AnimationMixer>();
-  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper>();
-  const [animations, setAnimations] = useState<THREE.AnimationClip[]>();
-
-  const currentAnimationClip = useMemo(() => animations?.[1], [animations]);
-  const currentAction = useMemo(() => {
-    let action;
-    if (currentAnimationClip) {
-      action = mixer?.clipAction(currentAnimationClip);
-    }
-    return action;
-  }, [currentAnimationClip, mixer]);
-
-  const [targetBlobUrl, setTargetBolbUrl] = useState('');
-
-  const modelRef = useRef<HTMLDivElement>(null);
-
-  const handleFileLoad = (file?: File[]) => {
-    if (file && !_.isEmpty(file)) {
-      const blobUrl = URL.createObjectURL(file[0]);
-      setTargetBolbUrl(blobUrl);
-    }
-  };
-
-  useDropzone({
-    dropzoneRef: modelRef,
-    onDrop: handleFileLoad,
-  });
-
-  useRenderingModel({
-    id: 'container',
-    fileUrl: targetBlobUrl || DEFAULT_MODEL_URL,
-    format: FORMAT_TYPES.glb,
-    setMixer,
-    CONFIG_INFOS: CONFIG_INFOS,
-    setSkeletonHelper,
-    setAnimations,
-  });
-
+const Model: FunctionComponent<Props> = ({
+  isStart,
+  data,
+  innerRef,
+  skeletonHelper,
+  currentAction,
+}) => {
   useEffect(() => {
     // console.log('skeletonHelper');
     // console.log(skeletonHelper);
@@ -103,14 +68,7 @@ const Model: FunctionComponent<Props> = ({ isStart, data }) => {
     currentAction?.play();
   }, [currentAction]);
 
-  return (
-    <>
-      <div id="container" ref={modelRef} className={cx('wrapper')} />
-      <FilledButton className={cx('play')} onClick={handlePlay}>
-        Play
-      </FilledButton>
-    </>
-  );
+  return <div id="container" ref={innerRef} className={cx('wrapper')} />;
 };
 
 export default memo(Model);
