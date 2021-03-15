@@ -11,7 +11,7 @@ interface BaseProps {
   fullSize?: boolean;
 }
 
-type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
+export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const defaultProps: Partial<BaseProps> = {
   color: 'primary',
