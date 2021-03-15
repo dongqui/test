@@ -1,5 +1,4 @@
 import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
-import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import _ from 'lodash';
 
 interface fnFilterArrayByHierarchyProps {

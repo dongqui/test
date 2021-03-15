@@ -20,9 +20,8 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
   const pages = useReactiveVar(PAGES);
   const searchWord = useReactiveVar(SEARCH_WORD);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
-  const lpmode = useReactiveVar(LP_MODE);
   const listViewWrapperRef = useRef<HTMLDivElement>(null);
-  const { onContextMenu, shortcutData, onDragStart, onDrop, getFilteredData } = useLPControl({
+  const { onContextMenu, shortcutData, onDragStart, onDrop } = useLPControl({
     contextmenuInfo,
     mainData,
     pages,
@@ -37,6 +36,10 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
     let data = fnSortArrayByHierarchy({ data: mainData });
     if (!_.isEmpty(searchWord)) {
       data = fnFilterArrayByHierarchy({ data, searchWord });
+      data = _.map(data, (item) => ({
+        ...item,
+        parentKey: _.isEqual(item.type, FILE_TYPES.file) ? ROOT_FOLDER_NAME : item.parentKey,
+      }));
     }
     data = fnMakeSelection({ data });
     _.forEach(data, (item) => {
@@ -44,10 +47,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
         result.push(item);
         return;
       }
-      if (
-        _.some(result, [MAINDATA_PROPERTY_TYPES.key, item.parentKey]) &&
-        _.find(result, [MAINDATA_PROPERTY_TYPES.key, item.parentKey])?.isExpanded
-      ) {
+      if (_.find(result, [MAINDATA_PROPERTY_TYPES.key, item.parentKey])?.isExpanded) {
         result.push(item);
       }
     });
@@ -58,6 +58,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
       {_.map(processedData, (item, index) => (
         <S.ListViewRowWrapper
           key={index}
+          id={item.key}
           className="icon"
           draggable
           onDragStart={() => onDragStart({ key: item.key })}
@@ -65,19 +66,10 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
             onDrop({ key: _.isEqual(item.type, FILE_TYPES.motion) ? item.parentKey : item.key });
           }}
         >
-          {_.isEqual(item.parentKey, ROOT_FOLDER_NAME) ? (
-            <ListRow
-              rowKey={item.key}
-              mode={item.type}
-              isClicked={item.isClicked}
-              isSelected={item.isSelected}
-              isVisualizeSelected={item.isVisualizeSelected}
-              isVisualized={item.isVisualized}
-              data={processedData}
-            />
-          ) : (
+          {_.isEmpty(searchWord) ? (
             <>
-              {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, item.parentKey])?.isExpanded && (
+              {(_.isEqual(item.parentKey, ROOT_FOLDER_NAME) ||
+                _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, item.parentKey])?.isExpanded) && (
                 <ListRow
                   rowKey={item.key}
                   mode={item.type}
@@ -89,6 +81,16 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
                 />
               )}
             </>
+          ) : (
+            <ListRow
+              rowKey={item.key}
+              mode={item.type}
+              isClicked={item.isClicked}
+              isSelected={item.isSelected}
+              isVisualizeSelected={item.isVisualizeSelected}
+              isVisualized={item.isVisualized}
+              data={processedData}
+            />
           )}
         </S.ListViewRowWrapper>
       ))}
