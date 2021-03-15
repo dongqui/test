@@ -2,7 +2,8 @@ import { FILE_TYPES, MainDataTypes } from 'interfaces';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 
 export const isClient = typeof window !== 'undefined';
-export const DEFAULT_MODEL_URL = 'https://assets.babylonjs.com/meshes/HVGirl.glb';
+export const DEFAULT_MODEL_URL =
+  'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1615807075/hiphopdancing_ms5twt.glb';
 export const CUT_IMAGES_CNT = 20;
 export const STANDARD_TIME_UNIT = 1 / 30;
 export const INITIAL_MAIN_DATA: MainDataTypes[] = [
