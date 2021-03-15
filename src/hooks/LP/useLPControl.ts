@@ -1,16 +1,9 @@
 import _, { isEqual } from 'lodash';
 import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  ContextmenuTypes,
-  FILE_TYPES,
-  LPMODE_TYPES,
-  MainDataTypes,
-  MAINDATA_PROPERTY_TYPES,
-} from 'interfaces';
+import { ContextmenuTypes, FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
-import { MAX_FILE_LENGTH } from 'styles/constants/common';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 
 interface useLPControlProps {
