@@ -144,7 +144,7 @@ export const useRenderingModel = ({
 }: {
   id: string;
   fileUrl?: string;
-  format: FORMAT_TYPES;
+  format: 'glb' | 'fbx';
   setMixer: Function;
   renderingOptions: RenderingOption[] | undefined;
   setSkeletonHelper: Function;

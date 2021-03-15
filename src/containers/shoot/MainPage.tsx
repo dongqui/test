@@ -74,11 +74,11 @@ const MainContainer: React.FC = () => {
           position={{ ...renderingPanel.position }}
         >
           <RenderingController
+            id="container"
             fileUrl={fileUrl}
             isPlay={renderingData.isPlay}
             playDirection={renderingData.playDirection}
             playSpeed={renderingData.playSpeed}
-            motionDataRT={[]}
           />
         </Rnd>
         <Rnd

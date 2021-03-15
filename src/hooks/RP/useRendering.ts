@@ -28,9 +28,9 @@ let innerMixer: THREE.AnimationMixer | undefined;
 interface UseRendering {
   id: string;
   fileUrl?: string;
-  setMixer: Dispatch<SetStateAction<THREE.AnimationMixer>>;
+  setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
   renderingOptions: RenderingOption[] | undefined;
-  setSkeletonHelper: Dispatch<SetStateAction<THREE.SkeletonHelper>>;
+  setSkeletonHelper: Dispatch<SetStateAction<THREE.SkeletonHelper | undefined>>;
   setAnimations: Dispatch<SetStateAction<THREE.AnimationClip[]>>;
 }
 
@@ -382,6 +382,8 @@ export const useRendering = (props: UseRendering) => {
     [popFromRedoArray, popFromUndoArray],
   );
 
+  const clock = new THREE.Clock();
+
   useEffect(() => {
     // rendering할 div요소 선택
     const renderingDiv = document.getElementById(id);
@@ -508,6 +510,9 @@ export const useRendering = (props: UseRendering) => {
       // RenderingDiv 아래에 새로운 canvas를 생성하고, scene과 camera를 추가
       renderingDiv.appendChild(renderer.domElement);
       const animate = () => {
+        if (innerMixer) {
+          innerMixer.update(clock.getDelta());
+        }
         if (fnResizeRendererToDisplaySize({ renderer, renderingDiv })) {
           const canvas = renderer.domElement;
           camera.aspect = canvas.clientWidth / canvas.clientHeight;
