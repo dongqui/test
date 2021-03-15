@@ -4,13 +4,7 @@ import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { RENDERING_DATA_TYPES } from 'interfaces/RP';
 import _ from 'lodash';
 import { INITIAL_MAIN_DATA, isClient } from 'utils/const';
-import {
-  contextmenuTypes,
-  LPMODE_TYPES,
-  mainDataTypes,
-  modalTypes,
-  skeletonHelpersTypes,
-} from '../interfaces';
+import { contextmenuTypes, LPMODE_TYPES, mainDataTypes, modalTypes } from '../interfaces';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
   let result = _.clone(initialData);
@@ -25,7 +19,6 @@ const makeInitialData = ({ name, initialData }: { name: string; initialData: any
 };
 export enum STORE_DATA_NAMES {
   mainData = 'mainData',
-  skeletonHelpers = 'skeletonHelpers',
 }
 // common
 export const CONTEXTMENU_INFO = makeVar<contextmenuTypes>({
@@ -46,9 +39,6 @@ export const PAGES = makeVar<PagesTypes[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_
 export const SEARCH_WORD = makeVar<string>('');
 export const LP_MODE = makeVar<LPMODE_TYPES>(LPMODE_TYPES.listview);
 // RP
-// export const SKELETON_HELPERS = makeVar<skeletonHelpersTypes[]>(
-//   makeInitialData({ name: `${STORE_DATA_NAMES.skeletonHelpers}`, initialData: undefined }),
-// );
 export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>({
   isPlay: false,
   playDirection: 1,

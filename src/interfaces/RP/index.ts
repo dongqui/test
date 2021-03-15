@@ -1,4 +1,4 @@
-export interface CONFIG_INFO {
+export interface RenderingOption {
   key: string;
   value: any;
   type: string;
