@@ -2,7 +2,6 @@ import { useReactiveVar } from '@apollo/client';
 import { useVideoToImages } from 'hooks/RP/useVideoToImages';
 import { RECORDING_DATA } from 'lib/store';
 import _ from 'lodash';
-import { useRouter } from 'next/dist/client/router';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { STANDARD_WIDTH } from 'styles/constants/common';
 import { CUT_IMAGES_CNT } from 'utils/const';
@@ -25,7 +24,9 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
         video.currentTime = 0;
         await video.pause();
       }
+      console.log('video.duration', video.duration);
       RECORDING_DATA({ ...recordingData, duration: video.duration });
+      CUT_IMAGES([]);
     }
   }, [recordingData]);
   const controlPlay = useCallback(async () => {
@@ -53,11 +54,15 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
     controlPlay();
   }, [controlPlay, recordingData.isPlay]);
   useEffect(() => {
-    const newCurrentTime =
-      recordingData.duration * (recordingData.rangeBoxInfo.barX / STANDARD_WIDTH);
-    const video = showVideoRef.current;
-    if (!_.isNull(video)) {
-      video.currentTime = newCurrentTime;
+    try {
+      const newCurrentTime =
+        recordingData.duration * (recordingData.rangeBoxInfo.barX / STANDARD_WIDTH);
+      const video = showVideoRef.current;
+      if (!_.isNull(video)) {
+        video.currentTime = newCurrentTime;
+      }
+    } catch (error) {
+      console.log('error', error);
     }
   }, [recordingData.duration, recordingData.rangeBoxInfo.barX]);
   useEffect(() => {

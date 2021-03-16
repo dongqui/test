@@ -9,7 +9,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 #### example
 
 ```javascript
-  useWebcam({ videoRef });
+  useWebcam({ videoRef, isRecording: recordingData.isRecording, onComplete, onError });
 ```
 
 ## Props
@@ -17,6 +17,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
 | Prop                | Description            |
 | ------------------- | ---------------------- |
 | **videoRef(DOM)**        | video 태그에 있는 DOM ref값        |
+| **isRecording(boolean)**        | 녹화중인지 여부        |
+| **onComplete(Function)**        | 완료되었을때 액션        |
+| **onError(Function)**        | 오류가 발생했을때 액션        |
 
 ## Return
 
