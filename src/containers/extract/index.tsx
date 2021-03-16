@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as S from './ExtractStyle';
 import { Webcam } from 'containers/Webcam';
 import { CutEdit } from 'containers/CutEdit';
-import { PlayBar } from 'containers/RecordPlayBar';
+import { PlayBar } from 'containers/ExtractPlayBar';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
 import { MAIN_DATA, MODAL_INFO, RECORDING_DATA } from 'lib/store';
