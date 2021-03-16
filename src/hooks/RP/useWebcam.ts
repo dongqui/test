@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 const CONSTRAINT_OBJ = {
   audio: false,
@@ -10,9 +10,7 @@ const CONSTRAINT_OBJ = {
   },
 };
 
-const VIDEO_TYPE = 'webm';
-
-export const useWebcam = ({ videoRef }: { videoRef: any }) => {
+export const useWebcam = ({ videoRef }: { videoRef: React.RefObject<HTMLVideoElement> }) => {
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia(CONSTRAINT_OBJ)
