@@ -30,7 +30,7 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
   }, [recordingData]);
   const controlPlay = useCallback(async () => {
     const video = showVideoRef.current;
-    if (recordingData.isPlay) {
+    if (recordingData.isPlaying) {
       await video?.play();
     } else {
       if (!_.isNull(video)) {
@@ -38,7 +38,7 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
       }
       await video?.pause();
     }
-  }, [recordingData.isPlay]);
+  }, [recordingData.isPlaying]);
   useVideoToImages({
     videoRef,
     action: ({ images }) => {
@@ -51,7 +51,7 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
   });
   useEffect(() => {
     controlPlay();
-  }, [controlPlay, recordingData.isPlay]);
+  }, [controlPlay, recordingData.isPlaying]);
   useEffect(() => {
     const newCurrentTime =
       recordingData.duration * (recordingData.rangeBoxInfo.barX / STANDARD_WIDTH);

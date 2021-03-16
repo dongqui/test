@@ -6,7 +6,7 @@ export interface RenderingOption {
 }
 export interface RENDERING_DATA_TYPES {
   playSpeed: number;
-  isPlay: boolean;
+  isPlaying: boolean;
   playDirection: -1 | 1;
 }
 interface RANGEBOX_INFO_TYPES {
@@ -19,6 +19,6 @@ interface RANGEBOX_INFO_TYPES {
 export interface RECORDING_DATA_TYPES {
   duration: number;
   rangeBoxInfo: RANGEBOX_INFO_TYPES;
-  isPlay: boolean;
+  isPlaying: boolean;
   motionName: string;
 }

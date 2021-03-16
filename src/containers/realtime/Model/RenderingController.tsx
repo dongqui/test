@@ -11,7 +11,7 @@ import { DEFAULT_MODEL_URL } from 'utils/const';
 export interface RenderingControllerProps {
   id?: string;
   fileUrl?: string;
-  isPlay?: boolean;
+  isPlaying?: boolean;
   playSpeed?: number;
   playDirection?: -1 | 1;
   motionDataRT?: BonesTypes[];
@@ -19,7 +19,7 @@ export interface RenderingControllerProps {
 const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   id = 'container',
   fileUrl = DEFAULT_MODEL_URL,
-  isPlay = false,
+  isPlaying = false,
   playDirection = 1,
   playSpeed = 1,
   motionDataRT = [],
@@ -46,7 +46,7 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   });
   useChangeMotion({ skeletonHelper, motionDataRT });
   useEffect(() => {
-    if (isPlay) {
+    if (isPlaying) {
       if (!_.isUndefined(mixer)) {
         mixer.timeScale = 1 * playSpeed * playDirection;
       }
@@ -56,7 +56,7 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
         mixer.timeScale = 0;
       }
     }
-  }, [currentAction, isPlay, mixer, playDirection, playSpeed]);
+  }, [currentAction, isPlaying, mixer, playDirection, playSpeed]);
   return <RenderingPresenter id={id} />;
 };
 

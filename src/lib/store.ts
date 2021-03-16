@@ -41,7 +41,7 @@ export const SEARCH_WORD = makeVar<string>('');
 export const LP_MODE = makeVar<LPMODE_TYPES>(LPMODE_TYPES.listview);
 // RP
 export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>({
-  isPlay: false,
+  isPlaying: false,
   playDirection: 1,
   playSpeed: 1,
 });
@@ -55,7 +55,7 @@ export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
     barX: 50,
     y: 0,
   },
-  isPlay: false,
+  isPlaying: false,
   motionName: '',
 });
 export const CUT_IMAGES = makeVar<string[]>([]);

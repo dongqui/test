@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { renderingOptions } from './const';
@@ -8,14 +8,14 @@ import { useRendering } from '../../../hooks/RP/useRendering';
 export interface RenderingControllerProps {
   id: string;
   fileUrl?: string;
-  isPlay: boolean;
+  isPlaying: boolean;
   playSpeed: number;
   playDirection: -1 | 1;
 }
-const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
+const RenderingController: React.FC<RenderingControllerProps> = ({
   id,
   fileUrl,
-  isPlay,
+  isPlaying,
   playDirection,
   playSpeed,
 }) => {
@@ -51,9 +51,9 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   });
 
   useEffect(() => {
-    if (isPlay) {
+    if (isPlaying) {
       if (!_.isUndefined(mixer)) {
-        mixer.timeScale = 0.3 * playSpeed * playDirection;
+        mixer.timeScale = 0.5 * playSpeed * playDirection;
       }
       currentAction?.play();
     } else {
@@ -61,9 +61,9 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
         mixer.timeScale = 0;
       }
     }
-  }, [currentAction, isPlay, mixer, playDirection, playSpeed]);
+  }, [currentAction, isPlaying, mixer, playDirection, playSpeed]);
 
   return <RenderingPresenter id={id} />;
 };
 
-export const RenderingController = React.memo(RenderingControllerComponent);
+export default memo(RenderingController);

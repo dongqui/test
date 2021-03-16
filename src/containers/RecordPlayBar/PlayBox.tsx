@@ -16,10 +16,10 @@ export interface PlayBoxProps {}
 const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
   const recordingData = useReactiveVar(RECORDING_DATA);
   const play = useCallback(() => {
-    RECORDING_DATA({ ...recordingData, isPlay: true });
+    RECORDING_DATA({ ...recordingData, isPlaying: true });
   }, [recordingData]);
   const pause = useCallback(() => {
-    RECORDING_DATA({ ...recordingData, isPlay: false });
+    RECORDING_DATA({ ...recordingData, isPlaying: false });
   }, [recordingData]);
   const extractVideo = useCallback(() => {
     MODAL_INFO({
@@ -36,7 +36,7 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
       <S.PlayBoxIconWrapper>
         <SquareIcon />
       </S.PlayBoxIconWrapper>
-      {recordingData.isPlay ? (
+      {recordingData.isPlaying ? (
         <S.PlayBoxIconDoubleWrapper onClick={pause}>
           <PauseIcon />
         </S.PlayBoxIconDoubleWrapper>
