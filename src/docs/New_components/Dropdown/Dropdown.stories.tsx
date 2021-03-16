@@ -7,7 +7,31 @@ export default {
   args: {},
 } as Meta;
 
-const Template: Story<Props> = (args) => <Component {...args} />;
+const Template: Story<Props> = ({}) => {
+  const list = [
+    {
+      key: 'item1',
+      value: 'One',
+      isSelected: true,
+    },
+    {
+      key: 'item2',
+      value: 'Two',
+      isSelected: false,
+    },
+    {
+      key: 'item3',
+      value: 'Three',
+      isSelected: false,
+    },
+  ];
 
-export const Default = Template.bind({});
-Default.args = {};
+  const handleSelect = (key: string, value: string) => {
+    console.log(key, value);
+  };
+
+  return <Component list={list} onSelect={handleSelect} />;
+};
+
+export const Dropdown = Template.bind({});
+Dropdown.args = {};

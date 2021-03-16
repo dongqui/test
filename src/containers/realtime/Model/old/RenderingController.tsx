@@ -2,8 +2,8 @@ import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
-import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
-import { BonesTypes, FORMAT_TYPES } from '../../../interfaces';
+import { useRenderingModel } from 'hooks/RP/useRenderingModel';
+import { BonesTypes, FORMAT_TYPES } from 'interfaces';
 import { CONFIG_INFOS } from './const';
 import { useChangeMotion } from 'hooks/RP/useChangeMotion';
 import { DEFAULT_MODEL_URL } from 'utils/const';
@@ -18,7 +18,8 @@ export interface RenderingControllerProps {
 }
 const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
   id = 'container',
-  fileUrl = DEFAULT_MODEL_URL,
+  // fileUrl = DEFAULT_MODEL_URL,
+  fileUrl,
   isPlay = false,
   playDirection = 1,
   playSpeed = 1,

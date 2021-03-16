@@ -11,7 +11,7 @@ interface BaseProps {
   fullSize?: boolean;
 }
 
-type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
+export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const defaultProps: Partial<BaseProps> = {
   color: 'primary',
@@ -24,10 +24,11 @@ const FilledButton: React.FC<Props> = ({
   color,
   fullSize,
   disabled,
+  className,
   children,
   ...rest
 }) => {
-  const classes = cx('filled', size, color, {
+  const classes = cx('filled', className, size, color, {
     disabled,
     fullSize,
   });
