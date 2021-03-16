@@ -54,7 +54,6 @@ export const uploadFileToMotionData = async ({
       type,
       fileName,
     });
-    console.log('file', file);
     formData.append('file', file);
     formData.append('type', type);
     formData.append('id', id);
