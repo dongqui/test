@@ -15,7 +15,7 @@ interface Datum {
 const CIRCLE_RADIUS = 12; // 원 반지름 크기
 const TRACK_HEIGHT = 48; // 트랙 높이
 const DOPE_SHEET_MARGIN = { top: 8, right: 20, bottom: 30, left: 30 }; // dope sheet에 적용 된 margin
-const dummyData = Array(1200) // 더미데이터
+const dummyData = Array(1200) // 더미 데이터
   .fill(0)
   .map((_, index) => {
     return { track: Math.floor(index / 100) + 1, time: (index % 100) + 1 };
