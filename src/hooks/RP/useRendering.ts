@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import _ from 'lodash';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -41,6 +41,8 @@ export const useRendering = (props: UseRendering) => {
     Array<THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D>
   >([]); // clear하기 위해 content 담아놓은 array
   const [theScene, setTheScene] = useState<THREE.Scene | undefined>(undefined); // clear 함수에서 사용하기 위해 component state로 관리
+  const keyDownRef = useRef<(event: any) => void>();
+  const keyUpRef = useRef<(event: any) => void>();
 
   const multiKeyController = useMemo(
     () => ({
@@ -463,8 +465,11 @@ export const useRendering = (props: UseRendering) => {
         handleCameraControlsShortcutUp({ event, cameraControls });
       };
 
-      renderingDiv.addEventListener('keydown', handleKeyDown);
-      renderingDiv.addEventListener('keyup', handleKeyUp);
+      keyDownRef.current = handleKeyDown;
+      keyUpRef.current = handleKeyUp;
+
+      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('keyup', handleKeyUp);
 
       // 파일 업로드를 통해 fileUrl이 생성되었다면
       if (fileUrl) {
@@ -526,12 +531,13 @@ export const useRendering = (props: UseRendering) => {
     }
 
     return () => {
+      // 단축키 제거
+      if (keyDownRef.current && keyUpRef.current) {
+        document.removeEventListener('keydown', keyDownRef.current);
+        document.removeEventListener('keyup', keyUpRef.current);
+      }
+      // clear
       if (renderingDiv) {
-        // 단축키 제거
-        // renderingDiv.removeEventListener('keydown', handleKeyDown);
-        // renderingDiv.removeEventListener('keyup', handleKeyUp);
-
-        // clear
         fnClearRendering({
           renderingDiv,
           contents,
