@@ -9,7 +9,8 @@ interface FnChangeBoneRotation {
 }
 
 /**
- * Changes the rotation value of the target bone.
+ * 대상 Bone 의 rotation value 를 변경합니다.
+ * 이때, 인자로 축 정보를 받아 해당 축의 값을 변경합니다.
  *
  * @param targetBone - The target bone
  * @param axis - The target axis ('x' | 'y' | 'z')

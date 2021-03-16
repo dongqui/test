@@ -5,7 +5,7 @@ interface FnAddShadow {
 }
 
 /**
- * Adds a shadow to the directional light in the scene.
+ * 현재 scene 에 그림자를 표시합니다.
  *
  * @param dirLight - The target directional light
  *

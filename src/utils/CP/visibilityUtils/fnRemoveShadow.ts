@@ -5,7 +5,7 @@ interface FnRemoveShadow {
 }
 
 /**
- * Removes a shadow from the directional light in the scene.
+ * 현재 scene에 그림자를 보이지 않도록 변경합니다.
  *
  * @param dirLight - The target directional light
  *

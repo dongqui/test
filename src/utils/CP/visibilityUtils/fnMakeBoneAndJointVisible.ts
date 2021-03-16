@@ -6,7 +6,7 @@ interface FnMakeBoneAndJointInvisible {
 }
 
 /**
- * Makes Bones and Joints in the scene visible.
+ * Bone 들과 Joint Mesh 들을 보이게 변경합니다.
  *
  * @param skeletonHelper - The skeleton helper in the scene
  *

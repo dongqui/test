@@ -9,7 +9,7 @@ interface FnChangeCameraPosition {
 }
 
 /**
- * Changes the position value of the camera attached to the canvas.
+ * 카메라의 position 속성을 변경합니다.
  *
  * @param camera - The camera
  * @param axis - The target axis ('x' | 'y' | 'z')

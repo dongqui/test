@@ -12,8 +12,8 @@ interface FnChangeAxis {
 }
 
 /**
- * Changes the axis of the scene and the camera.
- * The axis can be y-up or z-up, where default is y-up.
+ * scene 의 축 방향 (y-up 또는 z-up)을 변경합니다.
+ * 축 방향에 따라, camera 의 up 속성, ground 의 rotation 속성을 변경합니다.
  *
  * @param upDirection - The target up direction of the scene and the camera
  * @param camera - The camera attached to the canvas

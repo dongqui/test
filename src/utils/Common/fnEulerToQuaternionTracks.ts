@@ -1,11 +1,18 @@
 import * as THREE from 'three';
 import _ from 'lodash';
 
-interface fnEulerToQuaternionTracksProps {
+interface FnEulerToQuaternionTracks {
   eulerTracks: THREE.VectorKeyframeTrack[];
 }
 
-export const fnEulerToQuaternionTracks = ({ eulerTracks }: fnEulerToQuaternionTracksProps) => {
+/**
+ * Euler 값을 사용하는 rotation 트랙들을 Quaternion 값을 사용하는 rotation 트랙들로 변환합니다.
+ *
+ * @param eulerTracks - quaternion tracks 로 변경할 euler tracks
+ *
+ * @returns 변환한 quaternion tracks
+ */
+const fnEulerToQuaternionTracks = ({ eulerTracks }: FnEulerToQuaternionTracks) => {
   const quaternionTracks: THREE.QuaternionKeyframeTrack[] = [];
   _.forEach(eulerTracks, (track) => {
     const { name, times, values } = track;
@@ -33,3 +40,5 @@ export const fnEulerToQuaternionTracks = ({ eulerTracks }: fnEulerToQuaternionTr
   });
   return quaternionTracks;
 };
+
+export default fnEulerToQuaternionTracks;

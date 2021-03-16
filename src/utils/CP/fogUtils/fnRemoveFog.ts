@@ -5,7 +5,7 @@ interface FnRemoveFog {
 }
 
 /**
- * Deletes the fog from the scene.
+ * scene 에서 fog 를 제거합니다.
  *
  * @param scene - The scene where the fog will be attatched
  *

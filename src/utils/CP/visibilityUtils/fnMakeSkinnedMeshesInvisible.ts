@@ -6,8 +6,8 @@ interface FnMakeSkinnedMeshesInvisible {
 }
 
 /**
- * Makes skinned meshes within the scene invislble.
- * Reusable for making model's skin invisible.
+ * scene 안의 모든 Skinned Mesh 를 보이지 않게 변경합니다.
+ * 모델의 Skin 을 보이지 않게 변경하는데 사용합니다.
  *
  * @param scene - The target scene where we can iterate for getting skinned meshes
  *

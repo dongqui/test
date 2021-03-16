@@ -6,7 +6,8 @@ interface FnChangeFogFar {
 }
 
 /**
- * Changes the far value of a fog.
+ * fog 의 far 값을 변경합니다.
+ * far 속성은 fog 의 끝 지점을 결정합니다.
  *
  * @param fog - The fog added to the scene
  * @param value - The fog far value
