@@ -8,9 +8,9 @@ interface FnEulerToQuaternionTrack {
 /**
  * Euler 값을 사용하는 rotation 트랙을 Quaternion 값을 사용하는 rotation 트랙으로 변환합니다.
  *
- * @param eulertrack - quaternion track 으로 변경할 euler tracks
+ * @param eulertrack - quaternion track 으로 변경할 euler track
  *
- * @returns 변환한 quaternion tracks
+ * @returns 변환한 quaternion track
  */
 const fnEulerToQuaternionTrack = (props: FnEulerToQuaternionTrack) => {
   const { eulertrack } = props;
