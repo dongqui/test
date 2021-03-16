@@ -3,6 +3,7 @@ import { ContextmenuDataTypes } from '../components/Contextmenu';
 export enum PAGE_NAMES {
   extract = 'extract',
   shoot = 'shoot',
+  record = 'record',
 }
 export enum FORMAT_TYPES {
   glb = 'glb',

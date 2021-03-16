@@ -170,3 +170,4 @@ export const DropdownArrowDownIconWrapper = styled.div`
   position: absolute;
   right: ${rem(8)}rem;
 `;
+export const CameraIconWrapper = styled.div``;

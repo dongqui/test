@@ -3,6 +3,7 @@ import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 
 export const isClient = typeof window !== 'undefined';
 export const DEFAULT_MODEL_URL = 'https://assets.babylonjs.com/meshes/HVGirl.glb';
+export const DEFAULT_FILE_URL = '/video/exo.mp4';
 export const CUT_IMAGES_CNT = 20;
 export const STANDARD_TIME_UNIT = 1 / 30;
 export const INITIAL_MAIN_DATA: MainDataTypes[] = [
