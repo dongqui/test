@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as S from './ExtractStyle';
 import { Webcam } from 'containers/Webcam';
 import { CutEdit } from 'containers/CutEdit';
-import { PlayBar } from 'containers/RecordPlayBar';
+import { PlayBar } from 'containers/ExtractPlayBar';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
 import { MAIN_DATA, MODAL_INFO, RECORDING_DATA } from 'lib/store';
@@ -15,7 +15,7 @@ import { ModalInput } from 'components/Modal/ModalInput';
 import styled from 'styled-components';
 import * as api from 'utils/common/api';
 import { STANDARD_WIDTH } from 'styles/constants/common';
-import { STANDARD_TIME_UNIT } from 'utils/const';
+import { DEFAULT_FILE_URL, STANDARD_TIME_UNIT } from 'utils/const';
 import { Modal } from 'components/Modal';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 
@@ -63,7 +63,8 @@ const ExtractPage: NextPage<Props> = ({}) => {
         fileName: recordingData?.motionName,
       });
       if (error) {
-        MODAL_INFO({ ...modalInfo, type: MODAL_TYPES.alert, msg });
+        alert(msg);
+        MODAL_INFO({ ...modalInfo, isShow: false });
         return false;
       }
       const key = uuidv4();
@@ -118,7 +119,7 @@ const ExtractPage: NextPage<Props> = ({}) => {
         </ModalWrapper>
       )}
       <S.WebcamWrapper>
-        <Webcam videoUrl={`${router.query?.videoUrl ?? '/video/exo.mp4'}`} />
+        <Webcam videoUrl={`${router.query?.videoUrl ?? DEFAULT_FILE_URL}`} />
       </S.WebcamWrapper>
       <PlayBar />
       <S.CutEditWrapper>

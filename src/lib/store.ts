@@ -57,5 +57,6 @@ export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
   },
   isPlaying: false,
   motionName: '',
+  isRecording: undefined,
 });
 export const CUT_IMAGES = makeVar<string[]>([]);

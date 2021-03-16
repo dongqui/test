@@ -1,65 +1,89 @@
-import React, { useCallback, useState } from 'react';
-import { Rnd } from 'react-rnd';
+import { FunctionComponent, memo, useCallback, useState, useMemo, useRef } from 'react';
 import _ from 'lodash';
 import WebcamPanel from './Webcam';
-import { RenderingController } from './Model/RenderingController';
-import { BaseModal } from 'components/New_Modal';
+import Model from './Model';
+import { getDummyData } from 'utils/RT/getDummyData';
+import { useRenderingModel } from 'hooks/RP/useRenderingModel';
+import { DEFAULT_MODEL_URL } from 'utils/const';
+import useDropzone from './utils/useDropzone';
+import { FilledButton } from 'components/New_Buttons';
+import { CONFIG_INFOS } from './const';
+import { FORMAT_TYPES } from 'interfaces';
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classnames.bind(styles);
 
-const STANDARD_PANEL_WIDTH = 50;
+type RecordStatus = 'START' | 'END';
 
-const RealtimeContainer: React.FC = ({}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const handleOpen = () => {
-    setIsOpen(!isOpen);
+const RealtimeContainer: FunctionComponent = () => {
+  // const handleRetarget = useCallback(() => {
+  //   console.log('handleRetarget');
+  // }, []);
+
+  const [mixer, setMixer] = useState<THREE.AnimationMixer>();
+  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper>();
+  const [animations, setAnimations] = useState<THREE.AnimationClip[]>();
+
+  const currentAnimationClip = useMemo(() => animations?.[1], [animations]);
+  const currentAction = useMemo(() => {
+    let action;
+    if (currentAnimationClip) {
+      action = mixer?.clipAction(currentAnimationClip);
+    }
+    return action;
+  }, [currentAnimationClip, mixer]);
+
+  const [targetBlobUrl, setTargetBolbUrl] = useState('');
+
+  const modelRef = useRef<HTMLDivElement>(null);
+
+  const handleFileLoad = (file?: File[]) => {
+    if (file && !_.isEmpty(file)) {
+      const blobUrl = URL.createObjectURL(file[0]);
+      setTargetBolbUrl(blobUrl);
+    }
   };
+
+  useDropzone({
+    dropzoneRef: modelRef,
+    onDrop: handleFileLoad,
+  });
+
+  useRenderingModel({
+    id: 'container',
+    fileUrl: targetBlobUrl || DEFAULT_MODEL_URL,
+    format: FORMAT_TYPES.glb,
+    setMixer,
+    CONFIG_INFOS: CONFIG_INFOS,
+    setSkeletonHelper,
+    setAnimations,
+  });
+
+  const [isStart, setIsStart] = useState(false);
+  const [retargetedData, setRetargetedData] = useState<any[]>([]);
+
+  const handleStart = useCallback((status: RecordStatus) => {
+    const isRecording = _.isEqual(status, 'START');
+
+    setIsStart(isRecording);
+    setRetargetedData(getDummyData);
+  }, []);
+
   return (
     <div className={cx('wrapper')}>
       <div className={cx('model')}>
-        <RenderingController />
+        <Model
+          isStart={isStart}
+          data={retargetedData}
+          currentAction={currentAction}
+          innerRef={modelRef}
+          skeletonHelper={skeletonHelper}
+        />
       </div>
-      <div className={cx('webcam')}>
-        <WebcamPanel />
-        {/* <button onClick={handleOpen}>asdasds</button> */}
-      </div>
-      {/* {isOpen && <BaseModal onClose={handleOpen}>asdas</BaseModal>} */}
-      {/* <Rnd
-        style={{
-          border: '1px solid white',
-          zIndex: 100,
-        }}
-        default={{
-          x: 0,
-          y: 0,
-          width: `${STANDARD_PANEL_WIDTH}%`,
-          height: `100%`,
-        }}
-        enableResizing={{ right: true }}
-        disableDragging={true}
-      >
-        <WebcamPanel width="100%" height="100%" />
-      </Rnd>
-      <Rnd
-        style={{
-          border: '1px solid white',
-          zIndex: 200,
-        }}
-        default={{
-          x: window.innerWidth * STANDARD_PANEL_WIDTH * 0.01,
-          y: 0,
-          width: `${STANDARD_PANEL_WIDTH}%`,
-          height: `100%`,
-        }}
-        enableResizing={{ left: true }}
-        disableDragging={true}
-      >
-        <RenderingController />
-      </Rnd> */}
+      <WebcamPanel isStart={isStart} onStart={handleStart} />
     </div>
   );
 };
 
-export default React.memo(RealtimeContainer);
+export default memo(RealtimeContainer);

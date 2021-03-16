@@ -13,6 +13,7 @@ export interface WebcamProps {
   videoUrl: string;
 }
 const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
+  const router = useRouter();
   const recordingData = useReactiveVar(RECORDING_DATA);
   const cutImages = useReactiveVar(CUT_IMAGES);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -25,9 +26,14 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
         video.currentTime = 0;
         await video.pause();
       }
-      RECORDING_DATA({ ...recordingData, duration: video.duration });
+      let duration: any = video.duration;
+      if (duration == Infinity) {
+        duration = router?.query?.duration ?? 10;
+      }
+      RECORDING_DATA({ ...recordingData, duration });
+      CUT_IMAGES([]);
     }
-  }, [recordingData]);
+  }, [recordingData, router?.query?.duration]);
   const controlPlay = useCallback(async () => {
     const video = showVideoRef.current;
     if (recordingData.isPlaying) {
@@ -53,11 +59,15 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
     controlPlay();
   }, [controlPlay, recordingData.isPlaying]);
   useEffect(() => {
-    const newCurrentTime =
-      recordingData.duration * (recordingData.rangeBoxInfo.barX / STANDARD_WIDTH);
-    const video = showVideoRef.current;
-    if (!_.isNull(video)) {
-      video.currentTime = newCurrentTime;
+    try {
+      const newCurrentTime =
+        recordingData.duration * (recordingData.rangeBoxInfo.barX / STANDARD_WIDTH);
+      const video = showVideoRef.current;
+      if (!_.isNull(video)) {
+        video.currentTime = newCurrentTime;
+      }
+    } catch (error) {
+      console.log('error', error);
     }
   }, [recordingData.duration, recordingData.rangeBoxInfo.barX]);
   useEffect(() => {

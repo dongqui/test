@@ -1,7 +1,4 @@
-@import 'styles/libraries/_mixins';
-
-$borderRadius: 0.45rem;
-$itemPadding: 0.5rem;
+@import './common';
 
 .wrapper {
   position: relative;
@@ -36,18 +33,4 @@ $itemPadding: 0.5rem;
   border-bottom-left-radius: $borderRadius;
   border-bottom-right-radius: $borderRadius;
   overflow: hidden;
-}
-
-.menu-item {
-  @include reset-list-style();
-  padding: 1rem $borderRadius;
-  cursor: pointer;
-  border-radius: $borderRadius;
-
-  // hover, focus 효과의 구분이 필요
-  &:hover,
-  &:focus {
-    background-color: #3785f7;
-    color: #fff;
-  }
 }

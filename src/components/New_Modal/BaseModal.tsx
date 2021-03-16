@@ -91,7 +91,6 @@ const BaseModal: FunctionComponent<Props> = ({ theme, onClose, hasCloseIcon, tit
         if (!e.shiftKey) {
           if (_.isEqual(document.activeElement, lastFocusTarget)) {
             e.preventDefault();
-
             firstFocusTarget.focus();
           }
         }
