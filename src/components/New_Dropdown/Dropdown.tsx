@@ -1,41 +1,47 @@
-import React, { memo, useState, useEffect, useCallback, useRef } from 'react';
+import { FunctionComponent, memo, useState, useEffect, useCallback, useRef } from 'react';
 import _ from 'lodash';
+import DropdownItem from './DropdownItem';
 import classNames from 'classnames/bind';
 import styles from './Dropdown.module.scss';
 
 const cx = classNames.bind(styles);
 
-const focusableElementListString =
-  'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]';
+const focusableTargetList = [
+  'a[href]',
+  'area[href]',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  'button:not([disabled])',
+  'iframe',
+  'object',
+  'embed',
+  '[tabindex="0"]',
+  '[contenteditable]',
+];
 
-export interface DropDownProps {
-  onSelect: () => void;
+export interface Props {
+  onSelect: (key: string, value: string) => void;
   list: {
     key: string;
-    name: string;
+    value: string;
     isSelected: boolean;
   }[];
 }
 
-type Props = DropDownProps;
-
-const defaultProps: Partial<DropDownProps> = {};
-
-const Dropdown: React.FC<Props> = ({
-  list = [
-    { key: '0', name: 'select1', isSelected: true },
-    { key: '1', name: 'select2', isSelected: false },
-    { key: '2', name: 'select3', isSelected: false },
-  ],
-  ...rest
-}) => {
+/**
+ *
+ * @todo 추후, Sub Menu를 위한 Cascading 기능 추가 예정
+ */
+const Dropdown: FunctionComponent<Props> = ({ list, onSelect }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [transform, setTransform] = useState<string>();
 
-  const defaultValue = _.find(list, { isSelected: true })?.name;
+  const defaultValue = _.find(list, { isSelected: true })?.value || list[0].value;
+  const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   const handleToggle = useCallback(() => {
     setIsOpen(!isOpen);
@@ -45,7 +51,13 @@ const Dropdown: React.FC<Props> = ({
     isOpen && setIsOpen(false);
   }, [isOpen]);
 
-  const handleSelect = useCallback(() => {}, []);
+  const handleSelect = useCallback(
+    (key: string, value: string) => {
+      setSelectedValue(value);
+      onSelect(key, value);
+    },
+    [onSelect],
+  );
 
   useEffect(() => {
     if (buttonRef && buttonRef.current) {
@@ -57,37 +69,38 @@ const Dropdown: React.FC<Props> = ({
     const currentRef = wrapperRef?.current;
 
     if (currentRef) {
-      const focusableElementList = Array.prototype.slice.call(
-        currentRef.querySelectorAll(focusableElementListString),
-      );
+      const focusableNodeList = currentRef.querySelectorAll(focusableTargetList.toString());
+      const focusableElementList = Array.prototype.slice.call(focusableNodeList);
 
-      const isFocusable = !_.isEmpty(focusableElementList);
-
-      const firstFocusableElement = focusableElementList[0];
-      const lastFocusableElement = focusableElementList[focusableElementList.length - 1];
+      const firstFocusTarget = focusableElementList[0];
+      const lastFocusTarget = focusableElementList[focusableElementList.length - 1];
 
       const handleTrapTabKey = (e: KeyboardEvent) => {
-        // Check for TAB key press, keyCode 9
+        // Trap Tab Key: KeyCode 9
         if (_.isEqual(e.key, 'Tab')) {
-          // SHIFT + TAB
           if (e.shiftKey) {
-            if (document.activeElement === firstFocusableElement) {
+            if (_.isEqual(document.activeElement, firstFocusTarget)) {
               e.preventDefault();
-              lastFocusableElement.focus();
+              lastFocusTarget.focus();
             }
-            // TAB
-          } else if (document.activeElement === lastFocusableElement) {
-            e.preventDefault();
-            focusableElementList[0].focus();
+          }
+
+          // Tab
+          if (!e.shiftKey) {
+            if (_.isEqual(document.activeElement, lastFocusTarget)) {
+              e.preventDefault();
+
+              firstFocusTarget.focus();
+            }
           }
         }
 
-        // ESCAPE, keyCode 27
+        // ESC Key: KeyCode 27
         if (_.isEqual(e.key, 'Escape')) {
           isOpen && handleToggle();
         }
 
-        // Enter, keyCode 13
+        // Enter Key: Keycode 13
         if (_.isEqual(e.key, 'Enter')) {
           e.preventDefault();
         }
@@ -97,14 +110,13 @@ const Dropdown: React.FC<Props> = ({
         if (currentRef) {
           if (!currentRef.contains(e.target as Node)) {
             e.preventDefault();
-            if (isFocusable) {
-              focusableElementList[0].focus();
-            }
+            firstFocusTarget.focus();
           }
         }
       };
 
       const handleOutSideClick = (e: MouseEvent) => {
+        e.preventDefault();
         const target = e.target as Node;
         const isContains = wrapperRef.current?.contains(target);
 
@@ -132,23 +144,19 @@ const Dropdown: React.FC<Props> = ({
   return (
     <div ref={wrapperRef} className={cx('wrapper')}>
       <button ref={buttonRef} className={classes} onClick={handleToggle}>
-        {defaultValue}
+        {selectedValue}
       </button>
       {isOpen && (
         <ul className={cx('menu')} style={{ transform }} role="menu">
           {_.map(list, (item, i) => {
-            const key = `${item.key}-${i}`;
+            const key = `${item.key}_${i}`;
             return (
-              <li
+              <DropdownItem
                 key={key}
-                tabIndex={0}
-                className={cx('menu-item')}
-                onClick={handleSelect}
-                onKeyDown={handleSelect}
-                role="menuitem"
-              >
-                {item.name}
-              </li>
+                item={item}
+                selectedValue={selectedValue}
+                onSelect={handleSelect}
+              />
             );
           })}
         </ul>
@@ -156,7 +164,5 @@ const Dropdown: React.FC<Props> = ({
     </div>
   );
 };
-
-Dropdown.defaultProps = defaultProps;
 
 export default memo(Dropdown);
