@@ -1,0 +1,49 @@
+// 트랙 리스트 wrapper
+.track-list-container {
+  position: relative;
+  min-width: 230px;
+  height: 100%;
+}
+
+// 트랙 필터링 인풋 wrapper
+.track-input-wrapper {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  width: 230px;
+  height: 48px;
+  padding: 0 28px;
+  border: 1px solid #393939;
+  background: #151515;
+  z-index: 1;
+
+  input {
+    display: flex;
+    flex-flow: column nowrap;
+    width: 90%;
+    height: 100%;
+    border: 0 solid black;
+    font-size: 0.875rem;
+    line-height: 1.875rem;
+    letter-spacing: 0.013rem;
+    color: rgb(164, 164, 164);
+    background: rgb(21, 21, 21);
+    outline: 0;
+  }
+
+  // 돋보기 아이콘
+  .magnifying-glass-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 10%;
+  }
+}
+
+// 트랙 리스트 wrapper
+.track-list-wrapper {
+  position: absolute;
+  top: 48px;
+  width: 230px;
+}
