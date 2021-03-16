@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useCallback, useState, useMemo, useRef } from 'react';
+import { FunctionComponent, memo, useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import _ from 'lodash';
 import WebcamPanel from './Webcam';
 import Model from './Model';
@@ -67,8 +67,17 @@ const RealtimeContainer: FunctionComponent = () => {
     const isRecording = _.isEqual(status, 'START');
 
     setIsStart(isRecording);
-    setRetargetedData(getDummyData);
   }, []);
+
+  useEffect(() => {
+    if (isStart) {
+      const interval = setInterval(() => {
+        setRetargetedData(getDummyData);
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [isStart]);
 
   return (
     <div className={cx('wrapper')}>

@@ -36,16 +36,11 @@ const Model: FunctionComponent<Props> = ({
   currentAction,
 }) => {
   useEffect(() => {
-    // console.log('skeletonHelper');
-    // console.log(skeletonHelper);
-    if (!isStart && data && !_.isEmpty(data)) {
-      if (skeletonHelper) {
-        // console.log('data');
-        // console.log(data);
+    if (skeletonHelper) {
+      const handleTranslate = () => {
         _.map(data, (item) => {
           const targetBone = _.find(skeletonHelper.bones, { name: item.boneName });
           if (targetBone) {
-            console.log('targetBone');
             // hip에만 position이 있음
             // console.log(item);
             // targetBone.position.x = item.positionX;
@@ -60,13 +55,18 @@ const Model: FunctionComponent<Props> = ({
             // targetBone.scale.z = item.scaleZ;
           }
         });
+      };
+
+      if (isStart && data && !_.isEmpty(data)) {
+        // const interval = setInterval(() => {
+        //   handleTranslate();
+        // }, 1000);
+
+        // return () => clearInterval(interval);
+        handleTranslate();
       }
     }
   }, [data, isStart, skeletonHelper]);
-
-  const handlePlay = useCallback(() => {
-    currentAction?.play();
-  }, [currentAction]);
 
   return <div id="container" ref={innerRef} className={cx('wrapper')} />;
 };
