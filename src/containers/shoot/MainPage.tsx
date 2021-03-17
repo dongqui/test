@@ -14,6 +14,7 @@ import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { useResizeRP } from 'hooks/RP/useResizeRP';
 import TimelinePanel from 'containers/Panels/TimelinePanel';
 import { PlayBar } from 'containers/PlayBar';
+import TimelineContainer from 'containers/Panels/timeline';
 
 const cx = classNames.bind(styles);
 
@@ -107,8 +108,9 @@ const MainContainer: React.FC = () => {
         size={{ ...lowerSection.size }}
         position={{ ...lowerSection.position }}
       >
-        <PlayBar />
-        <TimelinePanel />
+        <TimelineContainer
+          data={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
+        />
       </Rnd>
     </>
   );
