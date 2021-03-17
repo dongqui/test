@@ -6,7 +6,6 @@ export interface ShootTrackType {
 }
 
 export interface ShootLayerType {
-  name: string;
   key: string;
   tracks: ShootTrackType[];
 }

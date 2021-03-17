@@ -94,7 +94,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
             key: clip?.uuid,
             name: clip?.name,
             baseLayer: fnGetBaseLayer({ bones, clip }),
-            // layers: [{ name: 'layer1', key: uuidv4(), tracks: fnGetNewLayer({ bones }) }],
+            // layers: [fnGetNewLayer({ bones })],
             layers: [],
             type: FILE_TYPES.motion,
             parentKey: key,

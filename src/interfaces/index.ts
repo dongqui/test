@@ -1,4 +1,4 @@
-import { ShootLayerType, ShootTrackType } from 'types/timelinePanel';
+import { ShootLayerType, ShootTrackType } from 'types/common';
 import { ContextmenuDataTypes } from '../components/Contextmenu';
 
 export enum PAGE_NAMES {

@@ -3,7 +3,7 @@ import classNames from 'classnames/bind';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
 import { PlayBar } from 'containers/PlayBar';
-import { ShootTrackType, ShootLayerType } from 'types/timelinePanel';
+import { ShootTrackType, ShootLayerType } from 'types/common';
 
 const cx = classNames.bind(styles);
 

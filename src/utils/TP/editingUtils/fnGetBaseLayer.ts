@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import _ from 'lodash';
 import fnQuaternionToEulerTrack from 'utils/common/fnQuaternionToEulerTrack';
-import { ShootTrackType } from 'types/timelinePanel';
+import { ShootTrackType } from 'types/common';
 
 interface FnGetBaseLayer {
   bones: THREE.Bone[];
