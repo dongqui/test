@@ -24,3 +24,4 @@ export const IconViewIconWrapper = styled.div`
 export const ListViewIconWrapper = styled.div`
   cursor: pointer;
 `;
+export const PlusIconWrapper = styled.div``;
