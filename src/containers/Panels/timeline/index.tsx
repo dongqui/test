@@ -6,9 +6,11 @@ import { PlayBar } from 'containers/PlayBar';
 
 const cx = classNames.bind(styles);
 
-interface Props {}
+interface Props {
+  data?: THREE.KeyframeTrack[];
+}
 
-const TimelineContainer: React.FC<Props> = () => {
+const TimelineContainer: React.FC<Props> = ({ data = [] }) => {
   return (
     <>
       <div className={cx('timeline-panel')}>
