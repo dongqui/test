@@ -19,7 +19,7 @@ import * as S from './LibraryPanelStyles';
 import { LPSelect } from 'components/LPSelect';
 import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL } from 'utils/const';
-import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
+import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
 import { InputLP } from 'components/Input/InputLP';
 import { useRouter } from 'next/dist/client/router';
 import * as api from 'utils/common/api';

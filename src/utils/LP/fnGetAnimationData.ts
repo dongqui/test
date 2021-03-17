@@ -1,10 +1,10 @@
 import { GLTFLoader } from '../../three/examples/jsm/loaders/GLTFLoader';
 import * as THREE from 'three';
 
-interface useGetAnimationDataProps {
+interface FnGetAnimationData {
   url: string;
 }
-export const fnGetAnimationData = async ({ url }: useGetAnimationDataProps) => {
+export const fnGetAnimationData = async ({ url }: FnGetAnimationData) => {
   const loader = new GLTFLoader();
   try {
     const { scene, animations } = await loader.loadAsync(url);
