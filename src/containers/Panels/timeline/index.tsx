@@ -13,8 +13,8 @@ interface Props {
 }
 
 const TimelineContainer: React.FC<Props> = ({ baseLayer = [], layers = [] }) => {
-  console.log('baseLayer: ', baseLayer);
-  console.log('layers:', layers);
+  // console.log('baseLayer: ', baseLayer);
+  // console.log('layers:', layers);
 
   return (
     <>
