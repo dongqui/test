@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import _ from 'lodash';
+import { ShootTrackType } from 'types/timelinePanel';
 
 interface FnGetNewLayer {
   bones: THREE.Bone[];
@@ -16,12 +17,7 @@ interface FnGetNewLayer {
  */
 const fnGetNewLayer = (props: FnGetNewLayer) => {
   const { bones } = props;
-  const newTracks: Array<{
-    name: string;
-    times: number[];
-    values: number[];
-    interpolation: string;
-  }> = [];
+  const newTracks: ShootTrackType[] = [];
   _.forEach(bones, (bone) => {
     newTracks.push(
       ..._.map(['position', 'rotation', 'scale'], (property) => ({

@@ -1,4 +1,5 @@
 import { GLTFLoader } from '../../three/examples/jsm/loaders/GLTFLoader';
+import * as THREE from 'three';
 
 interface useGetAnimationDataProps {
   url: string;
@@ -6,9 +7,11 @@ interface useGetAnimationDataProps {
 export const fnGetAnimationData = async ({ url }: useGetAnimationDataProps) => {
   const loader = new GLTFLoader();
   try {
-    const { animations = [] } = await loader.loadAsync(url);
+    const { scene, animations } = await loader.loadAsync(url);
+    const { bones } = new THREE.SkeletonHelper(scene);
     return {
-      result: animations,
+      animations,
+      bones,
       error: false,
     };
   } catch (error) {
