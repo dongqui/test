@@ -1,33 +1,28 @@
 import _ from 'lodash';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
-import { useRenderingModel } from '../../../hooks/RP/useRenderingModel';
-import { BonesTypes, FORMAT_TYPES } from '../../../interfaces';
-import { CONFIG_INFOS } from './const';
-import { useChangeMotion } from 'hooks/RP/useChangeMotion';
-import { DEFAULT_MODEL_URL } from 'utils/const';
+import { renderingOptions } from './const';
+import { useRendering } from '../../../hooks/RP/useRendering';
 
 export interface RenderingControllerProps {
-  id?: string;
+  id: string;
   fileUrl?: string;
-  isPlay?: boolean;
-  playSpeed?: number;
-  playDirection?: -1 | 1;
-  motionDataRT?: BonesTypes[];
+  isPlaying: boolean;
+  playSpeed: number;
+  playDirection: -1 | 1;
 }
-const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
-  id = 'container',
-  fileUrl = DEFAULT_MODEL_URL,
-  isPlay = false,
-  playDirection = 1,
-  playSpeed = 1,
-  motionDataRT = [],
+const RenderingController: React.FC<RenderingControllerProps> = ({
+  id,
+  fileUrl,
+  isPlaying,
+  playDirection,
+  playSpeed,
 }) => {
-  const [mixer, setMixer] = useState<THREE.AnimationMixer>();
-  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper>();
-  const [animations, setAnimations] = useState<THREE.AnimationClip[]>();
-  const currentAnimationClip = useMemo(() => animations?.[1], [animations]);
+  const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
+  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
+  const [animations, setAnimations] = useState<THREE.AnimationClip[]>([]);
+  const currentAnimationClip = useMemo(() => animations?.[0], [animations]);
   const currentAction = useMemo(() => {
     let action;
     if (currentAnimationClip) {
@@ -35,20 +30,30 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
     }
     return action;
   }, [currentAnimationClip, mixer]);
-  useRenderingModel({
+
+  // useRenderingModel({
+  //   id,
+  //   fileUrl,
+  //   renderingOptions,
+  //   format: 'glb',
+  //   setMixer,
+  //   setSkeletonHelper,
+  //   setAnimations,
+  // });
+
+  useRendering({
     id,
     fileUrl,
-    CONFIG_INFOS,
-    format: FORMAT_TYPES.glb,
     setMixer,
+    renderingOptions,
     setSkeletonHelper,
     setAnimations,
   });
-  useChangeMotion({ skeletonHelper, motionDataRT });
+
   useEffect(() => {
-    if (isPlay) {
+    if (isPlaying) {
       if (!_.isUndefined(mixer)) {
-        mixer.timeScale = 1 * playSpeed * playDirection;
+        mixer.timeScale = 0.5 * playSpeed * playDirection;
       }
       currentAction?.play();
     } else {
@@ -56,8 +61,9 @@ const RenderingControllerComponent: React.FC<RenderingControllerProps> = ({
         mixer.timeScale = 0;
       }
     }
-  }, [currentAction, isPlay, mixer, playDirection, playSpeed]);
+  }, [currentAction, isPlaying, mixer, playDirection, playSpeed]);
+
   return <RenderingPresenter id={id} />;
 };
 
-export const RenderingController = React.memo(RenderingControllerComponent);
+export default memo(RenderingController);

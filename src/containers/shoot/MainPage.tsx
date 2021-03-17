@@ -4,7 +4,9 @@ import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
 import { RENDERING_DATA, MAIN_DATA } from 'lib/store';
-import { RenderingController } from 'containers/Panels/RenderingPanel/RenderingController';
+import RenderingController, {
+  RenderingControllerProps,
+} from 'containers/Panels/RenderingPanel/RenderingController';
 import { MIN_WIDTH } from 'styles/constants/panels';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
@@ -74,11 +76,11 @@ const MainContainer: React.FC = () => {
           position={{ ...renderingPanel.position }}
         >
           <RenderingController
+            id="renderingDiv"
             fileUrl={fileUrl}
-            isPlay={renderingData.isPlay}
+            isPlaying={renderingData.isPlaying}
             playDirection={renderingData.playDirection}
             playSpeed={renderingData.playSpeed}
-            motionDataRT={[]}
           />
         </Rnd>
         <Rnd
