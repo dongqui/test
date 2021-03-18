@@ -1,5 +1,5 @@
 import React from 'react';
-import * as S from './InputStyles';
+import * as S from './StyleInput';
 
 export interface InputCPProps {
   prefix?: 'X' | 'Y' | 'Z';

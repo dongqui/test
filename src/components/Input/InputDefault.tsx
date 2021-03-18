@@ -2,7 +2,7 @@ import _ from 'lodash';
 import React from 'react';
 import { rem } from 'utils/rem';
 import { GRAY300 } from '../../styles/constants/common';
-import * as S from './InputStyles';
+import * as S from './StyleInput';
 
 export interface InputDefaultProps {
   width?: number;
