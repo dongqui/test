@@ -1,3 +1,4 @@
+import { ShootLayerType, ShootTrackType } from 'types/common';
 import { ContextmenuDataTypes } from '../components/Contextmenu';
 
 export enum PAGE_NAMES {
@@ -61,6 +62,7 @@ export enum MAINDATA_PROPERTY_TYPES {
   isCopied = 'isCopied',
   isDragging = 'isDragging',
   baseLayer = 'baseLayer',
+  layers = 'layers',
 }
 export enum LPMODE_TYPES {
   listview = 'listview',
@@ -82,6 +84,7 @@ export interface ContextmenuTypes {
   left: number;
   onClick: ({ key }: { key: string }) => void;
 }
+
 export interface MainDataTypes {
   [MAINDATA_PROPERTY_TYPES.key]: string;
   [MAINDATA_PROPERTY_TYPES.name]: string;
@@ -96,7 +99,8 @@ export interface MainDataTypes {
   [MAINDATA_PROPERTY_TYPES.isModifying]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isCopied]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isDragging]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.baseLayer]?: THREE.KeyframeTrack[];
+  [MAINDATA_PROPERTY_TYPES.baseLayer]?: ShootTrackType[];
+  [MAINDATA_PROPERTY_TYPES.layers]?: ShootLayerType[];
 }
 export interface BonesTypes {
   name: string;

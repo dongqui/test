@@ -10,7 +10,7 @@ import { TransformControls } from '../../three/examples/jsm/controls/TransformCo
 import { DragControls } from '../../three/examples/jsm/controls/DragControls';
 import { useHistory } from './useHistory';
 import { FORMAT_TYPES } from '../../interfaces';
-import { CONFIG_INFO } from '../../interfaces/RP';
+import { RenderingOption } from '../../interfaces/RP';
 
 const MAP_TYPES = [
   'map',
@@ -138,15 +138,15 @@ export const useRenderingModel = ({
   fileUrl,
   format,
   setMixer,
-  CONFIG_INFOS,
+  renderingOptions,
   setSkeletonHelper,
   setAnimations,
 }: {
   id: string;
   fileUrl?: string;
-  format: FORMAT_TYPES;
+  format: 'glb' | 'fbx';
   setMixer: Function;
-  CONFIG_INFOS: CONFIG_INFO[] | undefined;
+  renderingOptions: RenderingOption[] | undefined;
   setSkeletonHelper: Function;
   setAnimations: Function;
 }) => {
@@ -178,15 +178,15 @@ export const useRenderingModel = ({
   const createScene = useCallback(() => {
     const scene = new THREE.Scene(); // scene 생성
     scene.background = new THREE.Color(RENDERING_OPTION.scene.backgroundColor); // scene 배경색
-    if (_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneFogPower'))?.value) {
+    if (_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneFogPower'))?.value) {
       scene.fog = new THREE.Fog(
         RENDERING_OPTION.scene.fogColor,
-        _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneFogNear'))?.value,
-        _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneFogFar'))?.value,
+        _.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneFogNear'))?.value,
+        _.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneFogFar'))?.value,
       ); // scene 안개 (color, near, far)
     }
     return scene;
-  }, [CONFIG_INFOS]);
+  }, [renderingOptions]);
 
   const createCamera = useCallback(() => {
     const camera = new THREE.PerspectiveCamera(
@@ -195,25 +195,26 @@ export const useRenderingModel = ({
       RENDERING_OPTION.camera.near,
       RENDERING_OPTION.camera?.value,
     ); // camera 생성
-    if (!_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+    if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
       camera.up.set(0, 0, 1); // z-up
     }
     // camera 위치 (default)
-    let cameraPosition = _.find(CONFIG_INFOS, (item, index) =>
+    let cameraPosition = _.find(renderingOptions, (item, index) =>
       _.isEqual(item.key, 'cameraDefaultPosition'),
     )?.value;
     if (_.isEqual(format, FORMAT_TYPES.fbx)) {
       // camera 위치 (fbx)
-      cameraPosition = _.find(CONFIG_INFOS, (item, index) =>
+      cameraPosition = _.find(renderingOptions, (item, index) =>
         _.isEqual(item.key, 'cameraFbxPosition'),
       )?.value;
     }
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    const cameraLookAt = _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'cameraLookAt'))
-      ?.value;
+    const cameraLookAt = _.find(renderingOptions, (item, index) =>
+      _.isEqual(item.key, 'cameraLookAt'),
+    )?.value;
     camera.lookAt(cameraLookAt.x, cameraLookAt.y, cameraLookAt.z); // camera 방향
     return camera;
-  }, [CONFIG_INFOS, format]);
+  }, [renderingOptions, format]);
 
   const createRenderer = useCallback(
     ({ renderingDiv }: { renderingDiv: HTMLDivElement | undefined }) => {
@@ -248,10 +249,12 @@ export const useRenderingModel = ({
         RENDERING_OPTION.light.dirLight.position.y,
         RENDERING_OPTION.light.dirLight.position.z,
       );
-      dirLight.castShadow = _.find(CONFIG_INFOS, (item, index) =>
+      dirLight.castShadow = _.find(renderingOptions, (item, index) =>
         _.isEqual(item.key, 'dirLightCastShadow'),
       )?.value;
-      if (_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'dirLightCastShadow'))?.value) {
+      if (
+        _.find(renderingOptions, (item, index) => _.isEqual(item.key, 'dirLightCastShadow'))?.value
+      ) {
         dirLight.shadow.mapSize = RENDERING_OPTION.light.dirLight.shadow.mapSize;
         dirLight.shadow.camera.near = RENDERING_OPTION.light.dirLight.shadow.camera.near;
         dirLight.shadow.camera.far = RENDERING_OPTION.light.dirLight.shadow.camera.far;
@@ -262,7 +265,7 @@ export const useRenderingModel = ({
       }
       scene.add(dirLight);
     },
-    [CONFIG_INFOS],
+    [renderingOptions],
   );
 
   const addGround = useCallback(
@@ -302,7 +305,7 @@ export const useRenderingModel = ({
         RENDERING_OPTION.ground.position.y,
         RENDERING_OPTION.ground.position.z,
       );
-      if (_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+      if (_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
         groundMesh.rotation.x = -Math.PI / 2; // y-up
       } else {
         groundMesh.rotation.x = -Math.PI; // z-up
@@ -315,7 +318,7 @@ export const useRenderingModel = ({
       const xGeometry = new THREE.BufferGeometry().setFromPoints(RENDERING_OPTION.axis.x.points);
       const xAxis = new THREE.Line(xGeometry, xMaterial);
       scene.add(xAxis);
-      if (_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+      if (_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
         const zMaterial = new THREE.LineBasicMaterial({ color: RENDERING_OPTION.axis.z.color });
         const zGeometry = new THREE.BufferGeometry().setFromPoints(RENDERING_OPTION.axis.z.points);
         const zAxis = new THREE.Line(zGeometry, zMaterial);
@@ -328,7 +331,7 @@ export const useRenderingModel = ({
       scene.add(yAxis);
       return { groundMesh, axesArray: [xAxis, yAxis] };
     },
-    [CONFIG_INFOS],
+    [renderingOptions],
   );
 
   const createCameraControls = useCallback(
@@ -611,7 +614,7 @@ export const useRenderingModel = ({
   const addSkeletonHelper = useCallback(
     ({ scene, model }: { scene: THREE.Scene; model: THREE.Object3D }) => {
       const skeletonHelper = new THREE.SkeletonHelper(model);
-      skeletonHelper.visible = _.find(CONFIG_INFOS, (item, index) =>
+      skeletonHelper.visible = _.find(renderingOptions, (item, index) =>
         _.isEqual(item.key, 'skeletonBonesPower'),
       )?.value;
       setTimeout(() => {
@@ -620,7 +623,7 @@ export const useRenderingModel = ({
       setSkeletonHelper(skeletonHelper);
       return skeletonHelper;
     },
-    [CONFIG_INFOS, setSkeletonHelper],
+    [renderingOptions, setSkeletonHelper],
   );
 
   const addJointMeshes = useCallback(
@@ -650,7 +653,7 @@ export const useRenderingModel = ({
         boneMaterial.depthTest = false;
 
         const boneGeometry = new THREE.SphereBufferGeometry(
-          _.find(CONFIG_INFOS, (item, index) =>
+          _.find(renderingOptions, (item, index) =>
             _.isEqual(item.key, 'skeletonJointMeshesRadius'),
           )?.value,
           RENDERING_OPTION.skeletonJoint.segments.width,
@@ -691,7 +694,7 @@ export const useRenderingModel = ({
         });
       }
     },
-    [CONFIG_INFOS, currentBone],
+    [renderingOptions, currentBone],
   );
 
   const handleCameraControlsShortcutDown = useCallback(
@@ -717,7 +720,7 @@ export const useRenderingModel = ({
         case 't': // t (top)
         case 'T':
         case 'ㅅ':
-          if (!_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
             cameraControls.object.position.set(0, -5, 10);
             cameraControls.object.lookAt(0, 0, 0);
             cameraControls.target.set(0, 0, 0);
@@ -732,7 +735,7 @@ export const useRenderingModel = ({
         case 'b': // b (bottom)
         case 'B':
         case 'ㅠ':
-          if (!_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
             cameraControls.object.position.set(0, -5, -10);
             cameraControls.object.lookAt(0, 0, 0);
             cameraControls.target.set(0, 0, 0);
@@ -747,7 +750,7 @@ export const useRenderingModel = ({
         case 'l': // l (left)
         case 'L':
         case 'ㅣ':
-          if (!_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
             cameraControls.object.position.set(-10, 0, 5);
             cameraControls.object.lookAt(0, 0, 0);
             cameraControls.target.set(0, 0, 0);
@@ -771,7 +774,9 @@ export const useRenderingModel = ({
               multiKeyController.ㅍ.pressed) &&
             multiKeyController[event.key].pressed
           ) {
-            if (!_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+            if (
+              !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
+            ) {
               cameraControls.object.position.set(10, 0, 5);
               cameraControls.object.lookAt(0, 0, 0);
               cameraControls.target.set(0, 0, 0);
@@ -787,7 +792,7 @@ export const useRenderingModel = ({
         case 'f': // f (front)
         case 'F':
         case 'ㄹ':
-          if (!_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
             cameraControls.object.position.set(0, -10, 5);
             cameraControls.object.lookAt(0, 0, 0);
             cameraControls.target.set(0, 0, 0);
@@ -811,7 +816,9 @@ export const useRenderingModel = ({
               multiKeyController.ㅍ.pressed) &&
             multiKeyController[event.key].pressed
           ) {
-            if (!_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+            if (
+              !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
+            ) {
               cameraControls.object.position.set(0, 10, 5);
               cameraControls.object.lookAt(0, 0, 0);
               cameraControls.target.set(0, 0, 0);
@@ -828,7 +835,7 @@ export const useRenderingModel = ({
           break;
       }
     },
-    [CONFIG_INFOS, multiKeyController],
+    [renderingOptions, multiKeyController],
   );
 
   const handleCameraControlsShortcutUp = useCallback(
@@ -1079,14 +1086,15 @@ export const useRenderingModel = ({
           // ml 팀 bones 전달용
           // exportBonesJson({ skeletonHelper });
           if (
-            !_.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'modelMeshPower'))?.value
+            !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'modelMeshPower'))?.value
           ) {
             eraseSkinnedMeshes({ skeletonHelper });
           }
           setContents((prevContents) => [...prevContents, skeletonHelper]);
           if (
-            _.find(CONFIG_INFOS, (item, index) => _.isEqual(item.key, 'skeletonJointMeshesPower'))
-              ?.value
+            _.find(renderingOptions, (item, index) =>
+              _.isEqual(item.key, 'skeletonJointMeshesPower'),
+            )?.value
           ) {
             // skeleton bone에 mesh 추가, 현재 리타겟팅 문제로 임시 주석처리
             addJointMeshes({
@@ -1133,7 +1141,7 @@ export const useRenderingModel = ({
       clearRendering({ renderingDiv });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fileUrl, CONFIG_INFOS]);
+  }, [fileUrl, renderingOptions]);
   return {
     theCameraControls,
   };

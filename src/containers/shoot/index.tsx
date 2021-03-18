@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NextPage } from 'next';
 import _ from 'lodash';
 import styled from '@emotion/styled';
@@ -10,6 +10,7 @@ import { CONTEXTMENU_INFO, MODAL_INFO } from 'lib/store';
 import { GRAY200 } from 'styles/constants/common';
 import { Modal } from 'components/Modal';
 import { MODAL_TYPES } from 'interfaces';
+import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
 interface ContextMenuWrapperProps {
   top: string;
   left: string;
@@ -50,6 +51,9 @@ const ShootPage: NextPage<Props> = () => {
       MODAL_INFO({ ...modalInfo, isShow: false, msg: '' });
     },
   });
+  useEffect(() => {
+    fnKillSetInterval();
+  }, []);
 
   return (
     <main>

@@ -1,10 +1,11 @@
 import { makeVar } from '@apollo/client';
 import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
+import { CP_DATA_TYPES } from 'interfaces/CP';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'interfaces/RP';
 import _ from 'lodash';
-import { INITIAL_MAIN_DATA, isClient } from 'utils/const';
+import { INITIAL_CP_DATA, INITIAL_MAIN_DATA, INITIAL_RENDERING_DATA, isClient } from 'utils/const';
 import { ContextmenuTypes, LPMODE_TYPES, MainDataTypes, ModalTypes } from '../interfaces';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
@@ -20,7 +21,6 @@ const makeInitialData = ({ name, initialData }: { name: string; initialData: any
 };
 export enum STORE_DATA_NAMES {
   mainData = 'mainData',
-  skeletonHelpers = 'skeletonHelpers',
 }
 // common
 export const CONTEXTMENU_INFO = makeVar<ContextmenuTypes>({
@@ -41,11 +41,7 @@ export const PAGES = makeVar<PagesTypes[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_
 export const SEARCH_WORD = makeVar<string>('');
 export const LP_MODE = makeVar<LPMODE_TYPES>(LPMODE_TYPES.listview);
 // RP
-export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>({
-  isPlay: false,
-  playDirection: 1,
-  playSpeed: 1,
-});
+export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>(INITIAL_RENDERING_DATA);
 // WEBCAM
 export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
   duration: 10,
@@ -56,8 +52,10 @@ export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
     barX: 50,
     y: 0,
   },
-  isPlay: false,
+  isPlaying: false,
   motionName: '',
   isRecording: undefined,
 });
+// CP
+export const CP_DATA = makeVar<CP_DATA_TYPES[]>(INITIAL_CP_DATA);
 export const CUT_IMAGES = makeVar<string[]>([]);

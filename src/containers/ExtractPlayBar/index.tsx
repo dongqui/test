@@ -8,9 +8,9 @@ import { ModeSelect } from './ModeSelect';
 import * as S from './PlayBarStyles';
 import { PlayBox } from './PlayBox';
 
-export interface PlayBarProps {}
+export interface ExtractPlayBarProps {}
 
-const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
+const ExtractPlayBarComponent: React.FC<ExtractPlayBarProps> = ({}) => {
   const recordingData = useReactiveVar(RECORDING_DATA);
   const now = useMemo(
     () => (recordingData.duration * (recordingData.rangeBoxInfo.barX / STANDARD_WIDTH)).toFixed(1),
@@ -56,4 +56,4 @@ const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
     </S.PlayBarWrapper>
   );
 };
-export const PlayBar = React.memo(PlayBarComponent);
+export const ExtractPlayBar = React.memo(ExtractPlayBarComponent);
