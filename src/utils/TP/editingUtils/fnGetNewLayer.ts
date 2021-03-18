@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import _ from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
+import { ShootTrackType } from 'types/common';
 
 interface FnGetNewLayer {
   bones: THREE.Bone[];
@@ -16,12 +18,7 @@ interface FnGetNewLayer {
  */
 const fnGetNewLayer = (props: FnGetNewLayer) => {
   const { bones } = props;
-  const newTracks: Array<{
-    name: string;
-    times: number[];
-    values: number[];
-    interpolation: string;
-  }> = [];
+  const newTracks: ShootTrackType[] = [];
   _.forEach(bones, (bone) => {
     newTracks.push(
       ..._.map(['position', 'rotation', 'scale'], (property) => ({
@@ -32,7 +29,10 @@ const fnGetNewLayer = (props: FnGetNewLayer) => {
       })),
     );
   });
-  return newTracks;
+  return {
+    key: uuidv4(),
+    tracks: newTracks,
+  };
 };
 
 export default fnGetNewLayer;
