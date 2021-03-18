@@ -8,8 +8,12 @@ export interface CP_BUTTONINFO_TYPES {
   name: string;
   isSelected: boolean;
 }
+export enum CP_DATA_PROPERTY_NAMES {
+  key = 'key',
+  parentKey = 'parentKey',
+}
 export interface CP_DATA_TYPES {
-  key: string;
+  [CP_DATA_PROPERTY_NAMES.key]: string;
   name:
     | 'Transform'
     | 'Position'
@@ -23,7 +27,10 @@ export interface CP_DATA_TYPES {
     | 'Bone'
     | 'Joint'
     | 'Mesh'
-    | 'Shadow';
+    | 'Shadow'
+    | 'Fog'
+    | 'Near'
+    | 'Far';
   type:
     | CP_COMPONENT_TYPES.parent
     | CP_COMPONENT_TYPES.input
@@ -33,6 +40,9 @@ export interface CP_DATA_TYPES {
   y?: number;
   z?: number;
   buttonInfo?: CP_BUTTONINFO_TYPES[];
-  parentKey?: string;
+  [CP_DATA_PROPERTY_NAMES.parentKey]?: string;
   isExpanded?: boolean;
+  min?: number;
+  max?: number;
+  value?: number;
 }

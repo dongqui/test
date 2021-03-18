@@ -89,7 +89,7 @@ export const INITIAL_CP_DATA: CP_DATA_TYPES[] = [
     parentKey: '0',
   },
   {
-    key: '0-1',
+    key: '0-2',
     name: 'Rotation',
     type: CP_COMPONENT_TYPES.input,
     x: 1.11,
@@ -98,7 +98,7 @@ export const INITIAL_CP_DATA: CP_DATA_TYPES[] = [
     parentKey: '0',
   },
   {
-    key: '0-1',
+    key: '0-3',
     name: 'Scale',
     type: CP_COMPONENT_TYPES.input,
     x: 1.11,
@@ -185,5 +185,39 @@ export const INITIAL_CP_DATA: CP_DATA_TYPES[] = [
       { name: 'OFF', isSelected: false },
     ],
     parentKey: '2',
+  },
+  {
+    key: '3',
+    name: 'Fog',
+    type: CP_COMPONENT_TYPES.parent,
+    isExpanded: true,
+  },
+  {
+    key: '3-1',
+    name: 'Fog',
+    type: CP_COMPONENT_TYPES.select,
+    buttonInfo: [
+      { name: 'ON', isSelected: true },
+      { name: 'OFF', isSelected: false },
+    ],
+    parentKey: '3',
+  },
+  {
+    key: '3-2',
+    name: 'Near',
+    type: CP_COMPONENT_TYPES.slider,
+    parentKey: '3',
+    min: 0,
+    max: 100,
+    value: 50,
+  },
+  {
+    key: '3-3',
+    name: 'Far',
+    type: CP_COMPONENT_TYPES.slider,
+    parentKey: '3',
+    min: 0,
+    max: 100,
+    value: 50,
   },
 ];
