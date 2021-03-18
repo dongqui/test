@@ -20,6 +20,11 @@ export const LIBRARYPANEL_INFO = {
   heightPx: 540,
 } as const;
 
+export const CONTROLPANEL_INFO = {
+  widthPx: 226,
+  heightPx: 540,
+} as const;
+
 export const CONTROLLER_PANEL_WIDTH_RATE = 20 as const;
 export const RENDERING_PANEL_WIDTH_RATE = 60 as const;
 

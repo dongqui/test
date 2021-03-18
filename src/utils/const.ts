@@ -1,5 +1,7 @@
 import { FILE_TYPES, MainDataTypes } from 'interfaces';
+import { CP_COMPONENT_TYPES, CP_DATA_TYPES } from 'interfaces/CP';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
+import { RENDERING_DATA_TYPES } from 'interfaces/RP';
 
 export const isClient = typeof window !== 'undefined';
 export const DEFAULT_MODEL_URL =
@@ -38,4 +40,150 @@ export const INITIAL_MAIN_DATA: MainDataTypes[] = [
   //   parentKey: '0',
   //   baseLayer: [],
   // },
+];
+export const INITIAL_RENDERING_DATA: RENDERING_DATA_TYPES = {
+  isPlaying: false,
+  playDirection: 1,
+  playSpeed: 1,
+  Transform: {
+    positionX: 1.11,
+    positionY: 1.11,
+    positionZ: 1.11,
+    rotationX: 1.11,
+    rotationY: 1.11,
+    rotationZ: 1.11,
+    scaleX: 1.11,
+    scaleY: 1.11,
+    scaleZ: 1.11,
+  },
+  Camera: {
+    locationX: 1.11,
+    locationY: 1.11,
+    locationZ: 1.11,
+    angleX: 1.11,
+    angleY: 1.11,
+    angleZ: 1.11,
+  },
+  Visibility: {
+    Axis: 'Y-up',
+    Bone: true,
+    Joint: true,
+    Mesh: true,
+    Shadow: true,
+  },
+};
+export const INITIAL_CP_DATA: CP_DATA_TYPES[] = [
+  {
+    key: '0',
+    name: 'Transform',
+    type: CP_COMPONENT_TYPES.parent,
+    isExpanded: true,
+  },
+  {
+    key: '0-1',
+    name: 'Position',
+    type: CP_COMPONENT_TYPES.input,
+    x: 1.11,
+    y: 1.11,
+    z: 1.11,
+    parentKey: '0',
+  },
+  {
+    key: '0-1',
+    name: 'Rotation',
+    type: CP_COMPONENT_TYPES.input,
+    x: 1.11,
+    y: 1.11,
+    z: 1.11,
+    parentKey: '0',
+  },
+  {
+    key: '0-1',
+    name: 'Scale',
+    type: CP_COMPONENT_TYPES.input,
+    x: 1.11,
+    y: 1.11,
+    z: 1.11,
+    parentKey: '0',
+  },
+  {
+    key: '1',
+    name: 'Camera',
+    type: CP_COMPONENT_TYPES.parent,
+    isExpanded: true,
+  },
+  {
+    key: '1-1',
+    name: 'Location',
+    type: CP_COMPONENT_TYPES.input,
+    x: 1.1,
+    y: 1.1,
+    z: 1.1,
+    parentKey: '1',
+  },
+  {
+    key: '1-2',
+    name: 'Angle',
+    type: CP_COMPONENT_TYPES.input,
+    x: 1.1,
+    y: 1.1,
+    z: 1.1,
+    parentKey: '1',
+  },
+  {
+    key: '2',
+    name: 'Visibility',
+    type: CP_COMPONENT_TYPES.parent,
+    isExpanded: true,
+  },
+  {
+    key: '2-1',
+    name: 'Axis',
+    type: CP_COMPONENT_TYPES.select,
+    buttonInfo: [
+      { name: 'Y-up', isSelected: true },
+      { name: 'Z-up', isSelected: false },
+    ],
+    parentKey: '2',
+  },
+  {
+    key: '2-2',
+    name: 'Bone',
+    type: CP_COMPONENT_TYPES.select,
+    buttonInfo: [
+      { name: 'ON', isSelected: true },
+      { name: 'OFF', isSelected: false },
+    ],
+    parentKey: '2',
+  },
+  {
+    key: '2-3',
+    name: 'Joint',
+    type: CP_COMPONENT_TYPES.select,
+    buttonInfo: [
+      { name: 'ON', isSelected: true },
+      { name: 'OFF', isSelected: false },
+    ],
+    parentKey: '2',
+  },
+  {
+    key: '2-4',
+    name: 'Mesh',
+    type: CP_COMPONENT_TYPES.select,
+    buttonInfo: [
+      { name: 'ON', isSelected: true },
+      { name: 'OFF', isSelected: false },
+    ],
+    parentKey: '2',
+  },
+  {
+    key: '2-5',
+    name: 'Shadow',
+    type: CP_COMPONENT_TYPES.select,
+    buttonInfo: [
+      { name: 'ON', isSelected: true },
+      { name: 'OFF', isSelected: false },
+    ],
+    parentKey: '2',
+  },
 ];

@@ -5,9 +5,9 @@ import React from 'react';
 import * as S from './PlayBarStyles';
 import { PlayBox } from './PlayBox';
 
-export interface PlayBarProps {}
+export interface RecordPlayBarProps {}
 
-const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
+const RecordPlayBarComponent: React.FC<RecordPlayBarProps> = ({}) => {
   const recordingData = useReactiveVar(RECORDING_DATA);
   return (
     <S.PlayBarWrapper isRecording={recordingData.isRecording ?? false}>
@@ -17,4 +17,4 @@ const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
     </S.PlayBarWrapper>
   );
 };
-export const PlayBar = React.memo(PlayBarComponent);
+export const RecordPlayBar = React.memo(RecordPlayBarComponent);

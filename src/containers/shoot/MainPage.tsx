@@ -4,16 +4,12 @@ import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
 import { RENDERING_DATA, MAIN_DATA } from 'lib/store';
-import RenderingController, {
-  RenderingControllerProps,
-} from 'containers/Panels/RenderingPanel/RenderingController';
+import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { MIN_WIDTH } from 'styles/constants/panels';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { useResizeRP } from 'hooks/RP/useResizeRP';
-import TimelinePanel from 'containers/Panels/TimelinePanel';
-import { PlayBar } from 'containers/PlayBar';
 import TimelineContainer from 'containers/Panels/timeline';
 
 const cx = classNames.bind(styles);

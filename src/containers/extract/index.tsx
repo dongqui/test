@@ -1,18 +1,11 @@
-import React, {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useRef } from 'react';
 import { NextPage } from 'next';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import * as S from './ExtractStyle';
 import { Webcam } from 'containers/Webcam';
 import { CutEdit } from 'containers/CutEdit';
-import { PlayBar } from 'containers/ExtractPlayBar';
+import { ExtractPlayBar } from 'containers/ExtractPlayBar';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
 import { MAIN_DATA, MODAL_INFO, RECORDING_DATA } from 'lib/store';
@@ -128,7 +121,7 @@ const ExtractPage: NextPage<Props> = ({}) => {
       <S.WebcamWrapper>
         <Webcam videoUrl={`${router.query?.videoUrl ?? DEFAULT_FILE_URL}`} />
       </S.WebcamWrapper>
-      <PlayBar />
+      <ExtractPlayBar />
       <S.CutEditWrapper>
         <CutEdit />
       </S.CutEditWrapper>

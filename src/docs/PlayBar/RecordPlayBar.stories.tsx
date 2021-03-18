@@ -1,15 +1,15 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { PlayBar, PlayBarProps } from 'containers/ExtractPlayBar';
+import { RecordPlayBar, RecordPlayBarProps } from 'containers/RecordPlayBar';
 
 export default {
   title: 'Component API/Container/RecordPlayBar',
-  component: PlayBar,
+  component: RecordPlayBar,
   args: {},
 } as Meta;
 
-const Template: Story<PlayBarProps> = (args) => <PlayBar {...args} />;
+const Template: Story<RecordPlayBarProps> = (args) => <RecordPlayBar {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {};
