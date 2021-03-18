@@ -1,10 +1,12 @@
 import _ from 'lodash';
-import { ShootTrackType } from 'types/common';
+import { ShootLayerType, ShootTrackType } from 'types/common';
+import { fnGetInterpolatedTrackLinear, fnGetTrackUnionTimes } from 'utils/TP/editingUtils';
 
 interface FnUpdateKeyframeToLayer {
   track: ShootTrackType;
-  baseLayerTrack: ShootTrackType;
-  otherLayerTracks: ShootTrackType[];
+  currentLayerKey: string;
+  baseLayer: ShootTrackType[];
+  layers: ShootLayerType[];
   time: number;
   values: {
     x: number;
@@ -21,8 +23,9 @@ interface FnUpdateKeyframeToLayer {
  * 이때 base layer 의 해당 트랙이 그 시점(0.3333) 에 값을 갖지 않는다면, 자체적으로 보간한 값을 사용해 delta 값을 구합니다.
  *
  * @param track - 키프레임을 추가/수정할 대상 트랙
- * @param baseLayerTrack - 자체적인 interpolation 을 거친 base layer 내 동일 트랙
- * @param otherLayerTracks - 자체적인 interpolation 을 거친 other layers 내 동일 트랙들
+ * @param currentLayerKey - 현재 layer 의 key 값
+ * @param baseLayer - base layer
+ * @param layers - layers
  * @param time - 대상 시점 (현재 RP 에서 보이고 있는 시점)
  * @param values - 추가/수정 시 사용할 값 (x, y, z)
  *
@@ -30,21 +33,40 @@ interface FnUpdateKeyframeToLayer {
  *
  */
 const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer) => {
-  const { track, baseLayerTrack, otherLayerTracks, time, values } = props;
+  const { track, currentLayerKey, baseLayer, layers, time, values } = props;
+
+  const emptyTrack = {
+    name: 'empty',
+    times: [],
+    values: [],
+    interpolation: 'linear',
+  };
 
   // delta values 구하기
-  const unionTimes = baseLayerTrack.times;
+  const unionTimes = fnGetTrackUnionTimes({ track, baseLayer, layers });
   const unionTimeIndex = _.findIndex(unionTimes, (t) => t === time);
+
+  const baseLayerTrack = _.find(baseLayer, (t) => t.name === track.name) || emptyTrack;
+  const otherLayerTracks = _.map(
+    _.filter(layers, (layer) => layer.key !== currentLayerKey),
+    (lay) => _.find(lay.tracks, (t) => t.name === track.name) || emptyTrack,
+  );
+
+  const interpolatedBaseTrack = fnGetInterpolatedTrackLinear({ unionTimes, track: baseLayerTrack });
+  const interpolatedOtherLayerTracks = _.map(otherLayerTracks, (t) =>
+    fnGetInterpolatedTrackLinear({ unionTimes, track: t }),
+  );
+
   // base layer 값 빼기
-  let deltaX = values.x - baseLayerTrack.values[unionTimeIndex * 3];
-  let deltaY = values.y - baseLayerTrack.values[unionTimeIndex * 3 + 1];
-  let deltaZ = values.z - baseLayerTrack.values[unionTimeIndex * 3 + 2];
+  let deltaX = values.x - interpolatedBaseTrack.values[unionTimeIndex * 3];
+  let deltaY = values.y - interpolatedBaseTrack.values[unionTimeIndex * 3 + 1];
+  let deltaZ = values.z - interpolatedBaseTrack.values[unionTimeIndex * 3 + 2];
   // other layers 돌면서 값 빼기
-  if (otherLayerTracks.length !== 0) {
-    _.forEach(otherLayerTracks, (otherLayerTrack) => {
-      deltaX = deltaX - otherLayerTrack.values[unionTimeIndex + 3];
-      deltaY = deltaY - otherLayerTrack.values[unionTimeIndex + 3 + 1];
-      deltaZ = deltaZ - otherLayerTrack.values[unionTimeIndex + 3 + 2];
+  if (interpolatedOtherLayerTracks.length !== 0) {
+    _.forEach(interpolatedOtherLayerTracks, (interpolatedOtherLayerTrack) => {
+      deltaX = deltaX - interpolatedOtherLayerTrack.values[unionTimeIndex + 3];
+      deltaY = deltaY - interpolatedOtherLayerTrack.values[unionTimeIndex + 3 + 1];
+      deltaZ = deltaZ - interpolatedOtherLayerTrack.values[unionTimeIndex + 3 + 2];
     });
   }
   const deltaValues = {

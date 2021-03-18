@@ -23,12 +23,18 @@ const fnGetTrackUnionTimes = (props: FnGetTrackUnionTimes) => {
   }
   const targetTimes = [];
   // base layer 내 대상 트랙의 times
-  targetTimes.push(_.find(baseLayer, (tr) => tr.name === track.name)?.times);
+  const baseLayerTrack = _.find(baseLayer, (tr) => tr.name === track.name);
+  if (baseLayerTrack) {
+    targetTimes.push(baseLayerTrack.times);
+  }
   // layers 내 대상 트랙의 times
   _.forEach(layers, (layer) => {
-    targetTimes.push(_.find(layer.tracks, (tr) => tr.name === track.name)?.times);
+    const layerTrack = _.find(layer.tracks, (tr) => tr.name === track.name);
+    if (layerTrack) {
+      targetTimes.push(layerTrack.times);
+    }
   });
-  return _.union(targetTimes);
+  return _.union(...targetTimes).sort();
 };
 
 export default fnGetTrackUnionTimes;

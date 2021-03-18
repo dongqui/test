@@ -29,7 +29,7 @@ const fnGetSummaryTimes = (props: FnGetSummaryTimes) => {
       targetTimes.push(track.times);
     });
   });
-  return _.union(targetTimes);
+  return _.union(...targetTimes).sort();
 };
 
 export default fnGetSummaryTimes;
