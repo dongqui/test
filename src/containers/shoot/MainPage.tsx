@@ -11,6 +11,7 @@ import styles from './MainPage.module.scss';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
 import { useResizeRP } from 'hooks/RP/useResizeRP';
 import TimelineContainer from 'containers/Panels/timeline';
+import { ControlPanel } from 'containers/Panels/ControlPanel';
 
 const cx = classNames.bind(styles);
 
@@ -82,6 +83,7 @@ const MainContainer: React.FC = () => {
         </Rnd>
         <Rnd
           id="wrapper_control"
+          className={cx('control')}
           disableDragging
           enableResizing={{ left: true }}
           onResize={handleResizeStop}
@@ -91,7 +93,9 @@ const MainContainer: React.FC = () => {
           size={{ ...controlPanel.size }}
           position={{ ...controlPanel.position }}
         >
-          <div style={{ backgroundColor: 'black', height: '100%' }}>Control Panel</div>
+          <div className={cx('child')}>
+            <ControlPanel />
+          </div>
         </Rnd>
       </Rnd>
       <Rnd

@@ -2,3 +2,12 @@
   z-index: 1;
   overflow: hidden;
 }
+
+.control {
+  background-color: black;
+
+  .child {
+    position: absolute;
+    right: 0;
+  }
+}
