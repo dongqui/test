@@ -85,15 +85,16 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
     if (!filteredTrackList.length) {
       if (trimedLastTrackInput) {
         // 인풋 텍스트가 Base에 포함되는 경우
-        if (_.includes('Base', trimedLastTrackInput)) {
+        if (_.includes(_.toLower('Base'), trimedLastTrackInput)) {
           setPrintSummaryTrack(true);
           setPrintBaseTrack(true);
           setSummaryTrackToggle(true);
           setBaseTrackToggle(true);
           return;
         }
+
         // 인풋 텍스트가 Summary에 포함되는 경우
-        if (_.includes('Summary', trimedLastTrackInput)) {
+        if (_.includes(_.toLower('Summary'), trimedLastTrackInput)) {
           setPrintSummaryTrack(true);
           setPrintBaseTrack(false);
           setSummaryTrackToggle(true);
