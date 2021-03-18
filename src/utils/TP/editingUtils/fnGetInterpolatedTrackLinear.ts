@@ -25,11 +25,11 @@ const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear) => {
   const newValues: number[] = [];
 
   // unionTimes 를 순회하며 보간을 적용한다.
-  // 1. 먼저 track.times 가 시작되기 전의 시점에 대해서는 track.times[0] 값을 보간값으로 적용한다 v
-  // 2. track.times 와 겹치는 구간에 대해서는 (track.times 의 마지막 값 제외) v
-  //  1) track.times 에 속한 time 에 대해서는 track.values 내의 해당 값을 적용한다. v
+  // 1. 먼저 track.times 가 시작되기 전의 시점에 대해서는 0 을 보간값으로 적용한다.
+  // 2. track.times 와 겹치는 구간에 대해서는 (track.times 의 마지막 값 제외).
+  //  1) track.times 에 속한 time 에 대해서는 track.values 내의 해당 값을 적용한다.
   //  2) track.times 에 속하지 않는 time 에 대해서는 앞 뒤 값을 통해 (v1 + (v2 - v1)) / (t2 - t1) 값을 적용한다.
-  // 3. track.times 의 마지막 시점 부터는 해당 track.values 의 마지막 값을 적용한다. v
+  // 3. track.times 의 마지막 시점 부터는 해당 track.values 의 마지막 값을 적용한다.
 
   // track.times 가 빈 배열일 경우, values 를 0 으로 채운 후 return
   if (times.length === 0) {
@@ -45,9 +45,9 @@ const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear) => {
   _.forEach(unionTimes, (targetTime, index) => {
     // 1
     if (targetTime < times[0]) {
-      newValues.push(values[0]);
-      newValues.push(values[1]);
-      newValues.push(values[2]);
+      newValues.push(0);
+      newValues.push(0);
+      newValues.push(0);
       // 2
     } else if (targetTime < times[times.length - 1]) {
       const timeIndex = _.findIndex(times, (t) => t === targetTime);
