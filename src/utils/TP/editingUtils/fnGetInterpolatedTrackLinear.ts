@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { ShootTrackType } from 'types/common';
 
 interface FnGetInterpolatedTrackLinear {
-  targetTimes: number[];
+  unionTimes: number[];
   track: ShootTrackType;
 }
 
@@ -12,19 +12,19 @@ interface FnGetInterpolatedTrackLinear {
  * 예를 들어, baseLayer 내 hips.position 의 times 가 [1, 1.5, 3] 이고, Layer1 내 hips.position 의 times 가 [1, 2, 3] 이라면,
  * 기준 times 는 [1, 1.5, 2, 3] 입니다.
  *
- * @param targetTimes - 기준 times
+ * @param unionTimes - 기준이 될 합집합 times
  * @param track - 보간 적용 대상 track
  *
  * @returns 자체적인 선형보간법을 적용한 새로운 track
  *
  */
 const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear) => {
-  const { targetTimes, track } = props;
-  const newTimes = _.clone(targetTimes);
+  const { unionTimes, track } = props;
+  const newTimes = _.clone(unionTimes);
   const { times, values } = track;
   const newValues: number[] = [];
 
-  // targetTimes 를 순회하며 보간을 적용한다.
+  // unionTimes 를 순회하며 보간을 적용한다.
   // 1. 먼저 track.times 가 시작되기 전의 시점에 대해서는 track.times[0] 값을 보간값으로 적용한다 v
   // 2. track.times 와 겹치는 구간에 대해서는 (track.times 의 마지막 값 제외) v
   //  1) track.times 에 속한 time 에 대해서는 track.values 내의 해당 값을 적용한다. v
@@ -42,7 +42,7 @@ const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear) => {
   }
 
   // track.times 가 빈 배열이 아닐 때
-  _.forEach(targetTimes, (targetTime, index) => {
+  _.forEach(unionTimes, (targetTime, index) => {
     // 1
     if (targetTime < times[0]) {
       newValues.push(values[0]);
