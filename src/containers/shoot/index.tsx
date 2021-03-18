@@ -10,7 +10,7 @@ import { CONTEXTMENU_INFO, MODAL_INFO } from 'lib/store';
 import { GRAY200 } from 'styles/constants/common';
 import { Modal } from 'components/Modal';
 import { MODAL_TYPES } from 'interfaces';
-import { fnKillSetInterval } from 'utils/common/FnKillSetInterval';
+import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
 interface ContextMenuWrapperProps {
   top: string;
   left: string;
