@@ -1,6 +1,6 @@
-export { default as fnGetBaseLayer } from './fnGetBaseLayer';
-export { default as fnGetNewLayer } from './fnGetNewLayer';
-export { default as fnGetInterpolatedTrackLinear } from './fnGetInterpolatedTrackLinear';
-export { default as fnUpdateKeyframeToBase } from './fnUpdateKeyframeToBase';
-export { default as fnUpdateKeyframeToLayer } from './fnUpdateKeyframeToLayer';
-export { default as fnDeleteKeyframe } from './fnDeleteKeyframe';
+export { default as fnGetBaseLayer } from './FnGetBaseLayer';
+export { default as fnGetNewLayer } from './FnGetNewLayer';
+export { default as fnGetInterpolatedTrackLinear } from './FnGetInterpolatedTrackLinear';
+export { default as fnUpdateKeyframeToBase } from './FnUpdateKeyframeToBase';
+export { default as fnUpdateKeyframeToLayer } from './FnUpdateKeyframeToLayer';
+export { default as fnDeleteKeyframe } from './FnDeleteKeyframe';

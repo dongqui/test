@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
+import { fnKillSetInterval } from 'utils/common/FnKillSetInterval';
 
 interface useVideoToImagesProps {
   videoRef: React.RefObject<HTMLVideoElement>;

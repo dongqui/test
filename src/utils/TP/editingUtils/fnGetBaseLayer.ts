@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import _ from 'lodash';
-import fnQuaternionToEulerTrack from 'utils/common/fnQuaternionToEulerTrack';
+import fnQuaternionToEulerTrack from 'utils/common/FnQuaternionToEulerTrack';
 import { ShootTrackType } from 'types/common';
 
 interface FnGetBaseLayer {
