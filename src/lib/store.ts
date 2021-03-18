@@ -5,7 +5,13 @@ import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'interfaces/RP';
 import _ from 'lodash';
 import { INITIAL_MAIN_DATA, isClient } from 'utils/const';
-import { ContextmenuTypes, LPMODE_TYPES, MainDataTypes, ModalTypes } from '../interfaces';
+import {
+  ContextmenuTypes,
+  LPMODE_TYPES,
+  MainDataTypes,
+  ModalTypes,
+  TpTrackTypes,
+} from '../interfaces';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
   let result = _.clone(initialData);
@@ -60,3 +66,7 @@ export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
   isRecording: undefined,
 });
 export const CUT_IMAGES = makeVar<string[]>([]);
+
+// TP
+export const TPDefaultTrackList = makeVar<TpTrackTypes[]>([]);
+export const TPFilteredTrackList = makeVar<TpTrackTypes[]>([]);

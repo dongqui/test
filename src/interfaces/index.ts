@@ -124,3 +124,10 @@ export interface ModalTypes {
   isShow: boolean;
   type?: MODAL_TYPES;
 }
+
+// TP 트랙 기본 타입
+export interface TpTrackTypes {
+  children: string[];
+  isChildTrackOpen: boolean;
+  title: string;
+}
