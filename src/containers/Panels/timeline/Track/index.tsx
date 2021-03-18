@@ -1,19 +1,27 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import classNames from 'classnames/bind';
 import { ArrowRight } from 'components/Icons/generated/ArrowRight';
 import styles from './index.module.scss';
 
 interface TrackProps {
-  title: string; // 트랙 이름
-  trackNumber: number; // 트랙 번호
+  children?: React.ReactNode;
+  isChildTrackOpen?: boolean; // 자식 트랙이 열려있는 상태로 출력여부
+  isLeafTrack?: boolean; // 말단 트랙 확인(말단 트랙인 경우 true)
+  title: 'Summary' | 'Base' | string; // 트랙 이름
   paddingLeft?: number; // 트랙 좌측 패딩 값
-  tempData?: any[];
 }
 
 const cx = classNames.bind(styles);
 
-const Track: React.FC<TrackProps> = ({ title, trackNumber, paddingLeft = 10, tempData }) => {
-  const [toggleArrowButton, setToggleArrowButton] = useState(false); // 화살표 토글 버튼(true면 하위 트랙 open)
+const Track: React.FC<TrackProps> = ({
+  children,
+  isChildTrackOpen = false,
+  isLeafTrack = false,
+  title,
+  paddingLeft = 10,
+}) => {
+  // 화살표 토글 버튼(true면 하위 트랙 open)
+  const [toggleArrowButton, setToggleArrowButton] = useState(false);
 
   // 토글 화살표 버튼 클릭
   const clickToggleArrowButton = useCallback(() => {
@@ -25,15 +33,16 @@ const Track: React.FC<TrackProps> = ({ title, trackNumber, paddingLeft = 10, tem
     event.preventDefault();
   }, []);
 
+  // 자식 트랙 open 여부 변경
+  useEffect(() => {
+    setToggleArrowButton(isChildTrackOpen);
+  }, [isChildTrackOpen]);
+
   return (
     <>
-      <div
-        className={cx('track-wrapper')}
-        style={{ paddingLeft: `${paddingLeft}px` }}
-        onContextMenu={clickRightMouse}
-      >
-        <div className={cx('track-body')}>
-          {tempData?.length && (
+      <div className={cx('track-wrapper')} onContextMenu={clickRightMouse}>
+        <div className={cx('track-body')} style={{ paddingLeft: `${paddingLeft}px` }}>
+          {!isLeafTrack && (
             <button
               className={cx('track-button', 'arrow-button', { opened: toggleArrowButton })}
               onClick={clickToggleArrowButton}
@@ -43,23 +52,18 @@ const Track: React.FC<TrackProps> = ({ title, trackNumber, paddingLeft = 10, tem
           )}
           <span>{title}</span>
           <div className={cx('track-button-wrapper')}>
-            {/* 
-              To Do...
+            {/* To Do...
               아이콘 3종 적용
-            */}
+             */}
           </div>
         </div>
+        <div
+          className={cx('children-track-list')}
+          style={{ display: toggleArrowButton ? 'block' : 'none' }}
+        >
+          {children}
+        </div>
       </div>
-      {toggleArrowButton &&
-        tempData?.map((value, index) => (
-          <Track
-            key={value.title}
-            title={value.title}
-            trackNumber={trackNumber + 1 + index}
-            tempData={value.tempData}
-            paddingLeft={paddingLeft + 10}
-          />
-        ))}
     </>
   );
 };
