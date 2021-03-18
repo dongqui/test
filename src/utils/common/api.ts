@@ -2,7 +2,7 @@ import axios from 'axios';
 import { FORMAT_TYPES, VIDEO_FORMAT_TYPES } from 'interfaces';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import { fnConvertBloburlToFile } from './FnConvertBloburlToFile';
+import { fnConvertBloburlToFile } from './fnConvertBloburlToFile';
 
 const BASE_URL = 'https://shootapi.myplask.com:5000';
 const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:5000/';
