@@ -7,7 +7,7 @@ import { useRenderingModel } from 'hooks/RP/useRenderingModel';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 import useDropzone from './utils/useDropzone';
 import { FilledButton } from 'components/New_Buttons';
-import { CONFIG_INFOS } from './const';
+import { renderingOptions } from './const';
 import { FORMAT_TYPES } from 'interfaces';
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -55,7 +55,7 @@ const RealtimeContainer: FunctionComponent = () => {
     fileUrl: targetBlobUrl || DEFAULT_MODEL_URL,
     format: FORMAT_TYPES.glb,
     setMixer,
-    CONFIG_INFOS: CONFIG_INFOS,
+    renderingOptions: renderingOptions,
     setSkeletonHelper,
     setAnimations,
   });

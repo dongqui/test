@@ -2,46 +2,40 @@ import { FILE_TYPES, MainDataTypes } from 'interfaces';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 
 export const isClient = typeof window !== 'undefined';
-export const DEFAULT_MODEL_URL = 'https://assets.babylonjs.com/meshes/HVGirl.glb';
+export const DEFAULT_MODEL_URL =
+  'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1612095825/DyingToGlb_fqke1a.glb';
+export const DEFAULT_FILE_URL = '/video/exo.mp4';
 export const CUT_IMAGES_CNT = 20;
 export const STANDARD_TIME_UNIT = 1 / 30;
 export const INITIAL_MAIN_DATA: MainDataTypes[] = [
-  {
-    key: '0',
-    name: 'model.glb',
-    type: FILE_TYPES.file,
-    parentKey: ROOT_FOLDER_NAME,
-    url: DEFAULT_MODEL_URL,
-    isExpanded: true,
-  },
-  {
-    key: 'motion1',
-    name: 'motion1',
-    type: FILE_TYPES.motion,
-    parentKey: '0',
-    baseLayer: [],
-  },
-  {
-    key: 'motion2',
-    name: 'motion2',
-    type: FILE_TYPES.motion,
-    parentKey: '0',
-    isVisualized: true,
-    baseLayer: [],
-  },
-  {
-    key: 'motion3',
-    name: 'motion3',
-    type: FILE_TYPES.motion,
-    parentKey: '0',
-    baseLayer: [],
-  },
-  {
-    key: '1',
-    name: 'model2.glb',
-    type: FILE_TYPES.file,
-    parentKey: ROOT_FOLDER_NAME,
-    url: DEFAULT_MODEL_URL,
-    isExpanded: true,
-  },
+  // {
+  //   key: '0',
+  //   name: 'model.glb',
+  //   type: FILE_TYPES.file,
+  //   parentKey: ROOT_FOLDER_NAME,
+  //   url: DEFAULT_MODEL_URL,
+  //   isExpanded: true,
+  // },
+  // {
+  //   key: 'motion1',
+  //   name: 'motion1',
+  //   type: FILE_TYPES.motion,
+  //   parentKey: '0',
+  //   baseLayer: [],
+  // },
+  // {
+  //   key: 'motion2',
+  //   name: 'motion2',
+  //   type: FILE_TYPES.motion,
+  //   parentKey: '0',
+  //   isVisualized: true,
+  //   baseLayer: [],
+  // },
+  // {
+  //   key: 'motion3',
+  //   name: 'motion3',
+  //   type: FILE_TYPES.motion,
+  //   parentKey: '0',
+  //   baseLayer: [],
+  // },
 ];

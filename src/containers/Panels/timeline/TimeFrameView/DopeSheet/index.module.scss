@@ -1,7 +1,12 @@
 .dopesheet-container {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%;
   background: #151515;
+
+  rect {
+    background: #151515;
+  }
 
   circle {
     fill: transparent;

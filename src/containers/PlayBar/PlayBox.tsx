@@ -22,21 +22,21 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
       <S.PlayBoxIconWrapper>
         <SquareIcon />
       </S.PlayBoxIconWrapper>
-      {renderingData.isPlay ? (
+      {renderingData.isPlaying ? (
         <S.PlayBoxIconDoubleWrapper
-          onClick={() => RENDERING_DATA({ ...renderingData, isPlay: false })}
+          onClick={() => RENDERING_DATA({ ...renderingData, isPlaying: false })}
         >
           <PauseIcon />
         </S.PlayBoxIconDoubleWrapper>
       ) : (
         <>
           <S.PlayBoxIconWrapper
-            onClick={() => RENDERING_DATA({ ...renderingData, playDirection: -1, isPlay: true })}
+            onClick={() => RENDERING_DATA({ ...renderingData, playDirection: -1, isPlaying: true })}
           >
             <PlayForwardIcon />
           </S.PlayBoxIconWrapper>
           <S.PlayBoxIconWrapper
-            onClick={() => RENDERING_DATA({ ...renderingData, playDirection: 1, isPlay: true })}
+            onClick={() => RENDERING_DATA({ ...renderingData, playDirection: 1, isPlaying: true })}
           >
             <PlayIcon />
           </S.PlayBoxIconWrapper>

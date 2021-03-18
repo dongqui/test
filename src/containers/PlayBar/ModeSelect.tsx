@@ -1,7 +1,9 @@
 import { Camera, HorizontalBar } from 'components/Icons';
 import { CameraIcon } from 'components/Icons/generated2/CameraIcon';
 import { HorizontalBarIcon } from 'components/Icons/generated2/HorizontalBarIcon';
+import { PAGE_NAMES } from 'interfaces';
 import _ from 'lodash';
+import { useRouter } from 'next/dist/client/router';
 import React from 'react';
 import * as S from './PlayBarStyles';
 
@@ -17,6 +19,7 @@ const ModeSelectComponent: React.FC<ModeSelectProps> = ({
   ],
   onSelect = () => {},
 }) => {
+  const router = useRouter();
   return (
     <S.ModeSelectWrapper>
       {_.map(data, (item, index) => (
@@ -26,7 +29,17 @@ const ModeSelectComponent: React.FC<ModeSelectProps> = ({
           onClick={() => onSelect({ key: item.key })}
         >
           {_.isEqual(item.key, 'edit') && <HorizontalBarIcon />}
-          {_.isEqual(item.key, 'camera') && <CameraIcon />}
+          {_.isEqual(item.key, 'camera') && (
+            <S.CameraIconWrapper
+              onClick={() => {
+                router.push({
+                  pathname: `/${PAGE_NAMES.record}`,
+                });
+              }}
+            >
+              <CameraIcon />
+            </S.CameraIconWrapper>
+          )}
         </S.ModeSelectIconWrapper>
       ))}
     </S.ModeSelectWrapper>

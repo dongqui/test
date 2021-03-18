@@ -16,7 +16,6 @@ import { useDropzone } from 'react-dropzone';
 import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
 import * as S from './LibraryPanelStyles';
-import { Loading } from 'components/Loading';
 import { LPSelect } from 'components/LPSelect';
 import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL } from 'utils/const';
@@ -24,6 +23,7 @@ import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
 import { InputLP } from 'components/Input/InputLP';
 import { useRouter } from 'next/dist/client/router';
 import * as api from 'utils/common/api';
+import { Loading } from 'components/Loading';
 
 export interface PagesTypes {
   key: string;
@@ -126,7 +126,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       </div>
       {loading && (
         <S.LoadingWrapper>
-          <Loading />
+          <Loading color="white" />
         </S.LoadingWrapper>
       )}
       <S.TitleWrapper>Library</S.TitleWrapper>

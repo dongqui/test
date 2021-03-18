@@ -2,11 +2,11 @@
 import { FaFolder } from 'react-icons/fa';
 import styled, { css } from 'styled-components';
 import { rem } from 'utils/rem';
-import { BACKGROUND_COLOR, PRIMARY_BLUE } from '../../../styles/constants/common';
+import { PRIMARY_BLUE } from '../../../styles/constants/common';
 
 const TOP_HEIGHT = rem(48);
 const TOP_BACKGROUND_COLOR = 'rgba(36, 36, 36, 1)';
-const FONT_SIZE = rem(12);
+const FONT_SIZE = rem(11);
 const BORDER_RADIUS = 0.375;
 interface IconStyleProps {
   isClicked: boolean;
