@@ -19,11 +19,12 @@ import * as S from './LibraryPanelStyles';
 import { LPSelect } from 'components/LPSelect';
 import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL } from 'utils/const';
-import { fnGetAnimationData } from 'hooks/RP/fnGetAnimationData';
+import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
 import { InputLP } from 'components/Input/InputLP';
 import { useRouter } from 'next/dist/client/router';
 import * as api from 'utils/common/api';
 import { Loading } from 'components/Loading';
+import { fnGetBaseLayer, fnGetNewLayer } from 'utils/TP/editingUtils';
 
 export interface PagesTypes {
   key: string;
@@ -79,7 +80,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         });
         return false;
       }
-      const { result, error, msg } = await fnGetAnimationData({ url });
+      const { animations, bones, error, msg } = await fnGetAnimationData({ url });
       if (error) {
         MODAL_INFO({ isShow: true, msg });
         setLoading(false);
@@ -87,14 +88,18 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       }
       const motions: MainDataTypes[] = [];
       const key = uuidv4();
-      _.forEach(result, (item, index) => {
-        motions.push({
-          key: item?.uuid,
-          name: item?.name,
-          baseLayer: _.cloneDeep(item?.tracks),
-          type: FILE_TYPES.motion,
-          parentKey: key,
-        });
+      _.forEach(animations, (clip, index) => {
+        if (bones) {
+          motions.push({
+            key: clip?.uuid,
+            name: clip?.name,
+            baseLayer: fnGetBaseLayer({ bones, clip }),
+            // layers: [fnGetNewLayer({ bones })],
+            layers: [],
+            type: FILE_TYPES.motion,
+            parentKey: key,
+          });
+        }
       });
       let newData: MainDataTypes[] = [
         {

@@ -22,6 +22,7 @@ import {
 } from 'utils/RP/renderingUtils';
 import { RenderingOption } from '../../interfaces/RP';
 import { useHistory } from './useHistory';
+import { fnGetInterpolatedTrackLinear } from 'utils/TP/editingUtils';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -490,6 +491,17 @@ export const useRendering = (props: UseRendering) => {
             // skeleton helper 생성 및 scene에 추가
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
             setSkeletonHelper(innerSkeletonHelper);
+
+            // const targetTimes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+            // const track = {
+            //   name: 'dummy',
+            //   times: [3, 5, 8],
+            //   values: [70, 71, 72, 80, 81, 82, 90, 91, 92],
+            //   interpolation: 'linear',
+            // };
+            // const interpolatedTrack = fnGetInterpolatedTrackLinear({ targetTimes, track });
+            // console.log('interpolatedTrack: ', interpolatedTrack);
+
             // eslint-disable-next-line no-console
             console.log('skeletonHelper: ', innerSkeletonHelper);
             setContents((prevContents) => [...prevContents, innerSkeletonHelper]);

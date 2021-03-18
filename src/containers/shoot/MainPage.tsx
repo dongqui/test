@@ -109,7 +109,8 @@ const MainContainer: React.FC = () => {
         position={{ ...lowerSection.position }}
       >
         <TimelineContainer
-          data={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
+          baseLayer={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
+          layers={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.layers}
         />
       </Rnd>
     </>
