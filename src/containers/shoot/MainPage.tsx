@@ -36,6 +36,22 @@ const MainContainer: React.FC = () => {
         })),
       );
     }
+    if (
+      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type, FILE_TYPES.file)
+    ) {
+      const targetKey = _.filter(mainData, (item) =>
+        _.isEqual(
+          item.parentKey,
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.key,
+        ),
+      )?.[0]?.key;
+      MAIN_DATA(
+        _.map(mainData, (item) => ({
+          ...item,
+          isVisualized: _.isEqual(item.key, targetKey) ? true : false,
+        })),
+      );
+    }
   }, [mainData]);
   const {
     handleResizeStop,
@@ -79,6 +95,8 @@ const MainContainer: React.FC = () => {
             isPlaying={renderingData.isPlaying}
             playDirection={renderingData.playDirection}
             playSpeed={renderingData.playSpeed}
+            baseLayer={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
+            layers={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.layers}
           />
         </Rnd>
         <Rnd

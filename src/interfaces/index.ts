@@ -1,4 +1,3 @@
-import { ShootLayerType, ShootTrackType } from 'types/common';
 import { ContextmenuDataTypes } from '../components/Contextmenu';
 
 export enum PAGE_NAMES {
@@ -123,4 +122,15 @@ export interface ModalTypes {
   msg: string;
   isShow: boolean;
   type?: MODAL_TYPES;
+}
+export interface ShootTrackType {
+  name: string;
+  times: number[];
+  values: number[];
+  interpolation: string;
+}
+
+export interface ShootLayerType {
+  key: string;
+  tracks: ShootTrackType[];
 }

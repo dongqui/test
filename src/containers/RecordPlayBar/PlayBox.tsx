@@ -4,14 +4,21 @@ import { SquareIcon } from 'components/Icons/generated2/SquareIcon';
 import { RECORDING_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
+import { sleep } from 'utils/common/sleep';
 import * as S from './PlayBarStyles';
 
 export interface PlayBoxProps {}
 
 const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
   const recordingData = useReactiveVar(RECORDING_DATA);
-  const onClick = useCallback(() => {
-    RECORDING_DATA({ ...recordingData, isRecording: !recordingData.isRecording });
+  const onClick = useCallback(async () => {
+    if (!recordingData.isRecording) {
+      for (const count of [5, 4, 3, 2, 1]) {
+        RECORDING_DATA({ ...recordingData, count });
+        await sleep(1000);
+      }
+    }
+    RECORDING_DATA({ ...recordingData, isRecording: !recordingData.isRecording, count: undefined });
   }, [recordingData]);
   return (
     <S.PlayBoxWrapper>

@@ -9,7 +9,6 @@ export interface InputLPProps {
   height?: number;
   backgroundColor?: string;
   borderRadius?: number;
-  icon?: React.ReactNode;
   placeholder?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void | undefined;
 }
@@ -19,7 +18,6 @@ const IconLPComponent: React.FC<InputLPProps> = ({
   height = rem(32),
   backgroundColor = GRAY300,
   borderRadius = 0.4,
-  icon,
   placeholder = 'Search Projects',
   onChange = () => {},
 }) => {
