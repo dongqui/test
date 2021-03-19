@@ -4,6 +4,7 @@ import { PagesTypes } from 'containers/Panels/LibraryPanel';
 import { CP_DATA_TYPES } from 'interfaces/CP';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'interfaces/RP';
+import { TPBoneTrack, TPTransformTrack } from 'interfaces/TP';
 import _ from 'lodash';
 import { INITIAL_CP_DATA, INITIAL_MAIN_DATA, INITIAL_RENDERING_DATA, isClient } from 'utils/const';
 import { ContextmenuTypes, LPMODE_TYPES, MainDataTypes, ModalTypes } from '../interfaces';
@@ -59,3 +60,8 @@ export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
 // CP
 export const CP_DATA = makeVar<CP_DATA_TYPES[]>(INITIAL_CP_DATA);
 export const CUT_IMAGES = makeVar<string[]>([]);
+
+// TP
+export const TPDefaultTrackNameList = makeVar<TPBoneTrack[]>([]);
+export const TPFilteredTrackNameList = makeVar<TPBoneTrack[]>([]);
+export const TPTransformTrackList = makeVar<TPTransformTrack[]>([]);
