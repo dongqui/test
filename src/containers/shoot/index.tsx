@@ -11,6 +11,8 @@ import { GRAY200 } from 'styles/constants/common';
 import { Modal } from 'components/Modal';
 import { MODAL_TYPES } from 'interfaces';
 import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
+import { BaseModal } from 'components/New_Modal';
+import { ModalInner } from 'docs/New_components/Modal/BaseModal.stories';
 interface ContextMenuWrapperProps {
   top: string;
   left: string;
@@ -24,16 +26,6 @@ const ContextMenuWrapper = styled.div<ContextMenuWrapperProps>`
   top: ${(props) => props.top};
   left: ${(props) => props.left};
   z-index: 1000;
-`;
-const ModalWrapper = styled.div<ModalWrapperProps>`
-  position: absolute;
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  background-color: ${(props) => (props.active ? 'rgba(0, 0, 0, 0.5)' : '')};
 `;
 
 interface Props {}
@@ -75,9 +67,9 @@ const ShootPage: NextPage<Props> = () => {
       {modalInfo.isShow && (
         <>
           {_.isEqual(modalInfo.type, MODAL_TYPES.alert) && (
-            <ModalWrapper ref={modalRef} active={modalInfo.isShow}>
-              <Modal msg={modalInfo.msg} />
-            </ModalWrapper>
+            <BaseModal hasCloseIcon onClose={() => {}} theme="dark">
+              <ModalInner>{modalInfo.msg}</ModalInner>
+            </BaseModal>
           )}
         </>
       )}

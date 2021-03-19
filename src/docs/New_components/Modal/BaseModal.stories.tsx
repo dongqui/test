@@ -43,6 +43,6 @@ BaseModal.args = {
   hasCloseIcon: true,
 };
 
-const ModalInner = styled.div`
+export const ModalInner = styled.div`
   text-align: center;
 `;

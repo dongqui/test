@@ -18,7 +18,6 @@ const IconViewComponent: React.FC<IconViewProps> = ({}) => {
   const pages = useReactiveVar(PAGES);
   const searchWord = useReactiveVar(SEARCH_WORD);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
-  const lpmode = useReactiveVar(LP_MODE);
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
   const {
     onClick,

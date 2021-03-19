@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import {
   BACKGROUND_COLOR,
   CONTROLPANEL_INFO,
@@ -11,6 +11,7 @@ import {
 
 const PADDING_LEFT = 12;
 const PADDING_RIGHT = 12;
+const BORDER_RADIUS = 8;
 
 const FONT_SIZE = 12;
 interface CPSelectButonWrapperProps {
@@ -18,6 +19,9 @@ interface CPSelectButonWrapperProps {
 }
 interface SliderIndicatorProps {
   left: number;
+}
+interface CPListRowParentChildWrapperProps {
+  isExpanded: boolean;
 }
 export const CPTitleWrapper = styled.div`
   width: ${CONTROLPANEL_INFO.widthPx}px;
@@ -45,6 +49,26 @@ export const CPListRowParentWrapper = styled.div`
   width: ${CONTROLPANEL_INFO.widthPx}px;
   height: 42px;
   cursor: pointer;
+`;
+export const CPListRowParentChildWrapper = styled.div<CPListRowParentChildWrapperProps>`
+  padding-left: ${PADDING_LEFT}px;
+  padding-right: ${PADDING_RIGHT}px;
+  width: 100%;
+  height: 80%;
+  border-radius: ${BORDER_RADIUS}px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  :hover {
+    background-color: ${GRAY400};
+  }
+
+  ${(props) =>
+    !props.isExpanded &&
+    css`
+      background-color: ${GRAY200};
+    `}
 `;
 export const CPListRowParentTextWrapper = styled.div`
   margin-left: 8px;
