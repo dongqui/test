@@ -4,8 +4,6 @@ import {
   useCallback,
   FocusEvent,
   KeyboardEvent,
-  MutableRefObject,
-  InputHTMLAttributes,
   ChangeEvent,
 } from 'react';
 import classNames from 'classnames/bind';
@@ -13,12 +11,7 @@ import styles from './BaseInput.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface BaseProps {
-  innerRef?: MutableRefObject<HTMLInputElement>;
-  invalid?: boolean;
-}
-
-export type Props = BaseProps & InputHTMLAttributes<HTMLInputElement>;
+type Props = Input.BaseInputProps;
 
 const defaultProps: Partial<Props> = {
   type: 'text',
@@ -27,6 +20,7 @@ const defaultProps: Partial<Props> = {
 const BaseInput: FunctionComponent<Props> = ({
   className,
   innerRef,
+  disabled,
   invalid,
   onBlur,
   onChange,
@@ -35,6 +29,7 @@ const BaseInput: FunctionComponent<Props> = ({
 }) => {
   const classes = cx('input', className, {
     invalid,
+    disabled,
   });
 
   const handleBlur = useCallback(
@@ -61,6 +56,7 @@ const BaseInput: FunctionComponent<Props> = ({
   return (
     <input
       className={classes}
+      disabled={disabled}
       onBlur={handleBlur}
       onChange={handleChange}
       onKeyUp={handleKeyUp}

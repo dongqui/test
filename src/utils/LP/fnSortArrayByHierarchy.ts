@@ -1,5 +1,5 @@
-import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
-import { ROOT_FOLDER_NAME } from 'interfaces/LP';
+import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
+import { ROOT_FOLDER_NAME } from 'types/LP';
 import _ from 'lodash';
 
 interface fnSortArrayByHierarchyProps {

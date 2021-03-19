@@ -1,7 +1,7 @@
 import { useReactiveVar } from '@apollo/client';
 import { IconviewIcon } from 'components/Icons/generated2/IconviewIcon';
 import { ListviewIcon } from 'components/Icons/generated2/ListviewIcon';
-import { FILE_TYPES, LPMODE_TYPES } from 'interfaces';
+import { FILE_TYPES, LPMODE_TYPES } from 'types';
 import { LP_MODE, MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';

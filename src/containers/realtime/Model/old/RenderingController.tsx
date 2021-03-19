@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { renderingOptions } from './const';
 import { useRenderingModel } from 'hooks/RP/useRenderingModel';
-import { BonesTypes, FORMAT_TYPES } from 'interfaces';
+import { BonesTypes, FORMAT_TYPES } from 'types';
 import { useChangeMotion } from 'hooks/RP/useChangeMotion';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 

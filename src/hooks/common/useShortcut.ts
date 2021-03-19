@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React, { useCallback, useEffect } from 'react';
-import { ShortcutTypes } from '../../interfaces';
+import { ShortcutTypes } from '../../types';
 
 export const useShortcut = ({ data }: { data: ShortcutTypes[] }) => {
   const onKeyPress = useCallback(

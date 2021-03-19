@@ -8,7 +8,7 @@ import { DEFAULT_MODEL_URL } from 'utils/const';
 import useDropzone from './utils/useDropzone';
 import { FilledButton } from 'components/New_Buttons';
 import { renderingOptions } from './const';
-import { FORMAT_TYPES } from 'interfaces';
+import { FORMAT_TYPES } from 'types';
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
 

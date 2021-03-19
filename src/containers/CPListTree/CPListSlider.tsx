@@ -1,5 +1,5 @@
 import { useReactiveVar } from '@apollo/client';
-import { CP_DATA_PROPERTY_NAMES } from 'interfaces/CP';
+import { CP_DATA_PROPERTY_NAMES } from 'types/CP';
 import { CP_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo } from 'react';

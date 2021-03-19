@@ -1,13 +1,13 @@
 import { makeVar } from '@apollo/client';
 import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
-import { CP_DATA_TYPES } from 'interfaces/CP';
-import { ROOT_FOLDER_NAME } from 'interfaces/LP';
-import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'interfaces/RP';
-import { TPBoneTrack, TPTransformTrack } from 'interfaces/TP';
+import { CP_DATA_TYPES } from 'types/CP';
+import { ROOT_FOLDER_NAME } from 'types/LP';
+import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'types/RP';
+import { TPBoneTrack, TPTransformTrack } from 'types/TP';
 import _ from 'lodash';
 import { INITIAL_CP_DATA, INITIAL_MAIN_DATA, INITIAL_RENDERING_DATA, isClient } from 'utils/const';
-import { ContextmenuTypes, LPMODE_TYPES, MainDataTypes, ModalTypes } from '../interfaces';
+import { ContextmenuTypes, LPMODE_TYPES, MainDataTypes, ModalTypes } from '../types';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
   let result = _.clone(initialData);
