@@ -27,6 +27,7 @@ const defaultProps: Partial<Props> = {
 const BaseInput: FunctionComponent<Props> = ({
   className,
   innerRef,
+  disabled,
   invalid,
   onBlur,
   onChange,
@@ -35,6 +36,7 @@ const BaseInput: FunctionComponent<Props> = ({
 }) => {
   const classes = cx('input', className, {
     invalid,
+    disabled,
   });
 
   const handleBlur = useCallback(
@@ -61,6 +63,7 @@ const BaseInput: FunctionComponent<Props> = ({
   return (
     <input
       className={classes}
+      disabled={disabled}
       onBlur={handleBlur}
       onChange={handleChange}
       onKeyUp={handleKeyUp}

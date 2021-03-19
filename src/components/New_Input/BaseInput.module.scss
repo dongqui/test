@@ -20,16 +20,16 @@
   }
 
   &::placeholder {
-    color: rgba(0, 0, 0, 0.4) !important;
+    color: rgba(255, 255, 255, 0.4) !important;
     opacity: 1;
     transition: color 0.3s;
   }
 
   &.disabled {
-    color: rgba(0, 0, 0, 0.2) !important;
+    color: rgba(255, 255, 255, 0.2) !important;
 
     &::placeholder {
-      color: rgba(0, 0, 0, 0.2) !important;
+      color: rgba(255, 255, 255, 0.2) !important;
     }
   }
 
