@@ -2,7 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { CircleMotionIcon } from 'components/Icons/generated2/CircleMotion';
 import { ModelFileIcon } from 'components/Icons/generated2/ModelFileIcon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
 import { MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo, useRef } from 'react';

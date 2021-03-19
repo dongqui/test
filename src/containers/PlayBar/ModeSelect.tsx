@@ -1,7 +1,7 @@
 import { Camera, HorizontalBar } from 'components/Icons';
 import { CameraIcon } from 'components/Icons/generated2/CameraIcon';
 import { HorizontalBarIcon } from 'components/Icons/generated2/HorizontalBarIcon';
-import { PAGE_NAMES } from 'interfaces';
+import { PAGE_NAMES } from 'types';
 import _ from 'lodash';
 import { useRouter } from 'next/dist/client/router';
 import React from 'react';

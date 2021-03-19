@@ -8,7 +8,7 @@ import RenderingController from 'containers/Panels/RenderingPanel/RenderingContr
 import { MIN_WIDTH } from 'styles/constants/panels';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
-import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
 import { useResizeRP } from 'hooks/RP/useResizeRP';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { useCallback, useMemo } from 'react';
-import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
 import { MAIN_DATA } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
 

@@ -9,7 +9,7 @@ import { ExtractPlayBar } from 'containers/ExtractPlayBar';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
 import { MAIN_DATA, MODAL_INFO, RECORDING_DATA } from 'lib/store';
-import { FILE_TYPES, MainDataTypes, MODAL_TYPES, PAGE_NAMES } from 'interfaces';
+import { FILE_TYPES, MainDataTypes, MODAL_TYPES, PAGE_NAMES } from 'types';
 import { ModalLoading } from 'components/Modal/ModalLoading';
 import { ModalInput } from 'components/Modal/ModalInput';
 import styled from 'styled-components';
@@ -17,7 +17,7 @@ import * as api from 'utils/common/api';
 import { STANDARD_WIDTH } from 'styles/constants/common';
 import { DEFAULT_FILE_URL, STANDARD_TIME_UNIT } from 'utils/const';
 import { Modal } from 'components/Modal';
-import { ROOT_FOLDER_NAME } from 'interfaces/LP';
+import { ROOT_FOLDER_NAME } from 'types/LP';
 
 interface Props {}
 

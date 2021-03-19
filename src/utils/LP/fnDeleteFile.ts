@@ -1,4 +1,4 @@
-import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
 import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
 

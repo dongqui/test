@@ -1,4 +1,4 @@
-import { ShootTrackType } from 'interfaces';
+import { ShootTrackType } from 'types';
 import _ from 'lodash';
 
 interface FnGetInterpolatedTrackLinear {

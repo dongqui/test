@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { renderingOptions } from './const';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { ShootLayerType, ShootTrackType } from 'interfaces';
+import { ShootLayerType, ShootTrackType } from 'types';
 
 export interface RenderingControllerProps {
   id: string;

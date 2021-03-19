@@ -1,8 +1,8 @@
 import { useReactiveVar } from '@apollo/client';
 import { ArrowBackIcon } from 'components/Icons/generated2/ArrowBackIcon';
 import { ArrowForwardIcon } from 'components/Icons/generated2/ArrowForwardIcon';
-import { LPMODE_TYPES } from 'interfaces';
-import { ROOT_FOLDER_NAME } from 'interfaces/LP';
+import { LPMODE_TYPES } from 'types';
+import { ROOT_FOLDER_NAME } from 'types/LP';
 import { LP_MODE, PAGES } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';

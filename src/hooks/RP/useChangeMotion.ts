@@ -1,4 +1,4 @@
-import { BonesTypes, skeletonHelpersTypes } from 'interfaces';
+import { BonesTypes, skeletonHelpersTypes } from 'types';
 import _ from 'lodash';
 import { useCallback, useEffect } from 'react';
 

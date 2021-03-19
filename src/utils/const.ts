@@ -1,6 +1,6 @@
-import { MainDataTypes } from 'interfaces';
-import { CP_COMPONENT_TYPES, CP_DATA_TYPES } from 'interfaces/CP';
-import { RENDERING_DATA_TYPES } from 'interfaces/RP';
+import { MainDataTypes } from 'types';
+import { CP_COMPONENT_TYPES, CP_DATA_TYPES } from 'types/CP';
+import { RENDERING_DATA_TYPES } from 'types/RP';
 
 export const isClient = typeof window !== 'undefined';
 export const DEFAULT_MODEL_URL =

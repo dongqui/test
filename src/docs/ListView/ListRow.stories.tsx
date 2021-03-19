@@ -2,7 +2,7 @@ import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
 import { ListRow, ListRowProps } from 'containers/ListTree/ListRow';
-import { FILE_TYPES } from 'interfaces';
+import { FILE_TYPES } from 'types';
 
 export default {
   title: 'Component API/Container/ListView/ListRow',

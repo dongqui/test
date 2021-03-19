@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
-import { TPBoneTrack } from 'interfaces/TP';
+import { TPBoneTrack } from 'types/TP';
 import { TPDefaultTrackNameList, TPFilteredTrackNameList } from 'lib/store';
 import Track from './Track';
 import styles from './TrackList.module.scss';
