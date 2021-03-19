@@ -4,8 +4,6 @@ import {
   useCallback,
   FocusEvent,
   KeyboardEvent,
-  MutableRefObject,
-  InputHTMLAttributes,
   ChangeEvent,
 } from 'react';
 import classNames from 'classnames/bind';
@@ -13,12 +11,7 @@ import styles from './BaseInput.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface BaseProps {
-  innerRef?: MutableRefObject<HTMLInputElement>;
-  invalid?: boolean;
-}
-
-export type Props = BaseProps & InputHTMLAttributes<HTMLInputElement>;
+type Props = Input.BaseInputProps;
 
 const defaultProps: Partial<Props> = {
   type: 'text',
