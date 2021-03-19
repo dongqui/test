@@ -4,7 +4,7 @@ import { ArrowRightIcon } from 'components/Icons/generated2/ArrowRightIcon';
 import { ModelIcon } from 'components/Icons/generated2/ModelIcon';
 import { MotionIcon } from 'components/Icons/generated2/MotionIcon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
 import { MAIN_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo } from 'react';

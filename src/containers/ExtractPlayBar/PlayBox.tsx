@@ -4,7 +4,7 @@ import { PauseIcon } from 'components/Icons/generated2/PauseIcon';
 import { PlayForwardIcon } from 'components/Icons/generated2/PlayForwardIcon';
 import { PlayIcon } from 'components/Icons/generated2/PlayIcon';
 import { SquareIcon } from 'components/Icons/generated2/SquareIcon';
-import { MODAL_TYPES } from 'interfaces';
+import { MODAL_TYPES } from 'types';
 import { MODAL_INFO, RECORDING_DATA } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';

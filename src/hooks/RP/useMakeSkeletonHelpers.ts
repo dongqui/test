@@ -1,4 +1,4 @@
-// import { skeletonHelpersTypes } from 'interfaces';
+// import { skeletonHelpersTypes } from 'types';
 // import _ from 'lodash';
 // import { useCallback, useEffect } from 'react';
 

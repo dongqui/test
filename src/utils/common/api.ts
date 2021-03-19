@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FORMAT_TYPES, VIDEO_FORMAT_TYPES } from 'interfaces';
+import { FORMAT_TYPES, VIDEO_FORMAT_TYPES } from 'types';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { fnConvertBloburlToFile } from './fnConvertBloburlToFile';

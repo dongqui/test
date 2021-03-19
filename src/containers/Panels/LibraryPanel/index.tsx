@@ -9,7 +9,7 @@ import {
   MainDataTypes,
   MODAL_TYPES,
   PAGE_NAMES,
-} from 'interfaces';
+} from 'types';
 import { LP_MODE, MAIN_DATA, MODAL_INFO, PAGES, SEARCH_WORD } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';

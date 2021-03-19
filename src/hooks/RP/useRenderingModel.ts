@@ -9,8 +9,8 @@ import { OrbitControls } from '../../three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from '../../three/examples/jsm/controls/TransformControls';
 import { DragControls } from '../../three/examples/jsm/controls/DragControls';
 import { useHistory } from './useHistory';
-import { FORMAT_TYPES } from '../../interfaces';
-import { RenderingOption } from '../../interfaces/RP';
+import { FORMAT_TYPES } from '../../types';
+import { RenderingOption } from '../../types/RP';
 
 const MAP_TYPES = [
   'map',

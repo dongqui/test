@@ -3,7 +3,7 @@ import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
 import { Icon as IconComponent, IconProps } from '../../containers/IconTree/Icon';
 import { rem } from 'utils/rem';
-import { FILE_TYPES } from 'interfaces';
+import { FILE_TYPES } from 'types';
 
 export default {
   title: 'Component API/Container/IconTree/Icon',

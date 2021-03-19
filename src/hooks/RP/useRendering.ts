@@ -20,7 +20,7 @@ import {
   fnCreateScene,
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
-import { RenderingOption } from '../../interfaces/RP';
+import { RenderingOption } from '../../types/RP';
 import { useHistory } from './useHistory';
 import { fnGetInterpolatedTrackLinear } from 'utils/TP/editingUtils';
 

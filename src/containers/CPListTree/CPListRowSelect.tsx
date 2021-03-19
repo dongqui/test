@@ -2,7 +2,7 @@ import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { CPSelectButton } from './CPSelectButton';
 import * as S from './CPListTreeStyles';
-import { CP_BUTTONINFO_TYPES } from 'interfaces/CP';
+import { CP_BUTTONINFO_TYPES } from 'types/CP';
 import { useReactiveVar } from '@apollo/client';
 import { CP_DATA } from 'lib/store';
 

@@ -4,9 +4,9 @@ import classNames from 'classnames/bind';
 import { TPDefaultTrackNameList, TPFilteredTrackNameList, TPTransformTrackList } from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
-import { TPBoneTrack, TPTransformTrack } from 'interfaces/TP';
+import { TPBoneTrack, TPTransformTrack } from 'types/TP';
 import { PlayBar } from 'containers/PlayBar';
-import { ShootLayerType, ShootTrackType } from 'interfaces';
+import { ShootLayerType, ShootTrackType } from 'types';
 
 const cx = classNames.bind(styles);
 

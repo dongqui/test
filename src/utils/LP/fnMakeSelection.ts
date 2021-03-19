@@ -1,4 +1,4 @@
-import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'interfaces';
+import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
 
 interface fnMakeSelectionProps {

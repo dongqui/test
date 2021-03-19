@@ -1,5 +1,5 @@
 import { useReactiveVar } from '@apollo/client';
-import { PAGE_NAMES, VIDEO_FORMAT_TYPES } from 'interfaces';
+import { PAGE_NAMES, VIDEO_FORMAT_TYPES } from 'types';
 import { RECORDING_DATA } from 'lib/store';
 import _ from 'lodash';
 import moment, { Moment } from 'moment';
