@@ -1,11 +1,10 @@
 import { useReactiveVar } from '@apollo/client';
-import { ArrowRight } from 'components/Icons';
 import { ArrowDownIcon } from 'components/Icons/generated2/ArrowDownIcon';
 import { ArrowRightIcon } from 'components/Icons/generated2/ArrowRightIcon';
 import { CP_DATA_PROPERTY_NAMES } from 'interfaces/CP';
 import { CP_DATA } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import * as S from './CPListTreeStyles';
 
 export interface CPListRowParentProps {
@@ -18,6 +17,10 @@ const CPListRowParentComponent: React.FC<CPListRowParentProps> = ({
   rowKey,
 }) => {
   const cpData = useReactiveVar(CP_DATA);
+  const isExpanded = useMemo(
+    () => _.find(cpData, [CP_DATA_PROPERTY_NAMES.key, rowKey])?.isExpanded ?? false,
+    [cpData, rowKey],
+  );
   const onClick = useCallback(() => {
     CP_DATA(
       _.map(cpData, (item) => ({
@@ -28,14 +31,16 @@ const CPListRowParentComponent: React.FC<CPListRowParentProps> = ({
   }, [cpData, rowKey]);
   return (
     <S.CPListRowParentWrapper onClick={onClick}>
-      <S.ArrowButtonWrapper>
-        {_.find(cpData, [CP_DATA_PROPERTY_NAMES.key, rowKey])?.isExpanded ? (
-          <ArrowDownIcon />
-        ) : (
-          <ArrowRightIcon />
-        )}
-      </S.ArrowButtonWrapper>
-      <S.CPListRowParentTextWrapper>{text}</S.CPListRowParentTextWrapper>
+      <S.CPListRowParentChildWrapper isExpanded={isExpanded}>
+        <S.ArrowButtonWrapper>
+          {_.find(cpData, [CP_DATA_PROPERTY_NAMES.key, rowKey])?.isExpanded ? (
+            <ArrowDownIcon />
+          ) : (
+            <ArrowRightIcon />
+          )}
+        </S.ArrowButtonWrapper>
+        <S.CPListRowParentTextWrapper>{text}</S.CPListRowParentTextWrapper>
+      </S.CPListRowParentChildWrapper>
     </S.CPListRowParentWrapper>
   );
 };

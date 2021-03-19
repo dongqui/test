@@ -7,7 +7,7 @@ interface IconPageStyleProps {}
 export const MARGIN_TOP = '2rem';
 export const MARGIN_RIGHT = rem(8);
 export const IconPageWrapper = styled.div<IconPageStyleProps>`
-  width: ${LIBRARYPANEL_INFO.widthRem}rem;
+  width: ${LIBRARYPANEL_INFO.widthPx}px;
   height: ${rem(48)}rem;
   background-color: ${BACKGROUND_COLOR};
   display: flex;

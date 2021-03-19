@@ -6,7 +6,7 @@ import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
 import { TPBoneTrack, TPTransformTrack } from 'interfaces/TP';
 import { PlayBar } from 'containers/PlayBar';
-import { ShootTrackType, ShootLayerType } from 'types/common';
+import { ShootLayerType, ShootTrackType } from 'interfaces';
 
 const cx = classNames.bind(styles);
 

@@ -3,10 +3,9 @@ import { CircleMotionIcon } from 'components/Icons/generated2/CircleMotion';
 import { ModelFileIcon } from 'components/Icons/generated2/ModelFileIcon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'interfaces';
-import { MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
+import { MAIN_DATA, PAGES } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { rem } from 'utils/rem';
+import React, { useCallback, useMemo, useRef } from 'react';
 import * as S from './IconStyles';
 
 export interface IconProps {
@@ -16,7 +15,6 @@ export interface IconProps {
 const IconComponent: React.FC<IconProps> = ({ rowKey }) => {
   const mainData = useReactiveVar(MAIN_DATA);
   const pages = useReactiveVar(PAGES);
-  const searchWord = useReactiveVar(SEARCH_WORD);
   const fileType = useMemo(
     () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
     [rowKey, mainData],
@@ -37,9 +35,17 @@ const IconComponent: React.FC<IconProps> = ({ rowKey }) => {
       mainData,
     ]) ?? false;
   const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
-  const onClick = useCallback(() => {
-    MAIN_DATA(_.map(mainData, (item) => ({ ...item, isClicked: _.isEqual(item.key, rowKey) })));
-  }, [rowKey, mainData]);
+  const onClick = useCallback(
+    (e) => {
+      MAIN_DATA(
+        _.map(mainData, (item) => ({
+          ...item,
+          isClicked: _.isEqual(item.key, rowKey) ? true : e.ctrlKey ? item.isClicked : false,
+        })),
+      );
+    },
+    [rowKey, mainData],
+  );
   const onDoubleClick = useCallback(() => {
     if (
       _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type, FILE_TYPES.motion)

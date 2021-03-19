@@ -91,6 +91,11 @@ export const InputCPInput = styled.input<InputLPProps>`
   background-color: inherit;
   border-radius: 4px;
   margin-left: 6px;
+  -ms-user-select: none;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 
   :focus {
     outline: none;
