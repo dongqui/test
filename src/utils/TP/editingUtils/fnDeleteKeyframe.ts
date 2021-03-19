@@ -27,9 +27,9 @@ const fnDeleteKeyframe = (props: FnDeleteKeyframe) => {
     if (timeIndex === 0) {
       newTimes = _.slice(newTimes, 1);
       newValues = _.slice(newValues, 3);
-    } else if (timeIndex === targetTrack.times.length - 1) {
-      newTimes = _.slice(newTimes, 0, targetTrack.times.length - 1);
-      newValues = _.slice(newValues, 0, targetTrack.times.length - 3);
+    } else if (timeIndex === track.times.length - 1) {
+      newTimes = _.slice(newTimes, 0, track.times.length - 1);
+      newValues = _.slice(newValues, 0, track.times.length - 3);
     } else {
       newTimes = [..._.slice(newTimes, 0, timeIndex), ..._.slice(newTimes, timeIndex + 1)];
       newValues = [

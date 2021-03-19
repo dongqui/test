@@ -3,15 +3,10 @@ import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
 import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'interfaces/RP';
+import { TPBoneTrack, TPTransformTrack } from 'interfaces/TP';
 import _ from 'lodash';
 import { INITIAL_MAIN_DATA, isClient } from 'utils/const';
-import {
-  ContextmenuTypes,
-  LPMODE_TYPES,
-  MainDataTypes,
-  ModalTypes,
-  TpTrackTypes,
-} from '../interfaces';
+import { ContextmenuTypes, LPMODE_TYPES, MainDataTypes, ModalTypes } from '../interfaces';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
   let result = _.clone(initialData);
@@ -68,5 +63,6 @@ export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
 export const CUT_IMAGES = makeVar<string[]>([]);
 
 // TP
-export const TPDefaultTrackList = makeVar<TpTrackTypes[]>([]);
-export const TPFilteredTrackList = makeVar<TpTrackTypes[]>([]);
+export const TPDefaultTrackNameList = makeVar<TPBoneTrack[]>([]);
+export const TPFilteredTrackNameList = makeVar<TPBoneTrack[]>([]);
+export const TPTransformTrackList = makeVar<TPTransformTrack[]>([]);

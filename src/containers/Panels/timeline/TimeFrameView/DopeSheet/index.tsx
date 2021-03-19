@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
+import { TPTransformTrackList } from 'lib/store';
 import styles from './index.module.scss';
 
 interface Props {}
@@ -23,6 +25,7 @@ const dummyData = Array(1200) // 더미 데이터
 const cx = classNames.bind(styles);
 
 const DopeSheet: React.FC<Props> = () => {
+  const transformTrackList = useReactiveVar(TPTransformTrackList);
   const dopeSheetRef = useRef<HTMLDivElement>(null);
   const [zoomTransform, setZoomTransform] = useState<d3.ZoomTransform>();
   const circleY = useMemo(
@@ -33,7 +36,7 @@ const DopeSheet: React.FC<Props> = () => {
 
   // dope sheet 초기 세팅
   useEffect(() => {
-    if (!dopeSheetRef.current) return;
+    if (!dopeSheetRef.current || !transformTrackList.length) return;
     const { clientWidth: width, clientHeight: height } = dopeSheetRef.current;
 
     // x 좌표 범위 설정
@@ -67,6 +70,34 @@ const DopeSheet: React.FC<Props> = () => {
       .on('zoom', (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
         setZoomTransform(event.transform);
       });
+
+    // // dope sheet svg 생성
+    // const dopeSheet = d3
+    //   .select(dopeSheetRef.current)
+    //   .append('svg')
+    //   .attr('class', 'dopesheet-svg')
+    //   .attr('width', width)
+    //   .attr('height', transformTrackList.length * TRACK_HEIGHT)
+    //   .attr('transform', `translate(0, ${TRACK_HEIGHT})`);
+    // d3.select(dopeSheetRef.current).call(zoomBehavior);
+
+    // // circle group wrapper 생성
+    // const circleGroupWrapper = dopeSheet
+    //   .append('g')
+    //   .attr('class', 'circle-group-wrapper')
+    //   .attr('height', transformTrackList.length * TRACK_HEIGHT);
+    // console.log('transformTrackList', transformTrackList);
+
+    // circle group 생성
+    // _.forEach(transformTrackList, (property, index) => {
+    //   // const circleGroup = circleGroupWrapper
+    //   //   .append('g')
+    //   //   .attr('class', 'circle-group')
+    //   //   .attr('width', width)
+    //   //   .attr('height', TRACK_HEIGHT)
+    //   //   .attr('transform', `translate(0, ${index * TRACK_HEIGHT})`);
+    //   console.log(index + 4);
+    // });
 
     // dope sheet svg 생성
     const dopeSheet = d3
@@ -113,7 +144,7 @@ const DopeSheet: React.FC<Props> = () => {
       .attr('width', '100%')
       .attr('height', TRACK_HEIGHT)
       .call(xAxis);
-  }, [circleY]);
+  }, [circleY, transformTrackList]);
 
   // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
   useEffect(() => {

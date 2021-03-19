@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
-import { TpTrackTypes } from 'interfaces';
-import { TPDefaultTrackList, TPFilteredTrackList } from 'lib/store';
+import { TPBoneTrack } from 'interfaces/TP';
+import { TPDefaultTrackNameList, TPFilteredTrackNameList } from 'lib/store';
 import Track from './Track';
 import styles from './TrackList.module.scss';
 
@@ -15,8 +15,8 @@ const DEBOUNCED_TIME = 300;
 const cx = classNames.bind(styles);
 
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
-  const defaultTrackList = useReactiveVar(TPDefaultTrackList);
-  const filteredTrackList = useReactiveVar(TPFilteredTrackList);
+  const defaultTrackList = useReactiveVar(TPDefaultTrackNameList);
+  const filteredTrackList = useReactiveVar(TPFilteredTrackNameList);
   const [printSummaryTrack, setPrintSummaryTrack] = useState(false);
   const [printBaseTrack, setPrintBaseTrack] = useState(false);
   const [summaryTrackToggle, setSummaryTrackToggle] = useState(false);
@@ -43,11 +43,11 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         // 이전 검색 텍스트가 있으면서, 현재 검색 텍스트가 비어있는 경우(디폴트 트랙 리스트로 갱신)
         if (lastTrackInput.current !== trimInputText && !trimInputText) {
-          return TPFilteredTrackList(defaultTrackList);
+          return TPFilteredTrackNameList(defaultTrackList);
         }
 
         // 인풋 텍스트가 포함 된 트랙 리스트 필터링
-        const renewedTrackList = _.reduce<TpTrackTypes, TpTrackTypes[] | []>(
+        const renewedTrackList = _.reduce<TPBoneTrack, TPBoneTrack[] | []>(
           defaultTrackList,
           (acc, track) => {
             const lowerCasedInputText = _.toLower(trimInputText);
@@ -65,7 +65,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
         );
 
         // 필터링 트랙 리스트 갱신
-        TPFilteredTrackList(renewedTrackList);
+        TPFilteredTrackNameList(renewedTrackList);
         lastTrackInput.current = trimInputText;
       }, DEBOUNCED_TIME),
     [defaultTrackList],
