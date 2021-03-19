@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { BsSearch } from 'react-icons/bs';
 import { rem } from 'utils/rem';
-import { GRAY500 } from '../../styles/constants/common';
+import { GRAY400, GRAY500, PRIMARY_BLUE } from '../../styles/constants/common';
 
 interface InputLPWrapperProps {
   width: number;
@@ -61,4 +61,38 @@ export const SearchIcon = styled(BsSearch)`
   width: ${rem(10.64)}rem;
   height: ${rem(10.64)}rem;
   color: ${GRAY500};
+`;
+export const InputCPWrapper = styled.div`
+  width: 40px;
+  height: 20px;
+  border-radius: 4px;
+  background-color: ${GRAY400};
+  display: flex;
+  flex-direction: row;
+  padding-left: 4px;
+  padding-right: 4px;
+`;
+export const PrefixWrapper = styled.div`
+  width: 5px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: ${PRIMARY_BLUE};
+  font-weight: bold;
+  font-size: 8px;
+`;
+export const InputCPInput = styled.input<InputLPProps>`
+  width: 21px;
+  height: 20px;
+  font-size: 10px;
+  border-width: 0;
+  color: white;
+  background-color: inherit;
+  border-radius: 4px;
+  margin-left: 6px;
+
+  :focus {
+    outline: none;
+  }
 `;

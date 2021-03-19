@@ -1,9 +1,10 @@
+import { FunctionComponent } from 'react';
 import Close from './Close.svg';
 
 type Icon = 'Close';
 
 type Images = {
-  [key in Icon]: React.FunctionComponent;
+  [key in Icon]: FunctionComponent;
 };
 
 const images: Images = {
