@@ -55,6 +55,7 @@ export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
   isPlaying: false,
   motionName: '',
   isRecording: undefined,
+  count: undefined,
 });
 // CP
 export const CP_DATA = makeVar<CP_DATA_TYPES[]>(INITIAL_CP_DATA);

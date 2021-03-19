@@ -1,6 +1,5 @@
-import { FILE_TYPES, MainDataTypes } from 'interfaces';
+import { MainDataTypes } from 'interfaces';
 import { CP_COMPONENT_TYPES, CP_DATA_TYPES } from 'interfaces/CP';
-import { ROOT_FOLDER_NAME } from 'interfaces/LP';
 import { RENDERING_DATA_TYPES } from 'interfaces/RP';
 
 export const isClient = typeof window !== 'undefined';
@@ -9,68 +8,11 @@ export const DEFAULT_MODEL_URL =
 export const DEFAULT_FILE_URL = '/video/exo.mp4';
 export const CUT_IMAGES_CNT = 20;
 export const STANDARD_TIME_UNIT = 1 / 30;
-export const INITIAL_MAIN_DATA: MainDataTypes[] = [
-  // {
-  //   key: '0',
-  //   name: 'model.glb',
-  //   type: FILE_TYPES.file,
-  //   parentKey: ROOT_FOLDER_NAME,
-  //   url: DEFAULT_MODEL_URL,
-  //   isExpanded: true,
-  // },
-  // {
-  //   key: 'motion1',
-  //   name: 'motion1',
-  //   type: FILE_TYPES.motion,
-  //   parentKey: '0',
-  //   baseLayer: [],
-  // },
-  // {
-  //   key: 'motion2',
-  //   name: 'motion2',
-  //   type: FILE_TYPES.motion,
-  //   parentKey: '0',
-  //   isVisualized: true,
-  //   baseLayer: [],
-  // },
-  // {
-  //   key: 'motion3',
-  //   name: 'motion3',
-  //   type: FILE_TYPES.motion,
-  //   parentKey: '0',
-  //   baseLayer: [],
-  // },
-];
+export const INITIAL_MAIN_DATA: MainDataTypes[] = [];
 export const INITIAL_RENDERING_DATA: RENDERING_DATA_TYPES = {
   isPlaying: false,
   playDirection: 1,
   playSpeed: 1,
-  Transform: {
-    positionX: 1.11,
-    positionY: 1.11,
-    positionZ: 1.11,
-    rotationX: 1.11,
-    rotationY: 1.11,
-    rotationZ: 1.11,
-    scaleX: 1.11,
-    scaleY: 1.11,
-    scaleZ: 1.11,
-  },
-  Camera: {
-    locationX: 1.11,
-    locationY: 1.11,
-    locationZ: 1.11,
-    angleX: 1.11,
-    angleY: 1.11,
-    angleZ: 1.11,
-  },
-  Visibility: {
-    Axis: 'Y-up',
-    Bone: true,
-    Joint: true,
-    Mesh: true,
-    Shadow: true,
-  },
 };
 export const INITIAL_CP_DATA: CP_DATA_TYPES[] = [
   {

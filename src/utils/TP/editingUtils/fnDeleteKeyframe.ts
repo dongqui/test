@@ -1,5 +1,5 @@
+import { ShootTrackType } from 'interfaces';
 import _ from 'lodash';
-import { ShootTrackType } from 'types/common';
 
 interface FnDeleteKeyframe {
   track: ShootTrackType;

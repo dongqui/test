@@ -7,6 +7,7 @@ import {
   FORMAT_TYPES,
   LPMODE_TYPES,
   MainDataTypes,
+  MODAL_TYPES,
   PAGE_NAMES,
 } from 'interfaces';
 import { LP_MODE, MAIN_DATA, MODAL_INFO, PAGES, SEARCH_WORD } from 'lib/store';
@@ -44,74 +45,110 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
   }, []);
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      if (_.isEmpty(acceptedFiles)) {
-        MODAL_INFO({ isShow: true, msg: '파일이 존재하지 않습니다.' });
-        return false;
-      }
       setLoading(true);
-      const extension = _.last(_.split(acceptedFiles[0].name, '.'));
-      let convertedFileUrl = DEFAULT_MODEL_URL;
-      if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
-        MODAL_INFO({ isShow: true, msg: '파일 형식이 올바르지 않습니다.' });
+      if (_.isEmpty(acceptedFiles)) {
+        MODAL_INFO({ isShow: true, msg: '파일이 존재하지 않습니다.', type: MODAL_TYPES.alert });
         setLoading(false);
         return false;
       }
-      if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
-        // fbx 파일 업로드 및 변환
-        const { url, error, msg } = await api.uploadFbxToGlb({
-          file: acceptedFiles[0],
-          type: FORMAT_TYPES.glb,
+      if (
+        _.gt(
+          _.size(
+            _.filter(acceptedFiles, (acceptedFile) =>
+              _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(acceptedFile.name, '.'))),
+            ),
+          ),
+          1,
+        )
+      ) {
+        MODAL_INFO({
+          isShow: true,
+          msg: '영상파일은 2개이상 가져올수 없습니다.',
+          type: MODAL_TYPES.alert,
         });
+        setLoading(false);
+        return false;
+      }
+      let newDatas: MainDataTypes[] = [];
+      for (const acceptedFile of acceptedFiles) {
+        const extension = _.last(_.split(acceptedFile.name, '.'));
+        let convertedFileUrl = DEFAULT_MODEL_URL;
+        if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
+          MODAL_INFO({
+            isShow: true,
+            msg: '파일 형식이 올바르지 않습니다.',
+            type: MODAL_TYPES.alert,
+          });
+          setLoading(false);
+          return false;
+        }
+        if (_.some(mainData, (item) => _.isEqual(item.name, acceptedFile.name))) {
+          MODAL_INFO({
+            isShow: true,
+            msg: `대상 폴더에 이름이 ${acceptedFile.name}이 있습니다.`,
+            type: MODAL_TYPES.alert,
+          });
+          setLoading(false);
+          return false;
+        }
+        if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
+          // fbx 파일 업로드 및 변환
+          const { url, error, msg } = await api.uploadFbxToGlb({
+            file: acceptedFile,
+            type: FORMAT_TYPES.glb,
+          });
+          if (error) {
+            MODAL_INFO({ isShow: true, msg });
+            setLoading(false);
+            return false;
+          }
+          convertedFileUrl = url;
+        }
+        let url = URL.createObjectURL(acceptedFile);
+        if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
+          url = convertedFileUrl;
+        }
+        if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
+          router.push({
+            pathname: `/${PAGE_NAMES.extract}`,
+            query: { videoUrl: url, extension },
+          });
+          return false;
+        }
+        const { animations, bones, error, msg } = await fnGetAnimationData({ url });
         if (error) {
           MODAL_INFO({ isShow: true, msg });
           setLoading(false);
           return false;
         }
-        convertedFileUrl = url;
-      }
-      let url = URL.createObjectURL(acceptedFiles[0]);
-      if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
-        url = convertedFileUrl;
-      }
-      if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
-        router.push({
-          pathname: `/${PAGE_NAMES.extract}`,
-          query: { videoUrl: url, extension },
+        const motions: MainDataTypes[] = [];
+        const key = uuidv4();
+        _.forEach(animations, (clip, index) => {
+          if (bones) {
+            motions.push({
+              key: clip?.uuid,
+              name: clip?.name,
+              baseLayer: fnGetBaseLayer({ bones, clip }),
+              // layers: [fnGetNewLayer({ bones })],
+              layers: [],
+              type: FILE_TYPES.motion,
+              parentKey: key,
+            });
+          }
         });
-        return false;
+        let newData: MainDataTypes[] = [
+          {
+            key,
+            type: FILE_TYPES.file,
+            name: acceptedFile.name,
+            url,
+            parentKey: _.last(pages)?.key,
+          },
+        ];
+        newData = _.concat(newData, motions);
+        newDatas = _.concat(newDatas, newData);
       }
-      const { animations, bones, error, msg } = await fnGetAnimationData({ url });
-      if (error) {
-        MODAL_INFO({ isShow: true, msg });
-        setLoading(false);
-        return false;
-      }
-      const motions: MainDataTypes[] = [];
-      const key = uuidv4();
-      _.forEach(animations, (clip, index) => {
-        if (bones) {
-          motions.push({
-            key: clip?.uuid,
-            name: clip?.name,
-            baseLayer: fnGetBaseLayer({ bones, clip }),
-            // layers: [fnGetNewLayer({ bones })],
-            layers: [],
-            type: FILE_TYPES.motion,
-            parentKey: key,
-          });
-        }
-      });
-      let newData: MainDataTypes[] = [
-        {
-          key,
-          type: FILE_TYPES.file,
-          name: acceptedFiles[0].name,
-          url,
-          parentKey: _.last(pages)?.key,
-        },
-      ];
-      newData = _.concat(newData, motions);
-      MAIN_DATA(_.concat(mainData, newData));
+      MAIN_DATA(_.concat(mainData, newDatas));
       setLoading(false);
     },
     [mainData, pages, router],

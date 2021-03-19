@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import { ShootTrackType } from 'types/common';
+import { ShootTrackType } from 'interfaces';
 
 interface FnGetNewLayer {
   bones: THREE.Bone[];

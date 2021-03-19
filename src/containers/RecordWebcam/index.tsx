@@ -7,6 +7,7 @@ import { useRouter } from 'next/dist/client/router';
 import React, { useEffect, useRef, useState } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { useRecordWebcam } from '../../hooks/RP/useRecordWebcam';
+import * as S from './RecordStyle';
 
 let time = { start: moment(), end: moment() };
 const RecordWebcam: React.FC = () => {
@@ -40,7 +41,12 @@ const RecordWebcam: React.FC = () => {
       });
     }
   }, [mediaBlobUrl, router, status]);
-  return <video width="100%" height="100%" ref={videoRef} muted></video>;
+  return (
+    <S.VideoWrapper>
+      {recordingData.count && <S.VideoTimerWrapper>{recordingData.count}</S.VideoTimerWrapper>}
+      <video width="100%" height="100%" ref={videoRef} muted></video>
+    </S.VideoWrapper>
+  );
 };
 
 export default React.memo(RecordWebcam);

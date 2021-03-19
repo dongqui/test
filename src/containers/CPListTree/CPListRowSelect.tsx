@@ -39,8 +39,13 @@ const CPListRowSelectComponent: React.FC<CPListRowSelectProps> = ({
       <S.CPListRowInputWrapper>
         {text}
         <S.CPListRowInputsWrapper>
-          {_.map(buttonInfo, (item) => (
-            <CPSelectButton isSelected={item.isSelected} onClick={onClick} text={item.name} />
+          {_.map(buttonInfo, (item, index) => (
+            <CPSelectButton
+              key={index}
+              isSelected={item.isSelected}
+              onClick={onClick}
+              text={item.name}
+            />
           ))}
         </S.CPListRowInputsWrapper>
       </S.CPListRowInputWrapper>

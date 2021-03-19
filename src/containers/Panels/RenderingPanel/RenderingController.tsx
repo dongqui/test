@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { renderingOptions } from './const';
 import { useRendering } from '../../../hooks/RP/useRendering';
+import { ShootLayerType, ShootTrackType } from 'interfaces';
 
 export interface RenderingControllerProps {
   id: string;
@@ -11,6 +12,8 @@ export interface RenderingControllerProps {
   isPlaying: boolean;
   playSpeed: number;
   playDirection: -1 | 1;
+  baseLayer?: ShootTrackType[];
+  layers?: ShootLayerType[];
 }
 const RenderingController: React.FC<RenderingControllerProps> = ({
   id,
@@ -18,6 +21,8 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   isPlaying,
   playDirection,
   playSpeed,
+  baseLayer = [],
+  layers = [],
 }) => {
   const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
@@ -30,16 +35,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     }
     return action;
   }, [currentAnimationClip, mixer]);
-
-  // useRenderingModel({
-  //   id,
-  //   fileUrl,
-  //   renderingOptions,
-  //   format: 'glb',
-  //   setMixer,
-  //   setSkeletonHelper,
-  //   setAnimations,
-  // });
 
   useRendering({
     id,
