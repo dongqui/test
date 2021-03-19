@@ -1,0 +1,75 @@
+import {
+  FunctionComponent,
+  memo,
+  useCallback,
+  FocusEvent,
+  KeyboardEvent,
+  MutableRefObject,
+  InputHTMLAttributes,
+  ChangeEvent,
+} from 'react';
+import classNames from 'classnames/bind';
+import styles from './BaseInput.module.scss';
+
+const cx = classNames.bind(styles);
+
+interface BaseProps {
+  innerRef?: MutableRefObject<HTMLInputElement>;
+  invalid?: boolean;
+}
+
+export type Props = BaseProps & InputHTMLAttributes<HTMLInputElement>;
+
+const defaultProps: Partial<Props> = {
+  type: 'text',
+};
+
+const BaseInput: FunctionComponent<Props> = ({
+  className,
+  innerRef,
+  invalid,
+  onBlur,
+  onChange,
+  onKeyUp,
+  ...rest
+}) => {
+  const classes = cx('input', className, {
+    invalid,
+  });
+
+  const handleBlur = useCallback(
+    (e: FocusEvent<HTMLInputElement>) => {
+      onBlur && onBlur(e);
+    },
+    [onBlur],
+  );
+
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      onChange && onChange(e);
+    },
+    [onChange],
+  );
+
+  const handleKeyUp = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      onKeyUp && onKeyUp(e);
+    },
+    [onKeyUp],
+  );
+
+  return (
+    <input
+      className={classes}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      onKeyUp={handleKeyUp}
+      ref={innerRef}
+      {...rest}
+    />
+  );
+};
+
+BaseInput.defaultProps = defaultProps;
+
+export default memo(BaseInput);

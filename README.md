@@ -2,6 +2,8 @@
 
 plask homepage with nextjs, typescript, webgl, d3.js, apollo client
 
+https://shoot-azure.vercel.app/
+
 ### Installation ⚙️
 
 ```bash
