@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
+import _ from 'lodash';
 import classNames from 'classnames/bind';
 import TrackList from './TrackList';
 import TimeFrameView from './TimeFrameView';
