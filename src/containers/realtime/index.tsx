@@ -6,7 +6,7 @@ import { getDummyData } from 'utils/RT/getDummyData';
 import { useRenderingModel } from 'hooks/RP/useRenderingModel';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 import useDropzone from './utils/useDropzone';
-import { FilledButton } from 'components/New_Buttons';
+import { FilledButton } from 'components/New_Button';
 import { renderingOptions } from './const';
 import { FORMAT_TYPES } from 'types';
 import classnames from 'classnames/bind';

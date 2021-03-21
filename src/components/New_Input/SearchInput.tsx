@@ -1,5 +1,5 @@
 import { FunctionComponent, memo } from 'react';
-import { IconWrapper, SvgPath } from 'components/New_Icons';
+import { IconWrapper, SvgPath } from 'components/New_Icon';
 import BaseInput from './BaseInput';
 import classNames from 'classnames/bind';
 import styles from './SearchInput.module.scss';
