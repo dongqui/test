@@ -10,7 +10,7 @@ import {
 import _ from 'lodash';
 import { Overlay } from 'components/New_Overlay';
 import { Headline } from 'components/New_Typography';
-import { IconWrapper, SvgPath } from 'components/New_Icons';
+import { IconWrapper, SvgPath } from 'components/New_Icon';
 import BasePortal from './BasePortal';
 import classnames from 'classnames/bind';
 import styles from './BaseModal.module.scss';

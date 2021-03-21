@@ -1,7 +1,7 @@
 import { FunctionComponent, memo, useState, useEffect, useCallback, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import _ from 'lodash';
-import { FilledButton } from 'components/New_Buttons';
+import { FilledButton } from 'components/New_Button';
 import { Headline } from 'components/New_Typography';
 import useWebcam from 'hooks/RP/useWebcam';
 import classnames from 'classnames/bind';
