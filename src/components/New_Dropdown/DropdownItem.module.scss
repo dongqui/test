@@ -1,10 +1,11 @@
-@import './common';
+@import 'styles/libraries/_mixins';
+@import 'styles/libraries/_functions';
 
 .menu-item {
   @include reset-list-style();
-  padding: 1rem $borderRadius;
+  padding: 1rem 0.45rem;
   cursor: pointer;
-  border-radius: $borderRadius;
+  border-radius: 0.45rem;
   margin-bottom: 5px;
 
   &:last-child {

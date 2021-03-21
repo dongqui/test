@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
-import Close from './Close.svg';
-import Search from './Search.svg';
+import Close from './svg/Close.svg';
+import Search from './svg/Search.svg';
 
 type Icon = 'Close' | 'Search';
 

@@ -1,4 +1,4 @@
-import { MutableRefObject } from 'react';
+import { MutableRefObject, InputHTMLAttributes } from 'react';
 
 export = Input;
 export as namespace Input;
