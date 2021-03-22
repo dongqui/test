@@ -34,7 +34,7 @@ const fnGetTrackUnionTimes = (props: FnGetTrackUnionTimes) => {
       targetTimes.push(layerTrack.times);
     }
   });
-  return _.union(...targetTimes).sort();
+  return _.union(...targetTimes).sort((a, b) => a - b);
 };
 
 export default fnGetTrackUnionTimes;
