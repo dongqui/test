@@ -1,4 +1,4 @@
-import React, { memo, ButtonHTMLAttributes } from 'react';
+import { FunctionComponent, memo, ButtonHTMLAttributes } from 'react';
 import classNames from 'classnames/bind';
 import styles from './FilledButton.module.scss';
 
@@ -18,7 +18,7 @@ const defaultProps: Partial<BaseProps> = {
   size: 'small',
 };
 
-const FilledButton: React.FC<Props> = ({
+const FilledButton: FunctionComponent<Props> = ({
   size,
   text,
   color,
