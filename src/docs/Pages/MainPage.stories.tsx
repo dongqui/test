@@ -1,7 +1,7 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import MainPage from 'containers/shoot/MainPage';
+import MainPage from 'containers/Shoot/MainPage';
 
 export default {
   title: 'Pages/MainPage',
