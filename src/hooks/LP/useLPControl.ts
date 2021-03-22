@@ -1,6 +1,8 @@
 import _, { isEqual } from 'lodash';
 import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { Modal } from 'antd';
+import 'antd/dist/antd.css';
 import { ContextmenuTypes, FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
 import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
@@ -141,6 +143,7 @@ export const useLPControl = ({
         data,
         onClick: ({ key }) => {
           CONTEXTMENU_INFO({ ...contextmenuInfo, isShow: false });
+          let content = '';
           switch (key) {
             case '0':
               MAIN_DATA(
@@ -157,7 +160,30 @@ export const useLPControl = ({
               onCopy({ mainData: newMainData });
               break;
             case '2':
-              fnDeleteFile({ mainData: newMainData });
+              if (
+                _.isEqual(
+                  _.find(newMainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.type,
+                  FILE_TYPES.file,
+                )
+              ) {
+                content = '파일을 삭제하시겠습니까?';
+              }
+              if (
+                _.isEqual(
+                  _.find(newMainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.type,
+                  FILE_TYPES.folder,
+                )
+              ) {
+                content = '내부 파일도 함께 삭제됩니다. 디렉토리를 삭제하시겠습니까?';
+              }
+              Modal.confirm({
+                okText: '확인',
+                cancelText: '취소',
+                content,
+                onOk: () => {
+                  fnDeleteFile({ mainData: newMainData });
+                },
+              });
               break;
             case '3':
               onPaste();
