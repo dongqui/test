@@ -1,110 +1,53 @@
 import * as THREE from 'three';
 import _ from 'lodash';
+import { useEffect, useMemo } from 'react';
+
+type TargetPanel = 'RP' | 'TP';
+
+interface RPValue {
+  bone: THREE.Bone;
+  position: { x: number; y: number; z: number };
+  quaternion: { x: number; y: number; z: number; w: number };
+  scale: { x: number; y: number; z: number };
+}
+
+interface HistoryItem {
+  panel: TargetPanel;
+  value: RPValue;
+}
 
 export const useHistory = () => {
-  const undoArray: any[] = [];
-  const redoArray: any[] = [];
+  const undoArray: HistoryItem[] = [];
+  const redoArray: HistoryItem[] = [];
 
-  const pushToUndoArray = ({
-    bone,
-    mode,
-    value,
-  }: {
-    bone: THREE.Bone;
-    mode: string;
-    value: any;
-  }) => {
-    undoArray.push({ bone, mode, value });
+  const pushToUndoArray = ({ panel, value }: { panel: TargetPanel; value: RPValue }) => {
+    undoArray.push({ panel, value });
   };
 
   const popFromUndoArray = () => {
     if (undoArray.length !== 0) {
       const undoInfo = undoArray.pop();
-      const { bone, mode } = undoInfo;
-      let value;
-      switch (mode) {
-        case 'translate':
-          value = {
-            x: bone.position.x,
-            y: bone.position.y,
-            z: bone.position.z,
-          };
-          break;
-        case 'rotate':
-          value = {
-            x: bone.quaternion.x,
-            y: bone.quaternion.y,
-            z: bone.quaternion.z,
-            w: bone.quaternion.w,
-          };
-          break;
-        case 'scale':
-          value = {
-            x: bone.scale.x,
-            y: bone.scale.y,
-            z: bone.scale.z,
-          };
-          break;
-        default:
-          break;
+      if (!undoInfo) {
+        return;
       }
-      pushToRedoArray({ bone, mode, value });
+      const { panel, value } = undoInfo;
+      pushToRedoArray({ panel, value });
       return undoInfo;
     }
   };
 
-  const resetRedoArray = () => {
-    if (redoArray.length > 0) {
-      _.forEach(redoArray, (item) => {
-        redoArray.pop();
-      });
-    }
-  };
-
-  const pushToRedoArray = ({
-    bone,
-    mode,
-    value,
-  }: {
-    bone: THREE.Bone;
-    mode: string;
-    value: any;
-  }) => {
-    redoArray.push({ bone, mode, value });
+  const pushToRedoArray = ({ panel, value }: { panel: TargetPanel; value: RPValue }) => {
+    redoArray.push({ panel, value });
   };
 
   const popFromRedoArray = () => {
     if (redoArray.length !== 0) {
       const redoInfo = redoArray.pop();
-      const { bone, mode } = redoInfo;
-      let value;
-      switch (mode) {
-        case 'translate':
-          value = {
-            x: bone.position.x,
-            y: bone.position.y,
-            z: bone.position.z,
-          };
-          break;
-        case 'rotate':
-          value = {
-            x: bone.quaternion.x,
-            y: bone.quaternion.y,
-            z: bone.quaternion.z,
-            w: bone.quaternion.w,
-          };
-          break;
-        case 'scale':
-          value = {
-            x: bone.scale.x,
-            y: bone.scale.y,
-            z: bone.scale.z,
-          };
-          break;
-        default:
-          break;
+      if (!redoInfo) {
+        return;
       }
-      pushToUndoArray({ bone, mode, value });
+      const { panel, value } = redoInfo;
+      pushToUndoArray({ panel, value });
       return redoInfo;
     }
   };
@@ -112,7 +55,7 @@ export const useHistory = () => {
   return {
     pushToUndoArray,
     popFromUndoArray,
-    resetRedoArray,
+    pushToRedoArray,
     popFromRedoArray,
   };
 };
