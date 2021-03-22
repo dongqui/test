@@ -201,16 +201,9 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
     <S.LibraryPanelWrapper backgroundColor={backgroundColor} {...getRootProps()}>
-      <div
-        style={{
-          width: '100%',
-          position: 'absolute',
-          bottom: 0,
-          zIndex: 100,
-        }}
-      >
+      <S.LPSelectWrapper>
         <LPSelect />
-      </div>
+      </S.LPSelectWrapper>
       {loading && (
         <S.LoadingWrapper>
           <Loading color="white" />
