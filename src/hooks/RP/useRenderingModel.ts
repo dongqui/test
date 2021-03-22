@@ -173,7 +173,7 @@ export const useRenderingModel = ({
     [],
   );
 
-  const { pushToUndoArray, popFromUndoArray, resetRedoArray, popFromRedoArray } = useHistory();
+  const { pushToUndoArray, popFromUndoArray, popFromRedoArray } = useHistory();
 
   const createScene = useCallback(() => {
     const scene = new THREE.Scene(); // scene 생성
@@ -391,37 +391,27 @@ export const useRenderingModel = ({
       transformControls.addEventListener('dragging-changed', (event: any) => {
         cameraControls.enabled = !event?.value; // 요소 드래그 중에는 카메라 이동 불가하도록 설정
         if (event.value) {
-          const bone = event.target.object;
-          const { mode } = transformControls;
-          let value;
-          switch (mode) {
-            case 'translate':
-              value = {
-                x: bone.position.x,
-                y: bone.position.y,
-                z: bone.position.z,
-              };
-              break;
-            case 'rotate':
-              value = {
-                w: bone.quaternion.w,
-                x: bone.quaternion.x,
-                y: bone.quaternion.y,
-                z: bone.quaternion.z,
-              };
-              break;
-            case 'scale':
-              value = {
-                x: bone.scale.x,
-                y: bone.scale.y,
-                z: bone.scale.z,
-              };
-              break;
-            default:
-              break;
-          }
-          pushToUndoArray({ bone, mode, value });
-          resetRedoArray();
+          const bone: THREE.Bone = event.target.object;
+          const value = {
+            bone,
+            position: {
+              x: bone.position.x,
+              y: bone.position.y,
+              z: bone.position.z,
+            },
+            quaternion: {
+              x: bone.quaternion.x,
+              y: bone.quaternion.y,
+              z: bone.quaternion.z,
+              w: bone.quaternion.w,
+            },
+            scale: {
+              x: bone.scale.x,
+              y: bone.scale.y,
+              z: bone.scale.z,
+            },
+          };
+          pushToUndoArray({ panel: 'RP', value });
         }
       });
       // 트랜스폼 컨트롤러 scene에 추가
@@ -429,7 +419,7 @@ export const useRenderingModel = ({
       // setTheTransformControls(transformControls);
       return transformControls;
     },
-    [pushToUndoArray, resetRedoArray],
+    [pushToUndoArray],
   );
 
   const handleTransformControlsShortcutDown = useCallback(
@@ -888,29 +878,27 @@ export const useRenderingModel = ({
         case 'ㅋ':
           // redo
           if (event.ctrlKey && event.shiftKey) {
-            info = popFromRedoArray();
+            const info = popFromRedoArray();
             if (info) {
-              const { bone, mode, value } = info;
-              if (mode === 'translate') {
-                bone.position.set(value.x, value.y, value.z);
-              } else if (mode === 'rotate') {
-                bone.quaternion.set(value.x, value.y, value.z, value.w);
-              } else {
-                bone.scale.set(value.x, value.y, value.z);
+              const { panel, value } = info;
+              if (panel === 'RP') {
+                const { bone, position, quaternion, scale } = value;
+                bone.position.set(position.x, position.y, position.z);
+                bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+                bone.scale.set(scale.x, scale.y, scale.z);
               }
             }
           }
           // undo
           if (event.ctrlKey && !event.shiftKey) {
-            info = popFromUndoArray();
+            const info = popFromUndoArray();
             if (info) {
-              const { bone, mode, value } = info;
-              if (mode === 'translate') {
-                bone.position.set(value.x, value.y, value.z);
-              } else if (mode === 'rotate') {
-                bone.quaternion.set(value.x, value.y, value.z, value.w);
-              } else {
-                bone.scale.set(value.x, value.y, value.z);
+              const { panel, value } = info;
+              if (panel === 'RP') {
+                const { bone, position, quaternion, scale } = value;
+                bone.position.set(position.x, position.y, position.z);
+                bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+                bone.scale.set(scale.x, scale.y, scale.z);
               }
             }
           }
