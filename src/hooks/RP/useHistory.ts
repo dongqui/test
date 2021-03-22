@@ -31,7 +31,31 @@ export const useHistory = () => {
         return;
       }
       const { panel, value } = undoInfo;
-      pushToRedoArray({ panel, value });
+      const { bone } = value;
+      if (panel === 'RP') {
+        pushToRedoArray({
+          panel,
+          value: {
+            bone,
+            position: {
+              x: bone.position.x,
+              y: bone.position.y,
+              z: bone.position.z,
+            },
+            quaternion: {
+              x: bone.quaternion.x,
+              y: bone.quaternion.y,
+              z: bone.quaternion.z,
+              w: bone.quaternion.w,
+            },
+            scale: {
+              x: bone.scale.x,
+              y: bone.scale.y,
+              z: bone.scale.z,
+            },
+          },
+        });
+      }
       return undoInfo;
     }
   };
@@ -47,7 +71,31 @@ export const useHistory = () => {
         return;
       }
       const { panel, value } = redoInfo;
-      pushToUndoArray({ panel, value });
+      const { bone } = value;
+      if (panel === 'RP') {
+        pushToUndoArray({
+          panel,
+          value: {
+            bone,
+            position: {
+              x: bone.position.x,
+              y: bone.position.y,
+              z: bone.position.z,
+            },
+            quaternion: {
+              x: bone.quaternion.x,
+              y: bone.quaternion.y,
+              z: bone.quaternion.z,
+              w: bone.quaternion.w,
+            },
+            scale: {
+              x: bone.scale.x,
+              y: bone.scale.y,
+              z: bone.scale.z,
+            },
+          },
+        });
+      }
       return redoInfo;
     }
   };
