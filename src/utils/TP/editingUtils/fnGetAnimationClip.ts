@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import _ from 'lodash';
-import { ShootLayerType, ShootTrackType } from 'types/common';
+import { ShootLayerType, ShootTrackType } from 'types';
 
 interface FnGetAnimationClip {
   name: string;

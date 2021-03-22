@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { ShootLayerType, ShootTrackType } from 'types/common';
+import { ShootLayerType, ShootTrackType } from 'types';
 import { fnGetInterpolatedTrackLinear, fnGetTrackUnionTimes } from 'utils/TP/editingUtils';
 
 interface FnUpdateKeyframeToLayer {

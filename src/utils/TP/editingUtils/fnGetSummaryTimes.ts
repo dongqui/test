@@ -1,5 +1,5 @@
 import _, { forEach } from 'lodash';
-import { ShootLayerType, ShootTrackType } from 'types/common';
+import { ShootLayerType, ShootTrackType } from 'types';
 
 interface FnGetSummaryTimes {
   baseLayer: ShootTrackType[];
