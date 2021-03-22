@@ -1,4 +1,4 @@
-import _, { forEach } from 'lodash';
+import _ from 'lodash';
 import { ShootLayerType, ShootTrackType } from 'types';
 
 interface FnGetSummaryTimes {
@@ -20,12 +20,12 @@ const fnGetSummaryTimes = (props: FnGetSummaryTimes) => {
   const targetTimes: Array<number[]> = [];
 
   // base layer 내 모든 트랙의 times
-  forEach(baseLayer, (track) => {
+  _.forEach(baseLayer, (track) => {
     targetTimes.push(track.times);
   });
   // layers 내 모든 트랙의 times
-  forEach(layers, (layer) => {
-    forEach(layer.tracks, (track) => {
+  _.forEach(layers, (layer) => {
+    _.forEach(layer.tracks, (track) => {
       targetTimes.push(track.times);
     });
   });
