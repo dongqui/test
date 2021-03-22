@@ -167,7 +167,7 @@ const ListRowComponent: React.FC<ListRowProps> = ({
               autoFocus
               onFocus={(e) => e.target.select()}
               onChange={onChangeInput}
-              onBlur={onBlur}
+              // onBlur={onBlur}
             ></S.ListRowInput>
           ) : (
             <S.ListRowText marginLeft={rem(6)}>{filteredFileName}</S.ListRowText>

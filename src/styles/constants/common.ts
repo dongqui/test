@@ -1,5 +1,3 @@
-import { rem } from 'utils/rem';
-
 /**
  * 공통 길이
  */

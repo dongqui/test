@@ -7,6 +7,7 @@ import { ContextmenuTypes, FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } 
 import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
 import { PagesTypes } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
+import { fnGetFileName } from 'utils/LP/fnGetFileName';
 
 interface useLPControlProps {
   mainData: MainDataTypes[];
@@ -22,9 +23,21 @@ export const useLPControl = ({
 }: useLPControlProps) => {
   const onClick = useCallback(
     (e) => {
+      const newFileName = fnGetFileName({
+        key: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
+        name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.name ?? '',
+        mainData,
+      });
       const icons = document.getElementsByClassName('icon');
       if (!_.some(icons, (icon) => icon.contains(e?.target as any))) {
-        MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: false, isClicked: false })));
+        MAIN_DATA(
+          _.map(mainData, (item) => ({
+            ...item,
+            isSelected: false,
+            isClicked: false,
+            name: item.isClicked ? newFileName : item.name,
+          })),
+        );
       }
     },
     [mainData],
@@ -74,16 +87,11 @@ export const useLPControl = ({
       let newMainData = _.concat(mainData, {
         key: newKey,
         type: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.type ?? FILE_TYPES.file,
-        name: `${_.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name} (${
-          _.size(
-            _.filter(mainData, (item) =>
-              _.includes(
-                item.name,
-                _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name,
-              ),
-            ),
-          ) + 1
-        })`,
+        name: fnGetFileName({
+          key: '',
+          name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name ?? '',
+          mainData,
+        }),
         parentKey: _.isEqual(
           _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.type,
           FILE_TYPES.motion,
@@ -109,11 +117,17 @@ export const useLPControl = ({
       MAIN_DATA(newMainData);
     }
   }, [mainData, pages]);
-  const onEdit = useCallback(({ mainData }) => {
+  const onEdit = useCallback(({ mainData }: { mainData: MainDataTypes[] }) => {
+    const newFileName = fnGetFileName({
+      key: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
+      name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.name ?? '',
+      mainData,
+    });
     MAIN_DATA(
       _.map(mainData, (item) => ({
         ...item,
         isModifying: item.isClicked ? !item.isModifying : item.isModifying,
+        name: item.isClicked ? newFileName : item.name,
       })),
     );
   }, []);
@@ -160,6 +174,14 @@ export const useLPControl = ({
               onCopy({ mainData: newMainData });
               break;
             case '2':
+              if (
+                _.isEqual(
+                  _.find(newMainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.type,
+                  FILE_TYPES.motion,
+                )
+              ) {
+                content = '모션을 삭제하시겠습니까?';
+              }
               if (
                 _.isEqual(
                   _.find(newMainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.type,

@@ -5,6 +5,12 @@ const MARGIN_LEFT = rem(12);
 interface LibraryPanelStyleProps {
   backgroundColor: string;
 }
+export const LPSelectWrapper = styled.div`
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  z-index: 100;
+`;
 export const LibraryPanelWrapper = styled.div<LibraryPanelStyleProps>`
   width: 100%;
   height: 100%;
