@@ -60,7 +60,7 @@ export const useRendering = (props: UseRendering) => {
     [],
   );
 
-  const { pushToUndoArray, popFromUndoArray, resetRedoArray, popFromRedoArray } = useHistory();
+  const { pushToUndoArray, popFromUndoArray, pushToRedoArray, popFromRedoArray } = useHistory();
 
   const handleTransformControlsShortcutDown = useCallback(
     ({
@@ -344,36 +344,33 @@ export const useRendering = (props: UseRendering) => {
 
   const handleHistoryShortcutDown = useCallback(
     ({ event }: { event: KeyboardEvent }) => {
-      let info;
       switch (event.key) {
         case 'z':
         case 'Z':
         case 'ㅋ':
           // redo
           if (event.ctrlKey && event.shiftKey) {
-            info = popFromRedoArray();
+            const info = popFromRedoArray();
             if (info) {
-              const { bone, mode, value } = info;
-              if (mode === 'translate') {
-                bone.position.set(value.x, value.y, value.z);
-              } else if (mode === 'rotate') {
-                bone.quaternion.set(value.x, value.y, value.z, value.w);
-              } else {
-                bone.scale.set(value.x, value.y, value.z);
+              const { panel, value } = info;
+              if (panel === 'RP') {
+                const { bone, position, quaternion, scale } = value;
+                bone.position.set(position.x, position.y, position.z);
+                bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+                bone.scale.set(scale.x, scale.y, scale.z);
               }
             }
           }
           // undo
           if (event.ctrlKey && !event.shiftKey) {
-            info = popFromUndoArray();
+            const info = popFromUndoArray();
             if (info) {
-              const { bone, mode, value } = info;
-              if (mode === 'translate') {
-                bone.position.set(value.x, value.y, value.z);
-              } else if (mode === 'rotate') {
-                bone.quaternion.set(value.x, value.y, value.z, value.w);
-              } else {
-                bone.scale.set(value.x, value.y, value.z);
+              const { panel, value } = info;
+              if (panel === 'RP') {
+                const { bone, position, quaternion, scale } = value;
+                bone.position.set(position.x, position.y, position.z);
+                bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+                bone.scale.set(scale.x, scale.y, scale.z);
               }
             }
           }
@@ -420,37 +417,27 @@ export const useRendering = (props: UseRendering) => {
       // https://redux.js.org/recipes/implementing-undo-history#understanding-undo-history
       transformControls.addEventListener('dragging-changed', (event: any) => {
         if (event.value) {
-          const bone = event.target.object;
-          const { mode } = transformControls;
-          let value;
-          switch (mode) {
-            case 'translate':
-              value = {
-                x: bone.position.x,
-                y: bone.position.y,
-                z: bone.position.z,
-              };
-              break;
-            case 'rotate':
-              value = {
-                w: bone.quaternion.w,
-                x: bone.quaternion.x,
-                y: bone.quaternion.y,
-                z: bone.quaternion.z,
-              };
-              break;
-            case 'scale':
-              value = {
-                x: bone.scale.x,
-                y: bone.scale.y,
-                z: bone.scale.z,
-              };
-              break;
-            default:
-              break;
-          }
-          pushToUndoArray({ bone, mode, value });
-          resetRedoArray();
+          const bone: THREE.Bone = event.target.object;
+          const value = {
+            bone,
+            position: {
+              x: bone.position.x,
+              y: bone.position.y,
+              z: bone.position.z,
+            },
+            quaternion: {
+              x: bone.quaternion.x,
+              y: bone.quaternion.y,
+              z: bone.quaternion.z,
+              w: bone.quaternion.w,
+            },
+            scale: {
+              x: bone.scale.x,
+              y: bone.scale.y,
+              z: bone.scale.z,
+            },
+          };
+          pushToUndoArray({ panel: 'RP', value });
         }
       });
       setContents((prevContents) => [...prevContents, transformControls]);
