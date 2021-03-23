@@ -1,6 +1,5 @@
 import { makeVar } from '@apollo/client';
 import produce from 'immer';
-import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
 import {
   TPTrackName,
   TPDopeSheet,
