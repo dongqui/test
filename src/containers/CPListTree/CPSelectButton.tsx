@@ -5,7 +5,7 @@ import * as S from './CPListTreeStyles';
 export interface CPSelectButtonProps {
   text: string;
   isSelected: boolean;
-  onClick: ({ name }: { name: string }) => void;
+  onClick: ((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void) | undefined;
 }
 
 const CPSelectButtonComponent: React.FC<CPSelectButtonProps> = ({
@@ -14,7 +14,7 @@ const CPSelectButtonComponent: React.FC<CPSelectButtonProps> = ({
   onClick = () => {},
 }) => {
   return (
-    <S.CPSelectButtonWrapper isSelected={isSelected} onClick={() => onClick({ name: text })}>
+    <S.CPSelectButtonWrapper isSelected={isSelected} onClick={onClick}>
       {text}
     </S.CPSelectButtonWrapper>
   );
