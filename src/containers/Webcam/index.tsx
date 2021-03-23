@@ -5,7 +5,6 @@ import _ from 'lodash';
 import { useRouter } from 'next/dist/client/router';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { STANDARD_WIDTH } from 'styles/constants/common';
-import { CUT_IMAGES_CNT } from 'utils/const';
 import { CUT_IMAGES } from '../../lib/store';
 import * as S from './WebcamStyles';
 
@@ -53,7 +52,7 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
       }
     },
     active: _.isEmpty(cutImages),
-    intervalTime: ((videoRef.current?.duration ?? 10) / CUT_IMAGES_CNT) * 1000,
+    intervalTime: ((videoRef.current?.duration ?? 10) / 20) * 1000,
   });
   useEffect(() => {
     controlPlay();

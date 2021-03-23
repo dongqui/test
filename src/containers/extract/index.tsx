@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { NextPage } from 'next';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,14 +8,14 @@ import { CutEdit } from 'containers/CutEdit';
 import { ExtractPlayBar } from 'containers/ExtractPlayBar';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
-import { MAIN_DATA, MODAL_INFO, RECORDING_DATA } from 'lib/store';
+import { CP_DATA, CUT_IMAGES, MAIN_DATA, MODAL_INFO, RECORDING_DATA } from 'lib/store';
 import { FILE_TYPES, MainDataTypes, MODAL_TYPES, PAGE_NAMES } from 'types';
 import { ModalLoading } from 'components/Modal/ModalLoading';
 import { ModalInput } from 'components/Modal/ModalInput';
 import styled from 'styled-components';
 import * as api from 'utils/common/api';
 import { STANDARD_WIDTH } from 'styles/constants/common';
-import { DEFAULT_FILE_URL, STANDARD_TIME_UNIT } from 'utils/const';
+import { DEFAULT_FILE_URL, INITIAL_CP_DATA, STANDARD_TIME_UNIT } from 'utils/const';
 import { Modal } from 'components/Modal';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 
@@ -78,8 +78,8 @@ const ExtractPage: NextPage<Props> = ({}) => {
         },
       ];
       MAIN_DATA(_.concat(mainData, newData));
-      router.push({
-        pathname: `/${PAGE_NAMES.shoot}`,
+      router.push(`/${PAGE_NAMES.shoot}`, undefined, {
+        shallow: true,
       });
     },
     [
