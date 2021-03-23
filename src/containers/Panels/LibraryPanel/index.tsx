@@ -81,10 +81,18 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           url = convertedFileUrl;
         }
         if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
-          router.push({
-            pathname: `/${PAGE_NAMES.extract}`,
-            query: { videoUrl: url, extension },
+          Modal.confirm({
+            okText: '확인',
+            cancelText: '취소',
+            content: '모션을 추출하시겠습니까?',
+            onOk: () => {
+              router.push({
+                pathname: `/${PAGE_NAMES.extract}`,
+                query: { videoUrl: url, extension },
+              });
+            },
           });
+          setLoading(false);
           return false;
         }
         const { animations, bones, error, msg } = await fnGetAnimationData({ url });
