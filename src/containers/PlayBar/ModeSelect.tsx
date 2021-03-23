@@ -32,8 +32,8 @@ const ModeSelectComponent: React.FC<ModeSelectProps> = ({
           {_.isEqual(item.key, 'camera') && (
             <S.CameraIconWrapper
               onClick={() => {
-                router.push({
-                  pathname: `/${PAGE_NAMES.record}`,
+                router.push(`/${PAGE_NAMES.record}`, undefined, {
+                  shallow: true,
                 });
               }}
             >

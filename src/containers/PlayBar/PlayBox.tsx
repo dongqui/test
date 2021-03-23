@@ -5,7 +5,7 @@ import { PlayForwardIcon } from 'components/Icons/generated2/PlayForwardIcon';
 import { PlayIcon } from 'components/Icons/generated2/PlayIcon';
 import { RangeIcon } from 'components/Icons/generated2/RangeIcon';
 import { SquareIcon } from 'components/Icons/generated2/SquareIcon';
-import { RENDERING_DATA } from 'lib/store';
+import { storeRenderingData } from 'lib/store';
 import _ from 'lodash';
 import React from 'react';
 import * as S from './PlayBarStyles';
@@ -13,7 +13,7 @@ import * as S from './PlayBarStyles';
 export interface PlayBoxProps {}
 
 const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
-  const renderingData = useReactiveVar(RENDERING_DATA);
+  const renderingData = useReactiveVar(storeRenderingData);
   return (
     <S.PlayBoxWrapper>
       <S.PlayBoxIconWrapper>
@@ -24,19 +24,23 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
       </S.PlayBoxIconWrapper>
       {renderingData.isPlaying ? (
         <S.PlayBoxIconDoubleWrapper
-          onClick={() => RENDERING_DATA({ ...renderingData, isPlaying: false })}
+          onClick={() => storeRenderingData({ ...renderingData, isPlaying: false })}
         >
           <PauseIcon />
         </S.PlayBoxIconDoubleWrapper>
       ) : (
         <>
           <S.PlayBoxIconWrapper
-            onClick={() => RENDERING_DATA({ ...renderingData, playDirection: -1, isPlaying: true })}
+            onClick={() =>
+              storeRenderingData({ ...renderingData, playDirection: -1, isPlaying: true })
+            }
           >
             <PlayForwardIcon />
           </S.PlayBoxIconWrapper>
           <S.PlayBoxIconWrapper
-            onClick={() => RENDERING_DATA({ ...renderingData, playDirection: 1, isPlaying: true })}
+            onClick={() =>
+              storeRenderingData({ ...renderingData, playDirection: 1, isPlaying: true })
+            }
           >
             <PlayIcon />
           </S.PlayBoxIconWrapper>

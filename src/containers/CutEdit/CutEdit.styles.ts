@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 import { BACKGROUND_COLOR } from 'styles/constants/common';
-import { CUT_IMAGES_CNT } from 'utils/const';
 
 export const CUTIMAGE_HEIGHT = 140;
 export const OPACITY = 0.8;
@@ -27,7 +26,7 @@ export const LoadingCutImagesWrapper = styled.div`
   flex-direction: row;
 `;
 export const LoadingCutImageWrapper = styled.div`
-  width: ${100 / CUT_IMAGES_CNT}%;
+  width: ${100 / 20}%;
   height: 100%;
   border: 1px solid black;
   display: flex;

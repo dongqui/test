@@ -12,9 +12,20 @@ import {
   TPDopeSheetData,
   TPDopeSheetStatus,
 } from 'types/TP';
+import { PagesType } from 'containers/Panels/LibraryPanel';
+import { CPDataType } from 'types/CP';
+import { ROOT_FOLDER_NAME } from 'types/LP';
+import { RecordingDataType, RenderingDataType } from 'types/RP';
+import { TPBoneTrack, TPTransformTrack } from 'types/TP';
 import _ from 'lodash';
-import { INITIAL_CP_DATA, INITIAL_MAIN_DATA, INITIAL_RENDERING_DATA, isClient } from 'utils/const';
-import { ContextmenuTypes, LPMODE_TYPES, MainDataTypes, ModalTypes } from '../types';
+import {
+  INITIAL_CP_DATA,
+  INITIAL_MAIN_DATA,
+  INITIAL_RECORDING_DATA,
+  INITIAL_RENDERING_DATA,
+  isClient,
+} from 'utils/const';
+import { ContextmenuType, LPModeType, MainDataType, ModalType } from '../types';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
   let result = _.clone(initialData);
@@ -27,48 +38,32 @@ const makeInitialData = ({ name, initialData }: { name: string; initialData: any
   }
   return result;
 };
-export enum STORE_DATA_NAMES {
+export enum StoreDataNames {
   mainData = 'mainData',
 }
 // common
-export const CONTEXTMENU_INFO = makeVar<ContextmenuTypes>({
+export const storeContextMenuInfo = makeVar<ContextmenuType>({
   isShow: false,
   top: 0,
   left: 0,
   onClick: () => {},
 });
-export const MODAL_INFO = makeVar<ModalTypes>({
+export const storeModalInfo = makeVar<ModalType>({
   msg: '',
   isShow: false,
 });
 // LP
-export const MAIN_DATA = makeVar<MainDataTypes[]>(
-  makeInitialData({ name: `${STORE_DATA_NAMES.mainData}`, initialData: INITIAL_MAIN_DATA }),
-);
-export const PAGES = makeVar<PagesTypes[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }]);
-export const SEARCH_WORD = makeVar<string>('');
-export const LP_MODE = makeVar<LPMODE_TYPES>(LPMODE_TYPES.listview);
+export const storeMainData = makeVar<MainDataType[]>(INITIAL_MAIN_DATA);
+export const storePages = makeVar<PagesType[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }]);
+export const storeSearchWord = makeVar<string>('');
+export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 // RP
-export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>(INITIAL_RENDERING_DATA);
+export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 // WEBCAM
-export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
-  duration: 10,
-  rangeBoxInfo: {
-    width: 1700,
-    height: CUTIMAGE_HEIGHT,
-    x: 50,
-    barX: 50,
-    y: 0,
-  },
-  isPlaying: false,
-  motionName: '',
-  isRecording: undefined,
-  count: undefined,
-});
+export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 // CP
-export const CP_DATA = makeVar<CP_DATA_TYPES[]>(INITIAL_CP_DATA);
-export const CUT_IMAGES = makeVar<string[]>([]);
-
+export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
+export const storeCutImages = makeVar<string[]>([]);
 // TP
 // export const TPDefaultTrackNameList = makeVar<TPBoneTrack[]>([]);
 // export const TPFilteredTrackNameList = makeVar<TPBoneTrack[]>([]);

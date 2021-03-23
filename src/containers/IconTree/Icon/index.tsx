@@ -3,7 +3,7 @@ import { CircleMotionIcon } from 'components/Icons/generated2/CircleMotion';
 import { ModelFileIcon } from 'components/Icons/generated2/ModelFileIcon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
-import { MAIN_DATA, PAGES } from 'lib/store';
+import { storeMainData, storePages } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo, useRef } from 'react';
 import * as S from './IconStyles';
@@ -13,8 +13,8 @@ export interface IconProps {
 }
 
 const IconComponent: React.FC<IconProps> = ({ rowKey }) => {
-  const mainData = useReactiveVar(MAIN_DATA);
-  const pages = useReactiveVar(PAGES);
+  const mainData = useReactiveVar(storeMainData);
+  const pages = useReactiveVar(storePages);
   const fileType = useMemo(
     () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
     [rowKey, mainData],
@@ -37,7 +37,7 @@ const IconComponent: React.FC<IconProps> = ({ rowKey }) => {
   const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
   const onClick = useCallback(
     (e) => {
-      MAIN_DATA(
+      storeMainData(
         _.map(mainData, (item) => ({
           ...item,
           isClicked: _.isEqual(item.key, rowKey) ? true : e.ctrlKey ? item.isClicked : false,
@@ -50,11 +50,11 @@ const IconComponent: React.FC<IconProps> = ({ rowKey }) => {
     if (
       _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type, FILE_TYPES.motion)
     ) {
-      MAIN_DATA(
+      storeMainData(
         _.map(mainData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, rowKey) })),
       );
     } else {
-      PAGES(
+      storePages(
         _.concat(pages, {
           key: rowKey,
           name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.name ?? 'Folder',

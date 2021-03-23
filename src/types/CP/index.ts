@@ -1,48 +1,67 @@
-export enum CP_COMPONENT_TYPES {
+import { RenderingDataPropertyName } from 'types/RP';
+
+export enum CPComponentType {
   parent = 'parent',
   input = 'input',
   select = 'select',
   slider = 'slider',
 }
-export interface CP_BUTTONINFO_TYPES {
-  name: string;
-  isSelected: boolean;
-}
-export enum CP_DATA_PROPERTY_NAMES {
+export enum CPDataPropertyNames {
   key = 'key',
   parentKey = 'parentKey',
 }
-export interface CP_DATA_TYPES {
-  [CP_DATA_PROPERTY_NAMES.key]: string;
-  name:
-    | 'Transform'
-    | 'Position'
-    | 'Rotation'
-    | 'Scale'
-    | 'Camera'
-    | 'Location'
-    | 'Angle'
-    | 'Visibility'
-    | 'Axis'
-    | 'Bone'
-    | 'Joint'
-    | 'Mesh'
-    | 'Shadow'
-    | 'Fog'
-    | 'Near'
-    | 'Far';
+export enum CPNameType {
+  Transform = 'Transform',
+  Position = 'Position',
+  Rotation = 'Rotation',
+  Scale = 'Scale',
+  Camera = 'Camera',
+  Location = 'Location',
+  Angle = 'Angle',
+  Visibility = 'Visibility',
+  Axis = 'Axis',
+  Bone = 'Bone',
+  Joint = 'Joint',
+  Mesh = 'Mesh',
+  Shadow = 'Shadow',
+  Fog = 'Fog',
+  Near = 'Near',
+  Far = 'Far',
+}
+export interface CPDataType {
+  [CPDataPropertyNames.key]: string;
+  name: CPNameType;
   type:
-    | CP_COMPONENT_TYPES.parent
-    | CP_COMPONENT_TYPES.input
-    | CP_COMPONENT_TYPES.select
-    | CP_COMPONENT_TYPES.slider;
-  x?: number;
-  y?: number;
-  z?: number;
-  buttonInfo?: CP_BUTTONINFO_TYPES[];
-  [CP_DATA_PROPERTY_NAMES.parentKey]?: string;
+    | CPComponentType.parent
+    | CPComponentType.input
+    | CPComponentType.select
+    | CPComponentType.slider;
+  [CPDataPropertyNames.parentKey]?: string;
   isExpanded?: boolean;
-  min?: number;
-  max?: number;
-  value?: number;
+  x?:
+    | RenderingDataPropertyName.positionX
+    | RenderingDataPropertyName.rotationX
+    | RenderingDataPropertyName.scaleX
+    | RenderingDataPropertyName.locationX
+    | RenderingDataPropertyName.angleX;
+  y?:
+    | RenderingDataPropertyName.positionY
+    | RenderingDataPropertyName.rotationY
+    | RenderingDataPropertyName.scaleY
+    | RenderingDataPropertyName.locationY
+    | RenderingDataPropertyName.angleY;
+  z?:
+    | RenderingDataPropertyName.positionZ
+    | RenderingDataPropertyName.rotationZ
+    | RenderingDataPropertyName.scaleZ
+    | RenderingDataPropertyName.locationZ
+    | RenderingDataPropertyName.angleZ;
+  button?:
+    | RenderingDataPropertyName.axis
+    | RenderingDataPropertyName.bone
+    | RenderingDataPropertyName.joint
+    | RenderingDataPropertyName.mesh
+    | RenderingDataPropertyName.shadow
+    | RenderingDataPropertyName.fog;
+  slider?: RenderingDataPropertyName.near | RenderingDataPropertyName.far;
 }

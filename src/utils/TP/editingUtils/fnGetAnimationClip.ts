@@ -49,7 +49,7 @@ const fnGetAnimationClip = (props: FnGetAnimationClip) => {
     const unionValues =
       valuesArray.length === 1
         ? baseInterpolatedTrack.values
-        : _.map(_.zip(valuesArray), (zipArray) => _.sum(zipArray));
+        : _.zipWith(...valuesArray, (...item) => _.sum(item));
     return new THREE.VectorKeyframeTrack(track.name, unionTimes, unionValues);
   });
 

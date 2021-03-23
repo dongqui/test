@@ -4,8 +4,8 @@ import { ArrowRightIcon } from 'components/Icons/generated2/ArrowRightIcon';
 import { ModelIcon } from 'components/Icons/generated2/ModelIcon';
 import { MotionIcon } from 'components/Icons/generated2/MotionIcon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
-import { MAIN_DATA } from 'lib/store';
+import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { storeMainData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo } from 'react';
 import { INITIAL_MAIN_DATA } from 'utils/const';
@@ -19,7 +19,7 @@ export interface ListRowProps {
   [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
-  data: MainDataTypes[];
+  data: MainDataType[];
 }
 
 const ListRowComponent: React.FC<ListRowProps> = ({
@@ -31,7 +31,7 @@ const ListRowComponent: React.FC<ListRowProps> = ({
   isVisualizeSelected,
   data = INITIAL_MAIN_DATA,
 }) => {
-  const mainData = useReactiveVar(MAIN_DATA);
+  const mainData = useReactiveVar(storeMainData);
   const isFirst = useMemo(() => {
     let result = false;
     if (
@@ -70,7 +70,7 @@ const ListRowComponent: React.FC<ListRowProps> = ({
     return result;
   }, [data, rowKey]);
   const onClick = useCallback(() => {
-    MAIN_DATA(
+    storeMainData(
       _.map(mainData, (item) => ({
         ...item,
         isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,

@@ -2,51 +2,49 @@ import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { CPSelectButton } from './CPSelectButton';
 import * as S from './CPListTreeStyles';
-import { CP_BUTTONINFO_TYPES } from 'types/CP';
 import { useReactiveVar } from '@apollo/client';
-import { CP_DATA } from 'lib/store';
+import { storeCPData, storeRenderingData } from 'lib/store';
+import { RenderingDataPropertyName } from 'types/RP';
 
 export interface CPListRowSelectProps {
   rowKey: string;
-  text: string;
-  buttonInfo?: CP_BUTTONINFO_TYPES[];
+  name: string;
+  button?:
+    | RenderingDataPropertyName.axis
+    | RenderingDataPropertyName.bone
+    | RenderingDataPropertyName.joint
+    | RenderingDataPropertyName.mesh
+    | RenderingDataPropertyName.shadow
+    | RenderingDataPropertyName.fog;
 }
 
 const CPListRowSelectComponent: React.FC<CPListRowSelectProps> = ({
   rowKey,
-  text = 'Axis',
-  buttonInfo = [],
+  name,
+  button = RenderingDataPropertyName.axis,
 }) => {
-  const cpData = useReactiveVar(CP_DATA);
+  const renderingData = useReactiveVar(storeRenderingData);
   const onClick = useCallback(
-    ({ name }) => {
-      CP_DATA(
-        _.map(cpData, (item) => ({
-          ...item,
-          buttonInfo: _.isEqual(rowKey, item.key)
-            ? _.map(item.buttonInfo, (item) => ({
-                ...item,
-                isSelected: _.isEqual(item.name, name) ? true : false,
-              }))
-            : item.buttonInfo,
-        })),
-      );
+    ({ payload }) => {
+      storeRenderingData({ ...renderingData, [button]: payload });
     },
-    [cpData, rowKey],
+    [button, renderingData],
   );
   return (
     <S.CPListRowParentWrapper>
       <S.CPListRowInputWrapper>
-        {text}
+        {name}
         <S.CPListRowInputsWrapper>
-          {_.map(buttonInfo, (item, index) => (
-            <CPSelectButton
-              key={index}
-              isSelected={item.isSelected}
-              onClick={onClick}
-              text={item.name}
-            />
-          ))}
+          <CPSelectButton
+            isSelected={renderingData[button] as boolean}
+            onClick={() => onClick({ payload: true })}
+            text="ON"
+          />
+          <CPSelectButton
+            isSelected={!renderingData[button] as boolean}
+            onClick={() => onClick({ payload: false })}
+            text="OFF"
+          />
         </S.CPListRowInputsWrapper>
       </S.CPListRowInputWrapper>
     </S.CPListRowParentWrapper>

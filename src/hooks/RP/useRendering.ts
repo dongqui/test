@@ -22,7 +22,6 @@ import {
 } from 'utils/RP/renderingUtils';
 import { RenderingOption } from '../../types/RP';
 import { useHistory } from './useHistory';
-import { fnGetInterpolatedTrackLinear } from 'utils/TP/editingUtils';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -388,6 +387,11 @@ export const useRendering = (props: UseRendering) => {
     // rendering할 div요소 선택
     const renderingDiv = document.getElementById(id);
 
+    // 우클릭 메뉴 -> context menu component 개발 후 구현
+    // renderingDiv?.addEventListener('contextmenu', (e) => {
+    //   console.log('contextmenu e: ', e);
+    // });
+
     if (renderingDiv) {
       // scene 생성 및 설정
       const scene = fnCreateScene();
@@ -396,6 +400,14 @@ export const useRendering = (props: UseRendering) => {
       const camera = fnCreateCamera();
       // renderer 생성 및 설정
       const renderer = fnCreateRenderer({ renderingDiv });
+
+      // initial canvas resize
+      if (fnResizeRendererToDisplaySize({ renderer, renderingDiv })) {
+        const canvas = renderer.domElement;
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+      }
+
       // scene에 조명 추가
       fnAddLights({ scene });
       // scene에 바닥 추가
@@ -478,16 +490,6 @@ export const useRendering = (props: UseRendering) => {
             // skeleton helper 생성 및 scene에 추가
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
             setSkeletonHelper(innerSkeletonHelper);
-
-            // const targetTimes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-            // const track = {
-            //   name: 'dummy',
-            //   times: [3, 5, 8],
-            //   values: [70, 71, 72, 80, 81, 82, 90, 91, 92],
-            //   interpolation: 'linear',
-            // };
-            // const interpolatedTrack = fnGetInterpolatedTrackLinear({ targetTimes, track });
-            // console.log('interpolatedTrack: ', interpolatedTrack);
 
             // eslint-disable-next-line no-console
             console.log('skeletonHelper: ', innerSkeletonHelper);

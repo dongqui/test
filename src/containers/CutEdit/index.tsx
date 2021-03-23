@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { TimeBar } from 'components/TimeBar';
-import { RECORDING_DATA } from 'lib/store';
+import { storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
@@ -29,10 +29,10 @@ const coordinateX = ({ x }: { x: number }) => {
   return result;
 };
 const CutEditComponent: React.FC<CutEditProps> = ({}) => {
-  const recordingData = useReactiveVar(RECORDING_DATA);
+  const recordingData = useReactiveVar(storeRecordingData);
   const handleDrag = useCallback(
     (e, data) => {
-      RECORDING_DATA({
+      storeRecordingData({
         ...recordingData,
         rangeBoxInfo: {
           ...recordingData.rangeBoxInfo,
@@ -49,7 +49,7 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
   );
   const handleResize: RndResizeCallback = useCallback(
     (_e, _dir, ref, _delta, position) => {
-      RECORDING_DATA({
+      storeRecordingData({
         ...recordingData,
         rangeBoxInfo: {
           ...recordingData.rangeBoxInfo,
@@ -68,7 +68,7 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
   );
   const handleDragBar: RndDragCallback = useCallback(
     (e, data) => {
-      RECORDING_DATA({
+      storeRecordingData({
         ...recordingData,
         rangeBoxInfo: {
           ...recordingData.rangeBoxInfo,
