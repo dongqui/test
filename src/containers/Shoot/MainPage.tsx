@@ -20,38 +20,18 @@ const MainContainer: React.FC = () => {
   const renderingData = useReactiveVar(RENDERING_DATA);
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
+    if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
+      return visualizedRow?.url;
+    }
     return _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
   }, [mainData]);
   const handleDrop = useCallback(() => {
-    if (
-      _.isEqual(
-        _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type,
-        FILE_TYPES.motion,
-      )
-    ) {
-      MAIN_DATA(
-        _.map(mainData, (item) => ({
-          ...item,
-          isVisualized: item.isDragging,
-        })),
-      );
-    }
-    if (
-      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type, FILE_TYPES.file)
-    ) {
-      const targetKey = _.filter(mainData, (item) =>
-        _.isEqual(
-          item.parentKey,
-          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.key,
-        ),
-      )?.[0]?.key;
-      MAIN_DATA(
-        _.map(mainData, (item) => ({
-          ...item,
-          isVisualized: _.isEqual(item.key, targetKey) ? true : false,
-        })),
-      );
-    }
+    MAIN_DATA(
+      _.map(mainData, (item) => ({
+        ...item,
+        isVisualized: item.isDragging,
+      })),
+    );
   }, [mainData]);
   const {
     handleResizeStop,
