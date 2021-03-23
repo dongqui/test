@@ -40,9 +40,7 @@ export const storeModalInfo = makeVar<ModalType>({
   isShow: false,
 });
 // LP
-export const storeMainData = makeVar<MainDataType[]>(
-  makeInitialData({ name: `${StoreDataNames.mainData}`, initialData: INITIAL_MAIN_DATA }),
-);
+export const storeMainData = makeVar<MainDataType[]>(INITIAL_MAIN_DATA);
 export const storePages = makeVar<PagesType[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }]);
 export const storeSearchWord = makeVar<string>('');
 export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
