@@ -19,19 +19,19 @@ const ControlPanelComponent: React.FC<ControlPanelProps> = ({}) => {
       {_.map(cpData, (item) => (
         <>
           {_.isEqual(item.type, CPComponentType.parent) && (
-            <CPListRowParent rowKey={item.key} text={item.name} />
+            <CPListRowParent rowKey={item.key} name={item.name} />
           )}
           {_.isEqual(item.type, CPComponentType.input) &&
             _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
-              <CPListRowInput rowKey={item.key} text={item.name} x={item.x} y={item.y} z={item.z} />
+              <CPListRowInput rowKey={item.key} name={item.name} x={item.x} y={item.y} z={item.z} />
             )}
           {_.isEqual(item.type, CPComponentType.select) &&
             _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
-              <CPListRowSelect rowKey={item.key} text={item.name} buttonInfo={item.buttonInfo} />
+              <CPListRowSelect rowKey={item.key} name={item.name} button={item.button} />
             )}
           {_.isEqual(item.type, CPComponentType.slider) &&
             _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
-              <CPListRowSlider rowKey={item.key} text={item.name} min={item.min} max={item.max} />
+              <CPListRowSlider rowKey={item.key} name={item.name} slider={item.slider} />
             )}
         </>
       ))}

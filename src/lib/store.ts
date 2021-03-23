@@ -51,7 +51,6 @@ export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_D
 // CP
 export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeCutImages = makeVar<string[]>([]);
-
 // TP
 export const TPDefaultTrackNameList = makeVar<TPBoneTrack[]>([]);
 export const TPFilteredTrackNameList = makeVar<TPBoneTrack[]>([]);

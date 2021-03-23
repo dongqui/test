@@ -18,16 +18,12 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
   // store data
   const mainData = useReactiveVar(storeMainData);
   const renderingData = useReactiveVar(storeRenderingData);
-
   // component state
   const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
   const [animations, setAnimations] = useState<THREE.AnimationClip[]>([]);
 
-  useEffect(() => {
-    console.log('mainData: ', mainData);
-    console.log('renderingData: ', renderingData);
-  }, [mainData, renderingData]);
+  useEffect(() => {}, [mainData, renderingData]);
 
   // 바꿔야 함
   const currentAnimationClip = useMemo(() => animations?.[0], [animations]);
