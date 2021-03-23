@@ -21,7 +21,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
   const searchWord = useReactiveVar(SEARCH_WORD);
   const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
   const listViewWrapperRef = useRef<HTMLDivElement>(null);
-  const { onContextMenu, shortcutData, onDragStart, onDrop } = useLPControl({
+  const { onContextMenu, shortcutData, onDragStart, onDrop, onClick } = useLPControl({
     contextmenuInfo,
     mainData,
     pages,
@@ -54,7 +54,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
     return result;
   }, [mainData, searchWord]);
   return (
-    <S.ListViewWrapper ref={listViewWrapperRef}>
+    <S.ListViewWrapper ref={listViewWrapperRef} onClick={onClick}>
       {_.map(processedData, (item, index) => (
         <S.ListViewRowWrapper
           key={index}

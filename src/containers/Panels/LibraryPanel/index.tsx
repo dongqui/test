@@ -1,5 +1,8 @@
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
+import { Modal } from 'antd';
+import 'antd/dist/antd.css';
+
 import {
   ENABLE_FILE_FORMATS,
   ENABLE_VIDEO_FORMATS,
@@ -7,6 +10,7 @@ import {
   FORMAT_TYPES,
   LPMODE_TYPES,
   MainDataTypes,
+  MAINDATA_PROPERTY_TYPES,
   MODAL_TYPES,
   PAGE_NAMES,
 } from 'types';
@@ -26,6 +30,7 @@ import { useRouter } from 'next/dist/client/router';
 import * as api from 'utils/common/api';
 import { Loading } from 'components/Loading';
 import { fnGetBaseLayer, fnGetNewLayer } from 'utils/TP/editingUtils';
+import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 
 export interface PagesTypes {
   key: string;
@@ -43,32 +48,8 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
   const onChangeSearchText = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     SEARCH_WORD(e.target.value);
   }, []);
-  const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      setLoading(true);
-      if (_.isEmpty(acceptedFiles)) {
-        MODAL_INFO({ isShow: true, msg: '파일이 존재하지 않습니다.', type: MODAL_TYPES.alert });
-        setLoading(false);
-        return false;
-      }
-      if (
-        _.gt(
-          _.size(
-            _.filter(acceptedFiles, (acceptedFile) =>
-              _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(acceptedFile.name, '.'))),
-            ),
-          ),
-          1,
-        )
-      ) {
-        MODAL_INFO({
-          isShow: true,
-          msg: '영상파일은 2개이상 가져올수 없습니다.',
-          type: MODAL_TYPES.alert,
-        });
-        setLoading(false);
-        return false;
-      }
+  const onDropPost = useCallback(
+    async ({ acceptedFiles, overrideKeys = [] }) => {
       let newDatas: MainDataTypes[] = [];
       for (const acceptedFile of acceptedFiles) {
         const extension = _.last(_.split(acceptedFile.name, '.'));
@@ -77,15 +58,6 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           MODAL_INFO({
             isShow: true,
             msg: '파일 형식이 올바르지 않습니다.',
-            type: MODAL_TYPES.alert,
-          });
-          setLoading(false);
-          return false;
-        }
-        if (_.some(mainData, (item) => _.isEqual(item.name, acceptedFile.name))) {
-          MODAL_INFO({
-            isShow: true,
-            msg: `대상 폴더에 이름이 ${acceptedFile.name}이 있습니다.`,
             type: MODAL_TYPES.alert,
           });
           setLoading(false);
@@ -148,24 +120,90 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         newData = _.concat(newData, motions);
         newDatas = _.concat(newDatas, newData);
       }
-      MAIN_DATA(_.concat(mainData, newDatas));
+      let filteredMainData = _.clone(mainData);
+      if (!_.isEmpty(overrideKeys)) {
+        filteredMainData = fnDeleteFileByKeys({ mainData: filteredMainData, keys: overrideKeys });
+      }
+      MAIN_DATA(_.concat(filteredMainData, newDatas));
       setLoading(false);
     },
     [mainData, pages, router],
   );
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      setLoading(true);
+      if (_.isEmpty(acceptedFiles)) {
+        MODAL_INFO({ isShow: true, msg: '파일이 존재하지 않습니다.', type: MODAL_TYPES.alert });
+        setLoading(false);
+        return false;
+      }
+      if (
+        _.gt(
+          _.size(
+            _.filter(acceptedFiles, (acceptedFile) =>
+              _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(acceptedFile.name, '.'))),
+            ),
+          ),
+          1,
+        )
+      ) {
+        MODAL_INFO({
+          isShow: true,
+          msg: '영상파일은 2개이상 가져올수 없습니다.',
+          type: MODAL_TYPES.alert,
+        });
+        setLoading(false);
+        return false;
+      }
+      if (
+        _.some(mainData, (item) =>
+          _.includes(
+            _.map(acceptedFiles, (o) => o.name),
+            item.name,
+          ),
+        )
+      ) {
+        Modal.confirm({
+          okText: '덮어쓰기',
+          cancelText: '취소',
+          content: `대상 폴더에 이름이 ${
+            _.find(mainData, (item) =>
+              _.includes(
+                _.map(acceptedFiles, (o) => o.name),
+                item.name,
+              ),
+            )?.name
+          }인 파일이 있습니다. 덮어쓰시겠습니까?`,
+          onOk: () => {
+            onDropPost({
+              acceptedFiles,
+              override: true,
+              overrideKeys: [
+                _.find(mainData, (item) =>
+                  _.includes(
+                    _.map(acceptedFiles, (o) => o.name),
+                    item.name,
+                  ),
+                )?.key,
+              ],
+            });
+          },
+          onCancel: () => {
+            setLoading(false);
+          },
+        });
+        return false;
+      }
+      await onDropPost({ acceptedFiles });
+    },
+    [mainData, onDropPost],
+  );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   return (
     <S.LibraryPanelWrapper backgroundColor={backgroundColor} {...getRootProps()}>
-      <div
-        style={{
-          width: '100%',
-          position: 'absolute',
-          bottom: 0,
-          zIndex: 100,
-        }}
-      >
+      <S.LPSelectWrapper>
         <LPSelect />
-      </div>
+      </S.LPSelectWrapper>
       {loading && (
         <S.LoadingWrapper>
           <Loading color="white" />

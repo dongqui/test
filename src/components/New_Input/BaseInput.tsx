@@ -15,6 +15,7 @@ type Props = Input.BaseInputProps;
 
 const defaultProps: Partial<Props> = {
   type: 'text',
+  spellCheck: 'false',
 };
 
 const BaseInput: FunctionComponent<Props> = ({
