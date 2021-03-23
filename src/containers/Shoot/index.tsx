@@ -6,7 +6,7 @@ import { useReactiveVar } from '@apollo/client';
 import { Contextmenu } from 'components/Contextmenu';
 import MainPage from './MainPage';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
-import { CONTEXTMENU_INFO, MODAL_INFO } from 'lib/store';
+import { storeContextMenuInfo, storeModalInfo } from 'lib/store';
 import { GRAY200 } from 'styles/constants/common';
 import { Modal } from 'components/Modal';
 import { MODAL_TYPES } from 'types';
@@ -31,16 +31,16 @@ const ContextMenuWrapper = styled.div<ContextMenuWrapperProps>`
 interface Props {}
 
 const ShootPage: NextPage<Props> = () => {
-  const contextMenuInfo = useReactiveVar(CONTEXTMENU_INFO);
-  const modalInfo = useReactiveVar(MODAL_INFO);
+  const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
+  const modalInfo = useReactiveVar(storeModalInfo);
   const contextMenuRef = useRef<HTMLDivElement | any>(null);
   const modalRef = useRef<HTMLDivElement | any>(null);
 
   useOutsideClick({
     ref: contextMenuRef,
     event: () => {
-      CONTEXTMENU_INFO({ ...contextMenuInfo, isShow: false });
-      MODAL_INFO({ ...modalInfo, isShow: false, msg: '' });
+      storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+      storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
     },
   });
   useEffect(() => {

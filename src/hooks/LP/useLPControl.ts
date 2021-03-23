@@ -3,15 +3,16 @@ import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'antd';
 import 'antd/dist/antd.css';
-import { ContextmenuTypes, FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
-import { CONTEXTMENU_INFO, MAIN_DATA } from 'lib/store';
-import { PagesTypes } from 'containers/Panels/LibraryPanel';
+import { ContextmenuType, FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { storeContextMenuInfo, storeMainData } from 'lib/store';
+import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
+import { fnGetFileName } from 'utils/LP/fnGetFileName';
 
 interface useLPControlProps {
-  mainData: MainDataTypes[];
-  pages: PagesTypes[];
-  contextmenuInfo: ContextmenuTypes;
+  mainData: MainDataType[];
+  pages: PagesType[];
+  contextmenuInfo: ContextmenuType;
   searchWord: string;
 }
 export const useLPControl = ({
@@ -22,28 +23,40 @@ export const useLPControl = ({
 }: useLPControlProps) => {
   const onClick = useCallback(
     (e) => {
+      const newFileName = fnGetFileName({
+        key: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
+        name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.name ?? '',
+        mainData,
+      });
       const icons = document.getElementsByClassName('icon');
       if (!_.some(icons, (icon) => icon.contains(e?.target as any))) {
-        MAIN_DATA(_.map(mainData, (item) => ({ ...item, isSelected: false, isClicked: false })));
+        storeMainData(
+          _.map(mainData, (item) => ({
+            ...item,
+            isSelected: false,
+            isClicked: false,
+            name: item.isClicked ? newFileName : item.name,
+          })),
+        );
       }
     },
     [mainData],
   );
   const onDragStart = useCallback(
     ({ key }) => {
-      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isDragging: _.isEqual(item.key, key) })));
+      storeMainData(_.map(mainData, (item) => ({ ...item, isDragging: _.isEqual(item.key, key) })));
     },
     [mainData],
   );
   const onDragEnd = useCallback(
     ({ key }) => {
-      MAIN_DATA(_.map(mainData, (item) => ({ ...item, isDragging: false })));
+      storeMainData(_.map(mainData, (item) => ({ ...item, isDragging: false })));
     },
     [mainData],
   );
   const onDrop = useCallback(
     ({ key }) => {
-      MAIN_DATA(
+      storeMainData(
         _.map(mainData, (item) => ({
           ...item,
           parentKey: item.isDragging ? key : item.parentKey,
@@ -60,7 +73,7 @@ export const useLPControl = ({
         FILE_TYPES.folder,
       )
     ) {
-      MAIN_DATA(
+      storeMainData(
         _.map(mainData, (item) => ({
           ...item,
           isCopied: item.isClicked,
@@ -74,16 +87,11 @@ export const useLPControl = ({
       let newMainData = _.concat(mainData, {
         key: newKey,
         type: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.type ?? FILE_TYPES.file,
-        name: `${_.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name} (${
-          _.size(
-            _.filter(mainData, (item) =>
-              _.includes(
-                item.name,
-                _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name,
-              ),
-            ),
-          ) + 1
-        })`,
+        name: fnGetFileName({
+          key: '',
+          name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name ?? '',
+          mainData,
+        }),
         parentKey: _.isEqual(
           _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.type,
           FILE_TYPES.motion,
@@ -106,14 +114,20 @@ export const useLPControl = ({
           });
         },
       );
-      MAIN_DATA(newMainData);
+      storeMainData(newMainData);
     }
   }, [mainData, pages]);
-  const onEdit = useCallback(({ mainData }) => {
-    MAIN_DATA(
+  const onEdit = useCallback(({ mainData }: { mainData: MainDataType[] }) => {
+    const newFileName = fnGetFileName({
+      key: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
+      name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.name ?? '',
+      mainData,
+    });
+    storeMainData(
       _.map(mainData, (item) => ({
         ...item,
         isModifying: item.isClicked ? !item.isModifying : item.isModifying,
+        name: item.isClicked ? newFileName : item.name,
       })),
     );
   }, []);
@@ -136,17 +150,17 @@ export const useLPControl = ({
             { key: '4', name: 'Visualization' },
             { key: '5', name: 'Edit name' },
           ];
-      CONTEXTMENU_INFO({
+      storeContextMenuInfo({
         isShow: true,
         top,
         left,
         data,
         onClick: ({ key }) => {
-          CONTEXTMENU_INFO({ ...contextmenuInfo, isShow: false });
+          storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
           let content = '';
           switch (key) {
             case '0':
-              MAIN_DATA(
+              storeMainData(
                 _.concat(mainData, {
                   key: uuidv4(),
                   type: FILE_TYPES.folder,
@@ -160,6 +174,14 @@ export const useLPControl = ({
               onCopy({ mainData: newMainData });
               break;
             case '2':
+              if (
+                _.isEqual(
+                  _.find(newMainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.type,
+                  FILE_TYPES.motion,
+                )
+              ) {
+                content = '모션을 삭제하시겠습니까?';
+              }
               if (
                 _.isEqual(
                   _.find(newMainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.type,
@@ -189,7 +211,7 @@ export const useLPControl = ({
               onPaste();
               break;
             case '4':
-              MAIN_DATA(
+              storeMainData(
                 _.map(mainData, (item) => ({
                   ...item,
                   isVisualized: _.isEqual(
@@ -245,7 +267,7 @@ export const useLPControl = ({
     },
     [mainData, searchWord],
   );
-  const filteredData: MainDataTypes[] = useMemo(() => {
+  const filteredData: MainDataType[] = useMemo(() => {
     let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
     result = getFilteredData({ data: result });
     return result;

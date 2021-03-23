@@ -1,8 +1,8 @@
-import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
 
 interface fnMakeSelectionProps {
-  data: MainDataTypes[];
+  data: MainDataType[];
 }
 export const fnMakeSelection = ({ data }: fnMakeSelectionProps) => {
   let result = _.clone(data);

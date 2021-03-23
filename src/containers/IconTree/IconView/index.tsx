@@ -2,7 +2,13 @@ import { useReactiveVar } from '@apollo/client';
 import { useContextmenu } from 'hooks/common/useContextmenu';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CONTEXTMENU_INFO, LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from '../../../lib/store';
+import {
+  storeContextMenuInfo,
+  storeLPMode,
+  storeMainData,
+  storePages,
+  storeSearchWord,
+} from '../../../lib/store';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
 import { useShortcut } from 'hooks/common/useShortcut';
@@ -14,10 +20,10 @@ export interface onChangeFileNameTypes {
 }
 
 const IconViewComponent: React.FC<IconViewProps> = ({}) => {
-  const mainData = useReactiveVar(MAIN_DATA);
-  const pages = useReactiveVar(PAGES);
-  const searchWord = useReactiveVar(SEARCH_WORD);
-  const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
+  const mainData = useReactiveVar(storeMainData);
+  const pages = useReactiveVar(storePages);
+  const searchWord = useReactiveVar(storeSearchWord);
+  const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
   const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
   const {
     onClick,

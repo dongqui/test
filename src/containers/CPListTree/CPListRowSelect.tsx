@@ -2,14 +2,14 @@ import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { CPSelectButton } from './CPSelectButton';
 import * as S from './CPListTreeStyles';
-import { CP_BUTTONINFO_TYPES } from 'types/CP';
+import { CPButtonInfoType } from 'types/CP';
 import { useReactiveVar } from '@apollo/client';
-import { CP_DATA } from 'lib/store';
+import { storeCPData } from 'lib/store';
 
 export interface CPListRowSelectProps {
   rowKey: string;
   text: string;
-  buttonInfo?: CP_BUTTONINFO_TYPES[];
+  buttonInfo?: CPButtonInfoType[];
 }
 
 const CPListRowSelectComponent: React.FC<CPListRowSelectProps> = ({
@@ -17,10 +17,10 @@ const CPListRowSelectComponent: React.FC<CPListRowSelectProps> = ({
   text = 'Axis',
   buttonInfo = [],
 }) => {
-  const cpData = useReactiveVar(CP_DATA);
+  const cpData = useReactiveVar(storeCPData);
   const onClick = useCallback(
     ({ name }) => {
-      CP_DATA(
+      storeCPData(
         _.map(cpData, (item) => ({
           ...item,
           buttonInfo: _.isEqual(rowKey, item.key)

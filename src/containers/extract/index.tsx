@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { NextPage } from 'next';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,16 +8,17 @@ import { CutEdit } from 'containers/CutEdit';
 import { ExtractPlayBar } from 'containers/ExtractPlayBar';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
-import { MAIN_DATA, MODAL_INFO, RECORDING_DATA } from 'lib/store';
-import { FILE_TYPES, MainDataTypes, MODAL_TYPES, PAGE_NAMES } from 'types';
+import { storeMainData, storeModalInfo, storeRecordingData } from 'lib/store';
+import { FILE_TYPES, MainDataType, MODAL_TYPES, PAGE_NAMES } from 'types';
 import { ModalLoading } from 'components/Modal/ModalLoading';
 import { ModalInput } from 'components/Modal/ModalInput';
 import styled from 'styled-components';
 import * as api from 'utils/common/api';
 import { STANDARD_WIDTH } from 'styles/constants/common';
-import { DEFAULT_FILE_URL, STANDARD_TIME_UNIT } from 'utils/const';
+import { DEFAULT_FILE_URL, INITIAL_CP_DATA, STANDARD_TIME_UNIT } from 'utils/const';
 import { Modal } from 'components/Modal';
 import { ROOT_FOLDER_NAME } from 'types/LP';
+import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
 
 interface Props {}
 
@@ -34,19 +35,19 @@ const ModalWrapper = styled.div`
 
 const ExtractPage: NextPage<Props> = ({}) => {
   const router = useRouter();
-  const mainData = useReactiveVar(MAIN_DATA);
-  const modalInfo = useReactiveVar(MODAL_INFO);
+  const mainData = useReactiveVar(storeMainData);
+  const modalInfo = useReactiveVar(storeModalInfo);
   const modalRef = useRef<HTMLDivElement>(null);
-  const recordingData = useReactiveVar(RECORDING_DATA);
+  const recordingData = useReactiveVar(storeRecordingData);
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      RECORDING_DATA({ ...recordingData, motionName: e.target.value });
+      storeRecordingData({ ...recordingData, motionName: e.target.value });
     },
     [recordingData],
   );
   const onClick = useCallback(
     async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      MODAL_INFO({ ...modalInfo, type: MODAL_TYPES.loading });
+      storeModalInfo({ ...modalInfo, type: MODAL_TYPES.loading });
       const { error, msg, result } = await api.uploadFileToMotionData({
         url: `${router?.query?.videoUrl}`,
         type: `${router?.query?.extension ?? 'mp4'}`,
@@ -64,20 +65,22 @@ const ExtractPage: NextPage<Props> = ({}) => {
       });
       if (error) {
         alert(msg);
-        MODAL_INFO({ ...modalInfo, isShow: false });
+        storeModalInfo({ ...modalInfo, isShow: false });
         return false;
       }
       const key = uuidv4();
-      const newData: MainDataTypes[] = [
+      const newData: MainDataType[] = [
         {
           key,
           type: FILE_TYPES.motion,
           name: recordingData.motionName,
           parentKey: ROOT_FOLDER_NAME,
-          baseLayer: result?.data?.result ?? [],
+          baseLayer: result?.data?.result
+            ? fnQuaternionToEulerTracks({ quaternionTracks: result?.data?.result })
+            : [],
         },
       ];
-      MAIN_DATA(_.concat(mainData, newData));
+      storeMainData(_.concat(mainData, newData));
       router.push({
         pathname: `/${PAGE_NAMES.shoot}`,
       });
@@ -93,10 +96,10 @@ const ExtractPage: NextPage<Props> = ({}) => {
     ],
   );
   const onClickConfirm = useCallback(() => {
-    MODAL_INFO({ ...modalInfo, isShow: false, msg: '' });
+    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
   }, [modalInfo]);
   const onCancelLoading = useCallback(() => {
-    MODAL_INFO({ ...modalInfo, isShow: false, msg: '' });
+    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
   }, [modalInfo]);
   return (
     <main>

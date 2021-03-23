@@ -1,19 +1,19 @@
-export enum CP_COMPONENT_TYPES {
+export enum CPComponentType {
   parent = 'parent',
   input = 'input',
   select = 'select',
   slider = 'slider',
 }
-export interface CP_BUTTONINFO_TYPES {
+export interface CPButtonInfoType {
   name: string;
   isSelected: boolean;
 }
-export enum CP_DATA_PROPERTY_NAMES {
+export enum CPDataPropertyNames {
   key = 'key',
   parentKey = 'parentKey',
 }
-export interface CP_DATA_TYPES {
-  [CP_DATA_PROPERTY_NAMES.key]: string;
+export interface CPDataType {
+  [CPDataPropertyNames.key]: string;
   name:
     | 'Transform'
     | 'Position'
@@ -32,15 +32,15 @@ export interface CP_DATA_TYPES {
     | 'Near'
     | 'Far';
   type:
-    | CP_COMPONENT_TYPES.parent
-    | CP_COMPONENT_TYPES.input
-    | CP_COMPONENT_TYPES.select
-    | CP_COMPONENT_TYPES.slider;
+    | CPComponentType.parent
+    | CPComponentType.input
+    | CPComponentType.select
+    | CPComponentType.slider;
   x?: number;
   y?: number;
   z?: number;
-  buttonInfo?: CP_BUTTONINFO_TYPES[];
-  [CP_DATA_PROPERTY_NAMES.parentKey]?: string;
+  buttonInfo?: CPButtonInfoType[];
+  [CPDataPropertyNames.parentKey]?: string;
   isExpanded?: boolean;
   min?: number;
   max?: number;

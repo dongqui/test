@@ -22,7 +22,6 @@ import {
 } from 'utils/RP/renderingUtils';
 import { RenderingOption } from '../../types/RP';
 import { useHistory } from './useHistory';
-import { fnGetInterpolatedTrackLinear } from 'utils/TP/editingUtils';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -60,7 +59,7 @@ export const useRendering = (props: UseRendering) => {
     [],
   );
 
-  const { pushToUndoArray, popFromUndoArray, resetRedoArray, popFromRedoArray } = useHistory();
+  const { pushToUndoArray, popFromUndoArray, pushToRedoArray, popFromRedoArray } = useHistory();
 
   const handleTransformControlsShortcutDown = useCallback(
     ({
@@ -344,36 +343,33 @@ export const useRendering = (props: UseRendering) => {
 
   const handleHistoryShortcutDown = useCallback(
     ({ event }: { event: KeyboardEvent }) => {
-      let info;
       switch (event.key) {
         case 'z':
         case 'Z':
         case 'ㅋ':
           // redo
           if (event.ctrlKey && event.shiftKey) {
-            info = popFromRedoArray();
+            const info = popFromRedoArray();
             if (info) {
-              const { bone, mode, value } = info;
-              if (mode === 'translate') {
-                bone.position.set(value.x, value.y, value.z);
-              } else if (mode === 'rotate') {
-                bone.quaternion.set(value.x, value.y, value.z, value.w);
-              } else {
-                bone.scale.set(value.x, value.y, value.z);
+              const { panel, value } = info;
+              if (panel === 'RP') {
+                const { bone, position, quaternion, scale } = value;
+                bone.position.set(position.x, position.y, position.z);
+                bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+                bone.scale.set(scale.x, scale.y, scale.z);
               }
             }
           }
           // undo
           if (event.ctrlKey && !event.shiftKey) {
-            info = popFromUndoArray();
+            const info = popFromUndoArray();
             if (info) {
-              const { bone, mode, value } = info;
-              if (mode === 'translate') {
-                bone.position.set(value.x, value.y, value.z);
-              } else if (mode === 'rotate') {
-                bone.quaternion.set(value.x, value.y, value.z, value.w);
-              } else {
-                bone.scale.set(value.x, value.y, value.z);
+              const { panel, value } = info;
+              if (panel === 'RP') {
+                const { bone, position, quaternion, scale } = value;
+                bone.position.set(position.x, position.y, position.z);
+                bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+                bone.scale.set(scale.x, scale.y, scale.z);
               }
             }
           }
@@ -391,6 +387,11 @@ export const useRendering = (props: UseRendering) => {
     // rendering할 div요소 선택
     const renderingDiv = document.getElementById(id);
 
+    // 우클릭 메뉴 -> context menu component 개발 후 구현
+    // renderingDiv?.addEventListener('contextmenu', (e) => {
+    //   console.log('contextmenu e: ', e);
+    // });
+
     if (renderingDiv) {
       // scene 생성 및 설정
       const scene = fnCreateScene();
@@ -399,6 +400,14 @@ export const useRendering = (props: UseRendering) => {
       const camera = fnCreateCamera();
       // renderer 생성 및 설정
       const renderer = fnCreateRenderer({ renderingDiv });
+
+      // initial canvas resize
+      if (fnResizeRendererToDisplaySize({ renderer, renderingDiv })) {
+        const canvas = renderer.domElement;
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+      }
+
       // scene에 조명 추가
       fnAddLights({ scene });
       // scene에 바닥 추가
@@ -420,37 +429,27 @@ export const useRendering = (props: UseRendering) => {
       // https://redux.js.org/recipes/implementing-undo-history#understanding-undo-history
       transformControls.addEventListener('dragging-changed', (event: any) => {
         if (event.value) {
-          const bone = event.target.object;
-          const { mode } = transformControls;
-          let value;
-          switch (mode) {
-            case 'translate':
-              value = {
-                x: bone.position.x,
-                y: bone.position.y,
-                z: bone.position.z,
-              };
-              break;
-            case 'rotate':
-              value = {
-                w: bone.quaternion.w,
-                x: bone.quaternion.x,
-                y: bone.quaternion.y,
-                z: bone.quaternion.z,
-              };
-              break;
-            case 'scale':
-              value = {
-                x: bone.scale.x,
-                y: bone.scale.y,
-                z: bone.scale.z,
-              };
-              break;
-            default:
-              break;
-          }
-          pushToUndoArray({ bone, mode, value });
-          resetRedoArray();
+          const bone: THREE.Bone = event.target.object;
+          const value = {
+            bone,
+            position: {
+              x: bone.position.x,
+              y: bone.position.y,
+              z: bone.position.z,
+            },
+            quaternion: {
+              x: bone.quaternion.x,
+              y: bone.quaternion.y,
+              z: bone.quaternion.z,
+              w: bone.quaternion.w,
+            },
+            scale: {
+              x: bone.scale.x,
+              y: bone.scale.y,
+              z: bone.scale.z,
+            },
+          };
+          pushToUndoArray({ panel: 'RP', value });
         }
       });
       setContents((prevContents) => [...prevContents, transformControls]);
@@ -491,16 +490,6 @@ export const useRendering = (props: UseRendering) => {
             // skeleton helper 생성 및 scene에 추가
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
             setSkeletonHelper(innerSkeletonHelper);
-
-            // const targetTimes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-            // const track = {
-            //   name: 'dummy',
-            //   times: [3, 5, 8],
-            //   values: [70, 71, 72, 80, 81, 82, 90, 91, 92],
-            //   interpolation: 'linear',
-            // };
-            // const interpolatedTrack = fnGetInterpolatedTrackLinear({ targetTimes, track });
-            // console.log('interpolatedTrack: ', interpolatedTrack);
 
             // eslint-disable-next-line no-console
             console.log('skeletonHelper: ', innerSkeletonHelper);
