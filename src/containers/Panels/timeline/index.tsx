@@ -1,10 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import { TPDefaultTrackNameList, TPFilteredTrackNameList, TPTransformTrackList } from 'lib/store';
+import {
+  TPDefaultTrackNameList,
+  TPFilteredTrackNameList,
+  TPDopeSheetList,
+  TPLastBoneTrackIndexList,
+} from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
-import { TPBoneTrack, TPTransformTrack } from 'types/TP';
+import {
+  TPTrackName,
+  TPDopeSheet,
+  TPLastBoneTrackIndex,
+  TPDopeSheetData,
+  TPDopeSheetStatus,
+} from 'types/TP';
 import { PlayBar } from 'containers/PlayBar';
 import { ShootLayerType, ShootTrackType } from 'types';
 
@@ -16,64 +27,291 @@ interface Props {
 }
 
 const TimelineContainer: React.FC<Props> = ({ baseLayer = [], layers = [] }) => {
+  const [dopeSheetList, setDopeSheetList] = useState<TPDopeSheet[]>([]);
+
   // 최초 TP 데이터 가공
   useEffect(() => {
     if (!baseLayer.length) return;
-    // 트랙 이름만 따로 뽑아낸 리스트
-    const defaultTrackNameList = _.reduce<ShootTrackType, TPBoneTrack[]>(
-      baseLayer,
-      (acc, value, index) => {
-        if (index % 4) return acc;
-        const splited = value.name.split('.');
-        return [
-          ...acc,
-          {
-            title: splited[0],
-            children: ['Position', 'Rotation', 'Scale'],
-            isChildTrackOpen: false,
-          },
-        ];
-      },
-      [],
-    );
 
-    // property 트랙 데이터 가공
-    const defaultTransformTrackList = _.reduce<ShootTrackType, TPTransformTrack[]>(
-      baseLayer,
-      (acc, { interpolation, name, times, values: propertys }) => {
-        const splited = _.split(name, '.');
-        const keyframes = _.map(_.fill(Array(times.length), 0), (value, index) => index + 1);
+    // Summary, Base 트랙 추가
+    const defaultTrackNameList: TPTrackName[] = [];
+    defaultTrackNameList.push({
+      defaultChildrenTrackOpened: false,
+      name: 'Summary',
+      trackIndex: 1,
+      childrenTrackList: [
+        {
+          childrenTrackList: [],
+          defaultChildrenTrackOpened: false,
+          name: 'Base',
+          trackIndex: 2,
+        },
+      ],
+    });
+
+    // Bone, Transform 트랙 세팅
+    let trackIndex = 3;
+    const currentBaseTrack = defaultTrackNameList[0].childrenTrackList[0].childrenTrackList;
+    const lastBoneTrackIndexList: TPLastBoneTrackIndex = {
+      layerIdnex: 2,
+      lastBoneTrackIndex: 0,
+    }; // Base Track에서 마지막 Bone Track Index
+    for (let boneTrackIndex = 0; boneTrackIndex < baseLayer.length; boneTrackIndex += 3) {
+      const splitedBoneName = baseLayer[boneTrackIndex].name.split('.');
+
+      // 마지막 bone track index가 track index보다 작은 경우 갱신
+      if (lastBoneTrackIndexList.lastBoneTrackIndex < trackIndex) {
+        lastBoneTrackIndexList.lastBoneTrackIndex = trackIndex;
+      }
+
+      // Bone 트랙 추가
+      currentBaseTrack.push({
+        childrenTrackList: [],
+        defaultChildrenTrackOpened: false,
+        name: splitedBoneName[0],
+        trackIndex,
+      });
+      trackIndex += 1;
+
+      // Transform 트랙 추가
+      const currentBoneTrack = currentBaseTrack[boneTrackIndex / 3].childrenTrackList;
+      for (
+        let transformTrackIndex = boneTrackIndex;
+        transformTrackIndex < boneTrackIndex + 3;
+        transformTrackIndex += 1
+      ) {
+        const splitedTransformName = baseLayer[transformTrackIndex].name.split('.');
+        const upperFirstTransformTrackName = _.upperFirst(splitedTransformName[1]);
+        currentBoneTrack.push({
+          childrenTrackList: [],
+          defaultChildrenTrackOpened: false,
+          name: upperFirstTransformTrackName,
+          trackIndex,
+        });
+        trackIndex += 1;
+      }
+      if ((trackIndex - 1) % 10 === 0) trackIndex += 2;
+    }
+
+    // Summary, Base 트랙 status 추가
+    const dopeSheetList: TPDopeSheet[] = [];
+    const times = _.map(_.fill(Array(baseLayer[0].times.length), 0), (value, index) => index + 1);
+    let dopeSheetIndex = 1;
+    for (let index = 0; index < 2; index += 1) {
+      dopeSheetList.push({
+        isSelected: false,
+        isShowed: index === 0 ? true : false,
+        isLocked: false,
+        isExcludedRendering: false,
+        isFiltered: true,
+        isClickedParentTrackArrowBtn: false,
+        trackIndex: dopeSheetIndex,
+        times, // 임시 방편(summary, tarck timer 구하는 함수 받으면 교체 예정)
+      });
+      dopeSheetIndex += 1;
+    }
+
+    // Bone, Transform 트랙 status 세팅
+    for (let boneTrackIndex = 0; boneTrackIndex < baseLayer.length; boneTrackIndex += 3) {
+      const currnetBoneTrack = baseLayer[boneTrackIndex];
+      const times = _.map(
+        _.fill(Array(currnetBoneTrack.times.length), 0),
+        (value, index) => index + 1,
+      );
+
+      // Bone track status 추가
+      dopeSheetList.push({
+        isSelected: false,
+        isShowed: false,
+        isLocked: false,
+        isExcludedRendering: false,
+        isFiltered: true,
+        isClickedParentTrackArrowBtn: false,
+        trackIndex: dopeSheetIndex,
+        times,
+      });
+      dopeSheetIndex += 1;
+
+      // Transform track status 추가
+      for (
+        let transformIndex = boneTrackIndex;
+        transformIndex < boneTrackIndex + 3;
+        transformIndex += 1
+      ) {
         const x: number[] = [];
         const y: number[] = [];
         const z: number[] = [];
-        _.forEach(propertys, (property, index) => {
+        _.forEach(baseLayer[transformIndex].values, (transform, index) => {
           const remainder = index % 3;
-          if (remainder === 0) x.push(property);
-          else if (remainder === 1) y.push(property);
-          else z.push(property);
+          if (remainder === 0) x.push(transform);
+          else if (remainder === 1) y.push(transform);
+          else z.push(transform);
         });
-        return [
-          ...acc,
-          {
-            interpolation,
-            name: splited[0],
-            property: splited[1],
-            times,
-            keyframes,
-            x,
-            y,
-            z,
-          },
-        ];
-      },
-      [],
-    );
 
-    // TP Store에 가공 된 transform 데이터 리스트, 트랙 네이밍 리스트 저장
+        dopeSheetList.push({
+          isSelected: false,
+          isShowed: false,
+          isLocked: false,
+          isExcludedRendering: false,
+          isFiltered: true,
+          isClickedParentTrackArrowBtn: false,
+          trackIndex: dopeSheetIndex,
+          times,
+          x,
+          y,
+          z,
+        });
+        dopeSheetIndex += 1;
+      }
+      if ((dopeSheetIndex - 1) % 10 === 0) dopeSheetIndex += 2;
+    }
+
     TPDefaultTrackNameList(defaultTrackNameList);
     TPFilteredTrackNameList(defaultTrackNameList);
-    TPTransformTrackList(defaultTransformTrackList);
+    TPDopeSheetList(dopeSheetList);
+    TPLastBoneTrackIndexList([lastBoneTrackIndexList]);
   }, [baseLayer]);
+
+  // // 최초 TP 데이터 가공
+  // useEffect(() => {
+  //   if (!baseLayer.length) return;
+
+  //   // Summary, Base 트랙 추가
+  //   const defaultTrackNameList: TPTrackName[] = [];
+  //   defaultTrackNameList.push({
+  //     defaultChildrenTrackOpened: false,
+  //     name: 'Summary',
+  //     trackIndex: 1,
+  //     childrenTrackList: [
+  //       {
+  //         childrenTrackList: [],
+  //         defaultChildrenTrackOpened: false,
+  //         name: 'Base',
+  //         trackIndex: 2,
+  //       },
+  //     ],
+  //   });
+
+  //   // Bone, Transform 트랙 세팅
+  //   let trackIndex = 3;
+  //   const currentBaseTrack = defaultTrackNameList[0].childrenTrackList[0].childrenTrackList;
+  //   const lastBoneTrackIndexList: TPLastBoneTrackIndex = {
+  //     layerIdnex: 2,
+  //     lastBoneTrackIndex: 0,
+  //   }; // Base Track에서 마지막 Bone Track Index
+  //   for (let boneTrackIndex = 0; boneTrackIndex < baseLayer.length; boneTrackIndex += 3) {
+  //     const splitedBoneName = baseLayer[boneTrackIndex].name.split('.');
+
+  //     // 마지막 bone track index가 track index보다 작은 경우 갱신
+  //     if (lastBoneTrackIndexList.lastBoneTrackIndex < trackIndex) {
+  //       lastBoneTrackIndexList.lastBoneTrackIndex = trackIndex;
+  //     }
+
+  //     // Bone 트랙 추가
+  //     currentBaseTrack.push({
+  //       childrenTrackList: [],
+  //       defaultChildrenTrackOpened: false,
+  //       name: splitedBoneName[0],
+  //       trackIndex,
+  //     });
+  //     trackIndex += 1;
+
+  //     // Transform 트랙 추가
+  //     const currentBoneTrack = currentBaseTrack[boneTrackIndex / 3].childrenTrackList;
+  //     for (
+  //       let transformTrackIndex = boneTrackIndex;
+  //       transformTrackIndex < boneTrackIndex + 3;
+  //       transformTrackIndex += 1
+  //     ) {
+  //       const splitedTransformName = baseLayer[transformTrackIndex].name.split('.');
+  //       const upperFirstTransformTrackName = _.upperFirst(splitedTransformName[1]);
+  //       currentBoneTrack.push({
+  //         childrenTrackList: [],
+  //         defaultChildrenTrackOpened: false,
+  //         name: upperFirstTransformTrackName,
+  //         trackIndex,
+  //       });
+  //       trackIndex += 1;
+  //     }
+  //     if ((trackIndex - 1) % 10 === 0) trackIndex += 2;
+  //   }
+
+  //   // Summary, Base 트랙 status 추가
+  //   const dopeSheetList: TPDopeSheet[] = [];
+  //   const times = _.map(_.fill(Array(baseLayer[0].times.length), 0), (value, index) => index + 1);
+  //   let dopeSheetIndex = 1;
+  //   for (let index = 0; index < 2; index += 1) {
+  //     dopeSheetList.push({
+  //       isSelected: false,
+  //       isShowed: index === 0 ? true : false,
+  //       isLocked: false,
+  //       isExcludedRendering: false,
+  //       isFiltered: true,
+  //       trackIndex: dopeSheetIndex,
+  //       times, // 임시 방편(summary, tarck timer 구하는 함수 받으면 교체 예정)
+  //     });
+  //     dopeSheetIndex += 1;
+  //   }
+
+  //   // Bone, Transform 트랙 status 세팅
+  //   for (let boneTrackIndex = 0; boneTrackIndex < baseLayer.length; boneTrackIndex += 3) {
+  //     const currnetBoneTrack = baseLayer[boneTrackIndex];
+  //     const times = _.map(
+  //       _.fill(Array(currnetBoneTrack.times.length), 0),
+  //       (value, index) => index + 1,
+  //     );
+
+  //     // Bone track status 추가
+  //     dopeSheetList.push({
+  //       isSelected: false,
+  //       isShowed: false,
+  //       isLocked: false,
+  //       isExcludedRendering: false,
+  //       isFiltered: true,
+  //       trackIndex: dopeSheetIndex,
+  //       times,
+  //     });
+  //     dopeSheetIndex += 1;
+
+  //     // Transform track status 추가
+  //     for (
+  //       let transformIndex = boneTrackIndex;
+  //       transformIndex < boneTrackIndex + 3;
+  //       transformIndex += 1
+  //     ) {
+  //       const x: number[] = [];
+  //       const y: number[] = [];
+  //       const z: number[] = [];
+  //       _.forEach(baseLayer[transformIndex].values, (transform, index) => {
+  //         const remainder = index % 3;
+  //         if (remainder === 0) x.push(transform);
+  //         else if (remainder === 1) y.push(transform);
+  //         else z.push(transform);
+  //       });
+
+  //       dopeSheetList.push({
+  //         isSelected: false,
+  //         isShowed: false,
+  //         isLocked: false,
+  //         isExcludedRendering: false,
+  //         isFiltered: true,
+  //         trackIndex: dopeSheetIndex,
+  //         times,
+  //         x,
+  //         y,
+  //         z,
+  //       });
+  //       dopeSheetIndex += 1;
+  //     }
+  //     if ((dopeSheetIndex - 1) % 10 === 0) dopeSheetIndex += 2;
+  //   }
+
+  //   TPDefaultTrackNameList(defaultTrackNameList);
+  //   TPFilteredTrackNameList(defaultTrackNameList);
+  //   TPDopeSheetList(dopeSheetList);
+  //   TPLastBoneTrackIndexList([lastBoneTrackIndexList]);
+  //   // setDopeSheetList(dopeSheetList);
+  // }, [baseLayer]);
 
   return (
     <>
