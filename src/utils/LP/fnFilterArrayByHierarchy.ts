@@ -1,8 +1,8 @@
-import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
 
 interface fnFilterArrayByHierarchyProps {
-  data: MainDataTypes[];
+  data: MainDataType[];
   searchWord: string;
 }
 export const fnFilterArrayByHierarchy = ({ data, searchWord }: fnFilterArrayByHierarchyProps) => {

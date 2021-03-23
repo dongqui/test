@@ -1,10 +1,10 @@
 import _ from 'lodash';
-import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
+import { MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
 
 interface fnGetFileNameProps {
   key: string;
   name: string;
-  mainData: MainDataTypes[];
+  mainData: MainDataType[];
 }
 
 export const fnGetFileName = ({ key, name, mainData }: fnGetFileNameProps) => {

@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-import { RENDERING_DATA, MAIN_DATA, CP_DATA } from 'lib/store';
+import { storeRenderingData, storeMainData, storeCPData } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { MIN_WIDTH } from 'styles/constants/panels';
 import classNames from 'classnames/bind';
@@ -18,10 +18,9 @@ import { useDebuggingData } from 'hooks/common/useDebuggingData';
 const cx = classNames.bind(styles);
 
 const MainContainer: React.FC = () => {
-  const mainData = useReactiveVar(MAIN_DATA);
-  const cpData = useReactiveVar(CP_DATA);
-  const renderingData = useReactiveVar(RENDERING_DATA);
-  const dispatch = useDispatch();
+  const mainData = useReactiveVar(storeMainData);
+  const cpData = useReactiveVar(storeCPData);
+  const renderingData = useReactiveVar(storeRenderingData);
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
     if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
@@ -30,7 +29,7 @@ const MainContainer: React.FC = () => {
     return _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
   }, [mainData]);
   const handleDrop = useCallback(() => {
-    MAIN_DATA(
+    storeMainData(
       _.map(mainData, (item) => ({
         ...item,
         isVisualized: item.isDragging,
@@ -74,15 +73,7 @@ const MainContainer: React.FC = () => {
           size={{ ...renderingPanel.size }}
           position={{ ...renderingPanel.position }}
         >
-          <RenderingController
-            id="renderingDiv"
-            fileUrl={fileUrl}
-            isPlaying={renderingData.isPlaying}
-            playDirection={renderingData.playDirection}
-            playSpeed={renderingData.playSpeed}
-            baseLayer={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
-            layers={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.layers}
-          />
+          <RenderingController id="renderingDiv" fileUrl={fileUrl} />
         </Rnd>
         <Rnd
           id="wrapper_control"

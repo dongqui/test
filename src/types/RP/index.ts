@@ -4,7 +4,7 @@ export interface RenderingOption {
   type: string;
   category: string;
 }
-export interface RENDERING_DATA_TYPES {
+export interface RenderingDataType {
   playSpeed: number;
   isPlaying: boolean;
   playDirection: -1 | 1;
@@ -16,7 +16,7 @@ interface RANGEBOX_INFO_TYPES {
   barX: number;
   y: number;
 }
-export interface RECORDING_DATA_TYPES {
+export interface RecordingDataType {
   duration: number;
   rangeBoxInfo: RANGEBOX_INFO_TYPES;
   isPlaying: boolean;

@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { InputCP } from 'components/Input/InputCP';
-import { CP_DATA } from 'lib/store';
+import { storeCPData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
 import * as S from './CPListTreeStyles';
@@ -20,12 +20,12 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   y = 1.1,
   z = 1.1,
 }) => {
-  const cpData = useReactiveVar(CP_DATA);
+  const cpData = useReactiveVar(storeCPData);
   const onChange = useCallback(
     (e) => {
       if (!_.isNaN(Number(e.target.value))) {
         const name = e.target.name;
-        CP_DATA(
+        storeCPData(
           _.map(cpData, (item: any) => ({
             ...item,
             [name]: _.isEqual(item.key, rowKey) ? e.target.value : item?.[name],

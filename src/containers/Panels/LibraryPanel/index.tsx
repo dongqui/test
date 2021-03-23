@@ -8,20 +8,20 @@ import {
   ENABLE_VIDEO_FORMATS,
   FILE_TYPES,
   FORMAT_TYPES,
-  LPMODE_TYPES,
-  MainDataTypes,
+  LPModeType,
+  MainDataType,
   MAINDATA_PROPERTY_TYPES,
   MODAL_TYPES,
   PAGE_NAMES,
 } from 'types';
 import {
-  CUT_IMAGES,
-  LP_MODE,
-  MAIN_DATA,
-  MODAL_INFO,
-  PAGES,
-  RECORDING_DATA,
-  SEARCH_WORD,
+  storeCutImages,
+  storeLPMode,
+  storeMainData,
+  storeModalInfo,
+  storePages,
+  storeRecordingData,
+  storeSearchWord,
 } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
@@ -40,7 +40,7 @@ import { Loading } from 'components/Loading';
 import { fnGetBaseLayer, fnGetNewLayer } from 'utils/TP/editingUtils';
 import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 
-export interface PagesTypes {
+export interface PagesType {
   key: string;
   name: string;
 }
@@ -49,21 +49,21 @@ export interface LibraryPanelProps {
 }
 const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 'black' }) => {
   const router = useRouter();
-  const mainData = useReactiveVar(MAIN_DATA);
-  const pages = useReactiveVar(PAGES);
-  const lpmode = useReactiveVar(LP_MODE);
+  const mainData = useReactiveVar(storeMainData);
+  const pages = useReactiveVar(storePages);
+  const lpmode = useReactiveVar(storeLPMode);
   const [loading, setLoading] = useState(false);
   const onChangeSearchText = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    SEARCH_WORD(e.target.value);
+    storeSearchWord(e.target.value);
   }, []);
   const onDropPost = useCallback(
     async ({ acceptedFiles, overrideKeys = [] }) => {
-      let newDatas: MainDataTypes[] = [];
+      let newDatas: MainDataType[] = [];
       for (const acceptedFile of acceptedFiles) {
         const extension = _.last(_.split(acceptedFile.name, '.'));
         let convertedFileUrl = DEFAULT_MODEL_URL;
         if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
-          MODAL_INFO({
+          storeModalInfo({
             isShow: true,
             msg: '파일 형식이 올바르지 않습니다.',
             type: MODAL_TYPES.alert,
@@ -78,7 +78,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
             type: FORMAT_TYPES.glb,
           });
           if (error) {
-            MODAL_INFO({ isShow: true, msg });
+            storeModalInfo({ isShow: true, msg });
             setLoading(false);
             return false;
           }
@@ -94,8 +94,8 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
             cancelText: '취소',
             content: '모션을 추출하시겠습니까?',
             onOk: () => {
-              RECORDING_DATA(INITIAL_RECORDING_DATA);
-              CUT_IMAGES([]);
+              storeRecordingData(INITIAL_RECORDING_DATA);
+              storeCutImages([]);
               router.push(
                 `/${PAGE_NAMES.extract}?videoUrl=${url}&extension=${extension}`,
                 undefined,
@@ -110,11 +110,11 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         }
         const { animations, bones, error, msg } = await fnGetAnimationData({ url });
         if (error) {
-          MODAL_INFO({ isShow: true, msg });
+          storeModalInfo({ isShow: true, msg });
           setLoading(false);
           return false;
         }
-        const motions: MainDataTypes[] = [];
+        const motions: MainDataType[] = [];
         const key = uuidv4();
         _.forEach(animations, (clip, index) => {
           if (bones) {
@@ -122,14 +122,13 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
               key: clip?.uuid,
               name: clip?.name,
               baseLayer: fnGetBaseLayer({ bones, clip }),
-              // layers: [fnGetNewLayer({ bones })],
               layers: [],
               type: FILE_TYPES.motion,
               parentKey: key,
             });
           }
         });
-        let newData: MainDataTypes[] = [
+        let newData: MainDataType[] = [
           {
             key,
             type: FILE_TYPES.file,
@@ -145,7 +144,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       if (!_.isEmpty(overrideKeys)) {
         filteredMainData = fnDeleteFileByKeys({ mainData: filteredMainData, keys: overrideKeys });
       }
-      MAIN_DATA(_.concat(filteredMainData, newDatas));
+      storeMainData(_.concat(filteredMainData, newDatas));
       setLoading(false);
     },
     [mainData, pages, router],
@@ -154,7 +153,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
     async (acceptedFiles: File[]) => {
       setLoading(true);
       if (_.isEmpty(acceptedFiles)) {
-        MODAL_INFO({ isShow: true, msg: '파일이 존재하지 않습니다.', type: MODAL_TYPES.alert });
+        storeModalInfo({ isShow: true, msg: '파일이 존재하지 않습니다.', type: MODAL_TYPES.alert });
         setLoading(false);
         return false;
       }
@@ -168,7 +167,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           1,
         )
       ) {
-        MODAL_INFO({
+        storeModalInfo({
           isShow: true,
           msg: '영상파일은 2개이상 가져올수 없습니다.',
           type: MODAL_TYPES.alert,
@@ -235,7 +234,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
       </S.SearchWrapper>
       <IconPage />
-      {_.isEqual(lpmode, LPMODE_TYPES.iconview) ? <IconView /> : <ListView />}
+      {_.isEqual(lpmode, LPModeType.iconview) ? <IconView /> : <ListView />}
     </S.LibraryPanelWrapper>
   );
 };

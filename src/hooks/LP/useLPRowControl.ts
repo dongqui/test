@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import { useCallback, useMemo } from 'react';
-import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
-import { MAIN_DATA } from 'lib/store';
+import { MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { storeMainData } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
 
 interface useLPControlProps {
-  mainData: MainDataTypes[];
+  mainData: MainDataType[];
   rowKey?: string;
 }
 export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
@@ -25,7 +25,7 @@ export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
   );
   const onChangeInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      MAIN_DATA(
+      storeMainData(
         _.map(mainData, (item) => ({
           ...item,
           name: _.isEqual(item.key, rowKey) ? e.target.value : item.name,
@@ -35,7 +35,7 @@ export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
     [rowKey, mainData],
   );
   const onBlur = useCallback(() => {
-    MAIN_DATA(
+    storeMainData(
       _.map(mainData, (item) => ({
         ...item,
         isModifying: _.isEqual(item.key, rowKey) ? false : item.isModifying,

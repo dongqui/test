@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { PAGE_NAMES, VIDEO_FORMAT_TYPES } from 'types';
-import { CP_DATA, CUT_IMAGES, RECORDING_DATA } from 'lib/store';
+import { storeCutImages, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import moment, { Moment } from 'moment';
 import { useRouter } from 'next/dist/client/router';
@@ -13,7 +13,7 @@ import { INITIAL_CP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
 let time = { start: moment(), end: moment() };
 const RecordWebcam: React.FC = () => {
   const router = useRouter();
-  const recordingData = useReactiveVar(RECORDING_DATA);
+  const recordingData = useReactiveVar(storeRecordingData);
   const videoRef = useRef<HTMLVideoElement>(null);
   useRecordWebcam({ ref: videoRef });
   const { status, startRecording, stopRecording, mediaBlobUrl } = useReactMediaRecorder({
@@ -32,8 +32,8 @@ const RecordWebcam: React.FC = () => {
   }, [mediaBlobUrl, recordingData.isRecording, router, startRecording, stopRecording]);
   useEffect(() => {
     if (_.isEqual(status, 'stopped') && !_.isEmpty(mediaBlobUrl)) {
-      RECORDING_DATA(INITIAL_RECORDING_DATA);
-      CUT_IMAGES([]);
+      storeRecordingData(INITIAL_RECORDING_DATA);
+      storeCutImages([]);
       router.push(
         `/${PAGE_NAMES.extract}?videoUrl=${mediaBlobUrl}&extension=${
           VIDEO_FORMAT_TYPES.mp4

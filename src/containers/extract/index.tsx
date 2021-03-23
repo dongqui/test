@@ -8,8 +8,8 @@ import { CutEdit } from 'containers/CutEdit';
 import { ExtractPlayBar } from 'containers/ExtractPlayBar';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
-import { CP_DATA, CUT_IMAGES, MAIN_DATA, MODAL_INFO, RECORDING_DATA } from 'lib/store';
-import { FILE_TYPES, MainDataTypes, MODAL_TYPES, PAGE_NAMES } from 'types';
+import { storeMainData, storeModalInfo, storeRecordingData } from 'lib/store';
+import { FILE_TYPES, MainDataType, MODAL_TYPES, PAGE_NAMES } from 'types';
 import { ModalLoading } from 'components/Modal/ModalLoading';
 import { ModalInput } from 'components/Modal/ModalInput';
 import styled from 'styled-components';
@@ -34,19 +34,19 @@ const ModalWrapper = styled.div`
 
 const ExtractPage: NextPage<Props> = ({}) => {
   const router = useRouter();
-  const mainData = useReactiveVar(MAIN_DATA);
-  const modalInfo = useReactiveVar(MODAL_INFO);
+  const mainData = useReactiveVar(storeMainData);
+  const modalInfo = useReactiveVar(storeModalInfo);
   const modalRef = useRef<HTMLDivElement>(null);
-  const recordingData = useReactiveVar(RECORDING_DATA);
+  const recordingData = useReactiveVar(storeRecordingData);
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      RECORDING_DATA({ ...recordingData, motionName: e.target.value });
+      storeRecordingData({ ...recordingData, motionName: e.target.value });
     },
     [recordingData],
   );
   const onClick = useCallback(
     async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      MODAL_INFO({ ...modalInfo, type: MODAL_TYPES.loading });
+      storeModalInfo({ ...modalInfo, type: MODAL_TYPES.loading });
       const { error, msg, result } = await api.uploadFileToMotionData({
         url: `${router?.query?.videoUrl}`,
         type: `${router?.query?.extension ?? 'mp4'}`,
@@ -64,11 +64,11 @@ const ExtractPage: NextPage<Props> = ({}) => {
       });
       if (error) {
         alert(msg);
-        MODAL_INFO({ ...modalInfo, isShow: false });
+        storeModalInfo({ ...modalInfo, isShow: false });
         return false;
       }
       const key = uuidv4();
-      const newData: MainDataTypes[] = [
+      const newData: MainDataType[] = [
         {
           key,
           type: FILE_TYPES.motion,
@@ -77,9 +77,9 @@ const ExtractPage: NextPage<Props> = ({}) => {
           baseLayer: result?.data?.result ?? [],
         },
       ];
-      MAIN_DATA(_.concat(mainData, newData));
-      router.push(`/${PAGE_NAMES.shoot}`, undefined, {
-        shallow: true,
+      storeMainData(_.concat(mainData, newData));
+      router.push({
+        pathname: `/${PAGE_NAMES.shoot}`,
       });
     },
     [
@@ -93,10 +93,10 @@ const ExtractPage: NextPage<Props> = ({}) => {
     ],
   );
   const onClickConfirm = useCallback(() => {
-    MODAL_INFO({ ...modalInfo, isShow: false, msg: '' });
+    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
   }, [modalInfo]);
   const onCancelLoading = useCallback(() => {
-    MODAL_INFO({ ...modalInfo, isShow: false, msg: '' });
+    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
   }, [modalInfo]);
   return (
     <main>
