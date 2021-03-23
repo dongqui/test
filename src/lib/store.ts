@@ -6,7 +6,13 @@ import { ROOT_FOLDER_NAME } from 'types/LP';
 import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'types/RP';
 import { TPBoneTrack, TPTransformTrack } from 'types/TP';
 import _ from 'lodash';
-import { INITIAL_CP_DATA, INITIAL_MAIN_DATA, INITIAL_RENDERING_DATA, isClient } from 'utils/const';
+import {
+  INITIAL_CP_DATA,
+  INITIAL_MAIN_DATA,
+  INITIAL_RECORDING_DATA,
+  INITIAL_RENDERING_DATA,
+  isClient,
+} from 'utils/const';
 import { ContextmenuTypes, LPMODE_TYPES, MainDataTypes, ModalTypes } from '../types';
 
 const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
@@ -44,20 +50,7 @@ export const LP_MODE = makeVar<LPMODE_TYPES>(LPMODE_TYPES.listview);
 // RP
 export const RENDERING_DATA = makeVar<RENDERING_DATA_TYPES>(INITIAL_RENDERING_DATA);
 // WEBCAM
-export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>({
-  duration: 10,
-  rangeBoxInfo: {
-    width: 1700,
-    height: CUTIMAGE_HEIGHT,
-    x: 50,
-    barX: 50,
-    y: 0,
-  },
-  isPlaying: false,
-  motionName: '',
-  isRecording: undefined,
-  count: undefined,
-});
+export const RECORDING_DATA = makeVar<RECORDING_DATA_TYPES>(INITIAL_RECORDING_DATA);
 // CP
 export const CP_DATA = makeVar<CP_DATA_TYPES[]>(INITIAL_CP_DATA);
 export const CUT_IMAGES = makeVar<string[]>([]);

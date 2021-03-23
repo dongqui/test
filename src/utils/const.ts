@@ -1,18 +1,34 @@
+import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
 import { MainDataTypes } from 'types';
 import { CP_COMPONENT_TYPES, CP_DATA_TYPES } from 'types/CP';
-import { RENDERING_DATA_TYPES } from 'types/RP';
+import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'types/RP';
 
+export const isDebug = true;
 export const isClient = typeof window !== 'undefined';
 export const DEFAULT_MODEL_URL =
   'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1612095825/DyingToGlb_fqke1a.glb';
 export const DEFAULT_FILE_URL = '/video/exo.mp4';
-export const CUT_IMAGES_CNT = 20;
+// export const CUT_IMAGES_CNT = 20;
 export const STANDARD_TIME_UNIT = 1 / 30;
 export const INITIAL_MAIN_DATA: MainDataTypes[] = [];
 export const INITIAL_RENDERING_DATA: RENDERING_DATA_TYPES = {
   isPlaying: false,
   playDirection: 1,
   playSpeed: 1,
+};
+export const INITIAL_RECORDING_DATA: RECORDING_DATA_TYPES = {
+  duration: 10,
+  rangeBoxInfo: {
+    width: 1700,
+    height: CUTIMAGE_HEIGHT,
+    x: 50,
+    barX: 50,
+    y: 0,
+  },
+  isPlaying: false,
+  motionName: '',
+  isRecording: undefined,
+  count: undefined,
 };
 export const INITIAL_CP_DATA: CP_DATA_TYPES[] = [
   {

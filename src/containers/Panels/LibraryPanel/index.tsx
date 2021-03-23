@@ -14,7 +14,15 @@ import {
   MODAL_TYPES,
   PAGE_NAMES,
 } from 'types';
-import { LP_MODE, MAIN_DATA, MODAL_INFO, PAGES, SEARCH_WORD } from 'lib/store';
+import {
+  CUT_IMAGES,
+  LP_MODE,
+  MAIN_DATA,
+  MODAL_INFO,
+  PAGES,
+  RECORDING_DATA,
+  SEARCH_WORD,
+} from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -23,7 +31,7 @@ import { IconView } from '../../IconTree/IconView';
 import * as S from './LibraryPanelStyles';
 import { LPSelect } from 'components/LPSelect';
 import { ListView } from 'containers/ListTree/ListView';
-import { DEFAULT_MODEL_URL } from 'utils/const';
+import { DEFAULT_MODEL_URL, INITIAL_CP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
 import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
 import { InputLP } from 'components/Input/InputLP';
 import { useRouter } from 'next/dist/client/router';
@@ -81,10 +89,23 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
           url = convertedFileUrl;
         }
         if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
-          router.push({
-            pathname: `/${PAGE_NAMES.extract}`,
-            query: { videoUrl: url, extension },
+          Modal.confirm({
+            okText: '확인',
+            cancelText: '취소',
+            content: '모션을 추출하시겠습니까?',
+            onOk: () => {
+              RECORDING_DATA(INITIAL_RECORDING_DATA);
+              CUT_IMAGES([]);
+              router.push(
+                `/${PAGE_NAMES.extract}?videoUrl=${url}&extension=${extension}`,
+                undefined,
+                {
+                  shallow: true,
+                },
+              );
+            },
           });
+          setLoading(false);
           return false;
         }
         const { animations, bones, error, msg } = await fnGetAnimationData({ url });

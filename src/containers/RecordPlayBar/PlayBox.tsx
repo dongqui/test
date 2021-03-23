@@ -12,13 +12,19 @@ export interface PlayBoxProps {}
 const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
   const recordingData = useReactiveVar(RECORDING_DATA);
   const onClick = useCallback(async () => {
-    if (!recordingData.isRecording) {
-      for (const count of [5, 4, 3, 2, 1]) {
-        RECORDING_DATA({ ...recordingData, count });
-        await sleep(1000);
+    if (_.isUndefined(recordingData.count)) {
+      if (!recordingData.isRecording) {
+        for (const count of [5, 4, 3, 2, 1]) {
+          RECORDING_DATA({ ...recordingData, count });
+          await sleep(1000);
+        }
       }
+      RECORDING_DATA({
+        ...recordingData,
+        isRecording: !recordingData.isRecording,
+        count: undefined,
+      });
     }
-    RECORDING_DATA({ ...recordingData, isRecording: !recordingData.isRecording, count: undefined });
   }, [recordingData]);
   return (
     <S.PlayBoxWrapper>

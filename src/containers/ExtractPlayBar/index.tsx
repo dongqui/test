@@ -37,7 +37,7 @@ const ExtractPlayBarComponent: React.FC<ExtractPlayBarProps> = ({}) => {
         <PlayBox />
       </S.PlayBarPlayBoxWrapper>
       <S.SelectWrapper>
-        <ModeSelect
+        {/* <ModeSelect
           data={[
             {
               isSelected: true,
@@ -51,7 +51,7 @@ const ExtractPlayBarComponent: React.FC<ExtractPlayBarProps> = ({}) => {
             },
           ]}
           onSelect={() => {}}
-        />
+        /> */}
       </S.SelectWrapper>
     </S.PlayBarWrapper>
   );
