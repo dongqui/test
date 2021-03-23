@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setCpData, setMainData, setRenderingData } from 'redux/homeSlice';
-import { MainDataTypes } from 'types';
-import { CP_DATA_TYPES } from 'types/CP';
-import { RENDERING_DATA_TYPES } from 'types/RP';
+import { MainDataType } from 'types';
+import { CPDataType } from 'types/CP';
+import { RecordingDataType, RenderingDataType } from 'types/RP';
 import { isDebug } from 'utils/const';
 
 interface useDebuggingDataProps {
-  mainData: MainDataTypes[];
-  cpData: CP_DATA_TYPES[];
-  renderingData: RENDERING_DATA_TYPES;
+  mainData: MainDataType[];
+  cpData: CPDataType[];
+  renderingData: RenderingDataType;
 }
 
 export const useDebuggingData = ({ mainData, cpData, renderingData }: useDebuggingDataProps) => {
