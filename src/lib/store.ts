@@ -1,10 +1,6 @@
 import { makeVar } from '@apollo/client';
 import produce from 'immer';
 import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
-import { PagesTypes } from 'containers/Panels/LibraryPanel';
-import { CP_DATA_TYPES } from 'types/CP';
-import { ROOT_FOLDER_NAME } from 'types/LP';
-import { RECORDING_DATA_TYPES, RENDERING_DATA_TYPES } from 'types/RP';
 import {
   TPTrackName,
   TPDopeSheet,
@@ -16,7 +12,6 @@ import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { RecordingDataType, RenderingDataType } from 'types/RP';
-import { TPBoneTrack, TPTransformTrack } from 'types/TP';
 import _ from 'lodash';
 import {
   INITIAL_CP_DATA,
