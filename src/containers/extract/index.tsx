@@ -18,6 +18,7 @@ import { STANDARD_WIDTH } from 'styles/constants/common';
 import { DEFAULT_FILE_URL, STANDARD_TIME_UNIT } from 'utils/const';
 import { Modal } from 'components/Modal';
 import { ROOT_FOLDER_NAME } from 'types/LP';
+import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
 
 interface Props {}
 
@@ -74,7 +75,9 @@ const ExtractPage: NextPage<Props> = ({}) => {
           type: FILE_TYPES.motion,
           name: recordingData.motionName,
           parentKey: ROOT_FOLDER_NAME,
-          baseLayer: result?.data?.result ?? [],
+          baseLayer: result?.data?.result
+            ? fnQuaternionToEulerTracks({ quaternionTracks: result?.data?.result })
+            : [],
         },
       ];
       storeMainData(_.concat(mainData, newData));
