@@ -2,31 +2,34 @@ import _ from 'lodash';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
-import { renderingOptions } from './const';
 import { useRendering } from '../../../hooks/RP/useRendering';
 import { ShootLayerType, ShootTrackType } from 'types';
+import { MAIN_DATA, RENDERING_DATA } from 'lib/store';
+import { useReactiveVar } from '@apollo/client';
 
+// 바꿔야 함
+import { renderingOptions } from './const';
+//
 export interface RenderingControllerProps {
   id: string;
   fileUrl?: string;
-  isPlaying: boolean;
-  playSpeed: number;
-  playDirection: -1 | 1;
-  baseLayer?: ShootTrackType[];
-  layers?: ShootLayerType[];
 }
-const RenderingController: React.FC<RenderingControllerProps> = ({
-  id,
-  fileUrl,
-  isPlaying,
-  playDirection,
-  playSpeed,
-  baseLayer = [],
-  layers = [],
-}) => {
+const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }) => {
+  // store data
+  const mainData = useReactiveVar(MAIN_DATA);
+  const renderingData = useReactiveVar(RENDERING_DATA);
+
+  // component state
   const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
   const [animations, setAnimations] = useState<THREE.AnimationClip[]>([]);
+
+  useEffect(() => {
+    console.log('mainData: ', mainData);
+    console.log('renderingData: ', renderingData);
+  }, [mainData, renderingData]);
+
+  // 바꿔야 함
   const currentAnimationClip = useMemo(() => animations?.[0], [animations]);
   const currentAction = useMemo(() => {
     let action;
@@ -35,6 +38,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     }
     return action;
   }, [currentAnimationClip, mixer]);
+  //
 
   useRendering({
     id,
@@ -45,10 +49,11 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     setAnimations,
   });
 
+  // 바꿔야 함
   useEffect(() => {
-    if (isPlaying) {
+    if (renderingData.isPlaying) {
       if (!_.isUndefined(mixer)) {
-        mixer.timeScale = 0.5 * playSpeed * playDirection;
+        mixer.timeScale = 0.5 * renderingData.playSpeed * renderingData.playDirection;
       }
       currentAction?.play();
     } else {
@@ -56,7 +61,14 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
         mixer.timeScale = 0;
       }
     }
-  }, [currentAction, isPlaying, mixer, playDirection, playSpeed]);
+  }, [
+    currentAction,
+    mixer,
+    renderingData.isPlaying,
+    renderingData.playDirection,
+    renderingData.playSpeed,
+  ]);
+  //
 
   return <RenderingPresenter id={id} />;
 };

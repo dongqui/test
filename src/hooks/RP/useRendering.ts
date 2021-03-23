@@ -387,6 +387,11 @@ export const useRendering = (props: UseRendering) => {
     // rendering할 div요소 선택
     const renderingDiv = document.getElementById(id);
 
+    // 우클릭 메뉴 -> context menu component 개발 후 구현
+    // renderingDiv?.addEventListener('contextmenu', (e) => {
+    //   console.log('contextmenu e: ', e);
+    // });
+
     if (renderingDiv) {
       // scene 생성 및 설정
       const scene = fnCreateScene();

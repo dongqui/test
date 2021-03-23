@@ -2,6 +2,7 @@ import { ShootLayerType } from 'types';
 
 const dummyLayers: ShootLayerType[] = [
   {
+    name: 'layer1',
     key: 'qweqweqwe111',
     tracks: [
       {
@@ -366,6 +367,7 @@ const dummyLayers: ShootLayerType[] = [
   //
   //
   {
+    name: 'layer2',
     key: 'ewqewqewq111',
     tracks: [
       {

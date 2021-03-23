@@ -41,6 +41,7 @@ const MainContainer: React.FC = () => {
     upperSection,
     controlPanel,
   } = useResizeRP();
+
   return (
     <>
       <Rnd
@@ -69,15 +70,7 @@ const MainContainer: React.FC = () => {
           size={{ ...renderingPanel.size }}
           position={{ ...renderingPanel.position }}
         >
-          <RenderingController
-            id="renderingDiv"
-            fileUrl={fileUrl}
-            isPlaying={renderingData.isPlaying}
-            playDirection={renderingData.playDirection}
-            playSpeed={renderingData.playSpeed}
-            baseLayer={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
-            layers={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.layers}
-          />
+          <RenderingController id="renderingDiv" fileUrl={fileUrl} />
         </Rnd>
         <Rnd
           id="wrapper_control"
