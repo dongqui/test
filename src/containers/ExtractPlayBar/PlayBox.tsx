@@ -5,7 +5,7 @@ import { PlayForwardIcon } from 'components/Icons/generated2/PlayForwardIcon';
 import { PlayIcon } from 'components/Icons/generated2/PlayIcon';
 import { SquareIcon } from 'components/Icons/generated2/SquareIcon';
 import { MODAL_TYPES } from 'types';
-import { MODAL_INFO, RECORDING_DATA } from 'lib/store';
+import { storeModalInfo, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { ExtractIcon } from '../../components/Icons/generated2/ExtractIcon';
@@ -14,18 +14,18 @@ import * as S from './PlayBarStyles';
 export interface PlayBoxProps {}
 
 const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
-  const recordingData = useReactiveVar(RECORDING_DATA);
+  const recordingData = useReactiveVar(storeRecordingData);
   const play = useCallback(() => {
-    RECORDING_DATA({ ...recordingData, isPlaying: true });
+    storeRecordingData({ ...recordingData, isPlaying: true });
     setTimeout(() => {
-      RECORDING_DATA({ ...recordingData, isPlaying: false });
+      storeRecordingData({ ...recordingData, isPlaying: false });
     }, 1000 * recordingData.duration);
   }, [recordingData]);
   const pause = useCallback(() => {
-    RECORDING_DATA({ ...recordingData, isPlaying: false });
+    storeRecordingData({ ...recordingData, isPlaying: false });
   }, [recordingData]);
   const extractVideo = useCallback(() => {
-    MODAL_INFO({
+    storeModalInfo({
       isShow: true,
       type: MODAL_TYPES.input,
       msg: '모션의 이름을 입력해주세요.',

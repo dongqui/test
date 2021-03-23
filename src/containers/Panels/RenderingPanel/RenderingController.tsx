@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
 import { ShootLayerType, ShootTrackType } from 'types';
-import { MAIN_DATA, RENDERING_DATA } from 'lib/store';
+import { storeMainData, storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 
 // 바꿔야 함
@@ -16,8 +16,8 @@ export interface RenderingControllerProps {
 }
 const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }) => {
   // store data
-  const mainData = useReactiveVar(MAIN_DATA);
-  const renderingData = useReactiveVar(RENDERING_DATA);
+  const mainData = useReactiveVar(storeMainData);
+  const renderingData = useReactiveVar(storeRenderingData);
 
   // component state
   const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);

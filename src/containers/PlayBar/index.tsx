@@ -1,5 +1,5 @@
 import { useReactiveVar } from '@apollo/client';
-import { RENDERING_DATA } from 'lib/store';
+import { storeRenderingData } from 'lib/store';
 import _ from 'lodash';
 import React from 'react';
 import { Dropdown } from './Dropdown';
@@ -12,7 +12,7 @@ import { PlayBox } from './PlayBox';
 export interface PlayBarProps {}
 
 const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
-  const renderingData = useReactiveVar(RENDERING_DATA);
+  const renderingData = useReactiveVar(storeRenderingData);
   return (
     <S.PlayBarWrapper>
       <LayerSelect
@@ -70,7 +70,7 @@ const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
               },
             ]}
             onSelect={({ key }) => {
-              RENDERING_DATA({ ...renderingData, playSpeed: key });
+              storeRenderingData({ ...renderingData, playSpeed: key });
             }}
           />
         </S.PlayBarDropdownWrapper>

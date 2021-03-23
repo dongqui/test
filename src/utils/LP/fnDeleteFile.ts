@@ -1,9 +1,9 @@
-import { MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
-import { MAIN_DATA } from 'lib/store';
+import { MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { storeMainData } from 'lib/store';
 import _ from 'lodash';
 
 interface fnDeleteFileProps {
-  mainData: MainDataTypes[];
+  mainData: MainDataType[];
   keys?: string[];
 }
 
@@ -19,7 +19,7 @@ export const fnDeleteFile = ({ mainData }: fnDeleteFileProps) => {
       tempData = _.filter(tempData, (item) => !_.includes(keys, item.key));
     });
   } while (_.some(tempData, (item) => _.includes(keys, item.parentKey)));
-  MAIN_DATA(tempData);
+  storeMainData(tempData);
 };
 export const fnDeleteFileByKeys = ({ keys = [], mainData }: fnDeleteFileProps) => {
   let tempData = _.clone(mainData);

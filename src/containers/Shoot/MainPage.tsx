@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-import { RENDERING_DATA, MAIN_DATA } from 'lib/store';
+import { storeRenderingData, storeMainData } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { MIN_WIDTH } from 'styles/constants/panels';
 import classNames from 'classnames/bind';
@@ -16,8 +16,8 @@ import { ControlPanel } from 'containers/Panels/ControlPanel';
 const cx = classNames.bind(styles);
 
 const MainContainer: React.FC = () => {
-  const mainData = useReactiveVar(MAIN_DATA);
-  const renderingData = useReactiveVar(RENDERING_DATA);
+  const mainData = useReactiveVar(storeMainData);
+  const renderingData = useReactiveVar(storeRenderingData);
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
     if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
@@ -26,7 +26,7 @@ const MainContainer: React.FC = () => {
     return _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
   }, [mainData]);
   const handleDrop = useCallback(() => {
-    MAIN_DATA(
+    storeMainData(
       _.map(mainData, (item) => ({
         ...item,
         isVisualized: item.isDragging,

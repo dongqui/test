@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
-import { CP_DATA_PROPERTY_NAMES } from 'types/CP';
-import { CP_DATA } from 'lib/store';
+import { CPDataPropertyNames } from 'types/CP';
+import { storeCPData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo } from 'react';
 import * as S from './CPListTreeStyles';
@@ -19,14 +19,14 @@ const CPListRowSliderComponent: React.FC<CPListRowSliderProps> = ({
   min = 0,
   max = 100,
 }) => {
-  const cpData = useReactiveVar(CP_DATA);
+  const cpData = useReactiveVar(storeCPData);
   const value: number = useMemo(
-    () => _.find(cpData, [CP_DATA_PROPERTY_NAMES.key, rowKey])?.value ?? 0,
+    () => _.find(cpData, [CPDataPropertyNames.key, rowKey])?.value ?? 0,
     [cpData, rowKey],
   );
   const onChange = useCallback(
     (e) => {
-      CP_DATA(
+      storeCPData(
         _.map(cpData, (item) => ({
           ...item,
           value: _.isEqual(item.key, rowKey) ? e.target.valueAsNumber : item?.value,

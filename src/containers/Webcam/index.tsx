@@ -1,12 +1,12 @@
 import { useReactiveVar } from '@apollo/client';
 import { useVideoToImages } from 'hooks/RP/useVideoToImages';
-import { RECORDING_DATA } from 'lib/store';
+import { storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import { useRouter } from 'next/dist/client/router';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { STANDARD_WIDTH } from 'styles/constants/common';
 import { CUT_IMAGES_CNT } from 'utils/const';
-import { CUT_IMAGES } from '../../lib/store';
+import { storeCutImages } from '../../lib/store';
 import * as S from './WebcamStyles';
 
 export interface WebcamProps {
@@ -14,8 +14,8 @@ export interface WebcamProps {
 }
 const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
   const router = useRouter();
-  const recordingData = useReactiveVar(RECORDING_DATA);
-  const cutImages = useReactiveVar(CUT_IMAGES);
+  const recordingData = useReactiveVar(storeRecordingData);
+  const cutImages = useReactiveVar(storeCutImages);
   const videoRef = useRef<HTMLVideoElement>(null);
   const showVideoRef = useRef<HTMLVideoElement>(null);
   const initialAction = useCallback(async () => {
@@ -30,8 +30,8 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
       if (duration == Infinity) {
         duration = router?.query?.duration ?? 10;
       }
-      RECORDING_DATA({ ...recordingData, duration });
-      CUT_IMAGES([]);
+      storeRecordingData({ ...recordingData, duration });
+      storeCutImages([]);
     }
   }, [recordingData, router?.query?.duration]);
   const controlPlay = useCallback(async () => {
@@ -49,7 +49,7 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
     videoRef,
     action: ({ images }) => {
       if (_.isEmpty(cutImages)) {
-        CUT_IMAGES(images);
+        storeCutImages(images);
       }
     },
     active: _.isEmpty(cutImages),

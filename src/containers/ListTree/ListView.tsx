@@ -2,9 +2,15 @@ import { useReactiveVar } from '@apollo/client';
 import { useContextmenu } from 'hooks/common/useContextmenu';
 import { useShortcut } from 'hooks/common/useShortcut';
 import { useLPControl } from 'hooks/LP/useLPControl';
-import { FILE_TYPES, MainDataTypes, MAINDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { CONTEXTMENU_INFO, LP_MODE, MAIN_DATA, PAGES, SEARCH_WORD } from 'lib/store';
+import {
+  storeContextMenuInfo,
+  storeLPMode,
+  storeMainData,
+  storePages,
+  storeSearchWord,
+} from 'lib/store';
 import _ from 'lodash';
 import React, { useMemo, useRef } from 'react';
 import { fnFilterArrayByHierarchy } from 'utils/LP/fnFilterArrayByHierarchy';
@@ -16,10 +22,10 @@ import * as S from './ListTreeStyles';
 export interface ListViewProps {}
 
 const ListViewComponent: React.FC<ListViewProps> = ({}) => {
-  const mainData = useReactiveVar(MAIN_DATA);
-  const pages = useReactiveVar(PAGES);
-  const searchWord = useReactiveVar(SEARCH_WORD);
-  const contextmenuInfo = useReactiveVar(CONTEXTMENU_INFO);
+  const mainData = useReactiveVar(storeMainData);
+  const pages = useReactiveVar(storePages);
+  const searchWord = useReactiveVar(storeSearchWord);
+  const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
   const listViewWrapperRef = useRef<HTMLDivElement>(null);
   const { onContextMenu, shortcutData, onDragStart, onDrop, onClick } = useLPControl({
     contextmenuInfo,
@@ -32,7 +38,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    const result: MainDataTypes[] = [];
+    const result: MainDataType[] = [];
     let data = fnSortArrayByHierarchy({ data: mainData });
     if (!_.isEmpty(searchWord)) {
       data = fnFilterArrayByHierarchy({ data, searchWord });

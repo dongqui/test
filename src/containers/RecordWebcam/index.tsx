@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { PAGE_NAMES, VIDEO_FORMAT_TYPES } from 'types';
-import { RECORDING_DATA } from 'lib/store';
+import { storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import moment, { Moment } from 'moment';
 import { useRouter } from 'next/dist/client/router';
@@ -12,7 +12,7 @@ import * as S from './RecordStyle';
 let time = { start: moment(), end: moment() };
 const RecordWebcam: React.FC = () => {
   const router = useRouter();
-  const recordingData = useReactiveVar(RECORDING_DATA);
+  const recordingData = useReactiveVar(storeRecordingData);
   const videoRef = useRef<HTMLVideoElement>(null);
   useRecordWebcam({ ref: videoRef });
   const { status, startRecording, stopRecording, mediaBlobUrl } = useReactMediaRecorder({
