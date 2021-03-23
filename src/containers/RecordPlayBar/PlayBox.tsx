@@ -12,10 +12,12 @@ export interface PlayBoxProps {}
 const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
   const onClick = useCallback(async () => {
-    if (!recordingData.isRecording) {
-      for (const count of [5, 4, 3, 2, 1]) {
-        storeRecordingData({ ...recordingData, count });
-        await sleep(1000);
+    if (_.isUndefined(recordingData.count)) {
+      if (!recordingData.isRecording) {
+        for (const count of [5, 4, 3, 2, 1]) {
+          storeRecordingData({ ...recordingData, count });
+          await sleep(1000);
+        }
       }
       storeRecordingData({
         ...recordingData,
