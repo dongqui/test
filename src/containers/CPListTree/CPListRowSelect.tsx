@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import { CPSelectButton } from './CPSelectButton';
 import * as S from './CPListTreeStyles';
 import { useReactiveVar } from '@apollo/client';
-import { storeCPData, storeRenderingData } from 'lib/store';
+import { storeRenderingData } from 'lib/store';
 import { RenderingDataPropertyName } from 'types/RP';
 
 export interface CPListRowSelectProps {

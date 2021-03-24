@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { InputCP } from 'components/Input/InputCP';
-import { storeCPData, storeRenderingData } from 'lib/store';
+import { storeRenderingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { RenderingDataPropertyName } from 'types/RP';
