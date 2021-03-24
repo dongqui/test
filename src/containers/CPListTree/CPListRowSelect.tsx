@@ -56,12 +56,12 @@ const CPListRowSelectComponent: React.FC<CPListRowSelectProps> = ({
           <CPSelectButton
             isSelected={isSelectedOn}
             onClick={() => onClick({ payload: true })}
-            text="ON"
+            text={_.isEqual(button, RenderingDataPropertyName.axis) ? `Y-UP` : 'ON'}
           />
           <CPSelectButton
             isSelected={isSelectedOff}
             onClick={() => onClick({ payload: false })}
-            text="OFF"
+            text={_.isEqual(button, RenderingDataPropertyName.axis) ? `Z-UP` : 'OFF'}
           />
         </S.CPListRowInputsWrapper>
       </S.CPListRowInputWrapper>

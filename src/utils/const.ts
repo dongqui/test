@@ -1,9 +1,14 @@
 import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
 import { MainDataType } from 'types';
 import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
-import { axisName, RenderingDataPropertyName, RenderingDataType } from 'types/RP';
+import {
+  AnimatingDataType,
+  axisName,
+  RenderingDataPropertyName,
+  RenderingDataType,
+} from 'types/RP';
 
-export const isDebug = false;
+export const isDebug = true;
 export const isClient = typeof window !== 'undefined';
 export const DEFAULT_MODEL_URL =
   'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1612095825/DyingToGlb_fqke1a.glb';
@@ -11,10 +16,15 @@ export const DEFAULT_FILE_URL = '/video/exo.mp4';
 export const CUT_IMAGES_CNT = 20;
 export const STANDARD_TIME_UNIT = 1 / 30;
 export const INITIAL_MAIN_DATA: MainDataType[] = [];
-export const INITIAL_RENDERING_DATA: RenderingDataType = {
+export const INITIAL_ANIMATING_DATA: AnimatingDataType = {
   isPlaying: false,
-  playDirection: 1,
+  playDirection: 1, // 1 은 정재생, -1 은 역재생
   playSpeed: 1,
+  startTimeIndex: 0, // 미들바의 start 에 해당
+  endTimeIndex: 100, // 미들바의 end 에 해당
+  currentTimeIndex: 0, // 미들바의 now 에 해당
+};
+export const INITIAL_RENDERING_DATA: RenderingDataType = {
   positionX: 1.1,
   positionY: 1.1,
   positionZ: 1.1,

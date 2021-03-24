@@ -44,10 +44,11 @@ const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear) => {
   // track.times 가 빈 배열이 아닐 때
   _.forEach(unionTimes, (targetTime, index) => {
     // 1
+    // time 시작 이전에는 0 이 아니라 제일 앞의 값을 넣어줌
     if (targetTime < times[0]) {
-      newValues.push(0);
-      newValues.push(0);
-      newValues.push(0);
+      newValues.push(values[0]);
+      newValues.push(values[1]);
+      newValues.push(values[2]);
       // 2
     } else if (targetTime < times[times.length - 1]) {
       const timeIndex = _.findIndex(times, (t) => t === targetTime);
