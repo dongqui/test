@@ -75,9 +75,10 @@ const ListRowComponent: React.FC<ListRowProps> = ({
         ...item,
         isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
         isClicked: _.isEqual(rowKey, item.key),
+        isVisualized: isVisualizeSelected ? _.isEqual(item.key, rowKey) : item.isVisualized,
       })),
     );
-  }, [rowKey, mainData]);
+  }, [isVisualizeSelected, mainData, rowKey]);
   const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
     mainData,
     rowKey,
