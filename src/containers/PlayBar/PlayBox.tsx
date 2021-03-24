@@ -5,7 +5,7 @@ import { PlayForwardIcon } from 'components/Icons/generated2/PlayForwardIcon';
 import { PlayIcon } from 'components/Icons/generated2/PlayIcon';
 import { RangeIcon } from 'components/Icons/generated2/RangeIcon';
 import { SquareIcon } from 'components/Icons/generated2/SquareIcon';
-import { storeRenderingData } from 'lib/store';
+import { storeAnimatingData } from 'lib/store';
 import _ from 'lodash';
 import React from 'react';
 import * as S from './PlayBarStyles';
@@ -13,7 +13,7 @@ import * as S from './PlayBarStyles';
 export interface PlayBoxProps {}
 
 const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
-  const renderingData = useReactiveVar(storeRenderingData);
+  const animatingData = useReactiveVar(storeAnimatingData);
   return (
     <S.PlayBoxWrapper>
       <S.PlayBoxIconWrapper>
@@ -22,9 +22,9 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
       <S.PlayBoxIconWrapper>
         <SquareIcon />
       </S.PlayBoxIconWrapper>
-      {renderingData.isPlaying ? (
+      {animatingData.isPlaying ? (
         <S.PlayBoxIconDoubleWrapper
-          onClick={() => storeRenderingData({ ...renderingData, isPlaying: false })}
+          onClick={() => storeAnimatingData({ ...animatingData, isPlaying: false })}
         >
           <PauseIcon />
         </S.PlayBoxIconDoubleWrapper>
@@ -32,14 +32,14 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
         <>
           <S.PlayBoxIconWrapper
             onClick={() =>
-              storeRenderingData({ ...renderingData, playDirection: -1, isPlaying: true })
+              storeAnimatingData({ ...animatingData, playDirection: -1, isPlaying: true })
             }
           >
             <PlayForwardIcon />
           </S.PlayBoxIconWrapper>
           <S.PlayBoxIconWrapper
             onClick={() =>
-              storeRenderingData({ ...renderingData, playDirection: 1, isPlaying: true })
+              storeAnimatingData({ ...animatingData, playDirection: 1, isPlaying: true })
             }
           >
             <PlayIcon />

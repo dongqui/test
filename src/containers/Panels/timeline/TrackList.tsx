@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
-import { TPBoneTrack } from 'types/TP';
+import { TPTrackName } from 'types/TP';
 import { TPDefaultTrackNameList, TPFilteredTrackNameList } from 'lib/store';
 import Track from './Track';
 import styles from './TrackList.module.scss';
@@ -15,60 +15,70 @@ const DEBOUNCED_TIME = 300;
 const cx = classNames.bind(styles);
 
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
-  const defaultTrackList = useReactiveVar(TPDefaultTrackNameList);
-  const filteredTrackList = useReactiveVar(TPFilteredTrackNameList);
-  const [printSummaryTrack, setPrintSummaryTrack] = useState(false);
-  const [printBaseTrack, setPrintBaseTrack] = useState(false);
-  const [summaryTrackToggle, setSummaryTrackToggle] = useState(false);
-  const [baseTrackToggle, setBaseTrackToggle] = useState(false);
   const lastTrackInput = useRef('');
+
+  const testDefaultTrackList = useReactiveVar(TPDefaultTrackNameList);
+  const testFilteredTrackList = useReactiveVar(TPFilteredTrackNameList);
 
   // debouned가 적용 된 track input 갱신
   const changeDebounedTrackInput = useMemo(
     () =>
       _.debounce((inputText: string) => {
-        // 디폴트 트랙 리스트가 없는 경우(아무 동작을 시키지 않음)
-        if (!defaultTrackList.length) return;
-        const trimInputText = _.trim(inputText);
+        // 트랙 리스트가 없는 상태에서 검색하는 경우(아무 동작을 시키지 않음)
+        if (!testDefaultTrackList.length) return;
+        const trimInputText = _.toLower(_.trim(inputText));
 
-        // 이전 검색 텍스트와 현재 검색 텍스트가 같거나,
-        // 현재 검색 텍스트가 이전 검색 텍스트에 포함 된 텍스트인 경우(아무 동작을 시키지 않음)
+        // 이전 검색 텍스트와 현재 검색 텍스트가 같은 경우(아무 동작을 시키지 않음)
         if (lastTrackInput.current === trimInputText) return;
-        if (
-          _.isLength(lastTrackInput.current) &&
-          _.isLength(trimInputText) &&
-          _.includes(lastTrackInput.current, trimInputText)
-        )
-          return;
 
         // 이전 검색 텍스트가 있으면서, 현재 검색 텍스트가 비어있는 경우(디폴트 트랙 리스트로 갱신)
         if (lastTrackInput.current !== trimInputText && !trimInputText) {
-          return TPFilteredTrackNameList(defaultTrackList);
+          return TPFilteredTrackNameList(testDefaultTrackList);
         }
 
-        // 인풋 텍스트가 포함 된 트랙 리스트 필터링
-        const renewedTrackList = _.reduce<TPBoneTrack, TPBoneTrack[] | []>(
-          defaultTrackList,
-          (acc, track) => {
-            const lowerCasedInputText = _.toLower(trimInputText);
-            const { title, children } = track;
-            if (_.includes(_.toLower(title), lowerCasedInputText)) return [...acc, track];
-            const filteredChildren = _.filter(children, (child) =>
-              _.includes(_.toLower(child), lowerCasedInputText),
-            );
-            if (filteredChildren.length) {
-              return [...acc, { title, children: filteredChildren, isChildTrackOpen: true }];
+        // 재귀를 걸어서 텍스트에 만족하는 트랙 필터링
+        const recursiveTrackSearch = ({ trackList }: { trackList: TPTrackName[] }) => {
+          const renewChildrenTrackList: TPTrackName[] = []; // 재귀가 끝날 때 리턴시킬 트랙 리스트
+          _.forEach(trackList, ({ name, childrenTrackList, trackIndex }) => {
+            const toLowerTrackName = _.toLower(name);
+            // 트랙 이름에 텍스트가 포함되면, 본인 트랙 정보 추가
+            // 이후 하위 트랙 재귀
+            if (_.includes(toLowerTrackName, trimInputText)) {
+              renewChildrenTrackList.push({
+                defaultChildrenTrackOpened: true,
+                name,
+                trackIndex,
+                childrenTrackList: recursiveTrackSearch({
+                  trackList: childrenTrackList,
+                }),
+              });
+            } else {
+              // 하위 트랙 재귀
+              const recursiveResult = recursiveTrackSearch({
+                trackList: childrenTrackList,
+              });
+              // 재귀 결과가 있는 경우
+              if (recursiveResult.length) {
+                renewChildrenTrackList.push({
+                  defaultChildrenTrackOpened: true,
+                  name,
+                  trackIndex,
+                  childrenTrackList: recursiveResult,
+                });
+              }
             }
-            return acc;
-          },
-          [],
-        );
+          });
+          return renewChildrenTrackList;
+        };
 
-        // 필터링 트랙 리스트 갱신
-        TPFilteredTrackNameList(renewedTrackList);
+        // 필터링 리스트 갱신
+        const filterResult = recursiveTrackSearch({
+          trackList: testDefaultTrackList,
+        });
         lastTrackInput.current = trimInputText;
+        TPFilteredTrackNameList(filterResult);
       }, DEBOUNCED_TIME),
-    [defaultTrackList],
+    [testDefaultTrackList],
   );
 
   // 트랙 인풋 텍스트 변경
@@ -78,45 +88,6 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
     },
     [changeDebounedTrackInput],
   );
-
-  // Summary, Base 트랙 출력여부
-  useEffect(() => {
-    const trimedLastTrackInput = _.trim(lastTrackInput.current);
-    if (!filteredTrackList.length) {
-      if (trimedLastTrackInput) {
-        // 인풋 텍스트가 Base에 포함되는 경우
-        if (_.includes(_.toLower('Base'), trimedLastTrackInput)) {
-          setPrintSummaryTrack(true);
-          setPrintBaseTrack(true);
-          setSummaryTrackToggle(true);
-          setBaseTrackToggle(true);
-          return;
-        }
-
-        // 인풋 텍스트가 Summary에 포함되는 경우
-        if (_.includes(_.toLower('Summary'), trimedLastTrackInput)) {
-          setPrintSummaryTrack(true);
-          setPrintBaseTrack(false);
-          setSummaryTrackToggle(true);
-          setBaseTrackToggle(false);
-          return;
-        }
-      }
-      // 인풋 텍스트가 Summary, Base에 모두 포함되지 않은 경우
-      setPrintSummaryTrack(false);
-      setPrintBaseTrack(false);
-      setSummaryTrackToggle(false);
-      setBaseTrackToggle(false);
-      return;
-    }
-    // 필터링 트랙 리스트가 존재하는 경우
-    setPrintSummaryTrack(true);
-    setPrintBaseTrack(true);
-    if (trimedLastTrackInput) {
-      setSummaryTrackToggle(true);
-      setBaseTrackToggle(true);
-    }
-  }, [filteredTrackList]);
 
   return (
     <>
@@ -128,32 +99,19 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           <input type="text" onChange={changeTrackInput} />
         </div>
         <div className={cx('track-list-wrapper')}>
-          {printSummaryTrack && (
-            <Track title="Summary" isChildTrackOpen={summaryTrackToggle} paddingLeft={10}>
-              {printBaseTrack && (
-                <Track title="Base" isChildTrackOpen={baseTrackToggle} paddingLeft={20}>
-                  {filteredTrackList.length &&
-                    _.map(filteredTrackList, ({ title, children, isChildTrackOpen }) => (
-                      <Track
-                        key={title}
-                        isChildTrackOpen={isChildTrackOpen}
-                        title={title}
-                        paddingLeft={30}
-                      >
-                        {_.map(children, (propertyTrack) => (
-                          <Track
-                            key={propertyTrack}
-                            isLeafTrack={true}
-                            title={propertyTrack}
-                            paddingLeft={40}
-                          />
-                        ))}
-                      </Track>
-                    ))}
-                </Track>
-              )}
-            </Track>
-          )}
+          {testFilteredTrackList?.map((track) => {
+            const { childrenTrackList, defaultChildrenTrackOpened, name, trackIndex } = track;
+            return (
+              <Track
+                key={name}
+                childrenTrackList={childrenTrackList}
+                defaultChildrenTrackOpened={defaultChildrenTrackOpened}
+                paddingLeft={10}
+                title={name}
+                trackIndex={trackIndex}
+              />
+            );
+          })}
         </div>
       </div>
     </>

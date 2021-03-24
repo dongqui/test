@@ -19,6 +19,7 @@ import {
   storeLPMode,
   storeMainData,
   storeModalInfo,
+  storePageInfo,
   storePages,
   storeRecordingData,
   storeSearchWord,
@@ -48,7 +49,6 @@ export interface LibraryPanelProps {
   backgroundColor?: string;
 }
 const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 'black' }) => {
-  const router = useRouter();
   const mainData = useReactiveVar(storeMainData);
   const pages = useReactiveVar(storePages);
   const lpmode = useReactiveVar(storeLPMode);
@@ -96,13 +96,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
             onOk: () => {
               storeRecordingData(INITIAL_RECORDING_DATA);
               storeCutImages([]);
-              router.push(
-                `/${PAGE_NAMES.extract}?videoUrl=${url}&extension=${extension}`,
-                undefined,
-                {
-                  shallow: true,
-                },
-              );
+              storePageInfo({ page: PAGE_NAMES.extract, videoUrl: url, extension });
             },
           });
           setLoading(false);
@@ -135,6 +129,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
             name: acceptedFile.name,
             url,
             parentKey: _.last(pages)?.key,
+            baseLayer: _.cloneDeep(motions?.[0]?.baseLayer ?? []),
           },
         ];
         newData = _.concat(newData, motions);
@@ -147,7 +142,7 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
       storeMainData(_.concat(filteredMainData, newDatas));
       setLoading(false);
     },
-    [mainData, pages, router],
+    [mainData, pages],
   );
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {

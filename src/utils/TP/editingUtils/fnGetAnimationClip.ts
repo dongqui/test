@@ -9,24 +9,38 @@ interface FnGetAnimationClip {
   name: string;
   baseLayer: ShootTrackType[];
   layers: ShootLayerType[];
+  startTimeIndex?: number;
+  endTimeIndex?: number;
 }
 
 /**
  * base layer 와 layers 를 통해 새로운 animation clip 을 생성 후 반환합니다.
+ * 재생을 위한 clip 생성 시에는 startTimeIndex, endTimeIndex 를 인자로 받아 길이를 조절하고,
+ * LP 에서 추출을 위해 clip 을 생성할 때는 startTimeIndex, endTimeIndex 를 받지 않고 전체 길이를 clip 으로 생성합니다.
  *
  * @param name - 생성할 clip 의 name
  * @param baseLayer - base layer
  * @param layers - other layers
+ * @param startTimeIndex - 미들바에서 설정한 시작 timeIndex 값
+ * @param endTimeIndex - 미들바에서 설정한 끝 timeIndex 값
  *
  * @returns 생성한 animation clip
  */
 const fnGetAnimationClip = (props: FnGetAnimationClip) => {
   let duration = 0; // track 들의 union times 중 가장 큰 애들 비교하면서 교체
-  const { name, baseLayer, layers } = props;
+  const { name, baseLayer, layers, startTimeIndex, endTimeIndex } = props;
   // baseLayer 와 layers 를 사용한다.
   // 각 layers 들은 동일한 track 들로 채워져있다.
   const tracks = _.map(baseLayer, (track) => {
-    const unionTimes = fnGetTrackUnionTimes({ track, baseLayer, layers });
+    // union time 을 구하되 start 및 end timeIndex 가 있으면 길이를 조절해서 clip 생성
+    const unionTimes =
+      startTimeIndex && endTimeIndex
+        ? fnGetTrackUnionTimes({ track, baseLayer, layers }).filter(
+            (time) =>
+              time >= _.round(startTimeIndex * (1 / 30), 4) &&
+              time <= _.round(endTimeIndex * (1 / 30), 4),
+          )
+        : fnGetTrackUnionTimes({ track, baseLayer, layers });
     if (duration < unionTimes[unionTimes.length - 1]) {
       duration = unionTimes[unionTimes.length - 1];
     }
@@ -58,6 +72,13 @@ const fnGetAnimationClip = (props: FnGetAnimationClip) => {
     _.includes(track.name, 'rotation') ? fnEulerToQuaternionTrack({ eulertrack: track }) : track,
   );
 
+  if (
+    startTimeIndex &&
+    endTimeIndex &&
+    duration < _.round((endTimeIndex - startTimeIndex + 1) * (1 / 30), 4)
+  ) {
+    duration = _.round((endTimeIndex - startTimeIndex + 1) * (1 / 30), 4);
+  }
   return new THREE.AnimationClip(name, duration, rotationConvertedTracks);
 };
 

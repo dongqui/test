@@ -19,4 +19,4 @@ const RecordPage: NextPage<Props> = ({}) => {
   );
 };
 
-export default RecordPage;
+export default React.memo(RecordPage);

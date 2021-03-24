@@ -9,13 +9,10 @@ import * as S from './CPListTreeStyles';
 
 export interface CPListRowParentProps {
   rowKey: string;
-  text: string;
+  name: string;
 }
 
-const CPListRowParentComponent: React.FC<CPListRowParentProps> = ({
-  text = 'Transform',
-  rowKey,
-}) => {
+const CPListRowParentComponent: React.FC<CPListRowParentProps> = ({ name, rowKey }) => {
   const cpData = useReactiveVar(storeCPData);
   const isExpanded = useMemo(
     () => _.find(cpData, [CPDataPropertyNames.key, rowKey])?.isExpanded ?? false,
@@ -39,7 +36,7 @@ const CPListRowParentComponent: React.FC<CPListRowParentProps> = ({
             <ArrowRightIcon />
           )}
         </S.ArrowButtonWrapper>
-        <S.CPListRowParentTextWrapper>{text}</S.CPListRowParentTextWrapper>
+        <S.CPListRowParentTextWrapper>{name}</S.CPListRowParentTextWrapper>
       </S.CPListRowParentChildWrapper>
     </S.CPListRowParentWrapper>
   );
