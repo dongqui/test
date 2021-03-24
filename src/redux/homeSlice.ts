@@ -2,7 +2,6 @@ import { createSlice } from '@reduxjs/toolkit';
 import _ from 'lodash';
 import {
   INITIAL_ANIMATING_DATA,
-  INITIAL_CP_DATA,
   INITIAL_MAIN_DATA,
   INITIAL_RECORDING_DATA,
   INITIAL_RENDERING_DATA,
@@ -11,7 +10,6 @@ import {
 const initialState = {
   mainData: INITIAL_MAIN_DATA,
   renderingData: INITIAL_RENDERING_DATA,
-  cpData: INITIAL_CP_DATA,
   recordingData: INITIAL_RECORDING_DATA,
   animatingData: INITIAL_ANIMATING_DATA,
 };
@@ -21,9 +19,6 @@ const homeSlice = createSlice({
   reducers: {
     setMainData(state, action) {
       state.mainData = action.payload;
-    },
-    setCpData(state, action) {
-      state.cpData = action.payload;
     },
     setRenderingData(state, action) {
       state.renderingData = action.payload;
@@ -40,7 +35,6 @@ const homeSlice = createSlice({
 
 export const {
   setMainData,
-  setCpData,
   setRecordingData,
   setRenderingData,
   setAnimatingData,

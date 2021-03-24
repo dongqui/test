@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { setAnimatingData, setCpData, setMainData, setRenderingData } from 'redux/homeSlice';
+import { setAnimatingData, setMainData, setRenderingData } from 'redux/homeSlice';
 import { MainDataType } from 'types';
 import { CPDataType } from 'types/CP';
 import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
@@ -25,11 +25,6 @@ export const useDebuggingData = ({
       dispatch(setMainData(mainData));
     }
   }, [dispatch, mainData]);
-  useEffect(() => {
-    if (isDebug) {
-      dispatch(setCpData(cpData));
-    }
-  }, [dispatch, cpData]);
   useEffect(() => {
     if (isDebug) {
       dispatch(setRenderingData(renderingData));
