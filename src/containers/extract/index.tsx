@@ -15,7 +15,7 @@ import { ModalInput } from 'components/Modal/ModalInput';
 import styled from 'styled-components';
 import * as api from 'utils/common/api';
 import { STANDARD_WIDTH } from 'styles/constants/common';
-import { DEFAULT_FILE_URL, INITIAL_CP_DATA, isClient, STANDARD_TIME_UNIT } from 'utils/const';
+import { DEFAULT_FILE_URL, STANDARD_TIME_UNIT } from 'utils/const';
 import { Modal } from 'components/Modal';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
