@@ -5,9 +5,6 @@ export interface RenderingOption {
   category: string;
 }
 export enum RenderingDataPropertyName {
-  playSpeed = 'playSpeed',
-  isPlaying = 'isPlaying',
-  playDirection = 'playDirection',
   positionX = 'positionX',
   positionY = 'positionY',
   positionZ = 'positionZ',
@@ -32,10 +29,11 @@ export enum RenderingDataPropertyName {
   near = 'near',
   far = 'far',
 }
+export enum axisName {
+  y = 'y',
+  z = 'z',
+}
 export interface RenderingDataType {
-  [RenderingDataPropertyName.playSpeed]: number;
-  [RenderingDataPropertyName.isPlaying]: boolean;
-  [RenderingDataPropertyName.playDirection]: -1 | 1;
   [RenderingDataPropertyName.positionX]: number;
   [RenderingDataPropertyName.positionY]: number;
   [RenderingDataPropertyName.positionZ]: number;
@@ -51,7 +49,7 @@ export interface RenderingDataType {
   [RenderingDataPropertyName.angleX]: number;
   [RenderingDataPropertyName.angleY]: number;
   [RenderingDataPropertyName.angleZ]: number;
-  [RenderingDataPropertyName.axis]: 'Y-up' | 'Z-up';
+  [RenderingDataPropertyName.axis]: axisName;
   [RenderingDataPropertyName.bone]: boolean;
   [RenderingDataPropertyName.joint]: boolean;
   [RenderingDataPropertyName.mesh]: boolean;
@@ -74,4 +72,15 @@ export interface RecordingDataType {
   motionName: string;
   isRecording?: boolean;
   count?: number | undefined;
+}
+
+type PlayDirection = 1 | -1;
+
+export interface AnimatingDataType {
+  isPlaying: boolean;
+  playDirection: PlayDirection;
+  playSpeed: number;
+  startTimeIndex: number;
+  endTimeIndex: number;
+  currentTimeIndex: number;
 }

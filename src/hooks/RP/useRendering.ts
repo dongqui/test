@@ -20,7 +20,6 @@ import {
   fnCreateScene,
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
-import { RenderingOption } from '../../types/RP';
 import { useHistory } from './useHistory';
 
 let innerMixer: THREE.AnimationMixer | undefined;
@@ -29,13 +28,12 @@ interface UseRendering {
   id: string;
   fileUrl?: string;
   setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
-  renderingOptions: RenderingOption[] | undefined;
   setSkeletonHelper: Dispatch<SetStateAction<THREE.SkeletonHelper | undefined>>;
   setAnimations: Dispatch<SetStateAction<THREE.AnimationClip[]>>;
 }
 
 export const useRendering = (props: UseRendering) => {
-  const { id, fileUrl, setMixer, renderingOptions, setSkeletonHelper, setAnimations } = props;
+  const { id, fileUrl, setMixer, setSkeletonHelper, setAnimations } = props;
   const [currentBone, setCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
   const [contents, setContents] = useState<
     Array<THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D>
@@ -182,47 +180,47 @@ export const useRendering = (props: UseRendering) => {
         case 't': // t (top)
         case 'T':
         case 'ㅅ':
-          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-            cameraControls.object.position.set(0, -5, 10);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          } else {
-            cameraControls.object.position.set(0, 10, 0);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          }
+          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          // cameraControls.object.position.set(0, -5, 10);
+          // cameraControls.object.lookAt(0, 0, 0);
+          // cameraControls.target.set(0, 0, 0);
+          // cameraControls.update();
+          // } else {
+          cameraControls.object.position.set(0, 10, 0);
+          cameraControls.object.lookAt(0, 0, 0);
+          cameraControls.target.set(0, 0, 0);
+          cameraControls.update();
+          // }
           break;
         case 'b': // b (bottom)
         case 'B':
         case 'ㅠ':
-          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-            cameraControls.object.position.set(0, -5, -10);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          } else {
-            cameraControls.object.position.set(0, -10, 0);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          }
+          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          // cameraControls.object.position.set(0, -5, -10);
+          // cameraControls.object.lookAt(0, 0, 0);
+          // cameraControls.target.set(0, 0, 0);
+          // cameraControls.update();
+          // } else {
+          cameraControls.object.position.set(0, -10, 0);
+          cameraControls.object.lookAt(0, 0, 0);
+          cameraControls.target.set(0, 0, 0);
+          cameraControls.update();
+          // }
           break;
         case 'l': // l (left)
         case 'L':
         case 'ㅣ':
-          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-            cameraControls.object.position.set(-10, 0, 5);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          } else {
-            cameraControls.object.position.set(-10, 5, 0);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          }
+          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          // cameraControls.object.position.set(-10, 0, 5);
+          // cameraControls.object.lookAt(0, 0, 0);
+          // cameraControls.target.set(0, 0, 0);
+          // cameraControls.update();
+          // } else {
+          cameraControls.object.position.set(-10, 5, 0);
+          cameraControls.object.lookAt(0, 0, 0);
+          cameraControls.target.set(0, 0, 0);
+          cameraControls.update();
+          // }
           break;
         case 'r': // r (right)
         case 'R':
@@ -236,35 +234,35 @@ export const useRendering = (props: UseRendering) => {
               multiKeyController.ㅍ.pressed) &&
             multiKeyController[event.key].pressed
           ) {
-            if (
-              !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
-            ) {
-              cameraControls.object.position.set(10, 0, 5);
-              cameraControls.object.lookAt(0, 0, 0);
-              cameraControls.target.set(0, 0, 0);
-              cameraControls.update();
-            } else {
-              cameraControls.object.position.set(10, 5, 0);
-              cameraControls.object.lookAt(0, 0, 0);
-              cameraControls.target.set(0, 0, 0);
-              cameraControls.update();
-            }
+            // if (
+            //   !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
+            // ) {
+            // cameraControls.object.position.set(10, 0, 5);
+            // cameraControls.object.lookAt(0, 0, 0);
+            // cameraControls.target.set(0, 0, 0);
+            // cameraControls.update();
+            // } else {
+            cameraControls.object.position.set(10, 5, 0);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+            // }
           }
           break;
         case 'f': // f (front)
         case 'F':
         case 'ㄹ':
-          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-            cameraControls.object.position.set(0, -10, 5);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          } else {
-            cameraControls.object.position.set(0, 5, 10);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          }
+          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          // cameraControls.object.position.set(0, -10, 5);
+          // cameraControls.object.lookAt(0, 0, 0);
+          // cameraControls.target.set(0, 0, 0);
+          // cameraControls.update();
+          // } else {
+          cameraControls.object.position.set(0, 5, 10);
+          cameraControls.object.lookAt(0, 0, 0);
+          cameraControls.target.set(0, 0, 0);
+          cameraControls.update();
+          // }
           break;
         case 'k': // k (back)
         case 'K':
@@ -278,26 +276,26 @@ export const useRendering = (props: UseRendering) => {
               multiKeyController.ㅍ.pressed) &&
             multiKeyController[event.key].pressed
           ) {
-            if (
-              !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
-            ) {
-              cameraControls.object.position.set(0, 10, 5);
-              cameraControls.object.lookAt(0, 0, 0);
-              cameraControls.target.set(0, 0, 0);
-              cameraControls.update();
-            } else {
-              cameraControls.object.position.set(0, 5, -10);
-              cameraControls.object.lookAt(0, 0, 0);
-              cameraControls.target.set(0, 0, 0);
-              cameraControls.update();
-            }
+            // if (
+            //   !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
+            // ) {
+            // cameraControls.object.position.set(0, 10, 5);
+            // cameraControls.object.lookAt(0, 0, 0);
+            // cameraControls.target.set(0, 0, 0);
+            // cameraControls.update();
+            // } else {
+            cameraControls.object.position.set(0, 5, -10);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+            // }
           }
           break;
         default:
           break;
       }
     },
-    [renderingOptions, multiKeyController],
+    [multiKeyController],
   );
 
   const handleCameraControlsShortcutUp = useCallback(

@@ -10,28 +10,24 @@ import {
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { RecordingDataType, RenderingDataType } from 'types/RP';
+import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
 import _ from 'lodash';
 import {
+  INITIAL_ANIMATING_DATA,
   INITIAL_CP_DATA,
   INITIAL_MAIN_DATA,
   INITIAL_RECORDING_DATA,
   INITIAL_RENDERING_DATA,
-  isClient,
 } from 'utils/const';
-import { ContextmenuType, LPModeType, MainDataType, ModalType } from '../types';
+import {
+  ContextmenuType,
+  LPModeType,
+  MainDataType,
+  ModalType,
+  PageInfoType,
+  PAGE_NAMES,
+} from '../types';
 
-const makeInitialData = ({ name, initialData }: { name: string; initialData: any }) => {
-  let result = _.clone(initialData);
-  if (isClient) {
-    try {
-      result = JSON.parse(localStorage.getItem(`${name}`) ?? '');
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  return result;
-};
 export enum StoreDataNames {
   mainData = 'mainData',
 }
@@ -46,12 +42,14 @@ export const storeModalInfo = makeVar<ModalType>({
   msg: '',
   isShow: false,
 });
+export const storePageInfo = makeVar<PageInfoType>({ page: PAGE_NAMES.shoot });
 // LP
 export const storeMainData = makeVar<MainDataType[]>(INITIAL_MAIN_DATA);
 export const storePages = makeVar<PagesType[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }]);
 export const storeSearchWord = makeVar<string>('');
 export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 // RP
+export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_DATA);
 export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
