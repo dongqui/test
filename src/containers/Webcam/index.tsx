@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { useVideoToImages } from 'hooks/RP/useVideoToImages';
-import { storeRecordingData } from 'lib/store';
+import { storePageInfo, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import { useRouter } from 'next/dist/client/router';
 import React, { useCallback, useEffect, useRef } from 'react';
@@ -12,9 +12,9 @@ export interface WebcamProps {
   videoUrl: string;
 }
 const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
-  const router = useRouter();
   const recordingData = useReactiveVar(storeRecordingData);
   const cutImages = useReactiveVar(storeCutImages);
+  const pageInfo = useReactiveVar(storePageInfo);
   const videoRef = useRef<HTMLVideoElement>(null);
   const showVideoRef = useRef<HTMLVideoElement>(null);
   const initialAction = useCallback(async () => {
@@ -27,12 +27,12 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
       }
       let duration: any = video.duration;
       if (duration == Infinity) {
-        duration = router?.query?.duration ?? 10;
+        duration = pageInfo?.duration ?? 10;
       }
       storeRecordingData({ ...recordingData, duration });
       storeCutImages([]);
     }
-  }, [recordingData, router?.query?.duration]);
+  }, [pageInfo?.duration, recordingData]);
   const controlPlay = useCallback(async () => {
     const video = showVideoRef.current;
     if (recordingData.isPlaying) {
