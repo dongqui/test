@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-import { storeRenderingData, storeMainData, storeCPData } from 'lib/store';
+import { storeRenderingData, storeMainData, storeCPData, storeAnimatingData } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { MIN_WIDTH } from 'styles/constants/panels';
 import classNames from 'classnames/bind';
@@ -21,6 +21,7 @@ const MainContainer: React.FC = () => {
   const mainData = useReactiveVar(storeMainData);
   const cpData = useReactiveVar(storeCPData);
   const renderingData = useReactiveVar(storeRenderingData);
+  const animatingData = useReactiveVar(storeAnimatingData);
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
     if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
@@ -44,7 +45,7 @@ const MainContainer: React.FC = () => {
     upperSection,
     controlPanel,
   } = useResizeRP();
-  useDebuggingData({ mainData, cpData, renderingData });
+  useDebuggingData({ mainData, cpData, renderingData, animatingData });
   return (
     <>
       <Rnd
