@@ -1,7 +1,7 @@
 import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
 import { MainDataType } from 'types';
 import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
-import { RenderingDataPropertyName, RenderingDataType } from 'types/RP';
+import { axisName, RenderingDataPropertyName, RenderingDataType } from 'types/RP';
 
 export const isDebug = false;
 export const isClient = typeof window !== 'undefined';
@@ -30,7 +30,7 @@ export const INITIAL_RENDERING_DATA: RenderingDataType = {
   angleX: 1.1,
   angleY: 1.1,
   angleZ: 1.1,
-  axis: 'Y-up',
+  axis: axisName.y,
   bone: true,
   joint: true,
   mesh: true,

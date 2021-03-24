@@ -32,6 +32,10 @@ export enum RenderingDataPropertyName {
   near = 'near',
   far = 'far',
 }
+export enum axisName {
+  y = 'y',
+  z = 'z',
+}
 export interface RenderingDataType {
   [RenderingDataPropertyName.playSpeed]: number;
   [RenderingDataPropertyName.isPlaying]: boolean;
@@ -51,7 +55,7 @@ export interface RenderingDataType {
   [RenderingDataPropertyName.angleX]: number;
   [RenderingDataPropertyName.angleY]: number;
   [RenderingDataPropertyName.angleZ]: number;
-  [RenderingDataPropertyName.axis]: 'Y-up' | 'Z-up';
+  [RenderingDataPropertyName.axis]: axisName;
   [RenderingDataPropertyName.bone]: boolean;
   [RenderingDataPropertyName.joint]: boolean;
   [RenderingDataPropertyName.mesh]: boolean;

@@ -8,7 +8,6 @@ import MainPage from './MainPage';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import { storeContextMenuInfo, storeModalInfo } from 'lib/store';
 import { GRAY200 } from 'styles/constants/common';
-import { Modal } from 'components/Modal';
 import { MODAL_TYPES } from 'types';
 import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
 import { BaseModal } from 'components/New_Modal';
