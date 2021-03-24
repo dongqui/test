@@ -72,6 +72,13 @@ const fnGetAnimationClip = (props: FnGetAnimationClip) => {
     _.includes(track.name, 'rotation') ? fnEulerToQuaternionTrack({ eulertrack: track }) : track,
   );
 
+  if (
+    startTimeIndex &&
+    endTimeIndex &&
+    duration < _.round((endTimeIndex - startTimeIndex + 1) * (1 / 30), 4)
+  ) {
+    duration = _.round((endTimeIndex - startTimeIndex + 1) * (1 / 30), 4);
+  }
   return new THREE.AnimationClip(name, duration, rotationConvertedTracks);
 };
 

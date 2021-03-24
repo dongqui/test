@@ -46,6 +46,7 @@ const MainContainer: React.FC = () => {
     controlPanel,
   } = useResizeRP();
   useDebuggingData({ mainData, cpData, renderingData, animatingData });
+
   return (
     <>
       <Rnd
