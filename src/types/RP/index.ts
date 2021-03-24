@@ -5,9 +5,6 @@ export interface RenderingOption {
   category: string;
 }
 export enum RenderingDataPropertyName {
-  playSpeed = 'playSpeed',
-  isPlaying = 'isPlaying',
-  playDirection = 'playDirection',
   positionX = 'positionX',
   positionY = 'positionY',
   positionZ = 'positionZ',
@@ -33,9 +30,6 @@ export enum RenderingDataPropertyName {
   far = 'far',
 }
 export interface RenderingDataType {
-  [RenderingDataPropertyName.playSpeed]: number;
-  [RenderingDataPropertyName.isPlaying]: boolean;
-  [RenderingDataPropertyName.playDirection]: -1 | 1;
   [RenderingDataPropertyName.positionX]: number;
   [RenderingDataPropertyName.positionY]: number;
   [RenderingDataPropertyName.positionZ]: number;
@@ -74,4 +68,15 @@ export interface RecordingDataType {
   motionName: string;
   isRecording?: boolean;
   count?: number | undefined;
+}
+
+type PlayDirection = 1 | -1;
+
+export interface AnimatingDataType {
+  isPlaying: boolean;
+  playDirection: PlayDirection;
+  playSpeed: number;
+  startTimeIndex: number;
+  endTimeIndex: number;
+  currentTimeIndex: number;
 }

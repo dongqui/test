@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
 import { ShootLayerType, ShootTrackType } from 'types';
-import { storeMainData, storeRenderingData } from 'lib/store';
+import { storeAnimatingData, storeMainData, storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 
 // 바꿔야 함
@@ -18,6 +18,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
   // store data
   const mainData = useReactiveVar(storeMainData);
   const renderingData = useReactiveVar(storeRenderingData);
+  const animatingData = useReactiveVar(storeAnimatingData);
   // component state
   const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
@@ -40,30 +41,29 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     id,
     fileUrl,
     setMixer,
-    renderingOptions,
     setSkeletonHelper,
     setAnimations,
   });
 
   // 바꿔야 함
-  useEffect(() => {
-    if (renderingData.isPlaying) {
-      if (!_.isUndefined(mixer)) {
-        mixer.timeScale = 0.5 * renderingData.playSpeed * renderingData.playDirection;
-      }
-      currentAction?.play();
-    } else {
-      if (!_.isUndefined(mixer)) {
-        mixer.timeScale = 0;
-      }
-    }
-  }, [
-    currentAction,
-    mixer,
-    renderingData.isPlaying,
-    renderingData.playDirection,
-    renderingData.playSpeed,
-  ]);
+  // useEffect(() => {
+  //   if (renderingData.isPlaying) {
+  //     if (!_.isUndefined(mixer)) {
+  //       mixer.timeScale = 0.5 * renderingData.playSpeed * renderingData.playDirection;
+  //     }
+  //     currentAction?.play();
+  //   } else {
+  //     if (!_.isUndefined(mixer)) {
+  //       mixer.timeScale = 0;
+  //     }
+  //   }
+  // }, [
+  //   currentAction,
+  //   mixer,
+  //   renderingData.isPlaying,
+  //   renderingData.playDirection,
+  //   renderingData.playSpeed,
+  // ]);
   //
 
   return <RenderingPresenter id={id} />;
