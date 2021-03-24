@@ -261,7 +261,9 @@ export const useLPControl = ({
     ({ data }) => {
       let result = _.clone(data);
       if (!_.isEmpty(searchWord)) {
-        result = _.filter(mainData, (o) => _.includes(o.name, searchWord));
+        result = _.filter(mainData, (o) =>
+          _.includes(o.name.toLowerCase(), searchWord.toLowerCase()),
+        );
       }
       return result;
     },

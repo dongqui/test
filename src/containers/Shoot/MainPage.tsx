@@ -30,12 +30,16 @@ const MainContainer: React.FC = () => {
     return _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
   }, [mainData]);
   const handleDrop = useCallback(() => {
-    storeMainData(
-      _.map(mainData, (item) => ({
-        ...item,
-        isVisualized: item.isDragging,
-      })),
-    );
+    if (
+      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type, FILE_TYPES.file)
+    ) {
+      storeMainData(
+        _.map(mainData, (item) => ({
+          ...item,
+          isVisualized: item.isDragging,
+        })),
+      );
+    }
   }, [mainData]);
   const {
     handleResizeStop,

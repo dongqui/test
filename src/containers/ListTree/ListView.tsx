@@ -1,18 +1,12 @@
+import React, { useMemo, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useContextmenu } from 'hooks/common/useContextmenu';
 import { useShortcut } from 'hooks/common/useShortcut';
 import { useLPControl } from 'hooks/LP/useLPControl';
 import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import {
-  storeContextMenuInfo,
-  storeLPMode,
-  storeMainData,
-  storePages,
-  storeSearchWord,
-} from 'lib/store';
+import { storeContextMenuInfo, storeMainData, storePages, storeSearchWord } from 'lib/store';
 import _ from 'lodash';
-import React, { useMemo, useRef } from 'react';
 import { fnFilterArrayByHierarchy } from 'utils/LP/fnFilterArrayByHierarchy';
 import { fnMakeSelection } from 'utils/LP/fnMakeSelection';
 import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';

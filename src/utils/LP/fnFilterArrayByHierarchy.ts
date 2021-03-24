@@ -1,4 +1,4 @@
-import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, MainDataType } from 'types';
 import _ from 'lodash';
 
 interface fnFilterArrayByHierarchyProps {
@@ -9,7 +9,9 @@ export const fnFilterArrayByHierarchy = ({ data, searchWord }: fnFilterArrayByHi
   const fileKeys = _.map(
     _.filter(
       data,
-      (item) => _.isEqual(item.type, FILE_TYPES.file) && _.includes(item.name, searchWord),
+      (item) =>
+        _.isEqual(item.type, FILE_TYPES.file) &&
+        _.includes(item.name.toLowerCase(), searchWord.toLowerCase()),
     ),
     (item) => item.key,
   );
