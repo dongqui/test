@@ -21,6 +21,7 @@ export enum MODAL_TYPES {
   alert = 'alert',
   input = 'input',
   loading = 'loading',
+  confirm = 'confirm',
 }
 export const ENABLE_VIDEO_FORMATS = [
   VIDEO_FORMAT_TYPES.mp4,
@@ -134,4 +135,10 @@ export interface ShootLayerType {
   name: string;
   key: string;
   tracks: ShootTrackType[];
+}
+export interface PageInfoType {
+  page: PAGE_NAMES;
+  videoUrl?: string;
+  extension?: string;
+  duration?: number;
 }
