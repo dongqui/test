@@ -11,7 +11,7 @@ interface FnSetPlayState {
   playSpeed: number;
 }
 /**
- * 에니메이션 플레이 상태를 변경합니다.
+ * 애니메이션 플레이 상태를 변경합니다.
  *
  * @param mixer - animation mixer
  * @param currentAction - 현재 mixer 에 등록된 animation action

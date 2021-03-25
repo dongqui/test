@@ -7,7 +7,7 @@ interface FnSetPlayDirection {
   playDirection: PlayDirection;
 }
 /**
- * 에니메이션 mixer 의 재생 방향을 변경합니다.
+ * 애니메이션 mixer 의 재생 방향을 변경합니다.
  *
  * @param mixer - animation mixer
  * @param playDirection - 재생 방향
