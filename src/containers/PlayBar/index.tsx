@@ -1,5 +1,5 @@
 import { useReactiveVar } from '@apollo/client';
-import { RENDERING_DATA } from 'lib/store';
+import { storeAnimatingData } from 'lib/store';
 import _ from 'lodash';
 import React from 'react';
 import { Dropdown } from './Dropdown';
@@ -12,7 +12,7 @@ import { PlayBox } from './PlayBox';
 export interface PlayBarProps {}
 
 const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
-  const renderingData = useReactiveVar(RENDERING_DATA);
+  const animatingData = useReactiveVar(storeAnimatingData);
   return (
     <S.PlayBarWrapper>
       <LayerSelect
@@ -39,38 +39,38 @@ const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
           <Dropdown
             data={[
               {
-                isSelected: _.isEqual(renderingData.playSpeed, 0.25),
+                isSelected: _.isEqual(animatingData.playSpeed, 0.25),
                 key: 0.25,
                 name: '0.25x',
               },
               {
-                isSelected: _.isEqual(renderingData.playSpeed, 0.5),
+                isSelected: _.isEqual(animatingData.playSpeed, 0.5),
                 key: 0.5,
                 name: '0.5x',
               },
               {
-                isSelected: _.isEqual(renderingData.playSpeed, 1),
+                isSelected: _.isEqual(animatingData.playSpeed, 1),
                 key: 1,
                 name: '1x',
               },
               {
-                isSelected: _.isEqual(renderingData.playSpeed, 1.25),
+                isSelected: _.isEqual(animatingData.playSpeed, 1.25),
                 key: 1.25,
                 name: '1.25x',
               },
               {
-                isSelected: _.isEqual(renderingData.playSpeed, 1.75),
+                isSelected: _.isEqual(animatingData.playSpeed, 1.75),
                 key: 1.75,
                 name: '1.75x',
               },
               {
-                isSelected: _.isEqual(renderingData.playSpeed, 2),
+                isSelected: _.isEqual(animatingData.playSpeed, 2),
                 key: 2,
                 name: '2x',
               },
             ]}
             onSelect={({ key }) => {
-              RENDERING_DATA({ ...renderingData, playSpeed: key });
+              storeAnimatingData({ ...animatingData, playSpeed: key });
             }}
           />
         </S.PlayBarDropdownWrapper>

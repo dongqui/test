@@ -6,6 +6,7 @@ import _ from 'lodash';
 import { useRouter } from 'next/dist/client/router';
 import React from 'react';
 import * as S from './PlayBarStyles';
+import { storePageInfo } from 'lib/store';
 
 export interface ModeSelectProps {
   data: { key: string; mode: 'camera' | 'edit'; isSelected: boolean }[];
@@ -19,7 +20,6 @@ const ModeSelectComponent: React.FC<ModeSelectProps> = ({
   ],
   onSelect = () => {},
 }) => {
-  const router = useRouter();
   return (
     <S.ModeSelectWrapper>
       {_.map(data, (item, index) => (
@@ -32,9 +32,7 @@ const ModeSelectComponent: React.FC<ModeSelectProps> = ({
           {_.isEqual(item.key, 'camera') && (
             <S.CameraIconWrapper
               onClick={() => {
-                router.push({
-                  pathname: `/${PAGE_NAMES.record}`,
-                });
+                storePageInfo({ page: PAGE_NAMES.record });
               }}
             >
               <CameraIcon />

@@ -1,0 +1,28 @@
+@import 'styles/libraries/_colors';
+@import 'styles/libraries/_mixins';
+@import 'styles/libraries/_functions';
+
+.wrapper {
+  border-radius: 8px;
+  padding: 16px;
+  background-color: $gray600;
+  display: inline-block;
+}
+
+.inner {
+  @include reset-list-style();
+}
+
+.item {
+  cursor: pointer;
+  margin-bottom: 8px;
+
+  &:hover {
+    background-color: $primaryColor;
+    color: #fff;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}

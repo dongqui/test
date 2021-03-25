@@ -21,7 +21,7 @@ const fnGetBoneTimes = (props: FnGetBoneTimes) => {
   const { positionTrack, rotationTrack, scaleTrack } = props;
   const targetTimes: Array<number[]> = [positionTrack.times, rotationTrack.times, scaleTrack.times];
 
-  return _.union(targetTimes).sort();
+  return _.union(...targetTimes).sort((a, b) => a - b);
 };
 
 export default fnGetBoneTimes;

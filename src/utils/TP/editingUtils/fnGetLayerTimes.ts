@@ -21,7 +21,7 @@ const fnGetLayerTimes = (props: FnGetLayerTimes) => {
   _.forEach(targetLayer, (track) => {
     targetTimes.push(track.times);
   });
-  return _.union(...targetTimes).sort();
+  return _.union(...targetTimes).sort((a, b) => a - b);
 };
 
 export default fnGetLayerTimes;

@@ -21,6 +21,7 @@ export enum MODAL_TYPES {
   alert = 'alert',
   input = 'input',
   loading = 'loading',
+  confirm = 'confirm',
 }
 export const ENABLE_VIDEO_FORMATS = [
   VIDEO_FORMAT_TYPES.mp4,
@@ -63,7 +64,7 @@ export enum MAINDATA_PROPERTY_TYPES {
   baseLayer = 'baseLayer',
   layers = 'layers',
 }
-export enum LPMODE_TYPES {
+export enum LPModeType {
   listview = 'listview',
   iconview = 'iconview',
 }
@@ -76,7 +77,7 @@ export interface ShortcutTypes {
   ctrlKey?: boolean;
   event: Function;
 }
-export interface ContextmenuTypes {
+export interface ContextmenuType {
   data?: ContextmenuDataTypes[];
   isShow: boolean;
   top: number;
@@ -84,7 +85,7 @@ export interface ContextmenuTypes {
   onClick: ({ key }: { key: string }) => void;
 }
 
-export interface MainDataTypes {
+export interface MainDataType {
   [MAINDATA_PROPERTY_TYPES.key]: string;
   [MAINDATA_PROPERTY_TYPES.name]: string;
   [MAINDATA_PROPERTY_TYPES.type]: FILE_TYPES;
@@ -118,7 +119,7 @@ export interface skeletonHelpersTypes {
   time?: string;
   bones?: BonesTypes[];
 }
-export interface ModalTypes {
+export interface ModalType {
   msg: string;
   isShow: boolean;
   type?: MODAL_TYPES;
@@ -131,6 +132,13 @@ export interface ShootTrackType {
 }
 
 export interface ShootLayerType {
+  name: string;
   key: string;
   tracks: ShootTrackType[];
+}
+export interface PageInfoType {
+  page: PAGE_NAMES;
+  videoUrl?: string;
+  extension?: string;
+  duration?: number;
 }

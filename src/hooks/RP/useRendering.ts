@@ -20,9 +20,7 @@ import {
   fnCreateScene,
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
-import { RenderingOption } from '../../types/RP';
 import { useHistory } from './useHistory';
-import { fnGetInterpolatedTrackLinear } from 'utils/TP/editingUtils';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -30,13 +28,12 @@ interface UseRendering {
   id: string;
   fileUrl?: string;
   setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
-  renderingOptions: RenderingOption[] | undefined;
   setSkeletonHelper: Dispatch<SetStateAction<THREE.SkeletonHelper | undefined>>;
   setAnimations: Dispatch<SetStateAction<THREE.AnimationClip[]>>;
 }
 
 export const useRendering = (props: UseRendering) => {
-  const { id, fileUrl, setMixer, renderingOptions, setSkeletonHelper, setAnimations } = props;
+  const { id, fileUrl, setMixer, setSkeletonHelper, setAnimations } = props;
   const [currentBone, setCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
   const [contents, setContents] = useState<
     Array<THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D>
@@ -183,47 +180,47 @@ export const useRendering = (props: UseRendering) => {
         case 't': // t (top)
         case 'T':
         case 'ㅅ':
-          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-            cameraControls.object.position.set(0, -5, 10);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          } else {
-            cameraControls.object.position.set(0, 10, 0);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          }
+          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          // cameraControls.object.position.set(0, -5, 10);
+          // cameraControls.object.lookAt(0, 0, 0);
+          // cameraControls.target.set(0, 0, 0);
+          // cameraControls.update();
+          // } else {
+          cameraControls.object.position.set(0, 10, 0);
+          cameraControls.object.lookAt(0, 0, 0);
+          cameraControls.target.set(0, 0, 0);
+          cameraControls.update();
+          // }
           break;
         case 'b': // b (bottom)
         case 'B':
         case 'ㅠ':
-          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-            cameraControls.object.position.set(0, -5, -10);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          } else {
-            cameraControls.object.position.set(0, -10, 0);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          }
+          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          // cameraControls.object.position.set(0, -5, -10);
+          // cameraControls.object.lookAt(0, 0, 0);
+          // cameraControls.target.set(0, 0, 0);
+          // cameraControls.update();
+          // } else {
+          cameraControls.object.position.set(0, -10, 0);
+          cameraControls.object.lookAt(0, 0, 0);
+          cameraControls.target.set(0, 0, 0);
+          cameraControls.update();
+          // }
           break;
         case 'l': // l (left)
         case 'L':
         case 'ㅣ':
-          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-            cameraControls.object.position.set(-10, 0, 5);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          } else {
-            cameraControls.object.position.set(-10, 5, 0);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          }
+          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          // cameraControls.object.position.set(-10, 0, 5);
+          // cameraControls.object.lookAt(0, 0, 0);
+          // cameraControls.target.set(0, 0, 0);
+          // cameraControls.update();
+          // } else {
+          cameraControls.object.position.set(-10, 5, 0);
+          cameraControls.object.lookAt(0, 0, 0);
+          cameraControls.target.set(0, 0, 0);
+          cameraControls.update();
+          // }
           break;
         case 'r': // r (right)
         case 'R':
@@ -237,35 +234,35 @@ export const useRendering = (props: UseRendering) => {
               multiKeyController.ㅍ.pressed) &&
             multiKeyController[event.key].pressed
           ) {
-            if (
-              !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
-            ) {
-              cameraControls.object.position.set(10, 0, 5);
-              cameraControls.object.lookAt(0, 0, 0);
-              cameraControls.target.set(0, 0, 0);
-              cameraControls.update();
-            } else {
-              cameraControls.object.position.set(10, 5, 0);
-              cameraControls.object.lookAt(0, 0, 0);
-              cameraControls.target.set(0, 0, 0);
-              cameraControls.update();
-            }
+            // if (
+            //   !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
+            // ) {
+            // cameraControls.object.position.set(10, 0, 5);
+            // cameraControls.object.lookAt(0, 0, 0);
+            // cameraControls.target.set(0, 0, 0);
+            // cameraControls.update();
+            // } else {
+            cameraControls.object.position.set(10, 5, 0);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+            // }
           }
           break;
         case 'f': // f (front)
         case 'F':
         case 'ㄹ':
-          if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-            cameraControls.object.position.set(0, -10, 5);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          } else {
-            cameraControls.object.position.set(0, 5, 10);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-          }
+          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
+          // cameraControls.object.position.set(0, -10, 5);
+          // cameraControls.object.lookAt(0, 0, 0);
+          // cameraControls.target.set(0, 0, 0);
+          // cameraControls.update();
+          // } else {
+          cameraControls.object.position.set(0, 5, 10);
+          cameraControls.object.lookAt(0, 0, 0);
+          cameraControls.target.set(0, 0, 0);
+          cameraControls.update();
+          // }
           break;
         case 'k': // k (back)
         case 'K':
@@ -279,26 +276,26 @@ export const useRendering = (props: UseRendering) => {
               multiKeyController.ㅍ.pressed) &&
             multiKeyController[event.key].pressed
           ) {
-            if (
-              !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
-            ) {
-              cameraControls.object.position.set(0, 10, 5);
-              cameraControls.object.lookAt(0, 0, 0);
-              cameraControls.target.set(0, 0, 0);
-              cameraControls.update();
-            } else {
-              cameraControls.object.position.set(0, 5, -10);
-              cameraControls.object.lookAt(0, 0, 0);
-              cameraControls.target.set(0, 0, 0);
-              cameraControls.update();
-            }
+            // if (
+            //   !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
+            // ) {
+            // cameraControls.object.position.set(0, 10, 5);
+            // cameraControls.object.lookAt(0, 0, 0);
+            // cameraControls.target.set(0, 0, 0);
+            // cameraControls.update();
+            // } else {
+            cameraControls.object.position.set(0, 5, -10);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+            // }
           }
           break;
         default:
           break;
       }
     },
-    [renderingOptions, multiKeyController],
+    [multiKeyController],
   );
 
   const handleCameraControlsShortcutUp = useCallback(
@@ -388,6 +385,11 @@ export const useRendering = (props: UseRendering) => {
     // rendering할 div요소 선택
     const renderingDiv = document.getElementById(id);
 
+    // 우클릭 메뉴 -> context menu component 개발 후 구현
+    // renderingDiv?.addEventListener('contextmenu', (e) => {
+    //   console.log('contextmenu e: ', e);
+    // });
+
     if (renderingDiv) {
       // scene 생성 및 설정
       const scene = fnCreateScene();
@@ -396,6 +398,14 @@ export const useRendering = (props: UseRendering) => {
       const camera = fnCreateCamera();
       // renderer 생성 및 설정
       const renderer = fnCreateRenderer({ renderingDiv });
+
+      // initial canvas resize
+      if (fnResizeRendererToDisplaySize({ renderer, renderingDiv })) {
+        const canvas = renderer.domElement;
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+      }
+
       // scene에 조명 추가
       fnAddLights({ scene });
       // scene에 바닥 추가
@@ -478,16 +488,6 @@ export const useRendering = (props: UseRendering) => {
             // skeleton helper 생성 및 scene에 추가
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
             setSkeletonHelper(innerSkeletonHelper);
-
-            // const targetTimes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-            // const track = {
-            //   name: 'dummy',
-            //   times: [3, 5, 8],
-            //   values: [70, 71, 72, 80, 81, 82, 90, 91, 92],
-            //   interpolation: 'linear',
-            // };
-            // const interpolatedTrack = fnGetInterpolatedTrackLinear({ targetTimes, track });
-            // console.log('interpolatedTrack: ', interpolatedTrack);
 
             // eslint-disable-next-line no-console
             console.log('skeletonHelper: ', innerSkeletonHelper);

@@ -1,9 +1,9 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import _ from 'lodash';
 import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-import { RENDERING_DATA, MAIN_DATA } from 'lib/store';
+import { storeRenderingData, storeMainData, storeCPData, storeAnimatingData } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { MIN_WIDTH } from 'styles/constants/panels';
 import classNames from 'classnames/bind';
@@ -12,43 +12,48 @@ import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
 import { useResizeRP } from 'hooks/RP/useResizeRP';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
+import { useDispatch } from 'react-redux';
+import { useDebuggingData } from 'hooks/common/useDebuggingData';
 
 const cx = classNames.bind(styles);
 
 const MainContainer: React.FC = () => {
-  const mainData = useReactiveVar(MAIN_DATA);
-  const renderingData = useReactiveVar(RENDERING_DATA);
+  const mainData = useReactiveVar(storeMainData);
+  const cpData = useReactiveVar(storeCPData);
+  const renderingData = useReactiveVar(storeRenderingData);
+  const animatingData = useReactiveVar(storeAnimatingData);
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
+    if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
+      return visualizedRow?.url;
+    }
     return _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
+  }, [mainData]);
+  const visualizedInfo = useMemo(() => {
+    const visualizedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
+    let result = {
+      visualizedName: visualizedRow?.name,
+      visualizedBaseLayer: visualizedRow?.baseLayer,
+      visualizedLayers: visualizedRow?.layers,
+    };
+    if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
+      const childMotion = _.find(mainData, [MAINDATA_PROPERTY_TYPES.parentKey, visualizedRow?.key]);
+      result = {
+        visualizedName: childMotion?.name,
+        visualizedBaseLayer: childMotion?.baseLayer,
+        visualizedLayers: childMotion?.layers,
+      };
+    }
+    return result;
   }, [mainData]);
   const handleDrop = useCallback(() => {
     if (
-      _.isEqual(
-        _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type,
-        FILE_TYPES.motion,
-      )
+      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type, FILE_TYPES.file)
     ) {
-      MAIN_DATA(
+      storeMainData(
         _.map(mainData, (item) => ({
           ...item,
           isVisualized: item.isDragging,
-        })),
-      );
-    }
-    if (
-      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type, FILE_TYPES.file)
-    ) {
-      const targetKey = _.filter(mainData, (item) =>
-        _.isEqual(
-          item.parentKey,
-          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.key,
-        ),
-      )?.[0]?.key;
-      MAIN_DATA(
-        _.map(mainData, (item) => ({
-          ...item,
-          isVisualized: _.isEqual(item.key, targetKey) ? true : false,
         })),
       );
     }
@@ -61,6 +66,8 @@ const MainContainer: React.FC = () => {
     upperSection,
     controlPanel,
   } = useResizeRP();
+  useDebuggingData({ mainData, cpData, renderingData, animatingData });
+
   return (
     <>
       <Rnd
@@ -92,11 +99,9 @@ const MainContainer: React.FC = () => {
           <RenderingController
             id="renderingDiv"
             fileUrl={fileUrl}
-            isPlaying={renderingData.isPlaying}
-            playDirection={renderingData.playDirection}
-            playSpeed={renderingData.playSpeed}
-            baseLayer={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
-            layers={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.layers}
+            visualizedName={visualizedInfo?.visualizedName}
+            visualizedBaseLayer={visualizedInfo.visualizedBaseLayer}
+            visualizedLayers={visualizedInfo.visualizedLayers}
           />
         </Rnd>
         <Rnd

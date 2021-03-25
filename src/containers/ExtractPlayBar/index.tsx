@@ -1,5 +1,5 @@
 import { useReactiveVar } from '@apollo/client';
-import { RECORDING_DATA } from 'lib/store';
+import { storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useMemo } from 'react';
 import { STANDARD_WIDTH } from 'styles/constants/common';
@@ -11,7 +11,7 @@ import { PlayBox } from './PlayBox';
 export interface ExtractPlayBarProps {}
 
 const ExtractPlayBarComponent: React.FC<ExtractPlayBarProps> = ({}) => {
-  const recordingData = useReactiveVar(RECORDING_DATA);
+  const recordingData = useReactiveVar(storeRecordingData);
   const now = useMemo(
     () => (recordingData.duration * (recordingData.rangeBoxInfo.barX / STANDARD_WIDTH)).toFixed(1),
     [recordingData.duration, recordingData.rangeBoxInfo.barX],
@@ -37,7 +37,7 @@ const ExtractPlayBarComponent: React.FC<ExtractPlayBarProps> = ({}) => {
         <PlayBox />
       </S.PlayBarPlayBoxWrapper>
       <S.SelectWrapper>
-        <ModeSelect
+        {/* <ModeSelect
           data={[
             {
               isSelected: true,
@@ -51,7 +51,7 @@ const ExtractPlayBarComponent: React.FC<ExtractPlayBarProps> = ({}) => {
             },
           ]}
           onSelect={() => {}}
-        />
+        /> */}
       </S.SelectWrapper>
     </S.PlayBarWrapper>
   );

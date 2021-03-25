@@ -1,50 +1,45 @@
 import { useReactiveVar } from '@apollo/client';
-import { CP_DATA_PROPERTY_NAMES } from 'types/CP';
-import { CP_DATA } from 'lib/store';
+import { storeRenderingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useMemo } from 'react';
 import * as S from './CPListTreeStyles';
+import { RenderingDataPropertyName } from 'types/RP';
 
+const MIN = 0;
+const MAX = 100;
 export interface CPListRowSliderProps {
   rowKey: string;
-  text: string;
-  min?: number;
-  max?: number;
-  value?: number;
+  name: string;
+  slider?: RenderingDataPropertyName.near | RenderingDataPropertyName.far;
 }
-
 const CPListRowSliderComponent: React.FC<CPListRowSliderProps> = ({
   rowKey,
-  text = 'Near',
-  min = 0,
-  max = 100,
+  name,
+  slider = RenderingDataPropertyName.near,
 }) => {
-  const cpData = useReactiveVar(CP_DATA);
-  const value: number = useMemo(
-    () => _.find(cpData, [CP_DATA_PROPERTY_NAMES.key, rowKey])?.value ?? 0,
-    [cpData, rowKey],
-  );
+  const renderingData = useReactiveVar(storeRenderingData);
+  const value = useMemo(() => renderingData[slider], [renderingData, slider]);
   const onChange = useCallback(
     (e) => {
-      CP_DATA(
-        _.map(cpData, (item) => ({
-          ...item,
-          value: _.isEqual(item.key, rowKey) ? e.target.valueAsNumber : item?.value,
-        })),
-      );
+      storeRenderingData({
+        ...renderingData,
+        [slider]: e.target.valueAsNumber,
+      });
     },
-    [cpData, rowKey],
+    [renderingData, slider],
   );
   return (
     <S.CPListRowParentWrapper>
       <S.CPListRowInputWrapper>
-        {text}
+        {name}
         <S.CPListRowInputsWrapper>
-          <S.SliderIndicator left={Math.round((value / max) * 100) - 6}>{value}</S.SliderIndicator>
+          <S.SliderIndicator left={Math.round(((value as any) / MAX) * 100) - 6}>
+            {value}
+          </S.SliderIndicator>
           <S.CPListRowSliderWrapper
-            min={min}
-            max={max}
-            value={value}
+            min={MIN}
+            max={MAX}
+            value={value as any}
             onChange={onChange}
           ></S.CPListRowSliderWrapper>
         </S.CPListRowInputsWrapper>
