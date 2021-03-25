@@ -14,7 +14,7 @@ interface FnAddJointMeshes {
   innerMixer: THREE.AnimationMixer;
   innerCurrentBone: THREE.Bone | undefined;
   setInnerCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
-  setCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
+  setCurrentBoneIndex: Dispatch<SetStateAction<number>>;
 }
 
 /**
@@ -29,7 +29,7 @@ interface FnAddJointMeshes {
  * @param innerMixer - The animation mixer defined within the useRendering.ts file (not the global state mixer)
  * @param innerCurrentBone - The current selected bone
  * @param setInnerCurrentBone - A function setting the innerCurrentBone
- * @param setCurrentBone - A function setting the currentBone
+ * @param setCurrentBoneIndex - A function setting the current Bone index
  *
  */
 const fnAddJointMeshes = (props: FnAddJointMeshes) => {
@@ -42,7 +42,7 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
     innerMixer,
     innerCurrentBone,
     setInnerCurrentBone,
-    setCurrentBone,
+    setCurrentBoneIndex,
   } = props;
   const innerBones: THREE.Bone[] = [];
   _.forEach(skeletonHelper.bones, (bone) => {
@@ -72,7 +72,9 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
       if (innerCurrentBone !== event.object.parent) {
         transformControls.attach(event.object.parent);
         setInnerCurrentBone(event.object.parent);
-        setCurrentBone(event.object.parent);
+        setCurrentBoneIndex(
+          _.findIndex(skeletonHelper.bones, (bone) => bone === event.object.parent),
+        );
         dragControls.enabled = false;
       }
       if (innerMixer) {

@@ -12,6 +12,11 @@ import {
   fnSetPlayDirection,
   fnGoToSpecificTimeIndex,
 } from 'utils/RP/animatingUtils';
+import {
+  fnChangeBonePosition,
+  fnChangeBoneRotation,
+  fnChangeBoneScale,
+} from 'utils/CP/transformUtils';
 
 export interface RenderingControllerProps {
   id: string;
@@ -35,7 +40,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
   const [animations, setAnimations] = useState<THREE.AnimationClip[]>([]);
   const [currentAction, setCurrentAction] = useState<THREE.AnimationAction | undefined>(undefined);
-  const [currentBone, setCurrentBone] = useState<THREE.Bone | undefined>(undefined);
+  const [currentBoneIndex, setCurrentBoneIndex] = useState<number>(0);
 
   useRendering({
     id,
@@ -43,7 +48,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     setMixer,
     setSkeletonHelper,
     setAnimations,
-    setCurrentBone,
+    setCurrentBoneIndex,
   });
 
   const { startTimeIndex, endTimeIndex } = animatingData;
@@ -86,12 +91,99 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     }
   }, [currentAction, currentTimeIndex, mixer]);
 
-  const {} = renderingData;
+  const currentBone = useMemo(() => {
+    if (skeletonHelper) {
+      return skeletonHelper.bones[currentBoneIndex];
+    }
+  }, [currentBoneIndex, skeletonHelper]);
 
-  // rendering option 적용 로직
-  useEffect(() => {
-    // console.log('currentBone: ', currentBone);
-  }, [currentBone]);
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     storeRenderingData({
+  //       ...renderingData,
+  //       ['positionX']: currentBone.position.x,
+  //       ['positionY']: currentBone.position.y,
+  //       ['positionZ']: currentBone.position.z,
+  //       ['rotationX']: currentBone.rotation.x,
+  //       ['rotationY']: currentBone.rotation.y,
+  //       ['rotationZ']: currentBone.rotation.z,
+  //       ['scaleX']: currentBone.scale.x,
+  //       ['scaleY']: currentBone.scale.y,
+  //       ['scaleZ']: currentBone.scale.z,
+  //     });
+  //   }
+  // }, [currentBone, renderingData]);
+
+  const {
+    positionX,
+    positionY,
+    positionZ,
+    rotationX,
+    rotationY,
+    rotationZ,
+    scaleX,
+    scaleY,
+    scaleZ,
+  } = renderingData;
+
+  // bone transform 적용 로직
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBonePosition({ targetBone: currentBone, axis: 'x', value: positionX });
+  //   }
+  // }, [currentBone, positionX]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBonePosition({ targetBone: currentBone, axis: 'y', value: positionY });
+  //   }
+  // }, [currentBone, positionY]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBonePosition({ targetBone: currentBone, axis: 'z', value: positionZ });
+  //   }
+  // }, [currentBone, positionZ]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneRotation({ targetBone: currentBone, axis: 'x', value: rotationX });
+  //   }
+  // }, [currentBone, rotationX]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneRotation({ targetBone: currentBone, axis: 'y', value: rotationY });
+  //   }
+  // }, [currentBone, rotationY]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneRotation({ targetBone: currentBone, axis: 'z', value: rotationZ });
+  //   }
+  // }, [currentBone, rotationZ]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneScale({ targetBone: currentBone, axis: 'x', value: scaleX });
+  //   }
+  // }, [currentBone, scaleX]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneScale({ targetBone: currentBone, axis: 'y', value: scaleY });
+  //   }
+  // }, [currentBone, scaleY]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneScale({ targetBone: currentBone, axis: 'z', value: scaleZ });
+  //   }
+  // }, [currentBone, scaleX, scaleZ]);
+
+  // camera option 적용 로직
+  const { locationX, locationY, locationZ, angleX, angleY, angleZ } = renderingData;
+  useEffect(() => {});
 
   return <RenderingPresenter id={id} />;
 };
