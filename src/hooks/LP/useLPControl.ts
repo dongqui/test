@@ -139,17 +139,49 @@ export const useLPControl = ({
         ...item,
         isClicked: _.isEqual(item.key, targetIcon?.id),
       }));
-      const data = _.isEmpty(targetIcon)
-        ? [
-            { key: '0', name: 'New Group' },
-            { key: '3', name: 'Paste' },
-          ]
-        : [
-            { key: '1', name: 'Copy' },
-            { key: '2', name: 'Delete' },
-            { key: '4', name: 'Visualization' },
-            { key: '5', name: 'Edit name' },
-          ];
+      let data = [
+        { key: '0', name: 'New Group' },
+        { key: '3', name: 'Paste' },
+      ];
+      if (
+        _.isEqual(
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
+          FILE_TYPES.folder,
+        )
+      ) {
+        data = [
+          { key: '1', name: 'Copy' },
+          { key: '2', name: 'Delete' },
+          { key: '5', name: 'Edit name' },
+        ];
+      }
+      if (
+        _.isEqual(
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
+          FILE_TYPES.file,
+        )
+      ) {
+        data = [
+          { key: '1', name: 'Copy' },
+          { key: '2', name: 'Delete' },
+          { key: '4', name: 'Visualization' },
+          { key: '5', name: 'Edit name' },
+          { key: '6', name: 'Add motion' },
+        ];
+      }
+      if (
+        _.isEqual(
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
+          FILE_TYPES.motion,
+        )
+      ) {
+        data = [
+          { key: '1', name: 'Copy' },
+          { key: '2', name: 'Delete' },
+          { key: '4', name: 'Visualization' },
+          { key: '5', name: 'Edit name' },
+        ];
+      }
       storeContextMenuInfo({
         isShow: true,
         top,
@@ -224,6 +256,30 @@ export const useLPControl = ({
             case '5':
               onEdit({ mainData: newMainData });
               break;
+            case '6':
+              if (
+                _.isEqual(
+                  _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
+                  FILE_TYPES.file,
+                )
+              ) {
+                const motion: MainDataType | undefined = _.find(mainData, [
+                  MAINDATA_PROPERTY_TYPES.parentKey,
+                  targetIcon?.id,
+                ]);
+                if (motion) {
+                  storeMainData(
+                    _.concat(mainData, {
+                      ...motion,
+                      key: uuidv4(),
+                      name: 'empty motion',
+                      baseLayer: [],
+                      layers: [],
+                    }),
+                  );
+                }
+              }
+              break;
             default:
               break;
           }
@@ -261,7 +317,9 @@ export const useLPControl = ({
     ({ data }) => {
       let result = _.clone(data);
       if (!_.isEmpty(searchWord)) {
-        result = _.filter(mainData, (o) => _.includes(o.name, searchWord));
+        result = _.filter(mainData, (o) =>
+          _.includes(o.name.toLowerCase(), searchWord.toLowerCase()),
+        );
       }
       return result;
     },

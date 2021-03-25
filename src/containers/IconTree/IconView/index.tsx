@@ -1,10 +1,9 @@
 import { useReactiveVar } from '@apollo/client';
 import useContextMenu from 'hooks/common/useContextMenu';
 import _ from 'lodash';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import {
   storeContextMenuInfo,
-  storeLPMode,
   storeMainData,
   storePages,
   storeSearchWord,

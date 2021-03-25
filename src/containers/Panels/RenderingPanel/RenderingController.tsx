@@ -3,7 +3,7 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { ShootLayerType, ShootTrackType } from 'types';
+import { FILE_TYPES, ShootLayerType, ShootTrackType } from 'types';
 import { storeAnimatingData, storeMainData, storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClip } from 'utils/TP/editingUtils';
@@ -40,32 +40,32 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     if (_.isUndefined(visualizedItem)) {
       return;
     }
-    if (visualizedItem.type === 'file') {
+    if (visualizedItem.type === FILE_TYPES.file) {
       return _.find(mainData, (item) => item.parentKey === visualizedItem.key);
-    } else if (visualizedItem.type === 'motion') {
+    } else if (visualizedItem.type === FILE_TYPES.motion) {
       return visualizedItem;
     }
   }, [mainData]);
 
   useEffect(() => {
     if (visualizedMotion) {
-      console.log('baseLayer: ', visualizedMotion.baseLayer);
-      console.log('layers: ', visualizedMotion.layers);
-      const { name, baseLayer, layers } = visualizedMotion;
-      const { startTimeIndex, endTimeIndex } = animatingData;
-      if (mixer && name && baseLayer && layers) {
-        const visualizedClip = fnGetAnimationClip({
-          name,
-          baseLayer,
-          layers,
-          startTimeIndex,
-          endTimeIndex,
-        });
-        const action = mixer.clipAction(visualizedClip);
-        console.log(action);
-        setCurrentAction(action);
-        console.log('visualizedClip: ', visualizedClip);
-      }
+      // console.log('baseLayer: ', visualizedMotion.baseLayer);
+      // console.log('layers: ', visualizedMotion.layers);
+      // const { name, baseLayer, layers } = visualizedMotion;
+      // const { startTimeIndex, endTimeIndex } = animatingData;
+      // if (mixer && name && baseLayer && layers) {
+      //   const visualizedClip = fnGetAnimationClip({
+      //     name,
+      //     baseLayer,
+      //     layers,
+      //     startTimeIndex,
+      //     endTimeIndex,
+      //   });
+      //   const action = mixer.clipAction(visualizedClip);
+      //   console.log(action);
+      //   setCurrentAction(action);
+      //   console.log('visualizedClip: ', visualizedClip);
+      // }
     }
   }, [animatingData, mixer, visualizedMotion]);
 
