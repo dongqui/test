@@ -16,8 +16,8 @@ const ControlPanelComponent: React.FC<ControlPanelProps> = ({}) => {
   return (
     <S.ControlPanelWrapper>
       <CPTitle />
-      {_.map(cpData, (item) => (
-        <>
+      {_.map(cpData, (item, index) => (
+        <React.Fragment key={index}>
           {_.isEqual(item.type, CPComponentType.parent) && (
             <CPListRowParent rowKey={item.key} name={item.name} />
           )}
@@ -33,7 +33,7 @@ const ControlPanelComponent: React.FC<ControlPanelProps> = ({}) => {
             _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
               <CPListRowSlider rowKey={item.key} name={item.name} slider={item.slider} />
             )}
-        </>
+        </React.Fragment>
       ))}
     </S.ControlPanelWrapper>
   );
