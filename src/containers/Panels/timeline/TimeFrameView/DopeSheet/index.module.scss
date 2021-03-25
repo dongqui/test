@@ -4,6 +4,10 @@
   width: 100%;
   background: #151515;
 
+  .circle-group-wrapper {
+    transform: translate3d(0, 48px, 0);
+  }
+
   rect {
     background: #151515;
   }
@@ -12,5 +16,9 @@
     fill: transparent;
     stroke: #fff;
     stroke-width: 1px;
+  }
+
+  text {
+    fill: white;
   }
 }
