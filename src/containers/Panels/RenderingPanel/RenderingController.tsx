@@ -7,6 +7,16 @@ import { FILE_TYPES, ShootLayerType, ShootTrackType } from 'types';
 import { storeAnimatingData, storeMainData, storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClip } from 'utils/TP/editingUtils';
+import {
+  fnSetPlayState,
+  fnSetPlayDirection,
+  fnGoToSpecificTimeIndex,
+} from 'utils/RP/animatingUtils';
+import {
+  fnChangeBonePosition,
+  fnChangeBoneRotation,
+  fnChangeBoneScale,
+} from 'utils/CP/transformUtils';
 
 export interface RenderingControllerProps {
   id: string;
@@ -23,7 +33,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   visualizedLayers,
 }) => {
   // store data
-  const mainData = useReactiveVar(storeMainData);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   // component state
@@ -31,6 +40,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
   const [animations, setAnimations] = useState<THREE.AnimationClip[]>([]);
   const [currentAction, setCurrentAction] = useState<THREE.AnimationAction | undefined>(undefined);
+  const [currentBoneIndex, setCurrentBoneIndex] = useState<number>(0);
 
   useRendering({
     id,
@@ -38,66 +48,142 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     setMixer,
     setSkeletonHelper,
     setAnimations,
+    setCurrentBoneIndex,
   });
 
-  useEffect(() => {
-    console.log('mainData: ', mainData);
-  }, [mainData]);
+  const { startTimeIndex, endTimeIndex } = animatingData;
 
-  const visualizedMotion = useMemo(() => {
-    const visualizedItem = _.find(mainData, (item) => item.isVisualized === true);
-    if (_.isUndefined(visualizedItem)) {
-      return;
+  // animation 생성 로직
+  useEffect(() => {
+    if (mixer && visualizedName && visualizedBaseLayer && visualizedLayers) {
+      const visualizedClip = fnGetAnimationClip({
+        name: visualizedName,
+        baseLayer: visualizedBaseLayer,
+        layers: visualizedLayers,
+        startTimeIndex,
+        endTimeIndex,
+      });
+      mixer.stopAllAction();
+      const action = mixer.clipAction(visualizedClip);
+      setCurrentAction(action);
+      console.log('action: ', action);
     }
-    if (visualizedItem.type === FILE_TYPES.file) {
-      return _.find(mainData, (item) => item.parentKey === visualizedItem.key);
-    } else if (visualizedItem.type === FILE_TYPES.motion) {
-      return visualizedItem;
+  }, [endTimeIndex, mixer, startTimeIndex, visualizedBaseLayer, visualizedLayers, visualizedName]);
+
+  const { playState, playDirection, playSpeed, currentTimeIndex } = animatingData;
+
+  // animation 컨트롤 로직
+  useEffect(() => {
+    if (mixer && currentAction) {
+      fnSetPlayState({ mixer, currentAction, playState, playSpeed });
     }
-  }, [mainData]);
+  }, [currentAction, mixer, playSpeed, playState]);
 
   useEffect(() => {
-    if (visualizedMotion) {
-      // console.log('baseLayer: ', visualizedMotion.baseLayer);
-      // console.log('layers: ', visualizedMotion.layers);
-      // const { name, baseLayer, layers } = visualizedMotion;
-      // const { startTimeIndex, endTimeIndex } = animatingData;
-      // if (mixer && name && baseLayer && layers) {
-      //   const visualizedClip = fnGetAnimationClip({
-      //     name,
-      //     baseLayer,
-      //     layers,
-      //     startTimeIndex,
-      //     endTimeIndex,
-      //   });
-      //   const action = mixer.clipAction(visualizedClip);
-      //   console.log(action);
-      //   setCurrentAction(action);
-      //   console.log('visualizedClip: ', visualizedClip);
-      // }
+    if (mixer) {
+      fnSetPlayDirection({ mixer, playDirection });
     }
-  }, [animatingData, mixer, visualizedMotion]);
+  }, [mixer, playDirection]);
 
-  // 바꿔야 함
   useEffect(() => {
-    if (animatingData.isPlaying) {
-      if (!_.isUndefined(mixer)) {
-        mixer.timeScale = 0.5 * animatingData.playSpeed * animatingData.playDirection;
-      }
-      currentAction?.play();
-    } else {
-      if (!_.isUndefined(mixer)) {
-        mixer.timeScale = 0;
-      }
+    if (mixer && currentAction) {
+      fnGoToSpecificTimeIndex({ mixer, currentTimeIndex, currentAction });
     }
-  }, [
-    currentAction,
-    mixer,
-    animatingData.isPlaying,
-    animatingData.playDirection,
-    animatingData.playSpeed,
-  ]);
-  //
+  }, [currentAction, currentTimeIndex, mixer]);
+
+  const currentBone = useMemo(() => {
+    if (skeletonHelper) {
+      return skeletonHelper.bones[currentBoneIndex];
+    }
+  }, [currentBoneIndex, skeletonHelper]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     storeRenderingData({
+  //       ...renderingData,
+  //       ['positionX']: currentBone.position.x,
+  //       ['positionY']: currentBone.position.y,
+  //       ['positionZ']: currentBone.position.z,
+  //       ['rotationX']: currentBone.rotation.x,
+  //       ['rotationY']: currentBone.rotation.y,
+  //       ['rotationZ']: currentBone.rotation.z,
+  //       ['scaleX']: currentBone.scale.x,
+  //       ['scaleY']: currentBone.scale.y,
+  //       ['scaleZ']: currentBone.scale.z,
+  //     });
+  //   }
+  // }, [currentBone, renderingData]);
+
+  const {
+    positionX,
+    positionY,
+    positionZ,
+    rotationX,
+    rotationY,
+    rotationZ,
+    scaleX,
+    scaleY,
+    scaleZ,
+  } = renderingData;
+
+  // bone transform 적용 로직
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBonePosition({ targetBone: currentBone, axis: 'x', value: positionX });
+  //   }
+  // }, [currentBone, positionX]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBonePosition({ targetBone: currentBone, axis: 'y', value: positionY });
+  //   }
+  // }, [currentBone, positionY]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBonePosition({ targetBone: currentBone, axis: 'z', value: positionZ });
+  //   }
+  // }, [currentBone, positionZ]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneRotation({ targetBone: currentBone, axis: 'x', value: rotationX });
+  //   }
+  // }, [currentBone, rotationX]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneRotation({ targetBone: currentBone, axis: 'y', value: rotationY });
+  //   }
+  // }, [currentBone, rotationY]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneRotation({ targetBone: currentBone, axis: 'z', value: rotationZ });
+  //   }
+  // }, [currentBone, rotationZ]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneScale({ targetBone: currentBone, axis: 'x', value: scaleX });
+  //   }
+  // }, [currentBone, scaleX]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneScale({ targetBone: currentBone, axis: 'y', value: scaleY });
+  //   }
+  // }, [currentBone, scaleY]);
+
+  // useEffect(() => {
+  //   if (currentBone) {
+  //     fnChangeBoneScale({ targetBone: currentBone, axis: 'z', value: scaleZ });
+  //   }
+  // }, [currentBone, scaleX, scaleZ]);
+
+  // camera option 적용 로직
+  const { locationX, locationY, locationZ, angleX, angleY, angleZ } = renderingData;
+  useEffect(() => {});
 
   return <RenderingPresenter id={id} />;
 };

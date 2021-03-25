@@ -44,8 +44,8 @@ const fnGetBaseLayer = (props: FnGetBaseLayer) => {
           } else {
             return {
               name: `${bone.name}.${property}`,
-              times: [0.03333],
-              values: property === 'scale' ? [1, 1, 1] : [0, 0, 0],
+              times: [],
+              values: [],
               interpolation: 'linear',
             };
           }
@@ -61,8 +61,8 @@ const fnGetBaseLayer = (props: FnGetBaseLayer) => {
         ..._.map(['position', 'rotation', 'scale'], (property) => {
           return {
             name: `${bone.name}.${property}`,
-            times: [0],
-            values: property === 'scale' ? [1, 1, 1] : [0, 0, 0],
+            times: [],
+            values: [],
             interpolation: 'linear',
           };
         }),
