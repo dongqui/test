@@ -1,9 +1,9 @@
-import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 type Axis = 'x' | 'y' | 'z';
 
 interface FnChangeCameraPosition {
-  camera: THREE.PerspectiveCamera;
+  cameraControls: OrbitControls;
   axis: Axis;
   value: number;
 }
@@ -11,14 +11,15 @@ interface FnChangeCameraPosition {
 /**
  * 카메라의 position 속성을 변경합니다.
  *
- * @param camera - The camera
+ * @param cameraControls - The orbit cameraControls
  * @param axis - The target axis ('x' | 'y' | 'z')
  * @param value - The value of the position
  *
  */
 const fnChangeCameraPosition = (props: FnChangeCameraPosition) => {
-  const { camera, value, axis } = props;
-  camera.position[axis] = value;
+  const { cameraControls, value, axis } = props;
+  cameraControls.object.position[axis] = value;
+  cameraControls.update();
 };
 
 export default fnChangeCameraPosition;

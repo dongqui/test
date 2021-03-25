@@ -21,6 +21,7 @@ import {
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
 import { useHistory } from './useHistory';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -29,12 +30,21 @@ interface UseRendering {
   fileUrl?: string;
   setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
   setSkeletonHelper: Dispatch<SetStateAction<THREE.SkeletonHelper | undefined>>;
-  setAnimations: Dispatch<SetStateAction<THREE.AnimationClip[]>>;
   setCurrentBoneIndex: Dispatch<SetStateAction<number>>;
+  setCameraControls: Dispatch<SetStateAction<OrbitControls | undefined>>;
+  setScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
 }
 
 export const useRendering = (props: UseRendering) => {
-  const { id, fileUrl, setMixer, setSkeletonHelper, setAnimations, setCurrentBoneIndex } = props;
+  const {
+    id,
+    fileUrl,
+    setMixer,
+    setSkeletonHelper,
+    setCurrentBoneIndex,
+    setCameraControls,
+    setScene,
+  } = props;
   const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
   const [contents, setContents] = useState<
     Array<THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D>
@@ -399,6 +409,7 @@ export const useRendering = (props: UseRendering) => {
     if (renderingDiv) {
       // scene 생성 및 설정
       const scene = fnCreateScene();
+      setScene(scene);
       setTheScene(scene);
       // camera 생성 및 설정
       const camera = fnCreateCamera();
@@ -421,6 +432,7 @@ export const useRendering = (props: UseRendering) => {
       setContents((prevContents) => [...prevContents, xAxis, yAxis, zAxis]);
       // cameraControls 생성 및 설정
       const cameraControls = fnCreateCameraControls({ camera, renderer });
+      setCameraControls(cameraControls);
       // scene에 transformControls 추가
       const transformControls = fnAddTransformControls({
         scene,
@@ -486,8 +498,6 @@ export const useRendering = (props: UseRendering) => {
             // animation mixer 생성 및 set
             innerMixer = fnCreateMixer({ object });
             setMixer(innerMixer);
-            // animations set
-            setAnimations(object.animations);
             // scene에 model 추가
             const model = fnAddModel({ scene, object });
             setContents((prevContents) => [...prevContents, model]);
