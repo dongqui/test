@@ -3,10 +3,10 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { ShootLayerType, ShootTrackType } from 'types';
 import { storeAnimatingData, storeMainData, storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClip } from 'utils/TP/editingUtils';
+import { fnSetPlayState, fnSetPlayDirection } from 'utils/RP/animatingUtils';
 
 export interface RenderingControllerProps {
   id: string;
@@ -47,12 +47,11 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     }
   }, [mainData]);
 
+  const { startTimeIndex, endTimeIndex } = animatingData;
+
   useEffect(() => {
     if (visualizedMotion) {
-      console.log('baseLayer: ', visualizedMotion.baseLayer);
-      console.log('layers: ', visualizedMotion.layers);
       const { name, baseLayer, layers } = visualizedMotion;
-      const { startTimeIndex, endTimeIndex } = animatingData;
       if (mixer && name && baseLayer && layers) {
         const visualizedClip = fnGetAnimationClip({
           name,
@@ -61,34 +60,26 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
           startTimeIndex,
           endTimeIndex,
         });
+        mixer.stopAllAction();
         const action = mixer.clipAction(visualizedClip);
-        console.log(action);
         setCurrentAction(action);
-        console.log('visualizedClip: ', visualizedClip);
       }
     }
-  }, [animatingData, mixer, visualizedMotion]);
+  }, [mixer, startTimeIndex, endTimeIndex, visualizedMotion]);
 
-  // 바꿔야 함
+  const { playState, playDirection, playSpeed, currentTimeIndex } = animatingData;
+
   useEffect(() => {
-    if (animatingData.isPlaying) {
-      if (!_.isUndefined(mixer)) {
-        mixer.timeScale = 0.5 * animatingData.playSpeed * animatingData.playDirection;
-      }
-      currentAction?.play();
-    } else {
-      if (!_.isUndefined(mixer)) {
-        mixer.timeScale = 0;
-      }
+    if (mixer && currentAction) {
+      fnSetPlayState({ mixer, currentAction, playState, playSpeed });
     }
-  }, [
-    currentAction,
-    mixer,
-    animatingData.isPlaying,
-    animatingData.playDirection,
-    animatingData.playSpeed,
-  ]);
-  //
+  }, [currentAction, mixer, playSpeed, playState]);
+
+  useEffect(() => {
+    if (mixer) {
+      fnSetPlayDirection({ mixer, playDirection });
+    }
+  }, [mixer, playDirection]);
 
   return <RenderingPresenter id={id} />;
 };

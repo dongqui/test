@@ -17,7 +17,7 @@ export const CUT_IMAGES_CNT = 20;
 export const STANDARD_TIME_UNIT = 1 / 30;
 export const INITIAL_MAIN_DATA: MainDataType[] = [];
 export const INITIAL_ANIMATING_DATA: AnimatingDataType = {
-  isPlaying: false,
+  playState: 'stop',
   playDirection: 1, // 1 은 정재생, -1 은 역재생
   playSpeed: 1,
   startTimeIndex: 0, // 미들바의 start 에 해당
