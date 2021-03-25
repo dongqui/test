@@ -30,11 +30,12 @@ interface UseRendering {
   setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
   setSkeletonHelper: Dispatch<SetStateAction<THREE.SkeletonHelper | undefined>>;
   setAnimations: Dispatch<SetStateAction<THREE.AnimationClip[]>>;
+  setCurrentBoneIndex: Dispatch<SetStateAction<number>>;
 }
 
 export const useRendering = (props: UseRendering) => {
-  const { id, fileUrl, setMixer, setSkeletonHelper, setAnimations } = props;
-  const [currentBone, setCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
+  const { id, fileUrl, setMixer, setSkeletonHelper, setAnimations, setCurrentBoneIndex } = props;
+  const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
   const [contents, setContents] = useState<
     Array<THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D>
   >([]); // clear하기 위해 content 담아놓은 array
@@ -72,7 +73,7 @@ export const useRendering = (props: UseRendering) => {
           // 현재 transformControl 붙어 있는 것 제거
           if (transformControls) {
             transformControls.detach();
-            // setCurrentBoneIndex(undefined);  // store 에 current bone 저장 필요 ()
+            setCurrentBoneIndex(0); // store 에 current bone 저장 필요 ()
           }
           break;
         case 'q': // q
@@ -137,7 +138,12 @@ export const useRendering = (props: UseRendering) => {
           break;
       }
     },
-    [multiKeyController],
+    [
+      multiKeyController.V.pressed,
+      multiKeyController.v.pressed,
+      multiKeyController.ㅍ.pressed,
+      setCurrentBoneIndex,
+    ],
   );
 
   const handleTransformControlsShortcutUp = useCallback(
@@ -499,8 +505,9 @@ export const useRendering = (props: UseRendering) => {
               cameraControls,
               transformControls,
               innerMixer,
-              currentBone,
-              setCurrentBone,
+              innerCurrentBone,
+              setInnerCurrentBone,
+              setCurrentBoneIndex,
             });
           },
           () => {},

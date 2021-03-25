@@ -12,8 +12,9 @@ interface FnAddJointMeshes {
   cameraControls: OrbitControls;
   transformControls: TransformControls;
   innerMixer: THREE.AnimationMixer;
-  currentBone: THREE.Bone | undefined;
-  setCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
+  innerCurrentBone: THREE.Bone | undefined;
+  setInnerCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
+  setCurrentBoneIndex: Dispatch<SetStateAction<number>>;
 }
 
 /**
@@ -26,8 +27,9 @@ interface FnAddJointMeshes {
  * @param cameraControls - The camera controls attached to the canvas
  * @param transformControls - The transform controls added to the scene, and will be attached to the selected joint mesh
  * @param innerMixer - The animation mixer defined within the useRendering.ts file (not the global state mixer)
- * @param currentBone - The current selected bone
- * @param setCurrentBone - A function setting the currentBone
+ * @param innerCurrentBone - The current selected bone
+ * @param setInnerCurrentBone - A function setting the innerCurrentBone
+ * @param setCurrentBoneIndex - A function setting the current Bone index
  *
  */
 const fnAddJointMeshes = (props: FnAddJointMeshes) => {
@@ -38,8 +40,9 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
     cameraControls,
     transformControls,
     innerMixer,
-    currentBone,
-    setCurrentBone,
+    innerCurrentBone,
+    setInnerCurrentBone,
+    setCurrentBoneIndex,
   } = props;
   const innerBones: THREE.Bone[] = [];
   _.forEach(skeletonHelper.bones, (bone) => {
@@ -66,9 +69,12 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
       cameraControls.enabled = true;
     });
     dragControls.addEventListener('dragstart', (event) => {
-      if (currentBone !== event.object.parent) {
+      if (innerCurrentBone !== event.object.parent) {
         transformControls.attach(event.object.parent);
-        setCurrentBone(event.object.parent);
+        setInnerCurrentBone(event.object.parent);
+        setCurrentBoneIndex(
+          _.findIndex(skeletonHelper.bones, (bone) => bone === event.object.parent),
+        );
         dragControls.enabled = false;
       }
       if (innerMixer) {

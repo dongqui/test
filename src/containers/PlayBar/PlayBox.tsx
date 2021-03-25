@@ -19,12 +19,14 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
       <S.PlayBoxIconWrapper>
         <CircleIcon />
       </S.PlayBoxIconWrapper>
-      <S.PlayBoxIconWrapper>
+      <S.PlayBoxIconWrapper
+        onClick={() => storeAnimatingData({ ...animatingData, playState: 'stop' })}
+      >
         <SquareIcon />
       </S.PlayBoxIconWrapper>
-      {animatingData.isPlaying ? (
+      {animatingData.playState === 'play' ? (
         <S.PlayBoxIconDoubleWrapper
-          onClick={() => storeAnimatingData({ ...animatingData, isPlaying: false })}
+          onClick={() => storeAnimatingData({ ...animatingData, playState: 'pause' })}
         >
           <PauseIcon />
         </S.PlayBoxIconDoubleWrapper>
@@ -32,14 +34,14 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
         <>
           <S.PlayBoxIconWrapper
             onClick={() =>
-              storeAnimatingData({ ...animatingData, playDirection: -1, isPlaying: true })
+              storeAnimatingData({ ...animatingData, playDirection: -1, playState: 'play' })
             }
           >
             <PlayForwardIcon />
           </S.PlayBoxIconWrapper>
           <S.PlayBoxIconWrapper
             onClick={() =>
-              storeAnimatingData({ ...animatingData, playDirection: 1, isPlaying: true })
+              storeAnimatingData({ ...animatingData, playDirection: 1, playState: 'play' })
             }
           >
             <PlayIcon />
