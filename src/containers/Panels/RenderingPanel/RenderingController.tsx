@@ -16,8 +16,17 @@ import {
 export interface RenderingControllerProps {
   id: string;
   fileUrl?: string;
+  visualizedName?: string;
+  visualizedBaseLayer?: ShootTrackType[];
+  visualizedLayers?: ShootLayerType[];
 }
-const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }) => {
+const RenderingController: React.FC<RenderingControllerProps> = ({
+  id,
+  fileUrl,
+  visualizedName,
+  visualizedBaseLayer,
+  visualizedLayers,
+}) => {
   // store data
   const mainData = useReactiveVar(storeMainData);
   const renderingData = useReactiveVar(storeRenderingData);
