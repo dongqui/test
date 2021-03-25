@@ -28,7 +28,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   visualizedLayers,
 }) => {
   // store data
-  const mainData = useReactiveVar(storeMainData);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   // component state
@@ -47,42 +46,24 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     setCurrentBone,
   });
 
-  useEffect(() => {
-    console.log('mainData: ', mainData);
-  }, [mainData]);
-
-  const visualizedMotion = useMemo(() => {
-    const visualizedItem = _.find(mainData, (item) => item.isVisualized === true);
-    if (_.isUndefined(visualizedItem)) {
-      return;
-    }
-    if (visualizedItem.type === FILE_TYPES.file) {
-      return _.find(mainData, (item) => item.parentKey === visualizedItem.key);
-    } else if (visualizedItem.type === FILE_TYPES.motion) {
-      return visualizedItem;
-    }
-  }, [mainData]);
-
   const { startTimeIndex, endTimeIndex } = animatingData;
 
   // animation 생성 로직
   useEffect(() => {
-    if (visualizedMotion) {
-      const { name, baseLayer, layers } = visualizedMotion;
-      if (mixer && name && baseLayer && layers) {
-        const visualizedClip = fnGetAnimationClip({
-          name,
-          baseLayer,
-          layers,
-          startTimeIndex,
-          endTimeIndex,
-        });
-        mixer.stopAllAction();
-        const action = mixer.clipAction(visualizedClip);
-        setCurrentAction(action);
-      }
+    if (mixer && visualizedName && visualizedBaseLayer && visualizedLayers) {
+      const visualizedClip = fnGetAnimationClip({
+        name: visualizedName,
+        baseLayer: visualizedBaseLayer,
+        layers: visualizedLayers,
+        startTimeIndex,
+        endTimeIndex,
+      });
+      mixer.stopAllAction();
+      const action = mixer.clipAction(visualizedClip);
+      setCurrentAction(action);
+      console.log('action: ', action);
     }
-  }, [mixer, startTimeIndex, endTimeIndex, visualizedMotion]);
+  }, [endTimeIndex, mixer, startTimeIndex, visualizedBaseLayer, visualizedLayers, visualizedName]);
 
   const { playState, playDirection, playSpeed, currentTimeIndex } = animatingData;
 
@@ -109,8 +90,8 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
 
   // rendering option 적용 로직
   useEffect(() => {
-    console.log('currentBone: ', currentBone);
-  });
+    // console.log('currentBone: ', currentBone);
+  }, [currentBone]);
 
   return <RenderingPresenter id={id} />;
 };
