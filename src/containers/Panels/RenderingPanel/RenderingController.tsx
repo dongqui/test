@@ -7,7 +7,11 @@ import { FILE_TYPES, ShootLayerType, ShootTrackType } from 'types';
 import { storeAnimatingData, storeMainData, storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClip } from 'utils/TP/editingUtils';
-import { fnSetPlayState, fnSetPlayDirection } from 'utils/RP/animatingUtils';
+import {
+  fnSetPlayState,
+  fnSetPlayDirection,
+  fnGoToSpecificTimeIndex,
+} from 'utils/RP/animatingUtils';
 
 export interface RenderingControllerProps {
   id: string;
@@ -23,6 +27,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
   const [animations, setAnimations] = useState<THREE.AnimationClip[]>([]);
   const [currentAction, setCurrentAction] = useState<THREE.AnimationAction | undefined>(undefined);
+  const [currentBone, setCurrentBone] = useState<THREE.Bone | undefined>(undefined);
 
   useRendering({
     id,
@@ -30,6 +35,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     setMixer,
     setSkeletonHelper,
     setAnimations,
+    setCurrentBone,
   });
 
   useEffect(() => {
@@ -50,6 +56,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
 
   const { startTimeIndex, endTimeIndex } = animatingData;
 
+  // animation 생성 로직
   useEffect(() => {
     if (visualizedMotion) {
       const { name, baseLayer, layers } = visualizedMotion;
@@ -70,6 +77,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
 
   const { playState, playDirection, playSpeed, currentTimeIndex } = animatingData;
 
+  // animation 컨트롤 로직
   useEffect(() => {
     if (mixer && currentAction) {
       fnSetPlayState({ mixer, currentAction, playState, playSpeed });
@@ -81,6 +89,19 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       fnSetPlayDirection({ mixer, playDirection });
     }
   }, [mixer, playDirection]);
+
+  useEffect(() => {
+    if (mixer && currentAction) {
+      fnGoToSpecificTimeIndex({ mixer, currentTimeIndex, currentAction });
+    }
+  }, [currentAction, currentTimeIndex, mixer]);
+
+  const {} = renderingData;
+
+  // rendering option 적용 로직
+  useEffect(() => {
+    console.log('currentBone: ', currentBone);
+  });
 
   return <RenderingPresenter id={id} />;
 };

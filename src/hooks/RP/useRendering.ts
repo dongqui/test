@@ -30,11 +30,12 @@ interface UseRendering {
   setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
   setSkeletonHelper: Dispatch<SetStateAction<THREE.SkeletonHelper | undefined>>;
   setAnimations: Dispatch<SetStateAction<THREE.AnimationClip[]>>;
+  setCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
 }
 
 export const useRendering = (props: UseRendering) => {
-  const { id, fileUrl, setMixer, setSkeletonHelper, setAnimations } = props;
-  const [currentBone, setCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
+  const { id, fileUrl, setMixer, setSkeletonHelper, setAnimations, setCurrentBone } = props;
+  const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
   const [contents, setContents] = useState<
     Array<THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D>
   >([]); // clear하기 위해 content 담아놓은 array
@@ -499,7 +500,8 @@ export const useRendering = (props: UseRendering) => {
               cameraControls,
               transformControls,
               innerMixer,
-              currentBone,
+              innerCurrentBone,
+              setInnerCurrentBone,
               setCurrentBone,
             });
           },
