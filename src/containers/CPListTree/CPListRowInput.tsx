@@ -41,7 +41,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     (e) => {
       if (!_.isNaN(Number(e.target.value))) {
         const name = e.target.name;
-        storeRenderingData({ ...renderingData, [name]: e.target.value });
+        storeRenderingData({ ...renderingData, [name]: parseFloat(e.target.value) });
       }
     },
     [renderingData],

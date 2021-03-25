@@ -178,7 +178,6 @@ export const useLPControl = ({
         data = [
           { key: '1', name: 'Copy' },
           { key: '2', name: 'Delete' },
-          { key: '4', name: 'Visualization' },
           { key: '5', name: 'Edit name' },
         ];
       }
@@ -248,7 +247,7 @@ export const useLPControl = ({
                   ...item,
                   isVisualized: _.isEqual(
                     item.key,
-                    _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.key,
+                    _.find(newMainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.key,
                   ),
                 })),
               );
