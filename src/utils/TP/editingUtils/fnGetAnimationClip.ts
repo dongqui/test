@@ -31,7 +31,8 @@ const fnGetAnimationClip = (props: FnGetAnimationClip) => {
   const { name, baseLayer, layers, startTimeIndex, endTimeIndex } = props;
   // baseLayer 와 layers 를 사용한다.
   // 각 layers 들은 동일한 track 들로 채워져있다.
-  const tracks = _.map(baseLayer, (track) => {
+  const tracks: THREE.VectorKeyframeTrack[] = [];
+  _.forEach(baseLayer, (track) => {
     // union time 을 구하되 start 및 end timeIndex 가 있으면 길이를 조절해서 clip 생성
     const unionTimes =
       startTimeIndex && endTimeIndex
@@ -64,7 +65,10 @@ const fnGetAnimationClip = (props: FnGetAnimationClip) => {
       valuesArray.length === 1
         ? baseInterpolatedTrack.values
         : _.zipWith(...valuesArray, (...item) => _.sum(item));
-    return new THREE.VectorKeyframeTrack(track.name, unionTimes, unionValues);
+    // times 와 values 값을 가진 유효한 track 들만 추가
+    if (unionTimes.length !== 0 && unionValues.length !== 0) {
+      tracks.push(new THREE.VectorKeyframeTrack(track.name, unionTimes, unionValues));
+    }
   });
 
   // rotation track 들 quaternion track 으로 변환
@@ -72,6 +76,7 @@ const fnGetAnimationClip = (props: FnGetAnimationClip) => {
     _.includes(track.name, 'rotation') ? fnEulerToQuaternionTrack({ eulertrack: track }) : track,
   );
 
+  // animation 의 duration 계산
   if (
     startTimeIndex &&
     endTimeIndex &&
@@ -79,6 +84,7 @@ const fnGetAnimationClip = (props: FnGetAnimationClip) => {
   ) {
     duration = _.round((endTimeIndex - startTimeIndex + 1) * (1 / 30), 4);
   }
+
   return new THREE.AnimationClip(name, duration, rotationConvertedTracks);
 };
 
