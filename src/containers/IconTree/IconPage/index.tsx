@@ -28,14 +28,14 @@ const IconPageComponent: React.FC<IconPageProps> = ({}) => {
           ? pages
           : [{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }],
         (item: PagesType, index) => (
-          <>
+          <React.Fragment key={index}>
             <S.PageText>{item.name}</S.PageText>
             {!_.isEqual(index, _.size(pages) - 1) && (
               <S.ArrowForwardIconWrapper>
                 <ArrowForwardIcon />
               </S.ArrowForwardIconWrapper>
             )}
-          </>
+          </React.Fragment>
         ),
       )}
     </S.IconPageWrapper>

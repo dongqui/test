@@ -82,7 +82,7 @@ export const PrefixWrapper = styled.div`
   font-weight: bold;
   font-size: 8px;
 `;
-export const InputCPInput = styled.input<InputLPProps>`
+export const InputCPInput = styled.input`
   width: 21px;
   height: 20px;
   font-size: 10px;
@@ -91,13 +91,22 @@ export const InputCPInput = styled.input<InputLPProps>`
   background-color: inherit;
   border-radius: 4px;
   margin-left: 6px;
-  -ms-user-select: none;
-  -moz-user-select: -moz-none;
-  -khtml-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
 
   :focus {
     outline: none;
   }
+`;
+export const InputCPInputDiv = styled.div`
+  width: 21px;
+  height: 20px;
+  font-size: 10px;
+  border-width: 0;
+  color: white;
+  background-color: inherit;
+  border-radius: 4px;
+  margin-left: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: col-resize;
 `;

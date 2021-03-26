@@ -37,24 +37,52 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   z = RenderingDataPropertyName.positionZ,
 }) => {
   const renderingData = useReactiveVar(storeRenderingData);
-  const onChange = useCallback(
-    (e) => {
-      if (!_.isNaN(Number(e.target.value))) {
-        const name = e.target.name;
-        storeRenderingData({ ...renderingData, [name]: e.target.value });
-      }
+  const onDragEnd = useCallback(
+    ({ name, value }) => {
+      storeRenderingData({ ...renderingData, [name]: value });
     },
     [renderingData],
   );
-
+  const handleBlur = useCallback(
+    ({ name, value }) => {
+      storeRenderingData({ ...renderingData, [name]: value });
+    },
+    [renderingData],
+  );
+  const onKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (_.isEqual(e.key, 'Enter')) {
+      e.currentTarget.blur();
+    }
+  }, []);
   return (
     <S.CPListRowParentWrapper>
       <S.CPListRowInputWrapper>
         {name}
         <S.CPListRowInputsWrapper>
-          <InputCP number={renderingData[x] as number} prefix="X" onChange={onChange} name={x} />
-          <InputCP number={renderingData[y] as number} prefix="Y" onChange={onChange} name={y} />
-          <InputCP number={renderingData[z] as number} prefix="Z" onChange={onChange} name={z} />
+          <InputCP
+            number={renderingData[x] as number}
+            prefix="X"
+            onDragEnd={onDragEnd}
+            handleBlur={handleBlur}
+            onKeyPress={onKeyPress}
+            name={x}
+          />
+          <InputCP
+            number={renderingData[y] as number}
+            prefix="Y"
+            onDragEnd={onDragEnd}
+            handleBlur={handleBlur}
+            onKeyPress={onKeyPress}
+            name={y}
+          />
+          <InputCP
+            number={renderingData[z] as number}
+            prefix="Z"
+            onDragEnd={onDragEnd}
+            handleBlur={handleBlur}
+            onKeyPress={onKeyPress}
+            name={z}
+          />
         </S.CPListRowInputsWrapper>
       </S.CPListRowInputWrapper>
     </S.CPListRowParentWrapper>
