@@ -6,14 +6,16 @@ import { LibraryPanel } from 'containers/Panels/LibraryPanel';
 import { storeRenderingData, storeMainData, storeCPData, storeAnimatingData } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { MIN_WIDTH } from 'styles/constants/panels';
-import classNames from 'classnames/bind';
-import styles from './MainPage.module.scss';
+import { Resizable, ResizableBox } from 'react-resizable';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
 import { useResizeRP } from 'hooks/RP/useResizeRP';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDispatch } from 'react-redux';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
+import classNames from 'classnames/bind';
+import styles from './MainPage.module.scss';
+import { ReplaceOnOverflow } from './overflower';
 
 const cx = classNames.bind(styles);
 
@@ -69,8 +71,50 @@ const MainContainer: React.FC = () => {
   useDebuggingData({ mainData, cpData, renderingData, animatingData });
 
   return (
-    <>
-      <Rnd
+    <div className={cx('wrapper')}>
+      <ResizableBox
+        width={window.innerWidth}
+        height={window.innerHeight * 0.7}
+        minConstraints={[window.innerWidth, window.innerHeight * 0.5]}
+        maxConstraints={[window.innerWidth, window.innerHeight * 0.7]}
+        className={cx('box1')}
+        resizeHandles={['s']}
+        axis="y"
+      >
+        <ReplaceOnOverflow orientation="horizontal" short="no horizontal space">
+          <ReplaceOnOverflow orientation="vertical" short="no vertical space">
+            <div>
+              <span>
+                hiding if there is
+                <br />
+                no space for me
+              </span>
+            </div>
+          </ReplaceOnOverflow>
+        </ReplaceOnOverflow>
+      </ResizableBox>
+      <ResizableBox
+        width={window.innerWidth}
+        height={window.innerHeight * 0.3}
+        minConstraints={[window.innerWidth, window.innerHeight * 0.3]}
+        maxConstraints={[window.innerWidth, window.innerHeight * 0.5]}
+        className={cx('box2')}
+        // resizeHandles={["n"]}
+        axis="none"
+      >
+        <ReplaceOnOverflow orientation="horizontal" short="no horizontal space">
+          <ReplaceOnOverflow orientation="vertical" short="no vertical space">
+            <div>
+              <span>
+                m hiding if there is
+                <br />
+                no space for me
+              </span>
+            </div>
+          </ReplaceOnOverflow>
+        </ReplaceOnOverflow>
+      </ResizableBox>
+      {/* <Rnd
         id="wrapper_upper"
         disableDragging
         enableResizing={false}
@@ -135,8 +179,8 @@ const MainContainer: React.FC = () => {
           baseLayer={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
           layers={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.layers}
         />
-      </Rnd>
-    </>
+      </Rnd> */}
+    </div>
   );
 };
 
