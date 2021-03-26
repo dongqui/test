@@ -41,20 +41,43 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     (e) => {
       if (!_.isNaN(Number(e.target.value))) {
         const name = e.target.name;
-        storeRenderingData({ ...renderingData, [name]: e.target.value });
+        storeRenderingData({ ...renderingData, [name]: parseFloat(e.target.value) });
       }
     },
     [renderingData],
   );
-
+  const onDragEnd = useCallback(
+    ({ name, value }) => {
+      storeRenderingData({ ...renderingData, [name]: value });
+    },
+    [renderingData],
+  );
   return (
     <S.CPListRowParentWrapper>
       <S.CPListRowInputWrapper>
         {name}
         <S.CPListRowInputsWrapper>
-          <InputCP number={renderingData[x] as number} prefix="X" onChange={onChange} name={x} />
-          <InputCP number={renderingData[y] as number} prefix="Y" onChange={onChange} name={y} />
-          <InputCP number={renderingData[z] as number} prefix="Z" onChange={onChange} name={z} />
+          <InputCP
+            number={renderingData[x] as number}
+            prefix="X"
+            onChange={onChange}
+            onDragEnd={onDragEnd}
+            name={x}
+          />
+          <InputCP
+            number={renderingData[y] as number}
+            prefix="Y"
+            onChange={onChange}
+            onDragEnd={onDragEnd}
+            name={y}
+          />
+          <InputCP
+            number={renderingData[z] as number}
+            prefix="Z"
+            onChange={onChange}
+            onDragEnd={onDragEnd}
+            name={z}
+          />
         </S.CPListRowInputsWrapper>
       </S.CPListRowInputWrapper>
     </S.CPListRowParentWrapper>
