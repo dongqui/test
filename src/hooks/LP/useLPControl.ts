@@ -178,6 +178,7 @@ export const useLPControl = ({
         data = [
           { key: '1', name: 'Copy' },
           { key: '2', name: 'Delete' },
+          { key: '4', name: 'Visualization' },
           { key: '5', name: 'Edit name' },
         ];
       }
