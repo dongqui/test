@@ -13,9 +13,10 @@ import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDispatch } from 'react-redux';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
+import { ReplaceOnOverflow } from './overflower';
+import breakpoints from 'styles/libraries/breakpoints';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
-import { ReplaceOnOverflow } from './overflower';
 
 const cx = classNames.bind(styles);
 
@@ -70,35 +71,68 @@ const MainContainer: React.FC = () => {
     <div className={cx('wrapper')}>
       <ResizableBox
         width={window.innerWidth}
+        // height={window.innerHeight - 40}
         height={window.innerHeight * 0.7}
         minConstraints={[window.innerWidth, window.innerHeight * 0.5]}
         maxConstraints={[window.innerWidth, window.innerHeight * 0.7]}
-        className={cx('box1')}
+        className={cx('upper-section')}
         resizeHandles={['s']}
         axis="y"
       >
-        <ReplaceOnOverflow orientation="horizontal" short="no horizontal space">
-          <ReplaceOnOverflow orientation="vertical" short="no vertical space">
-            <div>
-              <span>
-                hiding if there is
-                <br />
-                no space for me
-              </span>
-            </div>
-          </ReplaceOnOverflow>
-        </ReplaceOnOverflow>
+        <ResizableBox
+          width={230}
+          // width={40}
+          height={('100%' as unknown) as number}
+          minConstraints={[230, window.innerHeight * 0.5]}
+          // minConstraints={[40, window.innerHeight * 0.5]}
+          maxConstraints={[450, window.innerHeight * 0.7]}
+          className={cx('panel-library')}
+          resizeHandles={['e']}
+          axis="both"
+        >
+          <div>LP</div>
+        </ResizableBox>
+        <ResizableBox
+          width={window.innerWidth - 230 * 2}
+          // width={window.innerWidth - 40 * 2}
+          height={('100%' as unknown) as number}
+          minConstraints={[150, window.innerHeight * 0.5]}
+          maxConstraints={[window.innerWidth - 230 * 2, window.innerHeight * 0.7]}
+          // maxConstraints={[window.innerWidth - 40 * 2, window.innerHeight * 0.7]}
+          className={cx('panel-rendering')}
+          // resizeHandles={['e']}
+          // lockAspectRatio
+          axis="both"
+        >
+          <div>RP</div>
+        </ResizableBox>
+        <ResizableBox
+          width={230}
+          // width={40}
+          height={('100%' as unknown) as number}
+          minConstraints={[230, window.innerHeight * 0.5]}
+          // minConstraints={[40, window.innerHeight * 0.5]}
+          maxConstraints={[450, window.innerHeight * 0.7]}
+          className={cx('panel-control')}
+          resizeHandles={['w']}
+          axis="both"
+        >
+          <div>CP</div>
+        </ResizableBox>
       </ResizableBox>
       <ResizableBox
         width={window.innerWidth}
-        height={window.innerHeight * 0.3}
-        minConstraints={[window.innerWidth, window.innerHeight * 0.3]}
-        maxConstraints={[window.innerWidth, window.innerHeight * 0.5]}
-        className={cx('box2')}
+        height={40}
+        // height={window.innerHeight * 0.3}
+        // minConstraints={[window.innerWidth, window.innerHeight * 0.3]}
+        // maxConstraints={[window.innerWidth, window.innerHeight * 0.5]}
+        className={cx('lower-section')}
         // resizeHandles={["n"]}
         axis="none"
       >
-        <ReplaceOnOverflow orientation="horizontal" short="no horizontal space">
+        <div>sadsad</div>
+
+        {/* <ReplaceOnOverflow orientation="horizontal" short="no horizontal space">
           <ReplaceOnOverflow orientation="vertical" short="no vertical space">
             <div>
               <span>
@@ -108,7 +142,7 @@ const MainContainer: React.FC = () => {
               </span>
             </div>
           </ReplaceOnOverflow>
-        </ReplaceOnOverflow>
+        </ReplaceOnOverflow> */}
       </ResizableBox>
       {/* <Rnd
         id="wrapper_upper"

@@ -2,12 +2,13 @@
   position: relative;
 }
 
-.react-resizable-handle {
-  width: 100%;
+.react-resizabe-handle {
   position: absolute;
 
+  /* width: 100%;
+  height: 20px; */
+
   /* width: 20px; */
-  height: 20px;
 
   /* background-repeat: no-repeat;
   background-origin: content-box;
@@ -44,29 +45,47 @@
   transform: rotate(270deg);
 }
 
-.react-resizable-handle-w,
+/* .react-resizable-handle-w,
 .react-resizable-handle-e {
   top: 50%;
   margin-top: -10px;
   cursor: ew-resize;
-}
+} */
 
 .react-resizable-handle-w {
+  // left: 0;
+  // transform: rotate(135deg);
+  // top: 50%;
+  // margin-top: -10px;
+  // cursor: ew-resize;
   left: 0;
-  transform: rotate(135deg);
+  cursor: ew-resize;
+  width: 20px;
+  position: absolute;
+  height: 100%;
+  transform: translateX(-50%);
 }
 
 .react-resizable-handle-e {
+  position: absolute;
   right: 0;
-  transform: rotate(315deg);
+  width: 20px;
+  height: 100%;
+  cursor: ew-resize;
+  transform: translateX(50%);
+
+  /* transform: rotate(315deg); */
 }
 
 .react-resizable-handle-n,
 .react-resizable-handle-s {
   /* left: 50%; */
+  position: absolute;
   left: 0;
-  margin-left: -10px;
+  transform: translateY(50%);
   cursor: ns-resize;
+  width: 100%;
+  height: 20px;
 }
 
 .react-resizable-handle-n {

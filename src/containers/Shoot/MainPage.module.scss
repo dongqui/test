@@ -1,3 +1,5 @@
+@import 'styles/libraries/_responsive';
+
 .library {
   z-index: 1;
   overflow: hidden;
@@ -18,12 +20,33 @@
   flex-direction: column;
 }
 
-.box1 {
-  background: rgba(255, 0, 0, 0.1);
+.upper-section {
+  background: cyan;
+  display: flex;
   flex-basis: 50%;
 }
 
-.box2 {
+.panel-library {
+  background: black;
+  display: flex;
+  height: 100%;
+}
+
+.panel-rendering {
+  background: peru;
+  display: flex;
+  height: 100%;
+}
+
+.panel-control {
+  position: absolute;
+  right: 0;
+  background: red;
+  display: flex;
+  height: 100%;
+}
+
+.lower-section {
   background: rgba(255, 255, 0, 0.1);
   flex-basis: 50%;
 }
