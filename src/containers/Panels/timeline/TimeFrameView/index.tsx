@@ -1,12 +1,10 @@
 import React from 'react';
 import DopeSheet from './DopeSheet';
 
-interface Props {
-  rescaleDopeSheetCircleX: (rescale: () => void) => void;
-}
+interface Props {}
 
-const TimeFrameView: React.FC<Props> = ({ rescaleDopeSheetCircleX }) => {
-  return <DopeSheet rescaleDopeSheetCircleX={rescaleDopeSheetCircleX} />;
+const TimeFrameView: React.FC<Props> = () => {
+  return <DopeSheet />;
 };
 
 export default TimeFrameView;

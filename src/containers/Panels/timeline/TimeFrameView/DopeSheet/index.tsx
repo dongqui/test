@@ -6,9 +6,7 @@ import classNames from 'classnames/bind';
 import { TPDopeSheetList } from 'lib/store';
 import styles from './index.module.scss';
 
-interface Props {
-  rescaleDopeSheetCircleX: (rescale: () => void) => void;
-}
+interface Props {}
 
 interface Datum {
   name: string;
@@ -48,7 +46,7 @@ const TP_TRACK_INDEX = {
  * @constant renderXAxis x축 랜더링
  */
 
-const DopeSheet: React.FC<Props> = ({ rescaleDopeSheetCircleX }) => {
+const DopeSheet: React.FC<Props> = () => {
   const dopeSheetList = useReactiveVar(TPDopeSheetList);
   const dopeSheetRef = useRef<HTMLDivElement>(null);
 
@@ -291,14 +289,6 @@ const DopeSheet: React.FC<Props> = ({ rescaleDopeSheetCircleX }) => {
 
     d3.select(dopeSheetRef.current).call(zoomBehavior);
   }, []);
-
-  // dope sheet 스크롤
-  useEffect(() => {
-    const rescale = () => {
-      console.log('dope sheet');
-    };
-    rescaleDopeSheetCircleX(rescale);
-  }, [rescaleDopeSheetCircleX]);
 
   return (
     <>

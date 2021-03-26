@@ -13,19 +13,6 @@ const TimelineWrapper: React.FC<Props> = () => {
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
   const trackListRef = useRef<HTMLDivElement>(null);
 
-  const rescaleDopeSheetCircleX = useCallback(
-    () => (rescale: () => void) => {
-      rescale();
-    },
-    [],
-  );
-
-  const scrollTimelineWrapper = useCallback(() => {
-    if (!trackListRef.current) return;
-    rescaleDopeSheetCircleX();
-    console.log('scrolllll');
-  }, [rescaleDopeSheetCircleX]);
-
   // 트랙 리스트에서 세로 스크롤 이벤트 방지
   useEffect(() => {
     if (!timelineWrapperRef.current || !trackListRef.current) return;
@@ -43,13 +30,9 @@ const TimelineWrapper: React.FC<Props> = () => {
 
   return (
     <>
-      <div
-        className={cx('timeline-wrapper')}
-        ref={timelineWrapperRef}
-        onScroll={scrollTimelineWrapper}
-      >
+      <div className={cx('timeline-wrapper')} ref={timelineWrapperRef}>
         <TrackList trackListRef={trackListRef} />
-        <TimeFrameView rescaleDopeSheetCircleX={rescaleDopeSheetCircleX} />
+        <TimeFrameView />
       </div>
     </>
   );
