@@ -49,16 +49,12 @@ const MainContainer: React.FC = () => {
     return result;
   }, [mainData]);
   const handleDrop = useCallback(() => {
-    if (
-      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type, FILE_TYPES.file)
-    ) {
-      storeMainData(
-        _.map(mainData, (item) => ({
-          ...item,
-          isVisualized: item.isDragging,
-        })),
-      );
-    }
+    storeMainData(
+      _.map(mainData, (item) => ({
+        ...item,
+        isVisualized: item.isDragging,
+      })),
+    );
   }, [mainData]);
   const {
     handleResizeStop,
