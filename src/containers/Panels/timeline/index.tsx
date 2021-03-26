@@ -20,10 +20,10 @@ interface Props {
   layers?: ShootLayerType[];
 }
 
-const TimelineContainer: React.FC<Props> = ({ baseLayer = [], layers = [] }) => {
+const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
   // 최초 TP 데이터 가공
   useEffect(() => {
-    if (!baseLayer.length) return;
+    if (!baseLayer) return;
 
     // Summary, Base 트랙 추가
     const defaultTrackNameList: TPTrackName[] = [];

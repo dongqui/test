@@ -1,15 +1,13 @@
-.dopesheet-container {
+.dopesheet-wrapper {
   display: flex;
   flex-direction: column;
   width: 100%;
   background: #151515;
 
   .circle-group-wrapper {
+    display: flex;
+    flex-direction: column;
     transform: translate3d(0, 48px, 0);
-  }
-
-  rect {
-    background: #151515;
   }
 
   circle {
