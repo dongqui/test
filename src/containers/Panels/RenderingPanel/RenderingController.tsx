@@ -20,6 +20,14 @@ import {
 import { fnChangeCameraLookAt, fnChangeCameraPosition } from 'utils/CP/cameraUtils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { fnAddFog, fnChangeFogFar, fnChangeFogNear, fnRemoveFog } from 'utils/CP/fogUtils';
+import {
+  fnAddShadow,
+  fnMakeBoneAndJointInvisible,
+  fnMakeBoneAndJointVisible,
+  fnMakeSkinnedMeshesInvisible,
+  fnMakeSkinnedMeshesVisible,
+  fnRemoveShadow,
+} from 'utils/CP/visibilityUtils';
 
 export interface RenderingControllerProps {
   id: string;
@@ -44,6 +52,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   const [cameraControls, setCameraControls] = useState<OrbitControls | undefined>(undefined);
   const [scene, setScene] = useState<THREE.Scene | undefined>(undefined);
   const [fog, setFog] = useState<THREE.Fog | undefined>(undefined);
+  const [dirLight, setDirLight] = useState<THREE.DirectionalLight | undefined>(undefined);
   const [currentAction, setCurrentAction] = useState<THREE.AnimationAction | undefined>(undefined);
   const [currentBoneIndex, setCurrentBoneIndex] = useState<number>(0);
 
@@ -55,6 +64,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     setCurrentBoneIndex,
     setCameraControls,
     setScene,
+    setDirLight,
   });
 
   const { startTimeIndex, endTimeIndex } = animatingData;
@@ -223,14 +233,14 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
 
   useEffect(() => {
     if (scene) {
-      if (isFogOn) {
-        const innerFog = fnAddFog({ scene });
-        setFog(innerFog);
+      if (isFogOn && fogNear && fogFar) {
+        const tmpFog = fnAddFog({ scene, fogNear, fogFar });
+        setFog(tmpFog);
       } else {
         fnRemoveFog({ scene });
       }
     }
-  }, [isFogOn, scene]);
+  }, [fogFar, fogNear, isFogOn, scene]);
 
   useEffect(() => {
     if (fog) {
@@ -243,6 +253,40 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       fnChangeFogFar({ fog, value: fogFar });
     }
   }, [fog, fogFar]);
+
+  // visibility option 적용 로직
+  const { isBoneOn, isJointOn, isMeshOn, isShadowOn } = renderingData;
+
+  useEffect(() => {
+    if (skeletonHelper) {
+      // isBoneOn 과 isJointOn 은 함께 움직이는 값
+      if (isBoneOn) {
+        fnMakeBoneAndJointVisible({ skeletonHelper });
+      } else {
+        fnMakeBoneAndJointInvisible({ skeletonHelper });
+      }
+    }
+  }, [isBoneOn, skeletonHelper]);
+
+  useEffect(() => {
+    if (scene) {
+      if (isMeshOn) {
+        fnMakeSkinnedMeshesVisible({ scene });
+      } else {
+        fnMakeSkinnedMeshesInvisible({ scene });
+      }
+    }
+  }, [isMeshOn, scene]);
+
+  useEffect(() => {
+    if (dirLight) {
+      if (isShadowOn) {
+        fnAddShadow({ dirLight });
+      } else {
+        fnRemoveShadow({ dirLight });
+      }
+    }
+  }, [dirLight, isShadowOn]);
 
   return <RenderingPresenter id={id} />;
 };

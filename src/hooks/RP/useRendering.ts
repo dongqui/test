@@ -33,6 +33,7 @@ interface UseRendering {
   setCurrentBoneIndex: Dispatch<SetStateAction<number>>;
   setCameraControls: Dispatch<SetStateAction<OrbitControls | undefined>>;
   setScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
+  setDirLight: Dispatch<SetStateAction<THREE.DirectionalLight | undefined>>;
 }
 
 export const useRendering = (props: UseRendering) => {
@@ -44,6 +45,7 @@ export const useRendering = (props: UseRendering) => {
     setCurrentBoneIndex,
     setCameraControls,
     setScene,
+    setDirLight,
   } = props;
   const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
   const [contents, setContents] = useState<
@@ -424,7 +426,8 @@ export const useRendering = (props: UseRendering) => {
       }
 
       // scene에 조명 추가
-      fnAddLights({ scene });
+      const tmpDirLight = fnAddLights({ scene });
+      setDirLight(tmpDirLight);
       // scene에 바닥 추가
       const ground = fnAddGround({ scene, camera, renderer });
       setContents((prevContents) => [...prevContents, ground]);
