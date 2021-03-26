@@ -74,10 +74,11 @@ export interface RecordingDataType {
   count?: number | undefined;
 }
 
+type playState = 'play' | 'pause' | 'stop';
 type PlayDirection = 1 | -1;
 
 export interface AnimatingDataType {
-  isPlaying: boolean;
+  playState: playState;
   playDirection: PlayDirection;
   playSpeed: number;
   startTimeIndex: number;

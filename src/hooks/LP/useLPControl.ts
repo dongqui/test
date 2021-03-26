@@ -248,7 +248,7 @@ export const useLPControl = ({
                   ...item,
                   isVisualized: _.isEqual(
                     item.key,
-                    _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.key,
+                    _.find(newMainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.key,
                   ),
                 })),
               );

@@ -29,17 +29,30 @@ const MainContainer: React.FC = () => {
     }
     return _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
   }, [mainData]);
-  const handleDrop = useCallback(() => {
-    if (
-      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type, FILE_TYPES.file)
-    ) {
-      storeMainData(
-        _.map(mainData, (item) => ({
-          ...item,
-          isVisualized: item.isDragging,
-        })),
-      );
+  const visualizedInfo = useMemo(() => {
+    const visualizedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
+    let result = {
+      visualizedName: visualizedRow?.name,
+      visualizedBaseLayer: visualizedRow?.baseLayer,
+      visualizedLayers: visualizedRow?.layers,
+    };
+    if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
+      const childMotion = _.find(mainData, [MAINDATA_PROPERTY_TYPES.parentKey, visualizedRow?.key]);
+      result = {
+        visualizedName: childMotion?.name,
+        visualizedBaseLayer: childMotion?.baseLayer,
+        visualizedLayers: childMotion?.layers,
+      };
     }
+    return result;
+  }, [mainData]);
+  const handleDrop = useCallback(() => {
+    storeMainData(
+      _.map(mainData, (item) => ({
+        ...item,
+        isVisualized: item.isDragging,
+      })),
+    );
   }, [mainData]);
   const {
     handleResizeStop,
@@ -79,7 +92,13 @@ const MainContainer: React.FC = () => {
           size={{ ...renderingPanel.size }}
           position={{ ...renderingPanel.position }}
         >
-          <RenderingController id="renderingDiv" fileUrl={fileUrl} />
+          <RenderingController
+            id="renderingDiv"
+            fileUrl={fileUrl}
+            visualizedName={visualizedInfo?.visualizedName}
+            visualizedBaseLayer={visualizedInfo.visualizedBaseLayer}
+            visualizedLayers={visualizedInfo.visualizedLayers}
+          />
         </Rnd>
         <Rnd
           id="wrapper_control"
