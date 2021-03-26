@@ -37,21 +37,23 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   z = RenderingDataPropertyName.positionZ,
 }) => {
   const renderingData = useReactiveVar(storeRenderingData);
-  const onChange = useCallback(
-    (e) => {
-      if (!_.isNaN(Number(e.target.value))) {
-        const name = e.target.name;
-        storeRenderingData({ ...renderingData, [name]: parseFloat(e.target.value) });
-      }
-    },
-    [renderingData],
-  );
   const onDragEnd = useCallback(
     ({ name, value }) => {
       storeRenderingData({ ...renderingData, [name]: value });
     },
     [renderingData],
   );
+  const handleBlur = useCallback(
+    ({ name, value }) => {
+      storeRenderingData({ ...renderingData, [name]: value });
+    },
+    [renderingData],
+  );
+  const onKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (_.isEqual(e.key, 'Enter')) {
+      e.currentTarget.blur();
+    }
+  }, []);
   return (
     <S.CPListRowParentWrapper>
       <S.CPListRowInputWrapper>
@@ -60,22 +62,25 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
           <InputCP
             number={renderingData[x] as number}
             prefix="X"
-            onChange={onChange}
             onDragEnd={onDragEnd}
+            handleBlur={handleBlur}
+            onKeyPress={onKeyPress}
             name={x}
           />
           <InputCP
             number={renderingData[y] as number}
             prefix="Y"
-            onChange={onChange}
             onDragEnd={onDragEnd}
+            handleBlur={handleBlur}
+            onKeyPress={onKeyPress}
             name={y}
           />
           <InputCP
             number={renderingData[z] as number}
             prefix="Z"
-            onChange={onChange}
             onDragEnd={onDragEnd}
+            handleBlur={handleBlur}
+            onKeyPress={onKeyPress}
             name={z}
           />
         </S.CPListRowInputsWrapper>
