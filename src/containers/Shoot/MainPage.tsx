@@ -12,8 +12,8 @@ import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
 import { useResizeRP } from 'hooks/RP/useResizeRP';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
-import { useDispatch } from 'react-redux';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
+import { RetargetPanel } from 'containers/Panels/RetargetPanel';
 
 const cx = classNames.bind(styles);
 
@@ -114,6 +114,7 @@ const MainContainer: React.FC = () => {
         >
           <div className={cx('child')}>
             <ControlPanel />
+            {/* <RetargetPanel /> */}
           </div>
         </Rnd>
       </Rnd>

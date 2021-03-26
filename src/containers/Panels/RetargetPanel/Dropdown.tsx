@@ -3,7 +3,7 @@ import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import _ from 'lodash';
 import React, { useRef, useState } from 'react';
 import { rem } from 'utils/rem';
-import * as S from './PlayBarStyles';
+import * as S from './RetargetPanelStyles';
 
 export interface DropdownProps {
   data: { key: number; name: string; isSelected: boolean }[];
