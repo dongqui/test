@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import { FunctionComponent, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import _ from 'lodash';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
@@ -12,13 +12,13 @@ import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDispatch } from 'react-redux';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
-import breakpoints from 'styles/libraries/breakpoints';
+import useWindowSize from 'hooks/common/useWindowSize';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
 
 const cx = classNames.bind(styles);
 
-const MainContainer: React.FC = () => {
+const MainContainer: FunctionComponent = () => {
   const mainData = useReactiveVar(storeMainData);
   const cpData = useReactiveVar(storeCPData);
   const renderingData = useReactiveVar(storeRenderingData);
@@ -55,32 +55,26 @@ const MainContainer: React.FC = () => {
       })),
     );
   }, [mainData]);
-  const {
-    handleResizeStop,
-    libraryPanel,
-    lowerSection,
-    renderingPanel,
-    upperSection,
-    controlPanel,
-  } = useResizeRP();
+
   useDebuggingData({ mainData, cpData, renderingData, animatingData });
+
+  const [width, height] = useWindowSize();
 
   return (
     <div className={cx('wrapper')}>
       <ResizableBox
-        width={window.innerWidth}
-        height={window.innerHeight * 0.7}
-        minConstraints={[window.innerWidth, window.innerHeight * 0.5]}
-        maxConstraints={[window.innerWidth, window.innerHeight * 0.7]}
+        width={width}
+        height={height * 0.7}
+        minConstraints={[width, height * 0.5]}
+        maxConstraints={[width, height * 0.7]}
         className={cx('upper-section')}
         resizeHandles={['s']}
         axis="y"
       >
         <ResizableBox
           width={230}
-          height={('100%' as unknown) as number}
-          minConstraints={[230, window.innerHeight * 0.5]}
-          maxConstraints={[450, window.innerHeight * 0.7]}
+          minConstraints={[230, height * 0.5]}
+          maxConstraints={[450, height * 0.7]}
           className={cx('panel-library')}
           resizeHandles={['e']}
           axis="both"
@@ -88,10 +82,9 @@ const MainContainer: React.FC = () => {
           <LibraryPanel />
         </ResizableBox>
         <ResizableBox
-          width={window.innerWidth - 230 * 2}
-          height={('100%' as unknown) as number}
-          minConstraints={[150, window.innerHeight * 0.5]}
-          maxConstraints={[window.innerWidth - 230 * 2, window.innerHeight * 0.7]}
+          width={width - 230 * 2}
+          minConstraints={[150, height * 0.5]}
+          maxConstraints={[width - 230 * 2, height * 0.7]}
           className={cx('panel-rendering')}
           axis="both"
         >
@@ -105,9 +98,8 @@ const MainContainer: React.FC = () => {
         </ResizableBox>
         <ResizableBox
           width={230}
-          height={('100%' as unknown) as number}
-          minConstraints={[230, window.innerHeight * 0.5]}
-          maxConstraints={[450, window.innerHeight * 0.7]}
+          minConstraints={[230, height * 0.5]}
+          maxConstraints={[450, height * 0.7]}
           className={cx('panel-control')}
           resizeHandles={['w']}
           axis="both"
@@ -115,12 +107,7 @@ const MainContainer: React.FC = () => {
           <ControlPanel />
         </ResizableBox>
       </ResizableBox>
-      <ResizableBox
-        width={window.innerWidth}
-        height={window.innerHeight * 0.3}
-        className={cx('lower-section')}
-        axis="none"
-      >
+      <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">
         <TimelineContainer
           baseLayer={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
           layers={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.layers}
@@ -130,4 +117,4 @@ const MainContainer: React.FC = () => {
   );
 };
 
-export default React.memo(MainContainer);
+export default MainContainer;
