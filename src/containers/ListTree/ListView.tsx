@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { useContextmenu } from 'hooks/common/useContextmenu';
+import useContextMenu from 'hooks/common/useContextMenu';
 import { useShortcut } from 'hooks/common/useShortcut';
 import { useLPControl } from 'hooks/LP/useLPControl';
 import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
@@ -27,7 +27,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
     pages,
     searchWord,
   });
-  useContextmenu({ targetRef: listViewWrapperRef, event: onContextMenu });
+  useContextMenu({ targetRef: listViewWrapperRef, event: onContextMenu });
   useShortcut({
     data: shortcutData,
   });
