@@ -9,9 +9,7 @@ import styles from './index.module.scss';
 
 interface TrackProps {
   childrenTrackList: TPTrackName[];
-  // children?: React.ReactNode;
   defaultChildrenTrackOpened: boolean; // 자식 트랙이 열려있는 상태로 출력여부
-  // isLeafTrack?: boolean; // 말단 트랙 확인(말단 트랙인 경우 true)
   title: 'Summary' | 'Base' | string; // 트랙 이름
   paddingLeft?: number; // 트랙 좌측 패딩 값
   trackIndex: number;
@@ -28,9 +26,7 @@ const TP_TRACK_INDEX = {
 
 const Track: React.FC<TrackProps> = ({
   childrenTrackList,
-  // children,
   defaultChildrenTrackOpened = false,
-  // isLeafTrack = false,
   title,
   paddingLeft = 10,
   trackIndex,
@@ -49,21 +45,27 @@ const Track: React.FC<TrackProps> = ({
           updatedTrackList.push({
             trackIndex: trackIndex + 1,
             isClickedParentTrackArrowBtn: !prev,
-            // isShowed: !prev,
+            isClickedTrackArrowBtn: !prev,
           });
+          TPUpdateDopeSheetList(updatedTrackList);
           return !prev;
         }
         // Layer 트랙 화살표 클릭
         case TP_TRACK_INDEX.LAYER: {
-          let index = 3;
-          while (index <= lastBoneTrackIndexList[0].lastBoneTrackIndex) {
+          let boneTrackIndex = 3;
+          while (boneTrackIndex <= lastBoneTrackIndexList[0].lastBoneTrackIndex) {
             updatedTrackList.push({
-              trackIndex: index,
+              trackIndex: boneTrackIndex,
               isClickedParentTrackArrowBtn: !prev,
-              // isShowed: !prev,
+              isClickedTrackArrowBtn: !prev,
             });
-            index += index % 10 === 3 ? 4 : 6;
+            if (boneTrackIndex % 10 === TP_TRACK_INDEX.BONE_A) {
+              boneTrackIndex += 4;
+            } else if (boneTrackIndex % 10 === TP_TRACK_INDEX.BONE_B) {
+              boneTrackIndex += 6;
+            }
           }
+          TPUpdateDopeSheetList(updatedTrackList);
           return !prev;
         }
         // Bone 트랙 화살표 클릭
@@ -77,9 +79,10 @@ const Track: React.FC<TrackProps> = ({
             updatedTrackList.push({
               trackIndex: transformIndex + 1,
               isClickedParentTrackArrowBtn: !prev,
-              // isShowed: !prev,
+              isClickedTrackArrowBtn: !prev,
             });
           }
+          TPUpdateDopeSheetList(updatedTrackList);
           return !prev;
         }
         default: {
@@ -87,7 +90,6 @@ const Track: React.FC<TrackProps> = ({
         }
       }
     });
-    TPUpdateDopeSheetList(updatedTrackList);
   }, [lastBoneTrackIndexList, trackIndex]);
 
   // 트랙 마우스 우클릭

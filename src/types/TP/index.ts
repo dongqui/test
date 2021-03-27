@@ -35,10 +35,10 @@ export interface TPTrackName {
 
 export interface TPDopeSheet {
   isSelected: boolean; // dope sheet 선택 체크
-  isShowed: boolean; // sheet 출력 체크
   isLocked: boolean; // sheet 잠금 체크
   isExcludedRendering: boolean; // sheet 랜더링 제외 체크
   isClickedParentTrackArrowBtn: boolean;
+  isClickedTrackArrowBtn: boolean;
   isFiltered: boolean; // sheet 필터링 체크
   trackIndex: number; // 트랙 index
   times?: number[];
@@ -54,7 +54,6 @@ export interface TPLastBoneTrackIndex {
 
 export interface TPDopeSheetStatus {
   isSelected: boolean; // dope sheet 선택 체크
-  isShowed: boolean; // sheet 출력 체크
   isLocked: boolean; // sheet 잠금 체크
   isExcludedRendering: boolean; // sheet 랜더링 제외 체크
   isFiltered: boolean; // sheet 필터링 체크

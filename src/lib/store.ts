@@ -57,11 +57,6 @@ export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_D
 export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeCutImages = makeVar<string[]>([]);
 // TP
-// export const TPDefaultTrackNameList = makeVar<TPBoneTrack[]>([]);
-// export const TPFilteredTrackNameList = makeVar<TPBoneTrack[]>([]);
-// export const TPTransformTrackList = makeVar<TPTransformTrack[]>([]);
-// export const TPTrackList = makeVar<TPTrack[]>([]);
-
 export const TPDefaultTrackNameList = makeVar<TPTrackName[]>([]);
 export const TPFilteredTrackNameList = makeVar<TPTrackName[]>([]);
 export const TPDopeSheetList = makeVar<TPDopeSheet[]>([]);
@@ -69,27 +64,13 @@ export const TPLastBoneTrackIndexList = makeVar<TPLastBoneTrackIndex[]>([]); // 
 export const TPDopeSheetStatusList = makeVar<TPDopeSheetStatus[]>([]);
 export const TPDopeShetDataList = makeVar<TPDopeSheetData[]>([]);
 
-// export const TPUpdateDopeSheetList = makeVar<Partial<TPDopeSheet>[]>([]);
-
-// export const TPUpdateDopeSheetList = (statusList: Partial<TPDopeSheet>[]) => {
-//   const dopeSheetList = TPDopeSheetList();
-//   _.forEach(statusList, (status) => {
-//     const index = _.findIndex(
-//       dopeSheetList,
-//       (dopeSheet) => dopeSheet.trackIndex === status.trackIndex,
-//     );
-//     dopeSheetList[index] = { ...dopeSheetList[index], ...status };
-//   });
-//   TPDopeSheetList(dopeSheetList);
-// };
-
 export const TPUpdateDopeSheetList = (statusList: Partial<TPDopeSheet>[]) => {
   const state = TPDopeSheetList();
   const nextState = produce<TPDopeSheet[]>(state, (draft) => {
     _.forEach(statusList, (status) => {
       const index = _.findIndex(draft, (dopeSheet) => dopeSheet.trackIndex === status.trackIndex);
-      // draft[index].isShowed = status.isShowed as boolean;
       draft[index].isClickedParentTrackArrowBtn = status.isClickedParentTrackArrowBtn as boolean;
+      draft[index].isClickedTrackArrowBtn = status.isClickedTrackArrowBtn as boolean;
     });
   });
   TPDopeSheetList(nextState);

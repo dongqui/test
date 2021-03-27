@@ -10,11 +10,11 @@ import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
 import { useResizeRP } from 'hooks/RP/useResizeRP';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
-import { useDispatch } from 'react-redux';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import useWindowSize from 'hooks/common/useWindowSize';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
+import { RetargetPanel } from 'containers/Panels/RetargetPanel';
 
 const cx = classNames.bind(styles);
 
@@ -105,6 +105,7 @@ const MainContainer: FunctionComponent = () => {
           axis="both"
         >
           <ControlPanel />
+          {/* <RetargetPanel /> */}
         </ResizableBox>
       </ResizableBox>
       <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">

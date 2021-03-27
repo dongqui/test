@@ -3,12 +3,14 @@ import _ from 'lodash';
 import React from 'react';
 import * as S from './CPListTreeStyles';
 
-export interface CPTitleProps {}
+export interface CPTitleProps {
+  title?: string;
+}
 
-const CPTitleComponent: React.FC<CPTitleProps> = ({}) => {
+const CPTitleComponent: React.FC<CPTitleProps> = ({ title = 'Properties' }) => {
   return (
     <S.CPTitleWrapper>
-      Properties
+      {title}
       <div>
         <ArrowRightBIcon />
         <ArrowRightBIcon />
