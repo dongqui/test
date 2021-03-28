@@ -1,0 +1,20 @@
+@import 'styles/libraries/_colors';
+@import 'styles/libraries/_mixins';
+@import 'styles/libraries/_functions';
+
+.menu-item {
+  @include reset-list-style();
+  cursor: pointer;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    background-color: $primaryColor;
+    color: #fff;
+  }
+}

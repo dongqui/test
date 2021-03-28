@@ -40,7 +40,7 @@ const RetargetRowComponent: React.FC<RetargetRowProps> = ({
       name: item,
       isSelected: _.isEqual(item, targetBoneName),
     }));
-    if (_.isEmpty(targetBoneName)) {
+    if (_.isEmpty(targetBoneName) && !_.isEmpty(result)) {
       result[0].isSelected = true;
     }
     return result;

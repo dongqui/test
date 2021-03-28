@@ -13,12 +13,12 @@ export const TIMELINEPANEL_INFO = {
 export const LIBRARYPANEL_INFO = {
   widthPx: 230,
   widthRate: 0.14,
-  heightPx: 640,
+  heightPx: 720,
 } as const;
 
 export const CONTROLPANEL_INFO = {
   widthPx: 226,
-  heightPx: 640,
+  heightPx: 720,
 } as const;
 
 export const CONTROLLER_PANEL_WIDTH_RATE = 20 as const;

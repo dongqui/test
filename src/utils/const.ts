@@ -202,3 +202,10 @@ export const INITIAL_RETARGET_DATA: RetargetDataType[] = [
   { boneName: 'L Hand', x: 60, y: 60, z: 60 },
   { boneName: 'R Hand', x: 60, y: 60, z: 60 },
 ];
+export const DEFAULT_TARGETBONES = [
+  'Source Bone1',
+  'Source Bone2',
+  'Source Bone3',
+  'Source Bone4',
+  'Source Bone5',
+];

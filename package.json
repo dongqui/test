@@ -51,6 +51,7 @@
     "react-icons": "^4.2.0",
     "react-media-recorder": "^1.4.0",
     "react-redux": "^7.2.3",
+    "react-resizable": "^1.11.1",
     "react-rnd": "^10.2.4",
     "redux": "^4.0.5",
     "sass": "^1.32.7",

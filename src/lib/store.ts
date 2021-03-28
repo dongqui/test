@@ -62,7 +62,7 @@ export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_D
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);
 // CP
-export const storeCPMode = makeVar<CPModeType>(CPModeType.retarget);
+export const storeCPMode = makeVar<CPModeType>(CPModeType.property);
 export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 // RETARGET
 export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);

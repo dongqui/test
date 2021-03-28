@@ -1,5 +1,5 @@
 import { useReactiveVar } from '@apollo/client';
-import { useContextmenu } from 'hooks/common/useContextmenu';
+import useContextMenu from 'hooks/common/useContextMenu';
 import _ from 'lodash';
 import React, { useRef } from 'react';
 import {
@@ -38,7 +38,7 @@ const IconViewComponent: React.FC<IconViewProps> = ({}) => {
     pages,
     searchWord,
   });
-  useContextmenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
+  useContextMenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
   useShortcut({
     data: shortcutData,
   });
