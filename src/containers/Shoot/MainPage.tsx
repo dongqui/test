@@ -3,7 +3,13 @@ import _ from 'lodash';
 import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-import { storeRenderingData, storeMainData, storeCPData, storeAnimatingData } from 'lib/store';
+import {
+  storeRenderingData,
+  storeMainData,
+  storeCPData,
+  storeAnimatingData,
+  storeCPMode,
+} from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { MIN_WIDTH } from 'styles/constants/panels';
 import classNames from 'classnames/bind';
@@ -14,12 +20,15 @@ import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import { RetargetPanel } from 'containers/Panels/RetargetPanel';
+import { CPModeType } from 'types/CP';
+import { RenderingDataPropertyName } from 'types/RP';
 
 const cx = classNames.bind(styles);
 
 const MainContainer: React.FC = () => {
   const mainData = useReactiveVar(storeMainData);
   const cpData = useReactiveVar(storeCPData);
+  const cpMode = useReactiveVar(storeCPMode);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const fileUrl = useMemo(() => {
@@ -45,6 +54,13 @@ const MainContainer: React.FC = () => {
       };
     }
     return result;
+  }, [mainData]);
+  const targetBones = useMemo(() => {
+    const visualizedBaseLayer = _.filter(
+      _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer,
+      (item) => _.includes(item.name, 'rotation'),
+    );
+    return _.map(visualizedBaseLayer, (item) => _.split(item.name, '.')?.[0]);
   }, [mainData]);
   const handleDrop = useCallback(() => {
     storeMainData(
@@ -113,8 +129,8 @@ const MainContainer: React.FC = () => {
           position={{ ...controlPanel.position }}
         >
           <div className={cx('child')}>
-            <ControlPanel />
-            {/* <RetargetPanel /> */}
+            {_.isEqual(cpMode, CPModeType.property) && <ControlPanel />}
+            {_.isEqual(cpMode, CPModeType.retarget) && <RetargetPanel targetBones={targetBones} />}
           </div>
         </Rnd>
       </Rnd>

@@ -21,7 +21,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
   const searchWord = useReactiveVar(storeSearchWord);
   const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
   const listViewWrapperRef = useRef<HTMLDivElement>(null);
-  const { onContextMenu, shortcutData, onDragStart, onDrop, onClick } = useLPControl({
+  const { onContextMenu, shortcutData, onDragStart, onDrop, onClick, onDragEnd } = useLPControl({
     contextmenuInfo,
     mainData,
     pages,
@@ -62,6 +62,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
           className="icon"
           draggable
           onDragStart={() => onDragStart({ key: item.key })}
+          onDragEnd={onDragEnd}
           onDrop={() => {
             onDrop({ key: _.isEqual(item.type, FILE_TYPES.motion) ? item.parentKey : item.key });
           }}

@@ -10,7 +10,12 @@ import {
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
+import {
+  AnimatingDataType,
+  RecordingDataType,
+  RenderingDataType,
+  RetargetDataType,
+} from 'types/RP';
 import _ from 'lodash';
 import {
   INITIAL_ANIMATING_DATA,
@@ -27,6 +32,8 @@ import {
   PageInfoType,
   PAGE_NAMES,
 } from '../types';
+import { INITIAL_RETARGET_DATA } from '../utils/const';
+import { CPModeType } from '../types/CP';
 
 export enum StoreDataNames {
   mainData = 'mainData',
@@ -53,9 +60,12 @@ export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_D
 export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
-// CP
-export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeCutImages = makeVar<string[]>([]);
+// CP
+export const storeCPMode = makeVar<CPModeType>(CPModeType.retarget);
+export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
+// RETARGET
+export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);
 // TP
 export const TPDefaultTrackNameList = makeVar<TPTrackName[]>([]);
 export const TPFilteredTrackNameList = makeVar<TPTrackName[]>([]);

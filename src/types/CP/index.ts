@@ -28,6 +28,10 @@ export enum CPNameType {
   Near = 'Near',
   Far = 'Far',
 }
+export enum CPModeType {
+  property = 'property',
+  retarget = 'retarget',
+}
 export interface CPDataType {
   [CPDataPropertyNames.key]: string;
   name: CPNameType;
