@@ -16,14 +16,21 @@ const fnMakeSkinnedMeshesInvisible = (props: FnMakeSkinnedMeshesInvisible) => {
   const { scene } = props;
   const skinnedMeshes = _.filter(scene.children, (child) => child.type === 'SkinnedMesh');
   if (_.isEmpty(skinnedMeshes)) {
-    _.forEach(scene.children, (innerChild) => {
-      skinnedMeshes.push(...innerChild.children);
+    _.forEach(scene.children, (child) => {
+      skinnedMeshes.push(...child.children);
     });
   }
   _.forEach(skinnedMeshes, (mesh) => {
     if (_.isEqual(mesh.type, 'SkinnedMesh')) {
       // eslint-disable-next-line no-param-reassign
       mesh.visible = false;
+    } else {
+      _.forEach(mesh.children, (meshChild) => {
+        if (_.isEqual(meshChild.type, 'SkinnedMesh')) {
+          // eslint-disable-next-line no-param-reassign
+          meshChild.visible = false;
+        }
+      });
     }
   });
 };
