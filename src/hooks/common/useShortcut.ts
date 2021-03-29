@@ -3,10 +3,10 @@ import React, { useCallback, useEffect } from 'react';
 import { ShortcutTypes } from '../../types';
 
 export const useShortcut = ({ data }: { data: ShortcutTypes[] }) => {
-  const onKeyPress = useCallback(
+  const onKeyDown = useCallback(
     (e) => {
       if (_.find(data, ['key', e.key])?.ctrlKey) {
-        if (!e.ctrlKey) {
+        if (!e.ctrlKey && !e.metaKey) {
           return;
         }
       }
@@ -15,9 +15,9 @@ export const useShortcut = ({ data }: { data: ShortcutTypes[] }) => {
     [data],
   );
   useEffect(() => {
-    document.addEventListener('keyup', onKeyPress);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
-      document.removeEventListener('keyup', onKeyPress);
+      document.removeEventListener('keydown', onKeyDown);
     };
-  }, [onKeyPress]);
+  }, [onKeyDown]);
 };
