@@ -31,7 +31,7 @@ declare module 'react-resizable' {
 
   interface ResizableProps {
     className?: string;
-    width: number;
+    width?: number;
     height?: number;
     handle?: React.ReactNode | ((resizeHandle: ResizeHandle) => React.ReactNode);
     handleSize?: [number, number];
@@ -44,16 +44,39 @@ declare module 'react-resizable' {
     onResize?: (e: React.SyntheticEvent, data: ResizeCallbackData) => any;
     draggableOpts?: any;
     resizeHandles?: ResizeHandle[];
+    transformScale?: number;
   }
 
   class Resizable extends React.Component<ResizableProps, ResizableState> {}
 
   interface ResizableBoxState {
-    height: number;
     width: number;
+    height: number;
   }
 
-  type ResizableBoxProps = ResizableProps;
+  type ResizableBoxProps = ResizableProps & {
+    style?: Object;
+    children?: ReactElement<any>;
+  };
+
+  type ResizeCallbackData = {
+    node: HTMLElement;
+    handle: ResizeHandle;
+    size: {
+      width: number;
+      height: number;
+    };
+  };
+
+  type DragCallbackData = {
+    node: HTMLElement;
+    x: number;
+    y: number;
+    deltaX: number;
+    deltaY: number;
+    lastX: number;
+    lastY: number;
+  };
 
   class ResizableBox extends React.Component<ResizableBoxProps, ResizableBoxState> {}
 }

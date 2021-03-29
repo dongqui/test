@@ -5,8 +5,20 @@ import EyeClose from './svg/EyeClose.svg';
 import EyeOpen from './svg/EyeOpen.svg';
 import LockClose from './svg/LockClose.svg';
 import LockOpen from './svg/LockOpen.svg';
+import ListView from './svg/ListView.svg';
+import IconView from './svg/IconView.svg';
+import Plus from './svg/Plus.svg';
 
-type Icon = 'Close' | 'Search' | 'EyeClose' | 'EyeOpen' | 'LockClose' | 'LockOpen';
+type Icon =
+  | 'Close'
+  | 'Search'
+  | 'EyeClose'
+  | 'EyeOpen'
+  | 'LockClose'
+  | 'LockOpen'
+  | 'ListView'
+  | 'IconView'
+  | 'Plus';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -19,6 +31,9 @@ const images: Images = {
   EyeOpen,
   LockClose,
   LockOpen,
+  ListView,
+  IconView,
+  Plus,
 };
 
 export default images;

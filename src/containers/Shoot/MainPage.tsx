@@ -90,8 +90,8 @@ const MainContainer: FunctionComponent = () => {
         axis="y"
       >
         <ResizableBox
-          width={230}
-          minConstraints={[230, height * 0.5]}
+          width={248}
+          minConstraints={[248, height * 0.5]}
           maxConstraints={[450, height * 0.7]}
           className={cx('panel-library')}
           resizeHandles={['e']}
@@ -100,9 +100,9 @@ const MainContainer: FunctionComponent = () => {
           <LibraryPanel />
         </ResizableBox>
         <ResizableBox
-          width={width - 230 * 2}
+          width={width - 248 - 230}
           minConstraints={[150, height * 0.5]}
-          maxConstraints={[width - 230 * 2, height * 0.7]}
+          maxConstraints={[width - 248 - 230, height * 0.7]}
           className={cx('panel-rendering')}
           axis="both"
         >

@@ -1,0 +1,25 @@
+@import 'styles/libraries/_colors';
+
+.wrapper {
+  background-color: $gray100;
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  outline: 0;
+}
+
+.inner {
+  position: relative;
+  height: 100%;
+}
+
+.title {
+  color: white;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

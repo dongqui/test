@@ -1,8 +1,8 @@
+import { FunctionComponent, memo, useCallback, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'antd';
 import 'antd/dist/antd.css';
-
 import {
   ENABLE_FILE_FORMATS,
   ENABLE_VIDEO_FORMATS,
@@ -25,7 +25,6 @@ import {
   storeSearchWord,
 } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
@@ -40,15 +39,19 @@ import * as api from 'utils/common/api';
 import { Loading } from 'components/Loading';
 import { fnGetBaseLayer, fnGetNewLayer } from 'utils/TP/editingUtils';
 import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
+import { Headline } from 'components/New_Typography';
+import Explorer from './Explorer/index';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
 
 export interface PagesType {
   key: string;
   name: string;
 }
-export interface LibraryPanelProps {
-  backgroundColor?: string;
-}
-const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 'black' }) => {
+
+const LibraryPanelComponent: FunctionComponent = () => {
   const mainData = useReactiveVar(storeMainData);
   const pages = useReactiveVar(storePages);
   const lpmode = useReactiveVar(storeLPMode);
@@ -214,24 +217,28 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
     },
     [mainData, onDropPost],
   );
+
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
+
   return (
-    <S.LibraryPanelWrapper backgroundColor={backgroundColor} {...getRootProps()}>
-      <S.LPSelectWrapper>
-        <LPSelect />
-      </S.LPSelectWrapper>
+    <div className={cx('wrapper')} {...getRootProps()}>
+      <div className={cx('inner')}>
+        <Headline className={cx('title')} level="5" align="left" margin>
+          Library
+        </Headline>
+        {/* <S.LPSelectWrapper>
+            <LPSelect />
+          </S.LPSelectWrapper> */}
+        <Explorer onChange={onChangeSearchText} />
+        <IconPage />
+        {_.isEqual(lpmode, LPModeType.iconview) ? <IconView /> : <ListView />}
+      </div>
       {loading && (
-        <S.LoadingWrapper>
+        <div className={cx('loading')}>
           <Loading color="white" />
-        </S.LoadingWrapper>
+        </div>
       )}
-      <S.TitleWrapper>Library</S.TitleWrapper>
-      <S.SearchWrapper>
-        <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
-      </S.SearchWrapper>
-      <IconPage />
-      {_.isEqual(lpmode, LPModeType.iconview) ? <IconView /> : <ListView />}
-    </S.LibraryPanelWrapper>
+    </div>
   );
 };
-export const LibraryPanel = React.memo(LibraryPanelComponent);
+export const LibraryPanel = memo(LibraryPanelComponent);
