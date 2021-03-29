@@ -10,7 +10,12 @@ import {
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
+import {
+  AnimatingDataType,
+  RecordingDataType,
+  RenderingDataType,
+  RetargetDataType,
+} from 'types/RP';
 import _ from 'lodash';
 import {
   INITIAL_ANIMATING_DATA,
@@ -27,6 +32,8 @@ import {
   PageInfoType,
   PAGE_NAMES,
 } from '../types';
+import { INITIAL_RETARGET_DATA } from '../utils/const';
+import { CPModeType } from '../types/CP';
 
 export enum StoreDataNames {
   mainData = 'mainData',
@@ -53,15 +60,13 @@ export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_D
 export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
-// CP
-export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeCutImages = makeVar<string[]>([]);
+// CP
+export const storeCPMode = makeVar<CPModeType>(CPModeType.property);
+export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
+// RETARGET
+export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);
 // TP
-// export const TPDefaultTrackNameList = makeVar<TPBoneTrack[]>([]);
-// export const TPFilteredTrackNameList = makeVar<TPBoneTrack[]>([]);
-// export const TPTransformTrackList = makeVar<TPTransformTrack[]>([]);
-// export const TPTrackList = makeVar<TPTrack[]>([]);
-
 export const TPDefaultTrackNameList = makeVar<TPTrackName[]>([]);
 export const TPFilteredTrackNameList = makeVar<TPTrackName[]>([]);
 export const TPDopeSheetList = makeVar<TPDopeSheet[]>([]);
@@ -69,27 +74,13 @@ export const TPLastBoneTrackIndexList = makeVar<TPLastBoneTrackIndex[]>([]); // 
 export const TPDopeSheetStatusList = makeVar<TPDopeSheetStatus[]>([]);
 export const TPDopeShetDataList = makeVar<TPDopeSheetData[]>([]);
 
-// export const TPUpdateDopeSheetList = makeVar<Partial<TPDopeSheet>[]>([]);
-
-// export const TPUpdateDopeSheetList = (statusList: Partial<TPDopeSheet>[]) => {
-//   const dopeSheetList = TPDopeSheetList();
-//   _.forEach(statusList, (status) => {
-//     const index = _.findIndex(
-//       dopeSheetList,
-//       (dopeSheet) => dopeSheet.trackIndex === status.trackIndex,
-//     );
-//     dopeSheetList[index] = { ...dopeSheetList[index], ...status };
-//   });
-//   TPDopeSheetList(dopeSheetList);
-// };
-
 export const TPUpdateDopeSheetList = (statusList: Partial<TPDopeSheet>[]) => {
   const state = TPDopeSheetList();
   const nextState = produce<TPDopeSheet[]>(state, (draft) => {
     _.forEach(statusList, (status) => {
       const index = _.findIndex(draft, (dopeSheet) => dopeSheet.trackIndex === status.trackIndex);
-      // draft[index].isShowed = status.isShowed as boolean;
       draft[index].isClickedParentTrackArrowBtn = status.isClickedParentTrackArrowBtn as boolean;
+      draft[index].isClickedTrackArrowBtn = status.isClickedTrackArrowBtn as boolean;
     });
   });
   TPDopeSheetList(nextState);

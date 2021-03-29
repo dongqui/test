@@ -1,10 +1,14 @@
 import React from 'react';
-import DopeSheet from './DopeSheet';
+import dynamic from 'next/dynamic';
 
-interface Props {}
+const DynamicDopeSheet = dynamic(() => import('./DopeSheet'));
 
-const TimeFrameView: React.FC<Props> = () => {
-  return <DopeSheet />;
+interface Props {
+  rescaleDopeSheetCircleX: (rescale: () => void) => void;
+}
+
+const TimeFrameView: React.FC<Props> = ({ rescaleDopeSheetCircleX }) => {
+  return <DynamicDopeSheet rescaleDopeSheetCircleX={rescaleDopeSheetCircleX} />;
 };
 
 export default TimeFrameView;

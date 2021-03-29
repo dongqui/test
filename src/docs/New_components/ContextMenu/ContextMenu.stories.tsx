@@ -1,7 +1,7 @@
-import { Fragment, useState, useRef } from 'react';
+import { Fragment, useState, useRef, MutableRefObject } from 'react';
 import { Story, Meta } from '@storybook/react/types-6-0';
 import { FilledButton } from 'components/New_Button';
-import { useContextmenu } from 'hooks/common/useContextmenu';
+import useContextMenu from 'hooks/common/useContextMenu';
 import Component, { Props } from 'components/New_ContextMenu/ContextMenu';
 
 export default {
@@ -33,25 +33,20 @@ const Template: Story<Props> = ({}) => {
     console.log(key, value);
   };
 
-  const [isOpen, setIsOpen] = useState(false);
-
   const targetRef = useRef(null);
+  const innerRef = useRef<HTMLDivElement>() as MutableRefObject<HTMLDivElement>;
 
-  const test = () => {
-    console.log('???');
+  const handleContextMenu = ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+    console.log(top, left, e);
   };
 
-  useContextmenu({ targetRef, event: test });
+  useContextMenu({ targetRef, event: handleContextMenu });
 
-  const handleOpen = () => {
-    setIsOpen(!isOpen);
-  };
+  const position = { top: '30px', left: '30px' };
 
-  // return <Component list={list} onSelect={handleSelect} />;
   return (
-    <div ref={targetRef}>
-      <FilledButton onClick={handleOpen}>Click</FilledButton>
-      {/* {isOpen && <Component list={[]} onSelect={handleSelect} position={} />} */}
+    <div style={{ position: 'relative', width: '500px', height: '500px' }} ref={targetRef}>
+      <Component innerRef={innerRef} list={list} onSelect={handleSelect} position={position} />
     </div>
   );
 };

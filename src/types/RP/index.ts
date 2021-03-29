@@ -33,6 +33,13 @@ export enum axisName {
   y = 'y',
   z = 'z',
 }
+export enum RetargetDataPropertyName {
+  boneName = 'boneName',
+  targetBoneName = 'targetBoneName',
+  x = 'x',
+  y = 'y',
+  z = 'z',
+}
 export interface RenderingDataType {
   [RenderingDataPropertyName.positionX]: number;
   [RenderingDataPropertyName.positionY]: number;
@@ -84,4 +91,11 @@ export interface AnimatingDataType {
   startTimeIndex: number;
   endTimeIndex: number;
   currentTimeIndex: number;
+}
+export interface RetargetDataType {
+  [RetargetDataPropertyName.boneName]: string;
+  [RetargetDataPropertyName.targetBoneName]?: string;
+  [RetargetDataPropertyName.x]: number;
+  [RetargetDataPropertyName.y]: number;
+  [RetargetDataPropertyName.z]: number;
 }

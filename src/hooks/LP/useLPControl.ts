@@ -3,11 +3,24 @@ import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'antd';
 import 'antd/dist/antd.css';
-import { ContextmenuType, FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
-import { storeContextMenuInfo, storeMainData } from 'lib/store';
+import {
+  ContextmenuType,
+  FILE_TYPES,
+  LPModeType,
+  MainDataType,
+  MAINDATA_PROPERTY_TYPES,
+} from 'types';
+import {
+  storeContextMenuInfo,
+  storeCPData,
+  storeCPMode,
+  storeLPMode,
+  storeMainData,
+} from 'lib/store';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
+import { CPModeType } from 'types/CP';
 
 interface useLPControlProps {
   mainData: MainDataType[];
@@ -56,6 +69,15 @@ export const useLPControl = ({
   );
   const onDrop = useCallback(
     ({ key }) => {
+      if (
+        _.isEqual(
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type,
+          FILE_TYPES.motion,
+        ) &&
+        _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, key])?.type, FILE_TYPES.file)
+      ) {
+        storeCPMode(CPModeType.retarget);
+      }
       storeMainData(
         _.map(mainData, (item) => ({
           ...item,
@@ -178,6 +200,7 @@ export const useLPControl = ({
         data = [
           { key: '1', name: 'Copy' },
           { key: '2', name: 'Delete' },
+          { key: '4', name: 'Visualization' },
           { key: '5', name: 'Edit name' },
         ];
       }
