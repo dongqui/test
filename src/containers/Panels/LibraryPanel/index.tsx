@@ -63,11 +63,12 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         const extension = _.last(_.split(acceptedFile.name, '.'));
         let convertedFileUrl = DEFAULT_MODEL_URL;
         if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
-          storeModalInfo({
-            isShow: true,
-            msg: '파일 형식이 올바르지 않습니다.',
-            type: MODAL_TYPES.alert,
-          });
+          // storeModalInfo({
+          //   isShow: true,
+          //   msg: '파일 형식이 올바르지 않습니다.',
+          //   type: MODAL_TYPES.alert,
+          // });
+          alert('파일 형식이 올바르지 않습니다.');
           setLoading(false);
           return false;
         }
