@@ -25,6 +25,7 @@ import {
   storeSearchWord,
 } from 'lib/store';
 import _ from 'lodash';
+import { SearchInput } from 'components/New_Input';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { IconPage } from '../../IconTree/IconPage';
@@ -225,9 +226,10 @@ const LibraryPanelComponent: React.FC<LibraryPanelProps> = ({ backgroundColor = 
         </S.LoadingWrapper>
       )}
       <S.TitleWrapper>Library</S.TitleWrapper>
-      <S.SearchWrapper>
+      {/* <S.SearchWrapper>
         <InputLP borderRadius={0.5} onChange={onChangeSearchText} placeholder="Search Projects" />
-      </S.SearchWrapper>
+      </S.SearchWrapper> */}
+      <SearchInput placeholder="Search Projects" onChange={onChangeSearchText} />
       <IconPage />
       {_.isEqual(lpmode, LPModeType.iconview) ? <IconView /> : <ListView />}
     </S.LibraryPanelWrapper>

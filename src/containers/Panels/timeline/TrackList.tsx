@@ -4,6 +4,7 @@ import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { TPTrackName } from 'types/TP';
 import { TPDefaultTrackNameList } from 'lib/store';
+import { SearchInput } from 'components/New_Input';
 import Track from './Track';
 import styles from './TrackList.module.scss';
 
@@ -15,17 +16,16 @@ const DEBOUNCED_TIME = 300;
 const cx = classNames.bind(styles);
 
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
+  const defaultTrackNameList = useReactiveVar(TPDefaultTrackNameList);
   const [trackList, setTrackList] = useState<TPTrackName[]>([]);
   const lastTrackInput = useRef('');
-
-  const defaultTrackList = useReactiveVar(TPDefaultTrackNameList);
 
   // debouned가 적용 된 track input 갱신
   const changeDebounedTrackInput = useMemo(
     () =>
       _.debounce((inputText: string) => {
         // 트랙 리스트가 없는 상태에서 검색하는 경우(아무 동작을 시키지 않음)
-        if (!defaultTrackList.length) return;
+        if (!defaultTrackNameList.length) return;
         const trimInputText = _.toLower(_.trim(inputText));
 
         // 이전 검색 텍스트와 현재 검색 텍스트가 같은 경우(아무 동작을 시키지 않음)
@@ -33,7 +33,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         // 이전 검색 텍스트가 있으면서, 현재 검색 텍스트가 비어있는 경우(디폴트 트랙 리스트로 갱신)
         if (lastTrackInput.current !== trimInputText && !trimInputText) {
-          return setTrackList(defaultTrackList);
+          return setTrackList(defaultTrackNameList);
         }
 
         // 재귀를 걸어서 텍스트에 만족하는 트랙 필터링
@@ -72,12 +72,12 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         // 필터링 리스트 갱신
         const filterResult = recursiveTrackSearch({
-          trackList: defaultTrackList,
+          trackList: defaultTrackNameList,
         });
         lastTrackInput.current = trimInputText;
         setTrackList(filterResult);
       }, DEBOUNCED_TIME),
-    [defaultTrackList],
+    [defaultTrackNameList],
   );
 
   // 트랙 인풋 텍스트 변경
@@ -90,34 +90,40 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   // 최초 Track List 적용
   useEffect(() => {
-    if (!defaultTrackList.length) return;
-    setTrackList(defaultTrackList);
-  }, [defaultTrackList]);
+    if (!defaultTrackNameList.length) return;
+    setTrackList(defaultTrackNameList);
+  }, [defaultTrackNameList]);
+
+  const isEmptyTrack = _.isEmpty(trackList);
 
   return (
     <>
-      <div className={cx('track-list-container')} ref={trackListRef}>
-        <div className={cx('track-input-wrapper')}>
-          {/* To Do
-              돋보기 아이콘 적용
-          */}
-          <input type="text" onChange={changeTrackInput} />
+      <div className={cx('wrapper')} ref={trackListRef}>
+        <div className={cx('search-wrapper')}>
+          <SearchInput
+            className={cx('search-joint')}
+            placeholder="Search Joints"
+            onChange={changeTrackInput}
+          />
         </div>
-        <div className={cx('track-list-wrapper')}>
-          {trackList?.map((track) => {
-            const { childrenTrackList, isOpenedChildrenTrack, name, trackIndex } = track;
-            return (
-              <Track
-                key={name}
-                childrenTrackList={childrenTrackList}
-                isOpenedChildrenTrack={isOpenedChildrenTrack}
-                paddingLeft={10}
-                title={name}
-                trackIndex={trackIndex}
-              />
-            );
-          })}
-        </div>
+        {!isEmptyTrack && (
+          <div className={cx('list')}>
+            {_.map(trackList, (track, i) => {
+              const { childrenTrackList, isOpenedChildrenTrack, name, trackIndex } = track;
+              const key = `${name}_${i}`;
+              return (
+                <Track
+                  key={key}
+                  childrenTrackList={childrenTrackList}
+                  isOpenedChildrenTrack={isOpenedChildrenTrack}
+                  paddingLeft={10}
+                  title={name}
+                  trackIndex={trackIndex}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </>
   );
