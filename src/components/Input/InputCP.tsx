@@ -65,6 +65,7 @@ export const InputCP: React.FC<InputCPProps> = ({
       setValue(parseFloat(e.target.value));
     }
   }, []);
+
   useEffect(() => {
     document.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('mousemove', handleMouseMove);
@@ -75,6 +76,7 @@ export const InputCP: React.FC<InputCPProps> = ({
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp]);
+
   return (
     <S.InputCPWrapper ref={inputWrapperRef}>
       <S.PrefixWrapper>{prefix}</S.PrefixWrapper>

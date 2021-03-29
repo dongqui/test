@@ -1,8 +1,8 @@
 import { useReactiveVar } from '@apollo/client';
 import { InputCP } from 'components/Input/InputCP';
-import { storeRenderingData, storeCurrentBone } from 'lib/store';
+import { storeRenderingData, storeCurrentBone, storeTransformControls } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { RenderingDataPropertyName } from 'types/RP';
 import {
   fnChangeBonePosition,
@@ -10,6 +10,7 @@ import {
   fnChangeBoneScale,
 } from 'utils/CP/transformUtils';
 import * as S from './CPListTreeStyles';
+import * as THREE from 'three';
 
 export interface CPListRowInputProps {
   rowKey: string;
@@ -43,6 +44,8 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
 }) => {
   const renderingData = useReactiveVar(storeRenderingData);
   const currentBone = useReactiveVar(storeCurrentBone);
+  const transformControls = useReactiveVar(storeTransformControls);
+
   const onDragEnd = useCallback(
     ({ name, value }) => {
       const property = name.slice(0, -1);
@@ -67,6 +70,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     },
     [currentBone],
   );
+
   const handleBlur = useCallback(
     ({ name, value }) => {
       const property = name.slice(0, -1);
@@ -91,16 +95,19 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     },
     [currentBone],
   );
+
   const onKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (_.isEqual(e.key, 'Enter')) {
       e.currentTarget.blur();
     }
   }, []);
+
   const initialValue = {
     x: 0,
     y: 0,
     z: 0,
   };
+
   switch (x.slice(0, -1)) {
     case 'position':
       if (currentBone) {

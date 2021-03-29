@@ -35,6 +35,7 @@ import {
 } from '../types';
 import { INITIAL_RETARGET_DATA } from '../utils/const';
 import { CPModeType } from '../types/CP';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 
 export enum StoreDataNames {
   mainData = 'mainData',
@@ -60,6 +61,7 @@ export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_DATA);
 export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 export const storeCurrentBone = makeVar<THREE.Bone | undefined>(undefined);
+export const storeTransformControls = makeVar<TransformControls | undefined>(undefined);
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);

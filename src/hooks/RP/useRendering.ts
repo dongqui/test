@@ -21,7 +21,7 @@ import {
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
 import { useHistory } from './useHistory';
-import { storeCurrentBone } from '../../lib/store';
+import { storeCurrentBone, storeTransformControls } from '../../lib/store';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 let innerMixer: THREE.AnimationMixer | undefined;
@@ -439,6 +439,7 @@ export const useRendering = (props: UseRendering) => {
         renderer,
         cameraControls,
       });
+      storeTransformControls(transformControls);
       // 아래 링크처럼 store 사용하는 방법으로 바꿔야 함
       // https://spectrum.chat/apollo/apollo-link-state/undo-redo-functionality-proposal~48be8143-c460-4655-8e44-b41df3e00a12
       // https://redux.js.org/recipes/implementing-undo-history#understanding-undo-history
