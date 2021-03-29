@@ -82,8 +82,8 @@ const DopeSheet: React.FC<Props> = ({ rescaleDopeSheetCircleX }) => {
       .attr('width', '100%')
       .attr('height', TRACK_HEIGHT)
       .style('position', 'fixed')
-      .style('background', '#151515')
-      .style('border', '1px solid #393939');
+      .style('background', '#151515');
+    // .style('border', '1px solid #393939');
 
     // x축 g 태그 랜더링
     renderXAxis.current = d3
@@ -120,8 +120,9 @@ const DopeSheet: React.FC<Props> = ({ rescaleDopeSheetCircleX }) => {
         .attr('width', width)
         .attr('height', TRACK_HEIGHT)
         .attr('fill', '#151515')
-        .attr('stroke-width', 1)
-        .attr('stroke', 'rgb(57, 57, 57)');
+        .attr('stroke-dasharray', '100, 50');
+      // .attr('stroke-width', 1)
+      // .attr('stroke', 'rgb(57, 57, 57)');
 
       // circle 생성
       circleGroup

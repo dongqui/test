@@ -4,6 +4,7 @@ import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { TPTrackName } from 'types/TP';
 import { TPDefaultTrackNameList, TPFilteredTrackNameList } from 'lib/store';
+import { SearchInput } from 'components/New_Input';
 import Track from './Track';
 import styles from './TrackList.module.scss';
 
@@ -89,30 +90,36 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
     [changeDebounedTrackInput],
   );
 
+  const isEmptyTrack = _.isEmpty(testFilteredTrackList);
+
   return (
     <>
-      <div className={cx('track-list-container')} ref={trackListRef}>
-        <div className={cx('track-input-wrapper')}>
-          {/* To Do
-              돋보기 아이콘 적용
-          */}
-          <input type="text" onChange={changeTrackInput} />
+      <div className={cx('wrapper')} ref={trackListRef}>
+        <div className={cx('search-wrapper')}>
+          <SearchInput
+            className={cx('search-joint')}
+            placeholder="Search Joints"
+            onChange={changeTrackInput}
+          />
         </div>
-        <div className={cx('track-list-wrapper')}>
-          {testFilteredTrackList?.map((track) => {
-            const { childrenTrackList, defaultChildrenTrackOpened, name, trackIndex } = track;
-            return (
-              <Track
-                key={name}
-                childrenTrackList={childrenTrackList}
-                defaultChildrenTrackOpened={defaultChildrenTrackOpened}
-                paddingLeft={10}
-                title={name}
-                trackIndex={trackIndex}
-              />
-            );
-          })}
-        </div>
+        {!isEmptyTrack && (
+          <div className={cx('list')}>
+            {_.map(testFilteredTrackList, (track, i) => {
+              const { childrenTrackList, defaultChildrenTrackOpened, name, trackIndex } = track;
+              const key = `${name}_${i}`;
+              return (
+                <Track
+                  key={key}
+                  childrenTrackList={childrenTrackList}
+                  defaultChildrenTrackOpened={defaultChildrenTrackOpened}
+                  paddingLeft={10}
+                  title={name}
+                  trackIndex={trackIndex}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </>
   );
