@@ -36,6 +36,7 @@ export const CPTitleWrapper = styled.div`
   color: white;
   font-size: 14px;
   font-weight: bold;
+  border-bottom: 1px solid ${GRAY200};
 `;
 export const CPListRowParentWrapper = styled.div`
   padding-left: ${PADDING_LEFT}px;

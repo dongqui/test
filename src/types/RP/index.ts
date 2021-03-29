@@ -21,15 +21,22 @@ export enum RenderingDataPropertyName {
   angleY = 'angleY',
   angleZ = 'angleZ',
   axis = 'axis',
-  bone = 'bone',
-  joint = 'joint',
-  mesh = 'mesh',
-  shadow = 'shadow',
-  fog = 'fog',
-  near = 'near',
-  far = 'far',
+  isBoneOn = 'isBoneOn',
+  isJointOn = 'isJointOn',
+  isMeshOn = 'isMeshOn',
+  isShadowOn = 'isShadowOn',
+  isFogOn = 'isFogOn',
+  fogNear = 'fogNear',
+  fogFar = 'fogFar',
 }
 export enum axisName {
+  y = 'y',
+  z = 'z',
+}
+export enum RetargetDataPropertyName {
+  boneName = 'boneName',
+  targetBoneName = 'targetBoneName',
+  x = 'x',
   y = 'y',
   z = 'z',
 }
@@ -50,13 +57,13 @@ export interface RenderingDataType {
   [RenderingDataPropertyName.angleY]: number;
   [RenderingDataPropertyName.angleZ]: number;
   [RenderingDataPropertyName.axis]: axisName;
-  [RenderingDataPropertyName.bone]: boolean;
-  [RenderingDataPropertyName.joint]: boolean;
-  [RenderingDataPropertyName.mesh]: boolean;
-  [RenderingDataPropertyName.shadow]: boolean;
-  [RenderingDataPropertyName.fog]: boolean;
-  [RenderingDataPropertyName.near]: number;
-  [RenderingDataPropertyName.far]: number;
+  [RenderingDataPropertyName.isBoneOn]: boolean;
+  [RenderingDataPropertyName.isJointOn]: boolean;
+  [RenderingDataPropertyName.isMeshOn]: boolean;
+  [RenderingDataPropertyName.isShadowOn]: boolean;
+  [RenderingDataPropertyName.isFogOn]: boolean;
+  [RenderingDataPropertyName.fogNear]: number;
+  [RenderingDataPropertyName.fogFar]: number;
 }
 interface RANGEBOX_INFO_TYPES {
   width: number;
@@ -84,4 +91,11 @@ export interface AnimatingDataType {
   startTimeIndex: number;
   endTimeIndex: number;
   currentTimeIndex: number;
+}
+export interface RetargetDataType {
+  [RetargetDataPropertyName.boneName]: string;
+  [RetargetDataPropertyName.targetBoneName]?: string;
+  [RetargetDataPropertyName.x]: number;
+  [RetargetDataPropertyName.y]: number;
+  [RetargetDataPropertyName.z]: number;
 }
