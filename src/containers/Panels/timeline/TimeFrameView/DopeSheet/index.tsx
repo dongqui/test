@@ -69,6 +69,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
 
     // x축 위치 설정
     xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear);
+    d3.axisTop(xScale.current as d3ScaleLinear).scale();
 
     // x축 svg 태그 추가
     d3.select(dopeSheetRef.current)
@@ -79,14 +80,28 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       .attr('height', TRACK_HEIGHT)
       .style('position', 'fixed')
       .style('background', '#151515');
-    // .style('border', '1px solid #393939');
 
     // x축 g 태그 랜더링
     renderXAxis.current = d3
       .select(`.${X_AXIS_SVG_CLASSNAME}`)
       .append('g')
       .attr('transform', `translate(${DOPE_SHEET_MARGIN.left}, ${TRACK_HEIGHT})`)
-      .call(xAxisPosition.current);
+      .call(
+        xAxisPosition.current.scale(
+          d3
+            .scaleLinear()
+            .domain([-5, 5])
+            .range([DOPE_SHEET_MARGIN.left, width - DOPE_SHEET_MARGIN.right]),
+        ),
+      );
+
+    // const rescaleXRef = event.transform.rescaleX(xScaleCopy.current as d3.ZoomScale); // rescale을 하고
+    // const renderXAxisRef = renderXAxis.current as d3Selection; // x축 g태그를 갖고와서
+    // const xAxisRef = xAxisPosition.current as d3Axis; // 어디 위치에 x축을 박을지 정하고
+    // const xScaleRef = xScale.current as d3ScaleLinear; // x값 범위를 가져온다
+
+    // xScale.current = rescaleXRef; // rescale된 값으로 x값을 갱신
+    // renderXAxisRef.call(xAxisRef.scale(xScaleRef)); // 갱신되기 전 값으로 x축을 그린다
   }, []);
 
   // dope sheet 세팅
@@ -118,8 +133,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         .attr('height', TRACK_HEIGHT)
         .attr('fill', '#151515')
         .attr('stroke-dasharray', '100, 50');
-      // .attr('stroke-width', 1)
-      // .attr('stroke', 'rgb(57, 57, 57)');
 
       // circle 생성
       circleGroup
@@ -260,20 +273,100 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     };
 
     // circle x값 rescale
+    // const rescaleCircleX = () => {
+    //   d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
+    //     const circleGroup = d3.select(this);
+    //     const circleGroupNode = circleGroup.node() as Element;
+    //     const xScaleLinear = xScale.current as d3ScaleLinear;
+
+    //     const observer = new IntersectionObserver(([entry], observer) => {
+    //       if (!entry.isIntersecting) return observer.unobserve(entry.target);
+    //       circleGroup
+    //         .selectAll('circle')
+    //         .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
+    //       observer.unobserve(entry.target);
+    //     });
+    //     observer.observe(circleGroupNode);
+    //   });
+    // };
+
+    // const rescaleCircleX = () => {
+    //   console.log(2);
+    //   return new Promise((resolve) =>
+    //     resolve(
+    //       d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
+    //         const circleGroup = d3.select(this);
+    //         const circleGroupNode = circleGroup.node() as Element;
+    //         const xScaleLinear = xScale.current as d3ScaleLinear;
+    //         console.log(3);
+
+    //         const observer = new IntersectionObserver(([entry], observer) => {
+    //           console.log(4);
+    //           if (!entry.isIntersecting) return observer.unobserve(entry.target);
+    //           circleGroup
+    //             .selectAll('circle')
+    //             .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
+    //           observer.unobserve(entry.target);
+    //         });
+    //         observer.observe(circleGroupNode);
+    //       }),
+    //     ),
+    //   );
+    // };
+
+    // const rescaleCircleX = () => {
+    //   d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
+    //     const circleGroup = d3.select(this);
+    //     const circleGroupNode = circleGroup.node() as Element;
+    //     const xScaleLinear = xScale.current as d3ScaleLinear;
+
+    //     const observer = new IntersectionObserver(async ([entry], observer) => {
+    //       if (!entry.isIntersecting) return observer.unobserve(entry.target);
+    //       await Promise.resolve(
+    //         circleGroup
+    //           .selectAll('circle')
+    //           .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25),
+    //       ).then(() => observer.unobserve(entry.target));
+    //     });
+    //     observer.observe(circleGroupNode);
+    //   });
+    // };
+
+    // const rescaleCircleX = async () => {
+    //   return await Promise.all(
+    //     d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(async function () {
+    //       const circleGroup = d3.select(this);
+    //       const circleGroupNode = circleGroup.node() as Element;
+    //       const xScaleLinear = xScale.current as d3ScaleLinear;
+
+    //       const observer = new IntersectionObserver(async ([entry], observer) => {
+    //         if (!entry.isIntersecting) return observer.unobserve(entry.target);
+    //         await Promise.resolve(
+    //           circleGroup
+    //             .selectAll('circle')
+    //             .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25),
+    //         ).then(() => observer.unobserve(entry.target));
+    //       });
+    //       observer.observe(circleGroupNode);
+    //     }),
+    //   );
+    // };
+
+    const {
+      top: dopeSheetTop,
+      height: dopeSheetHeight,
+    } = dopeSheetRef.current.getBoundingClientRect();
     const rescaleCircleX = () => {
       d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
         const circleGroup = d3.select(this);
         const circleGroupNode = circleGroup.node() as Element;
         const xScaleLinear = xScale.current as d3ScaleLinear;
-
-        const observer = new IntersectionObserver(([entry], observer) => {
-          if (!entry.isIntersecting) return observer.unobserve(entry.target);
+        const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
+        if (dopeSheetTop <= circleGroupTop && circleGroupTop <= dopeSheetTop + dopeSheetHeight) {
           circleGroup
             .selectAll('circle')
             .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
-          observer.unobserve(entry.target);
-        });
-        observer.observe(circleGroupNode);
+        }
       });
     };
 
@@ -288,9 +381,50 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       .on(
         'zoom',
         _.throttle((event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-          rescaleXAxis(event);
           rescaleCircleX();
-        }, 100),
+          rescaleXAxis(event);
+        }, 50),
+
+        // promise.all
+        // _.throttle(async (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
+        //   await Promise.all(
+        //     d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
+        //       const circleGroup = d3.select(this);
+        //       const circleGroupNode = circleGroup.node() as Element;
+        //       const xScaleLinear = xScale.current as d3ScaleLinear;
+
+        //       const observer = new IntersectionObserver(([entry], observer) => {
+        //         if (!entry.isIntersecting) return observer.unobserve(entry.target);
+        //         circleGroup
+        //           .selectAll('circle')
+        //           .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
+        //         observer.unobserve(entry.target);
+        //       });
+        //       observer.observe(circleGroupNode);
+        //     }),
+        //   );
+        //   rescaleXAxis(event);
+        // }, 60),
+
+        // async (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
+        //   await Promise.all(
+        //     d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(async function () {
+        //       const circleGroup = d3.select(this);
+        //       const circleGroupNode = circleGroup.node() as Element;
+        //       const xScaleLinear = xScale.current as d3ScaleLinear;
+
+        //       const observer = new IntersectionObserver(async ([entry], observer) => {
+        //         if (!entry.isIntersecting) return observer.unobserve(entry.target);
+        //         await Promise.resolve(
+        //           circleGroup
+        //             .selectAll('circle')
+        //             .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25),
+        //         ).then(() => observer.unobserve(entry.target));
+        //       });
+        //       observer.observe(circleGroupNode);
+        //     }),
+        //   ).then(() => rescaleXAxis(event));
+        // },
       );
 
     d3.select(dopeSheetRef.current).call(zoomBehavior);
@@ -308,13 +442,19 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         const circleGroupNode = circleGroup.node() as Element;
         const xScaleLinear = xScale.current as d3ScaleLinear;
 
-        const observer = new IntersectionObserver(([entry], observer) => {
-          if (!entry.isIntersecting) return observer.unobserve(entry.target);
-          circleGroup
-            .selectAll('circle')
-            .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
-          observer.unobserve(entry.target);
-        });
+        const observer = new IntersectionObserver(
+          ([entry], observer) => {
+            if (!entry.isIntersecting) return observer.unobserve(entry.target);
+            circleGroup
+              .selectAll('circle')
+              .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
+            observer.unobserve(entry.target);
+          },
+          {
+            root: document.getElementById('timeline-wrapper'),
+            rootMargin: `${TRACK_HEIGHT * 64}px 0px`,
+          },
+        );
         observer.observe(circleGroupNode);
       });
     };
