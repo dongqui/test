@@ -162,8 +162,8 @@ export const useLPControl = ({
         isClicked: _.isEqual(item.key, targetIcon?.id),
       }));
       let data = [
-        { key: '0', name: 'New Group' },
-        { key: '3', name: 'Paste' },
+        { key: '0', value: 'New Group' },
+        { key: '3', value: 'Paste' },
       ];
       if (
         _.isEqual(
@@ -172,9 +172,9 @@ export const useLPControl = ({
         )
       ) {
         data = [
-          { key: '1', name: 'Copy' },
-          { key: '2', name: 'Delete' },
-          { key: '5', name: 'Edit name' },
+          { key: '1', value: 'Copy' },
+          { key: '2', value: 'Delete' },
+          { key: '5', value: 'Edit name' },
         ];
       }
       if (
@@ -184,11 +184,11 @@ export const useLPControl = ({
         )
       ) {
         data = [
-          { key: '1', name: 'Copy' },
-          { key: '2', name: 'Delete' },
-          { key: '4', name: 'Visualization' },
-          { key: '5', name: 'Edit name' },
-          { key: '6', name: 'Add motion' },
+          { key: '1', value: 'Copy' },
+          { key: '2', value: 'Delete' },
+          { key: '4', value: 'Visualization' },
+          { key: '5', value: 'Edit name' },
+          { key: '6', value: 'Add motion' },
         ];
       }
       if (
@@ -198,10 +198,10 @@ export const useLPControl = ({
         )
       ) {
         data = [
-          { key: '1', name: 'Copy' },
-          { key: '2', name: 'Delete' },
-          { key: '4', name: 'Visualization' },
-          { key: '5', name: 'Edit name' },
+          { key: '1', value: 'Copy' },
+          { key: '2', value: 'Delete' },
+          { key: '4', value: 'Visualization' },
+          { key: '5', value: 'Edit name' },
         ];
       }
       storeContextMenuInfo({
@@ -209,7 +209,7 @@ export const useLPControl = ({
         top,
         left,
         data,
-        onClick: ({ key }) => {
+        onClick: (key, value) => {
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
           let content = '';
           switch (key) {

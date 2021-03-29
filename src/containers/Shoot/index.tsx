@@ -5,7 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 import styled from '@emotion/styled';
 import * as api from 'utils/common/api';
 import { useReactiveVar } from '@apollo/client';
-import { Contextmenu } from 'components/Contextmenu';
+// import { Contextmenu } from 'components/Contextmenu';
+import { ContextMenu } from 'components/New_ContextMenu';
 import MainPage from './MainPage';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import {
@@ -132,19 +133,28 @@ const ShootPage: NextPage<Props> = () => {
   return (
     <main>
       {contextMenuInfo.isShow && (
-        <ContextMenuWrapper
-          ref={contextMenuRef}
-          top={`${contextMenuInfo.top}px`}
-          left={`${contextMenuInfo.left}px`}
-        >
-          <Contextmenu
-            width="8rem"
-            height="3rem"
-            backgroundColor={GRAY200}
-            data={contextMenuInfo.data}
-            onClick={contextMenuInfo.onClick}
-          />
-        </ContextMenuWrapper>
+        <ContextMenu
+          innerRef={contextMenuRef}
+          position={{
+            top: `${contextMenuInfo.top}px`,
+            left: `${contextMenuInfo.left}px`,
+          }}
+          onSelect={contextMenuInfo.onClick}
+          list={contextMenuInfo.data}
+        />
+        // <ContextMenuWrapper
+        //   ref={contextMenuRef}
+        //   top={`${contextMenuInfo.top}px`}
+        //   left={`${contextMenuInfo.left}px`}
+        // >
+        //   <Contextmenu
+        //     width="8rem"
+        //     height="3rem"
+        //     backgroundColor={GRAY200}
+        //     data={contextMenuInfo.data}
+        //     onClick={contextMenuInfo.onClick}
+        //   />
+        // </ContextMenuWrapper>
       )}
       {modalInfo.isShow && (
         <>

@@ -79,10 +79,7 @@ export const ListRowText = styled.span<ListRowTextProps>`
   margin-left: ${(props) => props.marginLeft ?? 0}rem;
 `;
 export const ListViewWrapper = styled.div<ListViewWrapperProps>`
-  width: ${LIBRARYPANEL_INFO.widthPx}px;
-  height: ${rem(480)}rem;
-  background-color: ${BACKGROUND_COLOR};
-  padding-left: ${rem(12)}rem;
+  /* height: ${rem(480)}rem; */
   position: relative;
   -ms-user-select: none;
   -moz-user-select: -moz-none;

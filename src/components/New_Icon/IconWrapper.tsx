@@ -17,10 +17,6 @@ const defaultProps: Partial<Props> = {
 };
 
 const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, className, onClick }) => {
-  const classes = cx('wrapper', className, {
-    frame: hasFrame,
-  });
-
   const Component = icon;
 
   const isClickable = !!onClick;
@@ -34,6 +30,11 @@ const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, className, onCl
     },
     [onClick],
   );
+
+  const classes = cx('wrapper', className, {
+    button: isClickable,
+    frame: hasFrame,
+  });
 
   if (isClickable) {
     return (
