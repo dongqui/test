@@ -2,7 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { InputCP } from 'components/Input/InputCP';
 import { storeRenderingData, storeCurrentBone, storeTransformControls } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { RenderingDataPropertyName } from 'types/RP';
 import {
   fnChangeBonePosition,
@@ -10,7 +10,6 @@ import {
   fnChangeBoneScale,
 } from 'utils/CP/transformUtils';
 import * as S from './CPListTreeStyles';
-import * as THREE from 'three';
 
 export interface CPListRowInputProps {
   rowKey: string;

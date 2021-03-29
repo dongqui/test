@@ -1,9 +1,9 @@
 import _ from 'lodash';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { FILE_TYPES, ShootLayerType, ShootTrackType } from 'types';
+import { ShootLayerType, ShootTrackType } from 'types';
 import { storeAnimatingData, storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClip } from 'utils/TP/editingUtils';
@@ -12,16 +12,11 @@ import {
   fnSetPlayDirection,
   fnGoToSpecificTimeIndex,
 } from 'utils/RP/animatingUtils';
-import {
-  fnChangeBonePosition,
-  fnChangeBoneRotation,
-  fnChangeBoneScale,
-} from 'utils/CP/transformUtils';
-import { fnChangeCameraLookAt, fnChangeCameraPosition } from 'utils/CP/cameraUtils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { fnAddFog, fnChangeFogFar, fnChangeFogNear, fnRemoveFog } from 'utils/CP/fogUtils';
 import {
   fnAddShadow,
+  fnChangeAxis,
   fnMakeBoneAndJointInvisible,
   fnMakeBoneAndJointVisible,
   fnMakeSkinnedMeshesInvisible,
@@ -53,6 +48,10 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   const [scene, setScene] = useState<THREE.Scene | undefined>(undefined);
   const [fog, setFog] = useState<THREE.Fog | undefined>(undefined);
   const [dirLight, setDirLight] = useState<THREE.DirectionalLight | undefined>(undefined);
+  const [camera, setCamera] = useState<THREE.PerspectiveCamera | undefined>(undefined);
+  const [ground, setGround] = useState<THREE.Mesh | undefined>(undefined);
+  const [yAxis, setYAxis] = useState<THREE.Line | undefined>(undefined);
+  const [zAxis, setZAxis] = useState<THREE.Line | undefined>(undefined);
   const [currentAction, setCurrentAction] = useState<THREE.AnimationAction | undefined>(undefined);
 
   useRendering({
@@ -63,6 +62,10 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     setCameraControls,
     setScene,
     setDirLight,
+    setCamera,
+    setGround,
+    setYAxis,
+    setZAxis,
   });
 
   const { startTimeIndex, endTimeIndex } = animatingData;
@@ -165,7 +168,33 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   }, [fog, fogFar]);
 
   // visibility option 적용 로직
-  const { isBoneOn, isJointOn, isMeshOn, isShadowOn } = renderingData;
+  const { axis, isBoneOn, isJointOn, isMeshOn, isShadowOn } = renderingData;
+
+  useEffect(() => {
+    if (scene && camera && cameraControls && ground && yAxis && zAxis) {
+      if (axis === 'y') {
+        fnChangeAxis({
+          upDirection: 'y',
+          camera,
+          cameraControls,
+          scene,
+          ground,
+          yAxis,
+          zAxis,
+        });
+      } else if (axis === 'z') {
+        fnChangeAxis({
+          upDirection: 'z',
+          camera,
+          cameraControls,
+          scene,
+          ground,
+          yAxis,
+          zAxis,
+        });
+      }
+    }
+  }, [axis, camera, cameraControls, ground, scene, yAxis, zAxis]);
 
   useEffect(() => {
     if (skeletonHelper) {

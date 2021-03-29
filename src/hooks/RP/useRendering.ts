@@ -34,6 +34,10 @@ interface UseRendering {
   setCameraControls: Dispatch<SetStateAction<OrbitControls | undefined>>;
   setScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
   setDirLight: Dispatch<SetStateAction<THREE.DirectionalLight | undefined>>;
+  setCamera: Dispatch<SetStateAction<THREE.PerspectiveCamera | undefined>>;
+  setGround: Dispatch<SetStateAction<THREE.Mesh | undefined>>;
+  setYAxis: Dispatch<SetStateAction<THREE.Line | undefined>>;
+  setZAxis: Dispatch<SetStateAction<THREE.Line | undefined>>;
 }
 
 export const useRendering = (props: UseRendering) => {
@@ -45,6 +49,10 @@ export const useRendering = (props: UseRendering) => {
     setCameraControls,
     setScene,
     setDirLight,
+    setCamera,
+    setGround,
+    setYAxis,
+    setZAxis,
   } = props;
   // component state
   const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
@@ -411,6 +419,7 @@ export const useRendering = (props: UseRendering) => {
       setTheScene(scene);
       // camera 생성 및 설정
       const camera = fnCreateCamera();
+      setCamera(camera);
       // renderer 생성 및 설정
       const renderer = fnCreateRenderer({ renderingDiv });
 
@@ -426,8 +435,11 @@ export const useRendering = (props: UseRendering) => {
       setDirLight(tmpDirLight);
       // scene에 바닥 추가
       const ground = fnAddGround({ scene, camera, renderer });
+      setGround(ground);
       setContents((prevContents) => [...prevContents, ground]);
       const { xAxis, yAxis, zAxis } = fnAddAxes({ scene });
+      setYAxis(yAxis);
+      setZAxis(zAxis);
       setContents((prevContents) => [...prevContents, xAxis, yAxis, zAxis]);
       // cameraControls 생성 및 설정
       const cameraControls = fnCreateCameraControls({ camera, renderer });
