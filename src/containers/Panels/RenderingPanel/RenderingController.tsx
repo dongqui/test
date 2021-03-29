@@ -108,35 +108,35 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   // bone transform 적용 로직 -> CP 직접 컨트롤 방식으로 변경할 듯
 
   // camera option 적용 로직
-  const { locationX, locationY, locationZ, angleX, angleY, angleZ } = renderingData;
+  // const { locationX, locationY, locationZ, angleX, angleY, angleZ } = renderingData;
 
-  useEffect(() => {
-    if (cameraControls) {
-      fnChangeCameraPosition({ cameraControls, axis: 'x', value: locationX });
-    }
-  }, [cameraControls, locationX]);
+  // useEffect(() => {
+  //   if (cameraControls) {
+  //     fnChangeCameraPosition({ cameraControls, axis: 'x', value: locationX });
+  //   }
+  // }, [cameraControls, locationX]);
 
-  useEffect(() => {
-    if (cameraControls) {
-      fnChangeCameraPosition({ cameraControls, axis: 'y', value: locationY });
-    }
-  }, [cameraControls, locationY]);
+  // useEffect(() => {
+  //   if (cameraControls) {
+  //     fnChangeCameraPosition({ cameraControls, axis: 'y', value: locationY });
+  //   }
+  // }, [cameraControls, locationY]);
 
-  useEffect(() => {
-    if (cameraControls) {
-      fnChangeCameraPosition({ cameraControls, axis: 'z', value: locationZ });
-    }
-  }, [cameraControls, locationZ]);
+  // useEffect(() => {
+  //   if (cameraControls) {
+  //     fnChangeCameraPosition({ cameraControls, axis: 'z', value: locationZ });
+  //   }
+  // }, [cameraControls, locationZ]);
 
-  useEffect(() => {
-    if (cameraControls) {
-      fnChangeCameraLookAt({
-        cameraControls,
-        axis: 'x',
-        value: { x: angleX, y: angleX, z: angleZ },
-      });
-    }
-  }, [cameraControls, angleX, angleZ]);
+  // useEffect(() => {
+  //   if (cameraControls) {
+  //     fnChangeCameraLookAt({
+  //       cameraControls,
+  //       axis: 'x',
+  //       value: { x: angleX, y: angleX, z: angleZ },
+  //     });
+  //   }
+  // }, [cameraControls, angleX, angleZ]);
 
   // fog option 적용 로직
   const { isFogOn, fogNear, fogFar } = renderingData;

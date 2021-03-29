@@ -17,21 +17,21 @@ export interface CPListRowInputProps {
   x?:
     | RenderingDataPropertyName.positionX
     | RenderingDataPropertyName.rotationX
-    | RenderingDataPropertyName.scaleX
-    | RenderingDataPropertyName.locationX
-    | RenderingDataPropertyName.angleX;
+    | RenderingDataPropertyName.scaleX;
+  // | RenderingDataPropertyName.locationX
+  // | RenderingDataPropertyName.angleX;
   y?:
     | RenderingDataPropertyName.positionY
     | RenderingDataPropertyName.rotationY
-    | RenderingDataPropertyName.scaleY
-    | RenderingDataPropertyName.locationY
-    | RenderingDataPropertyName.angleY;
+    | RenderingDataPropertyName.scaleY;
+  // | RenderingDataPropertyName.locationY
+  // | RenderingDataPropertyName.angleY;
   z?:
     | RenderingDataPropertyName.positionZ
     | RenderingDataPropertyName.rotationZ
-    | RenderingDataPropertyName.scaleZ
-    | RenderingDataPropertyName.locationZ
-    | RenderingDataPropertyName.angleZ;
+    | RenderingDataPropertyName.scaleZ;
+  // | RenderingDataPropertyName.locationZ
+  // | RenderingDataPropertyName.angleZ;
 }
 
 const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
