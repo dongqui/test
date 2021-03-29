@@ -4,7 +4,7 @@ import * as S from './StyleInput';
 
 export interface InputCPProps {
   prefix?: 'X' | 'Y' | 'Z';
-  number: number;
+  initialValue: number;
   name?: string;
   onDragEnd?: ({ name, value }: { name: string; value: number }) => void;
   onKeyPress?: ((event: React.KeyboardEvent<HTMLInputElement>) => void) | undefined;
@@ -13,7 +13,7 @@ export interface InputCPProps {
 let currentValue: number;
 export const InputCP: React.FC<InputCPProps> = ({
   prefix = 'X',
-  number,
+  initialValue,
   name = '',
   onDragEnd = () => {},
   onKeyPress = () => {},
@@ -23,7 +23,7 @@ export const InputCP: React.FC<InputCPProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isModifying, setIsModifying] = useState(false);
-  const [value, setValue] = useState(number);
+  const [value, setValue] = useState(initialValue);
   const handleMouseDown = useCallback((e) => {
     if (inputWrapperRef.current && inputWrapperRef.current.contains(e.target)) {
       setIsDragging(true);
@@ -91,7 +91,7 @@ export const InputCP: React.FC<InputCPProps> = ({
         ></S.InputCPInput>
       ) : (
         <S.InputCPInputDiv ref={inputRef} onClick={onClick}>
-          {number}
+          {initialValue}
         </S.InputCPInputDiv>
       )}
     </S.InputCPWrapper>

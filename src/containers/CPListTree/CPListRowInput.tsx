@@ -1,9 +1,14 @@
 import { useReactiveVar } from '@apollo/client';
 import { InputCP } from 'components/Input/InputCP';
-import { storeRenderingData } from 'lib/store';
+import { storeRenderingData, storeCurrentBone } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { RenderingDataPropertyName } from 'types/RP';
+import {
+  fnChangeBonePosition,
+  fnChangeBoneRotation,
+  fnChangeBoneScale,
+} from 'utils/CP/transformUtils';
 import * as S from './CPListTreeStyles';
 
 export interface CPListRowInputProps {
@@ -37,30 +42,126 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   z = RenderingDataPropertyName.positionZ,
 }) => {
   const renderingData = useReactiveVar(storeRenderingData);
+  const currentBone = useReactiveVar(storeCurrentBone);
   const onDragEnd = useCallback(
     ({ name, value }) => {
-      storeRenderingData({ ...renderingData, [name]: value });
+      const property = name.slice(0, -1);
+      const axis = name.slice(-1).toLowerCase();
+      switch (property) {
+        case 'position':
+          if (currentBone) {
+            fnChangeBonePosition({ targetBone: currentBone, axis, value });
+          }
+          break;
+        case 'rotation':
+          if (currentBone) {
+            fnChangeBoneRotation({ targetBone: currentBone, axis, value });
+          }
+          break;
+        case 'scale':
+          if (currentBone) {
+            fnChangeBoneScale({ targetBone: currentBone, axis, value });
+          }
+          break;
+      }
     },
-    [renderingData],
+    [currentBone],
   );
   const handleBlur = useCallback(
     ({ name, value }) => {
-      storeRenderingData({ ...renderingData, [name]: value });
+      const property = name.slice(0, -1);
+      const axis = name.slice(-1).toLowerCase();
+      switch (property) {
+        case 'position':
+          if (currentBone) {
+            fnChangeBonePosition({ targetBone: currentBone, axis, value });
+          }
+          break;
+        case 'rotation':
+          if (currentBone) {
+            fnChangeBoneRotation({ targetBone: currentBone, axis, value });
+          }
+          break;
+        case 'scale':
+          if (currentBone) {
+            fnChangeBoneScale({ targetBone: currentBone, axis, value });
+          }
+          break;
+      }
     },
-    [renderingData],
+    [currentBone],
   );
   const onKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (_.isEqual(e.key, 'Enter')) {
       e.currentTarget.blur();
     }
   }, []);
+  const initialValue = {
+    x: 0,
+    y: 0,
+    z: 0,
+  };
+  switch (x.slice(0, -1)) {
+    case 'position':
+      if (currentBone) {
+        initialValue.x = currentBone.position.x;
+      }
+      break;
+    case 'rotation':
+      if (currentBone) {
+        initialValue.x = currentBone.rotation.x;
+      }
+      break;
+    case 'scale':
+      if (currentBone) {
+        initialValue.x = currentBone.scale.x;
+      }
+      break;
+  }
+
+  switch (y.slice(0, -1)) {
+    case 'position':
+      if (currentBone) {
+        initialValue.y = currentBone.position.y;
+      }
+      break;
+    case 'rotation':
+      if (currentBone) {
+        initialValue.y = currentBone.rotation.y;
+      }
+      break;
+    case 'scale':
+      if (currentBone) {
+        initialValue.y = currentBone.scale.y;
+      }
+      break;
+  }
+
+  switch (z.slice(0, -1)) {
+    case 'position':
+      if (currentBone) {
+        initialValue.z = currentBone.position.z;
+      }
+      break;
+    case 'rotation':
+      if (currentBone) {
+        initialValue.z = currentBone.rotation.z;
+      }
+      break;
+    case 'scale':
+      if (currentBone) {
+        initialValue.z = currentBone.scale.z;
+      }
+      break;
+  }
+
   return (
     <S.CPListRowParentWrapper>
       <S.CPListRowInputWrapper>
         {name}
         <S.CPListRowInputsWrapper>
           <InputCP
-            number={renderingData[x] as number}
+            initialValue={initialValue.x}
             prefix="X"
             onDragEnd={onDragEnd}
             handleBlur={handleBlur}
@@ -68,7 +169,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
             name={x}
           />
           <InputCP
-            number={renderingData[y] as number}
+            initialValue={initialValue.y}
             prefix="Y"
             onDragEnd={onDragEnd}
             handleBlur={handleBlur}
@@ -76,7 +177,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
             name={y}
           />
           <InputCP
-            number={renderingData[z] as number}
+            initialValue={initialValue.z}
             prefix="Z"
             onDragEnd={onDragEnd}
             handleBlur={handleBlur}

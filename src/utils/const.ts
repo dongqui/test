@@ -22,7 +22,7 @@ export const INITIAL_ANIMATING_DATA: AnimatingDataType = {
   playDirection: 1, // 1 은 정재생, -1 은 역재생
   playSpeed: 1,
   startTimeIndex: 0, // 미들바의 start 에 해당
-  endTimeIndex: 100, // 미들바의 end 에 해당
+  endTimeIndex: 300, // 미들바의 end 에 해당
   currentTimeIndex: 0, // 미들바의 now 에 해당
 };
 export const INITIAL_RENDERING_DATA: RenderingDataType = {

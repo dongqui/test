@@ -21,6 +21,7 @@ import {
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
 import { useHistory } from './useHistory';
+import { storeCurrentBone } from '../../lib/store';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 let innerMixer: THREE.AnimationMixer | undefined;
@@ -30,7 +31,6 @@ interface UseRendering {
   fileUrl?: string;
   setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
   setSkeletonHelper: Dispatch<SetStateAction<THREE.SkeletonHelper | undefined>>;
-  setCurrentBoneIndex: Dispatch<SetStateAction<number>>;
   setCameraControls: Dispatch<SetStateAction<OrbitControls | undefined>>;
   setScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
   setDirLight: Dispatch<SetStateAction<THREE.DirectionalLight | undefined>>;
@@ -42,11 +42,11 @@ export const useRendering = (props: UseRendering) => {
     fileUrl,
     setMixer,
     setSkeletonHelper,
-    setCurrentBoneIndex,
     setCameraControls,
     setScene,
     setDirLight,
   } = props;
+  // component state
   const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
   const [contents, setContents] = useState<
     Array<THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D>
@@ -85,7 +85,8 @@ export const useRendering = (props: UseRendering) => {
           // 현재 transformControl 붙어 있는 것 제거
           if (transformControls) {
             transformControls.detach();
-            setCurrentBoneIndex(0); // store 에 current bone 저장 필요 ()
+            setInnerCurrentBone(undefined);
+            // storeCurrentBone(bone[0])
           }
           break;
         case 'q': // q
@@ -150,12 +151,7 @@ export const useRendering = (props: UseRendering) => {
           break;
       }
     },
-    [
-      multiKeyController.V.pressed,
-      multiKeyController.v.pressed,
-      multiKeyController.ㅍ.pressed,
-      setCurrentBoneIndex,
-    ],
+    [multiKeyController.V.pressed, multiKeyController.v.pressed, multiKeyController.ㅍ.pressed],
   );
 
   const handleTransformControlsShortcutUp = useCallback(
@@ -510,6 +506,7 @@ export const useRendering = (props: UseRendering) => {
 
             // eslint-disable-next-line no-console
             console.log('skeletonHelper: ', innerSkeletonHelper);
+            storeCurrentBone(innerSkeletonHelper.bones[0]);
             setContents((prevContents) => [...prevContents, innerSkeletonHelper]);
             fnAddJointMeshes({
               skeletonHelper: innerSkeletonHelper,
@@ -520,7 +517,7 @@ export const useRendering = (props: UseRendering) => {
               innerMixer,
               innerCurrentBone,
               setInnerCurrentBone,
-              setCurrentBoneIndex,
+              storeCurrentBone,
             });
           },
           () => {},

@@ -1,5 +1,6 @@
 import { makeVar } from '@apollo/client';
 import produce from 'immer';
+import * as THREE from 'three';
 import {
   TPTrackName,
   TPDopeSheet,
@@ -58,6 +59,7 @@ export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 // RP
 export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_DATA);
 export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
+export const storeCurrentBone = makeVar<THREE.Bone | undefined>(undefined);
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);
