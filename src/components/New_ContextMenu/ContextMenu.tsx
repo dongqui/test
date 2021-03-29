@@ -34,7 +34,7 @@ export interface Props {
   list: {
     key: string;
     value: string;
-    isSelected: boolean;
+    isSelected?: boolean;
   }[];
   position: {
     top: string | number;
@@ -62,7 +62,7 @@ const defaultProps: Partial<Props> = {
   ],
 };
 
-const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect }) => {
+const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, position }) => {
   // const wrapperRef = useRef<HTMLDivElement>(null);
 
   const defaultValue = _.find(list, { isSelected: true })?.value || list[0].value;
@@ -149,7 +149,11 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect }) => 
   }, [innerRef]);
 
   return (
-    <div ref={innerRef} className={cx('wrapper')}>
+    <div
+      ref={innerRef}
+      className={cx('wrapper')}
+      style={{ top: position.top, left: position.left }}
+    >
       <ul className={cx('menu')} role="menu">
         {_.map(list, (item, i) => {
           const key = `${item.key}_${i}`;

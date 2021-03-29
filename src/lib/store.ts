@@ -37,6 +37,7 @@ export const storeContextMenuInfo = makeVar<ContextmenuType>({
   isShow: false,
   top: 0,
   left: 0,
+  data: [],
   onClick: () => {},
 });
 export const storeModalInfo = makeVar<ModalType>({
