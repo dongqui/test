@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import TrackList from './TrackList';
@@ -32,7 +32,7 @@ const TimelineWrapper: React.FC<Props> = () => {
     <>
       <div className={cx('timeline-wrapper')} ref={timelineWrapperRef}>
         <TrackList trackListRef={trackListRef} />
-        <TimeFrameView />
+        <TimeFrameView timelineWrapperRef={timelineWrapperRef} />
       </div>
     </>
   );
