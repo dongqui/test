@@ -3,10 +3,10 @@ import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import _ from 'lodash';
 import React, { useRef, useState } from 'react';
 import { rem } from 'utils/rem';
-import * as S from './PlayBarStyles';
+import * as S from './RetargetPanelStyles';
 
 export interface DropdownProps {
-  data: { key: number; name: string; isSelected: boolean }[];
+  data: { key: number | string; name: string; isSelected: boolean }[];
   onSelect: ({ key }: { key: number }) => void;
   width?: number;
   height?: number;
@@ -23,38 +23,39 @@ const DropdownComponent: React.FC<DropdownProps> = ({
     { key: 2, name: '2x', isSelected: false },
   ],
   onSelect = () => {},
-  width = 64,
-  height = 36,
-  fontSize = 14,
+  width = 106,
+  height = 20,
+  fontSize = 2,
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement | any>(null);
-  useOutsideClick({ ref: wrapperRef, event: () => setIsOpen(false) });
   return (
-    <div ref={wrapperRef}>
+    <div>
       {isOpen ? (
-        _.map(data, (item, index) => (
-          <S.DropdownWrapper
-            width={width}
-            height={height}
-            isFirst={_.isEqual(index, 0)}
-            isLast={_.isEqual(index, _.size(data) - 1)}
-            isSelected={item.isSelected}
-            onClick={() => {
-              onSelect({ key: item.key });
-              setIsOpen(false);
-            }}
-          >
-            <S.IndicatorText marginLeft={12} fontSize={fontSize}>
-              {item.name}
-            </S.IndicatorText>
-            {_.isEqual(index, 0) && (
-              <S.DropdownArrowDownIconWrapper>
-                <DropdownArrowDownIcon />
-              </S.DropdownArrowDownIconWrapper>
-            )}
-          </S.DropdownWrapper>
-        ))
+        <S.DropdownParentWrapper height={height * 5}>
+          <>
+            {_.map(data, (item: any, index) => (
+              <S.DropdownWrapper
+                key={index}
+                width={width}
+                height={height}
+                isSelected={item.isSelected}
+                onClick={() => {
+                  onSelect({ key: item.key });
+                  setIsOpen(false);
+                }}
+              >
+                <S.IndicatorText marginLeft={12} fontSize={fontSize}>
+                  {item.name}
+                </S.IndicatorText>
+                {_.isEqual(index, 0) && (
+                  <S.DropdownArrowDownIconWrapper>
+                    <DropdownArrowDownIcon />
+                  </S.DropdownArrowDownIconWrapper>
+                )}
+              </S.DropdownWrapper>
+            ))}
+          </>
+        </S.DropdownParentWrapper>
       ) : (
         <S.DropdownWrapper
           width={width}

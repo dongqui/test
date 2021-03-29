@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { useContextmenu } from 'hooks/common/useContextmenu';
+import useContextMenu from 'hooks/common/useContextMenu';
 import { useShortcut } from 'hooks/common/useShortcut';
 import { useLPControl } from 'hooks/LP/useLPControl';
 import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
@@ -21,13 +21,13 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
   const searchWord = useReactiveVar(storeSearchWord);
   const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
   const listViewWrapperRef = useRef<HTMLDivElement>(null);
-  const { onContextMenu, shortcutData, onDragStart, onDrop, onClick } = useLPControl({
+  const { onContextMenu, shortcutData, onDragStart, onDrop, onClick, onDragEnd } = useLPControl({
     contextmenuInfo,
     mainData,
     pages,
     searchWord,
   });
-  useContextmenu({ targetRef: listViewWrapperRef, event: onContextMenu });
+  useContextMenu({ targetRef: listViewWrapperRef, event: onContextMenu });
   useShortcut({
     data: shortcutData,
   });
@@ -62,6 +62,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
           className="icon"
           draggable
           onDragStart={() => onDragStart({ key: item.key })}
+          onDragEnd={onDragEnd}
           onDrop={() => {
             onDrop({ key: _.isEqual(item.type, FILE_TYPES.motion) ? item.parentKey : item.key });
           }}

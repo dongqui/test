@@ -28,6 +28,10 @@ export enum CPNameType {
   Near = 'Near',
   Far = 'Far',
 }
+export enum CPModeType {
+  property = 'property',
+  retarget = 'retarget',
+}
 export interface CPDataType {
   [CPDataPropertyNames.key]: string;
   name: CPNameType;
@@ -58,10 +62,10 @@ export interface CPDataType {
     | RenderingDataPropertyName.angleZ;
   button?:
     | RenderingDataPropertyName.axis
-    | RenderingDataPropertyName.bone
-    | RenderingDataPropertyName.joint
-    | RenderingDataPropertyName.mesh
-    | RenderingDataPropertyName.shadow
-    | RenderingDataPropertyName.fog;
-  slider?: RenderingDataPropertyName.near | RenderingDataPropertyName.far;
+    | RenderingDataPropertyName.isBoneOn
+    | RenderingDataPropertyName.isJointOn
+    | RenderingDataPropertyName.isMeshOn
+    | RenderingDataPropertyName.isShadowOn
+    | RenderingDataPropertyName.isFogOn;
+  slider?: RenderingDataPropertyName.fogNear | RenderingDataPropertyName.fogFar;
 }

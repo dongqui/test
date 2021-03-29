@@ -11,11 +11,11 @@ export interface CPListRowSelectProps {
   name: string;
   button?:
     | RenderingDataPropertyName.axis
-    | RenderingDataPropertyName.bone
-    | RenderingDataPropertyName.joint
-    | RenderingDataPropertyName.mesh
-    | RenderingDataPropertyName.shadow
-    | RenderingDataPropertyName.fog;
+    | RenderingDataPropertyName.isBoneOn
+    | RenderingDataPropertyName.isJointOn
+    | RenderingDataPropertyName.isMeshOn
+    | RenderingDataPropertyName.isShadowOn
+    | RenderingDataPropertyName.isFogOn;
 }
 
 const CPListRowSelectComponent: React.FC<CPListRowSelectProps> = ({

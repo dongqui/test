@@ -1,25 +1,33 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import { FunctionComponent, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import _ from 'lodash';
-import { Rnd } from 'react-rnd';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-import { storeRenderingData, storeMainData, storeCPData, storeAnimatingData } from 'lib/store';
+import {
+  storeRenderingData,
+  storeMainData,
+  storeCPData,
+  storeAnimatingData,
+  storeCPMode,
+} from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
-import { MIN_WIDTH } from 'styles/constants/panels';
-import classNames from 'classnames/bind';
-import styles from './MainPage.module.scss';
+import { ResizableBox } from 'react-resizable';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
-import { useResizeRP } from 'hooks/RP/useResizeRP';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
-import { useDispatch } from 'react-redux';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
+import useWindowSize from 'hooks/common/useWindowSize';
+import classNames from 'classnames/bind';
+import styles from './MainPage.module.scss';
+import { RetargetPanel } from 'containers/Panels/RetargetPanel';
+import { CPModeType } from 'types/CP';
+import { DEFAULT_TARGETBONES } from 'utils/const';
 
 const cx = classNames.bind(styles);
 
-const MainContainer: React.FC = () => {
+const MainContainer: FunctionComponent = () => {
   const mainData = useReactiveVar(storeMainData);
   const cpData = useReactiveVar(storeCPData);
+  const cpMode = useReactiveVar(storeCPMode);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const fileUrl = useMemo(() => {
@@ -46,6 +54,17 @@ const MainContainer: React.FC = () => {
     }
     return result;
   }, [mainData]);
+  const targetBones = useMemo(() => {
+    let result = DEFAULT_TARGETBONES;
+    const visualizedBaseLayer = _.filter(
+      _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer,
+      (item) => _.includes(item.name, 'rotation'),
+    );
+    if (!_.isEmpty(visualizedBaseLayer)) {
+      result = _.map(visualizedBaseLayer, (item) => _.split(item.name, '.')?.[0]);
+    }
+    return result;
+  }, [mainData]);
   const handleDrop = useCallback(() => {
     storeMainData(
       _.map(mainData, (item) => ({
@@ -54,86 +73,69 @@ const MainContainer: React.FC = () => {
       })),
     );
   }, [mainData]);
-  const {
-    handleResizeStop,
-    libraryPanel,
-    lowerSection,
-    renderingPanel,
-    upperSection,
-    controlPanel,
-  } = useResizeRP();
+
   useDebuggingData({ mainData, cpData, renderingData, animatingData });
 
+  const [width, height] = useWindowSize();
+
   return (
-    <>
-      <Rnd
-        id="wrapper_upper"
-        disableDragging
-        enableResizing={false}
-        size={{ ...upperSection.size }}
+    <div className={cx('wrapper')}>
+      <ResizableBox
+        width={width}
+        height={height * 0.7}
+        minConstraints={[width, height * 0.5]}
+        maxConstraints={[width, height * 0.7]}
+        className={cx('upper-section')}
+        resizeHandles={['s']}
+        axis="y"
       >
-        <Rnd
-          id="wrapper_library"
-          className={cx('library')}
-          disableDragging
-          enableResizing={{ right: true }}
-          onResize={handleResizeStop}
-          minWidth={MIN_WIDTH.library}
-          maxWidth={libraryPanel.maxWidth}
-          size={{ ...libraryPanel.size }}
+        <ResizableBox
+          width={230}
+          minConstraints={[230, height * 0.5]}
+          maxConstraints={[450, height * 0.7]}
+          className={cx('panel-library')}
+          resizeHandles={['e']}
+          axis="both"
         >
           <LibraryPanel />
-        </Rnd>
-        <Rnd
-          id="wrapper_rendering"
-          disableDragging
-          enableResizing={false}
-          onDrop={handleDrop}
-          size={{ ...renderingPanel.size }}
-          position={{ ...renderingPanel.position }}
+        </ResizableBox>
+        <ResizableBox
+          width={width - 230 * 2}
+          minConstraints={[150, height * 0.5]}
+          maxConstraints={[width - 230 * 2, height * 0.7]}
+          className={cx('panel-rendering')}
+          axis="both"
         >
-          <RenderingController
-            id="renderingDiv"
-            fileUrl={fileUrl}
-            visualizedName={visualizedInfo?.visualizedName}
-            visualizedBaseLayer={visualizedInfo.visualizedBaseLayer}
-            visualizedLayers={visualizedInfo.visualizedLayers}
-          />
-        </Rnd>
-        <Rnd
-          id="wrapper_control"
-          className={cx('control')}
-          disableDragging
-          enableResizing={{ left: true }}
-          onResize={handleResizeStop}
-          onDrop={handleDrop}
-          minWidth={MIN_WIDTH.control}
-          maxWidth={controlPanel.maxWidth}
-          size={{ ...controlPanel.size }}
-          position={{ ...controlPanel.position }}
-        >
-          <div className={cx('child')}>
-            <ControlPanel />
+          <div style={{ width: '100%', height: '100%' }} onDrop={handleDrop}>
+            <RenderingController
+              id="renderingDiv"
+              fileUrl={fileUrl}
+              visualizedName={visualizedInfo?.visualizedName}
+              visualizedBaseLayer={visualizedInfo.visualizedBaseLayer}
+              visualizedLayers={visualizedInfo.visualizedLayers}
+            />
           </div>
-        </Rnd>
-      </Rnd>
-      <Rnd
-        id="wrapper_lower"
-        disableDragging
-        enableResizing={{ top: true }}
-        onResize={handleResizeStop}
-        minHeight={lowerSection.minHeight}
-        maxHeight={lowerSection.maxHeight}
-        size={{ ...lowerSection.size }}
-        position={{ ...lowerSection.position }}
-      >
+        </ResizableBox>
+        <ResizableBox
+          width={230}
+          minConstraints={[230, height * 0.5]}
+          maxConstraints={[450, height * 0.7]}
+          className={cx('panel-control')}
+          resizeHandles={['w']}
+          axis="both"
+        >
+          {_.isEqual(cpMode, CPModeType.property) && <ControlPanel />}
+          {_.isEqual(cpMode, CPModeType.retarget) && <RetargetPanel targetBones={targetBones} />}
+        </ResizableBox>
+      </ResizableBox>
+      <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">
         <TimelineContainer
           baseLayer={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
           layers={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.layers}
         />
-      </Rnd>
-    </>
+      </ResizableBox>
+    </div>
   );
 };
 
-export default React.memo(MainContainer);
+export default MainContainer;

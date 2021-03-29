@@ -6,18 +6,21 @@ import { GRAY200, GRAY300, GRAY500, GRAY600 } from '../../styles/constants/commo
 
 interface IndicatorTextProps {
   marginLeft?: number;
+  fontSize?: number;
 }
 interface DropdownWrapperProps {
   isBorderRadius?: boolean;
   isFirst?: boolean;
   isLast?: boolean;
   isSelected?: boolean;
+  width: number;
+  height: number;
 }
 interface ModeSelectIconWrapperProps {
   isSelected?: boolean;
 }
-const FONT_SIZE = rem(14);
-const BORDER_RADIUS = rem(8);
+const FONT_SIZE = 14;
+const BORDER_RADIUS = 8;
 const HOVER_COLOR = 'rgb(69, 69, 69, 1)';
 export const IndicatorWrapper = styled.div`
   width: ${rem(302)}rem;
@@ -28,10 +31,10 @@ export const IndicatorWrapper = styled.div`
   background-color: ${GRAY300};
 `;
 export const IndicatorText = styled.span<IndicatorTextProps>`
-  font-size: ${FONT_SIZE}rem;
+  font-size: ${(props) => props.fontSize ?? FONT_SIZE}px;
   color: ${GRAY600};
   font-weight: bold;
-  margin-left: ${(props) => props.marginLeft ?? 0}rem;
+  margin-left: ${(props) => props.marginLeft ?? 0}px;
 `;
 export const IndicatorNumberWrapper = styled.div`
   margin-left: ${rem(8)}rem;
@@ -45,15 +48,15 @@ export const IndicatorNumberWrapper = styled.div`
   border-radius: ${rem(8)}rem;
 `;
 export const IndicatorBar = styled.div`
-  margin-left: ${rem(16)}rem;
-  width: ${rem(24)}rem;
+  margin-left: 16px;
+  width: 24px;
   height: 0;
   border: 1px solid #454545;
   transform: rotate(90deg);
 `;
 export const DropdownWrapper = styled.div<DropdownWrapperProps>`
-  width: ${rem(64)}rem;
-  height: ${rem(36)}rem;
+  width: ${(props) => props.width}px;
+  height: ${(props) => props.height}px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -67,19 +70,19 @@ export const DropdownWrapper = styled.div<DropdownWrapperProps>`
   ${(props) =>
     (props.isBorderRadius ?? false) &&
     css`
-      border-radius: ${BORDER_RADIUS}rem;
+      border-radius: ${BORDER_RADIUS}px;
     `}
   ${(props) =>
     (props.isFirst ?? false) &&
     css`
-      border-top-left-radius: ${BORDER_RADIUS}rem;
-      border-top-right-radius: ${BORDER_RADIUS}rem;
+      border-top-left-radius: ${BORDER_RADIUS}px;
+      border-top-right-radius: ${BORDER_RADIUS}px;
     `}
   ${(props) =>
     (props.isLast ?? false) &&
     css`
-      border-bottom-left-radius: ${BORDER_RADIUS}rem;
-      border-bottom-right-radius: ${BORDER_RADIUS}rem;
+      border-bottom-left-radius: ${BORDER_RADIUS}px;
+      border-bottom-right-radius: ${BORDER_RADIUS}px;
     `}
   cursor: pointer;
 
@@ -88,10 +91,10 @@ export const DropdownWrapper = styled.div<DropdownWrapperProps>`
   }
 `;
 export const ModeSelectWrapper = styled.div`
-  width: ${rem(73)}rem;
-  height: ${rem(36)}rem;
+  width: 73px;
+  height: 36px;
   background-color: ${GRAY300};
-  border-radius: ${BORDER_RADIUS}rem;
+  border-radius: ${BORDER_RADIUS}px;
   display: flex;
   flex-direction: row;
 
@@ -102,7 +105,7 @@ export const ModeSelectWrapper = styled.div`
 export const ModeSelectIconWrapper = styled.div<ModeSelectIconWrapperProps>`
   width: ${rem(36.5)}rem;
   height: ${rem(36)}rem;
-  border-radius: ${BORDER_RADIUS}rem;
+  border-radius: ${BORDER_RADIUS}px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -117,7 +120,7 @@ export const PlayBoxWrapper = styled.div`
   width: ${rem(180)}rem;
   height: ${rem(36)}rem;
   background-color: ${GRAY300};
-  border-radius: ${BORDER_RADIUS}rem;
+  border-radius: ${BORDER_RADIUS}px;
   display: flex;
   flex-direction: row;
 `;
@@ -168,6 +171,8 @@ export const PlayBarDropdownWrapper = styled.div`
 `;
 export const DropdownArrowDownIconWrapper = styled.div`
   position: absolute;
-  right: ${rem(8)}rem;
+  right: 8px;
+  display: flex;
+  align-items: center;
 `;
 export const CameraIconWrapper = styled.div``;
