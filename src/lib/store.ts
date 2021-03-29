@@ -1,16 +1,15 @@
 import { makeVar } from '@apollo/client';
 import produce from 'immer';
-import {
-  TPTrackName,
-  TPDopeSheet,
-  TPLastBoneTrackIndex,
-  TPDopeSheetData,
-  TPDopeSheetStatus,
-} from 'types/TP';
+import { TPTrackName, TPDopeSheet, TPLastBoneTrackIndex } from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
+import {
+  AnimatingDataType,
+  RecordingDataType,
+  RenderingDataType,
+  RetargetDataType,
+} from 'types/RP';
 import _ from 'lodash';
 import {
   INITIAL_ANIMATING_DATA,
@@ -27,6 +26,8 @@ import {
   PageInfoType,
   PAGE_NAMES,
 } from '../types';
+import { INITIAL_RETARGET_DATA } from '../utils/const';
+import { CPModeType } from '../types/CP';
 
 export enum StoreDataNames {
   mainData = 'mainData',
@@ -53,16 +54,17 @@ export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_D
 export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
-// CP
-export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeCutImages = makeVar<string[]>([]);
+// CP
+export const storeCPMode = makeVar<CPModeType>(CPModeType.property);
+export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
+// RETARGET
+export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);
+
 // TP
 export const TPDefaultTrackNameList = makeVar<TPTrackName[]>([]);
-export const TPFilteredTrackNameList = makeVar<TPTrackName[]>([]);
 export const TPDopeSheetList = makeVar<TPDopeSheet[]>([]);
 export const TPLastBoneTrackIndexList = makeVar<TPLastBoneTrackIndex[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
-export const TPDopeSheetStatusList = makeVar<TPDopeSheetStatus[]>([]);
-export const TPDopeShetDataList = makeVar<TPDopeSheetData[]>([]);
 
 export const TPUpdateDopeSheetList = (statusList: Partial<TPDopeSheet>[]) => {
   const state = TPDopeSheetList();
@@ -70,7 +72,6 @@ export const TPUpdateDopeSheetList = (statusList: Partial<TPDopeSheet>[]) => {
     _.forEach(statusList, (status) => {
       const index = _.findIndex(draft, (dopeSheet) => dopeSheet.trackIndex === status.trackIndex);
       draft[index].isClickedParentTrackArrowBtn = status.isClickedParentTrackArrowBtn as boolean;
-      draft[index].isClickedTrackArrowBtn = status.isClickedTrackArrowBtn as boolean;
     });
   });
   TPDopeSheetList(nextState);

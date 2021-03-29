@@ -2,12 +2,16 @@ import { FunctionComponent, memo, useCallback, useEffect, useMemo, useState } fr
 import _ from 'lodash';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-import { storeRenderingData, storeMainData, storeCPData, storeAnimatingData } from 'lib/store';
+import {
+  storeRenderingData,
+  storeMainData,
+  storeCPData,
+  storeAnimatingData,
+  storeCPMode,
+} from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
-import { MIN_WIDTH } from 'styles/constants/panels';
 import { ResizableBox } from 'react-resizable';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
-import { useResizeRP } from 'hooks/RP/useResizeRP';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
@@ -15,12 +19,15 @@ import useWindowSize from 'hooks/common/useWindowSize';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
 import { RetargetPanel } from 'containers/Panels/RetargetPanel';
+import { CPModeType } from 'types/CP';
+import { DEFAULT_TARGETBONES } from 'utils/const';
 
 const cx = classNames.bind(styles);
 
 const MainContainer: FunctionComponent = () => {
   const mainData = useReactiveVar(storeMainData);
   const cpData = useReactiveVar(storeCPData);
+  const cpMode = useReactiveVar(storeCPMode);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const fileUrl = useMemo(() => {
@@ -44,6 +51,17 @@ const MainContainer: FunctionComponent = () => {
         visualizedBaseLayer: childMotion?.baseLayer,
         visualizedLayers: childMotion?.layers,
       };
+    }
+    return result;
+  }, [mainData]);
+  const targetBones = useMemo(() => {
+    let result = DEFAULT_TARGETBONES;
+    const visualizedBaseLayer = _.filter(
+      _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer,
+      (item) => _.includes(item.name, 'rotation'),
+    );
+    if (!_.isEmpty(visualizedBaseLayer)) {
+      result = _.map(visualizedBaseLayer, (item) => _.split(item.name, '.')?.[0]);
     }
     return result;
   }, [mainData]);
@@ -88,13 +106,15 @@ const MainContainer: FunctionComponent = () => {
           className={cx('panel-rendering')}
           axis="both"
         >
-          <RenderingController
-            id="renderingDiv"
-            fileUrl={fileUrl}
-            visualizedName={visualizedInfo?.visualizedName}
-            visualizedBaseLayer={visualizedInfo.visualizedBaseLayer}
-            visualizedLayers={visualizedInfo.visualizedLayers}
-          />
+          <div style={{ width: '100%', height: '100%' }} onDrop={handleDrop}>
+            <RenderingController
+              id="renderingDiv"
+              fileUrl={fileUrl}
+              visualizedName={visualizedInfo?.visualizedName}
+              visualizedBaseLayer={visualizedInfo.visualizedBaseLayer}
+              visualizedLayers={visualizedInfo.visualizedLayers}
+            />
+          </div>
         </ResizableBox>
         <ResizableBox
           width={230}
@@ -104,8 +124,8 @@ const MainContainer: FunctionComponent = () => {
           resizeHandles={['w']}
           axis="both"
         >
-          <ControlPanel />
-          {/* <RetargetPanel /> */}
+          {_.isEqual(cpMode, CPModeType.property) && <ControlPanel />}
+          {_.isEqual(cpMode, CPModeType.retarget) && <RetargetPanel targetBones={targetBones} />}
         </ResizableBox>
       </ResizableBox>
       <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">

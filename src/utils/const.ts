@@ -6,6 +6,7 @@ import {
   axisName,
   RenderingDataPropertyName,
   RenderingDataType,
+  RetargetDataType,
 } from 'types/RP';
 
 export const isDebug = false;
@@ -34,20 +35,20 @@ export const INITIAL_RENDERING_DATA: RenderingDataType = {
   scaleX: 1.1,
   scaleY: 1.1,
   scaleZ: 1.1,
-  locationX: 1.1,
-  locationY: 1.1,
-  locationZ: 1.1,
-  angleX: 1.1,
-  angleY: 1.1,
-  angleZ: 1.1,
+  locationX: -10,
+  locationY: 10,
+  locationZ: 2,
+  angleX: 0,
+  angleY: 0,
+  angleZ: 0,
   axis: axisName.y,
-  bone: true,
-  joint: true,
-  mesh: true,
-  shadow: true,
-  fog: true,
-  near: 50,
-  far: 50,
+  isBoneOn: true,
+  isJointOn: true,
+  isMeshOn: true,
+  isShadowOn: true,
+  isFogOn: false,
+  fogNear: 10,
+  fogFar: 80,
 };
 export const INITIAL_CP_DATA: CPDataType[] = [
   {
@@ -124,28 +125,28 @@ export const INITIAL_CP_DATA: CPDataType[] = [
     key: '2-2',
     name: CPNameType.Bone,
     type: CPComponentType.select,
-    button: RenderingDataPropertyName.bone,
+    button: RenderingDataPropertyName.isBoneOn,
     parentKey: '2',
   },
   {
     key: '2-3',
     name: CPNameType.Joint,
     type: CPComponentType.select,
-    button: RenderingDataPropertyName.joint,
+    button: RenderingDataPropertyName.isJointOn,
     parentKey: '2',
   },
   {
     key: '2-4',
     name: CPNameType.Mesh,
     type: CPComponentType.select,
-    button: RenderingDataPropertyName.mesh,
+    button: RenderingDataPropertyName.isMeshOn,
     parentKey: '2',
   },
   {
     key: '2-5',
     name: CPNameType.Shadow,
     type: CPComponentType.select,
-    button: RenderingDataPropertyName.shadow,
+    button: RenderingDataPropertyName.isShadowOn,
     parentKey: '2',
   },
   {
@@ -158,21 +159,21 @@ export const INITIAL_CP_DATA: CPDataType[] = [
     key: '3-1',
     name: CPNameType.Fog,
     type: CPComponentType.select,
-    button: RenderingDataPropertyName.fog,
+    button: RenderingDataPropertyName.isFogOn,
     parentKey: '3',
   },
   {
     key: '3-2',
     name: CPNameType.Near,
     type: CPComponentType.slider,
-    slider: RenderingDataPropertyName.near,
+    slider: RenderingDataPropertyName.fogNear,
     parentKey: '3',
   },
   {
     key: '3-3',
     name: CPNameType.Far,
     type: CPComponentType.slider,
-    slider: RenderingDataPropertyName.far,
+    slider: RenderingDataPropertyName.fogFar,
     parentKey: '3',
   },
 ];
@@ -189,4 +190,36 @@ export const INITIAL_RECORDING_DATA = {
   motionName: '',
   isRecording: undefined,
   count: undefined,
+};
+export const INITIAL_RETARGET_DATA: RetargetDataType[] = [
+  { boneName: 'Head', x: 60, y: 60, z: 60 },
+  { boneName: 'L Shoulder', x: 60, y: 60, z: 60 },
+  { boneName: 'R Shoulder', x: 60, y: 60, z: 60 },
+  { boneName: 'L Elbow', x: 60, y: 60, z: 60 },
+  { boneName: 'R Elbow', x: 60, y: 60, z: 60 },
+  { boneName: 'L Wrist', x: 60, y: 60, z: 60 },
+  { boneName: 'R Wrist', x: 60, y: 60, z: 60 },
+  { boneName: 'L Hand', x: 60, y: 60, z: 60 },
+  { boneName: 'R Hand', x: 60, y: 60, z: 60 },
+];
+export const DEFAULT_TARGETBONES = [
+  'Source Bone1',
+  'Source Bone2',
+  'Source Bone3',
+  'Source Bone4',
+  'Source Bone5',
+];
+
+// TP Track 별 Index 규칙
+export const TP_TRACK_INDEX = {
+  SUMMARY: 1, // Summary 트랙
+  LAYER: 2, // Layer 트랙(Base Layer, 사용자가 추가시킨 Layer)
+  BONE_A: 3, // Bone 트랙 Index는 끝자리를 3과 7로 지정
+  POSITION_A: 4, // Position 트랙 index는 끝자리를 4와 8로 지정
+  ROTATION_A: 5, // Rotation 트랙 index는 끝자리를 5과 9로 지정
+  SCALE_A: 6, // Scale 트랙 index는 끝자리를 6과 0으로 지정
+  BONE_B: 7,
+  POSITION_B: 8,
+  ROTATION_B: 9,
+  SCALE_B: 0,
 };

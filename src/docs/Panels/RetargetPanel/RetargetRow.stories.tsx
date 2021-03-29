@@ -5,7 +5,7 @@ import { Story, Meta } from '@storybook/react/types-6-0';
 import { RetargetRowProps, RetargetRow } from 'containers/Panels/RetargetPanel/RetargetRow';
 
 export default {
-  title: 'Panels/Retarget/RetaretRowParent',
+  title: 'Panels/Retarget/RetaretRow',
   component: RetargetRow,
   argTypes: {},
   args: {},

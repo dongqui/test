@@ -3,7 +3,7 @@ import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { TPTrackName } from 'types/TP';
-import { TPDefaultTrackNameList, TPFilteredTrackNameList } from 'lib/store';
+import { TPDefaultTrackNameList } from 'lib/store';
 import { SearchInput } from 'components/New_Input';
 import Track from './Track';
 import styles from './TrackList.module.scss';
@@ -16,17 +16,16 @@ const DEBOUNCED_TIME = 300;
 const cx = classNames.bind(styles);
 
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
+  const defaultTrackNameList = useReactiveVar(TPDefaultTrackNameList);
+  const [trackList, setTrackList] = useState<TPTrackName[]>([]);
   const lastTrackInput = useRef('');
-
-  const testDefaultTrackList = useReactiveVar(TPDefaultTrackNameList);
-  const testFilteredTrackList = useReactiveVar(TPFilteredTrackNameList);
 
   // debouned가 적용 된 track input 갱신
   const changeDebounedTrackInput = useMemo(
     () =>
       _.debounce((inputText: string) => {
         // 트랙 리스트가 없는 상태에서 검색하는 경우(아무 동작을 시키지 않음)
-        if (!testDefaultTrackList.length) return;
+        if (!defaultTrackNameList.length) return;
         const trimInputText = _.toLower(_.trim(inputText));
 
         // 이전 검색 텍스트와 현재 검색 텍스트가 같은 경우(아무 동작을 시키지 않음)
@@ -34,7 +33,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         // 이전 검색 텍스트가 있으면서, 현재 검색 텍스트가 비어있는 경우(디폴트 트랙 리스트로 갱신)
         if (lastTrackInput.current !== trimInputText && !trimInputText) {
-          return TPFilteredTrackNameList(testDefaultTrackList);
+          return setTrackList(defaultTrackNameList);
         }
 
         // 재귀를 걸어서 텍스트에 만족하는 트랙 필터링
@@ -42,11 +41,10 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           const renewChildrenTrackList: TPTrackName[] = []; // 재귀가 끝날 때 리턴시킬 트랙 리스트
           _.forEach(trackList, ({ name, childrenTrackList, trackIndex }) => {
             const toLowerTrackName = _.toLower(name);
-            // 트랙 이름에 텍스트가 포함되면, 본인 트랙 정보 추가
-            // 이후 하위 트랙 재귀
+            // 트랙 이름에 inputText가 포함되면 현재 트랙 추가, 이후 하위 트랙 재귀
             if (_.includes(toLowerTrackName, trimInputText)) {
               renewChildrenTrackList.push({
-                defaultChildrenTrackOpened: true,
+                isOpenedChildrenTrack: true,
                 name,
                 trackIndex,
                 childrenTrackList: recursiveTrackSearch({
@@ -61,7 +59,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
               // 재귀 결과가 있는 경우
               if (recursiveResult.length) {
                 renewChildrenTrackList.push({
-                  defaultChildrenTrackOpened: true,
+                  isOpenedChildrenTrack: true,
                   name,
                   trackIndex,
                   childrenTrackList: recursiveResult,
@@ -74,12 +72,12 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         // 필터링 리스트 갱신
         const filterResult = recursiveTrackSearch({
-          trackList: testDefaultTrackList,
+          trackList: defaultTrackNameList,
         });
         lastTrackInput.current = trimInputText;
-        TPFilteredTrackNameList(filterResult);
+        setTrackList(filterResult);
       }, DEBOUNCED_TIME),
-    [testDefaultTrackList],
+    [defaultTrackNameList],
   );
 
   // 트랙 인풋 텍스트 변경
@@ -90,7 +88,13 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
     [changeDebounedTrackInput],
   );
 
-  const isEmptyTrack = _.isEmpty(testFilteredTrackList);
+  // 최초 Track List 적용
+  useEffect(() => {
+    if (!defaultTrackNameList.length) return;
+    setTrackList(defaultTrackNameList);
+  }, [defaultTrackNameList]);
+
+  const isEmptyTrack = _.isEmpty(trackList);
 
   return (
     <>
@@ -104,14 +108,14 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
         </div>
         {!isEmptyTrack && (
           <div className={cx('list')}>
-            {_.map(testFilteredTrackList, (track, i) => {
-              const { childrenTrackList, defaultChildrenTrackOpened, name, trackIndex } = track;
+            {_.map(trackList, (track, i) => {
+              const { childrenTrackList, isOpenedChildrenTrack, name, trackIndex } = track;
               const key = `${name}_${i}`;
               return (
                 <Track
                   key={key}
                   childrenTrackList={childrenTrackList}
-                  defaultChildrenTrackOpened={defaultChildrenTrackOpened}
+                  isOpenedChildrenTrack={isOpenedChildrenTrack}
                   paddingLeft={10}
                   title={name}
                   trackIndex={trackIndex}

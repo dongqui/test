@@ -10,12 +10,12 @@ const MAX = 100;
 export interface CPListRowSliderProps {
   rowKey: string;
   name: string;
-  slider?: RenderingDataPropertyName.near | RenderingDataPropertyName.far;
+  slider?: RenderingDataPropertyName.fogNear | RenderingDataPropertyName.fogFar;
 }
 const CPListRowSliderComponent: React.FC<CPListRowSliderProps> = ({
   rowKey,
   name,
-  slider = RenderingDataPropertyName.near,
+  slider = RenderingDataPropertyName.fogNear,
 }) => {
   const renderingData = useReactiveVar(storeRenderingData);
   const value = useMemo(() => renderingData[slider], [renderingData, slider]);

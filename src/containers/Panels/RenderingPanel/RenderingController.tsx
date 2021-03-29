@@ -17,6 +17,17 @@ import {
   fnChangeBoneRotation,
   fnChangeBoneScale,
 } from 'utils/CP/transformUtils';
+import { fnChangeCameraLookAt, fnChangeCameraPosition } from 'utils/CP/cameraUtils';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { fnAddFog, fnChangeFogFar, fnChangeFogNear, fnRemoveFog } from 'utils/CP/fogUtils';
+import {
+  fnAddShadow,
+  fnMakeBoneAndJointInvisible,
+  fnMakeBoneAndJointVisible,
+  fnMakeSkinnedMeshesInvisible,
+  fnMakeSkinnedMeshesVisible,
+  fnRemoveShadow,
+} from 'utils/CP/visibilityUtils';
 
 export interface RenderingControllerProps {
   id: string;
@@ -38,7 +49,10 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   // component state
   const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
-  const [animations, setAnimations] = useState<THREE.AnimationClip[]>([]);
+  const [cameraControls, setCameraControls] = useState<OrbitControls | undefined>(undefined);
+  const [scene, setScene] = useState<THREE.Scene | undefined>(undefined);
+  const [fog, setFog] = useState<THREE.Fog | undefined>(undefined);
+  const [dirLight, setDirLight] = useState<THREE.DirectionalLight | undefined>(undefined);
   const [currentAction, setCurrentAction] = useState<THREE.AnimationAction | undefined>(undefined);
   const [currentBoneIndex, setCurrentBoneIndex] = useState<number>(0);
 
@@ -47,8 +61,10 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     fileUrl,
     setMixer,
     setSkeletonHelper,
-    setAnimations,
     setCurrentBoneIndex,
+    setCameraControls,
+    setScene,
+    setDirLight,
   });
 
   const { startTimeIndex, endTimeIndex } = animatingData;
@@ -183,7 +199,94 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
 
   // camera option 적용 로직
   const { locationX, locationY, locationZ, angleX, angleY, angleZ } = renderingData;
-  useEffect(() => {});
+
+  useEffect(() => {
+    if (cameraControls) {
+      fnChangeCameraPosition({ cameraControls, axis: 'x', value: locationX });
+    }
+  }, [cameraControls, locationX]);
+
+  useEffect(() => {
+    if (cameraControls) {
+      fnChangeCameraPosition({ cameraControls, axis: 'y', value: locationY });
+    }
+  }, [cameraControls, locationY]);
+
+  useEffect(() => {
+    if (cameraControls) {
+      fnChangeCameraPosition({ cameraControls, axis: 'z', value: locationZ });
+    }
+  }, [cameraControls, locationZ]);
+
+  useEffect(() => {
+    if (cameraControls) {
+      fnChangeCameraLookAt({
+        cameraControls,
+        axis: 'x',
+        value: { x: angleX, y: angleX, z: angleZ },
+      });
+    }
+  }, [cameraControls, angleX, angleZ]);
+
+  // fog option 적용 로직
+  const { isFogOn, fogNear, fogFar } = renderingData;
+
+  useEffect(() => {
+    if (scene) {
+      if (isFogOn && fogNear && fogFar) {
+        const tmpFog = fnAddFog({ scene, fogNear, fogFar });
+        setFog(tmpFog);
+      } else {
+        fnRemoveFog({ scene });
+      }
+    }
+  }, [fogFar, fogNear, isFogOn, scene]);
+
+  useEffect(() => {
+    if (fog) {
+      fnChangeFogNear({ fog, value: fogNear });
+    }
+  }, [fog, fogNear]);
+
+  useEffect(() => {
+    if (fog) {
+      fnChangeFogFar({ fog, value: fogFar });
+    }
+  }, [fog, fogFar]);
+
+  // visibility option 적용 로직
+  const { isBoneOn, isJointOn, isMeshOn, isShadowOn } = renderingData;
+
+  useEffect(() => {
+    if (skeletonHelper) {
+      // isBoneOn 과 isJointOn 은 함께 움직이는 값
+      if (isBoneOn) {
+        fnMakeBoneAndJointVisible({ skeletonHelper });
+      } else {
+        fnMakeBoneAndJointInvisible({ skeletonHelper });
+      }
+    }
+  }, [isBoneOn, skeletonHelper]);
+
+  useEffect(() => {
+    if (scene) {
+      if (isMeshOn) {
+        fnMakeSkinnedMeshesVisible({ scene });
+      } else {
+        fnMakeSkinnedMeshesInvisible({ scene });
+      }
+    }
+  }, [isMeshOn, scene]);
+
+  useEffect(() => {
+    if (dirLight) {
+      if (isShadowOn) {
+        fnAddShadow({ dirLight });
+      } else {
+        fnRemoveShadow({ dirLight });
+      }
+    }
+  }, [dirLight, isShadowOn]);
 
   return <RenderingPresenter id={id} />;
 };
