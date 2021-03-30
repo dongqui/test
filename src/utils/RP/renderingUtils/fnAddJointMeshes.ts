@@ -14,7 +14,7 @@ interface FnAddJointMeshes {
   innerMixer: THREE.AnimationMixer;
   innerCurrentBone: THREE.Bone | undefined;
   setInnerCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
-  setCurrentBoneIndex: Dispatch<SetStateAction<number>>;
+  storeCurrentBone: any;
 }
 
 /**
@@ -42,7 +42,7 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
     innerMixer,
     innerCurrentBone,
     setInnerCurrentBone,
-    setCurrentBoneIndex,
+    storeCurrentBone,
   } = props;
   const innerBones: THREE.Bone[] = [];
   _.forEach(skeletonHelper.bones, (bone) => {
@@ -72,9 +72,7 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
       if (innerCurrentBone !== event.object.parent) {
         transformControls.attach(event.object.parent);
         setInnerCurrentBone(event.object.parent);
-        setCurrentBoneIndex(
-          _.findIndex(skeletonHelper.bones, (bone) => bone === event.object.parent),
-        );
+        storeCurrentBone(event.object.parent);
         dragControls.enabled = false;
       }
       if (innerMixer) {
