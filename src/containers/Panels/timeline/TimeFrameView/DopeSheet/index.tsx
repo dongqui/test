@@ -48,7 +48,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const dopeSheetRef = useRef<HTMLDivElement>(null);
   const lastCircleGroupNameList = useRef<number[]>([]);
 
-  const xScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
+  const xScale = useRef<d3ScaleLinear | d3.ZoomScale | d3.ZoomTransform | null>(null);
   const xScaleCopy = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const xAxisPosition = useRef<d3Axis | null>(null);
   const renderXAxis = useRef<d3Selection | null>(null);
@@ -79,12 +79,12 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       .attr('height', TRACK_HEIGHT)
       .style('position', 'fixed')
       .style('background', '#151515');
-    // .style('border', '1px solid #393939');
 
     // x축 g 태그 랜더링
     renderXAxis.current = d3
       .select(`.${X_AXIS_SVG_CLASSNAME}`)
       .append('g')
+      .attr('class', 'x-axis-g')
       .attr('transform', `translate(${DOPE_SHEET_MARGIN.left}, ${TRACK_HEIGHT})`)
       .call(xAxisPosition.current);
   }, []);
@@ -118,8 +118,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         .attr('height', TRACK_HEIGHT)
         .attr('fill', '#151515')
         .attr('stroke-dasharray', '100, 50');
-      // .attr('stroke-width', 1)
-      // .attr('stroke', 'rgb(57, 57, 57)');
 
       // circle 생성
       circleGroup
@@ -247,16 +245,19 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     if (!xScale.current || !xScaleCopy.current) return;
     if (!xAxisPosition.current || !renderXAxis.current) return;
     const { clientWidth: width, clientHeight: height } = dopeSheetRef.current;
+    const { top: dopeSheetTop } = dopeSheetRef.current.getBoundingClientRect();
 
     // x축 다시 그리기
     const rescaleXAxis = (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-      const rescaleXRef = event.transform.rescaleX(xScaleCopy.current as d3.ZoomScale);
+      const rescaleX = event.transform.rescaleX(xScaleCopy.current as d3.ZoomScale); // x rescale
       const renderXAxisRef = renderXAxis.current as d3Selection;
-      const xAxisRef = xAxisPosition.current as d3Axis;
-      const xScaleRef = xScale.current as d3ScaleLinear;
+      const xAxisPositionRef = xAxisPosition.current as d3Axis;
 
-      xScale.current = rescaleXRef;
-      renderXAxisRef.call(xAxisRef.scale(xScaleRef));
+      renderXAxisRef.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // 이전 값으로 scale 적용
+      xScale.current = rescaleX; // rescale한 값으로 갱신
+
+      // const t = d3.zoomIdentity.scale(25000);
+      // const k = d3.zoomTransform(renderXAxisRef.node() as Element).rescaleX(t.k)
     };
 
     // circle x값 rescale
@@ -265,20 +266,17 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         const circleGroup = d3.select(this);
         const circleGroupNode = circleGroup.node() as Element;
         const xScaleLinear = xScale.current as d3ScaleLinear;
-
-        const observer = new IntersectionObserver(([entry], observer) => {
-          if (!entry.isIntersecting) return observer.unobserve(entry.target);
+        const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
+        if (dopeSheetTop <= circleGroupTop && circleGroupTop <= dopeSheetTop + height) {
           circleGroup
             .selectAll('circle')
             .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
-          observer.unobserve(entry.target);
-        });
-        observer.observe(circleGroupNode);
+        }
       });
     };
 
     // zoom 이벤트 적용
-    const zoomBehavior: any = d3
+    const zoomBehavior = d3
       .zoom()
       .scaleExtent([1, 25000])
       .translateExtent([
@@ -288,12 +286,12 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       .on(
         'zoom',
         _.throttle((event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-          rescaleXAxis(event);
           rescaleCircleX();
-        }, 100),
+          rescaleXAxis(event);
+        }, 50),
       );
 
-    d3.select(dopeSheetRef.current).call(zoomBehavior);
+    d3.select(dopeSheetRef.current).call(zoomBehavior as any);
   }, []);
 
   // timelineWrapper에 scroll 효과 적용
@@ -308,13 +306,19 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         const circleGroupNode = circleGroup.node() as Element;
         const xScaleLinear = xScale.current as d3ScaleLinear;
 
-        const observer = new IntersectionObserver(([entry], observer) => {
-          if (!entry.isIntersecting) return observer.unobserve(entry.target);
-          circleGroup
-            .selectAll('circle')
-            .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
-          observer.unobserve(entry.target);
-        });
+        const observer = new IntersectionObserver(
+          ([entry], observer) => {
+            if (!entry.isIntersecting) return observer.unobserve(entry.target);
+            circleGroup
+              .selectAll('circle')
+              .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
+            observer.unobserve(entry.target);
+          },
+          {
+            root: document.getElementById('timeline-wrapper'),
+            rootMargin: `${TRACK_HEIGHT * 64}px 0px`,
+          },
+        );
         observer.observe(circleGroupNode);
       });
     };

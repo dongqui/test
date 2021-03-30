@@ -30,7 +30,7 @@ const TimelineWrapper: React.FC<Props> = () => {
 
   return (
     <>
-      <div className={cx('timeline-wrapper')} ref={timelineWrapperRef}>
+      <div id="timeline-wrapper" className={cx('timeline-wrapper')} ref={timelineWrapperRef}>
         <TrackList trackListRef={trackListRef} />
         <TimeFrameView timelineWrapperRef={timelineWrapperRef} />
       </div>
