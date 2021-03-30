@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as S from './StyleInput';
 
 export interface InputCPProps {
   prefix?: 'X' | 'Y' | 'Z';
   initialValue: number;
   name?: string;
-  onDragEnd?: ({ name, value }: { name: string; value: number }) => void;
+  onDragMove?: ({ name, value }: { name: string; value: number }) => void;
   onKeyPress?: ((event: React.KeyboardEvent<HTMLInputElement>) => void) | undefined;
   handleBlur?: ({ name, value }: { name: string; value: number }) => void;
 }
@@ -15,7 +15,7 @@ export const InputCP: React.FC<InputCPProps> = ({
   prefix = 'X',
   initialValue,
   name = '',
-  onDragEnd = () => {},
+  onDragMove = () => {},
   onKeyPress = () => {},
   handleBlur = () => {},
 }) => {
@@ -24,6 +24,7 @@ export const InputCP: React.FC<InputCPProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isModifying, setIsModifying] = useState(false);
   const [value, setValue] = useState(initialValue);
+  const roundedValue = useMemo(() => Math.round(value * 100) / 100, [value]);
   const handleMouseDown = useCallback((e) => {
     if (inputWrapperRef.current && inputWrapperRef.current.contains(e.target)) {
       setIsDragging(true);
@@ -35,20 +36,19 @@ export const InputCP: React.FC<InputCPProps> = ({
         currentValue =
           Math.round((parseFloat(inputRef.current.innerText) + e.movementX * 0.1) * 10) / 10;
         inputRef.current.innerText = `${currentValue}`;
+        onDragMove({ name, value: currentValue });
+        setValue(currentValue);
       }
     },
-    [isDragging],
+    [isDragging, name, onDragMove],
   );
   const handleMouseUp = useCallback(
     (e) => {
       if (isDragging && inputRef.current) {
         setIsDragging(false);
-        if (currentValue) {
-          onDragEnd({ name, value: currentValue });
-        }
       }
     },
-    [isDragging, name, onDragEnd],
+    [isDragging],
   );
   const onClick = useCallback(() => {
     setIsModifying(true);
@@ -57,6 +57,7 @@ export const InputCP: React.FC<InputCPProps> = ({
     (e) => {
       setIsModifying(false);
       handleBlur({ name, value: e.target.value });
+      setValue(e.target.value);
     },
     [handleBlur, name],
   );
@@ -65,7 +66,9 @@ export const InputCP: React.FC<InputCPProps> = ({
       setValue(parseFloat(e.target.value));
     }
   }, []);
-
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
   useEffect(() => {
     document.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('mousemove', handleMouseMove);
@@ -84,7 +87,7 @@ export const InputCP: React.FC<InputCPProps> = ({
         <S.InputCPInput
           ref={inputRef}
           onChange={onChange}
-          value={value}
+          value={roundedValue}
           name={name}
           onBlur={onBlur}
           autoFocus
@@ -93,7 +96,7 @@ export const InputCP: React.FC<InputCPProps> = ({
         ></S.InputCPInput>
       ) : (
         <S.InputCPInputDiv ref={inputRef} onClick={onClick}>
-          {initialValue}
+          {roundedValue}
         </S.InputCPInputDiv>
       )}
     </S.InputCPWrapper>
