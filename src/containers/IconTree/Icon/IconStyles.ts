@@ -42,7 +42,9 @@ const makebackgroundcolor = ({
 export const TopWrapper = styled.div<TopWrapperProps>`
   width: 100%;
   height: ${TOP_HEIGHT}rem;
-  background-color: ${TOP_BACKGROUND_COLOR};
+
+  /* background-color: ${TOP_BACKGROUND_COLOR}; */
+  background-color: red;
   border-radius: ${BORDER_RADIUS}rem;
   position: relative;
   display: flex;
