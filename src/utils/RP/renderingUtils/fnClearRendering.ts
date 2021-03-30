@@ -44,6 +44,26 @@ interface FnClearRendering {
   setTheScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
 }
 
+const traverseDispose = (target: any) => {
+  if (target.traverse) {
+    target.traverse((node: any) => {
+      // node 가 mesh 인 경우 geometry 와 material 을 각각 dispose
+      if (node.isMesh) {
+        // geometry dispose
+        node.geometry.dispose();
+
+        // material dispose
+        const materials = Array.isArray(node.material) ? node.material : [node.material];
+        materials.forEach((material: any) => {
+          MAP_TYPES.forEach((mapType) => {
+            if (material[mapType]) material[mapType].dispose();
+          });
+        });
+      }
+    });
+  }
+};
+
 /**
  * Removes children of rendering div and dispose all meshes for preventing resoure leaking.
  *
@@ -61,91 +81,21 @@ const fnClearRendering = (props: FnClearRendering) => {
       renderingDiv.removeChild(renderingDiv.firstChild);
     }
   }
+  // scene 순환하며 node 들의 geometry 와 material dispose
   if (theScene) {
-    theScene.traverse((node: any) => {
-      if (node.isMesh) {
-        node.geometry.dispose();
-        if (Array.isArray(node.material)) {
-          node.material.forEach((m: any) => {
-            MAP_TYPES.forEach((mapName) => {
-              if (m[mapName]) {
-                m[mapName].dispose();
-              }
-            });
-          });
-        } else {
-          MAP_TYPES.forEach((mapName) => {
-            if (node.material[mapName]) {
-              node.material[mapName].dispose();
-            }
-          });
-        }
-      }
-    });
+    traverseDispose(theScene);
   }
   if (theScene && contents.length > 0) {
-    console.log(theScene, contents);
     contents.forEach((content: any) => {
-      if (content.type === 'Object3D') {
-        if (content.children.length > 0) {
-          content.children.forEach((child: any) => {
-            child.geometry?.dispose();
-            MAP_TYPES.forEach((mapName) => {
-              if (content.material && content.material[mapName]) {
-                content.material[mapName].dispose();
-              }
-            });
-          });
-        }
-        content.dispose();
-      }
-      if (content.type === 'Line') {
-        content.geometry.dispose();
-        MAP_TYPES.forEach((mapName) => {
-          if (content.material[mapName]) {
-            content.material[mapName].dispose();
-          }
-        });
-      }
-      if (content.type === 'Mesh') {
-        content.geometry.dispose();
-        MAP_TYPES.forEach((mapName) => {
-          if (content.material && content.material[mapName]) {
-            content.material[mapName].dispose();
-          }
-        });
-      }
+      // THREE.Texture
       if (content.type === 1009) {
-        // texture
         if (content.dispose) content.dispose();
-      }
-      if (content.type !== 1009) {
+      } else {
         // 자체 dispose
         if (content.geometry) content.geometry.dispose();
         if (content.material) content.material.dispose();
-        // 내부 순환
-        if (content.traverse) {
-          content.traverse((node: any) => {
-            if (node.isMesh) {
-              node.geometry.dispose();
-              if (Array.isArray(node.material)) {
-                node.material.forEach((m: any) => {
-                  MAP_TYPES.forEach((mapName) => {
-                    if (m[mapName]) {
-                      m[mapName].dispose();
-                    }
-                  });
-                });
-              } else {
-                MAP_TYPES.forEach((mapName) => {
-                  if (node.material[mapName]) {
-                    node.material[mapName].dispose();
-                  }
-                });
-              }
-            }
-          });
-        }
+        // 내부 node 순환
+        traverseDispose(content);
       }
       theScene.remove(content);
     });
