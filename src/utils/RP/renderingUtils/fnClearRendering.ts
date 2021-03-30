@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 
 const MAP_TYPES = [
@@ -17,16 +18,51 @@ const MAP_TYPES = [
 interface FnClearRendering {
   renderingDiv: HTMLElement;
   contents: Array<
-    THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D
+    | THREE.Mesh
+    | THREE.Line
+    | TransformControls
+    | THREE.SkeletonHelper
+    | THREE.Object3D
+    | THREE.Texture
+    | OrbitControls
+    | THREE.WebGL1Renderer
   >;
   setContents: Dispatch<
     SetStateAction<
-      Array<THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D>
+      Array<
+        | THREE.Mesh
+        | THREE.Line
+        | TransformControls
+        | THREE.SkeletonHelper
+        | THREE.Object3D
+        | THREE.Texture
+        | OrbitControls
+      >
     >
   >;
   theScene: THREE.Scene | undefined;
   setTheScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
 }
+
+const traverseDispose = (target: any) => {
+  if (target.traverse) {
+    target.traverse((node: any) => {
+      // node 가 mesh 인 경우 geometry 와 material 을 각각 dispose
+      if (node.isMesh) {
+        // geometry dispose
+        node.geometry.dispose();
+
+        // material dispose
+        const materials = Array.isArray(node.material) ? node.material : [node.material];
+        materials.forEach((material: any) => {
+          MAP_TYPES.forEach((mapType) => {
+            if (material[mapType]) material[mapType].dispose();
+          });
+        });
+      }
+    });
+  }
+};
 
 /**
  * Removes children of rendering div and dispose all meshes for preventing resoure leaking.
@@ -45,24 +81,23 @@ const fnClearRendering = (props: FnClearRendering) => {
       renderingDiv.removeChild(renderingDiv.firstChild);
     }
   }
+  // scene 순환하며 node 들의 geometry 와 material dispose
+  if (theScene) {
+    traverseDispose(theScene);
+  }
   if (theScene && contents.length > 0) {
     contents.forEach((content: any) => {
+      // THREE.Texture
+      if (content.type === 1009) {
+        if (content.dispose) content.dispose();
+      } else {
+        // 자체 dispose
+        if (content.geometry) content.geometry.dispose();
+        if (content.material) content.material.dispose();
+        // 내부 node 순환
+        traverseDispose(content);
+      }
       theScene.remove(content);
-      content.traverse((node: any) => {
-        if (!node.isMesh) return;
-        node.geometry.dispose();
-        const materials: Array<THREE.MeshBasicMaterial | THREE.MeshPhongMaterial> = Array.isArray(
-          node.material,
-        )
-          ? node.material
-          : [node.material];
-        // material 타입 특정 시 타입 에러 발생
-        materials.forEach((material: any) => {
-          MAP_TYPES.forEach((mapType) => {
-            material[mapType]?.dispose();
-          });
-        });
-      });
     });
     setContents([]);
     setTheScene(undefined);

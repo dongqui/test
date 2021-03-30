@@ -52,6 +52,7 @@ const dummyBaseLayer: ShootTrackType[] = [
       -102.54151153564453,
     ],
     interpolation: 'linear',
+    included: true,
   },
   {
     name: 'mixamorigHips.rotation',
@@ -104,6 +105,7 @@ const dummyBaseLayer: ShootTrackType[] = [
       0.01542361918836832,
     ],
     interpolation: 'linear',
+    included: true,
   },
   {
     name: 'mixamorigHips.scale',
@@ -172,6 +174,7 @@ const dummyBaseLayer: ShootTrackType[] = [
       1,
     ],
     interpolation: 'linear',
+    included: true,
   },
   //
   // {
@@ -225,6 +228,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     -1.3920626640319824,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigSpine.rotation',
@@ -277,6 +281,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     0.03166443854570389,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigSpine.scale',
@@ -329,6 +334,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     1,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // //
   // {
@@ -382,6 +388,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     0.3133315145969391,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigHead.rotation',
@@ -434,6 +441,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     0.03014962747693062,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigHead.scale',
@@ -486,6 +494,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     1,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // //
   // {
@@ -539,6 +548,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     -2.0584604740142822,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigLeftShoulder.rotation',
@@ -591,6 +601,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     -0.18791615962982178,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigLeftShoulder.scale',
@@ -643,6 +654,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     1,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // //
   // {
@@ -696,6 +708,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     -2.117722511291504,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigRightShoulder.rotation',
@@ -748,6 +761,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     0.20612089335918427,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigRightShoulder.scale',
@@ -800,6 +814,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     1,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // //
   // {
@@ -853,6 +868,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     -1.0108859539031982,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigLeftUpLeg.rotation',
@@ -905,6 +921,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     0.13059872388839722,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigLeftUpLeg.scale',
@@ -957,6 +974,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     1,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // //
   // {
@@ -1010,6 +1028,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     -1.2116553783416748,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigRightUpLeg.rotation',
@@ -1062,6 +1081,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     -0.17511557042598724,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
   // {
   //   name: 'mixamorigRightUpLeg.scale',
@@ -1114,6 +1134,7 @@ const dummyBaseLayer: ShootTrackType[] = [
   //     1,
   //   ],
   //   interpolation: 'linear',
+  // included: true,
   // },
 ];
 
