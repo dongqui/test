@@ -20,7 +20,6 @@ const fnAddShadow = (props: FnAddShadow) => {
   dirLight.shadow.camera.right = 8.25;
   dirLight.shadow.camera.top = 8.25;
   dirLight.shadow.camera.bottom = 8.25 * -1;
-  console.log('dirLight: ', dirLight);
 };
 
 export default fnAddShadow;

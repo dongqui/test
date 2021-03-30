@@ -134,6 +134,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
             url,
             parentKey: _.last(pages)?.key,
             baseLayer: _.cloneDeep(motions?.[0]?.baseLayer ?? []),
+            layers: _.cloneDeep(motions?.[0]?.layers ?? []),
+            boneNames: _.map(bones, (bone) => bone.name),
           },
         ];
         newData = _.concat(newData, motions);

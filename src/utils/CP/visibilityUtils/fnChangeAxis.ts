@@ -1,10 +1,12 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 type UpDirection = 'y' | 'z';
 
 interface FnChangeAxis {
   upDirection: UpDirection;
   camera: THREE.PerspectiveCamera;
+  cameraControls: OrbitControls;
   ground: THREE.Mesh;
   scene: THREE.Scene;
   yAxis: THREE.Line;
@@ -17,6 +19,7 @@ interface FnChangeAxis {
  *
  * @param upDirection - The target up direction of the scene and the camera
  * @param camera - The camera attached to the canvas
+ * @param cameraControls - The orbit controls
  * @param ground - The ground mesh of the scene
  * @param scene - The scene where the axes can ba added
  * @param yAxis - y axis
@@ -24,14 +27,16 @@ interface FnChangeAxis {
  *
  */
 const fnChangeAxis = (params: FnChangeAxis) => {
-  const { upDirection, camera, ground, scene, yAxis, zAxis } = params;
+  const { upDirection, camera, cameraControls, ground, scene, yAxis, zAxis } = params;
   if (upDirection === 'z') {
     camera.up.set(0, 0, 1);
+    cameraControls.update();
     ground.rotation.x = -Math.PI;
     scene.remove(zAxis);
     scene.add(yAxis);
   } else if (upDirection === 'y') {
     camera.up.set(0, 1, 0);
+    cameraControls.update();
     ground.rotation.x = -Math.PI / 2;
     scene.remove(yAxis);
     scene.add(zAxis);

@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 
+type UpDirection = 'y' | 'z';
+
 interface FnAddGround {
   scene: THREE.Scene;
   camera: THREE.Camera | THREE.PerspectiveCamera;
   renderer: THREE.WebGL1Renderer;
+  upDirection: UpDirection;
 }
 
 /**
@@ -13,12 +16,13 @@ interface FnAddGround {
  * @param scene - The scene where the ground will be attatched
  * @param camera - The camera which is attached to the canvas
  * @param renderer - The renderer which has the domElement(canvas)
+ * @param upDirection - The axis of the scene's up direction
  *
  * @returns THREE.Mesh for changing up direction
  *
  */
 const fnAddGround = (props: FnAddGround) => {
-  const { scene, camera, renderer } = props;
+  const { scene, camera, renderer, upDirection } = props;
   const texture = new THREE.TextureLoader().load('texture/texture_01.png', () => {
     renderer.render(scene, camera);
   });
@@ -35,7 +39,11 @@ const fnAddGround = (props: FnAddGround) => {
     }),
   );
   ground.position.set(0, 0, 0);
-  ground.rotation.x = -Math.PI / 2;
+  if (upDirection === 'y') {
+    ground.rotation.x = -Math.PI / 2;
+  } else if (upDirection === 'z') {
+    ground.rotation.x = -Math.PI;
+  }
   ground.receiveShadow = true;
   scene.add(ground);
   return ground;

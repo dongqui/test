@@ -31,6 +31,9 @@ const fnAddTransformControls = (props: FnAddTransformControls) => {
   transformControls.addEventListener('dragging-changed', (event: any) => {
     cameraControls.enabled = !event.value;
   });
+  transformControls.addEventListener('objectChange', (e) => {
+    // console.log(e.target.object.position.x);
+  });
   scene.add(transformControls);
 
   return transformControls;

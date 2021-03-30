@@ -22,7 +22,7 @@ export const INITIAL_ANIMATING_DATA: AnimatingDataType = {
   playDirection: 1, // 1 은 정재생, -1 은 역재생
   playSpeed: 1,
   startTimeIndex: 0, // 미들바의 start 에 해당
-  endTimeIndex: 100, // 미들바의 end 에 해당
+  endTimeIndex: 300, // 미들바의 end 에 해당
   currentTimeIndex: 0, // 미들바의 now 에 해당
 };
 export const INITIAL_RENDERING_DATA: RenderingDataType = {
@@ -35,12 +35,12 @@ export const INITIAL_RENDERING_DATA: RenderingDataType = {
   scaleX: 1.1,
   scaleY: 1.1,
   scaleZ: 1.1,
-  locationX: -10,
-  locationY: 10,
-  locationZ: 2,
-  angleX: 0,
-  angleY: 0,
-  angleZ: 0,
+  // locationX: -10,
+  // locationY: 10,
+  // locationZ: 2,
+  // angleX: 0,
+  // angleY: 0,
+  // angleZ: 0,
   axis: axisName.y,
   isBoneOn: true,
   isJointOn: true,
@@ -84,30 +84,30 @@ export const INITIAL_CP_DATA: CPDataType[] = [
     z: RenderingDataPropertyName.scaleZ,
     parentKey: '0',
   },
-  {
-    key: '1',
-    name: CPNameType.Camera,
-    type: CPComponentType.parent,
-    isExpanded: true,
-  },
-  {
-    key: '1-1',
-    name: CPNameType.Location,
-    type: CPComponentType.input,
-    x: RenderingDataPropertyName.locationX,
-    y: RenderingDataPropertyName.locationY,
-    z: RenderingDataPropertyName.locationZ,
-    parentKey: '1',
-  },
-  {
-    key: '1-2',
-    name: CPNameType.Angle,
-    type: CPComponentType.input,
-    x: RenderingDataPropertyName.angleX,
-    y: RenderingDataPropertyName.angleY,
-    z: RenderingDataPropertyName.angleZ,
-    parentKey: '1',
-  },
+  // {
+  //   key: '1',
+  //   name: CPNameType.Camera,
+  //   type: CPComponentType.parent,
+  //   isExpanded: true,
+  // },
+  // {
+  //   key: '1-1',
+  //   name: CPNameType.Location,
+  //   type: CPComponentType.input,
+  //   x: RenderingDataPropertyName.locationX,
+  //   y: RenderingDataPropertyName.locationY,
+  //   z: RenderingDataPropertyName.locationZ,
+  //   parentKey: '1',
+  // },
+  // {
+  //   key: '1-2',
+  //   name: CPNameType.Angle,
+  //   type: CPComponentType.input,
+  //   x: RenderingDataPropertyName.angleX,
+  //   y: RenderingDataPropertyName.angleY,
+  //   z: RenderingDataPropertyName.angleZ,
+  //   parentKey: '1',
+  // },
   {
     key: '2',
     name: CPNameType.Visibility,
