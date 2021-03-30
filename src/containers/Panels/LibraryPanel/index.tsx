@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useCallback, useState } from 'react';
+import { FunctionComponent, memo, useCallback, useEffect, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'antd';
@@ -65,16 +65,15 @@ const LibraryPanelComponent: FunctionComponent = () => {
       for (const acceptedFile of acceptedFiles) {
         const extension = _.last(_.split(acceptedFile.name, '.'));
         let convertedFileUrl = DEFAULT_MODEL_URL;
-        if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
-          // storeModalInfo({
-          //   isShow: true,
-          //   msg: '파일 형식이 올바르지 않습니다.',
-          //   type: MODAL_TYPES.alert,
-          // });
-          alert('파일 형식이 올바르지 않습니다.');
-          setLoading(false);
-          return false;
-        }
+        // if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
+        //   storeModalInfo({
+        //     isShow: true,
+        //     msg: '파일 형식이 올바르지 않습니다.',
+        //     type: MODAL_TYPES.alert,
+        //   });
+        //   setLoading(false);
+        //   return false;
+        // }
         if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
           // fbx 파일 업로드 및 변환
           const { url, error, msg } = await api.uploadFbxToGlb({
@@ -159,6 +158,20 @@ const LibraryPanelComponent: FunctionComponent = () => {
         return false;
       }
       if (
+        _.some(
+          acceptedFiles,
+          (file) => !_.includes(ENABLE_FILE_FORMATS, _.last(_.split(file.name, '.'))),
+        )
+      ) {
+        storeModalInfo({
+          isShow: true,
+          msg: '파일 형식이 올바르지 않습니다.',
+          type: MODAL_TYPES.alert,
+        });
+        setLoading(false);
+        return false;
+      }
+      if (
         _.gt(
           _.size(
             _.filter(acceptedFiles, (acceptedFile) =>
@@ -219,9 +232,19 @@ const LibraryPanelComponent: FunctionComponent = () => {
     },
     [mainData, onDropPost],
   );
-
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
-
+  useEffect(() => {
+    const body = document.querySelector('body');
+    if (loading) {
+      if (body) {
+        body.style.cursor = 'wait';
+      }
+    } else {
+      if (body) {
+        body.style.cursor = 'default';
+      }
+    }
+  }, [loading]);
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
       <div className={cx('inner')}>
@@ -235,11 +258,6 @@ const LibraryPanelComponent: FunctionComponent = () => {
         <IconPage />
         {_.isEqual(lpmode, LPModeType.iconview) ? <IconView /> : <ListView />}
       </div>
-      {loading && (
-        <div className={cx('loading')}>
-          <Loading color="white" />
-        </div>
-      )}
     </div>
   );
 };
