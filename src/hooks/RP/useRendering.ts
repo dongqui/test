@@ -65,7 +65,14 @@ export const useRendering = (props: UseRendering) => {
   // component state
   const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
   const [contents, setContents] = useState<
-    Array<THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D>
+    Array<
+      | THREE.Mesh
+      | THREE.Line
+      | TransformControls
+      | THREE.SkeletonHelper
+      | THREE.Object3D
+      | THREE.Texture
+    >
   >([]); // clear하기 위해 content 담아놓은 array
   const [theScene, setTheScene] = useState<THREE.Scene | undefined>(undefined); // clear 함수에서 사용하기 위해 component state로 관리
   const keyDownRef = useRef<(event: any) => void>();
@@ -436,8 +443,8 @@ export const useRendering = (props: UseRendering) => {
       const tmpDirLight = fnAddLights({ scene, upDirection: axis });
       setDirLight(tmpDirLight);
       // scene에 바닥 추가
-      const ground = fnAddGround({ scene, camera, renderer, upDirection: axis });
-      setContents((prevContents) => [...prevContents, ground]);
+      const { ground, texture } = fnAddGround({ scene, camera, renderer, upDirection: axis });
+      setContents((prevContents) => [...prevContents, ground, texture]);
       const { xAxis, yAxis, zAxis } = fnAddAxes({ scene, upDirection: axis });
       setContents((prevContents) => [...prevContents, xAxis, yAxis, zAxis]);
       // cameraControls 생성 및 설정

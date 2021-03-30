@@ -1,27 +1,29 @@
+import content from '*.svg';
 import { Dispatch, SetStateAction } from 'react';
 import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-
-const MAP_TYPES = [
-  'map',
-  'aoMap',
-  'emissiveMap',
-  'glossinessMap',
-  'metalnessMap',
-  'normalMap',
-  'roughnessMap',
-  'specularMap',
-];
 
 // load 된 objcet 에 대해 타입 특정 시 에러 발생
 interface FnClearRendering {
   renderingDiv: HTMLElement;
   contents: Array<
-    THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D
+    | THREE.Mesh
+    | THREE.Line
+    | TransformControls
+    | THREE.SkeletonHelper
+    | THREE.Object3D
+    | THREE.Texture
   >;
   setContents: Dispatch<
     SetStateAction<
-      Array<THREE.Mesh | THREE.Line | TransformControls | THREE.SkeletonHelper | THREE.Object3D>
+      Array<
+        | THREE.Mesh
+        | THREE.Line
+        | TransformControls
+        | THREE.SkeletonHelper
+        | THREE.Object3D
+        | THREE.Texture
+      >
     >
   >;
   theScene: THREE.Scene | undefined;
@@ -46,23 +48,43 @@ const fnClearRendering = (props: FnClearRendering) => {
     }
   }
   if (theScene && contents.length > 0) {
-    contents.forEach((content: any) => {
-      theScene.remove(content);
-      content.traverse((node: any) => {
-        if (!node.isMesh) return;
-        node.geometry.dispose();
-        const materials: Array<THREE.MeshBasicMaterial | THREE.MeshPhongMaterial> = Array.isArray(
-          node.material,
-        )
-          ? node.material
-          : [node.material];
-        // material 타입 특정 시 타입 에러 발생
-        materials.forEach((material: any) => {
-          MAP_TYPES.forEach((mapType) => {
-            material[mapType]?.dispose();
+    contents.forEach(async (content: any) => {
+      if (content.type === 'Object3D') {
+        if (content.children.length > 0) {
+          content.children.forEach(async (child: any) => {
+            await child.material?.dispose();
+            await child.geometry?.dispose();
           });
+        }
+        content.dispose();
+      }
+      if (content.type === 'Line') {
+        await content.geometry.dispose();
+        await content.material.dispose();
+      }
+      if (content.type === 'Mesh') {
+        await content.geometry.dispose();
+        await content.material.dispose();
+      }
+      if (content.type === 1009) {
+        // texture
+        await content.dispose();
+      }
+      if (content.type !== 1009) {
+        content.traverse(async (node: any) => {
+          if (node.isMesh) {
+            await node.geometry.dispose();
+            if (Array.isArray(node.material)) {
+              node.material.forEach((m: THREE.MeshBasicMaterial | THREE.MeshPhongMaterial) => {
+                m.dispose();
+              });
+            } else {
+              await node.material.dispose();
+            }
+          }
         });
-      });
+      }
+      theScene.remove(content);
     });
     setContents([]);
     setTheScene(undefined);
