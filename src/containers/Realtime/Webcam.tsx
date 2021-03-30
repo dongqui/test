@@ -79,7 +79,7 @@ const Webcam: FunctionComponent<Props> = ({ isStart, onStart }) => {
       ) : (
         <div className={cx('inner')}>
           <div className={cx('message')}>
-            <Headline level="6" align="center" margin>
+            <Headline level="4" align="center" margin>
               Please check your webcam
             </Headline>
             <FilledButton onClick={handlePageRefresh}>Refresh</FilledButton>

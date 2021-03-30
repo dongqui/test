@@ -4,7 +4,8 @@ import * as S from './ContextmenuStyles';
 
 export interface ContextmenuDataTypes {
   key: string;
-  name: string;
+  value: string;
+  isSelected?: boolean;
 }
 export interface ContextmeneuProps {
   width: string;
@@ -19,10 +20,10 @@ const ContextmenuComponent: React.FC<ContextmeneuProps> = ({
   height,
   backgroundColor = 'black',
   data = [
-    { key: '0', name: 'Copy' },
-    { key: '1', name: 'Paste' },
-    { key: '2', name: 'Visualization' },
-    { key: '3', name: 'Edit name' },
+    { key: '0', value: 'Copy' },
+    { key: '1', value: 'Paste' },
+    { key: '2', value: 'Visualization' },
+    { key: '3', value: 'Edit name' },
   ],
   onClick = () => {},
 }) => {
@@ -30,7 +31,7 @@ const ContextmenuComponent: React.FC<ContextmeneuProps> = ({
     <S.ContextmenuWrapper width={width} backgroundColor={backgroundColor}>
       {_.map(data as ContextmenuDataTypes[], (item, index) => (
         <S.RowWrapper key={index} height={height} onClick={() => onClick({ key: item.key })}>
-          {item.name}
+          {item.value}
         </S.RowWrapper>
       ))}
     </S.ContextmenuWrapper>
