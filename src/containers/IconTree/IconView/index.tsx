@@ -10,8 +10,14 @@ import {
 } from '../../../lib/store';
 import { Icon } from '../Icon';
 import * as S from './IconViewStyles';
+import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { useShortcut } from 'hooks/common/useShortcut';
 import { useLPControl } from 'hooks/LP/useLPControl';
+import { ShortcutTypes } from 'types';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
 
 export interface IconViewProps {}
 export interface onChangeFileNameTypes {
@@ -42,23 +48,37 @@ const IconViewComponent: React.FC<IconViewProps> = ({}) => {
   useShortcut({
     data: shortcutData,
   });
+
   return (
-    <S.IconViewWrapper ref={iconViewWrapperRef} onClick={onClick}>
+    <div className={cx('wrapper')} ref={iconViewWrapperRef} onClick={onClick} aria-hidden="true">
       {_.map(filteredData, (item, index) => (
-        <S.IconWrapper
-          key={index}
-          className="icon"
-          id={item.key}
-          index={index}
-          draggable
-          onDragStart={() => onDragStart({ key: item.key })}
-          onDragEnd={onDragEnd}
-          onDrop={() => onDrop({ key: item.key })}
-        >
-          <Icon rowKey={item.key} />
-        </S.IconWrapper>
+        <div className={cx('icon-wrapper')}>
+          <div
+            key={index}
+            className="icon"
+            id={item.key}
+            draggable
+            onDragStart={() => onDragStart({ key: item.key })}
+            onDragEnd={onDragEnd}
+            onDrop={() => onDrop({ key: item.key })}
+          >
+            <Icon rowKey={item.key} />
+          </div>
+          {/* <S.IconWrapper
+            key={index}
+            className="icon"
+            id={item.key}
+            index={index}
+            draggable
+            onDragStart={() => onDragStart({ key: item.key })}
+            onDragEnd={onDragEnd}
+            onDrop={() => onDrop({ key: item.key })}
+          >
+            <Icon rowKey={item.key} />
+          </S.IconWrapper> */}
+        </div>
       ))}
-    </S.IconViewWrapper>
+    </div>
   );
 };
 export const IconView = React.memo(IconViewComponent);

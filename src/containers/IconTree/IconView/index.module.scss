@@ -1,0 +1,14 @@
+@import 'styles/libraries/_colors';
+
+.wrapper {
+  display: flex;
+  height: 100%;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
+.icon-wrapper {
+  position: relative;
+  margin-right: 8px;
+}

@@ -12,6 +12,10 @@ import { fnMakeSelection } from 'utils/LP/fnMakeSelection';
 import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';
 import { ListRow } from './ListRow';
 import * as S from './ListTreeStyles';
+import classNames from 'classnames/bind';
+import styles from './ListView.module.scss';
+
+const cx = classNames.bind(styles);
 
 export interface ListViewProps {}
 
@@ -53,8 +57,11 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
     });
     return result;
   }, [mainData, searchWord]);
+
+  // <S.ListViewWrapper ref={listViewWrapperRef} onClick={onClick}>
+  //   </S.ListViewWrapper>
   return (
-    <S.ListViewWrapper ref={listViewWrapperRef} onClick={onClick}>
+    <div className={cx('wrapper')} ref={listViewWrapperRef} onClick={onClick} aria-hidden="true">
       {_.map(processedData, (item, index) => (
         <S.ListViewRowWrapper
           key={index}
@@ -95,7 +102,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
           )}
         </S.ListViewRowWrapper>
       ))}
-    </S.ListViewWrapper>
+    </div>
   );
 };
 export const ListView = React.memo(ListViewComponent);

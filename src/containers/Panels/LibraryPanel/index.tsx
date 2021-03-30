@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useCallback, useState } from 'react';
+import { FunctionComponent, memo, useCallback, useState, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'antd';
@@ -23,6 +23,7 @@ import {
   storePages,
   storeRecordingData,
   storeSearchWord,
+  storeContextMenuInfo,
 } from 'lib/store';
 import _ from 'lodash';
 import { useDropzone } from 'react-dropzone';
@@ -222,18 +223,43 @@ const LibraryPanelComponent: FunctionComponent = () => {
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
+  // const mainData = useReactiveVar(storeMainData);
+  // const pages = useReactiveVar(storePages);
+  // const searchWord = useReactiveVar(storeSearchWord);
+  // const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
+  // const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
+  // const {
+  //   onClick,
+  //   onContextMenu,
+  //   onDragStart,
+  //   onDragEnd,
+  //   onDrop,
+  //   shortcutData,
+  //   filteredData,
+  // } = useLPControl({
+  //   contextmenuInfo,
+  //   mainData,
+  //   pages,
+  //   searchWord,
+  // });
+  // useContextMenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
+
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
       <div className={cx('inner')}>
-        <Headline className={cx('title')} level="5" align="left" margin>
-          Library
-        </Headline>
-        {/* <S.LPSelectWrapper>
+        <div className={cx('header')}>
+          <Headline className={cx('title')} level="5" align="left" margin>
+            Library
+          </Headline>
+          {/* <S.LPSelectWrapper>
             <LPSelect />
           </S.LPSelectWrapper> */}
-        <Explorer onChange={onChangeSearchText} />
-        <IconPage />
-        {_.isEqual(lpmode, LPModeType.iconview) ? <IconView /> : <ListView />}
+          <Explorer onChange={onChangeSearchText} />
+          <IconPage />
+        </div>
+        <div className={cx('content')}>
+          {_.isEqual(lpmode, LPModeType.iconview) ? <IconView /> : <ListView />}
+        </div>
       </div>
       {loading && (
         <div className={cx('loading')}>
