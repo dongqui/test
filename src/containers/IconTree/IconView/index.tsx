@@ -1,64 +1,61 @@
-import { useReactiveVar } from '@apollo/client';
-import useContextMenu from 'hooks/common/useContextMenu';
+import { FunctionComponent, memo } from 'react';
 import _ from 'lodash';
-import React, { useRef } from 'react';
-import {
-  storeContextMenuInfo,
-  storeMainData,
-  storePages,
-  storeSearchWord,
-} from '../../../lib/store';
+import { MainDataType } from 'types';
 import { Icon } from '../Icon';
-import * as S from './IconViewStyles';
 import { useShortcut } from 'hooks/common/useShortcut';
-import { useLPControl } from 'hooks/LP/useLPControl';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
-export interface IconViewProps {}
+const cx = classNames.bind(styles);
+
+export interface IconViewProps {
+  onClick: (e: any) => void;
+  onContextMenu: ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => void;
+  onDragStart: ({ key }: any) => void;
+  onDragEnd: ({ key }: any) => void;
+  onDrop: ({ key }: any) => void;
+  shortcutData: {
+    key: string;
+    ctrlKey?: boolean;
+    event: () => void;
+  }[];
+  filteredData: MainDataType[];
+}
 export interface onChangeFileNameTypes {
   ({ key, value }: { key: string; value: string }): void;
 }
 
-const IconViewComponent: React.FC<IconViewProps> = ({}) => {
-  const mainData = useReactiveVar(storeMainData);
-  const pages = useReactiveVar(storePages);
-  const searchWord = useReactiveVar(storeSearchWord);
-  const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
-  const iconViewWrapperRef = useRef<HTMLDivElement | any>(null);
-  const {
-    onClick,
-    onContextMenu,
-    onDragStart,
-    onDragEnd,
-    onDrop,
-    shortcutData,
-    filteredData,
-  } = useLPControl({
-    contextmenuInfo,
-    mainData,
-    pages,
-    searchWord,
-  });
-  useContextMenu({ targetRef: iconViewWrapperRef, event: onContextMenu });
+const IconViewComponent: FunctionComponent<IconViewProps> = ({
+  onClick,
+  onContextMenu,
+  onDragStart,
+  onDragEnd,
+  onDrop,
+  shortcutData,
+  filteredData,
+}) => {
   useShortcut({
     data: shortcutData,
   });
+
   return (
-    <S.IconViewWrapper ref={iconViewWrapperRef} onClick={onClick}>
+    <div className={cx('wrapper')}>
       {_.map(filteredData, (item, index) => (
-        <S.IconWrapper
-          key={index}
-          className="icon"
-          id={item.key}
-          index={index}
-          draggable
-          onDragStart={() => onDragStart({ key: item.key })}
-          onDragEnd={onDragEnd}
-          onDrop={() => onDrop({ key: item.key })}
-        >
-          <Icon rowKey={item.key} />
-        </S.IconWrapper>
+        <div className={cx('icon-wrapper')}>
+          <div
+            key={index}
+            className="icon"
+            id={item.key}
+            draggable
+            onDragStart={() => onDragStart({ key: item.key })}
+            onDragEnd={onDragEnd}
+            onDrop={() => onDrop({ key: item.key })}
+          >
+            <Icon rowKey={item.key} />
+          </div>
+        </div>
       ))}
-    </S.IconViewWrapper>
+    </div>
   );
 };
-export const IconView = React.memo(IconViewComponent);
+export const IconView = memo(IconViewComponent);

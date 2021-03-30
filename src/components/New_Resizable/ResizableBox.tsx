@@ -35,8 +35,6 @@ class ResizableBox extends Component<ResizableBoxProps, ResizableBoxState> {
 
   onResize = (e: SyntheticEvent, data: ResizeCallbackData) => {
     const { size } = data;
-    console.log('size');
-    console.log(size);
     if (this.props.onResize) {
       e.persist && e.persist();
       this.setState(size, () => this.props.onResize && this.props.onResize(e, data));

@@ -1,33 +1,43 @@
-import React, { useMemo, useRef } from 'react';
+import { FunctionComponent, memo, useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import useContextMenu from 'hooks/common/useContextMenu';
 import { useShortcut } from 'hooks/common/useShortcut';
-import { useLPControl } from 'hooks/LP/useLPControl';
 import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { storeContextMenuInfo, storeMainData, storePages, storeSearchWord } from 'lib/store';
+import { storeMainData, storeSearchWord } from 'lib/store';
 import _ from 'lodash';
 import { fnFilterArrayByHierarchy } from 'utils/LP/fnFilterArrayByHierarchy';
 import { fnMakeSelection } from 'utils/LP/fnMakeSelection';
 import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';
 import { ListRow } from './ListRow';
 import * as S from './ListTreeStyles';
+import classNames from 'classnames/bind';
+import styles from './ListView.module.scss';
 
-export interface ListViewProps {}
+const cx = classNames.bind(styles);
 
-const ListViewComponent: React.FC<ListViewProps> = ({}) => {
+export interface ListViewProps {
+  onClick: (e: any) => void;
+  onContextMenu: ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => void;
+  onDragStart: ({ key }: any) => void;
+  onDragEnd: ({ key }: any) => void;
+  onDrop: ({ key }: any) => void;
+  shortcutData: {
+    key: string;
+    ctrlKey?: boolean;
+    event: () => void;
+  }[];
+}
+
+const ListViewComponent: FunctionComponent<ListViewProps> = ({
+  onClick,
+  onContextMenu,
+  onDragStart,
+  onDragEnd,
+  onDrop,
+  shortcutData,
+}) => {
   const mainData = useReactiveVar(storeMainData);
-  const pages = useReactiveVar(storePages);
   const searchWord = useReactiveVar(storeSearchWord);
-  const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
-  const listViewWrapperRef = useRef<HTMLDivElement>(null);
-  const { onContextMenu, shortcutData, onDragStart, onDrop, onClick, onDragEnd } = useLPControl({
-    contextmenuInfo,
-    mainData,
-    pages,
-    searchWord,
-  });
-  useContextMenu({ targetRef: listViewWrapperRef, event: onContextMenu });
   useShortcut({
     data: shortcutData,
   });
@@ -53,8 +63,9 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
     });
     return result;
   }, [mainData, searchWord]);
+
   return (
-    <S.ListViewWrapper ref={listViewWrapperRef} onClick={onClick}>
+    <div className={cx('wrapper')}>
       {_.map(processedData, (item, index) => (
         <S.ListViewRowWrapper
           key={index}
@@ -95,7 +106,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({}) => {
           )}
         </S.ListViewRowWrapper>
       ))}
-    </S.ListViewWrapper>
+    </div>
   );
 };
-export const ListView = React.memo(ListViewComponent);
+export const ListView = memo(ListViewComponent);
