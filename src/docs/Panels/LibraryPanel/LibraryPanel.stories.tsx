@@ -1,11 +1,7 @@
-import React from 'react';
 import '../../common.css';
 // also exported from '@storybook/react' if you can deal with breaking changes in 6.1
 import { Story, Meta } from '@storybook/react/types-6-0';
-import {
-  LibraryPanel as LibraryPanelComponent,
-  LibraryPanelProps,
-} from '../../../containers/Panels/LibraryPanel';
+import { LibraryPanel as LibraryPanelComponent } from '../../../containers/Panels/LibraryPanel';
 import { LIBRARYPANEL_INFO } from 'styles/constants/common';
 
 export default {
@@ -15,6 +11,6 @@ export default {
   args: {},
 } as Meta;
 
-const Template: Story<LibraryPanelProps> = (args) => <LibraryPanelComponent {...args} />;
+const Template: Story = (args) => <LibraryPanelComponent {...args} />;
 
 export const Default = Template.bind({});

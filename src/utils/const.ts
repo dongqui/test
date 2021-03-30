@@ -209,3 +209,17 @@ export const DEFAULT_TARGETBONES = [
   'Source Bone4',
   'Source Bone5',
 ];
+
+// TP Track 별 Index 규칙
+export const TP_TRACK_INDEX = {
+  SUMMARY: 1, // Summary 트랙
+  LAYER: 2, // Layer 트랙(Base Layer, 사용자가 추가시킨 Layer)
+  BONE_A: 3, // Bone 트랙 Index는 끝자리를 3과 7로 지정
+  POSITION_A: 4, // Position 트랙 index는 끝자리를 4와 8로 지정
+  ROTATION_A: 5, // Rotation 트랙 index는 끝자리를 5과 9로 지정
+  SCALE_A: 6, // Scale 트랙 index는 끝자리를 6과 0으로 지정
+  BONE_B: 7,
+  POSITION_B: 8,
+  ROTATION_B: 9,
+  SCALE_B: 0,
+};

@@ -79,11 +79,11 @@ export interface ShortcutTypes {
   event: Function;
 }
 export interface ContextmenuType {
-  data?: ContextmenuDataTypes[];
+  data: ContextmenuDataTypes[];
   isShow: boolean;
   top: number;
   left: number;
-  onClick: ({ key }: { key: string }) => void;
+  onClick: (key: string, value: string) => void;
 }
 
 export interface MainDataType {

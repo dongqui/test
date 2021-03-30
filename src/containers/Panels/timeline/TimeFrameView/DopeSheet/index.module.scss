@@ -1,7 +1,7 @@
 .dopesheet-wrapper {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: calc(100% - 230px);
   background: #151515;
 
   .circle-group-wrapper {

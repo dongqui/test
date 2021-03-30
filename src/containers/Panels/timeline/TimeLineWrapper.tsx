@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import TrackList from './TrackList';
@@ -12,19 +12,6 @@ interface Props {}
 const TimelineWrapper: React.FC<Props> = () => {
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
   const trackListRef = useRef<HTMLDivElement>(null);
-
-  const rescaleDopeSheetCircleX = useCallback(
-    () => (rescale: () => void) => {
-      rescale();
-    },
-    [],
-  );
-
-  const scrollTimelineWrapper = useCallback(() => {
-    if (!trackListRef.current) return;
-    rescaleDopeSheetCircleX();
-    console.log('scrolllll');
-  }, [rescaleDopeSheetCircleX]);
 
   // 트랙 리스트에서 세로 스크롤 이벤트 방지
   useEffect(() => {
@@ -43,13 +30,9 @@ const TimelineWrapper: React.FC<Props> = () => {
 
   return (
     <>
-      <div
-        className={cx('timeline-wrapper')}
-        ref={timelineWrapperRef}
-        onScroll={scrollTimelineWrapper}
-      >
+      <div className={cx('timeline-wrapper')} ref={timelineWrapperRef}>
         <TrackList trackListRef={trackListRef} />
-        <TimeFrameView rescaleDopeSheetCircleX={rescaleDopeSheetCircleX} />
+        <TimeFrameView timelineWrapperRef={timelineWrapperRef} />
       </div>
     </>
   );
