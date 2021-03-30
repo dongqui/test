@@ -16,7 +16,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { fnAddFog, fnChangeFogFar, fnChangeFogNear, fnRemoveFog } from 'utils/CP/fogUtils';
 import {
   fnAddShadow,
-  fnChangeAxis,
   fnMakeBoneAndJointInvisible,
   fnMakeBoneAndJointVisible,
   fnMakeSkinnedMeshesInvisible,

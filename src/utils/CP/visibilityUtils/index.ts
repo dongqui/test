@@ -4,4 +4,3 @@ export { default as fnMakeBoneAndJointVisible } from './fnMakeBoneAndJointVisibl
 export { default as fnMakeBoneAndJointInvisible } from './fnMakeBoneAndJointInvisible';
 export { default as fnMakeSkinnedMeshesVisible } from './fnMakeSkinnedMeshesVisible';
 export { default as fnMakeSkinnedMeshesInvisible } from './fnMakeSkinnedMeshesInvisible';
-export { default as fnChangeAxis } from './fnChangeAxis';
