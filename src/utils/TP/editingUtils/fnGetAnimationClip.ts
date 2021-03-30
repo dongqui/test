@@ -28,9 +28,23 @@ interface FnGetAnimationClip {
  */
 const fnGetAnimationClip = (props: FnGetAnimationClip) => {
   let duration = 0; // track 들의 union times 중 가장 큰 애들 비교하면서 교체
-  const { name, baseLayer, layers, startTimeIndex, endTimeIndex } = props;
+  const {
+    name,
+    baseLayer: inputBaseLayer,
+    layers: inputLayers,
+    startTimeIndex,
+    endTimeIndex,
+  } = props;
   // baseLayer 와 layers 를 사용한다.
   // 각 layers 들은 동일한 track 들로 채워져있다.
+
+  // track 중 included = true 인 track 만 사용한다.
+  const baseLayer = _.filter(inputBaseLayer, (track: ShootTrackType) => track.included);
+  const layers = _.cloneDeep(inputLayers);
+  _.forEach(layers, (layer: ShootLayerType) => {
+    layer.tracks = _.filter(layer.tracks, (track: ShootTrackType) => track.included);
+  });
+
   const tracks: THREE.VectorKeyframeTrack[] = [];
   _.forEach(baseLayer, (track) => {
     // union time 을 구하되 start 및 end timeIndex 가 있으면 길이를 조절해서 clip 생성

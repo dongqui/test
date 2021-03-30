@@ -40,6 +40,7 @@ const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer) => {
     times: [],
     values: [],
     interpolation: 'linear',
+    included: true,
   };
 
   // delta values 구하기

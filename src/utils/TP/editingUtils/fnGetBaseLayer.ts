@@ -40,6 +40,7 @@ const fnGetBaseLayer = (props: FnGetBaseLayer) => {
               times: [...targetTrack.times],
               values: [...targetTrack.values],
               interpolation: 'linear',
+              included: true,
             };
           } else {
             return {
@@ -47,6 +48,7 @@ const fnGetBaseLayer = (props: FnGetBaseLayer) => {
               times: [],
               values: [],
               interpolation: 'linear',
+              included: true,
             };
           }
         }),
@@ -64,6 +66,7 @@ const fnGetBaseLayer = (props: FnGetBaseLayer) => {
             times: [],
             values: [],
             interpolation: 'linear',
+            included: true,
           };
         }),
       );
