@@ -6,7 +6,7 @@ import { useRendering } from '../../../hooks/RP/useRendering';
 import { ShootLayerType, ShootTrackType } from 'types';
 import { storeAnimatingData, storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
-import { fnGetAnimationClip } from 'utils/TP/editingUtils';
+import { fnGetAnimationClipForPlay } from 'utils/TP/editingUtils';
 import {
   fnSetPlayState,
   fnSetPlayDirection,
@@ -64,7 +64,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   // animation 생성 로직
   useEffect(() => {
     if (mixer && visualizedName && visualizedBaseLayer && visualizedLayers) {
-      const visualizedClip = fnGetAnimationClip({
+      const visualizedClip = fnGetAnimationClipForPlay({
         name: visualizedName,
         baseLayer: visualizedBaseLayer,
         layers: visualizedLayers,
