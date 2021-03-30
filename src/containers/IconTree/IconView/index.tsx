@@ -1,8 +1,8 @@
-import { FunctionComponent, memo, useCallback } from 'react';
+import { FunctionComponent, memo } from 'react';
 import _ from 'lodash';
 import { MainDataType } from 'types';
+import { Icon } from '../Icon';
 import { useShortcut } from 'hooks/common/useShortcut';
-import IconNode from './IconNode';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -21,6 +21,9 @@ export interface IconViewProps {
   }[];
   filteredData: MainDataType[];
 }
+export interface onChangeFileNameTypes {
+  ({ key, value }: { key: string; value: string }): void;
+}
 
 const IconViewComponent: FunctionComponent<IconViewProps> = ({
   onClick,
@@ -35,34 +38,23 @@ const IconViewComponent: FunctionComponent<IconViewProps> = ({
     data: shortcutData,
   });
 
-  const handleDragStart = useCallback(
-    (key: string) => {
-      onDragStart({ key });
-    },
-    [onDragStart],
-  );
-
-  const handleDrop = useCallback(
-    (key: any) => {
-      onDrop({ key });
-    },
-    [onDrop],
-  );
-
   return (
     <div className={cx('wrapper')}>
-      {_.map(filteredData, (item, index) => {
-        const key = `${item.parentKey}_${item.name}_${index}`;
-        return (
-          <IconNode
-            key={key}
-            item={item}
-            onDragStart={handleDragStart}
+      {_.map(filteredData, (item, index) => (
+        <div className={cx('icon-wrapper')}>
+          <div
+            key={index}
+            className="icon"
+            id={item.key}
+            draggable
+            onDragStart={() => onDragStart({ key: item.key })}
             onDragEnd={onDragEnd}
-            onDrop={handleDrop}
-          />
-        );
-      })}
+            onDrop={() => onDrop({ key: item.key })}
+          >
+            <Icon rowKey={item.key} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

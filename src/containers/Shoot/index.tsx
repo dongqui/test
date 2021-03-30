@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { NextPage } from 'next';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
@@ -48,7 +48,9 @@ const ModalWrapper = styled.div`
   transform: translate(-50%, -50%);
 `;
 
-const ShootPage: FunctionComponent = () => {
+interface Props {}
+
+const ShootPage: NextPage<Props> = () => {
   const mainData = useReactiveVar(storeMainData);
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const modalInfo = useReactiveVar(storeModalInfo);
@@ -193,4 +195,4 @@ const ShootPage: FunctionComponent = () => {
   );
 };
 
-export default memo(ShootPage);
+export default ShootPage;
