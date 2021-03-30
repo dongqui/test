@@ -11,6 +11,7 @@ import Plus from './svg/Plus.svg';
 import Model from './svg/Model.svg';
 import Folder from './svg/Folder.svg';
 import Motion from './svg/Motion.svg';
+import FilledArrow from './svg/FilledArrow.svg';
 
 type Icon =
   | 'Close'
@@ -24,7 +25,8 @@ type Icon =
   | 'Plus'
   | 'Model'
   | 'Folder'
-  | 'Motion';
+  | 'Motion'
+  | 'FilledArrow';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -43,6 +45,7 @@ const images: Images = {
   Model,
   Folder,
   Motion,
+  FilledArrow,
 };
 
 export default images;
