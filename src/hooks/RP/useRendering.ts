@@ -63,6 +63,7 @@ export const useRendering = (props: UseRendering) => {
   // store data
   const { axis } = useReactiveVar(storeRenderingData);
   // component state
+  const [renderer, setRenderer] = useState<THREE.WebGL1Renderer | undefined>(undefined);
   const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
   const [contents, setContents] = useState<
     Array<
@@ -72,6 +73,7 @@ export const useRendering = (props: UseRendering) => {
       | THREE.SkeletonHelper
       | THREE.Object3D
       | THREE.Texture
+      | OrbitControls
     >
   >([]); // clear하기 위해 content 담아놓은 array
   const [theScene, setTheScene] = useState<THREE.Scene | undefined>(undefined); // clear 함수에서 사용하기 위해 component state로 관리
@@ -414,6 +416,14 @@ export const useRendering = (props: UseRendering) => {
   const clock = new THREE.Clock();
 
   useEffect(() => {
+    const renderingDiv = document.getElementById(id);
+    if (renderingDiv) {
+      // renderer 생성 및 설정
+      setRenderer(fnCreateRenderer({ renderingDiv }));
+    }
+  }, [id]);
+
+  useEffect(() => {
     // rendering할 div요소 선택
     const renderingDiv = document.getElementById(id);
 
@@ -422,15 +432,15 @@ export const useRendering = (props: UseRendering) => {
     //   console.log('contextmenu e: ', e);
     // });
 
-    if (renderingDiv) {
+    if (renderingDiv && renderer) {
       // scene 생성 및 설정
       const scene = fnCreateScene();
       setScene(scene);
       setTheScene(scene);
+
       // camera 생성 및 설정
       const camera = fnCreateCamera({ upDirection: axis });
-      // renderer 생성 및 설정
-      const renderer = fnCreateRenderer({ renderingDiv });
+      setContents((prevContents) => [...prevContents, camera]);
 
       // initial canvas resize
       if (fnResizeRendererToDisplaySize({ renderer, renderingDiv })) {
@@ -440,8 +450,9 @@ export const useRendering = (props: UseRendering) => {
       }
 
       // scene에 조명 추가
-      const tmpDirLight = fnAddLights({ scene, upDirection: axis });
-      setDirLight(tmpDirLight);
+      const { hemiLight, dirLight } = fnAddLights({ scene, upDirection: axis });
+      setContents((prevContents) => [...prevContents, hemiLight, dirLight]);
+      setDirLight(dirLight);
       // scene에 바닥 추가
       const { ground, texture } = fnAddGround({ scene, camera, renderer, upDirection: axis });
       setContents((prevContents) => [...prevContents, ground, texture]);
@@ -449,6 +460,7 @@ export const useRendering = (props: UseRendering) => {
       setContents((prevContents) => [...prevContents, xAxis, yAxis, zAxis]);
       // cameraControls 생성 및 설정
       const cameraControls = fnCreateCameraControls({ camera, renderer });
+      setContents((prevContents) => [...prevContents, cameraControls]);
       setCameraControls(cameraControls);
       // scene에 transformControls 추가
       const transformControls = fnAddTransformControls({
@@ -583,5 +595,5 @@ export const useRendering = (props: UseRendering) => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fileUrl, axis]);
+  }, [fileUrl, axis, renderer]);
 };

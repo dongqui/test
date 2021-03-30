@@ -1,7 +1,18 @@
-import content from '*.svg';
 import { Dispatch, SetStateAction } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+
+const MAP_TYPES = [
+  'map',
+  'aoMap',
+  'emissiveMap',
+  'glossinessMap',
+  'metalnessMap',
+  'normalMap',
+  'roughnessMap',
+  'specularMap',
+];
 
 // load 된 objcet 에 대해 타입 특정 시 에러 발생
 interface FnClearRendering {
@@ -13,6 +24,8 @@ interface FnClearRendering {
     | THREE.SkeletonHelper
     | THREE.Object3D
     | THREE.Texture
+    | OrbitControls
+    | THREE.WebGL1Renderer
   >;
   setContents: Dispatch<
     SetStateAction<
@@ -23,6 +36,7 @@ interface FnClearRendering {
         | THREE.SkeletonHelper
         | THREE.Object3D
         | THREE.Texture
+        | OrbitControls
       >
     >
   >;
@@ -47,42 +61,91 @@ const fnClearRendering = (props: FnClearRendering) => {
       renderingDiv.removeChild(renderingDiv.firstChild);
     }
   }
+  if (theScene) {
+    theScene.traverse((node: any) => {
+      if (node.isMesh) {
+        node.geometry.dispose();
+        if (Array.isArray(node.material)) {
+          node.material.forEach((m: any) => {
+            MAP_TYPES.forEach((mapName) => {
+              if (m[mapName]) {
+                m[mapName].dispose();
+              }
+            });
+          });
+        } else {
+          MAP_TYPES.forEach((mapName) => {
+            if (node.material[mapName]) {
+              node.material[mapName].dispose();
+            }
+          });
+        }
+      }
+    });
+  }
   if (theScene && contents.length > 0) {
-    contents.forEach(async (content: any) => {
+    console.log(theScene, contents);
+    contents.forEach((content: any) => {
       if (content.type === 'Object3D') {
         if (content.children.length > 0) {
-          content.children.forEach(async (child: any) => {
-            await child.material?.dispose();
-            await child.geometry?.dispose();
+          content.children.forEach((child: any) => {
+            child.geometry?.dispose();
+            MAP_TYPES.forEach((mapName) => {
+              if (content.material && content.material[mapName]) {
+                content.material[mapName].dispose();
+              }
+            });
           });
         }
         content.dispose();
       }
       if (content.type === 'Line') {
-        await content.geometry.dispose();
-        await content.material.dispose();
+        content.geometry.dispose();
+        MAP_TYPES.forEach((mapName) => {
+          if (content.material[mapName]) {
+            content.material[mapName].dispose();
+          }
+        });
       }
       if (content.type === 'Mesh') {
-        await content.geometry.dispose();
-        await content.material.dispose();
+        content.geometry.dispose();
+        MAP_TYPES.forEach((mapName) => {
+          if (content.material && content.material[mapName]) {
+            content.material[mapName].dispose();
+          }
+        });
       }
       if (content.type === 1009) {
         // texture
-        await content.dispose();
+        if (content.dispose) content.dispose();
       }
       if (content.type !== 1009) {
-        content.traverse(async (node: any) => {
-          if (node.isMesh) {
-            await node.geometry.dispose();
-            if (Array.isArray(node.material)) {
-              node.material.forEach((m: THREE.MeshBasicMaterial | THREE.MeshPhongMaterial) => {
-                m.dispose();
-              });
-            } else {
-              await node.material.dispose();
+        // 자체 dispose
+        if (content.geometry) content.geometry.dispose();
+        if (content.material) content.material.dispose();
+        // 내부 순환
+        if (content.traverse) {
+          content.traverse((node: any) => {
+            if (node.isMesh) {
+              node.geometry.dispose();
+              if (Array.isArray(node.material)) {
+                node.material.forEach((m: any) => {
+                  MAP_TYPES.forEach((mapName) => {
+                    if (m[mapName]) {
+                      m[mapName].dispose();
+                    }
+                  });
+                });
+              } else {
+                MAP_TYPES.forEach((mapName) => {
+                  if (node.material[mapName]) {
+                    node.material[mapName].dispose();
+                  }
+                });
+              }
             }
-          }
-        });
+          });
+        }
       }
       theScene.remove(content);
     });

@@ -13,7 +13,7 @@ interface FnAddLights {
  * @param scene - The scene where lights will be attatched
  * @param upDirection - The target up direction of the scene and the camera
  *
- * @returns THREE.DirectionalLight for turning on/off the shadow
+ * @returns HemiLight and DirectionalLight for clearing and turning on/off the shadow
  *
  */
 const fnAddLights = (props: FnAddLights) => {
@@ -42,7 +42,7 @@ const fnAddLights = (props: FnAddLights) => {
   }
   scene.add(dirLight);
 
-  return dirLight;
+  return { hemiLight, dirLight };
 };
 
 export default fnAddLights;
