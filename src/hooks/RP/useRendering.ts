@@ -420,7 +420,7 @@ export const useRendering = (props: UseRendering) => {
       }
 
       // scene에 조명 추가
-      const tmpDirLight = fnAddLights({ scene });
+      const tmpDirLight = fnAddLights({ scene, upDirection: axis });
       setDirLight(tmpDirLight);
       // scene에 바닥 추가
       const ground = fnAddGround({ scene, camera, renderer, upDirection: axis });

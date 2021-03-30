@@ -1,21 +1,29 @@
 import * as THREE from 'three';
 
+type UpDirection = 'y' | 'z';
+
 interface FnAddLights {
   scene: THREE.Scene;
+  upDirection: UpDirection;
 }
 
 /**
  * Adds a hemisphere light and a directional light to the scene.
  *
  * @param scene - The scene where lights will be attatched
+ * @param upDirection - The target up direction of the scene and the camera
  *
  * @returns THREE.DirectionalLight for turning on/off the shadow
  *
  */
 const fnAddLights = (props: FnAddLights) => {
-  const { scene } = props;
+  const { scene, upDirection } = props;
   const hemiLight = new THREE.HemisphereLight(0xaaaaaa);
-  hemiLight.position.set(0, 20, 0);
+  if (upDirection === 'y') {
+    hemiLight.position.set(0, 20, 0);
+  } else if (upDirection === 'z') {
+    hemiLight.position.set(0, 0, 20);
+  }
   scene.add(hemiLight);
 
   const dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
@@ -27,6 +35,11 @@ const fnAddLights = (props: FnAddLights) => {
   dirLight.shadow.camera.right = 8.25;
   dirLight.shadow.camera.top = 8.25;
   dirLight.shadow.camera.bottom = 8.25 * -1;
+  if (upDirection === 'y') {
+    dirLight.position.set(0, 20, 0);
+  } else if (upDirection === 'z') {
+    dirLight.position.set(0, 0, 20);
+  }
   scene.add(dirLight);
 
   return dirLight;
