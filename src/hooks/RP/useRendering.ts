@@ -37,6 +37,19 @@ interface UseRendering {
   setDirLight: Dispatch<SetStateAction<THREE.DirectionalLight | undefined>>;
 }
 
+/**
+ * RenderingController 에서 사용해, Canvas 생성하고 fileUrl 이 있다면 모델을 Visualize 합니다.
+ * Visualization 시 RP 내에서 사용하는 단축키들 또한 등록합니다.
+ *
+ * @param id - Canvas 를 부착할 HTMLDivElement 의 id
+ * @param fileUrl - RP 에 visualize 할 모델의 url
+ * @param setMixer - RenderingController 내 state 인 mixer 의 set 함수
+ * @param setSkeletonHelper - RenderingController 내 state 인 skeletonHelper 의 set 함수
+ * @param setCameraControls - RenderingController 내 state 인 cameraControls 의 set 함수
+ * @param setScene - RenderingController 내 state 인 scene 의 set 함수
+ * @param setDirLight - RenderingController 내 state 인 dirLight 의 set 함수
+ *
+ */
 export const useRendering = (props: UseRendering) => {
   const {
     id,
