@@ -32,7 +32,7 @@ interface FnUpdateKeyframeToLayer {
  * @returns 키프레임이 추가/수정된 새로운 track
  *
  */
-const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer) => {
+const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer): ShootTrackType => {
   const { track, currentLayerKey, baseLayer, layers, time, values } = props;
 
   const emptyTrack = {
@@ -127,6 +127,7 @@ const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer) => {
     times: newTimes,
     values: newValues,
     interpolation: track.interpolation,
+    included: true,
   };
 };
 
