@@ -1,0 +1,82 @@
+@mixin common-panel {
+  display: flex;
+  height: 165px;
+  
+  border-bottom: 1px solid #303030;  
+  
+  padding: 12px;
+} 
+
+.panel-wrap {
+  background-color: #151515;
+  overflow-y: auto;
+}
+
+.panel-top-header {
+  padding: 12px 8px;
+  border-bottom: 1px solid #303030;
+  span {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 700;
+
+    vertical-align: text-top;
+
+    color: var(--gray700);
+  }
+}
+
+.panel-transform {
+  @include common-panel;
+  span {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 700;
+
+    vertical-align: text-top;
+
+    color: var(--gray700);
+  }
+}
+
+.panel-camera {
+  @include common-panel;
+  height: 130px;
+  span {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 700;
+
+    vertical-align: text-top;
+
+    color: var(--gray700);
+  }
+}
+
+.panel-visibility {
+  @include common-panel;
+  height: 200px;
+  span {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 700;
+
+    vertical-align: text-top;
+
+    color: var(--gray700);
+  }
+}
+
+.panel-fog {
+  @include common-panel;
+  height: 200px;
+  span {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 700;
+
+    vertical-align: text-top;
+
+    color: var(--gray700);
+  }
+}

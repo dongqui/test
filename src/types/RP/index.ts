@@ -14,12 +14,12 @@ export enum RenderingDataPropertyName {
   scaleX = 'scaleX',
   scaleY = 'scaleY',
   scaleZ = 'scaleZ',
-  locationX = 'locationX',
-  locationY = 'locationY',
-  locationZ = 'locationZ',
-  angleX = 'angleX',
-  angleY = 'angleY',
-  angleZ = 'angleZ',
+  // locationX = 'locationX',
+  // locationY = 'locationY',
+  // locationZ = 'locationZ',
+  // angleX = 'angleX',
+  // angleY = 'angleY',
+  // angleZ = 'angleZ',
   axis = 'axis',
   isBoneOn = 'isBoneOn',
   isJointOn = 'isJointOn',
@@ -50,12 +50,12 @@ export interface RenderingDataType {
   [RenderingDataPropertyName.scaleX]: number;
   [RenderingDataPropertyName.scaleY]: number;
   [RenderingDataPropertyName.scaleZ]: number;
-  [RenderingDataPropertyName.locationX]: number;
-  [RenderingDataPropertyName.locationY]: number;
-  [RenderingDataPropertyName.locationZ]: number;
-  [RenderingDataPropertyName.angleX]: number;
-  [RenderingDataPropertyName.angleY]: number;
-  [RenderingDataPropertyName.angleZ]: number;
+  // [RenderingDataPropertyName.locationX]: number;
+  // [RenderingDataPropertyName.locationY]: number;
+  // [RenderingDataPropertyName.locationZ]: number;
+  // [RenderingDataPropertyName.angleX]: number;
+  // [RenderingDataPropertyName.angleY]: number;
+  // [RenderingDataPropertyName.angleZ]: number;
   [RenderingDataPropertyName.axis]: axisName;
   [RenderingDataPropertyName.isBoneOn]: boolean;
   [RenderingDataPropertyName.isJointOn]: boolean;

@@ -13,7 +13,6 @@ interface FnRemoveShadow {
 const fnRemoveShadow = (props: FnRemoveShadow) => {
   const { dirLight } = props;
   dirLight.castShadow = false;
-  console.log('dirLight: ', dirLight);
 };
 
 export default fnRemoveShadow;

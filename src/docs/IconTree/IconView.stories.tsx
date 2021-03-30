@@ -21,7 +21,3 @@ const Template: Story<IconViewProps> = (args) => {
 };
 
 export const Default = Template.bind({});
-Default.args = {
-  width: '30%',
-  height: '50rem',
-};

@@ -63,6 +63,7 @@ export enum MAINDATA_PROPERTY_TYPES {
   isDragging = 'isDragging',
   baseLayer = 'baseLayer',
   layers = 'layers',
+  boneNames = 'boneNames',
 }
 export enum LPModeType {
   listview = 'listview',
@@ -101,6 +102,7 @@ export interface MainDataType {
   [MAINDATA_PROPERTY_TYPES.isDragging]?: boolean;
   [MAINDATA_PROPERTY_TYPES.baseLayer]?: ShootTrackType[];
   [MAINDATA_PROPERTY_TYPES.layers]?: ShootLayerType[];
+  [MAINDATA_PROPERTY_TYPES.boneNames]?: string[];
 }
 export interface BonesTypes {
   name: string;
@@ -129,6 +131,7 @@ export interface ShootTrackType {
   times: number[];
   values: number[];
   interpolation: string;
+  included: boolean;
 }
 
 export interface ShootLayerType {

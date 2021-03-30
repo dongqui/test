@@ -119,6 +119,9 @@ const ShootPage: NextPage<Props> = () => {
   const onCancelLoading = useCallback(() => {
     storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
   }, [modalInfo]);
+  const handleClose = useCallback(() => {
+    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
+  }, [modalInfo]);
 
   useOutsideClick({
     ref: contextMenuRef,
@@ -159,7 +162,7 @@ const ShootPage: NextPage<Props> = () => {
       {modalInfo.isShow && (
         <>
           {_.isEqual(modalInfo.type, MODAL_TYPES.alert) && (
-            <BaseModal hasCloseIcon onClose={() => {}} theme="dark">
+            <BaseModal hasCloseIcon onClose={handleClose} theme="dark">
               <ModalInner>{modalInfo.msg}</ModalInner>
             </BaseModal>
           )}

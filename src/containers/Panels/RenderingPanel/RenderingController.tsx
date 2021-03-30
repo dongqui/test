@@ -1,23 +1,17 @@
 import _ from 'lodash';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { RenderingPresenter } from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { FILE_TYPES, ShootLayerType, ShootTrackType } from 'types';
-import { storeAnimatingData, storeMainData, storeRenderingData } from 'lib/store';
+import { ShootLayerType, ShootTrackType } from 'types';
+import { storeAnimatingData, storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
-import { fnGetAnimationClip } from 'utils/TP/editingUtils';
+import { fnGetAnimationClipForPlay } from 'utils/TP/editingUtils';
 import {
   fnSetPlayState,
   fnSetPlayDirection,
   fnGoToSpecificTimeIndex,
 } from 'utils/RP/animatingUtils';
-import {
-  fnChangeBonePosition,
-  fnChangeBoneRotation,
-  fnChangeBoneScale,
-} from 'utils/CP/transformUtils';
-import { fnChangeCameraLookAt, fnChangeCameraPosition } from 'utils/CP/cameraUtils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { fnAddFog, fnChangeFogFar, fnChangeFogNear, fnRemoveFog } from 'utils/CP/fogUtils';
 import {
@@ -54,14 +48,12 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   const [fog, setFog] = useState<THREE.Fog | undefined>(undefined);
   const [dirLight, setDirLight] = useState<THREE.DirectionalLight | undefined>(undefined);
   const [currentAction, setCurrentAction] = useState<THREE.AnimationAction | undefined>(undefined);
-  const [currentBoneIndex, setCurrentBoneIndex] = useState<number>(0);
 
   useRendering({
     id,
     fileUrl,
     setMixer,
     setSkeletonHelper,
-    setCurrentBoneIndex,
     setCameraControls,
     setScene,
     setDirLight,
@@ -72,7 +64,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   // animation 생성 로직
   useEffect(() => {
     if (mixer && visualizedName && visualizedBaseLayer && visualizedLayers) {
-      const visualizedClip = fnGetAnimationClip({
+      const visualizedClip = fnGetAnimationClipForPlay({
         name: visualizedName,
         baseLayer: visualizedBaseLayer,
         layers: visualizedLayers,
@@ -107,126 +99,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     }
   }, [currentAction, currentTimeIndex, mixer]);
 
-  const currentBone = useMemo(() => {
-    if (skeletonHelper) {
-      return skeletonHelper.bones[currentBoneIndex];
-    }
-  }, [currentBoneIndex, skeletonHelper]);
-
-  // useEffect(() => {
-  //   if (currentBone) {
-  //     storeRenderingData({
-  //       ...renderingData,
-  //       ['positionX']: currentBone.position.x,
-  //       ['positionY']: currentBone.position.y,
-  //       ['positionZ']: currentBone.position.z,
-  //       ['rotationX']: currentBone.rotation.x,
-  //       ['rotationY']: currentBone.rotation.y,
-  //       ['rotationZ']: currentBone.rotation.z,
-  //       ['scaleX']: currentBone.scale.x,
-  //       ['scaleY']: currentBone.scale.y,
-  //       ['scaleZ']: currentBone.scale.z,
-  //     });
-  //   }
-  // }, [currentBone, renderingData]);
-
-  const {
-    positionX,
-    positionY,
-    positionZ,
-    rotationX,
-    rotationY,
-    rotationZ,
-    scaleX,
-    scaleY,
-    scaleZ,
-  } = renderingData;
-
-  // bone transform 적용 로직
-  // useEffect(() => {
-  //   if (currentBone) {
-  //     fnChangeBonePosition({ targetBone: currentBone, axis: 'x', value: positionX });
-  //   }
-  // }, [currentBone, positionX]);
-
-  // useEffect(() => {
-  //   if (currentBone) {
-  //     fnChangeBonePosition({ targetBone: currentBone, axis: 'y', value: positionY });
-  //   }
-  // }, [currentBone, positionY]);
-
-  // useEffect(() => {
-  //   if (currentBone) {
-  //     fnChangeBonePosition({ targetBone: currentBone, axis: 'z', value: positionZ });
-  //   }
-  // }, [currentBone, positionZ]);
-
-  // useEffect(() => {
-  //   if (currentBone) {
-  //     fnChangeBoneRotation({ targetBone: currentBone, axis: 'x', value: rotationX });
-  //   }
-  // }, [currentBone, rotationX]);
-
-  // useEffect(() => {
-  //   if (currentBone) {
-  //     fnChangeBoneRotation({ targetBone: currentBone, axis: 'y', value: rotationY });
-  //   }
-  // }, [currentBone, rotationY]);
-
-  // useEffect(() => {
-  //   if (currentBone) {
-  //     fnChangeBoneRotation({ targetBone: currentBone, axis: 'z', value: rotationZ });
-  //   }
-  // }, [currentBone, rotationZ]);
-
-  // useEffect(() => {
-  //   if (currentBone) {
-  //     fnChangeBoneScale({ targetBone: currentBone, axis: 'x', value: scaleX });
-  //   }
-  // }, [currentBone, scaleX]);
-
-  // useEffect(() => {
-  //   if (currentBone) {
-  //     fnChangeBoneScale({ targetBone: currentBone, axis: 'y', value: scaleY });
-  //   }
-  // }, [currentBone, scaleY]);
-
-  // useEffect(() => {
-  //   if (currentBone) {
-  //     fnChangeBoneScale({ targetBone: currentBone, axis: 'z', value: scaleZ });
-  //   }
-  // }, [currentBone, scaleX, scaleZ]);
-
-  // camera option 적용 로직
-  const { locationX, locationY, locationZ, angleX, angleY, angleZ } = renderingData;
-
-  useEffect(() => {
-    if (cameraControls) {
-      fnChangeCameraPosition({ cameraControls, axis: 'x', value: locationX });
-    }
-  }, [cameraControls, locationX]);
-
-  useEffect(() => {
-    if (cameraControls) {
-      fnChangeCameraPosition({ cameraControls, axis: 'y', value: locationY });
-    }
-  }, [cameraControls, locationY]);
-
-  useEffect(() => {
-    if (cameraControls) {
-      fnChangeCameraPosition({ cameraControls, axis: 'z', value: locationZ });
-    }
-  }, [cameraControls, locationZ]);
-
-  useEffect(() => {
-    if (cameraControls) {
-      fnChangeCameraLookAt({
-        cameraControls,
-        axis: 'x',
-        value: { x: angleX, y: angleX, z: angleZ },
-      });
-    }
-  }, [cameraControls, angleX, angleZ]);
+  // bone transform 적용 로직 -> CP 직접 컨트롤 방식으로 변경
 
   // fog option 적용 로직
   const { isFogOn, fogNear, fogFar } = renderingData;

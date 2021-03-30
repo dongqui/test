@@ -15,14 +15,14 @@ interface FnDeleteKeyframe {
  * @returns 키프레임이 삭제된 새로운 track
  *
  */
-const fnDeleteKeyframe = (props: FnDeleteKeyframe) => {
+const fnDeleteKeyframe = (props: FnDeleteKeyframe): ShootTrackType => {
   const { track, time } = props;
   let newTimes = _.clone(track.times);
   let newValues = _.clone(track.values);
   const timeIndex = _.findIndex(track.times, (t) => _.round(t, 4) === _.round(time, 4));
   if (timeIndex === -1) {
-    // 해당 time 이 track 의 times 내에 존재하지 않는다면 그냥 return
-    return;
+    // 해당 time 이 track 의 times 내에 존재하지 않는다면 그냥 원래 track 을 return
+    return track;
   } else {
     if (timeIndex === 0) {
       newTimes = _.slice(newTimes, 1);
@@ -43,6 +43,7 @@ const fnDeleteKeyframe = (props: FnDeleteKeyframe) => {
     times: newTimes,
     values: newValues,
     interpolation: track.interpolation,
+    included: true,
   };
 };
 
