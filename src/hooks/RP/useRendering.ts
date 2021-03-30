@@ -21,8 +21,9 @@ import {
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
 import { useHistory } from './useHistory';
-import { storeCurrentBone, storeTransformControls } from '../../lib/store';
+import { storeCurrentBone, storeRenderingData, storeTransformControls } from '../../lib/store';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { useReactiveVar } from '@apollo/client';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -34,10 +35,6 @@ interface UseRendering {
   setCameraControls: Dispatch<SetStateAction<OrbitControls | undefined>>;
   setScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
   setDirLight: Dispatch<SetStateAction<THREE.DirectionalLight | undefined>>;
-  setCamera: Dispatch<SetStateAction<THREE.PerspectiveCamera | undefined>>;
-  setGround: Dispatch<SetStateAction<THREE.Mesh | undefined>>;
-  setYAxis: Dispatch<SetStateAction<THREE.Line | undefined>>;
-  setZAxis: Dispatch<SetStateAction<THREE.Line | undefined>>;
 }
 
 export const useRendering = (props: UseRendering) => {
@@ -49,11 +46,9 @@ export const useRendering = (props: UseRendering) => {
     setCameraControls,
     setScene,
     setDirLight,
-    setCamera,
-    setGround,
-    setYAxis,
-    setZAxis,
   } = props;
+  // store data
+  const { axis } = useReactiveVar(storeRenderingData);
   // component state
   const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
   const [contents, setContents] = useState<
@@ -197,52 +192,51 @@ export const useRendering = (props: UseRendering) => {
           if (multiKeyController[event.key]) {
             multiKeyController[event.key].pressed = true;
           }
-          // setIsViewportOpen(true);
           break;
         case 't': // t (top)
         case 'T':
         case 'ㅅ':
-          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-          // cameraControls.object.position.set(0, -5, 10);
-          // cameraControls.object.lookAt(0, 0, 0);
-          // cameraControls.target.set(0, 0, 0);
-          // cameraControls.update();
-          // } else {
-          cameraControls.object.position.set(0, 10, 0);
-          cameraControls.object.lookAt(0, 0, 0);
-          cameraControls.target.set(0, 0, 0);
-          cameraControls.update();
-          // }
+          if (axis === 'z') {
+            cameraControls.object.position.set(0, -5, 10);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+          } else if (axis === 'y') {
+            cameraControls.object.position.set(0, 10, 0);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+          }
           break;
         case 'b': // b (bottom)
         case 'B':
         case 'ㅠ':
-          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-          // cameraControls.object.position.set(0, -5, -10);
-          // cameraControls.object.lookAt(0, 0, 0);
-          // cameraControls.target.set(0, 0, 0);
-          // cameraControls.update();
-          // } else {
-          cameraControls.object.position.set(0, -10, 0);
-          cameraControls.object.lookAt(0, 0, 0);
-          cameraControls.target.set(0, 0, 0);
-          cameraControls.update();
-          // }
+          if (axis === 'z') {
+            cameraControls.object.position.set(0, -5, -10);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+          } else {
+            cameraControls.object.position.set(0, -10, 0);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+          }
           break;
         case 'l': // l (left)
         case 'L':
         case 'ㅣ':
-          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-          // cameraControls.object.position.set(-10, 0, 5);
-          // cameraControls.object.lookAt(0, 0, 0);
-          // cameraControls.target.set(0, 0, 0);
-          // cameraControls.update();
-          // } else {
-          cameraControls.object.position.set(-10, 5, 0);
-          cameraControls.object.lookAt(0, 0, 0);
-          cameraControls.target.set(0, 0, 0);
-          cameraControls.update();
-          // }
+          if (axis === 'z') {
+            cameraControls.object.position.set(-10, 0, 5);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+          } else if (axis === 'y') {
+            cameraControls.object.position.set(-10, 5, 0);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+          }
           break;
         case 'r': // r (right)
         case 'R':
@@ -256,35 +250,33 @@ export const useRendering = (props: UseRendering) => {
               multiKeyController.ㅍ.pressed) &&
             multiKeyController[event.key].pressed
           ) {
-            // if (
-            //   !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
-            // ) {
-            // cameraControls.object.position.set(10, 0, 5);
-            // cameraControls.object.lookAt(0, 0, 0);
-            // cameraControls.target.set(0, 0, 0);
-            // cameraControls.update();
-            // } else {
-            cameraControls.object.position.set(10, 5, 0);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-            // }
+            if (axis === 'z') {
+              cameraControls.object.position.set(10, 0, 5);
+              cameraControls.object.lookAt(0, 0, 0);
+              cameraControls.target.set(0, 0, 0);
+              cameraControls.update();
+            } else if (axis === 'y') {
+              cameraControls.object.position.set(10, 5, 0);
+              cameraControls.object.lookAt(0, 0, 0);
+              cameraControls.target.set(0, 0, 0);
+              cameraControls.update();
+            }
           }
           break;
         case 'f': // f (front)
         case 'F':
         case 'ㄹ':
-          // if (!_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value) {
-          // cameraControls.object.position.set(0, -10, 5);
-          // cameraControls.object.lookAt(0, 0, 0);
-          // cameraControls.target.set(0, 0, 0);
-          // cameraControls.update();
-          // } else {
-          cameraControls.object.position.set(0, 5, 10);
-          cameraControls.object.lookAt(0, 0, 0);
-          cameraControls.target.set(0, 0, 0);
-          cameraControls.update();
-          // }
+          if (axis === 'z') {
+            cameraControls.object.position.set(0, -10, 5);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+          } else if (axis === 'y') {
+            cameraControls.object.position.set(0, 5, 10);
+            cameraControls.object.lookAt(0, 0, 0);
+            cameraControls.target.set(0, 0, 0);
+            cameraControls.update();
+          }
           break;
         case 'k': // k (back)
         case 'K':
@@ -298,26 +290,24 @@ export const useRendering = (props: UseRendering) => {
               multiKeyController.ㅍ.pressed) &&
             multiKeyController[event.key].pressed
           ) {
-            // if (
-            //   !_.find(renderingOptions, (item, index) => _.isEqual(item.key, 'sceneYUp'))?.value
-            // ) {
-            // cameraControls.object.position.set(0, 10, 5);
-            // cameraControls.object.lookAt(0, 0, 0);
-            // cameraControls.target.set(0, 0, 0);
-            // cameraControls.update();
-            // } else {
-            cameraControls.object.position.set(0, 5, -10);
-            cameraControls.object.lookAt(0, 0, 0);
-            cameraControls.target.set(0, 0, 0);
-            cameraControls.update();
-            // }
+            if (axis === 'z') {
+              cameraControls.object.position.set(0, 10, 5);
+              cameraControls.object.lookAt(0, 0, 0);
+              cameraControls.target.set(0, 0, 0);
+              cameraControls.update();
+            } else if (axis === 'y') {
+              cameraControls.object.position.set(0, 5, -10);
+              cameraControls.object.lookAt(0, 0, 0);
+              cameraControls.target.set(0, 0, 0);
+              cameraControls.update();
+            }
           }
           break;
         default:
           break;
       }
     },
-    [multiKeyController],
+    [axis, multiKeyController],
   );
 
   const handleCameraControlsShortcutUp = useCallback(
@@ -418,8 +408,7 @@ export const useRendering = (props: UseRendering) => {
       setScene(scene);
       setTheScene(scene);
       // camera 생성 및 설정
-      const camera = fnCreateCamera();
-      setCamera(camera);
+      const camera = fnCreateCamera({ upDirection: axis });
       // renderer 생성 및 설정
       const renderer = fnCreateRenderer({ renderingDiv });
 
@@ -434,12 +423,9 @@ export const useRendering = (props: UseRendering) => {
       const tmpDirLight = fnAddLights({ scene });
       setDirLight(tmpDirLight);
       // scene에 바닥 추가
-      const ground = fnAddGround({ scene, camera, renderer });
-      setGround(ground);
+      const ground = fnAddGround({ scene, camera, renderer, upDirection: axis });
       setContents((prevContents) => [...prevContents, ground]);
-      const { xAxis, yAxis, zAxis } = fnAddAxes({ scene });
-      setYAxis(yAxis);
-      setZAxis(zAxis);
+      const { xAxis, yAxis, zAxis } = fnAddAxes({ scene, upDirection: axis });
       setContents((prevContents) => [...prevContents, xAxis, yAxis, zAxis]);
       // cameraControls 생성 및 설정
       const cameraControls = fnCreateCameraControls({ camera, renderer });
@@ -577,5 +563,5 @@ export const useRendering = (props: UseRendering) => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fileUrl]);
+  }, [fileUrl, axis]);
 };

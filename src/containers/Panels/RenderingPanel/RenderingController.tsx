@@ -48,10 +48,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   const [scene, setScene] = useState<THREE.Scene | undefined>(undefined);
   const [fog, setFog] = useState<THREE.Fog | undefined>(undefined);
   const [dirLight, setDirLight] = useState<THREE.DirectionalLight | undefined>(undefined);
-  const [camera, setCamera] = useState<THREE.PerspectiveCamera | undefined>(undefined);
-  const [ground, setGround] = useState<THREE.Mesh | undefined>(undefined);
-  const [yAxis, setYAxis] = useState<THREE.Line | undefined>(undefined);
-  const [zAxis, setZAxis] = useState<THREE.Line | undefined>(undefined);
   const [currentAction, setCurrentAction] = useState<THREE.AnimationAction | undefined>(undefined);
 
   useRendering({
@@ -62,10 +58,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     setCameraControls,
     setScene,
     setDirLight,
-    setCamera,
-    setGround,
-    setYAxis,
-    setZAxis,
   });
 
   const { startTimeIndex, endTimeIndex } = animatingData;
@@ -108,38 +100,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     }
   }, [currentAction, currentTimeIndex, mixer]);
 
-  // bone transform 적용 로직 -> CP 직접 컨트롤 방식으로 변경할 듯
-
-  // camera option 적용 로직
-  // const { locationX, locationY, locationZ, angleX, angleY, angleZ } = renderingData;
-
-  // useEffect(() => {
-  //   if (cameraControls) {
-  //     fnChangeCameraPosition({ cameraControls, axis: 'x', value: locationX });
-  //   }
-  // }, [cameraControls, locationX]);
-
-  // useEffect(() => {
-  //   if (cameraControls) {
-  //     fnChangeCameraPosition({ cameraControls, axis: 'y', value: locationY });
-  //   }
-  // }, [cameraControls, locationY]);
-
-  // useEffect(() => {
-  //   if (cameraControls) {
-  //     fnChangeCameraPosition({ cameraControls, axis: 'z', value: locationZ });
-  //   }
-  // }, [cameraControls, locationZ]);
-
-  // useEffect(() => {
-  //   if (cameraControls) {
-  //     fnChangeCameraLookAt({
-  //       cameraControls,
-  //       axis: 'x',
-  //       value: { x: angleX, y: angleX, z: angleZ },
-  //     });
-  //   }
-  // }, [cameraControls, angleX, angleZ]);
+  // bone transform 적용 로직 -> CP 직접 컨트롤 방식으로 변경
 
   // fog option 적용 로직
   const { isFogOn, fogNear, fogFar } = renderingData;
@@ -168,33 +129,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   }, [fog, fogFar]);
 
   // visibility option 적용 로직
-  const { axis, isBoneOn, isJointOn, isMeshOn, isShadowOn } = renderingData;
-
-  useEffect(() => {
-    if (scene && camera && cameraControls && ground && yAxis && zAxis) {
-      if (axis === 'y') {
-        fnChangeAxis({
-          upDirection: 'y',
-          camera,
-          cameraControls,
-          scene,
-          ground,
-          yAxis,
-          zAxis,
-        });
-      } else if (axis === 'z') {
-        fnChangeAxis({
-          upDirection: 'z',
-          camera,
-          cameraControls,
-          scene,
-          ground,
-          yAxis,
-          zAxis,
-        });
-      }
-    }
-  }, [axis, camera, cameraControls, ground, scene, yAxis, zAxis]);
+  const { isBoneOn, isJointOn, isMeshOn, isShadowOn } = renderingData;
 
   useEffect(() => {
     if (skeletonHelper) {

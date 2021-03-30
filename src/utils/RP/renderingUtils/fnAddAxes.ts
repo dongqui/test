@@ -1,7 +1,10 @@
 import * as THREE from 'three';
 
+type UpDirection = 'y' | 'z';
+
 interface FnAddAxes {
   scene: THREE.Scene;
+  upDirection: UpDirection;
 }
 
 /**
@@ -9,12 +12,13 @@ interface FnAddAxes {
  * And this function also returns x, y, z axes, for the case where the up-axis setting changes.
  *
  * @param scene - The scene where the axes will be added
+ * @param upDirection - The axis of the scene's up direction
  *
  * @returns x, y, z axes which can be added to the scene
  *
  */
 const fnAddAxes = (props: FnAddAxes) => {
-  const { scene } = props;
+  const { scene, upDirection } = props;
   const xMaterial = new THREE.LineBasicMaterial({ color: '#ea2027' });
   const xGeometry = new THREE.BufferGeometry().setFromPoints([
     new THREE.Vector3(-500, 0, 0),
@@ -36,8 +40,13 @@ const fnAddAxes = (props: FnAddAxes) => {
   ]);
   const zAxis = new THREE.Line(zGeometry, zMaterial);
 
-  scene.add(xAxis);
-  scene.add(zAxis);
+  if (upDirection === 'y') {
+    scene.add(xAxis);
+    scene.add(zAxis);
+  } else if (upDirection === 'z') {
+    scene.add(xAxis);
+    scene.add(yAxis);
+  }
 
   return { xAxis, yAxis, zAxis };
 };
