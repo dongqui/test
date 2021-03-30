@@ -2,7 +2,8 @@ import { useReactiveVar } from '@apollo/client';
 import { InputCP } from 'components/Input/InputCP';
 import { storeRenderingData, storeCurrentBone, storeTransformControls } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { CPNameType } from 'types/CP';
 import { RenderingDataPropertyName } from 'types/RP';
 import {
   fnChangeBonePosition,
@@ -41,11 +42,15 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   y = RenderingDataPropertyName.positionY,
   z = RenderingDataPropertyName.positionZ,
 }) => {
-  const renderingData = useReactiveVar(storeRenderingData);
   const currentBone = useReactiveVar(storeCurrentBone);
   const transformControls = useReactiveVar(storeTransformControls);
+  const [initialValue, setInitialValue] = useState({
+    x: 0,
+    y: 0,
+    z: 0,
+  });
 
-  const onDragEnd = useCallback(
+  const onDragMove = useCallback(
     ({ name, value }) => {
       const property = name.slice(0, -1);
       const axis = name.slice(-1).toLowerCase();
@@ -101,66 +106,59 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     }
   }, []);
 
-  const initialValue = {
-    x: 0,
-    y: 0,
-    z: 0,
-  };
-
-  switch (x.slice(0, -1)) {
-    case 'position':
-      if (currentBone) {
-        initialValue.x = currentBone.position.x;
-      }
-      break;
-    case 'rotation':
-      if (currentBone) {
-        initialValue.x = currentBone.rotation.x;
-      }
-      break;
-    case 'scale':
-      if (currentBone) {
-        initialValue.x = currentBone.scale.x;
-      }
-      break;
-  }
-
-  switch (y.slice(0, -1)) {
-    case 'position':
-      if (currentBone) {
-        initialValue.y = currentBone.position.y;
-      }
-      break;
-    case 'rotation':
-      if (currentBone) {
-        initialValue.y = currentBone.rotation.y;
-      }
-      break;
-    case 'scale':
-      if (currentBone) {
-        initialValue.y = currentBone.scale.y;
-      }
-      break;
-  }
-
-  switch (z.slice(0, -1)) {
-    case 'position':
-      if (currentBone) {
-        initialValue.z = currentBone.position.z;
-      }
-      break;
-    case 'rotation':
-      if (currentBone) {
-        initialValue.z = currentBone.rotation.z;
-      }
-      break;
-    case 'scale':
-      if (currentBone) {
-        initialValue.z = currentBone.scale.z;
-      }
-      break;
-  }
-
+  useEffect(() => {
+    if (transformControls) {
+      transformControls.addEventListener('objectChange', (event) => {
+        // event.target 이 transformControls,
+        // event.target.object 가 컨트롤 한 Bone 입니다
+        const targetObject = event.target.object;
+        if (_.isEqual(name, CPNameType.Position)) {
+          setInitialValue({
+            x: targetObject?.position?.x ?? 0,
+            y: targetObject?.position?.y ?? 0,
+            z: targetObject?.position?.z ?? 0,
+          });
+        }
+        if (_.isEqual(name, CPNameType.Rotation)) {
+          setInitialValue({
+            x: targetObject?.rotation?.x ?? 0,
+            y: targetObject?.rotation?.y ?? 0,
+            z: targetObject?.rotation?.z ?? 0,
+          });
+        }
+        if (_.isEqual(name, CPNameType.Scale)) {
+          setInitialValue({
+            x: targetObject?.scale?.x ?? 0,
+            y: targetObject?.scale?.y ?? 0,
+            z: targetObject?.scale?.z ?? 0,
+          });
+        }
+      });
+    }
+  }, [name, transformControls]);
+  useEffect(() => {
+    if (_.isEqual(name, CPNameType.Position)) {
+      setInitialValue({
+        x: currentBone?.position?.x ?? 0,
+        y: currentBone?.position?.y ?? 0,
+        z: currentBone?.position?.z ?? 0,
+      });
+    }
+    if (_.isEqual(name, CPNameType.Rotation)) {
+      setInitialValue({
+        x: currentBone?.rotation?.x ?? 0,
+        y: currentBone?.rotation?.y ?? 0,
+        z: currentBone?.rotation?.z ?? 0,
+      });
+    }
+    if (_.isEqual(name, CPNameType.Scale)) {
+      setInitialValue({
+        x: currentBone?.scale?.x ?? 0,
+        y: currentBone?.scale?.y ?? 0,
+        z: currentBone?.scale?.z ?? 0,
+      });
+    }
+  }, [currentBone, name]);
   return (
     <S.CPListRowParentWrapper>
       <S.CPListRowInputWrapper>
@@ -169,7 +167,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
           <InputCP
             initialValue={initialValue.x}
             prefix="X"
-            onDragEnd={onDragEnd}
+            onDragMove={onDragMove}
             handleBlur={handleBlur}
             onKeyPress={onKeyPress}
             name={x}
@@ -177,7 +175,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
           <InputCP
             initialValue={initialValue.y}
             prefix="Y"
-            onDragEnd={onDragEnd}
+            onDragMove={onDragMove}
             handleBlur={handleBlur}
             onKeyPress={onKeyPress}
             name={y}
@@ -185,7 +183,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
           <InputCP
             initialValue={initialValue.z}
             prefix="Z"
-            onDragEnd={onDragEnd}
+            onDragMove={onDragMove}
             handleBlur={handleBlur}
             onKeyPress={onKeyPress}
             name={z}
