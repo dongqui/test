@@ -415,6 +415,7 @@ export const useRendering = (props: UseRendering) => {
 
   const clock = new THREE.Clock();
 
+  // renderer 최초 생성 (id 는 renderingDiv 의 id 라 바뀌지 않음)
   useEffect(() => {
     const renderingDiv = document.getElementById(id);
     if (renderingDiv) {
@@ -423,6 +424,15 @@ export const useRendering = (props: UseRendering) => {
     }
   }, [id]);
 
+  // renderer 생성되면 canvas 를 renderingDiv 에 붙이는 로직
+  useEffect(() => {
+    const renderingDiv = document.getElementById(id);
+    if (renderingDiv && renderer) {
+      renderingDiv.appendChild(renderer.domElement);
+    }
+  }, [id, renderer]);
+
+  // canvas 내부를 그려내는 로직
   useEffect(() => {
     // rendering할 div요소 선택
     const renderingDiv = document.getElementById(id);
@@ -595,5 +605,5 @@ export const useRendering = (props: UseRendering) => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fileUrl, axis, renderer]);
+  }, [id, fileUrl, axis, renderer]);
 };
