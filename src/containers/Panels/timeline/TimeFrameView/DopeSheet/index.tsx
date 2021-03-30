@@ -48,7 +48,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const dopeSheetRef = useRef<HTMLDivElement>(null);
   const lastCircleGroupNameList = useRef<number[]>([]);
 
-  const xScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
+  const xScale = useRef<d3ScaleLinear | d3.ZoomScale | d3.ZoomTransform | null>(null);
   const xScaleCopy = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const xAxisPosition = useRef<d3Axis | null>(null);
   const renderXAxis = useRef<d3Selection | null>(null);
@@ -69,7 +69,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
 
     // x축 위치 설정
     xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear);
-    d3.axisTop(xScale.current as d3ScaleLinear).scale();
 
     // x축 svg 태그 추가
     d3.select(dopeSheetRef.current)
@@ -85,23 +84,9 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     renderXAxis.current = d3
       .select(`.${X_AXIS_SVG_CLASSNAME}`)
       .append('g')
+      .attr('class', 'x-axis-g')
       .attr('transform', `translate(${DOPE_SHEET_MARGIN.left}, ${TRACK_HEIGHT})`)
-      .call(
-        xAxisPosition.current.scale(
-          d3
-            .scaleLinear()
-            .domain([-5, 5])
-            .range([DOPE_SHEET_MARGIN.left, width - DOPE_SHEET_MARGIN.right]),
-        ),
-      );
-
-    // const rescaleXRef = event.transform.rescaleX(xScaleCopy.current as d3.ZoomScale); // rescale을 하고
-    // const renderXAxisRef = renderXAxis.current as d3Selection; // x축 g태그를 갖고와서
-    // const xAxisRef = xAxisPosition.current as d3Axis; // 어디 위치에 x축을 박을지 정하고
-    // const xScaleRef = xScale.current as d3ScaleLinear; // x값 범위를 가져온다
-
-    // xScale.current = rescaleXRef; // rescale된 값으로 x값을 갱신
-    // renderXAxisRef.call(xAxisRef.scale(xScaleRef)); // 갱신되기 전 값으로 x축을 그린다
+      .call(xAxisPosition.current);
   }, []);
 
   // dope sheet 세팅
@@ -260,109 +245,29 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     if (!xScale.current || !xScaleCopy.current) return;
     if (!xAxisPosition.current || !renderXAxis.current) return;
     const { clientWidth: width, clientHeight: height } = dopeSheetRef.current;
+    const { top: dopeSheetTop } = dopeSheetRef.current.getBoundingClientRect();
 
     // x축 다시 그리기
     const rescaleXAxis = (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-      const rescaleXRef = event.transform.rescaleX(xScaleCopy.current as d3.ZoomScale);
+      const rescaleX = event.transform.rescaleX(xScaleCopy.current as d3.ZoomScale); // x rescale
       const renderXAxisRef = renderXAxis.current as d3Selection;
-      const xAxisRef = xAxisPosition.current as d3Axis;
-      const xScaleRef = xScale.current as d3ScaleLinear;
+      const xAxisPositionRef = xAxisPosition.current as d3Axis;
 
-      xScale.current = rescaleXRef;
-      renderXAxisRef.call(xAxisRef.scale(xScaleRef));
+      renderXAxisRef.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // 이전 값으로 scale 적용
+      xScale.current = rescaleX; // rescale한 값으로 갱신
+
+      // const t = d3.zoomIdentity.scale(25000);
+      // const k = d3.zoomTransform(renderXAxisRef.node() as Element).rescaleX(t.k)
     };
 
     // circle x값 rescale
-    // const rescaleCircleX = () => {
-    //   d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
-    //     const circleGroup = d3.select(this);
-    //     const circleGroupNode = circleGroup.node() as Element;
-    //     const xScaleLinear = xScale.current as d3ScaleLinear;
-
-    //     const observer = new IntersectionObserver(([entry], observer) => {
-    //       if (!entry.isIntersecting) return observer.unobserve(entry.target);
-    //       circleGroup
-    //         .selectAll('circle')
-    //         .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
-    //       observer.unobserve(entry.target);
-    //     });
-    //     observer.observe(circleGroupNode);
-    //   });
-    // };
-
-    // const rescaleCircleX = () => {
-    //   console.log(2);
-    //   return new Promise((resolve) =>
-    //     resolve(
-    //       d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
-    //         const circleGroup = d3.select(this);
-    //         const circleGroupNode = circleGroup.node() as Element;
-    //         const xScaleLinear = xScale.current as d3ScaleLinear;
-    //         console.log(3);
-
-    //         const observer = new IntersectionObserver(([entry], observer) => {
-    //           console.log(4);
-    //           if (!entry.isIntersecting) return observer.unobserve(entry.target);
-    //           circleGroup
-    //             .selectAll('circle')
-    //             .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
-    //           observer.unobserve(entry.target);
-    //         });
-    //         observer.observe(circleGroupNode);
-    //       }),
-    //     ),
-    //   );
-    // };
-
-    // const rescaleCircleX = () => {
-    //   d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
-    //     const circleGroup = d3.select(this);
-    //     const circleGroupNode = circleGroup.node() as Element;
-    //     const xScaleLinear = xScale.current as d3ScaleLinear;
-
-    //     const observer = new IntersectionObserver(async ([entry], observer) => {
-    //       if (!entry.isIntersecting) return observer.unobserve(entry.target);
-    //       await Promise.resolve(
-    //         circleGroup
-    //           .selectAll('circle')
-    //           .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25),
-    //       ).then(() => observer.unobserve(entry.target));
-    //     });
-    //     observer.observe(circleGroupNode);
-    //   });
-    // };
-
-    // const rescaleCircleX = async () => {
-    //   return await Promise.all(
-    //     d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(async function () {
-    //       const circleGroup = d3.select(this);
-    //       const circleGroupNode = circleGroup.node() as Element;
-    //       const xScaleLinear = xScale.current as d3ScaleLinear;
-
-    //       const observer = new IntersectionObserver(async ([entry], observer) => {
-    //         if (!entry.isIntersecting) return observer.unobserve(entry.target);
-    //         await Promise.resolve(
-    //           circleGroup
-    //             .selectAll('circle')
-    //             .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25),
-    //         ).then(() => observer.unobserve(entry.target));
-    //       });
-    //       observer.observe(circleGroupNode);
-    //     }),
-    //   );
-    // };
-
-    const {
-      top: dopeSheetTop,
-      height: dopeSheetHeight,
-    } = dopeSheetRef.current.getBoundingClientRect();
     const rescaleCircleX = () => {
       d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
         const circleGroup = d3.select(this);
         const circleGroupNode = circleGroup.node() as Element;
         const xScaleLinear = xScale.current as d3ScaleLinear;
         const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
-        if (dopeSheetTop <= circleGroupTop && circleGroupTop <= dopeSheetTop + dopeSheetHeight) {
+        if (dopeSheetTop <= circleGroupTop && circleGroupTop <= dopeSheetTop + height) {
           circleGroup
             .selectAll('circle')
             .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
@@ -371,7 +276,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     };
 
     // zoom 이벤트 적용
-    const zoomBehavior: any = d3
+    const zoomBehavior = d3
       .zoom()
       .scaleExtent([1, 25000])
       .translateExtent([
@@ -384,50 +289,9 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           rescaleCircleX();
           rescaleXAxis(event);
         }, 50),
-
-        // promise.all
-        // _.throttle(async (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-        //   await Promise.all(
-        //     d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
-        //       const circleGroup = d3.select(this);
-        //       const circleGroupNode = circleGroup.node() as Element;
-        //       const xScaleLinear = xScale.current as d3ScaleLinear;
-
-        //       const observer = new IntersectionObserver(([entry], observer) => {
-        //         if (!entry.isIntersecting) return observer.unobserve(entry.target);
-        //         circleGroup
-        //           .selectAll('circle')
-        //           .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
-        //         observer.unobserve(entry.target);
-        //       });
-        //       observer.observe(circleGroupNode);
-        //     }),
-        //   );
-        //   rescaleXAxis(event);
-        // }, 60),
-
-        // async (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-        //   await Promise.all(
-        //     d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(async function () {
-        //       const circleGroup = d3.select(this);
-        //       const circleGroupNode = circleGroup.node() as Element;
-        //       const xScaleLinear = xScale.current as d3ScaleLinear;
-
-        //       const observer = new IntersectionObserver(async ([entry], observer) => {
-        //         if (!entry.isIntersecting) return observer.unobserve(entry.target);
-        //         await Promise.resolve(
-        //           circleGroup
-        //             .selectAll('circle')
-        //             .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25),
-        //         ).then(() => observer.unobserve(entry.target));
-        //       });
-        //       observer.observe(circleGroupNode);
-        //     }),
-        //   ).then(() => rescaleXAxis(event));
-        // },
       );
 
-    d3.select(dopeSheetRef.current).call(zoomBehavior);
+    d3.select(dopeSheetRef.current).call(zoomBehavior as any);
   }, []);
 
   // timelineWrapper에 scroll 효과 적용
