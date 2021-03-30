@@ -139,4 +139,4 @@ const MainContainer: FunctionComponent = () => {
   );
 };
 
-export default MainContainer;
+export default memo(MainContainer);
