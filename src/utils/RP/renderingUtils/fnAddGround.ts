@@ -18,7 +18,7 @@ interface FnAddGround {
  * @param renderer - The renderer which has the domElement(canvas)
  * @param upDirection - The axis of the scene's up direction
  *
- * @returns THREE.Mesh for changing up direction
+ * @returns THREE.Mesh and THREE.Texture for clearing
  *
  */
 const fnAddGround = (props: FnAddGround) => {
@@ -46,7 +46,7 @@ const fnAddGround = (props: FnAddGround) => {
   }
   ground.receiveShadow = true;
   scene.add(ground);
-  return ground;
+  return { ground, texture };
 };
 
 export default fnAddGround;

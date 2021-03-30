@@ -18,7 +18,7 @@ interface FnGetInterpolatedTrackLinear {
  * @returns 자체적인 선형보간법을 적용한 새로운 track
  *
  */
-const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear) => {
+const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear): ShootTrackType => {
   const { unionTimes, track } = props;
   const newTimes = _.clone(unionTimes);
   const { times, values } = track;
@@ -38,6 +38,7 @@ const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear) => {
       times: newTimes,
       values: _.fill(Array(newTimes.length * 3), 0),
       interpolation: track.interpolation,
+      included: true,
     };
   }
 
@@ -93,6 +94,7 @@ const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear) => {
     times: newTimes,
     values: newValues,
     interpolation: track.interpolation,
+    included: true,
   };
 };
 

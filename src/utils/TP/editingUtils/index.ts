@@ -11,4 +11,5 @@ export { default as fnGetLayerTimes } from './fnGetLayerTimes';
 export { default as fnGetSummaryTimes } from './fnGetSummaryTimes';
 
 export { default as fnGetInterpolatedTrackLinear } from './fnGetInterpolatedTrackLinear';
-export { default as fnGetAnimationClip } from './fnGetAnimationClip';
+export { default as fnGetAnimationClipForPlay } from './fnGetAnimationClipForPlay';
+export { default as fnGetAnimationClipForExport } from './fnGetAnimationClipForExport';

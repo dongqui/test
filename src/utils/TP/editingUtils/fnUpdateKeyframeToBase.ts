@@ -23,7 +23,7 @@ interface FnUpdateKeyframeToBase {
  * @returns 키프레임이 추가/수정된 새로운 track
  *
  */
-const fnUpdateKeyframeToBase = (props: FnUpdateKeyframeToBase) => {
+const fnUpdateKeyframeToBase = (props: FnUpdateKeyframeToBase): ShootTrackType => {
   const { track, time, values } = props;
   let newTimes = _.clone(track.times);
   let newValues = _.clone(track.values);
@@ -75,6 +75,7 @@ const fnUpdateKeyframeToBase = (props: FnUpdateKeyframeToBase) => {
     times: newTimes,
     values: newValues,
     interpolation: track.interpolation,
+    included: true,
   };
 };
 

@@ -131,6 +131,7 @@ export interface ShootTrackType {
   times: number[];
   values: number[];
   interpolation: string;
+  included: boolean;
 }
 
 export interface ShootLayerType {

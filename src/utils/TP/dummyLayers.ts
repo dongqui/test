@@ -26,6 +26,7 @@ const dummyLayers: ShootLayerType[] = [
           10.54151153564453,
         ],
         interpolation: 'linear',
+        included: true,
       },
       {
         name: 'mixamorigHips.rotation',
@@ -48,12 +49,14 @@ const dummyLayers: ShootLayerType[] = [
           0.001542361918836832,
         ],
         interpolation: 'linear',
+        included: true,
       },
       {
         name: 'mixamorigHips.scale',
         times: [0.05, 0.1, 0.15, 0.2, 10],
         values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
         interpolation: 'linear',
+        included: true,
       },
       //
       // {
@@ -77,6 +80,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigSpine.rotation',
@@ -99,12 +103,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigSpine.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // //
       // {
@@ -128,6 +134,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigHead.rotation',
@@ -150,12 +157,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigHead.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // //
       // {
@@ -179,6 +188,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigLeftShoulder.rotation',
@@ -201,12 +211,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigLeftShoulder.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // //
       // {
@@ -230,6 +242,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigRightShoulder.rotation',
@@ -252,12 +265,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigRightShoulder.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // //
       // {
@@ -281,6 +296,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigLeftUpLeg.rotation',
@@ -303,12 +319,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigLeftUpLeg.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // //
       // {
@@ -332,6 +350,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigRightUpLeg.rotation',
@@ -354,12 +373,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigRightUpLeg.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
     ],
   },
@@ -406,6 +427,7 @@ const dummyLayers: ShootLayerType[] = [
           -30,
         ],
         interpolation: 'linear',
+        included: true,
       },
       {
         name: 'mixamorigHips.rotation',
@@ -428,12 +450,14 @@ const dummyLayers: ShootLayerType[] = [
           0.001542361918836832,
         ],
         interpolation: 'linear',
+        included: true,
       },
       {
         name: 'mixamorigHips.scale',
         times: [0.05, 0.1, 0.15, 0.2, 10],
         values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
         interpolation: 'linear',
+        included: true,
       },
       //
       // {
@@ -457,6 +481,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigSpine.rotation',
@@ -479,12 +504,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigSpine.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // //
       // {
@@ -508,6 +535,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigHead.rotation',
@@ -530,12 +558,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigHead.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // //
       // {
@@ -559,6 +589,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigLeftShoulder.rotation',
@@ -581,12 +612,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigLeftShoulder.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // //
       // {
@@ -610,6 +643,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigRightShoulder.rotation',
@@ -632,12 +666,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigRightShoulder.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // //
       // {
@@ -661,6 +697,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigLeftUpLeg.rotation',
@@ -683,12 +720,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigLeftUpLeg.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // //
       // {
@@ -712,6 +751,7 @@ const dummyLayers: ShootLayerType[] = [
       //     10.54151153564453,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigRightUpLeg.rotation',
@@ -734,12 +774,14 @@ const dummyLayers: ShootLayerType[] = [
       //     0.001542361918836832,
       //   ],
       //   interpolation: 'linear',
+      // included: true,
       // },
       // {
       //   name: 'mixamorigRightUpLeg.scale',
       //   times: [0.05, 0.1, 0.15, 0.2, 10],
       //   values: [0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1],
       //   interpolation: 'linear',
+      // included: true,
       // },
     ],
   },
