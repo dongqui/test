@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import * as THREE from 'three';
-import { RenderingPresenter } from './RenderingPresenter';
+import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
 import { ShootLayerType, ShootTrackType } from 'types';
 import { storeAnimatingData, storeRenderingData } from 'lib/store';
@@ -13,7 +13,6 @@ import {
   fnGoToSpecificTimeIndex,
 } from 'utils/RP/animatingUtils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { fnAddFog, fnChangeFogFar, fnChangeFogNear, fnRemoveFog } from 'utils/CP/fogUtils';
 import {
   fnAddShadow,
   fnMakeBoneAndJointInvisible,
@@ -45,7 +44,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
   const [cameraControls, setCameraControls] = useState<OrbitControls | undefined>(undefined);
   const [scene, setScene] = useState<THREE.Scene | undefined>(undefined);
-  const [fog, setFog] = useState<THREE.Fog | undefined>(undefined);
   const [dirLight, setDirLight] = useState<THREE.DirectionalLight | undefined>(undefined);
   const [currentAction, setCurrentAction] = useState<THREE.AnimationAction | undefined>(undefined);
 
@@ -101,35 +99,11 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
 
   // bone transform 적용 로직 -> CP 직접 컨트롤 방식으로 변경
 
-  // fog option 적용 로직
-  const { isFogOn, fogNear, fogFar } = renderingData;
+  // fog option 적용 로직 -> 제외
 
-  useEffect(() => {
-    if (scene) {
-      if (isFogOn && fogNear && fogFar) {
-        const tmpFog = fnAddFog({ scene, fogNear, fogFar });
-        setFog(tmpFog);
-      } else {
-        fnRemoveFog({ scene });
-      }
-    }
-  }, [fogFar, fogNear, isFogOn, scene]);
-
-  useEffect(() => {
-    if (fog) {
-      fnChangeFogNear({ fog, value: fogNear });
-    }
-  }, [fog, fogNear]);
-
-  useEffect(() => {
-    if (fog) {
-      fnChangeFogFar({ fog, value: fogFar });
-    }
-  }, [fog, fogFar]);
+  const { axis, isBoneOn, isJointOn, isMeshOn, isShadowOn } = renderingData;
 
   // visibility option 적용 로직
-  const { isBoneOn, isJointOn, isMeshOn, isShadowOn } = renderingData;
-
   useEffect(() => {
     if (skeletonHelper) {
       // isBoneOn 과 isJointOn 은 함께 움직이는 값
@@ -161,7 +135,23 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     }
   }, [dirLight, isShadowOn]);
 
-  return <RenderingPresenter id={id} />;
+  const handleCameraReset = useCallback(() => {
+    if (cameraControls) {
+      if (axis === 'y') {
+        cameraControls.object.position.set(-10, 10, 2);
+        cameraControls.object.lookAt(0, 0, 0);
+        cameraControls.target.set(0, 0, 0);
+        cameraControls.update();
+      } else if (axis === 'z') {
+        cameraControls.object.position.set(10, 2, 10);
+        cameraControls.object.lookAt(0, 0, 0);
+        cameraControls.target.set(0, 0, 0);
+        cameraControls.update();
+      }
+    }
+  }, [axis, cameraControls]);
+
+  return <RenderingPresenter id={id} handleCameraReset={handleCameraReset} />;
 };
 
 export default memo(RenderingController);
