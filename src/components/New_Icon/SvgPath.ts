@@ -8,6 +8,7 @@ import LockOpen from './svg/LockOpen.svg';
 import ListView from './svg/ListView.svg';
 import IconView from './svg/IconView.svg';
 import Plus from './svg/Plus.svg';
+import CameraReset from './svg/CameraReset.svg';
 
 type Icon =
   | 'Close'
@@ -18,7 +19,8 @@ type Icon =
   | 'LockOpen'
   | 'ListView'
   | 'IconView'
-  | 'Plus';
+  | 'Plus'
+  | 'CameraReset';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -34,6 +36,7 @@ const images: Images = {
   ListView,
   IconView,
   Plus,
+  CameraReset,
 };
 
 export default images;
