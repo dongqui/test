@@ -1,16 +1,21 @@
+import { FunctionComponent, memo, Fragment, useCallback, useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { ArrowDownIcon } from 'components/Icons/generated2/ArrowDownIcon';
 import { ArrowRightIcon } from 'components/Icons/generated2/ArrowRightIcon';
 import { ModelIcon } from 'components/Icons/generated2/ModelIcon';
 import { MotionIcon } from 'components/Icons/generated2/MotionIcon';
+import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
 import { storeMainData } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback, useMemo } from 'react';
 import { INITIAL_MAIN_DATA } from 'utils/const';
 import { rem } from 'utils/rem';
 import * as S from './ListTreeStyles';
+import classNames from 'classnames/bind';
+import styles from './ListRow.module.scss';
+
+const cx = classNames.bind(styles);
 
 export interface ListRowProps {
   mode: FILE_TYPES;
@@ -22,7 +27,7 @@ export interface ListRowProps {
   data: MainDataType[];
 }
 
-const ListRowComponent: React.FC<ListRowProps> = ({
+const ListRowComponent: FunctionComponent<ListRowProps> = ({
   mode = FILE_TYPES.folder,
   rowKey = '0',
   isClicked,
@@ -83,23 +88,22 @@ const ListRowComponent: React.FC<ListRowProps> = ({
     mainData,
     rowKey,
   });
+
+  const isExpanded = _.find(mainData, { key: rowKey })?.isExpanded;
+
+  const folderArrowClasses = cx('icon-arrow', {
+    open: isExpanded,
+  });
+
   return (
-    <>
+    <Fragment>
       {_.isEqual(mode, FILE_TYPES.folder) && (
         <S.ListRowWrapper
           isVisualized={isVisualized}
           isVisualizeSelected={isVisualizeSelected}
           onClick={onClick}
         >
-          {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isExpanded ? (
-            <S.ArrowWrapper>
-              <ArrowDownIcon />
-            </S.ArrowWrapper>
-          ) : (
-            <S.ArrowWrapper>
-              <ArrowRightIcon />
-            </S.ArrowWrapper>
-          )}
+          <IconWrapper className={folderArrowClasses} icon={SvgPath.FilledArrow} hasFrame={false} />
           {isModifying ? (
             <S.ListRowInput
               value={fileName}
@@ -175,7 +179,7 @@ const ListRowComponent: React.FC<ListRowProps> = ({
           )}
         </S.ListRowWrapper>
       )}
-    </>
+    </Fragment>
   );
 };
-export const ListRow = React.memo(ListRowComponent);
+export const ListRow = memo(ListRowComponent);

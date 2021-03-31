@@ -1,0 +1,16 @@
+@import 'styles/libraries/_colors';
+
+.icon-arrow {
+  display: flex;
+  padding: 8px;
+  border: 0;
+
+  &.open {
+    transform: rotate(90deg);
+  }
+
+  & > svg {
+    width: 6px;
+    color: $gray500;
+  }
+}
