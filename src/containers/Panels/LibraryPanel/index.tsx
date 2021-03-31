@@ -253,6 +253,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     mainData,
     pages,
     searchWord,
+    lpmode,
   });
 
   useContextMenu({ targetRef: panelWrapperRef, event: onContextMenu });

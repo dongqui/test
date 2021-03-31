@@ -27,12 +27,14 @@ interface useLPControlProps {
   pages: PagesType[];
   contextmenuInfo: ContextmenuType;
   searchWord: string;
+  lpmode: LPModeType;
 }
 export const useLPControl = ({
   mainData,
   pages,
   contextmenuInfo,
   searchWord,
+  lpmode,
 }: useLPControlProps) => {
   const onClick = useCallback(
     (e) => {
@@ -193,12 +195,21 @@ export const useLPControl = ({
       }
       if (
         _.isEqual(
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, _.last(pages)?.key])?.type,
+          FILE_TYPES.file,
+        ) &&
+        _.isEqual(lpmode, LPModeType.iconview)
+      ) {
+        data = [{ key: '6', value: 'Add motion' }];
+      }
+      if (
+        _.isEqual(
           _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
           FILE_TYPES.motion,
         )
       ) {
         data = [
-          { key: '1', value: 'Copy' },
+          { key: '7', value: 'Duplicate' },
           { key: '2', value: 'Delete' },
           { key: '4', value: 'Visualization' },
           { key: '5', value: 'Edit name' },
@@ -212,6 +223,7 @@ export const useLPControl = ({
         onClick: (key, value) => {
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
           let content = '';
+          let motion: MainDataType | undefined;
           switch (key) {
             case '0':
               storeMainData(
@@ -279,27 +291,42 @@ export const useLPControl = ({
               onEdit({ mainData: newMainData });
               break;
             case '6':
-              if (
-                _.isEqual(
-                  _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
-                  FILE_TYPES.file,
-                )
-              ) {
-                const motion: MainDataType | undefined = _.find(mainData, [
-                  MAINDATA_PROPERTY_TYPES.parentKey,
-                  targetIcon?.id,
-                ]);
-                if (motion) {
-                  storeMainData(
-                    _.concat(mainData, {
-                      ...motion,
-                      key: uuidv4(),
-                      name: 'empty motion',
-                      baseLayer: [],
-                      layers: [],
+              motion = _.find(mainData, [
+                MAINDATA_PROPERTY_TYPES.parentKey,
+                targetIcon?.id || _.last(pages)?.key,
+              ]);
+              if (motion) {
+                storeMainData(
+                  _.concat(mainData, {
+                    ...motion,
+                    key: uuidv4(),
+                    name: fnGetFileName({
+                      key: 'empty motion',
+                      name: motion?.name,
+                      mainData,
                     }),
-                  );
-                }
+                    isVisualized: false,
+                    baseLayer: [],
+                    layers: [],
+                  }),
+                );
+              }
+              break;
+            case '7':
+              motion = _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id]);
+              if (motion) {
+                storeMainData(
+                  _.concat(mainData, {
+                    ...motion,
+                    key: uuidv4(),
+                    name: fnGetFileName({
+                      key: '',
+                      name: motion?.name,
+                      mainData,
+                    }),
+                    isVisualized: false,
+                  }),
+                );
               }
               break;
             default:
@@ -308,7 +335,7 @@ export const useLPControl = ({
         },
       });
     },
-    [contextmenuInfo, mainData, onCopy, onEdit, onPaste, pages],
+    [contextmenuInfo, lpmode, mainData, onCopy, onEdit, onPaste, pages],
   );
   const shortcutData = useMemo(
     () => [
