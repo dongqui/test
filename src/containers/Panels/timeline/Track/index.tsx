@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
@@ -38,7 +38,7 @@ const Track: React.FC<TrackProps> = ({
         case TP_TRACK_INDEX.SUMMARY: {
           updatedTrackList.push({
             trackIndex: trackIndex + 1,
-            isClickedParentTrackArrowBtn: !prev,
+            isClickedParentTrack: !prev,
           });
           TPUpdateDopeSheetList(updatedTrackList);
           return !prev;
@@ -50,11 +50,10 @@ const Track: React.FC<TrackProps> = ({
             lastBoneTrackIndexList,
             (lastBoneTrackIndex) => lastBoneTrackIndex.layerIdnex === trackIndex,
           );
-          console.log('clickedLayerIndex', clickedLayerIndex);
           while (boneTrackIndex <= lastBoneTrackIndexList[0].lastBoneTrackIndex) {
             updatedTrackList.push({
               trackIndex: boneTrackIndex,
-              isClickedParentTrackArrowBtn: !prev,
+              isClickedParentTrack: !prev,
             });
             if (boneTrackIndex % 10 === TP_TRACK_INDEX.BONE_A) {
               boneTrackIndex += 4; // 3 -> 7
@@ -75,7 +74,7 @@ const Track: React.FC<TrackProps> = ({
           ) {
             updatedTrackList.push({
               trackIndex: transformIndex + 1,
-              isClickedParentTrackArrowBtn: !prev,
+              isClickedParentTrack: !prev,
             });
           }
           TPUpdateDopeSheetList(updatedTrackList);
@@ -140,4 +139,4 @@ const Track: React.FC<TrackProps> = ({
   );
 };
 
-export default Track;
+export default memo(Track);
