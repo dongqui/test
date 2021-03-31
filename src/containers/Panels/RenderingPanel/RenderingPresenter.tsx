@@ -2,7 +2,7 @@ import { IconWrapper, SvgPath } from 'components/New_Icon';
 import _ from 'lodash';
 import React, { memo } from 'react';
 import classNames from 'classnames/bind';
-import styles from './index.module.scss';
+import styles from './RenderingPresenter.module.scss';
 
 const cx = classNames.bind(styles);
 
