@@ -111,6 +111,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
               layers: [],
               type: FILE_TYPES.motion,
               parentKey: key,
+              boneNames: _.map(bones, (bone) => bone.name),
             });
           }
         });

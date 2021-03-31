@@ -21,6 +21,7 @@ import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
 import { CPModeType } from 'types/CP';
+import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
 
 interface useLPControlProps {
   mainData: MainDataType[];
@@ -230,7 +231,11 @@ export const useLPControl = ({
                 _.concat(mainData, {
                   key: uuidv4(),
                   type: FILE_TYPES.folder,
-                  name: 'Folder',
+                  name: fnGetFileName({
+                    key: '',
+                    name: 'Folder',
+                    mainData,
+                  }),
                   parentKey: _.last(pages)?.key,
                   isModifying: true,
                 }),
@@ -301,12 +306,12 @@ export const useLPControl = ({
                     ...motion,
                     key: uuidv4(),
                     name: fnGetFileName({
-                      key: 'empty motion',
-                      name: motion?.name,
+                      key: '',
+                      name: 'empty motion',
                       mainData,
                     }),
                     isVisualized: false,
-                    baseLayer: [],
+                    baseLayer: fnGetBaseLayerWithBoneNames({ boneNames: motion?.boneNames ?? [] }),
                     layers: [],
                   }),
                 );
