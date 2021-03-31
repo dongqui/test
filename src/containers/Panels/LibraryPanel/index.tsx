@@ -63,15 +63,6 @@ const LibraryPanelComponent: FunctionComponent = () => {
       for (const acceptedFile of acceptedFiles) {
         const extension = _.last(_.split(acceptedFile.name, '.'));
         let convertedFileUrl = DEFAULT_MODEL_URL;
-        // if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
-        //   storeModalInfo({
-        //     isShow: true,
-        //     msg: '파일 형식이 올바르지 않습니다.',
-        //     type: MODAL_TYPES.alert,
-        //   });
-        //   setLoading(false);
-        //   return false;
-        // }
         if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
           // fbx 파일 업로드 및 변환
           const { url, error, msg } = await api.uploadFbxToGlb({
@@ -273,7 +264,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     onContextMenu,
     onDragStart,
     onDragEnd,
-    onDrop,
+    onDrop: handleDrop,
     shortcutData,
     filteredData,
   };

@@ -1,4 +1,4 @@
-import { FunctionComponent, Fragment, memo, useCallback, useMemo, useRef } from 'react';
+import { FunctionComponent, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
@@ -9,6 +9,7 @@ import * as S from './IconStyles';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import main from 'sha1';
 
 const cx = classNames.bind(styles);
 
@@ -19,6 +20,7 @@ export interface IconProps {
 const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
   const mainData = useReactiveVar(storeMainData);
   const pages = useReactiveVar(storePages);
+  const [value, setValue] = useState('');
   const fileType = useMemo(
     () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
     [rowKey, mainData],
@@ -70,7 +72,6 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
     mainData,
     rowKey,
   });
-
   const classes = cx('wrapper', {
     visualized: isVisualized,
     editing: isModifying,
@@ -103,7 +104,7 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
           className={cx('input-name')}
           value={fileName}
           autoFocus
-          onFocus={(e) => e.target.select()}
+          // onFocus={(e) => e.target.select()}
           onChange={onChangeInput}
           onBlur={onBlur}
         />
