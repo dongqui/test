@@ -35,7 +35,7 @@ import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL, INITIAL_CP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
 import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
 import * as api from 'utils/common/api';
-import { fnGetBaseLayer, fnGetNewLayer } from 'utils/TP/editingUtils';
+import { fnGetBaseLayerWithClip, fnGetNewLayer } from 'utils/TP/editingUtils';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import { Headline } from 'components/New_Typography';
 import Explorer from './Explorer/index';
@@ -107,10 +107,11 @@ const LibraryPanelComponent: FunctionComponent = () => {
             motions.push({
               key: clip?.uuid,
               name: clip?.name,
-              baseLayer: fnGetBaseLayer({ bones, clip }),
+              baseLayer: fnGetBaseLayerWithClip({ bones, clip }),
               layers: [],
               type: FILE_TYPES.motion,
               parentKey: key,
+              boneNames: _.map(bones, (bone) => bone.name),
             });
           }
         });
@@ -253,6 +254,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     mainData,
     pages,
     searchWord,
+    lpmode,
   });
 
   useContextMenu({ targetRef: panelWrapperRef, event: onContextMenu });

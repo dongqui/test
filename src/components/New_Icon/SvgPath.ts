@@ -8,6 +8,7 @@ import LockOpen from './svg/LockOpen.svg';
 import ListView from './svg/ListView.svg';
 import IconView from './svg/IconView.svg';
 import Plus from './svg/Plus.svg';
+import CameraReset from './svg/CameraReset.svg';
 import Model from './svg/Model.svg';
 import Folder from './svg/Folder.svg';
 import Motion from './svg/Motion.svg';
@@ -23,6 +24,7 @@ type Icon =
   | 'ListView'
   | 'IconView'
   | 'Plus'
+  | 'CameraReset'
   | 'Model'
   | 'Folder'
   | 'Motion'
@@ -42,6 +44,7 @@ const images: Images = {
   ListView,
   IconView,
   Plus,
+  CameraReset,
   Model,
   Folder,
   Motion,

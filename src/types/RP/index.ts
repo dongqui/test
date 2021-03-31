@@ -25,9 +25,9 @@ export enum RenderingDataPropertyName {
   isJointOn = 'isJointOn',
   isMeshOn = 'isMeshOn',
   isShadowOn = 'isShadowOn',
-  isFogOn = 'isFogOn',
-  fogNear = 'fogNear',
-  fogFar = 'fogFar',
+  // isFogOn = 'isFogOn',
+  // fogNear = 'fogNear',
+  // fogFar = 'fogFar',
 }
 export enum axisName {
   y = 'y',
@@ -61,9 +61,9 @@ export interface RenderingDataType {
   [RenderingDataPropertyName.isJointOn]: boolean;
   [RenderingDataPropertyName.isMeshOn]: boolean;
   [RenderingDataPropertyName.isShadowOn]: boolean;
-  [RenderingDataPropertyName.isFogOn]: boolean;
-  [RenderingDataPropertyName.fogNear]: number;
-  [RenderingDataPropertyName.fogFar]: number;
+  // [RenderingDataPropertyName.isFogOn]: boolean;
+  // [RenderingDataPropertyName.fogNear]: number;
+  // [RenderingDataPropertyName.fogFar]: number;
 }
 interface RANGEBOX_INFO_TYPES {
   width: number;

@@ -29,10 +29,10 @@ const ControlPanelComponent: React.FC<ControlPanelProps> = ({}) => {
             _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
               <CPListRowSelect rowKey={item.key} name={item.name} button={item.button} />
             )}
-          {_.isEqual(item.type, CPComponentType.slider) &&
+          {/* {_.isEqual(item.type, CPComponentType.slider) &&
             _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
               <CPListRowSlider rowKey={item.key} name={item.name} slider={item.slider} />
-            )}
+            )} */}
         </React.Fragment>
       ))}
     </S.ControlPanelWrapper>
