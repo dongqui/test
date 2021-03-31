@@ -10,36 +10,36 @@ const MAX = 100;
 export interface CPListRowSliderProps {
   rowKey: string;
   name: string;
-  slider?: RenderingDataPropertyName.fogNear | RenderingDataPropertyName.fogFar;
+  // slider?: RenderingDataPropertyName.fogNear | RenderingDataPropertyName.fogFar;
 }
 const CPListRowSliderComponent: React.FC<CPListRowSliderProps> = ({
   rowKey,
   name,
-  slider = RenderingDataPropertyName.fogNear,
+  // slider = RenderingDataPropertyName.fogNear,
 }) => {
   const renderingData = useReactiveVar(storeRenderingData);
-  const value = useMemo(() => renderingData[slider], [renderingData, slider]);
+  // const value = useMemo(() => renderingData[slider], [renderingData, slider]);
   const onChange = useCallback(
     (e) => {
       storeRenderingData({
         ...renderingData,
-        [slider]: e.target.valueAsNumber,
+        // [slider]: e.target.valueAsNumber,
       });
     },
-    [renderingData, slider],
+    [renderingData],
   );
   return (
     <S.CPListRowParentWrapper>
       <S.CPListRowInputWrapper>
         {name}
         <S.CPListRowInputsWrapper>
-          <S.SliderIndicator left={Math.round(((value as any) / MAX) * 100) - 6}>
+          {/* <S.SliderIndicator left={Math.round(((value as any) / MAX) * 100) - 6}>
             {value}
-          </S.SliderIndicator>
+          </S.SliderIndicator> */}
           <S.CPListRowSliderWrapper
             min={MIN}
             max={MAX}
-            value={value as any}
+            // value={value as any}
             onChange={onChange}
           ></S.CPListRowSliderWrapper>
         </S.CPListRowInputsWrapper>
