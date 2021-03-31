@@ -15,7 +15,7 @@ const makelocation = ({ index }: { index: number }) => {
   return { top, left };
 };
 export const IconViewWrapper = styled.div<IconViewStyleProps>`
-  width: ${LIBRARYPANEL_INFO.widthPx}px;
+  /* width: ${LIBRARYPANEL_INFO.widthPx}px; */
   height: ${rem(480)}rem;
   background-color: ${BACKGROUND_COLOR};
   position: relative;

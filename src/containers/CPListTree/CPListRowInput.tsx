@@ -136,6 +136,29 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       });
     }
   }, [name, transformControls]);
+  useEffect(() => {
+    if (_.isEqual(name, CPNameType.Position)) {
+      setInitialValue({
+        x: currentBone?.position?.x ?? 0,
+        y: currentBone?.position?.y ?? 0,
+        z: currentBone?.position?.z ?? 0,
+      });
+    }
+    if (_.isEqual(name, CPNameType.Rotation)) {
+      setInitialValue({
+        x: currentBone?.rotation?.x ?? 0,
+        y: currentBone?.rotation?.y ?? 0,
+        z: currentBone?.rotation?.z ?? 0,
+      });
+    }
+    if (_.isEqual(name, CPNameType.Scale)) {
+      setInitialValue({
+        x: currentBone?.scale?.x ?? 0,
+        y: currentBone?.scale?.y ?? 0,
+        z: currentBone?.scale?.z ?? 0,
+      });
+    }
+  }, [currentBone, name]);
   return (
     <S.CPListRowParentWrapper>
       <S.CPListRowInputWrapper>

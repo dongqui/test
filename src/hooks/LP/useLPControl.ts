@@ -76,7 +76,7 @@ export const useLPControl = ({
         ) &&
         _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, key])?.type, FILE_TYPES.file)
       ) {
-        storeCPMode(CPModeType.retarget);
+        // storeCPMode(CPModeType.retarget);
       }
       storeMainData(
         _.map(mainData, (item) => ({

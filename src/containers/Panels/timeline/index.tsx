@@ -21,8 +21,8 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
   useEffect(() => {
     if (!baseLayer) return;
     // Summary, Base 트랙 추가
-    const defaultTrackNameList: TPTrackName[] = [];
-    defaultTrackNameList.push({
+    const trackNameList: TPTrackName[] = [];
+    trackNameList.push({
       isOpenedChildrenTrack: false,
       name: 'Summary',
       trackIndex: TP_TRACK_INDEX.SUMMARY, // 1
@@ -41,7 +41,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
       layerIdnex: TP_TRACK_INDEX.LAYER, // 2
       lastBoneTrackIndex: 0,
     };
-    const baseTrack = defaultTrackNameList[0].childrenTrackList[0].childrenTrackList;
+    const baseTrack = trackNameList[0].childrenTrackList[0].childrenTrackList;
     const moveNextBoneIndex = TP_TRACK_INDEX.BONE_A; // 3
     let currentTrackIndex = moveNextBoneIndex; // 현재 track Index
 
@@ -87,7 +87,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
       if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2; // 11 -> 13, 21 -> 23
     }
 
-    TPDefaultTrackNameList(defaultTrackNameList);
+    TPDefaultTrackNameList(trackNameList);
     TPLastBoneTrackIndexList([lastBoneIndexList]);
   }, [baseLayer]);
 

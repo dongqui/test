@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
 import { NextPage } from 'next';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
@@ -48,9 +48,7 @@ const ModalWrapper = styled.div`
   transform: translate(-50%, -50%);
 `;
 
-interface Props {}
-
-const ShootPage: NextPage<Props> = () => {
+const ShootPage: FunctionComponent = () => {
   const mainData = useReactiveVar(storeMainData);
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const modalInfo = useReactiveVar(storeModalInfo);
@@ -119,6 +117,9 @@ const ShootPage: NextPage<Props> = () => {
   const onCancelLoading = useCallback(() => {
     storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
   }, [modalInfo]);
+  const handleClose = useCallback(() => {
+    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
+  }, [modalInfo]);
 
   useOutsideClick({
     ref: contextMenuRef,
@@ -159,7 +160,7 @@ const ShootPage: NextPage<Props> = () => {
       {modalInfo.isShow && (
         <>
           {_.isEqual(modalInfo.type, MODAL_TYPES.alert) && (
-            <BaseModal hasCloseIcon onClose={() => {}} theme="dark">
+            <BaseModal hasCloseIcon onClose={handleClose} theme="dark">
               <ModalInner>{modalInfo.msg}</ModalInner>
             </BaseModal>
           )}
@@ -192,4 +193,4 @@ const ShootPage: NextPage<Props> = () => {
   );
 };
 
-export default ShootPage;
+export default memo(ShootPage);

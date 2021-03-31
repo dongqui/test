@@ -1,16 +1,36 @@
 @import 'styles/libraries/_colors';
 
+.hidden-wrapper {
+  width: 100%;
+  display: flex;
+}
+
 .wrapper {
+  display: flex;
   background-color: $gray100;
   width: 100%;
-  padding: 16px;
+  padding: 8px;
   border: 0;
   outline: 0;
 }
 
 .inner {
+  display: flex;
+  flex-direction: column;
   position: relative;
+  flex-basis: 100%;
   height: 100%;
+}
+
+.content {
+  flex-basis: 100%;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .title {

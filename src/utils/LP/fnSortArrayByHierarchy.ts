@@ -9,7 +9,9 @@ export const fnSortArrayByHierarchy = ({ data }: fnSortArrayByHierarchyProps) =>
   let tempData = _.clone(data);
   let result: MainDataType[] = [];
   let newData: MainDataType[];
+  let cnt = 0;
   do {
+    cnt += 1;
     if (_.some(tempData, [MAINDATA_PROPERTY_TYPES.parentKey, ROOT_FOLDER_NAME])) {
       newData = _.filter(tempData, [MAINDATA_PROPERTY_TYPES.parentKey, ROOT_FOLDER_NAME]);
       result = _.concat(result, newData);
@@ -30,6 +32,9 @@ export const fnSortArrayByHierarchy = ({ data }: fnSortArrayByHierarchyProps) =>
       }
     });
     result = _.clone(tempResult);
+    if (_.gt(cnt, 20)) {
+      break;
+    }
   } while (!_.isEqual(_.size(data), _.size(result)));
   return result;
 };
