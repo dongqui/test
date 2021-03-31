@@ -30,6 +30,7 @@ export interface IconProps {
 const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
   const mainData = useReactiveVar(storeMainData);
   const pages = useReactiveVar(storePages);
+  const [isModifyingStart, setIsModdifyingStart] = useState(false);
   const inputRef = useRef<HTMLInputElement>() as MutableRefObject<HTMLInputElement>;
   const fileType = useMemo(
     () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
@@ -78,6 +79,21 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
       );
     }
   }, [rowKey, mainData, pages]);
+  const handleFocus = useCallback(
+    (e) => {
+      if (isModifyingStart) {
+        // if (_.isEqual(fileType, FILE_TYPES.file)) {
+        //   const extension = `.${_.last(_.split(e.target.value, '.'))}`;
+        //   const rangeIndex = e.target.value.indexOf(extension);
+        //   e.target.setSelectionRange(0, rangeIndex);
+        // } else {
+        //   e.target.select();
+        // }
+        e.target.select();
+      }
+    },
+    [isModifyingStart],
+  );
   const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
     mainData,
     rowKey,
@@ -87,6 +103,11 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
     editing: isModifying,
     dragging: isDragging,
   });
+  useEffect(() => {
+    if (!isModifyingStart) {
+      setIsModdifyingStart(true);
+    }
+  }, [isModifying, isModifyingStart]);
   return (
     <Fragment>
       <div
@@ -111,12 +132,11 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
       {isModifying ? (
         <BaseInput
           className={cx('input-name')}
-          // value={fileName}
+          value={fileName}
           innerRef={inputRef}
           autoFocus
-          onFocus={(e) => e.target.select()}
-          // onChange={onChangeInput}
-          onChange={() => {}}
+          onFocus={handleFocus}
+          onChange={onChangeInput}
           onBlur={onBlur}
         />
       ) : (
