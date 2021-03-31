@@ -1,0 +1,35 @@
+.rendering-panel {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.rendering-div {
+  width: 100%;
+  height: 100%;
+}
+
+.camera-reset-background {
+  position: absolute;
+  top: 32px;
+  right: 48px;
+  border-radius: 5px;
+  width: 36px;
+  height: 36px;
+  background-color: rgba($color: #000000, $alpha: 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.camera-reset {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  & > svg {
+    width: 32px;
+    height: 32px;
+  }
+}
