@@ -8,6 +8,7 @@ import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
 import { storeMainData } from 'lib/store';
+import { BaseInput } from 'components/New_Input';
 import _ from 'lodash';
 import { INITIAL_MAIN_DATA } from 'utils/const';
 import { rem } from 'utils/rem';
@@ -37,13 +38,16 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
   data = INITIAL_MAIN_DATA,
 }) => {
   const mainData = useReactiveVar(storeMainData);
+
   const isFirst = useMemo(() => {
     let result = false;
+
     if (
       _.isEqual(data[_.findIndex(data, [MAINDATA_PROPERTY_TYPES.isSelected, true])]?.key, rowKey)
     ) {
       result = true;
     }
+
     if (
       _.isEqual(
         data[_.findIndex(data, [MAINDATA_PROPERTY_TYPES.isVisualizeSelected, true])]?.key,
@@ -52,10 +56,13 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
     ) {
       result = true;
     }
+
     return result;
   }, [data, rowKey]);
+
   const isLast = useMemo(() => {
     let result = false;
+
     if (
       _.isEqual(
         data[_.findLastIndex(data, [MAINDATA_PROPERTY_TYPES.isSelected, true])]?.key,
@@ -64,6 +71,7 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
     ) {
       result = true;
     }
+
     if (
       _.isEqual(
         data[_.findLastIndex(data, [MAINDATA_PROPERTY_TYPES.isVisualizeSelected, true])]?.key,
@@ -72,24 +80,68 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
     ) {
       result = true;
     }
+
     return result;
   }, [data, rowKey]);
+
   const onClick = useCallback(() => {
     storeMainData(
       _.map(mainData, (item) => ({
         ...item,
+        // !_.isEqual(mode, FILE_TYPES.motion) &&
         isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
         isClicked: _.isEqual(rowKey, item.key),
         isVisualized: isVisualizeSelected ? _.isEqual(item.key, rowKey) : item.isVisualized,
       })),
     );
   }, [isVisualizeSelected, mainData, rowKey]);
+
   const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
     mainData,
     rowKey,
   });
 
   const isExpanded = _.find(mainData, { key: rowKey })?.isExpanded;
+
+  console.log(isFirst, isLast);
+
+  // const rowClasses = cx('list-row', {
+  //   selected: isSelected,
+  //   clicked: isClicked,
+  //   clickSelected: isClicked && isSelected,
+  //   visualized: isVisualized,
+  //   visualizeSelected: isVisualizeSelected,
+  //   closed: !isExpanded,
+  //   first: isExpanded && isFirst,
+  //   last: isExpanded && isLast,
+  // });
+
+  const folderClasses = cx('list-row', {
+    visualized: isVisualized,
+    visualizeSelected: isVisualizeSelected,
+  });
+
+  const fileClasses = cx('list-row', {
+    selected: isSelected,
+    // clicked: isClicked,
+    clickSelected: isClicked && isSelected,
+    visualized: isVisualized,
+    visualizeSelected: isVisualizeSelected,
+    // closed: !isExpanded,
+    first: isFirst,
+    last: isLast,
+  });
+
+  const motionClasses = cx('list-row', {
+    selected: isSelected,
+    // clicked: isClicked,
+    clickSelected: isClicked && isSelected,
+    visualized: isVisualized,
+    visualizeSelected: isVisualizeSelected,
+    // closed: !isExpanded,
+    first: isFirst,
+    last: isLast,
+  });
 
   const folderArrowClasses = cx('icon-arrow', {
     open: isExpanded,
@@ -98,6 +150,84 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
   return (
     <Fragment>
       {_.isEqual(mode, FILE_TYPES.folder) && (
+        <div
+          className={folderClasses}
+          role="button"
+          onKeyDown={() => {}}
+          tabIndex={0}
+          onClick={onClick}
+        >
+          <IconWrapper className={folderArrowClasses} icon={SvgPath.FilledArrow} hasFrame={false} />
+          <div className={cx('name-outer')}>
+            <IconWrapper className={cx('icon-item')} icon={SvgPath.Folder} hasFrame={false} />
+            {isModifying ? (
+              <BaseInput
+                className={cx('input-name')}
+                value={fileName}
+                autoFocus
+                // onFocus={(e) => e.target.select()}
+                onChange={onChangeInput}
+                onBlur={onBlur}
+              />
+            ) : (
+              <div className={cx('name')}>{fileName}</div>
+            )}
+          </div>
+        </div>
+      )}
+      {_.isEqual(mode, FILE_TYPES.file) && (
+        <div
+          className={fileClasses}
+          role="button"
+          onKeyDown={() => {}}
+          tabIndex={0}
+          onClick={onClick}
+        >
+          <IconWrapper className={folderArrowClasses} icon={SvgPath.FilledArrow} hasFrame={false} />
+          <div className={cx('name-outer')}>
+            <IconWrapper className={cx('icon-item')} icon={SvgPath.Model} hasFrame={false} />
+            {isModifying ? (
+              <BaseInput
+                className={cx('input-name')}
+                value={fileName}
+                autoFocus
+                // onFocus={(e) => e.target.select()}
+                onChange={onChangeInput}
+                onBlur={onBlur}
+              />
+            ) : (
+              <div className={cx('name')}>{fileName}</div>
+            )}
+          </div>
+        </div>
+      )}
+      {_.isEqual(mode, FILE_TYPES.motion) && (
+        <div
+          className={motionClasses}
+          role="button"
+          onKeyDown={() => {}}
+          tabIndex={0}
+          onClick={onClick}
+        >
+          {/* <IconWrapper className={folderArrowClasses} icon={SvgPath.FilledArrow} hasFrame={false} /> */}
+          <div className={cx('name-outer')}>
+            <IconWrapper className={cx('icon-item')} icon={SvgPath.Motion} hasFrame={false} />
+            {isModifying ? (
+              <BaseInput
+                className={cx('input-name')}
+                value={fileName}
+                autoFocus
+                // onFocus={(e) => e.target.select()}
+                onChange={onChangeInput}
+                onBlur={onBlur}
+              />
+            ) : (
+              <div className={cx('name')}>{fileName}</div>
+            )}
+          </div>
+        </div>
+      )}
+      {/* {_.isEqual(mode, FILE_TYPES.folder) && (
         <S.ListRowWrapper
           isVisualized={isVisualized}
           isVisualizeSelected={isVisualizeSelected}
@@ -178,7 +308,7 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
             <S.ListRowText marginLeft={rem(6)}>{filteredFileName}</S.ListRowText>
           )}
         </S.ListRowWrapper>
-      )}
+      )} */}
     </Fragment>
   );
 };
