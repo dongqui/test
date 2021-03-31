@@ -1,4 +1,14 @@
-import { FunctionComponent, Fragment, memo, useCallback, useMemo, useRef } from 'react';
+import {
+  FunctionComponent,
+  Fragment,
+  memo,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  MutableRefObject,
+} from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
@@ -9,6 +19,7 @@ import * as S from './IconStyles';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import main from 'sha1';
 
 const cx = classNames.bind(styles);
 
@@ -19,6 +30,8 @@ export interface IconProps {
 const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
   const mainData = useReactiveVar(storeMainData);
   const pages = useReactiveVar(storePages);
+  const [isModifyingStart, setIsModdifyingStart] = useState(false);
+  const inputRef = useRef<HTMLInputElement>() as MutableRefObject<HTMLInputElement>;
   const fileType = useMemo(
     () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
     [rowKey, mainData],
@@ -66,17 +79,35 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
       );
     }
   }, [rowKey, mainData, pages]);
+  const handleFocus = useCallback(
+    (e) => {
+      if (isModifyingStart) {
+        // if (_.isEqual(fileType, FILE_TYPES.file)) {
+        //   const extension = `.${_.last(_.split(e.target.value, '.'))}`;
+        //   const rangeIndex = e.target.value.indexOf(extension);
+        //   e.target.setSelectionRange(0, rangeIndex);
+        // } else {
+        //   e.target.select();
+        // }
+        e.target.select();
+      }
+    },
+    [isModifyingStart],
+  );
   const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
     mainData,
     rowKey,
   });
-
   const classes = cx('wrapper', {
     visualized: isVisualized,
     editing: isModifying,
     dragging: isDragging,
   });
-
+  useEffect(() => {
+    if (!isModifyingStart) {
+      setIsModdifyingStart(true);
+    }
+  }, [isModifying, isModifyingStart]);
   return (
     <Fragment>
       <div
@@ -102,8 +133,9 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
         <BaseInput
           className={cx('input-name')}
           value={fileName}
+          innerRef={inputRef}
           autoFocus
-          onFocus={(e) => e.target.select()}
+          onFocus={handleFocus}
           onChange={onChangeInput}
           onBlur={onBlur}
         />

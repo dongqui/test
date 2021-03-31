@@ -24,9 +24,9 @@ export enum CPNameType {
   Joint = 'Joint',
   Mesh = 'Mesh',
   Shadow = 'Shadow',
-  Fog = 'Fog',
-  Near = 'Near',
-  Far = 'Far',
+  // Fog = 'Fog',
+  // Near = 'Near',
+  // Far = 'Far',
 }
 export enum CPModeType {
   property = 'property',
@@ -65,7 +65,7 @@ export interface CPDataType {
     | RenderingDataPropertyName.isBoneOn
     | RenderingDataPropertyName.isJointOn
     | RenderingDataPropertyName.isMeshOn
-    | RenderingDataPropertyName.isShadowOn
-    | RenderingDataPropertyName.isFogOn;
-  slider?: RenderingDataPropertyName.fogNear | RenderingDataPropertyName.fogFar;
+    | RenderingDataPropertyName.isShadowOn;
+  //   | RenderingDataPropertyName.isFogOn;
+  // slider?: RenderingDataPropertyName.fogNear | RenderingDataPropertyName.fogFar;
 }

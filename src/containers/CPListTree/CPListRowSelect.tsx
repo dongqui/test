@@ -14,8 +14,7 @@ export interface CPListRowSelectProps {
     | RenderingDataPropertyName.isBoneOn
     | RenderingDataPropertyName.isJointOn
     | RenderingDataPropertyName.isMeshOn
-    | RenderingDataPropertyName.isShadowOn
-    | RenderingDataPropertyName.isFogOn;
+    | RenderingDataPropertyName.isShadowOn;
 }
 
 const CPListRowSelectComponent: React.FC<CPListRowSelectProps> = ({

@@ -35,7 +35,7 @@ import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL, INITIAL_CP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
 import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
 import * as api from 'utils/common/api';
-import { fnGetBaseLayer, fnGetNewLayer } from 'utils/TP/editingUtils';
+import { fnGetBaseLayerWithClip, fnGetNewLayer } from 'utils/TP/editingUtils';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import { Headline } from 'components/New_Typography';
 import Explorer from './Explorer/index';
@@ -63,15 +63,6 @@ const LibraryPanelComponent: FunctionComponent = () => {
       for (const acceptedFile of acceptedFiles) {
         const extension = _.last(_.split(acceptedFile.name, '.'));
         let convertedFileUrl = DEFAULT_MODEL_URL;
-        // if (_.some(acceptedFiles, (file) => !_.includes(ENABLE_FILE_FORMATS, extension))) {
-        //   storeModalInfo({
-        //     isShow: true,
-        //     msg: '파일 형식이 올바르지 않습니다.',
-        //     type: MODAL_TYPES.alert,
-        //   });
-        //   setLoading(false);
-        //   return false;
-        // }
         if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
           // fbx 파일 업로드 및 변환
           const { url, error, msg } = await api.uploadFbxToGlb({
@@ -116,10 +107,11 @@ const LibraryPanelComponent: FunctionComponent = () => {
             motions.push({
               key: clip?.uuid,
               name: clip?.name,
-              baseLayer: fnGetBaseLayer({ bones, clip }),
+              baseLayer: fnGetBaseLayerWithClip({ bones, clip }),
               layers: [],
               type: FILE_TYPES.motion,
               parentKey: key,
+              boneNames: _.map(bones, (bone) => bone.name),
             });
           }
         });
@@ -262,6 +254,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     mainData,
     pages,
     searchWord,
+    lpmode,
   });
 
   useContextMenu({ targetRef: panelWrapperRef, event: onContextMenu });
@@ -273,7 +266,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     onContextMenu,
     onDragStart,
     onDragEnd,
-    onDrop,
+    onDrop: handleDrop,
     shortcutData,
     filteredData,
   };

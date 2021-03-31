@@ -1,4 +1,5 @@
-export { default as fnGetBaseLayer } from './fnGetBaseLayer';
+export { default as fnGetBaseLayerWithClip } from './fnGetBaseLayerWithClip';
+export { default as fnGetBaseLayerWithBoneNames } from './fnGetBaseLayerWithBoneNames';
 export { default as fnGetNewLayer } from './fnGetNewLayer';
 
 export { default as fnUpdateKeyframeToBase } from './fnUpdateKeyframeToBase';
