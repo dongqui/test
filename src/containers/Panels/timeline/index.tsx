@@ -7,7 +7,7 @@ import styles from './index.module.scss';
 import { TPTrackName, TPDopeSheet, TPLastBoneTrackIndex } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { fnGetSummaryTimes, fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
-import { PlayBar } from 'containers/PlayBar';
+import MiddleBar from 'containers/MiddleBar';
 import { ShootLayerType, ShootTrackType } from 'types';
 
 const cx = classNames.bind(styles);
@@ -168,7 +168,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
   return (
     <>
       <div className={cx('timeline-panel')}>
-        <PlayBar />
+        <MiddleBar />
         <TimelineWrapper />
       </div>
     </>
