@@ -11,6 +11,7 @@ import {
   fnSetPlayState,
   fnSetPlayDirection,
   fnGoToSpecificTimeIndex,
+  fnLogAnimationTime,
 } from 'utils/RP/animatingUtils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {
@@ -134,6 +135,13 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       }
     }
   }, [dirLight, isShadowOn]);
+
+  // action 의 current time 을 10초 동안 콘솔에 찍는 예시 함수입니다.
+  useEffect(() => {
+    if (currentAction) {
+      fnLogAnimationTime({ action: currentAction });
+    }
+  }, [currentAction]);
 
   const handleCameraReset = useCallback(() => {
     if (cameraControls) {

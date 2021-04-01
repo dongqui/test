@@ -13,6 +13,7 @@ export interface PlayBarProps {}
 
 const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
   const animatingData = useReactiveVar(storeAnimatingData);
+
   return (
     <S.PlayBarWrapper>
       <LayerSelect
