@@ -58,12 +58,15 @@ export enum MAINDATA_PROPERTY_TYPES {
   isSelected = 'isSelected',
   isVisualized = 'isVisualized',
   isVisualizeSelected = 'isVisualizeSelected',
+  isFirst = 'isFirst',
+  isLast = 'isLast',
   isModifying = 'isModifying',
   isCopied = 'isCopied',
   isDragging = 'isDragging',
   baseLayer = 'baseLayer',
   layers = 'layers',
   boneNames = 'boneNames',
+  depth = 'depth',
 }
 export enum LPModeType {
   listview = 'listview',
@@ -97,12 +100,15 @@ export interface MainDataType {
   [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isFirst]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isLast]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isModifying]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isCopied]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isDragging]?: boolean;
   [MAINDATA_PROPERTY_TYPES.baseLayer]?: ShootTrackType[];
   [MAINDATA_PROPERTY_TYPES.layers]?: ShootLayerType[];
   [MAINDATA_PROPERTY_TYPES.boneNames]?: string[];
+  [MAINDATA_PROPERTY_TYPES.depth]?: number;
 }
 export interface BonesTypes {
   name: string;

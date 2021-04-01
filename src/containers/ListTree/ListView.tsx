@@ -42,7 +42,7 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    const result: MainDataType[] = [];
+    let result: MainDataType[] = [];
     let data = fnSortArrayByHierarchy({ data: mainData });
     if (!_.isEmpty(searchWord)) {
       data = fnFilterArrayByHierarchy({ data, searchWord });
@@ -51,7 +51,6 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
         parentKey: _.isEqual(item.type, FILE_TYPES.file) ? ROOT_FOLDER_NAME : item.parentKey,
       }));
     }
-    data = fnMakeSelection({ data });
     _.forEach(data, (item) => {
       if (_.isEqual(item.parentKey, ROOT_FOLDER_NAME)) {
         result.push(item);
@@ -61,6 +60,7 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
         result.push(item);
       }
     });
+    result = fnMakeSelection({ data: result });
     return result;
   }, [mainData, searchWord]);
 
@@ -86,7 +86,6 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
           <ListNode
             key={key}
             item={item}
-            data={processedData}
             onDragStart={handleDragStart}
             onDragEnd={onDragEnd}
             onDrop={handleDrop}
@@ -96,4 +95,54 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
     </div>
   );
 };
+
 export const ListView = memo(ListViewComponent);
+
+{
+  /* return (
+    <div className={cx('wrapper')}>
+      {_.map(processedData, (item, index) => (
+        <S.ListViewRowWrapper
+          key={index}
+          id={item.key}
+          className="icon"
+          draggable
+          onDragStart={() => onDragStart({ key: item.key })}
+          onDragEnd={onDragEnd}
+          onDrop={() => {
+            onDrop({ key: _.isEqual(item.type, FILE_TYPES.motion) ? item.parentKey : item.key });
+          }}
+        >
+          {_.isEmpty(searchWord) ? (
+            <>
+              {(_.isEqual(item.parentKey, ROOT_FOLDER_NAME) ||
+                _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, item.parentKey])?.isExpanded) && (
+                <ListRow
+                  rowKey={item.key}
+                  mode={item.type}
+                  isClicked={item.isClicked}
+                  isSelected={item.isSelected}
+                  isVisualizeSelected={item.isVisualizeSelected}
+                  isVisualized={item.isVisualized}
+                  isFirst={item.isFirst}
+                  isLast={item.isLast}
+                />
+              )}
+            </>
+          ) : (
+            <ListRow
+              rowKey={item.key}
+              mode={item.type}
+              isClicked={item.isClicked}
+              isSelected={item.isSelected}
+              isVisualizeSelected={item.isVisualizeSelected}
+              isVisualized={item.isVisualized}
+              isFirst={item.isFirst}
+              isLast={item.isLast}
+            />
+          )}
+        </S.ListViewRowWrapper>
+      ))}
+    </div>
+  ); */
+}

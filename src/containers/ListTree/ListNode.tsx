@@ -12,13 +12,12 @@ const cx = classNames.bind(styles);
 
 interface Props {
   item: MainDataType;
-  data: MainDataType[];
   onDragStart: ({ key }: any) => void;
   onDragEnd: ({ key }: any) => void;
   onDrop: ({ key }: any) => void;
 }
 
-const ListNode: FunctionComponent<Props> = ({ item, data, onDragStart, onDragEnd, onDrop }) => {
+const ListNode: FunctionComponent<Props> = ({ item, onDragStart, onDragEnd, onDrop }) => {
   const mainData = useReactiveVar(storeMainData);
   const searchWord = useReactiveVar(storeSearchWord);
 
@@ -56,7 +55,8 @@ const ListNode: FunctionComponent<Props> = ({ item, data, onDragStart, onDragEnd
                 isSelected={item.isSelected}
                 isVisualizeSelected={item.isVisualizeSelected}
                 isVisualized={item.isVisualized}
-                data={data}
+                isFirst={item.isFirst}
+                isLast={item.isLast}
               />
             )}
           </Fragment>
@@ -68,7 +68,8 @@ const ListNode: FunctionComponent<Props> = ({ item, data, onDragStart, onDragEnd
             isSelected={item.isSelected}
             isVisualizeSelected={item.isVisualizeSelected}
             isVisualized={item.isVisualized}
-            data={data}
+            isFirst={item.isFirst}
+            isLast={item.isLast}
           />
         )}
       </div>
