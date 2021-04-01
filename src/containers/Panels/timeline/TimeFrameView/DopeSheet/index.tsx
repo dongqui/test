@@ -26,7 +26,6 @@ const X_AXIS_SVG_CLASSNAME = 'x-axis-svg';
 const CIRCLE_GROUP_CLASSNAME = 'circle-group';
 
 const X_AXIS_DOMAIN = 500000;
-const CIRCLE_RADIUS = 12; // 원 반지름 크기
 const TRACK_HEIGHT = 48; // 트랙 높이
 const THROTTLE_TIMER = 50;
 
@@ -53,6 +52,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const xScaleCopy = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const xAxisPosition = useRef<d3Axis | null>(null);
   const renderXAxis = useRef<d3Selection | null>(null);
+  const prevXScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
 
   // svg로 x축 그리기
   useEffect(() => {
@@ -62,8 +62,8 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     // x값 범위 설정
     xScale.current = d3.scaleLinear().domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN]).range([0, width]);
 
-    // x값 복사
-    xScaleCopy.current = xScale.current.copy();
+    xScaleCopy.current = xScale.current.copy(); // x값 원본 복사
+    prevXScale.current = xScale.current.copy(); // 이전 x값 복사
 
     // x축 위치 설정
     xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear);
@@ -101,6 +101,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       const renderXAxisRef = renderXAxis.current as d3Selection;
       const xAxisPositionRef = xAxisPosition.current as d3Axis;
 
+      prevXScale.current = xScale.current?.copy() as d3ScaleLinear; // 이전 x값 복사
       renderXAxisRef.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // 이전 값으로 scale 적용
       xScale.current = rescaleX; // rescale한 값으로 갱신
     };
@@ -114,10 +115,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
         if (dopeSheetTop <= circleGroupTop && circleGroupTop <= dopeSheetTop + height) {
           circleGroup.selectAll('circle').each(function () {
-            d3.select(this).attr(
-              'cx',
-              (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25,
-            );
+            d3.select(this).attr('cx', (time) => xScaleLinear((time as number) * 30));
           });
         }
       });
@@ -126,7 +124,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     // zoom 이벤트 적용
     const zoomBehavior = d3
       .zoom()
-      .scaleExtent([1, 25000])
+      .scaleExtent([1, 100000])
       .translateExtent([
         [0, 0],
         [width, height],
@@ -159,10 +157,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           ([entry], observer) => {
             if (!entry.isIntersecting) return observer.unobserve(entry.target);
             circleGroup.selectAll('circle').each(function () {
-              d3.select(this).attr(
-                'cx',
-                (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25,
-              );
+              d3.select(this).attr('cx', (time) => xScaleLinear((time as number) * 30));
             });
             observer.unobserve(entry.target);
           },
@@ -181,22 +176,25 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
 
     d3.select(timelineWrapper).on('scroll', rescaleCircleX);
   }, [timelineWrapperRef]);
+  // console.log('dopeSheetList', dopeSheetList);
 
   return (
     <>
       <div className={cx('dopesheet-wrapper')} ref={dopeSheetRef}>
         {/* d3에 의해 x axis가 추가 될 자리 */}
         <div className={cx('circle-group-wrapper')}>
-          {dopeSheetList?.map(
-            (dopeSheetData) =>
-              dopeSheetData.isClickedParentTrack && (
+          {_.map(dopeSheetList, (dopeSheet) => {
+            return (
+              dopeSheet.isClickedParentTrack &&
+              dopeSheet.isFiltered && (
                 <CircleGroup
-                  key={dopeSheetData.trackIndex}
-                  dopeSheetData={dopeSheetData}
-                  xScale={xScale.current as d3ScaleLinear}
+                  key={dopeSheet.trackIndex}
+                  dopeSheetData={dopeSheet}
+                  prevXScale={prevXScale.current as d3ScaleLinear}
                 />
-              ),
-          )}
+              )
+            );
+          })}
         </div>
       </div>
     </>

@@ -1,6 +1,6 @@
 import { makeVar } from '@apollo/client';
 import produce from 'immer';
-import { TPTrackName, TPDopeSheet, TPLastBoneTrackIndex } from 'types/TP';
+import { TPTrackName, TPDopeSheet, TPLastBoneTrackIndex, TPUpdateDopeSheet } from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
@@ -66,16 +66,27 @@ export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);
 
 // TP
-export const TPDefaultTrackNameList = makeVar<TPTrackName[]>([]);
+export const TPTrackNameList = makeVar<TPTrackName[]>([]);
 export const TPDopeSheetList = makeVar<TPDopeSheet[]>([]);
 export const TPLastBoneTrackIndexList = makeVar<TPLastBoneTrackIndex[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
 
-export const TPUpdateDopeSheetList = (statusList: Partial<TPDopeSheet>[]) => {
+export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
   const state = TPDopeSheetList();
   const nextState = produce<TPDopeSheet[]>(state, (draft) => {
-    _.forEach(statusList, (status) => {
-      const index = _.findIndex(draft, (dopeSheet) => dopeSheet.trackIndex === status.trackIndex);
-      draft[index].isClickedParentTrack = status.isClickedParentTrack as boolean;
+    _.forEach(updatedList, (target, key) => {
+      const index =
+        status === 'isFiltered'
+          ? key
+          : _.findIndex(draft, (find) => find.trackIndex === target.trackIndex);
+      switch (status) {
+        case 'isFiltered':
+          draft[index as number].isFiltered = target.isFiltered as boolean;
+          draft[index as number].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          break;
+        case 'isClickedParentTrack':
+          draft[index as number].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          break;
+      }
     });
   });
   TPDopeSheetList(nextState);

@@ -28,6 +28,9 @@ const Track: React.FC<TrackProps> = ({
   const [toggleArrowButton, setToggleArrowButton] = useState(false); // 화살표 토글 버튼(true면 하위 트랙 open)
   const lastBoneTrackIndexList = useReactiveVar(TPLastBoneTrackIndexList);
 
+  // 트랙 클릭
+  const clickTrackBody = useCallback(() => {}, []);
+
   // 화살표 버튼 클릭
   const clickToggleArrowButton = useCallback(() => {
     const remainder = trackIndex % 10;
@@ -40,7 +43,7 @@ const Track: React.FC<TrackProps> = ({
             trackIndex: trackIndex + 1,
             isClickedParentTrack: !prev,
           });
-          TPUpdateDopeSheetList(updatedTrackList);
+          TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isClickedParentTrack' });
           return !prev;
         }
         // Layer 트랙 화살표 클릭
@@ -61,7 +64,7 @@ const Track: React.FC<TrackProps> = ({
               boneTrackIndex += 6; // 7 -> 3
             }
           }
-          TPUpdateDopeSheetList(updatedTrackList);
+          TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isClickedParentTrack' });
           return !prev;
         }
         // Bone 트랙 화살표 클릭
@@ -77,7 +80,7 @@ const Track: React.FC<TrackProps> = ({
               isClickedParentTrack: !prev,
             });
           }
-          TPUpdateDopeSheetList(updatedTrackList);
+          TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isClickedParentTrack' });
           return !prev;
         }
         default: {
@@ -100,7 +103,11 @@ const Track: React.FC<TrackProps> = ({
   return (
     <>
       <div className={cx('track-wrapper')} onContextMenu={clickRightMouse}>
-        <div className={cx('track-body')} style={{ paddingLeft: `${paddingLeft}px` }}>
+        <button
+          className={cx('track-body')}
+          style={{ paddingLeft: `${paddingLeft}px` }}
+          onClick={clickTrackBody}
+        >
           {childrenTrackList.length && (
             <button
               className={cx('track-button', 'arrow-button', { opened: toggleArrowButton })}
@@ -115,7 +122,7 @@ const Track: React.FC<TrackProps> = ({
               아이콘 3종 적용
              */}
           </div>
-        </div>
+        </button>
         <div
           className={cx('children-track-list')}
           style={{ display: toggleArrowButton ? 'block' : 'none' }}
