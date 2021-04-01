@@ -67,12 +67,19 @@ const MainContainer: FunctionComponent = () => {
     return result;
   }, [mainData]);
   const handleDrop = useCallback(() => {
-    storeMainData(
-      _.map(mainData, (item) => ({
-        ...item,
-        isVisualized: item.isDragging,
-      })),
-    );
+    if (
+      !_.isEqual(
+        _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type,
+        FILE_TYPES.folder,
+      )
+    ) {
+      storeMainData(
+        _.map(mainData, (item) => ({
+          ...item,
+          isVisualized: item.isDragging,
+        })),
+      );
+    }
   }, [mainData]);
 
   useDebuggingData({ mainData, cpData, renderingData, animatingData });

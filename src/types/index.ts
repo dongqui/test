@@ -58,6 +58,8 @@ export enum MAINDATA_PROPERTY_TYPES {
   isSelected = 'isSelected',
   isVisualized = 'isVisualized',
   isVisualizeSelected = 'isVisualizeSelected',
+  isFirst = 'isFirst',
+  isLast = 'isLast',
   isModifying = 'isModifying',
   isCopied = 'isCopied',
   isDragging = 'isDragging',
@@ -97,6 +99,8 @@ export interface MainDataType {
   [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isFirst]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isLast]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isModifying]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isCopied]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isDragging]?: boolean;

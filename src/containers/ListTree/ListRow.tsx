@@ -19,7 +19,8 @@ export interface ListRowProps {
   [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
-  data: MainDataType[];
+  [MAINDATA_PROPERTY_TYPES.isFirst]?: boolean;
+  [MAINDATA_PROPERTY_TYPES.isLast]?: boolean;
 }
 
 const ListRowComponent: React.FC<ListRowProps> = ({
@@ -29,46 +30,10 @@ const ListRowComponent: React.FC<ListRowProps> = ({
   isSelected,
   isVisualized,
   isVisualizeSelected,
-  data = INITIAL_MAIN_DATA,
+  isFirst,
+  isLast,
 }) => {
   const mainData = useReactiveVar(storeMainData);
-  const isFirst = useMemo(() => {
-    let result = false;
-    if (
-      _.isEqual(data[_.findIndex(data, [MAINDATA_PROPERTY_TYPES.isSelected, true])]?.key, rowKey)
-    ) {
-      result = true;
-    }
-    if (
-      _.isEqual(
-        data[_.findIndex(data, [MAINDATA_PROPERTY_TYPES.isVisualizeSelected, true])]?.key,
-        rowKey,
-      )
-    ) {
-      result = true;
-    }
-    return result;
-  }, [data, rowKey]);
-  const isLast = useMemo(() => {
-    let result = false;
-    if (
-      _.isEqual(
-        data[_.findLastIndex(data, [MAINDATA_PROPERTY_TYPES.isSelected, true])]?.key,
-        rowKey,
-      )
-    ) {
-      result = true;
-    }
-    if (
-      _.isEqual(
-        data[_.findLastIndex(data, [MAINDATA_PROPERTY_TYPES.isVisualizeSelected, true])]?.key,
-        rowKey,
-      )
-    ) {
-      result = true;
-    }
-    return result;
-  }, [data, rowKey]);
   const onClick = useCallback(() => {
     storeMainData(
       _.map(mainData, (item) => ({
@@ -104,7 +69,7 @@ const ListRowComponent: React.FC<ListRowProps> = ({
             <S.ListRowInput
               value={fileName}
               autoFocus
-              onFocus={(e) => e.target.select()}
+              // onFocus={(e) => e.target.select()}
               onChange={onChangeInput}
               onBlur={onBlur}
             ></S.ListRowInput>
@@ -140,7 +105,7 @@ const ListRowComponent: React.FC<ListRowProps> = ({
             <S.ListRowInput
               value={fileName}
               autoFocus
-              onFocus={(e) => e.target.select()}
+              // onFocus={(e) => e.target.select()}
               onChange={onChangeInput}
               onBlur={onBlur}
             ></S.ListRowInput>
@@ -166,9 +131,9 @@ const ListRowComponent: React.FC<ListRowProps> = ({
             <S.ListRowInput
               value={fileName}
               autoFocus
-              onFocus={(e) => e.target.select()}
+              // onFocus={(e) => e.target.select()}
               onChange={onChangeInput}
-              // onBlur={onBlur}
+              onBlur={onBlur}
             ></S.ListRowInput>
           ) : (
             <S.ListRowText marginLeft={rem(6)}>{filteredFileName}</S.ListRowText>
