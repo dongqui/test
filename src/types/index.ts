@@ -66,6 +66,7 @@ export enum MAINDATA_PROPERTY_TYPES {
   baseLayer = 'baseLayer',
   layers = 'layers',
   boneNames = 'boneNames',
+  depth = 'depth',
 }
 export enum LPModeType {
   listview = 'listview',
@@ -107,6 +108,7 @@ export interface MainDataType {
   [MAINDATA_PROPERTY_TYPES.baseLayer]?: ShootTrackType[];
   [MAINDATA_PROPERTY_TYPES.layers]?: ShootLayerType[];
   [MAINDATA_PROPERTY_TYPES.boneNames]?: string[];
+  [MAINDATA_PROPERTY_TYPES.depth]?: number;
 }
 export interface BonesTypes {
   name: string;
