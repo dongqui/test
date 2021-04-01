@@ -22,6 +22,7 @@ import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
 import { CPModeType } from 'types/CP';
 import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
+import { ROOT_FOLDER_NAME } from 'types/LP';
 
 interface useLPControlProps {
   mainData: MainDataType[];
@@ -72,14 +73,25 @@ export const useLPControl = ({
   );
   const onDrop = useCallback(
     ({ key }) => {
-      if (
-        _.isEqual(
-          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type,
-          FILE_TYPES.motion,
-        ) &&
-        _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, key])?.type, FILE_TYPES.file)
-      ) {
-        // storeCPMode(CPModeType.retarget);
+      const draggingRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true]);
+      const targetRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, key]);
+      if (_.isEqual(draggingRow?.key, targetRow?.key)) {
+        return;
+      }
+      if (_.isEqual(draggingRow?.type, FILE_TYPES.motion)) {
+        if (!_.isEqual(targetRow?.type, FILE_TYPES.file)) {
+          return;
+        }
+      }
+      if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
+        if (!_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
+          return;
+        }
+      }
+      if (_.isEqual(draggingRow?.type, FILE_TYPES.folder)) {
+        if (!_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
+          return;
+        }
       }
       storeMainData(
         _.map(mainData, (item) => ({
@@ -236,7 +248,9 @@ export const useLPControl = ({
                     name: 'Folder',
                     mainData,
                   }),
-                  parentKey: _.last(pages)?.key,
+                  parentKey: _.isEqual(lpmode, LPModeType.iconview)
+                    ? _.last(pages)?.key
+                    : ROOT_FOLDER_NAME,
                   isModifying: true,
                 }),
               );
@@ -296,26 +310,20 @@ export const useLPControl = ({
               onEdit({ mainData: newMainData });
               break;
             case '6':
-              motion = _.find(mainData, [
-                MAINDATA_PROPERTY_TYPES.parentKey,
-                targetIcon?.id || _.last(pages)?.key,
-              ]);
-              if (motion) {
-                storeMainData(
-                  _.concat(mainData, {
-                    ...motion,
-                    key: uuidv4(),
-                    name: fnGetFileName({
-                      key: '',
-                      name: 'empty motion',
-                      mainData,
-                    }),
-                    isVisualized: false,
-                    baseLayer: fnGetBaseLayerWithBoneNames({ boneNames: motion?.boneNames ?? [] }),
-                    layers: [],
-                  }),
-                );
-              }
+              motion = {
+                key: uuidv4(),
+                name: fnGetFileName({
+                  key: '',
+                  name: 'empty motion',
+                  mainData,
+                }),
+                isVisualized: false,
+                baseLayer: fnGetBaseLayerWithBoneNames({ boneNames: motion?.boneNames ?? [] }),
+                layers: [],
+                type: FILE_TYPES.motion,
+                parentKey: targetIcon?.id || _.last(pages)?.key,
+              };
+              storeMainData(_.concat(mainData, motion));
               break;
             case '7':
               motion = _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id]);

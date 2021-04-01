@@ -9,6 +9,7 @@ import { fnGetFileName } from 'utils/LP/fnGetFileName';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { ROOT_FOLDER_NAME } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
@@ -35,11 +36,11 @@ const Explorer: FunctionComponent<Props> = ({ onChange }) => {
         key: uuidv4(),
         type: FILE_TYPES.folder,
         name: fnGetFileName({ key: '', mainData, name: 'Folder' }),
-        parentKey: _.last(pages)?.key,
+        parentKey: _.isEqual(lpmode, LPModeType.iconview) ? _.last(pages)?.key : ROOT_FOLDER_NAME,
         isModifying: true,
       }),
     );
-  }, [mainData, pages]);
+  }, [lpmode, mainData, pages]);
 
   const icon = _.isEqual(lpmode, LPModeType.iconview) ? SvgPath.IconView : SvgPath.ListView;
 
