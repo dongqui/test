@@ -82,13 +82,6 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
   const handleFocus = useCallback(
     (e) => {
       if (isModifyingStart) {
-        // if (_.isEqual(fileType, FILE_TYPES.file)) {
-        //   const extension = `.${_.last(_.split(e.target.value, '.'))}`;
-        //   const rangeIndex = e.target.value.indexOf(extension);
-        //   e.target.setSelectionRange(0, rangeIndex);
-        // } else {
-        //   e.target.select();
-        // }
         e.target.select();
       }
     },

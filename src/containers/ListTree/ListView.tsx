@@ -42,7 +42,7 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    const result: MainDataType[] = [];
+    let result: MainDataType[] = [];
     let data = fnSortArrayByHierarchy({ data: mainData });
     if (!_.isEmpty(searchWord)) {
       data = fnFilterArrayByHierarchy({ data, searchWord });
@@ -51,7 +51,6 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
         parentKey: _.isEqual(item.type, FILE_TYPES.file) ? ROOT_FOLDER_NAME : item.parentKey,
       }));
     }
-    data = fnMakeSelection({ data });
     _.forEach(data, (item) => {
       if (_.isEqual(item.parentKey, ROOT_FOLDER_NAME)) {
         result.push(item);
@@ -61,9 +60,9 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
         result.push(item);
       }
     });
+    result = fnMakeSelection({ data: result });
     return result;
   }, [mainData, searchWord]);
-
   return (
     <div className={cx('wrapper')}>
       {_.map(processedData, (item, index) => (
@@ -89,7 +88,8 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
                   isSelected={item.isSelected}
                   isVisualizeSelected={item.isVisualizeSelected}
                   isVisualized={item.isVisualized}
-                  data={processedData}
+                  isFirst={item.isFirst}
+                  isLast={item.isLast}
                 />
               )}
             </>
@@ -101,7 +101,8 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
               isSelected={item.isSelected}
               isVisualizeSelected={item.isVisualizeSelected}
               isVisualized={item.isVisualized}
-              data={processedData}
+              isFirst={item.isFirst}
+              isLast={item.isLast}
             />
           )}
         </S.ListViewRowWrapper>

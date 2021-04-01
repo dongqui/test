@@ -279,7 +279,6 @@ const LibraryPanelComponent: FunctionComponent = () => {
     onDrop: handleDrop,
     shortcutData,
   };
-
   return (
     <div className={cx('hidden-wrapper')} ref={panelWrapperRef}>
       <div className={cx('wrapper')} {...getRootProps()}>
