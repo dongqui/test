@@ -1,6 +1,12 @@
 @import 'styles/libraries/_functions';
 @import 'styles/libraries/_colors';
 
+@function indent($depth) {
+  $padding: 28px * ($depth - 1);
+
+  @return $padding;
+}
+
 .list-row {
   display: flex;
   flex-direction: row;
@@ -8,7 +14,26 @@
   cursor: pointer;
   outline: 0;
   border: 1px solid transparent;
+
+  @for $i from 6 through length(1) {
+    &.depth-#{$i} {
+      padding-left: indent($i);
+    }
+  }
+
   // margin-bottom: 8px;
+
+  // &.folder {
+  //   margin-bottom: 12px;
+  // }
+
+  // &.model {
+  //   margin-bottom: 8px;
+  // }
+
+  // &.motion {
+  //   margin-bottom: 4px;
+  // }
 
   .icon-arrow,
   .icon-item,
@@ -100,7 +125,7 @@
 .name-outer {
   display: flex;
   align-items: center;
-  flex-basis: 100%;
+  flex-basis: calc(100% - 28px);
 }
 
 .input-name {
@@ -123,7 +148,7 @@
 }
 
 .name {
-  width: 100%;
+  width: calc(100% - 28px);
   font-size: 11px;
   // color: #fff;
   text-overflow: ellipsis;

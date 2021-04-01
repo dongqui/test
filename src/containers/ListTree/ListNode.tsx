@@ -57,6 +57,7 @@ const ListNode: FunctionComponent<Props> = ({ item, onDragStart, onDragEnd, onDr
                 isVisualized={item.isVisualized}
                 isFirst={item.isFirst}
                 isLast={item.isLast}
+                depth={item.depth}
               />
             )}
           </Fragment>
@@ -70,6 +71,7 @@ const ListNode: FunctionComponent<Props> = ({ item, onDragStart, onDragEnd, onDr
             isVisualized={item.isVisualized}
             isFirst={item.isFirst}
             isLast={item.isLast}
+            depth={item.depth}
           />
         )}
       </div>

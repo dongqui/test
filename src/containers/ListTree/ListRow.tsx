@@ -21,6 +21,7 @@ const cx = classNames.bind(styles);
 export interface ListRowProps {
   mode: FILE_TYPES;
   rowKey: string;
+  depth?: number;
   [MAINDATA_PROPERTY_TYPES.isClicked]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
   [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
@@ -32,6 +33,7 @@ export interface ListRowProps {
 const ListRowComponent: FunctionComponent<ListRowProps> = ({
   mode = FILE_TYPES.folder,
   rowKey = '0',
+  depth,
   isClicked,
   isSelected,
   isVisualized,
@@ -59,25 +61,16 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
 
   const isExpanded = _.find(mainData, { key: rowKey })?.isExpanded;
 
-  console.log(isFirst, isLast);
-
-  // const rowClasses = cx('list-row', {
-  //   selected: isSelected,
-  //   clicked: isClicked,
-  //   clickSelected: isClicked && isSelected,
-  //   visualized: isVisualized,
-  //   visualizeSelected: isVisualizeSelected,
-  //   closed: !isExpanded,
-  //   first: isExpanded && isFirst,
-  //   last: isExpanded && isLast,
-  // });
-
-  const folderClasses = cx('list-row', {
+  const folderClasses = cx('list-row', `depth-${depth}`, {
+    selected: isSelected,
+    clickSelected: isClicked && isSelected,
     visualized: isVisualized,
     visualizeSelected: isVisualizeSelected,
+    first: isFirst,
+    last: isLast,
   });
 
-  const fileClasses = cx('list-row', {
+  const fileClasses = cx('list-row', `depth-${depth}`, {
     selected: isSelected,
     // clicked: isClicked,
     clickSelected: isClicked && isSelected,
@@ -88,7 +81,7 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
     last: isLast,
   });
 
-  const motionClasses = cx('list-row', {
+  const motionClasses = cx('list-row', `depth-${depth}`, {
     selected: isSelected,
     // clicked: isClicked,
     clickSelected: isClicked && isSelected,
