@@ -6,6 +6,7 @@ import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
 import { TPTrackName, TPDopeSheet, TPLastBoneTrackIndex } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
+import { fnGetSummaryTimes, fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
 import { PlayBar } from 'containers/PlayBar';
 import { ShootLayerType, ShootTrackType } from 'types';
 
@@ -104,9 +105,9 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         isLocked: false,
         isExcludedRendering: false,
         isFiltered: true,
-        isClickedParentTrackArrowBtn: false,
+        isClickedParentTrack: index === 1 ? false : true,
         trackIndex: dopeSheetIndex,
-        times, // summary, layer track 타이머 구하는 함수 받으면 교체 예정
+        times: baseLayer[index].times, // summary, layer track 타이머 구하는 함수 받으면 교체 예정
       });
       dopeSheetIndex += 1;
     }
@@ -115,10 +116,6 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
     const moveNextBoneIndex = TP_TRACK_INDEX.BONE_A; // 3
     for (let boneIndex = 0; boneIndex < baseLayer.length; boneIndex += moveNextBoneIndex) {
       const currnetBoneTrack = baseLayer[boneIndex];
-      const times = _.map(
-        _.fill(Array(currnetBoneTrack.times.length), 0),
-        (time, index) => index + 1,
-      );
 
       // Bone track status 추가
       dopeSheetList.push({
@@ -126,9 +123,9 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         isLocked: false,
         isExcludedRendering: false,
         isFiltered: true,
-        isClickedParentTrackArrowBtn: false,
+        isClickedParentTrack: false,
         trackIndex: dopeSheetIndex,
-        times,
+        times: currnetBoneTrack.times,
       });
       dopeSheetIndex += 1;
 
@@ -154,9 +151,9 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
           isLocked: false,
           isExcludedRendering: false,
           isFiltered: true,
-          isClickedParentTrackArrowBtn: false,
+          isClickedParentTrack: false,
           trackIndex: dopeSheetIndex,
-          times,
+          times: currnetBoneTrack.times,
           x,
           y,
           z,

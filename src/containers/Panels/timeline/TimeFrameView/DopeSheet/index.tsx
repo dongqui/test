@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import { TPDopeSheetList } from 'lib/store';
-import { TP_TRACK_INDEX } from 'utils/const';
+import CircleGroup from './circleGroup';
 import styles from './index.module.scss';
 
 interface Props {
@@ -28,12 +28,13 @@ const CIRCLE_GROUP_CLASSNAME = 'circle-group';
 const X_AXIS_DOMAIN = 500000;
 const CIRCLE_RADIUS = 12; // 원 반지름 크기
 const TRACK_HEIGHT = 48; // 트랙 높이
-const DOPE_SHEET_MARGIN = { top: 8, right: 20, bottom: 30, left: 30 }; // dope sheet에 적용 된 margin
+const THROTTLE_TIMER = 50;
 
 /** Dope Sheet 관련 변수
  * @constant dopeSheetList store에 저장 된 dope sheet data list
  * @constant dopeSheetRef Dope Sheet의 Ref
  * @constant lastCircleGroupNameList Dope Sheet를 다시 그리기 전에 그려진 Circle Group ID 리스트
+ * @constant prevScrollTop 직전 TP scroll 위치
  */
 
 /** x축 관련 useRef
@@ -46,9 +47,9 @@ const DOPE_SHEET_MARGIN = { top: 8, right: 20, bottom: 30, left: 30 }; // dope s
 const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const dopeSheetList = useReactiveVar(TPDopeSheetList);
   const dopeSheetRef = useRef<HTMLDivElement>(null);
-  const lastCircleGroupNameList = useRef<number[]>([]);
+  const prevScrollTop = useRef(0);
 
-  const xScale = useRef<d3ScaleLinear | d3.ZoomScale | d3.ZoomTransform | null>(null);
+  const xScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const xScaleCopy = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const xAxisPosition = useRef<d3Axis | null>(null);
   const renderXAxis = useRef<d3Selection | null>(null);
@@ -59,10 +60,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     const { clientWidth: width } = dopeSheetRef.current;
 
     // x값 범위 설정
-    xScale.current = d3
-      .scaleLinear()
-      .domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN])
-      .range([DOPE_SHEET_MARGIN.left, width - DOPE_SHEET_MARGIN.right]);
+    xScale.current = d3.scaleLinear().domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN]).range([0, width]);
 
     // x값 복사
     xScaleCopy.current = xScale.current.copy();
@@ -85,159 +83,9 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       .select(`.${X_AXIS_SVG_CLASSNAME}`)
       .append('g')
       .attr('class', 'x-axis-g')
-      .attr('transform', `translate(${DOPE_SHEET_MARGIN.left}, ${TRACK_HEIGHT})`)
+      .attr('transform', `translate(0, ${TRACK_HEIGHT})`)
       .call(xAxisPosition.current);
   }, []);
-
-  // dope sheet 세팅
-  useEffect(() => {
-    if (!dopeSheetRef.current || !dopeSheetList.length) return;
-    if (!xScale.current) return;
-    const { clientWidth: width } = dopeSheetRef.current;
-    const circleGroupWrapper = dopeSheetRef.current.firstChild as HTMLDivElement;
-
-    d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).remove();
-
-    // circle group과 ciecle을 그리는 함수
-    const drawDopeSheetCircles = ({ lineIndex, times }: { lineIndex: number; times: number[] }) => {
-      const xScaleLinear = xScale.current as d3ScaleLinear;
-      lastCircleGroupNameList.current.push(lineIndex);
-
-      // circle group 생성
-      const circleGroup = d3
-        .select(circleGroupWrapper)
-        .append('svg')
-        .attr('class', `${CIRCLE_GROUP_CLASSNAME}`)
-        .attr('width', width)
-        .attr('height', TRACK_HEIGHT);
-
-      // rect 테두리 생성
-      circleGroup
-        .append('rect')
-        .attr('width', width)
-        .attr('height', TRACK_HEIGHT)
-        .attr('fill', '#151515')
-        .attr('stroke-dasharray', '100, 50');
-
-      // circle 생성
-      circleGroup
-        .selectAll('circle')
-        .data(times)
-        .join('circle')
-        .attr('cx', (time) => xScaleLinear(time) + CIRCLE_RADIUS * 0.25)
-        .attr('cy', TRACK_HEIGHT - DOPE_SHEET_MARGIN.top - CIRCLE_RADIUS * 1.5)
-        .attr('r', CIRCLE_RADIUS)
-        .attr('stroke', '#ffffff');
-    };
-
-    let trackIndex = 0; //
-    let lineIndex = 0; //
-    // dope sheet circle 위치 설정(trackIndex가 dopeSheetList의 길이보다 커질 때까지 while 반복)
-    const setDopeSheet = () => {
-      while (trackIndex < dopeSheetList.length) {
-        const remainder = dopeSheetList[trackIndex].trackIndex % 10;
-        switch (remainder) {
-          // Summary 트랙
-          case TP_TRACK_INDEX.SUMMARY: {
-            if (!dopeSheetList[trackIndex].isFiltered) return; // isFiltered=false인 경우 반복문 종료
-            drawDopeSheetCircles({
-              lineIndex,
-              times: dopeSheetList[trackIndex].times as number[],
-            });
-            trackIndex += 1;
-            lineIndex += 1;
-            break;
-          }
-          // Layer 트랙
-          case TP_TRACK_INDEX.LAYER: {
-            if (!dopeSheetList[trackIndex].isClickedParentTrackArrowBtn) return;
-            if (!dopeSheetList[trackIndex].isFiltered) return; // isFiltered=false인 경우 다음 Layer 트랙으로 이동
-            drawDopeSheetCircles({
-              lineIndex,
-              times: dopeSheetList[trackIndex].times as number[],
-            });
-            trackIndex += 1;
-            lineIndex += 1;
-            break;
-          }
-          // Bone 트랙
-          case TP_TRACK_INDEX.BONE_A:
-          case TP_TRACK_INDEX.BONE_B: {
-            if (!dopeSheetList[trackIndex].isClickedParentTrackArrowBtn) return;
-            if (dopeSheetList[trackIndex].isFiltered) {
-              drawDopeSheetCircles({
-                lineIndex,
-                times: dopeSheetList[trackIndex].times as number[],
-              });
-              trackIndex += 1;
-              lineIndex += 1;
-            } else {
-              trackIndex += 4;
-            }
-            break;
-          }
-          // Position 트랙
-          case TP_TRACK_INDEX.POSITION_A:
-          case TP_TRACK_INDEX.POSITION_B: {
-            if (!dopeSheetList[trackIndex].isClickedParentTrackArrowBtn) {
-              trackIndex += 3;
-              continue;
-            }
-            if (dopeSheetList[trackIndex].isFiltered) {
-              drawDopeSheetCircles({
-                lineIndex,
-                times: dopeSheetList[trackIndex].times as number[],
-              });
-              trackIndex += 1;
-              lineIndex += 1;
-            } else {
-              trackIndex += 3;
-            }
-            break;
-          }
-          // Rotation 트랙
-          case TP_TRACK_INDEX.ROTATION_A:
-          case TP_TRACK_INDEX.ROTATION_B: {
-            if (!dopeSheetList[trackIndex].isClickedParentTrackArrowBtn) {
-              trackIndex += 2;
-              continue;
-            }
-            if (dopeSheetList[trackIndex].isFiltered) {
-              drawDopeSheetCircles({
-                lineIndex,
-                times: dopeSheetList[trackIndex].times as number[],
-              });
-              trackIndex += 1;
-              lineIndex += 1;
-            } else {
-              trackIndex += 2;
-            }
-            break;
-          }
-          // Scale 트랙
-          case TP_TRACK_INDEX.SCALE_A:
-          case TP_TRACK_INDEX.SCALE_B: {
-            if (!dopeSheetList[trackIndex].isClickedParentTrackArrowBtn) {
-              trackIndex += 1;
-              continue;
-            }
-            if (dopeSheetList[trackIndex].isFiltered) {
-              drawDopeSheetCircles({
-                lineIndex,
-                times: dopeSheetList[trackIndex].times as number[],
-              });
-              lineIndex += 1;
-            }
-            trackIndex += 1;
-            break;
-          }
-        }
-      }
-    };
-
-    setDopeSheet();
-    d3.select(circleGroupWrapper).style('height', `${lineIndex * TRACK_HEIGHT}px`);
-  }, [dopeSheetList]);
 
   // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
   useEffect(() => {
@@ -255,9 +103,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
 
       renderXAxisRef.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // 이전 값으로 scale 적용
       xScale.current = rescaleX; // rescale한 값으로 갱신
-
-      // const t = d3.zoomIdentity.scale(25000);
-      // const k = d3.zoomTransform(renderXAxisRef.node() as Element).rescaleX(t.k)
     };
 
     // circle x값 rescale
@@ -268,9 +113,12 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         const xScaleLinear = xScale.current as d3ScaleLinear;
         const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
         if (dopeSheetTop <= circleGroupTop && circleGroupTop <= dopeSheetTop + height) {
-          circleGroup
-            .selectAll('circle')
-            .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
+          circleGroup.selectAll('circle').each(function () {
+            d3.select(this).attr(
+              'cx',
+              (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25,
+            );
+          });
         }
       });
     };
@@ -288,7 +136,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         _.throttle((event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
           rescaleCircleX();
           rescaleXAxis(event);
-        }, 50),
+        }, THROTTLE_TIMER),
       );
 
     d3.select(dopeSheetRef.current).call(zoomBehavior as any);
@@ -301,6 +149,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
 
     // circle x값 rescale
     const rescaleCircleX = () => {
+      const isBelowPrevScrollTop = prevScrollTop.current < timelineWrapper.scrollTop;
       d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
         const circleGroup = d3.select(this);
         const circleGroupNode = circleGroup.node() as Element;
@@ -309,18 +158,25 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         const observer = new IntersectionObserver(
           ([entry], observer) => {
             if (!entry.isIntersecting) return observer.unobserve(entry.target);
-            circleGroup
-              .selectAll('circle')
-              .attr('cx', (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25);
+            circleGroup.selectAll('circle').each(function () {
+              d3.select(this).attr(
+                'cx',
+                (time) => xScaleLinear(time as number) + CIRCLE_RADIUS * 0.25,
+              );
+            });
             observer.unobserve(entry.target);
           },
           {
             root: document.getElementById('timeline-wrapper'),
-            rootMargin: `${TRACK_HEIGHT * 64}px 0px`,
+            rootMargin: `
+            ${isBelowPrevScrollTop ? 0 : TRACK_HEIGHT * 20}px 0px
+            ${isBelowPrevScrollTop ? TRACK_HEIGHT * 20 : 0}px 0px
+            `,
           },
         );
         observer.observe(circleGroupNode);
       });
+      prevScrollTop.current = timelineWrapper.scrollTop;
     };
 
     d3.select(timelineWrapper).on('scroll', rescaleCircleX);
@@ -331,7 +187,16 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       <div className={cx('dopesheet-wrapper')} ref={dopeSheetRef}>
         {/* d3에 의해 x axis가 추가 될 자리 */}
         <div className={cx('circle-group-wrapper')}>
-          {/* d3에 의해 circle group들이 추가 될 자리 */}
+          {dopeSheetList?.map(
+            (dopeSheetData) =>
+              dopeSheetData.isClickedParentTrack && (
+                <CircleGroup
+                  key={dopeSheetData.trackIndex}
+                  dopeSheetData={dopeSheetData}
+                  xScale={xScale.current as d3ScaleLinear}
+                />
+              ),
+          )}
         </div>
       </div>
     </>

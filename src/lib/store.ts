@@ -75,7 +75,7 @@ export const TPUpdateDopeSheetList = (statusList: Partial<TPDopeSheet>[]) => {
   const nextState = produce<TPDopeSheet[]>(state, (draft) => {
     _.forEach(statusList, (status) => {
       const index = _.findIndex(draft, (dopeSheet) => dopeSheet.trackIndex === status.trackIndex);
-      draft[index].isClickedParentTrackArrowBtn = status.isClickedParentTrackArrowBtn as boolean;
+      draft[index].isClickedParentTrack = status.isClickedParentTrack as boolean;
     });
   });
   TPDopeSheetList(nextState);

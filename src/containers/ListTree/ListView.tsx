@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useMemo } from 'react';
+import { FunctionComponent, memo, useMemo, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useShortcut } from 'hooks/common/useShortcut';
 import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
@@ -8,8 +8,8 @@ import _ from 'lodash';
 import { fnFilterArrayByHierarchy } from 'utils/LP/fnFilterArrayByHierarchy';
 import { fnMakeSelection } from 'utils/LP/fnMakeSelection';
 import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';
-import { ListRow } from './ListRow';
 import * as S from './ListTreeStyles';
+import ListNode from './ListNode';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
 
@@ -63,7 +63,43 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
     result = fnMakeSelection({ data: result });
     return result;
   }, [mainData, searchWord]);
+
+  const handleDragStart = useCallback(
+    (key: string) => {
+      onDragStart({ key });
+    },
+    [onDragStart],
+  );
+
+  const handleDrop = useCallback(
+    (key: string) => {
+      onDrop({ key });
+    },
+    [onDrop],
+  );
+
   return (
+    <div className={cx('wrapper')}>
+      {_.map(processedData, (item, index) => {
+        const key = `${item.parentKey}_${item.name}_${index}`;
+        return (
+          <ListNode
+            key={key}
+            item={item}
+            onDragStart={handleDragStart}
+            onDragEnd={onDragEnd}
+            onDrop={handleDrop}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+export const ListView = memo(ListViewComponent);
+
+{
+  /* return (
     <div className={cx('wrapper')}>
       {_.map(processedData, (item, index) => (
         <S.ListViewRowWrapper
@@ -108,6 +144,5 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
         </S.ListViewRowWrapper>
       ))}
     </div>
-  );
-};
-export const ListView = memo(ListViewComponent);
+  ); */
+}
