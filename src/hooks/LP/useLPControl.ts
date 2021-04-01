@@ -10,19 +10,13 @@ import {
   MainDataType,
   MAINDATA_PROPERTY_TYPES,
 } from 'types';
-import {
-  storeContextMenuInfo,
-  storeCPData,
-  storeCPMode,
-  storeLPMode,
-  storeMainData,
-} from 'lib/store';
+import { storeContextMenuInfo, storeMainData } from 'lib/store';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
-import { CPModeType } from 'types/CP';
 import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
 import { ROOT_FOLDER_NAME } from 'types/LP';
+import { fnPasteFile } from 'utils/LP/fnPasteFile';
 
 interface useLPControlProps {
   mainData: MainDataType[];
@@ -104,21 +98,21 @@ export const useLPControl = ({
     [mainData],
   );
   const onCopy = useCallback(({ mainData }) => {
-    if (
-      !_.isEqual(
-        _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.type,
-        FILE_TYPES.folder,
-      )
-    ) {
-      storeMainData(
-        _.map(mainData, (item) => ({
-          ...item,
-          isCopied: item.isClicked,
-        })),
-      );
-    }
+    storeMainData(
+      _.map(mainData, (item) => ({
+        ...item,
+        isCopied: item.isClicked,
+      })),
+    );
   }, []);
   const onPaste = useCallback(() => {
+    const copiedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true]);
+    // 폴더의 경우 하위 depth 고려 별도 복사 로직 처리
+    if (_.isEqual(copiedRow?.type, FILE_TYPES.folder)) {
+      const newMainData = fnPasteFile({ mainData });
+      storeMainData(newMainData);
+      return;
+    }
     if (_.some(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])) {
       const newKey = uuidv4();
       let newMainData = _.concat(mainData, {
