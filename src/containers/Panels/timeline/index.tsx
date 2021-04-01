@@ -96,7 +96,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
     if (!baseLayer) return;
     // Summary, Base 트랙 status 추가
     const dopeSheetList: TPDopeSheet[] = [];
-    const times = _.map(_.fill(Array(baseLayer[0].times.length), 0), (time, index) => index + 1);
+    const times = _.map(_.fill(Array(baseLayer?.[0]?.times.length), 0), (time, index) => index + 1);
     let dopeSheetIndex = TP_TRACK_INDEX.SUMMARY;
     for (let index = 0; index < 2; index += 1) {
       dopeSheetList.push({
