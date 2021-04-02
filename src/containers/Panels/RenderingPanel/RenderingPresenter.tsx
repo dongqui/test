@@ -2,17 +2,17 @@ import { IconWrapper, SvgPath } from 'components/New_Icon';
 import _ from 'lodash';
 import React, { memo } from 'react';
 import classNames from 'classnames/bind';
-import styles from './index.module.scss';
+import styles from './RenderingPresenter.module.scss';
 
 const cx = classNames.bind(styles);
 
 export interface RenderingPresenterProps {
   id: string;
-  handleCameraReset: () => void;
+  onCameraReset: () => void;
 }
 
 const RenderingPresenter: React.FC<RenderingPresenterProps> = (props: RenderingPresenterProps) => {
-  const { id, handleCameraReset } = props;
+  const { id, onCameraReset } = props;
 
   return (
     <div className={cx('rendering-panel')}>
@@ -22,7 +22,7 @@ const RenderingPresenter: React.FC<RenderingPresenterProps> = (props: RenderingP
           className={cx('camera-reset')}
           icon={SvgPath.CameraReset}
           hasFrame={false}
-          onClick={handleCameraReset}
+          onClick={onCameraReset}
         />
       </div>
     </div>

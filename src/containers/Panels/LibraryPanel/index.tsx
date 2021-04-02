@@ -31,11 +31,12 @@ import { useDropzone } from 'react-dropzone';
 import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
 import * as S from './LibraryPanelStyles';
+import Breadcrumb from './Breadcrumb';
 import { ListView } from 'containers/ListTree/ListView';
-import { DEFAULT_MODEL_URL, INITIAL_CP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
+import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
 import * as api from 'utils/common/api';
-import { fnGetBaseLayerWithClip, fnGetNewLayer } from 'utils/TP/editingUtils';
+import { fnGetBaseLayerWithClip } from 'utils/TP/editingUtils';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import { Headline } from 'components/New_Typography';
 import Explorer from './Explorer/index';
@@ -289,8 +290,12 @@ const LibraryPanelComponent: FunctionComponent = () => {
               Library
             </Headline>
             <Explorer onChange={onChangeSearchText} />
-            <IconPage />
           </div>
+          {isIconView && (
+            <div className={cx('breadcrumb')}>
+              <Breadcrumb />
+            </div>
+          )}
           <div className={cx('content')}>
             {isIconView ? <IconView {...iconViewProps} /> : <ListView {...listViewProps} />}
           </div>

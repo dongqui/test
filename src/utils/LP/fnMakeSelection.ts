@@ -3,31 +3,49 @@ import _ from 'lodash';
 
 interface fnMakeSelectionProps {
   data: MainDataType[];
+  originalData: MainDataType[];
 }
-export const fnMakeSelection = ({ data }: fnMakeSelectionProps) => {
-  let result = _.clone(data);
-  let selectedRowKeys: string[] = [];
-  let visualizedRowKeys: string[] = [];
-  const clickedRow = _.find(result, [MAINDATA_PROPERTY_TYPES.isClicked, true]);
-  let key = _.isEqual(clickedRow?.type, FILE_TYPES.file) ? clickedRow?.key : clickedRow?.parentKey;
-  selectedRowKeys = _.concat(selectedRowKeys, key ?? '');
-  selectedRowKeys = _.concat(
-    selectedRowKeys,
-    _.map(_.filter(result, [MAINDATA_PROPERTY_TYPES.parentKey, key]), (item) => item.key),
-  );
-  const visualizedRow = _.find(result, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
-  key = _.isEqual(visualizedRow?.type, FILE_TYPES.file)
-    ? visualizedRow?.key
-    : visualizedRow?.parentKey;
-  visualizedRowKeys = _.concat(visualizedRowKeys, key ?? '');
-  visualizedRowKeys = _.concat(
-    visualizedRowKeys,
-    _.map(_.filter(result, [MAINDATA_PROPERTY_TYPES.parentKey, key]), (item) => item.key),
-  );
-  result = _.map(result, (item) => ({
-    ...item,
-    isSelected: _.includes(selectedRowKeys, item.key),
-    isVisualizeSelected: _.includes(visualizedRowKeys, item.key),
-  }));
+export const fnMakeSelection = ({ data, originalData }: fnMakeSelectionProps) => {
+  const result: MainDataType[] = [];
+  let isFirst = false;
+  let isLast = false;
+  let isSelected = false;
+  let isVisualizeSelected = false;
+  let depth = 0;
+  let clickedRow = _.find(data, [MAINDATA_PROPERTY_TYPES.isClicked, true]);
+  let visualizedRow = _.find(originalData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
+  do {
+    if (_.some(data, [MAINDATA_PROPERTY_TYPES.key, clickedRow?.parentKey])) {
+      clickedRow = _.find(data, [MAINDATA_PROPERTY_TYPES.key, clickedRow?.parentKey]);
+    }
+  } while (_.some(data, [MAINDATA_PROPERTY_TYPES.key, clickedRow?.parentKey]));
+  do {
+    if (_.some(originalData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])) {
+      visualizedRow = _.find(originalData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey]);
+    }
+  } while (_.some(originalData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey]));
+  _.forEach(data, (item, index) => {
+    isFirst = false;
+    isLast = false;
+    if (!_.some(data, [MAINDATA_PROPERTY_TYPES.key, item?.parentKey])) {
+      isFirst = true;
+      isLast = false;
+      if (_.isEqual(clickedRow?.key, item?.key)) {
+        isSelected = true;
+      }
+      if (_.isEqual(visualizedRow?.key, item?.key)) {
+        isVisualizeSelected = true;
+      }
+    }
+    if (!_.some(data, [MAINDATA_PROPERTY_TYPES.key, data?.[index + 1]?.parentKey])) {
+      isLast = true;
+    }
+    depth = (_.find(result, [MAINDATA_PROPERTY_TYPES.key, item?.parentKey])?.depth ?? 0) + 1;
+    result.push({ ...item, isFirst, isLast, depth, isSelected, isVisualizeSelected });
+    if (isLast) {
+      isSelected = false;
+      isVisualizeSelected = false;
+    }
+  });
   return result;
 };

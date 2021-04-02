@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import TrackList from './TrackList';
-import TimeFrameView from './TimeFrameView';
-import styles from './TimeLineWrapper.module.scss';
+import TrackList from '../TrackList';
+import TimeFrameView from '../TimeFrameView';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 

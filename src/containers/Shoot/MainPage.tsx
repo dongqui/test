@@ -67,10 +67,24 @@ const MainContainer: FunctionComponent = () => {
     return result;
   }, [mainData]);
   const handleDrop = useCallback(() => {
+    const draggingRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true]);
+    let visualizedKeys = draggingRow?.key;
+    if (_.isEqual(draggingRow?.type, FILE_TYPES.folder)) {
+      return;
+    }
+    if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
+      const defaultVisulizedMotionRow = _.find(mainData, [
+        MAINDATA_PROPERTY_TYPES.parentKey,
+        draggingRow?.key,
+      ]);
+      if (defaultVisulizedMotionRow) {
+        visualizedKeys = defaultVisulizedMotionRow?.key;
+      }
+    }
     storeMainData(
       _.map(mainData, (item) => ({
         ...item,
-        isVisualized: item.isDragging,
+        isVisualized: _.isEqual(visualizedKeys, item.key),
       })),
     );
   }, [mainData]);

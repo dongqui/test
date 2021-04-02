@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useMemo } from 'react';
+import { FunctionComponent, memo, useMemo, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useShortcut } from 'hooks/common/useShortcut';
 import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
@@ -8,8 +8,8 @@ import _ from 'lodash';
 import { fnFilterArrayByHierarchy } from 'utils/LP/fnFilterArrayByHierarchy';
 import { fnMakeSelection } from 'utils/LP/fnMakeSelection';
 import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';
-import { ListRow } from './ListRow';
 import * as S from './ListTreeStyles';
+import ListNode from './ListNode';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
 
@@ -42,7 +42,7 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    const result: MainDataType[] = [];
+    let result: MainDataType[] = [];
     let data = fnSortArrayByHierarchy({ data: mainData });
     if (!_.isEmpty(searchWord)) {
       data = fnFilterArrayByHierarchy({ data, searchWord });
@@ -51,7 +51,6 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
         parentKey: _.isEqual(item.type, FILE_TYPES.file) ? ROOT_FOLDER_NAME : item.parentKey,
       }));
     }
-    data = fnMakeSelection({ data });
     _.forEach(data, (item) => {
       if (_.isEqual(item.parentKey, ROOT_FOLDER_NAME)) {
         result.push(item);
@@ -61,10 +60,45 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
         result.push(item);
       }
     });
+    result = fnMakeSelection({ data: result, originalData: mainData });
     return result;
   }, [mainData, searchWord]);
 
+  const handleDragStart = useCallback(
+    (key: string) => {
+      onDragStart({ key });
+    },
+    [onDragStart],
+  );
+
+  const handleDrop = useCallback(
+    (key: string) => {
+      onDrop({ key });
+    },
+    [onDrop],
+  );
   return (
+    <div className={cx('wrapper')}>
+      {_.map(processedData, (item, index) => {
+        const key = `${item.parentKey}_${item.name}_${index}`;
+        return (
+          <ListNode
+            key={key}
+            item={item}
+            onDragStart={handleDragStart}
+            onDragEnd={onDragEnd}
+            onDrop={handleDrop}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+export const ListView = memo(ListViewComponent);
+
+{
+  /* return (
     <div className={cx('wrapper')}>
       {_.map(processedData, (item, index) => (
         <S.ListViewRowWrapper
@@ -89,7 +123,8 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
                   isSelected={item.isSelected}
                   isVisualizeSelected={item.isVisualizeSelected}
                   isVisualized={item.isVisualized}
-                  data={processedData}
+                  isFirst={item.isFirst}
+                  isLast={item.isLast}
                 />
               )}
             </>
@@ -101,12 +136,12 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
               isSelected={item.isSelected}
               isVisualizeSelected={item.isVisualizeSelected}
               isVisualized={item.isVisualized}
-              data={processedData}
+              isFirst={item.isFirst}
+              isLast={item.isLast}
             />
           )}
         </S.ListViewRowWrapper>
       ))}
     </div>
-  );
-};
-export const ListView = memo(ListViewComponent);
+  ); */
+}

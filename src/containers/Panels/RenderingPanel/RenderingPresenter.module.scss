@@ -1,3 +1,6 @@
+@import 'styles/libraries/_responsive';
+@import 'styles/libraries/_colors';
+
 .rendering-panel {
   width: 100%;
   height: 100%;
@@ -16,10 +19,14 @@
   border-radius: 5px;
   width: 36px;
   height: 36px;
-  background-color: rgba($color: #000000, $alpha: 0.2);
+  background-color: rgba($color: #000, $alpha: 0.2);
   display: flex;
   justify-content: center;
   align-items: center;
+
+  @include media("<=md") {
+    display: none;
+  }
 }
 
 .camera-reset {
@@ -28,7 +35,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
+  &:focus {
+    border: 0;
+  }
+
   & > svg {
+    color: $gray200;
     width: 32px;
     height: 32px;
   }
