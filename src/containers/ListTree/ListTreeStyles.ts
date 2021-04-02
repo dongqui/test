@@ -27,7 +27,7 @@ const FONT_SIZE = rem(12);
 export const ListRowWrapper = styled.div<ListRowWrapperProps>`
   width: ${rem(206)}rem;
   height: ${rem(32)}rem;
-  background-color: ${BACKGROUND_COLOR};
+  /* background-color: ${BACKGROUND_COLOR}; */
   display: flex;
   flex-direction: row;
   align-items: center;

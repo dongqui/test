@@ -1,7 +1,7 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { PlayBox, PlayBoxProps } from 'containers/PlayBar/PlayBox';
+import { PlayBox, PlayBoxProps } from 'containers/MiddleBar/PlayBox';
 
 export default {
   title: 'Component API/Container/PlayBar/PlayBox',

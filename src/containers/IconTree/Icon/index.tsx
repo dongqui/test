@@ -1,4 +1,14 @@
-import { FunctionComponent, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
+import {
+  FunctionComponent,
+  Fragment,
+  memo,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  MutableRefObject,
+} from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
@@ -20,7 +30,8 @@ export interface IconProps {
 const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
   const mainData = useReactiveVar(storeMainData);
   const pages = useReactiveVar(storePages);
-  const [value, setValue] = useState('');
+  const [isModifyingStart, setIsModdifyingStart] = useState(false);
+  const inputRef = useRef<HTMLInputElement>() as MutableRefObject<HTMLInputElement>;
   const fileType = useMemo(
     () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
     [rowKey, mainData],
@@ -68,6 +79,14 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
       );
     }
   }, [rowKey, mainData, pages]);
+  const handleFocus = useCallback(
+    (e) => {
+      if (isModifyingStart) {
+        e.target.select();
+      }
+    },
+    [isModifyingStart],
+  );
   const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
     mainData,
     rowKey,
@@ -77,7 +96,11 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
     editing: isModifying,
     dragging: isDragging,
   });
-
+  useEffect(() => {
+    if (!isModifyingStart) {
+      setIsModdifyingStart(true);
+    }
+  }, [isModifying, isModifyingStart]);
   return (
     <Fragment>
       <div
@@ -103,8 +126,9 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
         <BaseInput
           className={cx('input-name')}
           value={fileName}
+          innerRef={inputRef}
           autoFocus
-          // onFocus={(e) => e.target.select()}
+          onFocus={handleFocus}
           onChange={onChangeInput}
           onBlur={onBlur}
         />

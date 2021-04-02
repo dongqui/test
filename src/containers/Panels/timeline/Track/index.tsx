@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
@@ -28,6 +28,9 @@ const Track: React.FC<TrackProps> = ({
   const [toggleArrowButton, setToggleArrowButton] = useState(false); // 화살표 토글 버튼(true면 하위 트랙 open)
   const lastBoneTrackIndexList = useReactiveVar(TPLastBoneTrackIndexList);
 
+  // 트랙 클릭
+  const clickTrackBody = useCallback(() => {}, []);
+
   // 화살표 버튼 클릭
   const clickToggleArrowButton = useCallback(() => {
     const remainder = trackIndex % 10;
@@ -38,9 +41,9 @@ const Track: React.FC<TrackProps> = ({
         case TP_TRACK_INDEX.SUMMARY: {
           updatedTrackList.push({
             trackIndex: trackIndex + 1,
-            isClickedParentTrackArrowBtn: !prev,
+            isClickedParentTrack: !prev,
           });
-          TPUpdateDopeSheetList(updatedTrackList);
+          TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isClickedParentTrack' });
           return !prev;
         }
         // Layer 트랙 화살표 클릭
@@ -50,11 +53,10 @@ const Track: React.FC<TrackProps> = ({
             lastBoneTrackIndexList,
             (lastBoneTrackIndex) => lastBoneTrackIndex.layerIdnex === trackIndex,
           );
-          console.log('clickedLayerIndex', clickedLayerIndex);
           while (boneTrackIndex <= lastBoneTrackIndexList[0].lastBoneTrackIndex) {
             updatedTrackList.push({
               trackIndex: boneTrackIndex,
-              isClickedParentTrackArrowBtn: !prev,
+              isClickedParentTrack: !prev,
             });
             if (boneTrackIndex % 10 === TP_TRACK_INDEX.BONE_A) {
               boneTrackIndex += 4; // 3 -> 7
@@ -62,7 +64,7 @@ const Track: React.FC<TrackProps> = ({
               boneTrackIndex += 6; // 7 -> 3
             }
           }
-          TPUpdateDopeSheetList(updatedTrackList);
+          TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isClickedParentTrack' });
           return !prev;
         }
         // Bone 트랙 화살표 클릭
@@ -75,10 +77,10 @@ const Track: React.FC<TrackProps> = ({
           ) {
             updatedTrackList.push({
               trackIndex: transformIndex + 1,
-              isClickedParentTrackArrowBtn: !prev,
+              isClickedParentTrack: !prev,
             });
           }
-          TPUpdateDopeSheetList(updatedTrackList);
+          TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isClickedParentTrack' });
           return !prev;
         }
         default: {
@@ -101,7 +103,11 @@ const Track: React.FC<TrackProps> = ({
   return (
     <>
       <div className={cx('track-wrapper')} onContextMenu={clickRightMouse}>
-        <div className={cx('track-body')} style={{ paddingLeft: `${paddingLeft}px` }}>
+        <button
+          className={cx('track-body')}
+          style={{ paddingLeft: `${paddingLeft}px` }}
+          onClick={clickTrackBody}
+        >
           {childrenTrackList.length && (
             <button
               className={cx('track-button', 'arrow-button', { opened: toggleArrowButton })}
@@ -116,7 +122,7 @@ const Track: React.FC<TrackProps> = ({
               아이콘 3종 적용
              */}
           </div>
-        </div>
+        </button>
         <div
           className={cx('children-track-list')}
           style={{ display: toggleArrowButton ? 'block' : 'none' }}
@@ -140,4 +146,4 @@ const Track: React.FC<TrackProps> = ({
   );
 };
 
-export default Track;
+export default memo(Track);

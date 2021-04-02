@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import { TPDefaultTrackNameList, TPDopeSheetList, TPLastBoneTrackIndexList } from 'lib/store';
+import { TPTrackNameList, TPDopeSheetList, TPLastBoneTrackIndexList } from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
 import { TPTrackName, TPDopeSheet, TPLastBoneTrackIndex } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
-import { PlayBar } from 'containers/PlayBar';
+import { fnGetSummaryTimes, fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
+import MiddleBar from 'containers/MiddleBar';
 import { ShootLayerType, ShootTrackType } from 'types';
 
 const cx = classNames.bind(styles);
@@ -87,7 +88,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
       if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2; // 11 -> 13, 21 -> 23
     }
 
-    TPDefaultTrackNameList(trackNameList);
+    TPTrackNameList(trackNameList);
     TPLastBoneTrackIndexList([lastBoneIndexList]);
   }, [baseLayer]);
 
@@ -96,7 +97,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
     if (!baseLayer) return;
     // Summary, Base 트랙 status 추가
     const dopeSheetList: TPDopeSheet[] = [];
-    const times = _.map(_.fill(Array(baseLayer[0].times.length), 0), (time, index) => index + 1);
+    const times = _.map(_.fill(Array(baseLayer?.[0]?.times.length), 0), (time, index) => index + 1);
     let dopeSheetIndex = TP_TRACK_INDEX.SUMMARY;
     for (let index = 0; index < 2; index += 1) {
       dopeSheetList.push({
@@ -104,9 +105,9 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         isLocked: false,
         isExcludedRendering: false,
         isFiltered: true,
-        isClickedParentTrackArrowBtn: false,
+        isClickedParentTrack: index === 1 ? false : true,
         trackIndex: dopeSheetIndex,
-        times, // summary, layer track 타이머 구하는 함수 받으면 교체 예정
+        times: baseLayer[index].times, // summary, layer track 타이머 구하는 함수 받으면 교체 예정
       });
       dopeSheetIndex += 1;
     }
@@ -115,10 +116,6 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
     const moveNextBoneIndex = TP_TRACK_INDEX.BONE_A; // 3
     for (let boneIndex = 0; boneIndex < baseLayer.length; boneIndex += moveNextBoneIndex) {
       const currnetBoneTrack = baseLayer[boneIndex];
-      const times = _.map(
-        _.fill(Array(currnetBoneTrack.times.length), 0),
-        (time, index) => index + 1,
-      );
 
       // Bone track status 추가
       dopeSheetList.push({
@@ -126,9 +123,9 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         isLocked: false,
         isExcludedRendering: false,
         isFiltered: true,
-        isClickedParentTrackArrowBtn: false,
+        isClickedParentTrack: false,
         trackIndex: dopeSheetIndex,
-        times,
+        times: currnetBoneTrack.times,
       });
       dopeSheetIndex += 1;
 
@@ -154,9 +151,9 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
           isLocked: false,
           isExcludedRendering: false,
           isFiltered: true,
-          isClickedParentTrackArrowBtn: false,
+          isClickedParentTrack: false,
           trackIndex: dopeSheetIndex,
-          times,
+          times: currnetBoneTrack.times,
           x,
           y,
           z,
@@ -171,7 +168,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
   return (
     <>
       <div className={cx('timeline-panel')}>
-        <PlayBar />
+        <MiddleBar />
         <TimelineWrapper />
       </div>
     </>

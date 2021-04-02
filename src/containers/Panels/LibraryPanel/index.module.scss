@@ -22,6 +22,10 @@
   height: 100%;
 }
 
+.header {
+  margin-bottom: 8px;
+}
+
 .content {
   flex-basis: 100%;
   overflow-y: auto;
@@ -35,6 +39,10 @@
 
 .title {
   color: white;
+}
+
+.breadcrumb {
+  margin-bottom: 8px;
 }
 
 .loading {

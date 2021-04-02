@@ -10,29 +10,27 @@ import {
   MainDataType,
   MAINDATA_PROPERTY_TYPES,
 } from 'types';
-import {
-  storeContextMenuInfo,
-  storeCPData,
-  storeCPMode,
-  storeLPMode,
-  storeMainData,
-} from 'lib/store';
+import { storeContextMenuInfo, storeMainData } from 'lib/store';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
-import { CPModeType } from 'types/CP';
+import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
+import { ROOT_FOLDER_NAME } from 'types/LP';
+import { fnPasteFile } from 'utils/LP/fnPasteFile';
 
 interface useLPControlProps {
   mainData: MainDataType[];
   pages: PagesType[];
   contextmenuInfo: ContextmenuType;
   searchWord: string;
+  lpmode: LPModeType;
 }
 export const useLPControl = ({
   mainData,
   pages,
   contextmenuInfo,
   searchWord,
+  lpmode,
 }: useLPControlProps) => {
   const onClick = useCallback(
     (e) => {
@@ -69,14 +67,25 @@ export const useLPControl = ({
   );
   const onDrop = useCallback(
     ({ key }) => {
-      if (
-        _.isEqual(
-          _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true])?.type,
-          FILE_TYPES.motion,
-        ) &&
-        _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, key])?.type, FILE_TYPES.file)
-      ) {
-        // storeCPMode(CPModeType.retarget);
+      const draggingRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true]);
+      const targetRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, key]);
+      if (_.isEqual(draggingRow?.key, targetRow?.key)) {
+        return;
+      }
+      if (_.isEqual(draggingRow?.type, FILE_TYPES.motion)) {
+        if (!_.isEqual(targetRow?.type, FILE_TYPES.file)) {
+          return;
+        }
+      }
+      if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
+        if (!_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
+          return;
+        }
+      }
+      if (_.isEqual(draggingRow?.type, FILE_TYPES.folder)) {
+        if (!_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
+          return;
+        }
       }
       storeMainData(
         _.map(mainData, (item) => ({
@@ -89,21 +98,21 @@ export const useLPControl = ({
     [mainData],
   );
   const onCopy = useCallback(({ mainData }) => {
-    if (
-      !_.isEqual(
-        _.find(mainData, [MAINDATA_PROPERTY_TYPES.isClicked, true])?.type,
-        FILE_TYPES.folder,
-      )
-    ) {
-      storeMainData(
-        _.map(mainData, (item) => ({
-          ...item,
-          isCopied: item.isClicked,
-        })),
-      );
-    }
+    storeMainData(
+      _.map(mainData, (item) => ({
+        ...item,
+        isCopied: item.isClicked,
+      })),
+    );
   }, []);
   const onPaste = useCallback(() => {
+    const copiedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true]);
+    // 폴더의 경우 하위 depth 고려 별도 복사 로직 처리
+    if (_.isEqual(copiedRow?.type, FILE_TYPES.folder)) {
+      const newMainData = fnPasteFile({ mainData });
+      storeMainData(newMainData);
+      return;
+    }
     if (_.some(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])) {
       const newKey = uuidv4();
       let newMainData = _.concat(mainData, {
@@ -193,12 +202,21 @@ export const useLPControl = ({
       }
       if (
         _.isEqual(
+          _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, _.last(pages)?.key])?.type,
+          FILE_TYPES.file,
+        ) &&
+        _.isEqual(lpmode, LPModeType.iconview)
+      ) {
+        data = [{ key: '6', value: 'Add motion' }];
+      }
+      if (
+        _.isEqual(
           _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
           FILE_TYPES.motion,
         )
       ) {
         data = [
-          { key: '1', value: 'Copy' },
+          { key: '7', value: 'Duplicate' },
           { key: '2', value: 'Delete' },
           { key: '4', value: 'Visualization' },
           { key: '5', value: 'Edit name' },
@@ -212,14 +230,21 @@ export const useLPControl = ({
         onClick: (key, value) => {
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
           let content = '';
+          let motion: MainDataType | undefined;
           switch (key) {
             case '0':
               storeMainData(
                 _.concat(mainData, {
                   key: uuidv4(),
                   type: FILE_TYPES.folder,
-                  name: 'Folder',
-                  parentKey: _.last(pages)?.key,
+                  name: fnGetFileName({
+                    key: '',
+                    name: 'Folder',
+                    mainData,
+                  }),
+                  parentKey: _.isEqual(lpmode, LPModeType.iconview)
+                    ? _.last(pages)?.key
+                    : ROOT_FOLDER_NAME,
                   isModifying: true,
                 }),
               );
@@ -279,27 +304,36 @@ export const useLPControl = ({
               onEdit({ mainData: newMainData });
               break;
             case '6':
-              if (
-                _.isEqual(
-                  _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
-                  FILE_TYPES.file,
-                )
-              ) {
-                const motion: MainDataType | undefined = _.find(mainData, [
-                  MAINDATA_PROPERTY_TYPES.parentKey,
-                  targetIcon?.id,
-                ]);
-                if (motion) {
-                  storeMainData(
-                    _.concat(mainData, {
-                      ...motion,
-                      key: uuidv4(),
-                      name: 'empty motion',
-                      baseLayer: [],
-                      layers: [],
+              motion = {
+                key: uuidv4(),
+                name: fnGetFileName({
+                  key: '',
+                  name: 'empty motion',
+                  mainData,
+                }),
+                isVisualized: false,
+                baseLayer: fnGetBaseLayerWithBoneNames({ boneNames: motion?.boneNames ?? [] }),
+                layers: [],
+                type: FILE_TYPES.motion,
+                parentKey: targetIcon?.id || _.last(pages)?.key,
+              };
+              storeMainData(_.concat(mainData, motion));
+              break;
+            case '7':
+              motion = _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, targetIcon?.id]);
+              if (motion) {
+                storeMainData(
+                  _.concat(mainData, {
+                    ...motion,
+                    key: uuidv4(),
+                    name: fnGetFileName({
+                      key: '',
+                      name: motion?.name,
+                      mainData,
                     }),
-                  );
-                }
+                    isVisualized: false,
+                  }),
+                );
               }
               break;
             default:
@@ -308,7 +342,7 @@ export const useLPControl = ({
         },
       });
     },
-    [contextmenuInfo, mainData, onCopy, onEdit, onPaste, pages],
+    [contextmenuInfo, lpmode, mainData, onCopy, onEdit, onPaste, pages],
   );
   const shortcutData = useMemo(
     () => [
