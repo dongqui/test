@@ -1,3 +1,10 @@
+export type TPDopeSheetStatus =
+  | 'isSelected'
+  | 'isLocked'
+  | 'isExcludedRendering'
+  | 'isClickedParentTrack'
+  | 'isFiltered';
+
 export interface TPTrackName {
   childrenTrackList: TPTrackName[]; // 하위 트랙 리스트
   isOpenedChildrenTrack: boolean; // 트랙 생성 시 하위 트랙을 펼친 상태로 출력여부(true면 펼친 상태로 출력)
@@ -21,4 +28,9 @@ export interface TPDopeSheet {
 export interface TPLastBoneTrackIndex {
   layerIdnex: number;
   lastBoneTrackIndex: number;
+}
+
+export interface TPUpdateDopeSheet {
+  updatedList: Partial<TPDopeSheet>[];
+  status: TPDopeSheetStatus;
 }

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import { TPDefaultTrackNameList, TPDopeSheetList, TPLastBoneTrackIndexList } from 'lib/store';
+import { TPTrackNameList, TPDopeSheetList, TPLastBoneTrackIndexList } from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
 import { TPTrackName, TPDopeSheet, TPLastBoneTrackIndex } from 'types/TP';
@@ -88,7 +88,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
       if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2; // 11 -> 13, 21 -> 23
     }
 
-    TPDefaultTrackNameList(trackNameList);
+    TPTrackNameList(trackNameList);
     TPLastBoneTrackIndexList([lastBoneIndexList]);
   }, [baseLayer]);
 
