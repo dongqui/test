@@ -46,13 +46,15 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
     storeMainData(
       _.map(mainData, (item) => ({
         ...item,
-        // !_.isEqual(mode, FILE_TYPES.motion) &&
         isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
         isClicked: _.isEqual(rowKey, item.key),
-        isVisualized: isVisualizeSelected ? _.isEqual(item.key, rowKey) : item.isVisualized,
+        isVisualized:
+          isVisualizeSelected && _.isEqual(mode, FILE_TYPES.motion)
+            ? _.isEqual(item.key, rowKey)
+            : item.isVisualized,
       })),
     );
-  }, [isVisualizeSelected, mainData, rowKey]);
+  }, [isVisualizeSelected, mainData, mode, rowKey]);
 
   const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
     mainData,

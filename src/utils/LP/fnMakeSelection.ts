@@ -3,44 +3,49 @@ import _ from 'lodash';
 
 interface fnMakeSelectionProps {
   data: MainDataType[];
+  originalData: MainDataType[];
 }
-export const fnMakeSelection = ({ data }: fnMakeSelectionProps) => {
-  let result: MainDataType[] = [];
+export const fnMakeSelection = ({ data, originalData }: fnMakeSelectionProps) => {
+  const result: MainDataType[] = [];
   let isFirst = false;
   let isLast = false;
+  let isSelected = false;
+  let isVisualizeSelected = false;
   let depth = 0;
+  let clickedRow = _.find(data, [MAINDATA_PROPERTY_TYPES.isClicked, true]);
+  let visualizedRow = _.find(originalData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
+  do {
+    if (_.some(data, [MAINDATA_PROPERTY_TYPES.key, clickedRow?.parentKey])) {
+      clickedRow = _.find(data, [MAINDATA_PROPERTY_TYPES.key, clickedRow?.parentKey]);
+    }
+  } while (_.some(data, [MAINDATA_PROPERTY_TYPES.key, clickedRow?.parentKey]));
+  do {
+    if (_.some(originalData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])) {
+      visualizedRow = _.find(originalData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey]);
+    }
+  } while (_.some(originalData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey]));
   _.forEach(data, (item, index) => {
-    if (_.isEqual(item.type, FILE_TYPES.file)) {
+    isFirst = false;
+    isLast = false;
+    if (!_.some(data, [MAINDATA_PROPERTY_TYPES.key, item?.parentKey])) {
       isFirst = true;
       isLast = false;
+      if (_.isEqual(clickedRow?.key, item?.key)) {
+        isSelected = true;
+      }
+      if (_.isEqual(visualizedRow?.key, item?.key)) {
+        isVisualizeSelected = true;
+      }
     }
-    if (_.isEqual(item.type, FILE_TYPES.motion)) {
-      isFirst = false;
-      isLast = false;
-    }
-    if (
-      _.isEqual(data?.[index + 1]?.type, FILE_TYPES.folder) ||
-      _.isEqual(data?.[index + 1]?.type, FILE_TYPES.file) ||
-      _.isEqual(index, _.size(data) - 1)
-    ) {
+    if (!_.some(data, [MAINDATA_PROPERTY_TYPES.key, data?.[index + 1]?.parentKey])) {
       isLast = true;
     }
     depth = (_.find(result, [MAINDATA_PROPERTY_TYPES.key, item?.parentKey])?.depth ?? 0) + 1;
-    result.push({ ...item, isFirst, isLast, depth });
+    result.push({ ...item, isFirst, isLast, depth, isSelected, isVisualizeSelected });
+    if (isLast) {
+      isSelected = false;
+      isVisualizeSelected = false;
+    }
   });
-  let clickedRow = _.find(result, [MAINDATA_PROPERTY_TYPES.isClicked, true]);
-  let visualizedRow = _.find(result, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
-  if (_.isEqual(clickedRow?.type, FILE_TYPES.motion)) {
-    clickedRow = _.find(result, [MAINDATA_PROPERTY_TYPES.key, clickedRow?.parentKey]);
-  }
-  if (_.isEqual(visualizedRow?.type, FILE_TYPES.motion)) {
-    visualizedRow = _.find(result, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey]);
-  }
-  result = _.map(result, (item) => ({
-    ...item,
-    isSelected: _.isEqual(item.key, clickedRow?.key) || _.isEqual(item.parentKey, clickedRow?.key),
-    isVisualizeSelected:
-      _.isEqual(item.key, visualizedRow?.key) || _.isEqual(item.parentKey, visualizedRow?.key),
-  }));
   return result;
 };
