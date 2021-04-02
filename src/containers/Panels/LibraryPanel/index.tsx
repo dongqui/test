@@ -30,6 +30,8 @@ import _ from 'lodash';
 import { useDropzone } from 'react-dropzone';
 import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
+import * as S from './LibraryPanelStyles';
+import Breadcrumb from './Breadcrumb';
 import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
@@ -278,6 +280,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     onDrop: handleDrop,
     shortcutData,
   };
+
   return (
     <div className={cx('hidden-wrapper')} ref={panelWrapperRef}>
       <div className={cx('wrapper')} {...getRootProps()}>
@@ -287,8 +290,12 @@ const LibraryPanelComponent: FunctionComponent = () => {
               Library
             </Headline>
             <Explorer onChange={onChangeSearchText} />
-            <IconPage />
           </div>
+          {isIconView && (
+            <div className={cx('breadcrumb')}>
+              <Breadcrumb />
+            </div>
+          )}
           <div className={cx('content')}>
             {isIconView ? <IconView {...iconViewProps} /> : <ListView {...listViewProps} />}
           </div>

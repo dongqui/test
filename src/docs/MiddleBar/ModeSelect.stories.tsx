@@ -1,7 +1,7 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { ModeSelect, ModeSelectProps } from 'containers/PlayBar/ModeSelect';
+import { ModeSelect, ModeSelectProps } from 'containers/MiddleBar/ModeSelect';
 
 export default {
   title: 'Component API/Container/PlayBar/ModeSelect',

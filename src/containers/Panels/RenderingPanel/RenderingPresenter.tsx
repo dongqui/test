@@ -8,11 +8,11 @@ const cx = classNames.bind(styles);
 
 export interface RenderingPresenterProps {
   id: string;
-  handleCameraReset: () => void;
+  onCameraReset: () => void;
 }
 
 const RenderingPresenter: React.FC<RenderingPresenterProps> = (props: RenderingPresenterProps) => {
-  const { id, handleCameraReset } = props;
+  const { id, onCameraReset } = props;
 
   return (
     <div className={cx('rendering-panel')}>
@@ -22,7 +22,7 @@ const RenderingPresenter: React.FC<RenderingPresenterProps> = (props: RenderingP
           className={cx('camera-reset')}
           icon={SvgPath.CameraReset}
           hasFrame={false}
-          onClick={handleCameraReset}
+          onClick={onCameraReset}
         />
       </div>
     </div>

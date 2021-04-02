@@ -1,16 +1,16 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { PlayBar, PlayBarProps } from 'containers/PlayBar';
+import MiddleBar, { Props } from 'containers/MiddleBar';
 
 export default {
   title: 'Component API/Container/PlayBar/PlayBar',
-  component: PlayBar,
+  component: MiddleBar,
   args: {},
 } as Meta;
 
-const Template: Story<PlayBarProps> = (args) => {
-  return <PlayBar {...args} />;
+const Template: Story<Props> = (args) => {
+  return <MiddleBar {...args} />;
 };
 
 export const Default = Template.bind({});

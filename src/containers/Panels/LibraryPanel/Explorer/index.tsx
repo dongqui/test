@@ -7,9 +7,9 @@ import { storeLPMode, storeMainData, storePages } from 'lib/store';
 import { v4 as uuidv4 } from 'uuid';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
 import _ from 'lodash';
+import { ROOT_FOLDER_NAME } from 'types/LP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { ROOT_FOLDER_NAME } from 'types/LP';
 
 const cx = classNames.bind(styles);
 

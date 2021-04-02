@@ -1,7 +1,7 @@
+import { FunctionComponent, memo } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { storeAnimatingData } from 'lib/store';
 import _ from 'lodash';
-import React from 'react';
 import { Dropdown } from './Dropdown';
 import { Indicator } from './Indicator';
 import { LayerSelect } from './LayerSelect';
@@ -9,9 +9,9 @@ import { ModeSelect } from './ModeSelect';
 import * as S from './PlayBarStyles';
 import { PlayBox } from './PlayBox';
 
-export interface PlayBarProps {}
+export interface Props {}
 
-const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
+const MiddleBar: FunctionComponent<Props> = ({}) => {
   const animatingData = useReactiveVar(storeAnimatingData);
 
   return (
@@ -94,4 +94,5 @@ const PlayBarComponent: React.FC<PlayBarProps> = ({}) => {
     </S.PlayBarWrapper>
   );
 };
-export const PlayBar = React.memo(PlayBarComponent);
+
+export default memo(MiddleBar);

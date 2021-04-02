@@ -1,8 +1,8 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { ModeSelect, ModeSelectProps } from 'containers/PlayBar/ModeSelect';
-import { LayerSelect, LayerSelectProps } from 'containers/PlayBar/LayerSelect';
+import { ModeSelect, ModeSelectProps } from 'containers/MiddleBar/ModeSelect';
+import { LayerSelect, LayerSelectProps } from 'containers/MiddleBar/LayerSelect';
 
 export default {
   title: 'Component API/Container/PlayBar/LayerSelect',
