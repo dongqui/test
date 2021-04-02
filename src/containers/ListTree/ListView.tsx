@@ -60,7 +60,7 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
         result.push(item);
       }
     });
-    result = fnMakeSelection({ data: result });
+    result = fnMakeSelection({ data: result, originalData: mainData });
     return result;
   }, [mainData, searchWord]);
 
@@ -77,7 +77,6 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
     },
     [onDrop],
   );
-
   return (
     <div className={cx('wrapper')}>
       {_.map(processedData, (item, index) => {
