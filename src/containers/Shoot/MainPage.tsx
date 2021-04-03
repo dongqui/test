@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { FunctionComponent, memo, useCallback, useMemo } from 'react';
 import _ from 'lodash';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';

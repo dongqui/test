@@ -360,14 +360,14 @@ export const useLPControl = ({
           onPaste();
         },
       },
-      {
-        key: 'Enter',
-        event: () => {
-          onEdit({ mainData });
-        },
-      },
+      // {
+      //   key: 'Enter',
+      //   event: () => {
+      //     onEdit({ mainData });
+      //   },
+      // },
     ],
-    [mainData, onCopy, onEdit, onPaste],
+    [mainData, onCopy, onPaste],
   );
   const getFilteredData = useCallback(
     ({ data }) => {
