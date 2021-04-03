@@ -1,9 +1,5 @@
 import { FunctionComponent, memo, Fragment, useCallback, useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { ArrowDownIcon } from 'components/Icons/generated2/ArrowDownIcon';
-import { ArrowRightIcon } from 'components/Icons/generated2/ArrowRightIcon';
-import { ModelIcon } from 'components/Icons/generated2/ModelIcon';
-import { MotionIcon } from 'components/Icons/generated2/MotionIcon';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
@@ -56,7 +52,15 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
     );
   }, [isVisualizeSelected, mainData, mode, rowKey]);
 
-  const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
+  const {
+    fileName,
+    isModifying,
+    onBlur,
+    onChangeInput,
+    name,
+    handleKeyDown,
+    handleFocus,
+  } = useLPRowControl({
     mainData,
     rowKey,
   });
@@ -114,11 +118,12 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
             {isModifying ? (
               <BaseInput
                 className={cx('input-name')}
-                value={fileName}
+                value={name}
                 autoFocus
-                // onFocus={(e) => e.target.select()}
+                onFocus={handleFocus}
                 onChange={onChangeInput}
                 onBlur={onBlur}
+                onKeyDown={handleKeyDown}
               />
             ) : (
               <div className={cx('name')}>{fileName}</div>
@@ -140,11 +145,12 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
             {isModifying ? (
               <BaseInput
                 className={cx('input-name')}
-                value={fileName}
+                value={name}
                 autoFocus
-                // onFocus={(e) => e.target.select()}
+                onFocus={handleFocus}
                 onChange={onChangeInput}
                 onBlur={onBlur}
+                onKeyDown={handleKeyDown}
               />
             ) : (
               <div className={cx('name')}>{fileName}</div>
@@ -166,11 +172,12 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
             {isModifying ? (
               <BaseInput
                 className={cx('input-name')}
-                value={fileName}
+                value={name}
                 autoFocus
-                // onFocus={(e) => e.target.select()}
+                onFocus={handleFocus}
                 onChange={onChangeInput}
                 onBlur={onBlur}
+                onKeyDown={handleKeyDown}
               />
             ) : (
               <div className={cx('name')}>{fileName}</div>
@@ -178,88 +185,6 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
           </div>
         </div>
       )}
-      {/* {_.isEqual(mode, FILE_TYPES.folder) && (
-        <S.ListRowWrapper
-          isVisualized={isVisualized}
-          isVisualizeSelected={isVisualizeSelected}
-          onClick={onClick}
-        >
-          <IconWrapper className={folderArrowClasses} icon={SvgPath.FilledArrow} hasFrame={false} />
-          {isModifying ? (
-            <S.ListRowInput
-              value={fileName}
-              autoFocus
-              // onFocus={(e) => e.target.select()}
-              onChange={onChangeInput}
-              onBlur={onBlur}
-            ></S.ListRowInput>
-          ) : (
-            <S.ListRowText marginLeft={rem(6)}>{filteredFileName}</S.ListRowText>
-          )}
-        </S.ListRowWrapper>
-      )}
-      {_.isEqual(mode, FILE_TYPES.file) && (
-        <S.ListRowWrapper
-          isVisualized={isVisualized}
-          isVisualizeSelected={isVisualizeSelected}
-          isSelected={isSelected}
-          isClicked={isClicked}
-          isFirst={isFirst}
-          isLast={isLast}
-          paddingLeft={rem(10)}
-          onClick={onClick}
-        >
-          {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isExpanded ? (
-            <S.ArrowWrapper>
-              <ArrowDownIcon />
-            </S.ArrowWrapper>
-          ) : (
-            <S.ArrowWrapper>
-              <ArrowRightIcon />
-            </S.ArrowWrapper>
-          )}
-          <S.ModelIconWrapper>
-            <ModelIcon />
-          </S.ModelIconWrapper>
-          {isModifying ? (
-            <S.ListRowInput
-              value={fileName}
-              autoFocus
-              // onFocus={(e) => e.target.select()}
-              onChange={onChangeInput}
-              onBlur={onBlur}
-            ></S.ListRowInput>
-          ) : (
-            <S.ListRowText marginLeft={rem(11)}>{filteredFileName}</S.ListRowText>
-          )}
-        </S.ListRowWrapper>
-      )}
-      {_.isEqual(mode, FILE_TYPES.motion) && (
-        <S.ListRowWrapper
-          isVisualized={isVisualized}
-          isVisualizeSelected={isVisualizeSelected}
-          isSelected={isSelected}
-          isClicked={isClicked}
-          isFirst={isFirst}
-          isLast={isLast}
-          onClick={onClick}
-        >
-          <S.MotionIconWrapper>
-            <MotionIcon />
-          </S.MotionIconWrapper>
-          {isModifying ? (
-            <S.ListRowInput
-              value={fileName}
-              autoFocus
-              // onFocus={(e) => e.target.select()}
-              onChange={onChangeInput}
-              onBlur={onBlur}
-            ></S.ListRowInput>
-          ) : (
-            <S.ListRowText marginLeft={rem(6)}>{filteredFileName}</S.ListRowText>
-          )}
-        </S.ListRowWrapper>
-      )} */}
     </Fragment>
   );
 };

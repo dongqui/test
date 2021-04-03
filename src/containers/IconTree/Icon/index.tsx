@@ -30,7 +30,6 @@ export interface IconProps {
 const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
   const mainData = useReactiveVar(storeMainData);
   const pages = useReactiveVar(storePages);
-  const [isModifyingStart, setIsModdifyingStart] = useState(false);
   const inputRef = useRef<HTMLInputElement>() as MutableRefObject<HTMLInputElement>;
   const fileType = useMemo(
     () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
@@ -79,15 +78,16 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
       );
     }
   }, [rowKey, mainData, pages]);
-  const handleFocus = useCallback(
-    (e) => {
-      if (isModifyingStart) {
-        e.target.select();
-      }
-    },
-    [isModifyingStart],
-  );
-  const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
+  const {
+    fileName,
+    filteredFileName,
+    isModifying,
+    onBlur,
+    onChangeInput,
+    name,
+    handleKeyDown,
+    handleFocus,
+  } = useLPRowControl({
     mainData,
     rowKey,
   });
@@ -96,11 +96,6 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
     editing: isModifying,
     dragging: isDragging,
   });
-  useEffect(() => {
-    if (!isModifyingStart) {
-      setIsModdifyingStart(true);
-    }
-  }, [isModifying, isModifyingStart]);
   return (
     <Fragment>
       <div
@@ -125,50 +120,18 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
       {isModifying ? (
         <BaseInput
           className={cx('input-name')}
-          value={fileName}
+          value={name}
           innerRef={inputRef}
           autoFocus
           onFocus={handleFocus}
           onChange={onChangeInput}
           onBlur={onBlur}
+          onKeyDown={handleKeyDown}
         />
       ) : (
         <div className={cx('name')}>{filteredFileName}</div>
       )}
     </Fragment>
-
-    // <S.IconWrapper
-    //   ref={iconRef}
-    //   onClick={onClick}
-    //   isClicked={isClicked}
-    //   isVisualized={isVisualized}
-    //   isModifying={isModifying}
-    //   opacity={isDragging ? 0.5 : 1}
-    //   onDoubleClick={onDoubleClick}
-    // >
-    //   {_.isEqual(fileType, FILE_TYPES.file) && (
-    //     <S.TopWrapper isClicked={isClicked}>
-    //       <ModelFileIcon />
-    //     </S.TopWrapper>
-    //   )}
-    //   {_.isEqual(fileType, FILE_TYPES.folder) && <S.FolderIcon></S.FolderIcon>}
-    //   {_.isEqual(fileType, FILE_TYPES.motion) && (
-    //     <S.TopWrapper isClicked={isClicked}>
-    //       <CircleMotionIcon></CircleMotionIcon>
-    //     </S.TopWrapper>
-    //   )}
-    //   {isModifying ? (
-    //     <S.BottomInput
-    //       value={fileName}
-    //       autoFocus
-    //       onFocus={(e) => e.target.select()}
-    //       onChange={onChangeInput}
-    //       onBlur={onBlur}
-    //     ></S.BottomInput>
-    //   ) : (
-    //     <S.BottomWrapper>{filteredFileName}</S.BottomWrapper>
-    //   )}
-    // </S.IconWrapper>
   );
 };
 export const Icon = memo(IconComponent);
