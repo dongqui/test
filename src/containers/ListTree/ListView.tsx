@@ -8,7 +8,6 @@ import _ from 'lodash';
 import { fnFilterArrayByHierarchy } from 'utils/LP/fnFilterArrayByHierarchy';
 import { fnMakeSelection } from 'utils/LP/fnMakeSelection';
 import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';
-import * as S from './ListTreeStyles';
 import ListNode from './ListNode';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
@@ -43,14 +42,11 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
   });
   const processedData = useMemo(() => {
     let result: MainDataType[] = [];
-    let data = fnSortArrayByHierarchy({ data: mainData });
+    let data = _.clone(mainData);
     if (!_.isEmpty(searchWord)) {
       data = fnFilterArrayByHierarchy({ data, searchWord });
-      data = _.map(data, (item) => ({
-        ...item,
-        parentKey: _.isEqual(item.type, FILE_TYPES.file) ? ROOT_FOLDER_NAME : item.parentKey,
-      }));
     }
+    data = fnSortArrayByHierarchy({ data });
     _.forEach(data, (item) => {
       if (_.isEqual(item.parentKey, ROOT_FOLDER_NAME)) {
         result.push(item);
