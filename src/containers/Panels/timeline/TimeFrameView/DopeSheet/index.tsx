@@ -73,7 +73,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       .append('svg')
       .attr('class', `${X_AXIS_SVG_CLASSNAME}`)
       .attr('width', '100%')
-      .attr('height', height)
+      .attr('height', 48)
       .style('border', 0);
 
     // x축 g 태그 랜더링

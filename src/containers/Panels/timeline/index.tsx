@@ -1,14 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import { TPTrackNameList, TPDopeSheetList, TPLastBoneList } from 'lib/store';
+import {
+  TPTrackNameList,
+  TPDopeSheetList,
+  TPLastBoneList,
+  storeSkeletonHelper,
+  storeCurrentVisualizedData,
+} from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
 import { TPTrackName, TPDopeSheet, TPLastBone } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
-import { fnGetSummaryTimes, fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
+import {
+  fnGetSummaryTimes,
+  fnGetLayerTimes,
+  fnGetBoneTimes,
+  fnUpdateKeyframeToBase,
+  fnUpdateKeyframeToLayer,
+} from 'utils/TP/editingUtils';
 import MiddleBar from 'containers/MiddleBar';
-import { ShootLayerType, ShootTrackType } from 'types';
+import { CurrentVisualizedDataType, ShootLayerType, ShootTrackType } from 'types';
+import { useReactiveVar } from '@apollo/client';
+import produce from 'immer';
 
 const cx = classNames.bind(styles);
 
@@ -18,6 +32,132 @@ interface Props {
 }
 
 const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
+  //////////////////////
+  // 아래는 테스트용 예시 코드
+  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
+  const targetTime = 0.033333;
+
+  // track 미리 변환 다 핸놓고 store 업데이트 한 번에 해야 함
+  // 0 번째인 position 은 정상적으로 반영
+  const handleUpdateKeyframeToBase = useCallback(() => {
+    console.log('keypress y');
+    if (baseLayer && skeletonHelper) {
+      const targetTracks = [baseLayer[0], baseLayer[1], baseLayer[2], baseLayer[3]];
+      targetTracks.forEach((track) => {
+        const [boneName, propertyName] = track.name.split('.');
+        const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
+        if (bone) {
+          let values;
+          if (propertyName === 'position') {
+            values = { x: bone.position.x, y: bone.position.y, z: bone.position.z };
+          } else if (propertyName === 'rotation') {
+            values = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+          } else if (propertyName === 'scale') {
+            values = { x: bone.scale.x, y: bone.scale.y, z: bone.scale.z };
+          }
+          if (values) {
+            const resultTrack = fnUpdateKeyframeToBase({ track, time: targetTime, values });
+            const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
+            const state = storeCurrentVisualizedData();
+            if (state && targetTrackIndex !== -1) {
+              const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+                draft.baseLayer = [
+                  ...draft.baseLayer.slice(0, targetTrackIndex),
+                  resultTrack,
+                  ...draft.baseLayer.slice(targetTrackIndex + 1),
+                ];
+              });
+              storeCurrentVisualizedData(nextState);
+            }
+          }
+        }
+      });
+    }
+  }, [baseLayer, skeletonHelper]);
+
+  // layer 에 추가 시 value 에 0 들어감
+  const handleUpdateKeyframeToLayer = useCallback(() => {
+    console.log('keypress u');
+    if (baseLayer && layers && layers.length !== 0 && skeletonHelper) {
+      const targetLayer = layers[0];
+      const targetTracks = [
+        targetLayer.tracks[0],
+        targetLayer.tracks[1],
+        targetLayer.tracks[2],
+        targetLayer.tracks[3],
+      ];
+      targetTracks.forEach((track) => {
+        const [boneName, propertyName] = track.name.split('.');
+        const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
+        if (bone) {
+          let values;
+          if (propertyName === 'position') {
+            values = { x: bone.position.x, y: bone.position.y, z: bone.position.z };
+          } else if (propertyName === 'rotation') {
+            values = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+          } else if (propertyName === 'scale') {
+            values = { x: bone.scale.x, y: bone.scale.y, z: bone.scale.z };
+          }
+          if (values) {
+            const resultTrack = fnUpdateKeyframeToLayer({
+              track,
+              currentLayerKey: targetLayer.key,
+              baseLayer,
+              layers,
+              time: targetTime,
+              values,
+            });
+            const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
+            const state = storeCurrentVisualizedData();
+            if (state && targetTrackIndex !== -1) {
+              const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+                draft.layers[0].tracks = [
+                  ...draft.layers[0].tracks.slice(0, targetTrackIndex),
+                  resultTrack,
+                  ...draft.layers[0].tracks.slice(targetTrackIndex + 1),
+                ];
+              });
+              storeCurrentVisualizedData(nextState);
+            }
+          }
+        }
+      });
+    }
+  }, [baseLayer, layers, skeletonHelper]);
+
+  const handleDeleteKeyframe = useCallback(() => {
+    console.log('keypress i');
+    if (baseLayer && skeletonHelper) {
+      const targetTracks = [baseLayer[0], baseLayer[1], baseLayer[2], baseLayer[3]];
+    }
+  }, [baseLayer, skeletonHelper]);
+  // 위는 테스트용 예시 코드
+  ////////////////////
+
+  const handleKeyPress = useCallback(
+    (event: any) => {
+      switch (event.key) {
+        case 'y':
+          handleUpdateKeyframeToBase();
+          break;
+        case 'u':
+          handleUpdateKeyframeToLayer();
+          break;
+        case 'i':
+          handleDeleteKeyframe();
+          break;
+      }
+    },
+    [handleDeleteKeyframe, handleUpdateKeyframeToBase, handleUpdateKeyframeToLayer],
+  );
+
+  useEffect(() => {
+    document.addEventListener('keypress', handleKeyPress);
+    return () => {
+      document.removeEventListener('keypress', handleKeyPress);
+    };
+  }, [handleKeyPress]);
+
   // 이름만 추출하여 TP 트랙 리스트 가공
   useEffect(() => {
     if (!baseLayer) return;
