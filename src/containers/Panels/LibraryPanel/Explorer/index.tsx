@@ -42,7 +42,7 @@ const Explorer: FunctionComponent<Props> = ({ onChange }) => {
     );
   }, [lpmode, lpData, pages]);
 
-  const icon = _.isEqual(lpmode, LPModeType.iconview) ? SvgPath.IconView : SvgPath.ListView;
+  const icon = _.isEqual(lpmode, LPModeType.iconview) ? SvgPath.ListView : SvgPath.IconView;
 
   return (
     <div className={cx('explorer')}>
