@@ -13,6 +13,9 @@ import Model from './svg/Model.svg';
 import Folder from './svg/Folder.svg';
 import Motion from './svg/Motion.svg';
 import FilledArrow from './svg/FilledArrow.svg';
+import ChevronLeft from './svg/ChevronLeft.svg';
+import BreadcrumbMore from './svg/BreadcrumbMore.svg';
+import Layer from './svg/Layer.svg';
 
 type Icon =
   | 'Close'
@@ -28,7 +31,10 @@ type Icon =
   | 'Model'
   | 'Folder'
   | 'Motion'
-  | 'FilledArrow';
+  | 'FilledArrow'
+  | 'ChevronLeft'
+  | 'BreadcrumbMore'
+  | 'Layer';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -49,6 +55,9 @@ const images: Images = {
   Folder,
   Motion,
   FilledArrow,
+  ChevronLeft,
+  BreadcrumbMore,
+  Layer,
 };
 
 export default images;
