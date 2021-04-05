@@ -1,7 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { LayerIcon } from 'components/Icons/generated2/LayerIcon';
-import { TrashIcon } from 'components/Icons/generated2/TrashIcon';
-import { storeMainData, storeSkeletonHelper } from 'lib/store';
+import { storeSkeletonHelper } from 'lib/store';
 import _ from 'lodash';
 import React, { memo } from 'react';
 import { fnGetNewLayer } from 'utils/TP/editingUtils';

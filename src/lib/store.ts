@@ -26,7 +26,7 @@ import {
   ModalType,
   PageInfoType,
   PAGE_NAMES,
-  CurrentDataType,
+  CurrentVisualizedDataType,
 } from '../types';
 import { INITIAL_RETARGET_DATA } from '../utils/const';
 import { CPModeType } from '../types/CP';
@@ -36,7 +36,7 @@ export enum StoreDataNames {
   mainData = 'mainData',
 }
 // common
-export const storeCurrentData = makeVar<CurrentDataType | undefined>(undefined);
+export const storeCurrentVisualizedData = makeVar<CurrentVisualizedDataType | undefined>(undefined);
 export const storeContextMenuInfo = makeVar<ContextmenuType>({
   isShow: false,
   top: 0,

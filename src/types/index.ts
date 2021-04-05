@@ -110,7 +110,7 @@ export interface LPDataType {
   [LPDATA_PROPERTY_TYPES.boneNames]?: string[];
   [LPDATA_PROPERTY_TYPES.depth]?: number;
 }
-export interface CurrentDataType {
+export interface CurrentVisualizedDataType {
   [LPDATA_PROPERTY_TYPES.key]: string;
   [LPDATA_PROPERTY_TYPES.name]: string;
   [LPDATA_PROPERTY_TYPES.type]: FILE_TYPES;

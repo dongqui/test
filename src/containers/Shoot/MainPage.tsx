@@ -8,11 +8,11 @@ import {
   storeCPData,
   storeAnimatingData,
   storeCPMode,
-  storeCurrentData,
+  storeCurrentVisualizedData,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox } from 'react-resizable';
-import { CurrentDataType, FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import { CurrentVisualizedDataType, FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
@@ -27,7 +27,7 @@ const cx = classNames.bind(styles);
 
 const MainContainer: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
-  const currentData = useReactiveVar(storeCurrentData);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const cpData = useReactiveVar(storeCPData);
   const cpMode = useReactiveVar(storeCPMode);
   const renderingData = useReactiveVar(storeRenderingData);
@@ -42,7 +42,7 @@ const MainContainer: FunctionComponent = () => {
   }, [lpData]);
   const visualizedRow = useMemo(() => {
     const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
-    let result: CurrentDataType = {
+    let result: CurrentVisualizedDataType = {
       key: visualizedRow?.key ?? '',
       name: visualizedRow?.name ?? '',
       type: visualizedRow?.type ?? FILE_TYPES.file,
@@ -95,12 +95,12 @@ const MainContainer: FunctionComponent = () => {
     );
   }, [lpData]);
 
-  useDebuggingData({ lpData, cpData, renderingData, animatingData });
+  useDebuggingData({ lpData, cpData, renderingData, animatingData, currentVisualizedData });
 
   const [width, height] = useWindowSize();
 
   useEffect(() => {
-    storeCurrentData(visualizedRow);
+    storeCurrentVisualizedData(visualizedRow);
   }, [visualizedRow]);
 
   return (
@@ -135,9 +135,9 @@ const MainContainer: FunctionComponent = () => {
             <RenderingController
               id="renderingDiv"
               fileUrl={fileUrl}
-              visualizedName={currentData?.name}
-              visualizedBaseLayer={currentData?.baseLayer}
-              visualizedLayers={currentData?.layers}
+              visualizedName={currentVisualizedData?.name}
+              visualizedBaseLayer={currentVisualizedData?.baseLayer}
+              visualizedLayers={currentVisualizedData?.layers}
             />
           </div>
         </ResizableBox>
@@ -154,7 +154,10 @@ const MainContainer: FunctionComponent = () => {
         </ResizableBox>
       </ResizableBox>
       <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">
-        <TimelineContainer baseLayer={currentData?.baseLayer} layers={currentData?.layers} />
+        <TimelineContainer
+          baseLayer={currentVisualizedData?.baseLayer}
+          layers={currentVisualizedData?.layers}
+        />
       </ResizableBox>
     </div>
   );
