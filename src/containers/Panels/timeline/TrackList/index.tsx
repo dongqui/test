@@ -179,7 +179,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
     // 추가 된 레이어의 마지막 bone index 저장
     const lastBone = {
       layerIdnex: layerIdnex + 10000,
-      lastBoneIndex: curBoneIndex,
+      lastBoneIndex: curBoneIndex - 3,
     };
 
     TPTrackNameList(updatedTrackNameList);
@@ -204,7 +204,12 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
             placeholder="Search Joints"
             onChange={changeTrackInput}
           />
-          <IconWrapper className={cx('layer')} icon={SvgPath.Layer} hasFrame={false} />
+          <IconWrapper
+            className={cx('layer')}
+            icon={SvgPath.Layer}
+            hasFrame={false}
+            onClick={clickLayerButton}
+          />
         </div>
         {!isEmptyTrack && (
           <div className={cx('list')}>

@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import Circles from './circles';
 import { TPDopeSheet } from 'types/TP';
@@ -10,25 +10,24 @@ interface Props {
 }
 
 const TRACK_HEIGHT = 32; // 트랙 높이
-const CIRCLE_RADIUS = 4; // 원 반지름 크기
+const SELECTED_COLOR = 'rgba(55, 133, 247, 10%)';
 
-const CircleGroup: React.FC<Props> = ({ dopeSheetData, layerDopeSheetData, prevXScale }) => {
+const CircleGroup: React.FC<Props> = ({ dopeSheetData, prevXScale }) => {
+  const [isSelected, setIsSelected] = useState(false);
   const circleGroupRef = useRef<SVGSVGElement>(null);
 
-  // useEffect(() => {
-  //   const trackIndex = dopeSheetData.trackIndex;
-  //   const layerIndex = layerDopeSheetData.trackIndex;
-  //   const remainder = trackIndex % 10;
-
-  //   if() {
-
-  //   }
-  // }, [dopeSheetData, layerDopeSheetData]);
+  useEffect(() => {
+    setIsSelected(dopeSheetData.isSelected);
+  }, [dopeSheetData]);
 
   return (
     <svg className="circle-group" width="100%" height={TRACK_HEIGHT} ref={circleGroupRef}>
-      <title style={{ display: 'none' }}>{dopeSheetData.trackIndex}</title>
-      <rect width="100%" height={TRACK_HEIGHT} fill="#151515" strokeDasharray="100, 50" />
+      <rect
+        width="100%"
+        height={TRACK_HEIGHT}
+        fill={isSelected ? SELECTED_COLOR : '#151515'}
+        strokeDasharray="100, 50"
+      />
       <Circles
         circleGroupRef={circleGroupRef}
         dopeSheetData={dopeSheetData}

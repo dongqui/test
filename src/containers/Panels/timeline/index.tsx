@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { memo, useEffect } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import { TPTrackNameList, TPDopeSheetList, TPLastBoneList } from 'lib/store';
@@ -185,4 +185,4 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
   );
 };
 
-export default TimelineContainer;
+export default memo(TimelineContainer);
