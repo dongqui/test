@@ -1,4 +1,4 @@
-import { CUTIMAGE_HEIGHT } from 'containers/CutEdit/CutEdit.styles';
+import { CUTIMAGE_HEIGHT } from 'containers/extract/CutEdit/CutEdit.styles';
 import { MainDataType } from 'types';
 import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
 import {
