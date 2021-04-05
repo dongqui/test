@@ -1,20 +1,18 @@
 import _ from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
-import { storeLpData } from 'lib/store';
+import { storeCurrentVisualizedData, storeLpData } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
 
 interface useLPControlProps {
-  mainData: LPDataType[];
+  lpData: LPDataType[];
   rowKey?: string;
 }
-export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
+export const useLPRowControl = ({ lpData, rowKey }: useLPControlProps) => {
   const fileName =
-    useMemo(() => _.find(mainData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name, [
-      rowKey,
-      mainData,
-    ]) ?? 'Model';
+    useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name, [rowKey, lpData]) ??
+    'Model';
   const [name, setName] = useState(fileName);
   const filteredFileName = useMemo(() => {
     return _.gt(_.size(fileName), MAX_FILE_LENGTH)
@@ -22,11 +20,11 @@ export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
       : fileName;
   }, [fileName]);
   const isModifying = useMemo(
-    () => _.find(mainData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isModifying,
-    [rowKey, mainData],
+    () => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isModifying,
+    [rowKey, lpData],
   );
-  const fileType = useMemo(() => _.find(mainData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type, [
-    mainData,
+  const fileType = useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type, [
+    lpData,
     rowKey,
   ]);
   const onChangeInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,15 +33,15 @@ export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
   const onBlur = useCallback(
     (e) => {
       storeLpData(
-        _.map(mainData, (item) => ({
+        _.map(lpData, (item) => ({
           ...item,
           isModifying: _.isEqual(item.key, rowKey) ? false : item.isModifying,
           name: _.isEqual(item.key, rowKey) ? name : item.name,
         })),
       );
-      setName(fnGetFileName({ key: '', mainData, name }));
+      setName(fnGetFileName({ key: '', mainData: lpData, name }));
     },
-    [mainData, rowKey, name],
+    [lpData, rowKey, name],
   );
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -64,6 +62,23 @@ export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
     },
     [fileType],
   );
+  const setCurrentData = useCallback(
+    ({ key }: { key: string }) => {
+      const targetRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, key]);
+      if (targetRow) {
+        storeCurrentVisualizedData({
+          key: targetRow?.key,
+          name: targetRow?.name,
+          type: targetRow?.type,
+          baseLayer: targetRow?.baseLayer,
+          boneNames: targetRow?.boneNames,
+          layers: targetRow?.layers,
+          url: targetRow?.url,
+        });
+      }
+    },
+    [lpData],
+  );
   return {
     onChangeInput,
     onBlur,
@@ -73,5 +88,6 @@ export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
     filteredFileName,
     isModifying,
     name,
+    setCurrentData,
   };
 };

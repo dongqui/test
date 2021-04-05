@@ -19,9 +19,6 @@ import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import useWindowSize from 'hooks/common/useWindowSize';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
-import { RetargetPanel } from 'containers/Panels/RetargetPanel';
-import { CPModeType } from 'types/CP';
-import { DEFAULT_TARGETBONES } from 'utils/const';
 
 const cx = classNames.bind(styles);
 
@@ -29,7 +26,6 @@ const MainContainer: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const cpData = useReactiveVar(storeCPData);
-  const cpMode = useReactiveVar(storeCPMode);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
 
@@ -40,41 +36,9 @@ const MainContainer: FunctionComponent = () => {
     }
     return _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
   }, [lpData]);
-  const visualizedRow = useMemo(() => {
-    const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
-    let result: CurrentVisualizedDataType = {
-      key: visualizedRow?.key ?? '',
-      name: visualizedRow?.name ?? '',
-      type: visualizedRow?.type ?? FILE_TYPES.file,
-      baseLayer: visualizedRow?.baseLayer,
-      layers: visualizedRow?.layers,
-    };
-    if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
-      const childMotion = _.find(lpData, [LPDATA_PROPERTY_TYPES.parentKey, visualizedRow?.key]);
-      result = {
-        key: childMotion?.key ?? '',
-        name: childMotion?.name ?? '',
-        type: childMotion?.type ?? FILE_TYPES.file,
-        baseLayer: childMotion?.baseLayer,
-        layers: childMotion?.layers,
-      };
-    }
-    return result;
-  }, [lpData]);
-  const targetBones = useMemo(() => {
-    let result = DEFAULT_TARGETBONES;
-    const visualizedBaseLayer = _.filter(
-      _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer,
-      (item) => _.includes(item.name, 'rotation'),
-    );
-    if (!_.isEmpty(visualizedBaseLayer)) {
-      result = _.map(visualizedBaseLayer, (item) => _.split(item.name, '.')?.[0]);
-    }
-    return result;
-  }, [lpData]);
   const handleDrop = useCallback(() => {
     const draggingRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
-    let visualizedKeys = draggingRow?.key;
+    let visualizedKey = draggingRow?.key;
     if (_.isEqual(draggingRow?.type, FILE_TYPES.folder)) {
       return;
     }
@@ -84,24 +48,30 @@ const MainContainer: FunctionComponent = () => {
         draggingRow?.key,
       ]);
       if (defaultVisulizedMotionRow) {
-        visualizedKeys = defaultVisulizedMotionRow?.key;
+        visualizedKey = defaultVisulizedMotionRow?.key;
       }
     }
+    const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedKey]);
     storeLpData(
       _.map(lpData, (item) => ({
         ...item,
-        isVisualized: _.isEqual(visualizedKeys, item.key),
+        isVisualized: _.isEqual(visualizedKey, item.key),
       })),
     );
+    storeCurrentVisualizedData({
+      key: visualizedRow?.key ?? '',
+      name: visualizedRow?.name ?? '',
+      type: visualizedRow?.type ?? FILE_TYPES.file,
+      url: visualizedRow?.url,
+      baseLayer: visualizedRow?.baseLayer,
+      layers: visualizedRow?.layers,
+      boneNames: visualizedRow?.boneNames,
+    });
   }, [lpData]);
 
   useDebuggingData({ lpData, cpData, renderingData, animatingData, currentVisualizedData });
 
   const [width, height] = useWindowSize();
-
-  useEffect(() => {
-    storeCurrentVisualizedData(visualizedRow);
-  }, [visualizedRow]);
 
   return (
     <div className={cx('wrapper')}>
@@ -149,8 +119,7 @@ const MainContainer: FunctionComponent = () => {
           resizeHandles={['w']}
           axis="both"
         >
-          {_.isEqual(cpMode, CPModeType.property) && <ControlPanel />}
-          {_.isEqual(cpMode, CPModeType.retarget) && <RetargetPanel targetBones={targetBones} />}
+          <ControlPanel />
         </ResizableBox>
       </ResizableBox>
       <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">
