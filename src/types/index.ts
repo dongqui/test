@@ -114,10 +114,9 @@ export interface CurrentVisualizedDataType {
   [LPDATA_PROPERTY_TYPES.key]: string;
   [LPDATA_PROPERTY_TYPES.name]: string;
   [LPDATA_PROPERTY_TYPES.type]: FILE_TYPES;
-  [LPDATA_PROPERTY_TYPES.url]?: string;
-  [LPDATA_PROPERTY_TYPES.baseLayer]?: ShootTrackType[];
-  [LPDATA_PROPERTY_TYPES.layers]?: ShootLayerType[];
-  [LPDATA_PROPERTY_TYPES.boneNames]?: string[];
+  [LPDATA_PROPERTY_TYPES.boneNames]: string[];
+  [LPDATA_PROPERTY_TYPES.baseLayer]: ShootTrackType[];
+  [LPDATA_PROPERTY_TYPES.layers]: ShootLayerType[];
 }
 export interface BonesTypes {
   name: string;

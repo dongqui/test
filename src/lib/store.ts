@@ -61,6 +61,7 @@ export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_D
 export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 export const storeCurrentBone = makeVar<THREE.Bone | undefined>(undefined);
 export const storeTransformControls = makeVar<TransformControls | undefined>(undefined);
+export const storeSkeletonHelper = makeVar<THREE.SkeletonHelper | undefined>(undefined);
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);

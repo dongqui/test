@@ -7,11 +7,12 @@ import {
   storeLpData,
   storeCPData,
   storeAnimatingData,
+  storeCPMode,
   storeCurrentVisualizedData,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox } from 'react-resizable';
-import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import { CurrentVisualizedDataType, FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
@@ -50,24 +51,25 @@ const MainContainer: FunctionComponent = () => {
       }
     }
     const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedKey]);
-    storeCurrentVisualizedData({
-      key: visualizedRow?.key ?? '',
-      name: visualizedRow?.name ?? '',
-      type: visualizedRow?.type ?? FILE_TYPES.file,
-      url: visualizedRow?.url,
-      baseLayer: visualizedRow?.baseLayer,
-      layers: visualizedRow?.layers,
-      boneNames: visualizedRow?.boneNames,
-    });
     storeLpData(
       _.map(lpData, (item) => ({
         ...item,
         isVisualized: _.isEqual(visualizedKey, item.key),
       })),
     );
+    if (visualizedRow) {
+      storeCurrentVisualizedData({
+        key: visualizedRow.key ?? '',
+        name: visualizedRow.name ?? '',
+        type: visualizedRow.type ?? FILE_TYPES.file,
+        boneNames: visualizedRow.boneNames ?? [],
+        baseLayer: visualizedRow.baseLayer ?? [],
+        layers: visualizedRow.layers ?? [],
+      });
+    }
   }, [lpData]);
 
-  useDebuggingData({ lpData, cpData, renderingData, animatingData });
+  useDebuggingData({ lpData, cpData, renderingData, animatingData, currentVisualizedData });
 
   const [width, height] = useWindowSize();
 
@@ -100,13 +102,7 @@ const MainContainer: FunctionComponent = () => {
           axis="both"
         >
           <div style={{ width: '100%', height: '100%' }} onDrop={handleDrop}>
-            <RenderingController
-              id="renderingDiv"
-              fileUrl={fileUrl}
-              visualizedName={currentVisualizedData?.name}
-              visualizedBaseLayer={currentVisualizedData?.baseLayer}
-              visualizedLayers={currentVisualizedData?.layers}
-            />
+            <RenderingController id="renderingDiv" fileUrl={fileUrl} />
           </div>
         </ResizableBox>
         <ResizableBox
