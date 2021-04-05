@@ -5,8 +5,6 @@ import {
   useCallback,
   useMemo,
   useRef,
-  useState,
-  useEffect,
   MutableRefObject,
 } from 'react';
 import { useReactiveVar } from '@apollo/client';
@@ -15,11 +13,9 @@ import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import { storeLpData, storePages } from 'lib/store';
 import { BaseInput } from 'components/New_Input';
 import _ from 'lodash';
-import * as S from './IconStyles';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import main from 'sha1';
 
 const cx = classNames.bind(styles);
 
@@ -62,11 +58,13 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
     },
     [rowKey, lpData],
   );
+  const { setCurrentData } = useLPRowControl({ lpData });
   const onDoubleClick = useCallback(() => {
     if (_.isEqual(_.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type, FILE_TYPES.motion)) {
       storeLpData(
         _.map(lpData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, rowKey) })),
       );
+      setCurrentData({ key: rowKey });
     } else {
       storePages(
         _.concat(pages, {
@@ -76,9 +74,8 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
         }),
       );
     }
-  }, [rowKey, lpData, pages]);
+  }, [lpData, rowKey, setCurrentData, pages]);
   const {
-    fileName,
     filteredFileName,
     isModifying,
     onBlur,
@@ -87,7 +84,7 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
     handleKeyDown,
     handleFocus,
   } = useLPRowControl({
-    mainData: lpData,
+    lpData,
     rowKey,
   });
   const classes = cx('wrapper', {

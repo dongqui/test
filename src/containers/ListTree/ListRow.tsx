@@ -35,6 +35,7 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
   isLast,
 }) => {
   const lpData = useReactiveVar(storeLpData);
+  const { setCurrentData } = useLPRowControl({ lpData, rowKey });
   const onClick = useCallback(() => {
     storeLpData(
       _.map(lpData, (item) => ({
@@ -47,7 +48,10 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
             : item.isVisualized,
       })),
     );
-  }, [isVisualizeSelected, lpData, mode, rowKey]);
+    if (isVisualizeSelected && _.isEqual(mode, FILE_TYPES.motion)) {
+      setCurrentData({ key: rowKey });
+    }
+  }, [isVisualizeSelected, lpData, mode, rowKey, setCurrentData]);
 
   const {
     fileName,
@@ -58,7 +62,7 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
     handleKeyDown,
     handleFocus,
   } = useLPRowControl({
-    mainData: lpData,
+    lpData,
     rowKey,
   });
 
