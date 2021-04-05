@@ -74,6 +74,7 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
         _.concat(pages, {
           key: rowKey,
           name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.name ?? 'Folder',
+          type: _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.folder,
         }),
       );
     }

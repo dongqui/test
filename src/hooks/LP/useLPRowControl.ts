@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
 import { storeMainData } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
+import { fnGetFileName } from 'utils/LP/fnGetFileName';
 
 interface useLPControlProps {
   mainData: MainDataType[];
@@ -32,30 +33,25 @@ export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
     setName(e.target.value);
   }, []);
   const onBlur = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e) => {
       storeMainData(
         _.map(mainData, (item) => ({
           ...item,
           isModifying: _.isEqual(item.key, rowKey) ? false : item.isModifying,
-          name: _.isEqual(item.key, rowKey) ? e.target.value : item.name,
+          name: _.isEqual(item.key, rowKey) ? name : item.name,
         })),
       );
+      setName(fnGetFileName({ key: '', mainData, name }));
     },
-    [rowKey, mainData],
+    [mainData, rowKey, name],
   );
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (_.isEqual(e.key, 'Enter')) {
-        storeMainData(
-          _.map(mainData, (item) => ({
-            ...item,
-            name: _.isEqual(item.key, rowKey) ? name : item.name,
-            isModifying: false,
-          })),
-        );
+        onBlur(e);
       }
     },
-    [mainData, name, rowKey],
+    [onBlur],
   );
   const handleFocus = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {

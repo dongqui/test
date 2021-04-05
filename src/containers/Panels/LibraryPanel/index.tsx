@@ -42,12 +42,14 @@ import { Headline } from 'components/New_Typography';
 import Explorer from './Explorer/index';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { ROOT_FOLDER_NAME } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
 export interface PagesType {
   key: string;
   name: string;
+  type: FILE_TYPES;
 }
 
 const LibraryPanelComponent: FunctionComponent = () => {
@@ -122,7 +124,9 @@ const LibraryPanelComponent: FunctionComponent = () => {
             type: FILE_TYPES.file,
             name: acceptedFile.name,
             url,
-            parentKey: _.last(pages)?.key,
+            parentKey: _.isEqual(lpmode, LPModeType.iconview)
+              ? _.last(pages)?.key
+              : ROOT_FOLDER_NAME,
             baseLayer: _.cloneDeep(motions?.[0]?.baseLayer ?? []),
             layers: _.cloneDeep(motions?.[0]?.layers ?? []),
             boneNames: _.map(bones, (bone) => bone.name),
@@ -138,7 +142,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       storeMainData(_.concat(filteredMainData, newDatas));
       setLoading(false);
     },
-    [mainData, pages],
+    [lpmode, mainData, pages],
   );
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {

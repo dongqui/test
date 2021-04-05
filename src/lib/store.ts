@@ -20,6 +20,7 @@ import {
 } from 'utils/const';
 import {
   ContextmenuType,
+  FILE_TYPES,
   LPModeType,
   MainDataType,
   ModalType,
@@ -48,7 +49,9 @@ export const storeModalInfo = makeVar<ModalType>({
 export const storePageInfo = makeVar<PageInfoType>({ page: PAGE_NAMES.shoot, duration: 10 });
 // LP
 export const storeMainData = makeVar<MainDataType[]>(INITIAL_MAIN_DATA);
-export const storePages = makeVar<PagesType[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }]);
+export const storePages = makeVar<PagesType[]>([
+  { key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME, type: FILE_TYPES.folder },
+]);
 export const storeSearchWord = makeVar<string>('');
 export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 // RP
