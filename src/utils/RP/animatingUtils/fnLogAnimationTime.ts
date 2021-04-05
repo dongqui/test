@@ -13,7 +13,7 @@ const fnLogAnimationTime = (props: FnLogAnimationTime) => {
   let reqId: number | undefined;
 
   const logAnimationTime = () => {
-    console.log(action.time);
+    // console.log(action.time);
   };
 
   const loop = () => {
