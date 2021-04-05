@@ -1,6 +1,5 @@
 @import 'styles/libraries/_colors';
 
-// 트랙 리스트 wrapper
 .wrapper {
   position: relative;
   width: 248px;
@@ -13,20 +12,28 @@
   position: fixed;
   width: inherit;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   background-color: $gray100;
   z-index: 2;
   border-right: 2px solid $gray300;
   border-bottom: 2px solid $gray300;
   height: 48px;
-  align-items: center;
+  padding: 0 8px;
+
+  .layer {
+    display: flex;
+    width: 28px;
+    padding: 2px;
+    color: $gray500;
+  }
 }
 
 .search-joint {
-  width: 100%;
-  background-color: transparent;
+  height: 28px;
+  background-color: $gray300;
 }
 
-// 트랙 리스트 wrapper
 .list {
   transform: translate3d(0, 48px, 0);
 }
