@@ -1,5 +1,5 @@
 import { CUTIMAGE_HEIGHT } from 'containers/extract/CutEdit/CutEdit.styles';
-import { MainDataType } from 'types';
+import { LPDataType } from 'types';
 import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
 import {
   AnimatingDataType,
@@ -16,7 +16,7 @@ export const DEFAULT_MODEL_URL =
 export const DEFAULT_FILE_URL = '/video/exo.mp4';
 export const CUT_IMAGES_CNT = 20;
 export const STANDARD_TIME_UNIT = 1 / 30;
-export const INITIAL_MAIN_DATA: MainDataType[] = [];
+export const INITIAL_LP_DATA: LPDataType[] = [];
 export const INITIAL_ANIMATING_DATA: AnimatingDataType = {
   playState: 'stop',
   playDirection: 1, // 1 은 정재생, -1 은 역재생

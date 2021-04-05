@@ -1,95 +1,74 @@
-import { FunctionComponent, memo, useCallback, useMemo } from 'react';
+import { FunctionComponent, memo, useCallback, useEffect, useMemo } from 'react';
 import _ from 'lodash';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
 import {
   storeRenderingData,
-  storeMainData,
+  storeLpData,
   storeCPData,
   storeAnimatingData,
-  storeCPMode,
+  storeCurrentVisualizedData,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox } from 'react-resizable';
-import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import useWindowSize from 'hooks/common/useWindowSize';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
-import { RetargetPanel } from 'containers/Panels/RetargetPanel';
-import { CPModeType } from 'types/CP';
-import { DEFAULT_TARGETBONES } from 'utils/const';
 
 const cx = classNames.bind(styles);
 
 const MainContainer: FunctionComponent = () => {
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const cpData = useReactiveVar(storeCPData);
-  const cpMode = useReactiveVar(storeCPMode);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
 
   const fileUrl = useMemo(() => {
-    const visualizedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
+    const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
     if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
       return visualizedRow?.url;
     }
-    return _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
-  }, [mainData]);
-  const visualizedInfo = useMemo(() => {
-    const visualizedRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
-    let result = {
-      visualizedName: visualizedRow?.name,
-      visualizedBaseLayer: visualizedRow?.baseLayer,
-      visualizedLayers: visualizedRow?.layers,
-    };
-    if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
-      const childMotion = _.find(mainData, [MAINDATA_PROPERTY_TYPES.parentKey, visualizedRow?.key]);
-      result = {
-        visualizedName: childMotion?.name,
-        visualizedBaseLayer: childMotion?.baseLayer,
-        visualizedLayers: childMotion?.layers,
-      };
-    }
-    return result;
-  }, [mainData]);
-  const targetBones = useMemo(() => {
-    let result = DEFAULT_TARGETBONES;
-    const visualizedBaseLayer = _.filter(
-      _.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer,
-      (item) => _.includes(item.name, 'rotation'),
-    );
-    if (!_.isEmpty(visualizedBaseLayer)) {
-      result = _.map(visualizedBaseLayer, (item) => _.split(item.name, '.')?.[0]);
-    }
-    return result;
-  }, [mainData]);
+    return _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
+  }, [lpData]);
   const handleDrop = useCallback(() => {
-    const draggingRow = _.find(mainData, [MAINDATA_PROPERTY_TYPES.isDragging, true]);
-    let visualizedKeys = draggingRow?.key;
+    const draggingRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
+    let visualizedKey = draggingRow?.key;
     if (_.isEqual(draggingRow?.type, FILE_TYPES.folder)) {
       return;
     }
     if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
-      const defaultVisulizedMotionRow = _.find(mainData, [
-        MAINDATA_PROPERTY_TYPES.parentKey,
+      const defaultVisulizedMotionRow = _.find(lpData, [
+        LPDATA_PROPERTY_TYPES.parentKey,
         draggingRow?.key,
       ]);
       if (defaultVisulizedMotionRow) {
-        visualizedKeys = defaultVisulizedMotionRow?.key;
+        visualizedKey = defaultVisulizedMotionRow?.key;
       }
     }
-    storeMainData(
-      _.map(mainData, (item) => ({
+    const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedKey]);
+    storeLpData(
+      _.map(lpData, (item) => ({
         ...item,
-        isVisualized: _.isEqual(visualizedKeys, item.key),
+        isVisualized: _.isEqual(visualizedKey, item.key),
       })),
     );
-  }, [mainData]);
+    storeCurrentVisualizedData({
+      key: visualizedRow?.key ?? '',
+      name: visualizedRow?.name ?? '',
+      type: visualizedRow?.type ?? FILE_TYPES.file,
+      url: visualizedRow?.url,
+      baseLayer: visualizedRow?.baseLayer,
+      layers: visualizedRow?.layers,
+      boneNames: visualizedRow?.boneNames,
+    });
+  }, [lpData]);
 
-  useDebuggingData({ mainData, cpData, renderingData, animatingData });
+  useDebuggingData({ lpData, cpData, renderingData, animatingData });
 
   const [width, height] = useWindowSize();
 
@@ -125,9 +104,9 @@ const MainContainer: FunctionComponent = () => {
             <RenderingController
               id="renderingDiv"
               fileUrl={fileUrl}
-              visualizedName={visualizedInfo?.visualizedName}
-              visualizedBaseLayer={visualizedInfo.visualizedBaseLayer}
-              visualizedLayers={visualizedInfo.visualizedLayers}
+              visualizedName={currentVisualizedData?.name}
+              visualizedBaseLayer={currentVisualizedData?.baseLayer}
+              visualizedLayers={currentVisualizedData?.layers}
             />
           </div>
         </ResizableBox>
@@ -139,14 +118,13 @@ const MainContainer: FunctionComponent = () => {
           resizeHandles={['w']}
           axis="both"
         >
-          {_.isEqual(cpMode, CPModeType.property) && <ControlPanel />}
-          {_.isEqual(cpMode, CPModeType.retarget) && <RetargetPanel targetBones={targetBones} />}
+          <ControlPanel />
         </ResizableBox>
       </ResizableBox>
       <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">
         <TimelineContainer
-          baseLayer={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer}
-          layers={_.find(mainData, [MAINDATA_PROPERTY_TYPES.isVisualized, true])?.layers}
+          baseLayer={currentVisualizedData?.baseLayer}
+          layers={currentVisualizedData?.layers}
         />
       </ResizableBox>
     </div>

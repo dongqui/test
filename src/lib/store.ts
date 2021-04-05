@@ -14,17 +14,19 @@ import _ from 'lodash';
 import {
   INITIAL_ANIMATING_DATA,
   INITIAL_CP_DATA,
-  INITIAL_MAIN_DATA,
+  INITIAL_LP_DATA,
   INITIAL_RECORDING_DATA,
   INITIAL_RENDERING_DATA,
 } from 'utils/const';
 import {
   ContextmenuType,
+  FILE_TYPES,
   LPModeType,
-  MainDataType,
+  LPDataType,
   ModalType,
   PageInfoType,
   PAGE_NAMES,
+  CurrentVisualizedDataType,
 } from '../types';
 import { INITIAL_RETARGET_DATA } from '../utils/const';
 import { CPModeType } from '../types/CP';
@@ -34,6 +36,7 @@ export enum StoreDataNames {
   mainData = 'mainData',
 }
 // common
+export const storeCurrentVisualizedData = makeVar<CurrentVisualizedDataType | undefined>(undefined);
 export const storeContextMenuInfo = makeVar<ContextmenuType>({
   isShow: false,
   top: 0,
@@ -47,8 +50,10 @@ export const storeModalInfo = makeVar<ModalType>({
 });
 export const storePageInfo = makeVar<PageInfoType>({ page: PAGE_NAMES.shoot, duration: 10 });
 // LP
-export const storeMainData = makeVar<MainDataType[]>(INITIAL_MAIN_DATA);
-export const storePages = makeVar<PagesType[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }]);
+export const storeLpData = makeVar<LPDataType[]>(INITIAL_LP_DATA);
+export const storePages = makeVar<PagesType[]>([
+  { key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME, type: FILE_TYPES.folder },
+]);
 export const storeSearchWord = makeVar<string>('');
 export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 // RP

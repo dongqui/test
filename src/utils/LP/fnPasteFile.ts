@@ -1,22 +1,22 @@
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import { MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { fnGetFileName } from './fnGetFileName';
 
 interface fnDeleteFileProps {
-  mainData: MainDataType[];
+  mainData: LPDataType[];
 }
 
 export const fnPasteFile = ({ mainData }: fnDeleteFileProps) => {
   let result = _.clone(mainData);
-  let additionalData: MainDataType[] = [];
+  let additionalData: LPDataType[] = [];
   let key = '';
-  if (!_.some(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])) {
+  if (!_.some(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])) {
     return result;
   }
-  const copiedRow: MainDataType | undefined = _.find(mainData, [
-    MAINDATA_PROPERTY_TYPES.isCopied,
+  const copiedRow: LPDataType | undefined = _.find(mainData, [
+    LPDATA_PROPERTY_TYPES.isCopied,
     true,
   ]);
   const pasteRowsCnt = _.size(_.filter(mainData, (item) => _.includes(item?.key, copiedRow?.key)));
@@ -32,7 +32,7 @@ export const fnPasteFile = ({ mainData }: fnDeleteFileProps) => {
         key: `${item?.key}${pasteRowsCnt}`,
         name: fnGetFileName({
           key: '',
-          name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.isCopied, true])?.name ?? '',
+          name: _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.name ?? '',
           mainData,
         }),
         parentKey: _.isEqual(item?.parentKey, ROOT_FOLDER_NAME)
@@ -45,7 +45,7 @@ export const fnPasteFile = ({ mainData }: fnDeleteFileProps) => {
     currentDepthRows = additionalData;
     additionalData = [];
     _.forEach(currentDepthRows, (item) => {
-      childRows = _.filter(result, [MAINDATA_PROPERTY_TYPES.parentKey, item?.key]);
+      childRows = _.filter(result, [LPDATA_PROPERTY_TYPES.parentKey, item?.key]);
       if (!_.isEmpty(childRows)) {
         additionalData = _.concat(additionalData, childRows);
       }
