@@ -1,6 +1,6 @@
 import { makeVar } from '@apollo/client';
 import produce from 'immer';
-import { TPTrackName, TPDopeSheet, TPLastBoneTrackIndex } from 'types/TP';
+import { TPTrackName, TPDopeSheet, TPLastBoneTrackIndex, TPUpdateDopeSheet } from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
@@ -20,11 +20,13 @@ import {
 } from 'utils/const';
 import {
   ContextmenuType,
+  FILE_TYPES,
   LPModeType,
-  MainDataType,
+  LPDataType,
   ModalType,
   PageInfoType,
   PAGE_NAMES,
+  CurrentDataType,
 } from '../types';
 import { INITIAL_RETARGET_DATA } from '../utils/const';
 import { CPModeType } from '../types/CP';
@@ -34,6 +36,7 @@ export enum StoreDataNames {
   mainData = 'mainData',
 }
 // common
+export const storeCurrentData = makeVar<CurrentDataType | undefined>(undefined);
 export const storeContextMenuInfo = makeVar<ContextmenuType>({
   isShow: false,
   top: 0,
@@ -45,10 +48,12 @@ export const storeModalInfo = makeVar<ModalType>({
   msg: '',
   isShow: false,
 });
-export const storePageInfo = makeVar<PageInfoType>({ page: PAGE_NAMES.shoot });
+export const storePageInfo = makeVar<PageInfoType>({ page: PAGE_NAMES.shoot, duration: 10 });
 // LP
-export const storeMainData = makeVar<MainDataType[]>(INITIAL_MAIN_DATA);
-export const storePages = makeVar<PagesType[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }]);
+export const storeLpData = makeVar<LPDataType[]>(INITIAL_MAIN_DATA);
+export const storePages = makeVar<PagesType[]>([
+  { key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME, type: FILE_TYPES.folder },
+]);
 export const storeSearchWord = makeVar<string>('');
 export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 // RP
@@ -67,16 +72,27 @@ export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);
 
 // TP
-export const TPDefaultTrackNameList = makeVar<TPTrackName[]>([]);
+export const TPTrackNameList = makeVar<TPTrackName[]>([]);
 export const TPDopeSheetList = makeVar<TPDopeSheet[]>([]);
 export const TPLastBoneTrackIndexList = makeVar<TPLastBoneTrackIndex[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
 
-export const TPUpdateDopeSheetList = (statusList: Partial<TPDopeSheet>[]) => {
+export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
   const state = TPDopeSheetList();
   const nextState = produce<TPDopeSheet[]>(state, (draft) => {
-    _.forEach(statusList, (status) => {
-      const index = _.findIndex(draft, (dopeSheet) => dopeSheet.trackIndex === status.trackIndex);
-      draft[index].isClickedParentTrackArrowBtn = status.isClickedParentTrackArrowBtn as boolean;
+    _.forEach(updatedList, (target, key) => {
+      const index =
+        status === 'isFiltered'
+          ? key
+          : _.findIndex(draft, (find) => find.trackIndex === target.trackIndex);
+      switch (status) {
+        case 'isFiltered':
+          draft[index as number].isFiltered = target.isFiltered as boolean;
+          draft[index as number].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          break;
+        case 'isClickedParentTrack':
+          draft[index as number].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          break;
+      }
     });
   });
   TPDopeSheetList(nextState);

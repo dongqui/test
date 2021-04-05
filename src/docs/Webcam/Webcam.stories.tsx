@@ -1,7 +1,7 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { Webcam, WebcamProps } from 'containers/Webcam';
+import { Webcam, WebcamProps } from 'containers/extract/Webcam';
 
 export default {
   title: 'Component API/Container/Webcam',

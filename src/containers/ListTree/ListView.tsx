@@ -1,15 +1,14 @@
-import { FunctionComponent, memo, useMemo } from 'react';
+import { FunctionComponent, memo, useMemo, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useShortcut } from 'hooks/common/useShortcut';
-import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { storeMainData, storeSearchWord } from 'lib/store';
+import { storeLpData, storeSearchWord } from 'lib/store';
 import _ from 'lodash';
 import { fnFilterArrayByHierarchy } from 'utils/LP/fnFilterArrayByHierarchy';
 import { fnMakeSelection } from 'utils/LP/fnMakeSelection';
 import { fnSortArrayByHierarchy } from 'utils/LP/fnSortArrayByHierarchy';
-import { ListRow } from './ListRow';
-import * as S from './ListTreeStyles';
+import ListNode from './ListNode';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
 
@@ -36,35 +35,66 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
   onDrop,
   shortcutData,
 }) => {
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
   const searchWord = useReactiveVar(storeSearchWord);
   useShortcut({
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    const result: MainDataType[] = [];
-    let data = fnSortArrayByHierarchy({ data: mainData });
+    let result: LPDataType[] = [];
+    let data = _.clone(lpData);
     if (!_.isEmpty(searchWord)) {
       data = fnFilterArrayByHierarchy({ data, searchWord });
-      data = _.map(data, (item) => ({
-        ...item,
-        parentKey: _.isEqual(item.type, FILE_TYPES.file) ? ROOT_FOLDER_NAME : item.parentKey,
-      }));
     }
-    data = fnMakeSelection({ data });
+    data = fnSortArrayByHierarchy({ data });
     _.forEach(data, (item) => {
       if (_.isEqual(item.parentKey, ROOT_FOLDER_NAME)) {
         result.push(item);
         return;
       }
-      if (_.find(result, [MAINDATA_PROPERTY_TYPES.key, item.parentKey])?.isExpanded) {
+      if (_.find(result, [LPDATA_PROPERTY_TYPES.key, item.parentKey])?.isExpanded) {
         result.push(item);
       }
     });
+    result = fnMakeSelection({ data: result, originalData: lpData });
     return result;
-  }, [mainData, searchWord]);
+  }, [lpData, searchWord]);
 
+  const handleDragStart = useCallback(
+    (key: string) => {
+      onDragStart({ key });
+    },
+    [onDragStart],
+  );
+
+  const handleDrop = useCallback(
+    (key: string) => {
+      onDrop({ key });
+    },
+    [onDrop],
+  );
   return (
+    <div className={cx('wrapper')}>
+      {_.map(processedData, (item, index) => {
+        const key = `${item.parentKey}_${item.name}_${index}`;
+        return (
+          <ListNode
+            key={key}
+            item={item}
+            onDragStart={handleDragStart}
+            onDragEnd={onDragEnd}
+            onDrop={handleDrop}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+export const ListView = memo(ListViewComponent);
+
+{
+  /* return (
     <div className={cx('wrapper')}>
       {_.map(processedData, (item, index) => (
         <S.ListViewRowWrapper
@@ -89,7 +119,8 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
                   isSelected={item.isSelected}
                   isVisualizeSelected={item.isVisualizeSelected}
                   isVisualized={item.isVisualized}
-                  data={processedData}
+                  isFirst={item.isFirst}
+                  isLast={item.isLast}
                 />
               )}
             </>
@@ -101,12 +132,12 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
               isSelected={item.isSelected}
               isVisualizeSelected={item.isVisualizeSelected}
               isVisualized={item.isVisualized}
-              data={processedData}
+              isFirst={item.isFirst}
+              isLast={item.isLast}
             />
           )}
         </S.ListViewRowWrapper>
       ))}
     </div>
-  );
-};
-export const ListView = memo(ListViewComponent);
+  ); */
+}

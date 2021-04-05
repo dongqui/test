@@ -1,9 +1,9 @@
 import React from 'react';
 import { NextPage } from 'next';
 import _ from 'lodash';
-import * as S from '../RecordWebcam/RecordStyle';
-import { RecordPlayBar } from 'containers/RecordPlayBar';
-import Webcam from 'containers/RecordWebcam';
+import * as S from './RecordWebcam/RecordStyle';
+import { RecordPlayBar } from 'containers/record/RecordPlayBar';
+import Webcam from 'containers/record/RecordWebcam';
 
 interface Props {}
 

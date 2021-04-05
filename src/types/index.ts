@@ -47,7 +47,7 @@ export enum FILE_TYPES {
   file = 'file',
   motion = 'motion',
 }
-export enum MAINDATA_PROPERTY_TYPES {
+export enum LPDATA_PROPERTY_TYPES {
   key = 'key',
   name = 'name',
   type = 'type',
@@ -58,12 +58,15 @@ export enum MAINDATA_PROPERTY_TYPES {
   isSelected = 'isSelected',
   isVisualized = 'isVisualized',
   isVisualizeSelected = 'isVisualizeSelected',
+  isFirst = 'isFirst',
+  isLast = 'isLast',
   isModifying = 'isModifying',
   isCopied = 'isCopied',
   isDragging = 'isDragging',
   baseLayer = 'baseLayer',
   layers = 'layers',
   boneNames = 'boneNames',
+  depth = 'depth',
 }
 export enum LPModeType {
   listview = 'listview',
@@ -86,23 +89,35 @@ export interface ContextmenuType {
   onClick: (key: string, value: string) => void;
 }
 
-export interface MainDataType {
-  [MAINDATA_PROPERTY_TYPES.key]: string;
-  [MAINDATA_PROPERTY_TYPES.name]: string;
-  [MAINDATA_PROPERTY_TYPES.type]: FILE_TYPES;
-  [MAINDATA_PROPERTY_TYPES.parentKey]?: string;
-  [MAINDATA_PROPERTY_TYPES.isExpanded]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.url]?: string;
-  [MAINDATA_PROPERTY_TYPES.isClicked]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isModifying]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isCopied]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isDragging]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.baseLayer]?: ShootTrackType[];
-  [MAINDATA_PROPERTY_TYPES.layers]?: ShootLayerType[];
-  [MAINDATA_PROPERTY_TYPES.boneNames]?: string[];
+export interface LPDataType {
+  [LPDATA_PROPERTY_TYPES.key]: string;
+  [LPDATA_PROPERTY_TYPES.name]: string;
+  [LPDATA_PROPERTY_TYPES.type]: FILE_TYPES;
+  [LPDATA_PROPERTY_TYPES.parentKey]?: string;
+  [LPDATA_PROPERTY_TYPES.isExpanded]?: boolean;
+  [LPDATA_PROPERTY_TYPES.url]?: string;
+  [LPDATA_PROPERTY_TYPES.isClicked]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isSelected]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isVisualized]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isFirst]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isLast]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isModifying]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isCopied]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isDragging]?: boolean;
+  [LPDATA_PROPERTY_TYPES.baseLayer]?: ShootTrackType[];
+  [LPDATA_PROPERTY_TYPES.layers]?: ShootLayerType[];
+  [LPDATA_PROPERTY_TYPES.boneNames]?: string[];
+  [LPDATA_PROPERTY_TYPES.depth]?: number;
+}
+export interface CurrentDataType {
+  [LPDATA_PROPERTY_TYPES.key]: string;
+  [LPDATA_PROPERTY_TYPES.name]: string;
+  [LPDATA_PROPERTY_TYPES.type]: FILE_TYPES;
+  [LPDATA_PROPERTY_TYPES.url]?: string;
+  [LPDATA_PROPERTY_TYPES.baseLayer]?: ShootTrackType[];
+  [LPDATA_PROPERTY_TYPES.layers]?: ShootLayerType[];
+  [LPDATA_PROPERTY_TYPES.boneNames]?: string[];
 }
 export interface BonesTypes {
   name: string;

@@ -158,7 +158,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     }
   }, [axis, cameraControls]);
 
-  return <RenderingPresenter id={id} handleCameraReset={handleCameraReset} />;
+  return <RenderingPresenter id={id} onCameraReset={handleCameraReset} />;
 };
 
 export default memo(RenderingController);

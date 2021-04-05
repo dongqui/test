@@ -1,181 +1,188 @@
+import { FunctionComponent, memo, Fragment, useCallback, useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { ArrowDownIcon } from 'components/Icons/generated2/ArrowDownIcon';
-import { ArrowRightIcon } from 'components/Icons/generated2/ArrowRightIcon';
-import { ModelIcon } from 'components/Icons/generated2/ModelIcon';
-import { MotionIcon } from 'components/Icons/generated2/MotionIcon';
+import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
-import { storeMainData } from 'lib/store';
+import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import { storeLpData } from 'lib/store';
+import { BaseInput } from 'components/New_Input';
 import _ from 'lodash';
-import React, { useCallback, useMemo } from 'react';
-import { INITIAL_MAIN_DATA } from 'utils/const';
-import { rem } from 'utils/rem';
-import * as S from './ListTreeStyles';
+import classNames from 'classnames/bind';
+import styles from './ListRow.module.scss';
+
+const cx = classNames.bind(styles);
 
 export interface ListRowProps {
   mode: FILE_TYPES;
   rowKey: string;
-  [MAINDATA_PROPERTY_TYPES.isClicked]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
-  data: MainDataType[];
+  depth?: number;
+  [LPDATA_PROPERTY_TYPES.isClicked]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isSelected]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isVisualized]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isFirst]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isLast]?: boolean;
 }
 
-const ListRowComponent: React.FC<ListRowProps> = ({
+const ListRowComponent: FunctionComponent<ListRowProps> = ({
   mode = FILE_TYPES.folder,
   rowKey = '0',
+  depth,
   isClicked,
   isSelected,
   isVisualized,
   isVisualizeSelected,
-  data = INITIAL_MAIN_DATA,
+  isFirst,
+  isLast,
 }) => {
-  const mainData = useReactiveVar(storeMainData);
-  const isFirst = useMemo(() => {
-    let result = false;
-    if (
-      _.isEqual(data[_.findIndex(data, [MAINDATA_PROPERTY_TYPES.isSelected, true])]?.key, rowKey)
-    ) {
-      result = true;
-    }
-    if (
-      _.isEqual(
-        data[_.findIndex(data, [MAINDATA_PROPERTY_TYPES.isVisualizeSelected, true])]?.key,
-        rowKey,
-      )
-    ) {
-      result = true;
-    }
-    return result;
-  }, [data, rowKey]);
-  const isLast = useMemo(() => {
-    let result = false;
-    if (
-      _.isEqual(
-        data[_.findLastIndex(data, [MAINDATA_PROPERTY_TYPES.isSelected, true])]?.key,
-        rowKey,
-      )
-    ) {
-      result = true;
-    }
-    if (
-      _.isEqual(
-        data[_.findLastIndex(data, [MAINDATA_PROPERTY_TYPES.isVisualizeSelected, true])]?.key,
-        rowKey,
-      )
-    ) {
-      result = true;
-    }
-    return result;
-  }, [data, rowKey]);
+  const lpData = useReactiveVar(storeLpData);
   const onClick = useCallback(() => {
-    storeMainData(
-      _.map(mainData, (item) => ({
+    storeLpData(
+      _.map(lpData, (item) => ({
         ...item,
         isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
         isClicked: _.isEqual(rowKey, item.key),
-        isVisualized: isVisualizeSelected ? _.isEqual(item.key, rowKey) : item.isVisualized,
+        isVisualized:
+          isVisualizeSelected && _.isEqual(mode, FILE_TYPES.motion)
+            ? _.isEqual(item.key, rowKey)
+            : item.isVisualized,
       })),
     );
-  }, [isVisualizeSelected, mainData, rowKey]);
-  const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
-    mainData,
+  }, [isVisualizeSelected, lpData, mode, rowKey]);
+
+  const {
+    fileName,
+    isModifying,
+    onBlur,
+    onChangeInput,
+    name,
+    handleKeyDown,
+    handleFocus,
+  } = useLPRowControl({
+    mainData: lpData,
     rowKey,
   });
+
+  const isExpanded = _.find(lpData, { key: rowKey })?.isExpanded;
+
+  const folderClasses = cx('list-row', `depth-${depth}`, {
+    selected: isSelected,
+    clickSelected: isClicked && isSelected,
+    visualized: isVisualized,
+    visualizeSelected: isVisualizeSelected,
+    first: isFirst,
+    last: isLast,
+  });
+
+  const fileClasses = cx('list-row', `depth-${depth}`, {
+    selected: isSelected,
+    // clicked: isClicked,
+    clickSelected: isClicked && isSelected,
+    visualized: isVisualized,
+    visualizeSelected: isVisualizeSelected,
+    // closed: !isExpanded,
+    first: isFirst,
+    last: isLast,
+  });
+
+  const motionClasses = cx('list-row', `depth-${depth}`, {
+    selected: isSelected,
+    // clicked: isClicked,
+    clickSelected: isClicked && isSelected,
+    visualized: isVisualized,
+    visualizeSelected: isVisualizeSelected,
+    // closed: !isExpanded,
+    first: isFirst,
+    last: isLast,
+  });
+
+  const folderArrowClasses = cx('icon-arrow', {
+    open: isExpanded,
+  });
+
   return (
-    <>
+    <Fragment>
       {_.isEqual(mode, FILE_TYPES.folder) && (
-        <S.ListRowWrapper
-          isVisualized={isVisualized}
-          isVisualizeSelected={isVisualizeSelected}
+        <div
+          className={folderClasses}
+          role="button"
+          onKeyDown={() => {}}
+          tabIndex={0}
           onClick={onClick}
         >
-          {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isExpanded ? (
-            <S.ArrowWrapper>
-              <ArrowDownIcon />
-            </S.ArrowWrapper>
-          ) : (
-            <S.ArrowWrapper>
-              <ArrowRightIcon />
-            </S.ArrowWrapper>
-          )}
-          {isModifying ? (
-            <S.ListRowInput
-              value={fileName}
-              autoFocus
-              onFocus={(e) => e.target.select()}
-              onChange={onChangeInput}
-              onBlur={onBlur}
-            ></S.ListRowInput>
-          ) : (
-            <S.ListRowText marginLeft={rem(6)}>{filteredFileName}</S.ListRowText>
-          )}
-        </S.ListRowWrapper>
+          <IconWrapper className={folderArrowClasses} icon={SvgPath.FilledArrow} hasFrame={false} />
+          <div className={cx('name-outer')}>
+            <IconWrapper className={cx('icon-item')} icon={SvgPath.Folder} hasFrame={false} />
+            {isModifying ? (
+              <BaseInput
+                className={cx('input-name')}
+                value={name}
+                autoFocus
+                onFocus={handleFocus}
+                onChange={onChangeInput}
+                onBlur={onBlur}
+                onKeyDown={handleKeyDown}
+              />
+            ) : (
+              <div className={cx('name')}>{fileName}</div>
+            )}
+          </div>
+        </div>
       )}
       {_.isEqual(mode, FILE_TYPES.file) && (
-        <S.ListRowWrapper
-          isVisualized={isVisualized}
-          isVisualizeSelected={isVisualizeSelected}
-          isSelected={isSelected}
-          isClicked={isClicked}
-          isFirst={isFirst}
-          isLast={isLast}
-          paddingLeft={rem(10)}
+        <div
+          className={fileClasses}
+          role="button"
+          onKeyDown={() => {}}
+          tabIndex={0}
           onClick={onClick}
         >
-          {_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isExpanded ? (
-            <S.ArrowWrapper>
-              <ArrowDownIcon />
-            </S.ArrowWrapper>
-          ) : (
-            <S.ArrowWrapper>
-              <ArrowRightIcon />
-            </S.ArrowWrapper>
-          )}
-          <S.ModelIconWrapper>
-            <ModelIcon />
-          </S.ModelIconWrapper>
-          {isModifying ? (
-            <S.ListRowInput
-              value={fileName}
-              autoFocus
-              onFocus={(e) => e.target.select()}
-              onChange={onChangeInput}
-              onBlur={onBlur}
-            ></S.ListRowInput>
-          ) : (
-            <S.ListRowText marginLeft={rem(11)}>{filteredFileName}</S.ListRowText>
-          )}
-        </S.ListRowWrapper>
+          <IconWrapper className={folderArrowClasses} icon={SvgPath.FilledArrow} hasFrame={false} />
+          <div className={cx('name-outer')}>
+            <IconWrapper className={cx('icon-item')} icon={SvgPath.Model} hasFrame={false} />
+            {isModifying ? (
+              <BaseInput
+                className={cx('input-name')}
+                value={name}
+                autoFocus
+                onFocus={handleFocus}
+                onChange={onChangeInput}
+                onBlur={onBlur}
+                onKeyDown={handleKeyDown}
+              />
+            ) : (
+              <div className={cx('name')}>{fileName}</div>
+            )}
+          </div>
+        </div>
       )}
       {_.isEqual(mode, FILE_TYPES.motion) && (
-        <S.ListRowWrapper
-          isVisualized={isVisualized}
-          isVisualizeSelected={isVisualizeSelected}
-          isSelected={isSelected}
-          isClicked={isClicked}
-          isFirst={isFirst}
-          isLast={isLast}
+        <div
+          className={motionClasses}
+          role="button"
+          onKeyDown={() => {}}
+          tabIndex={0}
           onClick={onClick}
         >
-          <S.MotionIconWrapper>
-            <MotionIcon />
-          </S.MotionIconWrapper>
-          {isModifying ? (
-            <S.ListRowInput
-              value={fileName}
-              autoFocus
-              onFocus={(e) => e.target.select()}
-              onChange={onChangeInput}
-              // onBlur={onBlur}
-            ></S.ListRowInput>
-          ) : (
-            <S.ListRowText marginLeft={rem(6)}>{filteredFileName}</S.ListRowText>
-          )}
-        </S.ListRowWrapper>
+          {/* <IconWrapper className={folderArrowClasses} icon={SvgPath.FilledArrow} hasFrame={false} /> */}
+          <div className={cx('name-outer')}>
+            <IconWrapper className={cx('icon-item')} icon={SvgPath.Motion} hasFrame={false} />
+            {isModifying ? (
+              <BaseInput
+                className={cx('input-name')}
+                value={name}
+                autoFocus
+                onFocus={handleFocus}
+                onChange={onChangeInput}
+                onBlur={onBlur}
+                onKeyDown={handleKeyDown}
+              />
+            ) : (
+              <div className={cx('name')}>{fileName}</div>
+            )}
+          </div>
+        </div>
       )}
-    </>
+    </Fragment>
   );
 };
-export const ListRow = React.memo(ListRowComponent);
+export const ListRow = memo(ListRowComponent);

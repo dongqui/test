@@ -11,8 +11,8 @@ import {
 } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
-import { storeMainData, storePages } from 'lib/store';
+import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import { storeLpData, storePages } from 'lib/store';
 import { BaseInput } from 'components/New_Input';
 import _ from 'lodash';
 import * as S from './IconStyles';
@@ -28,74 +28,66 @@ export interface IconProps {
 }
 
 const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
   const pages = useReactiveVar(storePages);
-  const [isModifyingStart, setIsModdifyingStart] = useState(false);
   const inputRef = useRef<HTMLInputElement>() as MutableRefObject<HTMLInputElement>;
   const fileType = useMemo(
-    () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
-    [rowKey, mainData],
+    () => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
+    [rowKey, lpData],
   );
   const isDragging =
-    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isDragging, [
+    useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isDragging, [
       rowKey,
-      mainData,
+      lpData,
     ]) ?? false;
   const isClicked =
-    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isClicked, [
+    useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isClicked, [
       rowKey,
-      mainData,
+      lpData,
     ]) ?? false;
   const isVisualized =
-    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isVisualized, [
+    useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isVisualized, [
       rowKey,
-      mainData,
+      lpData,
     ]) ?? false;
   const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
   const onClick = useCallback(
     (e) => {
-      storeMainData(
-        _.map(mainData, (item) => ({
+      storeLpData(
+        _.map(lpData, (item) => ({
           ...item,
           isClicked: _.isEqual(item.key, rowKey) ? true : e.ctrlKey ? item.isClicked : false,
         })),
       );
     },
-    [rowKey, mainData],
+    [rowKey, lpData],
   );
   const onDoubleClick = useCallback(() => {
-    if (
-      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type, FILE_TYPES.motion)
-    ) {
-      storeMainData(
-        _.map(mainData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, rowKey) })),
+    if (_.isEqual(_.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type, FILE_TYPES.motion)) {
+      storeLpData(
+        _.map(lpData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, rowKey) })),
       );
     } else {
       storePages(
         _.concat(pages, {
           key: rowKey,
-          name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.name ?? 'Folder',
+          name: _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name ?? 'Folder',
+          type: _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.folder,
         }),
       );
     }
-  }, [rowKey, mainData, pages]);
-  const handleFocus = useCallback(
-    (e) => {
-      if (isModifyingStart) {
-        // if (_.isEqual(fileType, FILE_TYPES.file)) {
-        //   const extension = `.${_.last(_.split(e.target.value, '.'))}`;
-        //   const rangeIndex = e.target.value.indexOf(extension);
-        //   e.target.setSelectionRange(0, rangeIndex);
-        // } else {
-        //   e.target.select();
-        // }
-        e.target.select();
-      }
-    },
-    [isModifyingStart],
-  );
-  const { fileName, filteredFileName, isModifying, onBlur, onChangeInput } = useLPRowControl({
-    mainData,
+  }, [rowKey, lpData, pages]);
+  const {
+    fileName,
+    filteredFileName,
+    isModifying,
+    onBlur,
+    onChangeInput,
+    name,
+    handleKeyDown,
+    handleFocus,
+  } = useLPRowControl({
+    mainData: lpData,
     rowKey,
   });
   const classes = cx('wrapper', {
@@ -103,11 +95,6 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
     editing: isModifying,
     dragging: isDragging,
   });
-  useEffect(() => {
-    if (!isModifyingStart) {
-      setIsModdifyingStart(true);
-    }
-  }, [isModifying, isModifyingStart]);
   return (
     <Fragment>
       <div
@@ -132,50 +119,18 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
       {isModifying ? (
         <BaseInput
           className={cx('input-name')}
-          value={fileName}
+          value={name}
           innerRef={inputRef}
           autoFocus
           onFocus={handleFocus}
           onChange={onChangeInput}
           onBlur={onBlur}
+          onKeyDown={handleKeyDown}
         />
       ) : (
         <div className={cx('name')}>{filteredFileName}</div>
       )}
     </Fragment>
-
-    // <S.IconWrapper
-    //   ref={iconRef}
-    //   onClick={onClick}
-    //   isClicked={isClicked}
-    //   isVisualized={isVisualized}
-    //   isModifying={isModifying}
-    //   opacity={isDragging ? 0.5 : 1}
-    //   onDoubleClick={onDoubleClick}
-    // >
-    //   {_.isEqual(fileType, FILE_TYPES.file) && (
-    //     <S.TopWrapper isClicked={isClicked}>
-    //       <ModelFileIcon />
-    //     </S.TopWrapper>
-    //   )}
-    //   {_.isEqual(fileType, FILE_TYPES.folder) && <S.FolderIcon></S.FolderIcon>}
-    //   {_.isEqual(fileType, FILE_TYPES.motion) && (
-    //     <S.TopWrapper isClicked={isClicked}>
-    //       <CircleMotionIcon></CircleMotionIcon>
-    //     </S.TopWrapper>
-    //   )}
-    //   {isModifying ? (
-    //     <S.BottomInput
-    //       value={fileName}
-    //       autoFocus
-    //       onFocus={(e) => e.target.select()}
-    //       onChange={onChangeInput}
-    //       onBlur={onBlur}
-    //     ></S.BottomInput>
-    //   ) : (
-    //     <S.BottomWrapper>{filteredFileName}</S.BottomWrapper>
-    //   )}
-    // </S.IconWrapper>
   );
 };
 export const Icon = memo(IconComponent);
