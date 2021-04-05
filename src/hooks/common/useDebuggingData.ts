@@ -1,20 +1,20 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setAnimatingData, setMainData, setRenderingData } from 'redux/homeSlice';
-import { MainDataType } from 'types';
+import { LPDataType } from 'types';
 import { CPDataType } from 'types/CP';
 import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
 import { isDebug } from 'utils/const';
 
 interface useDebuggingDataProps {
-  mainData: MainDataType[];
+  lpData: LPDataType[];
   cpData: CPDataType[];
   renderingData: RenderingDataType;
   animatingData: AnimatingDataType;
 }
 
 export const useDebuggingData = ({
-  mainData,
+  lpData,
   cpData,
   renderingData,
   animatingData,
@@ -22,9 +22,9 @@ export const useDebuggingData = ({
   const dispatch = useDispatch();
   useEffect(() => {
     if (isDebug) {
-      dispatch(setMainData(mainData));
+      dispatch(setMainData(lpData));
     }
-  }, [dispatch, mainData]);
+  }, [dispatch, lpData]);
   useEffect(() => {
     if (isDebug) {
       dispatch(setRenderingData(renderingData));

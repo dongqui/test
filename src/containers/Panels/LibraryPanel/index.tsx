@@ -11,14 +11,14 @@ import {
   FILE_TYPES,
   FORMAT_TYPES,
   LPModeType,
-  MainDataType,
+  LPDataType,
   MODAL_TYPES,
   PAGE_NAMES,
 } from 'types';
 import {
   storeCutImages,
   storeLPMode,
-  storeMainData,
+  storeLpData,
   storeModalInfo,
   storePageInfo,
   storePages,
@@ -42,16 +42,18 @@ import { Headline } from 'components/New_Typography';
 import Explorer from './Explorer/index';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { ROOT_FOLDER_NAME } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
 export interface PagesType {
   key: string;
   name: string;
+  type: FILE_TYPES;
 }
 
 const LibraryPanelComponent: FunctionComponent = () => {
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
   const pages = useReactiveVar(storePages);
   const lpmode = useReactiveVar(storeLPMode);
   const [loading, setLoading] = useState(false);
@@ -60,7 +62,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
   }, []);
   const onDropPost = useCallback(
     async ({ acceptedFiles, overrideKeys = [] }) => {
-      let newDatas: MainDataType[] = [];
+      let newDatas: LPDataType[] = [];
       for (const acceptedFile of acceptedFiles) {
         const extension = _.last(_.split(acceptedFile.name, '.'));
         let convertedFileUrl = DEFAULT_MODEL_URL;
@@ -101,7 +103,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
           setLoading(false);
           return false;
         }
-        const motions: MainDataType[] = [];
+        const motions: LPDataType[] = [];
         const key = uuidv4();
         _.forEach(animations, (clip, index) => {
           if (bones) {
@@ -116,13 +118,15 @@ const LibraryPanelComponent: FunctionComponent = () => {
             });
           }
         });
-        let newData: MainDataType[] = [
+        let newData: LPDataType[] = [
           {
             key,
             type: FILE_TYPES.file,
             name: acceptedFile.name,
             url,
-            parentKey: _.last(pages)?.key,
+            parentKey: _.isEqual(lpmode, LPModeType.iconview)
+              ? _.last(pages)?.key
+              : ROOT_FOLDER_NAME,
             baseLayer: _.cloneDeep(motions?.[0]?.baseLayer ?? []),
             layers: _.cloneDeep(motions?.[0]?.layers ?? []),
             boneNames: _.map(bones, (bone) => bone.name),
@@ -131,14 +135,14 @@ const LibraryPanelComponent: FunctionComponent = () => {
         newData = _.concat(newData, motions);
         newDatas = _.concat(newDatas, newData);
       }
-      let filteredMainData = _.clone(mainData);
+      let filteredLpData = _.clone(lpData);
       if (!_.isEmpty(overrideKeys)) {
-        filteredMainData = fnDeleteFileByKeys({ mainData: filteredMainData, keys: overrideKeys });
+        filteredLpData = fnDeleteFileByKeys({ mainData: filteredLpData, keys: overrideKeys });
       }
-      storeMainData(_.concat(filteredMainData, newDatas));
+      storeLpData(_.concat(filteredLpData, newDatas));
       setLoading(false);
     },
-    [mainData, pages],
+    [lpmode, lpData, pages],
   );
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -181,7 +185,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         return false;
       }
       if (
-        _.some(mainData, (item) =>
+        _.some(lpData, (item) =>
           _.includes(
             _.map(acceptedFiles, (o) => o.name),
             item.name,
@@ -192,7 +196,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
           okText: '덮어쓰기',
           cancelText: '취소',
           content: `대상 폴더에 이름이 ${
-            _.find(mainData, (item) =>
+            _.find(lpData, (item) =>
               _.includes(
                 _.map(acceptedFiles, (o) => o.name),
                 item.name,
@@ -203,7 +207,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
             onDropPost({
               acceptedFiles,
               overrideKeys: [
-                _.find(mainData, (item) =>
+                _.find(lpData, (item) =>
                   _.includes(
                     _.map(acceptedFiles, (o) => o.name),
                     item.name,
@@ -220,7 +224,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       }
       await onDropPost({ acceptedFiles });
     },
-    [mainData, onDropPost],
+    [lpData, onDropPost],
   );
   const { getRootProps } = useDropzone({ onDrop });
 
@@ -251,7 +255,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     filteredData,
   } = useLPControl({
     contextmenuInfo,
-    mainData,
+    mainData: lpData,
     pages,
     searchWord,
     lpmode,
