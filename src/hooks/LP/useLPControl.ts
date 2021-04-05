@@ -112,6 +112,7 @@ export const useLPControl = ({
       let newMainData = _.concat(mainData, {
         key: newKey,
         type: _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.type ?? FILE_TYPES.file,
+        url: _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.url,
         name: fnGetFileName({
           key: '',
           name: _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.name ?? '',

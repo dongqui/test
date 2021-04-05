@@ -7,29 +7,24 @@ import {
   storeLpData,
   storeCPData,
   storeAnimatingData,
-  storeCPMode,
-  storeCurrentData,
+  storeCurrentVisualizedData,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox } from 'react-resizable';
-import { CurrentDataType, FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import useWindowSize from 'hooks/common/useWindowSize';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
-import { RetargetPanel } from 'containers/Panels/RetargetPanel';
-import { CPModeType } from 'types/CP';
-import { DEFAULT_TARGETBONES } from 'utils/const';
 
 const cx = classNames.bind(styles);
 
 const MainContainer: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
-  const currentData = useReactiveVar(storeCurrentData);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const cpData = useReactiveVar(storeCPData);
-  const cpMode = useReactiveVar(storeCPMode);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
 
@@ -40,41 +35,9 @@ const MainContainer: FunctionComponent = () => {
     }
     return _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
   }, [lpData]);
-  const visualizedRow = useMemo(() => {
-    const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
-    let result: CurrentDataType = {
-      key: visualizedRow?.key ?? '',
-      name: visualizedRow?.name ?? '',
-      type: visualizedRow?.type ?? FILE_TYPES.file,
-      baseLayer: visualizedRow?.baseLayer,
-      layers: visualizedRow?.layers,
-    };
-    if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
-      const childMotion = _.find(lpData, [LPDATA_PROPERTY_TYPES.parentKey, visualizedRow?.key]);
-      result = {
-        key: childMotion?.key ?? '',
-        name: childMotion?.name ?? '',
-        type: childMotion?.type ?? FILE_TYPES.file,
-        baseLayer: childMotion?.baseLayer,
-        layers: childMotion?.layers,
-      };
-    }
-    return result;
-  }, [lpData]);
-  const targetBones = useMemo(() => {
-    let result = DEFAULT_TARGETBONES;
-    const visualizedBaseLayer = _.filter(
-      _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true])?.baseLayer,
-      (item) => _.includes(item.name, 'rotation'),
-    );
-    if (!_.isEmpty(visualizedBaseLayer)) {
-      result = _.map(visualizedBaseLayer, (item) => _.split(item.name, '.')?.[0]);
-    }
-    return result;
-  }, [lpData]);
   const handleDrop = useCallback(() => {
     const draggingRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
-    let visualizedKeys = draggingRow?.key;
+    let visualizedKey = draggingRow?.key;
     if (_.isEqual(draggingRow?.type, FILE_TYPES.folder)) {
       return;
     }
@@ -84,24 +47,30 @@ const MainContainer: FunctionComponent = () => {
         draggingRow?.key,
       ]);
       if (defaultVisulizedMotionRow) {
-        visualizedKeys = defaultVisulizedMotionRow?.key;
+        visualizedKey = defaultVisulizedMotionRow?.key;
       }
     }
+    const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedKey]);
     storeLpData(
       _.map(lpData, (item) => ({
         ...item,
-        isVisualized: _.isEqual(visualizedKeys, item.key),
+        isVisualized: _.isEqual(visualizedKey, item.key),
       })),
     );
+    storeCurrentVisualizedData({
+      key: visualizedRow?.key ?? '',
+      name: visualizedRow?.name ?? '',
+      type: visualizedRow?.type ?? FILE_TYPES.file,
+      url: visualizedRow?.url,
+      baseLayer: visualizedRow?.baseLayer,
+      layers: visualizedRow?.layers,
+      boneNames: visualizedRow?.boneNames,
+    });
   }, [lpData]);
 
   useDebuggingData({ lpData, cpData, renderingData, animatingData });
 
   const [width, height] = useWindowSize();
-
-  useEffect(() => {
-    storeCurrentData(visualizedRow);
-  }, [visualizedRow]);
 
   return (
     <div className={cx('wrapper')}>
@@ -135,9 +104,9 @@ const MainContainer: FunctionComponent = () => {
             <RenderingController
               id="renderingDiv"
               fileUrl={fileUrl}
-              visualizedName={currentData?.name}
-              visualizedBaseLayer={currentData?.baseLayer}
-              visualizedLayers={currentData?.layers}
+              visualizedName={currentVisualizedData?.name}
+              visualizedBaseLayer={currentVisualizedData?.baseLayer}
+              visualizedLayers={currentVisualizedData?.layers}
             />
           </div>
         </ResizableBox>
@@ -149,12 +118,14 @@ const MainContainer: FunctionComponent = () => {
           resizeHandles={['w']}
           axis="both"
         >
-          {_.isEqual(cpMode, CPModeType.property) && <ControlPanel />}
-          {_.isEqual(cpMode, CPModeType.retarget) && <RetargetPanel targetBones={targetBones} />}
+          <ControlPanel />
         </ResizableBox>
       </ResizableBox>
       <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">
-        <TimelineContainer baseLayer={currentData?.baseLayer} layers={currentData?.layers} />
+        <TimelineContainer
+          baseLayer={currentVisualizedData?.baseLayer}
+          layers={currentVisualizedData?.layers}
+        />
       </ResizableBox>
     </div>
   );
