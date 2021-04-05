@@ -26,7 +26,7 @@ const BreadcrumbItem: FunctionComponent<Props> = ({ item, level, isLast }) => {
 
   return (
     <div className={cx('wrapper')}>
-      <div className={cx('path-inner')} ref={hoverRef}>
+      <div className={cx('inner')} ref={hoverRef}>
         <div className={cx('icon-wrapper')}>
           <IconWrapper
             innerRef={hoverRef}

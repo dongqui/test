@@ -23,6 +23,7 @@
   align-items: center;
   // flex-basis: calc(100% - 28px);
   flex-basis: calc(85% - 28px);
+  height: 28px;
 }
 
 // .icon {
@@ -40,7 +41,10 @@
 .icon-more {
   position: relative;
   display: flex;
-  min-width: 20px;
+
+  & > svg {
+    width: 20px;
+  }
 }
 
 // @TODO - Mixin ellipsis로 변경 예정

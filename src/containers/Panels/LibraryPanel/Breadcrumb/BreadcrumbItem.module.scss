@@ -3,11 +3,14 @@
 .wrapper {
   display: flex;
   align-items: center;
+  height: 100%;
 }
 
-.path-inner {
+.inner {
   display: flex;
+  align-items: center;
   padding: 0 4px;
+  height: 100%;
 }
 
 .icon-wrapper {
@@ -19,8 +22,12 @@
 .icon {
   position: relative;
   display: flex;
-  min-width: 12px;
+  // min-width: 12px;
   // flex-basis: 12px;
+
+  & > svg {
+    width: 12px;
+  }
 
   &.last {
     // dark theme
