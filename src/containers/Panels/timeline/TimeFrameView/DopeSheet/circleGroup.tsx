@@ -24,7 +24,17 @@ const CircleGroup: React.FC<Props> = ({ dopeSheetData, prevXScale }) => {
         .attr('cx', (time) => prevXScale(time * 30))
         .attr('cy', TRACK_HEIGHT - DOPE_SHEET_MARGIN.top - CIRCLE_RADIUS * 1.5)
         .attr('r', CIRCLE_RADIUS)
-        .attr('stroke', '#ffffff');
+        .attr('stroke', '#ffffff')
+        .on('mouseenter', (event) => {
+          event.target.style.cursor = 'pointer';
+        })
+        .on('mouseout', (event) => {
+          event.target.style.cursor = '';
+        })
+        .on('click', (event, time) => {
+          console.log('event: ', event);
+          console.log('time: ', time);
+        });
     }
   }, [dopeSheetData, prevXScale]);
 
