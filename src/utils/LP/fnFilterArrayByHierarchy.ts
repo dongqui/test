@@ -1,12 +1,12 @@
-import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
 
 interface fnFilterArrayByHierarchyProps {
-  data: MainDataType[];
+  data: LPDataType[];
   searchWord: string;
 }
 export const fnFilterArrayByHierarchy = ({ data, searchWord }: fnFilterArrayByHierarchyProps) => {
-  let result: MainDataType[] = [];
+  let result: LPDataType[] = [];
   const searchFiles = _.filter(
     data,
     (item) =>
@@ -20,10 +20,10 @@ export const fnFilterArrayByHierarchy = ({ data, searchWord }: fnFilterArrayByHi
         result = _.concat(result, childRows);
       }
     }
-    let currentRow: MainDataType | undefined = _.clone(file);
+    let currentRow: LPDataType | undefined = _.clone(file);
     result = _.concat(result, currentRow);
     do {
-      currentRow = _.find(data, [MAINDATA_PROPERTY_TYPES.key, currentRow?.parentKey]);
+      currentRow = _.find(data, [LPDATA_PROPERTY_TYPES.key, currentRow?.parentKey]);
       if (currentRow) {
         result = _.concat(result, currentRow);
       }

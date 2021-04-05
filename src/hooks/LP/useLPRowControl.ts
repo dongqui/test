@@ -1,17 +1,17 @@
 import _ from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
-import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
-import { storeMainData } from 'lib/store';
+import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
+import { storeLpData } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
 
 interface useLPControlProps {
-  mainData: MainDataType[];
+  mainData: LPDataType[];
   rowKey?: string;
 }
 export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
   const fileName =
-    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.name, [
+    useMemo(() => _.find(mainData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name, [
       rowKey,
       mainData,
     ]) ?? 'Model';
@@ -22,10 +22,10 @@ export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
       : fileName;
   }, [fileName]);
   const isModifying = useMemo(
-    () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isModifying,
+    () => _.find(mainData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isModifying,
     [rowKey, mainData],
   );
-  const fileType = useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type, [
+  const fileType = useMemo(() => _.find(mainData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type, [
     mainData,
     rowKey,
   ]);
@@ -34,7 +34,7 @@ export const useLPRowControl = ({ mainData, rowKey }: useLPControlProps) => {
   }, []);
   const onBlur = useCallback(
     (e) => {
-      storeMainData(
+      storeLpData(
         _.map(mainData, (item) => ({
           ...item,
           isModifying: _.isEqual(item.key, rowKey) ? false : item.isModifying,

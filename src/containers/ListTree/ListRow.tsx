@@ -2,13 +2,10 @@ import { FunctionComponent, memo, Fragment, useCallback, useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
-import { storeMainData } from 'lib/store';
+import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import { storeLpData } from 'lib/store';
 import { BaseInput } from 'components/New_Input';
 import _ from 'lodash';
-import { INITIAL_MAIN_DATA } from 'utils/const';
-import { rem } from 'utils/rem';
-import * as S from './ListTreeStyles';
 import classNames from 'classnames/bind';
 import styles from './ListRow.module.scss';
 
@@ -18,12 +15,12 @@ export interface ListRowProps {
   mode: FILE_TYPES;
   rowKey: string;
   depth?: number;
-  [MAINDATA_PROPERTY_TYPES.isClicked]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isSelected]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isVisualized]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isFirst]?: boolean;
-  [MAINDATA_PROPERTY_TYPES.isLast]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isClicked]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isSelected]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isVisualized]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isFirst]?: boolean;
+  [LPDATA_PROPERTY_TYPES.isLast]?: boolean;
 }
 
 const ListRowComponent: FunctionComponent<ListRowProps> = ({
@@ -37,10 +34,10 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
   isFirst,
   isLast,
 }) => {
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
   const onClick = useCallback(() => {
-    storeMainData(
-      _.map(mainData, (item) => ({
+    storeLpData(
+      _.map(lpData, (item) => ({
         ...item,
         isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
         isClicked: _.isEqual(rowKey, item.key),
@@ -50,7 +47,7 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
             : item.isVisualized,
       })),
     );
-  }, [isVisualizeSelected, mainData, mode, rowKey]);
+  }, [isVisualizeSelected, lpData, mode, rowKey]);
 
   const {
     fileName,
@@ -61,11 +58,11 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
     handleKeyDown,
     handleFocus,
   } = useLPRowControl({
-    mainData,
+    mainData: lpData,
     rowKey,
   });
 
-  const isExpanded = _.find(mainData, { key: rowKey })?.isExpanded;
+  const isExpanded = _.find(lpData, { key: rowKey })?.isExpanded;
 
   const folderClasses = cx('list-row', `depth-${depth}`, {
     selected: isSelected,

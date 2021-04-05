@@ -1,9 +1,9 @@
 import { FunctionComponent, memo, useMemo, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useShortcut } from 'hooks/common/useShortcut';
-import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { storeMainData, storeSearchWord } from 'lib/store';
+import { storeLpData, storeSearchWord } from 'lib/store';
 import _ from 'lodash';
 import { fnFilterArrayByHierarchy } from 'utils/LP/fnFilterArrayByHierarchy';
 import { fnMakeSelection } from 'utils/LP/fnMakeSelection';
@@ -35,14 +35,14 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
   onDrop,
   shortcutData,
 }) => {
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
   const searchWord = useReactiveVar(storeSearchWord);
   useShortcut({
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    let result: MainDataType[] = [];
-    let data = _.clone(mainData);
+    let result: LPDataType[] = [];
+    let data = _.clone(lpData);
     if (!_.isEmpty(searchWord)) {
       data = fnFilterArrayByHierarchy({ data, searchWord });
     }
@@ -52,13 +52,13 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
         result.push(item);
         return;
       }
-      if (_.find(result, [MAINDATA_PROPERTY_TYPES.key, item.parentKey])?.isExpanded) {
+      if (_.find(result, [LPDATA_PROPERTY_TYPES.key, item.parentKey])?.isExpanded) {
         result.push(item);
       }
     });
-    result = fnMakeSelection({ data: result, originalData: mainData });
+    result = fnMakeSelection({ data: result, originalData: lpData });
     return result;
-  }, [mainData, searchWord]);
+  }, [lpData, searchWord]);
 
   const handleDragStart = useCallback(
     (key: string) => {

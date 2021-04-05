@@ -11,8 +11,8 @@ import {
 } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useLPRowControl } from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, MAINDATA_PROPERTY_TYPES } from 'types';
-import { storeMainData, storePages } from 'lib/store';
+import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import { storeLpData, storePages } from 'lib/store';
 import { BaseInput } from 'components/New_Input';
 import _ from 'lodash';
 import * as S from './IconStyles';
@@ -28,57 +28,55 @@ export interface IconProps {
 }
 
 const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
   const pages = useReactiveVar(storePages);
   const inputRef = useRef<HTMLInputElement>() as MutableRefObject<HTMLInputElement>;
   const fileType = useMemo(
-    () => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
-    [rowKey, mainData],
+    () => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
+    [rowKey, lpData],
   );
   const isDragging =
-    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isDragging, [
+    useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isDragging, [
       rowKey,
-      mainData,
+      lpData,
     ]) ?? false;
   const isClicked =
-    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isClicked, [
+    useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isClicked, [
       rowKey,
-      mainData,
+      lpData,
     ]) ?? false;
   const isVisualized =
-    useMemo(() => _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.isVisualized, [
+    useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isVisualized, [
       rowKey,
-      mainData,
+      lpData,
     ]) ?? false;
   const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
   const onClick = useCallback(
     (e) => {
-      storeMainData(
-        _.map(mainData, (item) => ({
+      storeLpData(
+        _.map(lpData, (item) => ({
           ...item,
           isClicked: _.isEqual(item.key, rowKey) ? true : e.ctrlKey ? item.isClicked : false,
         })),
       );
     },
-    [rowKey, mainData],
+    [rowKey, lpData],
   );
   const onDoubleClick = useCallback(() => {
-    if (
-      _.isEqual(_.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type, FILE_TYPES.motion)
-    ) {
-      storeMainData(
-        _.map(mainData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, rowKey) })),
+    if (_.isEqual(_.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type, FILE_TYPES.motion)) {
+      storeLpData(
+        _.map(lpData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, rowKey) })),
       );
     } else {
       storePages(
         _.concat(pages, {
           key: rowKey,
-          name: _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.name ?? 'Folder',
-          type: _.find(mainData, [MAINDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.folder,
+          name: _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name ?? 'Folder',
+          type: _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.folder,
         }),
       );
     }
-  }, [rowKey, mainData, pages]);
+  }, [rowKey, lpData, pages]);
   const {
     fileName,
     filteredFileName,
@@ -89,7 +87,7 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
     handleKeyDown,
     handleFocus,
   } = useLPRowControl({
-    mainData,
+    mainData: lpData,
     rowKey,
   });
   const classes = cx('wrapper', {
