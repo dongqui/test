@@ -1,5 +1,5 @@
 import { FunctionComponent, memo, useCallback } from 'react';
-import { MainDataType } from 'types';
+import { LPDataType } from 'types';
 import { Icon } from '../Icon';
 import classNames from 'classnames/bind';
 import styles from './IconNode.module.scss';
@@ -7,7 +7,7 @@ import styles from './IconNode.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
-  item: MainDataType;
+  item: LPDataType;
   onDragStart: (key: string) => void;
   onDragEnd: ({ key }: any) => void;
   onDrop: ({ key }: any) => void;

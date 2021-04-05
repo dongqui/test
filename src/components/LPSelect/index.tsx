@@ -2,7 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { IconviewIcon } from 'components/Icons/generated2/IconviewIcon';
 import { ListviewIcon } from 'components/Icons/generated2/ListviewIcon';
 import { FILE_TYPES, LPModeType } from 'types';
-import { storeLPMode, storeMainData, storePages } from 'lib/store';
+import { storeLPMode, storeLpData, storePages } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { GRAY500, PRIMARY_BLUE } from 'styles/constants/common';
@@ -16,18 +16,18 @@ export interface LPSelectProps {}
 const LPSelectComponent: React.FC<LPSelectProps> = ({}) => {
   const lpmode = useReactiveVar(storeLPMode);
   const pages = useReactiveVar(storePages);
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
   const addNewGroup = useCallback(() => {
-    storeMainData(
-      _.concat(mainData, {
+    storeLpData(
+      _.concat(lpData, {
         key: uuidv4(),
         type: FILE_TYPES.folder,
-        name: fnGetFileName({ key: '', mainData, name: 'Folder' }),
+        name: fnGetFileName({ key: '', mainData: lpData, name: 'Folder' }),
         parentKey: _.last(pages)?.key,
         isModifying: true,
       }),
     );
-  }, [mainData, pages]);
+  }, [lpData, pages]);
   return (
     <S.LPSelectWrapper>
       <S.PlusIconWrapper onClick={addNewGroup}>

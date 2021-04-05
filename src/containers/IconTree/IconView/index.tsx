@@ -1,6 +1,6 @@
 import { FunctionComponent, memo, useCallback } from 'react';
 import _ from 'lodash';
-import { MainDataType } from 'types';
+import { LPDataType } from 'types';
 import { useShortcut } from 'hooks/common/useShortcut';
 import IconNode from './IconNode';
 import classNames from 'classnames/bind';
@@ -19,7 +19,7 @@ export interface IconViewProps {
     ctrlKey?: boolean;
     event: () => void;
   }[];
-  filteredData: MainDataType[];
+  filteredData: LPDataType[];
 }
 
 const IconViewComponent: FunctionComponent<IconViewProps> = ({

@@ -1,33 +1,33 @@
-import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
 
 interface fnMakeSelectionProps {
-  data: MainDataType[];
-  originalData: MainDataType[];
+  data: LPDataType[];
+  originalData: LPDataType[];
 }
 export const fnMakeSelection = ({ data, originalData }: fnMakeSelectionProps) => {
-  const result: MainDataType[] = [];
+  const result: LPDataType[] = [];
   let isFirst = false;
   let isLast = false;
   let isSelected = false;
   let isVisualizeSelected = false;
   let depth = 0;
-  let clickedRow = _.find(data, [MAINDATA_PROPERTY_TYPES.isClicked, true]);
-  let visualizedRow = _.find(originalData, [MAINDATA_PROPERTY_TYPES.isVisualized, true]);
+  let clickedRow = _.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true]);
+  let visualizedRow = _.find(originalData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
   do {
-    if (_.some(data, [MAINDATA_PROPERTY_TYPES.key, clickedRow?.parentKey])) {
-      clickedRow = _.find(data, [MAINDATA_PROPERTY_TYPES.key, clickedRow?.parentKey]);
+    if (_.some(data, [LPDATA_PROPERTY_TYPES.key, clickedRow?.parentKey])) {
+      clickedRow = _.find(data, [LPDATA_PROPERTY_TYPES.key, clickedRow?.parentKey]);
     }
-  } while (_.some(data, [MAINDATA_PROPERTY_TYPES.key, clickedRow?.parentKey]));
+  } while (_.some(data, [LPDATA_PROPERTY_TYPES.key, clickedRow?.parentKey]));
   do {
-    if (_.some(originalData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])) {
-      visualizedRow = _.find(originalData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey]);
+    if (_.some(originalData, [LPDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])) {
+      visualizedRow = _.find(originalData, [LPDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey]);
     }
-  } while (_.some(originalData, [MAINDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey]));
+  } while (_.some(originalData, [LPDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey]));
   _.forEach(data, (item, index) => {
     isFirst = false;
     isLast = false;
-    if (!_.some(data, [MAINDATA_PROPERTY_TYPES.key, item?.parentKey])) {
+    if (!_.some(data, [LPDATA_PROPERTY_TYPES.key, item?.parentKey])) {
       isFirst = true;
       isLast = false;
       if (_.isEqual(clickedRow?.key, item?.key)) {
@@ -37,10 +37,10 @@ export const fnMakeSelection = ({ data, originalData }: fnMakeSelectionProps) =>
         isVisualizeSelected = true;
       }
     }
-    if (!_.some(data, [MAINDATA_PROPERTY_TYPES.key, data?.[index + 1]?.parentKey])) {
+    if (!_.some(data, [LPDATA_PROPERTY_TYPES.key, data?.[index + 1]?.parentKey])) {
       isLast = true;
     }
-    depth = (_.find(result, [MAINDATA_PROPERTY_TYPES.key, item?.parentKey])?.depth ?? 0) + 1;
+    depth = (_.find(result, [LPDATA_PROPERTY_TYPES.key, item?.parentKey])?.depth ?? 0) + 1;
     result.push({ ...item, isFirst, isLast, depth, isSelected, isVisualizeSelected });
     if (isLast) {
       isSelected = false;
