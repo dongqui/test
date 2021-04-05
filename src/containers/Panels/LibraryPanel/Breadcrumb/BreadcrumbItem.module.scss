@@ -1,0 +1,62 @@
+@import 'styles/libraries/_colors';
+
+.wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.path-inner {
+  display: flex;
+  padding: 0 4px;
+}
+
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  position: relative;
+  display: flex;
+  min-width: 12px;
+  // flex-basis: 12px;
+
+  &.last {
+    // dark theme
+    color: #fff;
+  }
+}
+
+// @TODO - Mixin ellipsis로 변경 예정
+.name {
+  font-size: 11px;
+  padding: 0 4px;
+  // width: 40px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+
+  &.last {
+    // dark theme
+    color: #fff;
+  }
+}
+
+.arrow-right {
+  min-width: 18px;
+  height: 100%;
+
+  & > svg {
+    display: block;
+    margin: auto;
+    width: 6px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%)rotate(180deg);
+  }
+}
