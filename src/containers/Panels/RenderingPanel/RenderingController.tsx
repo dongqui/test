@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
 import { ShootLayerType, ShootTrackType } from 'types';
-import { storeAnimatingData, storeRenderingData } from 'lib/store';
+import { storeAnimatingData, storeRenderingData, storeSkeletonHelper } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay } from 'utils/TP/editingUtils';
 import {
@@ -40,9 +40,9 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   // store data
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
+  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   // component state
   const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
-  const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper | undefined>(undefined);
   const [cameraControls, setCameraControls] = useState<OrbitControls | undefined>(undefined);
   const [scene, setScene] = useState<THREE.Scene | undefined>(undefined);
   const [dirLight, setDirLight] = useState<THREE.DirectionalLight | undefined>(undefined);
@@ -52,7 +52,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     id,
     fileUrl,
     setMixer,
-    setSkeletonHelper,
     setCameraControls,
     setScene,
     setDirLight,
@@ -137,11 +136,11 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   }, [dirLight, isShadowOn]);
 
   // action 의 current time 을 10초 동안 콘솔에 찍는 예시 함수입니다.
-  useEffect(() => {
-    if (currentAction) {
-      fnLogAnimationTime({ action: currentAction });
-    }
-  }, [currentAction]);
+  // useEffect(() => {
+  //   if (currentAction) {
+  //     fnLogAnimationTime({ action: currentAction });
+  //   }
+  // }, [currentAction]);
 
   const handleCameraReset = useCallback(() => {
     if (cameraControls) {

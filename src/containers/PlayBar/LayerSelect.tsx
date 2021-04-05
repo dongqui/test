@@ -1,34 +1,29 @@
+import { useReactiveVar } from '@apollo/client';
 import { LayerIcon } from 'components/Icons/generated2/LayerIcon';
 import { TrashIcon } from 'components/Icons/generated2/TrashIcon';
+import { storeMainData, storeSkeletonHelper } from 'lib/store';
 import _ from 'lodash';
-import React from 'react';
+import React, { memo } from 'react';
+import { fnGetNewLayer } from 'utils/TP/editingUtils';
 import * as S from './PlayBarStyles';
 
-export interface LayerSelectProps {
-  data: { key: string; mode: 'layer' | 'trash'; isSelected: boolean }[];
-  onSelect: ({ key }: { key: string }) => void;
-}
+const LayerSelect: React.FC = () => {
+  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
 
-const LayerSelectComponent: React.FC<LayerSelectProps> = ({
-  data = [
-    { key: 'layer', mode: 'layer', isSelected: true },
-    { key: 'trash', mode: 'trash', isSelected: false },
-  ],
-  onSelect = () => {},
-}) => {
+  const handleClick = () => {
+    const ok = confirm('Add a new layer?');
+    if (ok && skeletonHelper) {
+      const newLayer = fnGetNewLayer({ name: 'new layer', bones: skeletonHelper.bones });
+      console.log('new layer: ', newLayer);
+    }
+  };
+
   return (
     <S.ModeSelectWrapper>
-      {_.map(data, (item, index) => (
-        <S.ModeSelectIconWrapper
-          key={index}
-          isSelected={item.isSelected}
-          onClick={() => onSelect({ key: item.key })}
-        >
-          {_.isEqual(item.key, 'layer') && <LayerIcon />}
-          {_.isEqual(item.key, 'trash') && <TrashIcon />}
-        </S.ModeSelectIconWrapper>
-      ))}
+      <S.ModeSelectIconWrapper onClick={handleClick}>
+        <LayerIcon />
+      </S.ModeSelectIconWrapper>
     </S.ModeSelectWrapper>
   );
 };
-export const LayerSelect = React.memo(LayerSelectComponent);
+export default memo(LayerSelect);
