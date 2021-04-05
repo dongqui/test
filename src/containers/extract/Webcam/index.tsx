@@ -1,11 +1,11 @@
 import { useReactiveVar } from '@apollo/client';
+import getBlobDuration from 'get-blob-duration';
 import { useVideoToImages } from 'hooks/RP/useVideoToImages';
-import { storePageInfo, storeRecordingData } from 'lib/store';
+import { storeRecordingData } from 'lib/store';
 import _ from 'lodash';
-import { useRouter } from 'next/dist/client/router';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { STANDARD_WIDTH } from 'styles/constants/common';
-import { storeCutImages } from '../../lib/store';
+import { storeCutImages } from '../../../lib/store';
 import * as S from './WebcamStyles';
 
 export interface WebcamProps {
@@ -14,7 +14,6 @@ export interface WebcamProps {
 const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
   const recordingData = useReactiveVar(storeRecordingData);
   const cutImages = useReactiveVar(storeCutImages);
-  const pageInfo = useReactiveVar(storePageInfo);
   const videoRef = useRef<HTMLVideoElement>(null);
   const showVideoRef = useRef<HTMLVideoElement>(null);
   const initialAction = useCallback(async () => {
@@ -25,14 +24,11 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
         video.currentTime = 0;
         await video.pause();
       }
-      let duration: any = video.duration;
-      if (duration == Infinity) {
-        duration = pageInfo?.duration ?? 10;
-      }
+      const duration = await getBlobDuration(videoUrl);
       storeRecordingData({ ...recordingData, duration });
       storeCutImages([]);
     }
-  }, [pageInfo?.duration, recordingData]);
+  }, [recordingData, videoUrl]);
   const controlPlay = useCallback(async () => {
     const video = showVideoRef.current;
     if (recordingData.isPlaying) {
@@ -46,17 +42,17 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
   }, [recordingData.isPlaying]);
   useVideoToImages({
     videoRef,
+    videoUrl,
     action: ({ images }) => {
       if (_.isEmpty(cutImages)) {
         storeCutImages(images);
       }
     },
     active: _.isEmpty(cutImages),
-    intervalTime: ((videoRef.current?.duration ?? 10) / 20) * 1000,
   });
   useEffect(() => {
     controlPlay();
-  }, [controlPlay, recordingData.isPlaying]);
+  }, [controlPlay]);
   useEffect(() => {
     try {
       const newCurrentTime =

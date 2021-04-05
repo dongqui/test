@@ -202,7 +202,6 @@ const LibraryPanelComponent: FunctionComponent = () => {
           onOk: () => {
             onDropPost({
               acceptedFiles,
-              override: true,
               overrideKeys: [
                 _.find(mainData, (item) =>
                   _.includes(

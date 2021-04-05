@@ -3,10 +3,10 @@ import { PAGE_NAMES, VIDEO_FORMAT_TYPES } from 'types';
 import { storeCutImages, storePageInfo, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import moment, { Moment } from 'moment';
-import { useRouter } from 'next/dist/client/router';
+import getBlobDuration from 'get-blob-duration';
 import React, { useEffect, useRef, useState } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
-import { useRecordWebcam } from '../../hooks/RP/useRecordWebcam';
+import { useRecordWebcam } from '../../../hooks/RP/useRecordWebcam';
 import * as S from './RecordStyle';
 import { DEFAULT_FILE_URL, INITIAL_CP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
 

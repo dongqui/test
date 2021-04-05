@@ -45,7 +45,7 @@ export const storeModalInfo = makeVar<ModalType>({
   msg: '',
   isShow: false,
 });
-export const storePageInfo = makeVar<PageInfoType>({ page: PAGE_NAMES.shoot });
+export const storePageInfo = makeVar<PageInfoType>({ page: PAGE_NAMES.shoot, duration: 10 });
 // LP
 export const storeMainData = makeVar<MainDataType[]>(INITIAL_MAIN_DATA);
 export const storePages = makeVar<PagesType[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }]);
