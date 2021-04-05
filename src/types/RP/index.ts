@@ -22,7 +22,7 @@ export enum RenderingDataPropertyName {
   // angleZ = 'angleZ',
   axis = 'axis',
   isBoneOn = 'isBoneOn',
-  isJointOn = 'isJointOn',
+  // isJointOn = 'isJointOn',
   isMeshOn = 'isMeshOn',
   isShadowOn = 'isShadowOn',
   // isFogOn = 'isFogOn',
@@ -58,7 +58,7 @@ export interface RenderingDataType {
   // [RenderingDataPropertyName.angleZ]: number;
   [RenderingDataPropertyName.axis]: axisName;
   [RenderingDataPropertyName.isBoneOn]: boolean;
-  [RenderingDataPropertyName.isJointOn]: boolean;
+  // [RenderingDataPropertyName.isJointOn]: boolean;
   [RenderingDataPropertyName.isMeshOn]: boolean;
   [RenderingDataPropertyName.isShadowOn]: boolean;
   // [RenderingDataPropertyName.isFogOn]: boolean;

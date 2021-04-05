@@ -102,7 +102,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
 
   // fog option 적용 로직 -> 제외
 
-  const { axis, isBoneOn, isJointOn, isMeshOn, isShadowOn } = renderingData;
+  const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 
   // visibility option 적용 로직
   useEffect(() => {
