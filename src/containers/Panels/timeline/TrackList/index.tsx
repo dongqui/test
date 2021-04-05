@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import produce from 'immer';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
-import { TPTrackNameList, TPDopeSheetList, TPUpdateDopeSheetList } from 'lib/store';
+import { TPTrackNameList, TPDopeSheetList, TPUpdateDopeSheetList, TPLastBoneList } from 'lib/store';
 import { SearchInput } from 'components/New_Input';
+import { IconWrapper, SvgPath } from 'components/New_Icon';
 import Track from '../Track';
 import styles from './index.module.scss';
 
@@ -16,8 +18,9 @@ const DEBOUNCED_TIME = 300;
 const cx = classNames.bind(styles);
 
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
-  const trackNameList = useReactiveVar(TPTrackNameList);
+  const storeTrackNameList = useReactiveVar(TPTrackNameList);
   const dopeSheetList = useReactiveVar(TPDopeSheetList);
+  const lastBoneList = useReactiveVar(TPLastBoneList);
   const [trackList, setTrackList] = useState<TPTrackName[]>([]);
   const prevTrackInput = useRef('');
 
@@ -26,7 +29,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
     () =>
       _.debounce((inputText: string) => {
         // 트랙 리스트가 없는 상태에서 검색하는 경우(아무 동작을 시키지 않음)
-        if (!trackNameList.length) return;
+        if (!storeTrackNameList.length) return;
         const trimInput = _.toLower(_.trim(inputText));
 
         // 이전 검색 텍스트와 현재 검색 텍스트가 같은 경우(아무 동작을 시키지 않음)
@@ -43,7 +46,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           );
           resetDopeSheetList[0].isClickedParentTrack = true;
           TPUpdateDopeSheetList({ updatedList: resetDopeSheetList, status: 'isFiltered' });
-          setTrackList(trackNameList);
+          setTrackList(storeTrackNameList);
           return;
         }
 
@@ -104,15 +107,13 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         // 필터링 리스트 갱신
         const filterResult = recursiveTrackSearch({
-          trackList: trackNameList,
+          trackList: storeTrackNameList,
         });
         prevTrackInput.current = trimInput;
-        console.time('test');
         TPUpdateDopeSheetList({ updatedList: filteredDopeSheetList, status: 'isFiltered' });
-        console.timeEnd('test');
         setTrackList(filterResult);
       }, DEBOUNCED_TIME),
-    [trackNameList, dopeSheetList],
+    [storeTrackNameList, dopeSheetList],
   );
 
   // 트랙 인풋 텍스트 변경
@@ -123,11 +124,74 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
     [changeDebounedTrackInput],
   );
 
+  // 레이어 버튼 클릭
+  const clickLayerButton = useCallback(() => {
+    if (!storeTrackNameList.length) return;
+    const { layerIdnex } = lastBoneList[lastBoneList.length - 1];
+    const jump = 10000 * lastBoneList.length;
+    let curBoneIndex = 0;
+
+    // 트랙 네임 리스트 갱신
+    const updatedTrackNameList = produce(storeTrackNameList, (draft) => {
+      const summaryTrackChildren = draft[0].childrenTrackList;
+      const baseLayerChildren = summaryTrackChildren[0].childrenTrackList;
+      const createdLayer = _.map(baseLayerChildren, (boneTrack) => {
+        return {
+          ...boneTrack,
+          trackIndex: boneTrack.trackIndex + jump,
+          childrenTrackList: _.map(boneTrack.childrenTrackList, (transformTrack, index) => {
+            const transformIndex = transformTrack.trackIndex + jump;
+            if (index === 2 && curBoneIndex < transformIndex) {
+              curBoneIndex = transformIndex;
+            }
+            return { ...transformTrack, trackIndex: transformIndex };
+          }),
+        };
+      });
+
+      // 레이어 추가
+      summaryTrackChildren.push({
+        name: 'Layer1', // 이름 명명 적용 예정
+        isOpenedChildrenTrack: false,
+        childrenTrackList: createdLayer,
+        trackIndex: layerIdnex + 10000,
+      });
+    });
+
+    // Dope Sheet 리스트 갱신
+    const lastBaseBoneIndex = _.findIndex(
+      dopeSheetList,
+      (dopeSheet) => dopeSheet.trackIndex === lastBoneList[0].lastBoneIndex,
+    );
+    const updatedDopeSheetList: TPDopeSheet[] = [];
+    for (let index = 1; index <= lastBaseBoneIndex + 3; index += 1) {
+      updatedDopeSheetList.push({
+        trackIndex: dopeSheetList[index].trackIndex + jump,
+        isSelected: false,
+        isLocked: false,
+        isExcludedRendering: false,
+        isClickedParentTrack: index === 1 ? dopeSheetList[1].isClickedParentTrack : false,
+        isFiltered: true, // 상황에 맞춰서 구현해야 됨
+        times: [],
+      });
+    }
+
+    // 추가 된 레이어의 마지막 bone index 저장
+    const lastBone = {
+      layerIdnex: layerIdnex + 10000,
+      lastBoneIndex: curBoneIndex,
+    };
+
+    TPTrackNameList(updatedTrackNameList);
+    TPLastBoneList([...lastBoneList, lastBone]);
+    TPDopeSheetList([...dopeSheetList, ...updatedDopeSheetList]);
+  }, [dopeSheetList, lastBoneList, storeTrackNameList]);
+
   // 최초 Track List 적용
   useEffect(() => {
-    if (!trackNameList.length) return;
-    setTrackList(trackNameList);
-  }, [trackNameList]);
+    if (!storeTrackNameList.length) return;
+    setTrackList(storeTrackNameList);
+  }, [storeTrackNameList]);
 
   const isEmptyTrack = _.isEmpty(trackList);
 
@@ -140,6 +204,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
             placeholder="Search Joints"
             onChange={changeTrackInput}
           />
+          <IconWrapper className={cx('layer')} icon={SvgPath.Layer} hasFrame={false} />
         </div>
         {!isEmptyTrack && (
           <div className={cx('list')}>
@@ -150,7 +215,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                 <Track
                   key={key}
                   childrenTrackList={childrenTrackList}
-                  isOpenedChildrenTrack={isOpenedChildrenTrack}
+                  isOpenedParent={isOpenedChildrenTrack}
                   paddingLeft={10}
                   title={name}
                   trackIndex={trackIndex}
