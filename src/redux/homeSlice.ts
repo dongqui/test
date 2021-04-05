@@ -12,6 +12,7 @@ const initialState = {
   renderingData: INITIAL_RENDERING_DATA,
   recordingData: INITIAL_RECORDING_DATA,
   animatingData: INITIAL_ANIMATING_DATA,
+  currentVisualizedData: undefined,
 };
 const homeSlice = createSlice({
   name: 'homeReducer',
@@ -29,6 +30,9 @@ const homeSlice = createSlice({
     setAnimatingData(state, action) {
       state.animatingData = action.payload;
     },
+    setCurrentVisualizedData(state, action) {
+      state.currentVisualizedData = action.payload;
+    },
   },
   extraReducers: {},
 });
@@ -38,6 +42,7 @@ export const {
   setRecordingData,
   setRenderingData,
   setAnimatingData,
+  setCurrentVisualizedData,
 } = homeSlice.actions;
 
 export default homeSlice.reducer;

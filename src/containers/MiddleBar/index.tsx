@@ -4,7 +4,7 @@ import { storeAnimatingData } from 'lib/store';
 import _ from 'lodash';
 import { Dropdown } from './Dropdown';
 import { Indicator } from './Indicator';
-import { LayerSelect } from './LayerSelect';
+import LayerSelect from './LayerSelect';
 import { ModeSelect } from './ModeSelect';
 import * as S from './PlayBarStyles';
 import { PlayBox } from './PlayBox';
@@ -16,21 +16,7 @@ const MiddleBar: FunctionComponent<Props> = ({}) => {
 
   return (
     <S.PlayBarWrapper>
-      <LayerSelect
-        data={[
-          {
-            isSelected: false,
-            key: 'layer',
-            mode: 'layer',
-          },
-          {
-            isSelected: true,
-            key: 'trash',
-            mode: 'trash',
-          },
-        ]}
-        onSelect={() => {}}
-      />
+      <LayerSelect />
       <S.PlayBarIndicatorWrapper>
         <Indicator end={300} now={100} start={100} />
       </S.PlayBarIndicatorWrapper>

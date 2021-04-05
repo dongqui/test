@@ -67,13 +67,12 @@ export const useLPRowControl = ({ lpData, rowKey }: useLPControlProps) => {
       const targetRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, key]);
       if (targetRow) {
         storeCurrentVisualizedData({
-          key: targetRow?.key,
-          name: targetRow?.name,
-          type: targetRow?.type,
-          baseLayer: targetRow?.baseLayer,
-          boneNames: targetRow?.boneNames,
-          layers: targetRow?.layers,
-          url: targetRow?.url,
+          key: targetRow.key ?? '',
+          name: targetRow.name ?? '',
+          type: targetRow.type ?? FILE_TYPES.file,
+          boneNames: targetRow.boneNames ?? [],
+          baseLayer: targetRow.baseLayer ?? [],
+          layers: targetRow.layers ?? [],
         });
       }
     },

@@ -21,7 +21,7 @@ export enum CPNameType {
   Visibility = 'Visibility',
   Axis = 'Axis',
   Bone = 'Bone',
-  Joint = 'Joint',
+  // Joint = 'Joint',
   Mesh = 'Mesh',
   Shadow = 'Shadow',
   // Fog = 'Fog',
@@ -63,7 +63,7 @@ export interface CPDataType {
   button?:
     | RenderingDataPropertyName.axis
     | RenderingDataPropertyName.isBoneOn
-    | RenderingDataPropertyName.isJointOn
+    // | RenderingDataPropertyName.isJointOn
     | RenderingDataPropertyName.isMeshOn
     | RenderingDataPropertyName.isShadowOn;
   //   | RenderingDataPropertyName.isFogOn;

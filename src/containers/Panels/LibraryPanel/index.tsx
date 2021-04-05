@@ -28,9 +28,7 @@ import {
 } from 'lib/store';
 import _ from 'lodash';
 import { useDropzone } from 'react-dropzone';
-import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
-import * as S from './LibraryPanelStyles';
 import Breadcrumb from './Breadcrumb';
 import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
@@ -95,7 +93,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
             },
           });
           setLoading(false);
-          return false;
+          continue;
         }
         const { animations, bones, error, msg } = await fnGetAnimationData({ url });
         if (error) {
@@ -147,6 +145,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       setLoading(true);
+      const overrideFileNames: string[] = [];
       if (_.isEmpty(acceptedFiles)) {
         storeModalInfo({ isShow: true, msg: '파일이 존재하지 않습니다.', type: MODAL_TYPES.alert });
         setLoading(false);
@@ -178,53 +177,65 @@ const LibraryPanelComponent: FunctionComponent = () => {
       ) {
         storeModalInfo({
           isShow: true,
-          msg: '영상파일은 2개이상 가져올수 없습니다.',
+          msg: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
           type: MODAL_TYPES.alert,
         });
         setLoading(false);
         return false;
       }
-      if (
-        _.some(lpData, (item) =>
-          _.includes(
-            _.map(acceptedFiles, (o) => o.name),
-            item.name,
-          ),
-        )
-      ) {
-        Modal.confirm({
-          okText: '덮어쓰기',
-          cancelText: '취소',
-          content: `대상 폴더에 이름이 ${
-            _.find(lpData, (item) =>
-              _.includes(
-                _.map(acceptedFiles, (o) => o.name),
-                item.name,
-              ),
-            )?.name
-          }인 파일이 있습니다. 덮어쓰시겠습니까?`,
-          onOk: () => {
-            onDropPost({
-              acceptedFiles,
-              overrideKeys: [
-                _.find(lpData, (item) =>
-                  _.includes(
-                    _.map(acceptedFiles, (o) => o.name),
-                    item.name,
-                  ),
-                )?.key,
-              ],
-            });
-          },
-          onCancel: () => {
-            setLoading(false);
-          },
-        });
-        return false;
+      for (const acceptedFile of acceptedFiles) {
+        let overlappedFile: LPDataType | undefined;
+        if (_.isEqual(lpmode, LPModeType.iconview)) {
+          overlappedFile = _.find(
+            lpData,
+            (item) =>
+              _.isEqual(item.name, acceptedFile?.name) &&
+              _.isEqual(item.parentKey, _.last(pages)?.key),
+          );
+        }
+        if (_.isEqual(lpmode, LPModeType.listview)) {
+          overlappedFile = _.find(
+            lpData,
+            (item) =>
+              _.isEqual(item.name, acceptedFile?.name) &&
+              _.isEqual(item.parentKey, ROOT_FOLDER_NAME),
+          );
+        }
+        if (!_.isEmpty(overlappedFile)) {
+          overrideFileNames.push(acceptedFile.name);
+          Modal.confirm({
+            okText: '덮어쓰기',
+            cancelText: '취소',
+            content: `대상 폴더에 이름이 ${overlappedFile?.name}인 파일이 있습니다. 덮어쓰시겠습니까?`,
+            onOk: () => {
+              onDropPost({
+                acceptedFiles: [acceptedFile],
+                overrideKeys: [overlappedFile?.key],
+              });
+            },
+            onCancel: () => {
+              setLoading(false);
+            },
+          });
+        }
       }
-      await onDropPost({ acceptedFiles });
+      let filteredAcceptedFiles = _.filter(
+        acceptedFiles,
+        (file) => !_.includes(overrideFileNames, file.name),
+      );
+      // 비디오포맷은 마지막으로 재정렬
+      filteredAcceptedFiles = _.concat(
+        _.filter(
+          filteredAcceptedFiles,
+          (file) => !_.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))),
+        ),
+        _.filter(filteredAcceptedFiles, (file) =>
+          _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))),
+        ),
+      );
+      await onDropPost({ acceptedFiles: filteredAcceptedFiles });
     },
-    [lpData, onDropPost],
+    [lpData, lpmode, onDropPost, pages],
   );
   const { getRootProps } = useDropzone({ onDrop });
 

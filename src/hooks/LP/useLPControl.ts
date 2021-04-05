@@ -123,7 +123,9 @@ export const useLPControl = ({
           FILE_TYPES.motion,
         )
           ? _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.parentKey
-          : _.last(pages)?.key,
+          : _.isEqual(lpmode, LPModeType.iconview)
+          ? _.last(pages)?.key
+          : ROOT_FOLDER_NAME,
       });
       _.forEach(
         _.filter(mainData, [
@@ -136,13 +138,15 @@ export const useLPControl = ({
             type: item.type,
             name: item.name,
             parentKey: newKey,
-            baseLayer: item.baseLayer,
+            baseLayer: item?.baseLayer,
+            layers: item?.layers,
+            boneNames: item.boneNames,
           });
         },
       );
       storeLpData(newMainData);
     }
-  }, [mainData, pages]);
+  }, [lpmode, mainData, pages]);
   const onEdit = useCallback(({ mainData }: { mainData: LPDataType[] }) => {
     const newFileName = fnGetFileName({
       key: _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
