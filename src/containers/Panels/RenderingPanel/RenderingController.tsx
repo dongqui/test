@@ -4,7 +4,12 @@ import * as THREE from 'three';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
 import { ShootLayerType, ShootTrackType } from 'types';
-import { storeAnimatingData, storeRenderingData, storeSkeletonHelper } from 'lib/store';
+import {
+  storeAnimatingData,
+  storeCurrentVisualizedData,
+  storeRenderingData,
+  storeSkeletonHelper,
+} from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay } from 'utils/TP/editingUtils';
 import {
@@ -26,21 +31,13 @@ import {
 export interface RenderingControllerProps {
   id: string;
   fileUrl?: string;
-  visualizedName?: string;
-  visualizedBaseLayer?: ShootTrackType[];
-  visualizedLayers?: ShootLayerType[];
 }
-const RenderingController: React.FC<RenderingControllerProps> = ({
-  id,
-  fileUrl,
-  visualizedName,
-  visualizedBaseLayer,
-  visualizedLayers,
-}) => {
+const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }) => {
   // store data
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   // component state
   const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
   const [cameraControls, setCameraControls] = useState<OrbitControls | undefined>(undefined);
@@ -61,11 +58,11 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
 
   // animation 생성 로직
   useEffect(() => {
-    if (mixer && visualizedName && visualizedBaseLayer && visualizedLayers) {
+    if (mixer && currentVisualizedData) {
       const visualizedClip = fnGetAnimationClipForPlay({
-        name: visualizedName,
-        baseLayer: visualizedBaseLayer,
-        layers: visualizedLayers,
+        name: currentVisualizedData.name,
+        baseLayer: currentVisualizedData.baseLayer,
+        layers: currentVisualizedData.layers,
         startTimeIndex,
         endTimeIndex,
       });
@@ -74,7 +71,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       setCurrentAction(action);
       console.log('action: ', action);
     }
-  }, [endTimeIndex, mixer, startTimeIndex, visualizedBaseLayer, visualizedLayers, visualizedName]);
+  }, [currentVisualizedData, endTimeIndex, mixer, startTimeIndex]);
 
   const { playState, playDirection, playSpeed, currentTimeIndex } = animatingData;
 
