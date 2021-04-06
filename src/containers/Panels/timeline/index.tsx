@@ -18,6 +18,7 @@ import {
   fnGetBoneTimes,
   fnUpdateKeyframeToBase,
   fnUpdateKeyframeToLayer,
+  fnDeleteKeyframe,
 } from 'utils/TP/editingUtils';
 import MiddleBar from 'containers/MiddleBar';
 import { CurrentVisualizedDataType, ShootLayerType, ShootTrackType } from 'types';
@@ -37,11 +38,10 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const targetTime = 0.033333;
 
-  // track 미리 변환 다 핸놓고 store 업데이트 한 번에 해야 함
-  // 0 번째인 position 은 정상적으로 반영
   const handleUpdateKeyframeToBase = useCallback(() => {
     console.log('keypress y');
     if (baseLayer && skeletonHelper) {
+      const resultTracks: [ShootTrackType, number][] = [];
       const targetTracks = [baseLayer[0], baseLayer[1], baseLayer[2], baseLayer[3]];
       targetTracks.forEach((track) => {
         const [boneName, propertyName] = track.name.split('.');
@@ -58,27 +58,30 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
           if (values) {
             const resultTrack = fnUpdateKeyframeToBase({ track, time: targetTime, values });
             const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
-            const state = storeCurrentVisualizedData();
-            if (state && targetTrackIndex !== -1) {
-              const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-                draft.baseLayer = [
-                  ...draft.baseLayer.slice(0, targetTrackIndex),
-                  resultTrack,
-                  ...draft.baseLayer.slice(targetTrackIndex + 1),
-                ];
-              });
-              storeCurrentVisualizedData(nextState);
-            }
+            resultTracks.push([resultTrack, targetTrackIndex]);
           }
         }
       });
+      const state = storeCurrentVisualizedData();
+      if (state && resultTracks.length !== 0) {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+            draft.baseLayer = [
+              ...draft.baseLayer.slice(0, targetTrackIndex),
+              resultTrack,
+              ...draft.baseLayer.slice(targetTrackIndex + 1),
+            ];
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      }
     }
   }, [baseLayer, skeletonHelper]);
 
-  // layer 에 추가 시 value 에 0 들어감
   const handleUpdateKeyframeToLayer = useCallback(() => {
     console.log('keypress u');
     if (baseLayer && layers && layers.length !== 0 && skeletonHelper) {
+      const resultTracks: [ShootTrackType, number][] = [];
       const targetLayer = layers[0];
       const targetTracks = [
         targetLayer.tracks[0],
@@ -108,29 +111,83 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
               values,
             });
             const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
-            const state = storeCurrentVisualizedData();
-            if (state && targetTrackIndex !== -1) {
-              const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-                draft.layers[0].tracks = [
-                  ...draft.layers[0].tracks.slice(0, targetTrackIndex),
-                  resultTrack,
-                  ...draft.layers[0].tracks.slice(targetTrackIndex + 1),
-                ];
-              });
-              storeCurrentVisualizedData(nextState);
-            }
+            resultTracks.push([resultTrack, targetTrackIndex]);
           }
         }
       });
+      const state = storeCurrentVisualizedData();
+      if (state && resultTracks.length !== 0) {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+            draft.layers[0].tracks = [
+              ...draft.layers[0].tracks.slice(0, targetTrackIndex),
+              resultTrack,
+              ...draft.layers[0].tracks.slice(targetTrackIndex + 1),
+            ];
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      }
     }
   }, [baseLayer, layers, skeletonHelper]);
 
-  const handleDeleteKeyframe = useCallback(() => {
+  const handleDeleteKeyframeFromBase = useCallback(() => {
     console.log('keypress i');
-    if (baseLayer && skeletonHelper) {
+    if (baseLayer) {
+      const resultTracks: [ShootTrackType, number][] = [];
       const targetTracks = [baseLayer[0], baseLayer[1], baseLayer[2], baseLayer[3]];
+      targetTracks.forEach((track) => {
+        const resultTrack = fnDeleteKeyframe({ track, time: targetTime });
+        const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
+        resultTracks.push([resultTrack, targetTrackIndex]);
+      });
+      const state = storeCurrentVisualizedData();
+      if (state && resultTracks.length !== 0) {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+            draft.baseLayer = [
+              ...draft.baseLayer.slice(0, targetTrackIndex),
+              resultTrack,
+              ...draft.baseLayer.slice(targetTrackIndex + 1),
+            ];
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      }
     }
-  }, [baseLayer, skeletonHelper]);
+  }, [baseLayer]);
+
+  const handleDeleteKeyframeFromLayer = useCallback(() => {
+    console.log('keypress o');
+    if (baseLayer && layers && layers.length !== 0) {
+      const resultTracks: [ShootTrackType, number][] = [];
+      const targetLayer = layers[0];
+      const targetTracks = [
+        targetLayer.tracks[0],
+        targetLayer.tracks[1],
+        targetLayer.tracks[2],
+        targetLayer.tracks[3],
+      ];
+      targetTracks.forEach((track) => {
+        const resultTrack = fnDeleteKeyframe({ track, time: targetTime });
+        const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
+        resultTracks.push([resultTrack, targetTrackIndex]);
+      });
+      const state = storeCurrentVisualizedData();
+      if (state && resultTracks.length !== 0) {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+            draft.layers[0].tracks = [
+              ...draft.layers[0].tracks.slice(0, targetTrackIndex),
+              resultTrack,
+              ...draft.layers[0].tracks.slice(targetTrackIndex + 1),
+            ];
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      }
+    }
+  }, [baseLayer, layers]);
   // 위는 테스트용 예시 코드
   ////////////////////
 
@@ -138,17 +195,29 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
     (event: any) => {
       switch (event.key) {
         case 'y':
+        case 'ㅛ':
           handleUpdateKeyframeToBase();
           break;
         case 'u':
+        case 'ㅕ':
           handleUpdateKeyframeToLayer();
           break;
         case 'i':
-          handleDeleteKeyframe();
+        case 'ㅑ':
+          handleDeleteKeyframeFromBase();
+          break;
+        case 'o':
+        case 'ㅐ':
+          handleDeleteKeyframeFromLayer();
           break;
       }
     },
-    [handleDeleteKeyframe, handleUpdateKeyframeToBase, handleUpdateKeyframeToLayer],
+    [
+      handleDeleteKeyframeFromBase,
+      handleDeleteKeyframeFromLayer,
+      handleUpdateKeyframeToBase,
+      handleUpdateKeyframeToLayer,
+    ],
   );
 
   useEffect(() => {
