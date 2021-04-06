@@ -220,12 +220,12 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
     ],
   );
 
-  useEffect(() => {
-    document.addEventListener('keypress', handleKeyPress);
-    return () => {
-      document.removeEventListener('keypress', handleKeyPress);
-    };
-  }, [handleKeyPress]);
+  // useEffect(() => {
+  //   document.addEventListener('keypress', handleKeyPress);
+  //   return () => {
+  //     document.removeEventListener('keypress', handleKeyPress);
+  //   };
+  // }, [handleKeyPress]);
 
   // 이름만 추출하여 TP 트랙 리스트 가공
   useEffect(() => {
