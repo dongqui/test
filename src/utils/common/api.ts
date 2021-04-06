@@ -1,11 +1,12 @@
 import axios from 'axios';
-import { FORMAT_TYPES, VIDEO_FORMAT_TYPES } from 'types';
+import { VIDEO_FORMAT_TYPES } from 'types';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { fnConvertBloburlToFile } from './fnConvertBloburlToFile';
 
 const BASE_URL = 'https://shootapi.myplask.com:5000';
-const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:5000/';
+const RETARGETIING_URL = 'https://shootapi.myplask.com:6500';
+const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:5000';
 
 interface uploadFileToMotionDataProps {
   type: VIDEO_FORMAT_TYPES | string;
@@ -14,6 +15,9 @@ interface uploadFileToMotionDataProps {
   start: number;
   end: number;
   fileName: string;
+}
+interface getRetargetMapProps {
+  bones: THREE.Bone[];
 }
 export const uploadFbxToGlb = async ({ file, type }: { file: File; type: string }) => {
   const formData = new FormData();
@@ -70,6 +74,33 @@ export const uploadFileToMotionData = async ({
       error: false,
     };
   } catch (error) {
+    return {
+      error: true,
+      msg: error,
+    };
+  }
+};
+
+export const getRetargetMap = async ({ bones }: getRetargetMapProps) => {
+  try {
+    const result = await axios({
+      method: 'POST',
+      url: `${RETARGETIING_URL}/retargeting-mapper`,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Accept: 'application/json',
+      },
+      data: {
+        bones,
+      },
+      responseType: 'json',
+    });
+    return {
+      result,
+      error: false,
+    };
+  } catch (error) {
+    console.log('error', error);
     return {
       error: true,
       msg: error,

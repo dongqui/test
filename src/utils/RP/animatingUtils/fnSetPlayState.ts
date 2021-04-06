@@ -30,7 +30,11 @@ const fnSetPlayState = (props: FnSetPlayState) => {
       mixer.timeScale = 0;
       break;
     case 'stop':
-      currentAction.stop();
+      if (currentAction.isRunning()) {
+        // mixer.stopAllAction();
+        currentAction.stop();
+        currentAction.time = 0.0333;
+      }
       break;
     default:
       break;

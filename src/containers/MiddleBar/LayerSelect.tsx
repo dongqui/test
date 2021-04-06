@@ -48,7 +48,7 @@ const LayerSelect: React.FC = () => {
         const state = storeCurrentVisualizedData();
         if (state) {
           const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            draft?.layers === draft.layers.splice(targetLayerIndex, 1);
+            draft.layers = draft.layers.splice(targetLayerIndex, 1);
           });
           storeCurrentVisualizedData(nextState);
         }

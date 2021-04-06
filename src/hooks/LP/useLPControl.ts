@@ -148,16 +148,10 @@ export const useLPControl = ({
     }
   }, [lpmode, mainData, pages]);
   const onEdit = useCallback(({ mainData }: { mainData: LPDataType[] }) => {
-    const newFileName = fnGetFileName({
-      key: _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
-      name: _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.name ?? '',
-      mainData,
-    });
     storeLpData(
       _.map(mainData, (item) => ({
         ...item,
         isModifying: item.isClicked ? !item.isModifying : item.isModifying,
-        name: item.isClicked ? newFileName : item.name,
       })),
     );
   }, []);

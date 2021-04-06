@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
+import { LPDataType } from 'types';
 
 interface fnGetFileNameProps {
   key: string;

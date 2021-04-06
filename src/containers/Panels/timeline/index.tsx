@@ -1,14 +1,29 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo, useCallback, useEffect } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import { TPTrackNameList, TPDopeSheetList, TPLastBoneList } from 'lib/store';
+import {
+  TPTrackNameList,
+  TPDopeSheetList,
+  TPLastBoneList,
+  storeSkeletonHelper,
+  storeCurrentVisualizedData,
+} from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
 import { TPTrackName, TPDopeSheet, TPLastBone } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
-import { fnGetSummaryTimes, fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
+import {
+  fnGetSummaryTimes,
+  fnGetLayerTimes,
+  fnGetBoneTimes,
+  fnUpdateKeyframeToBase,
+  fnUpdateKeyframeToLayer,
+  fnDeleteKeyframe,
+} from 'utils/TP/editingUtils';
 import MiddleBar from 'containers/MiddleBar';
-import { ShootLayerType, ShootTrackType } from 'types';
+import { CurrentVisualizedDataType, ShootLayerType, ShootTrackType } from 'types';
+import { useReactiveVar } from '@apollo/client';
+import produce from 'immer';
 
 const cx = classNames.bind(styles);
 
@@ -18,6 +33,200 @@ interface Props {
 }
 
 const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
+  //////////////////////
+  // 아래는 테스트용 예시 코드
+  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
+  const targetTime = 0.033333;
+
+  const handleUpdateKeyframeToBase = useCallback(() => {
+    console.log('keypress y');
+    if (baseLayer && skeletonHelper) {
+      const resultTracks: [ShootTrackType, number][] = [];
+      const targetTracks = [baseLayer[0], baseLayer[1], baseLayer[2], baseLayer[3]];
+      targetTracks.forEach((track) => {
+        const [boneName, propertyName] = track.name.split('.');
+        const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
+        if (bone) {
+          let values;
+          if (propertyName === 'position') {
+            values = { x: bone.position.x, y: bone.position.y, z: bone.position.z };
+          } else if (propertyName === 'rotation') {
+            values = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+          } else if (propertyName === 'scale') {
+            values = { x: bone.scale.x, y: bone.scale.y, z: bone.scale.z };
+          }
+          if (values) {
+            const resultTrack = fnUpdateKeyframeToBase({ track, time: targetTime, values });
+            const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
+            resultTracks.push([resultTrack, targetTrackIndex]);
+          }
+        }
+      });
+      const state = storeCurrentVisualizedData();
+      if (state && resultTracks.length !== 0) {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+            draft.baseLayer = [
+              ...draft.baseLayer.slice(0, targetTrackIndex),
+              resultTrack,
+              ...draft.baseLayer.slice(targetTrackIndex + 1),
+            ];
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      }
+    }
+  }, [baseLayer, skeletonHelper]);
+
+  const handleUpdateKeyframeToLayer = useCallback(() => {
+    console.log('keypress u');
+    if (baseLayer && layers && layers.length !== 0 && skeletonHelper) {
+      const resultTracks: [ShootTrackType, number][] = [];
+      const targetLayer = layers[0];
+      const targetTracks = [
+        targetLayer.tracks[0],
+        targetLayer.tracks[1],
+        targetLayer.tracks[2],
+        targetLayer.tracks[3],
+      ];
+      targetTracks.forEach((track) => {
+        const [boneName, propertyName] = track.name.split('.');
+        const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
+        if (bone) {
+          let values;
+          if (propertyName === 'position') {
+            values = { x: bone.position.x, y: bone.position.y, z: bone.position.z };
+          } else if (propertyName === 'rotation') {
+            values = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+          } else if (propertyName === 'scale') {
+            values = { x: bone.scale.x, y: bone.scale.y, z: bone.scale.z };
+          }
+          if (values) {
+            const resultTrack = fnUpdateKeyframeToLayer({
+              track,
+              currentLayerKey: targetLayer.key,
+              baseLayer,
+              layers,
+              time: targetTime,
+              values,
+            });
+            const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
+            resultTracks.push([resultTrack, targetTrackIndex]);
+          }
+        }
+      });
+      const state = storeCurrentVisualizedData();
+      if (state && resultTracks.length !== 0) {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+            draft.layers[0].tracks = [
+              ...draft.layers[0].tracks.slice(0, targetTrackIndex),
+              resultTrack,
+              ...draft.layers[0].tracks.slice(targetTrackIndex + 1),
+            ];
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      }
+    }
+  }, [baseLayer, layers, skeletonHelper]);
+
+  const handleDeleteKeyframeFromBase = useCallback(() => {
+    console.log('keypress i');
+    if (baseLayer) {
+      const resultTracks: [ShootTrackType, number][] = [];
+      const targetTracks = [baseLayer[0], baseLayer[1], baseLayer[2], baseLayer[3]];
+      targetTracks.forEach((track) => {
+        const resultTrack = fnDeleteKeyframe({ track, time: targetTime });
+        const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
+        resultTracks.push([resultTrack, targetTrackIndex]);
+      });
+      const state = storeCurrentVisualizedData();
+      if (state && resultTracks.length !== 0) {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+            draft.baseLayer = [
+              ...draft.baseLayer.slice(0, targetTrackIndex),
+              resultTrack,
+              ...draft.baseLayer.slice(targetTrackIndex + 1),
+            ];
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      }
+    }
+  }, [baseLayer]);
+
+  const handleDeleteKeyframeFromLayer = useCallback(() => {
+    console.log('keypress o');
+    if (baseLayer && layers && layers.length !== 0) {
+      const resultTracks: [ShootTrackType, number][] = [];
+      const targetLayer = layers[0];
+      const targetTracks = [
+        targetLayer.tracks[0],
+        targetLayer.tracks[1],
+        targetLayer.tracks[2],
+        targetLayer.tracks[3],
+      ];
+      targetTracks.forEach((track) => {
+        const resultTrack = fnDeleteKeyframe({ track, time: targetTime });
+        const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
+        resultTracks.push([resultTrack, targetTrackIndex]);
+      });
+      const state = storeCurrentVisualizedData();
+      if (state && resultTracks.length !== 0) {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+            draft.layers[0].tracks = [
+              ...draft.layers[0].tracks.slice(0, targetTrackIndex),
+              resultTrack,
+              ...draft.layers[0].tracks.slice(targetTrackIndex + 1),
+            ];
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      }
+    }
+  }, [baseLayer, layers]);
+  // 위는 테스트용 예시 코드
+  ////////////////////
+
+  const handleKeyPress = useCallback(
+    (event: any) => {
+      switch (event.key) {
+        case 'y':
+        case 'ㅛ':
+          handleUpdateKeyframeToBase();
+          break;
+        case 'u':
+        case 'ㅕ':
+          handleUpdateKeyframeToLayer();
+          break;
+        case 'i':
+        case 'ㅑ':
+          handleDeleteKeyframeFromBase();
+          break;
+        case 'o':
+        case 'ㅐ':
+          handleDeleteKeyframeFromLayer();
+          break;
+      }
+    },
+    [
+      handleDeleteKeyframeFromBase,
+      handleDeleteKeyframeFromLayer,
+      handleUpdateKeyframeToBase,
+      handleUpdateKeyframeToLayer,
+    ],
+  );
+
+  useEffect(() => {
+    document.addEventListener('keypress', handleKeyPress);
+    return () => {
+      document.removeEventListener('keypress', handleKeyPress);
+    };
+  }, [handleKeyPress]);
+
   // 이름만 추출하여 TP 트랙 리스트 가공
   useEffect(() => {
     if (!baseLayer) return;

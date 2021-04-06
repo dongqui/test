@@ -127,10 +127,6 @@ const ShootPage: FunctionComponent = () => {
       storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
     },
   });
-  useEffect(() => {
-    fnKillSetInterval();
-  }, []);
-
   return (
     <main>
       {contextMenuInfo.isShow && (
@@ -143,19 +139,6 @@ const ShootPage: FunctionComponent = () => {
           onSelect={contextMenuInfo.onClick}
           list={contextMenuInfo.data}
         />
-        // <ContextMenuWrapper
-        //   ref={contextMenuRef}
-        //   top={`${contextMenuInfo.top}px`}
-        //   left={`${contextMenuInfo.left}px`}
-        // >
-        //   <Contextmenu
-        //     width="8rem"
-        //     height="3rem"
-        //     backgroundColor={GRAY200}
-        //     data={contextMenuInfo.data}
-        //     onClick={contextMenuInfo.onClick}
-        //   />
-        // </ContextMenuWrapper>
       )}
       {modalInfo.isShow && (
         <>
