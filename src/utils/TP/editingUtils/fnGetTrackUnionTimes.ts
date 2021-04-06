@@ -19,19 +19,19 @@ interface FnGetTrackUnionTimes {
 const fnGetTrackUnionTimes = (props: FnGetTrackUnionTimes) => {
   const { track, baseLayer, layers } = props;
   if (layers.length === 0) {
-    return track.times;
+    return track.times.map((t) => _.round(t, 4));
   }
   const targetTimes = [];
   // base layer 내 대상 트랙의 times
   const baseLayerTrack = _.find(baseLayer, (tr) => tr.name === track.name);
   if (baseLayerTrack) {
-    targetTimes.push(baseLayerTrack.times);
+    targetTimes.push(baseLayerTrack.times.map((t) => _.round(t, 4)));
   }
   // layers 내 대상 트랙의 times
   _.forEach(layers, (layer) => {
     const layerTrack = _.find(layer.tracks, (tr) => tr.name === track.name);
     if (layerTrack) {
-      targetTimes.push(layerTrack.times);
+      targetTimes.push(layerTrack.times.map((t) => _.round(t, 4)));
     }
   });
   return _.union(...targetTimes).sort((a, b) => a - b);
