@@ -1,7 +1,7 @@
 import { useReactiveVar } from '@apollo/client';
 import { ArrowBackIcon } from 'components/Icons/generated2/ArrowBackIcon';
 import { ArrowForwardIcon } from 'components/Icons/generated2/ArrowForwardIcon';
-import { LPModeType } from 'types';
+import { FILE_TYPES, LPModeType } from 'types';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { storeLPMode, storePages } from 'lib/store';
 import _ from 'lodash';
@@ -26,7 +26,7 @@ const IconPageComponent: React.FC<IconPageProps> = ({}) => {
       {_.map(
         _.isEqual(lpmode, LPModeType.iconview)
           ? pages
-          : [{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }],
+          : [{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME, type: FILE_TYPES.folder }],
         (item: PagesType, index) => (
           <React.Fragment key={index}>
             <S.PageText>{item.name}</S.PageText>

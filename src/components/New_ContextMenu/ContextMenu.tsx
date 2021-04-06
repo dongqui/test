@@ -35,6 +35,7 @@ export interface Props {
     key: string;
     value: string;
     isSelected?: boolean;
+    // isDisabled?: boolean;
   }[];
   position: {
     top: string | number;

@@ -72,10 +72,10 @@ const fnUpdateKeyframeToBase = (props: FnUpdateKeyframeToBase): ShootTrackType =
   }
   return {
     name: track.name,
-    times: newTimes,
+    times: newTimes.map((time) => _.round(time, 4)),
     values: newValues,
     interpolation: track.interpolation,
-    included: true,
+    isIncluded: true,
   };
 };
 

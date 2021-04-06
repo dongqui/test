@@ -12,7 +12,7 @@ export interface CPListRowSelectProps {
   button?:
     | RenderingDataPropertyName.axis
     | RenderingDataPropertyName.isBoneOn
-    | RenderingDataPropertyName.isJointOn
+    // | RenderingDataPropertyName.isJointOn
     | RenderingDataPropertyName.isMeshOn
     | RenderingDataPropertyName.isShadowOn;
 }

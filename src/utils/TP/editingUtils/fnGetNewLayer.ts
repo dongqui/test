@@ -28,7 +28,7 @@ const fnGetNewLayer = (props: FnGetNewLayer): ShootLayerType => {
         times: [],
         values: [],
         interpolation: 'linear',
-        included: true,
+        isIncluded: true,
       })),
     );
   });

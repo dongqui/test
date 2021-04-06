@@ -1,7 +1,10 @@
 import { FunctionComponent, Fragment, memo, useEffect, useState, useCallback } from 'react';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
+// import { Dropdown } from 'components/New_Dropdown';
 import { useReactiveVar } from '@apollo/client';
+import { useHover } from 'hooks/common';
 import { storePages } from 'lib/store';
+import BreadcrumbItem from './BreadcrumbItem';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -24,6 +27,10 @@ const Breadcrumb: FunctionComponent = () => {
     setIsOpen(!isOpen);
   }, [isOpen]);
 
+  // const handleSelect = useCallback(() => {
+  //   alert('handleSelect');
+  // }, []);
+
   useEffect(() => {
     // @TODO
     // 더보기 버튼으로 인한 Dropdown이 open인 상태에서, depth가 5미만으로 변경되면 보이지 않게 처리
@@ -40,7 +47,15 @@ const Breadcrumb: FunctionComponent = () => {
   const isAbbreviationLevel2 = filteredPathList.length >= 5;
 
   // 마지막 3개를 제외한 경로에 대해서는 Dropdown 처리
-  const dropdownItemList = _.slice(filteredPathList, 0, filteredPathList.length - 3);
+  const prevPathList = _.slice(filteredPathList, 0, filteredPathList.length - 3);
+
+  const dropdownItemList = _.map(prevPathList, (path) => {
+    return {
+      key: path.key,
+      value: path.name,
+      isSelected: false,
+    };
+  });
 
   // 마지막 3개의 경로에 대해서는 별도의 처리 없음
   const splitPathList = _.slice(filteredPathList, filteredPathList.length - 3);
@@ -62,12 +77,21 @@ const Breadcrumb: FunctionComponent = () => {
           // @TODO
           // 더보기 버튼 클릭 시 Dropdown으로 모든 경로 표시
           <Fragment>
-            <IconWrapper
-              className={cx('icon-more')}
-              icon={SvgPath.BreadcrumbMore}
-              onClick={handlePathOpen}
-              hasFrame={false}
-            />
+            <div className={cx('icon-more')}>
+              <IconWrapper
+                className={cx('icon-more')}
+                icon={SvgPath.BreadcrumbMore}
+                onClick={handlePathOpen}
+                hasFrame={false}
+              />
+              {/* <Fragment>
+                {isOpen && (
+                  <div className={cx('dropdown')}>
+                    <Dropdown list={dropdownItemList} onSelect={handleSelect} />
+                  </div>
+                )}
+              </Fragment> */}
+            </div>
             <IconWrapper
               className={cx('arrow-right')}
               icon={SvgPath.ChevronLeft}
@@ -76,50 +100,16 @@ const Breadcrumb: FunctionComponent = () => {
             {_.map(splitPathList, (item) => {
               const isLast = _.isEqual(_.last(splitPathList)?.key, item.key);
 
-              const iconClasses = cx('icon', { last: isLast });
-              const nameClasses = cx('name', { last: isLast });
-
-              // @TODO
-              // 각 item.name에 대해 useHover hook으로 Tooltip으로 fullname 보여지게 처리
-              return (
-                <Fragment key={item.key}>
-                  <div className={cx('path-inner')}>
-                    <IconWrapper className={iconClasses} icon={SvgPath.Folder} hasFrame={false} />
-                    {isLast && <div className={nameClasses}>{item.name}</div>}
-                  </div>
-                  <IconWrapper
-                    className={cx('arrow-right')}
-                    icon={SvgPath.ChevronLeft}
-                    hasFrame={false}
-                  />
-                </Fragment>
-              );
+              return <BreadcrumbItem key={item.key} item={item} isLast={isLast} level="2" />;
             })}
           </Fragment>
         )}
         {!isAbbreviationLevel2 &&
           _.map(filteredPathList, (item) => {
             const isLast = _.isEqual(_.last(filteredPathList)?.key, item.key);
+            const level = isAbbreviationLevel1 ? '1' : '0';
 
-            const iconClasses = cx('icon', { last: isLast });
-            const nameClasses = cx('name', { last: isLast });
-
-            // @TODO
-            // 각 item.name에 대해 useHover hook으로 Tooltip으로 fullname 보여지게 처리
-            return (
-              <Fragment key={item.key}>
-                <div className={cx('path-inner')}>
-                  <IconWrapper className={iconClasses} icon={SvgPath.Folder} hasFrame={false} />
-                  {!isAbbreviationLevel1 && <div className={nameClasses}>{item.name}</div>}
-                  {isAbbreviationLevel1 && isLast && <div className={nameClasses}>{item.name}</div>}
-                </div>
-                <IconWrapper
-                  className={cx('arrow-right')}
-                  icon={SvgPath.ChevronLeft}
-                  hasFrame={false}
-                />
-              </Fragment>
-            );
+            return <BreadcrumbItem key={item.key} item={item} isLast={isLast} level={level} />;
           })}
       </div>
     </div>

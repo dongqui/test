@@ -25,9 +25,9 @@ export interface TPDopeSheet {
   z?: number[];
 }
 
-export interface TPLastBoneTrackIndex {
+export interface TPLastBone {
   layerIdnex: number;
-  lastBoneTrackIndex: number;
+  lastBoneIndex: number;
 }
 
 export interface TPUpdateDopeSheet {

@@ -1,4 +1,4 @@
-import { FunctionComponent, KeyboardEventHandler, memo, useCallback } from 'react';
+import { FunctionComponent, KeyboardEventHandler, memo, useCallback, RefObject } from 'react';
 import _ from 'lodash';
 import classnames from 'classnames/bind';
 import styles from './IconWrapper.module.scss';
@@ -10,13 +10,20 @@ interface Props {
   hasFrame?: boolean;
   className?: string;
   onClick?: () => void;
+  innerRef?: RefObject<HTMLSpanElement>;
 }
 
 const defaultProps: Partial<Props> = {
   hasFrame: true,
 };
 
-const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, className, onClick }) => {
+const IconWrapper: FunctionComponent<Props> = ({
+  icon,
+  hasFrame,
+  innerRef,
+  className,
+  onClick,
+}) => {
   const Component = icon;
 
   const isClickable = !!onClick;
@@ -40,6 +47,7 @@ const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, className, onCl
     return (
       <span
         className={classes}
+        ref={innerRef}
         onClick={onClick}
         onKeyDown={handleKeyDown}
         role="button"
@@ -51,7 +59,7 @@ const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, className, onCl
   }
 
   return (
-    <span className={classes}>
+    <span className={classes} ref={innerRef}>
       <Component />
     </span>
   );

@@ -21,7 +21,12 @@ import {
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
 import { useHistory } from './useHistory';
-import { storeCurrentBone, storeRenderingData, storeTransformControls } from '../../lib/store';
+import {
+  storeCurrentBone,
+  storeRenderingData,
+  storeTransformControls,
+  storeSkeletonHelper,
+} from '../../lib/store';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { useReactiveVar } from '@apollo/client';
 
@@ -31,7 +36,6 @@ interface UseRendering {
   id: string;
   fileUrl?: string;
   setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
-  setSkeletonHelper: Dispatch<SetStateAction<THREE.SkeletonHelper | undefined>>;
   setCameraControls: Dispatch<SetStateAction<OrbitControls | undefined>>;
   setScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
   setDirLight: Dispatch<SetStateAction<THREE.DirectionalLight | undefined>>;
@@ -44,22 +48,13 @@ interface UseRendering {
  * @param id - Canvas 를 부착할 HTMLDivElement 의 id
  * @param fileUrl - RP 에 visualize 할 모델의 url
  * @param setMixer - RenderingController 내 state 인 mixer 의 set 함수
- * @param setSkeletonHelper - RenderingController 내 state 인 skeletonHelper 의 set 함수
  * @param setCameraControls - RenderingController 내 state 인 cameraControls 의 set 함수
  * @param setScene - RenderingController 내 state 인 scene 의 set 함수
  * @param setDirLight - RenderingController 내 state 인 dirLight 의 set 함수
  *
  */
 export const useRendering = (props: UseRendering) => {
-  const {
-    id,
-    fileUrl,
-    setMixer,
-    setSkeletonHelper,
-    setCameraControls,
-    setScene,
-    setDirLight,
-  } = props;
+  const { id, fileUrl, setMixer, setCameraControls, setScene, setDirLight } = props;
   // store data
   const { axis } = useReactiveVar(storeRenderingData);
   // component state
@@ -543,7 +538,8 @@ export const useRendering = (props: UseRendering) => {
             setContents((prevContents) => [...prevContents, model]);
             // skeleton helper 생성 및 scene에 추가
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
-            setSkeletonHelper(innerSkeletonHelper);
+            // setSkeletonHelper(innerSkeletonHelper);
+            storeSkeletonHelper(innerSkeletonHelper);
 
             // eslint-disable-next-line no-console
             console.log('skeletonHelper: ', innerSkeletonHelper);

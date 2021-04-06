@@ -40,12 +40,12 @@ const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer): ShootTrackType
     times: [],
     values: [],
     interpolation: 'linear',
-    included: true,
+    isIncluded: true,
   };
 
   // delta values 구하기
   const unionTimes = fnGetTrackUnionTimes({ track, baseLayer, layers });
-  const unionTimeIndex = _.findIndex(unionTimes, (t) => t === time);
+  const unionTimeIndex = _.findIndex(unionTimes, (t) => _.round(t, 4) === _.round(time, 4));
 
   const baseLayerTrack = _.find(baseLayer, (t) => t.name === track.name) || emptyTrack;
   const otherLayerTracks = _.map(
@@ -62,6 +62,7 @@ const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer): ShootTrackType
   let deltaX = values.x - interpolatedBaseTrack.values[unionTimeIndex * 3];
   let deltaY = values.y - interpolatedBaseTrack.values[unionTimeIndex * 3 + 1];
   let deltaZ = values.z - interpolatedBaseTrack.values[unionTimeIndex * 3 + 2];
+
   // other layers 돌면서 값 빼기
   if (interpolatedOtherLayerTracks.length !== 0) {
     _.forEach(interpolatedOtherLayerTracks, (interpolatedOtherLayerTrack) => {
@@ -124,10 +125,10 @@ const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer): ShootTrackType
   }
   return {
     name: track.name,
-    times: newTimes,
+    times: newTimes.map((time) => _.round(time, 4)),
     values: newValues,
     interpolation: track.interpolation,
-    included: true,
+    isIncluded: true,
   };
 };
 

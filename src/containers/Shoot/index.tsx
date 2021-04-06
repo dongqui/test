@@ -11,13 +11,13 @@ import MainPage from './MainPage';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import {
   storeContextMenuInfo,
-  storeMainData,
+  storeLpData,
   storeModalInfo,
   storePageInfo,
   storeRecordingData,
 } from 'lib/store';
 import { GRAY200, STANDARD_WIDTH } from 'styles/constants/common';
-import { FILE_TYPES, MainDataType, MODAL_TYPES, PAGE_NAMES } from 'types';
+import { FILE_TYPES, LPDataType, MODAL_TYPES, PAGE_NAMES } from 'types';
 import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
 import { BaseModal } from 'components/New_Modal';
 import { ModalInner } from 'docs/New_components/Modal/BaseModal.stories';
@@ -49,7 +49,7 @@ const ModalWrapper = styled.div`
 `;
 
 const ShootPage: FunctionComponent = () => {
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
@@ -85,7 +85,7 @@ const ShootPage: FunctionComponent = () => {
         return false;
       }
       const key = uuidv4();
-      const newData: MainDataType[] = [
+      const newData: LPDataType[] = [
         {
           key,
           type: FILE_TYPES.motion,
@@ -97,11 +97,11 @@ const ShootPage: FunctionComponent = () => {
         },
       ];
       storeModalInfo({ ...modalInfo, isShow: false });
-      storeMainData(_.concat(mainData, newData));
+      storeLpData(_.concat(lpData, newData));
       storePageInfo({ page: PAGE_NAMES.shoot });
     },
     [
-      mainData,
+      lpData,
       modalInfo,
       pageInfo.extension,
       pageInfo?.videoUrl,
@@ -127,10 +127,6 @@ const ShootPage: FunctionComponent = () => {
       storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
     },
   });
-  useEffect(() => {
-    fnKillSetInterval();
-  }, []);
-
   return (
     <main>
       {contextMenuInfo.isShow && (
@@ -143,19 +139,6 @@ const ShootPage: FunctionComponent = () => {
           onSelect={contextMenuInfo.onClick}
           list={contextMenuInfo.data}
         />
-        // <ContextMenuWrapper
-        //   ref={contextMenuRef}
-        //   top={`${contextMenuInfo.top}px`}
-        //   left={`${contextMenuInfo.left}px`}
-        // >
-        //   <Contextmenu
-        //     width="8rem"
-        //     height="3rem"
-        //     backgroundColor={GRAY200}
-        //     data={contextMenuInfo.data}
-        //     onClick={contextMenuInfo.onClick}
-        //   />
-        // </ContextMenuWrapper>
       )}
       {modalInfo.isShow && (
         <>

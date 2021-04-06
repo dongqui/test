@@ -31,7 +31,7 @@ const ControlPanelComponent: React.FC<ControlPanelProps> = ({}) => {
             )}
           {_.isEqual(item.type, CPComponentType.slider) &&
             _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
-              <CPListRowSlider rowKey={item.key} name={item.name} slider={item.slider} />
+              <CPListRowSlider rowKey={item.key} name={item.name} />
             )}
         </React.Fragment>
       ))}
