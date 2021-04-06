@@ -11,7 +11,7 @@ import {
 } from 'lib/store';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
-import { fnGetBinarySearch } from 'utils/TP/trackUtils';
+import { fnGetBinarySearch, fnClickTrackToCtrlKey, fnClickTrackToMouse } from 'utils/TP/trackUtils';
 import styles from './index.module.scss';
 
 interface TrackProps {
@@ -37,143 +37,30 @@ const Track: React.FC<TrackProps> = ({
   const dopeSheetList = useReactiveVar(TPDopeSheetList);
   const clickedTrackList = useReactiveVar(TPClickedTrackList);
 
-  const deselectTracks = ({ clickedTrackList }: { clickedTrackList: number[] }) => {
-    const deselect = _.map(clickedTrackList, (track) => ({
-      trackIndex: track,
-      isSelected: false,
-    }));
-    return deselect;
-  };
-
   // 트랙 클릭
   const clickTrackBody = useCallback(
     (event: React.MouseEvent<Element>) => {
       const clickedTrack = event.target as Element;
       if (clickedTrack.nodeName === 'DIV' || clickedTrack.nodeName === 'SPAN') {
-        if (title === 'Summary') return; // Summary 트랙 클릭 시 아무 반응 없음
-        const remainder = trackIndex % 10;
-        const updatedTrackList: Partial<TPDopeSheet>[] = [];
-        const newClickedTracks: number[] = [];
-
-        if (event.ctrlKey) {
-          switch (remainder) {
-            // Layer 트랙 클릭
-            case TP_TRACK_INDEX.LAYER: {
-              if (!clickedTrackList.length) {
-                const targetIndex = fnGetBinarySearch({
-                  collection: lastBoneList,
-                  index: trackIndex,
-                });
-                const lastBone = lastBoneList[targetIndex];
-                let currentIndex = lastBone.layerIdnex + 1;
-                newClickedTracks.push(trackIndex);
-                updatedTrackList.push({
-                  trackIndex,
-                  isSelected: true,
-                });
-
-                while (currentIndex <= lastBone.lastBoneIndex + 3) {
-                  updatedTrackList.push({
-                    trackIndex: currentIndex,
-                    isSelected: true,
-                  });
-                  newClickedTracks.push(currentIndex);
-                  currentIndex += 1;
-                  if ((currentIndex - 1) % 10 === 0) currentIndex += 2;
-                }
-              }
-              break;
-            }
-            // Bone 트랙 클릭
-            case TP_TRACK_INDEX.BONE_A:
-            case TP_TRACK_INDEX.BONE_B: {
-              if (!clickedTrackList.length) {
-                updatedTrackList.push({
-                  trackIndex,
-                  isSelected: true,
-                });
-                newClickedTracks.push(trackIndex);
-                for (
-                  let transformIndex = trackIndex + 1;
-                  transformIndex <= trackIndex + 3;
-                  transformIndex += 1
-                ) {
-                  updatedTrackList.push({
-                    trackIndex: transformIndex,
-                    isSelected: true,
-                  });
-                  newClickedTracks.push(transformIndex);
-                }
-              }
-              break;
-            }
-            // Transform 트랙 클릭
-            default: {
-              if (!clickedTrackList.length) {
-                updatedTrackList.push({
-                  trackIndex,
-                  isSelected: true,
-                });
-                newClickedTracks.push(trackIndex);
-              }
-              break;
-            }
-          }
-        } else {
-          if (clickedTrackList.length) {
-            const deselect = deselectTracks({ clickedTrackList });
-            updatedTrackList.push(...deselect);
-          }
-          newClickedTracks.push(trackIndex);
-          updatedTrackList.push({
-            trackIndex,
-            isSelected: true,
-          });
-          switch (remainder) {
-            // Layer 트랙 클릭
-            case TP_TRACK_INDEX.LAYER: {
-              const targetIndex = fnGetBinarySearch({
-                collection: lastBoneList,
-                index: trackIndex,
-              });
-              const lastBone = lastBoneList[targetIndex];
-              let currentIndex = lastBone.layerIdnex + 1;
-
-              while (currentIndex <= lastBone.lastBoneIndex + 3) {
-                updatedTrackList.push({
-                  trackIndex: currentIndex,
-                  isSelected: true,
-                });
-                newClickedTracks.push(currentIndex);
-                currentIndex += 1;
-                if ((currentIndex - 1) % 10 === 0) currentIndex += 2;
-              }
-              break;
-            }
-            // Bone 트랙 클릭
-            case TP_TRACK_INDEX.BONE_A:
-            case TP_TRACK_INDEX.BONE_B: {
-              for (
-                let transformIndex = trackIndex + 1;
-                transformIndex <= trackIndex + 3;
-                transformIndex += 1
-              ) {
-                updatedTrackList.push({
-                  trackIndex: transformIndex,
-                  isSelected: true,
-                });
-                newClickedTracks.push(transformIndex);
-              }
-              break;
-            }
-            // Transform 트랙 클릭
-            default: {
-              break;
-            }
+        if (title !== 'Summary') {
+          if (event.ctrlKey) {
+            const [updatedTrackList, newClickedTrackList] = fnClickTrackToCtrlKey({
+              clickedTrackList,
+              lastBoneList,
+              trackIndex,
+            });
+            TPClickedTrackList(newClickedTrackList);
+            TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
+          } else {
+            const [updatedTrackList, newClickedTrackList] = fnClickTrackToMouse({
+              clickedTrackList,
+              lastBoneList,
+              trackIndex,
+            });
+            TPClickedTrackList(newClickedTrackList);
+            TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
           }
         }
-        TPClickedTrackList(newClickedTracks);
-        TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
       }
     },
     [clickedTrackList, lastBoneList, title, trackIndex],
@@ -196,7 +83,8 @@ const Track: React.FC<TrackProps> = ({
         }
         // Layer 트랙 화살표 클릭
         case TP_TRACK_INDEX.LAYER: {
-          const layerTrack = _.find(lastBoneList, (lastBone) => lastBone.layerIdnex === trackIndex);
+          const targetIndex = fnGetBinarySearch({ collection: lastBoneList, index: trackIndex });
+          const layerTrack = lastBoneList[targetIndex];
           let curBoneIndex = (layerTrack?.layerIdnex as number) + 1;
           while (curBoneIndex <= (layerTrack?.lastBoneIndex as number)) {
             updatedTrackList.push({
