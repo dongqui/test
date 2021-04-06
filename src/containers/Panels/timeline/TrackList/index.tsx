@@ -127,7 +127,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
   // 레이어 버튼 클릭
   const clickLayerButton = useCallback(() => {
     if (!storeTrackNameList.length) return;
-    const { layerIdnex } = lastBoneList[lastBoneList.length - 1];
+    const { layerIndex } = lastBoneList[lastBoneList.length - 1];
     const jump = 10000 * lastBoneList.length;
     let curBoneIndex = 0;
 
@@ -154,7 +154,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
         name: 'Layer1', // 이름 명명 적용 예정
         isOpenedChildrenTrack: false,
         childrenTrackList: createdLayer,
-        trackIndex: layerIdnex + 10000,
+        trackIndex: layerIndex + 10000,
       });
     });
 
@@ -178,7 +178,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
     // 추가 된 레이어의 마지막 bone index 저장
     const lastBone = {
-      layerIdnex: layerIdnex + 10000,
+      layerIndex: layerIndex + 10000,
       lastBoneIndex: curBoneIndex - 3,
     };
 

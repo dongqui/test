@@ -249,7 +249,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
     // Layer 트랙의 마지막 Bone 트랙 리스트
     const lastBoneList: TPLastBone[] = [
       {
-        layerIdnex: TP_TRACK_INDEX.LAYER, // 2
+        layerIndex: TP_TRACK_INDEX.LAYER, // 2
         lastBoneIndex: 0,
       },
     ];

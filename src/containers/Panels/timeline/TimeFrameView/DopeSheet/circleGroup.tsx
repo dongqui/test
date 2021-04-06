@@ -22,6 +22,7 @@ const CircleGroup: React.FC<Props> = ({ dopeSheetData, prevXScale }) => {
 
   return (
     <svg className="circle-group" width="100%" height={TRACK_HEIGHT} ref={circleGroupRef}>
+      <title style={{ display: 'none' }}>{dopeSheetData.trackIndex}</title>
       <rect
         width="100%"
         height={TRACK_HEIGHT}

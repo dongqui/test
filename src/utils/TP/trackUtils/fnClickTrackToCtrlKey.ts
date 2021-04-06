@@ -1,6 +1,13 @@
-import { TP_TRACK_INDEX } from 'utils/const';
-import { fnSelectBoneTrack, fnSelectLayerTrack, fnSelectTransformTrack } from './index';
+import { fnCheckSelectedTrackList, fnSelectTrackList } from './index';
 import { TPDopeSheet, TPLastBone } from 'types/TP';
+
+interface Params {
+  clickedTrackList: number[];
+  lastBoneList: TPLastBone[];
+  trackIndex: number;
+}
+
+type Return = [Partial<TPDopeSheet>[], number[]] | false;
 
 /**
  * 트랙에다가 ctrl key와 함께 마우스 좌클릭을 할 경우, 클릭 한 트랙에 선택 효과를 적용시키는 함수입니다.
@@ -17,47 +24,33 @@ import { TPDopeSheet, TPLastBone } from 'types/TP';
  * @returns newClickedTrackList - 새로 선택 효과를 적용시킬 트랙 리스트(number[])
  */
 
-interface Params {
-  clickedTrackList: number[];
-  lastBoneList: TPLastBone[];
-  trackIndex: number;
-}
-
-type Return = [Partial<TPDopeSheet>[], number[]];
-
 const fnClickTrackToCtrlKey = ({ clickedTrackList, lastBoneList, trackIndex }: Params): Return => {
-  const remainder = trackIndex % 10;
   const updatedTrackList: Partial<TPDopeSheet>[] = [];
   const newClickedTrackList = [];
 
-  switch (remainder) {
-    // Layer 트랙 클릭
-    case TP_TRACK_INDEX.LAYER: {
-      if (!clickedTrackList.length) {
-        const [updatedList, newClickedList] = fnSelectLayerTrack({ lastBoneList, trackIndex });
-        updatedTrackList.push(...updatedList);
-        newClickedTrackList.push(...newClickedList);
-      }
-      break;
-    }
-    // Bone 트랙 클릭
-    case TP_TRACK_INDEX.BONE_A:
-    case TP_TRACK_INDEX.BONE_B: {
-      if (!clickedTrackList.length) {
-        const [updatedList, newClickedList] = fnSelectBoneTrack({ trackIndex });
-        updatedTrackList.push(...updatedList);
-        newClickedTrackList.push(...newClickedList);
-      }
-      break;
-    }
-    // Transform 트랙 클릭
-    default: {
-      if (!clickedTrackList.length) {
-        const [updatedList, newClickedList] = fnSelectTransformTrack({ trackIndex });
-        updatedTrackList.push(...updatedList);
-        newClickedTrackList.push(...newClickedList);
-      }
-      break;
+  // 선택 된 트랙이 없을 경우
+  if (!clickedTrackList.length) {
+    const [updatedList, newClickedList] = fnSelectTrackList({
+      isSelected: true,
+      lastBoneList,
+      trackIndex,
+    });
+    updatedTrackList.push(...updatedList);
+    newClickedTrackList.push(...newClickedList);
+  }
+  // 선택 된 트랙이 있을 경우
+  else {
+    const selectedTrackList = fnCheckSelectedTrackList({
+      clickedTrackList,
+      lastBoneList,
+      trackIndex,
+    });
+    if (selectedTrackList) {
+      const [updatedList, newClickedList] = selectedTrackList;
+      updatedTrackList.push(...updatedList);
+      newClickedTrackList.push(...newClickedList);
+    } else {
+      return false;
     }
   }
 

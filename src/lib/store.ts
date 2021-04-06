@@ -85,6 +85,7 @@ export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet
       const binarySearchIndex = fnGetBinarySearch({
         collection: state,
         index: target.trackIndex as number,
+        key: 'trackIndex',
       });
       const index = status === 'isFiltered' ? key : binarySearchIndex;
       switch (status) {

@@ -3,6 +3,14 @@ import { TP_TRACK_INDEX } from 'utils/const';
 import { fnSelectBoneTrack, fnSelectLayerTrack, fnSelectTransformTrack } from './index';
 import { TPDopeSheet, TPLastBone } from 'types/TP';
 
+interface Params {
+  clickedTrackList: number[];
+  lastBoneList: TPLastBone[];
+  trackIndex: number;
+}
+
+type Return = [Partial<TPDopeSheet>[], number[]];
+
 /**
  * 마우스 좌클릭을 했을 때, 클릭 한 트랙에 선택 효과를 적용시키는 함수입니다.
  * - 클릭한 트랙 리스트가 있을 경우 -> 선택 효과 제거
@@ -15,14 +23,6 @@ import { TPDopeSheet, TPLastBone } from 'types/TP';
  * @returns updatedTrackList - dope sheet list에서 상태값을 update시킬 트랙 리스트
  * @returns newClickedTrackList - 새로 선택 효과를 적용시킬 트랙 리스트(number[])
  */
-
-interface Params {
-  clickedTrackList: number[];
-  lastBoneList: TPLastBone[];
-  trackIndex: number;
-}
-
-type Return = [Partial<TPDopeSheet>[], number[]];
 
 const fnClickTrackToMouse = ({ clickedTrackList, lastBoneList, trackIndex }: Params): Return => {
   const remainder = trackIndex % 10;
@@ -41,7 +41,11 @@ const fnClickTrackToMouse = ({ clickedTrackList, lastBoneList, trackIndex }: Par
   switch (remainder) {
     // Layer 트랙 클릭
     case TP_TRACK_INDEX.LAYER: {
-      const [updatedList, newClickedList] = fnSelectLayerTrack({ lastBoneList, trackIndex });
+      const [updatedList, newClickedList] = fnSelectLayerTrack({
+        lastBoneList,
+        trackIndex,
+        isSelected: true,
+      });
       updatedTrackList.push(...updatedList);
       newClickedTrackList.push(...newClickedList);
       break;
@@ -49,14 +53,17 @@ const fnClickTrackToMouse = ({ clickedTrackList, lastBoneList, trackIndex }: Par
     // Bone 트랙 클릭
     case TP_TRACK_INDEX.BONE_A:
     case TP_TRACK_INDEX.BONE_B: {
-      const [updatedList, newClickedList] = fnSelectBoneTrack({ trackIndex });
+      const [updatedList, newClickedList] = fnSelectBoneTrack({ trackIndex, isSelected: true });
       updatedTrackList.push(...updatedList);
       newClickedTrackList.push(...newClickedList);
       break;
     }
     // Transform 트랙 클릭
     default: {
-      const [updatedList, newClickedList] = fnSelectTransformTrack({ trackIndex });
+      const [updatedList, newClickedList] = fnSelectTransformTrack({
+        trackIndex,
+        isSelected: true,
+      });
       updatedTrackList.push(...updatedList);
       newClickedTrackList.push(...newClickedList);
       break;

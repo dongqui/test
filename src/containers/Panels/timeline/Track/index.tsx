@@ -44,13 +44,18 @@ const Track: React.FC<TrackProps> = ({
       if (clickedTrack.nodeName === 'DIV' || clickedTrack.nodeName === 'SPAN') {
         if (title !== 'Summary') {
           if (event.ctrlKey) {
-            const [updatedTrackList, newClickedTrackList] = fnClickTrackToCtrlKey({
+            const clickTrackToCtrlKey = fnClickTrackToCtrlKey({
               clickedTrackList,
               lastBoneList,
               trackIndex,
             });
-            TPClickedTrackList(newClickedTrackList);
-            TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
+            if (clickTrackToCtrlKey) {
+              const [updatedTrackList, newClickedTrackList] = clickTrackToCtrlKey;
+              TPClickedTrackList(newClickedTrackList);
+              TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
+            } else {
+              alert('다른 레이어를 클릭');
+            }
           } else {
             const [updatedTrackList, newClickedTrackList] = fnClickTrackToMouse({
               clickedTrackList,
@@ -75,7 +80,7 @@ const Track: React.FC<TrackProps> = ({
         // Summary 트랙 화살표 클릭
         case TP_TRACK_INDEX.SUMMARY: {
           const updatedList = _.map(lastBoneList, (lastBone) => ({
-            trackIndex: lastBone.layerIdnex,
+            trackIndex: lastBone.layerIndex,
             isClickedParentTrack: !prev,
           }));
           TPUpdateDopeSheetList({ updatedList, status: 'isClickedParentTrack' });
@@ -83,9 +88,13 @@ const Track: React.FC<TrackProps> = ({
         }
         // Layer 트랙 화살표 클릭
         case TP_TRACK_INDEX.LAYER: {
-          const targetIndex = fnGetBinarySearch({ collection: lastBoneList, index: trackIndex });
+          const targetIndex = fnGetBinarySearch({
+            collection: lastBoneList,
+            index: trackIndex,
+            key: 'layerIndex',
+          });
           const layerTrack = lastBoneList[targetIndex];
-          let curBoneIndex = (layerTrack?.layerIdnex as number) + 1;
+          let curBoneIndex = (layerTrack?.layerIndex as number) + 1;
           while (curBoneIndex <= (layerTrack?.lastBoneIndex as number)) {
             updatedTrackList.push({
               trackIndex: curBoneIndex,
@@ -130,9 +139,12 @@ const Track: React.FC<TrackProps> = ({
 
   // 트랙 선택 효과 변경
   useEffect(() => {
-    const targetIndex = fnGetBinarySearch({ collection: dopeSheetList, index: trackIndex });
+    const targetIndex = fnGetBinarySearch({
+      collection: dopeSheetList,
+      index: trackIndex,
+      key: 'trackIndex',
+    });
     const targetTrack = dopeSheetList[targetIndex];
-
     setIsSelected(targetTrack.isSelected);
   }, [dopeSheetList, trackIndex]);
 
