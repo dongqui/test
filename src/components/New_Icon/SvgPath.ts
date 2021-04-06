@@ -18,6 +18,10 @@ import BreadcrumbMore from './svg/BreadcrumbMore.svg';
 import Layer from './svg/Layer.svg';
 import Camera from './svg/Camera.svg';
 import Dopesheet from './svg/Dopesheet.svg';
+import PlayArrow from './svg/PlayArrow.svg';
+import RewindArrow from './svg/RewindArrow.svg';
+import Pause from './svg/Pause.svg';
+import Export from './svg/Export.svg';
 
 type Icon =
   | 'Close'
@@ -38,7 +42,11 @@ type Icon =
   | 'BreadcrumbMore'
   | 'Layer'
   | 'Camera'
-  | 'Dopesheet';
+  | 'Dopesheet'
+  | 'PlayArrow'
+  | 'RewindArrow'
+  | 'Pause'
+  | 'Export';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -64,6 +72,10 @@ const images: Images = {
   Layer,
   Camera,
   Dopesheet,
+  PlayArrow,
+  RewindArrow,
+  Pause,
+  Export,
 };
 
 export default images;
