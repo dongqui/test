@@ -38,7 +38,7 @@ const fnGetBaseLayerWithClip = (props: FnGetBaseLayerWithClip) => {
             times: [...targetTrack.times],
             values: [...targetTrack.values],
             interpolation: 'linear',
-            included: true,
+            isIncluded: true,
           };
         } else {
           return {
@@ -46,7 +46,7 @@ const fnGetBaseLayerWithClip = (props: FnGetBaseLayerWithClip) => {
             times: [],
             values: [],
             interpolation: 'linear',
-            included: true,
+            isIncluded: true,
           };
         }
       }),

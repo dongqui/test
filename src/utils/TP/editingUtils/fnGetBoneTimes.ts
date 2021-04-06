@@ -19,7 +19,11 @@ interface FnGetBoneTimes {
  */
 const fnGetBoneTimes = (props: FnGetBoneTimes) => {
   const { positionTrack, rotationTrack, scaleTrack } = props;
-  const targetTimes: Array<number[]> = [positionTrack.times, rotationTrack.times, scaleTrack.times];
+  const targetTimes: Array<number[]> = [
+    positionTrack.times.map((t) => _.round(t, 4)),
+    rotationTrack.times.map((t) => _.round(t, 4)),
+    scaleTrack.times.map((t) => _.round(t, 4)),
+  ];
 
   return _.union(...targetTimes).sort((a, b) => a - b);
 };

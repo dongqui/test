@@ -13,7 +13,7 @@ interface FnGetAnimationClipForExport {
 
 /**
  * LP 에서 추출을 위해, base layer 와 layers 를 통해 새로운 animation clip 을 생성 후 반환합니다.
- * startTimeIndex, endTimeIndex, included 등과 무관하게 모든 track 의 전체 길이를 clip 으로 생성합니다.
+ * startTimeIndex, endTimeIndex, isIncluded 등과 무관하게 모든 track 의 전체 길이를 clip 으로 생성합니다.
  *
  * @param name - 생성할 clip 의 name
  * @param baseLayer - base layer

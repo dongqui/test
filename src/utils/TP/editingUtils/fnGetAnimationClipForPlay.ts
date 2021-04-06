@@ -15,7 +15,7 @@ interface FnGetAnimationClipForPlay {
 
 /**
  * RP 내 재생을 위해, base layer 와 layers 를 통해 새로운 animation clip 을 생성 후 반환합니다.
- * startTimeIndex, endTimeIndex 를 추가인자로 받아 길이를 조절하고, included 가 true 인 track 만을 사용합니다.
+ * startTimeIndex, endTimeIndex 를 추가인자로 받아 길이를 조절하고, isIncluded 가 true 인 track 만을 사용합니다.
  *
  * @param name - 생성할 clip 의 name
  * @param baseLayer - base layer
@@ -37,11 +37,11 @@ const fnGetAnimationClipForPlay = (props: FnGetAnimationClipForPlay) => {
   // baseLayer 와 layers 를 사용한다.
   // 각 layers 들은 동일한 track 들로 채워져있다.
 
-  // track 중 included = true 인 track 만 사용한다.
-  const baseLayer = _.filter(inputBaseLayer, (track: ShootTrackType) => track.included);
+  // track 중 isIncluded = true 인 track 만 사용한다.
+  const baseLayer = _.filter(inputBaseLayer, (track: ShootTrackType) => track.isIncluded);
   const layers = _.cloneDeep(inputLayers);
   _.forEach(layers, (layer: ShootLayerType) => {
-    layer.tracks = _.filter(layer.tracks, (track: ShootTrackType) => track.included);
+    layer.tracks = _.filter(layer.tracks, (track: ShootTrackType) => track.isIncluded);
   });
 
   const tracks: THREE.VectorKeyframeTrack[] = [];

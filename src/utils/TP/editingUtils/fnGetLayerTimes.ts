@@ -19,7 +19,7 @@ const fnGetLayerTimes = (props: FnGetLayerTimes) => {
 
   // base layer 내 모든 트랙의 times
   _.forEach(targetLayer, (track) => {
-    targetTimes.push(track.times);
+    targetTimes.push(track.times.map((t) => _.round(t, 4)));
   });
   return _.union(...targetTimes).sort((a, b) => a - b);
 };
