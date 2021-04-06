@@ -68,6 +68,9 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       });
       mixer.stopAllAction();
       const action = mixer.clipAction(visualizedClip);
+      action.play();
+      mixer.timeScale = 0;
+      action.time = 1 / 30;
       setCurrentAction(action);
       console.log('action: ', action);
     }

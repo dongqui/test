@@ -21,7 +21,13 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
         .join('circle')
         .attr('cx', (time) => prevXScale(time * 30))
         .attr('cy', TRACK_HEIGHT / 2)
-        .attr('r', CIRCLE_RADIUS);
+        .attr('r', CIRCLE_RADIUS)
+        .on('mouseenter', (event) => {
+          event.target.style.cursor = 'pointer';
+        })
+        .on('mouseout', (event) => {
+          event.target.style.cursor = '';
+        });
     }
   }, [circleGroupRef, dopeSheetData, prevXScale]);
 

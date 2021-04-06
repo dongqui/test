@@ -73,7 +73,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       .append('svg')
       .attr('class', `${X_AXIS_SVG_CLASSNAME}`)
       .attr('width', '100%')
-      .attr('height', height)
+      .attr('height', 48)
       .style('border', 0);
 
     // x축 g 태그 랜더링
@@ -156,7 +156,12 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       ])
       .filter((event: WheelEvent) => {
         if (_.isEqual(event.type, 'dblclick')) return false;
-        if (_.isEqual(event.type, 'mousedown') && _.isEqual(event.ctrlKey, false)) return false;
+        if (
+          _.isEqual(event.type, 'mousedown') &&
+          _.isEqual(event.ctrlKey, false) &&
+          _.isEqual(event.metaKey, false)
+        )
+          return false;
         return true;
       })
       .on(

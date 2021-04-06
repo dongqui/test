@@ -39,7 +39,6 @@ export const useLPRowControl = ({ lpData, rowKey }: useLPControlProps) => {
           name: _.isEqual(item.key, rowKey) ? name : item.name,
         })),
       );
-      setName(fnGetFileName({ key: '', mainData: lpData, name }));
     },
     [lpData, rowKey, name],
   );

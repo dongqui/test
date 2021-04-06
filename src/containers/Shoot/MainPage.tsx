@@ -72,7 +72,6 @@ const MainContainer: FunctionComponent = () => {
   useDebuggingData({ lpData, cpData, renderingData, animatingData, currentVisualizedData });
 
   const [width, height] = useWindowSize();
-
   return (
     <div className={cx('wrapper')}>
       <ResizableBox

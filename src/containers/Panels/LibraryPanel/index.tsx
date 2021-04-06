@@ -34,7 +34,7 @@ import { ListView } from 'containers/ListTree/ListView';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
 import * as api from 'utils/common/api';
-import { fnGetBaseLayerWithClip } from 'utils/TP/editingUtils';
+import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithClip } from 'utils/TP/editingUtils';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import { Headline } from 'components/New_Typography';
 import Explorer from './Explorer/index';
@@ -77,10 +77,9 @@ const LibraryPanelComponent: FunctionComponent = () => {
           }
           convertedFileUrl = url;
         }
-        let url = URL.createObjectURL(acceptedFile);
-        if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
-          url = convertedFileUrl;
-        }
+        const url = _.isEqual(extension, FORMAT_TYPES.fbx)
+          ? convertedFileUrl
+          : URL.createObjectURL(acceptedFile);
         if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
           Modal.confirm({
             okText: '확인',
@@ -95,12 +94,20 @@ const LibraryPanelComponent: FunctionComponent = () => {
           setLoading(false);
           continue;
         }
-        const { animations, bones, error, msg } = await fnGetAnimationData({ url });
+        const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
         if (error) {
           storeModalInfo({ isShow: true, msg });
           setLoading(false);
           return false;
         }
+        // const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
+        //   bones,
+        // });
+        // if (error2) {
+        //   storeModalInfo({ isShow: true, msg: msg2 });
+        //   setLoading(false);
+        //   return false;
+        // }
         const motions: LPDataType[] = [];
         const key = uuidv4();
         _.forEach(animations, (clip, index) => {
@@ -125,8 +132,12 @@ const LibraryPanelComponent: FunctionComponent = () => {
             parentKey: _.isEqual(lpmode, LPModeType.iconview)
               ? _.last(pages)?.key
               : ROOT_FOLDER_NAME,
-            baseLayer: _.cloneDeep(motions?.[0]?.baseLayer ?? []),
-            layers: _.cloneDeep(motions?.[0]?.layers ?? []),
+            // baseLayer: _.cloneDeep(motions?.[0]?.baseLayer ?? []),
+            // layers: _.cloneDeep(motions?.[0]?.layers ?? []),
+            baseLayer: fnGetBaseLayerWithBoneNames({
+              boneNames: _.map(bones, (bone) => bone.name),
+            }),
+            layers: [],
             boneNames: _.map(bones, (bone) => bone.name),
           },
         ];
