@@ -38,7 +38,7 @@ const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear): Shoo
       times: newTimes,
       values: _.fill(Array(newTimes.length * 3), 0),
       interpolation: track.interpolation,
-      included: true,
+      isIncluded: true,
     };
   }
 
@@ -94,7 +94,7 @@ const fnGetInterpolatedTrackLinear = (props: FnGetInterpolatedTrackLinear): Shoo
     times: newTimes,
     values: newValues,
     interpolation: track.interpolation,
-    included: true,
+    isIncluded: true,
   };
 };
 

@@ -27,7 +27,7 @@ const fnGetBaseLayerWithBoneNames = (props: FnGetBaseLayerWithBoneNames) => {
           times: [],
           values: [],
           interpolation: 'linear',
-          included: true,
+          isIncluded: true,
         };
       }),
     );
