@@ -5,6 +5,7 @@ import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
 import { TPTrackNameList, TPDopeSheetList, TPUpdateDopeSheetList, TPLastBoneList } from 'lib/store';
+import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { SearchInput } from 'components/New_Input';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import Track from '../Track';
@@ -61,10 +62,11 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         // 필터링 인덱스 찾기
         const searchTargetIndex = ({ targetIndex }: { targetIndex: number }) => {
-          const index = _.findIndex(
-            filteredDopeSheetList,
-            (filteredDopeSheet) => filteredDopeSheet.trackIndex === targetIndex,
-          );
+          const index = fnGetBinarySearch({
+            collection: filteredDopeSheetList,
+            index: targetIndex,
+            key: 'trackIndex',
+          });
           filteredDopeSheetList[index].isFiltered = true;
           filteredDopeSheetList[index].isClickedParentTrack = true;
         };

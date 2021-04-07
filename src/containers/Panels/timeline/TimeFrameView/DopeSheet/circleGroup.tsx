@@ -26,7 +26,7 @@ const CircleGroup: React.FC<Props> = ({ dopeSheetData, prevXScale }) => {
       <rect
         width="100%"
         height={TRACK_HEIGHT}
-        fill={isSelected ? SELECTED_COLOR : '#151515'}
+        fill={isSelected ? SELECTED_COLOR : 'transparent'}
         strokeDasharray="100, 50"
       />
       <Circles
