@@ -31,6 +31,7 @@ import {
 import { INITIAL_RETARGET_DATA } from '../utils/const';
 import { CPModeType } from '../types/CP';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 
 export enum StoreDataNames {
   mainData = 'mainData',
@@ -75,16 +76,18 @@ export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DA
 export const TPTrackNameList = makeVar<TPTrackName[]>([]);
 export const TPDopeSheetList = makeVar<TPDopeSheet[]>([]);
 export const TPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
-export const TPCurrentClidkedTracks = makeVar<number[]>([]);
+export const TPClickedTrackList = makeVar<number[]>([]);
 
 export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
   const state = TPDopeSheetList();
   const nextState = produce<TPDopeSheet[]>(state, (draft) => {
     _.forEach(updatedList, (target, key) => {
-      const index =
-        status === 'isFiltered'
-          ? key
-          : _.findIndex(draft, (find) => find.trackIndex === target.trackIndex);
+      const binarySearchIndex = fnGetBinarySearch({
+        collection: state,
+        index: target.trackIndex as number,
+        key: 'trackIndex',
+      });
+      const index = status === 'isFiltered' ? key : binarySearchIndex;
       switch (status) {
         case 'isFiltered':
           draft[index as number].isFiltered = target.isFiltered as boolean;
@@ -92,6 +95,9 @@ export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet
           break;
         case 'isClickedParentTrack':
           draft[index as number].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          break;
+        case 'isSelected':
+          draft[index as number].isSelected = target.isSelected as boolean;
           break;
       }
     });
