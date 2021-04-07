@@ -7,12 +7,13 @@ import {
   storeLpData,
   storeCPData,
   storeAnimatingData,
-  storeCPMode,
   storeCurrentVisualizedData,
+  storeTPDopeSheetList,
+  storeLPMode,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox } from 'react-resizable';
-import { CurrentVisualizedDataType, FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
@@ -28,6 +29,8 @@ const MainContainer: FunctionComponent = () => {
   const cpData = useReactiveVar(storeCPData);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
+  const tpDopeSheetList = useReactiveVar(storeTPDopeSheetList);
+
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
     if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
@@ -69,9 +72,38 @@ const MainContainer: FunctionComponent = () => {
     }
   }, [lpData]);
 
-  useDebuggingData({ lpData, cpData, renderingData, animatingData, currentVisualizedData });
+  useDebuggingData({
+    lpData,
+    cpData,
+    renderingData,
+    animatingData,
+    currentVisualizedData,
+    tpDopeSheetList,
+  });
 
   const [width, height] = useWindowSize();
+
+  useEffect(() => {
+    if (currentVisualizedData?.baseLayer) {
+      storeLpData(
+        _.map(lpData, (item) => ({
+          ...item,
+          baseLayer: _.isEqual(item?.key, currentVisualizedData?.key)
+            ? currentVisualizedData?.baseLayer
+            : item?.baseLayer,
+          layers: _.isEqual(item?.key, currentVisualizedData?.key)
+            ? currentVisualizedData?.layers
+            : item?.layers,
+        })),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentVisualizedData?.baseLayer, currentVisualizedData?.key, currentVisualizedData?.layers]);
+  useEffect(() => {
+    if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.key, currentVisualizedData?.key])) {
+      storeCurrentVisualizedData(undefined);
+    }
+  }, [currentVisualizedData?.key, lpData]);
   return (
     <div className={cx('wrapper')}>
       <ResizableBox
@@ -94,9 +126,9 @@ const MainContainer: FunctionComponent = () => {
           <LibraryPanel />
         </ResizableBox>
         <ResizableBox
-          width={width - 248 - 230}
+          width={width - 248 - 264}
           minConstraints={[150, height * 0.5]}
-          maxConstraints={[width - 248 - 230, height * 0.7]}
+          maxConstraints={[width - 248 - 264, height * 0.7]}
           className={cx('panel-rendering')}
           axis="both"
         >
@@ -105,8 +137,8 @@ const MainContainer: FunctionComponent = () => {
           </div>
         </ResizableBox>
         <ResizableBox
-          width={230}
-          minConstraints={[230, height * 0.5]}
+          width={264}
+          minConstraints={[264, height * 0.5]}
           maxConstraints={[450, height * 0.7]}
           className={cx('panel-control')}
           resizeHandles={['w']}

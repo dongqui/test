@@ -1,5 +1,6 @@
 import { FunctionComponent, memo, useCallback, useEffect, useState, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
+import { useDropzone } from 'react-dropzone';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'antd';
 import { useLPControl } from 'hooks/LP/useLPControl';
@@ -27,16 +28,17 @@ import {
   storeContextMenuInfo,
 } from 'lib/store';
 import _ from 'lodash';
-import { useDropzone } from 'react-dropzone';
 import { IconView } from '../../IconTree/IconView';
-import Breadcrumb from './Breadcrumb';
 import { ListView } from 'containers/ListTree/ListView';
+import Breadcrumb from './Breadcrumb';
+import * as api from 'utils/common/api';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
-import * as api from 'utils/common/api';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithClip } from 'utils/TP/editingUtils';
+import fnExportModelToFbx from 'utils/LP/fnExportModelToFbx';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
-import { Headline } from 'components/New_Typography';
+import { Headline, Html } from 'components/New_Typography';
+import { BaseModal } from 'components/New_Modal';
 import Explorer from './Explorer/index';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -96,18 +98,19 @@ const LibraryPanelComponent: FunctionComponent = () => {
         }
         const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
         if (error) {
-          storeModalInfo({ isShow: true, msg });
+          storeModalInfo({ isShow: true, msg, type: MODAL_TYPES.alert });
           setLoading(false);
           return false;
         }
-        // const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
-        //   bones,
-        // });
-        // if (error2) {
-        //   storeModalInfo({ isShow: true, msg: msg2 });
-        //   setLoading(false);
-        //   return false;
-        // }
+        const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
+          bones,
+        });
+        const retargetMap = result?.data?.result ?? [];
+        if (error2) {
+          storeModalInfo({ isShow: true, msg: msg2, type: MODAL_TYPES.alert });
+          setLoading(false);
+          return false;
+        }
         const motions: LPDataType[] = [];
         const key = uuidv4();
         _.forEach(animations, (clip, index) => {
@@ -132,13 +135,12 @@ const LibraryPanelComponent: FunctionComponent = () => {
             parentKey: _.isEqual(lpmode, LPModeType.iconview)
               ? _.last(pages)?.key
               : ROOT_FOLDER_NAME,
-            // baseLayer: _.cloneDeep(motions?.[0]?.baseLayer ?? []),
-            // layers: _.cloneDeep(motions?.[0]?.layers ?? []),
             baseLayer: fnGetBaseLayerWithBoneNames({
               boneNames: _.map(bones, (bone) => bone.name),
             }),
             layers: [],
             boneNames: _.map(bones, (bone) => bone.name),
+            retargetMap,
           },
         ];
         newData = _.concat(newData, motions);
@@ -275,6 +277,9 @@ const LibraryPanelComponent: FunctionComponent = () => {
     onDrop: handleDrop,
     shortcutData,
     filteredData,
+    showsModal,
+    setShowsModal,
+    modalMessage,
   } = useLPControl({
     contextmenuInfo,
     mainData: lpData,
@@ -282,6 +287,10 @@ const LibraryPanelComponent: FunctionComponent = () => {
     searchWord,
     lpmode,
   });
+
+  const handleModalClose = useCallback(() => {
+    setShowsModal(!showsModal);
+  }, [setShowsModal, showsModal]);
 
   useContextMenu({ targetRef: panelWrapperRef, event: onContextMenu });
 
@@ -326,6 +335,13 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
+      {showsModal && (
+        <BaseModal onClose={handleModalClose}>
+          <Headline level="5" align="center">
+            <Html content={modalMessage} />
+          </Headline>
+        </BaseModal>
+      )}
     </div>
   );
 };

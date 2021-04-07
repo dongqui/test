@@ -67,6 +67,7 @@ export enum LPDATA_PROPERTY_TYPES {
   layers = 'layers',
   boneNames = 'boneNames',
   depth = 'depth',
+  retargetMap = 'retargetMap',
 }
 export enum LPModeType {
   listview = 'listview',
@@ -105,10 +106,11 @@ export interface LPDataType {
   [LPDATA_PROPERTY_TYPES.isModifying]?: boolean;
   [LPDATA_PROPERTY_TYPES.isCopied]?: boolean;
   [LPDATA_PROPERTY_TYPES.isDragging]?: boolean;
-  [LPDATA_PROPERTY_TYPES.baseLayer]?: ShootTrackType[];
-  [LPDATA_PROPERTY_TYPES.layers]?: ShootLayerType[];
+  [LPDATA_PROPERTY_TYPES.baseLayer]: ShootTrackType[];
+  [LPDATA_PROPERTY_TYPES.layers]: ShootLayerType[];
   [LPDATA_PROPERTY_TYPES.boneNames]?: string[];
   [LPDATA_PROPERTY_TYPES.depth]?: number;
+  [LPDATA_PROPERTY_TYPES.retargetMap]?: Array<any>;
 }
 export interface CurrentVisualizedDataType {
   [LPDATA_PROPERTY_TYPES.key]: string;

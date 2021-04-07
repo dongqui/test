@@ -1,12 +1,12 @@
 import axios from 'axios';
-import { VIDEO_FORMAT_TYPES } from 'types';
+import { ShootTrackType, VIDEO_FORMAT_TYPES } from 'types';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { fnConvertBloburlToFile } from './fnConvertBloburlToFile';
 
-const BASE_URL = 'https://shootapi.myplask.com:5000';
+const BASE_URL = 'https://shootapi.myplask.com:6500';
 const RETARGETIING_URL = 'https://shootapi.myplask.com:6500';
-const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:5000';
+const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:6500';
 
 interface uploadFileToMotionDataProps {
   type: VIDEO_FORMAT_TYPES | string;
@@ -18,6 +18,11 @@ interface uploadFileToMotionDataProps {
 }
 interface getRetargetMapProps {
   bones: THREE.Bone[];
+}
+interface getRetargetBaseLayerProps {
+  baseLayer: ShootTrackType[];
+  name: string;
+  retargetMap: Array<any>;
 }
 export const uploadFbxToGlb = async ({ file, type }: { file: File; type: string }) => {
   const formData = new FormData();
@@ -41,6 +46,29 @@ export const uploadFbxToGlb = async ({ file, type }: { file: File; type: string 
       msg: error,
     };
   }
+};
+
+interface SetConvertGlbToFbx {
+  file: File;
+  type: string;
+  id: string;
+}
+
+export const setConvertGlbToFbx = async (props: SetConvertGlbToFbx) => {
+  const { file, type, id } = props;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('type', type);
+  formData.append('id', id);
+  const result = await axios({
+    method: 'POST',
+    url: `${BLENDER_BASE_URL}/glb2fbx-upload-api`,
+    data: formData,
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+    .then((res) => res.data.result)
+    .catch((err) => err);
+  return result;
 };
 
 export const uploadFileToMotionData = async ({
@@ -92,6 +120,39 @@ export const getRetargetMap = async ({ bones }: getRetargetMapProps) => {
       },
       data: {
         bones,
+      },
+      responseType: 'json',
+    });
+    return {
+      result,
+      error: false,
+    };
+  } catch (error) {
+    console.log('error', error);
+    return {
+      error: true,
+      msg: error,
+    };
+  }
+};
+
+export const getRetargetBaseLayer = async ({
+  baseLayer,
+  name,
+  retargetMap,
+}: getRetargetBaseLayerProps) => {
+  try {
+    const result = await axios({
+      method: 'POST',
+      url: `${RETARGETIING_URL}/retargeting-everyframe`,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Accept: 'application/json',
+      },
+      data: {
+        isFbx: false,
+        sourceMotion: { name, tracks: baseLayer },
+        retargetMap,
       },
       responseType: 'json',
     });

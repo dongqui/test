@@ -1,9 +1,9 @@
-import React, { Suspense, lazy, memo, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import { TPDopeSheetList } from 'lib/store';
+import { storeTPDopeSheetList } from 'lib/store';
 import CircleGroup from './circleGroup';
 import styles from './index.module.scss';
 interface Props {
@@ -25,7 +25,7 @@ const X_AXIS_SVG_CLASSNAME = 'x-axis-svg';
 const CIRCLE_GROUP_CLASSNAME = 'circle-group';
 
 const X_AXIS_DOMAIN = 500000;
-const TRACK_HEIGHT = 48; // 트랙 높이
+const X_AXIS_HEIGHT = 48; // 트랙 높이
 const THROTTLE_TIMER = 75;
 
 /** Dope Sheet 관련 변수
@@ -40,10 +40,11 @@ const THROTTLE_TIMER = 75;
  * @constant xScaleCopy x값 범위 copy
  * @constant xAxisPosition x축 위치 저장(axisTop)
  * @constant renderXAxis x축 랜더링
+ * @constant renderYGrid grid선 랜더링
  */
 
 const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
-  const dopeSheetList = useReactiveVar(TPDopeSheetList);
+  const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const dopeSheetRef = useRef<HTMLDivElement>(null);
   const prevScrollTop = useRef(0);
 
@@ -52,11 +53,12 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const xScaleCopy = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const xAxisPosition = useRef<d3Axis | null>(null);
   const renderXAxis = useRef<d3Selection | null>(null);
+  const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
 
   // svg로 x축 그리기
   useEffect(() => {
     if (!dopeSheetRef.current) return;
-    const { clientWidth: width, clientHeight: height } = dopeSheetRef.current;
+    const { clientWidth: width } = dopeSheetRef.current;
 
     // x값 범위 설정
     xScale.current = d3.scaleLinear().domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN]).range([0, width]);
@@ -67,39 +69,59 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     // x축 위치 설정
     xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear);
 
+    // grid line wrapper 생성
+    renderYGrid.current = d3
+      .select(dopeSheetRef.current)
+      .append('svg')
+      .attr('class', 'grid-line-wrapper')
+      .attr('width', '100%')
+      .attr('height', '100%')
+      .style('position', 'fixed')
+      .append('g')
+      .call(xAxisPosition.current);
+
+    // grid line 생성
+    d3.selectAll('.grid-line-wrapper .tick')
+      .append('line')
+      .attr('class', 'grid-line')
+      .attr('x1', 0)
+      .attr('y1', '100%')
+      .attr('x2', 0)
+      .attr('y2', 0);
+
     // x축 svg 태그 추가
-    d3.select(dopeSheetRef.current.firstChild as Element)
+    d3.select(dopeSheetRef.current)
       .call((dopeSheet) => dopeSheet.select(`.${X_AXIS_SVG_CLASSNAME}`).remove())
       .append('svg')
       .attr('class', `${X_AXIS_SVG_CLASSNAME}`)
       .attr('width', '100%')
-      .attr('height', 48)
-      .style('border', 0);
+      .attr('height', X_AXIS_HEIGHT)
+      .style('position', 'fixed')
+      .style('z-index', 2);
 
     // x축 g 태그 랜더링
     renderXAxis.current = d3
       .select(`.${X_AXIS_SVG_CLASSNAME}`)
       .append('g')
       .attr('class', 'x-axis-g')
-      .attr('transform', `translate(0, ${TRACK_HEIGHT / 2})`)
+      .attr('transform', `translate(0, ${X_AXIS_HEIGHT / 2})`)
       .call((xAxisG) =>
         xAxisG
           .append('rect')
           .attr('width', '100%')
-          .attr('height', TRACK_HEIGHT / 2)
-          .attr('transform', `translate(0, -${TRACK_HEIGHT / 2})`)
+          .attr('height', X_AXIS_HEIGHT / 2)
+          .attr('transform', `translate(0, -${X_AXIS_HEIGHT / 2})`)
           .style('fill', '#363636'),
       )
+      .call((xAxisG) =>
+        xAxisG
+          .append('rect')
+          .attr('width', '100%')
+          .attr('height', X_AXIS_HEIGHT / 2)
+          .attr('transform', `translate(0, 0)`)
+          .style('fill', '#282727'),
+      )
       .call(xAxisPosition.current);
-
-    // grid line 생성
-    d3.selectAll('.tick')
-      .append('line')
-      .attr('class', 'grid-line')
-      .attr('x1', 0)
-      .attr('y1', height * 2)
-      .attr('x2', 0)
-      .attr('y2', 0);
   }, []);
 
   // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
@@ -113,16 +135,16 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     // x축 다시 그리기
     const rescaleXAxis = (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
       const rescaleX = event.transform.rescaleX(xScaleCopy.current as d3.ZoomScale); // x rescale
-      const renderXAxisRef = renderXAxis.current as d3Selection;
       const xAxisPositionRef = xAxisPosition.current as d3Axis;
 
       prevXScale.current = xScale.current?.copy() as d3ScaleLinear; // 이전 x값 복사
-      renderXAxisRef.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // 이전 값으로 scale 적용
+      renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // 이전 값으로 scale 적용
+      renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear));
       xScale.current = rescaleX; // rescale한 값으로 갱신
 
       // grid line 조정
-      d3.selectAll('.tick .grid-line').remove();
-      d3.selectAll('.tick')
+      d3.selectAll('.grid-line').remove();
+      d3.selectAll('.grid-line-wrapper .tick')
         .append('line')
         .attr('class', 'grid-line')
         .attr('x1', 0)
@@ -172,7 +194,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         }, THROTTLE_TIMER),
       );
 
-    d3.select(`.${X_AXIS_SVG_CLASSNAME}`).call(zoomBehavior as any);
+    d3.select(dopeSheetRef.current).call(zoomBehavior as any);
   }, []);
 
   // timelineWrapper에 scroll 효과 적용
@@ -199,8 +221,8 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           {
             root: document.getElementById('timeline-wrapper'),
             rootMargin: `
-            ${isBelowPrevScrollTop ? 0 : TRACK_HEIGHT * 20}px 0px
-            ${isBelowPrevScrollTop ? TRACK_HEIGHT * 20 : 0}px 0px
+            ${isBelowPrevScrollTop ? 0 : X_AXIS_HEIGHT * 20}px 0px
+            ${isBelowPrevScrollTop ? X_AXIS_HEIGHT * 20 : 0}px 0px
             `,
           },
         );
@@ -209,13 +231,12 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       prevScrollTop.current = timelineWrapper.scrollTop;
     };
 
-    d3.select(timelineWrapper).on('scroll', rescaleCircleX);
+    d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
   }, [timelineWrapperRef]);
 
   return (
     <>
       <div className={cx('dopesheet-wrapper')} ref={dopeSheetRef}>
-        <div className={cx('x-axis-wrapper')} />
         <div className={cx('circle-group-wrapper')}>
           {_.map(dopeSheetList, (dopeSheet) => {
             return (

@@ -15,6 +15,8 @@ export interface Props {
   item: {
     key: string;
     value: string;
+    isSelected?: boolean;
+    isDisabled?: boolean;
   };
   selectedValue: string;
   onSelect: (key: string, value: string) => void;
@@ -23,12 +25,11 @@ export interface Props {
 const ContextMenuItem: FunctionComponent<Props> = ({ item, selectedValue, onSelect }) => {
   const handleClick: MouseEventHandler<HTMLLIElement> = useCallback(
     (_e) => {
-      // if (!_.isEqual(selectedValue, item.value)) {
-      //   onSelect(item.key, item.value);
-      // }
-      onSelect(item.key, item.value);
+      if (!item.isDisabled) {
+        onSelect(item.key, item.value);
+      }
     },
-    [item.key, item.value, onSelect],
+    [item.isDisabled, item.key, item.value, onSelect],
   );
 
   const handleSelect: KeyboardEventHandler<HTMLLIElement> = useCallback(
@@ -42,11 +43,15 @@ const ContextMenuItem: FunctionComponent<Props> = ({ item, selectedValue, onSele
     [item.key, item.value, onSelect, selectedValue],
   );
 
+  const classes = cx('menu-item', {
+    disabled: item.isDisabled,
+  });
+
   return (
     <li
       key={item.key}
       tabIndex={0}
-      className={cx('menu-item')}
+      className={classes}
       onClick={handleClick}
       onKeyDown={handleSelect}
       role="menuitem"
