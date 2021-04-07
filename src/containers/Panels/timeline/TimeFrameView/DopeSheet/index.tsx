@@ -25,7 +25,7 @@ const X_AXIS_SVG_CLASSNAME = 'x-axis-svg';
 const CIRCLE_GROUP_CLASSNAME = 'circle-group';
 
 const X_AXIS_DOMAIN = 500000;
-const TRACK_HEIGHT = 48; // 트랙 높이
+const X_AXIS_HEIGHT = 48; // 트랙 높이
 const THROTTLE_TIMER = 75;
 
 /** Dope Sheet 관련 변수
@@ -95,7 +95,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       .append('svg')
       .attr('class', `${X_AXIS_SVG_CLASSNAME}`)
       .attr('width', '100%')
-      .attr('height', TRACK_HEIGHT)
+      .attr('height', X_AXIS_HEIGHT)
       .style('position', 'fixed')
       .style('z-index', 2);
 
@@ -104,22 +104,22 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       .select(`.${X_AXIS_SVG_CLASSNAME}`)
       .append('g')
       .attr('class', 'x-axis-g')
-      .attr('transform', `translate(0, ${TRACK_HEIGHT / 2})`)
+      .attr('transform', `translate(0, ${X_AXIS_HEIGHT / 2})`)
       .call((xAxisG) =>
         xAxisG
           .append('rect')
           .attr('width', '100%')
-          .attr('height', TRACK_HEIGHT / 2)
-          .attr('transform', `translate(0, -${TRACK_HEIGHT / 2})`)
+          .attr('height', X_AXIS_HEIGHT / 2)
+          .attr('transform', `translate(0, -${X_AXIS_HEIGHT / 2})`)
           .style('fill', '#363636'),
       )
       .call((xAxisG) =>
         xAxisG
           .append('rect')
           .attr('width', '100%')
-          .attr('height', TRACK_HEIGHT / 2)
+          .attr('height', X_AXIS_HEIGHT / 2)
           .attr('transform', `translate(0, 0)`)
-          .style('fill', '#151515'),
+          .style('fill', '#282727'),
       )
       .call(xAxisPosition.current);
   }, []);
@@ -221,8 +221,8 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           {
             root: document.getElementById('timeline-wrapper'),
             rootMargin: `
-            ${isBelowPrevScrollTop ? 0 : TRACK_HEIGHT * 20}px 0px
-            ${isBelowPrevScrollTop ? TRACK_HEIGHT * 20 : 0}px 0px
+            ${isBelowPrevScrollTop ? 0 : X_AXIS_HEIGHT * 20}px 0px
+            ${isBelowPrevScrollTop ? X_AXIS_HEIGHT * 20 : 0}px 0px
             `,
           },
         );

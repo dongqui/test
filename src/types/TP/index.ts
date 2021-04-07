@@ -34,3 +34,8 @@ export interface TPUpdateDopeSheet {
   updatedList: Partial<TPDopeSheet>[];
   status: TPDopeSheetStatus;
 }
+
+export interface TPCurrnetClickedTrack {
+  trackIndex: number;
+  isClickedArrow: boolean;
+}

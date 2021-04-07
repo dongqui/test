@@ -1,6 +1,12 @@
 import { makeVar } from '@apollo/client';
 import produce from 'immer';
-import { TPTrackName, TPDopeSheet, TPLastBone, TPUpdateDopeSheet } from 'types/TP';
+import {
+  TPTrackName,
+  TPDopeSheet,
+  TPLastBone,
+  TPUpdateDopeSheet,
+  TPCurrnetClickedTrack,
+} from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
@@ -76,7 +82,8 @@ export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DA
 export const TPTrackNameList = makeVar<TPTrackName[]>([]);
 export const TPDopeSheetList = makeVar<TPDopeSheet[]>([]);
 export const TPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
-export const TPClickedTrackList = makeVar<number[]>([]);
+export const TPSelectedTrackList = makeVar<number[]>([]);
+export const storeTPCurrnetClickedTrack = makeVar<TPCurrnetClickedTrack | null>(null);
 
 export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
   const state = TPDopeSheetList();
