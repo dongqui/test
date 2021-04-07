@@ -47,7 +47,7 @@ const focusableTargetList = [
 
 const defaultProps: Partial<Props> = {
   theme: 'light',
-  hasCloseIcon: true,
+  hasCloseIcon: false,
 };
 
 const BaseModal: FunctionComponent<Props> = ({ theme, onClose, hasCloseIcon, title, children }) => {

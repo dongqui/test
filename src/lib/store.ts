@@ -1,6 +1,12 @@
 import { makeVar } from '@apollo/client';
 import produce from 'immer';
-import { TPTrackName, TPDopeSheet, TPLastBone, TPUpdateDopeSheet } from 'types/TP';
+import {
+  TPTrackName,
+  TPDopeSheet,
+  TPLastBone,
+  TPUpdateDopeSheet,
+  TPCurrnetClickedTrack,
+} from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
@@ -31,6 +37,7 @@ import {
 import { INITIAL_RETARGET_DATA } from '../utils/const';
 import { CPModeType } from '../types/CP';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 
 export enum StoreDataNames {
   mainData = 'mainData',
@@ -72,19 +79,22 @@ export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);
 
 // TP
-export const TPTrackNameList = makeVar<TPTrackName[]>([]);
-export const TPDopeSheetList = makeVar<TPDopeSheet[]>([]);
-export const TPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
-export const TPCurrentClidkedTracks = makeVar<number[]>([]);
+export const storeTPTrackNameList = makeVar<TPTrackName[]>([]);
+export const storeTPDopeSheetList = makeVar<TPDopeSheet[]>([]);
+export const storeTPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
+export const storeTPSelectedTrackList = makeVar<number[]>([]);
+export const storeTPCurrnetClickedTrack = makeVar<TPCurrnetClickedTrack | null>(null);
 
-export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
-  const state = TPDopeSheetList();
+export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
+  const state = storeTPDopeSheetList();
   const nextState = produce<TPDopeSheet[]>(state, (draft) => {
     _.forEach(updatedList, (target, key) => {
-      const index =
-        status === 'isFiltered'
-          ? key
-          : _.findIndex(draft, (find) => find.trackIndex === target.trackIndex);
+      const binarySearchIndex = fnGetBinarySearch({
+        collection: state,
+        index: target.trackIndex as number,
+        key: 'trackIndex',
+      });
+      const index = status === 'isFiltered' ? key : binarySearchIndex;
       switch (status) {
         case 'isFiltered':
           draft[index as number].isFiltered = target.isFiltered as boolean;
@@ -93,8 +103,11 @@ export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet
         case 'isClickedParentTrack':
           draft[index as number].isClickedParentTrack = target.isClickedParentTrack as boolean;
           break;
+        case 'isSelected':
+          draft[index as number].isSelected = target.isSelected as boolean;
+          break;
       }
     });
   });
-  TPDopeSheetList(nextState);
+  storeTPDopeSheetList(nextState);
 };

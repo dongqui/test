@@ -100,13 +100,16 @@ export const useRendering = (props: UseRendering) => {
       event: KeyboardEvent;
       transformControls: TransformControls;
     }) => {
+      const target = event.currentTarget as Element;
+      if (target.tagName === 'INPUT') {
+        return;
+      }
       switch (event.key) {
         case 'Escape': // esc
           // 현재 transformControl 붙어 있는 것 제거
           if (transformControls) {
             transformControls.detach();
             setInnerCurrentBone(undefined);
-            // storeCurrentBone(bone[0])
           }
           break;
         case 'q': // q
@@ -175,7 +178,17 @@ export const useRendering = (props: UseRendering) => {
   );
 
   const handleTransformControlsShortcutUp = useCallback(
-    ({ event, transformControls }: { event: any; transformControls: TransformControls }) => {
+    ({
+      event,
+      transformControls,
+    }: {
+      event: KeyboardEvent;
+      transformControls: TransformControls;
+    }) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
       switch (event.key) {
         case 'Shift': // shift
           // 기본 단위로 변경
@@ -193,6 +206,10 @@ export const useRendering = (props: UseRendering) => {
 
   const handleCameraControlsShortcutDown = useCallback(
     ({ event, cameraControls }: { event: KeyboardEvent; cameraControls: any }) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
       switch (event.key) {
         case 'Alt': // alt
           cameraControls.mouseButtons.MIDDLE = THREE.MOUSE.ROTATE;
@@ -329,6 +346,10 @@ export const useRendering = (props: UseRendering) => {
 
   const handleCameraControlsShortcutUp = useCallback(
     ({ event, cameraControls }: { event: KeyboardEvent; cameraControls: any }) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
       switch (event.key) {
         case 'Alt': // alt
           cameraControls.mouseButtons.MIDDLE = THREE.MOUSE.PAN;
@@ -370,6 +391,10 @@ export const useRendering = (props: UseRendering) => {
 
   const handleHistoryShortcutDown = useCallback(
     ({ event }: { event: KeyboardEvent }) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
       switch (event.key) {
         case 'z':
         case 'Z':
@@ -566,6 +591,8 @@ export const useRendering = (props: UseRendering) => {
       }
 
       // RenderingDiv 아래에 새로운 canvas를 생성하고, scene과 camera를 추가
+      renderer.domElement.tabIndex = 0;
+      renderer.domElement.className = 'canvas';
       renderingDiv.appendChild(renderer.domElement);
       const animate = () => {
         if (innerMixer) {
