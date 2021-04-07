@@ -100,9 +100,8 @@ export const useRendering = (props: UseRendering) => {
       event: KeyboardEvent;
       transformControls: TransformControls;
     }) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (event.target.tagName === 'INPUT') {
+      const target = event.currentTarget as Element;
+      if (target.tagName === 'INPUT') {
         return;
       }
       switch (event.key) {
@@ -179,8 +178,15 @@ export const useRendering = (props: UseRendering) => {
   );
 
   const handleTransformControlsShortcutUp = useCallback(
-    ({ event, transformControls }: { event: any; transformControls: TransformControls }) => {
-      if (event.target.tagName === 'INPUT') {
+    ({
+      event,
+      transformControls,
+    }: {
+      event: KeyboardEvent;
+      transformControls: TransformControls;
+    }) => {
+      const target = event.currentTarget as Element;
+      if (target.tagName === 'INPUT') {
         return;
       }
       switch (event.key) {
@@ -200,9 +206,8 @@ export const useRendering = (props: UseRendering) => {
 
   const handleCameraControlsShortcutDown = useCallback(
     ({ event, cameraControls }: { event: KeyboardEvent; cameraControls: any }) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (event.target.tagName === 'INPUT') {
+      const target = event.currentTarget as Element;
+      if (target.tagName === 'INPUT') {
         return;
       }
       switch (event.key) {
@@ -341,9 +346,8 @@ export const useRendering = (props: UseRendering) => {
 
   const handleCameraControlsShortcutUp = useCallback(
     ({ event, cameraControls }: { event: KeyboardEvent; cameraControls: any }) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (event.target.tagName === 'INPUT') {
+      const target = event.currentTarget as Element;
+      if (target.tagName === 'INPUT') {
         return;
       }
       switch (event.key) {
@@ -387,9 +391,8 @@ export const useRendering = (props: UseRendering) => {
 
   const handleHistoryShortcutDown = useCallback(
     ({ event }: { event: KeyboardEvent }) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (event.target.tagName === 'INPUT') {
+      const target = event.currentTarget as Element;
+      if (target.tagName === 'INPUT') {
         return;
       }
       switch (event.key) {

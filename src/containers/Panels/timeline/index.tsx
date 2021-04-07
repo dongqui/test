@@ -193,9 +193,8 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
 
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (event.target.tagName === 'INPUT') {
+      const target = event.currentTarget as Element;
+      if (target.tagName === 'INPUT') {
         return;
       }
       switch (event.key) {
