@@ -4,9 +4,9 @@ import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { fnConvertBloburlToFile } from './fnConvertBloburlToFile';
 
-const BASE_URL = 'https://shootapi.myplask.com:5000';
+const BASE_URL = 'https://shootapi.myplask.com:6500';
 const RETARGETIING_URL = 'https://shootapi.myplask.com:6500';
-const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:5000';
+const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:6500';
 
 interface uploadFileToMotionDataProps {
   type: VIDEO_FORMAT_TYPES | string;
@@ -46,6 +46,29 @@ export const uploadFbxToGlb = async ({ file, type }: { file: File; type: string 
       msg: error,
     };
   }
+};
+
+interface SetConvertGlbToFbx {
+  file: File;
+  type: string;
+  id: string;
+}
+
+export const setConvertGlbToFbx = async (props: SetConvertGlbToFbx) => {
+  const { file, type, id } = props;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('type', type);
+  formData.append('id', id);
+  const result = await axios({
+    method: 'POST',
+    url: `${BLENDER_BASE_URL}/glb2fbx-upload-api`,
+    data: formData,
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+    .then((res) => res.data.result)
+    .catch((err) => err);
+  return result;
 };
 
 export const uploadFileToMotionData = async ({
@@ -112,6 +135,7 @@ export const getRetargetMap = async ({ bones }: getRetargetMapProps) => {
     };
   }
 };
+
 export const getRetargetBaseLayer = async ({
   baseLayer,
   name,

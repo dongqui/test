@@ -5,10 +5,12 @@ import {
   setCurrentVisualizedData,
   setLpData,
   setRenderingData,
+  setTPDopeSheetList,
 } from 'redux/homeSlice';
 import { CurrentVisualizedDataType, LPDataType } from 'types';
 import { CPDataType } from 'types/CP';
 import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
+import { TPDopeSheet } from 'types/TP';
 import { isDebug } from 'utils/const';
 
 interface useDebuggingDataProps {
@@ -17,6 +19,7 @@ interface useDebuggingDataProps {
   renderingData: RenderingDataType;
   animatingData: AnimatingDataType;
   currentVisualizedData: CurrentVisualizedDataType | undefined;
+  tpDopeSheetList: TPDopeSheet[];
 }
 
 export const useDebuggingData = ({
@@ -25,6 +28,7 @@ export const useDebuggingData = ({
   renderingData,
   animatingData,
   currentVisualizedData,
+  tpDopeSheetList,
 }: useDebuggingDataProps) => {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -47,4 +51,9 @@ export const useDebuggingData = ({
       dispatch(setCurrentVisualizedData(currentVisualizedData));
     }
   }, [currentVisualizedData, dispatch]);
+  useEffect(() => {
+    if (isDebug) {
+      dispatch(setTPDopeSheetList(tpDopeSheetList));
+    }
+  }, [dispatch, tpDopeSheetList]);
 };
