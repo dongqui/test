@@ -8,7 +8,7 @@ import {
   storeCPData,
   storeAnimatingData,
   storeCurrentVisualizedData,
-  TPDopeSheetList,
+  storeTPDopeSheetList,
   storeLPMode,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
@@ -29,7 +29,7 @@ const MainContainer: FunctionComponent = () => {
   const cpData = useReactiveVar(storeCPData);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
-  const tpDopeSheetList = useReactiveVar(TPDopeSheetList);
+  const tpDopeSheetList = useReactiveVar(storeTPDopeSheetList);
 
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
