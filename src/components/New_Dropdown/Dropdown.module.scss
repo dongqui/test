@@ -1,4 +1,5 @@
 @import 'styles/libraries/_mixins';
+@import 'styles/libraries/_colors';
 @import 'styles/libraries/_functions';
 
 .wrapper {
@@ -6,21 +7,52 @@
   display: inline-block;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
 .button-toggle {
   @include reset-button-style();
-  display: inline-block;
+  // display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
   // padding: 1rem;
   padding: 2px 8px;
   background-color: #282727;
   color: #fff;
   // min-width: 10rem;
+  min-width: 72px;
   text-align: left;
   font-weight: 300;
   border-radius: 6px;
+  border: 1px solid $gray300;
 
   &.open {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+  }
+}
+
+.text {
+  margin-right: 8px;
+}
+
+.arrow {
+  border: 0;
+
+  & > svg {
+    width: 8px;
+    transform: rotate(-90deg);
+  }
+
+  &.open {
+    & > svg {
+      width: 8px;
+      transform: rotate(90deg);
+    }
   }
 }
 
@@ -29,10 +61,14 @@
   top: 0;
   left: 0;
   background-color: #282727;
+  min-width: 72px;
   color: #a7a7a7;
   padding: 6px;
   // min-width: 10rem;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
+  border: 1px solid $gray300;
+  border-top: 0;
   overflow: hidden;
+  z-index: 999;
 }
