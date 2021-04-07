@@ -372,12 +372,6 @@ export const useLPControl = ({
           onPaste();
         },
       },
-      // {
-      //   key: 'Enter',
-      //   event: () => {
-      //     onEdit({ mainData });
-      //   },
-      // },
     ],
     [mainData, onCopy, onPaste],
   );
@@ -385,13 +379,13 @@ export const useLPControl = ({
     ({ data }) => {
       let result = _.clone(data);
       if (!_.isEmpty(searchWord)) {
-        result = _.filter(mainData, (o) =>
+        result = _.filter(result, (o) =>
           _.includes(o.name.toLowerCase(), searchWord.toLowerCase()),
         );
       }
       return result;
     },
-    [mainData, searchWord],
+    [searchWord],
   );
   const filteredData: LPDataType[] = useMemo(() => {
     let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
