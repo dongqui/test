@@ -100,14 +100,15 @@ const LibraryPanelComponent: FunctionComponent = () => {
           setLoading(false);
           return false;
         }
-        // const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
-        //   bones,
-        // });
-        // if (error2) {
-        //   storeModalInfo({ isShow: true, msg: msg2 });
-        //   setLoading(false);
-        //   return false;
-        // }
+        const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
+          bones,
+        });
+        const retargetMap = result?.data?.result ?? [];
+        if (error2) {
+          storeModalInfo({ isShow: true, msg: msg2 });
+          setLoading(false);
+          return false;
+        }
         const motions: LPDataType[] = [];
         const key = uuidv4();
         _.forEach(animations, (clip, index) => {
@@ -132,13 +133,12 @@ const LibraryPanelComponent: FunctionComponent = () => {
             parentKey: _.isEqual(lpmode, LPModeType.iconview)
               ? _.last(pages)?.key
               : ROOT_FOLDER_NAME,
-            // baseLayer: _.cloneDeep(motions?.[0]?.baseLayer ?? []),
-            // layers: _.cloneDeep(motions?.[0]?.layers ?? []),
             baseLayer: fnGetBaseLayerWithBoneNames({
               boneNames: _.map(bones, (bone) => bone.name),
             }),
             layers: [],
             boneNames: _.map(bones, (bone) => bone.name),
+            retargetMap,
           },
         ];
         newData = _.concat(newData, motions);

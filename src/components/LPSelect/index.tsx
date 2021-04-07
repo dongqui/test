@@ -25,6 +25,8 @@ const LPSelectComponent: React.FC<LPSelectProps> = ({}) => {
         name: fnGetFileName({ key: '', mainData: lpData, name: 'Folder' }),
         parentKey: _.last(pages)?.key,
         isModifying: true,
+        baseLayer: [],
+        layers: [],
       }),
     );
   }, [lpData, pages]);
