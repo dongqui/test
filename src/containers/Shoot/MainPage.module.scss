@@ -1,19 +1,5 @@
 @import 'styles/libraries/_responsive';
 
-.library {
-  z-index: 1;
-  overflow: hidden;
-}
-
-.control {
-  background-color: black;
-
-  .child {
-    position: absolute;
-    right: 0;
-  }
-}
-
 .wrapper {
   height: 100%;
   display: flex;

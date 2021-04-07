@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   width: calc(100% - 248px);
-  background: #151515;
+  // background: #151515;
 
   .x-axis-wrapper {
     position: fixed;
@@ -10,7 +10,7 @@
     height: 48px;
     border-bottom: 2px solid #303030;
     z-index: 1;
-    background: #151515;
+    // background: #151515;
   }
 
   .circle-group-wrapper {

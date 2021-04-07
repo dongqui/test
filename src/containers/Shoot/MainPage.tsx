@@ -94,9 +94,9 @@ const MainContainer: FunctionComponent = () => {
           <LibraryPanel />
         </ResizableBox>
         <ResizableBox
-          width={width - 248 - 230}
+          width={width - 248 - 264}
           minConstraints={[150, height * 0.5]}
-          maxConstraints={[width - 248 - 230, height * 0.7]}
+          maxConstraints={[width - 248 - 264, height * 0.7]}
           className={cx('panel-rendering')}
           axis="both"
         >
@@ -105,8 +105,8 @@ const MainContainer: FunctionComponent = () => {
           </div>
         </ResizableBox>
         <ResizableBox
-          width={230}
-          minConstraints={[230, height * 0.5]}
+          width={264}
+          minConstraints={[264, height * 0.5]}
           maxConstraints={[450, height * 0.7]}
           className={cx('panel-control')}
           resizeHandles={['w']}

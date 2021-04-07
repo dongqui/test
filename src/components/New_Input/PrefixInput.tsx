@@ -7,15 +7,25 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   prefix: ReactNode;
+  arrow?: boolean;
+  color?: 'primary' | 'default';
+  className?: string;
 }
+
+const defaultProps: Partial<Props> = {
+  color: 'default',
+};
 
 export type Props = BaseProps & Omit<Input.BaseInputProps, 'prefix'>;
 
-const PrefixInput: FunctionComponent<Props> = ({ prefix, ...rest }) => {
+const PrefixInput: FunctionComponent<Props> = ({ prefix, arrow, color, className, ...rest }) => {
+  const classes = cx('input-wrapper', className);
+  const prefixClasses = cx('prefix', color);
+
   return (
-    <div className={cx('input-wrapper')}>
-      <span className={cx('prefix')}>{prefix}</span>
-      <BaseInput className={cx('input')} type="number" {...rest} />
+    <div className={classes}>
+      <span className={prefixClasses}>{prefix}</span>
+      <BaseInput className={cx('input')} type="number" arrow={arrow} {...rest} />
     </div>
   );
 };

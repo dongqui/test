@@ -15,6 +15,8 @@ export interface Props {
   item: {
     key: string;
     value: string;
+    isSelected?: boolean;
+    isDisabled?: boolean;
   };
   selectedValue: string;
   onSelect: (key: string, value: string) => void;
@@ -42,11 +44,15 @@ const ContextMenuItem: FunctionComponent<Props> = ({ item, selectedValue, onSele
     [item.key, item.value, onSelect, selectedValue],
   );
 
+  const classes = cx('menu-item', {
+    disabled: item.isDisabled,
+  });
+
   return (
     <li
       key={item.key}
       tabIndex={0}
-      className={cx('menu-item')}
+      className={classes}
       onClick={handleClick}
       onKeyDown={handleSelect}
       role="menuitem"
