@@ -2,9 +2,9 @@ import React, { memo, useCallback, useEffect } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import {
-  TPTrackNameList,
-  TPDopeSheetList,
-  TPLastBoneList,
+  storeTPTrackNameList,
+  storeTPDopeSheetList,
+  storeTPLastBoneList,
   storeSkeletonHelper,
   storeCurrentVisualizedData,
 } from 'lib/store';
@@ -300,8 +300,8 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
       if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2; // 11 -> 13, 21 -> 23
     }
 
-    TPTrackNameList(trackNameList);
-    TPLastBoneList(lastBoneList);
+    storeTPTrackNameList(trackNameList);
+    storeTPLastBoneList(lastBoneList);
   }, [baseLayer]);
 
   // Dope Sheet Status 리스트 가공
@@ -320,7 +320,10 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         isExcludedRendering: false,
         isFiltered: true,
         isClickedParentTrack: index === 0 ? true : false,
+        layerKey: 'baseLayer',
+        isTransformTrack: false,
         trackIndex: dopeSheetIndex,
+        trackName: index === 0 ? 'Summary' : 'Base',
         times: index === 0 ? summaryTimes : baseTimes,
       });
       dopeSheetIndex += 1;
@@ -343,7 +346,10 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         isExcludedRendering: false,
         isFiltered: true,
         isClickedParentTrack: false,
+        layerKey: 'baseLayer',
+        isTransformTrack: false,
         trackIndex: dopeSheetIndex,
+        trackName: _.split(currnetBoneTrack.name, '.')[0],
         times: boneTimes,
       });
       dopeSheetIndex += 1;
@@ -371,7 +377,10 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
           isExcludedRendering: false,
           isFiltered: true,
           isClickedParentTrack: false,
+          layerKey: 'baseLayer',
+          isTransformTrack: true,
           trackIndex: dopeSheetIndex,
+          trackName: baseLayer[transformIndex].name,
           times: currnetBoneTrack.times,
           x,
           y,
@@ -381,7 +390,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
       }
       if ((dopeSheetIndex - 1) % 10 === 0) dopeSheetIndex += 2; // 11 -> 13, 21 -> 23
     }
-    TPDopeSheetList(dopeSheetList);
+    storeTPDopeSheetList(dopeSheetList);
   }, [baseLayer]);
 
   return (
