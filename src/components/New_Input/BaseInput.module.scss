@@ -19,9 +19,28 @@
     transition: background-color 500000s ease-in-out 0s;
   }
 
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
+  &:not(.arrow) {
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+  }
+
+  &.arrow {
+    background: url('/images/InputArrow.svg');
+    background-position: center right;
+    background-size: auto;
+    background-repeat: no-repeat;
+    caret-color: transparent;
+
+    &::-webkit-inner-spin-button {
+      opacity: 1;
+      -webkit-appearance: none;
+      background: transparent;
+      cursor: pointer;
+      width: 24px;
+      height: 32px;
+    }
   }
 
   &::placeholder {

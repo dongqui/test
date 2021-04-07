@@ -1,5 +1,6 @@
 import { FunctionComponent, memo, useCallback, useEffect, useState, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
+import { useDropzone } from 'react-dropzone';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'antd';
 import { useLPControl } from 'hooks/LP/useLPControl';
@@ -11,14 +12,14 @@ import {
   FILE_TYPES,
   FORMAT_TYPES,
   LPModeType,
-  MainDataType,
+  LPDataType,
   MODAL_TYPES,
   PAGE_NAMES,
 } from 'types';
 import {
   storeCutImages,
   storeLPMode,
-  storeMainData,
+  storeLpData,
   storeModalInfo,
   storePageInfo,
   storePages,
@@ -27,31 +28,32 @@ import {
   storeContextMenuInfo,
 } from 'lib/store';
 import _ from 'lodash';
-import { useDropzone } from 'react-dropzone';
-import { IconPage } from '../../IconTree/IconPage';
 import { IconView } from '../../IconTree/IconView';
-import * as S from './LibraryPanelStyles';
-import Breadcrumb from './Breadcrumb';
 import { ListView } from 'containers/ListTree/ListView';
+import Breadcrumb from './Breadcrumb';
+import * as api from 'utils/common/api';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
-import * as api from 'utils/common/api';
-import { fnGetBaseLayerWithClip } from 'utils/TP/editingUtils';
+import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithClip } from 'utils/TP/editingUtils';
+import fnExportModelToFbx from 'utils/LP/fnExportModelToFbx';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
-import { Headline } from 'components/New_Typography';
+import { Headline, Html } from 'components/New_Typography';
+import { BaseModal } from 'components/New_Modal';
 import Explorer from './Explorer/index';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { ROOT_FOLDER_NAME } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
 export interface PagesType {
   key: string;
   name: string;
+  type: FILE_TYPES;
 }
 
 const LibraryPanelComponent: FunctionComponent = () => {
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
   const pages = useReactiveVar(storePages);
   const lpmode = useReactiveVar(storeLPMode);
   const [loading, setLoading] = useState(false);
@@ -60,7 +62,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
   }, []);
   const onDropPost = useCallback(
     async ({ acceptedFiles, overrideKeys = [] }) => {
-      let newDatas: MainDataType[] = [];
+      let newDatas: LPDataType[] = [];
       for (const acceptedFile of acceptedFiles) {
         const extension = _.last(_.split(acceptedFile.name, '.'));
         let convertedFileUrl = DEFAULT_MODEL_URL;
@@ -77,10 +79,9 @@ const LibraryPanelComponent: FunctionComponent = () => {
           }
           convertedFileUrl = url;
         }
-        let url = URL.createObjectURL(acceptedFile);
-        if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
-          url = convertedFileUrl;
-        }
+        const url = _.isEqual(extension, FORMAT_TYPES.fbx)
+          ? convertedFileUrl
+          : URL.createObjectURL(acceptedFile);
         if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
           Modal.confirm({
             okText: '확인',
@@ -93,15 +94,24 @@ const LibraryPanelComponent: FunctionComponent = () => {
             },
           });
           setLoading(false);
-          return false;
+          continue;
         }
-        const { animations, bones, error, msg } = await fnGetAnimationData({ url });
+        const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
         if (error) {
-          storeModalInfo({ isShow: true, msg });
+          storeModalInfo({ isShow: true, msg, type: MODAL_TYPES.alert });
           setLoading(false);
           return false;
         }
-        const motions: MainDataType[] = [];
+        const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
+          bones,
+        });
+        const retargetMap = result?.data?.result ?? [];
+        if (error2) {
+          storeModalInfo({ isShow: true, msg: msg2, type: MODAL_TYPES.alert });
+          setLoading(false);
+          return false;
+        }
+        const motions: LPDataType[] = [];
         const key = uuidv4();
         _.forEach(animations, (clip, index) => {
           if (bones) {
@@ -116,33 +126,39 @@ const LibraryPanelComponent: FunctionComponent = () => {
             });
           }
         });
-        let newData: MainDataType[] = [
+        let newData: LPDataType[] = [
           {
             key,
             type: FILE_TYPES.file,
             name: acceptedFile.name,
             url,
-            parentKey: _.last(pages)?.key,
-            baseLayer: _.cloneDeep(motions?.[0]?.baseLayer ?? []),
-            layers: _.cloneDeep(motions?.[0]?.layers ?? []),
+            parentKey: _.isEqual(lpmode, LPModeType.iconview)
+              ? _.last(pages)?.key
+              : ROOT_FOLDER_NAME,
+            baseLayer: fnGetBaseLayerWithBoneNames({
+              boneNames: _.map(bones, (bone) => bone.name),
+            }),
+            layers: [],
             boneNames: _.map(bones, (bone) => bone.name),
+            retargetMap,
           },
         ];
         newData = _.concat(newData, motions);
         newDatas = _.concat(newDatas, newData);
       }
-      let filteredMainData = _.clone(mainData);
+      let filteredLpData = _.clone(lpData);
       if (!_.isEmpty(overrideKeys)) {
-        filteredMainData = fnDeleteFileByKeys({ mainData: filteredMainData, keys: overrideKeys });
+        filteredLpData = fnDeleteFileByKeys({ mainData: filteredLpData, keys: overrideKeys });
       }
-      storeMainData(_.concat(filteredMainData, newDatas));
+      storeLpData(_.concat(filteredLpData, newDatas));
       setLoading(false);
     },
-    [mainData, pages],
+    [lpmode, lpData, pages],
   );
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       setLoading(true);
+      const overrideFileNames: string[] = [];
       if (_.isEmpty(acceptedFiles)) {
         storeModalInfo({ isShow: true, msg: '파일이 존재하지 않습니다.', type: MODAL_TYPES.alert });
         setLoading(false);
@@ -174,54 +190,65 @@ const LibraryPanelComponent: FunctionComponent = () => {
       ) {
         storeModalInfo({
           isShow: true,
-          msg: '영상파일은 2개이상 가져올수 없습니다.',
+          msg: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
           type: MODAL_TYPES.alert,
         });
         setLoading(false);
         return false;
       }
-      if (
-        _.some(mainData, (item) =>
-          _.includes(
-            _.map(acceptedFiles, (o) => o.name),
-            item.name,
-          ),
-        )
-      ) {
-        Modal.confirm({
-          okText: '덮어쓰기',
-          cancelText: '취소',
-          content: `대상 폴더에 이름이 ${
-            _.find(mainData, (item) =>
-              _.includes(
-                _.map(acceptedFiles, (o) => o.name),
-                item.name,
-              ),
-            )?.name
-          }인 파일이 있습니다. 덮어쓰시겠습니까?`,
-          onOk: () => {
-            onDropPost({
-              acceptedFiles,
-              override: true,
-              overrideKeys: [
-                _.find(mainData, (item) =>
-                  _.includes(
-                    _.map(acceptedFiles, (o) => o.name),
-                    item.name,
-                  ),
-                )?.key,
-              ],
-            });
-          },
-          onCancel: () => {
-            setLoading(false);
-          },
-        });
-        return false;
+      for (const acceptedFile of acceptedFiles) {
+        let overlappedFile: LPDataType | undefined;
+        if (_.isEqual(lpmode, LPModeType.iconview)) {
+          overlappedFile = _.find(
+            lpData,
+            (item) =>
+              _.isEqual(item.name, acceptedFile?.name) &&
+              _.isEqual(item.parentKey, _.last(pages)?.key),
+          );
+        }
+        if (_.isEqual(lpmode, LPModeType.listview)) {
+          overlappedFile = _.find(
+            lpData,
+            (item) =>
+              _.isEqual(item.name, acceptedFile?.name) &&
+              _.isEqual(item.parentKey, ROOT_FOLDER_NAME),
+          );
+        }
+        if (!_.isEmpty(overlappedFile)) {
+          overrideFileNames.push(acceptedFile.name);
+          Modal.confirm({
+            okText: '덮어쓰기',
+            cancelText: '취소',
+            content: `대상 폴더에 이름이 ${overlappedFile?.name}인 파일이 있습니다. 덮어쓰시겠습니까?`,
+            onOk: () => {
+              onDropPost({
+                acceptedFiles: [acceptedFile],
+                overrideKeys: [overlappedFile?.key],
+              });
+            },
+            onCancel: () => {
+              setLoading(false);
+            },
+          });
+        }
       }
-      await onDropPost({ acceptedFiles });
+      let filteredAcceptedFiles = _.filter(
+        acceptedFiles,
+        (file) => !_.includes(overrideFileNames, file.name),
+      );
+      // 비디오포맷은 마지막으로 재정렬
+      filteredAcceptedFiles = _.concat(
+        _.filter(
+          filteredAcceptedFiles,
+          (file) => !_.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))),
+        ),
+        _.filter(filteredAcceptedFiles, (file) =>
+          _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))),
+        ),
+      );
+      await onDropPost({ acceptedFiles: filteredAcceptedFiles });
     },
-    [mainData, onDropPost],
+    [lpData, lpmode, onDropPost, pages],
   );
   const { getRootProps } = useDropzone({ onDrop });
 
@@ -250,13 +277,20 @@ const LibraryPanelComponent: FunctionComponent = () => {
     onDrop: handleDrop,
     shortcutData,
     filteredData,
+    showsModal,
+    setShowsModal,
+    modalMessage,
   } = useLPControl({
     contextmenuInfo,
-    mainData,
+    mainData: lpData,
     pages,
     searchWord,
     lpmode,
   });
+
+  const handleModalClose = useCallback(() => {
+    setShowsModal(!showsModal);
+  }, [setShowsModal, showsModal]);
 
   useContextMenu({ targetRef: panelWrapperRef, event: onContextMenu });
 
@@ -301,6 +335,13 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
+      {showsModal && (
+        <BaseModal onClose={handleModalClose}>
+          <Headline level="5" align="center">
+            <Html content={modalMessage} />
+          </Headline>
+        </BaseModal>
+      )}
     </div>
   );
 };

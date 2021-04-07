@@ -8,7 +8,7 @@ import { MODAL_TYPES } from 'types';
 import { storeModalInfo, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
-import { ExtractIcon } from '../../components/Icons/generated2/ExtractIcon';
+import { ExtractIcon } from '../../../components/Icons/generated2/ExtractIcon';
 import * as S from './PlayBarStyles';
 
 export interface PlayBoxProps {}

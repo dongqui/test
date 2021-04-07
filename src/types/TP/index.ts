@@ -18,19 +18,27 @@ export interface TPDopeSheet {
   isExcludedRendering: boolean; // sheet 랜더링 제외 체크
   isClickedParentTrack: boolean; // 상위 트랙에 화살표 버튼이 클릭되어 있는지
   isFiltered: boolean; // sheet 필터링 체크
+  isTransformTrack: boolean; // 현재 트랙이 transform 트랙인지 아닌지 체크
+  layerKey: string; // 어떤 layer에 속했는지 key로 표현. base layer일 경우, key는 'baseLayer'가 됨
   trackIndex: number; // 트랙 index
+  trackName: string;
   times?: number[];
   x?: number[];
   y?: number[];
   z?: number[];
 }
 
-export interface TPLastBoneTrackIndex {
-  layerIdnex: number;
-  lastBoneTrackIndex: number;
+export interface TPLastBone {
+  layerIndex: number;
+  lastBoneIndex: number;
 }
 
 export interface TPUpdateDopeSheet {
   updatedList: Partial<TPDopeSheet>[];
   status: TPDopeSheetStatus;
+}
+
+export interface TPCurrnetClickedTrack {
+  trackIndex: number;
+  isClickedArrow: boolean;
 }

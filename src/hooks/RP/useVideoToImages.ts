@@ -1,34 +1,27 @@
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
+import getBlobDuration from 'get-blob-duration';
+import { sleep } from 'utils/common/sleep';
 
 interface useVideoToImagesProps {
   videoRef: React.RefObject<HTMLVideoElement>;
+  videoUrl: string;
   action: ({ images }: { images: string[] }) => void;
   active: boolean;
-  intervalTime: number;
 }
 
 let tempImages: string[] = [];
-let interval: any;
-export const useVideoToImages = ({
-  videoRef,
-  action,
-  active,
-  intervalTime,
-}: useVideoToImagesProps) => {
+export const useVideoToImages = ({ videoRef, videoUrl, action, active }: useVideoToImagesProps) => {
   const makeImages = useCallback(async () => {
-    try {
-      const video = videoRef.current;
-      if (video?.ended) {
-        tempImages = [];
-        await video.pause();
-        await video.remove();
-        fnKillSetInterval();
+    const video = videoRef.current;
+    const duration = await getBlobDuration(videoUrl);
+    const interval = duration / 20;
+    tempImages = [];
+    for (const i of _.range(20)) {
+      if (video) {
+        video.currentTime = interval * i;
       }
-      if (video?.paused) {
-        await video.play();
-      }
+      await video?.pause();
       document.getElementsByTagName('canvas')?.[0]?.remove();
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -40,15 +33,16 @@ export const useVideoToImages = ({
         tempImages = _.concat(tempImages, frameImage);
         action({ images: tempImages });
       }
+      await sleep(500);
+    }
+  }, [action, videoRef, videoUrl]);
+  useEffect(() => {
+    try {
+      if (active) {
+        makeImages();
+      }
     } catch (error) {
       console.log(error);
     }
-  }, [action, videoRef]);
-  useEffect(() => {
-    tempImages = [];
-    if (active) {
-      interval = setInterval(makeImages, intervalTime);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [active, makeImages]);
 };

@@ -43,7 +43,7 @@ const fnDeleteKeyframe = (props: FnDeleteKeyframe): ShootTrackType => {
     times: newTimes,
     values: newValues,
     interpolation: track.interpolation,
-    included: true,
+    isIncluded: true,
   };
 };
 

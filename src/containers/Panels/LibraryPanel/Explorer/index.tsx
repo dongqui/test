@@ -3,7 +3,7 @@ import { useReactiveVar } from '@apollo/client';
 import { SearchInput } from 'components/New_Input';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { FILE_TYPES, LPModeType } from 'types';
-import { storeLPMode, storeMainData, storePages } from 'lib/store';
+import { storeLPMode, storeLpData, storePages } from 'lib/store';
 import { v4 as uuidv4 } from 'uuid';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
 import _ from 'lodash';
@@ -20,7 +20,7 @@ export interface Props {
 const Explorer: FunctionComponent<Props> = ({ onChange }) => {
   const lpmode = useReactiveVar(storeLPMode);
   const pages = useReactiveVar(storePages);
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
 
   const handleChangeMode = useCallback(() => {
     const changeTargetMode = _.isEqual(lpmode, LPModeType.iconview)
@@ -31,18 +31,20 @@ const Explorer: FunctionComponent<Props> = ({ onChange }) => {
   }, [lpmode]);
 
   const handleAddGroup = useCallback(() => {
-    storeMainData(
-      _.concat(mainData, {
+    storeLpData(
+      _.concat(lpData, {
         key: uuidv4(),
         type: FILE_TYPES.folder,
-        name: fnGetFileName({ key: '', mainData, name: 'Folder' }),
+        name: fnGetFileName({ key: '', mainData: lpData, name: 'Folder' }),
         parentKey: _.isEqual(lpmode, LPModeType.iconview) ? _.last(pages)?.key : ROOT_FOLDER_NAME,
         isModifying: true,
+        baseLayer: [],
+        layers: [],
       }),
     );
-  }, [lpmode, mainData, pages]);
+  }, [lpmode, lpData, pages]);
 
-  const icon = _.isEqual(lpmode, LPModeType.iconview) ? SvgPath.IconView : SvgPath.ListView;
+  const icon = _.isEqual(lpmode, LPModeType.iconview) ? SvgPath.ListView : SvgPath.IconView;
 
   return (
     <div className={cx('explorer')}>

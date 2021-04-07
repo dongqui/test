@@ -1,7 +1,7 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { RecordPlayBar, RecordPlayBarProps } from 'containers/RecordPlayBar';
+import { RecordPlayBar, RecordPlayBarProps } from 'containers/record/RecordPlayBar';
 
 export default {
   title: 'Component API/Container/RecordPlayBar',

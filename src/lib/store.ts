@@ -1,6 +1,12 @@
 import { makeVar } from '@apollo/client';
 import produce from 'immer';
-import { TPTrackName, TPDopeSheet, TPLastBoneTrackIndex, TPUpdateDopeSheet } from 'types/TP';
+import {
+  TPTrackName,
+  TPDopeSheet,
+  TPLastBone,
+  TPUpdateDopeSheet,
+  TPCurrnetClickedTrack,
+} from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
@@ -14,26 +20,30 @@ import _ from 'lodash';
 import {
   INITIAL_ANIMATING_DATA,
   INITIAL_CP_DATA,
-  INITIAL_MAIN_DATA,
+  INITIAL_LP_DATA,
   INITIAL_RECORDING_DATA,
   INITIAL_RENDERING_DATA,
 } from 'utils/const';
 import {
   ContextmenuType,
+  FILE_TYPES,
   LPModeType,
-  MainDataType,
+  LPDataType,
   ModalType,
   PageInfoType,
   PAGE_NAMES,
+  CurrentVisualizedDataType,
 } from '../types';
 import { INITIAL_RETARGET_DATA } from '../utils/const';
 import { CPModeType } from '../types/CP';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 
 export enum StoreDataNames {
   mainData = 'mainData',
 }
 // common
+export const storeCurrentVisualizedData = makeVar<CurrentVisualizedDataType | undefined>(undefined);
 export const storeContextMenuInfo = makeVar<ContextmenuType>({
   isShow: false,
   top: 0,
@@ -45,10 +55,12 @@ export const storeModalInfo = makeVar<ModalType>({
   msg: '',
   isShow: false,
 });
-export const storePageInfo = makeVar<PageInfoType>({ page: PAGE_NAMES.shoot });
+export const storePageInfo = makeVar<PageInfoType>({ page: PAGE_NAMES.shoot, duration: 10 });
 // LP
-export const storeMainData = makeVar<MainDataType[]>(INITIAL_MAIN_DATA);
-export const storePages = makeVar<PagesType[]>([{ key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME }]);
+export const storeLpData = makeVar<LPDataType[]>(INITIAL_LP_DATA);
+export const storePages = makeVar<PagesType[]>([
+  { key: ROOT_FOLDER_NAME, name: ROOT_FOLDER_NAME, type: FILE_TYPES.folder },
+]);
 export const storeSearchWord = makeVar<string>('');
 export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 // RP
@@ -56,6 +68,7 @@ export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_D
 export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 export const storeCurrentBone = makeVar<THREE.Bone | undefined>(undefined);
 export const storeTransformControls = makeVar<TransformControls | undefined>(undefined);
+export const storeSkeletonHelper = makeVar<THREE.SkeletonHelper | undefined>(undefined);
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);
@@ -66,18 +79,22 @@ export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);
 
 // TP
-export const TPTrackNameList = makeVar<TPTrackName[]>([]);
-export const TPDopeSheetList = makeVar<TPDopeSheet[]>([]);
-export const TPLastBoneTrackIndexList = makeVar<TPLastBoneTrackIndex[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
+export const storeTPTrackNameList = makeVar<TPTrackName[]>([]);
+export const storeTPDopeSheetList = makeVar<TPDopeSheet[]>([]);
+export const storeTPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
+export const storeTPSelectedTrackList = makeVar<number[]>([]);
+export const storeTPCurrnetClickedTrack = makeVar<TPCurrnetClickedTrack | null>(null);
 
-export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
-  const state = TPDopeSheetList();
+export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
+  const state = storeTPDopeSheetList();
   const nextState = produce<TPDopeSheet[]>(state, (draft) => {
     _.forEach(updatedList, (target, key) => {
-      const index =
-        status === 'isFiltered'
-          ? key
-          : _.findIndex(draft, (find) => find.trackIndex === target.trackIndex);
+      const binarySearchIndex = fnGetBinarySearch({
+        collection: state,
+        index: target.trackIndex as number,
+        key: 'trackIndex',
+      });
+      const index = status === 'isFiltered' ? key : binarySearchIndex;
       switch (status) {
         case 'isFiltered':
           draft[index as number].isFiltered = target.isFiltered as boolean;
@@ -86,8 +103,11 @@ export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet
         case 'isClickedParentTrack':
           draft[index as number].isClickedParentTrack = target.isClickedParentTrack as boolean;
           break;
+        case 'isSelected':
+          draft[index as number].isSelected = target.isSelected as boolean;
+          break;
       }
     });
   });
-  TPDopeSheetList(nextState);
+  storeTPDopeSheetList(nextState);
 };

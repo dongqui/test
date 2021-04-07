@@ -17,4 +17,8 @@
     background-color: $primaryColor;
     color: #fff;
   }
+
+  &.disabled {
+    color: #bdbdbd;
+  }
 }

@@ -16,16 +16,17 @@
 .track-body {
   display: flex;
   align-items: center;
-  height: 48px;
-  // border-bottom: 2px solid $gray300;
-  width: 100%;
-  border: 0;
-  border-bottom: 2px solid #303030;
+  height: 32px;
+  border-bottom: 2px solid $gray300;
   background: transparent;
 
   span {
     margin-left: 10px;
     color: white;
+  }
+
+  &.selected {
+    background: rgba(55, 133, 247, 10%); // --vivid-blue: #3785f7;
   }
 
   // 화살표 버튼
@@ -39,6 +40,6 @@
 }
 
 // 숨기기, 잠그기 버튼 wrapper
-// .track-button-wrapper {
+// .track-icon-wrapper {
 
 // }

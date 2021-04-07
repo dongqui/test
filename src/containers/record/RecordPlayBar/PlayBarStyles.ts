@@ -1,8 +1,7 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { NumberArray } from 'd3';
 import { rem } from 'utils/rem';
-import { GRAY200, GRAY300, GRAY500, GRAY600 } from '../../styles/constants/common';
+import { GRAY200, GRAY300, GRAY500, GRAY600 } from '../../../styles/constants/common';
 
 interface IndicatorTextProps {
   marginLeft?: number;
@@ -15,6 +14,9 @@ interface DropdownWrapperProps {
 }
 interface ModeSelectIconWrapperProps {
   isSelected?: boolean;
+}
+interface PlayBarWrapperProps {
+  isRecording: boolean;
 }
 const FONT_SIZE = rem(14);
 const BORDER_RADIUS = rem(8);
@@ -120,10 +122,11 @@ export const ModeSelectIconWrapper = styled.div<ModeSelectIconWrapperProps>`
 export const PlayBoxWrapper = styled.div`
   width: ${rem(180)}rem;
   height: ${rem(36)}rem;
-  background-color: ${GRAY300};
   border-radius: ${BORDER_RADIUS}rem;
   display: flex;
   flex-direction: row;
+  justify-content: center;
+  align-items: center;
 `;
 export const PlayBoxIconWrapper = styled.div`
   width: ${rem(36)}rem;
@@ -132,10 +135,6 @@ export const PlayBoxIconWrapper = styled.div`
   justify-content: center;
   align-items: center;
   cursor: pointer;
-
-  :hover {
-    background-color: ${HOVER_COLOR};
-  }
 `;
 export const PlayBoxIconDoubleWrapper = styled.div`
   width: ${rem(72)}rem;
@@ -145,7 +144,7 @@ export const PlayBoxIconDoubleWrapper = styled.div`
   align-items: center;
   cursor: pointer;
 `;
-export const PlayBarWrapper = styled.div`
+export const PlayBarWrapper = styled.div<PlayBarWrapperProps>`
   width: 100%;
   height: 48px;
   background-color: ${GRAY300};
@@ -154,6 +153,12 @@ export const PlayBarWrapper = styled.div`
   align-items: center;
   justify-content: space-between;
   position: relative;
+
+  ${(props) =>
+    props.isRecording &&
+    css`
+      background-color: #e85757;
+    `}
 `;
 export const PlayBarIndicatorWrapper = styled.div`
   position: absolute;

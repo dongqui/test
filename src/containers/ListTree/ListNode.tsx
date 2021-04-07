@@ -1,7 +1,7 @@
 import { FunctionComponent, memo, Fragment, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { storeMainData, storeSearchWord } from 'lib/store';
-import { FILE_TYPES, MainDataType, MAINDATA_PROPERTY_TYPES } from 'types';
+import { storeLpData, storeSearchWord } from 'lib/store';
+import { FILE_TYPES, LPDataType } from 'types';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { ListRow } from './ListRow';
 import _ from 'lodash';
@@ -11,14 +11,14 @@ import styles from './ListNode.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
-  item: MainDataType;
+  item: LPDataType;
   onDragStart: ({ key }: any) => void;
   onDragEnd: ({ key }: any) => void;
   onDrop: ({ key }: any) => void;
 }
 
 const ListNode: FunctionComponent<Props> = ({ item, onDragStart, onDragEnd, onDrop }) => {
-  const mainData = useReactiveVar(storeMainData);
+  const lpData = useReactiveVar(storeLpData);
   const searchWord = useReactiveVar(storeSearchWord);
 
   const handleDragStart = useCallback(() => {
@@ -33,7 +33,7 @@ const ListNode: FunctionComponent<Props> = ({ item, onDragStart, onDragEnd, onDr
   const isSearching = _.isEmpty(searchWord);
 
   const isParentRoot = _.isEqual(item.parentKey, ROOT_FOLDER_NAME);
-  const isParentExpanded = _.find(mainData, { key: item.parentKey })?.isExpanded;
+  const isParentExpanded = _.find(lpData, { key: item.parentKey })?.isExpanded;
 
   return (
     <div className={cx('list-wrapper')}>

@@ -21,7 +21,12 @@ import {
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
 import { useHistory } from './useHistory';
-import { storeCurrentBone, storeRenderingData, storeTransformControls } from '../../lib/store';
+import {
+  storeCurrentBone,
+  storeRenderingData,
+  storeTransformControls,
+  storeSkeletonHelper,
+} from '../../lib/store';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { useReactiveVar } from '@apollo/client';
 
@@ -31,7 +36,6 @@ interface UseRendering {
   id: string;
   fileUrl?: string;
   setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
-  setSkeletonHelper: Dispatch<SetStateAction<THREE.SkeletonHelper | undefined>>;
   setCameraControls: Dispatch<SetStateAction<OrbitControls | undefined>>;
   setScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
   setDirLight: Dispatch<SetStateAction<THREE.DirectionalLight | undefined>>;
@@ -44,22 +48,13 @@ interface UseRendering {
  * @param id - Canvas 를 부착할 HTMLDivElement 의 id
  * @param fileUrl - RP 에 visualize 할 모델의 url
  * @param setMixer - RenderingController 내 state 인 mixer 의 set 함수
- * @param setSkeletonHelper - RenderingController 내 state 인 skeletonHelper 의 set 함수
  * @param setCameraControls - RenderingController 내 state 인 cameraControls 의 set 함수
  * @param setScene - RenderingController 내 state 인 scene 의 set 함수
  * @param setDirLight - RenderingController 내 state 인 dirLight 의 set 함수
  *
  */
 export const useRendering = (props: UseRendering) => {
-  const {
-    id,
-    fileUrl,
-    setMixer,
-    setSkeletonHelper,
-    setCameraControls,
-    setScene,
-    setDirLight,
-  } = props;
+  const { id, fileUrl, setMixer, setCameraControls, setScene, setDirLight } = props;
   // store data
   const { axis } = useReactiveVar(storeRenderingData);
   // component state
@@ -105,13 +100,16 @@ export const useRendering = (props: UseRendering) => {
       event: KeyboardEvent;
       transformControls: TransformControls;
     }) => {
+      const target = event.currentTarget as Element;
+      if (target.tagName === 'INPUT') {
+        return;
+      }
       switch (event.key) {
         case 'Escape': // esc
           // 현재 transformControl 붙어 있는 것 제거
           if (transformControls) {
             transformControls.detach();
             setInnerCurrentBone(undefined);
-            // storeCurrentBone(bone[0])
           }
           break;
         case 'q': // q
@@ -180,7 +178,17 @@ export const useRendering = (props: UseRendering) => {
   );
 
   const handleTransformControlsShortcutUp = useCallback(
-    ({ event, transformControls }: { event: any; transformControls: TransformControls }) => {
+    ({
+      event,
+      transformControls,
+    }: {
+      event: KeyboardEvent;
+      transformControls: TransformControls;
+    }) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
       switch (event.key) {
         case 'Shift': // shift
           // 기본 단위로 변경
@@ -198,6 +206,10 @@ export const useRendering = (props: UseRendering) => {
 
   const handleCameraControlsShortcutDown = useCallback(
     ({ event, cameraControls }: { event: KeyboardEvent; cameraControls: any }) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
       switch (event.key) {
         case 'Alt': // alt
           cameraControls.mouseButtons.MIDDLE = THREE.MOUSE.ROTATE;
@@ -334,6 +346,10 @@ export const useRendering = (props: UseRendering) => {
 
   const handleCameraControlsShortcutUp = useCallback(
     ({ event, cameraControls }: { event: KeyboardEvent; cameraControls: any }) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
       switch (event.key) {
         case 'Alt': // alt
           cameraControls.mouseButtons.MIDDLE = THREE.MOUSE.PAN;
@@ -375,6 +391,10 @@ export const useRendering = (props: UseRendering) => {
 
   const handleHistoryShortcutDown = useCallback(
     ({ event }: { event: KeyboardEvent }) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
       switch (event.key) {
         case 'z':
         case 'Z':
@@ -543,7 +563,8 @@ export const useRendering = (props: UseRendering) => {
             setContents((prevContents) => [...prevContents, model]);
             // skeleton helper 생성 및 scene에 추가
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
-            setSkeletonHelper(innerSkeletonHelper);
+            // setSkeletonHelper(innerSkeletonHelper);
+            storeSkeletonHelper(innerSkeletonHelper);
 
             // eslint-disable-next-line no-console
             console.log('skeletonHelper: ', innerSkeletonHelper);
@@ -570,6 +591,8 @@ export const useRendering = (props: UseRendering) => {
       }
 
       // RenderingDiv 아래에 새로운 canvas를 생성하고, scene과 camera를 추가
+      renderer.domElement.tabIndex = 0;
+      renderer.domElement.className = 'canvas';
       renderingDiv.appendChild(renderer.domElement);
       const animate = () => {
         if (innerMixer) {
