@@ -1,6 +1,8 @@
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { LPDataType } from 'types';
+import { fnGetAnimationClipForExport } from 'utils/TP/editingUtils';
+import _ from 'lodash';
 
 interface FnExportModelToFbx {
   modelName: string;
@@ -18,17 +20,16 @@ const fnExportModelToFbx = async (props: FnExportModelToFbx) => {
   const { modelName, modelUrl, motions } = props;
   const loader = new GLTFLoader();
   const scene = await loader.loadAsync(modelUrl).then((object) => object.scene || object.scenes[0]);
-  const animations: THREE.AnimationClip[] = [];
-  // const animations =
-  //   motions.length !== 0
-  //     ? _.map(motions, (motion) =>
-  //         fnGetAnimationClipForExport({
-  //           name: motion.name,
-  //           baseLayer: motion.baseLayer,
-  //           layers: motion.layers,
-  //         }),
-  //       )
-  //     : [];
+  const animations =
+    motions.length !== 0
+      ? _.map(motions, (motion) =>
+          fnGetAnimationClipForExport({
+            name: motion.name,
+            baseLayer: motion.baseLayer,
+            layers: motion.layers,
+          }),
+        )
+      : [];
   const options = {
     binary: true,
     animations,

@@ -20,17 +20,16 @@ const fnExportModelToGlb = async (props: FnExportModelToGlb) => {
   const { modelName, modelUrl, motions } = props;
   const loader = new GLTFLoader();
   const scene = await loader.loadAsync(modelUrl).then((object) => object.scene || object.scenes[0]);
-  const animations: THREE.AnimationClip[] = [];
-  // const animations =
-  //   motions.length !== 0
-  //     ? _.map(motions, (motion) =>
-  //         fnGetAnimationClipForExport({
-  //           name: motion.name,
-  //           baseLayer: motion.baseLayer,
-  //           layers: motion.layers,
-  //         }),
-  //       )
-  //     : [];
+  const animations =
+    motions.length !== 0
+      ? _.map(motions, (motion) =>
+          fnGetAnimationClipForExport({
+            name: motion.name,
+            baseLayer: motion.baseLayer,
+            layers: motion.layers,
+          }),
+        )
+      : [];
   const options = {
     binary: true,
     animations,
