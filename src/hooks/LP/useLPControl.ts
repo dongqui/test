@@ -3,8 +3,15 @@ import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'antd';
 import 'antd/dist/antd.css';
-import { ContextmenuType, FILE_TYPES, LPModeType, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
-import { storeContextMenuInfo, storeLpData } from 'lib/store';
+import {
+  ContextmenuType,
+  FILE_TYPES,
+  LPModeType,
+  LPDataType,
+  LPDATA_PROPERTY_TYPES,
+  MODAL_TYPES,
+} from 'types';
+import { storeContextMenuInfo, storeLpData, storeModalInfo } from 'lib/store';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
@@ -71,11 +78,19 @@ export const useLPControl = ({
         if (!_.isEqual(targetRow?.type, FILE_TYPES.file)) {
           return;
         }
-        // const { result, error, msg } = await api.getRetargetBaseLayer({
-        //   name: draggingRow?.name ?? '',
-        //   baseLayer: draggingRow?.baseLayer ?? [],
-        //   retargetMap: targetRow?.retargetMap ?? [],
-        // });
+        const { result, error, msg } = await api.getRetargetBaseLayer({
+          name: draggingRow?.name ?? '',
+          baseLayer: draggingRow?.baseLayer ?? [],
+          retargetMap: targetRow?.retargetMap ?? [],
+        });
+        if (error) {
+          storeModalInfo({
+            isShow: true,
+            msg: '리타겟팅 과정에서 오류가 발생하였습니다.',
+            type: MODAL_TYPES.alert,
+          });
+          return;
+        }
       }
       if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
         if (!_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
@@ -167,36 +182,35 @@ export const useLPControl = ({
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
       const icons = document.getElementsByClassName('icon');
       const targetIcon = _.find(icons, (icon) => icon.contains(e?.target as any));
+      const targetRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.key, targetIcon?.id]);
       const newMainData = _.map(mainData, (item) => ({
         ...item,
         isClicked: _.isEqual(item.key, targetIcon?.id),
       }));
       let data = [
         { key: '0', value: 'New Directory' },
-        { key: '3', value: 'Paste' },
+        {
+          key: '3',
+          value: 'Paste',
+          isDisabled: !_.some(newMainData, [LPDATA_PROPERTY_TYPES.isCopied, true]),
+        },
       ];
-      if (
-        _.isEqual(
-          _.find(mainData, [LPDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
-          FILE_TYPES.folder,
-        )
-      ) {
+      const isDisabledVisualized = _.isEqual(
+        _.find(newMainData, [LPDATA_PROPERTY_TYPES.isVisualized, true])?.key,
+        targetRow?.key,
+      );
+      if (_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
         data = [
           { key: '1', value: 'Copy' },
           { key: '2', value: 'Delete' },
           { key: '5', value: 'Edit name' },
         ];
       }
-      if (
-        _.isEqual(
-          _.find(mainData, [LPDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
-          FILE_TYPES.file,
-        )
-      ) {
+      if (_.isEqual(targetRow?.type, FILE_TYPES.file)) {
         data = [
           { key: '1', value: 'Copy' },
           { key: '2', value: 'Delete' },
-          { key: '4', value: 'Visualization' },
+          { key: '4', value: 'Visualization', isDisabled: isDisabledVisualized },
           { key: '5', value: 'Edit name' },
           { key: '6', value: 'Add motion' },
         ];
@@ -210,16 +224,11 @@ export const useLPControl = ({
       ) {
         data = [{ key: '6', value: 'Add motion' }];
       }
-      if (
-        _.isEqual(
-          _.find(mainData, [LPDATA_PROPERTY_TYPES.key, targetIcon?.id])?.type,
-          FILE_TYPES.motion,
-        )
-      ) {
+      if (_.isEqual(targetRow?.type, FILE_TYPES.motion)) {
         data = [
           { key: '7', value: 'Duplicate' },
           { key: '2', value: 'Delete' },
-          { key: '4', value: 'Visualization' },
+          { key: '4', value: 'Visualization', isDisabled: isDisabledVisualized },
           { key: '5', value: 'Edit name' },
         ];
       }
@@ -363,12 +372,6 @@ export const useLPControl = ({
           onPaste();
         },
       },
-      // {
-      //   key: 'Enter',
-      //   event: () => {
-      //     onEdit({ mainData });
-      //   },
-      // },
     ],
     [mainData, onCopy, onPaste],
   );
@@ -376,13 +379,13 @@ export const useLPControl = ({
     ({ data }) => {
       let result = _.clone(data);
       if (!_.isEmpty(searchWord)) {
-        result = _.filter(mainData, (o) =>
+        result = _.filter(result, (o) =>
           _.includes(o.name.toLowerCase(), searchWord.toLowerCase()),
         );
       }
       return result;
     },
-    [mainData, searchWord],
+    [searchWord],
   );
   const filteredData: LPDataType[] = useMemo(() => {
     let result = _.filter(mainData, (o) => _.isEqual(o.parentKey, _.last(pages)?.key));
