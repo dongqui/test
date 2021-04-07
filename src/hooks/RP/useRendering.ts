@@ -185,8 +185,8 @@ export const useRendering = (props: UseRendering) => {
       event: KeyboardEvent;
       transformControls: TransformControls;
     }) => {
-      const target = event.currentTarget as Element;
-      if (target.tagName === 'INPUT') {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
         return;
       }
       switch (event.key) {
@@ -206,8 +206,8 @@ export const useRendering = (props: UseRendering) => {
 
   const handleCameraControlsShortcutDown = useCallback(
     ({ event, cameraControls }: { event: KeyboardEvent; cameraControls: any }) => {
-      const target = event.currentTarget as Element;
-      if (target.tagName === 'INPUT') {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
         return;
       }
       switch (event.key) {
@@ -346,8 +346,8 @@ export const useRendering = (props: UseRendering) => {
 
   const handleCameraControlsShortcutUp = useCallback(
     ({ event, cameraControls }: { event: KeyboardEvent; cameraControls: any }) => {
-      const target = event.currentTarget as Element;
-      if (target.tagName === 'INPUT') {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
         return;
       }
       switch (event.key) {
@@ -391,8 +391,8 @@ export const useRendering = (props: UseRendering) => {
 
   const handleHistoryShortcutDown = useCallback(
     ({ event }: { event: KeyboardEvent }) => {
-      const target = event.currentTarget as Element;
-      if (target.tagName === 'INPUT') {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
         return;
       }
       switch (event.key) {
@@ -591,6 +591,8 @@ export const useRendering = (props: UseRendering) => {
       }
 
       // RenderingDiv 아래에 새로운 canvas를 생성하고, scene과 camera를 추가
+      renderer.domElement.tabIndex = 0;
+      renderer.domElement.className = 'canvas';
       renderingDiv.appendChild(renderer.domElement);
       const animate = () => {
         if (innerMixer) {

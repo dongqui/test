@@ -193,8 +193,8 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
 
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
-      const target = event.currentTarget as Element;
-      if (target.tagName === 'INPUT') {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
         return;
       }
       switch (event.key) {
