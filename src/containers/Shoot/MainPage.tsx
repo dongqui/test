@@ -8,6 +8,7 @@ import {
   storeCPData,
   storeAnimatingData,
   storeCurrentVisualizedData,
+  storeLPMode,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox } from 'react-resizable';
@@ -71,6 +72,28 @@ const MainContainer: FunctionComponent = () => {
   useDebuggingData({ lpData, cpData, renderingData, animatingData, currentVisualizedData });
 
   const [width, height] = useWindowSize();
+
+  useEffect(() => {
+    if (currentVisualizedData?.baseLayer) {
+      storeLpData(
+        _.map(lpData, (item) => ({
+          ...item,
+          baseLayer: _.isEqual(item?.key, currentVisualizedData?.key)
+            ? currentVisualizedData?.baseLayer
+            : item?.baseLayer,
+          layers: _.isEqual(item?.key, currentVisualizedData?.key)
+            ? currentVisualizedData?.layers
+            : item?.layers,
+        })),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentVisualizedData?.baseLayer, currentVisualizedData?.key, currentVisualizedData?.layers]);
+  useEffect(() => {
+    if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.key, currentVisualizedData?.key])) {
+      storeCurrentVisualizedData(undefined);
+    }
+  }, [currentVisualizedData?.key, lpData]);
   return (
     <div className={cx('wrapper')}>
       <ResizableBox
