@@ -9,13 +9,14 @@
 .button-toggle {
   @include reset-button-style();
   display: inline-block;
-  padding: 1rem;
-  background-color: #454545;
+  // padding: 1rem;
+  padding: 2px 8px;
+  background-color: #282727;
   color: #fff;
-  min-width: 10rem;
+  // min-width: 10rem;
   text-align: left;
   font-weight: 300;
-  border-radius: 0.45rem;
+  border-radius: 6px;
 
   &.open {
     border-bottom-left-radius: 0;
@@ -27,11 +28,11 @@
   position: absolute;
   top: 0;
   left: 0;
-  background-color: #454545;
+  background-color: #282727;
   color: #a7a7a7;
-  padding: 0.45rem;
-  min-width: 10rem;
-  border-bottom-left-radius: 0.45rem;
-  border-bottom-right-radius: 0.45rem;
+  padding: 6px;
+  // min-width: 10rem;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
   overflow: hidden;
 }

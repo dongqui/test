@@ -3,10 +3,10 @@
 
 .menu-item {
   @include reset-list-style();
-  padding: 1rem 0.45rem;
+  padding: 2px 8px;
   cursor: pointer;
-  border-radius: 0.45rem;
-  margin-bottom: 5px;
+  border-radius: 6px;
+  margin-bottom: 4px;
 
   &:last-child {
     margin: 0;

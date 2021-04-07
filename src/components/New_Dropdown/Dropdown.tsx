@@ -110,7 +110,7 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect }) => {
         if (currentRef) {
           if (!currentRef.contains(e.target as Node)) {
             e.preventDefault();
-            firstFocusTarget.focus();
+            // firstFocusTarget.focus();
           }
         }
       };
