@@ -4,7 +4,7 @@ import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
-import { TPTrackNameList, TPDopeSheetList, TPUpdateDopeSheetList, TPLastBoneList } from 'lib/store';
+import { storeTPTrackNameList, storeTPDopeSheetList, storeTPUpdateDopeSheetList, storeTPLastBoneList } from 'lib/store';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { SearchInput } from 'components/New_Input';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
@@ -19,9 +19,9 @@ const DEBOUNCED_TIME = 300;
 const cx = classNames.bind(styles);
 
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
-  const storeTrackNameList = useReactiveVar(TPTrackNameList);
-  const dopeSheetList = useReactiveVar(TPDopeSheetList);
-  const lastBoneList = useReactiveVar(TPLastBoneList);
+  const storeTrackNameList = useReactiveVar(storeTPTrackNameList);
+  const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
+  const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const [trackList, setTrackList] = useState<TPTrackName[]>([]);
   const prevTrackInput = useRef('');
 
@@ -46,7 +46,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
             }),
           );
           resetDopeSheetList[0].isClickedParentTrack = true;
-          TPUpdateDopeSheetList({ updatedList: resetDopeSheetList, status: 'isFiltered' });
+          storeTPUpdateDopeSheetList({ updatedList: resetDopeSheetList, status: 'isFiltered' });
           setTrackList(storeTrackNameList);
           return;
         }
@@ -112,7 +112,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           trackList: storeTrackNameList,
         });
         prevTrackInput.current = trimInput;
-        TPUpdateDopeSheetList({ updatedList: filteredDopeSheetList, status: 'isFiltered' });
+        storeTPUpdateDopeSheetList({ updatedList: filteredDopeSheetList, status: 'isFiltered' });
         setTrackList(filterResult);
       }, DEBOUNCED_TIME),
     [storeTrackNameList, dopeSheetList],
@@ -184,9 +184,9 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
       lastBoneIndex: curBoneIndex - 3,
     };
 
-    TPTrackNameList(updatedTrackNameList);
-    TPLastBoneList([...lastBoneList, lastBone]);
-    TPDopeSheetList([...dopeSheetList, ...updatedDopeSheetList]);
+    storeTPTrackNameList(updatedTrackNameList);
+    storeTPLastBoneList([...lastBoneList, lastBone]);
+    storeTPDopeSheetList([...dopeSheetList, ...updatedDopeSheetList]);
   }, [dopeSheetList, lastBoneList, storeTrackNameList]);
 
   // 최초 Track List 적용

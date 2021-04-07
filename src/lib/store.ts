@@ -79,14 +79,14 @@ export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);
 
 // TP
-export const TPTrackNameList = makeVar<TPTrackName[]>([]);
-export const TPDopeSheetList = makeVar<TPDopeSheet[]>([]);
-export const TPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
-export const TPSelectedTrackList = makeVar<number[]>([]);
+export const storeTPTrackNameList = makeVar<TPTrackName[]>([]);
+export const storeTPDopeSheetList = makeVar<TPDopeSheet[]>([]);
+export const storeTPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
+export const storeTPSelectedTrackList = makeVar<number[]>([]);
 export const storeTPCurrnetClickedTrack = makeVar<TPCurrnetClickedTrack | null>(null);
 
-export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
-  const state = TPDopeSheetList();
+export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
+  const state = storeTPDopeSheetList();
   const nextState = produce<TPDopeSheet[]>(state, (draft) => {
     _.forEach(updatedList, (target, key) => {
       const binarySearchIndex = fnGetBinarySearch({
@@ -109,5 +109,5 @@ export const TPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet
       }
     });
   });
-  TPDopeSheetList(nextState);
+  storeTPDopeSheetList(nextState);
 };

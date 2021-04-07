@@ -4,10 +4,10 @@ import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { ArrowRight } from 'components/Icons/generated/ArrowRight';
 import {
-  TPSelectedTrackList,
-  TPDopeSheetList,
-  TPLastBoneList,
-  TPUpdateDopeSheetList,
+  storeTPSelectedTrackList,
+  storeTPDopeSheetList,
+  storeTPLastBoneList,
+  storeTPUpdateDopeSheetList,
   storeTPCurrnetClickedTrack,
 } from 'lib/store';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
@@ -34,9 +34,9 @@ const Track: React.FC<TrackProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(false);
   const [isClickedArrowButton, setIsClickedArrowButton] = useState(false); // 화살표 토글 버튼(true면 하위 트랙 open)
-  const lastBoneList = useReactiveVar(TPLastBoneList);
-  const dopeSheetList = useReactiveVar(TPDopeSheetList);
-  const clickedTrackList = useReactiveVar(TPSelectedTrackList);
+  const lastBoneList = useReactiveVar(storeTPLastBoneList);
+  const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
+  const clickedTrackList = useReactiveVar(storeTPSelectedTrackList);
 
   // 트랙 클릭
   const clickTrackBody = useCallback(
@@ -52,8 +52,8 @@ const Track: React.FC<TrackProps> = ({
             });
             if (clickTrackToCtrlKey) {
               const [updatedTrackList, newClickedTrackList] = clickTrackToCtrlKey;
-              TPSelectedTrackList(newClickedTrackList);
-              TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
+              storeTPSelectedTrackList(newClickedTrackList);
+              storeTPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
             } else {
               alert('다른 레이어를 클릭');
             }
@@ -63,8 +63,8 @@ const Track: React.FC<TrackProps> = ({
               lastBoneList,
               trackIndex,
             });
-            TPSelectedTrackList(newClickedTrackList);
-            TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
+            storeTPSelectedTrackList(newClickedTrackList);
+            storeTPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
           }
         }
       }
@@ -84,7 +84,7 @@ const Track: React.FC<TrackProps> = ({
             trackIndex: lastBone.layerIndex,
             isClickedParentTrack: !prev,
           }));
-          TPUpdateDopeSheetList({ updatedList, status: 'isClickedParentTrack' });
+          storeTPUpdateDopeSheetList({ updatedList, status: 'isClickedParentTrack' });
           break;
         }
         // Layer 트랙 화살표 클릭
@@ -107,7 +107,10 @@ const Track: React.FC<TrackProps> = ({
               curBoneIndex += 6; // 7 -> 3
             }
           }
-          TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isClickedParentTrack' });
+          storeTPUpdateDopeSheetList({
+            updatedList: updatedTrackList,
+            status: 'isClickedParentTrack',
+          });
           break;
         }
         // Bone 트랙 화살표 클릭
@@ -123,7 +126,10 @@ const Track: React.FC<TrackProps> = ({
               isClickedParentTrack: !prev,
             });
           }
-          TPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isClickedParentTrack' });
+          storeTPUpdateDopeSheetList({
+            updatedList: updatedTrackList,
+            status: 'isClickedParentTrack',
+          });
           break;
         }
         default: {

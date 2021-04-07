@@ -3,7 +3,7 @@ import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import { TPDopeSheetList } from 'lib/store';
+import { storeTPDopeSheetList } from 'lib/store';
 import CircleGroup from './circleGroup';
 import styles from './index.module.scss';
 interface Props {
@@ -44,7 +44,7 @@ const THROTTLE_TIMER = 75;
  */
 
 const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
-  const dopeSheetList = useReactiveVar(TPDopeSheetList);
+  const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const dopeSheetRef = useRef<HTMLDivElement>(null);
   const prevScrollTop = useRef(0);
 
