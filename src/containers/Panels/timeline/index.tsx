@@ -320,7 +320,10 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         isExcludedRendering: false,
         isFiltered: true,
         isClickedParentTrack: index === 0 ? true : false,
+        layerKey: 'baseLayer',
+        isTransformTrack: false,
         trackIndex: dopeSheetIndex,
+        trackName: index === 0 ? 'Summary' : 'Base',
         times: index === 0 ? summaryTimes : baseTimes,
       });
       dopeSheetIndex += 1;
@@ -343,7 +346,10 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         isExcludedRendering: false,
         isFiltered: true,
         isClickedParentTrack: false,
+        layerKey: 'baseLayer',
+        isTransformTrack: false,
         trackIndex: dopeSheetIndex,
+        trackName: _.split(currnetBoneTrack.name, '.')[0],
         times: boneTimes,
       });
       dopeSheetIndex += 1;
@@ -371,7 +377,10 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
           isExcludedRendering: false,
           isFiltered: true,
           isClickedParentTrack: false,
+          layerKey: 'baseLayer',
+          isTransformTrack: true,
           trackIndex: dopeSheetIndex,
+          trackName: baseLayer[transformIndex].name,
           times: currnetBoneTrack.times,
           x,
           y,
