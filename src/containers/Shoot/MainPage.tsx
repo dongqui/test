@@ -8,6 +8,7 @@ import {
   storeCPData,
   storeAnimatingData,
   storeCurrentVisualizedData,
+  TPDopeSheetList,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox } from 'react-resizable';
@@ -27,6 +28,8 @@ const MainContainer: FunctionComponent = () => {
   const cpData = useReactiveVar(storeCPData);
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
+  const tpDopeSheetList = useReactiveVar(TPDopeSheetList);
+
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
     if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
@@ -68,7 +71,14 @@ const MainContainer: FunctionComponent = () => {
     }
   }, [lpData]);
 
-  useDebuggingData({ lpData, cpData, renderingData, animatingData, currentVisualizedData });
+  useDebuggingData({
+    lpData,
+    cpData,
+    renderingData,
+    animatingData,
+    currentVisualizedData,
+    tpDopeSheetList,
+  });
 
   const [width, height] = useWindowSize();
   return (
