@@ -11,11 +11,16 @@ import styles from './BaseInput.module.scss';
 
 const cx = classNames.bind(styles);
 
-type Props = Input.BaseInputProps;
+interface BaseProps {
+  arrow?: boolean;
+}
+
+type Props = BaseProps & Input.BaseInputProps;
 
 const defaultProps: Partial<Props> = {
   type: 'text',
   spellCheck: 'false',
+  arrow: false,
 };
 
 const BaseInput: FunctionComponent<Props> = ({
@@ -23,12 +28,14 @@ const BaseInput: FunctionComponent<Props> = ({
   innerRef,
   disabled,
   invalid,
+  arrow,
   onBlur,
   onChange,
   onKeyUp,
   ...rest
 }) => {
   const classes = cx('input', className, {
+    arrow,
     invalid,
     disabled,
   });

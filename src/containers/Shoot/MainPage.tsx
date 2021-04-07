@@ -7,12 +7,11 @@ import {
   storeLpData,
   storeCPData,
   storeAnimatingData,
-  storeCPMode,
   storeCurrentVisualizedData,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox } from 'react-resizable';
-import { CurrentVisualizedDataType, FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
@@ -94,9 +93,9 @@ const MainContainer: FunctionComponent = () => {
           <LibraryPanel />
         </ResizableBox>
         <ResizableBox
-          width={width - 248 - 230}
+          width={width - 248 - 264}
           minConstraints={[150, height * 0.5]}
-          maxConstraints={[width - 248 - 230, height * 0.7]}
+          maxConstraints={[width - 248 - 264, height * 0.7]}
           className={cx('panel-rendering')}
           axis="both"
         >
@@ -105,8 +104,8 @@ const MainContainer: FunctionComponent = () => {
           </div>
         </ResizableBox>
         <ResizableBox
-          width={230}
-          minConstraints={[230, height * 0.5]}
+          width={264}
+          minConstraints={[264, height * 0.5]}
           maxConstraints={[450, height * 0.7]}
           className={cx('panel-control')}
           resizeHandles={['w']}
