@@ -94,6 +94,7 @@ const ShootPage: FunctionComponent = () => {
           baseLayer: result?.data?.result
             ? fnQuaternionToEulerTracks({ quaternionTracks: result?.data?.result })
             : [],
+          layers: [],
         },
       ];
       storeModalInfo({ ...modalInfo, isShow: false });

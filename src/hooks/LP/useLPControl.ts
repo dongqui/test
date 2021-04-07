@@ -11,6 +11,7 @@ import { fnGetFileName } from 'utils/LP/fnGetFileName';
 import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { fnPasteFile } from 'utils/LP/fnPasteFile';
+import * as api from 'utils/common/api';
 
 interface useLPControlProps {
   mainData: LPDataType[];
@@ -60,7 +61,7 @@ export const useLPControl = ({
     [mainData],
   );
   const onDrop = useCallback(
-    ({ key }) => {
+    async ({ key }) => {
       const draggingRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
       const targetRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.key, key]);
       if (_.isEqual(draggingRow?.key, targetRow?.key)) {
@@ -70,6 +71,11 @@ export const useLPControl = ({
         if (!_.isEqual(targetRow?.type, FILE_TYPES.file)) {
           return;
         }
+        // const { result, error, msg } = await api.getRetargetBaseLayer({
+        //   name: draggingRow?.name ?? '',
+        //   baseLayer: draggingRow?.baseLayer ?? [],
+        //   retargetMap: targetRow?.retargetMap ?? [],
+        // });
       }
       if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
         if (!_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
@@ -126,6 +132,8 @@ export const useLPControl = ({
           : _.isEqual(lpmode, LPModeType.iconview)
           ? _.last(pages)?.key
           : ROOT_FOLDER_NAME,
+        baseLayer: [],
+        layers: [],
       });
       _.forEach(
         _.filter(mainData, [
@@ -164,7 +172,7 @@ export const useLPControl = ({
         isClicked: _.isEqual(item.key, targetIcon?.id),
       }));
       let data = [
-        { key: '0', value: 'New Group' },
+        { key: '0', value: 'New Directory' },
         { key: '3', value: 'Paste' },
       ];
       if (
@@ -239,6 +247,8 @@ export const useLPControl = ({
                     ? _.last(pages)?.key
                     : ROOT_FOLDER_NAME,
                   isModifying: true,
+                  baseLayer: [],
+                  layers: [],
                 }),
               );
               break;

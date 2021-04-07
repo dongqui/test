@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { VIDEO_FORMAT_TYPES } from 'types';
+import { ShootTrackType, VIDEO_FORMAT_TYPES } from 'types';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { fnConvertBloburlToFile } from './fnConvertBloburlToFile';
@@ -18,6 +18,11 @@ interface uploadFileToMotionDataProps {
 }
 interface getRetargetMapProps {
   bones: THREE.Bone[];
+}
+interface getRetargetBaseLayerProps {
+  baseLayer: ShootTrackType[];
+  name: string;
+  retargetMap: Array<any>;
 }
 export const uploadFbxToGlb = async ({ file, type }: { file: File; type: string }) => {
   const formData = new FormData();
@@ -92,6 +97,38 @@ export const getRetargetMap = async ({ bones }: getRetargetMapProps) => {
       },
       data: {
         bones,
+      },
+      responseType: 'json',
+    });
+    return {
+      result,
+      error: false,
+    };
+  } catch (error) {
+    console.log('error', error);
+    return {
+      error: true,
+      msg: error,
+    };
+  }
+};
+export const getRetargetBaseLayer = async ({
+  baseLayer,
+  name,
+  retargetMap,
+}: getRetargetBaseLayerProps) => {
+  try {
+    const result = await axios({
+      method: 'POST',
+      url: `${RETARGETIING_URL}/retargeting-everyframe`,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Accept: 'application/json',
+      },
+      data: {
+        isFbx: false,
+        sourceMotion: { name, tracks: baseLayer },
+        retargetMap,
       },
       responseType: 'json',
     });

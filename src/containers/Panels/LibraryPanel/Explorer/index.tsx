@@ -38,6 +38,8 @@ const Explorer: FunctionComponent<Props> = ({ onChange }) => {
         name: fnGetFileName({ key: '', mainData: lpData, name: 'Folder' }),
         parentKey: _.isEqual(lpmode, LPModeType.iconview) ? _.last(pages)?.key : ROOT_FOLDER_NAME,
         isModifying: true,
+        baseLayer: [],
+        layers: [],
       }),
     );
   }, [lpmode, lpData, pages]);
