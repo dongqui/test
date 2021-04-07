@@ -96,7 +96,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         }
         const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
         if (error) {
-          storeModalInfo({ isShow: true, msg });
+          storeModalInfo({ isShow: true, msg, type: MODAL_TYPES.alert });
           setLoading(false);
           return false;
         }
@@ -105,7 +105,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         });
         const retargetMap = result?.data?.result ?? [];
         if (error2) {
-          storeModalInfo({ isShow: true, msg: msg2 });
+          storeModalInfo({ isShow: true, msg: msg2, type: MODAL_TYPES.alert });
           setLoading(false);
           return false;
         }
