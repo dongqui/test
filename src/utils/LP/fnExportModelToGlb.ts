@@ -13,6 +13,10 @@ interface FnExportModelToGlb {
 /**
  * LP 내의 모델을 .glb 형식으로 추출합니다.
  *
+ * @param modelName - 추출 대상 모델의 이름
+ * @param modelUrl - 추출 대상 모델의 url
+ * @param motions - 추출 대상 모델이 포함하고 있는 모션들
+ *
  */
 const fnExportModelToGlb = async (props: FnExportModelToGlb) => {
   // scene 이랑 animations 가 필요

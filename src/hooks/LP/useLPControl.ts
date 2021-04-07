@@ -349,18 +349,21 @@ export const useLPControl = ({
               setShowsModal(!showsModal);
               setModalMessage('파일을 내보내는 중입니다. <br /> 잠시만 기다려주세요.');
 
+              // 아래 호출 시 사용한 값들은 예시 값이라서 LP 쪽 export 개발 후 변경해야 함
               await fnExportModelToFbx({
-                modelName: 'ㅋㅋ',
-                modelUrl: 'ㄴㅇㅁㄴㅇ',
-                motions: [],
+                modelName: 'Dying.fbx',
+                modelUrl:
+                  'https://kr.object.ncloudstorage.com/shoot-bucket/fbx/1617780017.207.glb?AWSAccessKeyId=0oW8tCxsQUkrFqNhYVlu&Signature=et0Z4ajTCqgHlQWGNi9Shkmj%2FzM%3D&Expires=1617783618',
+                motions: mainData.filter((d) => d.type === 'motion'),
               })
                 .then(() => {
-                  setShowsModal(!showsModal);
+                  setShowsModal(false);
                 })
                 .catch(() => {
                   setModalMessage('파일을 내보낼 수 없습니다.');
                 });
               break;
+            // 위 호출 시 사용한 값들은 예시 값이라서 LP 쪽 export 개발 후 변경해야 함
             default:
               break;
           }
