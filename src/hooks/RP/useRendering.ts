@@ -100,13 +100,17 @@ export const useRendering = (props: UseRendering) => {
       event: KeyboardEvent;
       transformControls: TransformControls;
     }) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (event.target.tagName === 'INPUT') {
+        return;
+      }
       switch (event.key) {
         case 'Escape': // esc
           // 현재 transformControl 붙어 있는 것 제거
           if (transformControls) {
             transformControls.detach();
             setInnerCurrentBone(undefined);
-            // storeCurrentBone(bone[0])
           }
           break;
         case 'q': // q
@@ -176,6 +180,9 @@ export const useRendering = (props: UseRendering) => {
 
   const handleTransformControlsShortcutUp = useCallback(
     ({ event, transformControls }: { event: any; transformControls: TransformControls }) => {
+      if (event.target.tagName === 'INPUT') {
+        return;
+      }
       switch (event.key) {
         case 'Shift': // shift
           // 기본 단위로 변경
@@ -193,6 +200,11 @@ export const useRendering = (props: UseRendering) => {
 
   const handleCameraControlsShortcutDown = useCallback(
     ({ event, cameraControls }: { event: KeyboardEvent; cameraControls: any }) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (event.target.tagName === 'INPUT') {
+        return;
+      }
       switch (event.key) {
         case 'Alt': // alt
           cameraControls.mouseButtons.MIDDLE = THREE.MOUSE.ROTATE;
@@ -329,6 +341,11 @@ export const useRendering = (props: UseRendering) => {
 
   const handleCameraControlsShortcutUp = useCallback(
     ({ event, cameraControls }: { event: KeyboardEvent; cameraControls: any }) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (event.target.tagName === 'INPUT') {
+        return;
+      }
       switch (event.key) {
         case 'Alt': // alt
           cameraControls.mouseButtons.MIDDLE = THREE.MOUSE.PAN;
@@ -370,6 +387,11 @@ export const useRendering = (props: UseRendering) => {
 
   const handleHistoryShortcutDown = useCallback(
     ({ event }: { event: KeyboardEvent }) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (event.target.tagName === 'INPUT') {
+        return;
+      }
       switch (event.key) {
         case 'z':
         case 'Z':

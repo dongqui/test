@@ -43,7 +43,7 @@ const Track: React.FC<TrackProps> = ({
       const clickedTrack = event.target as Element;
       if (clickedTrack.nodeName === 'DIV' || clickedTrack.nodeName === 'SPAN') {
         if (title !== 'Summary') {
-          if (event.ctrlKey) {
+          if (event.ctrlKey || event.metaKey) {
             const clickTrackToCtrlKey = fnClickTrackToCtrlKey({
               clickedTrackList,
               lastBoneList,
