@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import {
   setAnimatingData,
   setCurrentVisualizedData,
-  setMainData,
+  setLpData,
   setRenderingData,
 } from 'redux/homeSlice';
 import { CurrentVisualizedDataType, LPDataType } from 'types';
@@ -29,7 +29,7 @@ export const useDebuggingData = ({
   const dispatch = useDispatch();
   useEffect(() => {
     if (isDebug) {
-      dispatch(setMainData(lpData));
+      dispatch(setLpData(lpData));
     }
   }, [dispatch, lpData]);
   useEffect(() => {

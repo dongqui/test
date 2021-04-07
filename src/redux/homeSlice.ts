@@ -18,7 +18,7 @@ const homeSlice = createSlice({
   name: 'homeReducer',
   initialState,
   reducers: {
-    setMainData(state, action) {
+    setLpData(state, action) {
       state.lpData = action.payload;
     },
     setRenderingData(state, action) {
@@ -38,7 +38,7 @@ const homeSlice = createSlice({
 });
 
 export const {
-  setMainData,
+  setLpData,
   setRecordingData,
   setRenderingData,
   setAnimatingData,
