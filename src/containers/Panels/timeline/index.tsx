@@ -20,7 +20,8 @@ import {
   fnUpdateKeyframeToLayer,
   fnDeleteKeyframe,
 } from 'utils/TP/editingUtils';
-import MiddleBar from 'containers/MiddleBar';
+// import MiddleBar from 'containers/MiddleBar';
+import MiddleBar from 'containers/New_MiddleBar';
 import { CurrentVisualizedDataType, ShootLayerType, ShootTrackType } from 'types';
 import { useReactiveVar } from '@apollo/client';
 import produce from 'immer';

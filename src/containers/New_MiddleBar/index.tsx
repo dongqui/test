@@ -1,9 +1,12 @@
 import { FunctionComponent, memo, useEffect, useRef, useCallback } from 'react';
+import { useReactiveVar } from '@apollo/client';
+import { storeAnimatingData } from 'lib/store';
 import { SvgPath } from 'components/New_Icon';
 import { SegmentButton } from 'components/New_Button';
 import { PrefixInput, BaseInput } from 'components/New_Input';
 import { Dropdown } from 'components/New_Dropdown';
 import PlayBox from './PlayBox';
+import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -12,6 +15,7 @@ const cx = classNames.bind(styles);
 export interface Props {}
 
 const MiddleBar: FunctionComponent<Props> = () => {
+  const data = useReactiveVar(storeAnimatingData);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,40 +37,43 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const fasterList = [
     {
-      key: 'level1',
-      value: '0.25X',
-      isSelected: true,
+      key: '0.25',
+      value: '0.25x',
+      isSelected: _.isEqual(data.playSpeed, 0.25),
     },
     {
-      key: 'level2',
-      value: '0.5X',
-      isSelected: true,
+      key: '0.5',
+      value: '0.5x',
+      isSelected: _.isEqual(data.playSpeed, 0.5),
     },
     {
-      key: 'level3',
-      value: '1X',
-      isSelected: true,
+      key: '1',
+      value: '1x',
+      isSelected: _.isEqual(data.playSpeed, 1),
     },
     {
-      key: 'level4',
-      value: '1.25X',
-      isSelected: true,
+      key: '1.25',
+      value: '1.25x',
+      isSelected: _.isEqual(data.playSpeed, 1.25),
     },
     {
-      key: 'level5',
-      value: '1.75X',
-      isSelected: true,
+      key: '1.75',
+      value: '1.75x',
+      isSelected: _.isEqual(data.playSpeed, 1.75),
     },
     {
-      key: 'level6',
-      value: '2X',
-      isSelected: true,
+      key: '2',
+      value: '2x',
+      isSelected: _.isEqual(data.playSpeed, 2),
     },
   ];
 
-  const handleFasterSelect = useCallback((key: string, value: string) => {
-    console.log(key, value);
-  }, []);
+  const handleFasterSelect = useCallback(
+    (key: string, _value: string) => {
+      storeAnimatingData({ ...data, playSpeed: Number(key) });
+    },
+    [data],
+  );
 
   const modeList = [
     {
