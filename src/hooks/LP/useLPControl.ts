@@ -1,5 +1,5 @@
+import { useState, useCallback, useMemo } from 'react';
 import _ from 'lodash';
-import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'antd';
 import 'antd/dist/antd.css';
@@ -8,6 +8,7 @@ import { storeContextMenuInfo, storeLpData } from 'lib/store';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
+import fnExportModelToFbx from 'utils/LP/fnExportModelToFbx';
 import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { fnPasteFile } from 'utils/LP/fnPasteFile';
@@ -163,6 +164,10 @@ export const useLPControl = ({
       })),
     );
   }, []);
+
+  const [showsModal, setShowsModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+
   const onContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
       const icons = document.getElementsByClassName('icon');
@@ -199,6 +204,7 @@ export const useLPControl = ({
           { key: '4', value: 'Visualization' },
           { key: '5', value: 'Edit name' },
           { key: '6', value: 'Add motion' },
+          { key: '8', value: 'FBX Export' },
         ];
       }
       if (
@@ -228,7 +234,7 @@ export const useLPControl = ({
         top,
         left,
         data,
-        onClick: (key, value) => {
+        onClick: async (key, value) => {
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
           let content = '';
           let motion: LPDataType | undefined;
@@ -339,13 +345,29 @@ export const useLPControl = ({
                 );
               }
               break;
+            case '8':
+              setShowsModal(!showsModal);
+              setModalMessage('파일을 내보내는 중입니다. <br /> 잠시만 기다려주세요.');
+
+              await fnExportModelToFbx({
+                modelName: 'ㅋㅋ',
+                modelUrl: 'ㄴㅇㅁㄴㅇ',
+                motions: [],
+              })
+                .then(() => {
+                  setShowsModal(!showsModal);
+                })
+                .catch(() => {
+                  setModalMessage('파일을 내보낼 수 없습니다.');
+                });
+              break;
             default:
               break;
           }
         },
       });
     },
-    [contextmenuInfo, lpmode, mainData, onCopy, onEdit, onPaste, pages],
+    [contextmenuInfo, lpmode, mainData, onCopy, onEdit, onPaste, pages, showsModal],
   );
   const shortcutData = useMemo(
     () => [
@@ -389,6 +411,7 @@ export const useLPControl = ({
     result = getFilteredData({ data: result });
     return result;
   }, [getFilteredData, mainData, pages]);
+
   return {
     onClick,
     onDragStart,
@@ -401,5 +424,8 @@ export const useLPControl = ({
     shortcutData,
     filteredData,
     getFilteredData,
+    showsModal,
+    setShowsModal,
+    modalMessage,
   };
 };
