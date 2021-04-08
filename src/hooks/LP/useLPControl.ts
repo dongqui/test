@@ -20,6 +20,7 @@ import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { fnPasteFile } from 'utils/LP/fnPasteFile';
 import * as api from 'utils/common/api';
+import { fnVisualizeFile } from 'utils/LP/fnVisualizeFile';
 
 interface useLPControlProps {
   mainData: LPDataType[];
@@ -308,15 +309,10 @@ export const useLPControl = ({
               onPaste();
               break;
             case '4':
-              storeLpData(
-                _.map(mainData, (item) => ({
-                  ...item,
-                  isVisualized: _.isEqual(
-                    item.key,
-                    _.find(newMainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key,
-                  ),
-                })),
-              );
+              fnVisualizeFile({
+                key: _.find(newMainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
+                lpData: mainData,
+              });
               break;
             case '5':
               onEdit({ mainData: newMainData });

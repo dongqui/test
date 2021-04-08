@@ -1,0 +1,42 @@
+import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
+import { storeCurrentVisualizedData, storeLpData } from 'lib/store';
+import _ from 'lodash';
+
+interface fnVisualizeFileProps {
+  key: string;
+  lpData: LPDataType[];
+}
+
+export const fnVisualizeFile = ({ key, lpData }: fnVisualizeFileProps) => {
+  const targetRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, key]);
+  let visualizedKey = targetRow?.key;
+  if (_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
+    return;
+  }
+  if (_.isEqual(targetRow?.type, FILE_TYPES.file)) {
+    const defaultVisulizedMotionRow = _.find(lpData, [
+      LPDATA_PROPERTY_TYPES.parentKey,
+      targetRow?.key,
+    ]);
+    if (defaultVisulizedMotionRow) {
+      visualizedKey = defaultVisulizedMotionRow?.key;
+    }
+  }
+  const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedKey]);
+  if (visualizedRow) {
+    storeLpData(
+      _.map(lpData, (item) => ({
+        ...item,
+        isVisualized: _.isEqual(visualizedRow?.key, item.key),
+      })),
+    );
+    storeCurrentVisualizedData({
+      key: visualizedRow.key ?? '',
+      name: visualizedRow.name ?? '',
+      type: visualizedRow.type ?? FILE_TYPES.file,
+      boneNames: visualizedRow.boneNames ?? [],
+      baseLayer: visualizedRow.baseLayer ?? [],
+      layers: visualizedRow.layers ?? [],
+    });
+  }
+};

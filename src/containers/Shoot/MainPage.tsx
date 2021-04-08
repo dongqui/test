@@ -20,6 +20,7 @@ import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import useWindowSize from 'hooks/common/useWindowSize';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
+import { fnVisualizeFile } from 'utils/LP/fnVisualizeFile';
 
 const cx = classNames.bind(styles);
 
@@ -40,36 +41,7 @@ const MainContainer: FunctionComponent = () => {
   }, [lpData]);
   const handleDrop = useCallback(() => {
     const draggingRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
-    let visualizedKey = draggingRow?.key;
-    if (_.isEqual(draggingRow?.type, FILE_TYPES.folder)) {
-      return;
-    }
-    if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
-      const defaultVisulizedMotionRow = _.find(lpData, [
-        LPDATA_PROPERTY_TYPES.parentKey,
-        draggingRow?.key,
-      ]);
-      if (defaultVisulizedMotionRow) {
-        visualizedKey = defaultVisulizedMotionRow?.key;
-      }
-    }
-    const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedKey]);
-    storeLpData(
-      _.map(lpData, (item) => ({
-        ...item,
-        isVisualized: _.isEqual(visualizedKey, item.key),
-      })),
-    );
-    if (visualizedRow) {
-      storeCurrentVisualizedData({
-        key: visualizedRow.key ?? '',
-        name: visualizedRow.name ?? '',
-        type: visualizedRow.type ?? FILE_TYPES.file,
-        boneNames: visualizedRow.boneNames ?? [],
-        baseLayer: visualizedRow.baseLayer ?? [],
-        layers: visualizedRow.layers ?? [],
-      });
-    }
+    fnVisualizeFile({ key: draggingRow?.key ?? '', lpData });
   }, [lpData]);
 
   useDebuggingData({
