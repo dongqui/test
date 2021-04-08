@@ -1,5 +1,5 @@
+import { useState, useCallback, useMemo } from 'react';
 import _ from 'lodash';
-import { useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'antd';
 import 'antd/dist/antd.css';
@@ -15,6 +15,7 @@ import { storeContextMenuInfo, storeLpData, storeModalInfo } from 'lib/store';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
+import fnExportModelToFbx from 'utils/LP/fnExportModelToFbx';
 import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { fnPasteFile } from 'utils/LP/fnPasteFile';
@@ -178,6 +179,10 @@ export const useLPControl = ({
       })),
     );
   }, []);
+
+  const [showsModal, setShowsModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+
   const onContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
       const icons = document.getElementsByClassName('icon');
@@ -213,6 +218,7 @@ export const useLPControl = ({
           { key: '4', value: 'Visualization', isDisabled: isDisabledVisualized },
           { key: '5', value: 'Edit name' },
           { key: '6', value: 'Add motion' },
+          { key: '8', value: 'FBX Export' },
         ];
       }
       if (
@@ -237,7 +243,7 @@ export const useLPControl = ({
         top,
         left,
         data,
-        onClick: (key, value) => {
+        onClick: async (key, value) => {
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
           let content = '';
           let motion: LPDataType | undefined;
@@ -348,13 +354,32 @@ export const useLPControl = ({
                 );
               }
               break;
+            case '8':
+              setShowsModal(!showsModal);
+              setModalMessage('파일을 내보내는 중입니다. <br /> 잠시만 기다려주세요.');
+
+              // 아래 호출 시 사용한 값들은 예시 값이라서 LP 쪽 export 개발 후 변경해야 함
+              await fnExportModelToFbx({
+                modelName: 'Dying.fbx',
+                modelUrl:
+                  'https://kr.object.ncloudstorage.com/shoot-bucket/fbx/1617780017.207.glb?AWSAccessKeyId=0oW8tCxsQUkrFqNhYVlu&Signature=et0Z4ajTCqgHlQWGNi9Shkmj%2FzM%3D&Expires=1617783618',
+                motions: mainData.filter((d) => d.type === 'motion'),
+              })
+                .then(() => {
+                  setShowsModal(false);
+                })
+                .catch(() => {
+                  setModalMessage('파일을 내보낼 수 없습니다.');
+                });
+              break;
+            // 위 호출 시 사용한 값들은 예시 값이라서 LP 쪽 export 개발 후 변경해야 함
             default:
               break;
           }
         },
       });
     },
-    [contextmenuInfo, lpmode, mainData, onCopy, onEdit, onPaste, pages],
+    [contextmenuInfo, lpmode, mainData, onCopy, onEdit, onPaste, pages, showsModal],
   );
   const shortcutData = useMemo(
     () => [
@@ -392,6 +417,7 @@ export const useLPControl = ({
     result = getFilteredData({ data: result });
     return result;
   }, [getFilteredData, mainData, pages]);
+
   return {
     onClick,
     onDragStart,
@@ -404,5 +430,8 @@ export const useLPControl = ({
     shortcutData,
     filteredData,
     getFilteredData,
+    showsModal,
+    setShowsModal,
+    modalMessage,
   };
 };

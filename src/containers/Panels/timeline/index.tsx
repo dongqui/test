@@ -20,7 +20,8 @@ import {
   fnUpdateKeyframeToLayer,
   fnDeleteKeyframe,
 } from 'utils/TP/editingUtils';
-import MiddleBar from 'containers/MiddleBar';
+// import MiddleBar from 'containers/MiddleBar';
+import MiddleBar from 'containers/New_MiddleBar';
 import { CurrentVisualizedDataType, ShootLayerType, ShootTrackType } from 'types';
 import { useReactiveVar } from '@apollo/client';
 import produce from 'immer';
@@ -192,7 +193,11 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
   ////////////////////
 
   const handleKeyPress = useCallback(
-    (event: any) => {
+    (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
       switch (event.key) {
         case 'y':
         case 'ㅛ':
@@ -220,12 +225,12 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
     ],
   );
 
-  // useEffect(() => {
-  //   document.addEventListener('keypress', handleKeyPress);
-  //   return () => {
-  //     document.removeEventListener('keypress', handleKeyPress);
-  //   };
-  // }, [handleKeyPress]);
+  useEffect(() => {
+    document.addEventListener('keypress', handleKeyPress);
+    return () => {
+      document.removeEventListener('keypress', handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   // 이름만 추출하여 TP 트랙 리스트 가공
   useEffect(() => {
