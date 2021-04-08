@@ -56,7 +56,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const xAxisPosition = useRef<d3Axis | null>(null);
   const renderXAxis = useRef<d3Selection | null>(null);
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
-  const currentXAxisPosition = useRef(0);
+  const currentXAxisPosition = useRef(1);
 
   // svg로 x축 그리기
   useEffect(() => {
@@ -260,17 +260,24 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
 
   // 재생바 위치 변경
   useEffect(() => {
-    const dragBehavior = d3.drag().on('drag', function (drag: any) {
-      const xTick = _.floor(prevXScale.current?.invert(drag.x) as number);
-      const checkZero = xTick <= 0 ? 0 : xTick;
-      currentXAxisPosition.current = checkZero;
-      d3.select(this).attr(
-        'transform',
-        `translate(${(prevXScale.current as d3ScaleLinear)(checkZero) - 10} , ${
-          X_AXIS_HEIGHT / 2
-        })`,
-      );
-    });
+    const dragBehavior = d3
+      .drag()
+      .filter((playBar) => {
+        if (playBar.target.tagName !== 'path') return false;
+        return true;
+      })
+      .on('drag', function (drag: any) {
+        const currentXTick = _.floor(prevXScale.current?.invert(drag.x + 20) as number);
+        const checkZero = currentXTick <= 1 ? 1 : currentXTick;
+        const xScaleLinear = prevXScale.current as d3ScaleLinear;
+
+        currentXAxisPosition.current = checkZero;
+        d3.select(this).attr(
+          'transform',
+          `translate(${xScaleLinear(checkZero) - 10}, 
+        ${X_AXIS_HEIGHT / 2})`,
+        );
+      });
     d3.select('#play-bar-wrapper').call(dragBehavior as any);
   }, []);
 
