@@ -40,4 +40,9 @@
     background-color: $primaryColor;
     color: #fff;
   }
+
+  &.selected {
+    background-color: $primaryColor;
+    color: #fff;
+  }
 }
