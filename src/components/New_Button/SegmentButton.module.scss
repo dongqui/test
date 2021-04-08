@@ -31,17 +31,17 @@
     width: 16px;
   }
 
-  &.selected {
-    background-color: $primaryColor;
-    color: #fff;
-  }
-
   &:hover {
     background-color: $gray400;
     color: $gray600;
   }
 
   &:active {
+    background-color: $primaryColor;
+    color: #fff;
+  }
+
+  &.selected {
     background-color: $primaryColor;
     color: #fff;
   }

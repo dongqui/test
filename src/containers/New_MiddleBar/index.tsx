@@ -17,6 +17,7 @@ export interface Props {}
 
 const MiddleBar: FunctionComponent<Props> = () => {
   const data = useReactiveVar(storeAnimatingData);
+  const page = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,11 +77,14 @@ const MiddleBar: FunctionComponent<Props> = () => {
     [data],
   );
 
+  console.log('page');
+  console.log(page);
+
   const modeList = [
     {
       key: 'edit',
       value: SvgPath.Dopesheet,
-      isSelected: true,
+      isSelected: _.isEqual(page.page, PAGE_NAMES.shoot),
       onClick: (_key: string) => {
         storePageInfo({ page: PAGE_NAMES.shoot });
       },
@@ -88,7 +92,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
     {
       key: 'camera',
       value: SvgPath.Camera,
-      isSelected: false,
+      isSelected: _.isEqual(page.page, PAGE_NAMES.record),
       onClick: (_key: string) => {
         storePageInfo({ page: PAGE_NAMES.record });
       },
