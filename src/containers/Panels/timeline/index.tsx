@@ -302,6 +302,11 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
 
     storeTPTrackNameList(trackNameList);
     storeTPLastBoneList(lastBoneList);
+
+    return () => {
+      storeTPTrackNameList([]);
+      storeTPLastBoneList([]);
+    };
   }, [baseLayer]);
 
   // Dope Sheet Status 리스트 가공
@@ -391,6 +396,10 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
       if ((dopeSheetIndex - 1) % 10 === 0) dopeSheetIndex += 2; // 11 -> 13, 21 -> 23
     }
     storeTPDopeSheetList(dopeSheetList);
+
+    return () => {
+      storeTPDopeSheetList([]);
+    };
   }, [baseLayer]);
 
   return (
