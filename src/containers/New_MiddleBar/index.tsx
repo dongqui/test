@@ -81,22 +81,22 @@ const MiddleBar: FunctionComponent<Props> = () => {
     {
       key: 'edit',
       value: SvgPath.Dopesheet,
-      isSelected: useMemo(() => pageInfo.page === PAGE_NAMES.shoot, [pageInfo.page]),
-      onClick: useCallback(() => {
+      isSelected: pageInfo.page === PAGE_NAMES.shoot,
+      onClick: () => {
         if (pageInfo.page !== PAGE_NAMES.shoot) {
           storePageInfo({ page: PAGE_NAMES.shoot });
         }
-      }, [pageInfo.page]),
+      },
     },
     {
       key: 'camera',
       value: SvgPath.Camera,
-      isSelected: useMemo(() => pageInfo.page === PAGE_NAMES.record, [pageInfo.page]),
-      onClick: useCallback(() => {
+      isSelected: pageInfo.page === PAGE_NAMES.record,
+      onClick: () => {
         if (pageInfo.page === PAGE_NAMES.shoot) {
           storePageInfo({ page: PAGE_NAMES.record });
         }
-      }, [pageInfo.page]),
+      },
     },
   ];
 
