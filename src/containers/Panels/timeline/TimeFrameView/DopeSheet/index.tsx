@@ -5,6 +5,7 @@ import _ from 'lodash';
 import classNames from 'classnames/bind';
 import { storeTPDopeSheetList } from 'lib/store';
 import CircleGroup from './circleGroup';
+import PlayBar from './playBar';
 import styles from './index.module.scss';
 interface Props {
   timelineWrapperRef: React.RefObject<HTMLDivElement>;
@@ -41,6 +42,7 @@ const THROTTLE_TIMER = 75;
  * @constant xAxisPosition x축 위치 저장(axisTop)
  * @constant renderXAxis x축 랜더링
  * @constant renderYGrid grid선 랜더링
+ * @constant currentXAxisPosition 현재 타임바가 위치하고 있는 time index
  */
 
 const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
@@ -54,6 +56,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const xAxisPosition = useRef<d3Axis | null>(null);
   const renderXAxis = useRef<d3Selection | null>(null);
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
+  const currentXAxisPosition = useRef(0);
 
   // svg로 x축 그리기
   useEffect(() => {
@@ -70,6 +73,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear);
 
     // grid line wrapper 생성
+    d3.select('.grid-line-wrapper').remove();
     renderYGrid.current = d3
       .select(dopeSheetRef.current)
       .append('svg')
@@ -122,6 +126,19 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           .style('fill', '#282727'),
       )
       .call(xAxisPosition.current);
+
+    // 재생 바 transform 설정
+    const xScaleLinear = prevXScale.current as d3ScaleLinear;
+    d3.select('#play-bar-wrapper')
+      .attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
+      )
+      .select('#play-bar-wrapper line')
+      .attr('x1', '100%')
+      .attr('y1', '100%')
+      .attr('x2', 0)
+      .attr('y2', 0);
   }, []);
 
   // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
@@ -151,6 +168,13 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         .attr('y1', height * 2)
         .attr('x2', 0)
         .attr('y2', 0);
+
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${(prevXScale.current as d3ScaleLinear)(currentXAxisPosition.current) - 10}, ${
+          X_AXIS_HEIGHT / 2
+        })`,
+      );
     };
 
     // circle x값 rescale
@@ -234,9 +258,25 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
   }, [timelineWrapperRef]);
 
+  // 재생바 위치 변경
+  useEffect(() => {
+    const dragBehavior = d3.drag().on('drag', function (drag: any) {
+      const xTick = _.floor(prevXScale.current?.invert(drag.x) as number);
+      const checkZero = xTick <= 0 ? 0 : xTick;
+      currentXAxisPosition.current = checkZero;
+      d3.select(this).attr(
+        'transform',
+        `translate(${(prevXScale.current as d3ScaleLinear)(checkZero) - 10} , ${
+          X_AXIS_HEIGHT / 2
+        })`,
+      );
+    });
+    d3.select('#play-bar-wrapper').call(dragBehavior as any);
+  }, []);
+
   return (
     <>
-      <div className={cx('dopesheet-wrapper')} ref={dopeSheetRef}>
+      <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
         <div className={cx('circle-group-wrapper')}>
           {_.map(dopeSheetList, (dopeSheet) => {
             return (
@@ -244,7 +284,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
               dopeSheet.isFiltered && (
                 <CircleGroup
                   key={dopeSheet.trackIndex}
-                  layerDopeSheetData={dopeSheetList[1]}
                   dopeSheetData={dopeSheet}
                   prevXScale={prevXScale.current as d3ScaleLinear}
                 />
@@ -252,6 +291,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
             );
           })}
         </div>
+        <PlayBar />
       </div>
     </>
   );

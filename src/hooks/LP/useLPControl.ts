@@ -360,10 +360,11 @@ export const useLPControl = ({
 
               // 아래 호출 시 사용한 값들은 예시 값이라서 LP 쪽 export 개발 후 변경해야 함
               await fnExportModelToFbx({
-                modelName: 'Dying.fbx',
-                modelUrl:
-                  'https://kr.object.ncloudstorage.com/shoot-bucket/fbx/1617780017.207.glb?AWSAccessKeyId=0oW8tCxsQUkrFqNhYVlu&Signature=et0Z4ajTCqgHlQWGNi9Shkmj%2FzM%3D&Expires=1617783618',
-                motions: mainData.filter((d) => d.type === 'motion'),
+                modelName: 'target model name 입력하세요',
+                modelUrl: 'target model url 입력하세요',
+                motions: mainData.filter(
+                  (d) => d.type === 'motion' && d.parentKey === 'target model key',
+                ),
               })
                 .then(() => {
                   setShowsModal(false);

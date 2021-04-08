@@ -3,14 +3,19 @@ import produce from 'immer';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
+import { CurrentVisualizedDataType } from 'types';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
 import {
   storeTPTrackNameList,
   storeTPDopeSheetList,
   storeTPUpdateDopeSheetList,
   storeTPLastBoneList,
+  storeCurrentVisualizedData,
+  storeSkeletonHelper,
 } from 'lib/store';
+import fnGetSmallestNewNumber from 'utils/common/fnGetSmallestNewNumber';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
+import { fnGetNewLayer } from 'utils/TP/editingUtils';
 import { SearchInput } from 'components/New_Input';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import Track from '../Track';
@@ -24,19 +29,21 @@ const DEBOUNCED_TIME = 300;
 const cx = classNames.bind(styles);
 
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
-  const storeTrackNameList = useReactiveVar(storeTPTrackNameList);
+  const trackNameList = useReactiveVar(storeTPTrackNameList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
+  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+
   const [trackList, setTrackList] = useState<TPTrackName[]>([]);
   const prevTrackInput = useRef('');
-  console.log('dopeSheetList', dopeSheetList);
 
   // debouned가 적용 된 track input 갱신
   const changeDebounedTrackInput = useMemo(
     () =>
       _.debounce((inputText: string) => {
         // 트랙 리스트가 없는 상태에서 검색하는 경우(아무 동작을 시키지 않음)
-        if (!storeTrackNameList.length) return;
+        if (!trackNameList.length) return;
         const trimInput = _.toLower(_.trim(inputText));
 
         // 이전 검색 텍스트와 현재 검색 텍스트가 같은 경우(아무 동작을 시키지 않음)
@@ -53,7 +60,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           );
           resetDopeSheetList[0].isClickedParentTrack = true;
           storeTPUpdateDopeSheetList({ updatedList: resetDopeSheetList, status: 'isFiltered' });
-          setTrackList(storeTrackNameList);
+          setTrackList(trackNameList);
           return;
         }
 
@@ -115,13 +122,13 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         // 필터링 리스트 갱신
         const filterResult = recursiveTrackSearch({
-          trackList: storeTrackNameList,
+          trackList: trackNameList,
         });
         prevTrackInput.current = trimInput;
         storeTPUpdateDopeSheetList({ updatedList: filteredDopeSheetList, status: 'isFiltered' });
         setTrackList(filterResult);
       }, DEBOUNCED_TIME),
-    [storeTrackNameList, dopeSheetList],
+    [trackNameList, dopeSheetList],
   );
 
   // 트랙 인풋 텍스트 변경
@@ -132,74 +139,99 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
     [changeDebounedTrackInput],
   );
 
-  // // 레이어 버튼 클릭
-  // const clickLayerButton = useCallback(() => {
-  //   if (!storeTrackNameList.length) return;
-  //   const { layerIndex } = lastBoneList[lastBoneList.length - 1];
-  //   const jump = 10000 * lastBoneList.length;
-  //   let curBoneIndex = 0;
+  // 레이어 버튼 클릭
+  const clickLayerButton = useCallback(() => {
+    const isConfirmed = confirm('Add a new layer?');
 
-  //   // 트랙 네임 리스트 갱신
-  //   const updatedTrackNameList = produce(storeTrackNameList, (draft) => {
-  //     const summaryTrackChildren = draft[0].childrenTrackList;
-  //     const baseLayerChildren = summaryTrackChildren[0].childrenTrackList;
-  //     const createdLayer = _.map(baseLayerChildren, (boneTrack) => {
-  //       return {
-  //         ...boneTrack,
-  //         trackIndex: boneTrack.trackIndex + jump,
-  //         childrenTrackList: _.map(boneTrack.childrenTrackList, (transformTrack, index) => {
-  //           const transformIndex = transformTrack.trackIndex + jump;
-  //           if (index === 2 && curBoneIndex < transformIndex) {
-  //             curBoneIndex = transformIndex;
-  //           }
-  //           return { ...transformTrack, trackIndex: transformIndex };
-  //         }),
-  //       };
-  //     });
+    if (isConfirmed && skeletonHelper && currentVisualizedData) {
+      const layerNameRegex = /^layer[0-9]+/;
+      const defaultTypeNames = currentVisualizedData.layers
+        .map((layer) => layer.name.match(layerNameRegex))
+        .filter((res) => !_.isNull(res));
+      const defaultTypeOrders = defaultTypeNames.map((item) =>
+        parseInt(item ? item[0].split('layer')[1] : '1'),
+      );
+      const nextOrder = fnGetSmallestNewNumber(defaultTypeOrders);
+      const newLayer = fnGetNewLayer({ name: `layer${nextOrder}`, bones: skeletonHelper.bones });
+      const state = storeCurrentVisualizedData();
+      console.log('newLayer', newLayer);
+      if (state) {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          draft?.layers.push(newLayer);
+        });
+        storeCurrentVisualizedData(nextState);
+      }
+    }
+  }, [currentVisualizedData, skeletonHelper]);
 
-  //     // 레이어 추가
-  //     summaryTrackChildren.push({
-  //       name: 'Layer1', // 이름 명명 적용 예정
-  //       isOpenedChildrenTrack: false,
-  //       childrenTrackList: createdLayer,
-  //       trackIndex: layerIndex + 10000,
-  //     });
-  //   });
+  // 레이어 버튼 클릭
+  const ttt = useCallback(() => {
+    if (!trackNameList.length) return;
+    const { layerIndex: lastLayerIndex } = lastBoneList[lastBoneList.length - 1];
+    const jump = 10000 * lastBoneList.length;
+    let curBoneIndex = 0;
 
-  //   // Dope Sheet 리스트 갱신
-  //   const lastBaseBoneIndex = _.findIndex(
-  //     dopeSheetList,
-  //     (dopeSheet) => dopeSheet.trackIndex === lastBoneList[0].lastBoneIndex,
-  //   );
-  //   const updatedDopeSheetList: TPDopeSheet[] = [];
-  //   for (let index = 1; index <= lastBaseBoneIndex + 3; index += 1) {
-  //     updatedDopeSheetList.push({
-  //       trackIndex: dopeSheetList[index].trackIndex + jump,
-  //       isSelected: false,
-  //       isLocked: false,
-  //       isExcludedRendering: false,
-  //       isClickedParentTrack: index === 1 ? dopeSheetList[1].isClickedParentTrack : false,
-  //       isFiltered: true, // 상황에 맞춰서 구현해야 됨
-  //       times: [],
-  //     });
-  //   }
+    // 트랙 네임 리스트 갱신
+    const updatedTrackNameList = produce(trackNameList, (draft) => {
+      const summaryTrackChildren = draft[0].childrenTrackList;
+      const baseLayerChildren = summaryTrackChildren[0].childrenTrackList;
+      const createdLayer = _.map(baseLayerChildren, (boneTrack) => {
+        return {
+          ...boneTrack,
+          trackIndex: boneTrack.trackIndex + jump,
+          childrenTrackList: _.map(boneTrack.childrenTrackList, (transformTrack, index) => {
+            const transformIndex = transformTrack.trackIndex + jump;
+            if (index === 2 && curBoneIndex < transformIndex) {
+              curBoneIndex = transformIndex;
+            }
+            return { ...transformTrack, trackIndex: transformIndex };
+          }),
+        };
+      });
 
-  //   // 추가 된 레이어의 마지막 bone index 저장
-  //   const lastBone = {
-  //     layerIndex: layerIndex + 10000,
-  //     lastBoneIndex: curBoneIndex - 3,
-  //   };
+      // 레이어 추가
+      summaryTrackChildren.push({
+        name: 'Layer1', // 이름 명명 적용 예정
+        isOpenedChildrenTrack: false,
+        childrenTrackList: createdLayer,
+        trackIndex: lastLayerIndex + 10000,
+      });
+    });
 
-  //   storeTPTrackNameList(updatedTrackNameList);
-  //   storeTPLastBoneList([...lastBoneList, lastBone]);
-  //   storeTPDopeSheetList([...dopeSheetList, ...updatedDopeSheetList]);
-  // }, [dopeSheetList, lastBoneList, storeTrackNameList]);
+    // Dope Sheet 리스트 갱신
+    const lastBaseBoneIndex = _.findIndex(
+      dopeSheetList,
+      (dopeSheet) => dopeSheet.trackIndex === lastBoneList[0].lastBoneIndex,
+    );
+    const updatedDopeSheetList: TPDopeSheet[] = [];
+    for (let index = 1; index <= lastBaseBoneIndex + 3; index += 1) {
+      // updatedDopeSheetList.push({
+      //   trackIndex: dopeSheetList[index].trackIndex + jump,
+      //   isSelected: false,
+      //   isLocked: false,
+      //   isExcludedRendering: false,
+      //   isClickedParentTrack: index === 1 ? dopeSheetList[1].isClickedParentTrack : false,
+      //   isFiltered: true, // 상황에 맞춰서 구현해야 됨
+      //   times: [],
+      // });
+    }
+
+    // 추가 된 레이어의 마지막 bone index 저장
+    const lastBone = {
+      layerIndex: lastLayerIndex + 10000,
+      lastBoneIndex: curBoneIndex - 3,
+    };
+
+    storeTPTrackNameList(updatedTrackNameList);
+    storeTPLastBoneList([...lastBoneList, lastBone]);
+    storeTPDopeSheetList([...dopeSheetList, ...updatedDopeSheetList]);
+  }, [dopeSheetList, lastBoneList, trackNameList]);
 
   // 최초 Track List 적용
   useEffect(() => {
-    if (!storeTrackNameList.length) return;
-    setTrackList(storeTrackNameList);
-  }, [storeTrackNameList]);
+    if (!trackNameList.length) return;
+    setTrackList(trackNameList);
+  }, [trackNameList]);
 
   const isEmptyTrack = _.isEmpty(trackList);
 
@@ -216,7 +248,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
             className={cx('layer')}
             icon={SvgPath.Layer}
             hasFrame={false}
-            // onClick={clickLayerButton}
+            onClick={clickLayerButton}
           />
         </div>
         {!isEmptyTrack && (

@@ -1,11 +1,9 @@
-import { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
-import { NextPage } from 'next';
+import { FunctionComponent, memo, useCallback, useRef } from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import styled from '@emotion/styled';
 import * as api from 'utils/common/api';
 import { useReactiveVar } from '@apollo/client';
-// import { Contextmenu } from 'components/Contextmenu';
 import { ContextMenu } from 'components/New_ContextMenu';
 import MainPage from './MainPage';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
@@ -29,17 +27,7 @@ import { ModalInput } from 'components/Modal/ModalInput';
 import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
-interface ContextMenuWrapperProps {
-  top: string;
-  left: string;
-}
 
-const ContextMenuWrapper = styled.div<ContextMenuWrapperProps>`
-  position: absolute;
-  top: ${(props) => props.top};
-  left: ${(props) => props.left};
-  z-index: 1000;
-`;
 const ModalWrapper = styled.div`
   position: absolute;
   top: 50%;
@@ -128,6 +116,7 @@ const ShootPage: FunctionComponent = () => {
       storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
     },
   });
+
   return (
     <main>
       {contextMenuInfo.isShow && (

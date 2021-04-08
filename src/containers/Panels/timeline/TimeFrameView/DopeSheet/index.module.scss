@@ -37,3 +37,17 @@
     stroke: #303030;
   }
 }
+
+.play-bar-wrapper {
+  position: fixed;
+  z-index: 3;
+
+  path {
+    transform: translate(0, -108px);
+    cursor: pointer;
+  }
+
+  rect {
+    transform: translate(10px, -85px);
+  }
+}
