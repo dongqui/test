@@ -1,6 +1,6 @@
-import { FunctionComponent, memo, useEffect, useRef, useCallback } from 'react';
+import { FunctionComponent, memo, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { storeAnimatingData } from 'lib/store';
+import { storeAnimatingData, storePageInfo } from 'lib/store';
 import { SvgPath } from 'components/New_Icon';
 import { SegmentButton } from 'components/New_Button';
 import { PrefixInput, BaseInput } from 'components/New_Input';
@@ -9,13 +9,15 @@ import PlayBox from './PlayBox';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { PAGE_NAMES } from 'types';
 
 const cx = classNames.bind(styles);
 
 export interface Props {}
 
 const MiddleBar: FunctionComponent<Props> = () => {
-  const data = useReactiveVar(storeAnimatingData);
+  const animatingData = useReactiveVar(storeAnimatingData);
+  const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,54 +41,62 @@ const MiddleBar: FunctionComponent<Props> = () => {
     {
       key: '0.25',
       value: '0.25x',
-      isSelected: _.isEqual(data.playSpeed, 0.25),
+      isSelected: _.isEqual(animatingData.playSpeed, 0.25),
     },
     {
       key: '0.5',
       value: '0.5x',
-      isSelected: _.isEqual(data.playSpeed, 0.5),
+      isSelected: _.isEqual(animatingData.playSpeed, 0.5),
     },
     {
       key: '1',
       value: '1x',
-      isSelected: _.isEqual(data.playSpeed, 1),
+      isSelected: _.isEqual(animatingData.playSpeed, 1),
     },
     {
       key: '1.25',
       value: '1.25x',
-      isSelected: _.isEqual(data.playSpeed, 1.25),
+      isSelected: _.isEqual(animatingData.playSpeed, 1.25),
     },
     {
       key: '1.75',
       value: '1.75x',
-      isSelected: _.isEqual(data.playSpeed, 1.75),
+      isSelected: _.isEqual(animatingData.playSpeed, 1.75),
     },
     {
       key: '2',
       value: '2x',
-      isSelected: _.isEqual(data.playSpeed, 2),
+      isSelected: _.isEqual(animatingData.playSpeed, 2),
     },
   ];
 
   const handleFasterSelect = useCallback(
     (key: string, _value: string) => {
-      storeAnimatingData({ ...data, playSpeed: Number(key) });
+      storeAnimatingData({ ...animatingData, playSpeed: Number(key) });
     },
-    [data],
+    [animatingData],
   );
 
   const modeList = [
     {
       key: 'edit',
       value: SvgPath.Dopesheet,
-      isSelected: true,
-      onClick: () => {},
+      isSelected: useMemo(() => pageInfo.page === PAGE_NAMES.shoot, [pageInfo.page]),
+      onClick: useCallback(() => {
+        if (pageInfo.page !== PAGE_NAMES.shoot) {
+          storePageInfo({ page: PAGE_NAMES.shoot });
+        }
+      }, [pageInfo.page]),
     },
     {
       key: 'camera',
       value: SvgPath.Camera,
-      isSelected: false,
-      onClick: () => {},
+      isSelected: useMemo(() => pageInfo.page === PAGE_NAMES.record, [pageInfo.page]),
+      onClick: useCallback(() => {
+        if (pageInfo.page === PAGE_NAMES.shoot) {
+          storePageInfo({ page: PAGE_NAMES.record });
+        }
+      }, [pageInfo.page]),
     },
   ];
 

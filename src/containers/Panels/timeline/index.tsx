@@ -43,10 +43,6 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
 
   const updateTargetTime = deleteTargetTime; // 재생바로 시간 특정할 수 있어지면 삭제 필요
 
-  useEffect(() => {
-    console.log('deleteTargetTime: ', deleteTargetTime);
-  }, [deleteTargetTime]);
-
   const handleUpdateKeyframeToBase = useCallback(() => {
     if (updateTargetTime && baseLayer && skeletonHelper) {
       const tpDopesheetList = storeTPDopeSheetList();
