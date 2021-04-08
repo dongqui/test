@@ -118,20 +118,20 @@ const LibraryPanelComponent: FunctionComponent = () => {
           setLoading(false);
           return false;
         }
-        const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
-          bones,
-        });
-        const retargetMap = result?.data?.result ?? [];
-        if (error2 || _.isEqual(retargetMap, 'failed')) {
-          // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
-          storeModalInfo({
-            isShow: true,
-            msg: '리타겟맵을 불러오는 과정에서 오류가 발생하였습니다.',
-            type: MODAL_TYPES.alert,
-          });
-          setLoading(false);
-          return false;
-        }
+        // const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
+        //   bones,
+        // });
+        // const retargetMap = result?.data?.result ?? [];
+        // if (error2 || _.isEqual(retargetMap, 'failed')) {
+        //   // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
+        //   storeModalInfo({
+        //     isShow: true,
+        //     msg: '리타겟맵을 불러오는 과정에서 오류가 발생하였습니다.',
+        //     type: MODAL_TYPES.alert,
+        //   });
+        //   setLoading(false);
+        //   return false;
+        // }
         const motions: LPDataType[] = [];
         const key = uuidv4();
         _.forEach(animations, (clip, index) => {
@@ -161,7 +161,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
             }),
             layers: [],
             boneNames: _.map(bones, (bone) => bone.name),
-            retargetMap,
+            // retargetMap,
           },
         ];
         newData = _.concat(newData, motions);
