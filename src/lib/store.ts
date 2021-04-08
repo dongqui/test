@@ -84,6 +84,7 @@ export const storeTPDopeSheetList = makeVar<TPDopeSheet[]>([]);
 export const storeTPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
 export const storeTPSelectedTrackList = makeVar<number[]>([]);
 export const storeTPCurrnetClickedTrack = makeVar<TPCurrnetClickedTrack | null>(null);
+export const storeDeleteTargetTime = makeVar<number | undefined>(undefined);
 
 export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
   const state = storeTPDopeSheetList();

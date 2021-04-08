@@ -1,6 +1,8 @@
 import React, { memo, useEffect } from 'react';
 import * as d3 from 'd3';
 import { TPDopeSheet } from 'types/TP';
+import { useReactiveVar } from '@apollo/client';
+import { storeDeleteTargetTime } from 'lib/store';
 
 interface Props {
   circleGroupRef: React.RefObject<SVGSVGElement>;
@@ -13,6 +15,8 @@ const CIRCLE_RADIUS = 4; // 원 반지름 크기
 
 const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale }) => {
   // circle 생성
+  const deleteTargetTime = useReactiveVar(storeDeleteTargetTime);
+
   useEffect(() => {
     if (circleGroupRef.current) {
       d3.select(circleGroupRef.current)
@@ -27,9 +31,20 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
         })
         .on('mouseout', (event) => {
           event.target.style.cursor = '';
+        })
+        .on('click', (event, data) => {
+          if (event.ctrlKey || event.metaKey) {
+            if (deleteTargetTime && data === deleteTargetTime) {
+              storeDeleteTargetTime(undefined);
+            }
+          } else {
+            if (!deleteTargetTime || (deleteTargetTime && data !== deleteTargetTime)) {
+              storeDeleteTargetTime(data);
+            }
+          }
         });
     }
-  }, [circleGroupRef, dopeSheetData, prevXScale]);
+  }, [circleGroupRef, deleteTargetTime, dopeSheetData, prevXScale]);
 
   return <></>;
 };
