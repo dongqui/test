@@ -1,10 +1,11 @@
 import { FunctionComponent, memo, useEffect, useRef, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { storeAnimatingData } from 'lib/store';
+import { storeAnimatingData, storePageInfo } from 'lib/store';
 import { SvgPath } from 'components/New_Icon';
 import { SegmentButton } from 'components/New_Button';
 import { PrefixInput, BaseInput } from 'components/New_Input';
 import { Dropdown } from 'components/New_Dropdown';
+import { PAGE_NAMES } from 'types';
 import PlayBox from './PlayBox';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
@@ -38,32 +39,32 @@ const MiddleBar: FunctionComponent<Props> = () => {
   const fasterList = [
     {
       key: '0.25',
-      value: '0.25x',
+      value: '0.25X',
       isSelected: _.isEqual(data.playSpeed, 0.25),
     },
     {
       key: '0.5',
-      value: '0.5x',
+      value: '0.5X',
       isSelected: _.isEqual(data.playSpeed, 0.5),
     },
     {
       key: '1',
-      value: '1x',
+      value: '1X',
       isSelected: _.isEqual(data.playSpeed, 1),
     },
     {
       key: '1.25',
-      value: '1.25x',
+      value: '1.25X',
       isSelected: _.isEqual(data.playSpeed, 1.25),
     },
     {
       key: '1.75',
-      value: '1.75x',
+      value: '1.75X',
       isSelected: _.isEqual(data.playSpeed, 1.75),
     },
     {
       key: '2',
-      value: '2x',
+      value: '2X',
       isSelected: _.isEqual(data.playSpeed, 2),
     },
   ];
@@ -80,13 +81,17 @@ const MiddleBar: FunctionComponent<Props> = () => {
       key: 'edit',
       value: SvgPath.Dopesheet,
       isSelected: true,
-      onClick: () => {},
+      onClick: (_key: string) => {
+        storePageInfo({ page: PAGE_NAMES.shoot });
+      },
     },
     {
       key: 'camera',
       value: SvgPath.Camera,
       isSelected: false,
-      onClick: () => {},
+      onClick: (_key: string) => {
+        storePageInfo({ page: PAGE_NAMES.record });
+      },
     },
   ];
 
@@ -97,23 +102,35 @@ const MiddleBar: FunctionComponent<Props> = () => {
           <PlayBox />
         </div>
         <div className={cx('right')}>
-          <div className={cx('playtime')}>
-            <BaseInput className={cx('time-current')} defaultValue="00:00" />
-            <div className={cx('divide')}>/</div>
-            <BaseInput className={cx('time-last')} defaultValue="00:12" />
-            <div className={cx('faster')}>
-              <Dropdown list={fasterList} onSelect={handleFasterSelect} />
+          <div className={cx('right-inner')}>
+            <div className={cx('playtime')}>
+              <BaseInput className={cx('time-current')} defaultValue="00:00" />
+              <div className={cx('divide')}>/</div>
+              <BaseInput className={cx('time-last')} defaultValue="00:12" />
+              <div className={cx('faster')}>
+                <Dropdown list={fasterList} onSelect={handleFasterSelect} />
+              </div>
             </div>
-          </div>
-          <div className={cx('indicator')}>
-            <PrefixInput
-              className={cx('indicator-input')}
-              prefix="START"
-              defaultValue="0000"
-              arrow
-            />
-            <PrefixInput className={cx('indicator-input')} prefix="END" defaultValue="0000" arrow />
-            <PrefixInput className={cx('indicator-input')} prefix="NOW" defaultValue="0000" arrow />
+            <div className={cx('indicator')}>
+              <PrefixInput
+                className={cx('indicator-input')}
+                prefix="START"
+                defaultValue="0000"
+                arrow
+              />
+              <PrefixInput
+                className={cx('indicator-input')}
+                prefix="END"
+                defaultValue="0000"
+                arrow
+              />
+              <PrefixInput
+                className={cx('indicator-input')}
+                prefix="NOW"
+                defaultValue="0000"
+                arrow
+              />
+            </div>
           </div>
           <div className={cx('mode-selector')}>
             <SegmentButton list={modeList} />
