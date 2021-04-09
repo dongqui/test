@@ -7,7 +7,7 @@ import {
   storeTPLastBoneList,
   storeSkeletonHelper,
   storeCurrentVisualizedData,
-  storeDeleteTargetTime,
+  storeDeleteTargetKeyframes,
 } from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
@@ -38,10 +38,8 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
   //////////////////////
   // 아래는 테스트용 예시 코드
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
-  // const updateTargetTime = 0.033333;
-  const deleteTargetTime = useReactiveVar(storeDeleteTargetTime);
-
-  const updateTargetTime = deleteTargetTime; // 재생바로 시간 특정할 수 있어지면 삭제 필요
+  const updateTargetTime = 0.033333;
+  const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
 
   const handleUpdateKeyframeToBase = useCallback(() => {
     if (updateTargetTime && baseLayer && skeletonHelper) {
@@ -159,7 +157,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
   }, [baseLayer, layers, skeletonHelper, updateTargetTime]);
 
   const handleDeleteKeyframeFromBase = useCallback(() => {
-    if (deleteTargetTime && baseLayer) {
+    if (deleteTargetKeyframes && baseLayer) {
       // delete 시에는 isKeyframeSelected
       const tpDopesheetList = storeTPDopeSheetList();
       const selectedDopeSheets = tpDopesheetList.filter(
@@ -175,7 +173,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         selectedDopeSheets.map((dopesheet) => dopesheet.trackName).includes(track.name),
       );
       targetTracks.forEach((track) => {
-        const resultTrack = fnDeleteKeyframe({ track, time: deleteTargetTime });
+        const resultTrack = fnDeleteKeyframe({ track, time: deleteTargetKeyframes });
         const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
         resultTracks.push([resultTrack, targetTrackIndex]);
       });
@@ -193,10 +191,10 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         storeCurrentVisualizedData(nextState);
       }
     }
-  }, [baseLayer, deleteTargetTime]);
+  }, [baseLayer, deleteTargetKeyframes]);
 
   const handleDeleteKeyframeFromLayer = useCallback(() => {
-    if (deleteTargetTime && baseLayer && layers && layers.length !== 0) {
+    if (deleteTargetKeyframes && baseLayer && layers && layers.length !== 0) {
       const tpDopesheetList = storeTPDopeSheetList();
       const selectedDopeSheets = tpDopesheetList.filter(
         (item) =>
@@ -218,7 +216,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         );
 
         targetTracks.forEach((track) => {
-          const resultTrack = fnDeleteKeyframe({ track, time: deleteTargetTime });
+          const resultTrack = fnDeleteKeyframe({ track, time: deleteTargetKeyframes });
           const targetTrackIndex = _.findIndex(
             layers[targetLayerIndex].tracks,
             (t) => t.name === track.name,
@@ -240,7 +238,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         }
       }
     }
-  }, [baseLayer, deleteTargetTime, layers]);
+  }, [baseLayer, deleteTargetKeyframes, layers]);
   // 위는 테스트용 예시 코드
   ////////////////////
 

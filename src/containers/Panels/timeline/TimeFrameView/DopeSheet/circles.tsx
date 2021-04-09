@@ -1,8 +1,9 @@
 import React, { memo, useEffect } from 'react';
 import * as d3 from 'd3';
-import { TPDopeSheet } from 'types/TP';
+import { v4 as uuidv4 } from 'uuid';
+import { TPDopeSheet, KeyframeData } from 'types/TP';
 import { useReactiveVar } from '@apollo/client';
-import { storeDeleteTargetTime } from 'lib/store';
+import { storeDeleteTargetKeyframes } from 'lib/store';
 
 interface Props {
   circleGroupRef: React.RefObject<SVGSVGElement>;
@@ -15,7 +16,7 @@ const CIRCLE_RADIUS = 4; // 원 반지름 크기
 
 const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale }) => {
   // circle 생성
-  const deleteTargetTime = useReactiveVar(storeDeleteTargetTime);
+  const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
 
   useEffect(() => {
     if (circleGroupRef.current) {
@@ -34,18 +35,18 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
         })
         .on('click', (event, data) => {
           console.log('dopeSheetData: ', dopeSheetData);
-          if (event.ctrlKey || event.metaKey) {
-            if (deleteTargetTime && data === deleteTargetTime) {
-              storeDeleteTargetTime(undefined);
-            }
-          } else {
-            if (!deleteTargetTime || (deleteTargetTime && data !== deleteTargetTime)) {
-              storeDeleteTargetTime(data);
-            }
+          const { trackName, layerKey, isLocked } = dopeSheetData;
+          if (!isLocked) {
+            const keyframeData: KeyframeData = {
+              key: uuidv4(),
+              trackName,
+              layerKey,
+              time: data,
+            };
           }
         });
     }
-  }, [circleGroupRef, deleteTargetTime, dopeSheetData, prevXScale]);
+  }, [circleGroupRef, deleteTargetKeyframes, dopeSheetData, prevXScale]);
 
   return <></>;
 };
