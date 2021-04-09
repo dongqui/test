@@ -43,6 +43,7 @@ import Explorer from './Explorer/index';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { ROOT_FOLDER_NAME } from 'types/LP';
+import { useLoading } from 'hooks/common/useLoading';
 
 const cx = classNames.bind(styles);
 
@@ -56,8 +57,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
   const pages = useReactiveVar(storePages);
   const lpmode = useReactiveVar(storeLPMode);
-  const [loading, setLoading] = useState(false);
   const [originalLpmode, setOriginalLpmode] = useState<LPModeType | undefined>(undefined);
+  const { setLoading } = useLoading();
   const onChangeSearchText = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       storeSearchWord(e.target.value);
@@ -118,20 +119,6 @@ const LibraryPanelComponent: FunctionComponent = () => {
           setLoading(false);
           return false;
         }
-        // const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
-        //   bones,
-        // });
-        // const retargetMap = result?.data?.result ?? [];
-        // if (error2 || _.isEqual(retargetMap, 'failed')) {
-        //   // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
-        //   storeModalInfo({
-        //     isShow: true,
-        //     msg: '리타겟맵을 불러오는 과정에서 오류가 발생하였습니다.',
-        //     type: MODAL_TYPES.alert,
-        //   });
-        //   setLoading(false);
-        //   return false;
-        // }
         const motions: LPDataType[] = [];
         const key = uuidv4();
         _.forEach(animations, (clip, index) => {
@@ -174,7 +161,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       storeLpData(_.concat(filteredLpData, newDatas));
       setLoading(false);
     },
-    [lpmode, lpData, pages],
+    [lpData, setLoading, lpmode, pages],
   );
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -269,26 +256,13 @@ const LibraryPanelComponent: FunctionComponent = () => {
       );
       await onDropPost({ acceptedFiles: filteredAcceptedFiles });
     },
-    [lpData, lpmode, onDropPost, pages],
+    [lpData, lpmode, onDropPost, pages, setLoading],
   );
   const { getRootProps } = useDropzone({ onDrop });
 
   const searchWord = useReactiveVar(storeSearchWord);
   const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
   const panelWrapperRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const body = document.querySelector('body');
-    if (loading) {
-      if (body) {
-        body.style.cursor = 'wait';
-      }
-    } else {
-      if (body) {
-        body.style.cursor = 'default';
-      }
-    }
-  }, [loading]);
 
   const {
     onClick,

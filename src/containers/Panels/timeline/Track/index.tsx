@@ -157,7 +157,7 @@ const Track: React.FC<TrackProps> = ({
       key: 'trackIndex',
     });
     const targetTrack = dopeSheetList[targetIndex];
-    setIsSelected(targetTrack.isSelected);
+    setIsSelected(targetTrack?.isSelected);
   }, [dopeSheetList, trackIndex]);
 
   // 자식 트랙 opened 변경
