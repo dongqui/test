@@ -142,19 +142,15 @@ export const getRetargetBaseLayer = async ({
   retargetMap,
 }: getRetargetBaseLayerProps) => {
   try {
+    const formData = new FormData();
+    formData.append('isFbx', 'true');
+    formData.append('sourceMotion', JSON.stringify({ name, tracks: baseLayer }));
+    formData.append('retargetMap', JSON.stringify(retargetMap));
     const result = await axios({
       method: 'POST',
       url: `${RETARGETIING_URL}/retargeting-everyframe`,
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        Accept: 'application/json',
-      },
-      data: {
-        isFbx: false,
-        sourceMotion: { name, tracks: baseLayer },
-        retargetMap,
-      },
-      responseType: 'json',
+      data: formData,
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return {
       result,
