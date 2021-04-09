@@ -10,6 +10,7 @@ import {
   LPDataType,
   LPDATA_PROPERTY_TYPES,
   MODAL_TYPES,
+  ShootTrackType,
 } from 'types';
 import { storeContextMenuInfo, storeLpData, storeModalInfo } from 'lib/store';
 import { PagesType } from 'containers/Panels/LibraryPanel';
@@ -21,6 +22,8 @@ import { ROOT_FOLDER_NAME } from 'types/LP';
 import { fnPasteFile } from 'utils/LP/fnPasteFile';
 import * as api from 'utils/common/api';
 import { fnVisualizeFile } from 'utils/LP/fnVisualizeFile';
+import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
+import { useLoading } from 'hooks/common/useLoading';
 
 interface useLPControlProps {
   mainData: LPDataType[];
@@ -36,6 +39,7 @@ export const useLPControl = ({
   searchWord,
   lpmode,
 }: useLPControlProps) => {
+  const { setLoading } = useLoading();
   const onClick = useCallback(
     (e) => {
       const newFileName = fnGetFileName({
@@ -73,6 +77,7 @@ export const useLPControl = ({
     async ({ key }) => {
       const draggingRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
       const targetRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.key, key]);
+      let newBaseLayer: ShootTrackType[] = draggingRow?.baseLayer ?? [];
       if (_.isEqual(draggingRow?.key, targetRow?.key)) {
         return;
       }
@@ -80,19 +85,52 @@ export const useLPControl = ({
         if (!_.isEqual(targetRow?.type, FILE_TYPES.file)) {
           return;
         }
-        const { result, error, msg } = await api.getRetargetBaseLayer({
-          name: draggingRow?.name ?? '',
-          baseLayer: draggingRow?.baseLayer ?? [],
-          retargetMap: targetRow?.retargetMap ?? [],
+        if (!draggingRow?.isExportedMotion) {
+          return;
+        }
+        setLoading(true);
+        const { bones = [], error, msg } = await fnGetAnimationData({
+          url: targetRow?.url ?? '',
         });
         if (error) {
+          storeModalInfo({
+            isShow: true,
+            msg: '애니메이션 데이터 추출에 실패하였습니다.',
+            type: MODAL_TYPES.alert,
+          });
+          setLoading(false);
+          return;
+        }
+        const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
+          bones,
+        });
+        const retargetMap = result?.data?.result ?? [];
+        if (error2 || _.isEqual(retargetMap, 'failed')) {
+          // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
+          storeModalInfo({
+            isShow: true,
+            msg: '리타겟맵을 불러오는 과정에서 오류가 발생하였습니다.',
+            type: MODAL_TYPES.alert,
+          });
+          setLoading(false);
+          return;
+        }
+        const { result: result2, error: error3, msg: msg3 } = await api.getRetargetBaseLayer({
+          name: draggingRow?.name ?? '',
+          baseLayer: draggingRow?.baseLayer ?? [],
+          retargetMap,
+        });
+        if (error3) {
           storeModalInfo({
             isShow: true,
             msg: '리타겟팅 과정에서 오류가 발생하였습니다.',
             type: MODAL_TYPES.alert,
           });
+          setLoading(false);
           return;
         }
+        newBaseLayer = result2?.data?.result;
+        setLoading(false);
       }
       if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
         if (!_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
@@ -108,11 +146,12 @@ export const useLPControl = ({
         _.map(mainData, (item) => ({
           ...item,
           parentKey: item.isDragging ? key : item.parentKey,
+          baseLayer: item.isDragging ? newBaseLayer : item.baseLayer,
           isDragging: false,
         })),
       );
     },
-    [mainData],
+    [mainData, setLoading],
   );
   const onCopy = useCallback(({ mainData }) => {
     storeLpData(
