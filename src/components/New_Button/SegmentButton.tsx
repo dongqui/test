@@ -10,7 +10,7 @@ interface SegmentItem {
   key: string;
   value: ReactNode;
   isSelected: boolean;
-  onClick: () => void;
+  onClick: (key: string) => void;
 }
 
 interface BaseProps {
@@ -31,11 +31,20 @@ const SegmentButton: FunctionComponent<Props> = ({ list, color, fullSize, ...res
     <div className={cx(classes)}>
       {_.map(list, (item) => {
         const isIcon = _.isEqual(typeof item.value, 'function');
+
+        const handleClick = () => {
+          item.onClick(item.key);
+        };
+
+        const buttonClasses = cx('icon', {
+          selected: item.isSelected,
+        });
+
         if (isIcon) {
           return (
             <IconWrapper
-              className={cx('icon')}
-              onClick={item.onClick}
+              className={buttonClasses}
+              onClick={handleClick}
               icon={item.value as FunctionComponent}
               hasFrame={false}
             />

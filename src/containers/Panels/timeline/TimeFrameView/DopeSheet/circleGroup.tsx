@@ -8,7 +8,6 @@ import { TPDopeSheet } from 'types/TP';
 
 interface Props {
   dopeSheetData: TPDopeSheet;
-  layerDopeSheetData: TPDopeSheet;
   prevXScale: d3.ScaleLinear<number, number, never>;
 }
 

@@ -34,7 +34,7 @@ import Breadcrumb from './Breadcrumb';
 import * as api from 'utils/common/api';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
-import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithClip } from 'utils/TP/editingUtils';
+import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import fnExportModelToFbx from 'utils/LP/fnExportModelToFbx';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import { Headline, Html } from 'components/New_Typography';
@@ -43,6 +43,7 @@ import Explorer from './Explorer/index';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { ROOT_FOLDER_NAME } from 'types/LP';
+import { useLoading } from 'hooks/common/useLoading';
 
 const cx = classNames.bind(styles);
 
@@ -56,10 +57,22 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
   const pages = useReactiveVar(storePages);
   const lpmode = useReactiveVar(storeLPMode);
-  const [loading, setLoading] = useState(false);
-  const onChangeSearchText = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    storeSearchWord(e.target.value);
-  }, []);
+  const [originalLpmode, setOriginalLpmode] = useState<LPModeType | undefined>(undefined);
+  const { setLoading } = useLoading();
+  const onChangeSearchText = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      storeSearchWord(e.target.value);
+      if (_.isEqual(lpmode, LPModeType.iconview)) {
+        storeLPMode(LPModeType.listview);
+        setOriginalLpmode(LPModeType.iconview);
+      }
+      if (_.isEmpty(e.target.value) && _.isEqual(originalLpmode, LPModeType.iconview)) {
+        storeLPMode(LPModeType.iconview);
+        setOriginalLpmode(undefined);
+      }
+    },
+    [lpmode, originalLpmode],
+  );
   const onDropPost = useCallback(
     async ({ acceptedFiles, overrideKeys = [] }) => {
       let newDatas: LPDataType[] = [];
@@ -73,7 +86,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
             type: FORMAT_TYPES.glb,
           });
           if (error) {
-            storeModalInfo({ isShow: true, msg });
+            storeModalInfo({ isShow: true, msg: '파일업로드에 실패하였습니다.' });
             setLoading(false);
             return false;
           }
@@ -98,16 +111,11 @@ const LibraryPanelComponent: FunctionComponent = () => {
         }
         const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
         if (error) {
-          storeModalInfo({ isShow: true, msg, type: MODAL_TYPES.alert });
-          setLoading(false);
-          return false;
-        }
-        const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
-          bones,
-        });
-        const retargetMap = result?.data?.result ?? [];
-        if (error2) {
-          storeModalInfo({ isShow: true, msg: msg2, type: MODAL_TYPES.alert });
+          storeModalInfo({
+            isShow: true,
+            msg: '애니메이션 데이터 추출에 실패하였습니다.',
+            type: MODAL_TYPES.alert,
+          });
           setLoading(false);
           return false;
         }
@@ -118,7 +126,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
             motions.push({
               key: clip?.uuid,
               name: clip?.name,
-              baseLayer: fnGetBaseLayerWithClip({ bones, clip }),
+              baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
               layers: [],
               type: FILE_TYPES.motion,
               parentKey: key,
@@ -140,7 +148,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
             }),
             layers: [],
             boneNames: _.map(bones, (bone) => bone.name),
-            retargetMap,
+            // retargetMap,
           },
         ];
         newData = _.concat(newData, motions);
@@ -153,7 +161,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       storeLpData(_.concat(filteredLpData, newDatas));
       setLoading(false);
     },
-    [lpmode, lpData, pages],
+    [lpData, setLoading, lpmode, pages],
   );
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -248,26 +256,13 @@ const LibraryPanelComponent: FunctionComponent = () => {
       );
       await onDropPost({ acceptedFiles: filteredAcceptedFiles });
     },
-    [lpData, lpmode, onDropPost, pages],
+    [lpData, lpmode, onDropPost, pages, setLoading],
   );
   const { getRootProps } = useDropzone({ onDrop });
 
   const searchWord = useReactiveVar(storeSearchWord);
   const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
   const panelWrapperRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const body = document.querySelector('body');
-    if (loading) {
-      if (body) {
-        body.style.cursor = 'wait';
-      }
-    } else {
-      if (body) {
-        body.style.cursor = 'default';
-      }
-    }
-  }, [loading]);
 
   const {
     onClick,

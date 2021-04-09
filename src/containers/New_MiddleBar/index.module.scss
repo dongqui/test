@@ -14,8 +14,8 @@
   display: flex;
   align-items: center;
   flex-basis: 100%;
-  // overflow-x: auto;
-  // overflow-y: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   -ms-overflow-style: none;
   scrollbar-width: none;
 
@@ -34,8 +34,14 @@
 .right {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  // justify-content: space-between;
   flex-basis: 50%;
+
+  .right-inner {
+    display: flex;
+    justify-content: space-between;
+    flex-basis: calc(100% - 264px);
+  }
 }
 
 .playtime {
@@ -71,7 +77,7 @@
   justify-content: space-evenly;
 
   .indicator-input {
-    width: 112px;
+    width: 136px;
     height: 28px;
     margin-right: 8px;
 
@@ -81,6 +87,7 @@
 
     & > input {
       font-size: 14px;
+      padding: 0 8px;
     }
 
     &:last-child {
@@ -91,6 +98,6 @@
 
 .mode-selector {
   display: flex;
-  // flex-basis: 264px;
+  flex-basis: 264px;
   justify-content: flex-end;
 }
