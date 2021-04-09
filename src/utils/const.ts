@@ -174,6 +174,7 @@ export const INITIAL_CP_DATA: CPDataType[] = [
 export const INITIAL_RECORDING_DATA = {
   duration: 10,
   rangeBoxInfo: {
+    // width: window.innerWidth * 0.9,
     width: 1700,
     height: CUTIMAGE_HEIGHT,
     x: 50,

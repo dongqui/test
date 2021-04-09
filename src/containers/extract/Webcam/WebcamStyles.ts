@@ -7,6 +7,8 @@ export const WebcamWrapper = styled.video`
   width: 100%;
   height: 100%;
   z-index: 100;
+  outline: 0;
+  border: 0;
 `;
 export const WebcamSubWrapper = styled.video`
   position: absolute;
@@ -15,4 +17,6 @@ export const WebcamSubWrapper = styled.video`
   width: 100%;
   height: 100%;
   z-index: 0;
+  outline: 0;
+  border: 0;
 `;

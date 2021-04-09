@@ -59,6 +59,7 @@
   width: 48px;
   display: flex;
   align-items: center;
+  margin-right: 16px;
 }
 
 .pause {
@@ -76,6 +77,21 @@
     left: 50%;
     transform: translate(-50%, -50%);
     height: 16px;
+    color: $gray500;
+  }
+}
+
+.export {
+  position: relative;
+  width: 18px;
+  height: 18px;
+
+  & > svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 18px;
     color: $gray500;
   }
 }

@@ -100,6 +100,8 @@ const MiddleBar: FunctionComponent<Props> = () => {
     },
   ];
 
+  const isShootPage = _.isEqual(pageInfo.page, 'shoot');
+
   return (
     <div className={cx('wrapper')}>
       <div className={cx('inner')} ref={scrollRef}>
@@ -112,9 +114,11 @@ const MiddleBar: FunctionComponent<Props> = () => {
               <BaseInput className={cx('time-current')} defaultValue="00:00" />
               <div className={cx('divide')}>/</div>
               <BaseInput className={cx('time-last')} defaultValue="00:12" />
-              <div className={cx('faster')}>
-                <Dropdown list={fasterList} onSelect={handleFasterSelect} />
-              </div>
+              {isShootPage && (
+                <div className={cx('faster')}>
+                  <Dropdown list={fasterList} onSelect={handleFasterSelect} />
+                </div>
+              )}
             </div>
             <div className={cx('indicator')}>
               <PrefixInput

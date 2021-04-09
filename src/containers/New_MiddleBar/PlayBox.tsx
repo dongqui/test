@@ -1,6 +1,11 @@
 import { FunctionComponent, Fragment, memo, useCallback, useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { storeAnimatingData, storeCurrentVisualizedData, storePageInfo } from 'lib/store';
+import {
+  storeAnimatingData,
+  storeCurrentVisualizedData,
+  storePageInfo,
+  storeRecordingData,
+} from 'lib/store';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
@@ -12,8 +17,11 @@ const cx = classNames.bind(styles);
 export interface Props {}
 
 const PlayBox: FunctionComponent<Props> = ({}) => {
+  const recordingData = useReactiveVar(storeRecordingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const pageInfo = useReactiveVar(storePageInfo);
+
+  const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
   const handleKeyDown = () => {};
 
@@ -33,24 +41,42 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
   }, [animatingData]);
 
   const handleRewind = useCallback(() => {
-    if (!(animatingData.playState === 'play' && animatingData.playDirection === -1)) {
-      storeAnimatingData({
-        ...animatingData,
-        playDirection: -1,
-        playState: 'play',
-      });
+    if (isShootPage) {
+      if (!(animatingData.playState === 'play' && animatingData.playDirection === -1)) {
+        storeAnimatingData({
+          ...animatingData,
+          playDirection: -1,
+          playState: 'play',
+        });
+      }
     }
-  }, [animatingData]);
+
+    if (!isShootPage) {
+      storeRecordingData({ ...recordingData, isPlaying: true });
+      setTimeout(() => {
+        storeRecordingData({ ...recordingData, isPlaying: false });
+      }, 1000 * recordingData.duration);
+    }
+  }, [animatingData, isShootPage, recordingData]);
 
   const handlePlay = useCallback(() => {
-    if (!(animatingData.playState === 'play' && animatingData.playDirection === 1)) {
-      storeAnimatingData({
-        ...animatingData,
-        playDirection: 1,
-        playState: 'play',
-      });
+    if (isShootPage) {
+      if (!(animatingData.playState === 'play' && animatingData.playDirection === 1)) {
+        storeAnimatingData({
+          ...animatingData,
+          playDirection: 1,
+          playState: 'play',
+        });
+      }
     }
-  }, [animatingData]);
+
+    if (!isShootPage) {
+      storeRecordingData({ ...recordingData, isPlaying: true });
+      setTimeout(() => {
+        storeRecordingData({ ...recordingData, isPlaying: false });
+      }, 1000 * recordingData.duration);
+    }
+  }, [animatingData, isShootPage, recordingData]);
 
   const handlePause = useCallback(() => {
     if (animatingData.playState !== 'pause') {
@@ -60,6 +86,8 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
       });
     }
   }, [animatingData]);
+
+  const handleExport = useCallback(() => {}, []);
 
   const isPlaying = _.isEqual(animatingData.playState, 'play');
 
@@ -105,6 +133,14 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
             </Fragment>
           )}
         </div>
+        {!isShootPage && (
+          <IconWrapper
+            className={cx('export')}
+            onClick={handleExport}
+            icon={SvgPath.Export}
+            hasFrame={false}
+          />
+        )}
       </div>
     </div>
   );
