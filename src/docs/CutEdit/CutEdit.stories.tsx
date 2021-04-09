@@ -1,7 +1,7 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { CutEdit, CutEditProps } from 'containers/extract/CutEdit';
+import CutEdit from 'containers/extract/CutEdit';
 
 export default {
   title: 'Component API/Container/CutEdit',
@@ -10,7 +10,7 @@ export default {
   args: {},
 } as Meta;
 
-const Template: Story<CutEditProps> = (args) => <CutEdit {...args} />;
+const Template: Story = (args) => <CutEdit {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {};

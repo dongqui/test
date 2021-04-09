@@ -1,15 +1,18 @@
+import { FunctionComponent, Fragment, memo, useCallback, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { TimeBar } from 'components/TimeBar';
 import { storeRecordingData } from 'lib/store';
+import { IconWrapper, SvgPath } from 'components/New_Icon';
 import _ from 'lodash';
-import React, { useCallback, useState } from 'react';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
 import { STANDARD_WIDTH } from 'styles/constants/common';
 import { getNumberValue } from '../../../hooks/RP/useResizeRP';
 import * as S from './CutEdit.styles';
 import { CutImages } from './CutImages';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
-export interface CutEditProps {}
+const cx = classNames.bind(styles);
 
 const coordinateBarX = ({ barX, x, width }: { barX: number; x: number; width: number }) => {
   let result = barX;
@@ -28,7 +31,8 @@ const coordinateX = ({ x }: { x: number }) => {
   }
   return result;
 };
-const CutEditComponent: React.FC<CutEditProps> = ({}) => {
+
+const CutEditComponent: FunctionComponent = () => {
   const recordingData = useReactiveVar(storeRecordingData);
   const handleDrag = useCallback(
     (e, data) => {
@@ -82,8 +86,9 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
     },
     [recordingData],
   );
+
   return (
-    <S.CutEditWrapper>
+    <Fragment>
       <S.CutEditCutImagesWrapper>
         <Rnd
           dragAxis="x"
@@ -92,7 +97,11 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
           style={{ zIndex: 100, cursor: 'pointer' }}
           onDrag={handleDragBar}
         >
-          <TimeBar />
+          {/* <IconWrapper className={cx('icon-playbar')} icon={SvgPath.PlayBar} hasFrame={false} /> */}
+          {/* <TimeBar /> */}
+          <div className={cx('timebar')}>
+            <div className={cx('inner')} />
+          </div>
         </Rnd>
         <Rnd
           disableDragging
@@ -100,7 +109,7 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
           size={{ width: recordingData.rangeBoxInfo.x, height: recordingData.rangeBoxInfo.height }}
           position={{ x: 0, y: 0 }}
           style={{ backgroundColor: `rgba(0, 0, 0, ${S.OPACITY})` }}
-        ></Rnd>
+        />
         <Rnd
           dragAxis="x"
           enableResizing={{ right: true, left: true }}
@@ -111,8 +120,25 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
           position={{ x: recordingData.rangeBoxInfo.x, y: recordingData.rangeBoxInfo.y }}
           onResize={handleResize}
           onDrag={handleDrag}
-          style={{ border: '1px solid white' }}
-        ></Rnd>
+          style={{ overflow: 'hidden', border: '1px solid white', borderRadius: '12px' }}
+        >
+          <div className={cx('range-inner')}>
+            <div className={cx(['arrow-wrapper', 'left'])}>
+              <IconWrapper
+                className={cx(['triangle', 'left'])}
+                icon={SvgPath.LineLeftTriangle}
+                hasFrame={false}
+              />
+            </div>
+            <div className={cx(['arrow-wrapper', 'right'])}>
+              <IconWrapper
+                className={cx(['triangle', 'right'])}
+                icon={SvgPath.LineLeftTriangle}
+                hasFrame={false}
+              />
+            </div>
+          </div>
+        </Rnd>
         <Rnd
           disableDragging
           enableResizing={false}
@@ -130,7 +156,8 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
         ></Rnd>
         <CutImages />
       </S.CutEditCutImagesWrapper>
-    </S.CutEditWrapper>
+    </Fragment>
   );
 };
-export const CutEdit = React.memo(CutEditComponent);
+
+export default memo(CutEditComponent);

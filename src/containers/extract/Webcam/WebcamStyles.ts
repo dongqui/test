@@ -5,7 +5,7 @@ export const WebcamWrapper = styled.video`
   top: 0;
   left: 0;
   width: 100%;
-  height: 75%;
+  height: 100%;
   z-index: 100;
 `;
 export const WebcamSubWrapper = styled.video`
@@ -13,6 +13,6 @@ export const WebcamSubWrapper = styled.video`
   top: 0;
   left: 0;
   width: 100%;
-  height: 75%;
+  height: 100%;
   z-index: 0;
 `;
