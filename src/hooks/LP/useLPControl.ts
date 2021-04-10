@@ -10,17 +10,21 @@ import {
   LPDataType,
   LPDATA_PROPERTY_TYPES,
   MODAL_TYPES,
+  ShootTrackType,
 } from 'types';
 import { storeContextMenuInfo, storeLpData, storeModalInfo } from 'lib/store';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile } from 'utils/LP/fnDeleteFile';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
 import fnExportModelToFbx from 'utils/LP/fnExportModelToFbx';
-import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
+import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { fnPasteFile } from 'utils/LP/fnPasteFile';
 import * as api from 'utils/common/api';
 import { fnVisualizeFile } from 'utils/LP/fnVisualizeFile';
+import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
+import { useLoading } from 'hooks/common/useLoading';
+import fnExportModelToGlb from 'utils/LP/fnExportModelToGlb';
 
 interface useLPControlProps {
   mainData: LPDataType[];
@@ -36,6 +40,7 @@ export const useLPControl = ({
   searchWord,
   lpmode,
 }: useLPControlProps) => {
+  const { setLoading } = useLoading();
   const onClick = useCallback(
     (e) => {
       const newFileName = fnGetFileName({
@@ -73,6 +78,7 @@ export const useLPControl = ({
     async ({ key }) => {
       const draggingRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
       const targetRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.key, key]);
+      let newBaseLayer: ShootTrackType[] = draggingRow?.baseLayer ?? [];
       if (_.isEqual(draggingRow?.key, targetRow?.key)) {
         return;
       }
@@ -80,19 +86,54 @@ export const useLPControl = ({
         if (!_.isEqual(targetRow?.type, FILE_TYPES.file)) {
           return;
         }
-        const { result, error, msg } = await api.getRetargetBaseLayer({
-          name: draggingRow?.name ?? '',
-          baseLayer: draggingRow?.baseLayer ?? [],
-          retargetMap: targetRow?.retargetMap ?? [],
+        if (!draggingRow?.isExportedMotion) {
+          return;
+        }
+        setLoading(true);
+        const { bones = [], error, msg } = await fnGetAnimationData({
+          url: targetRow?.url ?? '',
         });
         if (error) {
+          storeModalInfo({
+            isShow: true,
+            msg: '애니메이션 데이터 추출에 실패하였습니다.',
+            type: MODAL_TYPES.alert,
+          });
+          setLoading(false);
+          return;
+        }
+        const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
+          bones,
+        });
+        const retargetMap = result?.data?.result ?? [];
+        if (error2 || _.isEqual(retargetMap, 'failed')) {
+          // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
+          storeModalInfo({
+            isShow: true,
+            msg: '리타겟맵을 불러오는 과정에서 오류가 발생하였습니다.',
+            type: MODAL_TYPES.alert,
+          });
+          setLoading(false);
+          return;
+        }
+        const { result: result2, error: error3, msg: msg3 } = await api.getRetargetBaseLayer({
+          name: draggingRow?.name ?? '',
+          baseLayer: draggingRow?.baseLayer ?? [],
+          retargetMap,
+        });
+        if (error3) {
           storeModalInfo({
             isShow: true,
             msg: '리타겟팅 과정에서 오류가 발생하였습니다.',
             type: MODAL_TYPES.alert,
           });
+          setLoading(false);
           return;
         }
+        const times = draggingRow?.baseLayer?.[0]?.times;
+        const tracks = _.map(result2?.data?.result, (item) => ({ ...item, times }));
+        newBaseLayer = fnGetBaseLayerWithTracks({ bones, tracks });
+        setLoading(false);
       }
       if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
         if (!_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
@@ -108,11 +149,12 @@ export const useLPControl = ({
         _.map(mainData, (item) => ({
           ...item,
           parentKey: item.isDragging ? key : item.parentKey,
+          baseLayer: item.isDragging ? newBaseLayer : item.baseLayer,
           isDragging: false,
         })),
       );
     },
-    [mainData],
+    [mainData, setLoading],
   );
   const onCopy = useCallback(({ mainData }) => {
     storeLpData(
@@ -220,6 +262,7 @@ export const useLPControl = ({
           { key: '5', value: 'Edit name' },
           { key: '6', value: 'Add motion' },
           { key: '8', value: 'FBX Export' },
+          { key: '9', value: 'GLB Export' },
         ];
       }
       if (
@@ -356,11 +399,26 @@ export const useLPControl = ({
 
               // 아래 호출 시 사용한 값들은 예시 값이라서 LP 쪽 export 개발 후 변경해야 함
               await fnExportModelToFbx({
-                modelName: 'target model name 입력하세요',
-                modelUrl: 'target model url 입력하세요',
-                motions: mainData.filter(
-                  (d) => d.type === 'motion' && d.parentKey === 'target model key',
-                ),
+                modelName: targetRow?.name ?? '',
+                modelUrl: targetRow?.url ?? '',
+                motions: _.filter(mainData, [LPDATA_PROPERTY_TYPES.parentKey, targetRow?.key]),
+              })
+                .then(() => {
+                  setShowsModal(false);
+                })
+                .catch(() => {
+                  setModalMessage('파일을 내보낼 수 없습니다.');
+                });
+              break;
+            case '9':
+              setShowsModal(!showsModal);
+              setModalMessage('파일을 내보내는 중입니다. <br /> 잠시만 기다려주세요.');
+
+              // 아래 호출 시 사용한 값들은 예시 값이라서 LP 쪽 export 개발 후 변경해야 함
+              await fnExportModelToGlb({
+                modelName: targetRow?.name ?? '',
+                modelUrl: targetRow?.url ?? '',
+                motions: _.filter(mainData, [LPDATA_PROPERTY_TYPES.parentKey, targetRow?.key]),
               })
                 .then(() => {
                   setShowsModal(false);

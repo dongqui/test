@@ -33,6 +33,7 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
           event.target.style.cursor = '';
         })
         .on('click', (event, data) => {
+          console.log('dopeSheetData: ', dopeSheetData);
           if (event.ctrlKey || event.metaKey) {
             if (deleteTargetTime && data === deleteTargetTime) {
               storeDeleteTargetTime(undefined);

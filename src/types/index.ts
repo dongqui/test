@@ -68,6 +68,7 @@ export enum LPDATA_PROPERTY_TYPES {
   boneNames = 'boneNames',
   depth = 'depth',
   retargetMap = 'retargetMap',
+  isExportedMotion = 'isExportedMotion',
 }
 export enum LPModeType {
   listview = 'listview',
@@ -111,6 +112,7 @@ export interface LPDataType {
   [LPDATA_PROPERTY_TYPES.boneNames]?: string[];
   [LPDATA_PROPERTY_TYPES.depth]?: number;
   [LPDATA_PROPERTY_TYPES.retargetMap]?: Array<any>;
+  [LPDATA_PROPERTY_TYPES.isExportedMotion]?: boolean;
 }
 export interface CurrentVisualizedDataType {
   [LPDATA_PROPERTY_TYPES.key]: string;
