@@ -397,7 +397,6 @@ export const useLPControl = ({
               setShowsModal(!showsModal);
               setModalMessage('파일을 내보내는 중입니다. <br /> 잠시만 기다려주세요.');
 
-              // 아래 호출 시 사용한 값들은 예시 값이라서 LP 쪽 export 개발 후 변경해야 함
               await fnExportModelToFbx({
                 modelName: targetRow?.name ?? '',
                 modelUrl: targetRow?.url ?? '',
@@ -414,7 +413,6 @@ export const useLPControl = ({
               setShowsModal(!showsModal);
               setModalMessage('파일을 내보내는 중입니다. <br /> 잠시만 기다려주세요.');
 
-              // 아래 호출 시 사용한 값들은 예시 값이라서 LP 쪽 export 개발 후 변경해야 함
               await fnExportModelToGlb({
                 modelName: targetRow?.name ?? '',
                 modelUrl: targetRow?.url ?? '',
@@ -427,7 +425,6 @@ export const useLPControl = ({
                   setModalMessage('파일을 내보낼 수 없습니다.');
                 });
               break;
-            // 위 호출 시 사용한 값들은 예시 값이라서 LP 쪽 export 개발 후 변경해야 함
             default:
               break;
           }

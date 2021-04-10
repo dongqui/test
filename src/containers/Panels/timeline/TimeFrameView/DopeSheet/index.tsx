@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import {
+  storeContextMenuInfo,
   storeCurrentVisualizedData,
   storeDeleteTargetKeyframes,
   storeSkeletonHelper,
@@ -19,6 +20,7 @@ import {
   fnUpdateKeyframeToLayer,
 } from 'utils/TP/editingUtils';
 import produce from 'immer';
+import useContextMenu from 'hooks/common/useContextMenu';
 interface Props {
   timelineWrapperRef: React.RefObject<HTMLDivElement>;
 }
@@ -297,20 +299,37 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
+  const tpDopesheetList = storeTPDopeSheetList();
+  const selectedBaseDopeSheets = useMemo(
+    () =>
+      tpDopesheetList.filter(
+        (item) =>
+          item.isSelected &&
+          !item.isLocked &&
+          item.isTransformTrack &&
+          item.layerKey === 'baseLayer',
+      ),
+    [tpDopesheetList],
+  );
+  const selectedLayerDopeSheets = useMemo(
+    () =>
+      tpDopesheetList.filter(
+        (item) =>
+          item.isSelected &&
+          !item.isLocked &&
+          item.isTransformTrack &&
+          item.layerKey !== 'baseLayer',
+      ),
+    [tpDopesheetList],
+  );
 
   const handleUpdateKeyframeToBase = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
       if (updateTargetTime && baseLayer && skeletonHelper) {
-        const tpDopesheetList = storeTPDopeSheetList();
-        const selectedDopeSheets = tpDopesheetList.filter(
-          (item) =>
-            item.isSelected &&
-            !item.isLocked &&
-            item.isTransformTrack &&
-            item.layerKey === 'baseLayer',
+        const selectedDopesheetNames = selectedBaseDopeSheets.map(
+          (dopesheet) => dopesheet.trackName,
         );
-        const selectedDopesheetNames = selectedDopeSheets.map((dopesheet) => dopesheet.trackName);
         const resultTracks: [ShootTrackType, number][] = [];
         const targetTracks = baseLayer.filter((track) =>
           selectedDopesheetNames.includes(track.name),
@@ -349,27 +368,21 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         }
       }
     }
-  }, [currentVisualizedData, skeletonHelper]);
+  }, [currentVisualizedData, selectedBaseDopeSheets, skeletonHelper, updateTargetTime]);
 
   const handleUpdateKeyframeToLayer = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
       if (updateTargetTime && baseLayer && layers && layers.length !== 0 && skeletonHelper) {
-        const tpDopesheetList = storeTPDopeSheetList();
-        const selectedDopeSheets = tpDopesheetList.filter(
-          (item) =>
-            item.isSelected &&
-            !item.isLocked &&
-            item.isTransformTrack &&
-            item.layerKey !== 'baseLayer',
-        );
         const targetLayerIndex = _.findIndex(
           layers,
-          (layer) => layer.key === selectedDopeSheets[0].layerKey,
+          (layer) => layer.key === selectedLayerDopeSheets[0].layerKey,
         );
         if (targetLayerIndex !== -1) {
           const resultTracks: [ShootTrackType, number][] = [];
-          const selectedDopesheetNames = selectedDopeSheets.map((dopesheet) => dopesheet.trackName);
+          const selectedDopesheetNames = selectedLayerDopeSheets.map(
+            (dopesheet) => dopesheet.trackName,
+          );
           const targetTracks = baseLayer.filter((track) =>
             selectedDopesheetNames.includes(track.name),
           );
@@ -419,16 +432,16 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         }
       }
     }
-  }, [currentVisualizedData, skeletonHelper]);
+  }, [currentVisualizedData, selectedLayerDopeSheets, skeletonHelper, updateTargetTime]);
 
   const handleDeleteKeyframe = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
       if (deleteTargetKeyframes && baseLayer && layers) {
+        const resultBaseLayerTracks: [ShootTrackType, number][] = [];
+        const resultLayersTracks: [ShootTrackType, number, number][] = [];
         _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
           const { layerKey, trackName, time } = targetKeyframe;
-          const resultBaseLayerTracks: [ShootTrackType, number][] = [];
-          const resultLayersTracks: [ShootTrackType, number, number][] = [];
           if (layerKey === 'baseLayer') {
             const targetTrack = _.find(baseLayer, (track) => track.name === trackName);
             if (targetTrack) {
@@ -453,27 +466,28 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
               }
             }
           }
-          const state = storeCurrentVisualizedData();
-          if (state && (resultBaseLayerTracks.length !== 0 || resultLayersTracks.length !== 0)) {
-            const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-              resultBaseLayerTracks.forEach(([resultTrack, targetTrackIndex]) => {
-                draft.baseLayer = [
-                  ...draft.baseLayer.slice(0, targetTrackIndex),
-                  resultTrack,
-                  ...draft.baseLayer.slice(targetTrackIndex + 1),
-                ];
-              });
-              resultLayersTracks.forEach(([resultTrack, targetLayerIndex, targetTrackIndex]) => {
-                draft.layers[targetLayerIndex].tracks = [
-                  ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
-                  resultTrack,
-                  ...draft.layers[targetLayerIndex].tracks.slice(targetTrackIndex + 1),
-                ];
-              });
-            });
-            storeCurrentVisualizedData(nextState);
-          }
         });
+        storeDeleteTargetKeyframes([]);
+        const state = storeCurrentVisualizedData();
+        if (state && (resultBaseLayerTracks.length !== 0 || resultLayersTracks.length !== 0)) {
+          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+            resultBaseLayerTracks.forEach(([resultTrack, targetTrackIndex]) => {
+              draft.baseLayer = [
+                ...draft.baseLayer.slice(0, targetTrackIndex),
+                resultTrack,
+                ...draft.baseLayer.slice(targetTrackIndex + 1),
+              ];
+            });
+            resultLayersTracks.forEach(([resultTrack, targetLayerIndex, targetTrackIndex]) => {
+              draft.layers[targetLayerIndex].tracks = [
+                ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
+                resultTrack,
+                ...draft.layers[targetLayerIndex].tracks.slice(targetTrackIndex + 1),
+              ];
+            });
+          });
+          storeCurrentVisualizedData(nextState);
+        }
       }
     }
   }, [currentVisualizedData, deleteTargetKeyframes]);
@@ -509,11 +523,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     };
   }, [handleKeyPress]);
 
-  const handleDopesheetContext = (event: React.MouseEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    console.log('dopesheet context');
-  };
-
   // TP Resize 시 circle 위치 조정(진행 중)
   // useEffect(() => {
   //   const rescaleCircleX = (event: any) => {
@@ -526,14 +535,62 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   //   };
   // }, [timelineWrapperRef]);
 
+  const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
+
+  const handleDopsheetContextMenu = ({
+    top,
+    left,
+    e,
+  }: {
+    top: number;
+    left: number;
+    e?: MouseEvent;
+  }) => {
+    e?.preventDefault();
+    storeContextMenuInfo({
+      isShow: true,
+      top,
+      left,
+      data: [
+        {
+          key: 'edit',
+          value: 'Edit Keyframe',
+          isSelected: false,
+          isDisabled: selectedBaseDopeSheets.length === 0 && selectedLayerDopeSheets.length === 0,
+        },
+        {
+          key: 'delete',
+          value: 'Delete Keyframe',
+          isSelected: false,
+          isDisabled: deleteTargetKeyframes.length === 0,
+        },
+      ],
+      onClick: (key) => {
+        switch (key) {
+          case 'edit':
+            if (selectedBaseDopeSheets.length !== 0) {
+              handleUpdateKeyframeToBase();
+            }
+            if (selectedLayerDopeSheets.length !== 0) {
+              handleUpdateKeyframeToLayer();
+            }
+            storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
+            break;
+          case 'delete':
+            handleDeleteKeyframe();
+            storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
+            break;
+          default:
+            break;
+        }
+      },
+    });
+  };
+  useContextMenu({ targetRef: dopeSheetRef, event: handleDopsheetContextMenu });
+
   return (
     <>
-      <div
-        className={cx('dopesheet-wrapper')}
-        id="dopesheet-wrapper"
-        ref={dopeSheetRef}
-        onContextMenu={handleDopesheetContext}
-      >
+      <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
         <div className={cx('circle-group-wrapper')}>
           {_.map(dopeSheetList, (dopeSheet) => {
             return (
