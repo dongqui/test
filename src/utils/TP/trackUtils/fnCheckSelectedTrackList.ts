@@ -2,7 +2,7 @@ import { TPDopeSheet, TPLastBone } from 'types/TP';
 import { fnSelectTrackList, fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { TP_TRACK_INDEX } from 'utils/const';
 
-interface Params {
+interface FnCheckSelectedTrackList {
   clickedTrackList: number[];
   lastBoneList: TPLastBone[];
   trackIndex: number;
@@ -14,7 +14,7 @@ const fnCheckSelectedTrackList = ({
   clickedTrackList,
   lastBoneList,
   trackIndex,
-}: Params): Return => {
+}: FnCheckSelectedTrackList): Return => {
   const {
     LAYER,
     POSITION_A,

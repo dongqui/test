@@ -4,7 +4,7 @@ import { fnGetSummaryTimes, fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/edi
 import { ShootLayerType, ShootTrackType } from 'types';
 import { TPDopeSheet } from 'types/TP';
 
-interface Params {
+interface FnSetDefaultDopeSheetList {
   baseLayer: ShootTrackType[];
   layers: ShootLayerType[];
 }
@@ -21,7 +21,7 @@ interface SetBoneTrackStatus {
   layer: ShootTrackType[];
 }
 
-const fnSetDefaultDopeSheetList = ({ baseLayer, layers }: Params) => {
+const fnSetDefaultDopeSheetList = ({ baseLayer, layers }: FnSetDefaultDopeSheetList) => {
   const dopeSheetList: TPDopeSheet[] = [];
   const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
   const baseTimes = fnGetLayerTimes({ targetLayer: baseLayer });
