@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { TimeBar } from 'components/TimeBar';
-import { storeRecordingData } from 'lib/store';
+import { storeBarPositionX, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
@@ -30,6 +30,7 @@ const coordinateX = ({ x }: { x: number }) => {
 };
 const CutEditComponent: React.FC<CutEditProps> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
+  const barPositionX = useReactiveVar(storeBarPositionX);
   const handleDrag = useCallback(
     (e, data) => {
       storeRecordingData({
@@ -38,14 +39,21 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
           ...recordingData.rangeBoxInfo,
           x: coordinateX({ x: data.x }),
           barX: coordinateBarX({
-            barX: recordingData.rangeBoxInfo.barX,
+            barX: barPositionX,
             x: recordingData.rangeBoxInfo.x,
             width: recordingData.rangeBoxInfo.width,
           }),
         },
       });
+      storeBarPositionX(
+        coordinateBarX({
+          barX: barPositionX,
+          x: recordingData.rangeBoxInfo.x,
+          width: recordingData.rangeBoxInfo.width,
+        }),
+      );
     },
-    [recordingData],
+    [barPositionX, recordingData],
   );
   const handleResize: RndResizeCallback = useCallback(
     (_e, _dir, ref, _delta, position) => {
@@ -57,14 +65,21 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
           x: coordinateX({ x: position.x }),
           y: position.y,
           barX: coordinateBarX({
-            barX: recordingData.rangeBoxInfo.barX,
+            barX: barPositionX,
             x: recordingData.rangeBoxInfo.x,
             width: recordingData.rangeBoxInfo.width,
           }),
         },
       });
+      storeBarPositionX(
+        coordinateBarX({
+          barX: barPositionX,
+          x: recordingData.rangeBoxInfo.x,
+          width: recordingData.rangeBoxInfo.width,
+        }),
+      );
     },
-    [recordingData],
+    [barPositionX, recordingData],
   );
   const handleDragBar: RndDragCallback = useCallback(
     (e, data) => {
@@ -79,6 +94,13 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
           }),
         },
       });
+      storeBarPositionX(
+        coordinateBarX({
+          barX: data.x,
+          x: recordingData.rangeBoxInfo.x,
+          width: recordingData.rangeBoxInfo.width,
+        }),
+      );
     },
     [recordingData],
   );
@@ -88,7 +110,7 @@ const CutEditComponent: React.FC<CutEditProps> = ({}) => {
         <Rnd
           dragAxis="x"
           enableResizing={false}
-          position={{ x: recordingData.rangeBoxInfo.barX, y: recordingData.rangeBoxInfo.y }}
+          position={{ x: barPositionX, y: recordingData.rangeBoxInfo.y }}
           style={{ zIndex: 100, cursor: 'pointer' }}
           onDrag={handleDragBar}
         >
