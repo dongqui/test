@@ -274,9 +274,19 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     d3.select('#play-bar-wrapper').call(dragBehavior as any);
   }, []);
 
+  const handleDopesheetContext = (event: any) => {
+    event.preventDefault();
+    console.log('dopesheet context');
+  };
+
   return (
     <>
-      <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
+      <div
+        className={cx('dopesheet-wrapper')}
+        id="dopesheet-wrapper"
+        ref={dopeSheetRef}
+        onContextMenu={handleDopesheetContext}
+      >
         <div className={cx('circle-group-wrapper')}>
           {_.map(dopeSheetList, (dopeSheet) => {
             return (

@@ -235,9 +235,13 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   const isEmptyTrack = _.isEmpty(trackList);
 
+  const handleTrackListContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+
   return (
     <>
-      <div className={cx('wrapper')} ref={trackListRef}>
+      <div className={cx('wrapper')} ref={trackListRef} onContextMenu={handleTrackListContextMenu}>
         <div className={cx('search-wrapper')}>
           <SearchInput
             className={cx('search-joint')}
