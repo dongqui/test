@@ -72,6 +72,7 @@ export const storeSkeletonHelper = makeVar<THREE.SkeletonHelper | undefined>(und
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);
+export const storeBarPositionX = makeVar<number>(0);
 // CP
 export const storeCPMode = makeVar<CPModeType>(CPModeType.property);
 export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
