@@ -1,6 +1,6 @@
 import React, { memo, useEffect } from 'react';
 import * as d3 from 'd3';
-import { v4 as uuidv4 } from 'uuid';
+import _ from 'lodash';
 import { TPDopeSheet, KeyframeData } from 'types/TP';
 import { useReactiveVar } from '@apollo/client';
 import { storeDeleteTargetKeyframes } from 'lib/store';
@@ -34,15 +34,31 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
           event.target.style.cursor = '';
         })
         .on('click', (event, data) => {
-          console.log('dopeSheetData: ', dopeSheetData);
-          const { trackName, layerKey, isLocked } = dopeSheetData;
-          if (!isLocked) {
+          const { trackName, layerKey, isLocked, isTransformTrack } = dopeSheetData;
+          if (!isLocked && isTransformTrack) {
             const keyframeData: KeyframeData = {
-              key: uuidv4(),
+              key: `${layerKey}&&${trackName}&&${data}`,
               trackName,
               layerKey,
               time: data,
             };
+            if (event.ctrlKey || event.metaKey) {
+              const targetKeyframeIndex = _.findIndex(
+                deleteTargetKeyframes,
+                (keyframe) => keyframe.key === keyframeData.key,
+              );
+              if (targetKeyframeIndex === -1) {
+                storeDeleteTargetKeyframes([...deleteTargetKeyframes, keyframeData]);
+              } else {
+                storeDeleteTargetKeyframes(
+                  _.filter(deleteTargetKeyframes, (_, idx) => idx !== targetKeyframeIndex),
+                );
+              }
+            } else {
+              if (deleteTargetKeyframes.length === 0) {
+                storeDeleteTargetKeyframes([keyframeData]);
+              }
+            }
           }
         });
     }

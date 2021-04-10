@@ -156,77 +156,47 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
     }
   }, [baseLayer, layers, skeletonHelper, updateTargetTime]);
 
-  const handleDeleteKeyframeFromBase = useCallback(() => {
-    if (deleteTargetKeyframes && baseLayer) {
-      // delete 시에는 isKeyframeSelected
-      const tpDopesheetList = storeTPDopeSheetList();
-      const selectedDopeSheets = tpDopesheetList.filter(
-        (item) =>
-          item.isSelected &&
-          // item.isKeyframeSelected && // -> isKeyframeSelected 추가되면 바꿔야 함
-          !item.isLocked &&
-          item.isTransformTrack &&
-          item.layerKey === 'baseLayer',
-      );
-      const resultTracks: [ShootTrackType, number][] = [];
-      const targetTracks = baseLayer.filter((track) =>
-        selectedDopeSheets.map((dopesheet) => dopesheet.trackName).includes(track.name),
-      );
-      targetTracks.forEach((track) => {
-        const resultTrack = fnDeleteKeyframe({ track, time: deleteTargetKeyframes });
-        const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
-        resultTracks.push([resultTrack, targetTrackIndex]);
-      });
-      const state = storeCurrentVisualizedData();
-      if (state && resultTracks.length !== 0) {
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-            draft.baseLayer = [
-              ...draft.baseLayer.slice(0, targetTrackIndex),
-              resultTrack,
-              ...draft.baseLayer.slice(targetTrackIndex + 1),
-            ];
-          });
-        });
-        storeCurrentVisualizedData(nextState);
-      }
-    }
-  }, [baseLayer, deleteTargetKeyframes]);
-
-  const handleDeleteKeyframeFromLayer = useCallback(() => {
-    if (deleteTargetKeyframes && baseLayer && layers && layers.length !== 0) {
-      const tpDopesheetList = storeTPDopeSheetList();
-      const selectedDopeSheets = tpDopesheetList.filter(
-        (item) =>
-          item.isSelected &&
-          // item.isKeyframeSelected && // -> isKeyframeSelected 추가되면 바꿔야 함
-          !item.isLocked &&
-          item.isTransformTrack &&
-          item.layerKey !== 'baseLayer',
-      );
-      const targetLayerIndex = _.findIndex(
-        layers,
-        (layer) => layer.key === selectedDopeSheets[0].layerKey,
-      );
-      if (targetLayerIndex !== -1) {
-        const resultTracks: [ShootTrackType, number][] = [];
-        const selectedDopesheetNames = selectedDopeSheets.map((dopesheet) => dopesheet.trackName);
-        const targetTracks = baseLayer.filter((track) =>
-          selectedDopesheetNames.includes(track.name),
-        );
-
-        targetTracks.forEach((track) => {
-          const resultTrack = fnDeleteKeyframe({ track, time: deleteTargetKeyframes });
-          const targetTrackIndex = _.findIndex(
-            layers[targetLayerIndex].tracks,
-            (t) => t.name === track.name,
-          );
-          resultTracks.push([resultTrack, targetTrackIndex]);
-        });
+  const handleDeleteKeyframe = useCallback(() => {
+    if (deleteTargetKeyframes && baseLayer && layers) {
+      _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
+        const { layerKey, trackName, time } = targetKeyframe;
+        const resultBaseLayerTracks: [ShootTrackType, number][] = [];
+        const resultLayersTracks: [ShootTrackType, number, number][] = [];
+        if (layerKey === 'baseLayer') {
+          const targetTrack = _.find(baseLayer, (track) => track.name === trackName);
+          if (targetTrack) {
+            const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
+            const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === targetTrack.name);
+            resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
+          }
+        } else {
+          const targetLayerIndex = _.findIndex(layers, (layer) => layer.key === layerKey);
+          if (layers.length !== 0 && targetLayerIndex !== -1) {
+            const targetTrack = _.find(
+              layers[targetLayerIndex].tracks,
+              (track) => (track.name = trackName),
+            ) as ShootTrackType;
+            if (targetTrack) {
+              const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
+              const targetTrackIndex = _.findIndex(
+                layers[targetLayerIndex].tracks,
+                (t) => t.name === targetTrack.name,
+              );
+              resultLayersTracks.push([resultTrack, targetLayerIndex, targetTrackIndex]);
+            }
+          }
+        }
         const state = storeCurrentVisualizedData();
-        if (state && resultTracks.length !== 0) {
+        if (state && (resultBaseLayerTracks.length !== 0 || resultLayersTracks.length !== 0)) {
           const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+            resultBaseLayerTracks.forEach(([resultTrack, targetTrackIndex]) => {
+              draft.baseLayer = [
+                ...draft.baseLayer.slice(0, targetTrackIndex),
+                resultTrack,
+                ...draft.baseLayer.slice(targetTrackIndex + 1),
+              ];
+            });
+            resultLayersTracks.forEach(([resultTrack, targetLayerIndex, targetTrackIndex]) => {
               draft.layers[targetLayerIndex].tracks = [
                 ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
                 resultTrack,
@@ -236,9 +206,10 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
           });
           storeCurrentVisualizedData(nextState);
         }
-      }
+      });
     }
   }, [baseLayer, deleteTargetKeyframes, layers]);
+
   // 위는 테스트용 예시 코드
   ////////////////////
 
@@ -259,20 +230,11 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
           break;
         case 'i':
         case 'ㅑ':
-          handleDeleteKeyframeFromBase();
-          break;
-        case 'o':
-        case 'ㅐ':
-          handleDeleteKeyframeFromLayer();
+          handleDeleteKeyframe();
           break;
       }
     },
-    [
-      handleDeleteKeyframeFromBase,
-      handleDeleteKeyframeFromLayer,
-      handleUpdateKeyframeToBase,
-      handleUpdateKeyframeToLayer,
-    ],
+    [handleDeleteKeyframe, handleUpdateKeyframeToBase, handleUpdateKeyframeToLayer],
   );
 
   useEffect(() => {
