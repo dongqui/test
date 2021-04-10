@@ -26,43 +26,47 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
         .join('circle')
         .attr('cx', (time) => prevXScale(time * 30))
         .attr('cy', TRACK_HEIGHT / 2)
-        .attr('r', CIRCLE_RADIUS)
-        .on('mouseenter', (event) => {
-          event.target.style.cursor = 'pointer';
-        })
-        .on('mouseout', (event) => {
-          event.target.style.cursor = '';
-        })
-        .on('click', (event, data) => {
-          const { trackName, layerKey, isLocked, isTransformTrack } = dopeSheetData;
-          if (!isLocked && isTransformTrack) {
-            const keyframeData: KeyframeData = {
-              key: `${layerKey}&&${trackName}&&${data}`,
-              trackName,
-              layerKey,
-              time: data,
-            };
-            if (event.ctrlKey || event.metaKey) {
-              const targetKeyframeIndex = _.findIndex(
-                deleteTargetKeyframes,
-                (keyframe) => keyframe.key === keyframeData.key,
-              );
-              if (targetKeyframeIndex === -1) {
-                storeDeleteTargetKeyframes([...deleteTargetKeyframes, keyframeData]);
-              } else {
-                storeDeleteTargetKeyframes(
-                  _.filter(deleteTargetKeyframes, (_, idx) => idx !== targetKeyframeIndex),
-                );
-              }
+        .attr('r', CIRCLE_RADIUS);
+    }
+  }, [circleGroupRef, dopeSheetData, prevXScale]);
+
+  useEffect(() => {
+    d3.selectAll('circle')
+      .on('mouseenter', (event) => {
+        event.target.style.cursor = 'pointer';
+      })
+      .on('mouseout', (event) => {
+        event.target.style.cursor = '';
+      })
+      .on('click', (event, data) => {
+        const { trackName, layerKey, isLocked, isTransformTrack } = dopeSheetData;
+        if (!isLocked && isTransformTrack) {
+          const keyframeData: KeyframeData = {
+            key: `${layerKey}&&${trackName}&&${data}`,
+            trackName,
+            layerKey,
+            time: data,
+          };
+          if (event.ctrlKey || event.metaKey) {
+            const targetKeyframeIndex = _.findIndex(
+              deleteTargetKeyframes,
+              (keyframe) => keyframe.key === keyframeData.key,
+            );
+            if (targetKeyframeIndex === -1) {
+              storeDeleteTargetKeyframes([...deleteTargetKeyframes, keyframeData]);
             } else {
-              if (deleteTargetKeyframes.length === 0) {
-                storeDeleteTargetKeyframes([keyframeData]);
-              }
+              storeDeleteTargetKeyframes(
+                _.filter(deleteTargetKeyframes, (_, idx) => idx !== targetKeyframeIndex),
+              );
+            }
+          } else {
+            if (deleteTargetKeyframes.length === 0) {
+              storeDeleteTargetKeyframes([keyframeData]);
             }
           }
-        });
-    }
-  }, [circleGroupRef, deleteTargetKeyframes, dopeSheetData, prevXScale]);
+        }
+      });
+  }, [deleteTargetKeyframes, dopeSheetData]);
 
   return <></>;
 };
