@@ -45,7 +45,7 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
             key: `${layerKey}&&${trackName}&&${data}`,
             trackName,
             layerKey,
-            time: data,
+            time: data as number,
           };
           if (event.ctrlKey || event.metaKey) {
             const targetKeyframeIndex = _.findIndex(
