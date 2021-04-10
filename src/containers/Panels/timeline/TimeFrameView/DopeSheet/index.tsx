@@ -281,6 +281,18 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     d3.select('#play-bar-wrapper').call(dragBehavior as any);
   }, []);
 
+  // TP Resize 시 circle 위치 조정(진행 중)
+  // useEffect(() => {
+  //   const rescaleCircleX = (event: any) => {
+  //     console.log('resize', event);
+  //   };
+  //   window.addEventListener('resize', rescaleCircleX);
+
+  //   return () => {
+  //     window.removeEventListener('resize', rescaleCircleX);
+  //   };
+  // }, [timelineWrapperRef]);
+
   return (
     <>
       <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>

@@ -25,27 +25,30 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
         .join('circle')
         .attr('cx', (time) => prevXScale(time * 30))
         .attr('cy', TRACK_HEIGHT / 2)
-        .attr('r', CIRCLE_RADIUS)
-        .on('mouseenter', (event) => {
-          event.target.style.cursor = 'pointer';
-        })
-        .on('mouseout', (event) => {
-          event.target.style.cursor = '';
-        })
-        .on('click', (event, data) => {
-          console.log('dopeSheetData: ', dopeSheetData);
-          if (event.ctrlKey || event.metaKey) {
-            if (deleteTargetTime && data === deleteTargetTime) {
-              storeDeleteTargetTime(undefined);
-            }
-          } else {
-            if (!deleteTargetTime || (deleteTargetTime && data !== deleteTargetTime)) {
-              storeDeleteTargetTime(data);
-            }
-          }
-        });
+        .attr('r', CIRCLE_RADIUS);
     }
-  }, [circleGroupRef, deleteTargetTime, dopeSheetData, prevXScale]);
+  }, [circleGroupRef, dopeSheetData, prevXScale]);
+
+  useEffect(() => {
+    d3.selectAll('circle')
+      .on('mouseenter', (event) => {
+        event.target.style.cursor = 'pointer';
+      })
+      .on('mouseout', (event) => {
+        event.target.style.cursor = '';
+      })
+      .on('click', (event, data) => {
+        if (event.ctrlKey || event.metaKey) {
+          if (deleteTargetTime && data === deleteTargetTime) {
+            storeDeleteTargetTime(undefined);
+          }
+        } else {
+          if (!deleteTargetTime || (deleteTargetTime && data !== deleteTargetTime)) {
+            storeDeleteTargetTime(data as number);
+          }
+        }
+      });
+  }, [deleteTargetTime]);
 
   return <></>;
 };

@@ -154,7 +154,6 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
       const nextOrder = fnGetSmallestNewNumber(defaultTypeOrders);
       const newLayer = fnGetNewLayer({ name: `layer${nextOrder}`, bones: skeletonHelper.bones });
       const state = storeCurrentVisualizedData();
-      console.log('newLayer', newLayer);
       if (state) {
         const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
           draft?.layers.push(newLayer);

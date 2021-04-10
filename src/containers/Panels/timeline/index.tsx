@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect } from 'react';
+import React, { memo, useCallback, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import {
@@ -21,6 +21,7 @@ import {
   fnUpdateKeyframeToLayer,
   fnDeleteKeyframe,
 } from 'utils/TP/editingUtils';
+import { fnSetDefaultDopeSheetList } from 'utils/TP/trackUtils';
 // import MiddleBar from 'containers/MiddleBar';
 import MiddleBar from 'containers/New_MiddleBar';
 import { CurrentVisualizedDataType, ShootLayerType, ShootTrackType } from 'types';
@@ -461,6 +462,66 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
       storeTPDopeSheetList([]);
     };
   }, [baseLayer]);
+
+  // base layer, layers 변경 로직 리팩토링 중
+  // const test = useRef<ShootTrackType[]>([]);
+  // const dopeSheetList = storeTPDopeSheetList();
+  // // Dope Sheet Status 리스트 가공
+  // useEffect(() => {
+  //   if (baseLayer && layers) {
+  //     console.log(_.isEqual(test.current, baseLayer), test.current, baseLayer);
+  //     if (dopeSheetList.length && _.isEqual(test.current, dopeSheetList)) {
+  //       console.log('heelo');
+  //     } else {
+  //       const defaultDopeSheetList = fnSetDefaultDopeSheetList({ baseLayer, layers });
+  //       storeTPDopeSheetList(defaultDopeSheetList);
+  //       test.current = baseLayer;
+  //     }
+  //   }
+  //   return () => {
+  //     storeTPDopeSheetList([]);
+  //   };
+  // }, [baseLayer]);
+
+  // ///////////////////////////////////////////////////////
+  // const trackNameList = useReactiveVar(storeTPTrackNameList);
+  // const dopeSheetListtt = useReactiveVar(storeTPDopeSheetList);
+  // const lastBoneList = useReactiveVar(storeTPLastBoneList);
+
+  // // track name list에 추가 된 레이어 적용
+  // useEffect(() => {
+  //   if (baseLayer?.length && layers?.length) {
+  //     console.log('layers', layers);
+  //     const { layerIndex: lastLayerIndex } = lastBoneList[lastBoneList.length - 1];
+  //     const increaseIndex = 10000 * layers.length;
+  //     const summaryTrackChildren = trackNameList[0].childrenTrackList;
+  //     const baseLayerChildren = summaryTrackChildren[0].childrenTrackList;
+  //     let curBoneIndex = 0;
+
+  //     const layerChildren = _.map(baseLayerChildren, (boneTrack) => {
+  //       return {
+  //         ...boneTrack,
+  //         trackIndex: boneTrack.trackIndex + increaseIndex,
+  //         childrenTrackList: _.map(boneTrack.childrenTrackList, (transformTrack, index) => {
+  //           const transformIndex = transformTrack.trackIndex + increaseIndex;
+  //           if (index === 2 && curBoneIndex < transformIndex) {
+  //             curBoneIndex = transformIndex;
+  //           }
+  //           return { ...transformTrack, trackIndex: transformIndex };
+  //         }),
+  //       };
+  //     });
+
+  //     // new layer 추가
+  //     const newLayer = {
+  //       name: layers[layers.length - 1].name, // 이름 명명 적용 예정
+  //       isOpenedChildrenTrack: false,
+  //       childrenTrackList: layerChildren,
+  //       trackIndex: lastLayerIndex + 10000,
+  //     };
+  //   }
+  // }, [layers]);
+  // ///////////////////////////////////////////////////////
 
   return (
     <>
