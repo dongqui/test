@@ -1,12 +1,24 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import { storeTPDopeSheetList } from 'lib/store';
+import {
+  storeCurrentVisualizedData,
+  storeDeleteTargetKeyframes,
+  storeSkeletonHelper,
+  storeTPDopeSheetList,
+} from 'lib/store';
 import CircleGroup from './circleGroup';
 import PlayBar from './playBar';
 import styles from './index.module.scss';
+import { CurrentVisualizedDataType, ShootTrackType } from 'types';
+import {
+  fnDeleteKeyframe,
+  fnUpdateKeyframeToBase,
+  fnUpdateKeyframeToLayer,
+} from 'utils/TP/editingUtils';
+import produce from 'immer';
 interface Props {
   timelineWrapperRef: React.RefObject<HTMLDivElement>;
 }
@@ -281,7 +293,223 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     d3.select('#play-bar-wrapper').call(dragBehavior as any);
   }, []);
 
-  const handleDopesheetContext = (event: any) => {
+  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
+  const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
+
+  const handleUpdateKeyframeToBase = useCallback(() => {
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      if (updateTargetTime && baseLayer && skeletonHelper) {
+        const tpDopesheetList = storeTPDopeSheetList();
+        const selectedDopeSheets = tpDopesheetList.filter(
+          (item) =>
+            item.isSelected &&
+            !item.isLocked &&
+            item.isTransformTrack &&
+            item.layerKey === 'baseLayer',
+        );
+        const selectedDopesheetNames = selectedDopeSheets.map((dopesheet) => dopesheet.trackName);
+        const resultTracks: [ShootTrackType, number][] = [];
+        const targetTracks = baseLayer.filter((track) =>
+          selectedDopesheetNames.includes(track.name),
+        );
+        targetTracks.forEach((track) => {
+          const [boneName, propertyName] = track.name.split('.');
+          const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
+          if (bone) {
+            let values;
+            if (propertyName === 'position') {
+              values = { x: bone.position.x, y: bone.position.y, z: bone.position.z };
+            } else if (propertyName === 'rotation') {
+              values = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+            } else if (propertyName === 'scale') {
+              values = { x: bone.scale.x, y: bone.scale.y, z: bone.scale.z };
+            }
+            if (values) {
+              const resultTrack = fnUpdateKeyframeToBase({ track, time: updateTargetTime, values });
+              const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
+              resultTracks.push([resultTrack, targetTrackIndex]);
+            }
+          }
+        });
+        const state = storeCurrentVisualizedData();
+        if (state && resultTracks.length !== 0) {
+          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+            resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+              draft.baseLayer = [
+                ...draft.baseLayer.slice(0, targetTrackIndex),
+                resultTrack,
+                ...draft.baseLayer.slice(targetTrackIndex + 1),
+              ];
+            });
+          });
+          storeCurrentVisualizedData(nextState);
+        }
+      }
+    }
+  }, [currentVisualizedData, skeletonHelper]);
+
+  const handleUpdateKeyframeToLayer = useCallback(() => {
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      if (updateTargetTime && baseLayer && layers && layers.length !== 0 && skeletonHelper) {
+        const tpDopesheetList = storeTPDopeSheetList();
+        const selectedDopeSheets = tpDopesheetList.filter(
+          (item) =>
+            item.isSelected &&
+            !item.isLocked &&
+            item.isTransformTrack &&
+            item.layerKey !== 'baseLayer',
+        );
+        const targetLayerIndex = _.findIndex(
+          layers,
+          (layer) => layer.key === selectedDopeSheets[0].layerKey,
+        );
+        if (targetLayerIndex !== -1) {
+          const resultTracks: [ShootTrackType, number][] = [];
+          const selectedDopesheetNames = selectedDopeSheets.map((dopesheet) => dopesheet.trackName);
+          const targetTracks = baseLayer.filter((track) =>
+            selectedDopesheetNames.includes(track.name),
+          );
+
+          targetTracks.forEach((track) => {
+            const [boneName, propertyName] = track.name.split('.');
+            const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
+            if (bone) {
+              let values;
+              if (propertyName === 'position') {
+                values = { x: bone.position.x, y: bone.position.y, z: bone.position.z };
+              } else if (propertyName === 'rotation') {
+                values = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+              } else if (propertyName === 'scale') {
+                values = { x: bone.scale.x, y: bone.scale.y, z: bone.scale.z };
+              }
+              if (values) {
+                const resultTrack = fnUpdateKeyframeToLayer({
+                  track,
+                  currentLayerKey: layers[targetLayerIndex].key,
+                  baseLayer,
+                  layers,
+                  time: updateTargetTime,
+                  values,
+                });
+                const targetTrackIndex = _.findIndex(
+                  layers[targetLayerIndex].tracks,
+                  (t) => t.name === track.name,
+                );
+                resultTracks.push([resultTrack, targetTrackIndex]);
+              }
+            }
+          });
+          const state = storeCurrentVisualizedData();
+          if (state && resultTracks.length !== 0) {
+            const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+              resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+                draft.layers[targetLayerIndex].tracks = [
+                  ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
+                  resultTrack,
+                  ...draft.layers[targetLayerIndex].tracks.slice(targetTrackIndex + 1),
+                ];
+              });
+            });
+            storeCurrentVisualizedData(nextState);
+          }
+        }
+      }
+    }
+  }, [currentVisualizedData, skeletonHelper]);
+
+  const handleDeleteKeyframe = useCallback(() => {
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      if (deleteTargetKeyframes && baseLayer && layers) {
+        _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
+          const { layerKey, trackName, time } = targetKeyframe;
+          const resultBaseLayerTracks: [ShootTrackType, number][] = [];
+          const resultLayersTracks: [ShootTrackType, number, number][] = [];
+          if (layerKey === 'baseLayer') {
+            const targetTrack = _.find(baseLayer, (track) => track.name === trackName);
+            if (targetTrack) {
+              const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
+              const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === targetTrack.name);
+              resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
+            }
+          } else {
+            const targetLayerIndex = _.findIndex(layers, (layer) => layer.key === layerKey);
+            if (layers.length !== 0 && targetLayerIndex !== -1) {
+              const targetTrack = _.find(
+                layers[targetLayerIndex].tracks,
+                (track) => (track.name = trackName),
+              ) as ShootTrackType;
+              if (targetTrack) {
+                const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
+                const targetTrackIndex = _.findIndex(
+                  layers[targetLayerIndex].tracks,
+                  (t) => t.name === targetTrack.name,
+                );
+                resultLayersTracks.push([resultTrack, targetLayerIndex, targetTrackIndex]);
+              }
+            }
+          }
+          const state = storeCurrentVisualizedData();
+          if (state && (resultBaseLayerTracks.length !== 0 || resultLayersTracks.length !== 0)) {
+            const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+              resultBaseLayerTracks.forEach(([resultTrack, targetTrackIndex]) => {
+                draft.baseLayer = [
+                  ...draft.baseLayer.slice(0, targetTrackIndex),
+                  resultTrack,
+                  ...draft.baseLayer.slice(targetTrackIndex + 1),
+                ];
+              });
+              resultLayersTracks.forEach(([resultTrack, targetLayerIndex, targetTrackIndex]) => {
+                draft.layers[targetLayerIndex].tracks = [
+                  ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
+                  resultTrack,
+                  ...draft.layers[targetLayerIndex].tracks.slice(targetTrackIndex + 1),
+                ];
+              });
+            });
+            storeCurrentVisualizedData(nextState);
+          }
+        });
+      }
+    }
+  }, [currentVisualizedData, deleteTargetKeyframes]);
+
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+      switch (event.key) {
+        case 'y':
+        case 'ㅛ':
+          handleUpdateKeyframeToBase();
+          break;
+        case 'u':
+        case 'ㅕ':
+          handleUpdateKeyframeToLayer();
+          break;
+        case 'i':
+        case 'ㅑ':
+          handleDeleteKeyframe();
+          break;
+      }
+    },
+    [handleDeleteKeyframe, handleUpdateKeyframeToBase, handleUpdateKeyframeToLayer],
+  );
+
+  useEffect(() => {
+    document.addEventListener('keypress', handleKeyPress);
+    return () => {
+      document.removeEventListener('keypress', handleKeyPress);
+    };
+  }, [handleKeyPress]);
+
+  const handleDopesheetContext = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     console.log('dopesheet context');
   };
