@@ -154,7 +154,6 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
       const nextOrder = fnGetSmallestNewNumber(defaultTypeOrders);
       const newLayer = fnGetNewLayer({ name: `layer${nextOrder}`, bones: skeletonHelper.bones });
       const state = storeCurrentVisualizedData();
-      console.log('newLayer', newLayer);
       if (state) {
         const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
           draft?.layers.push(newLayer);
@@ -235,9 +234,13 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   const isEmptyTrack = _.isEmpty(trackList);
 
+  const handleTrackListContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+
   return (
     <>
-      <div className={cx('wrapper')} ref={trackListRef}>
+      <div className={cx('wrapper')} ref={trackListRef} onContextMenu={handleTrackListContextMenu}>
         <div className={cx('search-wrapper')}>
           <SearchInput
             className={cx('search-joint')}

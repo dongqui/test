@@ -1,8 +1,9 @@
 import React, { memo, useEffect } from 'react';
 import * as d3 from 'd3';
-import { TPDopeSheet } from 'types/TP';
+import _ from 'lodash';
+import { TPDopeSheet, KeyframeData } from 'types/TP';
 import { useReactiveVar } from '@apollo/client';
-import { storeDeleteTargetTime } from 'lib/store';
+import { storeDeleteTargetKeyframes } from 'lib/store';
 
 interface Props {
   circleGroupRef: React.RefObject<SVGSVGElement>;
@@ -15,7 +16,7 @@ const CIRCLE_RADIUS = 4; // 원 반지름 크기
 
 const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale }) => {
   // circle 생성
-  const deleteTargetTime = useReactiveVar(storeDeleteTargetTime);
+  const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
 
   useEffect(() => {
     if (circleGroupRef.current) {
@@ -25,27 +26,47 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
         .join('circle')
         .attr('cx', (time) => prevXScale(time * 30))
         .attr('cy', TRACK_HEIGHT / 2)
-        .attr('r', CIRCLE_RADIUS)
-        .on('mouseenter', (event) => {
-          event.target.style.cursor = 'pointer';
-        })
-        .on('mouseout', (event) => {
-          event.target.style.cursor = '';
-        })
-        .on('click', (event, data) => {
-          console.log('dopeSheetData: ', dopeSheetData);
+        .attr('r', CIRCLE_RADIUS);
+    }
+  }, [circleGroupRef, dopeSheetData, prevXScale]);
+
+  useEffect(() => {
+    d3.selectAll('circle')
+      .on('mouseenter', (event) => {
+        event.target.style.cursor = 'pointer';
+      })
+      .on('mouseout', (event) => {
+        event.target.style.cursor = '';
+      })
+      .on('click', (event, data) => {
+        const { trackName, layerKey, isLocked, isTransformTrack } = dopeSheetData;
+        if (!isLocked && isTransformTrack) {
+          const keyframeData: KeyframeData = {
+            key: `${layerKey}&&${trackName}&&${data}`,
+            trackName,
+            layerKey,
+            time: data as number,
+          };
           if (event.ctrlKey || event.metaKey) {
-            if (deleteTargetTime && data === deleteTargetTime) {
-              storeDeleteTargetTime(undefined);
+            const targetKeyframeIndex = _.findIndex(
+              deleteTargetKeyframes,
+              (keyframe) => keyframe.key === keyframeData.key,
+            );
+            if (targetKeyframeIndex === -1) {
+              storeDeleteTargetKeyframes([...deleteTargetKeyframes, keyframeData]);
+            } else {
+              storeDeleteTargetKeyframes(
+                _.filter(deleteTargetKeyframes, (_, idx) => idx !== targetKeyframeIndex),
+              );
             }
           } else {
-            if (!deleteTargetTime || (deleteTargetTime && data !== deleteTargetTime)) {
-              storeDeleteTargetTime(data);
+            if (deleteTargetKeyframes.length === 0) {
+              storeDeleteTargetKeyframes([keyframeData]);
             }
           }
-        });
-    }
-  }, [circleGroupRef, deleteTargetTime, dopeSheetData, prevXScale]);
+        }
+      });
+  }, [deleteTargetKeyframes, dopeSheetData]);
 
   return <></>;
 };

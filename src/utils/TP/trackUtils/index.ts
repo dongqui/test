@@ -9,3 +9,4 @@ export { default as fnSelectTransformTrack } from './fnSelectTransformTrack';
 export { default as fnSelectTrackList } from './fnSelectTrackList';
 
 export { default as fnGetBinarySearch } from './fnGetBinarySearch';
+export { default as fnSetDefaultDopeSheetList } from './fnSetDefaultDopeSheetList';

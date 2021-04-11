@@ -6,6 +6,8 @@
   min-height: 100%;
   height: fit-content;
   border-right: 2px solid $gray300;
+  background-color: $panelColor;
+  z-index: 4;
 }
 
 .search-wrapper {
