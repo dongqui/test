@@ -3,7 +3,8 @@ export type TPDopeSheetStatus =
   | 'isLocked'
   | 'isExcludedRendering'
   | 'isClickedParentTrack'
-  | 'isFiltered';
+  | 'isFiltered'
+  | 'times';
 
 export interface TPTrackName {
   childrenTrackList: TPTrackName[]; // 하위 트랙 리스트
