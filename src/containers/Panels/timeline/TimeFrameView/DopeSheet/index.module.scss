@@ -3,7 +3,6 @@
   display: flex;
   flex-direction: column;
   width: calc(100% - 248px);
-  // background: #151515;
 
   .x-axis-wrapper {
     position: fixed;
@@ -11,7 +10,6 @@
     height: 48px;
     border-bottom: 2px solid #303030;
     z-index: 1;
-    // background: #151515;
   }
 
   .circle-group-wrapper {
@@ -35,6 +33,7 @@
 
   line {
     stroke: #303030;
+    transform: translate3d(0, 24px, 0);
   }
 }
 
@@ -43,11 +42,11 @@
   z-index: 3;
 
   path {
-    transform: translate(0, -108px);
+    transform: translate3d(0, -108px, 0);
     cursor: pointer;
   }
 
   rect {
-    transform: translate(10px, -85px);
+    transform: translate3d(10px, -85px, 0);
   }
 }

@@ -126,6 +126,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           .style('fill', '#282727'),
       )
       .call(xAxisPosition.current);
+    d3.selectAll('.x-axis-g line').attr('y2', -24);
 
     // 재생 바 transform 설정
     const xScaleLinear = prevXScale.current as d3ScaleLinear;
@@ -158,6 +159,8 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // 이전 값으로 scale 적용
       renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear));
       xScale.current = rescaleX; // rescale한 값으로 갱신
+
+      d3.selectAll('.x-axis-g line').attr('y2', -24);
 
       // grid line 조정
       d3.selectAll('.grid-line').remove();
