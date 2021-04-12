@@ -27,6 +27,7 @@ import { ModalInput } from 'components/Modal/ModalInput';
 import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
+import { useLoading } from 'hooks/common/useLoading';
 
 const ModalWrapper = styled.div`
   position: absolute;
@@ -43,6 +44,7 @@ const ShootPage: FunctionComponent = () => {
   const pageInfo = useReactiveVar(storePageInfo);
   const recordingData = useReactiveVar(storeRecordingData);
   const contextMenuRef = useRef<HTMLDivElement | any>(null);
+  const { setLoading } = useLoading();
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       storeRecordingData({ ...recordingData, motionName: e.target.value });
@@ -51,7 +53,8 @@ const ShootPage: FunctionComponent = () => {
   );
   const onClick = useCallback(
     async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      storeModalInfo({ ...modalInfo, type: MODAL_TYPES.loading });
+      storeModalInfo({ ...modalInfo, isShow: false });
+      setLoading(true);
       const { error, msg, result } = await api.uploadFileToMotionData({
         url: `${pageInfo?.videoUrl}`,
         type: `${pageInfo.extension ?? 'mp4'}`,
@@ -77,15 +80,17 @@ const ShootPage: FunctionComponent = () => {
         {
           key,
           type: FILE_TYPES.motion,
-          name: recordingData.motionName,
+          name: _.isEmpty(recordingData?.motionName)
+            ? 'Exported motion'
+            : recordingData?.motionName,
           parentKey: ROOT_FOLDER_NAME,
           baseLayer: result?.data?.result
             ? fnQuaternionToEulerTracks({ quaternionTracks: result?.data?.result })
             : [],
           layers: [],
+          isExportedMotion: true,
         },
       ];
-      storeModalInfo({ ...modalInfo, isShow: false });
       storeLpData(_.concat(lpData, newData));
       storePageInfo({ page: PAGE_NAMES.shoot });
     },
@@ -98,6 +103,7 @@ const ShootPage: FunctionComponent = () => {
       recordingData.motionName,
       recordingData.rangeBoxInfo.width,
       recordingData.rangeBoxInfo.x,
+      setLoading,
     ],
   );
   const onClickConfirm = useCallback(() => {
@@ -140,16 +146,6 @@ const ShootPage: FunctionComponent = () => {
           {_.isEqual(modalInfo.type, MODAL_TYPES.confirm) && (
             <ModalWrapper>
               <Modal msg={modalInfo.msg} onClick={onClickConfirm} />
-            </ModalWrapper>
-          )}
-          {_.isEqual(modalInfo.type, MODAL_TYPES.loading) && (
-            <ModalWrapper>
-              <ModalLoading
-                msg="영상에서 이미지를 추출하고 있습니다."
-                totalTime={Math.round(recordingData.duration * 5)}
-                isActive={true}
-                onCancel={onCancelLoading}
-              />
             </ModalWrapper>
           )}
           {_.isEqual(modalInfo.type, MODAL_TYPES.input) && (

@@ -1,14 +1,7 @@
-import React, { memo, useCallback, useEffect } from 'react';
+import React, { memo, useCallback, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import {
-  storeTPTrackNameList,
-  storeTPDopeSheetList,
-  storeTPLastBoneList,
-  storeSkeletonHelper,
-  storeCurrentVisualizedData,
-  storeDeleteTargetTime,
-} from 'lib/store';
+import { storeTPTrackNameList, storeTPDopeSheetList, storeTPLastBoneList } from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
 import { TPTrackName, TPDopeSheet, TPLastBone } from 'types/TP';
@@ -21,11 +14,10 @@ import {
   fnUpdateKeyframeToLayer,
   fnDeleteKeyframe,
 } from 'utils/TP/editingUtils';
+import { fnSetDefaultDopeSheetList } from 'utils/TP/trackUtils';
 // import MiddleBar from 'containers/MiddleBar';
 import MiddleBar from 'containers/New_MiddleBar';
-import { CurrentVisualizedDataType, ShootLayerType, ShootTrackType } from 'types';
-import { useReactiveVar } from '@apollo/client';
-import produce from 'immer';
+import { ShootLayerType, ShootTrackType } from 'types';
 
 const cx = classNames.bind(styles);
 
@@ -35,255 +27,6 @@ interface Props {
 }
 
 const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
-  //////////////////////
-  // 아래는 테스트용 예시 코드
-  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
-  // const updateTargetTime = 0.033333;
-  const deleteTargetTime = useReactiveVar(storeDeleteTargetTime);
-
-  const updateTargetTime = deleteTargetTime; // 재생바로 시간 특정할 수 있어지면 삭제 필요
-
-  const handleUpdateKeyframeToBase = useCallback(() => {
-    if (updateTargetTime && baseLayer && skeletonHelper) {
-      const tpDopesheetList = storeTPDopeSheetList();
-      const selectedDopeSheets = tpDopesheetList.filter(
-        (item) =>
-          item.isSelected &&
-          !item.isLocked &&
-          item.isTransformTrack &&
-          item.layerKey === 'baseLayer',
-      );
-      const selectedDopesheetNames = selectedDopeSheets.map((dopesheet) => dopesheet.trackName);
-      const resultTracks: [ShootTrackType, number][] = [];
-      const targetTracks = baseLayer.filter((track) => selectedDopesheetNames.includes(track.name));
-      targetTracks.forEach((track) => {
-        const [boneName, propertyName] = track.name.split('.');
-        const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
-        if (bone) {
-          let values;
-          if (propertyName === 'position') {
-            values = { x: bone.position.x, y: bone.position.y, z: bone.position.z };
-          } else if (propertyName === 'rotation') {
-            values = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
-          } else if (propertyName === 'scale') {
-            values = { x: bone.scale.x, y: bone.scale.y, z: bone.scale.z };
-          }
-          if (values) {
-            const resultTrack = fnUpdateKeyframeToBase({ track, time: updateTargetTime, values });
-            const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
-            resultTracks.push([resultTrack, targetTrackIndex]);
-          }
-        }
-      });
-      const state = storeCurrentVisualizedData();
-      if (state && resultTracks.length !== 0) {
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-            draft.baseLayer = [
-              ...draft.baseLayer.slice(0, targetTrackIndex),
-              resultTrack,
-              ...draft.baseLayer.slice(targetTrackIndex + 1),
-            ];
-          });
-        });
-        storeCurrentVisualizedData(nextState);
-      }
-    }
-  }, [baseLayer, skeletonHelper, updateTargetTime]);
-
-  const handleUpdateKeyframeToLayer = useCallback(() => {
-    if (updateTargetTime && baseLayer && layers && layers.length !== 0 && skeletonHelper) {
-      const tpDopesheetList = storeTPDopeSheetList();
-      const selectedDopeSheets = tpDopesheetList.filter(
-        (item) =>
-          item.isSelected &&
-          !item.isLocked &&
-          item.isTransformTrack &&
-          item.layerKey !== 'baseLayer',
-      );
-      const targetLayerIndex = _.findIndex(
-        layers,
-        (layer) => layer.key === selectedDopeSheets[0].layerKey,
-      );
-      if (targetLayerIndex !== -1) {
-        const resultTracks: [ShootTrackType, number][] = [];
-        const selectedDopesheetNames = selectedDopeSheets.map((dopesheet) => dopesheet.trackName);
-        const targetTracks = baseLayer.filter((track) =>
-          selectedDopesheetNames.includes(track.name),
-        );
-
-        targetTracks.forEach((track) => {
-          const [boneName, propertyName] = track.name.split('.');
-          const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
-          if (bone) {
-            let values;
-            if (propertyName === 'position') {
-              values = { x: bone.position.x, y: bone.position.y, z: bone.position.z };
-            } else if (propertyName === 'rotation') {
-              values = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
-            } else if (propertyName === 'scale') {
-              values = { x: bone.scale.x, y: bone.scale.y, z: bone.scale.z };
-            }
-            if (values) {
-              const resultTrack = fnUpdateKeyframeToLayer({
-                track,
-                currentLayerKey: layers[targetLayerIndex].key,
-                baseLayer,
-                layers,
-                time: updateTargetTime,
-                values,
-              });
-              const targetTrackIndex = _.findIndex(
-                layers[targetLayerIndex].tracks,
-                (t) => t.name === track.name,
-              );
-              resultTracks.push([resultTrack, targetTrackIndex]);
-            }
-          }
-        });
-        const state = storeCurrentVisualizedData();
-        if (state && resultTracks.length !== 0) {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-              draft.layers[targetLayerIndex].tracks = [
-                ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
-                resultTrack,
-                ...draft.layers[targetLayerIndex].tracks.slice(targetTrackIndex + 1),
-              ];
-            });
-          });
-          storeCurrentVisualizedData(nextState);
-        }
-      }
-    }
-  }, [baseLayer, layers, skeletonHelper, updateTargetTime]);
-
-  const handleDeleteKeyframeFromBase = useCallback(() => {
-    if (deleteTargetTime && baseLayer) {
-      // delete 시에는 isKeyframeSelected
-      const tpDopesheetList = storeTPDopeSheetList();
-      const selectedDopeSheets = tpDopesheetList.filter(
-        (item) =>
-          item.isSelected &&
-          // item.isKeyframeSelected && // -> isKeyframeSelected 추가되면 바꿔야 함
-          !item.isLocked &&
-          item.isTransformTrack &&
-          item.layerKey === 'baseLayer',
-      );
-      const resultTracks: [ShootTrackType, number][] = [];
-      const targetTracks = baseLayer.filter((track) =>
-        selectedDopeSheets.map((dopesheet) => dopesheet.trackName).includes(track.name),
-      );
-      targetTracks.forEach((track) => {
-        const resultTrack = fnDeleteKeyframe({ track, time: deleteTargetTime });
-        const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
-        resultTracks.push([resultTrack, targetTrackIndex]);
-      });
-      const state = storeCurrentVisualizedData();
-      if (state && resultTracks.length !== 0) {
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-            draft.baseLayer = [
-              ...draft.baseLayer.slice(0, targetTrackIndex),
-              resultTrack,
-              ...draft.baseLayer.slice(targetTrackIndex + 1),
-            ];
-          });
-        });
-        storeCurrentVisualizedData(nextState);
-      }
-    }
-  }, [baseLayer, deleteTargetTime]);
-
-  const handleDeleteKeyframeFromLayer = useCallback(() => {
-    if (deleteTargetTime && baseLayer && layers && layers.length !== 0) {
-      const tpDopesheetList = storeTPDopeSheetList();
-      const selectedDopeSheets = tpDopesheetList.filter(
-        (item) =>
-          item.isSelected &&
-          // item.isKeyframeSelected && // -> isKeyframeSelected 추가되면 바꿔야 함
-          !item.isLocked &&
-          item.isTransformTrack &&
-          item.layerKey !== 'baseLayer',
-      );
-      const targetLayerIndex = _.findIndex(
-        layers,
-        (layer) => layer.key === selectedDopeSheets[0].layerKey,
-      );
-      if (targetLayerIndex !== -1) {
-        const resultTracks: [ShootTrackType, number][] = [];
-        const selectedDopesheetNames = selectedDopeSheets.map((dopesheet) => dopesheet.trackName);
-        const targetTracks = baseLayer.filter((track) =>
-          selectedDopesheetNames.includes(track.name),
-        );
-
-        targetTracks.forEach((track) => {
-          const resultTrack = fnDeleteKeyframe({ track, time: deleteTargetTime });
-          const targetTrackIndex = _.findIndex(
-            layers[targetLayerIndex].tracks,
-            (t) => t.name === track.name,
-          );
-          resultTracks.push([resultTrack, targetTrackIndex]);
-        });
-        const state = storeCurrentVisualizedData();
-        if (state && resultTracks.length !== 0) {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-              draft.layers[targetLayerIndex].tracks = [
-                ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
-                resultTrack,
-                ...draft.layers[targetLayerIndex].tracks.slice(targetTrackIndex + 1),
-              ];
-            });
-          });
-          storeCurrentVisualizedData(nextState);
-        }
-      }
-    }
-  }, [baseLayer, deleteTargetTime, layers]);
-  // 위는 테스트용 예시 코드
-  ////////////////////
-
-  const handleKeyPress = useCallback(
-    (event: KeyboardEvent) => {
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-      switch (event.key) {
-        case 'y':
-        case 'ㅛ':
-          handleUpdateKeyframeToBase();
-          break;
-        case 'u':
-        case 'ㅕ':
-          handleUpdateKeyframeToLayer();
-          break;
-        case 'i':
-        case 'ㅑ':
-          handleDeleteKeyframeFromBase();
-          break;
-        case 'o':
-        case 'ㅐ':
-          handleDeleteKeyframeFromLayer();
-          break;
-      }
-    },
-    [
-      handleDeleteKeyframeFromBase,
-      handleDeleteKeyframeFromLayer,
-      handleUpdateKeyframeToBase,
-      handleUpdateKeyframeToLayer,
-    ],
-  );
-
-  useEffect(() => {
-    document.addEventListener('keypress', handleKeyPress);
-    return () => {
-      document.removeEventListener('keypress', handleKeyPress);
-    };
-  }, [handleKeyPress]);
-
   // 이름만 추출하여 TP 트랙 리스트 가공
   useEffect(() => {
     if (!baseLayer) return;
@@ -384,6 +127,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         isClickedParentTrack: index === 0 ? true : false,
         layerKey: 'baseLayer',
         isTransformTrack: false,
+        isKeyframeSelected: false,
         trackIndex: dopeSheetIndex,
         trackName: index === 0 ? 'Summary' : 'Base',
         times: index === 0 ? summaryTimes : baseTimes,
@@ -408,6 +152,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         isExcludedRendering: false,
         isFiltered: true,
         isClickedParentTrack: false,
+        isKeyframeSelected: false,
         layerKey: 'baseLayer',
         isTransformTrack: false,
         trackIndex: dopeSheetIndex,
@@ -441,6 +186,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
           isClickedParentTrack: false,
           layerKey: 'baseLayer',
           isTransformTrack: true,
+          isKeyframeSelected: false,
           trackIndex: dopeSheetIndex,
           trackName: baseLayer[transformIndex].name,
           times: currnetBoneTrack.times,
@@ -458,6 +204,66 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
       storeTPDopeSheetList([]);
     };
   }, [baseLayer]);
+
+  // base layer, layers 변경 로직 리팩토링 중
+  // const test = useRef<ShootTrackType[]>([]);
+  // const dopeSheetList = storeTPDopeSheetList();
+  // // Dope Sheet Status 리스트 가공
+  // useEffect(() => {
+  //   if (baseLayer && layers) {
+  //     console.log(_.isEqual(test.current, baseLayer), test.current, baseLayer);
+  //     if (dopeSheetList.length && _.isEqual(test.current, dopeSheetList)) {
+  //       console.log('heelo');
+  //     } else {
+  //       const defaultDopeSheetList = fnSetDefaultDopeSheetList({ baseLayer, layers });
+  //       storeTPDopeSheetList(defaultDopeSheetList);
+  //       test.current = baseLayer;
+  //     }
+  //   }
+  //   return () => {
+  //     storeTPDopeSheetList([]);
+  //   };
+  // }, [baseLayer]);
+
+  // ///////////////////////////////////////////////////////
+  // const trackNameList = useReactiveVar(storeTPTrackNameList);
+  // const dopeSheetListtt = useReactiveVar(storeTPDopeSheetList);
+  // const lastBoneList = useReactiveVar(storeTPLastBoneList);
+
+  // // track name list에 추가 된 레이어 적용
+  // useEffect(() => {
+  //   if (baseLayer?.length && layers?.length) {
+  //     console.log('layers', layers);
+  //     const { layerIndex: lastLayerIndex } = lastBoneList[lastBoneList.length - 1];
+  //     const increaseIndex = 10000 * layers.length;
+  //     const summaryTrackChildren = trackNameList[0].childrenTrackList;
+  //     const baseLayerChildren = summaryTrackChildren[0].childrenTrackList;
+  //     let curBoneIndex = 0;
+
+  //     const layerChildren = _.map(baseLayerChildren, (boneTrack) => {
+  //       return {
+  //         ...boneTrack,
+  //         trackIndex: boneTrack.trackIndex + increaseIndex,
+  //         childrenTrackList: _.map(boneTrack.childrenTrackList, (transformTrack, index) => {
+  //           const transformIndex = transformTrack.trackIndex + increaseIndex;
+  //           if (index === 2 && curBoneIndex < transformIndex) {
+  //             curBoneIndex = transformIndex;
+  //           }
+  //           return { ...transformTrack, trackIndex: transformIndex };
+  //         }),
+  //       };
+  //     });
+
+  //     // new layer 추가
+  //     const newLayer = {
+  //       name: layers[layers.length - 1].name, // 이름 명명 적용 예정
+  //       isOpenedChildrenTrack: false,
+  //       childrenTrackList: layerChildren,
+  //       trackIndex: lastLayerIndex + 10000,
+  //     };
+  //   }
+  // }, [layers]);
+  // ///////////////////////////////////////////////////////
 
   return (
     <>

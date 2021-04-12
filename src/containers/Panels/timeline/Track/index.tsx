@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
@@ -19,7 +19,7 @@ interface TrackProps {
   childrenTrackList: TPTrackName[];
   isOpenedParent: boolean; // 자식 트랙이 열려있는 상태로 출력여부
   title: 'Summary' | 'Base' | string; // 트랙 이름
-  paddingLeft?: number; // 트랙 좌측 패딩 값
+  paddingLeft: number; // 트랙 좌측 패딩 값
   trackIndex: number;
 }
 
@@ -29,7 +29,7 @@ const Track: React.FC<TrackProps> = ({
   childrenTrackList,
   isOpenedParent = false,
   title,
-  paddingLeft = 10,
+  paddingLeft,
   trackIndex,
 }) => {
   const [isSelected, setIsSelected] = useState(false);
@@ -37,6 +37,7 @@ const Track: React.FC<TrackProps> = ({
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const clickedTrackList = useReactiveVar(storeTPSelectedTrackList);
+  // const trackPaddingLeft = useMemo(() => trackIndex )
 
   // 트랙 클릭
   const clickTrackBody = useCallback(
@@ -145,9 +146,13 @@ const Track: React.FC<TrackProps> = ({
   }, [lastBoneList, trackIndex]);
 
   // 트랙 마우스 우클릭
-  const clickRightMouse = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    event.preventDefault();
-  }, []);
+  const handleTrackContextMenu = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      console.log('track context menu event : ', title, trackIndex); // 우클릭 이벤트 구현 시 console.log 없앨 예정
+    },
+    [title, trackIndex],
+  );
 
   // 트랙 선택 효과 변경
   useEffect(() => {
@@ -157,7 +162,7 @@ const Track: React.FC<TrackProps> = ({
       key: 'trackIndex',
     });
     const targetTrack = dopeSheetList[targetIndex];
-    setIsSelected(targetTrack.isSelected);
+    setIsSelected(targetTrack?.isSelected);
   }, [dopeSheetList, trackIndex]);
 
   // 자식 트랙 opened 변경
@@ -167,11 +172,12 @@ const Track: React.FC<TrackProps> = ({
 
   return (
     <>
-      <div className={cx('track-wrapper')} onContextMenu={clickRightMouse}>
+      <div className={cx('track-wrapper')}>
         <div
           className={cx('track-body', { selected: isSelected })}
           style={{ paddingLeft: `${paddingLeft}px` }}
           onClick={clickTrackBody}
+          onContextMenu={handleTrackContextMenu}
           aria-hidden="true"
         >
           {childrenTrackList.length ? (

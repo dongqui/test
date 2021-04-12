@@ -19,6 +19,7 @@ export interface TPDopeSheet {
   isClickedParentTrack: boolean; // 상위 트랙에 화살표 버튼이 클릭되어 있는지
   isFiltered: boolean; // sheet 필터링 체크
   isTransformTrack: boolean; // 현재 트랙이 transform 트랙인지 아닌지 체크
+  isKeyframeSelected: boolean;
   layerKey: string; // 어떤 layer에 속했는지 key로 표현. base layer일 경우, key는 'baseLayer'가 됨
   trackIndex: number; // 트랙 index
   trackName: string;
@@ -41,4 +42,11 @@ export interface TPUpdateDopeSheet {
 export interface TPCurrnetClickedTrack {
   trackIndex: number;
   isClickedArrow: boolean;
+}
+
+export interface KeyframeData {
+  key: string;
+  trackName: string;
+  layerKey: string;
+  time: number;
 }

@@ -33,7 +33,7 @@ export const useVideoToImages = ({ videoRef, videoUrl, action, active }: useVide
         tempImages = _.concat(tempImages, frameImage);
         action({ images: tempImages });
       }
-      await sleep(500);
+      await sleep(200);
     }
   }, [action, videoRef, videoUrl]);
   useEffect(() => {

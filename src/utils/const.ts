@@ -1,4 +1,5 @@
 import { CUTIMAGE_HEIGHT } from 'containers/extract/CutEdit/CutEdit.styles';
+import { STANDARD_WIDTH } from 'styles/constants/common';
 import { LPDataType } from 'types';
 import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
 import {
@@ -9,7 +10,7 @@ import {
   RetargetDataType,
 } from 'types/RP';
 
-export const isDebug = true;
+export const isDebug = false;
 export const isClient = typeof window !== 'undefined';
 export const DEFAULT_MODEL_URL =
   'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1612095825/DyingToGlb_fqke1a.glb';
@@ -177,8 +178,8 @@ export const INITIAL_RECORDING_DATA = {
     // width: window.innerWidth * 0.9,
     width: 1700,
     height: CUTIMAGE_HEIGHT,
-    x: 50,
-    barX: 50,
+    x: 0,
+    barX: 0,
     y: 0,
   },
   isPlaying: false,
