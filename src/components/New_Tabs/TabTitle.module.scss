@@ -35,3 +35,17 @@
     color: var(--gray700);
   }
 }
+
+.disabled {
+  @extend .tab-btn;
+  span {
+    font-weight: 700;
+    color: #7a7a7a;
+    &:hover {
+      color: #7a7a7a;
+    }
+  }
+  & > button {
+    cursor: not-allowed;
+  }
+}

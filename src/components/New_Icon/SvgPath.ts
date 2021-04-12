@@ -26,6 +26,8 @@ import PlayBar from './svg/PlayBar.svg';
 import LineLeftTriangle from './svg/LineLeftTriangle.svg';
 import CaretDown from './svg/CaretDown.svg';
 import Check from './svg/Check.svg';
+import Error from './svg/Error.svg';
+import Refresh from './svg/Refresh.svg';
 
 type Icon =
   | 'Close'
@@ -54,7 +56,9 @@ type Icon =
   | 'PlayBar'
   | 'LineLeftTriangle'
   | 'CaretDown'
-  | 'Check';
+  | 'Check'
+  | 'Error'
+  | 'Refresh';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -88,6 +92,8 @@ const images: Images = {
   LineLeftTriangle,
   CaretDown,
   Check,
+  Error,
+  Refresh,
 };
 
 export default images;

@@ -1,11 +1,25 @@
 .section-setup {
   position: relative;
   display: flex;
+
+  border-bottom: 1px solid #303030;
+
   .setup-group {
-    position: absolute;
-    padding: 0 8px;
-    right: 0;
+    width: 100%;
+    float: left;
+
+    padding-top: 4px;
+    margin: 0;
+
+    &>* {
+      float: right;
+    }
+
     .icon {
+      &>svg {
+        width: 32px;
+      }
+
       &:focus {
         border: 1px solid transparent;
       }
@@ -15,20 +29,36 @@
 
 .section-retarget {
   .retarget-card {
+    border-bottom: 1px solid #303030;
+    padding-bottom: 12px;
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
 
-      & > span {
+      padding: 12px 6px;
+
+      &>span {
         font-size: 14px;
-        font-weight: 400;
+        font-weight: 700;
 
         color: #fff;
       }
     }
+
     .card-coord {
       display: flex;
+      justify-content: space-between;
+      padding: 0 6px;
+
+      .card-input-group {
+        display: flex;
+        margin-left: 16px;
+
+        &>* {
+          margin-left: 4px;
+        }
+      }
     }
   }
 }

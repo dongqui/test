@@ -19,6 +19,7 @@ const Tabs: FunctionComponent<Props> = ({ children }) => {
             key={idx}
             tabID={idx}
             title={item.props.title}
+            disabled={item.props.disabled}
             activeTab={activeTab}
             setAtiveTab={setAtiveTab}
           />
