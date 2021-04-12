@@ -51,3 +51,8 @@ export interface KeyframeData {
   layerKey: string;
   time: number;
 }
+
+export interface IsIncludedChange {
+  name: string;
+  isIncluded: boolean;
+}

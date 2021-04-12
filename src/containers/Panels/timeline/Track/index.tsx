@@ -15,9 +15,10 @@ import { TPTrackName, TPDopeSheet } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import {
   fnClickLockButton,
-  fnGetBinarySearch,
+  fnClickRenderingButton,
   fnClickTrackToCtrlKey,
   fnClickTrackToMouse,
+  fnGetBinarySearch,
 } from 'utils/TP/trackUtils';
 import styles from './index.module.scss';
 
@@ -40,6 +41,7 @@ const Track: React.FC<TrackProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [isExcludedRendering, setIsExcludedRendering] = useState(true);
   const [isClickedArrowButton, setIsClickedArrowButton] = useState(false); // 화살표 토글 버튼(true면 하위 트랙 open)
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
@@ -179,16 +181,26 @@ const Track: React.FC<TrackProps> = ({
 
   // 수정불가 버튼 클릭
   const clickLockButton = useCallback(() => {
-    const updatedTrackList = fnClickLockButton({ dopeSheetList, lastBoneList, trackIndex });
-    console.log('updatedTrackList', updatedTrackList);
+    const updatedDopeSheetList = fnClickLockButton({ dopeSheetList, lastBoneList, trackIndex });
     storeTPUpdateDopeSheetList({
-      updatedList: updatedTrackList,
+      updatedList: updatedDopeSheetList,
       status: 'isLocked',
     });
   }, [dopeSheetList, lastBoneList, trackIndex]);
 
   // 랜더링 제외 버튼 클릭
-  const clickRenderingButton = useCallback(() => {}, []);
+  const clickRenderingButton = useCallback(() => {
+    const [updatedDopeSheetList, updatedCurrentVisualizedList] = fnClickRenderingButton({
+      dopeSheetList,
+      lastBoneList,
+      trackIndex,
+    });
+    console.log('updatedDopeSheetList', updatedDopeSheetList, updatedCurrentVisualizedList);
+    storeTPUpdateDopeSheetList({
+      updatedList: updatedDopeSheetList,
+      status: 'isExcludedRendering',
+    });
+  }, [dopeSheetList, lastBoneList, trackIndex]);
 
   // 트랙 선택 효과 변경
   useEffect(() => {
@@ -200,19 +212,8 @@ const Track: React.FC<TrackProps> = ({
       });
       const targetTrack = dopeSheetList[targetIndex];
       setIsSelected(targetTrack?.isSelected);
-    }
-  }, [dopeSheetList, trackIndex]);
-
-  // 트랙 잠금 효과 변경
-  useEffect(() => {
-    if (dopeSheetList && trackIndex) {
-      const targetIndex = fnGetBinarySearch({
-        collection: dopeSheetList,
-        index: trackIndex,
-        key: 'trackIndex',
-      });
-      const targetTrack = dopeSheetList[targetIndex];
       setIsLocked(targetTrack?.isLocked);
+      setIsExcludedRendering(targetTrack?.isExcludedRendering);
     }
   }, [dopeSheetList, trackIndex]);
 
@@ -253,7 +254,7 @@ const Track: React.FC<TrackProps> = ({
                 />
                 <div className={cx('check-wrapper')}>
                   <IconWrapper
-                    className={cx('track-icon', 'check')}
+                    className={cx('track-icon', 'check', { rendered: isExcludedRendering })}
                     icon={SvgPath.Check}
                     hasFrame={false}
                     onClick={clickRenderingButton}
