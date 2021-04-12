@@ -109,6 +109,9 @@ export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDope
         case 'isSelected':
           draft[index as number].isSelected = target.isSelected as boolean;
           break;
+        case 'times':
+          draft[index as number].times = target.times as number[];
+          break;
       }
     });
   });
