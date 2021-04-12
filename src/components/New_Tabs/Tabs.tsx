@@ -12,12 +12,20 @@ interface Props {
 const Tabs: FunctionComponent<Props> = ({ children }) => {
   const [activeTab, setAtiveTab] = useState(0);
   return (
-    <div className={cx('tabs-wrap')}>
-      {children.map((item, idx) => (
-        <TabTitle key={idx} tabID={idx} title={item.props.title} setAtiveTab={setAtiveTab} />
-      ))}
-      {children[activeTab]}
-    </div>
+    <>
+      <div className={cx('tabs-wrap')}>
+        {children.map((item, idx) => (
+          <TabTitle
+            key={idx}
+            tabID={idx}
+            title={item.props.title}
+            activeTab={activeTab}
+            setAtiveTab={setAtiveTab}
+          />
+        ))}
+      </div>
+      <div>{children[activeTab]}</div>
+    </>
   );
 };
 

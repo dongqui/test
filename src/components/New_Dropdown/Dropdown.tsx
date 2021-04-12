@@ -63,7 +63,7 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect }) => {
 
   useEffect(() => {
     if (buttonRef && buttonRef.current) {
-      setTransform(`translate3d(0px, ${buttonRef.current.offsetHeight / 3}px, 0px)`);
+      setTransform(`translate3d(0px, ${buttonRef.current.offsetHeight}px, 0px)`);
     }
   }, []);
 

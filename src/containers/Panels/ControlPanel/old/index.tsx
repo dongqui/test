@@ -38,4 +38,4 @@ const ControlPanelComponent: React.FC<ControlPanelProps> = ({}) => {
     </S.ControlPanelWrapper>
   );
 };
-export const ControlPanel = React.memo(ControlPanelComponent);
+export const ControlPanelOld = React.memo(ControlPanelComponent);

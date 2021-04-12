@@ -1,0 +1,37 @@
+.tab-header {
+  padding: 12px 8px;
+}
+
+.tab-btn {
+  border: 0;
+
+  cursor: pointer;
+
+  background: none;
+  outline: none;
+  appearance: none;
+
+  span {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+
+    vertical-align: text-top;
+
+    color: #7a7a7a;
+    transition: color 0.15s;
+    &:hover {
+      color: var(--gray700);
+      transition: color 0.15s;
+    }
+  }
+}
+
+.active {
+  @extend .tab-btn;
+  transition: color 0.15s;
+  span {
+    font-weight: 700;
+    color: var(--gray700);
+  }
+}

@@ -1,0 +1,35 @@
+.accordion-wrap {
+  & > span {
+    font-size: 12px;
+    font-weight: 600;
+    
+    color: #fff;
+  }
+  user-select: none;
+}
+
+.arrow {
+  & > svg {
+    width: 6px;
+    color: #fff;
+    transform: rotate(90deg);
+  }
+  &:focus {
+    border: 1px solid transparent;
+  }
+  padding-right: 8px;
+}
+
+.accordion-contents {
+  padding: 8px 0;
+}
+
+.hide {
+  display: none;
+}
+
+.rotate {
+  & > svg {
+    transform: rotate(0deg);
+  }
+}
