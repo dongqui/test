@@ -10,6 +10,7 @@ import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { ExtractIcon } from '../../../components/Icons/generated2/ExtractIcon';
 import * as S from './PlayBarStyles';
+import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
 
 export interface PlayBoxProps {}
 
@@ -29,6 +30,7 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
     });
   }, []);
   const backToHome = useCallback(() => {
+    fnKillSetInterval();
     storePageInfo({ page: PAGE_NAMES.shoot });
   }, []);
   return (
