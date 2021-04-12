@@ -71,7 +71,10 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       const action = mixer.clipAction(visualizedClip);
       action.play();
       mixer.timeScale = 0;
-      action.time = 1 / 30;
+      action.time = _.round(startTimeIndex / 30, 4);
+      mixer.addEventListener('loop', () => {
+        action.time = _.round(startTimeIndex / 30, 4);
+      });
       storeCurrentAction(action);
       console.log('action: ', action);
     }
@@ -82,9 +85,9 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
   // animation 컨트롤 로직
   useEffect(() => {
     if (mixer && currentAction) {
-      fnSetPlayState({ mixer, currentAction, playState, playSpeed });
+      fnSetPlayState({ mixer, currentAction, playState, playSpeed, startTimeIndex });
     }
-  }, [currentAction, mixer, playSpeed, playState]);
+  }, [currentAction, mixer, playSpeed, playState, startTimeIndex]);
 
   useEffect(() => {
     if (mixer) {
