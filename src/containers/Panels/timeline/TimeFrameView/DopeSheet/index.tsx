@@ -495,37 +495,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     }
   }, [currentVisualizedData, deleteTargetKeyframes]);
 
-  const handleKeyPress = useCallback(
-    (event: KeyboardEvent) => {
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-      switch (event.key) {
-        case 'y':
-        case 'ㅛ':
-          handleUpdateKeyframeToBase();
-          break;
-        case 'u':
-        case 'ㅕ':
-          handleUpdateKeyframeToLayer();
-          break;
-        case 'i':
-        case 'ㅑ':
-          handleDeleteKeyframe();
-          break;
-      }
-    },
-    [handleDeleteKeyframe, handleUpdateKeyframeToBase, handleUpdateKeyframeToLayer],
-  );
-
-  useEffect(() => {
-    document.addEventListener('keypress', handleKeyPress);
-    return () => {
-      document.removeEventListener('keypress', handleKeyPress);
-    };
-  }, [handleKeyPress]);
-
   // TP Resize 시 circle 위치 조정(진행 중)
   // useEffect(() => {
   //   const rescaleCircleX = (event: any) => {
