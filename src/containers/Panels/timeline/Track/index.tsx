@@ -2,7 +2,8 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
-import { ArrowRight } from 'components/Icons/generated/ArrowRight';
+import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { ContextMenu } from 'components/New_ContextMenu';
 import {
   storeTPSelectedTrackList,
   storeTPDopeSheetList,
@@ -37,13 +38,12 @@ const Track: React.FC<TrackProps> = ({
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const clickedTrackList = useReactiveVar(storeTPSelectedTrackList);
-  // const trackPaddingLeft = useMemo(() => trackIndex )
 
   // 트랙 클릭
   const clickTrackBody = useCallback(
     (event: React.MouseEvent<Element>) => {
       const clickedTrack = event.target as Element;
-      if (clickedTrack.nodeName === 'DIV' || clickedTrack.nodeName === 'SPAN') {
+      if (clickedTrack.nodeName === 'DIV' || clickedTrack.nodeName === 'P') {
         if (title !== 'Summary') {
           if (event.ctrlKey || event.metaKey) {
             const clickTrackToCtrlKey = fnClickTrackToCtrlKey({
@@ -145,6 +145,23 @@ const Track: React.FC<TrackProps> = ({
     });
   }, [lastBoneList, trackIndex]);
 
+  // 트랙 별 좌측 padding left 값 설정
+  const calcPaddingLeft = useMemo(
+    () => (trackIndex: number) => {
+      const remainder = trackIndex % 10;
+      switch (remainder) {
+        case TP_TRACK_INDEX.LAYER:
+          return 32;
+        case TP_TRACK_INDEX.BONE_A:
+        case TP_TRACK_INDEX.BONE_B:
+          return 48;
+        default:
+          return 84;
+      }
+    },
+    [],
+  );
+
   // 트랙 마우스 우클릭
   const handleTrackContextMenu = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -153,6 +170,12 @@ const Track: React.FC<TrackProps> = ({
     },
     [title, trackIndex],
   );
+
+  // 수정불가 버튼 클릭
+  const clickLockButton = useCallback(() => {}, []);
+
+  // 랜더링 제외 버튼 클릭
+  const clickRenderingButton = useCallback(() => {}, []);
 
   // 트랙 선택 효과 변경
   useEffect(() => {
@@ -181,20 +204,29 @@ const Track: React.FC<TrackProps> = ({
           aria-hidden="true"
         >
           {childrenTrackList.length ? (
-            <button
+            <IconWrapper
               className={cx('track-button', 'arrow-button', { opened: isClickedArrowButton })}
+              icon={SvgPath.CaretDown}
+              hasFrame={false}
               onClick={clickArrowButton}
-            >
-              <ArrowRight width="0.75rem" height="0.75rem" viewBox={'0 0 4 8'} />
-            </button>
+            />
           ) : (
             ''
           )}
-          <span>{title}</span>
+          <p>{title}</p>
           <div className={cx('track-icon-wrapper')}>
-            {/* To Do...
-              아이콘 적용
-             */}
+            <IconWrapper
+              className={cx('track-button', 'lock')}
+              icon={SvgPath.LockClose}
+              hasFrame={false}
+              onClick={clickLockButton}
+            />
+            <IconWrapper
+              className={cx('track-button', 'check')}
+              icon={SvgPath.LockClose}
+              hasFrame={false}
+              onClick={clickRenderingButton}
+            />
           </div>
         </div>
         <div
@@ -208,7 +240,7 @@ const Track: React.FC<TrackProps> = ({
                 key={name}
                 childrenTrackList={childrenTrackList}
                 isOpenedParent={isOpenedChildrenTrack}
-                paddingLeft={paddingLeft + 10}
+                paddingLeft={calcPaddingLeft(trackIndex)}
                 title={name}
                 trackIndex={trackIndex}
               />

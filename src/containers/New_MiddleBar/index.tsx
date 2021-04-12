@@ -1,7 +1,8 @@
-import { FunctionComponent, memo, useEffect, useRef, useCallback, useMemo } from 'react';
+import { FunctionComponent, memo, useEffect, useRef, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import {
   storeAnimatingData,
+  storeCurrentAction,
   storePageInfo,
   storeBarPositionX,
   storeRecordingData,
@@ -21,12 +22,15 @@ const cx = classNames.bind(styles);
 export interface Props {}
 
 const MiddleBar: FunctionComponent<Props> = () => {
+  const currentAction = useReactiveVar(storeCurrentAction);
   const animatingData = useReactiveVar(storeAnimatingData);
   const recordingData = useReactiveVar(storeRecordingData);
   const barPositionX = useReactiveVar(storeBarPositionX);
 
   const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
+  const lastTimeRef = useRef<HTMLInputElement>(null);
 
   const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
@@ -132,8 +136,11 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const handleStartInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.currentTarget.value);
-    if (value < endTimeIndex) {
+    if (value > 0 && value < endTimeIndex) {
       storeAnimatingData({ ...animatingData, startTimeIndex: value });
+      if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
+        currentTimeIndexRef.current.value = value.toString();
+      }
     } else {
       event.currentTarget.value = startTimeIndex.toString();
     }
@@ -143,8 +150,23 @@ const MiddleBar: FunctionComponent<Props> = () => {
     const value = parseInt(event.currentTarget.value);
     if (value > startTimeIndex) {
       storeAnimatingData({ ...animatingData, endTimeIndex: value });
+      if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
+        currentTimeIndexRef.current.value = value.toString();
+      }
     } else {
       event.currentTarget.value = endTimeIndex.toString();
+    }
+  };
+
+  const handleNowInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    if (currentAction) {
+      const now = _.round(currentAction.time * 30, 0);
+      const value = parseInt(event.currentTarget.value);
+      if (value >= startTimeIndex && value <= endTimeIndex) {
+        currentAction.time = _.round(value / 30, 4);
+      } else {
+        event.currentTarget.value = now.toString();
+      }
     }
   };
 
@@ -158,6 +180,13 @@ const MiddleBar: FunctionComponent<Props> = () => {
     }
   }, []);
 
+  useEffect(() => {
+    // 현재는 미들바 조작해야만 적용됨 -> 수정 필요
+    if (currentAction && lastTimeRef.current) {
+      lastTimeRef.current.value = _.round(currentAction.getClip().duration, 0).toString();
+    }
+  }, [currentAction, startTimeIndex]);
+
   return (
     <div className={cx('wrapper')}>
       <div className={cx('inner')} ref={scrollRef}>
@@ -169,7 +198,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
             <div className={cx('playtime')}>
               <BaseInput className={cx('time-current')} defaultValue="00:00" />
               <div className={cx('divide')}>/</div>
-              <BaseInput className={cx('time-last')} defaultValue="00:12" />
+              <BaseInput className={cx('time-last')} defaultValue="00:00" innerRef={lastTimeRef} />
               {isShootPage && (
                 <div className={cx('faster')}>
                   <Dropdown list={fasterList} onSelect={handleFasterSelect} />
@@ -201,6 +230,9 @@ const MiddleBar: FunctionComponent<Props> = () => {
                 prefix="NOW"
                 defaultValue={indicator.now}
                 value={indicator.now}
+                onBlur={handleNowInputBlur}
+                onKeyDown={handleInputKeyDown}
+                innerRef={currentTimeIndexRef}
                 arrow
               />
             </div>

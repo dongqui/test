@@ -1,4 +1,4 @@
-interface Params {
+interface FnGetBinarySearch {
   collection: any[];
   index: number;
   key: string;
@@ -10,11 +10,11 @@ interface Params {
  *
  * @param collection - 이진 탐색을 적용시킬 1차원 리스트
  * @param index - 찾고자 하는 index
- * @params key - 찾고자 하는 key
+ * @param key - 찾고자 하는 key
  *
  * @returns 이진 탐색 index
  */
-const fnGetBinarySearch = ({ collection, index, key }: Params) => {
+const fnGetBinarySearch = ({ collection, index, key }: FnGetBinarySearch) => {
   const size = collection.length;
   let left = 0;
   let right = size - 1;
@@ -22,12 +22,10 @@ const fnGetBinarySearch = ({ collection, index, key }: Params) => {
 
   while (left <= right) {
     const mid = Math.floor((left + right) / 2);
-    // if (collection[mid].trackIndex === index) {
     if (collection[mid][key] === index) {
       targetIndex = mid;
       break;
     } else if (collection[mid][key] > index) {
-      // } else if (collection[mid].trackIndex > index) {
       right = mid - 1;
     } else {
       left = mid + 1;

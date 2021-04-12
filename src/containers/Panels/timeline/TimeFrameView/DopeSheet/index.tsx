@@ -72,6 +72,18 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
   const currentXAxisPosition = useRef(1);
 
+  useEffect(() => {
+    setInterval(() => {
+      // currentXAxisPosition.current += 1000;
+      // const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      // d3.select('#play-bar-wrapper').attr(
+      //   'transform',
+      //   `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+      // ${X_AXIS_HEIGHT / 2})`,
+      // );
+    }, 500);
+  }, []);
+
   // svg로 x축 그리기
   useEffect(() => {
     if (!dopeSheetRef.current) return;
@@ -140,6 +152,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           .style('fill', '#282727'),
       )
       .call(xAxisPosition.current);
+    d3.selectAll('.x-axis-g line').attr('y2', -24);
 
     // 재생 바 transform 설정
     const xScaleLinear = prevXScale.current as d3ScaleLinear;
@@ -172,6 +185,8 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // 이전 값으로 scale 적용
       renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear));
       xScale.current = rescaleX; // rescale한 값으로 갱신
+
+      d3.selectAll('.x-axis-g line').attr('y2', -24);
 
       // grid line 조정
       d3.selectAll('.grid-line').remove();
@@ -357,11 +372,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         if (state && resultTracks.length !== 0) {
           const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
             resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-              draft.baseLayer = [
-                ...draft.baseLayer.slice(0, targetTrackIndex),
-                resultTrack,
-                ...draft.baseLayer.slice(targetTrackIndex + 1),
-              ];
+              draft.baseLayer[targetTrackIndex] = resultTrack;
             });
           });
           storeCurrentVisualizedData(nextState);
@@ -373,7 +384,14 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const handleUpdateKeyframeToLayer = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
-      if (updateTargetTime && baseLayer && layers && layers.length !== 0 && skeletonHelper) {
+      if (
+        updateTargetTime &&
+        baseLayer &&
+        layers &&
+        layers.length !== 0 &&
+        skeletonHelper &&
+        selectedLayerDopeSheets.length !== 0
+      ) {
         const targetLayerIndex = _.findIndex(
           layers,
           (layer) => layer.key === selectedLayerDopeSheets[0].layerKey,
@@ -383,7 +401,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           const selectedDopesheetNames = selectedLayerDopeSheets.map(
             (dopesheet) => dopesheet.trackName,
           );
-          const targetTracks = baseLayer.filter((track) =>
+          const targetTracks = layers[targetLayerIndex].tracks.filter((track) =>
             selectedDopesheetNames.includes(track.name),
           );
 
@@ -420,11 +438,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           if (state && resultTracks.length !== 0) {
             const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
               resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-                draft.layers[targetLayerIndex].tracks = [
-                  ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
-                  resultTrack,
-                  ...draft.layers[targetLayerIndex].tracks.slice(targetTrackIndex + 1),
-                ];
+                draft.layers[targetLayerIndex].tracks[targetTrackIndex] = resultTrack;
               });
             });
             storeCurrentVisualizedData(nextState);
@@ -438,6 +452,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
       if (deleteTargetKeyframes && baseLayer && layers) {
+        // deleteTargetKeyframes 에는 담기는데 반영이 안된 상태 -> store 변경 시점 로직 수정 필요
         const resultBaseLayerTracks: [ShootTrackType, number][] = [];
         const resultLayersTracks: [ShootTrackType, number, number][] = [];
         _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
@@ -491,37 +506,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       }
     }
   }, [currentVisualizedData, deleteTargetKeyframes]);
-
-  const handleKeyPress = useCallback(
-    (event: KeyboardEvent) => {
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-      switch (event.key) {
-        case 'y':
-        case 'ㅛ':
-          handleUpdateKeyframeToBase();
-          break;
-        case 'u':
-        case 'ㅕ':
-          handleUpdateKeyframeToLayer();
-          break;
-        case 'i':
-        case 'ㅑ':
-          handleDeleteKeyframe();
-          break;
-      }
-    },
-    [handleDeleteKeyframe, handleUpdateKeyframeToBase, handleUpdateKeyframeToLayer],
-  );
-
-  useEffect(() => {
-    document.addEventListener('keypress', handleKeyPress);
-    return () => {
-      document.removeEventListener('keypress', handleKeyPress);
-    };
-  }, [handleKeyPress]);
 
   // TP Resize 시 circle 위치 조정(진행 중)
   // useEffect(() => {

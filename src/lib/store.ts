@@ -68,6 +68,7 @@ export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_DATA);
 export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 export const storeCurrentBone = makeVar<THREE.Bone | undefined>(undefined);
+export const storeCurrentAction = makeVar<THREE.AnimationAction | undefined>(undefined);
 export const storeTransformControls = makeVar<TransformControls | undefined>(undefined);
 export const storeSkeletonHelper = makeVar<THREE.SkeletonHelper | undefined>(undefined);
 // WEBCAM
@@ -108,6 +109,9 @@ export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDope
           break;
         case 'isSelected':
           draft[index as number].isSelected = target.isSelected as boolean;
+          break;
+        case 'times':
+          draft[index as number].times = target.times as number[];
           break;
       }
     });

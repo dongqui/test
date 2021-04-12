@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo, useCallback, useEffect } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import { TPDopeSheet, KeyframeData } from 'types/TP';
@@ -18,11 +18,45 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
   // circle 생성
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
 
+  // circle 클릭 이벤트
+  const clickCircle = useCallback(
+    (event, data) => {
+      const { trackName, layerKey, isLocked, isTransformTrack } = dopeSheetData;
+      if (!isLocked && isTransformTrack) {
+        const keyframeData: KeyframeData = {
+          key: `${layerKey}&&${trackName}&&${data}`,
+          trackName,
+          layerKey,
+          time: data as number,
+        };
+        if (event.ctrlKey || event.metaKey) {
+          const targetKeyframeIndex = _.findIndex(
+            deleteTargetKeyframes,
+            (keyframe) => keyframe.key === keyframeData.key,
+          );
+          if (targetKeyframeIndex === -1) {
+            storeDeleteTargetKeyframes([...deleteTargetKeyframes, keyframeData]);
+          } else {
+            storeDeleteTargetKeyframes(
+              _.filter(deleteTargetKeyframes, (_, idx) => idx !== targetKeyframeIndex),
+            );
+          }
+        } else {
+          if (deleteTargetKeyframes.length === 0) {
+            storeDeleteTargetKeyframes([keyframeData]);
+          }
+        }
+      }
+    },
+    [deleteTargetKeyframes, dopeSheetData],
+  );
+
+  // circle 생성
   useEffect(() => {
-    if (circleGroupRef.current) {
+    if (circleGroupRef.current && dopeSheetData.times) {
       d3.select(circleGroupRef.current)
         .selectAll('circle')
-        .data(dopeSheetData.times as number[])
+        .data(dopeSheetData.times)
         .join('circle')
         .attr('cx', (time) => prevXScale(time * 30))
         .attr('cy', TRACK_HEIGHT / 2)
@@ -30,43 +64,18 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
     }
   }, [circleGroupRef, dopeSheetData, prevXScale]);
 
+  // circle에 이벤트 추가
   useEffect(() => {
-    d3.selectAll('circle')
+    d3.select(circleGroupRef.current)
+      .selectAll('circle')
       .on('mouseenter', (event) => {
         event.target.style.cursor = 'pointer';
       })
       .on('mouseout', (event) => {
         event.target.style.cursor = '';
       })
-      .on('click', (event, data) => {
-        const { trackName, layerKey, isLocked, isTransformTrack } = dopeSheetData;
-        if (!isLocked && isTransformTrack) {
-          const keyframeData: KeyframeData = {
-            key: `${layerKey}&&${trackName}&&${data}`,
-            trackName,
-            layerKey,
-            time: data as number,
-          };
-          if (event.ctrlKey || event.metaKey) {
-            const targetKeyframeIndex = _.findIndex(
-              deleteTargetKeyframes,
-              (keyframe) => keyframe.key === keyframeData.key,
-            );
-            if (targetKeyframeIndex === -1) {
-              storeDeleteTargetKeyframes([...deleteTargetKeyframes, keyframeData]);
-            } else {
-              storeDeleteTargetKeyframes(
-                _.filter(deleteTargetKeyframes, (_, idx) => idx !== targetKeyframeIndex),
-              );
-            }
-          } else {
-            if (deleteTargetKeyframes.length === 0) {
-              storeDeleteTargetKeyframes([keyframeData]);
-            }
-          }
-        }
-      });
-  }, [deleteTargetKeyframes, dopeSheetData]);
+      .on('click', (event, data) => clickCircle(event, data));
+  }, [circleGroupRef, clickCircle]);
 
   return <></>;
 };
@@ -75,12 +84,15 @@ export default memo(Circles, (prevProps, nextProps) => {
   const {
     isClickedParentTrack: prevIsClickedParentTrack,
     isFiltered: prevIsFiltered,
+    times: prevTimes,
   } = prevProps.dopeSheetData;
   const {
     isClickedParentTrack: nextIsClickedParentTrack,
     isFiltered: nextIsFiltered,
+    times: nextTimes,
   } = nextProps.dopeSheetData;
 
+  if (!_.isEqual(prevTimes, nextTimes)) return false;
   if (prevIsClickedParentTrack === nextIsClickedParentTrack) return true;
   if (prevIsFiltered === nextIsFiltered) return true;
   return false;

@@ -1,6 +1,6 @@
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { TPDopeSheet, TPLastBone } from 'types/TP';
-interface Params {
+interface FnSelectLayerTrack {
   isSelected: boolean;
   lastBoneList: TPLastBone[];
   trackIndex: number;
@@ -19,7 +19,11 @@ type Return = [Partial<TPDopeSheet>[], number[]];
  * @returns newClickedTrackList - 새로 선택 효과를 적용시킬 트랙 리스트(number[])
  */
 
-const fnSelectLayerTrack = ({ isSelected, lastBoneList, trackIndex }: Params): Return => {
+const fnSelectLayerTrack = ({
+  isSelected,
+  lastBoneList,
+  trackIndex,
+}: FnSelectLayerTrack): Return => {
   const updatedTrackList: Partial<TPDopeSheet>[] = [];
   const newClickedTrackList = [];
 
