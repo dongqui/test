@@ -233,7 +233,7 @@ const Track: React.FC<TrackProps> = ({
         >
           {childrenTrackList.length ? (
             <IconWrapper
-              className={cx('track-button', 'arrow-button', { opened: isClickedArrowButton })}
+              className={cx('track-icon', 'arrow-button', { opened: isClickedArrowButton })}
               icon={SvgPath.CaretDown}
               hasFrame={false}
               onClick={clickArrowButton}
@@ -242,21 +242,23 @@ const Track: React.FC<TrackProps> = ({
             ''
           )}
           <p className={cx({ locked: isLocked })}>{title}</p>
-          <div className={cx('track-icon-wrapper')}>
+          <div className={cx('track-icon-wrapper', { locked: isLocked })}>
             {trackIndex && (
               <>
                 <IconWrapper
-                  className={cx('track-button', 'lock')}
+                  className={cx('track-icon', 'lock')}
                   icon={isLocked ? SvgPath.LockOpen : SvgPath.LockClose}
                   hasFrame={false}
                   onClick={clickLockButton}
                 />
-                <IconWrapper
-                  className={cx('track-button', 'check')}
-                  icon={SvgPath.LockClose}
-                  hasFrame={false}
-                  onClick={clickRenderingButton}
-                />
+                <div className={cx('check-wrapper')}>
+                  <IconWrapper
+                    className={cx('track-icon', 'check')}
+                    icon={SvgPath.Check}
+                    hasFrame={false}
+                    onClick={clickRenderingButton}
+                  />
+                </div>
               </>
             )}
           </div>
@@ -267,8 +269,6 @@ const Track: React.FC<TrackProps> = ({
         >
           {childrenTrackList?.map((childTrack) => {
             const { childrenTrackList, isOpenedChildrenTrack, name, trackIndex } = childTrack;
-            // const aa = test;
-            // console.log('aa', aa);
             return (
               <Track
                 key={name}
