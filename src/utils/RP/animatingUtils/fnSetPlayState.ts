@@ -28,7 +28,6 @@ const fnSetPlayState = (props: FnSetPlayState) => {
     case 'play':
       mixer.timeScale = DEFAULT_SPEED * playSpeed;
       currentAction.play();
-      currentAction.time = _.round(startTimeIndex / 30, 4);
       break;
     case 'pause':
       mixer.timeScale = 0;
