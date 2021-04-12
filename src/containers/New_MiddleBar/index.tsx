@@ -20,6 +20,8 @@ const MiddleBar: FunctionComponent<Props> = () => {
   const animatingData = useReactiveVar(storeAnimatingData);
   const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
+  const lastTimeRef = useRef<HTMLInputElement>(null);
 
   const { startTimeIndex, endTimeIndex } = animatingData;
 
@@ -105,8 +107,11 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const handleStartInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.currentTarget.value);
-    if (value < endTimeIndex) {
+    if (value > 0 && value < endTimeIndex) {
       storeAnimatingData({ ...animatingData, startTimeIndex: value });
+      if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
+        currentTimeIndexRef.current.value = value.toString();
+      }
     } else {
       event.currentTarget.value = startTimeIndex.toString();
     }
@@ -116,6 +121,9 @@ const MiddleBar: FunctionComponent<Props> = () => {
     const value = parseInt(event.currentTarget.value);
     if (value > startTimeIndex) {
       storeAnimatingData({ ...animatingData, endTimeIndex: value });
+      if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
+        currentTimeIndexRef.current.value = value.toString();
+      }
     } else {
       event.currentTarget.value = endTimeIndex.toString();
     }
@@ -126,9 +134,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
       const now = _.round(currentAction.time * 30, 0);
       const value = parseInt(event.currentTarget.value);
       if (value >= startTimeIndex && value <= endTimeIndex) {
-        console.log(currentAction.time);
         currentAction.time = _.round(value / 30, 4);
-        console.log(currentAction.time);
       } else {
         event.currentTarget.value = now.toString();
       }
@@ -145,14 +151,12 @@ const MiddleBar: FunctionComponent<Props> = () => {
     }
   }, []);
 
-  const lastTimeRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     // 현재는 미들바 조작해야만 적용됨 -> 수정 필요
     if (currentAction && lastTimeRef.current) {
       lastTimeRef.current.value = _.round(currentAction.getClip().duration, 0).toString();
     }
-  }, [currentAction]);
+  }, [currentAction, startTimeIndex]);
 
   return (
     <div className={cx('wrapper')}>
@@ -190,10 +194,11 @@ const MiddleBar: FunctionComponent<Props> = () => {
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="NOW"
-                defaultValue="0000"
+                defaultValue="0001"
                 arrow
                 onBlur={handleNowInputBlur}
                 onKeyDown={handleInputKeyDown}
+                innerRef={currentTimeIndexRef}
               />
             </div>
           </div>

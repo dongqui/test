@@ -72,6 +72,18 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
   const currentXAxisPosition = useRef(1);
 
+  useEffect(() => {
+    setInterval(() => {
+      // currentXAxisPosition.current += 1000;
+      // const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      // d3.select('#play-bar-wrapper').attr(
+      //   'transform',
+      //   `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+      // ${X_AXIS_HEIGHT / 2})`,
+      // );
+    }, 500);
+  }, []);
+
   // svg로 x축 그리기
   useEffect(() => {
     if (!dopeSheetRef.current) return;
