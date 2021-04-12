@@ -4,16 +4,15 @@
   display: flex;
   background-color: $gray300;
   border-radius: 4px;
-  padding: 2px 8px;
+  padding: 2px 10px;
 }
 
-.prefix {
+.suffix {
   position: relative;
   display: flex;
   align-items: center;
-  font-size: 10px;
-  color: $primaryColor;
-  margin-right: 8px;
+  font-size: 14px;
+  color: $gray700;
 }
 
 .input {

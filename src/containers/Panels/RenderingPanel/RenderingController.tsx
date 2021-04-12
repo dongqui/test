@@ -55,7 +55,14 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     setDirLight,
   });
 
-  const { startTimeIndex, endTimeIndex } = animatingData;
+  const {
+    startTimeIndex,
+    endTimeIndex,
+    playState,
+    playDirection,
+    playSpeed,
+    currentTimeIndex,
+  } = animatingData;
 
   // animation 생성 로직
   useEffect(() => {
@@ -72,15 +79,19 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       action.play();
       mixer.timeScale = 0;
       action.time = _.round(startTimeIndex / 30, 4);
-      mixer.addEventListener('loop', () => {
-        action.time = _.round(startTimeIndex / 30, 4);
-      });
       storeCurrentAction(action);
       console.log('action: ', action);
     }
   }, [currentVisualizedData, endTimeIndex, mixer, startTimeIndex]);
 
-  const { playState, playDirection, playSpeed, currentTimeIndex } = animatingData;
+  // loop 했을 때 start index 로 보내줘야 함
+  useEffect(() => {
+    // mixer.addEventListener('loop', () => {
+    //   if (playDirection === 1) {
+    //     action.time = _.round(startTimeIndex / 30, 4);
+    //   }
+    // });
+  });
 
   // animation 컨트롤 로직
   useEffect(() => {
