@@ -1,5 +1,4 @@
 import { CUTIMAGE_HEIGHT } from 'containers/extract/CutEdit/CutEdit.styles';
-import { STANDARD_WIDTH } from 'styles/constants/common';
 import { LPDataType } from 'types';
 import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
 import {
@@ -22,9 +21,9 @@ export const INITIAL_ANIMATING_DATA: AnimatingDataType = {
   playState: 'stop',
   playDirection: 1, // 1 은 정재생, -1 은 역재생
   playSpeed: 1,
-  startTimeIndex: 0, // 미들바의 start 에 해당
+  startTimeIndex: 1, // 미들바의 start 에 해당
   endTimeIndex: 300, // 미들바의 end 에 해당
-  currentTimeIndex: 0, // 미들바의 now 에 해당
+  currentTimeIndex: 1, // 미들바의 now 에 해당
 };
 export const INITIAL_RENDERING_DATA: RenderingDataType = {
   positionX: 0,
@@ -175,7 +174,9 @@ export const INITIAL_CP_DATA: CPDataType[] = [
 export const INITIAL_RECORDING_DATA = {
   duration: 10,
   rangeBoxInfo: {
-    width: STANDARD_WIDTH,
+    // width: window.innerWidth * 0.9,
+    // width: 1700,
+    width: 0,
     height: CUTIMAGE_HEIGHT,
     x: 0,
     barX: 0,

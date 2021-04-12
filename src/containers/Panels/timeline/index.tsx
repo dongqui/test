@@ -21,6 +21,7 @@ import produce from 'immer';
 const cx = classNames.bind(styles);
 
 interface Props {
+  visualizedDataKey?: string;
   baseLayer?: ShootTrackType[];
   layers?: ShootLayerType[];
 }

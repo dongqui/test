@@ -4,7 +4,6 @@ import { useVideoToImages } from 'hooks/RP/useVideoToImages';
 import { storeBarPositionX, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useRef } from 'react';
-import { STANDARD_WIDTH } from 'styles/constants/common';
 import { storeCutImages } from '../../../lib/store';
 import { WebcamPresenter } from './WebcamPresenter';
 import * as S from './WebcamStyles';
@@ -12,6 +11,7 @@ import * as S from './WebcamStyles';
 export interface WebcamProps {
   videoUrl: string;
 }
+
 const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
   const recordingData = useReactiveVar(storeRecordingData);
   const cutImages = useReactiveVar(storeCutImages);
@@ -36,11 +36,11 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
   const handleTimeUpdate = useCallback(() => {
     if (recordingData?.isPlaying) {
       const currentTime = showVideoRef?.current?.currentTime ?? 0;
-      const startTime = recordingData.duration * (recordingData.rangeBoxInfo.x / STANDARD_WIDTH);
+      const startTime = recordingData.duration * (recordingData.rangeBoxInfo.x / window.innerWidth);
       const endTime =
         recordingData.duration *
-        ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / STANDARD_WIDTH);
-      let barX = STANDARD_WIDTH * (currentTime / recordingData.duration);
+        ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth);
+      let barX = window.innerWidth * (currentTime / recordingData.duration);
       if (_.gt(currentTime, endTime)) {
         if (showVideoRef?.current) {
           showVideoRef.current.currentTime = startTime;
@@ -66,7 +66,7 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
   useEffect(() => {
     try {
       const newCurrentTime =
-        recordingData.duration * (recordingData.rangeBoxInfo.barX / STANDARD_WIDTH);
+        recordingData.duration * (recordingData.rangeBoxInfo.barX / window.innerWidth);
       const video = showVideoRef.current;
       if (!_.isNull(video)) {
         video.currentTime = newCurrentTime;
@@ -86,4 +86,5 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
   }, []);
   return <WebcamPresenter showVideoRef={showVideoRef} videoRef={videoRef} videoUrl={videoUrl} />;
 };
-export const Webcam = React.memo(WebcamComponent);
+
+export default React.memo(WebcamComponent);

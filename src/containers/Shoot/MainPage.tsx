@@ -121,6 +121,7 @@ const MainContainer: FunctionComponent = () => {
       </ResizableBox>
       <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">
         <TimelineContainer
+          visualizedDataKey={currentVisualizedData?.key}
           baseLayer={currentVisualizedData?.baseLayer}
           layers={currentVisualizedData?.layers}
         />

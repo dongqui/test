@@ -12,11 +12,11 @@ interface BaseProps {
 export type Props = BaseProps;
 
 const Segment: FunctionComponent<Props> = ({ objList }) => {
-  const [selected, setSelected] = useState<Number>(0);
+  const [selected, setSelected] = useState<number>(0);
   const targetIDRef = useRef(selected);
 
   const handleClick = (e: any) => {
-    const targetID = Number(e.target.id);
+    const targetID = e.target.id;
     setSelected(targetID);
   };
 
@@ -24,15 +24,15 @@ const Segment: FunctionComponent<Props> = ({ objList }) => {
     targetIDRef.current = selected;
   }, [selected]);
 
-  const obj = _.map(objList, (item, idx) => (
+  const obj = _.map(objList, (item, idx: number) => (
     <React.Fragment key={item.id}>
       <div
         role="button"
         onClick={handleClick}
         onKeyPress={handleClick}
         id={String(idx)}
-        tabIndex={Number(idx)}
-        className={cx('segment', Number(selected) === Number(idx) ? cx('active') : undefined)}
+        tabIndex={idx}
+        className={cx('segment', Number(selected) === idx ? cx('active') : undefined)}
       >
         {item.contents}
       </div>

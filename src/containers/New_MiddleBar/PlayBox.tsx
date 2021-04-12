@@ -1,19 +1,28 @@
 import { FunctionComponent, Fragment, memo, useCallback, useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { storeAnimatingData, storeCurrentVisualizedData, storePageInfo } from 'lib/store';
+import {
+  storeAnimatingData,
+  storeModalInfo,
+  storeCurrentVisualizedData,
+  storePageInfo,
+  storeRecordingData,
+} from 'lib/store';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
-import { PAGE_NAMES } from 'types';
 
 const cx = classNames.bind(styles);
 
 export interface Props {}
 
 const PlayBox: FunctionComponent<Props> = ({}) => {
+  const recordingData = useReactiveVar(storeRecordingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const pageInfo = useReactiveVar(storePageInfo);
+
+  const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
   const handleKeyDown = () => {};
 
@@ -33,35 +42,75 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
   }, [animatingData]);
 
   const handleRewind = useCallback(() => {
-    if (!(animatingData.playState === 'play' && animatingData.playDirection === -1)) {
-      storeAnimatingData({
-        ...animatingData,
-        playDirection: -1,
-        playState: 'play',
-      });
+    if (isShootPage) {
+      if (!(animatingData.playState === 'play' && animatingData.playDirection === -1)) {
+        storeAnimatingData({
+          ...animatingData,
+          playDirection: -1,
+          playState: 'play',
+        });
+      }
     }
-  }, [animatingData]);
+
+    if (!isShootPage) {
+      storeRecordingData({ ...recordingData, isPlaying: true });
+      setTimeout(() => {
+        storeRecordingData({ ...recordingData, isPlaying: false });
+      }, 1000 * recordingData.duration);
+    }
+  }, [animatingData, isShootPage, recordingData]);
 
   const handlePlay = useCallback(() => {
-    if (!(animatingData.playState === 'play' && animatingData.playDirection === 1)) {
-      storeAnimatingData({
-        ...animatingData,
-        playDirection: 1,
-        playState: 'play',
-      });
+    if (isShootPage) {
+      if (!(animatingData.playState === 'play' && animatingData.playDirection === 1)) {
+        storeAnimatingData({
+          ...animatingData,
+          playDirection: 1,
+          playState: 'play',
+        });
+      }
     }
-  }, [animatingData]);
+
+    if (!isShootPage) {
+      storeRecordingData({ ...recordingData, isPlaying: true });
+      // setTimeout(() => {
+      //   storeRecordingData({ ...recordingData, isPlaying: false });
+      // }, 1000 * recordingData.duration);
+    }
+  }, [animatingData, isShootPage, recordingData]);
 
   const handlePause = useCallback(() => {
-    if (animatingData.playState !== 'pause') {
-      storeAnimatingData({
-        ...animatingData,
-        playState: 'pause',
-      });
+    if (isShootPage) {
+      if (animatingData.playState !== 'pause') {
+        storeAnimatingData({
+          ...animatingData,
+          playState: 'pause',
+        });
+      }
     }
-  }, [animatingData]);
 
-  const isPlaying = _.isEqual(animatingData.playState, 'play');
+    if (!isShootPage) {
+      storeRecordingData({ ...recordingData, isPlaying: false });
+    }
+  }, [animatingData, isShootPage, recordingData]);
+
+  const handleExport = useCallback(() => {
+    storeModalInfo({
+      isShow: true,
+      type: MODAL_TYPES.input,
+      msg: '모션의 이름을 입력해주세요.',
+    });
+  }, []);
+
+  const isPlaying = _.isEqual(animatingData.playState, 'play') || recordingData.isPlaying;
+
+  const pauseButtonClasses = cx('pause', {
+    center: isShootPage,
+  });
+
+  const rewindButtonClasses = cx('rewind', {
+    invisible: !isShootPage,
+  });
 
   return (
     <div className={cx('wrapper')}>
@@ -83,7 +132,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
         <div className={cx('holder')}>
           {isPlaying ? (
             <IconWrapper
-              className={cx('pause')}
+              className={pauseButtonClasses}
               onClick={handlePause}
               icon={SvgPath.Pause}
               hasFrame={false}
@@ -91,7 +140,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
           ) : (
             <Fragment>
               <IconWrapper
-                className={cx('rewind')}
+                className={rewindButtonClasses}
                 onClick={handleRewind}
                 icon={SvgPath.RewindArrow}
                 hasFrame={false}
@@ -105,6 +154,14 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
             </Fragment>
           )}
         </div>
+        {!isShootPage && (
+          <IconWrapper
+            className={cx('export')}
+            onClick={handleExport}
+            icon={SvgPath.Export}
+            hasFrame={false}
+          />
+        )}
       </div>
     </div>
   );

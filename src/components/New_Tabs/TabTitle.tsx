@@ -7,16 +7,19 @@ const cx = classNames.bind(styles);
 interface Props {
   tabID: number;
   title: string;
+  activeTab: number;
   setAtiveTab: (index: number) => void;
 }
 
-const TabTitle: FunctionComponent<Props> = ({ tabID, title, setAtiveTab }) => {
+const TabTitle: FunctionComponent<Props> = ({ tabID, title, activeTab, setAtiveTab }) => {
   const handleClick = useCallback(() => {
     setAtiveTab(tabID);
   }, [setAtiveTab, tabID]);
   return (
-    <div className={cx('tab-header')}>
-      <button onClick={handleClick}>{title}</button>
+    <div className={cx('tab-header', activeTab === tabID ? cx('active') : undefined)}>
+      <button className={cx('tab-btn')} onClick={handleClick}>
+        <span>{title}</span>
+      </button>
     </div>
   );
 };
