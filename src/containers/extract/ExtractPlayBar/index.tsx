@@ -1,8 +1,7 @@
 import { useReactiveVar } from '@apollo/client';
-import { storeRecordingData } from 'lib/store';
+import { storeBarPositionX, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useMemo } from 'react';
-import { STANDARD_WIDTH } from 'styles/constants/common';
 import { Indicator } from './Indicator';
 import { ModeSelect } from './ModeSelect';
 import * as S from './PlayBarStyles';
@@ -12,19 +11,20 @@ export interface ExtractPlayBarProps {}
 
 const ExtractPlayBarComponent: React.FC<ExtractPlayBarProps> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
+  const barPositionX = useReactiveVar(storeBarPositionX);
   const now = useMemo(
-    () => (recordingData.duration * (recordingData.rangeBoxInfo.barX / STANDARD_WIDTH)).toFixed(1),
-    [recordingData.duration, recordingData.rangeBoxInfo.barX],
+    () => (recordingData.duration * (barPositionX / window.innerWidth)).toFixed(1),
+    [recordingData.duration, barPositionX],
   );
   const start = useMemo(
-    () => (recordingData.duration * (recordingData.rangeBoxInfo.x / STANDARD_WIDTH)).toFixed(1),
+    () => (recordingData.duration * (recordingData.rangeBoxInfo.x / window.innerWidth)).toFixed(1),
     [recordingData.duration, recordingData.rangeBoxInfo.x],
   );
   const end = useMemo(
     () =>
       (
         recordingData.duration *
-        ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / STANDARD_WIDTH)
+        ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth)
       ).toFixed(1),
     [recordingData.duration, recordingData.rangeBoxInfo.width, recordingData.rangeBoxInfo.x],
   );

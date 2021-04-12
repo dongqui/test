@@ -1,12 +1,26 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import { storeTPDopeSheetList } from 'lib/store';
+import {
+  storeContextMenuInfo,
+  storeCurrentVisualizedData,
+  storeDeleteTargetKeyframes,
+  storeSkeletonHelper,
+  storeTPDopeSheetList,
+} from 'lib/store';
 import CircleGroup from './circleGroup';
 import PlayBar from './playBar';
 import styles from './index.module.scss';
+import { CurrentVisualizedDataType, ShootTrackType } from 'types';
+import {
+  fnDeleteKeyframe,
+  fnUpdateKeyframeToBase,
+  fnUpdateKeyframeToLayer,
+} from 'utils/TP/editingUtils';
+import produce from 'immer';
+import useContextMenu from 'hooks/common/useContextMenu';
 interface Props {
   timelineWrapperRef: React.RefObject<HTMLDivElement>;
 }
@@ -56,7 +70,19 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const xAxisPosition = useRef<d3Axis | null>(null);
   const renderXAxis = useRef<d3Selection | null>(null);
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
-  const currentXAxisPosition = useRef(0);
+  const currentXAxisPosition = useRef(1);
+
+  useEffect(() => {
+    setInterval(() => {
+      // currentXAxisPosition.current += 1000;
+      // const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      // d3.select('#play-bar-wrapper').attr(
+      //   'transform',
+      //   `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+      // ${X_AXIS_HEIGHT / 2})`,
+      // );
+    }, 500);
+  }, []);
 
   // svg로 x축 그리기
   useEffect(() => {
@@ -126,6 +152,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           .style('fill', '#282727'),
       )
       .call(xAxisPosition.current);
+    d3.selectAll('.x-axis-g line').attr('y2', -24);
 
     // 재생 바 transform 설정
     const xScaleLinear = prevXScale.current as d3ScaleLinear;
@@ -158,6 +185,8 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // 이전 값으로 scale 적용
       renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear));
       xScale.current = rescaleX; // rescale한 값으로 갱신
+
+      d3.selectAll('.x-axis-g line').attr('y2', -24);
 
       // grid line 조정
       d3.selectAll('.grid-line').remove();
@@ -260,19 +289,288 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
 
   // 재생바 위치 변경
   useEffect(() => {
-    const dragBehavior = d3.drag().on('drag', function (drag: any) {
-      const xTick = _.floor(prevXScale.current?.invert(drag.x) as number);
-      const checkZero = xTick <= 0 ? 0 : xTick;
-      currentXAxisPosition.current = checkZero;
-      d3.select(this).attr(
-        'transform',
-        `translate(${(prevXScale.current as d3ScaleLinear)(checkZero) - 10} , ${
-          X_AXIS_HEIGHT / 2
-        })`,
-      );
-    });
+    const dragBehavior = d3
+      .drag()
+      .filter((playBar) => {
+        if (playBar.target.tagName !== 'path') return false;
+        return true;
+      })
+      .on('drag', function (drag: any) {
+        const currentXTick = _.floor(prevXScale.current?.invert(drag.x + 20) as number);
+        const checkZero = currentXTick <= 1 ? 1 : currentXTick;
+        const xScaleLinear = prevXScale.current as d3ScaleLinear;
+
+        currentXAxisPosition.current = checkZero;
+        d3.select(this).attr(
+          'transform',
+          `translate(${xScaleLinear(checkZero) - 10}, 
+        ${X_AXIS_HEIGHT / 2})`,
+        );
+      });
     d3.select('#play-bar-wrapper').call(dragBehavior as any);
   }, []);
+
+  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
+  const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
+  const tpDopesheetList = storeTPDopeSheetList();
+  const selectedBaseDopeSheets = useMemo(
+    () =>
+      tpDopesheetList.filter(
+        (item) =>
+          item.isSelected &&
+          !item.isLocked &&
+          item.isTransformTrack &&
+          item.layerKey === 'baseLayer',
+      ),
+    [tpDopesheetList],
+  );
+  const selectedLayerDopeSheets = useMemo(
+    () =>
+      tpDopesheetList.filter(
+        (item) =>
+          item.isSelected &&
+          !item.isLocked &&
+          item.isTransformTrack &&
+          item.layerKey !== 'baseLayer',
+      ),
+    [tpDopesheetList],
+  );
+
+  const handleUpdateKeyframeToBase = useCallback(() => {
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      if (updateTargetTime && baseLayer && skeletonHelper) {
+        const selectedDopesheetNames = selectedBaseDopeSheets.map(
+          (dopesheet) => dopesheet.trackName,
+        );
+        const resultTracks: [ShootTrackType, number][] = [];
+        const targetTracks = baseLayer.filter((track) =>
+          selectedDopesheetNames.includes(track.name),
+        );
+        targetTracks.forEach((track) => {
+          const [boneName, propertyName] = track.name.split('.');
+          const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
+          if (bone) {
+            let values;
+            if (propertyName === 'position') {
+              values = { x: bone.position.x, y: bone.position.y, z: bone.position.z };
+            } else if (propertyName === 'rotation') {
+              values = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+            } else if (propertyName === 'scale') {
+              values = { x: bone.scale.x, y: bone.scale.y, z: bone.scale.z };
+            }
+            if (values) {
+              const resultTrack = fnUpdateKeyframeToBase({ track, time: updateTargetTime, values });
+              const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
+              resultTracks.push([resultTrack, targetTrackIndex]);
+            }
+          }
+        });
+        const state = storeCurrentVisualizedData();
+        if (state && resultTracks.length !== 0) {
+          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+            resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+              draft.baseLayer[targetTrackIndex] = resultTrack;
+            });
+          });
+          storeCurrentVisualizedData(nextState);
+        }
+      }
+    }
+  }, [currentVisualizedData, selectedBaseDopeSheets, skeletonHelper, updateTargetTime]);
+
+  const handleUpdateKeyframeToLayer = useCallback(() => {
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      if (
+        updateTargetTime &&
+        baseLayer &&
+        layers &&
+        layers.length !== 0 &&
+        skeletonHelper &&
+        selectedLayerDopeSheets.length !== 0
+      ) {
+        const targetLayerIndex = _.findIndex(
+          layers,
+          (layer) => layer.key === selectedLayerDopeSheets[0].layerKey,
+        );
+        if (targetLayerIndex !== -1) {
+          const resultTracks: [ShootTrackType, number][] = [];
+          const selectedDopesheetNames = selectedLayerDopeSheets.map(
+            (dopesheet) => dopesheet.trackName,
+          );
+          const targetTracks = layers[targetLayerIndex].tracks.filter((track) =>
+            selectedDopesheetNames.includes(track.name),
+          );
+
+          targetTracks.forEach((track) => {
+            const [boneName, propertyName] = track.name.split('.');
+            const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
+            if (bone) {
+              let values;
+              if (propertyName === 'position') {
+                values = { x: bone.position.x, y: bone.position.y, z: bone.position.z };
+              } else if (propertyName === 'rotation') {
+                values = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+              } else if (propertyName === 'scale') {
+                values = { x: bone.scale.x, y: bone.scale.y, z: bone.scale.z };
+              }
+              if (values) {
+                const resultTrack = fnUpdateKeyframeToLayer({
+                  track,
+                  currentLayerKey: layers[targetLayerIndex].key,
+                  baseLayer,
+                  layers,
+                  time: updateTargetTime,
+                  values,
+                });
+                const targetTrackIndex = _.findIndex(
+                  layers[targetLayerIndex].tracks,
+                  (t) => t.name === track.name,
+                );
+                resultTracks.push([resultTrack, targetTrackIndex]);
+              }
+            }
+          });
+          const state = storeCurrentVisualizedData();
+          if (state && resultTracks.length !== 0) {
+            const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+              resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
+                draft.layers[targetLayerIndex].tracks[targetTrackIndex] = resultTrack;
+              });
+            });
+            storeCurrentVisualizedData(nextState);
+          }
+        }
+      }
+    }
+  }, [currentVisualizedData, selectedLayerDopeSheets, skeletonHelper, updateTargetTime]);
+
+  const handleDeleteKeyframe = useCallback(() => {
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      if (deleteTargetKeyframes && baseLayer && layers) {
+        // deleteTargetKeyframes 에는 담기는데 반영이 안된 상태 -> store 변경 시점 로직 수정 필요
+        const resultBaseLayerTracks: [ShootTrackType, number][] = [];
+        const resultLayersTracks: [ShootTrackType, number, number][] = [];
+        _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
+          const { layerKey, trackName, time } = targetKeyframe;
+          if (layerKey === 'baseLayer') {
+            const targetTrack = _.find(baseLayer, (track) => track.name === trackName);
+            if (targetTrack) {
+              const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
+              const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === targetTrack.name);
+              resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
+            }
+          } else {
+            const targetLayerIndex = _.findIndex(layers, (layer) => layer.key === layerKey);
+            if (layers.length !== 0 && targetLayerIndex !== -1) {
+              const targetTrack = _.find(
+                layers[targetLayerIndex].tracks,
+                (track) => (track.name = trackName),
+              ) as ShootTrackType;
+              if (targetTrack) {
+                const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
+                const targetTrackIndex = _.findIndex(
+                  layers[targetLayerIndex].tracks,
+                  (t) => t.name === targetTrack.name,
+                );
+                resultLayersTracks.push([resultTrack, targetLayerIndex, targetTrackIndex]);
+              }
+            }
+          }
+        });
+        storeDeleteTargetKeyframes([]);
+        const state = storeCurrentVisualizedData();
+        if (state && (resultBaseLayerTracks.length !== 0 || resultLayersTracks.length !== 0)) {
+          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+            resultBaseLayerTracks.forEach(([resultTrack, targetTrackIndex]) => {
+              draft.baseLayer = [
+                ...draft.baseLayer.slice(0, targetTrackIndex),
+                resultTrack,
+                ...draft.baseLayer.slice(targetTrackIndex + 1),
+              ];
+            });
+            resultLayersTracks.forEach(([resultTrack, targetLayerIndex, targetTrackIndex]) => {
+              draft.layers[targetLayerIndex].tracks = [
+                ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
+                resultTrack,
+                ...draft.layers[targetLayerIndex].tracks.slice(targetTrackIndex + 1),
+              ];
+            });
+          });
+          storeCurrentVisualizedData(nextState);
+        }
+      }
+    }
+  }, [currentVisualizedData, deleteTargetKeyframes]);
+
+  // TP Resize 시 circle 위치 조정(진행 중)
+  // useEffect(() => {
+  //   const rescaleCircleX = (event: any) => {
+  //     console.log('resize', event);
+  //   };
+  //   window.addEventListener('resize', rescaleCircleX);
+
+  //   return () => {
+  //     window.removeEventListener('resize', rescaleCircleX);
+  //   };
+  // }, [timelineWrapperRef]);
+
+  const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
+
+  const handleDopsheetContextMenu = ({
+    top,
+    left,
+    e,
+  }: {
+    top: number;
+    left: number;
+    e?: MouseEvent;
+  }) => {
+    e?.preventDefault();
+    storeContextMenuInfo({
+      isShow: true,
+      top,
+      left,
+      data: [
+        {
+          key: 'edit',
+          value: 'Edit Keyframe',
+          isSelected: false,
+          isDisabled: selectedBaseDopeSheets.length === 0 && selectedLayerDopeSheets.length === 0,
+        },
+        {
+          key: 'delete',
+          value: 'Delete Keyframe',
+          isSelected: false,
+          isDisabled: deleteTargetKeyframes.length === 0,
+        },
+      ],
+      onClick: (key) => {
+        switch (key) {
+          case 'edit':
+            if (selectedBaseDopeSheets.length !== 0) {
+              handleUpdateKeyframeToBase();
+            }
+            if (selectedLayerDopeSheets.length !== 0) {
+              handleUpdateKeyframeToLayer();
+            }
+            storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
+            break;
+          case 'delete':
+            handleDeleteKeyframe();
+            storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
+            break;
+          default:
+            break;
+        }
+      },
+    });
+  };
+  useContextMenu({ targetRef: dopeSheetRef, event: handleDopsheetContextMenu });
 
   return (
     <>

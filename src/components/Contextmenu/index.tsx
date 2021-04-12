@@ -6,6 +6,7 @@ export interface ContextmenuDataTypes {
   key: string;
   value: string;
   isSelected?: boolean;
+  isDisabled?: boolean;
 }
 export interface ContextmeneuProps {
   width: string;

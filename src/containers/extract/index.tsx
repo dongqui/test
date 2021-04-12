@@ -1,29 +1,43 @@
-import React from 'react';
-import { NextPage } from 'next';
-import _ from 'lodash';
-import * as S from './ExtractStyle';
-import { Webcam } from 'containers/extract/Webcam';
-import { CutEdit } from 'containers/extract/CutEdit';
-import { ExtractPlayBar } from 'containers/extract/ExtractPlayBar';
+import { FunctionComponent, Fragment, memo } from 'react';
+import dynamic from 'next/dynamic';
 import { useReactiveVar } from '@apollo/client';
+import * as S from './ExtractStyle';
+import CutEdit from 'containers/extract/CutEdit';
+import { ExtractPlayBar } from 'containers/extract/ExtractPlayBar';
 import { storePageInfo } from 'lib/store';
 import { DEFAULT_FILE_URL } from 'utils/const';
+import MiddleBar from 'containers/New_MiddleBar';
+import Webcam from 'containers/extract/Webcam';
+import _ from 'lodash';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
-interface Props {}
+const cx = classNames.bind(styles);
 
-const ExtractPage: NextPage<Props> = ({}) => {
+const Extract: FunctionComponent = () => {
   const pageInfo = useReactiveVar(storePageInfo);
+
+  const videoURL = pageInfo.videoUrl;
+
   return (
-    <main>
-      <S.WebcamWrapper>
-        <Webcam videoUrl={`${pageInfo?.videoUrl ?? DEFAULT_FILE_URL}`} />
+    <Fragment>
+      <div className={cx('wrapper')}>
+        <div className={cx('upper-section')}>{videoURL && <Webcam videoUrl={videoURL} />}</div>
+        <MiddleBar />
+        {/* <ExtractPlayBar /> */}
+        <div className={cx('lower-section')}>
+          <CutEdit />
+        </div>
+      </div>
+      {/* <S.WebcamWrapper>
+        <Webcam videoUrl={videoURL} />
       </S.WebcamWrapper>
       <ExtractPlayBar />
       <S.CutEditWrapper>
         <CutEdit />
-      </S.CutEditWrapper>
-    </main>
+      </S.CutEditWrapper> */}
+    </Fragment>
   );
 };
 
-export default React.memo(ExtractPage);
+export default memo(Extract);

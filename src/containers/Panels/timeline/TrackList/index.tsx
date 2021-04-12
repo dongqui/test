@@ -31,7 +31,6 @@ const cx = classNames.bind(styles);
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
   const trackNameList = useReactiveVar(storeTPTrackNameList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
-  const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
@@ -141,9 +140,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   // 레이어 버튼 클릭
   const clickLayerButton = useCallback(() => {
-    const isConfirmed = confirm('Add a new layer?');
-
-    if (isConfirmed && skeletonHelper && currentVisualizedData) {
+    if (skeletonHelper && currentVisualizedData) {
       const layerNameRegex = /^layer[0-9]+/;
       const defaultTypeNames = currentVisualizedData.layers
         .map((layer) => layer.name.match(layerNameRegex))
@@ -154,7 +151,6 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
       const nextOrder = fnGetSmallestNewNumber(defaultTypeOrders);
       const newLayer = fnGetNewLayer({ name: `layer${nextOrder}`, bones: skeletonHelper.bones });
       const state = storeCurrentVisualizedData();
-      console.log('newLayer', newLayer);
       if (state) {
         const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
           draft?.layers.push(newLayer);
@@ -162,70 +158,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
         storeCurrentVisualizedData(nextState);
       }
     }
-  }, [currentVisualizedData, skeletonHelper]);
-
-  // 레이어 버튼 클릭
-  const ttt = useCallback(() => {
-    if (!trackNameList.length) return;
-    const { layerIndex: lastLayerIndex } = lastBoneList[lastBoneList.length - 1];
-    const jump = 10000 * lastBoneList.length;
-    let curBoneIndex = 0;
-
-    // 트랙 네임 리스트 갱신
-    const updatedTrackNameList = produce(trackNameList, (draft) => {
-      const summaryTrackChildren = draft[0].childrenTrackList;
-      const baseLayerChildren = summaryTrackChildren[0].childrenTrackList;
-      const createdLayer = _.map(baseLayerChildren, (boneTrack) => {
-        return {
-          ...boneTrack,
-          trackIndex: boneTrack.trackIndex + jump,
-          childrenTrackList: _.map(boneTrack.childrenTrackList, (transformTrack, index) => {
-            const transformIndex = transformTrack.trackIndex + jump;
-            if (index === 2 && curBoneIndex < transformIndex) {
-              curBoneIndex = transformIndex;
-            }
-            return { ...transformTrack, trackIndex: transformIndex };
-          }),
-        };
-      });
-
-      // 레이어 추가
-      summaryTrackChildren.push({
-        name: 'Layer1', // 이름 명명 적용 예정
-        isOpenedChildrenTrack: false,
-        childrenTrackList: createdLayer,
-        trackIndex: lastLayerIndex + 10000,
-      });
-    });
-
-    // Dope Sheet 리스트 갱신
-    const lastBaseBoneIndex = _.findIndex(
-      dopeSheetList,
-      (dopeSheet) => dopeSheet.trackIndex === lastBoneList[0].lastBoneIndex,
-    );
-    const updatedDopeSheetList: TPDopeSheet[] = [];
-    for (let index = 1; index <= lastBaseBoneIndex + 3; index += 1) {
-      // updatedDopeSheetList.push({
-      //   trackIndex: dopeSheetList[index].trackIndex + jump,
-      //   isSelected: false,
-      //   isLocked: false,
-      //   isExcludedRendering: false,
-      //   isClickedParentTrack: index === 1 ? dopeSheetList[1].isClickedParentTrack : false,
-      //   isFiltered: true, // 상황에 맞춰서 구현해야 됨
-      //   times: [],
-      // });
-    }
-
-    // 추가 된 레이어의 마지막 bone index 저장
-    const lastBone = {
-      layerIndex: lastLayerIndex + 10000,
-      lastBoneIndex: curBoneIndex - 3,
-    };
-
-    storeTPTrackNameList(updatedTrackNameList);
-    storeTPLastBoneList([...lastBoneList, lastBone]);
-    storeTPDopeSheetList([...dopeSheetList, ...updatedDopeSheetList]);
-  }, [dopeSheetList, lastBoneList, trackNameList]);
+  }, [skeletonHelper, currentVisualizedData]);
 
   // 최초 Track List 적용
   useEffect(() => {
@@ -235,9 +168,13 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   const isEmptyTrack = _.isEmpty(trackList);
 
+  const handleTrackListContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+
   return (
     <>
-      <div className={cx('wrapper')} ref={trackListRef}>
+      <div className={cx('wrapper')} ref={trackListRef} onContextMenu={handleTrackListContextMenu}>
         <div className={cx('search-wrapper')}>
           <SearchInput
             className={cx('search-joint')}
@@ -261,7 +198,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                   key={key}
                   childrenTrackList={childrenTrackList}
                   isOpenedParent={isOpenedChildrenTrack}
-                  paddingLeft={10}
+                  paddingLeft={18.5}
                   title={name}
                   trackIndex={trackIndex}
                 />

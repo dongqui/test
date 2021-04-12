@@ -8,6 +8,7 @@ export interface InputCPProps {
   name?: string;
   onDragMove?: ({ name, value }: { name: string; value: number }) => void;
   onKeyPress?: ((event: React.KeyboardEvent<HTMLInputElement>) => void) | undefined;
+  onKeyDown?: ((event: React.KeyboardEvent<HTMLInputElement>) => void) | undefined;
   handleBlur?: ({ name, value }: { name: string; value: number }) => void;
 }
 let currentValue: number;
@@ -17,6 +18,7 @@ export const InputCP: React.FC<InputCPProps> = ({
   name = '',
   onDragMove = () => {},
   onKeyPress = () => {},
+  onKeyDown = () => {},
   handleBlur = () => {},
 }) => {
   const inputWrapperRef = useRef<HTMLDivElement>(null);
@@ -93,6 +95,7 @@ export const InputCP: React.FC<InputCPProps> = ({
           autoFocus
           onFocus={(e) => e.target.select()}
           onKeyPress={onKeyPress}
+          onKeyDown={onKeyDown}
         ></S.InputCPInput>
       ) : (
         <S.InputCPInputDiv ref={inputRef} onClick={onClick}>

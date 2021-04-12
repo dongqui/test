@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useCallback, useRef } from 'react';
+import React, { FunctionComponent, memo, useCallback, useRef } from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import styled from '@emotion/styled';
@@ -14,7 +14,6 @@ import {
   storePageInfo,
   storeRecordingData,
 } from 'lib/store';
-import { GRAY200, STANDARD_WIDTH } from 'styles/constants/common';
 import { FILE_TYPES, LPDataType, MODAL_TYPES, PAGE_NAMES } from 'types';
 import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
 import { BaseModal } from 'components/New_Modal';
@@ -28,6 +27,8 @@ import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
 import { useLoading } from 'hooks/common/useLoading';
+import Html from 'components/New_Typography/Html';
+import { Headline } from 'components/New_Typography';
 
 const ModalWrapper = styled.div`
   position: absolute;
@@ -44,7 +45,6 @@ const ShootPage: FunctionComponent = () => {
   const pageInfo = useReactiveVar(storePageInfo);
   const recordingData = useReactiveVar(storeRecordingData);
   const contextMenuRef = useRef<HTMLDivElement | any>(null);
-  const { setLoading } = useLoading();
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       storeRecordingData({ ...recordingData, motionName: e.target.value });
@@ -53,19 +53,24 @@ const ShootPage: FunctionComponent = () => {
   );
   const onClick = useCallback(
     async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      storeModalInfo({ ...modalInfo, isShow: false });
-      setLoading(true);
+      storeModalInfo({
+        ...modalInfo,
+        isShow: true,
+        type: MODAL_TYPES.loading,
+        msg: '모션 데이터를 추출중입니다.',
+      });
       const { error, msg, result } = await api.uploadFileToMotionData({
         url: `${pageInfo?.videoUrl}`,
         type: `${pageInfo.extension ?? 'mp4'}`,
         id: uuidv4(),
         start: Math.round(
-          (recordingData.duration * (recordingData.rangeBoxInfo.x / STANDARD_WIDTH)) /
+          (recordingData.duration * (recordingData.rangeBoxInfo.x / window.innerWidth)) /
             STANDARD_TIME_UNIT,
         ),
         end: Math.round(
           (recordingData.duration *
-            ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / STANDARD_WIDTH)) /
+            ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) /
+              window.innerWidth)) /
             STANDARD_TIME_UNIT,
         ),
         fileName: recordingData?.motionName,
@@ -93,6 +98,7 @@ const ShootPage: FunctionComponent = () => {
       ];
       storeLpData(_.concat(lpData, newData));
       storePageInfo({ page: PAGE_NAMES.shoot });
+      storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
     },
     [
       lpData,
@@ -100,10 +106,9 @@ const ShootPage: FunctionComponent = () => {
       pageInfo.extension,
       pageInfo?.videoUrl,
       recordingData.duration,
-      recordingData.motionName,
+      recordingData?.motionName,
       recordingData.rangeBoxInfo.width,
       recordingData.rangeBoxInfo.x,
-      setLoading,
     ],
   );
   const onClickConfirm = useCallback(() => {
@@ -139,8 +144,17 @@ const ShootPage: FunctionComponent = () => {
       {modalInfo.isShow && (
         <>
           {_.isEqual(modalInfo.type, MODAL_TYPES.alert) && (
-            <BaseModal hasCloseIcon onClose={handleClose} theme="dark">
-              <ModalInner>{modalInfo.msg}</ModalInner>
+            <BaseModal onClose={handleClose}>
+              <Headline level="5" align="center">
+                <Html content={modalInfo.msg} />
+              </Headline>
+            </BaseModal>
+          )}
+          {_.isEqual(modalInfo.type, MODAL_TYPES.loading) && (
+            <BaseModal onClose={handleClose}>
+              <Headline level="5" align="center">
+                <Html content={modalInfo.msg} />
+              </Headline>
             </BaseModal>
           )}
           {_.isEqual(modalInfo.type, MODAL_TYPES.confirm) && (

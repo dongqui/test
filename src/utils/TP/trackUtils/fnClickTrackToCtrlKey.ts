@@ -1,7 +1,7 @@
 import { fnCheckSelectedTrackList, fnSelectTrackList } from './index';
 import { TPDopeSheet, TPLastBone } from 'types/TP';
 
-interface Params {
+interface FnClickTrackToCtrlKey {
   clickedTrackList: number[];
   lastBoneList: TPLastBone[];
   trackIndex: number;
@@ -24,7 +24,11 @@ type Return = [Partial<TPDopeSheet>[], number[]] | false;
  * @returns newClickedTrackList - 새로 선택 효과를 적용시킬 트랙 리스트(number[])
  */
 
-const fnClickTrackToCtrlKey = ({ clickedTrackList, lastBoneList, trackIndex }: Params): Return => {
+const fnClickTrackToCtrlKey = ({
+  clickedTrackList,
+  lastBoneList,
+  trackIndex,
+}: FnClickTrackToCtrlKey): Return => {
   const updatedTrackList: Partial<TPDopeSheet>[] = [];
   const newClickedTrackList = [];
 

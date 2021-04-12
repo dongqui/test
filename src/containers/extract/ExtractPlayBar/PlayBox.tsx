@@ -4,12 +4,13 @@ import { PauseIcon } from 'components/Icons/generated2/PauseIcon';
 import { PlayForwardIcon } from 'components/Icons/generated2/PlayForwardIcon';
 import { PlayIcon } from 'components/Icons/generated2/PlayIcon';
 import { SquareIcon } from 'components/Icons/generated2/SquareIcon';
-import { MODAL_TYPES } from 'types';
-import { storeModalInfo, storeRecordingData } from 'lib/store';
+import { MODAL_TYPES, PAGE_NAMES } from 'types';
+import { storeModalInfo, storePageInfo, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { ExtractIcon } from '../../../components/Icons/generated2/ExtractIcon';
 import * as S from './PlayBarStyles';
+import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
 
 export interface PlayBoxProps {}
 
@@ -17,9 +18,6 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
   const play = useCallback(() => {
     storeRecordingData({ ...recordingData, isPlaying: true });
-    setTimeout(() => {
-      storeRecordingData({ ...recordingData, isPlaying: false });
-    }, 1000 * recordingData.duration);
   }, [recordingData]);
   const pause = useCallback(() => {
     storeRecordingData({ ...recordingData, isPlaying: false });
@@ -30,6 +28,10 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
       type: MODAL_TYPES.input,
       msg: '모션의 이름을 입력해주세요.',
     });
+  }, []);
+  const backToHome = useCallback(() => {
+    fnKillSetInterval();
+    storePageInfo({ page: PAGE_NAMES.shoot });
   }, []);
   return (
     <S.PlayBoxWrapper>
@@ -45,7 +47,7 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
         </S.PlayBoxIconDoubleWrapper>
       ) : (
         <>
-          <S.PlayBoxIconWrapper onClick={play}>
+          <S.PlayBoxIconWrapper onClick={backToHome}>
             <PlayForwardIcon />
           </S.PlayBoxIconWrapper>
           <S.PlayBoxIconWrapper onClick={play}>
