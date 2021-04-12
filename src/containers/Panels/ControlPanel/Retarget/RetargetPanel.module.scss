@@ -1,0 +1,34 @@
+.section-setup {
+  position: relative;
+  display: flex;
+  .setup-group {
+    position: absolute;
+    padding: 0 8px;
+    right: 0;
+    .icon {
+      &:focus {
+        border: 1px solid transparent;
+      }
+    }
+  }
+}
+
+.section-retarget {
+  .retarget-card {
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+
+      & > span {
+        font-size: 14px;
+        font-weight: 400;
+
+        color: #fff;
+      }
+    }
+    .card-coord {
+      display: flex;
+    }
+  }
+}
