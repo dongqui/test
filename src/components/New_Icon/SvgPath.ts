@@ -23,6 +23,7 @@ import RewindArrow from './svg/RewindArrow.svg';
 import Pause from './svg/Pause.svg';
 import Export from './svg/Export.svg';
 import CaretDown from './svg/CaretDown.svg';
+import Check from './svg/Check.svg';
 
 type Icon =
   | 'Close'
@@ -48,7 +49,8 @@ type Icon =
   | 'RewindArrow'
   | 'Pause'
   | 'Export'
-  | 'CaretDown';
+  | 'CaretDown'
+  | 'Check';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -79,6 +81,7 @@ const images: Images = {
   Pause,
   Export,
   CaretDown,
+  Check,
 };
 
 export default images;
