@@ -6,6 +6,7 @@ import { useRendering } from '../../../hooks/RP/useRendering';
 import { ShootLayerType, ShootTrackType } from 'types';
 import {
   storeAnimatingData,
+  storeCurrentAction,
   storeCurrentVisualizedData,
   storeRenderingData,
   storeSkeletonHelper,
@@ -38,12 +39,12 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
   const animatingData = useReactiveVar(storeAnimatingData);
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  const currentAction = useReactiveVar(storeCurrentAction);
   // component state
   const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
   const [cameraControls, setCameraControls] = useState<OrbitControls | undefined>(undefined);
   const [scene, setScene] = useState<THREE.Scene | undefined>(undefined);
   const [dirLight, setDirLight] = useState<THREE.DirectionalLight | undefined>(undefined);
-  const [currentAction, setCurrentAction] = useState<THREE.AnimationAction | undefined>(undefined);
 
   useRendering({
     id,
@@ -71,7 +72,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       action.play();
       mixer.timeScale = 0;
       action.time = 1 / 30;
-      setCurrentAction(action);
+      storeCurrentAction(action);
       console.log('action: ', action);
     }
   }, [currentVisualizedData, endTimeIndex, mixer, startTimeIndex]);

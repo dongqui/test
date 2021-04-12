@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-const DEFAULT_SPEED = 0.3;
+const DEFAULT_SPEED = 0.4;
 
 type playState = 'play' | 'pause' | 'stop';
 
