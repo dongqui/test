@@ -48,7 +48,7 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
         }
       }
     },
-    [deleteTargetKeyframes],
+    [deleteTargetKeyframes, dopeSheetData],
   );
 
   // circle 생성
