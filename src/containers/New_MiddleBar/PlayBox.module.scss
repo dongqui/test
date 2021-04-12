@@ -32,6 +32,10 @@
     border: 1px solid transparent;
   }
 
+  &.invisible {
+    display: none;
+  }
+
   & > svg {
     display: block;
     margin: 0;
@@ -45,6 +49,10 @@
 
   &:focus {
     border: 1px solid transparent;
+  }
+
+  &.center {
+    width: 100%;
   }
 
   & > svg {
@@ -64,11 +72,15 @@
 
 .pause {
   position: relative;
-  width: 100%;
+  width: 12px;
   height: 16px;
 
   &:focus {
     border: 1px solid transparent;
+  }
+
+  &.center {
+    width: 100%;
   }
 
   & > svg {

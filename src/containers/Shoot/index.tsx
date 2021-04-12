@@ -14,7 +14,6 @@ import {
   storePageInfo,
   storeRecordingData,
 } from 'lib/store';
-import { GRAY200, STANDARD_WIDTH } from 'styles/constants/common';
 import { FILE_TYPES, LPDataType, MODAL_TYPES, PAGE_NAMES } from 'types';
 import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
 import { BaseModal } from 'components/New_Modal';
@@ -60,12 +59,13 @@ const ShootPage: FunctionComponent = () => {
         type: `${pageInfo.extension ?? 'mp4'}`,
         id: uuidv4(),
         start: Math.round(
-          (recordingData.duration * (recordingData.rangeBoxInfo.x / STANDARD_WIDTH)) /
+          (recordingData.duration * (recordingData.rangeBoxInfo.x / window.innerWidth)) /
             STANDARD_TIME_UNIT,
         ),
         end: Math.round(
           (recordingData.duration *
-            ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / STANDARD_WIDTH)) /
+            ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) /
+              window.innerWidth)) /
             STANDARD_TIME_UNIT,
         ),
         fileName: recordingData?.motionName,

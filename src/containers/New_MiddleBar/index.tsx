@@ -1,6 +1,11 @@
 import { FunctionComponent, memo, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { storeAnimatingData, storePageInfo } from 'lib/store';
+import {
+  storeAnimatingData,
+  storePageInfo,
+  storeBarPositionX,
+  storeRecordingData,
+} from 'lib/store';
 import { SvgPath } from 'components/New_Icon';
 import { SegmentButton } from 'components/New_Button';
 import { PrefixInput, BaseInput } from 'components/New_Input';
@@ -17,10 +22,33 @@ export interface Props {}
 
 const MiddleBar: FunctionComponent<Props> = () => {
   const animatingData = useReactiveVar(storeAnimatingData);
+  const recordingData = useReactiveVar(storeRecordingData);
+  const barPositionX = useReactiveVar(storeBarPositionX);
+
   const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const isShootPage = _.isEqual(pageInfo.page, 'shoot');
+
   const { startTimeIndex, endTimeIndex } = animatingData;
+
+  const indicator = isShootPage
+    ? {
+        start: startTimeIndex,
+        now: '0000',
+        end: endTimeIndex,
+      }
+    : {
+        start: (
+          recordingData.duration *
+          (recordingData.rangeBoxInfo.x / window.innerWidth)
+        ).toFixed(1),
+        now: (recordingData.duration * (barPositionX / window.innerWidth)).toFixed(1),
+        end: (
+          recordingData.duration *
+          ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth)
+        ).toFixed(1),
+      };
 
   useEffect(() => {
     const currentRef = scrollRef.current;
@@ -93,7 +121,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
     {
       key: 'camera',
       value: SvgPath.Camera,
-      isSelected: pageInfo.page === PAGE_NAMES.record,
+      isSelected: pageInfo.page !== PAGE_NAMES.shoot,
       onClick: () => {
         if (pageInfo.page === PAGE_NAMES.shoot) {
           storePageInfo({ page: PAGE_NAMES.record });
@@ -101,8 +129,6 @@ const MiddleBar: FunctionComponent<Props> = () => {
       },
     },
   ];
-
-  const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
   const handleStartInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.currentTarget.value);
@@ -154,7 +180,8 @@ const MiddleBar: FunctionComponent<Props> = () => {
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="START"
-                defaultValue={startTimeIndex}
+                defaultValue={indicator.start}
+                value={indicator.start}
                 arrow
                 onBlur={handleStartInputBlur}
                 onKeyDown={handleInputKeyDown}
@@ -162,15 +189,18 @@ const MiddleBar: FunctionComponent<Props> = () => {
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="END"
-                defaultValue={endTimeIndex}
+                defaultValue={indicator.end}
+                value={indicator.end}
                 arrow
                 onBlur={handleEndInputBlur}
                 onKeyDown={handleInputKeyDown}
               />
               <PrefixInput
+                id="now"
                 className={cx('indicator-input')}
                 prefix="NOW"
-                defaultValue="0000"
+                defaultValue={indicator.now}
+                value={indicator.now}
                 arrow
               />
             </div>

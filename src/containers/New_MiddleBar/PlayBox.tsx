@@ -2,15 +2,16 @@ import { FunctionComponent, Fragment, memo, useCallback, useEffect } from 'react
 import { useReactiveVar } from '@apollo/client';
 import {
   storeAnimatingData,
+  storeModalInfo,
   storeCurrentVisualizedData,
   storePageInfo,
   storeRecordingData,
 } from 'lib/store';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
-import { PAGE_NAMES } from 'types';
 
 const cx = classNames.bind(styles);
 
@@ -72,24 +73,44 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
 
     if (!isShootPage) {
       storeRecordingData({ ...recordingData, isPlaying: true });
-      setTimeout(() => {
-        storeRecordingData({ ...recordingData, isPlaying: false });
-      }, 1000 * recordingData.duration);
+      // setTimeout(() => {
+      //   storeRecordingData({ ...recordingData, isPlaying: false });
+      // }, 1000 * recordingData.duration);
     }
   }, [animatingData, isShootPage, recordingData]);
 
   const handlePause = useCallback(() => {
-    if (animatingData.playState !== 'pause') {
-      storeAnimatingData({
-        ...animatingData,
-        playState: 'pause',
-      });
+    if (isShootPage) {
+      if (animatingData.playState !== 'pause') {
+        storeAnimatingData({
+          ...animatingData,
+          playState: 'pause',
+        });
+      }
     }
-  }, [animatingData]);
 
-  const handleExport = useCallback(() => {}, []);
+    if (!isShootPage) {
+      storeRecordingData({ ...recordingData, isPlaying: false });
+    }
+  }, [animatingData, isShootPage, recordingData]);
 
-  const isPlaying = _.isEqual(animatingData.playState, 'play');
+  const handleExport = useCallback(() => {
+    storeModalInfo({
+      isShow: true,
+      type: MODAL_TYPES.input,
+      msg: '모션의 이름을 입력해주세요.',
+    });
+  }, []);
+
+  const isPlaying = _.isEqual(animatingData.playState, 'play') || recordingData.isPlaying;
+
+  const pauseButtonClasses = cx('pause', {
+    center: isShootPage,
+  });
+
+  const rewindButtonClasses = cx('rewind', {
+    invisible: !isShootPage,
+  });
 
   return (
     <div className={cx('wrapper')}>
@@ -111,7 +132,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
         <div className={cx('holder')}>
           {isPlaying ? (
             <IconWrapper
-              className={cx('pause')}
+              className={pauseButtonClasses}
               onClick={handlePause}
               icon={SvgPath.Pause}
               hasFrame={false}
@@ -119,7 +140,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
           ) : (
             <Fragment>
               <IconWrapper
-                className={cx('rewind')}
+                className={rewindButtonClasses}
                 onClick={handleRewind}
                 icon={SvgPath.RewindArrow}
                 hasFrame={false}

@@ -1,5 +1,4 @@
 import { CUTIMAGE_HEIGHT } from 'containers/extract/CutEdit/CutEdit.styles';
-import { STANDARD_WIDTH } from 'styles/constants/common';
 import { LPDataType } from 'types';
 import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
 import {
@@ -176,7 +175,8 @@ export const INITIAL_RECORDING_DATA = {
   duration: 10,
   rangeBoxInfo: {
     // width: window.innerWidth * 0.9,
-    width: 1700,
+    // width: 1700,
+    width: 0,
     height: CUTIMAGE_HEIGHT,
     x: 0,
     barX: 0,
