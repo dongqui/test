@@ -15,37 +15,31 @@
 
 .button-toggle {
   @include reset-button-style();
-  // display: inline-block;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  // padding: 1rem;
-  padding: 2px 8px;
-  background-color: $gray300;
+  padding: 3px 8px;
+  background-color: #303030;
   color: #fff;
-  // min-width: 10rem;
-  font-size: 13px;
+  min-width: 72px;
+  max-height: 10rem;
   text-align: left;
   font-weight: 300;
-  border-radius: 6px;
-
-  // &.open {
-  //   border-bottom-left-radius: 0;
-  //   border-bottom-right-radius: 0;
-  // }
+  border-radius: 4px;
 }
 
 .text {
   margin-right: 8px;
+  letter-spacing: 0.2px;
 }
 
 .arrow {
   border: 0;
-  color: #7a7a7a;
 
   & > svg {
     width: 6px;
     transform: rotate(-90deg);
+    color: #7a7a7a;
   }
 
   &.open {
@@ -60,14 +54,12 @@
   position: fixed;
   background-color: #282727;
   min-width: 72px;
-  padding: 4px 8px;
-  color: #fff;
-  font-size: 13px;
-  // min-width: 10rem;
+  color: #a7a7a7;
+  padding: 6px;
+  max-height: 10rem;
   border-radius: 6px;
-  // border-bottom-left-radius: 6px;
-  // border-bottom-right-radius: 6px;
-  border: 1px solid #7a7a7a;
+  border: 1px solid $gray300;
   overflow: hidden;
   z-index: 999;
+  letter-spacing: 1px;
 }

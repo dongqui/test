@@ -7,6 +7,7 @@ const cx = classNames.bind(styles);
 interface Props {
   title: string;
   children: ReactNode;
+  disabled?: boolean;
 }
 
 const Tab: FunctionComponent<Props> = ({ children }) => {
