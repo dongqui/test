@@ -13,7 +13,12 @@ import {
 } from 'lib/store';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
-import { fnGetBinarySearch, fnClickTrackToCtrlKey, fnClickTrackToMouse } from 'utils/TP/trackUtils';
+import {
+  fnClickLockButton,
+  fnGetBinarySearch,
+  fnClickTrackToCtrlKey,
+  fnClickTrackToMouse,
+} from 'utils/TP/trackUtils';
 import styles from './index.module.scss';
 
 interface TrackProps {
@@ -34,10 +39,28 @@ const Track: React.FC<TrackProps> = ({
   trackIndex,
 }) => {
   const [isSelected, setIsSelected] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   const [isClickedArrowButton, setIsClickedArrowButton] = useState(false); // 화살표 토글 버튼(true면 하위 트랙 open)
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const clickedTrackList = useReactiveVar(storeTPSelectedTrackList);
+
+  // 트랙 별 좌측 padding left 값 설정
+  const calcPaddingLeft = useMemo(
+    () => (trackIndex: number) => {
+      const remainder = trackIndex % 10;
+      switch (remainder) {
+        case TP_TRACK_INDEX.LAYER:
+          return 32;
+        case TP_TRACK_INDEX.BONE_A:
+        case TP_TRACK_INDEX.BONE_B:
+          return 48;
+        default:
+          return 84;
+      }
+    },
+    [],
+  );
 
   // 트랙 클릭
   const clickTrackBody = useCallback(
@@ -145,23 +168,6 @@ const Track: React.FC<TrackProps> = ({
     });
   }, [lastBoneList, trackIndex]);
 
-  // 트랙 별 좌측 padding left 값 설정
-  const calcPaddingLeft = useMemo(
-    () => (trackIndex: number) => {
-      const remainder = trackIndex % 10;
-      switch (remainder) {
-        case TP_TRACK_INDEX.LAYER:
-          return 32;
-        case TP_TRACK_INDEX.BONE_A:
-        case TP_TRACK_INDEX.BONE_B:
-          return 48;
-        default:
-          return 84;
-      }
-    },
-    [],
-  );
-
   // 트랙 마우스 우클릭
   const handleTrackContextMenu = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -172,20 +178,42 @@ const Track: React.FC<TrackProps> = ({
   );
 
   // 수정불가 버튼 클릭
-  const clickLockButton = useCallback(() => {}, []);
+  const clickLockButton = useCallback(() => {
+    const updatedTrackList = fnClickLockButton({ dopeSheetList, lastBoneList, trackIndex });
+    console.log('updatedTrackList', updatedTrackList);
+    storeTPUpdateDopeSheetList({
+      updatedList: updatedTrackList,
+      status: 'isLocked',
+    });
+  }, [dopeSheetList, lastBoneList, trackIndex]);
 
   // 랜더링 제외 버튼 클릭
   const clickRenderingButton = useCallback(() => {}, []);
 
   // 트랙 선택 효과 변경
   useEffect(() => {
-    const targetIndex = fnGetBinarySearch({
-      collection: dopeSheetList,
-      index: trackIndex,
-      key: 'trackIndex',
-    });
-    const targetTrack = dopeSheetList[targetIndex];
-    setIsSelected(targetTrack?.isSelected);
+    if (dopeSheetList && trackIndex) {
+      const targetIndex = fnGetBinarySearch({
+        collection: dopeSheetList,
+        index: trackIndex,
+        key: 'trackIndex',
+      });
+      const targetTrack = dopeSheetList[targetIndex];
+      setIsSelected(targetTrack?.isSelected);
+    }
+  }, [dopeSheetList, trackIndex]);
+
+  // 트랙 잠금 효과 변경
+  useEffect(() => {
+    if (dopeSheetList && trackIndex) {
+      const targetIndex = fnGetBinarySearch({
+        collection: dopeSheetList,
+        index: trackIndex,
+        key: 'trackIndex',
+      });
+      const targetTrack = dopeSheetList[targetIndex];
+      setIsLocked(targetTrack?.isLocked);
+    }
   }, [dopeSheetList, trackIndex]);
 
   // 자식 트랙 opened 변경
@@ -213,20 +241,24 @@ const Track: React.FC<TrackProps> = ({
           ) : (
             ''
           )}
-          <p>{title}</p>
+          <p className={cx({ locked: isLocked })}>{title}</p>
           <div className={cx('track-icon-wrapper')}>
-            <IconWrapper
-              className={cx('track-button', 'lock')}
-              icon={SvgPath.LockClose}
-              hasFrame={false}
-              onClick={clickLockButton}
-            />
-            <IconWrapper
-              className={cx('track-button', 'check')}
-              icon={SvgPath.LockClose}
-              hasFrame={false}
-              onClick={clickRenderingButton}
-            />
+            {trackIndex && (
+              <>
+                <IconWrapper
+                  className={cx('track-button', 'lock')}
+                  icon={isLocked ? SvgPath.LockOpen : SvgPath.LockClose}
+                  hasFrame={false}
+                  onClick={clickLockButton}
+                />
+                <IconWrapper
+                  className={cx('track-button', 'check')}
+                  icon={SvgPath.LockClose}
+                  hasFrame={false}
+                  onClick={clickRenderingButton}
+                />
+              </>
+            )}
           </div>
         </div>
         <div
@@ -235,6 +267,8 @@ const Track: React.FC<TrackProps> = ({
         >
           {childrenTrackList?.map((childTrack) => {
             const { childrenTrackList, isOpenedChildrenTrack, name, trackIndex } = childTrack;
+            // const aa = test;
+            // console.log('aa', aa);
             return (
               <Track
                 key={name}

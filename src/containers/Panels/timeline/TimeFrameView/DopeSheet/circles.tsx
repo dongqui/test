@@ -60,7 +60,8 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
         .join('circle')
         .attr('cx', (time) => prevXScale(time * 30))
         .attr('cy', TRACK_HEIGHT / 2)
-        .attr('r', CIRCLE_RADIUS);
+        .attr('r', CIRCLE_RADIUS)
+        .style('fill', dopeSheetData.isLocked ? '#404040' : '#7A7A7A');
     }
   }, [circleGroupRef, dopeSheetData, prevXScale]);
 
@@ -84,15 +85,18 @@ export default memo(Circles, (prevProps, nextProps) => {
   const {
     isClickedParentTrack: prevIsClickedParentTrack,
     isFiltered: prevIsFiltered,
+    isLocked: prevIsLocked,
     times: prevTimes,
   } = prevProps.dopeSheetData;
   const {
     isClickedParentTrack: nextIsClickedParentTrack,
     isFiltered: nextIsFiltered,
+    isLocked: nextIsLocked,
     times: nextTimes,
   } = nextProps.dopeSheetData;
 
   if (!_.isEqual(prevTimes, nextTimes)) return false;
+  if (prevIsLocked !== nextIsLocked) return false;
   if (prevIsClickedParentTrack === nextIsClickedParentTrack) return true;
   if (prevIsFiltered === nextIsFiltered) return true;
   return false;
