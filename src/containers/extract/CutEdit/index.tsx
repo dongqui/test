@@ -7,6 +7,7 @@ import _ from 'lodash';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
 import { getNumberValue } from '../../../hooks/RP/useResizeRP';
 import * as S from './CutEdit.styles';
+import ImageList from './ImageList';
 import { CutImages } from './CutImages';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -218,7 +219,7 @@ const CutEditComponent: FunctionComponent = () => {
           y: 0,
         }}
       />
-      <CutImages />
+      <ImageList />
     </div>
   );
 };
