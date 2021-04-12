@@ -1,6 +1,6 @@
 import { TPDopeSheet } from 'types/TP';
 
-interface Params {
+interface FnSelectTransformTrack {
   isSelected: boolean;
   trackIndex: number;
 }
@@ -17,7 +17,7 @@ type Return = [Partial<TPDopeSheet>[], number[]];
  * @returns newClickedTrackList - 새로 선택 효과를 적용시킬 트랙 리스트(number[])
  */
 
-const fnSelectTransformTrack = ({ isSelected, trackIndex }: Params): Return => {
+const fnSelectTransformTrack = ({ isSelected, trackIndex }: FnSelectTransformTrack): Return => {
   const updatedTrackList: Partial<TPDopeSheet>[] = [];
   const newClickedTrackList = [];
 

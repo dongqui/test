@@ -6,6 +6,10 @@
   position: relative;
   width: 100%;
 
+  svg {
+    width: 10px;
+  }
+
   // 트랙에 포함되는 아이콘 common style
   .track-button {
     @include reset-button-style();
@@ -17,29 +21,53 @@
   display: flex;
   align-items: center;
   height: 32px;
+  padding-right: 10px;
   border-bottom: 2px solid $gray300;
   background: transparent;
 
-  span {
-    margin-left: 10px;
+  p {
+    flex-grow: 1;
+    margin: 0;
     color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &.selected {
     background: rgba(55, 133, 247, 10%); // --vivid-blue: #3785f7;
   }
 
+  p.locked {
+    color: #5c5c5c;
+  }
+
   // 화살표 버튼
   .arrow-button {
-    transform: rotate(0deg);
+    margin-right: 8px;
+    color: #7a7a7a;
+
+    svg {
+      transform: rotate(-90deg);
+    }
 
     &.opened {
-      transform: rotate(90deg);
+      svg {
+        transform: rotate(0deg);
+      }
     }
   }
 }
 
 // 숨기기, 잠그기 버튼 wrapper
-// .track-icon-wrapper {
+.track-icon-wrapper {
+  display: flex;
 
-// }
+  .lock {
+    margin-right: 8px;
+  }
+
+  .lock,
+  .check {
+    color: #7a7a7a;
+  }
+}

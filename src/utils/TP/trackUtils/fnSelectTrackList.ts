@@ -2,7 +2,7 @@ import { TP_TRACK_INDEX } from 'utils/const';
 import { TPLastBone } from 'types/TP';
 import { fnSelectBoneTrack, fnSelectLayerTrack, fnSelectTransformTrack } from './index';
 
-interface Params {
+interface FnSelectTrackList {
   isSelected: boolean;
   lastBoneList: TPLastBone[];
   trackIndex: number;
@@ -17,7 +17,7 @@ interface Params {
  */
 
 // Base, Bone, Transform 트랙 선택
-const fnSelectTrackList = ({ isSelected, lastBoneList, trackIndex }: Params) => {
+const fnSelectTrackList = ({ isSelected, lastBoneList, trackIndex }: FnSelectTrackList) => {
   const remainder = trackIndex % 10;
   switch (remainder) {
     case TP_TRACK_INDEX.LAYER: {

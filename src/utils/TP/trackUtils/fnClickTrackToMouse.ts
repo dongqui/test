@@ -3,7 +3,7 @@ import { TP_TRACK_INDEX } from 'utils/const';
 import { fnSelectBoneTrack, fnSelectLayerTrack, fnSelectTransformTrack } from './index';
 import { TPDopeSheet, TPLastBone } from 'types/TP';
 
-interface Params {
+interface FnClickTrackToMouse {
   clickedTrackList: number[];
   lastBoneList: TPLastBone[];
   trackIndex: number;
@@ -24,7 +24,11 @@ type Return = [Partial<TPDopeSheet>[], number[]];
  * @returns newClickedTrackList - 새로 선택 효과를 적용시킬 트랙 리스트(number[])
  */
 
-const fnClickTrackToMouse = ({ clickedTrackList, lastBoneList, trackIndex }: Params): Return => {
+const fnClickTrackToMouse = ({
+  clickedTrackList,
+  lastBoneList,
+  trackIndex,
+}: FnClickTrackToMouse): Return => {
   const remainder = trackIndex % 10;
   const updatedTrackList: Partial<TPDopeSheet>[] = [];
   const newClickedTrackList = [];

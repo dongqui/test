@@ -3,7 +3,9 @@ import { GRAY600 } from 'styles/constants/common';
 
 export const BarWrapper = styled.div`
   width: 28px;
-  height: 160px;
+  height: 100%;
+
+  /* height: 160px; */
   position: relative;
   display: flex;
   justify-content: center;
