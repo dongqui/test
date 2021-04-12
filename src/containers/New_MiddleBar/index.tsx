@@ -1,6 +1,6 @@
-import { FunctionComponent, memo, useEffect, useRef, useCallback, useMemo } from 'react';
+import { FunctionComponent, memo, useEffect, useRef, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { storeAnimatingData, storePageInfo } from 'lib/store';
+import { storeAnimatingData, storeCurrentAction, storePageInfo } from 'lib/store';
 import { SvgPath } from 'components/New_Icon';
 import { SegmentButton } from 'components/New_Button';
 import { PrefixInput, BaseInput } from 'components/New_Input';
@@ -16,6 +16,7 @@ const cx = classNames.bind(styles);
 export interface Props {}
 
 const MiddleBar: FunctionComponent<Props> = () => {
+  const currentAction = useReactiveVar(storeCurrentAction);
   const animatingData = useReactiveVar(storeAnimatingData);
   const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -120,6 +121,20 @@ const MiddleBar: FunctionComponent<Props> = () => {
     }
   };
 
+  const handleNowInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    if (currentAction) {
+      const now = _.round(currentAction.time * 30, 0);
+      const value = parseInt(event.currentTarget.value);
+      if (value >= startTimeIndex && value <= endTimeIndex) {
+        console.log(currentAction.time);
+        currentAction.time = _.round(value / 30, 4);
+        console.log(currentAction.time);
+      } else {
+        event.currentTarget.value = now.toString();
+      }
+    }
+  };
+
   const handleInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     switch (event.key) {
       case 'Enter':
@@ -129,6 +144,15 @@ const MiddleBar: FunctionComponent<Props> = () => {
         break;
     }
   }, []);
+
+  const lastTimeRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // 현재는 미들바 조작해야만 적용됨 -> 수정 필요
+    if (currentAction && lastTimeRef.current) {
+      lastTimeRef.current.value = _.round(currentAction.getClip().duration, 0).toString();
+    }
+  }, [currentAction]);
 
   return (
     <div className={cx('wrapper')}>
@@ -141,7 +165,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
             <div className={cx('playtime')}>
               <BaseInput className={cx('time-current')} defaultValue="00:00" />
               <div className={cx('divide')}>/</div>
-              <BaseInput className={cx('time-last')} defaultValue="00:12" />
+              <BaseInput className={cx('time-last')} defaultValue="00:00" innerRef={lastTimeRef} />
               <div className={cx('faster')}>
                 <Dropdown list={fasterList} onSelect={handleFasterSelect} />
               </div>
@@ -168,6 +192,8 @@ const MiddleBar: FunctionComponent<Props> = () => {
                 prefix="NOW"
                 defaultValue="0000"
                 arrow
+                onBlur={handleNowInputBlur}
+                onKeyDown={handleInputKeyDown}
               />
             </div>
           </div>

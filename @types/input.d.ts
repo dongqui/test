@@ -1,11 +1,11 @@
-import { MutableRefObject, InputHTMLAttributes } from 'react';
+import { MutableRefObject, InputHTMLAttributes, RefObject } from 'react';
 
 export = Input;
 export as namespace Input;
 
 declare namespace Input {
   interface BaseProps {
-    innerRef?: MutableRefObject<HTMLInputElement>;
+    innerRef?: RefObject<HTMLInputElement>;
     invalid?: boolean;
   }
 
