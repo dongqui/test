@@ -29,7 +29,7 @@ const setDopeSheetStatus = ({
 }: SetDopeSheetStatus) => ({
   isSelected: false,
   isLocked: false,
-  isExcludedRendering: false,
+  isExcludedRendering: true,
   isFiltered: true,
   isClickedParentTrack,
   isKeyframeSelected: false,
