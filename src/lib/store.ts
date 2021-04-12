@@ -6,6 +6,7 @@ import {
   TPLastBone,
   TPUpdateDopeSheet,
   TPCurrnetClickedTrack,
+  KeyframeData,
 } from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
@@ -72,6 +73,7 @@ export const storeSkeletonHelper = makeVar<THREE.SkeletonHelper | undefined>(und
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);
+export const storeBarPositionX = makeVar<number>(0);
 // CP
 export const storeCPMode = makeVar<CPModeType>(CPModeType.property);
 export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
@@ -84,7 +86,7 @@ export const storeTPDopeSheetList = makeVar<TPDopeSheet[]>([]);
 export const storeTPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
 export const storeTPSelectedTrackList = makeVar<number[]>([]);
 export const storeTPCurrnetClickedTrack = makeVar<TPCurrnetClickedTrack | null>(null);
-export const storeDeleteTargetTime = makeVar<number | undefined>(undefined);
+export const storeDeleteTargetKeyframes = makeVar<KeyframeData[]>([]);
 
 export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
   const state = storeTPDopeSheetList();

@@ -1,9 +1,9 @@
 import React, { memo, useCallback, useEffect } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
-import { TPDopeSheet } from 'types/TP';
+import { TPDopeSheet, KeyframeData } from 'types/TP';
 import { useReactiveVar } from '@apollo/client';
-import { storeDeleteTargetTime } from 'lib/store';
+import { storeDeleteTargetKeyframes } from 'lib/store';
 
 interface Props {
   circleGroupRef: React.RefObject<SVGSVGElement>;
@@ -15,22 +15,40 @@ const TRACK_HEIGHT = 32; // 트랙 높이
 const CIRCLE_RADIUS = 4; // 원 반지름 크기
 
 const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale }) => {
-  const deleteTargetTime = useReactiveVar(storeDeleteTargetTime);
+  // circle 생성
+  const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
 
   // circle 클릭 이벤트
   const clickCircle = useCallback(
     (event, data) => {
-      if (event.ctrlKey || event.metaKey) {
-        if (deleteTargetTime && data === deleteTargetTime) {
-          storeDeleteTargetTime(undefined);
-        }
-      } else {
-        if (!deleteTargetTime || (deleteTargetTime && data !== deleteTargetTime)) {
-          storeDeleteTargetTime(data as number);
+      const { trackName, layerKey, isLocked, isTransformTrack } = dopeSheetData;
+      if (!isLocked && isTransformTrack) {
+        const keyframeData: KeyframeData = {
+          key: `${layerKey}&&${trackName}&&${data}`,
+          trackName,
+          layerKey,
+          time: data as number,
+        };
+        if (event.ctrlKey || event.metaKey) {
+          const targetKeyframeIndex = _.findIndex(
+            deleteTargetKeyframes,
+            (keyframe) => keyframe.key === keyframeData.key,
+          );
+          if (targetKeyframeIndex === -1) {
+            storeDeleteTargetKeyframes([...deleteTargetKeyframes, keyframeData]);
+          } else {
+            storeDeleteTargetKeyframes(
+              _.filter(deleteTargetKeyframes, (_, idx) => idx !== targetKeyframeIndex),
+            );
+          }
+        } else {
+          if (deleteTargetKeyframes.length === 0) {
+            storeDeleteTargetKeyframes([keyframeData]);
+          }
         }
       }
     },
-    [deleteTargetTime],
+    [deleteTargetKeyframes],
   );
 
   // circle 생성

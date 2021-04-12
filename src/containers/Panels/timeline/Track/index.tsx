@@ -163,7 +163,7 @@ const Track: React.FC<TrackProps> = ({
   );
 
   // 트랙 마우스 우클릭
-  const clickRightMouse = useCallback(
+  const handleTrackContextMenu = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.preventDefault();
       console.log('track context menu event : ', title, trackIndex); // 우클릭 이벤트 구현 시 console.log 없앨 예정
@@ -200,7 +200,7 @@ const Track: React.FC<TrackProps> = ({
           className={cx('track-body', { selected: isSelected })}
           style={{ paddingLeft: `${paddingLeft}px` }}
           onClick={clickTrackBody}
-          onContextMenu={clickRightMouse}
+          onContextMenu={handleTrackContextMenu}
           aria-hidden="true"
         >
           {childrenTrackList.length ? (

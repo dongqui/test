@@ -20,6 +20,8 @@ const MiddleBar: FunctionComponent<Props> = () => {
   const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const { startTimeIndex, endTimeIndex } = animatingData;
+
   useEffect(() => {
     const currentRef = scrollRef.current;
 
@@ -100,6 +102,34 @@ const MiddleBar: FunctionComponent<Props> = () => {
     },
   ];
 
+  const handleStartInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    const value = parseInt(event.currentTarget.value);
+    if (value < endTimeIndex) {
+      storeAnimatingData({ ...animatingData, startTimeIndex: value });
+    } else {
+      event.currentTarget.value = startTimeIndex.toString();
+    }
+  };
+
+  const handleEndInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    const value = parseInt(event.currentTarget.value);
+    if (value > startTimeIndex) {
+      storeAnimatingData({ ...animatingData, endTimeIndex: value });
+    } else {
+      event.currentTarget.value = endTimeIndex.toString();
+    }
+  };
+
+  const handleInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (event.key) {
+      case 'Enter':
+        event.currentTarget.blur();
+        break;
+      default:
+        break;
+    }
+  }, []);
+
   return (
     <div className={cx('wrapper')}>
       <div className={cx('inner')} ref={scrollRef}>
@@ -120,14 +150,18 @@ const MiddleBar: FunctionComponent<Props> = () => {
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="START"
-                defaultValue="0000"
+                defaultValue={startTimeIndex}
                 arrow
+                onBlur={handleStartInputBlur}
+                onKeyDown={handleInputKeyDown}
               />
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="END"
-                defaultValue="0000"
+                defaultValue={endTimeIndex}
                 arrow
+                onBlur={handleEndInputBlur}
+                onKeyDown={handleInputKeyDown}
               />
               <PrefixInput
                 className={cx('indicator-input')}

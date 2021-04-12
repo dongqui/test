@@ -106,6 +106,16 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     }
   }, []);
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (event.key) {
+      case 'Enter':
+        event.currentTarget.blur();
+        break;
+      default:
+        break;
+    }
+  };
+
   useEffect(() => {
     if (transformControls) {
       transformControls.addEventListener('objectChange', (event) => {
@@ -170,6 +180,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
             onDragMove={onDragMove}
             handleBlur={handleBlur}
             onKeyPress={onKeyPress}
+            onKeyDown={handleKeyDown}
             name={x}
           />
           <InputCP
@@ -178,6 +189,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
             onDragMove={onDragMove}
             handleBlur={handleBlur}
             onKeyPress={onKeyPress}
+            onKeyDown={handleKeyDown}
             name={y}
           />
           <InputCP
@@ -186,6 +198,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
             onDragMove={onDragMove}
             handleBlur={handleBlur}
             onKeyPress={onKeyPress}
+            onKeyDown={handleKeyDown}
             name={z}
           />
         </S.CPListRowInputsWrapper>

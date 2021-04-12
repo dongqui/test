@@ -44,3 +44,10 @@ export interface TPCurrnetClickedTrack {
   trackIndex: number;
   isClickedArrow: boolean;
 }
+
+export interface KeyframeData {
+  key: string;
+  trackName: string;
+  layerKey: string;
+  time: number;
+}
