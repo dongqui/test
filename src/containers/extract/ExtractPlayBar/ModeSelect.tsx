@@ -1,4 +1,3 @@
-import { Camera, HorizontalBar } from 'components/Icons';
 import { CameraIcon } from 'components/Icons/generated2/CameraIcon';
 import { HorizontalBarIcon } from 'components/Icons/generated2/HorizontalBarIcon';
 import _ from 'lodash';
