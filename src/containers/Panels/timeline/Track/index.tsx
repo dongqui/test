@@ -3,6 +3,7 @@ import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { ContextMenu } from 'components/New_ContextMenu';
 import {
   storeTPSelectedTrackList,
   storeTPDopeSheetList,
@@ -37,7 +38,6 @@ const Track: React.FC<TrackProps> = ({
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const clickedTrackList = useReactiveVar(storeTPSelectedTrackList);
-  // const trackPaddingLeft = useMemo(() => trackIndex )
 
   // 트랙 클릭
   const clickTrackBody = useCallback(
@@ -145,6 +145,23 @@ const Track: React.FC<TrackProps> = ({
     });
   }, [lastBoneList, trackIndex]);
 
+  // 트랙 별 좌측 padding left 값 설정
+  const calcPaddingLeft = useMemo(
+    () => (trackIndex: number) => {
+      const remainder = trackIndex % 10;
+      switch (remainder) {
+        case TP_TRACK_INDEX.LAYER:
+          return 32;
+        case TP_TRACK_INDEX.BONE_A:
+        case TP_TRACK_INDEX.BONE_B:
+          return 48;
+        default:
+          return 84;
+      }
+    },
+    [],
+  );
+
   // 트랙 마우스 우클릭
   const clickRightMouse = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -153,6 +170,12 @@ const Track: React.FC<TrackProps> = ({
     },
     [title, trackIndex],
   );
+
+  // 수정불가 버튼 클릭
+  const clickLockButton = useCallback(() => {}, []);
+
+  // 랜더링 제외 버튼 클릭
+  const clickRenderingButton = useCallback(() => {}, []);
 
   // 트랙 선택 효과 변경
   useEffect(() => {
@@ -169,22 +192,6 @@ const Track: React.FC<TrackProps> = ({
   useEffect(() => {
     setIsClickedArrowButton(isOpenedParent);
   }, [isOpenedParent]);
-
-  const calcPaddingLeft = useMemo(
-    () => (trackIndex: number) => {
-      const remainder = trackIndex % 10;
-      switch (remainder) {
-        case TP_TRACK_INDEX.LAYER:
-          return 32;
-        case TP_TRACK_INDEX.BONE_A:
-        case TP_TRACK_INDEX.BONE_B:
-          return 48;
-        default:
-          return 84;
-      }
-    },
-    [],
-  );
 
   return (
     <>
@@ -212,11 +219,13 @@ const Track: React.FC<TrackProps> = ({
               className={cx('track-button', 'lock')}
               icon={SvgPath.LockClose}
               hasFrame={false}
+              onClick={clickLockButton}
             />
             <IconWrapper
               className={cx('track-button', 'check')}
               icon={SvgPath.LockClose}
               hasFrame={false}
+              onClick={clickRenderingButton}
             />
           </div>
         </div>
