@@ -360,11 +360,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         if (state && resultTracks.length !== 0) {
           const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
             resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-              draft.baseLayer = [
-                ...draft.baseLayer.slice(0, targetTrackIndex),
-                resultTrack,
-                ...draft.baseLayer.slice(targetTrackIndex + 1),
-              ];
+              draft.baseLayer[targetTrackIndex] = resultTrack;
             });
           });
           storeCurrentVisualizedData(nextState);
@@ -376,7 +372,14 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const handleUpdateKeyframeToLayer = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
-      if (updateTargetTime && baseLayer && layers && layers.length !== 0 && skeletonHelper) {
+      if (
+        updateTargetTime &&
+        baseLayer &&
+        layers &&
+        layers.length !== 0 &&
+        skeletonHelper &&
+        selectedLayerDopeSheets.length !== 0
+      ) {
         const targetLayerIndex = _.findIndex(
           layers,
           (layer) => layer.key === selectedLayerDopeSheets[0].layerKey,
@@ -386,7 +389,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           const selectedDopesheetNames = selectedLayerDopeSheets.map(
             (dopesheet) => dopesheet.trackName,
           );
-          const targetTracks = baseLayer.filter((track) =>
+          const targetTracks = layers[targetLayerIndex].tracks.filter((track) =>
             selectedDopesheetNames.includes(track.name),
           );
 
@@ -423,11 +426,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           if (state && resultTracks.length !== 0) {
             const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
               resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-                draft.layers[targetLayerIndex].tracks = [
-                  ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
-                  resultTrack,
-                  ...draft.layers[targetLayerIndex].tracks.slice(targetTrackIndex + 1),
-                ];
+                draft.layers[targetLayerIndex].tracks[targetTrackIndex] = resultTrack;
               });
             });
             storeCurrentVisualizedData(nextState);
@@ -441,6 +440,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
       if (deleteTargetKeyframes && baseLayer && layers) {
+        // deleteTargetKeyframes 에는 담기는데 반영이 안된 상태 -> store 변경 시점 로직 수정 필요
         const resultBaseLayerTracks: [ShootTrackType, number][] = [];
         const resultLayersTracks: [ShootTrackType, number, number][] = [];
         _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
