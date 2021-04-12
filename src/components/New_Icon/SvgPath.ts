@@ -22,6 +22,7 @@ import PlayArrow from './svg/PlayArrow.svg';
 import RewindArrow from './svg/RewindArrow.svg';
 import Pause from './svg/Pause.svg';
 import Export from './svg/Export.svg';
+import Check from './svg/Check.svg';
 
 type Icon =
   | 'Close'
@@ -46,7 +47,8 @@ type Icon =
   | 'PlayArrow'
   | 'RewindArrow'
   | 'Pause'
-  | 'Export';
+  | 'Export'
+  | 'Check';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -76,6 +78,7 @@ const images: Images = {
   RewindArrow,
   Pause,
   Export,
+  Check,
 };
 
 export default images;
