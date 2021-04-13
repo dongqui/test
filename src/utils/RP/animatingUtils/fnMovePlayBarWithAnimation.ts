@@ -8,7 +8,6 @@ interface FnMovePlayBarWithAnimation {
   action: THREE.AnimationAction;
   playBarPositionRef: MutableRefObject<number>;
   prevXScale: MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
-  startTimeIndex: number;
 }
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
@@ -19,11 +18,10 @@ const X_AXIS_HEIGHT = 48; // 트랙 높이
  * @param action - time 을 구할 action 입니다.
  * @param playBarPositionRef - playBar 위치의 ref 값 입니다.
  * @param prevXScale - svg 재렌더링을 위한 ref 값 입니다.
- * @param startTimeIndex - 정지 시 돌아갈 index
  *
  */
 const fnMovePlayBarWithAnimation = (props: FnMovePlayBarWithAnimation) => {
-  const { action, playBarPositionRef, prevXScale, startTimeIndex } = props;
+  const { action, playBarPositionRef, prevXScale } = props;
 
   let reqId: number | undefined;
 
@@ -53,7 +51,6 @@ const fnMovePlayBarWithAnimation = (props: FnMovePlayBarWithAnimation) => {
 
   const pauseLoop = () => {
     if (reqId) {
-      playBarPositionRef.current = startTimeIndex;
       cancelAnimationFrame(reqId);
       reqId = undefined;
     }
@@ -61,7 +58,6 @@ const fnMovePlayBarWithAnimation = (props: FnMovePlayBarWithAnimation) => {
 
   const stopLoop = () => {
     if (reqId) {
-      playBarPositionRef.current = _.floor(action.time * 30, 0);
       cancelAnimationFrame(reqId);
       reqId = undefined;
     }

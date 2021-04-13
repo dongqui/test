@@ -86,7 +86,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         action: currentAction,
         playBarPositionRef: currentXAxisPosition,
         prevXScale,
-        startTimeIndex,
       });
       if (playState === 'play') {
         startLoop();
