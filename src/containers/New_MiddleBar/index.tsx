@@ -39,7 +39,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
   const indicator = isShootPage
     ? {
         start: startTimeIndex,
-        now: '0000',
+        now: startTimeIndex,
         end: endTimeIndex,
       }
     : {
@@ -160,12 +160,19 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const handleNowInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     if (currentAction) {
-      const now = _.round(currentAction.time * 30, 0);
       const value = parseInt(event.currentTarget.value);
       if (value >= startTimeIndex && value <= endTimeIndex) {
         currentAction.time = _.round(value / 30, 4);
       } else {
-        event.currentTarget.value = now.toString();
+        event.currentTarget.value = _.round(currentAction.time * 30, 0).toString();
+      }
+    } else {
+      // 애니메이션 없는 경우
+      const value = parseInt(event.currentTarget.value);
+      if (value <= startTimeIndex) {
+        event.currentTarget.value = startTimeIndex.toString();
+      } else if (value >= endTimeIndex) {
+        event.currentTarget.value = endTimeIndex.toString();
       }
     }
   };
@@ -180,6 +187,10 @@ const MiddleBar: FunctionComponent<Props> = () => {
     }
   }, []);
 
+  const handleMiddleBarContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+  };
+
   useEffect(() => {
     // 현재는 미들바 조작해야만 적용됨 -> 수정 필요
     if (currentAction && lastTimeRef.current) {
@@ -188,7 +199,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
   }, [currentAction, startTimeIndex]);
 
   return (
-    <div className={cx('wrapper')}>
+    <div className={cx('wrapper')} onContextMenu={handleMiddleBarContextMenu}>
       <div className={cx('inner')} ref={scrollRef}>
         <div className={cx('left')}>
           <PlayBox />
