@@ -23,6 +23,7 @@ const fnSetDefaultDopeSheetList = ({ baseLayer, layers }: FnSetDefaultDopeSheetL
   const summaryTrack = fnSetDopeSheetStatus({
     isClickedParentTrack: true,
     isTransformTrack: false,
+    isIncluded: true,
     times: summaryTimes,
     trackIndex: 1,
     trackName: 'Summary',
