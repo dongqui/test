@@ -594,6 +594,10 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           const checkZero = currentXTick <= 1 ? 1 : currentXTick;
           const xScaleLinear = prevXScale.current as d3ScaleLinear;
 
+          if (currentAction) {
+            currentAction.time = _.round(checkZero / 30, 4);
+          }
+
           currentXAxisPosition.current = checkZero;
           d3.select(this).attr(
             'transform',
@@ -607,7 +611,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         .attr('transform', `translate(${xScaleLinear(1) - 10}, ${X_AXIS_HEIGHT / 2})`)
         .call(dragBehavior as any);
     }
-  }, [playBarDisplayed]);
+  }, [currentAction, playBarDisplayed]);
 
   return (
     <>
