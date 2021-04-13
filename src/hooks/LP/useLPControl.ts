@@ -9,7 +9,6 @@ import {
   LPModeType,
   LPDataType,
   LPDATA_PROPERTY_TYPES,
-  MODAL_TYPES,
   ShootTrackType,
   FORMAT_TYPES,
   ENABLE_VIDEO_FORMATS,
@@ -20,7 +19,6 @@ import {
   storeContextMenuInfo,
   storeCutImages,
   storeLpData,
-  storeModalInfo,
   storePageInfo,
   storeRecordingData,
 } from 'lib/store';
@@ -34,7 +32,6 @@ import { fnPasteFile } from 'utils/LP/fnPasteFile';
 import * as api from 'utils/common/api';
 import { fnVisualizeFile } from 'utils/LP/fnVisualizeFile';
 import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
-import { useLoading } from 'hooks/common/useLoading';
 import fnExportModelToGlb from 'utils/LP/fnExportModelToGlb';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 
@@ -94,43 +91,61 @@ export const useLPControl = ({
         return;
       }
       if (_.isEqual(draggingRow?.type, FILE_TYPES.motion)) {
-        if (!_.isEqual(targetRow?.type, FILE_TYPES.file)) {
-          return;
-        }
+        // 추출된 모션이 아닐경우 이동불가
         if (!draggingRow?.isExportedMotion) {
           return;
         }
-        setShowsModal(true);
-        setModalMessage('애니메이션 데이터를 추출중입니다.');
-        const { bones = [], error, msg } = await fnGetAnimationData({
-          url: targetRow?.url ?? '',
-        });
-        if (error) {
-          setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
+        if (_.isEqual(targetRow?.type, FILE_TYPES.motion)) {
           return;
         }
-        const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
-          bones,
-        });
-        const retargetMap = result?.data?.result ?? [];
-        if (error2 || _.isEqual(retargetMap, 'failed')) {
-          // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
-          setModalMessage('리타겟맵을 불러오는 과정에서 오류가 발생하였습니다.');
+        if (_.isEqual(targetRow?.type, FILE_TYPES.file)) {
+          setShowsModal(true);
+          setModalMessage('리타겟팅을 진행중입니다.');
+          const { bones = [], error, msg } = await fnGetAnimationData({
+            url: targetRow?.url ?? '',
+          });
+          if (error) {
+            setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
+            return;
+          }
+          const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
+            bones,
+          });
+          const retargetMap = result?.data?.result ?? [];
+          if (error2 || _.isEqual(retargetMap, 'failed')) {
+            // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
+            setModalMessage('리타겟맵을 불러오는 과정에서 오류가 발생하였습니다.');
+            return;
+          }
+          const { result: result2, error: error3, msg: msg3 } = await api.getRetargetBaseLayer({
+            name: draggingRow?.name ?? '',
+            baseLayer: draggingRow?.baseLayer ?? [],
+            retargetMap,
+          });
+          if (error3) {
+            setModalMessage('리타겟팅 과정에서 오류가 발생하였습니다.');
+            return;
+          }
+          const times = draggingRow?.baseLayer?.[0]?.times;
+          const tracks = _.map(result2?.data?.result, (item) => ({ ...item, times }));
+          newBaseLayer = fnGetBaseLayerWithTracks({ bones, tracks });
+          const newMotion: LPDataType = {
+            ...draggingRow,
+            key: uuidv4(),
+            parentKey: key,
+            baseLayer: newBaseLayer,
+            layers: [],
+          };
+          const newMainData = _.concat(mainData, newMotion);
+          storeLpData(
+            _.map(newMainData, (item) => ({
+              ...item,
+              isDragging: false,
+            })),
+          );
+          setShowsModal(false);
           return;
         }
-        const { result: result2, error: error3, msg: msg3 } = await api.getRetargetBaseLayer({
-          name: draggingRow?.name ?? '',
-          baseLayer: draggingRow?.baseLayer ?? [],
-          retargetMap,
-        });
-        if (error3) {
-          setModalMessage('리타겟팅 과정에서 오류가 발생하였습니다.');
-          return;
-        }
-        const times = draggingRow?.baseLayer?.[0]?.times;
-        const tracks = _.map(result2?.data?.result, (item) => ({ ...item, times }));
-        newBaseLayer = fnGetBaseLayerWithTracks({ bones, tracks });
-        setShowsModal(false);
       }
       if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
         if (!_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
@@ -153,7 +168,6 @@ export const useLPControl = ({
         _.map(mainData, (item) => ({
           ...item,
           parentKey: item.isDragging ? key : item.parentKey,
-          baseLayer: item.isDragging ? newBaseLayer : item.baseLayer,
           isDragging: false,
         })),
       );
@@ -177,6 +191,14 @@ export const useLPControl = ({
       return;
     }
     if (_.some(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])) {
+      const parentKey = _.isEqual(
+        _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.type,
+        FILE_TYPES.motion,
+      )
+        ? _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.parentKey
+        : _.isEqual(lpmode, LPModeType.iconview)
+        ? _.last(pages)?.key
+        : ROOT_FOLDER_NAME;
       const newKey = uuidv4();
       let newMainData = _.concat(mainData, {
         key: newKey,
@@ -186,15 +208,9 @@ export const useLPControl = ({
           key: '',
           name: _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.name ?? '',
           mainData,
+          parentKey,
         }),
-        parentKey: _.isEqual(
-          _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.type,
-          FILE_TYPES.motion,
-        )
-          ? _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.parentKey
-          : _.isEqual(lpmode, LPModeType.iconview)
-          ? _.last(pages)?.key
-          : ROOT_FOLDER_NAME,
+        parentKey,
         baseLayer: [],
         layers: [],
       });
@@ -295,6 +311,9 @@ export const useLPControl = ({
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
           let content = '';
           let motion: LPDataType | undefined;
+          const parentKey = _.isEqual(lpmode, LPModeType.iconview)
+            ? _.last(pages)?.key
+            : ROOT_FOLDER_NAME;
           switch (key) {
             case '0':
               storeLpData(
@@ -305,10 +324,9 @@ export const useLPControl = ({
                     key: '',
                     name: 'Folder',
                     mainData,
+                    parentKey,
                   }),
-                  parentKey: _.isEqual(lpmode, LPModeType.iconview)
-                    ? _.last(pages)?.key
-                    : ROOT_FOLDER_NAME,
+                  parentKey,
                   isModifying: true,
                   baseLayer: [],
                   layers: [],
@@ -371,6 +389,7 @@ export const useLPControl = ({
                   key: '',
                   name: 'empty motion',
                   mainData,
+                  parentKey: targetIcon?.id || _.last(pages)?.key,
                 }),
                 isVisualized: false,
                 baseLayer: fnGetBaseLayerWithBoneNames({ boneNames: motion?.boneNames ?? [] }),
@@ -391,6 +410,7 @@ export const useLPControl = ({
                       key: '',
                       name: motion?.name,
                       mainData,
+                      parentKey: motion?.parentKey,
                     }),
                     isVisualized: false,
                   }),

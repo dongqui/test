@@ -11,8 +11,10 @@ interface useVideoToImagesProps {
 }
 
 let tempImages: string[] = [];
+let isWorking = false;
 export const useVideoToImages = ({ videoRef, videoUrl, action, active }: useVideoToImagesProps) => {
   const makeImages = useCallback(async () => {
+    isWorking = true;
     const video = videoRef.current;
     const duration = await getBlobDuration(videoUrl);
     const interval = duration / 20;
@@ -35,10 +37,11 @@ export const useVideoToImages = ({ videoRef, videoUrl, action, active }: useVide
       }
       await sleep(200);
     }
+    isWorking = false;
   }, [action, videoRef, videoUrl]);
   useEffect(() => {
     try {
-      if (active) {
+      if (active && !isWorking) {
         makeImages();
       }
     } catch (error) {
