@@ -78,20 +78,24 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       const action = mixer.clipAction(visualizedClip);
       action.play();
       mixer.timeScale = 0;
-      action.time = _.round(startTimeIndex / 30, 4);
+      action.time = _.round(startTimeIndex / 30, 4); // 재생 중인 상황이었으면 처음이 아니라, 해당 지점(playbar ref)으로 가야 할 듯 -> 변경 필요
       storeCurrentAction(action);
       console.log('action: ', action);
     }
   }, [currentVisualizedData, endTimeIndex, mixer, startTimeIndex]);
 
-  // loop 했을 때 start index 로 보내줘야 함
+  // loop 했을 때 start index 로 보내줘야 함 (역재생 시 end index)
   useEffect(() => {
-    // mixer.addEventListener('loop', () => {
-    //   if (playDirection === 1) {
-    //     action.time = _.round(startTimeIndex / 30, 4);
-    //   }
-    // });
-  });
+    if (mixer && currentAction) {
+      mixer.addEventListener('loop', () => {
+        if (playDirection === 1) {
+          currentAction.time = _.round(startTimeIndex / 30, 4);
+        } else if (playDirection === -1) {
+          currentAction.time = _.round(endTimeIndex / 30, 4);
+        }
+      });
+    }
+  }, [currentAction, endTimeIndex, mixer, playDirection, startTimeIndex]);
 
   // animation 컨트롤 로직
   useEffect(() => {
