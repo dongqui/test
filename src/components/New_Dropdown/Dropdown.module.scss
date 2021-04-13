@@ -15,29 +15,22 @@
 
 .button-toggle {
   @include reset-button-style();
-  // display: inline-block;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  // padding: 1rem;
-  padding: 2px 8px;
-  background-color: #282727;
+  padding: 3px 8px;
+  background-color: #303030;
   color: #fff;
-  // min-width: 10rem;
   min-width: 72px;
+  max-height: 10rem;
   text-align: left;
   font-weight: 300;
-  // border-radius: 6px;
-  // border: 1px solid $gray300;
-
-  &.open {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-  }
+  border-radius: 4px;
 }
 
 .text {
   margin-right: 8px;
+  letter-spacing: 0.2px;
 }
 
 .arrow {
@@ -46,6 +39,7 @@
   & > svg {
     width: 6px;
     transform: rotate(-90deg);
+    color: #7a7a7a;
   }
 
   &.open {
@@ -57,9 +51,7 @@
 }
 
 .menu {
-  position: absolute;
-  top: 2px;
-  left: 0;
+  position: fixed;
   background-color: #282727;
   min-width: 72px;
   color: #a7a7a7;
@@ -67,6 +59,7 @@
   max-height: 10rem;
   border-radius: 6px;
   border: 1px solid $gray300;
-  overflow-y: auto;
+  overflow: hidden;
   z-index: 999;
+  letter-spacing: 1px;
 }

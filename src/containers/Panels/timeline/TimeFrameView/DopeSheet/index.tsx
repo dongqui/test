@@ -4,7 +4,9 @@ import * as d3 from 'd3';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import {
+  storeAnimatingData,
   storeContextMenuInfo,
+  storeCurrentAction,
   storeCurrentVisualizedData,
   storeDeleteTargetKeyframes,
   storeSkeletonHelper,
@@ -21,6 +23,7 @@ import {
 } from 'utils/TP/editingUtils';
 import produce from 'immer';
 import useContextMenu from 'hooks/common/useContextMenu';
+import { fnMovePlayBarWithAnimation } from 'utils/RP/animatingUtils';
 interface Props {
   timelineWrapperRef: React.RefObject<HTMLDivElement>;
 }
@@ -72,17 +75,28 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
   const currentXAxisPosition = useRef(1);
 
+  const currentAction = useReactiveVar(storeCurrentAction);
+  const animatingData = useReactiveVar(storeAnimatingData);
+  const { startTimeIndex, endTimeIndex, playState } = animatingData;
+
+  // 미들바 애니메이션 싱크
   useEffect(() => {
-    setInterval(() => {
-      // currentXAxisPosition.current += 1000;
-      // const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      // d3.select('#play-bar-wrapper').attr(
-      //   'transform',
-      //   `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-      // ${X_AXIS_HEIGHT / 2})`,
-      // );
-    }, 500);
-  }, []);
+    if (currentAction) {
+      const { startLoop, pauseLoop, stopLoop } = fnMovePlayBarWithAnimation({
+        action: currentAction,
+        playBarPositionRef: currentXAxisPosition,
+        prevXScale,
+        startTimeIndex,
+      });
+      if (playState === 'play') {
+        startLoop();
+      } else if (playState === 'pause') {
+        pauseLoop();
+      } else if (playState === 'stop') {
+        stopLoop();
+      }
+    }
+  }, [currentAction, endTimeIndex, playState, startTimeIndex]);
 
   // svg로 x축 그리기
   useEffect(() => {
