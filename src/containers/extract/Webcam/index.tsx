@@ -6,7 +6,6 @@ import _ from 'lodash';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { storeCutImages } from '../../../lib/store';
 import { WebcamPresenter } from './WebcamPresenter';
-import * as S from './WebcamStyles';
 
 export interface WebcamProps {
   videoUrl: string;
