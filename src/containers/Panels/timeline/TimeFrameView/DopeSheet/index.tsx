@@ -67,7 +67,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const dopeSheetRef = useRef<HTMLDivElement>(null);
   const prevScrollTop = useRef(0);
   const prevModelKey = useRef('');
-  const [displayedPlaybar, setDisplayedPlaybar] = useState(false);
+  const [playBarDisplayed, setPlayBarDisplayed] = useState(false);
 
   const xScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const prevXScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
@@ -558,17 +558,17 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       const { key } = currentVisualizedData;
       if (prevModelKey.current !== key) {
         prevModelKey.current = key;
-        setDisplayedPlaybar(true);
+        setPlayBarDisplayed(true);
       }
     } else {
       prevModelKey.current = '';
-      setDisplayedPlaybar(false);
+      setPlayBarDisplayed(false);
     }
   }, [currentVisualizedData]);
 
   // 재생 바 출력 시 드래그 이벤트 적용
   useEffect(() => {
-    if (displayedPlaybar) {
+    if (playBarDisplayed) {
       const dragBehavior = d3
         .drag()
         .filter((playBar) => {
@@ -593,7 +593,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         .attr('transform', `translate(${xScaleLinear(1) - 10}, ${X_AXIS_HEIGHT / 2})`)
         .call(dragBehavior as any);
     }
-  }, [displayedPlaybar]);
+  }, [playBarDisplayed]);
 
   return (
     <>
@@ -612,7 +612,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
             );
           })}
         </div>
-        {displayedPlaybar && <PlayBar />}
+        {playBarDisplayed && <PlayBar />}
       </div>
     </>
   );
