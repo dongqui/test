@@ -34,7 +34,7 @@ const fnRenderTransformTrack = ({
       isIncluded: true,
     });
   } else {
-    const layerIndex = Math.floor(trackIndex / 10000) * 100000 + 2;
+    const layerIndex = Math.floor(trackIndex / 10000) * 10000 + 2;
     let boneIndex = 0;
     switch (remainder) {
       case TP_TRACK_INDEX.POSITION_A:

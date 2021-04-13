@@ -41,7 +41,7 @@ const fnRenderBoneTrack = ({ dopeSheetList, trackIndex }: FnRenderBoneTrack): Re
       dopeSheetIndex += 1;
     }
   } else {
-    const layerIndex = Math.floor(trackIndex / 10000) * 100000 + 2;
+    const layerIndex = Math.floor(trackIndex / 10000) * 10000 + 2;
     updatedDopeSheetList.push({
       trackIndex: layerIndex,
       isExcludedRendering: false,
