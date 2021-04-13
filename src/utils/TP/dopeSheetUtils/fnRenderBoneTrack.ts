@@ -20,10 +20,10 @@ const fnRenderBoneTrack = ({ dopeSheetList, trackIndex }: FnRenderBoneTrack): Re
   const targetTrack = dopeSheetList[targetIndex];
   let dopeSheetIndex = targetIndex + 1;
 
-  if (!targetTrack.isExcludedRendering) {
+  if (!targetTrack.isIncluded) {
     updatedDopeSheetList.push({
       trackIndex,
-      isExcludedRendering: true,
+      isIncluded: true,
     });
     for (
       let transformIndex = trackIndex + 1;
@@ -32,7 +32,7 @@ const fnRenderBoneTrack = ({ dopeSheetList, trackIndex }: FnRenderBoneTrack): Re
     ) {
       updatedDopeSheetList.push({
         trackIndex: transformIndex,
-        isExcludedRendering: true,
+        isIncluded: true,
       });
       updatedCurrentVisualizedList.push({
         name: dopeSheetList[dopeSheetIndex].trackName,
@@ -44,11 +44,11 @@ const fnRenderBoneTrack = ({ dopeSheetList, trackIndex }: FnRenderBoneTrack): Re
     const layerIndex = Math.floor(trackIndex / 10000) * 10000 + 2;
     updatedDopeSheetList.push({
       trackIndex: layerIndex,
-      isExcludedRendering: false,
+      isIncluded: false,
     });
     updatedDopeSheetList.push({
       trackIndex,
-      isExcludedRendering: false,
+      isIncluded: false,
     });
     for (
       let transformIndex = trackIndex + 1;
@@ -57,7 +57,7 @@ const fnRenderBoneTrack = ({ dopeSheetList, trackIndex }: FnRenderBoneTrack): Re
     ) {
       updatedDopeSheetList.push({
         trackIndex: transformIndex,
-        isExcludedRendering: false,
+        isIncluded: false,
       });
       updatedCurrentVisualizedList.push({
         name: dopeSheetList[dopeSheetIndex].trackName,

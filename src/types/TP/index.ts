@@ -1,7 +1,7 @@
 export type TPDopeSheetStatus =
   | 'isSelected'
   | 'isLocked'
-  | 'isExcludedRendering'
+  | 'isIncluded'
   | 'isClickedParentTrack'
   | 'isFiltered'
   | 'times';
@@ -16,12 +16,12 @@ export interface TPTrackName {
 export interface TPDopeSheet {
   isSelected: boolean; // dope sheet 선택 체크
   isLocked: boolean; // sheet 잠금 체크
-  isExcludedRendering: boolean; // sheet 랜더링 제외 체크
+  isIncluded: boolean; // sheet 랜더링 제외 체크
   isClickedParentTrack: boolean; // 상위 트랙에 화살표 버튼이 클릭되어 있는지
   isFiltered: boolean; // sheet 필터링 체크
   isTransformTrack: boolean; // 현재 트랙이 transform 트랙인지 아닌지 체크
   isKeyframeSelected: boolean;
-  layerKey: string; // 어떤 layer에 속했는지 key로 표현. base layer일 경우, key는 'baseLayer'가 됨
+  layerKey: 'baseLayer' | string; // 어떤 layer에 속했는지 key로 표현. base layer일 경우, key는 'baseLayer'가 됨
   trackIndex: number; // 트랙 index
   trackName: string;
   times?: number[];

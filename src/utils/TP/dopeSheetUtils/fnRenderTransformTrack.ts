@@ -24,10 +24,10 @@ const fnRenderTransformTrack = ({
   });
   const targetTrack = dopeSheetList[targetIndex];
 
-  if (!targetTrack.isExcludedRendering) {
+  if (!targetTrack.isIncluded) {
     updatedDopeSheetList.push({
       trackIndex,
-      isExcludedRendering: true,
+      isIncluded: true,
     });
     updatedCurrentVisualizedList.push({
       name: targetTrack.trackName,
@@ -55,15 +55,15 @@ const fnRenderTransformTrack = ({
     }
     updatedDopeSheetList.push({
       trackIndex: layerIndex,
-      isExcludedRendering: false,
+      isIncluded: false,
     });
     updatedDopeSheetList.push({
       trackIndex: boneIndex,
-      isExcludedRendering: false,
+      isIncluded: false,
     });
     updatedDopeSheetList.push({
       trackIndex,
-      isExcludedRendering: false,
+      isIncluded: false,
     });
     updatedCurrentVisualizedList.push({
       name: targetTrack.trackName,

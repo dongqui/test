@@ -33,15 +33,15 @@ const fnRenderLayerTrack = ({
   let curBoneIndex = layerIndex + 1;
   let dopeSheetIndex = targetIndex + 1;
 
-  if (!targetTrack.isExcludedRendering) {
+  if (!targetTrack.isIncluded) {
     updatedDopeSheetList.push({
       trackIndex,
-      isExcludedRendering: true,
+      isIncluded: true,
     });
     while (curBoneIndex <= lastBoneIndex + 3) {
       updatedDopeSheetList.push({
         trackIndex: curBoneIndex,
-        isExcludedRendering: true,
+        isIncluded: true,
       });
       if (curBoneIndex % 10 !== 3 && curBoneIndex % 10 !== 7) {
         updatedCurrentVisualizedList.push({
@@ -56,12 +56,12 @@ const fnRenderLayerTrack = ({
   } else {
     updatedDopeSheetList.push({
       trackIndex,
-      isExcludedRendering: false,
+      isIncluded: false,
     });
     while (curBoneIndex <= lastBoneIndex + 3) {
       updatedDopeSheetList.push({
         trackIndex: curBoneIndex,
-        isExcludedRendering: false,
+        isIncluded: false,
       });
       if (curBoneIndex % 10 !== 3 && curBoneIndex % 10 !== 7) {
         updatedCurrentVisualizedList.push({
