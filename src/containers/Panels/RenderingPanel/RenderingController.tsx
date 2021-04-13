@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
@@ -28,7 +28,6 @@ import {
   fnMakeSkinnedMeshesVisible,
   fnRemoveShadow,
 } from 'utils/CP/visibilityUtils';
-import fnLoopCallBack from 'utils/common/fnLoopCallback';
 
 export interface RenderingControllerProps {
   id: string;
@@ -96,24 +95,37 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     }
   }, [currentAction, endTimeIndex, mixer, playDirection, startTimeIndex]);
 
-  // 역재생 시 start index 아래로 가면 end 로 보내주는 루프 (재생의 loop event 핸들과 유사)
-  useEffect(() => {
+  const reversePlayReqIdRef = useRef<number | undefined>();
+
+  const handleReversePlayLoop = useCallback(() => {
     if (mixer && currentAction) {
-      const handleReversePlayLoop = () => {
-        if (currentAction.time <= _.round(startTimeIndex / 30, 4)) {
-          currentAction.time = _.round(endTimeIndex / 30, 4);
-        } else if (currentAction.time >= _.round(endTimeIndex / 30, 4)) {
-          currentAction.time = _.round((endTimeIndex - 1) / 30, 4);
-        }
-      };
-      const { startLoop, stopLoop } = fnLoopCallBack({ callback: handleReversePlayLoop });
-      if (playState === 'play' && playDirection === -1) {
-        startLoop();
-      } else {
-        stopLoop();
+      if (currentAction.time <= _.round(startTimeIndex / 30, 4)) {
+        currentAction.time = _.round(endTimeIndex / 30, 4);
+      } else if (currentAction.time >= _.round(endTimeIndex / 30, 4)) {
+        currentAction.time = _.round((endTimeIndex - 1) / 30, 4);
       }
     }
-  }, [currentAction, endTimeIndex, mixer, playDirection, playState, startTimeIndex]);
+    reversePlayReqIdRef.current = window.requestAnimationFrame(handleReversePlayLoop);
+  }, [currentAction, endTimeIndex, mixer, startTimeIndex]);
+
+  const startReversePlayLoop = useCallback(() => {
+    reversePlayReqIdRef.current = window.requestAnimationFrame(handleReversePlayLoop);
+  }, [handleReversePlayLoop]);
+
+  const stopReversePlayLoop = useCallback(() => {
+    if (reversePlayReqIdRef.current) {
+      window.cancelAnimationFrame(reversePlayReqIdRef.current);
+    }
+  }, []);
+
+  // 역재생 시 start index 아래로 가면 end 로 보내주는 루프 (재생의 loop event 핸들과 유사)
+  useEffect(() => {
+    if (playState === 'play' && playDirection === -1) {
+      startReversePlayLoop();
+    } else {
+      stopReversePlayLoop();
+    }
+  }, [playDirection, playState, startReversePlayLoop, stopReversePlayLoop]);
 
   // animation 컨트롤 로직
   useEffect(() => {
