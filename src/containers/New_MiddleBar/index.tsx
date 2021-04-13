@@ -6,6 +6,7 @@ import {
   storePageInfo,
   storeBarPositionX,
   storeRecordingData,
+  storeCurrentVisualizedData,
 } from 'lib/store';
 import { SvgPath } from 'components/New_Icon';
 import { SegmentButton } from 'components/New_Button';
@@ -26,20 +27,22 @@ const MiddleBar: FunctionComponent<Props> = () => {
   const animatingData = useReactiveVar(storeAnimatingData);
   const recordingData = useReactiveVar(storeRecordingData);
   const barPositionX = useReactiveVar(storeBarPositionX);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
   const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
+  const currentTimeRef = useRef<HTMLInputElement>(null);
   const lastTimeRef = useRef<HTMLInputElement>(null);
+  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
 
   const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
-  const { startTimeIndex, endTimeIndex } = animatingData;
+  const { startTimeIndex, endTimeIndex, playState } = animatingData;
 
   const indicator = isShootPage
     ? {
         start: startTimeIndex,
-        now: '0000',
+        now: startTimeIndex,
         end: endTimeIndex,
       }
     : {
@@ -160,12 +163,19 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const handleNowInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     if (currentAction) {
-      const now = _.round(currentAction.time * 30, 0);
       const value = parseInt(event.currentTarget.value);
       if (value >= startTimeIndex && value <= endTimeIndex) {
         currentAction.time = _.round(value / 30, 4);
       } else {
-        event.currentTarget.value = now.toString();
+        event.currentTarget.value = _.round(currentAction.time * 30, 0).toString();
+      }
+    } else {
+      // 애니메이션 없는 경우
+      const value = parseInt(event.currentTarget.value);
+      if (value <= startTimeIndex) {
+        event.currentTarget.value = startTimeIndex.toString();
+      } else if (value >= endTimeIndex) {
+        event.currentTarget.value = endTimeIndex.toString();
       }
     }
   };
@@ -180,15 +190,79 @@ const MiddleBar: FunctionComponent<Props> = () => {
     }
   }, []);
 
+  const handleMiddleBarContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+  };
+
   useEffect(() => {
-    // 현재는 미들바 조작해야만 적용됨 -> 수정 필요
+    // 총 시간
     if (currentAction && lastTimeRef.current) {
       lastTimeRef.current.value = _.round(currentAction.getClip().duration, 0).toString();
     }
   }, [currentAction, startTimeIndex]);
 
+  const currentTimeReqIdRef = useRef<number | undefined>();
+
+  const changeCurrentTimeRef = useCallback(() => {
+    if (currentAction && currentTimeRef.current) {
+      if (currentTimeRef.current) {
+        currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
+      }
+    }
+    currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
+  }, [currentAction]);
+
+  const startCurrentTimeLoop = useCallback(() => {
+    currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
+  }, [changeCurrentTimeRef]);
+
+  const stopCurrentTimeLoop = useCallback(() => {
+    if (currentTimeReqIdRef.current) {
+      window.cancelAnimationFrame(currentTimeReqIdRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    // 현재 시간
+    if (playState === 'play') {
+      startCurrentTimeLoop();
+    } else if (playState === 'pause' || playState === 'stop') {
+      stopCurrentTimeLoop();
+    }
+  }, [currentAction, playState, startCurrentTimeLoop, stopCurrentTimeLoop]);
+
+  const currentTimeIndexReqIdRef = useRef<number | undefined>();
+
+  const changeCurrentTimeIndexRef = useCallback(() => {
+    if (currentAction && currentTimeIndexRef.current) {
+      if (currentTimeIndexRef.current) {
+        currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
+      }
+    }
+    currentTimeIndexReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeIndexRef);
+  }, [currentAction]);
+
+  const startCurrentTimeIndexLoop = useCallback(() => {
+    currentTimeIndexReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeIndexRef);
+  }, [changeCurrentTimeIndexRef]);
+
+  const stopCurrentTimeIndexLoop = useCallback(() => {
+    if (currentTimeIndexReqIdRef.current) {
+      window.cancelAnimationFrame(currentTimeIndexReqIdRef.current);
+    }
+  }, []);
+
+  // 애니메이션 재생 시 now 변경
+  useEffect(() => {
+    if (playState === 'play') {
+      startCurrentTimeIndexLoop();
+    } else {
+      stopCurrentTimeIndexLoop();
+    }
+  }, [playState, startCurrentTimeIndexLoop, stopCurrentTimeIndexLoop]);
+
   return (
-    <div className={cx('wrapper')}>
+    <div className={cx('wrapper')} onContextMenu={handleMiddleBarContextMenu}>
       <div className={cx('inner')} ref={scrollRef}>
         <div className={cx('left')}>
           <PlayBox />
@@ -196,7 +270,11 @@ const MiddleBar: FunctionComponent<Props> = () => {
         <div className={cx('right')}>
           <div className={cx('right-inner')}>
             <div className={cx('playtime')}>
-              <BaseInput className={cx('time-current')} defaultValue="00:00" />
+              <BaseInput
+                className={cx('time-current')}
+                defaultValue="00:00"
+                innerRef={currentTimeRef}
+              />
               <div className={cx('divide')}>/</div>
               <BaseInput className={cx('time-last')} defaultValue="00:00" innerRef={lastTimeRef} />
               {isShootPage && (
@@ -209,29 +287,32 @@ const MiddleBar: FunctionComponent<Props> = () => {
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="START"
-                defaultValue={indicator.start}
+                defaultValue={indicator.start || ''}
                 // value={indicator.start}
                 arrow
                 onBlur={handleStartInputBlur}
                 onKeyDown={handleInputKeyDown}
+                disabled={!currentVisualizedData}
               />
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="END"
-                defaultValue={indicator.end}
+                defaultValue={indicator.end || ''}
                 // value={indicator.end}
                 arrow
                 onBlur={handleEndInputBlur}
                 onKeyDown={handleInputKeyDown}
+                disabled={!currentVisualizedData}
               />
               <PrefixInput
                 id="now"
                 className={cx('indicator-input')}
                 prefix="NOW"
-                defaultValue={indicator.now}
+                defaultValue={indicator.now || ''}
                 // value={indicator.now}
                 onBlur={handleNowInputBlur}
                 onKeyDown={handleInputKeyDown}
+                disabled={!currentVisualizedData}
                 innerRef={currentTimeIndexRef}
                 arrow
               />

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
@@ -78,20 +78,54 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       const action = mixer.clipAction(visualizedClip);
       action.play();
       mixer.timeScale = 0;
-      action.time = _.round(startTimeIndex / 30, 4);
+      action.time = _.round(startTimeIndex / 30, 4); // 재생 중인 상황이었으면 처음이 아니라, 해당 지점(playbar ref)으로 가야 할 듯 -> 변경 필요
       storeCurrentAction(action);
       console.log('action: ', action);
     }
   }, [currentVisualizedData, endTimeIndex, mixer, startTimeIndex]);
 
-  // loop 했을 때 start index 로 보내줘야 함
+  // loop 했을 때 start index 로 보내줘야 함 (역재생 시 end index)
   useEffect(() => {
-    // mixer.addEventListener('loop', () => {
-    //   if (playDirection === 1) {
-    //     action.time = _.round(startTimeIndex / 30, 4);
-    //   }
-    // });
-  });
+    if (mixer && currentAction) {
+      mixer.addEventListener('loop', () => {
+        if (playDirection === 1) {
+          currentAction.time = _.round(startTimeIndex / 30, 4);
+        }
+      });
+    }
+  }, [currentAction, endTimeIndex, mixer, playDirection, startTimeIndex]);
+
+  const reversePlayReqIdRef = useRef<number | undefined>();
+
+  const handleReversePlayLoop = useCallback(() => {
+    if (mixer && currentAction) {
+      if (currentAction.time <= _.round(startTimeIndex / 30, 4)) {
+        currentAction.time = _.round(endTimeIndex / 30, 4);
+      } else if (currentAction.time >= _.round(endTimeIndex / 30, 4)) {
+        currentAction.time = _.round((endTimeIndex - 1) / 30, 4);
+      }
+    }
+    reversePlayReqIdRef.current = window.requestAnimationFrame(handleReversePlayLoop);
+  }, [currentAction, endTimeIndex, mixer, startTimeIndex]);
+
+  const startReversePlayLoop = useCallback(() => {
+    reversePlayReqIdRef.current = window.requestAnimationFrame(handleReversePlayLoop);
+  }, [handleReversePlayLoop]);
+
+  const stopReversePlayLoop = useCallback(() => {
+    if (reversePlayReqIdRef.current) {
+      window.cancelAnimationFrame(reversePlayReqIdRef.current);
+    }
+  }, []);
+
+  // 역재생 시 start index 아래로 가면 end 로 보내주는 루프 (재생의 loop event 핸들과 유사)
+  useEffect(() => {
+    if (playState === 'play' && playDirection === -1) {
+      startReversePlayLoop();
+    } else {
+      stopReversePlayLoop();
+    }
+  }, [playDirection, playState, startReversePlayLoop, stopReversePlayLoop]);
 
   // animation 컨트롤 로직
   useEffect(() => {
