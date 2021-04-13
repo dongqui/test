@@ -61,7 +61,7 @@ const fnRenderBoneTrack = ({ dopeSheetList, trackIndex }: FnRenderBoneTrack): Re
       });
       updatedCurrentVisualizedList.push({
         name: dopeSheetList[dopeSheetIndex].trackName,
-        isIncluded: true,
+        isIncluded: false,
       });
       dopeSheetIndex += 1;
     }
