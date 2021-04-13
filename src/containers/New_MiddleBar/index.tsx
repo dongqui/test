@@ -17,7 +17,6 @@ import PlayBox from './PlayBox';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import fnLoopCallBack from 'utils/common/fnLoopCallback';
 
 const cx = classNames.bind(styles);
 
@@ -202,39 +201,65 @@ const MiddleBar: FunctionComponent<Props> = () => {
     }
   }, [currentAction, startTimeIndex]);
 
-  useEffect(() => {
-    // 현재 시간
+  const currentTimeReqIdRef = useRef<number | undefined>();
+
+  const changeCurrentTimeRef = useCallback(() => {
     if (currentAction && currentTimeRef.current) {
-      const changeCurrentTimeRef = () => {
-        if (currentTimeRef.current) {
-          currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
-        }
-      };
-      const { startLoop, stopLoop } = fnLoopCallBack({ callback: changeCurrentTimeRef });
-      if (playState === 'play') {
-        startLoop();
-      } else if (playState === 'pause' || playState === 'stop') {
-        stopLoop();
+      if (currentTimeRef.current) {
+        currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
       }
     }
-  }, [currentAction, playState]);
+    currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
+  }, [currentAction]);
+
+  const startCurrentTimeLoop = useCallback(() => {
+    currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
+  }, [changeCurrentTimeRef]);
+
+  const stopCurrentTimeLoop = useCallback(() => {
+    if (currentTimeReqIdRef.current) {
+      window.cancelAnimationFrame(currentTimeReqIdRef.current);
+    }
+  }, []);
 
   useEffect(() => {
-    // now -> 주석 풀면 input 입력 불가능 상태
+    // 현재 시간
+    if (playState === 'play') {
+      startCurrentTimeLoop();
+    } else if (playState === 'pause' || playState === 'stop') {
+      stopCurrentTimeLoop();
+    }
+  }, [currentAction, playState, startCurrentTimeLoop, stopCurrentTimeLoop]);
+
+  const currentTimeIndexReqIdRef = useRef<number | undefined>();
+
+  const changeCurrentTimeIndexRef = useCallback(() => {
     if (currentAction && currentTimeIndexRef.current) {
-      const changeCurrentTimeIndexRef = () => {
-        if (currentTimeIndexRef.current) {
-          currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
-        }
-      };
-      const { startLoop, stopLoop } = fnLoopCallBack({ callback: changeCurrentTimeIndexRef });
-      if (playState === 'play') {
-        startLoop();
-      } else if (playState === 'pause' || playState === 'stop') {
-        stopLoop();
+      if (currentTimeIndexRef.current) {
+        currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
       }
     }
-  }, [currentAction, playState]);
+    currentTimeIndexReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeIndexRef);
+  }, [currentAction]);
+
+  const startCurrentTimeIndexLoop = useCallback(() => {
+    currentTimeIndexReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeIndexRef);
+  }, [changeCurrentTimeIndexRef]);
+
+  const stopCurrentTimeIndexLoop = useCallback(() => {
+    if (currentTimeIndexReqIdRef.current) {
+      window.cancelAnimationFrame(currentTimeIndexReqIdRef.current);
+    }
+  }, []);
+
+  // 애니메이션 재생 시 now 변경
+  useEffect(() => {
+    if (playState === 'play') {
+      startCurrentTimeIndexLoop();
+    } else {
+      stopCurrentTimeIndexLoop();
+    }
+  }, [playState, startCurrentTimeIndexLoop, stopCurrentTimeIndexLoop]);
 
   return (
     <div className={cx('wrapper')} onContextMenu={handleMiddleBarContextMenu}>
