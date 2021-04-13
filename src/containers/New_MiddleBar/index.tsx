@@ -6,6 +6,7 @@ import {
   storePageInfo,
   storeBarPositionX,
   storeRecordingData,
+  storeCurrentVisualizedData,
 } from 'lib/store';
 import { SvgPath } from 'components/New_Icon';
 import { SegmentButton } from 'components/New_Button';
@@ -26,6 +27,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
   const animatingData = useReactiveVar(storeAnimatingData);
   const recordingData = useReactiveVar(storeRecordingData);
   const barPositionX = useReactiveVar(storeBarPositionX);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
   const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -225,6 +227,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
                 arrow
                 onBlur={handleStartInputBlur}
                 onKeyDown={handleInputKeyDown}
+                disabled={!currentVisualizedData}
               />
               <PrefixInput
                 className={cx('indicator-input')}
@@ -234,6 +237,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
                 arrow
                 onBlur={handleEndInputBlur}
                 onKeyDown={handleInputKeyDown}
+                disabled={!currentVisualizedData}
               />
               <PrefixInput
                 id="now"
@@ -243,6 +247,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
                 // value={indicator.now}
                 onBlur={handleNowInputBlur}
                 onKeyDown={handleInputKeyDown}
+                disabled={!currentVisualizedData}
                 innerRef={currentTimeIndexRef}
                 arrow
               />

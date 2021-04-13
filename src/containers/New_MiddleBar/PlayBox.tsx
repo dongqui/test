@@ -21,6 +21,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const pageInfo = useReactiveVar(storePageInfo);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
   const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
@@ -33,16 +34,16 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
   }, [pageInfo.page]);
 
   const handleStop = useCallback(() => {
-    if (animatingData.playState !== 'stop') {
+    if (animatingData.playState !== 'stop' && currentVisualizedData) {
       storeAnimatingData({
         ...animatingData,
         playState: 'stop',
       });
     }
-  }, [animatingData]);
+  }, [animatingData, currentVisualizedData]);
 
   const handleRewind = useCallback(() => {
-    if (isShootPage) {
+    if (isShootPage && currentVisualizedData) {
       if (!(animatingData.playState === 'play' && animatingData.playDirection === -1)) {
         storeAnimatingData({
           ...animatingData,
@@ -58,10 +59,10 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
         storeRecordingData({ ...recordingData, isPlaying: false });
       }, 1000 * recordingData.duration);
     }
-  }, [animatingData, isShootPage, recordingData]);
+  }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
 
   const handlePlay = useCallback(() => {
-    if (isShootPage) {
+    if (isShootPage && currentVisualizedData) {
       if (!(animatingData.playState === 'play' && animatingData.playDirection === 1)) {
         storeAnimatingData({
           ...animatingData,
@@ -77,10 +78,10 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
       //   storeRecordingData({ ...recordingData, isPlaying: false });
       // }, 1000 * recordingData.duration);
     }
-  }, [animatingData, isShootPage, recordingData]);
+  }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
 
   const handlePause = useCallback(() => {
-    if (isShootPage) {
+    if (isShootPage && currentVisualizedData) {
       if (animatingData.playState !== 'pause') {
         storeAnimatingData({
           ...animatingData,
@@ -92,7 +93,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
     if (!isShootPage) {
       storeRecordingData({ ...recordingData, isPlaying: false });
     }
-  }, [animatingData, isShootPage, recordingData]);
+  }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
 
   const handleExport = useCallback(() => {
     storeModalInfo({
