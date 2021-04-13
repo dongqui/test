@@ -1,44 +1,47 @@
+import { FunctionComponent, Fragment, ReactNode, ButtonHTMLAttributes, memo } from 'react';
 import _ from 'lodash';
-import React, { FunctionComponent, useState, useRef, useEffect } from 'react';
 import classNames from 'classnames/bind';
 import styles from './Segment.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface BaseProps {
-  objList?: any;
+interface SegmentItem {
+  key: string;
+  value: ReactNode;
+  isSelected: boolean;
+  onClick: (key: string) => void;
 }
 
-export type Props = BaseProps;
+interface BaseProps {
+  list: SegmentItem[];
+}
 
-const Segment: FunctionComponent<Props> = ({ objList }) => {
-  const [selected, setSelected] = useState<number>(0);
-  const targetIDRef = useRef(selected);
+export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
 
-  const handleClick = (e: any) => {
-    const targetID = e.target.id;
-    setSelected(targetID);
-  };
+const Segment: FunctionComponent<Props> = ({ list }) => {
+  const child = _.map(list, (item, idx: number) => {
+    const handleClick = () => {
+      item.onClick(item.key);
+    };
 
-  useEffect(() => {
-    targetIDRef.current = selected;
-  }, [selected]);
-
-  const obj = _.map(objList, (item, idx: number) => (
-    <React.Fragment key={item.id}>
+    const buttonClasses = cx('segment', {
+      active: item.isSelected,
+    });
+    return (
       <div
         role="button"
-        onClick={handleClick}
-        onKeyPress={handleClick}
-        id={String(idx)}
+        className={buttonClasses}
+        key={item.key}
+        id={item.key}
         tabIndex={idx}
-        className={cx('segment', Number(selected) === idx ? cx('active') : undefined)}
+        onKeyPress={handleClick}
+        onClick={handleClick}
       >
-        {item.contents}
+        {item.value}
       </div>
-    </React.Fragment>
-  ));
-  return <div className={cx('segment-wrap')}>{obj}</div>;
+    );
+  });
+  return <div className={cx('segment-wrap')}>{child}</div>;
 };
 
-export default Segment;
+export default memo(Segment);
