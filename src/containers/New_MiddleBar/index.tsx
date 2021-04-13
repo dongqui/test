@@ -210,7 +210,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
                 className={cx('indicator-input')}
                 prefix="START"
                 defaultValue={indicator.start}
-                value={indicator.start}
+                // value={indicator.start}
                 arrow
                 onBlur={handleStartInputBlur}
                 onKeyDown={handleInputKeyDown}
@@ -219,7 +219,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
                 className={cx('indicator-input')}
                 prefix="END"
                 defaultValue={indicator.end}
-                value={indicator.end}
+                // value={indicator.end}
                 arrow
                 onBlur={handleEndInputBlur}
                 onKeyDown={handleInputKeyDown}
@@ -229,7 +229,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
                 className={cx('indicator-input')}
                 prefix="NOW"
                 defaultValue={indicator.now}
-                value={indicator.now}
+                // value={indicator.now}
                 onBlur={handleNowInputBlur}
                 onKeyDown={handleInputKeyDown}
                 innerRef={currentTimeIndexRef}

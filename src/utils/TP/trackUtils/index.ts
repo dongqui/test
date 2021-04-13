@@ -1,6 +1,7 @@
 export { default as fnCheckSelectedTrackList } from './fnCheckSelectedTrackList';
 
 export { default as fnClickLockButton } from './fnClickLockButton';
+export { default as fnClickRenderingButton } from './fnClickRenderingButton';
 export { default as fnClickTrackToCtrlKey } from './fnClickTrackToCtrlKey';
 export { default as fnClickTrackToMouse } from './fnClickTrackToMouse';
 

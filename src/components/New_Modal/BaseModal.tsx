@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useCallback,
 } from 'react';
 import _ from 'lodash';
 import { Overlay } from 'components/New_Overlay';
@@ -19,12 +20,9 @@ const cx = classnames.bind(styles);
 
 type Theme = 'light' | 'dark';
 
-/**
- * ===WARN===
- * React의 memo type정의가 잘못되어있어서 children props를 임의로 명시
- */
 export interface Props {
   onClose: () => void;
+  onOutsideClose?: () => void;
   hasCloseIcon?: boolean;
   theme?: Theme;
   title?: string;
@@ -50,7 +48,14 @@ const defaultProps: Partial<Props> = {
   hasCloseIcon: false,
 };
 
-const BaseModal: FunctionComponent<Props> = ({ theme, onClose, hasCloseIcon, title, children }) => {
+const BaseModal: FunctionComponent<Props> = ({
+  theme,
+  onClose,
+  hasCloseIcon,
+  title,
+  onOutsideClose,
+  children,
+}) => {
   const portalRef = useRef(document.getElementById('portal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -132,6 +137,16 @@ const BaseModal: FunctionComponent<Props> = ({ theme, onClose, hasCloseIcon, tit
     icon: hasCloseIcon,
   });
 
+  const handleOutSideClose = useCallback(() => {
+    if (onOutsideClose) {
+      onOutsideClose();
+    }
+
+    if (!onOutsideClose) {
+      onClose();
+    }
+  }, [onClose, onOutsideClose]);
+
   return (
     <BasePortal container={portalRef}>
       <div className={cx('wrapper')} ref={modalRef}>
@@ -141,14 +156,14 @@ const BaseModal: FunctionComponent<Props> = ({ theme, onClose, hasCloseIcon, tit
           )}
           <div className={cx('content')}>
             {title && (
-              <Headline level="6" align="center" bold margin>
+              <Headline className={cx('title')} level="5" align="center" bold margin>
                 {title}
               </Headline>
             )}
             {children}
           </div>
         </div>
-        <Overlay onClose={onClose} />
+        <Overlay onClose={handleOutSideClose} />
       </div>
     </BasePortal>
   );
