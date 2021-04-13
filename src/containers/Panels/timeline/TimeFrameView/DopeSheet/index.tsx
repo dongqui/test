@@ -23,7 +23,7 @@ import {
 } from 'utils/TP/editingUtils';
 import produce from 'immer';
 import useContextMenu from 'hooks/common/useContextMenu';
-import { fnMovePlayBarWithAnimation } from 'utils/RP/animatingUtils';
+import fnLoopCallback from 'utils/common/fnLoopCallback';
 interface Props {
   timelineWrapperRef: React.RefObject<HTMLDivElement>;
 }
@@ -82,16 +82,22 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   // 미들바 애니메이션 싱크
   useEffect(() => {
     if (currentAction) {
-      const { startLoop, pauseLoop, stopLoop } = fnMovePlayBarWithAnimation({
-        action: currentAction,
-        playBarPositionRef: currentXAxisPosition,
-        prevXScale,
-      });
+      const setPlayBarPosition = () => {
+        if (currentXAxisPosition) {
+          currentXAxisPosition.current = currentAction.time * 30;
+          const xScaleLinear = prevXScale.current as d3ScaleLinear;
+          d3.select('#play-bar-wrapper').attr(
+            'transform',
+            `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+            ${X_AXIS_HEIGHT / 2})`,
+          );
+        }
+      };
+
+      const { startLoop, stopLoop } = fnLoopCallback({ callback: setPlayBarPosition });
       if (playState === 'play') {
         startLoop();
-      } else if (playState === 'pause') {
-        pauseLoop();
-      } else if (playState === 'stop') {
+      } else if (playState === 'pause' || playState === 'stop') {
         stopLoop();
       }
     }
