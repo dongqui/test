@@ -23,7 +23,6 @@ import {
 } from 'utils/TP/editingUtils';
 import produce from 'immer';
 import useContextMenu from 'hooks/common/useContextMenu';
-import fnLoopCallback from 'utils/common/fnLoopCallback';
 interface Props {
   timelineWrapperRef: React.RefObject<HTMLDivElement>;
 }
@@ -79,28 +78,39 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const animatingData = useReactiveVar(storeAnimatingData);
   const { startTimeIndex, endTimeIndex, playState } = animatingData;
 
+  const playBarPositionReqIdRef = useRef<number | undefined>();
+
+  const setPlayBarPosition = useCallback(() => {
+    if (currentXAxisPosition && currentAction) {
+      currentXAxisPosition.current = currentAction.time * 30;
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
+    }
+    playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
+  }, [currentAction]);
+
+  const startPlayBarPositionLoop = useCallback(() => {
+    playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
+  }, [setPlayBarPosition]);
+
+  const stopPlayBarPositionLoop = useCallback(() => {
+    if (playBarPositionReqIdRef.current) {
+      window.cancelAnimationFrame(playBarPositionReqIdRef.current);
+    }
+  }, []);
+
   // 미들바 애니메이션 싱크
   useEffect(() => {
-    if (currentAction) {
-      const setPlayBarPosition = () => {
-        if (currentXAxisPosition) {
-          currentXAxisPosition.current = currentAction.time * 30;
-          const xScaleLinear = prevXScale.current as d3ScaleLinear;
-          d3.select('#play-bar-wrapper').attr(
-            'transform',
-            `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-            ${X_AXIS_HEIGHT / 2})`,
-          );
-        }
-      };
-      const { startLoop, stopLoop } = fnLoopCallback({ callback: setPlayBarPosition });
-      if (playState === 'play') {
-        startLoop();
-      } else if (playState === 'pause' || playState === 'stop') {
-        stopLoop();
-      }
+    if (playState === 'play') {
+      startPlayBarPositionLoop();
+    } else if (playState === 'pause' || playState === 'stop') {
+      stopPlayBarPositionLoop();
     }
-  }, [currentAction, endTimeIndex, playState, startTimeIndex]);
+  }, [playState, startPlayBarPositionLoop, stopPlayBarPositionLoop]);
 
   // svg로 x축 그리기
   useEffect(() => {
