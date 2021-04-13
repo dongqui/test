@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -65,6 +65,8 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const dopeSheetRef = useRef<HTMLDivElement>(null);
   const prevScrollTop = useRef(0);
+  const prevModelKey = useRef('');
+  const [playBarDisplayed, setPlayBarDisplayed] = useState(false);
 
   const xScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const prevXScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
@@ -181,19 +183,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       )
       .call(xAxisPosition.current);
     d3.selectAll('.x-axis-g line').attr('y2', -24);
-
-    // 재생 바 transform 설정
-    const xScaleLinear = prevXScale.current as d3ScaleLinear;
-    d3.select('#play-bar-wrapper')
-      .attr(
-        'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
-      )
-      .select('#play-bar-wrapper line')
-      .attr('x1', '100%')
-      .attr('y1', '100%')
-      .attr('x2', 0)
-      .attr('y2', 0);
   }, []);
 
   // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
@@ -314,29 +303,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
 
     d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
   }, [timelineWrapperRef]);
-
-  // 재생바 위치 변경
-  useEffect(() => {
-    const dragBehavior = d3
-      .drag()
-      .filter((playBar) => {
-        if (playBar.target.tagName !== 'path') return false;
-        return true;
-      })
-      .on('drag', function (drag: any) {
-        const currentXTick = _.floor(prevXScale.current?.invert(drag.x + 20) as number);
-        const checkZero = currentXTick <= 1 ? 1 : currentXTick;
-        const xScaleLinear = prevXScale.current as d3ScaleLinear;
-
-        currentXAxisPosition.current = checkZero;
-        d3.select(this).attr(
-          'transform',
-          `translate(${xScaleLinear(checkZero) - 10}, 
-        ${X_AXIS_HEIGHT / 2})`,
-        );
-      });
-    d3.select('#play-bar-wrapper').call(dragBehavior as any);
-  }, []);
 
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
@@ -600,6 +566,49 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   };
   useContextMenu({ targetRef: dopeSheetRef, event: handleDopsheetContextMenu });
 
+  // 최초 visualize, 모델 변경 시 재생바 출력
+  useEffect(() => {
+    if (currentVisualizedData) {
+      const { key } = currentVisualizedData;
+      if (prevModelKey.current !== key) {
+        prevModelKey.current = key;
+        setPlayBarDisplayed(true);
+      }
+    } else {
+      prevModelKey.current = '';
+      setPlayBarDisplayed(false);
+    }
+  }, [currentVisualizedData]);
+
+  // 재생 바 출력 시 드래그 이벤트 적용
+  useEffect(() => {
+    if (playBarDisplayed) {
+      const dragBehavior = d3
+        .drag()
+        .filter((playBar) => {
+          if (playBar.target.tagName !== 'path') return false;
+          return true;
+        })
+        .on('drag', function (drag: any) {
+          const currentXTick = _.floor(prevXScale.current?.invert(drag.x + 20) as number);
+          const checkZero = currentXTick <= 1 ? 1 : currentXTick;
+          const xScaleLinear = prevXScale.current as d3ScaleLinear;
+
+          currentXAxisPosition.current = checkZero;
+          d3.select(this).attr(
+            'transform',
+            `translate(${xScaleLinear(checkZero) - 10}, 
+        ${X_AXIS_HEIGHT / 2})`,
+          );
+        });
+
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper')
+        .attr('transform', `translate(${xScaleLinear(1) - 10}, ${X_AXIS_HEIGHT / 2})`)
+        .call(dragBehavior as any);
+    }
+  }, [playBarDisplayed]);
+
   return (
     <>
       <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
@@ -617,7 +626,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
             );
           })}
         </div>
-        <PlayBar />
+        {playBarDisplayed && <PlayBar />}
       </div>
     </>
   );
