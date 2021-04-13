@@ -37,19 +37,22 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
   const lpData = useReactiveVar(storeLpData);
   const { setCurrentData } = useLPRowControl({ lpData, rowKey });
   const onClick = useCallback(() => {
-    storeLpData(
-      _.map(lpData, (item) => ({
-        ...item,
-        isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
-        isClicked: _.isEqual(rowKey, item.key),
-        isVisualized:
-          isVisualizeSelected && _.isEqual(mode, FILE_TYPES.motion)
-            ? _.isEqual(item.key, rowKey)
-            : item.isVisualized,
-      })),
-    );
-    if (isVisualizeSelected && _.isEqual(mode, FILE_TYPES.motion)) {
-      setCurrentData({ key: rowKey });
+    const isModifying = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isModifying;
+    if (!isModifying) {
+      storeLpData(
+        _.map(lpData, (item) => ({
+          ...item,
+          isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
+          isClicked: _.isEqual(rowKey, item.key),
+          isVisualized:
+            isVisualizeSelected && _.isEqual(mode, FILE_TYPES.motion)
+              ? _.isEqual(item.key, rowKey)
+              : item.isVisualized,
+        })),
+      );
+      if (isVisualizeSelected && _.isEqual(mode, FILE_TYPES.motion)) {
+        setCurrentData({ key: rowKey });
+      }
     }
   }, [isVisualizeSelected, lpData, mode, rowKey, setCurrentData]);
 
