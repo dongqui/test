@@ -28,6 +28,7 @@ import {
   fnMakeSkinnedMeshesVisible,
   fnRemoveShadow,
 } from 'utils/CP/visibilityUtils';
+import fnLoopCallBack from 'utils/common/fnLoopCallback';
 
 export interface RenderingControllerProps {
   id: string;
@@ -90,12 +91,29 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       mixer.addEventListener('loop', () => {
         if (playDirection === 1) {
           currentAction.time = _.round(startTimeIndex / 30, 4);
-        } else if (playDirection === -1) {
-          currentAction.time = _.round(endTimeIndex / 30, 4);
         }
       });
     }
   }, [currentAction, endTimeIndex, mixer, playDirection, startTimeIndex]);
+
+  // 역재생 시 start index 아래로 가면 end 로 보내주는 루프 (재생의 loop event 핸들과 유사)
+  useEffect(() => {
+    if (mixer && currentAction) {
+      const handleReversePlayLoop = () => {
+        if (currentAction.time <= _.round(startTimeIndex / 30, 4)) {
+          currentAction.time = _.round(endTimeIndex / 30, 4);
+        } else if (currentAction.time >= _.round(endTimeIndex / 30, 4)) {
+          currentAction.time = _.round((endTimeIndex - 1) / 30, 4);
+        }
+      };
+      const { startLoop, stopLoop } = fnLoopCallBack({ callback: handleReversePlayLoop });
+      if (playState === 'play' && playDirection === -1) {
+        startLoop();
+      } else {
+        stopLoop();
+      }
+    }
+  }, [currentAction, endTimeIndex, mixer, playDirection, playState, startTimeIndex]);
 
   // animation 컨트롤 로직
   useEffect(() => {
