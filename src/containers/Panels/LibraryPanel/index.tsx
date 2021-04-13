@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useCallback, useEffect, useState, useRef } from 'react';
+import { FunctionComponent, memo, useCallback, useState, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useDropzone } from 'react-dropzone';
 import { useLPControl } from 'hooks/LP/useLPControl';
@@ -16,8 +16,8 @@ import _ from 'lodash';
 import { IconView } from '../../IconTree/IconView';
 import { ListView } from 'containers/ListTree/ListView';
 import Breadcrumb from './Breadcrumb';
-import { Headline, Html } from 'components/New_Typography';
-import { BaseModal } from 'components/New_Modal';
+import { Headline } from 'components/New_Typography';
+import { ConfirmModal } from 'components/New_Modal';
 import Explorer from './Explorer/index';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -120,13 +120,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
-      {showsModal && (
-        <BaseModal onClose={handleModalClose}>
-          <Headline level="5" align="center">
-            <Html content={modalMessage} />
-          </Headline>
-        </BaseModal>
-      )}
+      {showsModal && <ConfirmModal onClose={handleModalClose} title={modalMessage} />}
     </div>
   );
 };

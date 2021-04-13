@@ -10,7 +10,7 @@ import {
 } from 'react';
 import _ from 'lodash';
 import { Overlay } from 'components/New_Overlay';
-import { Headline } from 'components/New_Typography';
+import { Headline, Html } from 'components/New_Typography';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import BasePortal from './BasePortal';
 import classnames from 'classnames/bind';
@@ -157,7 +157,7 @@ const BaseModal: FunctionComponent<Props> = ({
           <div className={cx('content')}>
             {title && (
               <Headline className={cx('title')} level="5" align="center" bold margin>
-                {title}
+                <Html content={title} />
               </Headline>
             )}
             {children}
