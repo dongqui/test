@@ -9,7 +9,7 @@ import {
   RetargetDataType,
 } from 'types/RP';
 
-export const isDebug = false;
+export const isDebug = true;
 export const isClient = typeof window !== 'undefined';
 export const DEFAULT_MODEL_URL =
   'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1612095825/DyingToGlb_fqke1a.glb';
