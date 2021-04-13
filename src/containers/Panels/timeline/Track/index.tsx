@@ -2,6 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
+import produce from 'immer';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { ContextMenu } from 'components/New_ContextMenu';
 import {
@@ -10,7 +11,9 @@ import {
   storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
   storeTPCurrnetClickedTrack,
+  storeCurrentVisualizedData,
 } from 'lib/store';
+import { CurrentVisualizedDataType } from 'types';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import {
@@ -41,7 +44,7 @@ const Track: React.FC<TrackProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
-  const [isExcludedRendering, setIsExcludedRendering] = useState(true);
+  const [isIncluded, setisIncluded] = useState(true);
   const [isClickedArrowButton, setIsClickedArrowButton] = useState(false); // 화살표 토글 버튼(true면 하위 트랙 open)
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
@@ -190,16 +193,50 @@ const Track: React.FC<TrackProps> = ({
 
   // 랜더링 제외 버튼 클릭
   const clickRenderingButton = useCallback(() => {
-    const [updatedDopeSheetList, updatedCurrentVisualizedList] = fnClickRenderingButton({
-      dopeSheetList,
-      lastBoneList,
-      trackIndex,
-    });
-    console.log('updatedDopeSheetList', updatedDopeSheetList, updatedCurrentVisualizedList);
-    storeTPUpdateDopeSheetList({
-      updatedList: updatedDopeSheetList,
-      status: 'isExcludedRendering',
-    });
+    const state = storeCurrentVisualizedData();
+    if (state) {
+      const [updatedDopeSheetList, updatedState] = fnClickRenderingButton({
+        dopeSheetList,
+        lastBoneList,
+        trackIndex,
+      });
+      const targetIndex = fnGetBinarySearch({
+        collection: dopeSheetList,
+        index: trackIndex,
+        key: 'trackIndex',
+      });
+      const targetTrack = dopeSheetList[targetIndex];
+      if (targetTrack.layerKey === 'baseLayer') {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          _.forEach(updatedState, (updated) => {
+            const transformIndex = _.findIndex(
+              draft.baseLayer,
+              (currentVisualizedData) => currentVisualizedData.name === updated.name,
+            );
+            draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      } else {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          const targetLayer = _.find(draft.layers, (layer) => layer.key === targetTrack.layerKey);
+          if (targetLayer) {
+            _.forEach(updatedState, (updated) => {
+              const transformIndex = _.findIndex(
+                targetLayer.tracks,
+                (currentVisualizedData) => currentVisualizedData.name === updated.name,
+              );
+              targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
+            });
+          }
+        });
+        storeCurrentVisualizedData(nextState);
+      }
+      storeTPUpdateDopeSheetList({
+        updatedList: updatedDopeSheetList,
+        status: 'isIncluded',
+      });
+    }
   }, [dopeSheetList, lastBoneList, trackIndex]);
 
   // 트랙 선택 효과 변경
@@ -213,7 +250,7 @@ const Track: React.FC<TrackProps> = ({
       const targetTrack = dopeSheetList[targetIndex];
       setIsSelected(targetTrack?.isSelected);
       setIsLocked(targetTrack?.isLocked);
-      setIsExcludedRendering(targetTrack?.isExcludedRendering);
+      setisIncluded(targetTrack?.isIncluded);
     }
   }, [dopeSheetList, trackIndex]);
 
@@ -254,7 +291,7 @@ const Track: React.FC<TrackProps> = ({
                 />
                 <div className={cx('check-wrapper')}>
                   <IconWrapper
-                    className={cx('track-icon', 'check', { rendered: isExcludedRendering })}
+                    className={cx('track-icon', 'check', { rendered: isIncluded })}
                     icon={SvgPath.Check}
                     hasFrame={false}
                     onClick={clickRenderingButton}
