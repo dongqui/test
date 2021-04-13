@@ -1,7 +1,12 @@
 import _ from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
-import { storeCurrentVisualizedData, storeLpData } from 'lib/store';
+import {
+  storeContextMenuInfo,
+  storeCurrentVisualizedData,
+  storeLpData,
+  storeModalInfo,
+} from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
 import { fnGetFileName } from 'utils/LP/fnGetFileName';
 
@@ -30,25 +35,56 @@ export const useLPRowControl = ({ lpData, rowKey }: useLPControlProps) => {
   const onChangeInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
   }, []);
+  const handleSubmitName = useCallback(() => {
+    let filteredLpData = _.clone(lpData);
+    const modifyingRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey]);
+    const sameDepthLpData = _.filter(lpData, [
+      LPDATA_PROPERTY_TYPES.parentKey,
+      modifyingRow?.parentKey,
+    ]);
+    const sameNameFile = _.find(
+      sameDepthLpData,
+      (item) => _.isEqual(item?.name, name) && !_.isEqual(item?.key, rowKey),
+    );
+    if (sameNameFile) {
+      const ok = window.confirm('동일한 파일의 이름이 존재합니다. 덮어쓰시겠습니까?');
+      if (ok) {
+        filteredLpData = _.filter(
+          filteredLpData,
+          (item) => !_.isEqual(item?.key, sameNameFile?.key),
+        );
+      } else {
+        setName(modifyingRow?.name ?? '');
+        storeLpData(
+          _.map(filteredLpData, (item) => ({
+            ...item,
+            isModifying: false,
+          })),
+        );
+        return;
+      }
+    }
+    storeLpData(
+      _.map(filteredLpData, (item) => ({
+        ...item,
+        isModifying: false,
+        name: _.isEqual(item.key, rowKey) ? name : item.name,
+      })),
+    );
+  }, [lpData, name, rowKey]);
   const onBlur = useCallback(
     (e) => {
-      storeLpData(
-        _.map(lpData, (item) => ({
-          ...item,
-          isModifying: _.isEqual(item.key, rowKey) ? false : item.isModifying,
-          name: _.isEqual(item.key, rowKey) ? name : item.name,
-        })),
-      );
+      handleSubmitName();
     },
-    [lpData, rowKey, name],
+    [handleSubmitName],
   );
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (_.isEqual(e.key, 'Enter')) {
-        onBlur(e);
+        handleSubmitName();
       }
     },
-    [onBlur],
+    [handleSubmitName],
   );
   const handleFocus = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {

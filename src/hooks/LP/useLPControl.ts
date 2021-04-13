@@ -129,7 +129,22 @@ export const useLPControl = ({
           const times = draggingRow?.baseLayer?.[0]?.times;
           const tracks = _.map(result2?.data?.result, (item) => ({ ...item, times }));
           newBaseLayer = fnGetBaseLayerWithTracks({ bones, tracks });
+          const newMotion: LPDataType = {
+            ...draggingRow,
+            key: uuidv4(),
+            parentKey: key,
+            baseLayer: newBaseLayer,
+            layers: [],
+          };
+          const newMainData = _.concat(mainData, newMotion);
+          storeLpData(
+            _.map(newMainData, (item) => ({
+              ...item,
+              isDragging: false,
+            })),
+          );
           setShowsModal(false);
+          return;
         }
       }
       if (_.isEqual(draggingRow?.type, FILE_TYPES.file)) {
@@ -153,7 +168,6 @@ export const useLPControl = ({
         _.map(mainData, (item) => ({
           ...item,
           parentKey: item.isDragging ? key : item.parentKey,
-          baseLayer: item.isDragging ? newBaseLayer : item.baseLayer,
           isDragging: false,
         })),
       );
