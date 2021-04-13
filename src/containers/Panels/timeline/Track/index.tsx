@@ -2,6 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
+import produce from 'immer';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { ContextMenu } from 'components/New_ContextMenu';
 import {
@@ -10,14 +11,17 @@ import {
   storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
   storeTPCurrnetClickedTrack,
+  storeCurrentVisualizedData,
 } from 'lib/store';
+import { CurrentVisualizedDataType } from 'types';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import {
   fnClickLockButton,
-  fnGetBinarySearch,
+  fnClickRenderingButton,
   fnClickTrackToCtrlKey,
   fnClickTrackToMouse,
+  fnGetBinarySearch,
 } from 'utils/TP/trackUtils';
 import styles from './index.module.scss';
 
@@ -40,6 +44,7 @@ const Track: React.FC<TrackProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [isIncluded, setisIncluded] = useState(true);
   const [isClickedArrowButton, setIsClickedArrowButton] = useState(false); // 화살표 토글 버튼(true면 하위 트랙 open)
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
@@ -179,16 +184,60 @@ const Track: React.FC<TrackProps> = ({
 
   // 수정불가 버튼 클릭
   const clickLockButton = useCallback(() => {
-    const updatedTrackList = fnClickLockButton({ dopeSheetList, lastBoneList, trackIndex });
-    console.log('updatedTrackList', updatedTrackList);
+    const updatedDopeSheetList = fnClickLockButton({ dopeSheetList, lastBoneList, trackIndex });
     storeTPUpdateDopeSheetList({
-      updatedList: updatedTrackList,
+      updatedList: updatedDopeSheetList,
       status: 'isLocked',
     });
   }, [dopeSheetList, lastBoneList, trackIndex]);
 
   // 랜더링 제외 버튼 클릭
-  const clickRenderingButton = useCallback(() => {}, []);
+  const clickRenderingButton = useCallback(() => {
+    const state = storeCurrentVisualizedData();
+    if (state) {
+      const [updatedDopeSheetList, updatedState] = fnClickRenderingButton({
+        dopeSheetList,
+        lastBoneList,
+        trackIndex,
+      });
+      const targetIndex = fnGetBinarySearch({
+        collection: dopeSheetList,
+        index: trackIndex,
+        key: 'trackIndex',
+      });
+      const targetTrack = dopeSheetList[targetIndex];
+      if (targetTrack.layerKey === 'baseLayer') {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          _.forEach(updatedState, (updated) => {
+            const transformIndex = _.findIndex(
+              draft.baseLayer,
+              (currentVisualizedData) => currentVisualizedData.name === updated.name,
+            );
+            draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      } else {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          const targetLayer = _.find(draft.layers, (layer) => layer.key === targetTrack.layerKey);
+          if (targetLayer) {
+            _.forEach(updatedState, (updated) => {
+              const transformIndex = _.findIndex(
+                targetLayer.tracks,
+                (currentVisualizedData) => currentVisualizedData.name === updated.name,
+              );
+              targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
+            });
+          }
+        });
+        storeCurrentVisualizedData(nextState);
+      }
+      storeTPUpdateDopeSheetList({
+        updatedList: updatedDopeSheetList,
+        status: 'isIncluded',
+      });
+    }
+  }, [dopeSheetList, lastBoneList, trackIndex]);
 
   // 트랙 선택 효과 변경
   useEffect(() => {
@@ -200,19 +249,8 @@ const Track: React.FC<TrackProps> = ({
       });
       const targetTrack = dopeSheetList[targetIndex];
       setIsSelected(targetTrack?.isSelected);
-    }
-  }, [dopeSheetList, trackIndex]);
-
-  // 트랙 잠금 효과 변경
-  useEffect(() => {
-    if (dopeSheetList && trackIndex) {
-      const targetIndex = fnGetBinarySearch({
-        collection: dopeSheetList,
-        index: trackIndex,
-        key: 'trackIndex',
-      });
-      const targetTrack = dopeSheetList[targetIndex];
       setIsLocked(targetTrack?.isLocked);
+      setisIncluded(targetTrack?.isIncluded);
     }
   }, [dopeSheetList, trackIndex]);
 
@@ -233,7 +271,7 @@ const Track: React.FC<TrackProps> = ({
         >
           {childrenTrackList.length ? (
             <IconWrapper
-              className={cx('track-button', 'arrow-button', { opened: isClickedArrowButton })}
+              className={cx('track-icon', 'arrow-button', { opened: isClickedArrowButton })}
               icon={SvgPath.CaretDown}
               hasFrame={false}
               onClick={clickArrowButton}
@@ -242,21 +280,23 @@ const Track: React.FC<TrackProps> = ({
             ''
           )}
           <p className={cx({ locked: isLocked })}>{title}</p>
-          <div className={cx('track-icon-wrapper')}>
+          <div className={cx('track-icon-wrapper', { locked: isLocked })}>
             {trackIndex && (
               <>
                 <IconWrapper
-                  className={cx('track-button', 'lock')}
+                  className={cx('track-icon', 'lock')}
                   icon={isLocked ? SvgPath.LockOpen : SvgPath.LockClose}
                   hasFrame={false}
                   onClick={clickLockButton}
                 />
-                <IconWrapper
-                  className={cx('track-button', 'check')}
-                  icon={SvgPath.LockClose}
-                  hasFrame={false}
-                  onClick={clickRenderingButton}
-                />
+                <div className={cx('check-wrapper')}>
+                  <IconWrapper
+                    className={cx('track-icon', 'check', { rendered: isIncluded })}
+                    icon={SvgPath.Check}
+                    hasFrame={false}
+                    onClick={clickRenderingButton}
+                  />
+                </div>
               </>
             )}
           </div>
@@ -267,8 +307,6 @@ const Track: React.FC<TrackProps> = ({
         >
           {childrenTrackList?.map((childTrack) => {
             const { childrenTrackList, isOpenedChildrenTrack, name, trackIndex } = childTrack;
-            // const aa = test;
-            // console.log('aa', aa);
             return (
               <Track
                 key={name}

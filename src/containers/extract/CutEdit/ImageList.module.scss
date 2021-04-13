@@ -8,21 +8,32 @@
 }
 
 .image-wrapper {
-  // position: relative;
-  // overflow: hidden;
-  // height: 100%;
   width: 25%;
   height: 100%;
+  display: none;
+
+  &:nth-child(4n) {
+    display: block;
+  }
 
   @include media(">md") {
     width: 20%;
+
+    &:nth-child(5n) {
+      display: block;
+    }
   }
 
   @include media(">lg") {
     width: 10%;
+
+    &:nth-child(2n) {
+      display: block;
+    }
   }
 
   @include media(">fhd") {
+    display: block;
     width: 5%;
   }
 }
@@ -31,20 +42,6 @@
   position: relative;
   overflow: hidden;
   height: 100%;
-  // width: 25%;
-  // height: 100%;
-
-  // @include media(">md") {
-  //   width: 20%;
-  // }
-
-  // @include media(">lg") {
-  //   width: 10%;
-  // }
-
-  // @include media(">fhd") {
-  //   width: 5%;
-  // }
 }
 
 .image {

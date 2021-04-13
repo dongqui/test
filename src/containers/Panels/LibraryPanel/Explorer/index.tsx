@@ -31,12 +31,15 @@ const Explorer: FunctionComponent<Props> = ({ onChange }) => {
   }, [lpmode]);
 
   const handleAddGroup = useCallback(() => {
+    const parentKey = _.isEqual(lpmode, LPModeType.iconview)
+      ? _.last(pages)?.key
+      : ROOT_FOLDER_NAME;
     storeLpData(
       _.concat(lpData, {
         key: uuidv4(),
         type: FILE_TYPES.folder,
-        name: fnGetFileName({ key: '', mainData: lpData, name: 'Folder' }),
-        parentKey: _.isEqual(lpmode, LPModeType.iconview) ? _.last(pages)?.key : ROOT_FOLDER_NAME,
+        name: fnGetFileName({ key: '', mainData: lpData, name: 'Folder', parentKey }),
+        parentKey,
         isModifying: true,
         baseLayer: [],
         layers: [],

@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useEffect, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
@@ -6,7 +6,6 @@ import {
   storeTPTrackNameList,
   storeTPDopeSheetList,
   storeTPLastBoneList,
-  storeCurrentVisualizedData,
   storeTPUpdateDopeSheetList,
 } from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
@@ -26,20 +25,18 @@ interface Props {
   layers?: ShootLayerType[];
 }
 
-const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
-  const [prevModelName, setPrevModelName] = useState('');
-  const [prevLayerLength, setPrevLayerLength] = useState(0);
+const TimelineContainer: React.FC<Props> = ({ baseLayer, layers, visualizedDataKey }) => {
+  const prevModelKey = useRef('');
+  const prevLayerLength = useRef(0);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const trackNameList = useReactiveVar(storeTPTrackNameList);
 
   // Dope Sheet, Track 리스트 가공
   useEffect(() => {
-    if (baseLayer && layers && currentVisualizedData) {
-      const { name } = currentVisualizedData;
+    if (baseLayer && layers && visualizedDataKey) {
       if (dopeSheetList.length) {
-        if (prevModelName === name) {
+        if (prevModelKey.current === visualizedDataKey) {
           // 현재 모델에서 keyframe에 변경사항이 생긴 경우
           console.log('현재 모델에서 keyframe에 변경사항이 생긴 경우');
           const updatedTimes = _.map(
@@ -70,22 +67,20 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
         storeTPTrackNameList(trackNameList);
         storeTPLastBoneList(lastBoneList);
       }
-      setPrevModelName(name);
-      setPrevLayerLength(layers.length);
+      prevModelKey.current = visualizedDataKey;
+      prevLayerLength.current = layers.length;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseLayer]);
 
   // 레이어 추가/삭제, 레이어 키프레임 변경
   useEffect(() => {
-    if (layers && currentVisualizedData && dopeSheetList) {
-      const { name } = currentVisualizedData;
-      if (name === prevModelName) {
-        console.log(layers.length, prevLayerLength);
-        if (layers.length < prevLayerLength) {
+    if (layers && visualizedDataKey && dopeSheetList) {
+      if (prevModelKey.current === visualizedDataKey) {
+        if (layers.length < prevLayerLength.current) {
           console.log('레이어 삭제');
-          setPrevLayerLength(layers.length - 1);
-        } else if (prevLayerLength < layers.length) {
+          prevLayerLength.current -= 1;
+        } else if (prevLayerLength.current < layers.length) {
           console.log('레이어 추가');
           const newLayer = layers[layers.length - 1];
           const layerIndex = lastBoneList[lastBoneList.length - 1].layerIndex;
@@ -115,7 +110,7 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers }) => {
           storeTPTrackNameList(updatedTrackNameList);
           storeTPLastBoneList([...lastBoneList, lastBone]);
           storeTPDopeSheetList([...dopeSheetList, ...layerDopeSheet]);
-          setPrevLayerLength(layers.length + 1);
+          prevLayerLength.current += 1;
         } else {
           console.log('레이어 키프레임 변경');
         }

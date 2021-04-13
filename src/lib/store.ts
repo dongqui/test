@@ -116,6 +116,9 @@ export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDope
         case 'isLocked':
           draft[index as number].isLocked = target.isLocked as boolean;
           break;
+        case 'isIncluded':
+          draft[index as number].isIncluded = target.isIncluded as boolean;
+          break;
       }
     });
   });

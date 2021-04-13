@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -18,7 +18,6 @@ const PlayBar: React.FC<Props> = () => {
         id="play-bar-wrapper"
       >
         <g>
-          {/* <line /> */}
           <rect
             x="0.1"
             y="-0.1"
@@ -38,4 +37,4 @@ const PlayBar: React.FC<Props> = () => {
   );
 };
 
-export default PlayBar;
+export default memo(PlayBar);
