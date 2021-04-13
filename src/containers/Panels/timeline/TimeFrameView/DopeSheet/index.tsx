@@ -93,7 +93,6 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           );
         }
       };
-
       const { startLoop, stopLoop } = fnLoopCallback({ callback: setPlayBarPosition });
       if (playState === 'play') {
         startLoop();

@@ -17,6 +17,7 @@ import PlayBox from './PlayBox';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import fnLoopCallBack from 'utils/common/fnLoopCallback';
 
 const cx = classNames.bind(styles);
 
@@ -31,12 +32,13 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
+  const currentTimeRef = useRef<HTMLInputElement>(null);
   const lastTimeRef = useRef<HTMLInputElement>(null);
+  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
 
   const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
-  const { startTimeIndex, endTimeIndex } = animatingData;
+  const { startTimeIndex, endTimeIndex, playState } = animatingData;
 
   const indicator = isShootPage
     ? {
@@ -194,11 +196,29 @@ const MiddleBar: FunctionComponent<Props> = () => {
   };
 
   useEffect(() => {
-    // 현재는 미들바 조작해야만 적용됨 -> 수정 필요
+    // 총 시간
     if (currentAction && lastTimeRef.current) {
       lastTimeRef.current.value = _.round(currentAction.getClip().duration, 0).toString();
     }
   }, [currentAction, startTimeIndex]);
+
+  useEffect(() => {
+    // 현재 시간 및 now
+    if (currentAction && currentTimeRef.current && currentTimeIndexRef.current) {
+      const changeCurrentTimeRelatedValues = () => {
+        if (currentTimeRef.current && currentTimeIndexRef.current) {
+          currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
+          currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
+        }
+      };
+      const { startLoop, stopLoop } = fnLoopCallBack({ callback: changeCurrentTimeRelatedValues });
+      if (playState === 'play') {
+        startLoop();
+      } else if (playState === 'pause' || playState === 'stop') {
+        stopLoop();
+      }
+    }
+  }, [currentAction, playState]);
 
   return (
     <div className={cx('wrapper')} onContextMenu={handleMiddleBarContextMenu}>
@@ -209,7 +229,11 @@ const MiddleBar: FunctionComponent<Props> = () => {
         <div className={cx('right')}>
           <div className={cx('right-inner')}>
             <div className={cx('playtime')}>
-              <BaseInput className={cx('time-current')} defaultValue="00:00" />
+              <BaseInput
+                className={cx('time-current')}
+                defaultValue="00:00"
+                innerRef={currentTimeRef}
+              />
               <div className={cx('divide')}>/</div>
               <BaseInput className={cx('time-last')} defaultValue="00:00" innerRef={lastTimeRef} />
               {isShootPage && (
