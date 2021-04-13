@@ -203,15 +203,31 @@ const MiddleBar: FunctionComponent<Props> = () => {
   }, [currentAction, startTimeIndex]);
 
   useEffect(() => {
-    // 현재 시간 및 now
-    if (currentAction && currentTimeRef.current && currentTimeIndexRef.current) {
-      const changeCurrentTimeRelatedValues = () => {
-        if (currentTimeRef.current && currentTimeIndexRef.current) {
+    // 현재 시간
+    if (currentAction && currentTimeRef.current) {
+      const changeCurrentTimeRef = () => {
+        if (currentTimeRef.current) {
           currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
+        }
+      };
+      const { startLoop, stopLoop } = fnLoopCallBack({ callback: changeCurrentTimeRef });
+      if (playState === 'play') {
+        startLoop();
+      } else if (playState === 'pause' || playState === 'stop') {
+        stopLoop();
+      }
+    }
+  }, [currentAction, playState]);
+
+  useEffect(() => {
+    // now -> 주석 풀면 input 입력 불가능 상태
+    if (currentAction && currentTimeIndexRef.current) {
+      const changeCurrentTimeIndexRef = () => {
+        if (currentTimeIndexRef.current) {
           currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
         }
       };
-      const { startLoop, stopLoop } = fnLoopCallBack({ callback: changeCurrentTimeRelatedValues });
+      const { startLoop, stopLoop } = fnLoopCallBack({ callback: changeCurrentTimeIndexRef });
       if (playState === 'play') {
         startLoop();
       } else if (playState === 'pause' || playState === 'stop') {
@@ -246,7 +262,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="START"
-                defaultValue={indicator.start}
+                defaultValue={indicator.start || ''}
                 // value={indicator.start}
                 arrow
                 onBlur={handleStartInputBlur}
@@ -256,7 +272,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="END"
-                defaultValue={indicator.end}
+                defaultValue={indicator.end || ''}
                 // value={indicator.end}
                 arrow
                 onBlur={handleEndInputBlur}
@@ -267,7 +283,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
                 id="now"
                 className={cx('indicator-input')}
                 prefix="NOW"
-                defaultValue={indicator.now}
+                defaultValue={indicator.now || ''}
                 // value={indicator.now}
                 onBlur={handleNowInputBlur}
                 onKeyDown={handleInputKeyDown}
