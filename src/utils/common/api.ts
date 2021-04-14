@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { ShootTrackType, VIDEO_FORMAT_TYPES } from 'types';
 import _ from 'lodash';
-import { v4 as uuidv4 } from 'uuid';
-import { fnConvertBloburlToFile } from './fnConvertBloburlToFile';
+import fnConvertBloburlToFile from './fnConvertBloburlToFile';
 
 const BASE_URL = 'https://shootapi.myplask.com:6500';
 const RETARGETIING_URL = 'https://shootapi.myplask.com:6500';
@@ -24,7 +23,15 @@ interface getRetargetBaseLayerProps {
   name: string;
   retargetMap: Array<any>;
 }
-export const uploadFbxToGlb = async ({ file, type }: { file: File; type: string }) => {
+/**
+ * fbx를 업로드하여 glb를 받는 api
+ *
+ * @param file - 업로드할 파일
+ * @param type - 파일 타입 (glb, fbx)
+ *
+ * @returns glb 파일의 url
+ */
+export const setConvertFbxToGlb = async ({ file, type }: { file: File; type: string }) => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('type', type);
@@ -53,7 +60,15 @@ interface SetConvertGlbToFbx {
   type: string;
   id: string;
 }
-
+/**
+ * glb를 업로드하여 fbx를 받는 api
+ *
+ * @param file - 업로드할 파일
+ * @param type - 파일 타입 (glb, fbx)
+ * @param id - id값
+ *
+ * @returns glb 파일의 url
+ */
 export const setConvertGlbToFbx = async (props: SetConvertGlbToFbx) => {
   const { file, type, id } = props;
   const formData = new FormData();
@@ -70,7 +85,18 @@ export const setConvertGlbToFbx = async (props: SetConvertGlbToFbx) => {
     .catch((err) => err);
   return result;
 };
-
+/**
+ * 영상파일에서 모션데이터를 추출하는 api
+ *
+ * @param start - 영상의 시작값
+ * @param end - 영상의 끝값
+ * @param fileName - 파일이름
+ * @param id - id값
+ * @param type - 파일타입
+ * @param url - 파일 url
+ *
+ * @returns 추출된 모션데이터
+ */
 export const uploadFileToMotionData = async ({
   start,
   end,
@@ -108,7 +134,13 @@ export const uploadFileToMotionData = async ({
     };
   }
 };
-
+/**
+ * 리타겟맵을 가져오는 api
+ *
+ * @param bones - bone에 대한  데이터 배열값
+ *
+ * @returns 리타겟맵
+ */
 export const getRetargetMap = async ({ bones }: getRetargetMapProps) => {
   try {
     const result = await axios({
@@ -135,7 +167,15 @@ export const getRetargetMap = async ({ bones }: getRetargetMapProps) => {
     };
   }
 };
-
+/**
+ * 리타겟팅 된 모션데이터를 가져오는 api
+ *
+ * @param baseLayer - baseLayer 값
+ * @param name - 모션이름
+ * @param retargetMap - 리타겟맵
+ *
+ * @returns 리타겟팅된 모션데이터
+ */
 export const getRetargetBaseLayer = async ({
   baseLayer,
   name,

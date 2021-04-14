@@ -8,7 +8,7 @@ import {
   MutableRefObject,
 } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { useLPRowControl } from 'hooks/LP/useLPRowControl';
+import useLPRowControl from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import { storeLpData, storePages } from 'lib/store';
 import { BaseInput } from 'components/New_Input';
@@ -36,11 +36,6 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
       rowKey,
       lpData,
     ]) ?? false;
-  const isClicked =
-    useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isClicked, [
-      rowKey,
-      lpData,
-    ]) ?? false;
   const isVisualized =
     useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isVisualized, [
       rowKey,
@@ -52,12 +47,20 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
       storeLpData(
         _.map(lpData, (item) => ({
           ...item,
-          isClicked: _.isEqual(item.key, rowKey) ? true : e.ctrlKey ? item.isClicked : false,
+          isClicked: _.isEqual(item.key, rowKey) ? true : false,
         })),
       );
     },
     [rowKey, lpData],
   );
+  const handleBlur = useCallback(() => {
+    storeLpData(
+      _.map(lpData, (item) => ({
+        ...item,
+        isClicked: false,
+      })),
+    );
+  }, [lpData]);
   const { setCurrentData } = useLPRowControl({ lpData });
   const onDoubleClick = useCallback(() => {
     if (_.isEqual(_.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type, FILE_TYPES.motion)) {
@@ -102,6 +105,7 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
         role="button"
         onKeyDown={() => {}}
         tabIndex={0}
+        onBlur={handleBlur}
       >
         {_.isEqual(fileType, FILE_TYPES.file) && (
           <IconWrapper className={cx('icon-model')} icon={SvgPath.Model} hasFrame={false} />
