@@ -21,8 +21,8 @@ import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import useWindowSize from 'hooks/common/useWindowSize';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
-import { fnVisualizeFile } from 'utils/LP/fnVisualizeFile';
 import { d3ScaleLinear } from 'types/TP';
+import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 
 const cx = classNames.bind(styles);
 

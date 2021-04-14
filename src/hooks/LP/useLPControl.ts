@@ -24,37 +24,37 @@ import {
 } from 'lib/store';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
-import { fnGetFileName } from 'utils/LP/fnGetFileName';
+import fnGetFileName from 'utils/LP/fnGetFileName';
 import fnExportModelToFbx from 'utils/LP/fnExportModelToFbx';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { fnPasteFile } from 'utils/LP/fnPasteFile';
+import fnPasteFile from 'utils/LP/fnPasteFile';
 import * as api from 'utils/common/api';
-import { fnVisualizeFile } from 'utils/LP/fnVisualizeFile';
-import { fnGetAnimationData } from 'utils/LP/fnGetAnimationData';
+import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
+import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
 import fnExportModelToGlb from 'utils/LP/fnExportModelToGlb';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 
-interface useLPControlProps {
+interface UseLPControlProps {
   mainData: LPDataType[];
   pages: PagesType[];
   contextmenuInfo: ContextmenuType;
   searchWord: string;
   lpmode: LPModeType;
 }
-export const useLPControl = ({
+const useLPControl = ({
   mainData,
   pages,
   contextmenuInfo,
   searchWord,
   lpmode,
-}: useLPControlProps) => {
+}: UseLPControlProps) => {
   const onClick = useCallback(
     (e) => {
       const newFileName = fnGetFileName({
         key: _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
         name: _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.name ?? '',
-        mainData,
+        lpData: mainData,
       });
       const icons = document.getElementsByClassName('icon');
       if (!_.some(icons, (icon) => icon.contains(e?.target as any))) {
@@ -190,7 +190,7 @@ export const useLPControl = ({
     const copiedRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true]);
     // 폴더의 경우 하위 depth 고려 별도 복사 로직 처리
     if (_.isEqual(copiedRow?.type, FILE_TYPES.folder)) {
-      const newMainData = fnPasteFile({ mainData });
+      const newMainData = fnPasteFile({ lpData: mainData });
       storeLpData(newMainData);
       return;
     }
@@ -211,7 +211,7 @@ export const useLPControl = ({
         name: fnGetFileName({
           key: '',
           name: _.find(mainData, [LPDATA_PROPERTY_TYPES.isCopied, true])?.name ?? '',
-          mainData,
+          lpData: mainData,
           parentKey,
         }),
         parentKey,
@@ -315,6 +315,7 @@ export const useLPControl = ({
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
           let content = '';
           let motion: LPDataType | undefined;
+          let ok;
           const parentKey = _.isEqual(lpmode, LPModeType.iconview)
             ? _.last(pages)?.key
             : ROOT_FOLDER_NAME;
@@ -327,7 +328,7 @@ export const useLPControl = ({
                   name: fnGetFileName({
                     key: '',
                     name: 'Folder',
-                    mainData,
+                    lpData: mainData,
                     parentKey,
                   }),
                   parentKey,
@@ -365,14 +366,10 @@ export const useLPControl = ({
               ) {
                 content = '내부 파일도 함께 삭제됩니다. 디렉토리를 삭제하시겠습니까?';
               }
-              Modal.confirm({
-                okText: '확인',
-                cancelText: '취소',
-                content,
-                onOk: () => {
-                  fnDeleteFile({ mainData: newMainData });
-                },
-              });
+              ok = window.confirm(content);
+              if (ok) {
+                fnDeleteFile({ lpData: newMainData });
+              }
               break;
             case '3':
               onPaste();
@@ -392,7 +389,7 @@ export const useLPControl = ({
                 name: fnGetFileName({
                   key: '',
                   name: 'empty motion',
-                  mainData,
+                  lpData: mainData,
                   parentKey: targetIcon?.id || _.last(pages)?.key,
                 }),
                 isVisualized: false,
@@ -413,7 +410,7 @@ export const useLPControl = ({
                     name: fnGetFileName({
                       key: '',
                       name: motion?.name,
-                      mainData,
+                      lpData: mainData,
                       parentKey: motion?.parentKey,
                     }),
                     isVisualized: false,
@@ -532,7 +529,7 @@ export const useLPControl = ({
       for (const file of sortedAcceptedFiles) {
         const extension = _.last(_.split(file.name, '.'));
         if (!_.includes(ENABLE_FILE_FORMATS, extension)) {
-          setModalMessage('파일 형식이 올바르지 않습니다.');
+          setModalMessage('지원하지 않는 형식이 포함되어 있습니다.');
           return false;
         }
         let overlappedFile: LPDataType | undefined;
@@ -557,7 +554,7 @@ export const useLPControl = ({
           if (ok) {
             newLpData = _.filter(newLpData, (item) => !_.isEqual(item?.key, overlappedFile?.key));
             newLpData = fnDeleteFileByKeys({
-              mainData: newLpData,
+              lpData: newLpData,
               keys: [overlappedFile?.key ?? ''],
             });
           } else {
@@ -567,7 +564,7 @@ export const useLPControl = ({
         let convertedFileUrl = DEFAULT_MODEL_URL;
         if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
           // fbx 파일 업로드 및 변환
-          const { url, error, msg } = await api.uploadFbxToGlb({
+          const { url, error, msg } = await api.setConvertFbxToGlb({
             file,
             type: FORMAT_TYPES.glb,
           });
@@ -656,3 +653,4 @@ export const useLPControl = ({
     modalMessage,
   };
 };
+export default useLPControl;

@@ -1,11 +1,19 @@
 import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
 
-interface fnMakeSelectionProps {
+interface FnMakeSelectionProps {
   data: LPDataType[];
   originalData: LPDataType[];
 }
-export const fnMakeSelection = ({ data, originalData }: fnMakeSelectionProps) => {
+/**
+ * 선택영역 표시를 도와주는 함수
+ *
+ * @param data - lpData
+ * @param originalData - 가공전의 lpData
+ *
+ * @return 선택영역 표시를 위한 flag 값이 들어간 후의 lpData
+ */
+const fnMakeSelection = ({ data, originalData }: FnMakeSelectionProps) => {
   const result: LPDataType[] = [];
   let isFirst = false;
   let isLast = false;
@@ -49,3 +57,4 @@ export const fnMakeSelection = ({ data, originalData }: fnMakeSelectionProps) =>
   });
   return result;
 };
+export default fnMakeSelection;

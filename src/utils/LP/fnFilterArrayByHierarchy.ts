@@ -1,19 +1,19 @@
 import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
 
-interface fnFilterArrayByHierarchyProps {
+interface FnFilterArrayByHierarchyProps {
   data: LPDataType[];
   searchWord: string;
 }
-interface addResultPrps {
+interface AddResultPrps {
   prevData: LPDataType[];
   newData: LPDataType[];
 }
-interface findAllChildsProps {
+interface FindAllChildsProps {
   data: LPDataType[];
   parentData: LPDataType;
 }
-const findAllChilds = ({ data, parentData }: findAllChildsProps) => {
+const findAllChilds = ({ data, parentData }: FindAllChildsProps) => {
   let result: LPDataType[] = [];
   let currentRows: LPDataType[] = [parentData];
   let additionalRows: LPDataType[] = [];
@@ -32,7 +32,7 @@ const findAllChilds = ({ data, parentData }: findAllChildsProps) => {
   } while (!_.isEmpty(currentRows));
   return result;
 };
-const addResult = ({ prevData, newData }: addResultPrps) => {
+const addResult = ({ prevData, newData }: AddResultPrps) => {
   const result = _.clone(prevData);
   _.forEach(newData, (item) => {
     if (!_.some(result, [LPDATA_PROPERTY_TYPES.key, item?.key])) {
@@ -41,7 +41,15 @@ const addResult = ({ prevData, newData }: addResultPrps) => {
   });
   return result;
 };
-export const fnFilterArrayByHierarchy = ({ data, searchWord }: fnFilterArrayByHierarchyProps) => {
+/**
+ * 검색어가 포함된 lpData 만 filter를 해준다.
+ *
+ * @param data - lpData
+ * @param searchWord - 검색어
+ *
+ * @return filter 후 lpData
+ */
+const fnFilterArrayByHierarchy = ({ data, searchWord }: FnFilterArrayByHierarchyProps) => {
   let result: LPDataType[] = [];
   const searchFiles = _.filter(data, (item) =>
     _.includes(item.name.toLowerCase(), searchWord.toLowerCase()),
@@ -64,3 +72,4 @@ export const fnFilterArrayByHierarchy = ({ data, searchWord }: fnFilterArrayByHi
   });
   return result;
 };
+export default fnFilterArrayByHierarchy;

@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import getBlobDuration from 'get-blob-duration';
-import { sleep } from 'utils/common/sleep';
+import sleep from 'utils/common/sleep';
 
-interface useVideoToImagesProps {
+interface UseVideoToImagesProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   videoUrl: string;
   action: ({ images }: { images: string[] }) => void;
@@ -12,7 +12,7 @@ interface useVideoToImagesProps {
 
 let tempImages: string[] = [];
 let isWorking = false;
-export const useVideoToImages = ({ videoRef, videoUrl, action, active }: useVideoToImagesProps) => {
+const useVideoToImages = ({ videoRef, videoUrl, action, active }: UseVideoToImagesProps) => {
   const makeImages = useCallback(async () => {
     isWorking = true;
     const video = videoRef.current;
@@ -49,3 +49,4 @@ export const useVideoToImages = ({ videoRef, videoUrl, action, active }: useVide
     }
   }, [active, makeImages]);
 };
+export default useVideoToImages;
