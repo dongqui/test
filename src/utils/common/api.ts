@@ -23,6 +23,7 @@ interface getRetargetBaseLayerProps {
   baseLayer: ShootTrackType[];
   name: string;
   retargetMap: Array<any>;
+  isFbx: boolean;
 }
 export const uploadFbxToGlb = async ({ file, type }: { file: File; type: string }) => {
   const formData = new FormData();
@@ -140,10 +141,11 @@ export const getRetargetBaseLayer = async ({
   baseLayer,
   name,
   retargetMap,
+  isFbx,
 }: getRetargetBaseLayerProps) => {
   try {
     const formData = new FormData();
-    formData.append('isFbx', 'true');
+    formData.append('isFbx', `${isFbx}`);
     formData.append('sourceMotion', JSON.stringify({ name, tracks: baseLayer }));
     formData.append('retargetMap', JSON.stringify(retargetMap));
     const result = await axios({
