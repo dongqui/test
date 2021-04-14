@@ -20,6 +20,7 @@ import {
   storeCutImages,
   storeLpData,
   storePageInfo,
+  storePages,
   storeRecordingData,
 } from 'lib/store';
 import { PagesType } from 'containers/Panels/LibraryPanel';
@@ -246,6 +247,22 @@ const useLPControl = ({
       })),
     );
   }, []);
+  const handleDelete = useCallback(({ data }: { data: LPDataType[] }) => {
+    let content = '';
+    if (_.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.motion)) {
+      content = '모션을 삭제하시겠습니까?';
+    }
+    if (_.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.file)) {
+      content = '파일을 삭제하시겠습니까?';
+    }
+    if (_.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.folder)) {
+      content = '내부 파일도 함께 삭제됩니다. 디렉토리를 삭제하시겠습니까?';
+    }
+    const ok = window.confirm(content);
+    if (ok) {
+      fnDeleteFile({ lpData: data });
+    }
+  }, []);
 
   const [showsModal, setShowsModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -313,7 +330,7 @@ const useLPControl = ({
         data,
         onClick: async (key, value) => {
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
-          let content = '';
+          const content = '';
           let motion: LPDataType | undefined;
           let ok;
           const parentKey = _.isEqual(lpmode, LPModeType.iconview)
@@ -342,34 +359,7 @@ const useLPControl = ({
               onCopy({ mainData: newMainData });
               break;
             case '2':
-              if (
-                _.isEqual(
-                  _.find(newMainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type,
-                  FILE_TYPES.motion,
-                )
-              ) {
-                content = '모션을 삭제하시겠습니까?';
-              }
-              if (
-                _.isEqual(
-                  _.find(newMainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type,
-                  FILE_TYPES.file,
-                )
-              ) {
-                content = '파일을 삭제하시겠습니까?';
-              }
-              if (
-                _.isEqual(
-                  _.find(newMainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type,
-                  FILE_TYPES.folder,
-                )
-              ) {
-                content = '내부 파일도 함께 삭제됩니다. 디렉토리를 삭제하시겠습니까?';
-              }
-              ok = window.confirm(content);
-              if (ok) {
-                fnDeleteFile({ lpData: newMainData });
-              }
+              handleDelete({ data: newMainData });
               break;
             case '3':
               onPaste();
@@ -456,7 +446,7 @@ const useLPControl = ({
         },
       });
     },
-    [contextmenuInfo, lpmode, mainData, onCopy, onEdit, onPaste, pages, showsModal],
+    [contextmenuInfo, handleDelete, lpmode, mainData, onCopy, onEdit, onPaste, pages, showsModal],
   );
   const shortcutData = useMemo(
     () => [
@@ -474,8 +464,37 @@ const useLPControl = ({
           onPaste();
         },
       },
+      {
+        key: 'x',
+        ctrlKey: true,
+        event: () => {
+          const clickedRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true]);
+          if (clickedRow) {
+            handleDelete({ data: mainData });
+          }
+        },
+      },
+      {
+        key: 'Enter',
+        event: () => {
+          const clickedRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true]);
+          if (
+            clickedRow &&
+            _.isEqual(lpmode, LPModeType.iconview) &&
+            !_.isEqual(clickedRow?.type, FILE_TYPES.motion)
+          ) {
+            storePages(
+              _.concat(pages, {
+                key: clickedRow?.key,
+                name: clickedRow?.name ?? 'Folder',
+                type: clickedRow?.type ?? FILE_TYPES.folder,
+              }),
+            );
+          }
+        },
+      },
     ],
-    [mainData, onCopy, onPaste],
+    [handleDelete, lpmode, mainData, onCopy, onPaste, pages],
   );
   const getFilteredData = useCallback(
     ({ data }) => {

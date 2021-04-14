@@ -56,6 +56,9 @@ const CIRCLE_GROUP_CLASSNAME = 'circle-group';
 const X_AXIS_DOMAIN = 500000;
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 const THROTTLE_TIMER = 75;
+const INITIAL_SCALE_LEVEL = 7000;
+const INITIAL_SCALE_X = -5105770.5 / 7000;
+const INITIAL_SCALE_Y = -801385.5 / 7000;
 
 /** Dope Sheet 관련 변수
  * @constant dopeSheetList store에 저장 된 dope sheet data list
@@ -199,6 +202,17 @@ const DopeSheet: React.FC<Props> = ({
       )
       .call(xAxisPosition.current);
     d3.selectAll('.x-axis-g line').attr('y2', -24);
+
+    // 최초 스케일에 맞춰서 x축, 세로 선 그리기
+    const zoom = d3.zoomIdentity
+      .scale(INITIAL_SCALE_LEVEL)
+      .translate(INITIAL_SCALE_X, INITIAL_SCALE_Y);
+    const rescaleX = zoom.rescaleX(xScaleCopy.current as d3ScaleLinear);
+
+    const xAxis = xAxisPosition.current as d3Axis;
+    renderXAxis.current.call(xAxis.scale(rescaleX)); // 이전 값으로 scale 적용
+    renderYGrid.current.call(xAxis.scale(rescaleX));
+    xScale.current = rescaleX;
   }, [prevXScale]);
 
   // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
@@ -280,7 +294,9 @@ const DopeSheet: React.FC<Props> = ({
         }, THROTTLE_TIMER),
       );
 
-    d3.select(dopeSheetRef.current).call(zoomBehavior as any);
+    d3.select(dopeSheetRef.current)
+      .call(zoomBehavior.scaleTo as any, INITIAL_SCALE_LEVEL)
+      .call(zoomBehavior as any);
   }, [currentXAxisPosition, prevXScale]);
 
   // timelineWrapper에 scroll 효과 적용
