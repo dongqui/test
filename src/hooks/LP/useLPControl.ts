@@ -602,11 +602,9 @@ const useLPControl = ({
           : URL.createObjectURL(file);
         if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
           // const ok = window.confirm('모션을 추출하시겠습니까?');
-          console.log('???');
           fnConfirmModal({
             showsModal: true,
             onConfirm: async () => {
-              console.log('???Zzzzz');
               storeLpData(newLpData);
               setShowsModal(false);
               storeRecordingData(INITIAL_RECORDING_DATA);
@@ -614,44 +612,44 @@ const useLPControl = ({
               storePageInfo({ page: PAGE_NAMES.extract, videoUrl: url, extension });
               // return false;
 
-              const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
-              if (error) {
-                setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
-                return false;
-              }
-              const motions: LPDataType[] = [];
-              const key = uuidv4();
-              _.forEach(animations, (clip, index) => {
-                if (bones) {
-                  motions.push({
-                    key: clip?.uuid,
-                    name: clip?.name,
-                    baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
-                    layers: [],
-                    type: FILE_TYPES.motion,
-                    parentKey: key,
-                    boneNames: _.map(bones, (bone) => bone.name),
-                  });
-                }
-              });
-              let newData: LPDataType[] = [
-                {
-                  key,
-                  type: FILE_TYPES.file,
-                  name: file.name,
-                  url,
-                  parentKey: _.isEqual(lpmode, LPModeType.iconview)
-                    ? _.last(pages)?.key
-                    : ROOT_FOLDER_NAME,
-                  baseLayer: fnGetBaseLayerWithBoneNames({
-                    boneNames: _.map(bones, (bone) => bone.name),
-                  }),
-                  layers: [],
-                  boneNames: _.map(bones, (bone) => bone.name),
-                },
-              ];
-              newData = _.concat(newData, motions);
-              newLpData = _.concat(newLpData, newData);
+              // const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
+              // if (error) {
+              //   setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
+              //   return false;
+              // }
+              // const motions: LPDataType[] = [];
+              // const key = uuidv4();
+              // _.forEach(animations, (clip, index) => {
+              //   if (bones) {
+              //     motions.push({
+              //       key: clip?.uuid,
+              //       name: clip?.name,
+              //       baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
+              //       layers: [],
+              //       type: FILE_TYPES.motion,
+              //       parentKey: key,
+              //       boneNames: _.map(bones, (bone) => bone.name),
+              //     });
+              //   }
+              // });
+              // let newData: LPDataType[] = [
+              //   {
+              //     key,
+              //     type: FILE_TYPES.file,
+              //     name: file.name,
+              //     url,
+              //     parentKey: _.isEqual(lpmode, LPModeType.iconview)
+              //       ? _.last(pages)?.key
+              //       : ROOT_FOLDER_NAME,
+              //     baseLayer: fnGetBaseLayerWithBoneNames({
+              //       boneNames: _.map(bones, (bone) => bone.name),
+              //     }),
+              //     layers: [],
+              //     boneNames: _.map(bones, (bone) => bone.name),
+              //   },
+              // ];
+              // newData = _.concat(newData, motions);
+              // newLpData = _.concat(newLpData, newData);
             },
             onClose: () => {
               console.log('???cancel');
@@ -674,44 +672,44 @@ const useLPControl = ({
           //   continue;
           // }
         }
-        // const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
-        // if (error) {
-        //   setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
-        //   return false;
-        // }
-        // const motions: LPDataType[] = [];
-        // const key = uuidv4();
-        // _.forEach(animations, (clip, index) => {
-        //   if (bones) {
-        //     motions.push({
-        //       key: clip?.uuid,
-        //       name: clip?.name,
-        //       baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
-        //       layers: [],
-        //       type: FILE_TYPES.motion,
-        //       parentKey: key,
-        //       boneNames: _.map(bones, (bone) => bone.name),
-        //     });
-        //   }
-        // });
-        // let newData: LPDataType[] = [
-        //   {
-        //     key,
-        //     type: FILE_TYPES.file,
-        //     name: file.name,
-        //     url,
-        //     parentKey: _.isEqual(lpmode, LPModeType.iconview)
-        //       ? _.last(pages)?.key
-        //       : ROOT_FOLDER_NAME,
-        //     baseLayer: fnGetBaseLayerWithBoneNames({
-        //       boneNames: _.map(bones, (bone) => bone.name),
-        //     }),
-        //     layers: [],
-        //     boneNames: _.map(bones, (bone) => bone.name),
-        //   },
-        // ];
-        // newData = _.concat(newData, motions);
-        // newLpData = _.concat(newLpData, newData);
+        const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
+        if (error) {
+          setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
+          return false;
+        }
+        const motions: LPDataType[] = [];
+        const key = uuidv4();
+        _.forEach(animations, (clip, index) => {
+          if (bones) {
+            motions.push({
+              key: clip?.uuid,
+              name: clip?.name,
+              baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
+              layers: [],
+              type: FILE_TYPES.motion,
+              parentKey: key,
+              boneNames: _.map(bones, (bone) => bone.name),
+            });
+          }
+        });
+        let newData: LPDataType[] = [
+          {
+            key,
+            type: FILE_TYPES.file,
+            name: file.name,
+            url,
+            parentKey: _.isEqual(lpmode, LPModeType.iconview)
+              ? _.last(pages)?.key
+              : ROOT_FOLDER_NAME,
+            baseLayer: fnGetBaseLayerWithBoneNames({
+              boneNames: _.map(bones, (bone) => bone.name),
+            }),
+            layers: [],
+            boneNames: _.map(bones, (bone) => bone.name),
+          },
+        ];
+        newData = _.concat(newData, motions);
+        newLpData = _.concat(newLpData, newData);
       }
       storeLpData(newLpData);
       setShowsModal(false);
