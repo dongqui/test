@@ -253,6 +253,16 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     }
   }, [currentAction, playState, startCurrentTimeLoop, stopCurrentTimeLoop]);
 
+  // start <-> end 구간 변경 시 current time 변경
+  useEffect(() => {
+    if (currentAction && currentTimeRef && currentTimeRef.current) {
+      currentTimeRef.current.value = _.round(
+        startTimeIndex / 30 - currentAction.time,
+        0,
+      ).toString();
+    }
+  }, [currentAction, currentTimeRef, startTimeIndex, endTimeIndex]);
+
   const currentTimeIndexReqIdRef = useRef<number | undefined>();
 
   const changeCurrentTimeIndexRef = useCallback(() => {
