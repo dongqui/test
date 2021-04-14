@@ -1,7 +1,7 @@
 import { FunctionComponent, memo, useCallback, useEffect, useState, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useDropzone } from 'react-dropzone';
-import { useLPControl } from 'hooks/LP/useLPControl';
+import useLPControl from 'hooks/LP/useLPControl';
 import useContextMenu from 'hooks/common/useContextMenu';
 import 'antd/dist/antd.css';
 import { FILE_TYPES, LPModeType } from 'types';
