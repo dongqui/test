@@ -580,9 +580,17 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     }
   }, [currentVisualizedData]);
 
-  // 재생 바 출력 시 드래그 이벤트 적용
+  // 재생 바 드래그 event
   useEffect(() => {
     if (playBarDisplayed) {
+      const setPlayBarX = (currentX: number) => {
+        if (currentX < startTimeIndex) {
+          return startTimeIndex;
+        } else if (endTimeIndex < currentX) {
+          return endTimeIndex;
+        }
+        return currentX;
+      };
       const dragBehavior = d3
         .drag()
         .filter((playBar) => {
@@ -590,28 +598,26 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
           return true;
         })
         .on('drag', function (drag: any) {
-          const currentXTick = _.floor(prevXScale.current?.invert(drag.x + 20) as number);
-          const checkZero = currentXTick <= 1 ? 1 : currentXTick;
           const xScaleLinear = prevXScale.current as d3ScaleLinear;
-
+          const currentX = _.floor(prevXScale.current?.invert(drag.x + 20) as number);
           if (currentAction) {
-            currentAction.time = _.round(checkZero / 30, 4);
+            currentAction.time = _.round(setPlayBarX(currentX) / 30, 4);
           }
-
-          currentXAxisPosition.current = checkZero;
+          currentXAxisPosition.current = setPlayBarX(currentX);
           d3.select(this).attr(
             'transform',
-            `translate(${xScaleLinear(checkZero) - 10}, 
-        ${X_AXIS_HEIGHT / 2})`,
+            `translate(${xScaleLinear(setPlayBarX(currentX)) - 10}, ${X_AXIS_HEIGHT / 2})`,
           );
         });
 
+      const initialXScale = setPlayBarX(currentXAxisPosition.current);
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      currentXAxisPosition.current = setPlayBarX(initialXScale);
       d3.select('#play-bar-wrapper')
-        .attr('transform', `translate(${xScaleLinear(1) - 10}, ${X_AXIS_HEIGHT / 2})`)
+        .attr('transform', `translate(${xScaleLinear(initialXScale) - 10}, ${X_AXIS_HEIGHT / 2})`)
         .call(dragBehavior as any);
     }
-  }, [currentAction, playBarDisplayed]);
+  }, [currentAction, endTimeIndex, playBarDisplayed, startTimeIndex]);
 
   return (
     <>
