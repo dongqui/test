@@ -66,6 +66,14 @@ const BaseModal: FunctionComponent<Props> = ({
     const mainElement = document.getElementById('_next');
     mainElement?.setAttribute('aria-hidden', 'true');
 
+    const focusableNodeList = modalRef?.current?.querySelectorAll(focusableTargetList.toString());
+    const focusableElementList = Array.prototype.slice.call(focusableNodeList);
+
+    const firstFocusTarget = focusableElementList[0];
+
+    // 초기 Modal Open시 focus 가능한 element에 기본 focus
+    firstFocusTarget.focus();
+
     return () => {
       mainElement?.removeAttribute('aria-hidden');
     };
@@ -79,7 +87,7 @@ const BaseModal: FunctionComponent<Props> = ({
     const lastFocusTarget = focusableElementList[focusableElementList.length - 1];
 
     // 초기 Modal Open시 focus 가능한 element에 기본 focus
-    firstFocusTarget.focus();
+    // firstFocusTarget.focus();
 
     const handleKeyPress = (e: KeyboardEvent) => {
       // Trap Tab Key: KeyCode 9
@@ -147,7 +155,7 @@ const BaseModal: FunctionComponent<Props> = ({
     }
   }, [onClose, onOutsideClose]);
 
-  const hasTitleMargin = Boolean(children);
+  const hasTitleMargin = !!children;
 
   return (
     <BasePortal container={portalRef}>

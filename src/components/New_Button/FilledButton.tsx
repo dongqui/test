@@ -6,7 +6,7 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   size?: 'small' | 'medium' | 'large';
-  color?: 'primary';
+  color?: 'primary' | 'secondary';
   text?: string;
   fullSize?: boolean;
 }
