@@ -255,13 +255,13 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   // start <-> end 구간 변경 시 current time 변경
   useEffect(() => {
-    if (currentAction && currentTimeRef && currentTimeRef.current) {
+    if (currentAction && currentTimeRef && currentTimeRef.current && currentXAxisPosition) {
       currentTimeRef.current.value = _.round(
-        startTimeIndex / 30 - currentAction.time,
+        currentXAxisPosition.current / 30 - startTimeIndex / 30,
         0,
       ).toString();
     }
-  }, [currentAction, currentTimeRef, startTimeIndex, endTimeIndex]);
+  }, [currentAction, currentTimeRef, startTimeIndex, endTimeIndex, currentXAxisPosition]);
 
   const currentTimeIndexReqIdRef = useRef<number | undefined>();
 
