@@ -120,8 +120,8 @@ export const ModeSelectIconWrapper = styled.div<ModeSelectIconWrapperProps>`
     `}
 `;
 export const PlayBoxWrapper = styled.div`
-  width: ${rem(180)}rem;
-  height: ${rem(36)}rem;
+  width: 100%;
+  height: 48px;
   border-radius: ${BORDER_RADIUS}rem;
   display: flex;
   flex-direction: row;
@@ -151,7 +151,8 @@ export const PlayBarWrapper = styled.div<PlayBarWrapperProps>`
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+
+  /* justify-content: space-between; */
   position: relative;
 
   ${(props) =>
@@ -166,10 +167,9 @@ export const PlayBarIndicatorWrapper = styled.div`
 `;
 export const PlayBarPlayBoxWrapper = styled.div`
   position: absolute;
-  left: 45%;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  flex-direction: row;
-  padding-right: 5%;
 `;
 export const PlayBarDropdownWrapper = styled.div`
   position: absolute;
