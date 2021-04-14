@@ -56,9 +56,9 @@ const CIRCLE_GROUP_CLASSNAME = 'circle-group';
 const X_AXIS_DOMAIN = 500000;
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 const THROTTLE_TIMER = 75;
-const INITIAL_SCALE_LEVEL = 7000;
-const INITIAL_SCALE_X = -5105770.5 / 7000;
-const INITIAL_SCALE_Y = -801385.5 / 7000;
+const INITIAL_SCALE_LEVEL = 7500;
+const INITIAL_SCALE_X = -5105770.5 / 7500;
+const INITIAL_SCALE_Y = -801385.5 / 7500;
 
 /** Dope Sheet 관련 변수
  * @constant dopeSheetList store에 저장 된 dope sheet data list
