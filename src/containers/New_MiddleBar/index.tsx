@@ -169,14 +169,14 @@ const MiddleBar: FunctionComponent<Props> = () => {
       } else {
         event.currentTarget.value = _.round(currentAction.time * 30, 0).toString();
       }
-    } else {
-      // 애니메이션 없는 경우
-      const value = parseInt(event.currentTarget.value);
-      if (value <= startTimeIndex) {
-        event.currentTarget.value = startTimeIndex.toString();
-      } else if (value >= endTimeIndex) {
-        event.currentTarget.value = endTimeIndex.toString();
-      }
+      // } else {
+      //   // 애니메이션 없는 경우
+      //   const value = parseInt(event.currentTarget.value);
+      //   if (value <= startTimeIndex) {
+      //     event.currentTarget.value = startTimeIndex.toString();
+      //   } else if (value >= endTimeIndex) {
+      //     event.currentTarget.value = endTimeIndex.toString();
+      //   }
     }
   };
 
@@ -205,9 +205,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const changeCurrentTimeRef = useCallback(() => {
     if (currentAction && currentTimeRef.current) {
-      if (currentTimeRef.current) {
-        currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
-      }
+      currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
     }
     currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
   }, [currentAction]);
@@ -235,9 +233,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const changeCurrentTimeIndexRef = useCallback(() => {
     if (currentAction && currentTimeIndexRef.current) {
-      if (currentTimeIndexRef.current) {
-        currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
-      }
+      currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
     }
     currentTimeIndexReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeIndexRef);
   }, [currentAction]);

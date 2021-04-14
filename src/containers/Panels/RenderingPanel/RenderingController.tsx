@@ -7,18 +7,14 @@ import { ShootLayerType, ShootTrackType } from 'types';
 import {
   storeAnimatingData,
   storeCurrentAction,
+  storeCurrentTimeIndex,
   storeCurrentVisualizedData,
   storeRenderingData,
   storeSkeletonHelper,
 } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay } from 'utils/TP/editingUtils';
-import {
-  fnSetPlayState,
-  fnSetPlayDirection,
-  fnGoToSpecificTimeIndex,
-  fnLogAnimationTime,
-} from 'utils/RP/animatingUtils';
+import { fnSetPlayState } from 'utils/RP/animatingUtils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {
   fnAddShadow,
@@ -55,14 +51,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     setDirLight,
   });
 
-  const {
-    startTimeIndex,
-    endTimeIndex,
-    playState,
-    playDirection,
-    playSpeed,
-    currentTimeIndex,
-  } = animatingData;
+  const { startTimeIndex, endTimeIndex, playState, playDirection, playSpeed } = animatingData;
 
   // animation 생성 로직
   useEffect(() => {
@@ -84,7 +73,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     }
   }, [currentVisualizedData, endTimeIndex, mixer, startTimeIndex]);
 
-  // loop 했을 때 start index 로 보내줘야 함 (역재생 시 end index)
+  // loop 했을 때 start index 로 보내줘야 함
   useEffect(() => {
     if (mixer && currentAction) {
       mixer.addEventListener('loop', () => {
@@ -127,7 +116,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     }
   }, [playDirection, playState, startReversePlayLoop, stopReversePlayLoop]);
 
-  // animation 컨트롤 로직
+  // animation 재생 관련 로직
   useEffect(() => {
     if (mixer && currentAction) {
       fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection });
