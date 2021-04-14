@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef } from 'react';
+import React, { memo, MutableRefObject, RefObject, useEffect, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
@@ -24,19 +24,26 @@ interface Props {
   visualizedDataKey?: string;
   baseLayer?: ShootTrackType[];
   layers?: ShootLayerType[];
+  currentTimeRef: RefObject<HTMLInputElement>;
+  currentTimeIndexRef: RefObject<HTMLInputElement>;
+  currentXAxisPosition: MutableRefObject<number>;
+  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
-const TimelineContainer: React.FC<Props> = ({ baseLayer, layers, visualizedDataKey }) => {
+const TimelineContainer: React.FC<Props> = ({
+  baseLayer,
+  layers,
+  visualizedDataKey,
+  currentTimeRef,
+  currentTimeIndexRef,
+  currentXAxisPosition,
+  prevXScale,
+}) => {
   const prevModelKey = useRef('');
   const prevLayerLength = useRef(0);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const trackNameList = useReactiveVar(storeTPTrackNameList);
-
-  const currentTimeRef = useRef<HTMLInputElement>(null);
-  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
-  const currentXAxisPosition = useRef(1);
-  const prevXScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
 
   // Dope Sheet, Track 리스트 가공
   useEffect(() => {

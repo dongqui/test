@@ -33,10 +33,10 @@ const cx = classNames.bind(styles);
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 
 export interface Props {
-  currentTimeRef: RefObject<HTMLInputElement>;
-  currentTimeIndexRef: RefObject<HTMLInputElement>;
-  currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  currentTimeRef?: RefObject<HTMLInputElement>;
+  currentTimeIndexRef?: RefObject<HTMLInputElement>;
+  currentXAxisPosition?: MutableRefObject<number>;
+  prevXScale?: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
 const MiddleBar: FunctionComponent<Props> = (props) => {
@@ -156,7 +156,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   const handleStartInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.currentTarget.value);
-    if (value > 0 && value < endTimeIndex) {
+    if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, startTimeIndex: value });
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
         currentTimeIndexRef.current.value = value.toString();
@@ -168,7 +168,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   const handleEndInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.currentTarget.value);
-    if (value > startTimeIndex) {
+    if (value > startTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, endTimeIndex: value });
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
         currentTimeIndexRef.current.value = value.toString();
@@ -181,7 +181,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleNowInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     if (currentXAxisPosition && currentAction) {
       const value = parseInt(event.currentTarget.value);
-      if (value >= startTimeIndex && value <= endTimeIndex) {
+      if (value >= startTimeIndex && value <= endTimeIndex && prevXScale) {
         currentAction.time = _.round(value / 30, 4);
         currentXAxisPosition.current = currentAction.time * 30;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
@@ -228,7 +228,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const currentTimeReqIdRef = useRef<number | undefined>();
 
   const changeCurrentTimeRef = useCallback(() => {
-    if (currentAction && currentTimeRef.current) {
+    if (currentAction && currentTimeRef && currentTimeRef.current) {
       currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
     }
     currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
@@ -256,7 +256,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const currentTimeIndexReqIdRef = useRef<number | undefined>();
 
   const changeCurrentTimeIndexRef = useCallback(() => {
-    if (currentAction && currentTimeIndexRef.current) {
+    if (currentAction && currentTimeIndexRef && currentTimeIndexRef.current) {
       currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
     }
     currentTimeIndexReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeIndexRef);

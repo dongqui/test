@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
@@ -27,8 +27,13 @@ import {
 export interface RenderingControllerProps {
   id: string;
   fileUrl?: string;
+  currentXAxisPosition: MutableRefObject<number>;
 }
-const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }) => {
+const RenderingController: React.FC<RenderingControllerProps> = ({
+  id,
+  fileUrl,
+  currentXAxisPosition,
+}) => {
   // store data
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
@@ -66,11 +71,13 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       const action = mixer.clipAction(visualizedClip);
       action.play();
       mixer.timeScale = 0;
-      action.time = _.round(startTimeIndex / 30, 4); // 재생 중인 상황이었으면 처음이 아니라, 해당 지점(playbar ref)으로 가야 할 듯 -> 변경 필요
+      if (currentXAxisPosition.current) {
+        action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
+      }
       storeCurrentAction(action);
       // console.log('action: ', action);
     }
-  }, [currentVisualizedData, endTimeIndex, mixer, startTimeIndex]);
+  }, [currentVisualizedData, currentXAxisPosition, endTimeIndex, mixer, startTimeIndex]);
 
   // loop 했을 때 start index 로 보내줘야 함
   useEffect(() => {
