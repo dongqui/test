@@ -1,6 +1,8 @@
 import { FunctionComponent, useCallback } from 'react';
 import classNames from 'classnames/bind';
 import styles from './TabTitle.module.scss';
+import { storeCPChangeTab } from 'lib/store';
+import { useReactiveVar } from '@apollo/client';
 
 const cx = classNames.bind(styles);
 
@@ -8,15 +10,14 @@ interface Props {
   tabID: number;
   title: string;
   disabled: boolean;
-  activeTab: number;
-  setAtiveTab: (index: number) => void;
 }
 
-const TabTitle: FunctionComponent<Props> = ({ tabID, title, disabled, activeTab, setAtiveTab }) => {
+const TabTitle: FunctionComponent<Props> = ({ tabID, title, disabled }) => {
+  const changeTabs = useReactiveVar(storeCPChangeTab);
   const handleClick = useCallback(() => {
-    setAtiveTab(tabID);
-  }, [setAtiveTab, tabID]);
-  const classes = cx('tab-header', activeTab === tabID ? cx('active') : undefined, {
+    storeCPChangeTab(tabID);
+  }, [tabID]);
+  const classes = cx('tab-header', changeTabs === tabID ? cx('active') : undefined, {
     disabled,
   });
   return (

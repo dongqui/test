@@ -78,6 +78,7 @@ export const storeBarPositionX = makeVar<number>(0);
 // CP
 export const storeCPMode = makeVar<CPModeType>(CPModeType.property);
 export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
+export const storeCPChangeTab = makeVar<number>(0);
 // RETARGET
 export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);
 
