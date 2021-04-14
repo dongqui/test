@@ -3,12 +3,12 @@ import { BACKGROUND_COLOR } from 'styles/constants/common';
 
 export const WebcamWrapper = styled.div`
   width: 100%;
-  height: 802px;
+  height: calc(100% - 128px - 48px);
   background-color: ${BACKGROUND_COLOR};
 `;
 export const CutEditWrapper = styled.div`
   width: 100%;
-  height: 1118px;
+  height: 128px;
   background-color: ${BACKGROUND_COLOR};
 `;
 export const WebcamVideo = styled.video`
