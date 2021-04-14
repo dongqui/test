@@ -6,6 +6,7 @@ import {
   useCallback,
   RefObject,
   MutableRefObject,
+  useState,
 } from 'react';
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
@@ -27,6 +28,7 @@ import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { d3ScaleLinear } from 'types/TP';
+import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 
 const cx = classNames.bind(styles);
 
@@ -47,6 +49,17 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const recordingData = useReactiveVar(storeRecordingData);
   const barPositionX = useReactiveVar(storeBarPositionX);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+
+  const [lastTime, setLastTime] = useState(1);
+
+  useEffect(() => {
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
+      const innerlastTime = summaryTimes[summaryTimes.length - 1];
+      setLastTime(innerlastTime);
+    }
+  }, [currentVisualizedData]);
 
   const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -220,19 +233,23 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   useEffect(() => {
     // 총 시간
-    if (currentAction && lastTimeRef.current) {
-      lastTimeRef.current.value = _.round(currentAction.getClip().duration, 0).toString();
+    if (lastTime && lastTimeRef.current) {
+      lastTimeRef.current.value = _.round(lastTime, 0).toString();
     }
-  }, [currentAction, startTimeIndex]);
+  }, [lastTime]);
 
   const currentTimeReqIdRef = useRef<number | undefined>();
 
   const changeCurrentTimeRef = useCallback(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current) {
-      currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
+      if (currentAction.time <= lastTime) {
+        currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
+      } else {
+        currentTimeRef.current.value = _.round(lastTime, 0).toString();
+      }
     }
     currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
-  }, [currentAction, currentTimeRef]);
+  }, [currentAction, currentTimeRef, lastTime]);
 
   const startCurrentTimeLoop = useCallback(() => {
     currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
@@ -256,12 +273,13 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   // start <-> end 구간 변경 시 current time 변경
   useEffect(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current && currentXAxisPosition) {
-      currentTimeRef.current.value = _.round(
-        currentXAxisPosition.current / 30 - startTimeIndex / 30,
-        0,
-      ).toString();
+      if (_.round(currentXAxisPosition.current / 30, 4) > lastTime) {
+        currentTimeRef.current.value = _.round(lastTime).toString();
+      } else {
+        currentTimeRef.current.value = _.round(currentXAxisPosition.current / 30, 0).toString();
+      }
     }
-  }, [currentAction, currentTimeRef, startTimeIndex, endTimeIndex, currentXAxisPosition]);
+  }, [currentAction, currentTimeRef, currentXAxisPosition, lastTime]);
 
   const currentTimeIndexReqIdRef = useRef<number | undefined>();
 

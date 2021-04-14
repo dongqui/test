@@ -1,5 +1,13 @@
 import _ from 'lodash';
-import React, { memo, MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  memo,
+  MutableRefObject,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import * as THREE from 'three';
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
@@ -13,7 +21,7 @@ import {
   storeSkeletonHelper,
 } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
-import { fnGetAnimationClipForPlay } from 'utils/TP/editingUtils';
+import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetPlayState } from 'utils/RP/animatingUtils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {
@@ -31,12 +39,16 @@ const X_AXIS_HEIGHT = 48; // 트랙 높이
 export interface RenderingControllerProps {
   id: string;
   fileUrl?: string;
+  currentTimeRef: RefObject<HTMLInputElement>;
+  currentTimeIndexRef: RefObject<HTMLInputElement>;
   currentXAxisPosition: MutableRefObject<number>;
   prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 const RenderingController: React.FC<RenderingControllerProps> = ({
   id,
   fileUrl,
+  currentTimeRef,
+  currentTimeIndexRef,
   currentXAxisPosition,
   prevXScale,
 }) => {
@@ -75,6 +87,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       });
       mixer.stopAllAction();
       const action = mixer.clipAction(visualizedClip);
+      console.log('action: ', action);
       action.play();
       mixer.timeScale = 0;
       if (currentXAxisPosition.current) {
@@ -135,9 +148,35 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     }
   }, [currentAction, mixer, playDirection, playSpeed, playState, startTimeIndex]);
 
-  // 정지 시 재생바 start 로
+  const [lastTime, setLastTime] = useState(1);
+
   useEffect(() => {
-    if (currentXAxisPosition && prevXScale && prevXScale.current && playState === 'stop') {
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
+      const innerlastTime = summaryTimes[summaryTimes.length - 1];
+      setLastTime(innerlastTime);
+    }
+  }, [currentVisualizedData]);
+
+  // 정지 시 재생바 start 로 && current time 과 time index 시작점으로
+  useEffect(() => {
+    if (
+      currentXAxisPosition &&
+      currentTimeRef &&
+      currentTimeRef.current &&
+      currentTimeIndexRef &&
+      currentTimeIndexRef.current &&
+      prevXScale &&
+      prevXScale.current &&
+      playState === 'stop'
+    ) {
+      if (_.round(startTimeIndex / 30, 4) <= lastTime) {
+        currentTimeRef.current.value = _.round(startTimeIndex / 30, 0).toString();
+      } else {
+        currentTimeRef.current.value = _.round(lastTime, 0).toString();
+      }
+      currentTimeIndexRef.current.value = startTimeIndex.toString();
       currentXAxisPosition.current = startTimeIndex;
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
       d3.select('#play-bar-wrapper').attr(
@@ -146,7 +185,15 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
         ${X_AXIS_HEIGHT / 2})`,
       );
     }
-  }, [currentXAxisPosition, playState, prevXScale, startTimeIndex]);
+  }, [
+    currentTimeIndexRef,
+    currentTimeRef,
+    currentXAxisPosition,
+    lastTime,
+    playState,
+    prevXScale,
+    startTimeIndex,
+  ]);
 
   const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 

@@ -115,6 +115,8 @@ const MainContainer: FunctionComponent = () => {
             <RenderingController
               id="renderingDiv"
               fileUrl={fileUrl}
+              currentTimeRef={currentTimeRef}
+              currentTimeIndexRef={currentTimeIndexRef}
               currentXAxisPosition={currentXAxisPosition}
               prevXScale={prevXScale}
             />
