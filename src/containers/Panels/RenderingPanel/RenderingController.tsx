@@ -130,25 +130,9 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
   // animation 컨트롤 로직
   useEffect(() => {
     if (mixer && currentAction) {
-      fnSetPlayState({ mixer, currentAction, playState, playSpeed, startTimeIndex });
+      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection });
     }
-  }, [currentAction, mixer, playSpeed, playState, startTimeIndex]);
-
-  useEffect(() => {
-    if (mixer) {
-      fnSetPlayDirection({ mixer, playDirection });
-    }
-  }, [mixer, playDirection]);
-
-  useEffect(() => {
-    if (mixer && currentAction) {
-      fnGoToSpecificTimeIndex({ mixer, currentTimeIndex, currentAction });
-    }
-  }, [currentAction, currentTimeIndex, mixer]);
-
-  // bone transform 적용 로직 -> CP 직접 컨트롤 방식으로 변경
-
-  // fog option 적용 로직 -> 제외
+  }, [currentAction, mixer, playDirection, playSpeed, playState, startTimeIndex]);
 
   const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 
@@ -183,13 +167,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       }
     }
   }, [dirLight, isShadowOn]);
-
-  // action 의 current time 을 10초 동안 콘솔에 찍는 예시 함수입니다.
-  // useEffect(() => {
-  //   if (currentAction) {
-  //     fnLogAnimationTime({ action: currentAction });
-  //   }
-  // }, [currentAction]);
 
   const handleCameraReset = useCallback(() => {
     if (cameraControls) {

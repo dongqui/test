@@ -3,14 +3,15 @@ import _ from 'lodash';
 
 const DEFAULT_SPEED = 0.4;
 
-type playState = 'play' | 'pause' | 'stop';
+type PlayDirection = 1 | -1;
+type PlayState = 'play' | 'pause' | 'stop';
 
 interface FnSetPlayState {
   mixer: THREE.AnimationMixer;
   currentAction: THREE.AnimationAction;
-  playState: playState;
+  playState: PlayState;
   playSpeed: number;
-  startTimeIndex: number;
+  playDirection: PlayDirection;
 }
 /**
  * 애니메이션 플레이 상태를 변경합니다.
@@ -19,15 +20,20 @@ interface FnSetPlayState {
  * @param currentAction - 현재 mixer 에 등록된 animation action
  * @param playState - 미들바를 통해 변경 가능한 플레이 상태(play, pause, stop)
  * @param playSpeed - 재생 속도
- * @param startTimeIndex - start index
+ * @param playDirection - 재생 방향
  *
  */
 const fnSetPlayState = (props: FnSetPlayState) => {
-  const { mixer, currentAction, playState, playSpeed, startTimeIndex } = props;
+  const { mixer, currentAction, playState, playSpeed, playDirection } = props;
   switch (playState) {
     case 'play':
-      mixer.timeScale = DEFAULT_SPEED * playSpeed;
-      currentAction.play();
+      if (playDirection === 1) {
+        mixer.timeScale = 1 * DEFAULT_SPEED * playSpeed;
+        currentAction.play();
+      } else if (playDirection === -1) {
+        mixer.timeScale = -1 * DEFAULT_SPEED * playSpeed;
+        currentAction.play();
+      }
       break;
     case 'pause':
       mixer.timeScale = 0;
