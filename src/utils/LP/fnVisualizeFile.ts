@@ -2,12 +2,18 @@ import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import { storeCurrentVisualizedData, storeLpData } from 'lib/store';
 import _ from 'lodash';
 
-interface fnVisualizeFileProps {
+interface FnVisualizeFileProps {
   key: string;
   lpData: LPDataType[];
 }
-
-export const fnVisualizeFile = ({ key, lpData }: fnVisualizeFileProps) => {
+/**
+ * 파일을 visualize 해준다
+ *
+ * @param key - key값
+ * @param lpData - lpData
+ *
+ */
+const fnVisualizeFile = ({ key, lpData }: FnVisualizeFileProps) => {
   const targetRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, key]);
   let visualizedKey = targetRow?.key;
   if (_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
@@ -40,3 +46,4 @@ export const fnVisualizeFile = ({ key, lpData }: fnVisualizeFileProps) => {
     });
   }
 };
+export default fnVisualizeFile;

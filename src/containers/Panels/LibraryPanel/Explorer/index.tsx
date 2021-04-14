@@ -5,7 +5,7 @@ import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { FILE_TYPES, LPModeType } from 'types';
 import { storeLPMode, storeLpData, storePages } from 'lib/store';
 import { v4 as uuidv4 } from 'uuid';
-import { fnGetFileName } from 'utils/LP/fnGetFileName';
+import fnGetFileName from 'utils/LP/fnGetFileName';
 import _ from 'lodash';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import classNames from 'classnames/bind';
@@ -38,7 +38,7 @@ const Explorer: FunctionComponent<Props> = ({ onChange }) => {
       _.concat(lpData, {
         key: uuidv4(),
         type: FILE_TYPES.folder,
-        name: fnGetFileName({ key: '', mainData: lpData, name: 'Folder', parentKey }),
+        name: fnGetFileName({ key: '', lpData, name: 'Folder', parentKey }),
         parentKey,
         isModifying: true,
         baseLayer: [],

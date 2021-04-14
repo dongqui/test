@@ -9,7 +9,7 @@ import { GRAY500, PRIMARY_BLUE } from 'styles/constants/common';
 import { v4 as uuidv4 } from 'uuid';
 import { PlusIcon } from '../Icons/generated2/PlusIcon';
 import * as S from './LPSelectStyles';
-import { fnGetFileName } from 'utils/LP/fnGetFileName';
+import fnGetFileName from 'utils/LP/fnGetFileName';
 
 export interface LPSelectProps {}
 
@@ -22,7 +22,7 @@ const LPSelectComponent: React.FC<LPSelectProps> = ({}) => {
       _.concat(lpData, {
         key: uuidv4(),
         type: FILE_TYPES.folder,
-        name: fnGetFileName({ key: '', mainData: lpData, name: 'Folder' }),
+        name: fnGetFileName({ key: '', lpData, name: 'Folder' }),
         parentKey: _.last(pages)?.key,
         isModifying: true,
         baseLayer: [],

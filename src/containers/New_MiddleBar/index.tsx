@@ -1,4 +1,13 @@
-import { FunctionComponent, memo, useEffect, useRef, useCallback } from 'react';
+import {
+  FunctionComponent,
+  memo,
+  useEffect,
+  useRef,
+  useCallback,
+  RefObject,
+  MutableRefObject,
+} from 'react';
+import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
 import {
   storeAnimatingData,
@@ -17,12 +26,22 @@ import PlayBox from './PlayBox';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { d3ScaleLinear } from 'types/TP';
 
 const cx = classNames.bind(styles);
 
-export interface Props {}
+const X_AXIS_HEIGHT = 48; // 트랙 높이
 
-const MiddleBar: FunctionComponent<Props> = () => {
+export interface Props {
+  currentTimeRef?: RefObject<HTMLInputElement>;
+  currentTimeIndexRef?: RefObject<HTMLInputElement>;
+  currentXAxisPosition?: MutableRefObject<number>;
+  prevXScale?: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+}
+
+const MiddleBar: FunctionComponent<Props> = (props) => {
+  const { currentTimeRef, currentTimeIndexRef, currentXAxisPosition, prevXScale } = props;
+
   const currentAction = useReactiveVar(storeCurrentAction);
   const animatingData = useReactiveVar(storeAnimatingData);
   const recordingData = useReactiveVar(storeRecordingData);
@@ -31,9 +50,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const pageInfo = useReactiveVar(storePageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const currentTimeRef = useRef<HTMLInputElement>(null);
   const lastTimeRef = useRef<HTMLInputElement>(null);
-  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
 
   const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
@@ -139,7 +156,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const handleStartInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.currentTarget.value);
-    if (value > 0 && value < endTimeIndex) {
+    if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, startTimeIndex: value });
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
         currentTimeIndexRef.current.value = value.toString();
@@ -151,7 +168,7 @@ const MiddleBar: FunctionComponent<Props> = () => {
 
   const handleEndInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.currentTarget.value);
-    if (value > startTimeIndex) {
+    if (value > startTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, endTimeIndex: value });
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
         currentTimeIndexRef.current.value = value.toString();
@@ -162,21 +179,28 @@ const MiddleBar: FunctionComponent<Props> = () => {
   };
 
   const handleNowInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    if (currentAction) {
+    if (currentXAxisPosition && currentAction) {
       const value = parseInt(event.currentTarget.value);
-      if (value >= startTimeIndex && value <= endTimeIndex) {
+      if (value >= startTimeIndex && value <= endTimeIndex && prevXScale) {
         currentAction.time = _.round(value / 30, 4);
+        currentXAxisPosition.current = currentAction.time * 30;
+        const xScaleLinear = prevXScale.current as d3ScaleLinear;
+        d3.select('#play-bar-wrapper').attr(
+          'transform',
+          `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+            ${X_AXIS_HEIGHT / 2})`,
+        );
       } else {
         event.currentTarget.value = _.round(currentAction.time * 30, 0).toString();
       }
-    } else {
-      // 애니메이션 없는 경우
-      const value = parseInt(event.currentTarget.value);
-      if (value <= startTimeIndex) {
-        event.currentTarget.value = startTimeIndex.toString();
-      } else if (value >= endTimeIndex) {
-        event.currentTarget.value = endTimeIndex.toString();
-      }
+      // } else {
+      //   // 애니메이션 없는 경우
+      //   const value = parseInt(event.currentTarget.value);
+      //   if (value <= startTimeIndex) {
+      //     event.currentTarget.value = startTimeIndex.toString();
+      //   } else if (value >= endTimeIndex) {
+      //     event.currentTarget.value = endTimeIndex.toString();
+      //   }
     }
   };
 
@@ -204,13 +228,11 @@ const MiddleBar: FunctionComponent<Props> = () => {
   const currentTimeReqIdRef = useRef<number | undefined>();
 
   const changeCurrentTimeRef = useCallback(() => {
-    if (currentAction && currentTimeRef.current) {
-      if (currentTimeRef.current) {
-        currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
-      }
+    if (currentAction && currentTimeRef && currentTimeRef.current) {
+      currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
     }
     currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
-  }, [currentAction]);
+  }, [currentAction, currentTimeRef]);
 
   const startCurrentTimeLoop = useCallback(() => {
     currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
@@ -231,16 +253,24 @@ const MiddleBar: FunctionComponent<Props> = () => {
     }
   }, [currentAction, playState, startCurrentTimeLoop, stopCurrentTimeLoop]);
 
+  // start <-> end 구간 변경 시 current time 변경
+  useEffect(() => {
+    if (currentAction && currentTimeRef && currentTimeRef.current && currentXAxisPosition) {
+      currentTimeRef.current.value = _.round(
+        currentXAxisPosition.current / 30 - startTimeIndex / 30,
+        0,
+      ).toString();
+    }
+  }, [currentAction, currentTimeRef, startTimeIndex, endTimeIndex, currentXAxisPosition]);
+
   const currentTimeIndexReqIdRef = useRef<number | undefined>();
 
   const changeCurrentTimeIndexRef = useCallback(() => {
-    if (currentAction && currentTimeIndexRef.current) {
-      if (currentTimeIndexRef.current) {
-        currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
-      }
+    if (currentAction && currentTimeIndexRef && currentTimeIndexRef.current) {
+      currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
     }
     currentTimeIndexReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeIndexRef);
-  }, [currentAction]);
+  }, [currentAction, currentTimeIndexRef]);
 
   const startCurrentTimeIndexLoop = useCallback(() => {
     currentTimeIndexReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeIndexRef);

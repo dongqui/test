@@ -1,6 +1,7 @@
 import _ from 'lodash';
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
 import { ShootLayerType, ShootTrackType } from 'types';
@@ -13,12 +14,7 @@ import {
 } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay } from 'utils/TP/editingUtils';
-import {
-  fnSetPlayState,
-  fnSetPlayDirection,
-  fnGoToSpecificTimeIndex,
-  fnLogAnimationTime,
-} from 'utils/RP/animatingUtils';
+import { fnSetPlayState } from 'utils/RP/animatingUtils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {
   fnAddShadow,
@@ -28,12 +24,22 @@ import {
   fnMakeSkinnedMeshesVisible,
   fnRemoveShadow,
 } from 'utils/CP/visibilityUtils';
+import { d3ScaleLinear } from 'types/TP';
+
+const X_AXIS_HEIGHT = 48; // 트랙 높이
 
 export interface RenderingControllerProps {
   id: string;
   fileUrl?: string;
+  currentXAxisPosition: MutableRefObject<number>;
+  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
-const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }) => {
+const RenderingController: React.FC<RenderingControllerProps> = ({
+  id,
+  fileUrl,
+  currentXAxisPosition,
+  prevXScale,
+}) => {
   // store data
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
@@ -55,14 +61,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     setDirLight,
   });
 
-  const {
-    startTimeIndex,
-    endTimeIndex,
-    playState,
-    playDirection,
-    playSpeed,
-    currentTimeIndex,
-  } = animatingData;
+  const { startTimeIndex, endTimeIndex, playState, playDirection, playSpeed } = animatingData;
 
   // animation 생성 로직
   useEffect(() => {
@@ -78,13 +77,15 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       const action = mixer.clipAction(visualizedClip);
       action.play();
       mixer.timeScale = 0;
-      action.time = _.round(startTimeIndex / 30, 4); // 재생 중인 상황이었으면 처음이 아니라, 해당 지점(playbar ref)으로 가야 할 듯 -> 변경 필요
+      if (currentXAxisPosition.current) {
+        action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
+      }
       storeCurrentAction(action);
-      console.log('action: ', action);
+      // console.log('action: ', action);
     }
-  }, [currentVisualizedData, endTimeIndex, mixer, startTimeIndex]);
+  }, [currentVisualizedData, currentXAxisPosition, endTimeIndex, mixer, startTimeIndex]);
 
-  // loop 했을 때 start index 로 보내줘야 함 (역재생 시 end index)
+  // loop 했을 때 start index 로 보내줘야 함
   useEffect(() => {
     if (mixer && currentAction) {
       mixer.addEventListener('loop', () => {
@@ -127,28 +128,25 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     }
   }, [playDirection, playState, startReversePlayLoop, stopReversePlayLoop]);
 
-  // animation 컨트롤 로직
+  // animation 재생 관련 로직
   useEffect(() => {
     if (mixer && currentAction) {
-      fnSetPlayState({ mixer, currentAction, playState, playSpeed, startTimeIndex });
+      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection, startTimeIndex });
     }
-  }, [currentAction, mixer, playSpeed, playState, startTimeIndex]);
+  }, [currentAction, mixer, playDirection, playSpeed, playState, startTimeIndex]);
 
+  // 정지 시 재생바 start 로
   useEffect(() => {
-    if (mixer) {
-      fnSetPlayDirection({ mixer, playDirection });
+    if (currentXAxisPosition && prevXScale && prevXScale.current && playState === 'stop') {
+      currentXAxisPosition.current = startTimeIndex;
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
     }
-  }, [mixer, playDirection]);
-
-  useEffect(() => {
-    if (mixer && currentAction) {
-      fnGoToSpecificTimeIndex({ mixer, currentTimeIndex, currentAction });
-    }
-  }, [currentAction, currentTimeIndex, mixer]);
-
-  // bone transform 적용 로직 -> CP 직접 컨트롤 방식으로 변경
-
-  // fog option 적용 로직 -> 제외
+  }, [currentXAxisPosition, playState, prevXScale, startTimeIndex]);
 
   const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 
@@ -183,13 +181,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       }
     }
   }, [dirLight, isShadowOn]);
-
-  // action 의 current time 을 10초 동안 콘솔에 찍는 예시 함수입니다.
-  // useEffect(() => {
-  //   if (currentAction) {
-  //     fnLogAnimationTime({ action: currentAction });
-  //   }
-  // }, [currentAction]);
 
   const handleCameraReset = useCallback(() => {
     if (cameraControls) {

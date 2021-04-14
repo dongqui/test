@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo, useCallback, useRef } from 'react';
+import React, { FunctionComponent, memo, useCallback, useRef, useState } from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import styled from '@emotion/styled';
@@ -13,10 +13,11 @@ import {
   storeModalInfo,
   storePageInfo,
   storeRecordingData,
+  storeConfirmModalData,
 } from 'lib/store';
 import { FILE_TYPES, LPDataType, MODAL_TYPES, PAGE_NAMES } from 'types';
 import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
-import { BaseModal } from 'components/New_Modal';
+import { BaseModal, ConfirmModal } from 'components/New_Modal';
 import { ModalInner } from 'docs/New_components/Modal/BaseModal.stories';
 import ExtractPage from 'containers/extract';
 import RecordPage from 'containers/record';
@@ -45,6 +46,9 @@ const ShootPage: FunctionComponent = () => {
   const pageInfo = useReactiveVar(storePageInfo);
   const recordingData = useReactiveVar(storeRecordingData);
   const contextMenuRef = useRef<HTMLDivElement | any>(null);
+
+  const confirmModalData = useReactiveVar(storeConfirmModalData);
+
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       storeRecordingData({ ...recordingData, motionName: e.target.value });
@@ -128,6 +132,8 @@ const ShootPage: FunctionComponent = () => {
     },
   });
 
+  const { showsModal, ...confirmModalRest } = confirmModalData;
+
   return (
     <main>
       {contextMenuInfo.isShow && (
@@ -141,6 +147,7 @@ const ShootPage: FunctionComponent = () => {
           list={contextMenuInfo.data}
         />
       )}
+      {showsModal && <ConfirmModal {...confirmModalRest} />}
       {modalInfo.isShow && (
         <>
           {_.isEqual(modalInfo.type, MODAL_TYPES.alert) && (
