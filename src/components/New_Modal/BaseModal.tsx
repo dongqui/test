@@ -21,7 +21,7 @@ const cx = classnames.bind(styles);
 type Theme = 'light' | 'dark';
 
 export interface Props {
-  onClose: () => void;
+  onClose?: () => void;
   onOutsideClose?: () => void;
   hasCloseIcon?: boolean;
   theme?: Theme;
@@ -103,7 +103,7 @@ const BaseModal: FunctionComponent<Props> = ({
 
       // ESC Key: KeyCode 27
       if (_.isEqual(e.key, 'Escape')) {
-        onClose();
+        onClose && onClose();
       }
 
       // Enter Key: Keycode 13
@@ -143,9 +143,11 @@ const BaseModal: FunctionComponent<Props> = ({
     }
 
     if (!onOutsideClose) {
-      onClose();
+      onClose && onClose();
     }
   }, [onClose, onOutsideClose]);
+
+  const hasTitleMargin = Boolean(children);
 
   return (
     <BasePortal container={portalRef}>
@@ -156,7 +158,13 @@ const BaseModal: FunctionComponent<Props> = ({
           )}
           <div className={cx('content')}>
             {title && (
-              <Headline className={cx('title')} level="5" align="center" bold margin>
+              <Headline
+                className={cx('title')}
+                level="5"
+                align="center"
+                margin={hasTitleMargin}
+                bold
+              >
                 <Html content={title} />
               </Headline>
             )}

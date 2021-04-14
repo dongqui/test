@@ -17,7 +17,7 @@ import { IconView } from '../../IconTree/IconView';
 import { ListView } from 'containers/ListTree/ListView';
 import Breadcrumb from './Breadcrumb';
 import { Headline } from 'components/New_Typography';
-import { ConfirmModal } from 'components/New_Modal';
+import { BaseModal } from 'components/New_Modal';
 import Explorer from './Explorer/index';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -120,7 +120,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
-      {showsModal && <ConfirmModal onClose={handleModalClose} title={modalMessage} />}
+      {showsModal && <BaseModal title={modalMessage} />}
     </div>
   );
 };
