@@ -26,6 +26,7 @@ import styles from './index.module.scss';
 import { CurrentVisualizedDataType, ShootTrackType } from 'types';
 import {
   fnDeleteKeyframe,
+  fnGetSummaryTimes,
   fnUpdateKeyframeToBase,
   fnUpdateKeyframeToLayer,
 } from 'utils/TP/editingUtils';
@@ -612,6 +613,17 @@ const DopeSheet: React.FC<Props> = ({
     }
   }, [currentVisualizedData]);
 
+  const [lastTime, setLastTime] = useState(1);
+
+  useEffect(() => {
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
+      const innerlastTime = summaryTimes[summaryTimes.length - 1];
+      setLastTime(innerlastTime);
+    }
+  }, [currentVisualizedData]);
+
   // 재생 바 드래그 event
   useEffect(() => {
     if (playBarDisplayed) {
@@ -637,8 +649,14 @@ const DopeSheet: React.FC<Props> = ({
             currentAction.time = _.round(setPlayBarX(currentX) / 30, 4);
           }
 
-          if (currentTimeRef.current && currentTimeIndexRef.current) {
-            currentTimeRef.current.value = _.round(setPlayBarX(currentX) / 30, 0).toString();
+          if (currentTimeRef.current) {
+            if (_.round(setPlayBarX(currentX) / 30, 4) <= lastTime) {
+              currentTimeRef.current.value = _.round(setPlayBarX(currentX) / 30, 0).toString();
+            } else {
+              currentTimeRef.current.value = _.round(lastTime, 0).toString();
+            }
+          }
+          if (currentTimeIndexRef.current) {
             currentTimeIndexRef.current.value = setPlayBarX(currentX).toString();
           }
           currentXAxisPosition.current = setPlayBarX(currentX);
@@ -665,6 +683,7 @@ const DopeSheet: React.FC<Props> = ({
     prevXScale,
     endTimeIndex,
     startTimeIndex,
+    lastTime,
   ]);
 
   return (

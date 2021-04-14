@@ -90,8 +90,8 @@ const fnGetAnimationClipForPlay = (props: FnGetAnimationClipForPlay) => {
   );
 
   // animation 의 duration 계산
-  if (duration < _.round((endTimeIndex - startTimeIndex + 1) * (1 / 30), 4)) {
-    duration = _.round((endTimeIndex - startTimeIndex + 1) * (1 / 30), 4);
+  if (duration < _.round(endTimeIndex * (1 / 30), 4)) {
+    duration = _.round(endTimeIndex * (1 / 30), 4);
   }
 
   return new THREE.AnimationClip(name, duration, rotationConvertedTracks);
