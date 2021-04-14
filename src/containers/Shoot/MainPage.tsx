@@ -1,5 +1,6 @@
-import { FunctionComponent, memo, useCallback, useEffect, useMemo } from 'react';
+import { FunctionComponent, memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import _ from 'lodash';
+import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
 import {
@@ -20,6 +21,7 @@ import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import useWindowSize from 'hooks/common/useWindowSize';
 import classNames from 'classnames/bind';
 import styles from './MainPage.module.scss';
+import { d3ScaleLinear } from 'types/TP';
 import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 
 const cx = classNames.bind(styles);
@@ -31,6 +33,11 @@ const MainContainer: FunctionComponent = () => {
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const tpDopeSheetList = useReactiveVar(storeTPDopeSheetList);
+
+  const currentTimeRef = useRef<HTMLInputElement>(null);
+  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
+  const currentXAxisPosition = useRef(1);
+  const prevXScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
 
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
@@ -105,7 +112,12 @@ const MainContainer: FunctionComponent = () => {
           axis="both"
         >
           <div style={{ width: '100%', height: '100%' }} onDrop={handleDrop}>
-            <RenderingController id="renderingDiv" fileUrl={fileUrl} />
+            <RenderingController
+              id="renderingDiv"
+              fileUrl={fileUrl}
+              currentXAxisPosition={currentXAxisPosition}
+              prevXScale={prevXScale}
+            />
           </div>
         </ResizableBox>
         <ResizableBox
@@ -124,6 +136,10 @@ const MainContainer: FunctionComponent = () => {
           visualizedDataKey={currentVisualizedData?.key}
           baseLayer={currentVisualizedData?.baseLayer}
           layers={currentVisualizedData?.layers}
+          currentTimeRef={currentTimeRef}
+          currentTimeIndexRef={currentTimeIndexRef}
+          currentXAxisPosition={currentXAxisPosition}
+          prevXScale={prevXScale}
         />
       </ResizableBox>
     </div>

@@ -22,6 +22,7 @@ interface getRetargetBaseLayerProps {
   baseLayer: ShootTrackType[];
   name: string;
   retargetMap: Array<any>;
+  isFbx: boolean;
 }
 /**
  * fbx를 업로드하여 glb를 받는 api
@@ -180,10 +181,11 @@ export const getRetargetBaseLayer = async ({
   baseLayer,
   name,
   retargetMap,
+  isFbx,
 }: getRetargetBaseLayerProps) => {
   try {
     const formData = new FormData();
-    formData.append('isFbx', 'true');
+    formData.append('isFbx', `${isFbx}`);
     formData.append('sourceMotion', JSON.stringify({ name, tracks: baseLayer }));
     formData.append('retargetMap', JSON.stringify(retargetMap));
     const result = await axios({

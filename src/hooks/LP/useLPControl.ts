@@ -122,6 +122,10 @@ const useLPControl = ({
             name: draggingRow?.name ?? '',
             baseLayer: draggingRow?.baseLayer ?? [],
             retargetMap,
+            isFbx:
+              targetRow?.name
+                .substring(targetRow?.name.lastIndexOf('.'), targetRow.name.length)
+                .toLowerCase() === '.fbx',
           });
           if (error3) {
             setModalMessage('리타겟팅 과정에서 오류가 발생하였습니다.');

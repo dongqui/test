@@ -56,3 +56,5 @@ export interface IsIncludedChange {
   name: string;
   isIncluded: boolean;
 }
+
+export type d3ScaleLinear = d3.ScaleLinear<number, number, never>;
