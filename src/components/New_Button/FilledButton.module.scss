@@ -4,7 +4,7 @@
 .filled {
   @include reset-button-style();
   border-radius: 6px;
-  font-weight: 300;
+  font-weight: 400;
   transition: background-color 0.25s;
 
   &.fullSize {
@@ -13,12 +13,16 @@
 
   &.disabled {
     cursor: not-allowed;
-    background-color: #a7a7a7; // GRAY500
-    color: #fff;
+    // background-color: #a7a7a7; // GRAY500
+    // color: #fff;
+    background-color: #f5f5f5;
+    color: #bdbdbd;
 
     &:hover {
-      color: #fff;
-      background-color: #a7a7a7;
+      // color: #fff;
+      // background-color: #a7a7a7;
+      background-color: #f5f5f5;
+      color: #bdbdbd;
     }
   }
 }
@@ -45,6 +49,6 @@
 
   &:focus,
   &:hover {
-    background-color: #dbdbdb;
+    background-color: darken($color: #f5f5f5, $amount: 4%);
   }
 }

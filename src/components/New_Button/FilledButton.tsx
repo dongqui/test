@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, ButtonHTMLAttributes } from 'react';
+import { FunctionComponent, memo, ButtonHTMLAttributes, MouseEvent, useCallback } from 'react';
 import classNames from 'classnames/bind';
 import styles from './FilledButton.module.scss';
 
@@ -24,6 +24,7 @@ const FilledButton: FunctionComponent<Props> = ({
   color,
   fullSize,
   disabled,
+  onClick,
   className,
   children,
   ...rest
@@ -33,8 +34,17 @@ const FilledButton: FunctionComponent<Props> = ({
     fullSize,
   });
 
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      if (!disabled) {
+        onClick && onClick(e);
+      }
+    },
+    [disabled, onClick],
+  );
+
   return (
-    <button className={classes} {...rest}>
+    <button className={classes} onClick={handleClick} {...rest}>
       {text || children}
     </button>
   );

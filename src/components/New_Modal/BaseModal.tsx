@@ -155,8 +155,6 @@ const BaseModal: FunctionComponent<Props> = ({
     }
   }, [onClose, onOutsideClose]);
 
-  const hasTitleMargin = !!children;
-
   return (
     <BasePortal container={portalRef}>
       <div className={cx('wrapper')} ref={modalRef}>
@@ -166,13 +164,7 @@ const BaseModal: FunctionComponent<Props> = ({
           )}
           <div className={cx('content')}>
             {title && (
-              <Headline
-                className={cx('title')}
-                level="5"
-                align="center"
-                margin={hasTitleMargin}
-                bold
-              >
+              <Headline className={cx('title')} level="5" align="center" bold>
                 <Html content={title} />
               </Headline>
             )}
