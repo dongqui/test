@@ -1,3 +1,5 @@
+@import 'styles/libraries/_responsive';
+
 .wrapper {
   position: fixed;
   z-index: 999;
@@ -14,11 +16,12 @@
   transform: translate(-50%, -50%);
   border-radius: 12px;
   box-shadow: 0 11px 15px -7px rgba(0, 0, 0, 0.2), 0 24px 38px 3px rgb(0, 0, 0, 0.15), 0 9px 46px 8px rgb(0, 0, 0, 0.12);
-  min-width: 384px;
+  min-width: 280px;
+  max-width: 60%;
   outline: 0;
 
   &.light {
-    background-color: #efefef;
+    background-color: #fff;
     color: #000;
   }
 
@@ -30,10 +33,15 @@
   &.icon {
     padding-top: 16px;
   }
+
+  @include media(">lg") {
+    max-width: 600px;
+  }
 }
 
 .title {
   color: #000;
+  margin-bottom: 32px;
 }
 
 .close {
@@ -53,5 +61,5 @@
 }
 
 .content {
-  padding: 32px;
+  padding: 24px 16px;
 }
