@@ -1,15 +1,23 @@
-import React, { useEffect, useRef } from 'react';
+import React, { MutableRefObject, RefObject, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import TrackList from '../TrackList';
 import TimeFrameView from '../TimeFrameView';
 import styles from './index.module.scss';
+import { d3ScaleLinear } from 'types/TP';
 
 const cx = classNames.bind(styles);
 
-interface Props {}
+interface Props {
+  currentTimeRef: RefObject<HTMLInputElement>;
+  currentTimeIndexRef: RefObject<HTMLInputElement>;
+  currentXAxisPosition: MutableRefObject<number>;
+  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+}
 
-const TimelineWrapper: React.FC<Props> = () => {
+const TimelineWrapper: React.FC<Props> = (props) => {
+  const { currentTimeRef, currentTimeIndexRef, currentXAxisPosition, prevXScale } = props;
+
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
   const trackListRef = useRef<HTMLDivElement>(null);
 
@@ -32,7 +40,13 @@ const TimelineWrapper: React.FC<Props> = () => {
     <>
       <div id="timeline-wrapper" className={cx('timeline-wrapper')} ref={timelineWrapperRef}>
         <TrackList trackListRef={trackListRef} />
-        <TimeFrameView timelineWrapperRef={timelineWrapperRef} />
+        <TimeFrameView
+          timelineWrapperRef={timelineWrapperRef}
+          currentTimeRef={currentTimeRef}
+          currentTimeIndexRef={currentTimeIndexRef}
+          currentXAxisPosition={currentXAxisPosition}
+          prevXScale={prevXScale}
+        />
       </div>
     </>
   );

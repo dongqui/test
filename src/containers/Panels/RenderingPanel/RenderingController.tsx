@@ -7,7 +7,6 @@ import { ShootLayerType, ShootTrackType } from 'types';
 import {
   storeAnimatingData,
   storeCurrentAction,
-  storeCurrentTimeIndex,
   storeCurrentVisualizedData,
   storeRenderingData,
   storeSkeletonHelper,
@@ -69,7 +68,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       mixer.timeScale = 0;
       action.time = _.round(startTimeIndex / 30, 4); // 재생 중인 상황이었으면 처음이 아니라, 해당 지점(playbar ref)으로 가야 할 듯 -> 변경 필요
       storeCurrentAction(action);
-      console.log('action: ', action);
+      // console.log('action: ', action);
     }
   }, [currentVisualizedData, endTimeIndex, mixer, startTimeIndex]);
 

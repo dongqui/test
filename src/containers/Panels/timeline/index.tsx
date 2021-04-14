@@ -16,6 +16,7 @@ import { fnSetDefaultTrackNameList, fnSetLayerTrack } from 'utils/TP/trackUtils'
 import MiddleBar from 'containers/New_MiddleBar';
 import { ShootLayerType, ShootTrackType } from 'types';
 import produce from 'immer';
+import { d3ScaleLinear } from 'types/TP';
 
 const cx = classNames.bind(styles);
 
@@ -31,6 +32,11 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers, visualizedDataK
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const trackNameList = useReactiveVar(storeTPTrackNameList);
+
+  const currentTimeRef = useRef<HTMLInputElement>(null);
+  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
+  const currentXAxisPosition = useRef(1);
+  const prevXScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
 
   // Dope Sheet, Track 리스트 가공
   useEffect(() => {
@@ -122,8 +128,18 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers, visualizedDataK
   return (
     <>
       <div className={cx('timeline-panel')}>
-        <MiddleBar />
-        <TimelineWrapper />
+        <MiddleBar
+          currentTimeRef={currentTimeRef}
+          currentTimeIndexRef={currentTimeIndexRef}
+          currentXAxisPosition={currentXAxisPosition}
+          prevXScale={prevXScale}
+        />
+        <TimelineWrapper
+          currentTimeRef={currentTimeRef}
+          currentTimeIndexRef={currentTimeIndexRef}
+          currentXAxisPosition={currentXAxisPosition}
+          prevXScale={prevXScale}
+        />
       </div>
     </>
   );

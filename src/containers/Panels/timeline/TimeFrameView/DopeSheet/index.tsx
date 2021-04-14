@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  MutableRefObject,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -24,7 +32,11 @@ import {
 import produce from 'immer';
 import useContextMenu from 'hooks/common/useContextMenu';
 interface Props {
-  timelineWrapperRef: React.RefObject<HTMLDivElement>;
+  timelineWrapperRef: RefObject<HTMLDivElement>;
+  currentTimeRef: RefObject<HTMLInputElement>;
+  currentTimeIndexRef: RefObject<HTMLInputElement>;
+  currentXAxisPosition: MutableRefObject<number>;
+  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
 interface Datum {
@@ -61,7 +73,13 @@ const THROTTLE_TIMER = 75;
  * @constant currentXAxisPosition 현재 타임바가 위치하고 있는 time index
  */
 
-const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
+const DopeSheet: React.FC<Props> = ({
+  timelineWrapperRef,
+  currentTimeRef,
+  currentTimeIndexRef,
+  currentXAxisPosition,
+  prevXScale,
+}) => {
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const dopeSheetRef = useRef<HTMLDivElement>(null);
   const prevScrollTop = useRef(0);
@@ -69,12 +87,10 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const [playBarDisplayed, setPlayBarDisplayed] = useState(false);
 
   const xScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
-  const prevXScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const xScaleCopy = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const xAxisPosition = useRef<d3Axis | null>(null);
   const renderXAxis = useRef<d3Selection | null>(null);
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
-  const currentXAxisPosition = useRef(1);
 
   const currentAction = useReactiveVar(storeCurrentAction);
   const animatingData = useReactiveVar(storeAnimatingData);
@@ -93,7 +109,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       );
     }
     playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
-  }, [currentAction]);
+  }, [currentAction, currentXAxisPosition, prevXScale]);
 
   const startPlayBarPositionLoop = useCallback(() => {
     playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
@@ -183,7 +199,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       )
       .call(xAxisPosition.current);
     d3.selectAll('.x-axis-g line').attr('y2', -24);
-  }, []);
+  }, [prevXScale]);
 
   // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
   useEffect(() => {
@@ -265,7 +281,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       );
 
     d3.select(dopeSheetRef.current).call(zoomBehavior as any);
-  }, []);
+  }, [currentXAxisPosition, prevXScale]);
 
   // timelineWrapper에 scroll 효과 적용
   useEffect(() => {
@@ -302,7 +318,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     };
 
     d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
-  }, [timelineWrapperRef]);
+  }, [prevXScale, timelineWrapperRef]);
 
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
@@ -598,6 +614,11 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
             currentAction.time = _.round(checkZero / 30, 4);
           }
 
+          if (currentTimeRef.current && currentTimeIndexRef.current) {
+            currentTimeRef.current.value = _.round(checkZero / 30, 0).toString();
+            currentTimeIndexRef.current.value = checkZero.toString();
+          }
+
           currentXAxisPosition.current = checkZero;
           d3.select(this).attr(
             'transform',
@@ -611,7 +632,14 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         .attr('transform', `translate(${xScaleLinear(1) - 10}, ${X_AXIS_HEIGHT / 2})`)
         .call(dragBehavior as any);
     }
-  }, [currentAction, playBarDisplayed]);
+  }, [
+    currentAction,
+    currentTimeIndexRef,
+    currentTimeRef,
+    currentXAxisPosition,
+    playBarDisplayed,
+    prevXScale,
+  ]);
 
   return (
     <>
