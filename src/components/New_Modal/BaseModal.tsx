@@ -124,7 +124,7 @@ const BaseModal: FunctionComponent<Props> = ({
       if (modalRef.current) {
         if (!modalRef.current.contains(e.target as Node)) {
           e.preventDefault();
-          firstFocusTarget.focus();
+          // firstFocusTarget.focus();
         }
       }
     };

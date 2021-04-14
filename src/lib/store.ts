@@ -125,3 +125,15 @@ export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDope
   });
   storeTPDopeSheetList(nextState);
 };
+
+export const storeConfirmModalData = makeVar({
+  showsModal: false,
+  onClose: () => {},
+  onConfirm: () => {},
+  onOutsideClose: () => {},
+  title: '',
+  text: {
+    confirm: '',
+    cancel: '',
+  },
+});
