@@ -2,10 +2,17 @@ import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import _ from 'lodash';
 
-interface fnSortArrayByHierarchyProps {
+interface FnSortArrayByHierarchyProps {
   data: LPDataType[];
 }
-export const fnSortArrayByHierarchy = ({ data }: fnSortArrayByHierarchyProps) => {
+/**
+ * lpData 를 계층순으로 정렬해준다.
+ *
+ * @param data - lpData
+ *
+ * @return 정렬 후 lpData
+ */
+const fnSortArrayByHierarchy = ({ data }: FnSortArrayByHierarchyProps) => {
   let tempData = _.clone(data);
   let result: LPDataType[] = [];
   let newData: LPDataType[];
@@ -38,3 +45,4 @@ export const fnSortArrayByHierarchy = ({ data }: fnSortArrayByHierarchyProps) =>
   } while (!_.isEqual(_.size(data), _.size(result)));
   return result;
 };
+export default fnSortArrayByHierarchy;

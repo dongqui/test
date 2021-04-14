@@ -23,7 +23,6 @@ export const INITIAL_ANIMATING_DATA: AnimatingDataType = {
   playSpeed: 1,
   startTimeIndex: 1, // 미들바의 start 에 해당
   endTimeIndex: 300, // 미들바의 end 에 해당
-  currentTimeIndex: 1, // 미들바의 now 에 해당
 };
 export const INITIAL_RENDERING_DATA: RenderingDataType = {
   positionX: 0,

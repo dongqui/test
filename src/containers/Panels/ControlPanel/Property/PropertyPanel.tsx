@@ -8,9 +8,13 @@ import styles from './PropertyPanel.module.scss';
 const cx = classNames.bind(styles);
 
 const PropertyPanel: FunctionComponent<{}> = () => {
+  // const objList = [
+  //   { id: 1, contents: 'ON' },
+  //   { id: 2, contents: 'OFF' },
+  // ];
   const objList = [
-    { id: 1, contents: 'ON' },
-    { id: 2, contents: 'OFF' },
+    { key: '1', value: 'ON', isSelected: true, onClick: () => {} },
+    { key: '2', value: 'OFF', isSelected: false, onClick: () => {} },
   ];
   return (
     <main className={cx('panel-wrap')}>
@@ -46,19 +50,19 @@ const PropertyPanel: FunctionComponent<{}> = () => {
         <AccordionMenu title="Visibility">
           <div className={cx('segment-group')}>
             <span>Axis</span>
-            <Segment objList={objList} />
+            <Segment list={objList} />
           </div>
           <div className={cx('segment-group')}>
             <span>Bone</span>
-            <Segment objList={objList} />
+            <Segment list={objList} />
           </div>
           <div className={cx('segment-group')}>
             <span>Mesh</span>
-            <Segment objList={objList} />
+            <Segment list={objList} />
           </div>
           <div className={cx('segment-group')}>
             <span>Shadow</span>
-            <Segment objList={objList} />
+            <Segment list={objList} />
           </div>
         </AccordionMenu>
       </section>

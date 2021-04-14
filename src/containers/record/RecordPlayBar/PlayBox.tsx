@@ -4,7 +4,7 @@ import { SquareIcon } from 'components/Icons/generated2/SquareIcon';
 import { storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
-import { sleep } from 'utils/common/sleep';
+import sleep from 'utils/common/sleep';
 import * as S from './PlayBarStyles';
 
 export interface PlayBoxProps {}

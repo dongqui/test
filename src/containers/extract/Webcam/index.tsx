@@ -1,6 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import getBlobDuration from 'get-blob-duration';
-import { useVideoToImages } from 'hooks/RP/useVideoToImages';
+import useVideoToImages from 'hooks/RP/useVideoToImages';
 import { storeBarPositionX, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useRef } from 'react';

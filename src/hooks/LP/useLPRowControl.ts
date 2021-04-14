@@ -1,20 +1,14 @@
 import _ from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
-import {
-  storeContextMenuInfo,
-  storeCurrentVisualizedData,
-  storeLpData,
-  storeModalInfo,
-} from 'lib/store';
+import { storeCurrentVisualizedData, storeLpData } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
-import { fnGetFileName } from 'utils/LP/fnGetFileName';
 
-interface useLPControlProps {
+interface UseLPControlProps {
   lpData: LPDataType[];
   rowKey?: string;
 }
-export const useLPRowControl = ({ lpData, rowKey }: useLPControlProps) => {
+const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
   const fileName =
     useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name, [rowKey, lpData]) ??
     'Model';
@@ -125,3 +119,4 @@ export const useLPRowControl = ({ lpData, rowKey }: useLPControlProps) => {
     setCurrentData,
   };
 };
+export default useLPRowControl;
