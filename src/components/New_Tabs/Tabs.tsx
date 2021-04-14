@@ -1,4 +1,6 @@
 import { FunctionComponent, useState, ReactElement } from 'react';
+import { useReactiveVar } from '@apollo/client';
+import { storeCPChangeTab } from 'lib/store';
 import TabTitle from './TabTitle';
 import classNames from 'classnames/bind';
 import styles from './Tabs.module.scss';
@@ -10,22 +12,15 @@ interface Props {
 }
 
 const Tabs: FunctionComponent<Props> = ({ children }) => {
-  const [activeTab, setAtiveTab] = useState(0);
+  const changeTabs = useReactiveVar(storeCPChangeTab);
   return (
     <>
       <div className={cx('tabs-wrap')}>
         {children.map((item, idx) => (
-          <TabTitle
-            key={idx}
-            tabID={idx}
-            title={item.props.title}
-            disabled={item.props.disabled}
-            activeTab={activeTab}
-            setAtiveTab={setAtiveTab}
-          />
+          <TabTitle key={idx} tabID={idx} title={item.props.title} disabled={item.props.disabled} />
         ))}
       </div>
-      <div>{children[activeTab]}</div>
+      <div>{children[changeTabs]}</div>
     </>
   );
 };
