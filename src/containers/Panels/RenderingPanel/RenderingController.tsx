@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React, { memo, MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
 import { ShootLayerType, ShootTrackType } from 'types';
@@ -23,16 +24,21 @@ import {
   fnMakeSkinnedMeshesVisible,
   fnRemoveShadow,
 } from 'utils/CP/visibilityUtils';
+import { d3ScaleLinear } from 'types/TP';
+
+const X_AXIS_HEIGHT = 48; // 트랙 높이
 
 export interface RenderingControllerProps {
   id: string;
   fileUrl?: string;
   currentXAxisPosition: MutableRefObject<number>;
+  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 const RenderingController: React.FC<RenderingControllerProps> = ({
   id,
   fileUrl,
   currentXAxisPosition,
+  prevXScale,
 }) => {
   // store data
   const renderingData = useReactiveVar(storeRenderingData);
@@ -125,9 +131,22 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   // animation 재생 관련 로직
   useEffect(() => {
     if (mixer && currentAction) {
-      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection });
+      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection, startTimeIndex });
     }
   }, [currentAction, mixer, playDirection, playSpeed, playState, startTimeIndex]);
+
+  // 정지 시 재생바 start 로
+  useEffect(() => {
+    if (currentXAxisPosition && prevXScale && prevXScale.current && playState === 'stop') {
+      currentXAxisPosition.current = startTimeIndex;
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
+    }
+  }, [currentXAxisPosition, playState, prevXScale, startTimeIndex]);
 
   const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 

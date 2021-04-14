@@ -12,6 +12,7 @@ interface FnSetPlayState {
   playState: PlayState;
   playSpeed: number;
   playDirection: PlayDirection;
+  startTimeIndex: number;
 }
 /**
  * 애니메이션 플레이 상태를 변경합니다.
@@ -21,10 +22,11 @@ interface FnSetPlayState {
  * @param playState - 미들바를 통해 변경 가능한 플레이 상태(play, pause, stop)
  * @param playSpeed - 재생 속도
  * @param playDirection - 재생 방향
+ * @param startTimeIndex - 정지 시 돌아갈 시점
  *
  */
 const fnSetPlayState = (props: FnSetPlayState) => {
-  const { mixer, currentAction, playState, playSpeed, playDirection } = props;
+  const { mixer, currentAction, playState, playSpeed, playDirection, startTimeIndex } = props;
   switch (playState) {
     case 'play':
       if (playDirection === 1) {
@@ -41,7 +43,7 @@ const fnSetPlayState = (props: FnSetPlayState) => {
     case 'stop':
       if (currentAction.isRunning()) {
         mixer.timeScale = 0;
-        currentAction.time = 1 / 30;
+        currentAction.time = startTimeIndex;
       }
       break;
     default:

@@ -116,6 +116,7 @@ const MainContainer: FunctionComponent = () => {
               id="renderingDiv"
               fileUrl={fileUrl}
               currentXAxisPosition={currentXAxisPosition}
+              prevXScale={prevXScale}
             />
           </div>
         </ResizableBox>
