@@ -59,8 +59,8 @@ const X_AXIS_DOMAIN = 500000;
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 const THROTTLE_TIMER = 75;
 const INITIAL_SCALE_LEVEL = 7500;
-const INITIAL_SCALE_X = -5105770.5 / 7500;
-const INITIAL_SCALE_Y = -801385.5 / 7500;
+const INITIAL_SCALE_X = -5105770.5 / INITIAL_SCALE_LEVEL;
+const INITIAL_SCALE_Y = -801385.5 / INITIAL_SCALE_LEVEL;
 
 /** Dope Sheet 관련 변수
  * @constant dopeSheetList store에 저장 된 dope sheet data list
@@ -268,7 +268,7 @@ const DopeSheet: React.FC<Props> = ({
         const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
         if (dopeSheetTop <= circleGroupTop && circleGroupTop <= dopeSheetTop + height) {
           circleGroup.selectAll('circle').each(function () {
-            d3.select(this).attr('cx', (time) => xScaleLinear((time as number) * 30));
+            d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
           });
         }
       });
@@ -322,7 +322,7 @@ const DopeSheet: React.FC<Props> = ({
           ([entry], observer) => {
             if (!entry.isIntersecting) return observer.unobserve(entry.target);
             circleGroup.selectAll('circle').each(function () {
-              d3.select(this).attr('cx', (time) => xScaleLinear((time as number) * 30));
+              d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
             });
             observer.unobserve(entry.target);
           },

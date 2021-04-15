@@ -1,10 +1,9 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
 import produce from 'immer';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
-import { ContextMenu } from 'components/New_ContextMenu';
 import {
   storeTPSelectedTrackList,
   storeTPDopeSheetList,
@@ -12,6 +11,7 @@ import {
   storeTPUpdateDopeSheetList,
   storeTPCurrnetClickedTrack,
   storeCurrentVisualizedData,
+  storeContextMenuInfo,
 } from 'lib/store';
 import { CurrentVisualizedDataType } from 'types';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
@@ -23,6 +23,7 @@ import {
   fnClickTrackToMouse,
   fnGetBinarySearch,
 } from 'utils/TP/trackUtils';
+import useContextMenu from 'hooks/common/useContextMenu';
 import styles from './index.module.scss';
 
 interface TrackProps {
@@ -173,15 +174,6 @@ const Track: React.FC<TrackProps> = ({
     });
   }, [lastBoneList, trackIndex]);
 
-  // 트랙 마우스 우클릭
-  const handleTrackContextMenu = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      console.log('track context menu event : ', title, trackIndex); // 우클릭 이벤트 구현 시 console.log 없앨 예정
-    },
-    [title, trackIndex],
-  );
-
   // 수정불가 버튼 클릭
   const clickLockButton = useCallback(() => {
     const updatedDopeSheetList = fnClickLockButton({ dopeSheetList, lastBoneList, trackIndex });
@@ -259,6 +251,104 @@ const Track: React.FC<TrackProps> = ({
     setIsClickedArrowButton(isOpenedParent);
   }, [isOpenedParent]);
 
+  // const trackContextMenuData = useMemo(() => {
+  //   const targetIndex = fnGetBinarySearch({
+  //     collection: dopeSheetList,
+  //     index: trackIndex,
+  //     key: 'trackIndex',
+  //   });
+  //   const targetTrack = dopeSheetList[targetIndex];
+  //   // const remainder = trackIndex % 10;
+  //   const commonData = [
+  //     {
+  //       key: targetTrack.isSelected ? 'Deselect' : 'Select',
+  //       value: targetTrack.isSelected ? 'Deselect' : 'Select',
+  //       isSelected: false,
+  //       isDisabled: true,
+  //     },
+  //     {
+  //       key: targetTrack.isLocked ? 'Unlock' : 'Lock',
+  //       value: targetTrack.isSelected ? 'Unlock' : 'Lock',
+  //       isSelected: false,
+  //       isDisabled: true,
+  //     },
+  //     {
+  //       key: targetTrack.isIncluded ? 'Exclude' : 'Include',
+  //       value: targetTrack.isIncluded ? 'Exclude' : 'Include',
+  //       isSelected: false,
+  //       isDisabled: true,
+  //     },
+  //   ];
+  //   return commonData;
+  // }, [dopeSheetList, trackIndex]);
+
+  // const clickTrackContextMenu = useCallback(
+  //   (key: string) => {
+  //     console.log('sfsdffsd', key);
+  //     switch (key) {
+  //       case 'Select': {
+  //         const [updatedTrackList, newClickedTrackList] = fnClickTrackToMouse({
+  //           clickedTrackList,
+  //           lastBoneList,
+  //           trackIndex,
+  //         });
+  //         storeTPSelectedTrackList(newClickedTrackList);
+  //         storeTPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
+  //         break;
+  //       }
+  //       case 'Deselect': {
+  //         const [updatedTrackList, newClickedTrackList] = fnClickTrackToMouse({
+  //           clickedTrackList,
+  //           lastBoneList,
+  //           trackIndex,
+  //         });
+  //         storeTPSelectedTrackList(newClickedTrackList);
+  //         storeTPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
+  //         break;
+  //       }
+  //       case 'Lock': {
+  //         clickLockButton();
+  //         break;
+  //       }
+  //       case 'Unlock': {
+  //         clickLockButton();
+  //         break;
+  //       }
+  //       case 'Include': {
+  //         clickRenderingButton();
+  //         break;
+  //       }
+  //       case 'Exclude': {
+  //         clickRenderingButton();
+  //         break;
+  //       }
+  //     }
+  //   },
+  //   [clickLockButton, clickRenderingButton, clickedTrackList, lastBoneList, trackIndex],
+  // );
+
+  // const trackRef = useRef<HTMLDivElement>(null);
+  // const handleTrackContextMenu = ({
+  //   top,
+  //   left,
+  //   e,
+  // }: {
+  //   top: number;
+  //   left: number;
+  //   e?: MouseEvent;
+  // }) => {
+  //   e?.preventDefault();
+  //   console.log('handleTrackContextMenu');
+  //   storeContextMenuInfo({
+  //     isShow: true,
+  //     top,
+  //     left,
+  //     data: trackContextMenuData,
+  //     onClick: clickTrackContextMenu,
+  //   });
+  // };
+  // useContextMenu({ targetRef: trackRef, event: handleTrackContextMenu });
+
   return (
     <>
       <div className={cx('track-wrapper')}>
@@ -266,8 +356,8 @@ const Track: React.FC<TrackProps> = ({
           className={cx('track-body', { selected: isSelected })}
           style={{ paddingLeft: `${paddingLeft}px` }}
           onClick={clickTrackBody}
-          onContextMenu={handleTrackContextMenu}
           aria-hidden="true"
+          // ref={trackRef}
         >
           {childrenTrackList.length ? (
             <IconWrapper
@@ -281,7 +371,7 @@ const Track: React.FC<TrackProps> = ({
           )}
           <p className={cx({ locked: isLocked })}>{title}</p>
           <div className={cx('track-icon-wrapper', { locked: isLocked })}>
-            {trackIndex && (
+            {trackIndex !== 1 && (
               <>
                 <IconWrapper
                   className={cx('track-icon', 'lock')}
