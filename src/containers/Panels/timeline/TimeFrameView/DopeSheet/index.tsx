@@ -100,6 +100,8 @@ const DopeSheet: React.FC<Props> = ({
   const animatingData = useReactiveVar(storeAnimatingData);
   const { startTimeIndex, endTimeIndex, playState } = animatingData;
 
+  const [lastTime, setLastTime] = useState(0);
+
   const playBarPositionReqIdRef = useRef<number | undefined>();
 
   const setPlayBarPosition = useCallback(() => {
@@ -549,6 +551,106 @@ const DopeSheet: React.FC<Props> = ({
     }
   }, [currentVisualizedData, deleteTargetKeyframes, playState]);
 
+  const handleMovePlayBarLeft = useCallback(() => {
+    if (
+      playState !== 'play' &&
+      currentVisualizedData &&
+      currentXAxisPosition &&
+      currentTimeRef &&
+      currentTimeIndexRef &&
+      currentXAxisPosition.current &&
+      currentTimeRef.current &&
+      currentTimeIndexRef.current &&
+      currentAction
+    ) {
+      const currentValue = currentXAxisPosition.current;
+      let nextValue: number;
+      if (currentValue === startTimeIndex) {
+        nextValue = endTimeIndex;
+      } else {
+        nextValue = currentValue - 1;
+      }
+      // 미들바 업데이트
+      currentXAxisPosition.current = nextValue;
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
+      // currentTime 및 timeIndex 인풋 업데이트
+      if (_.round(nextValue / 30, 4) >= lastTime) {
+        currentTimeRef.current.value = _.round(lastTime, 0).toString();
+      } else {
+        currentTimeRef.current.value = _.round(nextValue / 30, 0).toString();
+      }
+      currentTimeIndexRef.current.value = nextValue.toString();
+      // 액션 time 업데이트
+      currentAction.time = _.round(nextValue / 30, 4);
+    }
+  }, [
+    currentAction,
+    currentTimeIndexRef,
+    currentTimeRef,
+    currentVisualizedData,
+    currentXAxisPosition,
+    endTimeIndex,
+    lastTime,
+    playState,
+    prevXScale,
+    startTimeIndex,
+  ]);
+
+  const handleMovePlayBarRight = useCallback(() => {
+    if (
+      playState !== 'play' &&
+      currentVisualizedData &&
+      currentXAxisPosition &&
+      currentTimeRef &&
+      currentTimeIndexRef &&
+      currentXAxisPosition.current &&
+      currentTimeRef.current &&
+      currentTimeIndexRef.current &&
+      currentAction
+    ) {
+      const currentValue = currentXAxisPosition.current;
+      let nextValue: number;
+      if (currentValue === endTimeIndex) {
+        nextValue = startTimeIndex;
+      } else {
+        nextValue = currentValue + 1;
+      }
+      // 미들바 업데이트
+      currentXAxisPosition.current = nextValue;
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
+      // currentTime 및 timeIndex 인풋 업데이트
+      if (_.round(nextValue / 30, 4) >= lastTime) {
+        currentTimeRef.current.value = _.round(lastTime, 0).toString();
+      } else {
+        currentTimeRef.current.value = _.round(nextValue / 30, 0).toString();
+      }
+      currentTimeIndexRef.current.value = nextValue.toString();
+      // 액션 time 업데이트
+      currentAction.time = _.round(nextValue / 30, 4);
+    }
+  }, [
+    currentAction,
+    currentTimeIndexRef,
+    currentTimeRef,
+    currentVisualizedData,
+    currentXAxisPosition,
+    endTimeIndex,
+    lastTime,
+    playState,
+    prevXScale,
+    startTimeIndex,
+  ]);
+
   // TP Resize 시 circle 위치 조정(진행 중)
   // useEffect(() => {
   //   const rescaleCircleX = (event: any) => {
@@ -612,6 +714,7 @@ const DopeSheet: React.FC<Props> = ({
       },
     });
   };
+
   useContextMenu({ targetRef: dopeSheetRef, event: handleDopsheetContextMenu });
 
   // 최초 visualize, 모델 변경 시 재생바 출력
@@ -627,8 +730,6 @@ const DopeSheet: React.FC<Props> = ({
       setPlayBarDisplayed(false);
     }
   }, [currentVisualizedData]);
-
-  const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
     if (currentVisualizedData) {
@@ -760,14 +861,6 @@ const DopeSheet: React.FC<Props> = ({
             handleDeleteKeyframe();
           }
           break;
-        case ',':
-        case '<':
-          console.log('move left');
-          break;
-        case '.':
-        case '>':
-          console.log('move right');
-          break;
         default:
           break;
       }
@@ -809,15 +902,37 @@ const DopeSheet: React.FC<Props> = ({
     [multiKeyController],
   );
 
+  const handleDopesheetKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+      switch (event.key) {
+        case ',':
+        case '<':
+          handleMovePlayBarLeft();
+          break;
+        case '.':
+        case '>':
+          handleMovePlayBarRight();
+          break;
+      }
+    },
+    [handleMovePlayBarLeft, handleMovePlayBarRight],
+  );
+
   useEffect(() => {
     document.addEventListener('keydown', handleDopesheetKeyDown);
     document.addEventListener('keyup', handleDopesheetKeyUp);
+    document.addEventListener('keypress', handleDopesheetKeyPress);
 
     return () => {
       document.removeEventListener('keydown', handleDopesheetKeyDown);
       document.removeEventListener('keyup', handleDopesheetKeyUp);
+      document.removeEventListener('keypress', handleDopesheetKeyPress);
     };
-  }, [handleDopesheetKeyDown, handleDopesheetKeyUp]);
+  }, [handleDopesheetKeyDown, handleDopesheetKeyPress, handleDopesheetKeyUp]);
 
   return (
     <>
