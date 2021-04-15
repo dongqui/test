@@ -19,11 +19,12 @@ import {
   storeDeleteTargetKeyframes,
   storeSkeletonHelper,
   storeTPDopeSheetList,
+  storePageInfo,
 } from 'lib/store';
 import CircleGroup from './circleGroup';
 import PlayBar from './playBar';
 import styles from './index.module.scss';
-import { CurrentVisualizedDataType, ShootTrackType } from 'types';
+import { CurrentVisualizedDataType, PAGE_NAMES, ShootTrackType } from 'types';
 import {
   fnDeleteKeyframe,
   fnGetSummaryTimes,
@@ -101,6 +102,8 @@ const DopeSheet: React.FC<Props> = ({
   const { startTimeIndex, endTimeIndex, playState } = animatingData;
 
   const [lastTime, setLastTime] = useState(0);
+
+  const pageInfo = useReactiveVar(storePageInfo);
 
   const playBarPositionReqIdRef = useRef<number | undefined>();
 
@@ -808,6 +811,7 @@ const DopeSheet: React.FC<Props> = ({
       V: { pressed: false },
       ㅍ: { pressed: false },
       Alt: { pressed: false },
+      ' ': { pressed: false },
     }),
     [],
   );
@@ -861,16 +865,32 @@ const DopeSheet: React.FC<Props> = ({
             handleDeleteKeyframe();
           }
           break;
+        case ' ': // space bar
+          if (multiKeyController[event.key] && !multiKeyController[event.key].pressed) {
+            if (pageInfo.page === PAGE_NAMES.shoot && currentVisualizedData) {
+              if (playState === 'play') {
+                storeAnimatingData({ ...animatingData, playState: 'pause' });
+              } else {
+                storeAnimatingData({ ...animatingData, playState: 'play' });
+              }
+            }
+            multiKeyController[event.key].pressed = true;
+          }
+          break;
         default:
           break;
       }
     },
     [
+      animatingData,
+      currentVisualizedData,
       deleteTargetKeyframes.length,
       handleDeleteKeyframe,
       handleUpdateKeyframeToBase,
       handleUpdateKeyframeToLayer,
       multiKeyController,
+      pageInfo.page,
+      playState,
       selectedBaseDopeSheets.length,
       selectedLayerDopeSheets.length,
     ],
@@ -891,6 +911,11 @@ const DopeSheet: React.FC<Props> = ({
         case 'v': // v (viewport)
         case 'V':
         case 'ㅍ':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = false;
+          }
+          break;
+        case ' ': // space bar 연속 down 방지
           if (multiKeyController[event.key]) {
             multiKeyController[event.key].pressed = false;
           }
