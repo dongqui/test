@@ -367,7 +367,7 @@ const DopeSheet: React.FC<Props> = ({
   const handleUpdateKeyframeToBase = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
-      const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
+      const updateTargetTime = _.round(_.round(currentXAxisPosition.current, 0) / 30, 4);
       if (updateTargetTime && baseLayer && skeletonHelper) {
         const selectedDopesheetNames = selectedBaseDopeSheets.map(
           (dopesheet) => dopesheet.trackName,
@@ -411,7 +411,7 @@ const DopeSheet: React.FC<Props> = ({
   const handleUpdateKeyframeToLayer = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
-      const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
+      const updateTargetTime = _.round(_.round(currentXAxisPosition.current, 0) / 30, 4);
       if (
         updateTargetTime &&
         baseLayer &&
