@@ -2,7 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { CPTitle } from 'containers/CPListTree/CPTitle';
 import { storeRetargetData } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback } from 'react';
+import React from 'react';
 import * as S from './RetargetPanelStyles';
 import { RetargetRow } from './RetargetRow';
 

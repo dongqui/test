@@ -1,6 +1,6 @@
-import { BonesTypes, skeletonHelpersTypes } from 'types';
+import { BonesTypes } from 'types';
 import _ from 'lodash';
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 
 interface useChangeMotionProps {
   skeletonHelper?: THREE.SkeletonHelper;

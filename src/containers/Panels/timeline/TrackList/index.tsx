@@ -9,7 +9,6 @@ import {
   storeTPTrackNameList,
   storeTPDopeSheetList,
   storeTPUpdateDopeSheetList,
-  storeTPLastBoneList,
   storeCurrentVisualizedData,
   storeSkeletonHelper,
 } from 'lib/store';

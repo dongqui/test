@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
-import { dummy } from './dummy';
+// import { dummy } from './dummy';
 // import './curve.scss';
 
 enum Euler {
@@ -24,10 +24,6 @@ interface EulerValue {
 export interface TimelinePanelProps {
   data?: any;
 }
-
-const defaultProps: Partial<TimelinePanelProps> = {
-  data: dummy,
-};
 
 const colors = ['#E85757', '#059B00', '#5A57E8', '#E5E857'];
 
@@ -254,7 +250,5 @@ const TimelinePanel: React.FC<TimelinePanelProps> = ({ data }) => {
     <div className="curve" ref={divRef} style={{ width: '100%', height: 'calc(100% - 48px)' }} />
   );
 };
-
-TimelinePanel.defaultProps = defaultProps;
 
 export default TimelinePanel;

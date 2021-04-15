@@ -2,7 +2,6 @@ import { FunctionComponent, Fragment, memo, useEffect, useState, useCallback } f
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 // import { Dropdown } from 'components/New_Dropdown';
 import { useReactiveVar } from '@apollo/client';
-import { useHover } from 'hooks/common';
 import { storePages } from 'lib/store';
 import BreadcrumbItem from './BreadcrumbItem';
 import _ from 'lodash';
@@ -49,13 +48,13 @@ const Breadcrumb: FunctionComponent = () => {
   // 마지막 3개를 제외한 경로에 대해서는 Dropdown 처리
   const prevPathList = _.slice(filteredPathList, 0, filteredPathList.length - 3);
 
-  const dropdownItemList = _.map(prevPathList, (path) => {
-    return {
-      key: path.key,
-      value: path.name,
-      isSelected: false,
-    };
-  });
+  // const dropdownItemList = _.map(prevPathList, (path) => {
+  //   return {
+  //     key: path.key,
+  //     value: path.name,
+  //     isSelected: false,
+  //   };
+  // });
 
   // 마지막 3개의 경로에 대해서는 별도의 처리 없음
   const splitPathList = _.slice(filteredPathList, filteredPathList.length - 3);

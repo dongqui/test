@@ -1,14 +1,11 @@
-import { FunctionComponent, Fragment, memo, useEffect, useState, useCallback } from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
-import { TimeBar } from 'components/TimeBar';
 import { storeBarPositionX, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
 import { getNumberValue } from '../../../hooks/RP/useResizeRP';
-import * as S from './CutEdit.styles';
 import ImageList from './ImageList';
-import { CutImages } from './CutImages';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 

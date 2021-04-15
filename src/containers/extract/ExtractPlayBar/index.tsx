@@ -3,7 +3,6 @@ import { storeBarPositionX, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useMemo } from 'react';
 import { Indicator } from './Indicator';
-import { ModeSelect } from './ModeSelect';
 import * as S from './PlayBarStyles';
 import { PlayBox } from './PlayBox';
 

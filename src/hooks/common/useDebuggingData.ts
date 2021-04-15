@@ -9,7 +9,7 @@ import {
 } from 'redux/homeSlice';
 import { CurrentVisualizedDataType, LPDataType } from 'types';
 import { CPDataType } from 'types/CP';
-import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
+import { AnimatingDataType, RenderingDataType } from 'types/RP';
 import { TPDopeSheet } from 'types/TP';
 import { isDebug } from 'utils/const';
 

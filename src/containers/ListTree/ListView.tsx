@@ -1,7 +1,7 @@
 import { FunctionComponent, memo, useMemo, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useShortcut } from 'hooks/common/useShortcut';
-import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
+import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { storeLpData, storeSearchWord } from 'lib/store';
 import _ from 'lodash';

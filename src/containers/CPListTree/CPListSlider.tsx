@@ -1,9 +1,8 @@
 import { useReactiveVar } from '@apollo/client';
 import { storeRenderingData } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import * as S from './CPListTreeStyles';
-import { RenderingDataPropertyName } from 'types/RP';
 
 const MIN = 0;
 const MAX = 100;

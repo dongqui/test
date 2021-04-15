@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo, useCallback, useRef, useState } from 'react';
+import React, { FunctionComponent, memo, useCallback, useRef } from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import styled from '@emotion/styled';
@@ -16,18 +16,14 @@ import {
   storeConfirmModalData,
 } from 'lib/store';
 import { FILE_TYPES, LPDataType, MODAL_TYPES, PAGE_NAMES } from 'types';
-import { fnKillSetInterval } from 'utils/common/fnKillSetInterval';
 import { BaseModal, ConfirmModal } from 'components/New_Modal';
-import { ModalInner } from 'docs/New_components/Modal/BaseModal.stories';
 import ExtractPage from 'containers/extract';
 import RecordPage from 'containers/record';
 import { Modal } from 'components/Modal';
-import { ModalLoading } from 'components/Modal/ModalLoading';
 import { ModalInput } from 'components/Modal/ModalInput';
 import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
-import { useLoading } from 'hooks/common/useLoading';
 import Html from 'components/New_Typography/Html';
 import { Headline } from 'components/New_Typography';
 
