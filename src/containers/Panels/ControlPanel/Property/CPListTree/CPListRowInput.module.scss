@@ -1,0 +1,20 @@
+.panel-inner {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  .property-title {
+    min-width: 50px;
+    font-size: 12px;
+    letter-spacing: 0.2px;
+    line-height: 24px;
+    font-weight: 400;
+
+    color: var(--gray500);
+  }
+  .input-group {
+    display: flex;
+    & > * {
+      margin-left: 8px;
+    }
+  }
+}
