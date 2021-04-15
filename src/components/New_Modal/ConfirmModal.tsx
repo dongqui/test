@@ -29,12 +29,7 @@ const ConfirmModal: FunctionComponent<Props> = ({
   return (
     <Fragment>
       {isOpen && (
-        <BaseModal
-          className={cx('wrapper')}
-          onClose={onClose}
-          onOutsideClose={onOutsideClose}
-          title={title}
-        >
+        <BaseModal onClose={onClose} onOutsideClose={onOutsideClose} title={title}>
           <div className={cx('inner')}>
             <FilledButton
               className={cx('button-cancel')}

@@ -107,3 +107,12 @@
     color: $gray500;
   }
 }
+
+.form-name {
+  background-color: #f7f7f7;
+  color: $gray200;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 32px;
+  caret-color: #000;
+}

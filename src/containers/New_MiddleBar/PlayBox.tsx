@@ -1,4 +1,4 @@
-import { FunctionComponent, Fragment, memo, useCallback, useEffect } from 'react';
+import { FunctionComponent, Fragment, memo, useCallback, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import {
   storeAnimatingData,
@@ -10,6 +10,15 @@ import {
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import _ from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
+import * as api from 'utils/common/api';
+import { storeLpData } from 'lib/store';
+import { FILE_TYPES, LPDataType } from 'types';
+import { STANDARD_TIME_UNIT } from 'utils/const';
+import { ROOT_FOLDER_NAME } from 'types/LP';
+import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
+import { FormModal } from 'components/New_Modal';
+import { BaseInput } from 'components/New_Input';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
 
@@ -20,7 +29,9 @@ export interface Props {}
 const PlayBox: FunctionComponent<Props> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
   const animatingData = useReactiveVar(storeAnimatingData);
+  const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
+  const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
   const isShootPage = _.isEqual(pageInfo.page, 'shoot');
@@ -95,13 +106,83 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
     }
   }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
 
+  const [showsModal, setShowsModal] = useState(false);
+
+  const handleModalClose = () => {
+    setShowsModal(false);
+  };
+
+  const handleBlur = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      storeRecordingData({ ...recordingData, motionName: e.target.value });
+    },
+    [recordingData],
+  );
+
   const handleExport = useCallback(() => {
-    storeModalInfo({
-      isShow: true,
-      type: MODAL_TYPES.input,
-      msg: '모션의 이름을 입력해주세요.',
-    });
+    setShowsModal(true);
+    // storeModalInfo({
+    //   isShow: true,
+    //   type: MODAL_TYPES.input,
+    //   msg: '모션의 이름을 입력해주세요.',
+    // });
   }, []);
+
+  const handleSubmit = useCallback(async () => {
+    setShowsModal(false);
+    storeModalInfo({
+      ...modalInfo,
+      isShow: true,
+      type: MODAL_TYPES.loading,
+      msg: '모션 데이터를 추출중입니다.',
+    });
+    const { error, msg, result } = await api.uploadFileToMotionData({
+      url: `${pageInfo?.videoUrl}`,
+      type: `${pageInfo.extension ?? 'mp4'}`,
+      id: uuidv4(),
+      start: Math.round(
+        (recordingData.duration * (recordingData.rangeBoxInfo.x / window.innerWidth)) /
+          STANDARD_TIME_UNIT,
+      ),
+      end: Math.round(
+        (recordingData.duration *
+          ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth)) /
+          STANDARD_TIME_UNIT,
+      ),
+      fileName: recordingData?.motionName,
+    });
+    if (error) {
+      alert(msg);
+      storeModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert });
+      return false;
+    }
+    const key = uuidv4();
+    const newData: LPDataType[] = [
+      {
+        key,
+        type: FILE_TYPES.motion,
+        name: _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName,
+        parentKey: ROOT_FOLDER_NAME,
+        baseLayer: result?.data?.result
+          ? fnQuaternionToEulerTracks({ quaternionTracks: result?.data?.result })
+          : [],
+        layers: [],
+        isExportedMotion: true,
+      },
+    ];
+    storeLpData(_.concat(lpData, newData));
+    storePageInfo({ page: PAGE_NAMES.shoot });
+    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
+  }, [
+    lpData,
+    modalInfo,
+    pageInfo.extension,
+    pageInfo?.videoUrl,
+    recordingData.duration,
+    recordingData?.motionName,
+    recordingData.rangeBoxInfo.width,
+    recordingData.rangeBoxInfo.x,
+  ]);
 
   const isPlaying = _.isEqual(animatingData.playState, 'play') || recordingData.isPlaying;
 
@@ -162,6 +243,21 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
             icon={SvgPath.Export}
             hasFrame={false}
           />
+        )}
+        {showsModal && (
+          <FormModal
+            isOpen={showsModal}
+            onClose={handleModalClose}
+            onOutsideClose={handleModalClose}
+            onSubmit={handleSubmit}
+            title="모션의 이름을 입력해주세요"
+            text={{
+              submit: '확인',
+              cancel: '취소',
+            }}
+          >
+            <BaseInput className={cx('form-name')} placeholder="모션 이름" onBlur={handleBlur} />
+          </FormModal>
         )}
       </div>
     </div>
