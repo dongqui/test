@@ -46,6 +46,9 @@ const CPListRowButtonComponent: React.FC<CPListRowButtonProps> = ({
       if (_.isEqual(button, RenderingDataPropertyName.axis)) {
         result = payload ? axisName.y : axisName.z;
       }
+      if (!_.isEqual(renderingData.isBoneOn, renderingData.isMeshOn)) {
+        result = true;
+      }
       storeRenderingData({ ...renderingData, [button]: result });
     },
     [button, renderingData],

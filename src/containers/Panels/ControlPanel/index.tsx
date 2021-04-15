@@ -2,7 +2,7 @@ import { FunctionComponent } from 'react';
 import { Tabs, Tab } from 'components/New_Tabs';
 import { PropertyPanel } from './Property';
 import { RetargetPanel } from './Retarget';
-import { ControlPanelOld } from './old';
+import { storeCurrentVisualizedData } from 'lib/store'
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -17,9 +17,6 @@ export const ControlPanel: FunctionComponent<{}> = () => {
         </Tab>
         <Tab title="Retarget" disabled={false}>
           <RetargetPanel />
-        </Tab>
-        <Tab title="Old">
-          <ControlPanelOld />
         </Tab>
       </Tabs>
     </main>

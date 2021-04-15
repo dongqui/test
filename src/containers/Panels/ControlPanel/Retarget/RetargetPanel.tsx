@@ -63,16 +63,10 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
   ];
 
   const handleTargetBoneSelect = useCallback((key, value) => {
-    // console.log(fasterList);
-    _.map(retargetMap, (item: any, idx) => {
-      item.value.order = key;
-      fasterList.push({
-        key: item.value.sourceBone[1],
-        value: item.value.sourceBone[1],
-        isSelected: true,
-      });
-      // console.log('update', fasterList);
-      // console.log(item.value.sourceBone);
+    _.fill(fasterList, {
+      key: key,
+      value: value,
+      isSelected: true,
     });
   }, []);
 
@@ -99,22 +93,29 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
         </ul>
       </section>
       <section className={cx('section-retarget')}>
-        {_.map(retargetMap, (item: any, idx) => (
-          <div className={cx('retarget-card')}>
-            <div className={cx('card-header')}>
-              <span>{item.key}</span>
-              <Dropdown list={fasterList} onSelect={handleTargetBoneSelect} />
-            </div>
-            <div className={cx('card-coord')}>
-              <Dropdown list={coordList} onSelect={handleTargetBoneSelect} />
-              <div className={cx('card-input-group')}>
-                <SuffixInput suffix="°" value={item.value.x} />
-                <SuffixInput suffix="°" value={item.value.y} />
-                <SuffixInput suffix="°" value={item.value.z} />
+        {_.map(retargetMap, (item: any, idx) => {
+          _.fill(fasterList, {
+            key: item.value.targetBone,
+            value: item.value.targetBone,
+            isSelected: true,
+          });
+          return (
+            <div key={idx} className={cx('retarget-card')}>
+              <div className={cx('card-header')}>
+                <span>{item.key}</span>
+                <Dropdown list={fasterList} onSelect={handleTargetBoneSelect} />
+              </div>
+              <div className={cx('card-coord')}>
+                <Dropdown list={coordList} onSelect={handleTargetBoneSelect} />
+                <div className={cx('card-input-group')}>
+                  <SuffixInput suffix="°" value={item.value.x} />
+                  <SuffixInput suffix="°" value={item.value.y} />
+                  <SuffixInput suffix="°" value={item.value.z} />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </section>
     </main>
   );

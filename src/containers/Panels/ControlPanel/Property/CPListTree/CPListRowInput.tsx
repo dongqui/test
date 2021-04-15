@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { PrefixInput } from 'components/New_Input';
 import { CPNameType } from 'types/CP';
@@ -9,6 +9,7 @@ import {
   fnChangeBoneScale,
 } from 'utils/CP/transformUtils';
 import { storeCurrentBone, storeTransformControls } from 'lib/store';
+import { CPInput } from './CPInput';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';
@@ -38,6 +39,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   y = RenderingDataPropertyName.positionY,
   z = RenderingDataPropertyName.positionZ,
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
   const currentBone = useReactiveVar(storeCurrentBone);
   const transformControls = useReactiveVar(storeTransformControls);
   const [initialValue, setInitialValue] = useState({
@@ -45,11 +47,14 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     y: 0,
     z: 0,
   });
+  const [values, setValue] = useState(initialValue);
 
   const handleBlur = useCallback(
-    ({ name, value }) => {
-      const property = name.slice(0, -1);
-      const axis = name.slice(-1).toLowerCase();
+    (e: any) => {
+      const value = e.target.value;
+      const name = inputRef.current?.name;
+      const property = name?.slice(0, -1);
+      const axis: any = name?.slice(-1).toLowerCase();
       switch (property) {
         case 'position':
           if (currentBone) {
@@ -140,37 +145,40 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       });
     }
   }, [currentBone, name]);
+  const onChange = useCallback((e) => {
+    if (!_.isNaN(Number(e.target.value))) {
+      setValue(e.target.value);
+    }
+  }, []);
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  const valueList = [
+    { key: x, value: values.x, name: x, prefix: 'x' },
+    { key: y, value: values.y, name: y, prefix: 'y' },
+    { key: z, value: values.z, name: z, prefix: 'z' },
+  ];
   return (
     <div className={cx('panel-inner')}>
       <div className={cx('property-title')}>{name}</div>
       <div className={cx('input-group')}>
-        <PrefixInput
-          defaultValue={initialValue.x}
-          value={initialValue.x}
-          prefix="X"
-          onBlur={handleBlur}
-          onKeyPress={onKeyPress}
-          onKeyDown={handleKeyDown}
-          name={x}
-        />
-        <PrefixInput
-          defaultValue={initialValue.y}
-          value={initialValue.y}
-          prefix="Y"
-          onBlur={handleBlur}
-          onKeyPress={onKeyPress}
-          onKeyDown={handleKeyDown}
-          name={y}
-        />
-        <PrefixInput
-          defaultValue={initialValue.z}
-          value={initialValue.z}
-          prefix="Z"
-          onBlur={handleBlur}
-          onKeyPress={onKeyPress}
-          onKeyDown={handleKeyDown}
-          name={z}
-        />
+        {_.map(valueList, (item, idx) => {
+          const key = `${item.key}_${idx}`;
+          return (
+            <CPInput
+              key={key}
+              innerRef={inputRef}
+              value={item.value}
+              prefix={item.prefix}
+              onChange={onChange}
+              onBlur={handleBlur}
+              onKeyPress={onKeyPress}
+              onKeyDown={handleKeyDown}
+              name={item.name}
+            />
+          );
+        })}
       </div>
     </div>
   );

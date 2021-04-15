@@ -6,7 +6,6 @@ import styles from './PrefixInput.module.scss';
 const cx = classNames.bind(styles);
 
 interface BaseProps {
-  ref?: any;
   prefix: ReactNode;
   arrow?: boolean;
   color?: 'primary' | 'default';
@@ -19,21 +18,14 @@ const defaultProps: Partial<Props> = {
 
 export type Props = BaseProps & Omit<Input.BaseInputProps, 'prefix'>;
 
-const PrefixInput: FunctionComponent<Props> = ({
-  ref,
-  prefix,
-  arrow,
-  color,
-  className,
-  ...rest
-}) => {
+const PrefixInput: FunctionComponent<Props> = ({ prefix, arrow, color, className, ...rest }) => {
   const classes = cx('input-wrapper', className);
   const prefixClasses = cx('prefix', color);
 
   return (
     <div className={classes}>
       <span className={prefixClasses}>{prefix}</span>
-      <BaseInput innerRef={ref} className={cx('input')} type="number" arrow={arrow} {...rest} />
+      <BaseInput className={cx('input')} type="number" arrow={arrow} {...rest} />
     </div>
   );
 };
