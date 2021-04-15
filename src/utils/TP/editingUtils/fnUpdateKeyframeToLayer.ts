@@ -33,7 +33,7 @@ interface FnUpdateKeyframeToLayer {
  *
  */
 const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer): ShootTrackType => {
-  const { track, currentLayerKey, baseLayer, layers, time, values } = props;
+  const { track, currentLayerKey, baseLayer, layers, time: targetTime, values } = props;
 
   const emptyTrack = {
     name: 'empty',
@@ -44,8 +44,15 @@ const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer): ShootTrackType
   };
 
   // delta values 구하기
+  // baseLayer 와 layers 의 트랙들의 interpolated track 의 time 에도 없을 수 있다 -> union times 의 마지막 원소보다 target time 이 큰 경우
   const unionTimes = fnGetTrackUnionTimes({ track, baseLayer, layers });
-  const unionTimeIndex = _.findIndex(unionTimes, (t) => _.round(t, 4) === _.round(time, 4));
+
+  let unionTimeIndex = _.findIndex(unionTimes, (t) => _.round(t, 4) === _.round(targetTime, 4));
+  // unionTimeIndex 가 -1 인 경우 해당 time 을 unionTimes 의 제일 뒤에 추가해준다
+  if (unionTimeIndex === -1) {
+    unionTimes.push(targetTime);
+    unionTimeIndex = unionTimes.length - 1;
+  }
 
   const baseLayerTrack = _.find(baseLayer, (t) => t.name === track.name) || emptyTrack;
   const otherLayerTracks = _.map(
@@ -80,32 +87,33 @@ const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer): ShootTrackType
   // delta values 적용하기
   let newTimes = _.clone(track.times);
   let newValues = _.clone(track.values);
-  let timeIndex = _.findIndex(track.times, (t) => _.round(t, 4) === _.round(time, 4));
+  let timeIndex = _.findIndex(track.times, (t) => _.round(t, 4) === _.round(targetTime, 4));
   // 빈 배열인 경우
   if (newTimes.length === 0) {
-    newTimes = [time];
+    newTimes = [targetTime];
     newValues = [deltaValues.x, deltaValues.y, deltaValues.z];
   } else {
     // 해당 time 이 track 의 times 내에 존재하지 않는 경우 (키프레임 추가에 해당)
     if (timeIndex === -1) {
-      if (time > track.times[track.times.length - 1]) {
+      if (targetTime > track.times[track.times.length - 1]) {
         // 기존 times 뒤에 키프레임 추가
-        newTimes = [...newTimes, time];
+        newTimes = [...newTimes, targetTime];
         newValues = [...newValues, deltaValues.x, deltaValues.y, deltaValues.z];
-      } else if (time < track.times[0]) {
+      } else if (targetTime < track.times[0]) {
         // 기존 times 앞에 키프레임 추가
-        newTimes = [time, ...newTimes];
+        newTimes = [targetTime, ...newTimes];
         newValues = [deltaValues.x, deltaValues.y, deltaValues.z, ...newValues];
       } else {
         // 기존 times 사이에 키프레임 추가
         timeIndex = _.findIndex(
           _.slice(track.times, 1),
           (t, idx) =>
-            _.round(track.times[idx - 1], 4) < _.round(time, 4) && _.round(t, 4) > _.round(time, 4),
+            _.round(track.times[idx - 1], 4) < _.round(targetTime, 4) &&
+            _.round(t, 4) > _.round(targetTime, 4),
         );
         newTimes = [
           ..._.slice(newTimes, 0, timeIndex + 1),
-          time,
+          targetTime,
           ..._.slice(newTimes, timeIndex + 1),
         ];
         newValues = [
