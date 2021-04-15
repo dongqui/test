@@ -365,7 +365,7 @@ const DopeSheet: React.FC<Props> = ({
   );
 
   const handleUpdateKeyframeToBase = useCallback(() => {
-    if (currentVisualizedData) {
+    if (currentVisualizedData && playState !== 'play') {
       const { baseLayer, layers } = currentVisualizedData;
       const updateTargetTime = _.round(_.round(currentXAxisPosition.current, 0) / 30, 4);
       if (updateTargetTime && baseLayer && skeletonHelper) {
@@ -406,10 +406,16 @@ const DopeSheet: React.FC<Props> = ({
         }
       }
     }
-  }, [currentVisualizedData, currentXAxisPosition, selectedBaseDopeSheets, skeletonHelper]);
+  }, [
+    currentVisualizedData,
+    currentXAxisPosition,
+    playState,
+    selectedBaseDopeSheets,
+    skeletonHelper,
+  ]);
 
   const handleUpdateKeyframeToLayer = useCallback(() => {
-    if (currentVisualizedData) {
+    if (currentVisualizedData && playState !== 'play') {
       const { baseLayer, layers } = currentVisualizedData;
       const updateTargetTime = _.round(_.round(currentXAxisPosition.current, 0) / 30, 4);
       if (
@@ -474,10 +480,16 @@ const DopeSheet: React.FC<Props> = ({
         }
       }
     }
-  }, [currentVisualizedData, currentXAxisPosition, selectedLayerDopeSheets, skeletonHelper]);
+  }, [
+    currentVisualizedData,
+    currentXAxisPosition,
+    playState,
+    selectedLayerDopeSheets,
+    skeletonHelper,
+  ]);
 
   const handleDeleteKeyframe = useCallback(() => {
-    if (currentVisualizedData) {
+    if (currentVisualizedData && playState !== 'play') {
       const { baseLayer, layers } = currentVisualizedData;
       if (deleteTargetKeyframes && baseLayer && layers) {
         // deleteTargetKeyframes 에는 담기는데 반영이 안된 상태 -> store 변경 시점 로직 수정 필요
@@ -535,7 +547,7 @@ const DopeSheet: React.FC<Props> = ({
         }
       }
     }
-  }, [currentVisualizedData, deleteTargetKeyframes]);
+  }, [currentVisualizedData, deleteTargetKeyframes, playState]);
 
   // TP Resize 시 circle 위치 조정(진행 중)
   // useEffect(() => {
@@ -688,6 +700,124 @@ const DopeSheet: React.FC<Props> = ({
     startTimeIndex,
     lastTime,
   ]);
+
+  const multiKeyController = useMemo(
+    () => ({
+      v: { pressed: false },
+      V: { pressed: false },
+      ㅍ: { pressed: false },
+      Alt: { pressed: false },
+    }),
+    [],
+  );
+
+  const handleDopesheetKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+      switch (event.key) {
+        case 'Alt':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = true;
+          }
+          break;
+        case 'v': // v (viewport)
+        case 'V':
+        case 'ㅍ':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = true;
+          }
+          break;
+        case 'k': // keyframe update
+        case 'K':
+        case 'ㅏ':
+          if (
+            !(
+              multiKeyController['v'].pressed || // view port 전환 단축키와 중복 방지
+              multiKeyController['V'].pressed ||
+              multiKeyController['ㅍ'].pressed
+            )
+          ) {
+            if (selectedBaseDopeSheets.length !== 0) {
+              handleUpdateKeyframeToBase();
+            }
+            if (selectedLayerDopeSheets.length !== 0) {
+              handleUpdateKeyframeToLayer();
+            }
+          }
+          break;
+        case 'd': // keyframe update
+        case 'D':
+        case 'ㅇ':
+          if (multiKeyController['Alt'].pressed && deleteTargetKeyframes.length !== 0) {
+            handleDeleteKeyframe();
+          }
+          break;
+        case '∂': // keyframe update
+          if (deleteTargetKeyframes.length !== 0) {
+            handleDeleteKeyframe();
+          }
+          break;
+        case ',':
+        case '<':
+          console.log('move left');
+          break;
+        case '.':
+        case '>':
+          console.log('move right');
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      deleteTargetKeyframes.length,
+      handleDeleteKeyframe,
+      handleUpdateKeyframeToBase,
+      handleUpdateKeyframeToLayer,
+      multiKeyController,
+      selectedBaseDopeSheets.length,
+      selectedLayerDopeSheets.length,
+    ],
+  );
+
+  const handleDopesheetKeyUp = useCallback(
+    (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+      switch (event.key) {
+        case 'Alt':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = false;
+          }
+          break;
+        case 'v': // v (viewport)
+        case 'V':
+        case 'ㅍ':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = false;
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    [multiKeyController],
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleDopesheetKeyDown);
+    document.addEventListener('keyup', handleDopesheetKeyUp);
+
+    return () => {
+      document.removeEventListener('keydown', handleDopesheetKeyDown);
+      document.removeEventListener('keyup', handleDopesheetKeyUp);
+    };
+  }, [handleDopesheetKeyDown, handleDopesheetKeyUp]);
 
   return (
     <>

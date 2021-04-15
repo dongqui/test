@@ -211,7 +211,8 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
         ${X_AXIS_HEIGHT / 2})`,
       );
     }
-  }, [currentXAxisPosition, currentXAxisPosition.current, playState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentXAxisPosition, currentXAxisPosition.current, playState, prevXScale]);
 
   const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 
