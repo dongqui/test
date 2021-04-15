@@ -339,7 +339,6 @@ const DopeSheet: React.FC<Props> = ({
 
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
-  const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
   const tpDopesheetList = storeTPDopeSheetList();
   const selectedBaseDopeSheets = useMemo(
@@ -368,6 +367,7 @@ const DopeSheet: React.FC<Props> = ({
   const handleUpdateKeyframeToBase = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
+      const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
       if (updateTargetTime && baseLayer && skeletonHelper) {
         const selectedDopesheetNames = selectedBaseDopeSheets.map(
           (dopesheet) => dopesheet.trackName,
@@ -406,11 +406,12 @@ const DopeSheet: React.FC<Props> = ({
         }
       }
     }
-  }, [currentVisualizedData, selectedBaseDopeSheets, skeletonHelper, updateTargetTime]);
+  }, [currentVisualizedData, currentXAxisPosition, selectedBaseDopeSheets, skeletonHelper]);
 
   const handleUpdateKeyframeToLayer = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
+      const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
       if (
         updateTargetTime &&
         baseLayer &&
@@ -473,7 +474,7 @@ const DopeSheet: React.FC<Props> = ({
         }
       }
     }
-  }, [currentVisualizedData, selectedLayerDopeSheets, skeletonHelper, updateTargetTime]);
+  }, [currentVisualizedData, currentXAxisPosition, selectedLayerDopeSheets, skeletonHelper]);
 
   const handleDeleteKeyframe = useCallback(() => {
     if (currentVisualizedData) {
