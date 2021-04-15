@@ -18,13 +18,13 @@ const fnGetBinarySearch = ({ collection, index, key }: FnGetBinarySearch) => {
   const size = collection.length;
   let left = 0;
   let right = size - 1;
-  let targetIndex = 0;
+  const targetIndex = 0;
 
   while (left <= right) {
     const mid = Math.floor((left + right) / 2);
     if (collection[mid][key] === index) {
-      targetIndex = mid;
-      break;
+      // targetIndex = mid;
+      return mid;
     } else if (collection[mid][key] > index) {
       right = mid - 1;
     } else {
@@ -32,7 +32,7 @@ const fnGetBinarySearch = ({ collection, index, key }: FnGetBinarySearch) => {
     }
   }
 
-  return targetIndex;
+  return -1;
 };
 
 export default fnGetBinarySearch;

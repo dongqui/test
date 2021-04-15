@@ -3,7 +3,7 @@ interface SetDopeSheetStatus {
   isTransformTrack: boolean;
   isIncluded: boolean;
   layerKey?: string;
-  times: number[];
+  times: { time: number; isClicked: boolean }[];
   trackIndex: number;
   trackName: string;
 }
@@ -35,7 +35,6 @@ const setDopeSheetStatus = ({
   isIncluded,
   isFiltered: true,
   isClickedParentTrack,
-  isKeyframeSelected: false,
   isTransformTrack,
   layerKey,
   trackIndex,
