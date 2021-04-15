@@ -120,7 +120,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
-      {showsModal && <BaseModal title={modalMessage} />}
+      {showsModal && <BaseModal title={modalMessage} onClose={() => setShowsModal(false)} />}
     </div>
   );
 };
