@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import 'antd/dist/antd.css';
 import {
   ContextmenuType,
   FILE_TYPES,

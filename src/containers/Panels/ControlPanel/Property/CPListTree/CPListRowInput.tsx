@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { PrefixInput } from 'components/New_Input';
 import { CPNameType } from 'types/CP';
 import { RenderingDataPropertyName } from 'types/RP';
 import {

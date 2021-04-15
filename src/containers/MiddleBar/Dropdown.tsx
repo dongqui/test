@@ -2,7 +2,6 @@ import { DropdownArrowDownIcon } from 'components/Icons/generated2/DropdownArrow
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import _ from 'lodash';
 import React, { useRef, useState } from 'react';
-import { rem } from 'utils/rem';
 import * as S from './PlayBarStyles';
 
 export interface DropdownProps {

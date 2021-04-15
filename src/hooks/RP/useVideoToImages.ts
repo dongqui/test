@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import getBlobDuration from 'get-blob-duration';
 import sleep from 'utils/common/sleep';
 

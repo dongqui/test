@@ -1,5 +1,4 @@
 import { FunctionComponent, memo, useState, useEffect, useCallback, useRef } from 'react';
-import * as tf from '@tensorflow/tfjs';
 import _ from 'lodash';
 import { FilledButton } from 'components/New_Button';
 import { Headline } from 'components/New_Typography';
@@ -39,20 +38,19 @@ const Webcam: FunctionComponent<Props> = ({ isStart, onStart }) => {
   const handleRecord = useCallback(async () => {
     //   const video = document.getElementById('video') as HTMLVideoElement;
     if (videoRef && videoRef.current) {
-      const cam = await tf.data.webcam(videoRef.current);
-      const img = await cam.capture();
+      // const cam = await tf.data.webcam(videoRef.current);
+      // const img = await cam.capture();
 
       // cam.capture();
 
       if (!isStart) {
-        img.print();
-        // onRetarget();
+        // img.print();
         onStart('START');
       }
 
       if (isStart) {
         onStart('END');
-        cam.stop();
+        // cam.stop();
       }
 
       // onStart(!isStart);
