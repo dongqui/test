@@ -90,7 +90,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       console.log('action: ', action);
       action.play();
       mixer.timeScale = 0;
-      if (currentXAxisPosition.current) {
+      if (!_.isUndefined(currentXAxisPosition.current)) {
         action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
       }
       storeCurrentAction(action);
