@@ -2,7 +2,6 @@ import { useState, useCallback, useMemo } from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import 'antd/dist/antd.css';
-import fnConfirmModal from 'utils/common/fnConfirmModal';
 import {
   ContextmenuType,
   FILE_TYPES,
@@ -23,6 +22,7 @@ import {
   storePages,
   storeRecordingData,
 } from 'lib/store';
+import { useConfirmDialog } from 'components/New_Modal/ConfirmModal';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import fnGetFileName from 'utils/LP/fnGetFileName';
@@ -50,6 +50,8 @@ const useLPControl = ({
   searchWord,
   lpmode,
 }: UseLPControlProps) => {
+  const { getConfirm } = useConfirmDialog();
+
   const onClick = useCallback(
     (e) => {
       const newFileName = fnGetFileName({
@@ -247,22 +249,33 @@ const useLPControl = ({
       })),
     );
   }, []);
-  const handleDelete = useCallback(({ data }: { data: LPDataType[] }) => {
-    let content = '';
-    if (_.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.motion)) {
-      content = '모션을 삭제하시겠습니까?';
-    }
-    if (_.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.file)) {
-      content = '파일을 삭제하시겠습니까?';
-    }
-    if (_.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.folder)) {
-      content = '내부 파일도 함께 삭제됩니다. 디렉토리를 삭제하시겠습니까?';
-    }
-    const ok = window.confirm(content);
-    if (ok) {
-      fnDeleteFile({ lpData: data });
-    }
-  }, []);
+  const handleDelete = useCallback(
+    async ({ data }: { data: LPDataType[] }) => {
+      let content = '';
+      if (
+        _.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.motion)
+      ) {
+        content = '모션을 삭제하시겠습니까?';
+      }
+      if (_.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.file)) {
+        content = '파일을 삭제하시겠습니까?';
+      }
+      if (
+        _.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.folder)
+      ) {
+        content = '내부 파일도 함께 삭제됩니다. 디렉토리를 삭제하시겠습니까?';
+      }
+
+      const confirmed = await getConfirm({
+        title: content,
+      });
+
+      if (confirmed) {
+        fnDeleteFile({ lpData: data });
+      }
+    },
+    [getConfirm],
+  );
 
   const [showsModal, setShowsModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -568,10 +581,11 @@ const useLPControl = ({
           );
         }
         if (!_.isEmpty(overlappedFile)) {
-          const ok = window.confirm(
-            `대상 폴더에 이름이 ${overlappedFile?.name}인 파일이 있습니다. 덮어쓰시겠습니까?`,
-          );
-          if (ok) {
+          const confirmed = await getConfirm({
+            title: `대상 폴더에 이름이 ${overlappedFile?.name}인 파일이 있습니다. 덮어쓰시겠습니까?`,
+          });
+
+          if (confirmed) {
             newLpData = _.filter(newLpData, (item) => !_.isEqual(item?.key, overlappedFile?.key));
             newLpData = fnDeleteFileByKeys({
               lpData: newLpData,
@@ -598,67 +612,11 @@ const useLPControl = ({
           ? convertedFileUrl
           : URL.createObjectURL(file);
         if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
-          const ok = window.confirm('모션을 추출하시겠습니까?');
-          // fnConfirmModal({
-          //   showsModal: true,
-          //   onConfirm: async () => {
-          //     storeLpData(newLpData);
-          //     setShowsModal(false);
-          //     storeRecordingData(INITIAL_RECORDING_DATA);
-          //     storeCutImages([]);
-          //     storePageInfo({ page: PAGE_NAMES.extract, videoUrl: url, extension });
-          //     // return false;
+          const confirmed = await getConfirm({
+            title: '모션을 추출하시겠습니까?',
+          });
 
-          //     // const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
-          //     // if (error) {
-          //     //   setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
-          //     //   return false;
-          //     // }
-          //     // const motions: LPDataType[] = [];
-          //     // const key = uuidv4();
-          //     // _.forEach(animations, (clip, index) => {
-          //     //   if (bones) {
-          //     //     motions.push({
-          //     //       key: clip?.uuid,
-          //     //       name: clip?.name,
-          //     //       baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
-          //     //       layers: [],
-          //     //       type: FILE_TYPES.motion,
-          //     //       parentKey: key,
-          //     //       boneNames: _.map(bones, (bone) => bone.name),
-          //     //     });
-          //     //   }
-          //     // });
-          //     // let newData: LPDataType[] = [
-          //     //   {
-          //     //     key,
-          //     //     type: FILE_TYPES.file,
-          //     //     name: file.name,
-          //     //     url,
-          //     //     parentKey: _.isEqual(lpmode, LPModeType.iconview)
-          //     //       ? _.last(pages)?.key
-          //     //       : ROOT_FOLDER_NAME,
-          //     //     baseLayer: fnGetBaseLayerWithBoneNames({
-          //     //       boneNames: _.map(bones, (bone) => bone.name),
-          //     //     }),
-          //     //     layers: [],
-          //     //     boneNames: _.map(bones, (bone) => bone.name),
-          //     //   },
-          //     // ];
-          //     // newData = _.concat(newData, motions);
-          //     // newLpData = _.concat(newLpData, newData);
-          //   },
-          //   onClose: () => {
-          //     console.log('???cancel');
-          //   },
-          //   onOutsideClose: () => {},
-          //   text: {
-          //     confirm: '확인',
-          //     cancel: '취소',
-          //   },
-          //   title: '모션을 추출하시겠습니까?',
-          // });
-          if (ok) {
+          if (confirmed) {
             storeLpData(newLpData);
             setShowsModal(false);
             storeRecordingData(INITIAL_RECORDING_DATA);
@@ -711,7 +669,7 @@ const useLPControl = ({
       storeLpData(newLpData);
       setShowsModal(false);
     },
-    [lpmode, mainData, pages],
+    [getConfirm, lpmode, mainData, pages],
   );
 
   return {

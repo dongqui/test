@@ -1,3 +1,11 @@
+.wrapper {
+  visibility: hidden;
+
+  &.open {
+    visibility: visible;
+  }
+}
+
 .inner {
   display: flex;
   text-align: center;
