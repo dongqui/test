@@ -102,23 +102,24 @@ export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDope
       const index = status === 'isFiltered' ? key : binarySearchIndex;
       switch (status) {
         case 'isFiltered':
-          draft[index as number].isFiltered = target.isFiltered as boolean;
-          draft[index as number].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          draft[index].isFiltered = target.isFiltered as boolean;
+          draft[index].isClickedParentTrack = target.isClickedParentTrack as boolean;
           break;
         case 'isClickedParentTrack':
-          draft[index as number].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          draft[index].isClickedParentTrack = target.isClickedParentTrack as boolean;
           break;
         case 'isSelected':
-          draft[index as number].isSelected = target.isSelected as boolean;
+          draft[index].isSelected = target.isSelected as boolean;
           break;
         case 'times':
-          draft[index as number].times = target.times as number[];
+          draft[index].times = target.times as { time: number; isClicked: boolean }[];
+          // draft[index as number].times = target.times as number[];
           break;
         case 'isLocked':
-          draft[index as number].isLocked = target.isLocked as boolean;
+          draft[index].isLocked = target.isLocked as boolean;
           break;
         case 'isIncluded':
-          draft[index as number].isIncluded = target.isIncluded as boolean;
+          draft[index].isIncluded = target.isIncluded as boolean;
           break;
       }
     });

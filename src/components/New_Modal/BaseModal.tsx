@@ -21,6 +21,7 @@ const cx = classnames.bind(styles);
 type Theme = 'light' | 'dark';
 
 export interface Props {
+  className?: string;
   onClose?: () => void;
   onOutsideClose?: () => void;
   hasCloseIcon?: boolean;
@@ -49,6 +50,7 @@ const defaultProps: Partial<Props> = {
 };
 
 const BaseModal: FunctionComponent<Props> = ({
+  className,
   theme,
   onClose,
   hasCloseIcon,
@@ -149,22 +151,24 @@ const BaseModal: FunctionComponent<Props> = ({
     if (onOutsideClose) {
       onOutsideClose();
     }
+  }, [onOutsideClose]);
 
-    if (!onOutsideClose) {
-      onClose && onClose();
-    }
-  }, [onClose, onOutsideClose]);
+  const classes = className ? cx('wrapper', className) : cx('wrapper');
+
+  const titleClasses = cx('title', {
+    margin: !!children,
+  });
 
   return (
     <BasePortal container={portalRef}>
-      <div className={cx('wrapper')} ref={modalRef}>
+      <div className={classes} ref={modalRef}>
         <div className={innerClasses} tabIndex={0}>
           {hasCloseIcon && (
             <IconWrapper className={cx('close')} icon={SvgPath.Close} onClick={onClose} />
           )}
           <div className={cx('content')}>
             {title && (
-              <Headline className={cx('title')} level="5" align="center" bold>
+              <Headline className={titleClasses} level="5" align="center" bold>
                 <Html content={title} />
               </Headline>
             )}

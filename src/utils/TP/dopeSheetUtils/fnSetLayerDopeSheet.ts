@@ -35,7 +35,7 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
     isTransformTrack: false,
     isIncluded: true,
     layerKey,
-    times: layerTimes,
+    times: _.map(layerTimes, (time) => ({ time, isClicked: false })),
     trackIndex: trackIndex,
     trackName: layerName,
   });
@@ -58,7 +58,7 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
       isTransformTrack: false,
       isIncluded: true,
       layerKey,
-      times: boneTimes,
+      times: _.map(boneTimes, (time) => ({ time, isClicked: false })),
       trackIndex: trackIndex,
       trackName: _.split(currnetBoneTrack.name, '.')[0],
     });
@@ -86,7 +86,10 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
         isIncluded: layer[transformIndex].isIncluded,
         isTransformTrack: true,
         layerKey,
-        times: currnetBoneTrack.times,
+        times: _.map(currnetBoneTrack.times, (time) => ({
+          time: _.round(time, 4),
+          isClicked: false,
+        })),
         trackIndex,
         trackName: layer[transformIndex].name,
       });
