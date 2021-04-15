@@ -78,10 +78,11 @@ const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer): ShootTrackType
       deltaZ = deltaZ - interpolatedOtherLayerTrack.values[unionTimeIndex + 3 + 2];
     });
   }
+
   const deltaValues = {
-    x: deltaX,
-    y: deltaY,
-    z: deltaZ,
+    x: _.round(deltaX, 4),
+    y: _.round(deltaY, 4),
+    z: _.round(deltaZ, 4),
   };
 
   // delta values 적용하기
@@ -106,22 +107,22 @@ const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer): ShootTrackType
       } else {
         // 기존 times 사이에 키프레임 추가
         timeIndex = _.findIndex(
-          _.slice(track.times, 1),
+          track.times,
           (t, idx) =>
             _.round(track.times[idx - 1], 4) < _.round(targetTime, 4) &&
             _.round(t, 4) > _.round(targetTime, 4),
         );
         newTimes = [
-          ..._.slice(newTimes, 0, timeIndex + 1),
+          ..._.slice(newTimes, 0, timeIndex),
           targetTime,
-          ..._.slice(newTimes, timeIndex + 1),
+          ..._.slice(newTimes, timeIndex),
         ];
         newValues = [
-          ..._.slice(newValues, 0, 3 * (timeIndex + 1)),
+          ..._.slice(newValues, 0, 3 * timeIndex),
           deltaValues.x,
           deltaValues.y,
           deltaValues.z,
-          ..._.slice(newValues, 3 * (timeIndex + 1)),
+          ..._.slice(newValues, 3 * timeIndex),
         ];
       }
       // 해당 time 이 track 의 times 내에 이미 존재하는 경우 (키프레임 수정에 해당)
