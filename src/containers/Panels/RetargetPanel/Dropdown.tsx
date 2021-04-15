@@ -1,8 +1,6 @@
 import { DropdownArrowDownIcon } from 'components/Icons/generated2/DropdownArrowDownIcon';
-import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import _ from 'lodash';
-import React, { useRef, useState } from 'react';
-import { rem } from 'utils/rem';
+import React, { useState } from 'react';
 import * as S from './RetargetPanelStyles';
 
 export interface DropdownProps {

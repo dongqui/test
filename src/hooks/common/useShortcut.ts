@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { ShortcutTypes } from '../../types';
 
 export const useShortcut = ({ data }: { data: ShortcutTypes[] }) => {

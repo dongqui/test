@@ -1,4 +1,3 @@
-/* eslint-disable prefer-const */
 import { FunctionComponent, Fragment } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { AccordionMenu } from 'components/New_AccordionMenu';

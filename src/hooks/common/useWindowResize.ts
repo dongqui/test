@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 interface useWindowResizeProps {
   event: ({ width, height }: { width: number; height: number }) => void;

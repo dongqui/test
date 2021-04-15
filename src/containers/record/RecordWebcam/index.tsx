@@ -2,13 +2,12 @@ import { useReactiveVar } from '@apollo/client';
 import { PAGE_NAMES, VIDEO_FORMAT_TYPES } from 'types';
 import { storeCutImages, storePageInfo, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
-import moment, { Moment } from 'moment';
-import getBlobDuration from 'get-blob-duration';
-import React, { useEffect, useRef, useState } from 'react';
+import moment from 'moment';
+import React, { useEffect, useRef } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { useRecordWebcam } from '../../../hooks/RP/useRecordWebcam';
 import * as S from './RecordStyle';
-import { DEFAULT_FILE_URL, INITIAL_CP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
+import { DEFAULT_FILE_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 
 let time = { start: moment(), end: moment() };
 const RecordWebcam: React.FC = () => {

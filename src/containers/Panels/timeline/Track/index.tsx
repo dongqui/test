@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
@@ -11,7 +11,6 @@ import {
   storeTPUpdateDopeSheetList,
   storeTPCurrnetClickedTrack,
   storeCurrentVisualizedData,
-  storeContextMenuInfo,
 } from 'lib/store';
 import { CurrentVisualizedDataType } from 'types';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
@@ -23,7 +22,6 @@ import {
   fnClickTrackToMouse,
   fnGetBinarySearch,
 } from 'utils/TP/trackUtils';
-import useContextMenu from 'hooks/common/useContextMenu';
 import styles from './index.module.scss';
 
 interface TrackProps {

@@ -5,11 +5,10 @@ import useLPControl from 'hooks/LP/useLPControl';
 import { v4 as uuidv4 } from 'uuid';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { storeCutImages, storePageInfo, storeRecordingData } from 'lib/store';
-import 'antd/dist/antd.css';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import { FILE_TYPES, LPModeType } from 'types';
 import * as api from 'utils/common/api';
-import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
+import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
 import {
   storeLPMode,
@@ -28,10 +27,7 @@ import { BaseModal } from 'components/New_Modal';
 import { useConfirmDialog } from 'components/New_Modal/ConfirmModal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import {
-  ContextmenuType,
   LPDataType,
-  LPDATA_PROPERTY_TYPES,
-  ShootTrackType,
   FORMAT_TYPES,
   ENABLE_VIDEO_FORMATS,
   PAGE_NAMES,
@@ -165,7 +161,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       let convertedFileUrl = DEFAULT_MODEL_URL;
       if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
         // fbx 파일 업로드 및 변환
-        const { url, error, msg } = await api.setConvertFbxToGlb({
+        const { url, error } = await api.setConvertFbxToGlb({
           file,
           type: FORMAT_TYPES.glb,
         });
@@ -194,7 +190,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         }
       }
 
-      const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
+      const { animations, bones = [], error } = await fnGetAnimationData({ url });
       if (error) {
         setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
         return false;

@@ -10,7 +10,6 @@ import {
   storeAnimatingData,
   storeCurrentVisualizedData,
   storeTPDopeSheetList,
-  storeLPMode,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox } from 'react-resizable';
