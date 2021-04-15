@@ -2,6 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { LayerIcon } from 'components/Icons/generated2/LayerIcon';
 import produce from 'immer';
 import { storeCurrentVisualizedData, storeSkeletonHelper } from 'lib/store';
+import { useConfirmDialog } from 'components/New_Modal/ConfirmModal';
 import _ from 'lodash';
 import React, { memo } from 'react';
 import { CurrentVisualizedDataType } from 'types';
@@ -13,10 +14,14 @@ const LayerSelect: React.FC = () => {
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
-  const handleClickNewLayer = () => {
-    const isConfirmed = confirm('Add a new layer?');
+  const { getConfirm } = useConfirmDialog();
 
-    if (isConfirmed && skeletonHelper && currentVisualizedData) {
+  const handleClickNewLayer = async () => {
+    const confirmed = await getConfirm({
+      title: 'Add a new layer?',
+    });
+
+    if (confirmed && skeletonHelper && currentVisualizedData) {
       const defaultNameRegex = /^layer[0-9]+/;
       const defaultTypeNames = currentVisualizedData.layers
         .map((layer) => layer.name.match(defaultNameRegex))
@@ -36,10 +41,12 @@ const LayerSelect: React.FC = () => {
     }
   };
 
-  const handleClickDeleteLayer = ({ key }: { key: string }) => {
-    const isConfirmed = confirm('Delete this layer?');
+  const handleClickDeleteLayer = async ({ key }: { key: string }) => {
+    const confirmed = await getConfirm({
+      title: 'Delete this layer?',
+    });
 
-    if (isConfirmed && currentVisualizedData) {
+    if (confirmed && currentVisualizedData) {
       const targetLayerIndex = _.findIndex(
         currentVisualizedData.layers,
         (layer) => layer.key === key,

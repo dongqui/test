@@ -42,6 +42,10 @@
     }
   }
 
+  &.fullSize {
+    width: 100%;
+  }
+
   &::placeholder {
     color: $gray500 !important;
     text-align: left;

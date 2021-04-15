@@ -13,6 +13,7 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   arrow?: boolean;
+  fullSize?: boolean;
 }
 
 type Props = BaseProps & Input.BaseInputProps;
@@ -29,6 +30,7 @@ const BaseInput: FunctionComponent<Props> = ({
   disabled,
   invalid,
   arrow,
+  fullSize,
   onBlur,
   onChange,
   onKeyUp,
@@ -38,6 +40,7 @@ const BaseInput: FunctionComponent<Props> = ({
     arrow,
     invalid,
     disabled,
+    fullSize,
   });
 
   const handleBlur = useCallback(
