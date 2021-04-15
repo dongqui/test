@@ -19,11 +19,12 @@ import {
   storeDeleteTargetKeyframes,
   storeSkeletonHelper,
   storeTPDopeSheetList,
+  storePageInfo,
 } from 'lib/store';
 import CircleGroup from './circleGroup';
 import PlayBar from './playBar';
 import styles from './index.module.scss';
-import { CurrentVisualizedDataType, ShootTrackType } from 'types';
+import { CurrentVisualizedDataType, PAGE_NAMES, ShootTrackType } from 'types';
 import {
   fnDeleteKeyframe,
   fnGetSummaryTimes,
@@ -99,6 +100,10 @@ const DopeSheet: React.FC<Props> = ({
   const currentAction = useReactiveVar(storeCurrentAction);
   const animatingData = useReactiveVar(storeAnimatingData);
   const { startTimeIndex, endTimeIndex, playState } = animatingData;
+
+  const [lastTime, setLastTime] = useState(0);
+
+  const pageInfo = useReactiveVar(storePageInfo);
 
   const playBarPositionReqIdRef = useRef<number | undefined>();
 
@@ -365,9 +370,9 @@ const DopeSheet: React.FC<Props> = ({
   );
 
   const handleUpdateKeyframeToBase = useCallback(() => {
-    if (currentVisualizedData) {
+    if (currentVisualizedData && playState !== 'play') {
       const { baseLayer, layers } = currentVisualizedData;
-      const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
+      const updateTargetTime = _.round(_.round(currentXAxisPosition.current, 0) / 30, 4);
       if (updateTargetTime && baseLayer && skeletonHelper) {
         const selectedDopesheetNames = selectedBaseDopeSheets.map(
           (dopesheet) => dopesheet.trackName,
@@ -406,12 +411,18 @@ const DopeSheet: React.FC<Props> = ({
         }
       }
     }
-  }, [currentVisualizedData, currentXAxisPosition, selectedBaseDopeSheets, skeletonHelper]);
+  }, [
+    currentVisualizedData,
+    currentXAxisPosition,
+    playState,
+    selectedBaseDopeSheets,
+    skeletonHelper,
+  ]);
 
   const handleUpdateKeyframeToLayer = useCallback(() => {
-    if (currentVisualizedData) {
+    if (currentVisualizedData && playState !== 'play') {
       const { baseLayer, layers } = currentVisualizedData;
-      const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
+      const updateTargetTime = _.round(_.round(currentXAxisPosition.current, 0) / 30, 4);
       if (
         updateTargetTime &&
         baseLayer &&
@@ -474,10 +485,16 @@ const DopeSheet: React.FC<Props> = ({
         }
       }
     }
-  }, [currentVisualizedData, currentXAxisPosition, selectedLayerDopeSheets, skeletonHelper]);
+  }, [
+    currentVisualizedData,
+    currentXAxisPosition,
+    playState,
+    selectedLayerDopeSheets,
+    skeletonHelper,
+  ]);
 
   const handleDeleteKeyframe = useCallback(() => {
-    if (currentVisualizedData) {
+    if (currentVisualizedData && playState !== 'play') {
       const { baseLayer, layers } = currentVisualizedData;
       if (deleteTargetKeyframes && baseLayer && layers) {
         // deleteTargetKeyframes 에는 담기는데 반영이 안된 상태 -> store 변경 시점 로직 수정 필요
@@ -535,7 +552,107 @@ const DopeSheet: React.FC<Props> = ({
         }
       }
     }
-  }, [currentVisualizedData, deleteTargetKeyframes]);
+  }, [currentVisualizedData, deleteTargetKeyframes, playState]);
+
+  const handleMovePlayBarLeft = useCallback(() => {
+    if (
+      playState !== 'play' &&
+      currentVisualizedData &&
+      currentXAxisPosition &&
+      currentTimeRef &&
+      currentTimeIndexRef &&
+      currentXAxisPosition.current &&
+      currentTimeRef.current &&
+      currentTimeIndexRef.current &&
+      currentAction
+    ) {
+      const currentValue = currentXAxisPosition.current;
+      let nextValue: number;
+      if (currentValue === startTimeIndex) {
+        nextValue = endTimeIndex;
+      } else {
+        nextValue = currentValue - 1;
+      }
+      // 미들바 업데이트
+      currentXAxisPosition.current = nextValue;
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
+      // currentTime 및 timeIndex 인풋 업데이트
+      if (_.round(nextValue / 30, 4) >= lastTime) {
+        currentTimeRef.current.value = _.round(lastTime, 0).toString();
+      } else {
+        currentTimeRef.current.value = _.round(nextValue / 30, 0).toString();
+      }
+      currentTimeIndexRef.current.value = nextValue.toString();
+      // 액션 time 업데이트
+      currentAction.time = _.round(nextValue / 30, 4);
+    }
+  }, [
+    currentAction,
+    currentTimeIndexRef,
+    currentTimeRef,
+    currentVisualizedData,
+    currentXAxisPosition,
+    endTimeIndex,
+    lastTime,
+    playState,
+    prevXScale,
+    startTimeIndex,
+  ]);
+
+  const handleMovePlayBarRight = useCallback(() => {
+    if (
+      playState !== 'play' &&
+      currentVisualizedData &&
+      currentXAxisPosition &&
+      currentTimeRef &&
+      currentTimeIndexRef &&
+      currentXAxisPosition.current &&
+      currentTimeRef.current &&
+      currentTimeIndexRef.current &&
+      currentAction
+    ) {
+      const currentValue = currentXAxisPosition.current;
+      let nextValue: number;
+      if (currentValue === endTimeIndex) {
+        nextValue = startTimeIndex;
+      } else {
+        nextValue = currentValue + 1;
+      }
+      // 미들바 업데이트
+      currentXAxisPosition.current = nextValue;
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
+      // currentTime 및 timeIndex 인풋 업데이트
+      if (_.round(nextValue / 30, 4) >= lastTime) {
+        currentTimeRef.current.value = _.round(lastTime, 0).toString();
+      } else {
+        currentTimeRef.current.value = _.round(nextValue / 30, 0).toString();
+      }
+      currentTimeIndexRef.current.value = nextValue.toString();
+      // 액션 time 업데이트
+      currentAction.time = _.round(nextValue / 30, 4);
+    }
+  }, [
+    currentAction,
+    currentTimeIndexRef,
+    currentTimeRef,
+    currentVisualizedData,
+    currentXAxisPosition,
+    endTimeIndex,
+    lastTime,
+    playState,
+    prevXScale,
+    startTimeIndex,
+  ]);
 
   // TP Resize 시 circle 위치 조정(진행 중)
   // useEffect(() => {
@@ -600,6 +717,7 @@ const DopeSheet: React.FC<Props> = ({
       },
     });
   };
+
   useContextMenu({ targetRef: dopeSheetRef, event: handleDopsheetContextMenu });
 
   // 최초 visualize, 모델 변경 시 재생바 출력
@@ -615,8 +733,6 @@ const DopeSheet: React.FC<Props> = ({
       setPlayBarDisplayed(false);
     }
   }, [currentVisualizedData]);
-
-  const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
     if (currentVisualizedData) {
@@ -688,6 +804,160 @@ const DopeSheet: React.FC<Props> = ({
     startTimeIndex,
     lastTime,
   ]);
+
+  const multiKeyController = useMemo(
+    () => ({
+      v: { pressed: false },
+      V: { pressed: false },
+      ㅍ: { pressed: false },
+      Alt: { pressed: false },
+      ' ': { pressed: false },
+    }),
+    [],
+  );
+
+  const handleDopesheetKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+      switch (event.key) {
+        case 'Alt':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = true;
+          }
+          break;
+        case 'v': // v (viewport)
+        case 'V':
+        case 'ㅍ':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = true;
+          }
+          break;
+        case 'k': // keyframe update
+        case 'K':
+        case 'ㅏ':
+          if (
+            !(
+              multiKeyController['v'].pressed || // view port 전환 단축키와 중복 방지
+              multiKeyController['V'].pressed ||
+              multiKeyController['ㅍ'].pressed
+            )
+          ) {
+            if (selectedBaseDopeSheets.length !== 0) {
+              handleUpdateKeyframeToBase();
+            }
+            if (selectedLayerDopeSheets.length !== 0) {
+              handleUpdateKeyframeToLayer();
+            }
+          }
+          break;
+        case 'd': // keyframe update
+        case 'D':
+        case 'ㅇ':
+          if (multiKeyController['Alt'].pressed && deleteTargetKeyframes.length !== 0) {
+            handleDeleteKeyframe();
+          }
+          break;
+        case '∂': // keyframe update
+          if (deleteTargetKeyframes.length !== 0) {
+            handleDeleteKeyframe();
+          }
+          break;
+        case ' ': // space bar
+          if (multiKeyController[event.key] && !multiKeyController[event.key].pressed) {
+            if (pageInfo.page === PAGE_NAMES.shoot && currentVisualizedData) {
+              if (playState === 'play') {
+                storeAnimatingData({ ...animatingData, playState: 'pause' });
+              } else {
+                storeAnimatingData({ ...animatingData, playState: 'play' });
+              }
+            }
+            multiKeyController[event.key].pressed = true;
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      animatingData,
+      currentVisualizedData,
+      deleteTargetKeyframes.length,
+      handleDeleteKeyframe,
+      handleUpdateKeyframeToBase,
+      handleUpdateKeyframeToLayer,
+      multiKeyController,
+      pageInfo.page,
+      playState,
+      selectedBaseDopeSheets.length,
+      selectedLayerDopeSheets.length,
+    ],
+  );
+
+  const handleDopesheetKeyUp = useCallback(
+    (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+      switch (event.key) {
+        case 'Alt':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = false;
+          }
+          break;
+        case 'v': // v (viewport)
+        case 'V':
+        case 'ㅍ':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = false;
+          }
+          break;
+        case ' ': // space bar 연속 down 방지
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = false;
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    [multiKeyController],
+  );
+
+  const handleDopesheetKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+      switch (event.key) {
+        case ',':
+        case '<':
+          handleMovePlayBarLeft();
+          break;
+        case '.':
+        case '>':
+          handleMovePlayBarRight();
+          break;
+      }
+    },
+    [handleMovePlayBarLeft, handleMovePlayBarRight],
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleDopesheetKeyDown);
+    document.addEventListener('keyup', handleDopesheetKeyUp);
+    document.addEventListener('keypress', handleDopesheetKeyPress);
+
+    return () => {
+      document.removeEventListener('keydown', handleDopesheetKeyDown);
+      document.removeEventListener('keyup', handleDopesheetKeyUp);
+      document.removeEventListener('keypress', handleDopesheetKeyPress);
+    };
+  }, [handleDopesheetKeyDown, handleDopesheetKeyPress, handleDopesheetKeyUp]);
 
   return (
     <>

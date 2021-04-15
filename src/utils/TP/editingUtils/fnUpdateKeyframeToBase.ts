@@ -24,43 +24,44 @@ interface FnUpdateKeyframeToBase {
  *
  */
 const fnUpdateKeyframeToBase = (props: FnUpdateKeyframeToBase): ShootTrackType => {
-  const { track, time, values } = props;
+  const { track, time: targetTime, values } = props;
   let newTimes = _.clone(track.times);
   let newValues = _.clone(track.values);
-  let timeIndex = _.findIndex(track.times, (t) => _.round(t, 4) === _.round(time, 4));
+  let timeIndex = _.findIndex(track.times, (t) => _.round(t, 4) === _.round(targetTime, 4));
   // 빈 배열인 경우
   if (newTimes.length === 0) {
-    newTimes = [time];
+    newTimes = [targetTime];
     newValues = [values.x, values.y, values.z];
   } else {
     // 해당 time 이 track 의 times 내에 존재하지 않는 경우 (키프레임 추가에 해당)
     if (timeIndex === -1) {
-      if (time > track.times[track.times.length - 1]) {
+      if (targetTime > track.times[track.times.length - 1]) {
         // 기존 times 뒤에 키프레임 추가
-        newTimes = [...newTimes, time];
+        newTimes = [...newTimes, targetTime];
         newValues = [...newValues, values.x, values.y, values.z];
-      } else if (time < track.times[0]) {
+      } else if (targetTime < track.times[0]) {
         // 기존 times 앞에 키프레임 추가
-        newTimes = [time, ...newTimes];
+        newTimes = [targetTime, ...newTimes];
         newValues = [values.x, values.y, values.z, ...newValues];
       } else {
         // 기존 times 사이에 키프레임 추가
         timeIndex = _.findIndex(
-          _.slice(track.times, 1),
+          track.times,
           (t, idx) =>
-            _.round(track.times[idx - 1], 4) < _.round(time, 4) && _.round(t, 4) > _.round(time, 4),
+            _.round(track.times[idx - 1], 4) < _.round(targetTime, 4) &&
+            _.round(t, 4) > _.round(targetTime, 4),
         );
         newTimes = [
-          ..._.slice(newTimes, 0, timeIndex + 1),
-          time,
-          ..._.slice(newTimes, timeIndex + 1),
+          ..._.slice(newTimes, 0, timeIndex),
+          targetTime,
+          ..._.slice(newTimes, timeIndex),
         ];
         newValues = [
-          ..._.slice(newValues, 0, 3 * (timeIndex + 1)),
+          ..._.slice(newValues, 0, 3 * timeIndex),
           values.x,
           values.y,
           values.z,
-          ..._.slice(newValues, 3 * (timeIndex + 1)),
+          ..._.slice(newValues, 3 * timeIndex),
         ];
       }
       // 해당 time 이 track 의 times 내에 이미 존재하는 경우 (키프레임 수정에 해당)
