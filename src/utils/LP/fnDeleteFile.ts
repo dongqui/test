@@ -2,14 +2,19 @@ import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import { storeLpData } from 'lib/store';
 import _ from 'lodash';
 
-interface fnDeleteFileProps {
-  mainData: LPDataType[];
+interface FnDeleteFileProps {
+  lpData: LPDataType[];
   keys?: string[];
 }
-
-export const fnDeleteFile = ({ mainData }: fnDeleteFileProps) => {
-  let keys = [_.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key];
-  let tempData = _.clone(mainData);
+/**
+ * 파일삭제 (하위파일들도 모두 삭제)
+ *
+ * @param lpData - lpData
+ *
+ */
+export const fnDeleteFile = ({ lpData }: FnDeleteFileProps) => {
+  let keys = [_.find(lpData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key];
+  let tempData = _.clone(lpData);
   do {
     _.forEach(keys, (key) => {
       keys = _.concat(
@@ -21,8 +26,16 @@ export const fnDeleteFile = ({ mainData }: fnDeleteFileProps) => {
   } while (_.some(tempData, (item) => _.includes(keys, item.parentKey)));
   storeLpData(tempData);
 };
-export const fnDeleteFileByKeys = ({ keys = [], mainData }: fnDeleteFileProps) => {
-  let tempData = _.clone(mainData);
+/**
+ * 파일삭제 (키 값들을 통해 삭제)
+ *
+ * @param keys - 키값 배열
+ * @param lpData - lpData
+ *
+ * @return 삭제 후 lpData
+ */
+export const fnDeleteFileByKeys = ({ keys = [], lpData }: FnDeleteFileProps) => {
+  let tempData = _.clone(lpData);
   let tempKeys = _.clone(keys);
   do {
     _.forEach(tempKeys, (key) => {

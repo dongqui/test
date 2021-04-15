@@ -10,7 +10,7 @@ import {
 } from 'react';
 import _ from 'lodash';
 import { Overlay } from 'components/New_Overlay';
-import { Headline } from 'components/New_Typography';
+import { Headline, Html } from 'components/New_Typography';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import BasePortal from './BasePortal';
 import classnames from 'classnames/bind';
@@ -21,7 +21,7 @@ const cx = classnames.bind(styles);
 type Theme = 'light' | 'dark';
 
 export interface Props {
-  onClose: () => void;
+  onClose?: () => void;
   onOutsideClose?: () => void;
   hasCloseIcon?: boolean;
   theme?: Theme;
@@ -66,6 +66,14 @@ const BaseModal: FunctionComponent<Props> = ({
     const mainElement = document.getElementById('_next');
     mainElement?.setAttribute('aria-hidden', 'true');
 
+    const focusableNodeList = modalRef?.current?.querySelectorAll(focusableTargetList.toString());
+    const focusableElementList = Array.prototype.slice.call(focusableNodeList);
+
+    const firstFocusTarget = focusableElementList[0];
+
+    // 초기 Modal Open시 focus 가능한 element에 기본 focus
+    firstFocusTarget.focus();
+
     return () => {
       mainElement?.removeAttribute('aria-hidden');
     };
@@ -79,7 +87,7 @@ const BaseModal: FunctionComponent<Props> = ({
     const lastFocusTarget = focusableElementList[focusableElementList.length - 1];
 
     // 초기 Modal Open시 focus 가능한 element에 기본 focus
-    firstFocusTarget.focus();
+    // firstFocusTarget.focus();
 
     const handleKeyPress = (e: KeyboardEvent) => {
       // Trap Tab Key: KeyCode 9
@@ -103,7 +111,7 @@ const BaseModal: FunctionComponent<Props> = ({
 
       // ESC Key: KeyCode 27
       if (_.isEqual(e.key, 'Escape')) {
-        onClose();
+        onClose && onClose();
       }
 
       // Enter Key: Keycode 13
@@ -116,7 +124,7 @@ const BaseModal: FunctionComponent<Props> = ({
       if (modalRef.current) {
         if (!modalRef.current.contains(e.target as Node)) {
           e.preventDefault();
-          firstFocusTarget.focus();
+          // firstFocusTarget.focus();
         }
       }
     };
@@ -143,7 +151,7 @@ const BaseModal: FunctionComponent<Props> = ({
     }
 
     if (!onOutsideClose) {
-      onClose();
+      onClose && onClose();
     }
   }, [onClose, onOutsideClose]);
 
@@ -156,8 +164,8 @@ const BaseModal: FunctionComponent<Props> = ({
           )}
           <div className={cx('content')}>
             {title && (
-              <Headline className={cx('title')} level="5" align="center" bold margin>
-                {title}
+              <Headline className={cx('title')} level="5" align="center" bold>
+                <Html content={title} />
               </Headline>
             )}
             {children}

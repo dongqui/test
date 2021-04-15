@@ -38,34 +38,8 @@ const CutEditComponent: FunctionComponent = () => {
   const [rangeRate, setRangeRate] = useState(0);
 
   useEffect(() => {
-    const handleResize = _.debounce(() => {
-      const currentRate = Number(
-        Math.round((recordingData.rangeBoxInfo.width / window.innerWidth) * 100).toFixed(1),
-      );
-
-      storeRecordingData({
-        ...recordingData,
-        rangeBoxInfo: {
-          ...recordingData.rangeBoxInfo,
-          width: recordingData.rangeBoxInfo.width * rangeRate,
-        },
-      });
-    }, 200);
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [rangeRate, recordingData, recordingData.rangeBoxInfo.width]);
-
-  useEffect(() => {
     if (!recordingData.rangeBoxInfo.width) {
-      const currentRate = Number(
-        Math.round((recordingData.rangeBoxInfo.width / window.innerWidth) * 100).toFixed(1),
-      );
-
-      setRangeRate(currentRate);
+      setRangeRate(100);
 
       storeRecordingData({
         ...recordingData,
@@ -76,6 +50,24 @@ const CutEditComponent: FunctionComponent = () => {
       });
     }
   }, [recordingData, recordingData.rangeBoxInfo.width]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      storeRecordingData({
+        ...recordingData,
+        rangeBoxInfo: {
+          ...recordingData.rangeBoxInfo,
+          width: (window.innerWidth * rangeRate) / 100,
+        },
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [rangeRate, recordingData, recordingData.rangeBoxInfo.width]);
 
   const barPositionX = useReactiveVar(storeBarPositionX);
   const handleDrag = useCallback(
@@ -127,7 +119,7 @@ const CutEditComponent: FunctionComponent = () => {
       );
 
       const currentRate = Number(
-        Math.round((getNumberValue(ref.style.width) / window.innerWidth) * 100).toFixed(1),
+        Math.round((getNumberValue(ref.style.width) / window.innerWidth) * 100),
       );
 
       setRangeRate(currentRate);

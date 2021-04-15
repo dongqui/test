@@ -50,9 +50,13 @@ export interface KeyframeData {
   trackName: string;
   layerKey: string;
   time: number;
+  isTransformTrack: boolean;
+  trackIndex: number;
 }
 
 export interface IsIncludedChange {
   name: string;
   isIncluded: boolean;
 }
+
+export type d3ScaleLinear = d3.ScaleLinear<number, number, never>;

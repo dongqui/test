@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef } from 'react';
+import React, { memo, MutableRefObject, RefObject, useEffect, useRef } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
@@ -16,6 +16,7 @@ import { fnSetDefaultTrackNameList, fnSetLayerTrack } from 'utils/TP/trackUtils'
 import MiddleBar from 'containers/New_MiddleBar';
 import { ShootLayerType, ShootTrackType } from 'types';
 import produce from 'immer';
+import { d3ScaleLinear } from 'types/TP';
 
 const cx = classNames.bind(styles);
 
@@ -23,9 +24,21 @@ interface Props {
   visualizedDataKey?: string;
   baseLayer?: ShootTrackType[];
   layers?: ShootLayerType[];
+  currentTimeRef: RefObject<HTMLInputElement>;
+  currentTimeIndexRef: RefObject<HTMLInputElement>;
+  currentXAxisPosition: MutableRefObject<number>;
+  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
-const TimelineContainer: React.FC<Props> = ({ baseLayer, layers, visualizedDataKey }) => {
+const TimelineContainer: React.FC<Props> = ({
+  baseLayer,
+  layers,
+  visualizedDataKey,
+  currentTimeRef,
+  currentTimeIndexRef,
+  currentXAxisPosition,
+  prevXScale,
+}) => {
   const prevModelKey = useRef('');
   const prevLayerLength = useRef(0);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
@@ -122,8 +135,18 @@ const TimelineContainer: React.FC<Props> = ({ baseLayer, layers, visualizedDataK
   return (
     <>
       <div className={cx('timeline-panel')}>
-        <MiddleBar />
-        <TimelineWrapper />
+        <MiddleBar
+          currentTimeRef={currentTimeRef}
+          currentTimeIndexRef={currentTimeIndexRef}
+          currentXAxisPosition={currentXAxisPosition}
+          prevXScale={prevXScale}
+        />
+        <TimelineWrapper
+          currentTimeRef={currentTimeRef}
+          currentTimeIndexRef={currentTimeIndexRef}
+          currentXAxisPosition={currentXAxisPosition}
+          prevXScale={prevXScale}
+        />
       </div>
     </>
   );

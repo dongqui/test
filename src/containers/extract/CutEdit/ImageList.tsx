@@ -13,9 +13,9 @@ const ImageList: FunctionComponent = () => {
     <div className={cx('wrapper')}>
       {_.map(images, (image, i) => (
         <div className={cx('image-wrapper')}>
-          {/* <div className={cx('image-inner')}>
+          <div className={cx('image-inner')}>
             <img className={cx('image')} draggable={false} key={i} src={image} alt="cut_image" />
-          </div> */}
+          </div>
         </div>
       ))}
     </div>

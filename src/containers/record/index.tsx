@@ -14,7 +14,7 @@ const RecordPage: NextPage<Props> = ({}) => {
         <Webcam />
       </S.WebcamWrapper>
       <RecordPlayBar />
-      <S.CutEditWrapper></S.CutEditWrapper>
+      <S.CutEditWrapper />
     </main>
   );
 };

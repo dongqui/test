@@ -90,7 +90,6 @@ export interface AnimatingDataType {
   playSpeed: number;
   startTimeIndex: number;
   endTimeIndex: number;
-  currentTimeIndex: number;
 }
 export interface RetargetDataType {
   [RetargetDataPropertyName.boneName]: string;

@@ -1,5 +1,6 @@
-import { FunctionComponent, memo, ReactNode } from 'react';
+import { FunctionComponent, memo } from 'react';
 import { BaseModal } from 'components/New_Modal';
+import { FilledButton } from 'components/New_Button';
 import classnames from 'classnames/bind';
 import styles from './ConfirmModal.module.scss';
 
@@ -7,19 +8,32 @@ const cx = classnames.bind(styles);
 
 interface Props {
   onClose: () => void;
+  onConfirm: () => void;
   onOutsideClose?: () => void;
   title: string;
-  children?: ReactNode;
+  text: {
+    confirm: string;
+    cancel: string;
+  };
 }
 
-// 버튼 1개인 경우에는 TextButton, 2개 이상인 경우는 FilledButton, 3개 이상 세로 배치
-// Progress 넣을 수 있게
-const ConfirmModal: FunctionComponent<Props> = ({ title, onClose, onOutsideClose, children }) => {
-  const handleClose = () => {};
-
+const ConfirmModal: FunctionComponent<Props> = ({
+  title,
+  text,
+  onClose,
+  onConfirm,
+  onOutsideClose,
+}) => {
   return (
     <BaseModal onClose={onClose} onOutsideClose={onOutsideClose} title={title}>
-      <div className={cx('wrapper')}>{children}</div>
+      <div className={cx('inner')}>
+        <FilledButton className={cx('button-cancel')} onClick={onClose} color="secondary" fullSize>
+          {text.cancel}
+        </FilledButton>
+        <FilledButton onClick={onConfirm} color="primary" fullSize>
+          {text.confirm}
+        </FilledButton>
+      </div>
     </BaseModal>
   );
 };

@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, {
+  MutableRefObject,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -18,14 +26,18 @@ import styles from './index.module.scss';
 import { CurrentVisualizedDataType, ShootTrackType } from 'types';
 import {
   fnDeleteKeyframe,
+  fnGetSummaryTimes,
   fnUpdateKeyframeToBase,
   fnUpdateKeyframeToLayer,
 } from 'utils/TP/editingUtils';
 import produce from 'immer';
 import useContextMenu from 'hooks/common/useContextMenu';
-import { fnMovePlayBarWithAnimation } from 'utils/RP/animatingUtils';
 interface Props {
-  timelineWrapperRef: React.RefObject<HTMLDivElement>;
+  timelineWrapperRef: RefObject<HTMLDivElement>;
+  currentTimeRef: RefObject<HTMLInputElement>;
+  currentTimeIndexRef: RefObject<HTMLInputElement>;
+  currentXAxisPosition: MutableRefObject<number>;
+  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
 interface Datum {
@@ -45,6 +57,9 @@ const CIRCLE_GROUP_CLASSNAME = 'circle-group';
 const X_AXIS_DOMAIN = 500000;
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 const THROTTLE_TIMER = 75;
+const INITIAL_SCALE_LEVEL = 7500;
+const INITIAL_SCALE_X = -5105770.5 / 7500;
+const INITIAL_SCALE_Y = -801385.5 / 7500;
 
 /** Dope Sheet 관련 변수
  * @constant dopeSheetList store에 저장 된 dope sheet data list
@@ -62,41 +77,62 @@ const THROTTLE_TIMER = 75;
  * @constant currentXAxisPosition 현재 타임바가 위치하고 있는 time index
  */
 
-const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
+const DopeSheet: React.FC<Props> = ({
+  timelineWrapperRef,
+  currentTimeRef,
+  currentTimeIndexRef,
+  currentXAxisPosition,
+  prevXScale,
+}) => {
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const dopeSheetRef = useRef<HTMLDivElement>(null);
   const prevScrollTop = useRef(0);
+  const prevModelKey = useRef('');
+  const [playBarDisplayed, setPlayBarDisplayed] = useState(false);
 
   const xScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
-  const prevXScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const xScaleCopy = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
   const xAxisPosition = useRef<d3Axis | null>(null);
   const renderXAxis = useRef<d3Selection | null>(null);
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
-  const currentXAxisPosition = useRef(1);
 
   const currentAction = useReactiveVar(storeCurrentAction);
   const animatingData = useReactiveVar(storeAnimatingData);
   const { startTimeIndex, endTimeIndex, playState } = animatingData;
 
+  const playBarPositionReqIdRef = useRef<number | undefined>();
+
+  const setPlayBarPosition = useCallback(() => {
+    if (currentXAxisPosition && currentAction) {
+      currentXAxisPosition.current = currentAction.time * 30;
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
+    }
+    playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
+  }, [currentAction, currentXAxisPosition, prevXScale]);
+
+  const startPlayBarPositionLoop = useCallback(() => {
+    playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
+  }, [setPlayBarPosition]);
+
+  const stopPlayBarPositionLoop = useCallback(() => {
+    if (playBarPositionReqIdRef.current) {
+      window.cancelAnimationFrame(playBarPositionReqIdRef.current);
+    }
+  }, []);
+
   // 미들바 애니메이션 싱크
   useEffect(() => {
-    if (currentAction) {
-      const { startLoop, pauseLoop, stopLoop } = fnMovePlayBarWithAnimation({
-        action: currentAction,
-        playBarPositionRef: currentXAxisPosition,
-        prevXScale,
-        startTimeIndex,
-      });
-      if (playState === 'play') {
-        startLoop();
-      } else if (playState === 'pause') {
-        pauseLoop();
-      } else if (playState === 'stop') {
-        stopLoop();
-      }
+    if (playState === 'play') {
+      startPlayBarPositionLoop();
+    } else if (playState === 'pause' || playState === 'stop') {
+      stopPlayBarPositionLoop();
     }
-  }, [currentAction, endTimeIndex, playState, startTimeIndex]);
+  }, [playState, startPlayBarPositionLoop, stopPlayBarPositionLoop]);
 
   // svg로 x축 그리기
   useEffect(() => {
@@ -168,19 +204,17 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
       .call(xAxisPosition.current);
     d3.selectAll('.x-axis-g line').attr('y2', -24);
 
-    // 재생 바 transform 설정
-    const xScaleLinear = prevXScale.current as d3ScaleLinear;
-    d3.select('#play-bar-wrapper')
-      .attr(
-        'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
-      )
-      .select('#play-bar-wrapper line')
-      .attr('x1', '100%')
-      .attr('y1', '100%')
-      .attr('x2', 0)
-      .attr('y2', 0);
-  }, []);
+    // 최초 스케일에 맞춰서 x축, 세로 선 그리기
+    const zoom = d3.zoomIdentity
+      .scale(INITIAL_SCALE_LEVEL)
+      .translate(INITIAL_SCALE_X, INITIAL_SCALE_Y);
+    const rescaleX = zoom.rescaleX(xScaleCopy.current as d3ScaleLinear);
+
+    const xAxis = xAxisPosition.current as d3Axis;
+    renderXAxis.current.call(xAxis.scale(rescaleX)); // 이전 값으로 scale 적용
+    renderYGrid.current.call(xAxis.scale(rescaleX));
+    xScale.current = rescaleX;
+  }, [prevXScale]);
 
   // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
   useEffect(() => {
@@ -261,8 +295,10 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         }, THROTTLE_TIMER),
       );
 
-    d3.select(dopeSheetRef.current).call(zoomBehavior as any);
-  }, []);
+    d3.select(dopeSheetRef.current)
+      .call(zoomBehavior.scaleTo as any, INITIAL_SCALE_LEVEL)
+      .call(zoomBehavior as any);
+  }, [currentXAxisPosition, prevXScale]);
 
   // timelineWrapper에 scroll 효과 적용
   useEffect(() => {
@@ -299,34 +335,10 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
     };
 
     d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
-  }, [timelineWrapperRef]);
-
-  // 재생바 위치 변경
-  useEffect(() => {
-    const dragBehavior = d3
-      .drag()
-      .filter((playBar) => {
-        if (playBar.target.tagName !== 'path') return false;
-        return true;
-      })
-      .on('drag', function (drag: any) {
-        const currentXTick = _.floor(prevXScale.current?.invert(drag.x + 20) as number);
-        const checkZero = currentXTick <= 1 ? 1 : currentXTick;
-        const xScaleLinear = prevXScale.current as d3ScaleLinear;
-
-        currentXAxisPosition.current = checkZero;
-        d3.select(this).attr(
-          'transform',
-          `translate(${xScaleLinear(checkZero) - 10}, 
-        ${X_AXIS_HEIGHT / 2})`,
-        );
-      });
-    d3.select('#play-bar-wrapper').call(dragBehavior as any);
-  }, []);
+  }, [prevXScale, timelineWrapperRef]);
 
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
-  const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
   const tpDopesheetList = storeTPDopeSheetList();
   const selectedBaseDopeSheets = useMemo(
@@ -355,6 +367,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   const handleUpdateKeyframeToBase = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
+      const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
       if (updateTargetTime && baseLayer && skeletonHelper) {
         const selectedDopesheetNames = selectedBaseDopeSheets.map(
           (dopesheet) => dopesheet.trackName,
@@ -393,11 +406,12 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         }
       }
     }
-  }, [currentVisualizedData, selectedBaseDopeSheets, skeletonHelper, updateTargetTime]);
+  }, [currentVisualizedData, currentXAxisPosition, selectedBaseDopeSheets, skeletonHelper]);
 
   const handleUpdateKeyframeToLayer = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
+      const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
       if (
         updateTargetTime &&
         baseLayer &&
@@ -460,7 +474,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         }
       }
     }
-  }, [currentVisualizedData, selectedLayerDopeSheets, skeletonHelper, updateTargetTime]);
+  }, [currentVisualizedData, currentXAxisPosition, selectedLayerDopeSheets, skeletonHelper]);
 
   const handleDeleteKeyframe = useCallback(() => {
     if (currentVisualizedData) {
@@ -470,28 +484,30 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
         const resultBaseLayerTracks: [ShootTrackType, number][] = [];
         const resultLayersTracks: [ShootTrackType, number, number][] = [];
         _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
-          const { layerKey, trackName, time } = targetKeyframe;
-          if (layerKey === 'baseLayer') {
-            const targetTrack = _.find(baseLayer, (track) => track.name === trackName);
-            if (targetTrack) {
-              const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
-              const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === targetTrack.name);
-              resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
-            }
-          } else {
-            const targetLayerIndex = _.findIndex(layers, (layer) => layer.key === layerKey);
-            if (layers.length !== 0 && targetLayerIndex !== -1) {
-              const targetTrack = _.find(
-                layers[targetLayerIndex].tracks,
-                (track) => (track.name = trackName),
-              ) as ShootTrackType;
+          if (targetKeyframe.isTransformTrack) {
+            const { trackName, time, layerKey } = targetKeyframe;
+            if (layerKey === 'baseLayer') {
+              const targetTrack = _.find(baseLayer, (track) => track.name === trackName);
               if (targetTrack) {
                 const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
-                const targetTrackIndex = _.findIndex(
+                const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === targetTrack.name);
+                resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
+              }
+            } else {
+              const targetLayerIndex = _.findIndex(layers, (layer) => layer.key === layerKey);
+              if (layers.length !== 0 && targetLayerIndex !== -1) {
+                const targetTrack = _.find(
                   layers[targetLayerIndex].tracks,
-                  (t) => t.name === targetTrack.name,
-                );
-                resultLayersTracks.push([resultTrack, targetLayerIndex, targetTrackIndex]);
+                  (track) => (track.name = trackName),
+                ) as ShootTrackType;
+                if (targetTrack) {
+                  const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
+                  const targetTrackIndex = _.findIndex(
+                    layers[targetLayerIndex].tracks,
+                    (t) => t.name === targetTrack.name,
+                  );
+                  resultLayersTracks.push([resultTrack, targetLayerIndex, targetTrackIndex]);
+                }
               }
             }
           }
@@ -586,6 +602,93 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
   };
   useContextMenu({ targetRef: dopeSheetRef, event: handleDopsheetContextMenu });
 
+  // 최초 visualize, 모델 변경 시 재생바 출력
+  useEffect(() => {
+    if (currentVisualizedData) {
+      const { key } = currentVisualizedData;
+      if (prevModelKey.current !== key) {
+        prevModelKey.current = key;
+        setPlayBarDisplayed(true);
+      }
+    } else {
+      prevModelKey.current = '';
+      setPlayBarDisplayed(false);
+    }
+  }, [currentVisualizedData]);
+
+  const [lastTime, setLastTime] = useState(0);
+
+  useEffect(() => {
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
+      const innerlastTime = summaryTimes[summaryTimes.length - 1];
+      setLastTime(innerlastTime);
+    }
+  }, [currentVisualizedData]);
+
+  // 재생 바 드래그 event
+  useEffect(() => {
+    if (playBarDisplayed) {
+      const setPlayBarX = (currentX: number) => {
+        if (currentX < startTimeIndex) {
+          return startTimeIndex;
+        } else if (endTimeIndex < currentX) {
+          return endTimeIndex;
+        }
+        return currentX;
+      };
+      const dragBehavior = d3
+        .drag()
+        .filter((playBar) => {
+          if (playBar.target.tagName !== 'path') return false;
+          return true;
+        })
+        .on('drag', function (drag: any) {
+          const xScaleLinear = prevXScale.current as d3ScaleLinear;
+          const currentX = _.floor(prevXScale.current?.invert(drag.x + 20) as number);
+
+          if (currentAction) {
+            currentAction.time = _.round(setPlayBarX(currentX) / 30, 4);
+          }
+
+          if (currentTimeRef.current) {
+            if (_.round(setPlayBarX(currentX) / 30, 4) <= lastTime) {
+              currentTimeRef.current.value = _.round(setPlayBarX(currentX) / 30, 0).toString();
+            } else {
+              currentTimeRef.current.value = _.round(lastTime, 0).toString();
+            }
+          }
+          if (currentTimeIndexRef.current) {
+            currentTimeIndexRef.current.value = setPlayBarX(currentX).toString();
+          }
+          currentXAxisPosition.current = setPlayBarX(currentX);
+
+          d3.select(this).attr(
+            'transform',
+            `translate(${xScaleLinear(setPlayBarX(currentX)) - 10}, ${X_AXIS_HEIGHT / 2})`,
+          );
+        });
+
+      const initialXScale = setPlayBarX(currentXAxisPosition.current);
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      currentXAxisPosition.current = setPlayBarX(initialXScale);
+      d3.select('#play-bar-wrapper')
+        .attr('transform', `translate(${xScaleLinear(initialXScale) - 10}, ${X_AXIS_HEIGHT / 2})`)
+        .call(dragBehavior as any);
+    }
+  }, [
+    currentAction,
+    currentTimeIndexRef,
+    currentTimeRef,
+    currentXAxisPosition,
+    playBarDisplayed,
+    prevXScale,
+    endTimeIndex,
+    startTimeIndex,
+    lastTime,
+  ]);
+
   return (
     <>
       <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
@@ -603,7 +706,7 @@ const DopeSheet: React.FC<Props> = ({ timelineWrapperRef }) => {
             );
           })}
         </div>
-        <PlayBar />
+        {playBarDisplayed && <PlayBar />}
       </div>
     </>
   );

@@ -29,7 +29,7 @@ const SegmentButton: FunctionComponent<Props> = ({ list, color, fullSize, ...res
 
   return (
     <div className={cx(classes)}>
-      {_.map(list, (item) => {
+      {_.map(list, (item, i) => {
         const isIcon = _.isEqual(typeof item.value, 'function');
 
         const handleClick = () => {
@@ -40,9 +40,12 @@ const SegmentButton: FunctionComponent<Props> = ({ list, color, fullSize, ...res
           selected: item.isSelected,
         });
 
+        const key = `${item.key}_${i}`;
+
         if (isIcon) {
           return (
             <IconWrapper
+              key={key}
               className={buttonClasses}
               onClick={handleClick}
               icon={item.value as FunctionComponent}

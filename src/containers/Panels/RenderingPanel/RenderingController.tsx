@@ -1,9 +1,17 @@
 import _ from 'lodash';
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, {
+  memo,
+  MutableRefObject,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import * as THREE from 'three';
+import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { ShootLayerType, ShootTrackType } from 'types';
 import {
   storeAnimatingData,
   storeCurrentAction,
@@ -12,13 +20,8 @@ import {
   storeSkeletonHelper,
 } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
-import { fnGetAnimationClipForPlay } from 'utils/TP/editingUtils';
-import {
-  fnSetPlayState,
-  fnSetPlayDirection,
-  fnGoToSpecificTimeIndex,
-  fnLogAnimationTime,
-} from 'utils/RP/animatingUtils';
+import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
+import { fnSetPlayState } from 'utils/RP/animatingUtils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {
   fnAddShadow,
@@ -28,12 +31,26 @@ import {
   fnMakeSkinnedMeshesVisible,
   fnRemoveShadow,
 } from 'utils/CP/visibilityUtils';
+import { d3ScaleLinear } from 'types/TP';
+
+const X_AXIS_HEIGHT = 48; // 트랙 높이
 
 export interface RenderingControllerProps {
   id: string;
   fileUrl?: string;
+  currentTimeRef: RefObject<HTMLInputElement>;
+  currentTimeIndexRef: RefObject<HTMLInputElement>;
+  currentXAxisPosition: MutableRefObject<number>;
+  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
-const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }) => {
+const RenderingController: React.FC<RenderingControllerProps> = ({
+  id,
+  fileUrl,
+  currentTimeRef,
+  currentTimeIndexRef,
+  currentXAxisPosition,
+  prevXScale,
+}) => {
   // store data
   const renderingData = useReactiveVar(storeRenderingData);
   const animatingData = useReactiveVar(storeAnimatingData);
@@ -55,14 +72,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
     setDirLight,
   });
 
-  const {
-    startTimeIndex,
-    endTimeIndex,
-    playState,
-    playDirection,
-    playSpeed,
-    currentTimeIndex,
-  } = animatingData;
+  const { startTimeIndex, endTimeIndex, playState, playDirection, playSpeed } = animatingData;
 
   // animation 생성 로직
   useEffect(() => {
@@ -76,45 +86,119 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       });
       mixer.stopAllAction();
       const action = mixer.clipAction(visualizedClip);
+      console.log('action: ', action);
       action.play();
       mixer.timeScale = 0;
-      action.time = _.round(startTimeIndex / 30, 4);
+      if (currentXAxisPosition.current && currentXAxisPosition.current > startTimeIndex) {
+        action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
+      } else {
+        action.time = _.round(startTimeIndex / 30, 4);
+      }
       storeCurrentAction(action);
-      console.log('action: ', action);
+      // console.log('action: ', action);
     }
-  }, [currentVisualizedData, endTimeIndex, mixer, startTimeIndex]);
+  }, [currentVisualizedData, currentXAxisPosition, endTimeIndex, mixer, startTimeIndex]);
 
   // loop 했을 때 start index 로 보내줘야 함
   useEffect(() => {
-    // mixer.addEventListener('loop', () => {
-    //   if (playDirection === 1) {
-    //     action.time = _.round(startTimeIndex / 30, 4);
-    //   }
-    // });
-  });
+    if (mixer && currentAction) {
+      mixer.addEventListener('loop', () => {
+        if (playDirection === 1) {
+          currentAction.time = _.round(startTimeIndex / 30, 4);
+        }
+      });
+    }
+  }, [currentAction, endTimeIndex, mixer, playDirection, startTimeIndex]);
 
-  // animation 컨트롤 로직
+  const reversePlayReqIdRef = useRef<number | undefined>();
+
+  const handleReversePlayLoop = useCallback(() => {
+    if (mixer && currentAction) {
+      if (currentAction.time <= _.round(startTimeIndex / 30, 4)) {
+        currentAction.time = _.round(endTimeIndex / 30, 4);
+      } else if (currentAction.time >= _.round(endTimeIndex / 30, 4)) {
+        currentAction.time = _.round((endTimeIndex - 1) / 30, 4);
+      }
+    }
+    reversePlayReqIdRef.current = window.requestAnimationFrame(handleReversePlayLoop);
+  }, [currentAction, endTimeIndex, mixer, startTimeIndex]);
+
+  const startReversePlayLoop = useCallback(() => {
+    reversePlayReqIdRef.current = window.requestAnimationFrame(handleReversePlayLoop);
+  }, [handleReversePlayLoop]);
+
+  const stopReversePlayLoop = useCallback(() => {
+    if (reversePlayReqIdRef.current) {
+      window.cancelAnimationFrame(reversePlayReqIdRef.current);
+    }
+  }, []);
+
+  // 역재생 시 start index 아래로 가면 end 로 보내주는 루프 (재생의 loop event 핸들과 유사)
+  useEffect(() => {
+    if (playState === 'play' && playDirection === -1) {
+      startReversePlayLoop();
+    } else {
+      stopReversePlayLoop();
+    }
+  }, [playDirection, playState, startReversePlayLoop, stopReversePlayLoop]);
+
+  // animation 재생 관련 로직
   useEffect(() => {
     if (mixer && currentAction) {
-      fnSetPlayState({ mixer, currentAction, playState, playSpeed, startTimeIndex });
+      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection, startTimeIndex });
     }
-  }, [currentAction, mixer, playSpeed, playState, startTimeIndex]);
+  }, [currentAction, mixer, playDirection, playSpeed, playState, startTimeIndex]);
+
+  const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
-    if (mixer) {
-      fnSetPlayDirection({ mixer, playDirection });
+    if (currentVisualizedData) {
+      const { baseLayer, layers } = currentVisualizedData;
+      const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
+      const innerlastTime = summaryTimes[summaryTimes.length - 1];
+      setLastTime(innerlastTime);
     }
-  }, [mixer, playDirection]);
+  }, [currentVisualizedData]);
 
+  // 정지 시 재생바 start 로 && current time 과 time index 시작점으로
   useEffect(() => {
-    if (mixer && currentAction) {
-      fnGoToSpecificTimeIndex({ mixer, currentTimeIndex, currentAction });
+    if (
+      currentXAxisPosition &&
+      currentTimeRef &&
+      currentTimeRef.current &&
+      currentTimeIndexRef &&
+      currentTimeIndexRef.current &&
+      prevXScale &&
+      prevXScale.current &&
+      playState === 'stop'
+    ) {
+      if (_.round(startTimeIndex / 30, 4) <= lastTime) {
+        currentTimeRef.current.value = _.round(startTimeIndex / 30, 0).toString();
+      } else {
+        currentTimeRef.current.value = _.round(lastTime, 0).toString();
+      }
+      currentTimeIndexRef.current.value = startTimeIndex.toString();
+      if (currentXAxisPosition.current && _.round(startTimeIndex / 30, 4) <= lastTime) {
+        currentXAxisPosition.current = startTimeIndex;
+      } else {
+        currentXAxisPosition.current = _.round(lastTime * 30, 0);
+      }
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
     }
-  }, [currentAction, currentTimeIndex, mixer]);
-
-  // bone transform 적용 로직 -> CP 직접 컨트롤 방식으로 변경
-
-  // fog option 적용 로직 -> 제외
+  }, [
+    currentTimeIndexRef,
+    currentTimeRef,
+    currentXAxisPosition,
+    lastTime,
+    playState,
+    prevXScale,
+    startTimeIndex,
+  ]);
 
   const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 
@@ -149,13 +233,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({ id, fileUrl }
       }
     }
   }, [dirLight, isShadowOn]);
-
-  // action 의 current time 을 10초 동안 콘솔에 찍는 예시 함수입니다.
-  // useEffect(() => {
-  //   if (currentAction) {
-  //     fnLogAnimationTime({ action: currentAction });
-  //   }
-  // }, [currentAction]);
 
   const handleCameraReset = useCallback(() => {
     if (cameraControls) {
