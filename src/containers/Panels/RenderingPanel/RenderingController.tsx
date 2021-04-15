@@ -200,6 +200,20 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     startTimeIndex,
   ]);
 
+  // 일시 정지 시 재생바 30fps 에 맞게 변경
+  useEffect(() => {
+    if (playState === 'pause' && currentXAxisPosition && currentXAxisPosition.current) {
+      currentXAxisPosition.current = _.round(currentXAxisPosition.current, 0);
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentXAxisPosition, currentXAxisPosition.current, playState, prevXScale]);
+
   const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 
   // visibility option 적용 로직
