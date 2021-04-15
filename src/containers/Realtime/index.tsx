@@ -45,15 +45,15 @@ const RealtimeContainer: FunctionComponent = () => {
     onDrop: handleFileLoad,
   });
 
-  useRenderingModel({
-    id: 'container',
-    fileUrl: targetBlobUrl || DEFAULT_MODEL_URL,
-    format: FORMAT_TYPES.glb,
-    setMixer,
-    renderingOptions: renderingOptions,
-    setSkeletonHelper,
-    setAnimations,
-  });
+  // useRenderingModel({
+  //   id: 'container',
+  //   fileUrl: targetBlobUrl || DEFAULT_MODEL_URL,
+  //   format: FORMAT_TYPES.glb,
+  //   setMixer,
+  //   renderingOptions: renderingOptions,
+  //   setSkeletonHelper,
+  //   setAnimations,
+  // });
 
   const [isStart, setIsStart] = useState(false);
   const [retargetedData, setRetargetedData] = useState<any[]>([]);
