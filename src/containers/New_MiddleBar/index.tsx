@@ -50,7 +50,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const barPositionX = useReactiveVar(storeBarPositionX);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
-  const [lastTime, setLastTime] = useState(1);
+  const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
     if (currentVisualizedData) {
@@ -233,7 +233,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   useEffect(() => {
     // 총 시간
-    if (lastTime && lastTimeRef.current) {
+    if (lastTimeRef.current) {
       lastTimeRef.current.value = _.round(lastTime, 0).toString();
     }
   }, [lastTime]);

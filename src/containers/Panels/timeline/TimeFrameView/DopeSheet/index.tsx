@@ -339,7 +339,6 @@ const DopeSheet: React.FC<Props> = ({
 
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
-  const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
   const tpDopesheetList = storeTPDopeSheetList();
   const selectedBaseDopeSheets = useMemo(
@@ -368,6 +367,7 @@ const DopeSheet: React.FC<Props> = ({
   const handleUpdateKeyframeToBase = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
+      const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
       if (updateTargetTime && baseLayer && skeletonHelper) {
         const selectedDopesheetNames = selectedBaseDopeSheets.map(
           (dopesheet) => dopesheet.trackName,
@@ -406,11 +406,12 @@ const DopeSheet: React.FC<Props> = ({
         }
       }
     }
-  }, [currentVisualizedData, selectedBaseDopeSheets, skeletonHelper, updateTargetTime]);
+  }, [currentVisualizedData, currentXAxisPosition, selectedBaseDopeSheets, skeletonHelper]);
 
   const handleUpdateKeyframeToLayer = useCallback(() => {
     if (currentVisualizedData) {
       const { baseLayer, layers } = currentVisualizedData;
+      const updateTargetTime = _.round(currentXAxisPosition.current / 30, 4);
       if (
         updateTargetTime &&
         baseLayer &&
@@ -473,7 +474,7 @@ const DopeSheet: React.FC<Props> = ({
         }
       }
     }
-  }, [currentVisualizedData, selectedLayerDopeSheets, skeletonHelper, updateTargetTime]);
+  }, [currentVisualizedData, currentXAxisPosition, selectedLayerDopeSheets, skeletonHelper]);
 
   const handleDeleteKeyframe = useCallback(() => {
     if (currentVisualizedData) {
@@ -483,28 +484,30 @@ const DopeSheet: React.FC<Props> = ({
         const resultBaseLayerTracks: [ShootTrackType, number][] = [];
         const resultLayersTracks: [ShootTrackType, number, number][] = [];
         _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
-          const { layerKey, trackName, time } = targetKeyframe;
-          if (layerKey === 'baseLayer') {
-            const targetTrack = _.find(baseLayer, (track) => track.name === trackName);
-            if (targetTrack) {
-              const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
-              const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === targetTrack.name);
-              resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
-            }
-          } else {
-            const targetLayerIndex = _.findIndex(layers, (layer) => layer.key === layerKey);
-            if (layers.length !== 0 && targetLayerIndex !== -1) {
-              const targetTrack = _.find(
-                layers[targetLayerIndex].tracks,
-                (track) => (track.name = trackName),
-              ) as ShootTrackType;
+          if (targetKeyframe.isTransformTrack) {
+            const { trackName, time, layerKey } = targetKeyframe;
+            if (layerKey === 'baseLayer') {
+              const targetTrack = _.find(baseLayer, (track) => track.name === trackName);
               if (targetTrack) {
                 const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
-                const targetTrackIndex = _.findIndex(
+                const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === targetTrack.name);
+                resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
+              }
+            } else {
+              const targetLayerIndex = _.findIndex(layers, (layer) => layer.key === layerKey);
+              if (layers.length !== 0 && targetLayerIndex !== -1) {
+                const targetTrack = _.find(
                   layers[targetLayerIndex].tracks,
-                  (t) => t.name === targetTrack.name,
-                );
-                resultLayersTracks.push([resultTrack, targetLayerIndex, targetTrackIndex]);
+                  (track) => (track.name = trackName),
+                ) as ShootTrackType;
+                if (targetTrack) {
+                  const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
+                  const targetTrackIndex = _.findIndex(
+                    layers[targetLayerIndex].tracks,
+                    (t) => t.name === targetTrack.name,
+                  );
+                  resultLayersTracks.push([resultTrack, targetLayerIndex, targetTrackIndex]);
+                }
               }
             }
           }
@@ -613,7 +616,7 @@ const DopeSheet: React.FC<Props> = ({
     }
   }, [currentVisualizedData]);
 
-  const [lastTime, setLastTime] = useState(1);
+  const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
     if (currentVisualizedData) {
