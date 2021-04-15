@@ -615,7 +615,7 @@ const DopeSheet: React.FC<Props> = ({
     }
   }, [currentVisualizedData]);
 
-  const [lastTime, setLastTime] = useState(1);
+  const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
     if (currentVisualizedData) {

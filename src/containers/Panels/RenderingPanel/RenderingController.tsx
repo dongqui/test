@@ -12,7 +12,6 @@ import * as THREE from 'three';
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { ShootLayerType, ShootTrackType } from 'types';
 import {
   storeAnimatingData,
   storeCurrentAction,
@@ -90,8 +89,13 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       console.log('action: ', action);
       action.play();
       mixer.timeScale = 0;
-      if (!_.isUndefined(currentXAxisPosition.current)) {
+      if (
+        !_.isNull(currentXAxisPosition.current) &&
+        currentXAxisPosition.current > startTimeIndex
+      ) {
         action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
+      } else {
+        action.time = _.round(startTimeIndex / 30, 4);
       }
       storeCurrentAction(action);
       // console.log('action: ', action);
@@ -148,7 +152,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     }
   }, [currentAction, mixer, playDirection, playSpeed, playState, startTimeIndex]);
 
-  const [lastTime, setLastTime] = useState(1);
+  const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
     if (currentVisualizedData) {
