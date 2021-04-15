@@ -159,10 +159,24 @@ const useLPControl = ({
           return;
         }
         const childRows = _.filter(mainData, [LPDATA_PROPERTY_TYPES.parentKey, targetRow?.key]);
-        const isSameNameFile = _.some(childRows, [LPDATA_PROPERTY_TYPES.name, draggingRow?.name]);
-        if (isSameNameFile) {
-          setShowsModal(true);
-          setModalMessage('디렉토리 내에 동일한 이름의 파일이 존재합니다.');
+        const sameNameFile = _.find(childRows, [LPDATA_PROPERTY_TYPES.name, draggingRow?.name]);
+        if (sameNameFile) {
+          const ok = window.confirm(
+            '디렉토리 내에 동일한 이름의 파일이 존재합니다. 덮어쓰시겠습니까?',
+          );
+          if (ok) {
+            const filteredMainData = _.filter(
+              mainData,
+              (item) => !_.isEqual(item?.key, sameNameFile?.key),
+            );
+            storeLpData(
+              _.map(filteredMainData, (item) => ({
+                ...item,
+                parentKey: item.isDragging ? key : item.parentKey,
+                isDragging: false,
+              })),
+            );
+          }
           return;
         }
       }
@@ -491,8 +505,10 @@ const useLPControl = ({
         key: 'Enter',
         event: () => {
           const clickedRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true]);
+          const isModifyingRow = _.some(mainData, [LPDATA_PROPERTY_TYPES.isModifying, true]);
           if (
             clickedRow &&
+            !isModifyingRow &&
             _.isEqual(lpmode, LPModeType.iconview) &&
             !_.isEqual(clickedRow?.type, FILE_TYPES.motion)
           ) {
