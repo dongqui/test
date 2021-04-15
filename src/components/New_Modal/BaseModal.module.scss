@@ -41,7 +41,10 @@
 
 .title {
   color: #000;
-  margin-bottom: 32px;
+
+  &.margin {
+    margin-bottom: 32px;
+  }
 }
 
 .close {
