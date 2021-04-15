@@ -65,7 +65,7 @@ const CircleGroup: React.FC<Props> = ({ dopeSheetData, prevXScale }) => {
       ref={circleGroupRef}
       style={{ display: isDisplayed ? 'block' : 'none' }}
     >
-      <title style={{ display: 'none' }}>{dopeSheetData.trackIndex}</title>
+      {/* <title style={{ display: 'none' }}>{dopeSheetData.trackIndex}</title> */}
       <rect
         width="100%"
         height={TRACK_HEIGHT}

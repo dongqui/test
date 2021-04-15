@@ -24,7 +24,7 @@ const fnSetDefaultDopeSheetList = ({ baseLayer, layers }: FnSetDefaultDopeSheetL
     isClickedParentTrack: true,
     isTransformTrack: false,
     isIncluded: true,
-    times: summaryTimes,
+    times: _.map(summaryTimes, (time) => ({ time, isClicked: false })),
     trackIndex: 1,
     trackName: 'Summary',
   });
