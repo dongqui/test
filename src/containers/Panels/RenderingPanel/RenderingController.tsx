@@ -12,7 +12,6 @@ import * as THREE from 'three';
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { ShootLayerType, ShootTrackType } from 'types';
 import {
   storeAnimatingData,
   storeCurrentAction,
@@ -90,8 +89,10 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       console.log('action: ', action);
       action.play();
       mixer.timeScale = 0;
-      if (currentXAxisPosition.current) {
+      if (currentXAxisPosition.current && currentXAxisPosition.current > startTimeIndex) {
         action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
+      } else {
+        action.time = _.round(startTimeIndex / 30, 4);
       }
       storeCurrentAction(action);
       // console.log('action: ', action);
@@ -148,7 +149,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     }
   }, [currentAction, mixer, playDirection, playSpeed, playState, startTimeIndex]);
 
-  const [lastTime, setLastTime] = useState(1);
+  const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
     if (currentVisualizedData) {
@@ -177,7 +178,11 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
         currentTimeRef.current.value = _.round(lastTime, 0).toString();
       }
       currentTimeIndexRef.current.value = startTimeIndex.toString();
-      currentXAxisPosition.current = startTimeIndex;
+      if (currentXAxisPosition.current && _.round(startTimeIndex / 30, 4) <= lastTime) {
+        currentXAxisPosition.current = startTimeIndex;
+      } else {
+        currentXAxisPosition.current = _.round(lastTime * 30, 0);
+      }
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
       d3.select('#play-bar-wrapper').attr(
         'transform',
@@ -194,6 +199,20 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     prevXScale,
     startTimeIndex,
   ]);
+
+  // 일시 정지 시 재생바 30fps 에 맞게 변경
+  useEffect(() => {
+    if (playState === 'pause' && currentXAxisPosition && currentXAxisPosition.current) {
+      currentXAxisPosition.current = _.round(currentXAxisPosition.current, 0);
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      d3.select('#play-bar-wrapper').attr(
+        'transform',
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+        ${X_AXIS_HEIGHT / 2})`,
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentXAxisPosition, currentXAxisPosition.current, playState, prevXScale]);
 
   const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 

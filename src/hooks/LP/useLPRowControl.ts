@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
+import { useConfirmDialog } from 'components/New_Modal/ConfirmModal';
 import { storeCurrentVisualizedData, storeLpData } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
 
@@ -9,6 +10,7 @@ interface UseLPControlProps {
   rowKey?: string;
 }
 const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
+  const { getConfirm } = useConfirmDialog();
   const fileName =
     useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name, [rowKey, lpData]) ??
     'Model';
@@ -29,7 +31,7 @@ const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
   const onChangeInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
   }, []);
-  const handleSubmitName = useCallback(() => {
+  const handleSubmitName = useCallback(async () => {
     let filteredLpData = _.clone(lpData);
     const modifyingRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey]);
     const sameDepthLpData = _.filter(lpData, [
@@ -41,8 +43,10 @@ const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
       (item) => _.isEqual(item?.name, name) && !_.isEqual(item?.key, rowKey),
     );
     if (sameNameFile) {
-      const ok = window.confirm('동일한 파일의 이름이 존재합니다. 덮어쓰시겠습니까?');
-      if (ok) {
+      const confirmed = await getConfirm({
+        title: '동일한 파일의 이름이 존재합니다. 덮어쓰시겠습니까?',
+      });
+      if (confirmed) {
         filteredLpData = _.filter(
           filteredLpData,
           (item) => !_.isEqual(item?.key, sameNameFile?.key),
@@ -65,7 +69,7 @@ const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
         name: _.isEqual(item.key, rowKey) ? name : item.name,
       })),
     );
-  }, [lpData, name, rowKey]);
+  }, [getConfirm, lpData, name, rowKey]);
   const onBlur = useCallback(
     (e) => {
       handleSubmitName();
