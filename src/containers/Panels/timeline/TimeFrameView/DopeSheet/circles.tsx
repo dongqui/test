@@ -21,13 +21,15 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
   // circle 클릭 이벤트
   const clickCircle = useCallback(
     (event, data) => {
-      const { trackName, layerKey, isLocked, isTransformTrack } = dopeSheetData;
+      const { trackName, layerKey, isLocked, isTransformTrack, trackIndex } = dopeSheetData;
       if (!isLocked && isTransformTrack) {
         const keyframeData: KeyframeData = {
           key: `${layerKey}&&${trackName}&&${data}`,
           trackName,
           layerKey,
           time: data as number,
+          isTransformTrack,
+          trackIndex,
         };
         if (event.ctrlKey || event.metaKey) {
           const targetKeyframeIndex = _.findIndex(
