@@ -50,6 +50,8 @@ export interface KeyframeData {
   trackName: string;
   layerKey: string;
   time: number;
+  isTransformTrack: boolean;
+  trackIndex: number;
 }
 
 export interface IsIncludedChange {
