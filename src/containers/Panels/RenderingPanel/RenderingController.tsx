@@ -89,10 +89,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       console.log('action: ', action);
       action.play();
       mixer.timeScale = 0;
-      if (
-        !_.isNull(currentXAxisPosition.current) &&
-        currentXAxisPosition.current > startTimeIndex
-      ) {
+      if (currentXAxisPosition.current && currentXAxisPosition.current > startTimeIndex) {
         action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
       } else {
         action.time = _.round(startTimeIndex / 30, 4);
@@ -181,7 +178,11 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
         currentTimeRef.current.value = _.round(lastTime, 0).toString();
       }
       currentTimeIndexRef.current.value = startTimeIndex.toString();
-      currentXAxisPosition.current = startTimeIndex;
+      if (currentXAxisPosition.current && _.round(startTimeIndex / 30, 4) <= lastTime) {
+        currentXAxisPosition.current = startTimeIndex;
+      } else {
+        currentXAxisPosition.current = _.round(lastTime * 30, 0);
+      }
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
       d3.select('#play-bar-wrapper').attr(
         'transform',
