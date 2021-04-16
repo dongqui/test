@@ -152,7 +152,6 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
       fileName: recordingData?.motionName,
     });
     if (error) {
-      alert(msg);
       storeModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert });
       return false;
     }

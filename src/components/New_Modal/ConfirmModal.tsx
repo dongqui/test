@@ -82,7 +82,7 @@ const ConfirmDialogProvider = ({ children }: any) => {
         title={dialogConfig?.title}
         onConfirm={handleConfirm}
         onClose={handleDismiss}
-        text={{ confirm: '확인', cancel: '취소' }}
+        text={{ confirm: 'OK', cancel: 'Cancel' }}
       />
       {children}
     </ConfirmDialogContext.Provider>

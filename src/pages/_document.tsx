@@ -65,6 +65,7 @@ export default class MyDocument extends Document {
           <link href="https://fonts.googleapis.com/earlyaccess/notosanskr.css" rel="stylesheet" />
           <script src="https://apis.google.com/js/platform.js" async defer />
           <meta name="theme-color" content="#6963f7" />
+          <meta name="facebook-domain-verification" content="ek6odzyq50wlz0fwjwxxfgre47tjvh" />
         </Head>
         <body>
           <Main />

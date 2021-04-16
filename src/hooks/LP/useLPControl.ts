@@ -268,15 +268,16 @@ const useLPControl = ({
       if (
         _.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.motion)
       ) {
-        content = '모션을 삭제하시겠습니까?';
+        content = 'Are you sure you want to delete the motion?';
       }
       if (_.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.file)) {
-        content = '파일을 삭제하시겠습니까?';
+        content = 'Are you sure you want to delete the file?';
       }
       if (
         _.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.folder)
       ) {
-        content = '내부 파일도 함께 삭제됩니다. 디렉토리를 삭제하시겠습니까?';
+        content =
+          'Are you sure you want to delete this directory? <br /> This will delete all files in selected folder.';
       }
 
       const confirmed = await getConfirm({
@@ -316,6 +317,7 @@ const useLPControl = ({
       );
       if (_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
         data = [
+          { key: '0', value: 'New Directory' },
           { key: '1', value: 'Copy' },
           { key: '2', value: 'Delete' },
           { key: '5', value: 'Edit name' },
@@ -358,7 +360,6 @@ const useLPControl = ({
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
           const content = '';
           let motion: LPDataType | undefined;
-          let ok;
           const parentKey = _.isEqual(lpmode, LPModeType.iconview)
             ? _.last(pages)?.key
             : ROOT_FOLDER_NAME;
@@ -372,9 +373,9 @@ const useLPControl = ({
                     key: '',
                     name: 'Folder',
                     lpData: mainData,
-                    parentKey,
+                    parentKey: targetRow?.key ?? parentKey,
                   }),
-                  parentKey,
+                  parentKey: targetRow?.key ?? parentKey,
                   isModifying: true,
                   baseLayer: [],
                   layers: [],
@@ -505,19 +506,29 @@ const useLPControl = ({
         event: () => {
           const clickedRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true]);
           const isModifyingRow = _.some(mainData, [LPDATA_PROPERTY_TYPES.isModifying, true]);
-          if (
-            clickedRow &&
-            !isModifyingRow &&
-            _.isEqual(lpmode, LPModeType.iconview) &&
-            !_.isEqual(clickedRow?.type, FILE_TYPES.motion)
-          ) {
-            storePages(
-              _.concat(pages, {
-                key: clickedRow?.key,
-                name: clickedRow?.name ?? 'Folder',
-                type: clickedRow?.type ?? FILE_TYPES.folder,
-              }),
-            );
+          if (clickedRow && !isModifyingRow && !_.isEqual(clickedRow?.type, FILE_TYPES.motion)) {
+            if (
+              _.isEqual(lpmode, LPModeType.iconview) &&
+              _.isEqual(clickedRow?.parentKey, _.last(pages)?.key)
+            ) {
+              storePages(
+                _.concat(pages, {
+                  key: clickedRow?.key,
+                  name: clickedRow?.name ?? 'Folder',
+                  type: clickedRow?.type ?? FILE_TYPES.folder,
+                }),
+              );
+            }
+            if (_.isEqual(lpmode, LPModeType.listview)) {
+              storeLpData(
+                _.map(mainData, (item) => ({
+                  ...item,
+                  isExpanded: _.isEqual(item?.key, clickedRow?.key)
+                    ? !item?.isExpanded
+                    : item?.isExpanded,
+                })),
+              );
+            }
           }
         },
       },
@@ -545,7 +556,7 @@ const useLPControl = ({
   const handleDrop = useCallback(
     async (acceptedFiles: File[]) => {
       setShowsModal(true);
-      setModalMessage('파일을 불러오는중입니다.');
+      setModalMessage('Importing the file');
       if (_.isEmpty(acceptedFiles)) {
         setModalMessage('파일이 존재하지 않습니다.');
         return false;

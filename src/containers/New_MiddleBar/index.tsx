@@ -76,15 +76,16 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         end: endTimeIndex,
       }
     : {
-        start: (
-          recordingData.duration *
-          (recordingData.rangeBoxInfo.x / window.innerWidth)
-        ).toFixed(1),
-        now: (recordingData.duration * (barPositionX / window.innerWidth)).toFixed(1),
-        end: (
-          recordingData.duration *
-          ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth)
-        ).toFixed(1),
+        start: Number(
+          (recordingData.duration * (recordingData.rangeBoxInfo.x / window.innerWidth)).toFixed(1),
+        ),
+        now: Number((recordingData.duration * (barPositionX / window.innerWidth)).toFixed(1)),
+        end: Number(
+          (
+            recordingData.duration *
+            ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth)
+          ).toFixed(1),
+        ),
       };
 
   useEffect(() => {
@@ -335,7 +336,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="START"
-                defaultValue={indicator.start || ''}
+                defaultValue={indicator.start}
                 // value={indicator.start}
                 arrow
                 onBlur={handleStartInputBlur}
@@ -345,7 +346,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
               <PrefixInput
                 className={cx('indicator-input')}
                 prefix="END"
-                defaultValue={indicator.end || ''}
+                defaultValue={indicator.end}
                 // value={indicator.end}
                 arrow
                 onBlur={handleEndInputBlur}
@@ -356,7 +357,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                 id="now"
                 className={cx('indicator-input')}
                 prefix="NOW"
-                defaultValue={indicator.now || ''}
+                defaultValue={indicator.now}
                 // value={indicator.now}
                 onBlur={handleNowInputBlur}
                 onKeyDown={handleInputKeyDown}
