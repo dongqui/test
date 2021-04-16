@@ -25,7 +25,7 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
   // circle 클릭 이벤트
   const clickCircle = useCallback(
     (event, { time }) => {
-      const { trackName, layerKey, trackIndex } = dopeSheetData;
+      const { trackName, layerKey, trackIndex, isLocked } = dopeSheetData;
       if (trackIndex === 1) return;
       if (event.ctrlKey || event.metaKey) {
         const keyframeDataList = fnClickAnyKeyframeToCtrl({
@@ -36,9 +36,9 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
           time,
           trackName,
           trackIndex,
+          isLocked,
         });
-        console.log('keyframeDataList', keyframeDataList);
-        storeDeleteTargetKeyframes(keyframeDataList);
+        storeDeleteTargetKeyframes(_.sortBy(keyframeDataList, ['trackIndex', 'time']));
       } else {
         const keyframeDataList = fnClickAnyKeyframeToMouse({
           dopeSheetList,
@@ -47,8 +47,9 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
           time,
           trackName,
           trackIndex,
+          isLocked,
         });
-        storeDeleteTargetKeyframes(keyframeDataList);
+        storeDeleteTargetKeyframes(_.sortBy(keyframeDataList, ['trackIndex', 'time']));
       }
     },
     [deleteTargetKeyframes, dopeSheetData, dopeSheetList, lastBoneList],
@@ -88,7 +89,10 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
       // 클릭 효과 제거
       _.forEach(prevClickedCircles.current, (index) => {
         const targetCircle = circleGroupRef.current?.childNodes[index];
-        d3.select(targetCircle as Element).style('fill', isLocked ? '#404040' : '#7A7A7A');
+        d3.select(targetCircle as Element).style(
+          'fill',
+          dopeSheetData.isLocked ? '#404040' : '#7A7A7A',
+        );
       });
 
       const { trackIndex, times, isLocked } = dopeSheetData;
@@ -97,21 +101,38 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
         index: trackIndex,
         key: 'trackIndex',
       });
-      // console.log(existed, deleteTargetKeyframes);
 
       // 이진 검색 결과가 -1이 아닌 경우(검색 대상을 찾은 경우)
       if (existed !== -1) {
-        const { time } = deleteTargetKeyframes[existed];
-        const targetIndex = fnGetBinarySearch({
-          collection: times,
-          index: time,
-          key: 'time',
-        });
+        for (let index = existed; index < deleteTargetKeyframes.length; index += 1) {
+          if (deleteTargetKeyframes[index].trackIndex !== trackIndex) break;
+          const { time } = deleteTargetKeyframes[index];
+          const targetIndex = fnGetBinarySearch({
+            collection: times,
+            index: time,
+            key: 'time',
+          });
 
-        // 클릭 효과 적용
-        const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
-        d3.select(targetCircle as Element).style('fill', 'yellow');
-        prevClickedCircles.current.push(targetIndex + 1);
+          // 클릭 효과 적용
+          const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
+          d3.select(targetCircle as Element).style('fill', '#F9D454');
+          prevClickedCircles.current.push(targetIndex + 1);
+        }
+
+        for (let index = existed; 0 <= index; index -= 1) {
+          if (deleteTargetKeyframes[index].trackIndex !== trackIndex) break;
+          const { time } = deleteTargetKeyframes[index];
+          const targetIndex = fnGetBinarySearch({
+            collection: times,
+            index: time,
+            key: 'time',
+          });
+
+          // 클릭 효과 적용
+          const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
+          d3.select(targetCircle as Element).style('fill', '#F9D454');
+          prevClickedCircles.current.push(targetIndex + 1);
+        }
       }
       // 이진 검색 결과가 -1인 경우(검색 대상을 찾지 못한 경우)
       else {

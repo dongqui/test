@@ -160,16 +160,6 @@ const ShootPage: FunctionComponent = () => {
               </Headline>
             </BaseModal>
           )}
-          {_.isEqual(modalInfo.type, MODAL_TYPES.confirm) && (
-            <ModalWrapper>
-              <Modal msg={modalInfo.msg} onClick={onClickConfirm} />
-            </ModalWrapper>
-          )}
-          {_.isEqual(modalInfo.type, MODAL_TYPES.input) && (
-            <ModalWrapper>
-              <ModalInput msg="모션의 이름을 입력해주세요." onChange={onChange} onClick={onClick} />
-            </ModalWrapper>
-          )}
         </>
       )}
       {_.isEqual(pageInfo.page, PAGE_NAMES.shoot) && <MainPage />}

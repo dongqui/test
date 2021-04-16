@@ -11,6 +11,7 @@ interface FnClickAnyKeyframeToCtrl {
   time: number;
   trackName: string;
   trackIndex: number;
+  isLocked: boolean;
 }
 
 const fnClickAnyKeyframeToCtrl = ({
@@ -21,6 +22,7 @@ const fnClickAnyKeyframeToCtrl = ({
   time,
   trackIndex,
   trackName,
+  isLocked,
 }: FnClickAnyKeyframeToCtrl) => {
   const clickedKeyframes: KeyframeData[] = [];
   const remainder = trackIndex % 10;
@@ -70,6 +72,7 @@ const fnClickAnyKeyframeToCtrl = ({
       default: {
         clickedKeyframes.push({
           isTransformTrack: true,
+          isLocked,
           key: `${layerKey}&&${trackName}&&${time}`,
           trackIndex,
           trackName,
@@ -148,7 +151,6 @@ const fnClickAnyKeyframeToCtrl = ({
       }
     }
 
-    console.log('sdfklsdjlfsdkl');
     // 중간에 for문이 return되지 않고 끝까지 순회했을 경우, 선택 적용 된 리스트에 클릭한 트랙 리스트 추가
     clickedKeyframes.push(...deleteTargetKeyframes);
     switch (remainder) {
@@ -183,6 +185,7 @@ const fnClickAnyKeyframeToCtrl = ({
       default: {
         clickedKeyframes.push({
           isTransformTrack: true,
+          isLocked,
           key: `${layerKey}&&${trackName}&&${time}`,
           trackIndex,
           trackName,

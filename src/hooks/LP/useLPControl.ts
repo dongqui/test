@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, Dispatch, SetStateAction } from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -41,6 +41,10 @@ interface UseLPControlProps {
   contextmenuInfo: ContextmenuType;
   searchWord: string;
   lpmode: LPModeType;
+  showsModal: boolean;
+  setShowsModal: Dispatch<SetStateAction<boolean>>;
+  modalMessage: string;
+  setModalMessage: Dispatch<SetStateAction<string>>;
 }
 const useLPControl = ({
   mainData,
@@ -48,6 +52,10 @@ const useLPControl = ({
   contextmenuInfo,
   searchWord,
   lpmode,
+  showsModal,
+  setShowsModal,
+  modalMessage,
+  setModalMessage,
 }: UseLPControlProps) => {
   const { getConfirm } = useConfirmModal();
 
@@ -147,6 +155,7 @@ const useLPControl = ({
             _.map(newMainData, (item) => ({
               ...item,
               isDragging: false,
+              isVisualized: _.isEqual(item?.key, newMotion?.key) ? true : false,
             })),
           );
           setShowsModal(false);
@@ -192,7 +201,7 @@ const useLPControl = ({
         })),
       );
     },
-    [mainData],
+    [mainData, setModalMessage, setShowsModal],
   );
   const onCopy = useCallback(({ mainData }) => {
     storeLpData(
@@ -291,8 +300,8 @@ const useLPControl = ({
     [getConfirm],
   );
 
-  const [showsModal, setShowsModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
+  // const [showsModal, setShowsModal] = useState(false);
+  // const [modalMessage, setModalMessage] = useState('');
 
   const onContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
@@ -473,7 +482,19 @@ const useLPControl = ({
         },
       });
     },
-    [contextmenuInfo, handleDelete, lpmode, mainData, onCopy, onEdit, onPaste, pages, showsModal],
+    [
+      contextmenuInfo,
+      handleDelete,
+      lpmode,
+      mainData,
+      onCopy,
+      onEdit,
+      onPaste,
+      pages,
+      setModalMessage,
+      setShowsModal,
+      showsModal,
+    ],
   );
   const shortcutData = useMemo(
     () => [
@@ -506,19 +527,29 @@ const useLPControl = ({
         event: () => {
           const clickedRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true]);
           const isModifyingRow = _.some(mainData, [LPDATA_PROPERTY_TYPES.isModifying, true]);
-          if (
-            clickedRow &&
-            !isModifyingRow &&
-            _.isEqual(lpmode, LPModeType.iconview) &&
-            !_.isEqual(clickedRow?.type, FILE_TYPES.motion)
-          ) {
-            storePages(
-              _.concat(pages, {
-                key: clickedRow?.key,
-                name: clickedRow?.name ?? 'Folder',
-                type: clickedRow?.type ?? FILE_TYPES.folder,
-              }),
-            );
+          if (clickedRow && !isModifyingRow && !_.isEqual(clickedRow?.type, FILE_TYPES.motion)) {
+            if (
+              _.isEqual(lpmode, LPModeType.iconview) &&
+              _.isEqual(clickedRow?.parentKey, _.last(pages)?.key)
+            ) {
+              storePages(
+                _.concat(pages, {
+                  key: clickedRow?.key,
+                  name: clickedRow?.name ?? 'Folder',
+                  type: clickedRow?.type ?? FILE_TYPES.folder,
+                }),
+              );
+            }
+            if (_.isEqual(lpmode, LPModeType.listview)) {
+              storeLpData(
+                _.map(mainData, (item) => ({
+                  ...item,
+                  isExpanded: _.isEqual(item?.key, clickedRow?.key)
+                    ? !item?.isExpanded
+                    : item?.isExpanded,
+                })),
+              );
+            }
           }
         },
       },
@@ -685,7 +716,7 @@ const useLPControl = ({
       storeLpData(newLpData);
       setShowsModal(false);
     },
-    [getConfirm, lpmode, mainData, pages],
+    [getConfirm, lpmode, mainData, pages, setModalMessage, setShowsModal],
   );
 
   return {

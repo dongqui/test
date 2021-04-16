@@ -22,6 +22,7 @@ import { useAlertModal } from 'components/New_Modal/AlertModal';
 import { BaseInput } from 'components/New_Input';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
+import fnGetFileName from 'utils/LP/fnGetFileName';
 
 const cx = classNames.bind(styles);
 
@@ -29,6 +30,7 @@ export interface Props {}
 
 const PlayBox: FunctionComponent<Props> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
+  console.log('recordingData', recordingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
@@ -48,13 +50,22 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
   }, [pageInfo.page]);
 
   const handleStop = useCallback(() => {
-    if (animatingData.playState !== 'stop' && currentVisualizedData) {
-      storeAnimatingData({
-        ...animatingData,
-        playState: 'stop',
-      });
+    if (isShootPage) {
+      if (animatingData.playState !== 'stop' && currentVisualizedData) {
+        storeAnimatingData({
+          ...animatingData,
+          playState: 'stop',
+        });
+      }
     }
-  }, [animatingData, currentVisualizedData]);
+    // if (!isShootPage) {
+    //   storeRecordingData({
+    //     ...recordingData,
+    //     isPlaying: false,
+    //     rangeBoxInfo: { ...recordingData.rangeBoxInfo, barX: recordingData.rangeBoxInfo.x },
+    //   });
+    // }
+  }, [animatingData, currentVisualizedData, isShootPage]);
 
   const handleRewind = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
@@ -124,11 +135,6 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
 
   const handleExport = useCallback(() => {
     setShowsModal(true);
-    // storeModalInfo({
-    //   isShow: true,
-    //   type: MODAL_TYPES.input,
-    //   msg: '모션의 이름을 입력해주세요.',
-    // });
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -167,11 +173,13 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
       }
     }
     const key = uuidv4();
+    let name = _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName;
+    name = fnGetFileName({ key: '', lpData, name });
     const newData: LPDataType[] = [
       {
         key,
         type: FILE_TYPES.motion,
-        name: _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName,
+        name,
         parentKey: ROOT_FOLDER_NAME,
         baseLayer: result?.data?.result
           ? fnQuaternionToEulerTracks({ quaternionTracks: result?.data?.result })

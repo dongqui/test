@@ -32,10 +32,21 @@
     color: white;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 12px;
+    height: 32px;
+    line-height: 32px;
   }
 
-  &.selected {
-    background: rgba(55, 133, 247, 10%); // --vivid-blue: #3785f7;
+  &.layer-selected {
+    background: #4e452b;
+  }
+
+  &.bone-selected {
+    background: #373226;
+  }
+
+  &.transform-selected {
+    background: #2b2823;
   }
 
   p.locked {
