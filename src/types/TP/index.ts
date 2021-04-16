@@ -52,6 +52,7 @@ export interface KeyframeData {
   layerKey: string;
   time: number;
   isTransformTrack: boolean;
+  isLocked: boolean;
   trackIndex: number;
 }
 

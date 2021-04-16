@@ -25,7 +25,7 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
   // circle 클릭 이벤트
   const clickCircle = useCallback(
     (event, { time }) => {
-      const { trackName, layerKey, trackIndex } = dopeSheetData;
+      const { trackName, layerKey, trackIndex, isLocked } = dopeSheetData;
       if (trackIndex === 1) return;
       if (event.ctrlKey || event.metaKey) {
         const keyframeDataList = fnClickAnyKeyframeToCtrl({
@@ -36,11 +36,8 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
           time,
           trackName,
           trackIndex,
+          isLocked,
         });
-        console.log(
-          'storeDeleteTargetKeyframes',
-          _.sortBy(keyframeDataList, ['trackIndex', 'time']),
-        );
         storeDeleteTargetKeyframes(_.sortBy(keyframeDataList, ['trackIndex', 'time']));
       } else {
         const keyframeDataList = fnClickAnyKeyframeToMouse({
@@ -50,11 +47,8 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
           time,
           trackName,
           trackIndex,
+          isLocked,
         });
-        console.log(
-          'storeDeleteTargetKeyframes',
-          _.sortBy(keyframeDataList, ['trackIndex', 'time']),
-        );
         storeDeleteTargetKeyframes(_.sortBy(keyframeDataList, ['trackIndex', 'time']));
       }
     },
