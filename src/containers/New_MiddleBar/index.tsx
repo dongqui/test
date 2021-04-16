@@ -10,6 +10,7 @@ import {
 } from 'react';
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
+import moment from 'moment';
 import {
   storeAnimatingData,
   storeCurrentAction,
@@ -50,6 +51,8 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const barPositionX = useReactiveVar(storeBarPositionX);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
+  const [currentTime, setCurrentTime] = useState<string | number>(0);
+  const [lastInputTime, setLastInputTime] = useState<string | number>(0);
   const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
@@ -235,7 +238,14 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   useEffect(() => {
     // 총 시간
     if (lastTimeRef.current) {
-      lastTimeRef.current.value = _.round(lastTime, 0).toString();
+      // lastTimeRef.current.value = _.round(lastTime, 0).toString();
+      const value = new Date(_.round(lastTime, 0) * 1000)
+        .toISOString()
+        .substr(11, 8)
+        .substr(2)
+        .replace(':', '');
+
+      setLastInputTime(value);
     }
   }, [lastTime]);
 
@@ -244,9 +254,24 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const changeCurrentTimeRef = useCallback(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current) {
       if (currentAction.time <= lastTime) {
-        currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
+        // currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
+
+        const value = new Date(_.round(currentAction.time, 0) * 1000)
+          .toISOString()
+          .substr(11, 8)
+          .substr(2)
+          .replace(':', '');
+
+        setCurrentTime(value);
       } else {
-        currentTimeRef.current.value = _.round(lastTime, 0).toString();
+        // currentTimeRef.current.value = _.round(lastTime, 0).toString();
+        const value = new Date(_.round(lastTime, 0) * 1000)
+          .toISOString()
+          .substr(11, 8)
+          .substr(2)
+          .replace(':', '');
+
+        setCurrentTime(value);
       }
     }
     currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
@@ -275,9 +300,23 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   useEffect(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current && currentXAxisPosition) {
       if (_.round(currentXAxisPosition.current / 30, 4) > lastTime) {
-        currentTimeRef.current.value = _.round(lastTime).toString();
+        // currentTimeRef.current.value = _.round(lastTime).toString();
+        const value = new Date(_.round(lastTime) * 1000)
+          .toISOString()
+          .substr(11, 8)
+          .substr(2)
+          .replace(':', '');
+
+        setCurrentTime(value);
       } else {
-        currentTimeRef.current.value = _.round(currentXAxisPosition.current / 30, 0).toString();
+        // currentTimeRef.current.value = _.round(currentXAxisPosition.current / 30, 0).toString();
+        const value = new Date(_.round(currentXAxisPosition.current / 30, 0) * 1000)
+          .toISOString()
+          .substr(11, 8)
+          .substr(2)
+          .replace(':', '');
+
+        setCurrentTime(value);
       }
     }
   }, [currentAction, currentTimeRef, currentXAxisPosition, lastTime]);
@@ -321,11 +360,19 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
             <div className={cx('playtime')}>
               <BaseInput
                 className={cx('time-current')}
-                defaultValue="00:00"
+                mask="99:99"
+                maskChar="0"
+                value={currentTime}
                 innerRef={currentTimeRef}
               />
               <div className={cx('divide')}>/</div>
-              <BaseInput className={cx('time-last')} defaultValue="00:00" innerRef={lastTimeRef} />
+              <BaseInput
+                className={cx('time-last')}
+                mask="99:99"
+                maskChar="0"
+                value={lastTime}
+                innerRef={lastTimeRef}
+              />
               {isShootPage && (
                 <div className={cx('faster')}>
                   <Dropdown list={fasterList} onSelect={handleFasterSelect} />

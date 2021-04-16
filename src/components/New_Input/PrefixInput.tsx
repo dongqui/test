@@ -8,6 +8,8 @@ const cx = classNames.bind(styles);
 interface BaseProps {
   prefix: ReactNode;
   arrow?: boolean;
+  mask?: string | Array<string | RegExp>;
+  maskChar?: string | null;
   color?: 'primary' | 'default';
   className?: string;
 }

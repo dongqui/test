@@ -28,6 +28,7 @@ import CaretDown from './svg/CaretDown.svg';
 import Check from './svg/Check.svg';
 import Error from './svg/Error.svg';
 import Refresh from './svg/Refresh.svg';
+import Alert from './svg/Alert.svg';
 
 type Icon =
   | 'Close'
@@ -58,7 +59,8 @@ type Icon =
   | 'CaretDown'
   | 'Check'
   | 'Error'
-  | 'Refresh';
+  | 'Refresh'
+  | 'Alert';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -94,6 +96,7 @@ const images: Images = {
   Check,
   Error,
   Refresh,
+  Alert,
 };
 
 export default images;

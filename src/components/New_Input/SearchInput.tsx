@@ -6,7 +6,12 @@ import styles from './SearchInput.module.scss';
 
 const cx = classNames.bind(styles);
 
-type Props = Input.BaseInputProps;
+interface BaseProps {
+  mask?: string | Array<string | RegExp>;
+  maskChar?: string | null;
+}
+
+type Props = BaseProps & Input.BaseInputProps;
 
 const SearchInput: FunctionComponent<Props> = ({ className, ...rest }) => {
   const classes = cx('input-wrapper', className);

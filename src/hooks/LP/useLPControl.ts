@@ -268,15 +268,16 @@ const useLPControl = ({
       if (
         _.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.motion)
       ) {
-        content = '모션을 삭제하시겠습니까?';
+        content = 'Are you sure you want to delete the motion?';
       }
       if (_.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.file)) {
-        content = '파일을 삭제하시겠습니까?';
+        content = 'Are you sure you want to delete the file?';
       }
       if (
         _.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.folder)
       ) {
-        content = '내부 파일도 함께 삭제됩니다. 디렉토리를 삭제하시겠습니까?';
+        content =
+          'Are you sure you want to delete this directory? <br /> This will delete all files in selected folder.';
       }
 
       const confirmed = await getConfirm({
@@ -545,7 +546,7 @@ const useLPControl = ({
   const handleDrop = useCallback(
     async (acceptedFiles: File[]) => {
       setShowsModal(true);
-      setModalMessage('파일을 불러오는중입니다.');
+      setModalMessage('Importing the file');
       if (_.isEmpty(acceptedFiles)) {
         setModalMessage('파일이 존재하지 않습니다.');
         return false;

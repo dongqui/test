@@ -5,7 +5,7 @@ export as namespace Input;
 
 declare namespace Input {
   interface BaseProps {
-    innerRef?: RefObject<HTMLInputElement>;
+    innerRef?: RefObject<HTMLInputElement> | ((node: unknown) => void);
     invalid?: boolean;
   }
 
