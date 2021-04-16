@@ -88,8 +88,6 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         ),
       };
 
-  console.log(indicator);
-
   useEffect(() => {
     const currentRef = scrollRef.current;
 
