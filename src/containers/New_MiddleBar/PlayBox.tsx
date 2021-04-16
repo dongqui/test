@@ -256,7 +256,12 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
               cancel: '취소',
             }}
           >
-            <BaseInput className={cx('form-name')} placeholder="모션 이름" onBlur={handleBlur} />
+            <BaseInput
+              className={cx('form-name')}
+              placeholder="모션 이름"
+              onBlur={handleBlur}
+              fullSize
+            />
           </FormModal>
         )}
       </div>
