@@ -39,6 +39,20 @@
   }
 }
 
+.alert-wrapper {
+  width: 100%;
+  text-align: center;
+}
+
+.alert {
+  display: block;
+  margin-bottom: 16px;
+
+  & > svg {
+    width: 36px;
+  }
+}
+
 .title {
   color: #000;
 

@@ -18,6 +18,7 @@ import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
 import { FormModal } from 'components/New_Modal';
+import { useAlertModal } from 'components/New_Modal/AlertModal';
 import { BaseInput } from 'components/New_Input';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
@@ -33,6 +34,8 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
   const pageInfo = useReactiveVar(storePageInfo);
   const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+
+  const { getConfirm } = useAlertModal();
 
   const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
@@ -152,9 +155,16 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
       fileName: recordingData?.motionName,
     });
     if (error) {
-      alert(msg);
+      // alert(msg);
       storeModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert });
-      return false;
+
+      const confirmed = await getConfirm({
+        title: msg,
+      });
+
+      if (confirmed) {
+        return false;
+      }
     }
     const key = uuidv4();
     const newData: LPDataType[] = [
@@ -174,6 +184,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
     storePageInfo({ page: PAGE_NAMES.shoot });
     storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
   }, [
+    getConfirm,
     lpData,
     modalInfo,
     pageInfo.extension,

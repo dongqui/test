@@ -23,8 +23,8 @@ import { IconView } from '../../IconTree/IconView';
 import { ListView } from 'containers/ListTree/ListView';
 import Breadcrumb from './Breadcrumb';
 import { Headline } from 'components/New_Typography';
-import { BaseModal } from 'components/New_Modal';
-import { useConfirmDialog } from 'components/New_Modal/ConfirmModal';
+import { BaseModal, AlertModal } from 'components/New_Modal';
+import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import {
   LPDataType,
@@ -90,7 +90,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const [showsModal, setShowsModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
-  const { getConfirm } = useConfirmDialog();
+  const { getConfirm } = useConfirmModal();
 
   const handleDrop = async (acceptedFiles: File[]) => {
     setShowsModal(true);
@@ -260,6 +260,12 @@ const LibraryPanelComponent: FunctionComponent = () => {
     shortcutData,
   };
 
+  const [showAlert, setShowAlert] = useState(false);
+
+  const handleAA = () => {
+    setShowAlert(!showAlert);
+  };
+
   return (
     <div className={cx('hidden-wrapper')} ref={panelWrapperRef}>
       <div className={cx('wrapper')} {...getRootProps()}>
@@ -280,6 +286,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
+      {/* <button onClick={handleAA}>열려라 모달띠~</button>
+      {showAlert && <AlertModal isOpen={showAlert}>aasd</AlertModal>} */}
       {showsModal && <BaseModal title={modalMessage} onClose={handleModalClose} />}
     </div>
   );
