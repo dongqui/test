@@ -146,7 +146,7 @@ export const getRetargetMap = async ({ bones }: getRetargetMapProps) => {
   try {
     const result = await axios({
       method: 'POST',
-      url: `${RETARGETIING_URL}/retargeting-mapper`,
+      url: `${RETARGETIING_URL}/retargeting-mapper2`,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         Accept: 'application/json',
@@ -190,7 +190,7 @@ export const getRetargetBaseLayer = async ({
     formData.append('retargetMap', JSON.stringify(retargetMap));
     const result = await axios({
       method: 'POST',
-      url: `${RETARGETIING_URL}/retargeting-everyframe`,
+      url: `${RETARGETIING_URL}/retargeting-everyframe2`,
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
     });
