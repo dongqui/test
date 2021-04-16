@@ -9,7 +9,7 @@ interface Props {
   icon: FunctionComponent;
   hasFrame?: boolean;
   className?: string;
-  onClick?: () => void;
+  onClick?: (e?: any) => void;
   innerRef?: RefObject<HTMLSpanElement>;
 }
 
