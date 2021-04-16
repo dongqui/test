@@ -29,6 +29,7 @@ export interface Props {}
 
 const PlayBox: FunctionComponent<Props> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
+  console.log('recordingData', recordingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
@@ -46,13 +47,22 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
   }, [pageInfo.page]);
 
   const handleStop = useCallback(() => {
-    if (animatingData.playState !== 'stop' && currentVisualizedData) {
-      storeAnimatingData({
-        ...animatingData,
-        playState: 'stop',
-      });
+    if (isShootPage) {
+      if (animatingData.playState !== 'stop' && currentVisualizedData) {
+        storeAnimatingData({
+          ...animatingData,
+          playState: 'stop',
+        });
+      }
     }
-  }, [animatingData, currentVisualizedData]);
+    // if (!isShootPage) {
+    //   storeRecordingData({
+    //     ...recordingData,
+    //     isPlaying: false,
+    //     rangeBoxInfo: { ...recordingData.rangeBoxInfo, barX: recordingData.rangeBoxInfo.x },
+    //   });
+    // }
+  }, [animatingData, currentVisualizedData, isShootPage]);
 
   const handleRewind = useCallback(() => {
     if (isShootPage && currentVisualizedData) {

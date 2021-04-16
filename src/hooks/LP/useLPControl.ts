@@ -155,6 +155,7 @@ const useLPControl = ({
             _.map(newMainData, (item) => ({
               ...item,
               isDragging: false,
+              isVisualized: _.isEqual(item?.key, newMotion?.key) ? true : false,
             })),
           );
           setShowsModal(false);
