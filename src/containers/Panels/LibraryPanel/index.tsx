@@ -94,7 +94,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
 
   const handleDrop = async (acceptedFiles: File[]) => {
     setShowsModal(true);
-    setModalMessage('파일을 불러오는중입니다.');
+    setModalMessage('Importing the file');
     if (_.isEmpty(acceptedFiles)) {
       setModalMessage('파일이 존재하지 않습니다.');
       return false;
