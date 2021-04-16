@@ -32,6 +32,9 @@
     color: white;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 12px;
+    height: 32px;
+    line-height: 32px;
   }
 
   &.selected {
