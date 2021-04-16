@@ -508,16 +508,31 @@ const useLPControl = ({
           if (
             clickedRow &&
             !isModifyingRow &&
-            _.isEqual(lpmode, LPModeType.iconview) &&
+            // _.isEqual(lpmode, LPModeType.iconview) &&
             !_.isEqual(clickedRow?.type, FILE_TYPES.motion)
           ) {
-            storePages(
-              _.concat(pages, {
-                key: clickedRow?.key,
-                name: clickedRow?.name ?? 'Folder',
-                type: clickedRow?.type ?? FILE_TYPES.folder,
-              }),
-            );
+            if (
+              _.isEqual(lpmode, LPModeType.iconview) &&
+              _.isEqual(clickedRow?.parentKey, _.last(pages)?.key)
+            ) {
+              storePages(
+                _.concat(pages, {
+                  key: clickedRow?.key,
+                  name: clickedRow?.name ?? 'Folder',
+                  type: clickedRow?.type ?? FILE_TYPES.folder,
+                }),
+              );
+            }
+            if (_.isEqual(lpmode, LPModeType.listview)) {
+              storeLpData(
+                _.map(mainData, (item) => ({
+                  ...item,
+                  isExpanded: _.isEqual(item?.key, clickedRow?.key)
+                    ? !item?.isExpanded
+                    : item?.isExpanded,
+                })),
+              );
+            }
           }
         },
       },
