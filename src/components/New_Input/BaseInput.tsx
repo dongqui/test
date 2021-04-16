@@ -6,6 +6,7 @@ import {
   KeyboardEvent,
   ChangeEvent,
 } from 'react';
+import MaskedInput from 'react-input-mask';
 import classNames from 'classnames/bind';
 import styles from './BaseInput.module.scss';
 
@@ -13,6 +14,8 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   arrow?: boolean;
+  mask?: string | Array<string | RegExp>;
+  maskChar?: string | null;
   fullSize?: boolean;
 }
 
@@ -20,12 +23,16 @@ type Props = BaseProps & Input.BaseInputProps;
 
 const defaultProps: Partial<Props> = {
   type: 'text',
+  maskChar: '',
   spellCheck: 'false',
   arrow: false,
 };
 
 const BaseInput: FunctionComponent<Props> = ({
+  type,
   className,
+  mask,
+  maskChar,
   innerRef,
   disabled,
   invalid,
@@ -64,9 +71,18 @@ const BaseInput: FunctionComponent<Props> = ({
     [onKeyUp],
   );
 
+  if (mask) {
+    return (
+      <MaskedInput className={classes} mask={mask} maskChar={maskChar} alwaysShowMask {...rest}>
+        {(inputProps: unknown) => <input type={type} ref={innerRef} {...inputProps} />}
+      </MaskedInput>
+    );
+  }
+
   return (
     <input
       className={classes}
+      type={type}
       disabled={disabled}
       onBlur={handleBlur}
       onChange={handleChange}

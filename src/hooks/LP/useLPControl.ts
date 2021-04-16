@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, Dispatch, SetStateAction } from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -21,7 +21,7 @@ import {
   storePages,
   storeRecordingData,
 } from 'lib/store';
-import { useConfirmDialog } from 'components/New_Modal/ConfirmModal';
+import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import fnGetFileName from 'utils/LP/fnGetFileName';
@@ -41,6 +41,10 @@ interface UseLPControlProps {
   contextmenuInfo: ContextmenuType;
   searchWord: string;
   lpmode: LPModeType;
+  showsModal: boolean;
+  setShowsModal: Dispatch<SetStateAction<boolean>>;
+  modalMessage: string;
+  setModalMessage: Dispatch<SetStateAction<string>>;
 }
 const useLPControl = ({
   mainData,
@@ -48,8 +52,12 @@ const useLPControl = ({
   contextmenuInfo,
   searchWord,
   lpmode,
+  showsModal,
+  setShowsModal,
+  modalMessage,
+  setModalMessage,
 }: UseLPControlProps) => {
-  const { getConfirm } = useConfirmDialog();
+  const { getConfirm } = useConfirmModal();
 
   const onClick = useCallback(
     (e) => {
@@ -147,6 +155,7 @@ const useLPControl = ({
             _.map(newMainData, (item) => ({
               ...item,
               isDragging: false,
+              isVisualized: _.isEqual(item?.key, newMotion?.key) ? true : false,
             })),
           );
           setShowsModal(false);
@@ -192,7 +201,7 @@ const useLPControl = ({
         })),
       );
     },
-    [mainData],
+    [mainData, setModalMessage, setShowsModal],
   );
   const onCopy = useCallback(({ mainData }) => {
     storeLpData(
@@ -291,8 +300,8 @@ const useLPControl = ({
     [getConfirm],
   );
 
-  const [showsModal, setShowsModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
+  // const [showsModal, setShowsModal] = useState(false);
+  // const [modalMessage, setModalMessage] = useState('');
 
   const onContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
@@ -473,7 +482,19 @@ const useLPControl = ({
         },
       });
     },
-    [contextmenuInfo, handleDelete, lpmode, mainData, onCopy, onEdit, onPaste, pages, showsModal],
+    [
+      contextmenuInfo,
+      handleDelete,
+      lpmode,
+      mainData,
+      onCopy,
+      onEdit,
+      onPaste,
+      pages,
+      setModalMessage,
+      setShowsModal,
+      showsModal,
+    ],
   );
   const shortcutData = useMemo(
     () => [
@@ -695,7 +716,7 @@ const useLPControl = ({
       storeLpData(newLpData);
       setShowsModal(false);
     },
-    [getConfirm, lpmode, mainData, pages],
+    [getConfirm, lpmode, mainData, pages, setModalMessage, setShowsModal],
   );
 
   return {

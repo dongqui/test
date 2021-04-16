@@ -49,9 +49,9 @@ const ConfirmModal: FunctionComponent<Props> = ({
   );
 };
 
-const ConfirmDialogContext = createContext<any>({});
+const ConfirmModalContext = createContext<any>({});
 
-const ConfirmDialogProvider = ({ children }: any) => {
+const ConfirmModalProvider = ({ children }: any) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<any>({});
 
@@ -76,7 +76,7 @@ const ConfirmDialogProvider = ({ children }: any) => {
   };
 
   return (
-    <ConfirmDialogContext.Provider value={{ handleOpen }}>
+    <ConfirmModalContext.Provider value={{ handleOpen }}>
       <ConfirmModal
         isOpen={dialogOpen}
         title={dialogConfig?.title}
@@ -85,12 +85,12 @@ const ConfirmDialogProvider = ({ children }: any) => {
         text={{ confirm: 'OK', cancel: 'Cancel' }}
       />
       {children}
-    </ConfirmDialogContext.Provider>
+    </ConfirmModalContext.Provider>
   );
 };
 
-const useConfirmDialog = () => {
-  const { handleOpen } = useContext(ConfirmDialogContext);
+const useConfirmModal = () => {
+  const { handleOpen } = useContext(ConfirmModalContext);
 
   const getConfirm = ({ ...options }) =>
     new Promise((res) => {
@@ -100,5 +100,5 @@ const useConfirmDialog = () => {
   return { getConfirm };
 };
 
-export { ConfirmDialogProvider, useConfirmDialog };
+export { ConfirmModalProvider, useConfirmModal };
 export default memo(ConfirmModal);

@@ -17,12 +17,13 @@ import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
-import { ConfirmDialogProvider } from 'components/New_Modal/ConfirmModal';
+import { ConfirmModalProvider } from 'components/New_Modal/ConfirmModal';
+import { AlertModalProvider } from 'components/New_Modal/AlertModal';
 import useWindowSize from 'hooks/common/useWindowSize';
-import classNames from 'classnames/bind';
-import styles from './MainPage.module.scss';
 import { d3ScaleLinear } from 'types/TP';
 import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
+import classNames from 'classnames/bind';
+import styles from './MainPage.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -102,9 +103,9 @@ const MainContainer: FunctionComponent = () => {
           resizeHandles={['e']}
           axis="both"
         >
-          <ConfirmDialogProvider>
+          <ConfirmModalProvider>
             <LibraryPanel />
-          </ConfirmDialogProvider>
+          </ConfirmModalProvider>
         </ResizableBox>
         <ResizableBox
           width={width - 248 - 264}

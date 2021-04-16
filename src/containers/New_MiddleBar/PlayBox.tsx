@@ -18,9 +18,11 @@ import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
 import { FormModal } from 'components/New_Modal';
+import { useAlertModal } from 'components/New_Modal/AlertModal';
 import { BaseInput } from 'components/New_Input';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
+import fnGetFileName from 'utils/LP/fnGetFileName';
 
 const cx = classNames.bind(styles);
 
@@ -34,6 +36,8 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
   const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
+  const { getConfirm } = useAlertModal();
+
   const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
   const handleKeyDown = () => {};
@@ -45,13 +49,22 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
   }, [pageInfo.page]);
 
   const handleStop = useCallback(() => {
-    if (animatingData.playState !== 'stop' && currentVisualizedData) {
-      storeAnimatingData({
-        ...animatingData,
-        playState: 'stop',
-      });
+    if (isShootPage) {
+      if (animatingData.playState !== 'stop' && currentVisualizedData) {
+        storeAnimatingData({
+          ...animatingData,
+          playState: 'stop',
+        });
+      }
     }
-  }, [animatingData, currentVisualizedData]);
+    // if (!isShootPage) {
+    //   storeRecordingData({
+    //     ...recordingData,
+    //     isPlaying: false,
+    //     rangeBoxInfo: { ...recordingData.rangeBoxInfo, barX: recordingData.rangeBoxInfo.x },
+    //   });
+    // }
+  }, [animatingData, currentVisualizedData, isShootPage]);
 
   const handleRewind = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
@@ -121,11 +134,6 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
 
   const handleExport = useCallback(() => {
     setShowsModal(true);
-    // storeModalInfo({
-    //   isShow: true,
-    //   type: MODAL_TYPES.input,
-    //   msg: '모션의 이름을 입력해주세요.',
-    // });
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -153,14 +161,23 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
     });
     if (error) {
       storeModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert });
-      return false;
+
+      const confirmed = await getConfirm({
+        title: msg,
+      });
+
+      if (confirmed) {
+        return false;
+      }
     }
     const key = uuidv4();
+    let name = _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName;
+    name = fnGetFileName({ key: '', lpData, name });
     const newData: LPDataType[] = [
       {
         key,
         type: FILE_TYPES.motion,
-        name: _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName,
+        name,
         parentKey: ROOT_FOLDER_NAME,
         baseLayer: result?.data?.result
           ? fnQuaternionToEulerTracks({ quaternionTracks: result?.data?.result })
@@ -173,6 +190,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
     storePageInfo({ page: PAGE_NAMES.shoot });
     storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
   }, [
+    getConfirm,
     lpData,
     modalInfo,
     pageInfo.extension,
@@ -255,7 +273,12 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
               cancel: '취소',
             }}
           >
-            <BaseInput className={cx('form-name')} placeholder="모션 이름" onBlur={handleBlur} />
+            <BaseInput
+              className={cx('form-name')}
+              placeholder="모션 이름"
+              onBlur={handleBlur}
+              fullSize
+            />
           </FormModal>
         )}
       </div>

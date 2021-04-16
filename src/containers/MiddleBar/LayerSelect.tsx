@@ -2,7 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { LayerIcon } from 'components/Icons/generated2/LayerIcon';
 import produce from 'immer';
 import { storeCurrentVisualizedData, storeSkeletonHelper } from 'lib/store';
-import { useConfirmDialog } from 'components/New_Modal/ConfirmModal';
+import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import _ from 'lodash';
 import React, { memo } from 'react';
 import { CurrentVisualizedDataType } from 'types';
@@ -14,7 +14,7 @@ const LayerSelect: React.FC = () => {
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
-  const { getConfirm } = useConfirmDialog();
+  const { getConfirm } = useConfirmModal();
 
   const handleClickNewLayer = async () => {
     const confirmed = await getConfirm({
