@@ -249,103 +249,53 @@ const Track: React.FC<TrackProps> = ({
     setIsClickedArrowButton(isOpenedParent);
   }, [isOpenedParent]);
 
-  // const trackContextMenuData = useMemo(() => {
-  //   const targetIndex = fnGetBinarySearch({
-  //     collection: dopeSheetList,
-  //     index: trackIndex,
-  //     key: 'trackIndex',
-  //   });
-  //   const targetTrack = dopeSheetList[targetIndex];
-  //   // const remainder = trackIndex % 10;
-  //   const commonData = [
-  //     {
-  //       key: targetTrack.isSelected ? 'Deselect' : 'Select',
-  //       value: targetTrack.isSelected ? 'Deselect' : 'Select',
-  //       isSelected: false,
-  //       isDisabled: true,
-  //     },
-  //     {
-  //       key: targetTrack.isLocked ? 'Unlock' : 'Lock',
-  //       value: targetTrack.isSelected ? 'Unlock' : 'Lock',
-  //       isSelected: false,
-  //       isDisabled: true,
-  //     },
-  //     {
-  //       key: targetTrack.isIncluded ? 'Exclude' : 'Include',
-  //       value: targetTrack.isIncluded ? 'Exclude' : 'Include',
-  //       isSelected: false,
-  //       isDisabled: true,
-  //     },
-  //   ];
-  //   return commonData;
-  // }, [dopeSheetList, trackIndex]);
+  // 레이어 이름 변경 함수 호출
+  const updateLayerName = useCallback(() => {
+    const newLayerName = 'newLayerName'; // 임시로 작성 된 새로운 layer 이름
+    const state = storeCurrentVisualizedData();
+    if (state) {
+      const targetIndex = fnGetBinarySearch({
+        collection: dopeSheetList,
+        index: trackIndex,
+        key: 'trackIndex',
+      });
+      const curTrack = dopeSheetList[targetIndex];
+      const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+        const targetLayer = _.find(draft.layers, (layer) => layer.key === curTrack.layerKey);
+        if (targetLayer) targetLayer.name = newLayerName;
+      });
+      storeCurrentVisualizedData(nextState);
+    }
+  }, [dopeSheetList, trackIndex]);
 
-  // const clickTrackContextMenu = useCallback(
-  //   (key: string) => {
-  //     console.log('sfsdffsd', key);
-  //     switch (key) {
-  //       case 'Select': {
-  //         const [updatedTrackList, newClickedTrackList] = fnClickTrackToMouse({
-  //           clickedTrackList,
-  //           lastBoneList,
-  //           trackIndex,
-  //         });
-  //         storeTPSelectedTrackList(newClickedTrackList);
-  //         storeTPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
-  //         break;
-  //       }
-  //       case 'Deselect': {
-  //         const [updatedTrackList, newClickedTrackList] = fnClickTrackToMouse({
-  //           clickedTrackList,
-  //           lastBoneList,
-  //           trackIndex,
-  //         });
-  //         storeTPSelectedTrackList(newClickedTrackList);
-  //         storeTPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
-  //         break;
-  //       }
-  //       case 'Lock': {
-  //         clickLockButton();
-  //         break;
-  //       }
-  //       case 'Unlock': {
-  //         clickLockButton();
-  //         break;
-  //       }
-  //       case 'Include': {
-  //         clickRenderingButton();
-  //         break;
-  //       }
-  //       case 'Exclude': {
-  //         clickRenderingButton();
-  //         break;
-  //       }
-  //     }
-  //   },
-  //   [clickLockButton, clickRenderingButton, clickedTrackList, lastBoneList, trackIndex],
-  // );
+  // 레이어 삭제 함수 호출
+  const deleteLayer = useCallback(() => {
+    const state = storeCurrentVisualizedData();
+    if (state) {
+      const targetIndex = fnGetBinarySearch({
+        collection: dopeSheetList,
+        index: trackIndex,
+        key: 'trackIndex',
+      });
+      const curTrack = dopeSheetList[targetIndex];
+      const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+        draft.layers = _.filter(draft.layers, (layer) => layer.key !== curTrack.layerKey);
+      });
+      storeCurrentVisualizedData(nextState);
+    }
+  }, [dopeSheetList, trackIndex]);
 
-  // const trackRef = useRef<HTMLDivElement>(null);
-  // const handleTrackContextMenu = ({
-  //   top,
-  //   left,
-  //   e,
-  // }: {
-  //   top: number;
-  //   left: number;
-  //   e?: MouseEvent;
-  // }) => {
-  //   e?.preventDefault();
-  //   console.log('handleTrackContextMenu');
-  //   storeContextMenuInfo({
-  //     isShow: true,
-  //     top,
-  //     left,
-  //     data: trackContextMenuData,
-  //     onClick: clickTrackContextMenu,
-  //   });
-  // };
-  // useContextMenu({ targetRef: trackRef, event: handleTrackContextMenu });
+  ///////// 컨텍스트 메뉴 넣기 전, 임의의 조작키로 레이어 이름 변경, 레이어 삭제 확인
+  const clickRightMouse = useCallback(
+    (event: React.MouseEvent) => {
+      if (event.altKey) {
+        deleteLayer();
+      } else if (event.shiftKey) {
+        updateLayerName();
+      }
+    },
+    [deleteLayer, updateLayerName],
+  );
 
   const classes = cx('track-body', {
     'layer-selected': isSelected && trackIndex % 10 === 2,
@@ -367,8 +317,8 @@ const Track: React.FC<TrackProps> = ({
           className={classes}
           style={{ paddingLeft: `${paddingLeft}px` }}
           onClick={clickTrackBody}
+          onContextMenu={clickRightMouse} // 컨텍스트 메뉴 추가되면 이벤트 제거해야 됨
           aria-hidden="true"
-          // ref={trackRef}
         >
           {childrenTrackList.length ? (
             <IconWrapper
@@ -425,4 +375,5 @@ const Track: React.FC<TrackProps> = ({
   );
 };
 
-export default memo(Track);
+export default Track;
+// export default memo(Track);
