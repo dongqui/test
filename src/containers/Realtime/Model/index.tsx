@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useEffect, useCallback, RefObject } from 'react';
+import { FunctionComponent, memo, useEffect, RefObject } from 'react';
 import _ from 'lodash';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
 import classnames from 'classnames/bind';

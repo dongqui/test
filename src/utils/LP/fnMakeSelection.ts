@@ -1,4 +1,4 @@
-import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
+import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
 
 interface FnMakeSelectionProps {

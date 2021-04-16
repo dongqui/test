@@ -1,11 +1,7 @@
 import { FunctionComponent, Fragment, memo } from 'react';
-import dynamic from 'next/dynamic';
 import { useReactiveVar } from '@apollo/client';
-import * as S from './ExtractStyle';
 import CutEdit from 'containers/extract/CutEdit';
-import { ExtractPlayBar } from 'containers/extract/ExtractPlayBar';
 import { storePageInfo } from 'lib/store';
-import { DEFAULT_FILE_URL } from 'utils/const';
 import MiddleBar from 'containers/New_MiddleBar';
 import Webcam from 'containers/extract/Webcam';
 import _ from 'lodash';

@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, Fragment, useCallback, useMemo } from 'react';
+import { FunctionComponent, memo, Fragment, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import useLPRowControl from 'hooks/LP/useLPRowControl';

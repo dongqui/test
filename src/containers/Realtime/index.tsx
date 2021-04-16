@@ -1,12 +1,11 @@
 import { FunctionComponent, memo, useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import _ from 'lodash';
-import WebcamPanel from './Webcam';
-import Model from './Model';
+// import WebcamPanel from './Webcam';
+// import Model from './Model';
 import { getDummyData } from 'utils/RT/getDummyData';
 import { useRenderingModel } from 'hooks/RP/useRenderingModel';
 import { DEFAULT_MODEL_URL } from 'utils/const';
 import useDropzone from './utils/useDropzone';
-import { FilledButton } from 'components/New_Button';
 import { renderingOptions } from './const';
 import { FORMAT_TYPES } from 'types';
 import classnames from 'classnames/bind';
@@ -17,10 +16,6 @@ const cx = classnames.bind(styles);
 type RecordStatus = 'START' | 'END';
 
 const RealtimeContainer: FunctionComponent = () => {
-  // const handleRetarget = useCallback(() => {
-  //   console.log('handleRetarget');
-  // }, []);
-
   const [mixer, setMixer] = useState<THREE.AnimationMixer>();
   const [skeletonHelper, setSkeletonHelper] = useState<THREE.SkeletonHelper>();
   const [animations, setAnimations] = useState<THREE.AnimationClip[]>();
@@ -50,15 +45,15 @@ const RealtimeContainer: FunctionComponent = () => {
     onDrop: handleFileLoad,
   });
 
-  useRenderingModel({
-    id: 'container',
-    fileUrl: targetBlobUrl || DEFAULT_MODEL_URL,
-    format: FORMAT_TYPES.glb,
-    setMixer,
-    renderingOptions: renderingOptions,
-    setSkeletonHelper,
-    setAnimations,
-  });
+  // useRenderingModel({
+  //   id: 'container',
+  //   fileUrl: targetBlobUrl || DEFAULT_MODEL_URL,
+  //   format: FORMAT_TYPES.glb,
+  //   setMixer,
+  //   renderingOptions: renderingOptions,
+  //   setSkeletonHelper,
+  //   setAnimations,
+  // });
 
   const [isStart, setIsStart] = useState(false);
   const [retargetedData, setRetargetedData] = useState<any[]>([]);
@@ -81,7 +76,7 @@ const RealtimeContainer: FunctionComponent = () => {
 
   return (
     <div className={cx('wrapper')}>
-      <div className={cx('model')}>
+      {/* <div className={cx('model')}>
         <Model
           isStart={isStart}
           data={retargetedData}
@@ -90,7 +85,7 @@ const RealtimeContainer: FunctionComponent = () => {
           skeletonHelper={skeletonHelper}
         />
       </div>
-      <WebcamPanel isStart={isStart} onStart={handleStart} />
+      <WebcamPanel isStart={isStart} onStart={handleStart} /> */}
     </div>
   );
 };

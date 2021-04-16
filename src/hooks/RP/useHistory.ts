@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import _ from 'lodash';
-import { useEffect, useMemo } from 'react';
 
 type TargetPanel = 'RP' | 'TP';
 

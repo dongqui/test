@@ -1,4 +1,4 @@
-import { FunctionComponent, Fragment, memo } from 'react';
+import { FunctionComponent, memo } from 'react';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { Tooltip } from 'components/New_Tooltip';
 import { useHover } from 'hooks/common';
