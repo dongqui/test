@@ -18,6 +18,7 @@ import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
 import { FormModal } from 'components/New_Modal';
+import { useAlertModal } from 'components/New_Modal/AlertModal';
 import { BaseInput } from 'components/New_Input';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
@@ -29,12 +30,13 @@ export interface Props {}
 
 const PlayBox: FunctionComponent<Props> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
-  console.log('recordingData', recordingData);
   const animatingData = useReactiveVar(storeAnimatingData);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
   const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+
+  const { getConfirm } = useAlertModal();
 
   const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
@@ -159,7 +161,14 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
     });
     if (error) {
       storeModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert });
-      return false;
+
+      const confirmed = await getConfirm({
+        title: msg,
+      });
+
+      if (confirmed) {
+        return false;
+      }
     }
     const key = uuidv4();
     let name = _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName;
@@ -181,6 +190,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
     storePageInfo({ page: PAGE_NAMES.shoot });
     storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
   }, [
+    getConfirm,
     lpData,
     modalInfo,
     pageInfo.extension,
@@ -263,7 +273,12 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
               cancel: '취소',
             }}
           >
-            <BaseInput className={cx('form-name')} placeholder="모션 이름" onBlur={handleBlur} />
+            <BaseInput
+              className={cx('form-name')}
+              placeholder="모션 이름"
+              onBlur={handleBlur}
+              fullSize
+            />
           </FormModal>
         )}
       </div>

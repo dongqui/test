@@ -21,7 +21,7 @@ import {
   storePages,
   storeRecordingData,
 } from 'lib/store';
-import { useConfirmDialog } from 'components/New_Modal/ConfirmModal';
+import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import fnGetFileName from 'utils/LP/fnGetFileName';
@@ -57,7 +57,7 @@ const useLPControl = ({
   modalMessage,
   setModalMessage,
 }: UseLPControlProps) => {
-  const { getConfirm } = useConfirmDialog();
+  const { getConfirm } = useConfirmModal();
 
   const onClick = useCallback(
     (e) => {

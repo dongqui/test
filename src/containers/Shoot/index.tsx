@@ -13,14 +13,11 @@ import {
   storeModalInfo,
   storePageInfo,
   storeRecordingData,
-  storeConfirmModalData,
 } from 'lib/store';
 import { FILE_TYPES, LPDataType, MODAL_TYPES, PAGE_NAMES } from 'types';
-import { BaseModal, ConfirmModal } from 'components/New_Modal';
+import { BaseModal } from 'components/New_Modal';
 import ExtractPage from 'containers/extract';
 import RecordPage from 'containers/record';
-import { Modal } from 'components/Modal';
-import { ModalInput } from 'components/Modal/ModalInput';
 import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
@@ -42,8 +39,6 @@ const ShootPage: FunctionComponent = () => {
   const pageInfo = useReactiveVar(storePageInfo);
   const recordingData = useReactiveVar(storeRecordingData);
   const contextMenuRef = useRef<HTMLDivElement | any>(null);
-
-  const confirmModalData = useReactiveVar(storeConfirmModalData);
 
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,8 +123,6 @@ const ShootPage: FunctionComponent = () => {
     },
   });
 
-  const { showsModal, ...confirmModalRest } = confirmModalData;
-
   return (
     <main>
       {contextMenuInfo.isShow && (
@@ -143,7 +136,6 @@ const ShootPage: FunctionComponent = () => {
           list={contextMenuInfo.data}
         />
       )}
-      {showsModal && <ConfirmModal {...confirmModalRest} />}
       {modalInfo.isShow && (
         <>
           {_.isEqual(modalInfo.type, MODAL_TYPES.alert) && (
