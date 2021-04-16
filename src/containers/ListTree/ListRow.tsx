@@ -36,13 +36,24 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
 }) => {
   const lpData = useReactiveVar(storeLpData);
   const { setCurrentData } = useLPRowControl({ lpData, rowKey });
+  const handleClickExpand = useCallback(
+    (e) => {
+      e.stopPropagation();
+      storeLpData(
+        _.map(lpData, (item) => ({
+          ...item,
+          isExpanded: _.isEqual(item?.key, rowKey) ? !item.isExpanded : item.isExpanded,
+        })),
+      );
+    },
+    [lpData, rowKey],
+  );
   const onClick = useCallback(() => {
     const isModifying = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isModifying;
     if (!isModifying) {
       storeLpData(
         _.map(lpData, (item) => ({
           ...item,
-          isExpanded: _.isEqual(rowKey, item.key) ? !item.isExpanded : item.isExpanded,
           isClicked: _.isEqual(rowKey, item.key),
           isVisualized:
             isVisualizeSelected && _.isEqual(mode, FILE_TYPES.motion)
@@ -116,7 +127,12 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
           tabIndex={0}
           onClick={onClick}
         >
-          <IconWrapper className={folderArrowClasses} icon={SvgPath.FilledArrow} hasFrame={false} />
+          <IconWrapper
+            className={folderArrowClasses}
+            icon={SvgPath.FilledArrow}
+            hasFrame={false}
+            onClick={handleClickExpand}
+          />
           <div className={cx('name-outer')}>
             <IconWrapper className={cx('icon-item')} icon={SvgPath.Folder} hasFrame={false} />
             {isModifying ? (
@@ -143,7 +159,12 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
           tabIndex={0}
           onClick={onClick}
         >
-          <IconWrapper className={folderArrowClasses} icon={SvgPath.FilledArrow} hasFrame={false} />
+          <IconWrapper
+            className={folderArrowClasses}
+            icon={SvgPath.FilledArrow}
+            hasFrame={false}
+            onClick={handleClickExpand}
+          />
           <div className={cx('name-outer')}>
             <IconWrapper className={cx('icon-item')} icon={SvgPath.Model} hasFrame={false} />
             {isModifying ? (
