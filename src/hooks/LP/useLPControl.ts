@@ -505,12 +505,7 @@ const useLPControl = ({
         event: () => {
           const clickedRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true]);
           const isModifyingRow = _.some(mainData, [LPDATA_PROPERTY_TYPES.isModifying, true]);
-          if (
-            clickedRow &&
-            !isModifyingRow &&
-            // _.isEqual(lpmode, LPModeType.iconview) &&
-            !_.isEqual(clickedRow?.type, FILE_TYPES.motion)
-          ) {
+          if (clickedRow && !isModifyingRow && !_.isEqual(clickedRow?.type, FILE_TYPES.motion)) {
             if (
               _.isEqual(lpmode, LPModeType.iconview) &&
               _.isEqual(clickedRow?.parentKey, _.last(pages)?.key)
