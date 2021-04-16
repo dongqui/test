@@ -13,6 +13,7 @@ interface Props {
   onConfirm: () => void;
   onOutsideClose?: () => void;
   title: string;
+  text: string;
   isAlert?: boolean;
 }
 
@@ -27,14 +28,17 @@ const AlertModal: FunctionComponent<Props> = ({
   onConfirm,
   onOutsideClose,
   isAlert,
+  text,
   children,
 }) => {
   return (
     <Fragment>
       {isOpen && (
         <BaseModal title={title} isAlert>
-          <div className={cx('inner')}></div>
-          {children}
+          <div className={cx('inner')}>{children}</div>
+          <FilledButton onClick={onConfirm} fullSize>
+            {text}
+          </FilledButton>
         </BaseModal>
       )}
     </Fragment>
@@ -74,6 +78,7 @@ const AlertModalProvider = ({ children }: any) => {
         title={dialogConfig?.title}
         onConfirm={handleConfirm}
         onClose={handleDismiss}
+        text="OK"
       />
       {children}
     </AlertModalContext.Provider>

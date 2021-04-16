@@ -137,17 +137,15 @@ const MainContainer: FunctionComponent = () => {
         </ResizableBox>
       </ResizableBox>
       <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">
-        <AlertModalProvider>
-          <TimelineContainer
-            visualizedDataKey={currentVisualizedData?.key}
-            baseLayer={currentVisualizedData?.baseLayer}
-            layers={currentVisualizedData?.layers}
-            currentTimeRef={currentTimeRef}
-            currentTimeIndexRef={currentTimeIndexRef}
-            currentXAxisPosition={currentXAxisPosition}
-            prevXScale={prevXScale}
-          />
-        </AlertModalProvider>
+        <TimelineContainer
+          visualizedDataKey={currentVisualizedData?.key}
+          baseLayer={currentVisualizedData?.baseLayer}
+          layers={currentVisualizedData?.layers}
+          currentTimeRef={currentTimeRef}
+          currentTimeIndexRef={currentTimeIndexRef}
+          currentXAxisPosition={currentXAxisPosition}
+          prevXScale={prevXScale}
+        />
       </ResizableBox>
     </div>
   );
