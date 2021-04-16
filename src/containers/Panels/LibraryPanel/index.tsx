@@ -263,12 +263,6 @@ const LibraryPanelComponent: FunctionComponent = () => {
     shortcutData,
   };
 
-  const [showAlert, setShowAlert] = useState(false);
-
-  const handleAA = () => {
-    setShowAlert(!showAlert);
-  };
-
   return (
     <div className={cx('hidden-wrapper')} ref={panelWrapperRef}>
       <div className={cx('wrapper')} {...getRootProps()}>
@@ -289,8 +283,6 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
-      {/* <button onClick={handleAA}>열려라 모달띠~</button>
-      {showAlert && <AlertModal isOpen={showAlert}>aasd</AlertModal>} */}
       {showsModal && (
         <BaseModal
           title={modalMessage}
