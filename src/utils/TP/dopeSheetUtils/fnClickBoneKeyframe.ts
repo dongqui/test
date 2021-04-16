@@ -30,6 +30,7 @@ const fnClickBoneKeyframe = ({
     const track = dopeSheetList[curTrackIndex];
     clickedKeyframes.push({
       isTransformTrack: checkTransformTrack(track.trackIndex),
+      isLocked: track.isLocked,
       key: `${layerKey}&&${track.trackName}&&${time}`,
       trackIndex: track.trackIndex,
       trackName: track.trackName,
