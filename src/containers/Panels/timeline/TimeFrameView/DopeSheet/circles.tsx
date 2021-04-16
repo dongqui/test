@@ -89,7 +89,10 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
       // 클릭 효과 제거
       _.forEach(prevClickedCircles.current, (index) => {
         const targetCircle = circleGroupRef.current?.childNodes[index];
-        d3.select(targetCircle as Element).style('fill', isLocked ? '#404040' : '#7A7A7A');
+        d3.select(targetCircle as Element).style(
+          'fill',
+          dopeSheetData.isLocked ? '#404040' : '#7A7A7A',
+        );
       });
 
       const { trackIndex, times, isLocked } = dopeSheetData;
