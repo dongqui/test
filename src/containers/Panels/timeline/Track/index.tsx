@@ -375,4 +375,5 @@ const Track: React.FC<TrackProps> = ({
   );
 };
 
-export default memo(Track);
+export default Track;
+// export default memo(Track);

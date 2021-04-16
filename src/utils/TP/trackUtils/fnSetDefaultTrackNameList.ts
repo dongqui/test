@@ -36,6 +36,7 @@ const fnSetDefaultTrackNameList = ({
   // Base 트랙 추가
   const [base, baseLastBone] = fnSetLayerTrack({
     layerIndex: TP_TRACK_INDEX.LAYER,
+    layerKey: 'baseLayer',
     tracks: baseLayer,
     trackName: 'Base',
   });
@@ -46,6 +47,7 @@ const fnSetDefaultTrackNameList = ({
   _.forEach(layers, (layer, index) => {
     const [childrenTrack, layerLastBone] = fnSetLayerTrack({
       layerIndex: TP_TRACK_INDEX.LAYER + (index + 1) * 10000,
+      layerKey: layer.key,
       tracks: layer.tracks,
       trackName: layer.name,
     });

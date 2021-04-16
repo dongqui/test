@@ -11,7 +11,7 @@ import {
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
 import { fnSetDefaultDopeSheetList, fnSetLayerDopeSheet } from 'utils/TP/dopeSheetUtils';
-import { fnSetDefaultTrackNameList, fnSetLayerTrack } from 'utils/TP/trackUtils';
+import { fnGetBinarySearch, fnSetDefaultTrackNameList, fnSetLayerTrack } from 'utils/TP/trackUtils';
 // import MiddleBar from 'containers/MiddleBar';
 import MiddleBar from 'containers/New_MiddleBar';
 import { ShootLayerType, ShootTrackType } from 'types';
@@ -51,7 +51,6 @@ const TimelineContainer: React.FC<Props> = ({
       if (dopeSheetList.length) {
         // 현재 모델에서 keyframe에 변경사항이 생긴 경우
         if (prevModelKey.current === visualizedDataKey) {
-          console.log('현재 모델에서 keyframe에 변경사항이 생긴 경우');
           const updatedTimes = _.map(
             fnSetDefaultDopeSheetList({ baseLayer, layers }),
             (dopeSheet) => ({
@@ -127,6 +126,7 @@ const TimelineContainer: React.FC<Props> = ({
         const layerIndex = lastBoneList[lastBoneList.length - 1].layerIndex;
         const [layerTrack] = fnSetLayerTrack({
           layerIndex: layerIndex + 10000,
+          layerKey: newLayer.key,
           tracks: newLayer.tracks,
           trackName: newLayer.name,
         });
@@ -141,6 +141,7 @@ const TimelineContainer: React.FC<Props> = ({
         const lastBone = {
           layerIndex: layerIndex + 10000,
           trackName: newLayer.name,
+          layerKey: newLayer.key,
           lastBoneIndex: layerDopeSheet[layerDopeSheet.length - 4].trackIndex,
         };
 
@@ -156,6 +157,36 @@ const TimelineContainer: React.FC<Props> = ({
       }
       // 현재 layers 길이보다 이전 layers 길이가 같은 경우(레이어 내 데이터 변경)
       else {
+        for (let index = 0; index < layers.length; index += 1) {
+          const newLayer = layers[index];
+          const layerIndex = _.findIndex(
+            lastBoneList,
+            (lastBone) => lastBone.layerKey === newLayer.key,
+          );
+          const layer = lastBoneList[layerIndex];
+          if (newLayer.key === layer.layerKey && newLayer.name !== layer.trackName) {
+            const nextDopeSheetList = produce(dopeSheetList, (draft) => {
+              const dopeSheetIndex = fnGetBinarySearch({
+                collection: dopeSheetList,
+                index: layer.layerIndex,
+                key: 'trackIndex',
+              });
+              draft[dopeSheetIndex].trackName = newLayer.name;
+            });
+            const nextLastBoneList = produce(lastBoneList, (draft) => {
+              draft[index + 1].trackName = newLayer.name;
+            });
+            const nextTrackNameList = produce(trackNameList, (draft) => {
+              const summaryTrack = draft[0];
+              const changeNameLayer = summaryTrack.childrenTrackList[layerIndex];
+              changeNameLayer.name = newLayer.name;
+            });
+            storeTPTrackNameList(nextTrackNameList);
+            storeTPLastBoneList(nextLastBoneList);
+            storeTPDopeSheetList(nextDopeSheetList);
+            return;
+          }
+        }
         const updatedTimes = _.map(
           fnSetDefaultDopeSheetList({ baseLayer, layers }),
           (dopeSheet) => ({

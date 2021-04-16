@@ -4,6 +4,7 @@ import { ShootTrackType } from 'types';
 
 interface FnSetLayerTrack {
   layerIndex: number;
+  layerKey: string;
   tracks: ShootTrackType[];
   trackName: string;
 }
@@ -14,11 +15,17 @@ type LayerTrack = [TPTrackName[], TPLastBone];
  * layer와 하위 트랙들을 계층 구조 형식으로 생성하는 함수입니다.
  *
  * @param layerIndex - layer 트랙의 index
+ * @param layerKey - layer 트랙의 key
  * @param tracks - layerTrack을 생성시킬 트랙 리스트
  * @param trackName - layer 트랙 name
  * @return layerTrack
  */
-const fnSetLayerTrack = ({ layerIndex, tracks, trackName }: FnSetLayerTrack): LayerTrack => {
+const fnSetLayerTrack = ({
+  layerIndex,
+  layerKey,
+  tracks,
+  trackName,
+}: FnSetLayerTrack): LayerTrack => {
   const trackNameList: TPTrackName[] = [];
   const nextBoneIndex = 3;
   let currentTrackIndex = layerIndex + 1; // 현재 track Index
@@ -33,6 +40,7 @@ const fnSetLayerTrack = ({ layerIndex, tracks, trackName }: FnSetLayerTrack): La
 
   // Layer 트랙의 마지막 Bone 트랙 리스트
   const lastBoneList: TPLastBone = {
+    layerKey,
     layerIndex,
     trackName,
     lastBoneIndex: 0,
