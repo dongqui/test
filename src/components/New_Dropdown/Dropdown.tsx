@@ -118,7 +118,6 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect }) => {
       };
 
       const handleOutSideClick = (e: MouseEvent) => {
-        e.preventDefault();
         const target = e.target as Node;
         const isContains = wrapperRef.current?.contains(target);
 
