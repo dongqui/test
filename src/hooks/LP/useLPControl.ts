@@ -277,7 +277,7 @@ const useLPControl = ({
         _.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.folder)
       ) {
         content =
-          'Are you sure you want to delete this directory? This will delete all files in selected folder.';
+          'Are you sure you want to delete this directory? <br /> This will delete all files in selected folder.';
       }
 
       const confirmed = await getConfirm({
