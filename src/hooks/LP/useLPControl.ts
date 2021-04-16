@@ -316,6 +316,7 @@ const useLPControl = ({
       );
       if (_.isEqual(targetRow?.type, FILE_TYPES.folder)) {
         data = [
+          { key: '0', value: 'New Directory' },
           { key: '1', value: 'Copy' },
           { key: '2', value: 'Delete' },
           { key: '5', value: 'Edit name' },
@@ -358,7 +359,6 @@ const useLPControl = ({
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
           const content = '';
           let motion: LPDataType | undefined;
-          let ok;
           const parentKey = _.isEqual(lpmode, LPModeType.iconview)
             ? _.last(pages)?.key
             : ROOT_FOLDER_NAME;
@@ -372,9 +372,9 @@ const useLPControl = ({
                     key: '',
                     name: 'Folder',
                     lpData: mainData,
-                    parentKey,
+                    parentKey: targetRow?.key ?? parentKey,
                   }),
-                  parentKey,
+                  parentKey: targetRow?.key ?? parentKey,
                   isModifying: true,
                   baseLayer: [],
                   layers: [],
