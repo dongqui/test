@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, Dispatch, SetStateAction } from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -41,6 +41,10 @@ interface UseLPControlProps {
   contextmenuInfo: ContextmenuType;
   searchWord: string;
   lpmode: LPModeType;
+  showsModal: boolean;
+  setShowsModal: Dispatch<SetStateAction<boolean>>;
+  modalMessage: string;
+  setModalMessage: Dispatch<SetStateAction<string>>;
 }
 const useLPControl = ({
   mainData,
@@ -48,6 +52,10 @@ const useLPControl = ({
   contextmenuInfo,
   searchWord,
   lpmode,
+  showsModal,
+  setShowsModal,
+  modalMessage,
+  setModalMessage,
 }: UseLPControlProps) => {
   const { getConfirm } = useConfirmDialog();
 
@@ -192,7 +200,7 @@ const useLPControl = ({
         })),
       );
     },
-    [mainData],
+    [mainData, setModalMessage, setShowsModal],
   );
   const onCopy = useCallback(({ mainData }) => {
     storeLpData(
@@ -268,15 +276,16 @@ const useLPControl = ({
       if (
         _.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.motion)
       ) {
-        content = '모션을 삭제하시겠습니까?';
+        content = 'Are you sure you want to delete the motion?';
       }
       if (_.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.file)) {
-        content = '파일을 삭제하시겠습니까?';
+        content = 'Are you sure you want to delete the file?';
       }
       if (
         _.isEqual(_.find(data, [LPDATA_PROPERTY_TYPES.isClicked, true])?.type, FILE_TYPES.folder)
       ) {
-        content = '내부 파일도 함께 삭제됩니다. 디렉토리를 삭제하시겠습니까?';
+        content =
+          'Are you sure you want to delete this directory? <br /> This will delete all files in selected folder.';
       }
 
       const confirmed = await getConfirm({
@@ -290,8 +299,8 @@ const useLPControl = ({
     [getConfirm],
   );
 
-  const [showsModal, setShowsModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
+  // const [showsModal, setShowsModal] = useState(false);
+  // const [modalMessage, setModalMessage] = useState('');
 
   const onContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
@@ -472,7 +481,19 @@ const useLPControl = ({
         },
       });
     },
-    [contextmenuInfo, handleDelete, lpmode, mainData, onCopy, onEdit, onPaste, pages, showsModal],
+    [
+      contextmenuInfo,
+      handleDelete,
+      lpmode,
+      mainData,
+      onCopy,
+      onEdit,
+      onPaste,
+      pages,
+      setModalMessage,
+      setShowsModal,
+      showsModal,
+    ],
   );
   const shortcutData = useMemo(
     () => [
@@ -505,19 +526,29 @@ const useLPControl = ({
         event: () => {
           const clickedRow = _.find(mainData, [LPDATA_PROPERTY_TYPES.isClicked, true]);
           const isModifyingRow = _.some(mainData, [LPDATA_PROPERTY_TYPES.isModifying, true]);
-          if (
-            clickedRow &&
-            !isModifyingRow &&
-            _.isEqual(lpmode, LPModeType.iconview) &&
-            !_.isEqual(clickedRow?.type, FILE_TYPES.motion)
-          ) {
-            storePages(
-              _.concat(pages, {
-                key: clickedRow?.key,
-                name: clickedRow?.name ?? 'Folder',
-                type: clickedRow?.type ?? FILE_TYPES.folder,
-              }),
-            );
+          if (clickedRow && !isModifyingRow && !_.isEqual(clickedRow?.type, FILE_TYPES.motion)) {
+            if (
+              _.isEqual(lpmode, LPModeType.iconview) &&
+              _.isEqual(clickedRow?.parentKey, _.last(pages)?.key)
+            ) {
+              storePages(
+                _.concat(pages, {
+                  key: clickedRow?.key,
+                  name: clickedRow?.name ?? 'Folder',
+                  type: clickedRow?.type ?? FILE_TYPES.folder,
+                }),
+              );
+            }
+            if (_.isEqual(lpmode, LPModeType.listview)) {
+              storeLpData(
+                _.map(mainData, (item) => ({
+                  ...item,
+                  isExpanded: _.isEqual(item?.key, clickedRow?.key)
+                    ? !item?.isExpanded
+                    : item?.isExpanded,
+                })),
+              );
+            }
           }
         },
       },
@@ -545,7 +576,7 @@ const useLPControl = ({
   const handleDrop = useCallback(
     async (acceptedFiles: File[]) => {
       setShowsModal(true);
-      setModalMessage('파일을 불러오는중입니다.');
+      setModalMessage('Importing the file');
       if (_.isEmpty(acceptedFiles)) {
         setModalMessage('파일이 존재하지 않습니다.');
         return false;
@@ -684,7 +715,7 @@ const useLPControl = ({
       storeLpData(newLpData);
       setShowsModal(false);
     },
-    [getConfirm, lpmode, mainData, pages],
+    [getConfirm, lpmode, mainData, pages, setModalMessage, setShowsModal],
   );
 
   return {

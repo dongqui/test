@@ -21,6 +21,7 @@ import { FormModal } from 'components/New_Modal';
 import { BaseInput } from 'components/New_Input';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
+import fnGetFileName from 'utils/LP/fnGetFileName';
 
 const cx = classNames.bind(styles);
 
@@ -121,11 +122,6 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
 
   const handleExport = useCallback(() => {
     setShowsModal(true);
-    // storeModalInfo({
-    //   isShow: true,
-    //   type: MODAL_TYPES.input,
-    //   msg: '모션의 이름을 입력해주세요.',
-    // });
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -152,16 +148,17 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
       fileName: recordingData?.motionName,
     });
     if (error) {
-      alert(msg);
       storeModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert });
       return false;
     }
     const key = uuidv4();
+    let name = _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName;
+    name = fnGetFileName({ key: '', lpData, name });
     const newData: LPDataType[] = [
       {
         key,
         type: FILE_TYPES.motion,
-        name: _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName,
+        name,
         parentKey: ROOT_FOLDER_NAME,
         baseLayer: result?.data?.result
           ? fnQuaternionToEulerTracks({ quaternionTracks: result?.data?.result })

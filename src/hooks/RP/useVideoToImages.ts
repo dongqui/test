@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { useCallback, useEffect } from 'react';
 import getBlobDuration from 'get-blob-duration';
 import sleep from 'utils/common/sleep';
+import fnKillThread from 'utils/common/fnKillSetInterval';
 
 interface UseVideoToImagesProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -48,5 +49,11 @@ const useVideoToImages = ({ videoRef, videoUrl, action, active }: UseVideoToImag
       console.log(error);
     }
   }, [active, makeImages]);
+  useEffect(() => {
+    return () => {
+      isWorking = false;
+      fnKillThread();
+    };
+  }, []);
 };
 export default useVideoToImages;
