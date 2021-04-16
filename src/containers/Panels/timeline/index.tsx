@@ -49,8 +49,8 @@ const TimelineContainer: React.FC<Props> = ({
   useEffect(() => {
     if (baseLayer && layers && visualizedDataKey) {
       if (dopeSheetList.length) {
+        // 현재 모델에서 keyframe에 변경사항이 생긴 경우
         if (prevModelKey.current === visualizedDataKey) {
-          // 현재 모델에서 keyframe에 변경사항이 생긴 경우
           console.log('현재 모델에서 keyframe에 변경사항이 생긴 경우');
           const updatedTimes = _.map(
             fnSetDefaultDopeSheetList({ baseLayer, layers }),
@@ -60,9 +60,9 @@ const TimelineContainer: React.FC<Props> = ({
             }),
           );
           storeTPUpdateDopeSheetList({ updatedList: updatedTimes, status: 'times' });
-        } else {
-          // 다른 모델로 변경 된 경우
-          console.log('다른 모델로 변경 된 경우');
+        }
+        // 다른 모델로 변경 된 경우
+        else {
           const defaultDopeSheetList = fnSetDefaultDopeSheetList({ baseLayer, layers });
           const [trackNameList, lastBoneList] = fnSetDefaultTrackNameList({ baseLayer, layers });
 
@@ -70,9 +70,9 @@ const TimelineContainer: React.FC<Props> = ({
           storeTPTrackNameList(trackNameList);
           storeTPLastBoneList(lastBoneList);
         }
-      } else {
-        // 최초 visualize
-        console.log('최초 visualize');
+      }
+      // 최초 visualize
+      else {
         const defaultDopeSheetList = fnSetDefaultDopeSheetList({ baseLayer, layers });
         const [trackNameList, lastBoneList] = fnSetDefaultTrackNameList({ baseLayer, layers });
 
@@ -88,45 +88,82 @@ const TimelineContainer: React.FC<Props> = ({
 
   // 레이어 추가/삭제, 레이어 키프레임 변경
   useEffect(() => {
-    if (layers && visualizedDataKey && dopeSheetList) {
-      if (prevModelKey.current === visualizedDataKey) {
-        if (layers.length < prevLayerLength.current) {
-          console.log('레이어 삭제');
-          prevLayerLength.current -= 1;
-        } else if (prevLayerLength.current < layers.length) {
-          console.log('레이어 추가');
-          const newLayer = layers[layers.length - 1];
-          const layerIndex = lastBoneList[lastBoneList.length - 1].layerIndex;
-          const [layerTrack] = fnSetLayerTrack({
-            layerIndex: layerIndex + 10000,
-            tracks: newLayer.tracks,
-            trackName: newLayer.name,
-          });
+    if (
+      baseLayer &&
+      layers &&
+      visualizedDataKey &&
+      dopeSheetList &&
+      prevModelKey.current === visualizedDataKey
+    ) {
+      // 현재 layers 길이보다 이전 layers 길이가 더 큰 경우(레이어 삭제)
+      if (layers.length < prevLayerLength.current) {
+        const layerKeys = _.map(layers, (layer) => layer.key);
+        const layerNames = _.map(layers, (layer) => layer.name);
+        layerKeys.push('baseLayer');
+        layerNames.push('Base');
 
-          const layerDopeSheet = fnSetLayerDopeSheet({
-            layer: newLayer.tracks,
-            layerIndex: layerIndex + 10000,
-            layerName: newLayer.name,
-            layerKey: newLayer.key,
-          });
+        const filteredTrackNameList = produce(trackNameList, (draft) => {
+          const summaryTrack = draft[0];
+          const filterdLayers = _.filter(summaryTrack.childrenTrackList, (layerTrack) =>
+            layerNames.includes(layerTrack.name),
+          );
+          summaryTrack.childrenTrackList = filterdLayers;
+        });
+        const filteredDopeSheetList = produce(dopeSheetList, (draft) => {
+          return _.filter(draft, (dopeSheet) => layerKeys.includes(dopeSheet.layerKey));
+        });
+        const filteredLastBoneList = produce(lastBoneList, (draft) => {
+          return _.filter(draft, (lastBone) => layerNames.includes(lastBone.trackName));
+        });
 
-          const lastBone = {
-            layerIndex: layerIndex + 10000,
-            lastBoneIndex: layerDopeSheet[layerDopeSheet.length - 4].trackIndex,
-          };
+        storeTPTrackNameList(filteredTrackNameList);
+        storeTPDopeSheetList(filteredDopeSheetList);
+        storeTPLastBoneList(filteredLastBoneList);
+        prevLayerLength.current -= 1;
+      }
+      // 현재 layers 길이보다 이전 layers 길이가 더 작은 경우(레이어 추가)
+      else if (prevLayerLength.current < layers.length) {
+        const newLayer = layers[layers.length - 1];
+        const layerIndex = lastBoneList[lastBoneList.length - 1].layerIndex;
+        const [layerTrack] = fnSetLayerTrack({
+          layerIndex: layerIndex + 10000,
+          tracks: newLayer.tracks,
+          trackName: newLayer.name,
+        });
 
-          const updatedTrackNameList = produce(trackNameList, (draft) => {
-            const summaryTrackChildren = draft[0].childrenTrackList;
-            summaryTrackChildren.push(...layerTrack);
-          });
+        const layerDopeSheet = fnSetLayerDopeSheet({
+          layer: newLayer.tracks,
+          layerIndex: layerIndex + 10000,
+          layerName: newLayer.name,
+          layerKey: newLayer.key,
+        });
 
-          storeTPTrackNameList(updatedTrackNameList);
-          storeTPLastBoneList([...lastBoneList, lastBone]);
-          storeTPDopeSheetList([...dopeSheetList, ...layerDopeSheet]);
-          prevLayerLength.current += 1;
-        } else {
-          console.log('레이어 키프레임 변경');
-        }
+        const lastBone = {
+          layerIndex: layerIndex + 10000,
+          trackName: newLayer.name,
+          lastBoneIndex: layerDopeSheet[layerDopeSheet.length - 4].trackIndex,
+        };
+
+        const updatedTrackNameList = produce(trackNameList, (draft) => {
+          const summaryTrackChildren = draft[0].childrenTrackList;
+          summaryTrackChildren.push(...layerTrack);
+        });
+
+        storeTPTrackNameList(updatedTrackNameList);
+        storeTPLastBoneList([...lastBoneList, lastBone]);
+        storeTPDopeSheetList([...dopeSheetList, ...layerDopeSheet]);
+        prevLayerLength.current += 1;
+      }
+      // 현재 layers 길이보다 이전 layers 길이가 같은 경우(레이어 내 데이터 변경)
+      else {
+        const updatedTimes = _.map(
+          fnSetDefaultDopeSheetList({ baseLayer, layers }),
+          (dopeSheet) => ({
+            trackIndex: dopeSheet.trackIndex,
+            times: dopeSheet.times,
+          }),
+        );
+        storeTPUpdateDopeSheetList({ updatedList: updatedTimes, status: 'times' });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

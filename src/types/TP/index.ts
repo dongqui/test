@@ -33,6 +33,7 @@ export interface TPDopeSheet {
 
 export interface TPLastBone {
   layerIndex: number;
+  trackName: string;
   lastBoneIndex: number;
 }
 

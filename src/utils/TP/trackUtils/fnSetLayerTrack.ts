@@ -34,6 +34,7 @@ const fnSetLayerTrack = ({ layerIndex, tracks, trackName }: FnSetLayerTrack): La
   // Layer 트랙의 마지막 Bone 트랙 리스트
   const lastBoneList: TPLastBone = {
     layerIndex,
+    trackName,
     lastBoneIndex: 0,
   };
 
