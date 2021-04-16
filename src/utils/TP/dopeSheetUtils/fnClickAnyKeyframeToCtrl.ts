@@ -11,6 +11,7 @@ interface FnClickAnyKeyframeToCtrl {
   time: number;
   trackName: string;
   trackIndex: number;
+  isLocked: boolean;
 }
 
 const fnClickAnyKeyframeToCtrl = ({
@@ -21,6 +22,7 @@ const fnClickAnyKeyframeToCtrl = ({
   time,
   trackIndex,
   trackName,
+  isLocked,
 }: FnClickAnyKeyframeToCtrl) => {
   const clickedKeyframes: KeyframeData[] = [];
   const remainder = trackIndex % 10;
@@ -70,6 +72,7 @@ const fnClickAnyKeyframeToCtrl = ({
       default: {
         clickedKeyframes.push({
           isTransformTrack: true,
+          isLocked,
           key: `${layerKey}&&${trackName}&&${time}`,
           trackIndex,
           trackName,
@@ -182,6 +185,7 @@ const fnClickAnyKeyframeToCtrl = ({
       default: {
         clickedKeyframes.push({
           isTransformTrack: true,
+          isLocked,
           key: `${layerKey}&&${trackName}&&${time}`,
           trackIndex,
           trackName,

@@ -9,6 +9,7 @@ interface FnClickAnyKeyframeToMouse {
   time: number;
   trackName: string;
   trackIndex: number;
+  isLocked: boolean;
 }
 
 const fnClickAnyKeyframeToMouse = ({
@@ -18,6 +19,7 @@ const fnClickAnyKeyframeToMouse = ({
   time,
   trackIndex,
   trackName,
+  isLocked,
 }: FnClickAnyKeyframeToMouse) => {
   const clickedKeyframes: KeyframeData[] = [];
   const remainder = trackIndex % 10;
@@ -54,6 +56,7 @@ const fnClickAnyKeyframeToMouse = ({
     default: {
       clickedKeyframes.push({
         isTransformTrack: true,
+        isLocked,
         key: `${layerKey}&&${trackName}&&${time}`,
         trackIndex,
         trackName,

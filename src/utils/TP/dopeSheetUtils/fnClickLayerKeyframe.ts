@@ -41,6 +41,7 @@ const fnClickLayerKeyframe = ({
   // layer 키프레임 클릭
   keyframeList.push({
     isTransformTrack: false,
+    isLocked: false,
     key: `${layerKey}&&${trackName}&&${time}`,
     trackIndex,
     trackName,
@@ -53,6 +54,7 @@ const fnClickLayerKeyframe = ({
     const track = dopeSheetList[curDopeSheetIndex];
     keyframeList.push({
       isTransformTrack: checkTransformTrack(track.trackIndex),
+      isLocked: track.isLocked,
       key: `${layerKey}&&${track.trackName}&&${time}`,
       trackIndex: track.trackIndex,
       trackName: track.trackName,

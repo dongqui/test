@@ -297,11 +297,24 @@ const Track: React.FC<TrackProps> = ({
     [deleteLayer, updateLayerName],
   );
 
+  const classes = cx('track-body', {
+    'layer-selected': isSelected && trackIndex % 10 === 2,
+    'bone-selected': isSelected && (trackIndex % 10 === 3 || trackIndex % 10 === 7),
+    'transform-selected':
+      isSelected &&
+      (trackIndex % 10 === 4 ||
+        trackIndex % 10 === 5 ||
+        trackIndex % 10 === 6 ||
+        trackIndex % 10 === 8 ||
+        trackIndex % 10 === 9 ||
+        trackIndex % 10 === 0),
+  });
+
   return (
     <>
       <div className={cx('track-wrapper')}>
         <div
-          className={cx('track-body', { selected: isSelected })}
+          className={classes}
           style={{ paddingLeft: `${paddingLeft}px` }}
           onClick={clickTrackBody}
           onContextMenu={clickRightMouse} // 컨텍스트 메뉴 추가되면 이벤트 제거해야 됨
