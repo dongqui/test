@@ -67,6 +67,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const searchWord = useReactiveVar(storeSearchWord);
   const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
   const panelWrapperRef = useRef<HTMLDivElement>(null);
+  const [showsModal, setShowsModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
   const {
     onClick,
     onContextMenu,
@@ -85,10 +87,11 @@ const LibraryPanelComponent: FunctionComponent = () => {
     pages,
     searchWord,
     lpmode,
+    showsModal,
+    setShowsModal,
+    modalMessage,
+    setModalMessage,
   });
-
-  const [showsModal, setShowsModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
 
   const { getConfirm } = useConfirmDialog();
 
@@ -280,7 +283,13 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
-      {showsModal && <BaseModal title={modalMessage} onClose={handleModalClose} />}
+      {showsModal && (
+        <BaseModal
+          title={modalMessage}
+          onClose={handleModalClose}
+          onOutsideClose={handleModalClose}
+        />
+      )}
     </div>
   );
 };
