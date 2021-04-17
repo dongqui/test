@@ -37,14 +37,12 @@ const FormModal: FunctionComponent<Props> = ({
     formState: { errors },
   } = useForm();
   const handleFormSubmit = (data: unknown) => {
-    console.log(data);
-    // onSubmit && onSubmit();
+    onSubmit && onSubmit();
   };
   return (
     <BaseModal title={title} onClose={onClose} onOutsideClose={onOutsideClose}>
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         {children}
-        <BaseInput name="nameFirst" innerRef={register} />
         <div className={cx('inner')}>
           <FilledButton
             className={cx('button-cancel')}
