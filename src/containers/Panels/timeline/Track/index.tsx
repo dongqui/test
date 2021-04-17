@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
@@ -11,6 +11,7 @@ import {
   storeTPUpdateDopeSheetList,
   storeTPCurrnetClickedTrack,
   storeCurrentVisualizedData,
+  storeContextMenuInfo,
 } from 'lib/store';
 import { CurrentVisualizedDataType } from 'types';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
@@ -23,6 +24,7 @@ import {
   fnGetBinarySearch,
 } from 'utils/TP/trackUtils';
 import styles from './index.module.scss';
+import useContextMenu from 'hooks/common/useContextMenu';
 
 interface TrackProps {
   childrenTrackList: TPTrackName[];
@@ -48,6 +50,7 @@ const Track: React.FC<TrackProps> = ({
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const clickedTrackList = useReactiveVar(storeTPSelectedTrackList);
+  const trackRef = useRef<HTMLDivElement>(null);
 
   // 트랙 별 좌측 padding left 값 설정
   const calcPaddingLeft = useMemo(
@@ -285,17 +288,179 @@ const Track: React.FC<TrackProps> = ({
     }
   }, [dopeSheetList, trackIndex]);
 
-  ///////// 컨텍스트 메뉴 넣기 전, 임의의 조작키로 레이어 이름 변경, 레이어 삭제 확인
-  const clickRightMouse = useCallback(
-    (event: React.MouseEvent) => {
-      if (event.altKey) {
-        deleteLayer();
-      } else if (event.shiftKey) {
-        updateLayerName();
-      }
-    },
-    [deleteLayer, updateLayerName],
-  );
+  const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
+
+  let handleTrackContextMenu = ({
+    top,
+    left,
+    e,
+  }: {
+    top: number;
+    left: number;
+    e?: MouseEvent;
+  }) => {};
+
+  switch (trackIndex % 10) {
+    // layer 트랙
+    case 2:
+      handleTrackContextMenu = ({
+        top,
+        left,
+        e,
+      }: {
+        top: number;
+        left: number;
+        e?: MouseEvent;
+      }) => {
+        e?.preventDefault();
+        storeContextMenuInfo({
+          isShow: true,
+          top,
+          left,
+          data: [
+            {
+              key: 'edit',
+              value: 'Edit Name',
+              isSelected: false,
+              isDisabled: trackIndex === 2,
+            },
+            {
+              key: 'delete',
+              value: 'Delete Layer',
+              isSelected: false,
+              isDisabled: trackIndex === 2,
+            },
+            // {
+            //   key: 'select',
+            //   value: isSelected ? 'Unselect' : 'Select',
+            //   isSelected: false,
+            // },
+            {
+              key: 'lock',
+              value: isLocked ? 'Unlock' : 'Lock',
+              isSelected: false,
+            },
+            {
+              key: 'include',
+              value: isIncluded ? 'Exclude' : 'Include',
+              isSelected: false,
+            },
+          ],
+          onClick: (key) => {
+            switch (key) {
+              case 'edit':
+                updateLayerName();
+                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+                break;
+              case 'delete':
+                deleteLayer();
+                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+                break;
+              case 'select':
+                if (e) {
+                  if (isSelected) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    clickTrackBody(e);
+                  } else {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    clickTrackBody(e);
+                  }
+                }
+                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+                break;
+              case 'lock':
+                clickLockButton();
+                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+                break;
+              case 'include':
+                clickRenderingButton();
+                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+                break;
+              default:
+                break;
+            }
+          },
+        });
+      };
+      break;
+    // Bone 및 Transform 트랙
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 0:
+      handleTrackContextMenu = ({
+        top,
+        left,
+        e,
+      }: {
+        top: number;
+        left: number;
+        e?: MouseEvent;
+      }) => {
+        e?.preventDefault();
+        storeContextMenuInfo({
+          isShow: true,
+          top,
+          left,
+          data: [
+            // {
+            //   key: 'select',
+            //   value: isSelected ? 'Unselect' : 'Select',
+            //   isSelected: false,
+            // },
+            {
+              key: 'lock',
+              value: isLocked ? 'Unlock' : 'Lock',
+              isSelected: false,
+            },
+            {
+              key: 'include',
+              value: isIncluded ? 'Exclude' : 'Include',
+              isSelected: false,
+            },
+          ],
+          onClick: (key) => {
+            switch (key) {
+              case 'select':
+                if (e) {
+                  if (isSelected) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    clickTrackBody(e);
+                  } else {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    clickTrackBody(e);
+                  }
+                }
+                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+                break;
+              case 'lock':
+                clickLockButton();
+                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+                break;
+              case 'include':
+                clickRenderingButton();
+                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+                break;
+              default:
+                break;
+            }
+          },
+        });
+      };
+      break;
+    default:
+      break;
+  }
+
+  useContextMenu({ targetRef: trackRef, event: handleTrackContextMenu });
 
   const classes = cx('track-body', {
     'layer-selected': isSelected && trackIndex % 10 === 2,
@@ -317,8 +482,8 @@ const Track: React.FC<TrackProps> = ({
           className={classes}
           style={{ paddingLeft: `${paddingLeft}px` }}
           onClick={clickTrackBody}
-          onContextMenu={clickRightMouse} // 컨텍스트 메뉴 추가되면 이벤트 제거해야 됨
           aria-hidden="true"
+          ref={trackRef}
         >
           {childrenTrackList.length ? (
             <IconWrapper
