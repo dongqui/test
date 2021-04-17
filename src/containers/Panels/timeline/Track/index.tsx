@@ -12,8 +12,9 @@ import {
   storeTPCurrnetClickedTrack,
   storeCurrentVisualizedData,
   storeContextMenuInfo,
+  storeModalInfo,
 } from 'lib/store';
-import { CurrentVisualizedDataType } from 'types';
+import { CurrentVisualizedDataType, MODAL_TYPES } from 'types';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import {
@@ -25,6 +26,9 @@ import {
 } from 'utils/TP/trackUtils';
 import styles from './index.module.scss';
 import useContextMenu from 'hooks/common/useContextMenu';
+import { FormModal } from 'components/New_Modal';
+import { BaseInput } from 'components/New_Input';
+import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 
 interface TrackProps {
   childrenTrackList: TPTrackName[];
@@ -51,6 +55,11 @@ const Track: React.FC<TrackProps> = ({
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const clickedTrackList = useReactiveVar(storeTPSelectedTrackList);
   const trackRef = useRef<HTMLDivElement>(null);
+
+  const [showsModal, setShowsModal] = useState(false);
+  const [newLayerName, setNewLayerName] = useState('');
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  const modalInfo = useReactiveVar(storeModalInfo);
 
   // 트랙 별 좌측 padding left 값 설정
   const calcPaddingLeft = useMemo(
@@ -261,39 +270,71 @@ const Track: React.FC<TrackProps> = ({
 
   // 레이어 이름 변경 함수 호출
   const updateLayerName = useCallback(() => {
-    const newLayerName = 'newLayerName'; // 임시로 작성 된 새로운 layer 이름
-    const state = storeCurrentVisualizedData();
-    if (state) {
-      const targetIndex = fnGetBinarySearch({
-        collection: dopeSheetList,
-        index: trackIndex,
-        key: 'trackIndex',
+    setShowsModal(true);
+  }, []);
+
+  const handleSubmit = useCallback(() => {
+    console.log('newLayerName: ', newLayerName);
+    setShowsModal(false);
+    if (
+      newLayerName === '' ||
+      _.map(currentVisualizedData?.layers, (layer) => layer.name).includes(newLayerName)
+    ) {
+      storeModalInfo({
+        ...modalInfo,
+        isShow: true,
+        type: MODAL_TYPES.alert,
+        msg: '이미 존재하는 레이어 이름입니다.',
       });
-      const curTrack = dopeSheetList[targetIndex];
-      const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-        const targetLayer = _.find(draft.layers, (layer) => layer.key === curTrack.layerKey);
-        if (targetLayer) targetLayer.name = newLayerName;
-      });
-      storeCurrentVisualizedData(nextState);
+    } else {
+      const state = storeCurrentVisualizedData();
+      if (state) {
+        const targetIndex = fnGetBinarySearch({
+          collection: dopeSheetList,
+          index: trackIndex,
+          key: 'trackIndex',
+        });
+        const curTrack = dopeSheetList[targetIndex];
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          const targetLayer = _.find(draft.layers, (layer) => layer.key === curTrack.layerKey);
+          if (targetLayer) targetLayer.name = newLayerName;
+        });
+        storeCurrentVisualizedData(nextState);
+      }
     }
-  }, [dopeSheetList, trackIndex]);
+  }, [currentVisualizedData?.layers, dopeSheetList, modalInfo, newLayerName, trackIndex]);
+
+  const handleModalClose = () => {
+    setShowsModal(false);
+  };
+
+  const handleInputBlur = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewLayerName(event.target.value);
+  };
+
+  const { getConfirm } = useConfirmModal();
 
   // 레이어 삭제 함수 호출
-  const deleteLayer = useCallback(() => {
-    const state = storeCurrentVisualizedData();
-    if (state) {
-      const targetIndex = fnGetBinarySearch({
-        collection: dopeSheetList,
-        index: trackIndex,
-        key: 'trackIndex',
-      });
-      const curTrack = dopeSheetList[targetIndex];
-      const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-        draft.layers = _.filter(draft.layers, (layer) => layer.key !== curTrack.layerKey);
-      });
-      storeCurrentVisualizedData(nextState);
+  const deleteLayer = useCallback(async () => {
+    const confirmed = await getConfirm({
+      title: '레이어를 삭제하시겠습니까?',
+    });
+    if (confirmed) {
+      const state = storeCurrentVisualizedData();
+      if (state) {
+        const targetIndex = fnGetBinarySearch({
+          collection: dopeSheetList,
+          index: trackIndex,
+          key: 'trackIndex',
+        });
+        const curTrack = dopeSheetList[targetIndex];
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          draft.layers = _.filter(draft.layers, (layer) => layer.key !== curTrack.layerKey);
+        });
+        storeCurrentVisualizedData(nextState);
+      }
     }
-  }, [dopeSheetList, trackIndex]);
+  }, [dopeSheetList, getConfirm, trackIndex]);
 
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
 
@@ -546,6 +587,26 @@ const Track: React.FC<TrackProps> = ({
             );
           })}
         </div>
+        {showsModal && (
+          <FormModal
+            isOpen={showsModal}
+            onClose={handleModalClose}
+            onOutsideClose={handleModalClose}
+            onSubmit={handleSubmit} // 현재 modal submit 이 안 먹음
+            title="레이어 이름을 입력해주세요"
+            text={{
+              submit: '확인',
+              cancel: '취소',
+            }}
+          >
+            <BaseInput
+              className={cx('form-name')}
+              placeholder="레이어 이름"
+              onBlur={handleInputBlur}
+              fullSize
+            />
+          </FormModal>
+        )}
       </div>
     </>
   );
