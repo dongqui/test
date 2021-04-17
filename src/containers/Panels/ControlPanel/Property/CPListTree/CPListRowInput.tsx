@@ -13,6 +13,7 @@ import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';
 import fnConvertEulerToDegree from 'utils/common/fnConvertEulerToDegree';
+import fnConvertDegreeToEuler from 'utils/common/fnConvertDegreeToEuler';
 
 const cx = classNames.bind(styles);
 
@@ -66,7 +67,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
             fnChangeBoneRotation({
               targetBone: currentBone,
               axis,
-              value: fnConvertEulerToDegree({ eulerValue: value }),
+              value: fnConvertDegreeToEuler({ degreeValue: value }),
             });
           }
           break;
