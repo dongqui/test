@@ -69,13 +69,20 @@ const Track: React.FC<TrackProps> = ({
     [],
   );
 
+  const multiKeyController = useMemo(
+    () => ({
+      ctrl: { pressed: false },
+    }),
+    [],
+  );
+
   // 트랙 클릭
   const clickTrackBody = useCallback(
     (event: React.MouseEvent<Element>) => {
       const clickedTrack = event.target as Element;
       if (clickedTrack.nodeName === 'DIV' || clickedTrack.nodeName === 'P') {
         if (title !== 'Summary') {
-          if (event.ctrlKey || event.metaKey) {
+          if (event.ctrlKey || event.metaKey || multiKeyController.ctrl.pressed) {
             const clickTrackToCtrlKey = fnClickTrackToCtrlKey({
               clickedTrackList,
               lastBoneList,
@@ -100,7 +107,7 @@ const Track: React.FC<TrackProps> = ({
         }
       }
     },
-    [clickedTrackList, lastBoneList, title, trackIndex],
+    [clickedTrackList, lastBoneList, multiKeyController.ctrl.pressed, title, trackIndex],
   );
 
   // 화살표 버튼 클릭
@@ -330,11 +337,11 @@ const Track: React.FC<TrackProps> = ({
               isSelected: false,
               isDisabled: trackIndex === 2,
             },
-            // {
-            //   key: 'select',
-            //   value: isSelected ? 'Unselect' : 'Select',
-            //   isSelected: false,
-            // },
+            {
+              key: 'select',
+              value: isSelected ? 'Unselect' : 'Select',
+              isSelected: false,
+            },
             {
               key: 'lock',
               value: isLocked ? 'Unlock' : 'Lock',
@@ -359,9 +366,11 @@ const Track: React.FC<TrackProps> = ({
               case 'select':
                 if (e) {
                   if (isSelected) {
+                    multiKeyController.ctrl.pressed = true;
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     clickTrackBody(e);
+                    multiKeyController.ctrl.pressed = false;
                   } else {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
@@ -409,11 +418,11 @@ const Track: React.FC<TrackProps> = ({
           top,
           left,
           data: [
-            // {
-            //   key: 'select',
-            //   value: isSelected ? 'Unselect' : 'Select',
-            //   isSelected: false,
-            // },
+            {
+              key: 'select',
+              value: isSelected ? 'Unselect' : 'Select',
+              isSelected: false,
+            },
             {
               key: 'lock',
               value: isLocked ? 'Unlock' : 'Lock',
@@ -430,9 +439,11 @@ const Track: React.FC<TrackProps> = ({
               case 'select':
                 if (e) {
                   if (isSelected) {
+                    multiKeyController.ctrl.pressed = true;
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     clickTrackBody(e);
+                    multiKeyController.ctrl.pressed = false;
                   } else {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
