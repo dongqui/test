@@ -27,7 +27,7 @@ import styles from './index.module.scss';
 interface TrackProps {
   childrenTrackList: TPTrackName[];
   isOpenedParent: boolean; // 자식 트랙이 열려있는 상태로 출력여부
-  title: 'Summary' | 'Base' | string; // 트랙 이름
+  trackName: 'Summary' | 'Base' | string; // 트랙 이름
   paddingLeft: number; // 트랙 좌측 패딩 값
   trackIndex: number;
 }
@@ -37,7 +37,7 @@ const cx = classNames.bind(styles);
 const Track: React.FC<TrackProps> = ({
   childrenTrackList,
   isOpenedParent = false,
-  title,
+  trackName,
   paddingLeft,
   trackIndex,
 }) => {
@@ -71,7 +71,7 @@ const Track: React.FC<TrackProps> = ({
     (event: React.MouseEvent<Element>) => {
       const clickedTrack = event.target as Element;
       if (clickedTrack.nodeName === 'DIV' || clickedTrack.nodeName === 'P') {
-        if (title !== 'Summary') {
+        if (trackName !== 'Summary') {
           if (event.ctrlKey || event.metaKey) {
             const clickTrackToCtrlKey = fnClickTrackToCtrlKey({
               clickedTrackList,
@@ -97,7 +97,7 @@ const Track: React.FC<TrackProps> = ({
         }
       }
     },
-    [clickedTrackList, lastBoneList, title, trackIndex],
+    [clickedTrackList, lastBoneList, trackName, trackIndex],
   );
 
   // 화살표 버튼 클릭
@@ -330,7 +330,7 @@ const Track: React.FC<TrackProps> = ({
           ) : (
             ''
           )}
-          <p className={cx({ locked: isLocked })}>{title}</p>
+          <p className={cx({ locked: isLocked })}>{trackName}</p>
           <div className={cx('track-icon-wrapper', { locked: isLocked })}>
             {trackIndex !== 1 && (
               <>
@@ -364,7 +364,7 @@ const Track: React.FC<TrackProps> = ({
                 childrenTrackList={childrenTrackList}
                 isOpenedParent={isOpenedChildrenTrack}
                 paddingLeft={calcPaddingLeft(trackIndex)}
-                title={name}
+                trackName={name}
                 trackIndex={trackIndex}
               />
             );

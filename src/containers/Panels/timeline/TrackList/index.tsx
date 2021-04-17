@@ -197,7 +197,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                   childrenTrackList={childrenTrackList}
                   isOpenedParent={isOpenedChildrenTrack}
                   paddingLeft={18.5}
-                  title={name}
+                  trackName={name}
                   trackIndex={trackIndex}
                 />
               );
