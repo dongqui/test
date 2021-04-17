@@ -1,3 +1,9 @@
+.panel-wrap {
+  * {
+    font-size: 12px;
+  }
+}
+
 .section-setup {
   position: relative;
   display: flex;
@@ -6,14 +12,9 @@
 
   .setup-group {
     width: 100%;
-    float: left;
 
     padding-top: 4px;
     margin: 0;
-
-    &>* {
-      float: right;
-    }
 
     .icon {
       &>svg {
@@ -24,6 +25,27 @@
         border: 1px solid transparent;
       }
     }
+
+    .right {
+      float: right;
+    }
+  }
+
+  .apply-button {
+    font-weight: 600;
+
+    line-height: 24px;
+
+    color: #7A7A7A;
+
+    margin-right: 8px;
+
+    cursor: pointer;
+
+    appearance: none;
+    background: none;
+    outline: none;
+    border: none;
   }
 }
 
@@ -31,15 +53,15 @@
   .retarget-card {
     border-bottom: 1px solid #303030;
     padding-bottom: 12px;
+
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
 
-      padding: 12px 6px;
+      padding: 8px 12px;
 
       &>span {
-        font-size: 14px;
         font-weight: 700;
 
         color: #fff;
@@ -49,14 +71,14 @@
     .card-coord {
       display: flex;
       justify-content: space-between;
-      padding: 0 6px;
+      padding: 0 12px;
 
       .card-input-group {
         display: flex;
-        margin-left: 16px;
+        margin-left: 4px;
 
         &>* {
-          margin-left: 4px;
+          margin-left: 8px;
         }
       }
     }

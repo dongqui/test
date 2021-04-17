@@ -180,9 +180,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   }, [initialValue]);
 
   const valueList = [
-    { key: x, value: values.x, name: x, prefix: 'x' },
-    { key: y, value: values.y, name: y, prefix: 'y' },
-    { key: z, value: values.z, name: z, prefix: 'z' },
+    { key: x, value: values.x, name: x, prefix: 'X' },
+    { key: y, value: values.y, name: y, prefix: 'Y' },
+    { key: z, value: values.z, name: z, prefix: 'Z' },
   ];
   return (
     <div className={cx('panel-inner')}>

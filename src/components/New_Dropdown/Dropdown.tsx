@@ -118,7 +118,7 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect }) => {
       };
 
       const handleOutSideClick = (e: MouseEvent) => {
-        e.preventDefault();
+        // e.preventDefault();
         const target = e.target as Node;
         const isContains = wrapperRef.current?.contains(target);
 
@@ -150,7 +150,7 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect }) => {
   return (
     <div ref={wrapperRef} className={cx('wrapper')}>
       <div className={cx('header')}>
-        <button ref={buttonRef} className={buttonClasses} onClick={handleToggle}>
+        <button type="button" ref={buttonRef} className={buttonClasses} onClick={handleToggle}>
           <div className={cx('text')}>{selectedValue}</div>
           <IconWrapper className={arrowClasses} icon={SvgPath.ChevronLeft} hasFrame={false} />
         </button>
