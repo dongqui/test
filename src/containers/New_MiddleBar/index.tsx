@@ -371,7 +371,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                   className={cx('time-last')}
                   mask="99:99"
                   maskChar="0"
-                  value={lastTime}
+                  value={lastInputTime}
                   innerRef={lastTimeRef}
                 />
                 {isShootPage && (

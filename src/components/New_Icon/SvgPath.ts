@@ -29,6 +29,7 @@ import Check from './svg/Check.svg';
 import Error from './svg/Error.svg';
 import Refresh from './svg/Refresh.svg';
 import Alert from './svg/Alert.svg';
+import Reset from './svg/Reset.svg';
 
 type Icon =
   | 'Close'
@@ -60,7 +61,8 @@ type Icon =
   | 'Check'
   | 'Error'
   | 'Refresh'
-  | 'Alert';
+  | 'Alert'
+  | 'Reset';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -97,6 +99,7 @@ const images: Images = {
   Error,
   Refresh,
   Alert,
+  Reset,
 };
 
 export default images;

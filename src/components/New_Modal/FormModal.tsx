@@ -2,11 +2,10 @@ import { FunctionComponent } from 'react';
 import { useForm } from 'react-hook-form';
 import { BaseModal } from 'components/New_Modal';
 import { FilledButton } from 'components/New_Button';
+import { BaseInput } from 'components/New_Input';
 import classnames from 'classnames/bind';
 import styles from './FormModal.module.scss';
-
 const cx = classnames.bind(styles);
-
 export interface Props {
   isOpen?: boolean;
   onClose: () => void;
@@ -18,7 +17,6 @@ export interface Props {
     cancel: string;
   };
 }
-
 // Form submit
 // 버튼 1개는 fullSize배치
 // 버튼 3개 이상인 경우 세로 fullSize 배치
@@ -38,11 +36,9 @@ const FormModal: FunctionComponent<Props> = ({
     handleSubmit,
     formState: { errors },
   } = useForm();
-
   const handleFormSubmit = (data: unknown) => {
     onSubmit && onSubmit();
   };
-
   return (
     <BaseModal title={title} onClose={onClose} onOutsideClose={onOutsideClose}>
       <form onSubmit={handleSubmit(handleFormSubmit)}>
@@ -64,5 +60,4 @@ const FormModal: FunctionComponent<Props> = ({
     </BaseModal>
   );
 };
-
 export default FormModal;

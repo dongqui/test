@@ -691,7 +691,7 @@ const DopeSheet: React.FC<Props> = ({
   //   };
   // }, [timelineWrapperRef]);
 
-  const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
+  const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
 
   const handleDopsheetContextMenu = ({
     top,
@@ -730,11 +730,11 @@ const DopeSheet: React.FC<Props> = ({
             if (selectedLayerDopeSheets.length !== 0) {
               handleUpdateKeyframeToLayer();
             }
-            storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
+            storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
             break;
           case 'delete':
             handleDeleteKeyframe();
-            storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
+            storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
             break;
           default:
             break;
