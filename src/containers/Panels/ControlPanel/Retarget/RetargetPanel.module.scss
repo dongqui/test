@@ -29,6 +29,17 @@
     .right {
       float: right;
     }
+
+    .error {
+      & > svg {
+        & > path {
+          stroke: #E85757;
+        }
+        & > circle {
+          stroke: #E85757;
+        }
+      }
+    }
   }
 
   .apply-button {
