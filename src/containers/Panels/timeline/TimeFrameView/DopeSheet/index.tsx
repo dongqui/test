@@ -92,7 +92,7 @@ const DopeSheet: React.FC<Props> = ({
 
   const setPlayBarPosition = useCallback(() => {
     if (currentXAxisPosition && currentAction) {
-      currentXAxisPosition.current = currentAction.time * 30;
+      currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
       d3.select('#play-bar-wrapper').attr(
         'transform',
@@ -535,7 +535,7 @@ const DopeSheet: React.FC<Props> = ({
                 if (!targetTrack) {
                   targetTrack = _.find(
                     layers[targetLayerIndex].tracks,
-                    (track) => (track.name = trackName),
+                    (track) => track.name === trackName,
                   ) as ShootTrackType;
                 }
                 if (targetTrack) {
@@ -743,7 +743,7 @@ const DopeSheet: React.FC<Props> = ({
       const { baseLayer, layers } = currentVisualizedData;
       const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
       const innerlastTime = summaryTimes[summaryTimes.length - 1];
-      setLastTime(innerlastTime);
+      setLastTime(innerlastTime || 0);
     }
   }, [currentVisualizedData]);
 
@@ -774,9 +774,19 @@ const DopeSheet: React.FC<Props> = ({
 
           if (currentTimeRef.current) {
             if (_.round(setPlayBarX(currentX) / 30, 4) <= lastTime) {
-              currentTimeRef.current.value = _.round(setPlayBarX(currentX) / 30, 0).toString();
+              const value = new Date(_.round(setPlayBarX(currentX) / 30, 0) * 1000)
+                .toISOString()
+                .substr(11, 8)
+                .substr(2)
+                .replace(':', '');
+              currentTimeRef.current.value = value;
             } else {
-              currentTimeRef.current.value = _.round(lastTime, 0).toString();
+              const value = new Date(_.round(lastTime, 0) * 1000)
+                .toISOString()
+                .substr(11, 8)
+                .substr(2)
+                .replace(':', '');
+              currentTimeRef.current.value = value;
             }
           }
           if (currentTimeIndexRef.current) {
