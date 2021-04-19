@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef, Fragment } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { CPNameType } from 'types/CP';
 import { RenderingDataPropertyName } from 'types/RP';
@@ -7,8 +7,10 @@ import {
   fnChangeBoneRotation,
   fnChangeBoneScale,
 } from 'utils/CP/transformUtils';
+import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { storeCurrentBone, storeTransformControls } from 'lib/store';
 import { CPInput } from './CPInput';
+import { Segment } from 'components/New_Segment';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';
@@ -49,6 +51,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     z: 0,
   });
   const [values, setValue] = useState(initialValue);
+
+  const [quaternionMode, setQuaternionMode] = useState(false);
+  const [quaternionTab, setQuaternionTab] = useState(false);
 
   const handleBlur = useCallback(
     (e: any) => {
@@ -184,26 +189,87 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     { key: y, value: values.y, name: y, prefix: 'Y' },
     { key: z, value: values.z, name: z, prefix: 'Z' },
   ];
+
+  const quaternionList = [
+    { key: x, value: values.x, name: x, prefix: 'X' },
+    { key: y, value: values.y, name: y, prefix: 'Y' },
+    { key: z, value: values.z, name: z, prefix: 'Z' },
+    { key: 'w', value: values.z, name: 'w', prefix: 'W' },
+  ];
+
+  const iconClasses = cx('icon', {
+    rotation: _.isEqual(name, 'Rotation'),
+    quaternion: quaternionMode,
+  });
+
+  const titleClasses = cx('property-title', {
+    quaternionMode: quaternionTab,
+  });
+
+  const modeList = [
+    {
+      key: 'euler',
+      value: 'Euler',
+      isSelected: !quaternionTab,
+      onClick: () => setQuaternionTab(false),
+    },
+    {
+      key: 'quaternion',
+      value: 'Quaternion',
+      isSelected: quaternionTab,
+      onClick: () => setQuaternionTab(true),
+    },
+  ];
+
   return (
     <div className={cx('panel-inner')}>
-      <div className={cx('property-title')}>{name}</div>
+      <div className={titleClasses}>{name}</div>
+      <IconWrapper
+        className={iconClasses}
+        icon={SvgPath.ChevronLeft}
+        onClick={() => setQuaternionMode(!quaternionMode)}
+        hasFrame={false}
+      />
       <div className={cx('input-group')}>
-        {_.map(valueList, (item, idx) => {
-          const key = `${item.key}_${idx}`;
-          return (
-            <CPInput
-              key={key}
-              innerRef={inputRef}
-              value={item.value}
-              prefix={item.prefix}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              onKeyPress={handleKeyPress}
-              onKeyDown={handleKeyDown}
-              name={item.name}
-            />
-          );
-        })}
+        <Fragment>
+          {quaternionMode ? (
+            <Segment list={modeList} />
+          ) : quaternionTab ? (
+            _.map(quaternionList, (item, idx) => {
+              const key = `${item.key}_${idx}`;
+              return (
+                <CPInput
+                  key={key}
+                  innerRef={inputRef}
+                  value={item.value}
+                  prefix={item.prefix}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
+                  name={item.name}
+                />
+              );
+            })
+          ) : (
+            _.map(valueList, (item, idx) => {
+              const key = `${item.key}_${idx}`;
+              return (
+                <CPInput
+                  key={key}
+                  innerRef={inputRef}
+                  value={item.value}
+                  prefix={item.prefix}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
+                  name={item.name}
+                />
+              );
+            })
+          )}
+        </Fragment>
       </div>
     </div>
   );
