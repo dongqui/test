@@ -166,10 +166,11 @@ const useLPControl = ({
         const childRows = _.filter(mainData, [LPDATA_PROPERTY_TYPES.parentKey, targetRow?.key]);
         const sameNameFile = _.find(childRows, [LPDATA_PROPERTY_TYPES.name, draggingRow?.name]);
         if (sameNameFile) {
-          const ok = window.confirm(
-            '디렉토리 내에 동일한 이름의 파일이 존재합니다. 덮어쓰시겠습니까?',
-          );
-          if (ok) {
+          const confirmed = await getConfirm({
+            title: '디렉토리 내에 동일한 이름의 파일이 존재합니다. 덮어쓰시겠습니까?',
+          });
+
+          if (confirmed) {
             const filteredMainData = _.filter(
               mainData,
               (item) => !_.isEqual(item?.key, sameNameFile?.key),
@@ -198,7 +199,7 @@ const useLPControl = ({
         })),
       );
     },
-    [mainData, setModalMessage, setShowsModal],
+    [getConfirm, mainData, setModalMessage, setShowsModal],
   );
   const onCopy = useCallback(({ mainData }) => {
     storeLpData(
