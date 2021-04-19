@@ -11,12 +11,7 @@ import {
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import {
-  AnimatingDataType,
-  RecordingDataType,
-  RenderingDataType,
-  RetargetDataType,
-} from 'types/RP';
+import { AnimatingDataType, RecordingDataType, RenderingDataType, RetargetMap } from 'types/RP';
 import _ from 'lodash';
 import {
   INITIAL_ANIMATING_DATA,
@@ -35,10 +30,12 @@ import {
   PAGE_NAMES,
   CurrentVisualizedDataType,
 } from '../types';
-import { INITIAL_RETARGET_DATA } from '../utils/const';
+// import { INITIAL_RETARGET_DATA } from '../utils/const';
 import { CPModeType } from '../types/CP';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
+
+import { retargetMap } from 'utils/retargetMap';
 
 export enum StoreDataNames {
   mainData = 'mainData',
@@ -80,7 +77,7 @@ export const storeCPMode = makeVar<CPModeType>(CPModeType.property);
 export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeCPChangeTab = makeVar<number>(0);
 // RETARGET
-export const storeRetargetData = makeVar<RetargetDataType[]>(INITIAL_RETARGET_DATA);
+export const storeRetargetData = makeVar<RetargetMap[]>(retargetMap);
 
 // TP
 export const storeTPTrackNameList = makeVar<TPTrackName[]>([]);
