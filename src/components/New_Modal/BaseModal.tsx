@@ -27,6 +27,7 @@ export interface Props {
   hasCloseIcon?: boolean;
   theme?: Theme;
   title?: string;
+  isAlert?: boolean;
   children?: ReactNode;
 }
 
@@ -55,6 +56,7 @@ const BaseModal: FunctionComponent<Props> = ({
   onClose,
   hasCloseIcon,
   title,
+  isAlert,
   onOutsideClose,
   children,
 }) => {
@@ -167,6 +169,11 @@ const BaseModal: FunctionComponent<Props> = ({
             <IconWrapper className={cx('close')} icon={SvgPath.Close} onClick={onClose} />
           )}
           <div className={cx('content')}>
+            {isAlert && (
+              <div className={cx('alert-wrapper')}>
+                <IconWrapper className={cx('alert')} icon={SvgPath.Alert} hasFrame={false} />
+              </div>
+            )}
             {title && (
               <Headline className={titleClasses} level="5" align="center" bold>
                 <Html content={title} />

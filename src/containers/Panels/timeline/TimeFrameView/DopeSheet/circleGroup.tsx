@@ -12,7 +12,11 @@ interface Props {
 }
 
 const TRACK_HEIGHT = 32; // 트랙 높이
-const SELECTED_COLOR = 'rgba(55, 133, 247, 10%)';
+const SELECTED_COLOR = {
+  layer: '#4e452b',
+  bone: '#373226',
+  transform: '#2b2823',
+};
 
 const CircleGroup: React.FC<Props> = ({ dopeSheetData, prevXScale }) => {
   const [isDisplayed, setIsDisplayed] = useState(true);
@@ -57,6 +61,29 @@ const CircleGroup: React.FC<Props> = ({ dopeSheetData, prevXScale }) => {
     }
   }, [currentClickedTrack, dopeSheetData.trackIndex]);
 
+  let fillColor = 'transparent';
+  if (isSelected) {
+    switch (dopeSheetData.trackIndex % 10) {
+      case 2:
+        fillColor = SELECTED_COLOR.layer;
+        break;
+      case 3:
+      case 7:
+        fillColor = SELECTED_COLOR.bone;
+        break;
+      case 4:
+      case 5:
+      case 6:
+      case 8:
+      case 9:
+      case 0:
+        fillColor = SELECTED_COLOR.transform;
+        break;
+      default:
+        break;
+    }
+  }
+
   return (
     <svg
       className="circle-group"
@@ -66,12 +93,7 @@ const CircleGroup: React.FC<Props> = ({ dopeSheetData, prevXScale }) => {
       style={{ display: isDisplayed ? 'block' : 'none' }}
     >
       {/* <title style={{ display: 'none' }}>{dopeSheetData.trackIndex}</title> */}
-      <rect
-        width="100%"
-        height={TRACK_HEIGHT}
-        fill={isSelected ? SELECTED_COLOR : 'transparent'}
-        strokeDasharray="100, 50"
-      />
+      <rect width="100%" height={TRACK_HEIGHT} fill={fillColor} strokeDasharray="100, 50" />
       <Circles
         circleGroupRef={circleGroupRef}
         dopeSheetData={dopeSheetData}

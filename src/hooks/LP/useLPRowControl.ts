@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
-import { useConfirmDialog } from 'components/New_Modal/ConfirmModal';
+import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import { storeCurrentVisualizedData, storeLpData } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
 
@@ -10,7 +10,7 @@ interface UseLPControlProps {
   rowKey?: string;
 }
 const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
-  const { getConfirm } = useConfirmDialog();
+  const { getConfirm } = useConfirmModal();
   const fileName =
     useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name, [rowKey, lpData]) ??
     'Model';

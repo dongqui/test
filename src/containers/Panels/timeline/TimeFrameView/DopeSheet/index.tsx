@@ -497,33 +497,66 @@ const DopeSheet: React.FC<Props> = ({
     if (currentVisualizedData && playState !== 'play') {
       const { baseLayer, layers } = currentVisualizedData;
       if (deleteTargetKeyframes && baseLayer && layers) {
-        // deleteTargetKeyframes 에는 담기는데 반영이 안된 상태 -> store 변경 시점 로직 수정 필요
         const resultBaseLayerTracks: [ShootTrackType, number][] = [];
-        const resultLayersTracks: [ShootTrackType, number, number][] = [];
+        const resultLayersTracks: [ShootTrackType, number, number, string][] = [];
         _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
-          if (targetKeyframe.isTransformTrack) {
+          if (targetKeyframe.isTransformTrack && !targetKeyframe.isLocked) {
             const { trackName, time, layerKey } = targetKeyframe;
             if (layerKey === 'baseLayer') {
-              const targetTrack = _.find(baseLayer, (track) => track.name === trackName);
+              const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === trackName);
+              let targetTrack = _.find(
+                resultBaseLayerTracks,
+                (track) => targetTrackIndex === track[1],
+              )?.[0];
+              const alreadyIncludedIndex = _.findIndex(
+                resultBaseLayerTracks,
+                (track) => targetTrackIndex === track[1],
+              );
+              if (!targetTrack) {
+                targetTrack = _.find(baseLayer, (track) => track.name === trackName);
+              }
               if (targetTrack) {
                 const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
-                const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === targetTrack.name);
-                resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
+                if (alreadyIncludedIndex === -1) {
+                  resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
+                } else {
+                  resultBaseLayerTracks.splice(alreadyIncludedIndex, 1, [
+                    resultTrack,
+                    targetTrackIndex,
+                  ]);
+                }
               }
             } else {
               const targetLayerIndex = _.findIndex(layers, (layer) => layer.key === layerKey);
               if (layers.length !== 0 && targetLayerIndex !== -1) {
-                const targetTrack = _.find(
+                const targetTrackIndex = _.findIndex(
                   layers[targetLayerIndex].tracks,
-                  (track) => (track.name = trackName),
-                ) as ShootTrackType;
+                  (t) => t.name === trackName,
+                );
+                let targetTrack = _.find(
+                  resultLayersTracks,
+                  (track) => targetTrackIndex === track[1] && layerKey === track[3],
+                )?.[0];
+                const alreadyIncludedIndex = _.findIndex(
+                  resultBaseLayerTracks,
+                  (track) => targetTrackIndex === track[1],
+                );
+                if (!targetTrack) {
+                  targetTrack = _.find(
+                    layers[targetLayerIndex].tracks,
+                    (track) => (track.name = trackName),
+                  ) as ShootTrackType;
+                }
                 if (targetTrack) {
                   const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
-                  const targetTrackIndex = _.findIndex(
-                    layers[targetLayerIndex].tracks,
-                    (t) => t.name === targetTrack.name,
-                  );
-                  resultLayersTracks.push([resultTrack, targetLayerIndex, targetTrackIndex]);
+                  if (alreadyIncludedIndex === -1) {
+                    resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
+                  } else {
+                    resultBaseLayerTracks.splice(alreadyIncludedIndex, 1, [
+                      resultTrack,
+                      targetTrackIndex,
+                    ]);
+                  }
                 }
               }
             }
@@ -534,18 +567,10 @@ const DopeSheet: React.FC<Props> = ({
         if (state && (resultBaseLayerTracks.length !== 0 || resultLayersTracks.length !== 0)) {
           const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
             resultBaseLayerTracks.forEach(([resultTrack, targetTrackIndex]) => {
-              draft.baseLayer = [
-                ...draft.baseLayer.slice(0, targetTrackIndex),
-                resultTrack,
-                ...draft.baseLayer.slice(targetTrackIndex + 1),
-              ];
+              draft.baseLayer[targetTrackIndex] = resultTrack;
             });
             resultLayersTracks.forEach(([resultTrack, targetLayerIndex, targetTrackIndex]) => {
-              draft.layers[targetLayerIndex].tracks = [
-                ...draft.layers[targetLayerIndex].tracks.slice(0, targetTrackIndex),
-                resultTrack,
-                ...draft.layers[targetLayerIndex].tracks.slice(targetTrackIndex + 1),
-              ];
+              draft.layers[targetLayerIndex].tracks[targetTrackIndex] = resultTrack;
             });
           });
           storeCurrentVisualizedData(nextState);
@@ -666,7 +691,7 @@ const DopeSheet: React.FC<Props> = ({
   //   };
   // }, [timelineWrapperRef]);
 
-  const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
+  const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
 
   const handleDopsheetContextMenu = ({
     top,
@@ -705,11 +730,11 @@ const DopeSheet: React.FC<Props> = ({
             if (selectedLayerDopeSheets.length !== 0) {
               handleUpdateKeyframeToLayer();
             }
-            storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
+            storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
             break;
           case 'delete':
             handleDeleteKeyframe();
-            storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
+            storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
             break;
           default:
             break;

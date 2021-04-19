@@ -1,7 +1,7 @@
-import { FunctionComponent, Fragment, memo } from 'react';
+import { FunctionComponent, Fragment, memo, useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import CutEdit from 'containers/extract/CutEdit';
-import { storePageInfo } from 'lib/store';
+import { storeCutImages, storePageInfo } from 'lib/store';
 import MiddleBar from 'containers/New_MiddleBar';
 import Webcam from 'containers/extract/Webcam';
 import _ from 'lodash';
@@ -20,18 +20,10 @@ const Extract: FunctionComponent = () => {
       <div className={cx('wrapper')}>
         <div className={cx('upper-section')}>{videoURL && <Webcam videoUrl={videoURL} />}</div>
         <MiddleBar />
-        {/* <ExtractPlayBar /> */}
         <div className={cx('lower-section')}>
           <CutEdit />
         </div>
       </div>
-      {/* <S.WebcamWrapper>
-        <Webcam videoUrl={videoURL} />
-      </S.WebcamWrapper>
-      <ExtractPlayBar />
-      <S.CutEditWrapper>
-        <CutEdit />
-      </S.CutEditWrapper> */}
     </Fragment>
   );
 };

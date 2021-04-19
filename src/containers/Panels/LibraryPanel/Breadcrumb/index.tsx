@@ -27,7 +27,7 @@ const Breadcrumb: FunctionComponent = () => {
   }, [isOpen]);
 
   // const handleSelect = useCallback(() => {
-  //   alert('handleSelect');
+  //   console.log('handleSelect');
   // }, []);
 
   useEffect(() => {

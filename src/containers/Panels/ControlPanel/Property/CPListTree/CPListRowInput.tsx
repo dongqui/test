@@ -12,6 +12,8 @@ import { CPInput } from './CPInput';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';
+import fnConvertEulerToDegree from 'utils/common/fnConvertEulerToDegree';
+import fnConvertDegreeToEuler from 'utils/common/fnConvertDegreeToEuler';
 
 const cx = classNames.bind(styles);
 
@@ -62,7 +64,11 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
           break;
         case 'rotation':
           if (currentBone) {
-            fnChangeBoneRotation({ targetBone: currentBone, axis, value });
+            fnChangeBoneRotation({
+              targetBone: currentBone,
+              axis,
+              value: fnConvertDegreeToEuler({ degreeValue: value }),
+            });
           }
           break;
         case 'scale':
@@ -75,7 +81,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     [currentBone],
   );
 
-  const onKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (_.isEqual(e.key, 'Enter')) {
       e.currentTarget.blur();
     }
@@ -93,62 +99,82 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
 
   useEffect(() => {
     if (transformControls) {
-      transformControls.addEventListener('objectChange', (event) => {
+      // THREE example 소스라 타입 지원하지 않습니다
+      const handleObjectChange = (event: any) => {
         // event.target 이 transformControls,
         // event.target.object 가 컨트롤 한 Bone 입니다
         const targetObject = event.target.object;
         if (_.isEqual(name, CPNameType.Position)) {
           setInitialValue({
-            x: targetObject?.position?.x ?? 0,
-            y: targetObject?.position?.y ?? 0,
-            z: targetObject?.position?.z ?? 0,
+            x: targetObject?.position?.x ? _.round(targetObject?.position?.x, 4) : 0,
+            y: targetObject?.position?.y ? _.round(targetObject?.position?.y, 4) : 0,
+            z: targetObject?.position?.z ? _.round(targetObject?.position?.z, 4) : 0,
           });
         }
         if (_.isEqual(name, CPNameType.Rotation)) {
           setInitialValue({
-            x: targetObject?.rotation?.x ?? 0,
-            y: targetObject?.rotation?.y ?? 0,
-            z: targetObject?.rotation?.z ?? 0,
+            x: targetObject?.rotation?.x
+              ? _.round(fnConvertEulerToDegree({ eulerValue: targetObject?.rotation?.x }), 4)
+              : 0,
+            y: targetObject?.rotation?.y
+              ? _.round(fnConvertEulerToDegree({ eulerValue: targetObject?.rotation?.y }), 4)
+              : 0,
+            z: targetObject?.rotation?.z
+              ? _.round(fnConvertEulerToDegree({ eulerValue: targetObject?.rotation?.z }), 4)
+              : 0,
           });
         }
         if (_.isEqual(name, CPNameType.Scale)) {
           setInitialValue({
-            x: targetObject?.scale?.x ?? 0,
-            y: targetObject?.scale?.y ?? 0,
-            z: targetObject?.scale?.z ?? 0,
+            x: targetObject?.scale?.x ? _.round(targetObject?.scale?.x, 4) : 0,
+            y: targetObject?.scale?.y ? _.round(targetObject?.scale?.y, 4) : 0,
+            z: targetObject?.scale?.z ? _.round(targetObject?.scale?.z, 4) : 0,
           });
         }
-      });
+      };
+      transformControls.addEventListener('objectChange', handleObjectChange);
+      return () => {
+        transformControls.removeEventListener('objectChange', handleObjectChange);
+      };
     }
   }, [name, transformControls]);
+
   useEffect(() => {
     if (_.isEqual(name, CPNameType.Position)) {
       setInitialValue({
-        x: currentBone?.position?.x ?? 0,
-        y: currentBone?.position?.y ?? 0,
-        z: currentBone?.position?.z ?? 0,
+        x: currentBone?.position?.x ? _.round(currentBone?.position?.x, 4) : 0,
+        y: currentBone?.position?.y ? _.round(currentBone?.position?.y, 4) : 0,
+        z: currentBone?.position?.z ? _.round(currentBone?.position?.z, 4) : 0,
       });
     }
     if (_.isEqual(name, CPNameType.Rotation)) {
       setInitialValue({
-        x: currentBone?.rotation?.x ?? 0,
-        y: currentBone?.rotation?.y ?? 0,
-        z: currentBone?.rotation?.z ?? 0,
+        x: currentBone?.rotation?.x
+          ? _.round(fnConvertEulerToDegree({ eulerValue: currentBone?.rotation?.x }), 4)
+          : 0,
+        y: currentBone?.rotation?.y
+          ? _.round(fnConvertEulerToDegree({ eulerValue: currentBone?.rotation?.y }), 4)
+          : 0,
+        z: currentBone?.rotation?.z
+          ? _.round(fnConvertEulerToDegree({ eulerValue: currentBone?.rotation?.z }), 4)
+          : 0,
       });
     }
     if (_.isEqual(name, CPNameType.Scale)) {
       setInitialValue({
-        x: currentBone?.scale?.x ?? 0,
-        y: currentBone?.scale?.y ?? 0,
-        z: currentBone?.scale?.z ?? 0,
+        x: currentBone?.scale?.x ? _.round(currentBone?.scale?.x, 4) : 0,
+        y: currentBone?.scale?.y ? _.round(currentBone?.scale?.y, 4) : 0,
+        z: currentBone?.scale?.z ? _.round(currentBone?.scale?.z, 4) : 0,
       });
     }
   }, [currentBone, name]);
-  const onChange = useCallback((e) => {
+
+  const handleChange = useCallback((e) => {
     if (!_.isNaN(Number(e.target.value))) {
       setValue(e.target.value);
     }
   }, []);
+
   useEffect(() => {
     setValue(initialValue);
   }, [initialValue]);
@@ -170,9 +196,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
               innerRef={inputRef}
               value={item.value}
               prefix={item.prefix}
-              onChange={onChange}
+              onChange={handleChange}
               onBlur={handleBlur}
-              onKeyPress={onKeyPress}
+              onKeyPress={handleKeyPress}
               onKeyDown={handleKeyDown}
               name={item.name}
             />

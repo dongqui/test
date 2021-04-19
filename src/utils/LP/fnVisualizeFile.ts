@@ -34,16 +34,21 @@ const fnVisualizeFile = ({ key, lpData }: FnVisualizeFileProps) => {
       _.map(lpData, (item) => ({
         ...item,
         isVisualized: _.isEqual(visualizedRow?.key, item.key),
+        isDragging: false,
       })),
     );
-    storeCurrentVisualizedData({
-      key: visualizedRow.key ?? '',
-      name: visualizedRow.name ?? '',
-      type: visualizedRow.type ?? FILE_TYPES.file,
-      boneNames: visualizedRow.boneNames ?? [],
-      baseLayer: visualizedRow.baseLayer ?? [],
-      layers: visualizedRow.layers ?? [],
-    });
+    if (_.isEqual(visualizedRow?.type, FILE_TYPES.motion)) {
+      storeCurrentVisualizedData({
+        key: visualizedRow.key ?? '',
+        name: visualizedRow.name ?? '',
+        type: visualizedRow.type ?? FILE_TYPES.file,
+        boneNames: visualizedRow.boneNames ?? [],
+        baseLayer: visualizedRow.baseLayer ?? [],
+        layers: visualizedRow.layers ?? [],
+      });
+    } else {
+      storeCurrentVisualizedData(undefined);
+    }
   }
 };
 export default fnVisualizeFile;

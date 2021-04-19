@@ -37,8 +37,16 @@
     line-height: 32px;
   }
 
-  &.selected {
-    background: rgba(55, 133, 247, 10%); // --vivid-blue: #3785f7;
+  &.layer-selected {
+    background: #4e452b;
+  }
+
+  &.bone-selected {
+    background: #373226;
+  }
+
+  &.transform-selected {
+    background: #2b2823;
   }
 
   p.locked {
@@ -97,4 +105,13 @@
   .check.rendered {
     color: black;
   }
+}
+
+.form-name {
+  background-color: #f7f7f7;
+  color: $gray200;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 32px;
+  caret-color: #000;
 }

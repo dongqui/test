@@ -9,7 +9,7 @@ export default {
 
 const Template: Story<Props> = (args) => {
   const handleClick = () => {
-    alert('onClick');
+    console.log('onClick');
   };
 
   return (

@@ -23,8 +23,8 @@ import { IconView } from '../../IconTree/IconView';
 import { ListView } from 'containers/ListTree/ListView';
 import Breadcrumb from './Breadcrumb';
 import { Headline } from 'components/New_Typography';
-import { BaseModal } from 'components/New_Modal';
-import { useConfirmDialog } from 'components/New_Modal/ConfirmModal';
+import { BaseModal, AlertModal } from 'components/New_Modal';
+import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import {
   LPDataType,
@@ -67,30 +67,29 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const searchWord = useReactiveVar(storeSearchWord);
   const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
   const panelWrapperRef = useRef<HTMLDivElement>(null);
+  const [showsModal, setShowsModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
   const {
     onClick,
     onContextMenu,
     onDragStart,
     onDragEnd,
     onDrop,
-    // handleDrop,
     shortcutData,
     filteredData,
-    // showsModal,
-    // setShowsModal,
-    // modalMessage,
   } = useLPControl({
     contextmenuInfo,
     mainData: lpData,
     pages,
     searchWord,
     lpmode,
+    showsModal,
+    setShowsModal,
+    modalMessage,
+    setModalMessage,
   });
 
-  const [showsModal, setShowsModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
-
-  const { getConfirm } = useConfirmDialog();
+  const { getConfirm } = useConfirmModal();
 
   const handleDrop = async (acceptedFiles: File[]) => {
     setShowsModal(true);
@@ -280,7 +279,13 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
-      {showsModal && <BaseModal title={modalMessage} onClose={handleModalClose} />}
+      {showsModal && (
+        <BaseModal
+          title={modalMessage}
+          onClose={handleModalClose}
+          onOutsideClose={handleModalClose}
+        />
+      )}
     </div>
   );
 };

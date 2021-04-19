@@ -10,7 +10,6 @@ import {
 } from 'react';
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
-import moment from 'moment';
 import {
   storeAnimatingData,
   storeCurrentAction,
@@ -24,6 +23,7 @@ import { SegmentButton } from 'components/New_Button';
 import { PrefixInput, BaseInput } from 'components/New_Input';
 import { Dropdown } from 'components/New_Dropdown';
 import { PAGE_NAMES } from 'types';
+import { AlertModalProvider } from 'components/New_Modal/AlertModal';
 import PlayBox from './PlayBox';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
@@ -350,76 +350,78 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   }, [playState, startCurrentTimeIndexLoop, stopCurrentTimeIndexLoop]);
 
   return (
-    <div className={cx('wrapper')} onContextMenu={handleMiddleBarContextMenu}>
-      <div className={cx('inner')} ref={scrollRef}>
-        <div className={cx('left')}>
-          <PlayBox />
-        </div>
-        <div className={cx('right')}>
-          <div className={cx('right-inner')}>
-            <div className={cx('playtime')}>
-              <BaseInput
-                className={cx('time-current')}
-                mask="99:99"
-                maskChar="0"
-                value={currentTime}
-                innerRef={currentTimeRef}
-              />
-              <div className={cx('divide')}>/</div>
-              <BaseInput
-                className={cx('time-last')}
-                mask="99:99"
-                maskChar="0"
-                value={lastTime}
-                innerRef={lastTimeRef}
-              />
-              {isShootPage && (
-                <div className={cx('faster')}>
-                  <Dropdown list={fasterList} onSelect={handleFasterSelect} />
-                </div>
-              )}
-            </div>
-            <div className={cx('indicator')}>
-              <PrefixInput
-                className={cx('indicator-input')}
-                prefix="START"
-                defaultValue={indicator.start}
-                // value={indicator.start}
-                arrow
-                onBlur={handleStartInputBlur}
-                onKeyDown={handleInputKeyDown}
-                disabled={!currentVisualizedData}
-              />
-              <PrefixInput
-                className={cx('indicator-input')}
-                prefix="END"
-                defaultValue={indicator.end}
-                // value={indicator.end}
-                arrow
-                onBlur={handleEndInputBlur}
-                onKeyDown={handleInputKeyDown}
-                disabled={!currentVisualizedData}
-              />
-              <PrefixInput
-                id="now"
-                className={cx('indicator-input')}
-                prefix="NOW"
-                defaultValue={indicator.now}
-                // value={indicator.now}
-                onBlur={handleNowInputBlur}
-                onKeyDown={handleInputKeyDown}
-                disabled={!currentVisualizedData}
-                innerRef={currentTimeIndexRef}
-                arrow
-              />
-            </div>
+    <AlertModalProvider>
+      <div className={cx('wrapper')} onContextMenu={handleMiddleBarContextMenu}>
+        <div className={cx('inner')} ref={scrollRef}>
+          <div className={cx('left')}>
+            <PlayBox />
           </div>
-          <div className={cx('mode-selector')}>
-            <SegmentButton list={modeList} />
+          <div className={cx('right')}>
+            <div className={cx('right-inner')}>
+              <div className={cx('playtime')}>
+                <BaseInput
+                  className={cx('time-current')}
+                  mask="99:99"
+                  maskChar="0"
+                  value={currentTime}
+                  innerRef={currentTimeRef}
+                />
+                <div className={cx('divide')}>/</div>
+                <BaseInput
+                  className={cx('time-last')}
+                  mask="99:99"
+                  maskChar="0"
+                  value={lastInputTime}
+                  innerRef={lastTimeRef}
+                />
+                {isShootPage && (
+                  <div className={cx('faster')}>
+                    <Dropdown list={fasterList} onSelect={handleFasterSelect} />
+                  </div>
+                )}
+              </div>
+              <div className={cx('indicator')}>
+                <PrefixInput
+                  className={cx('indicator-input')}
+                  prefix="START"
+                  defaultValue={indicator.start}
+                  // value={indicator.start}
+                  arrow
+                  onBlur={handleStartInputBlur}
+                  onKeyDown={handleInputKeyDown}
+                  disabled={!currentVisualizedData}
+                />
+                <PrefixInput
+                  className={cx('indicator-input')}
+                  prefix="END"
+                  defaultValue={indicator.end}
+                  // value={indicator.end}
+                  arrow
+                  onBlur={handleEndInputBlur}
+                  onKeyDown={handleInputKeyDown}
+                  disabled={!currentVisualizedData}
+                />
+                <PrefixInput
+                  id="now"
+                  className={cx('indicator-input')}
+                  prefix="NOW"
+                  defaultValue={indicator.now}
+                  // value={indicator.now}
+                  onBlur={handleNowInputBlur}
+                  onKeyDown={handleInputKeyDown}
+                  disabled={!currentVisualizedData}
+                  innerRef={currentTimeIndexRef}
+                  arrow
+                />
+              </div>
+            </div>
+            <div className={cx('mode-selector')}>
+              <SegmentButton list={modeList} />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </AlertModalProvider>
   );
 };
 
