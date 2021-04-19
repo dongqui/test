@@ -795,9 +795,19 @@ const DopeSheet: React.FC<Props> = ({
 
           if (currentTimeRef.current) {
             if (_.round(setPlayBarX(currentX) / 30, 4) <= lastTime) {
-              currentTimeRef.current.value = _.round(setPlayBarX(currentX) / 30, 0).toString();
+              const value = new Date(_.round(setPlayBarX(currentX) / 30, 0) * 1000)
+                .toISOString()
+                .substr(11, 8)
+                .substr(2)
+                .replace(':', '');
+              currentTimeRef.current.value = value;
             } else {
-              currentTimeRef.current.value = _.round(lastTime, 0).toString();
+              const value = new Date(_.round(lastTime, 0) * 1000)
+                .toISOString()
+                .substr(11, 8)
+                .substr(2)
+                .replace(':', '');
+              currentTimeRef.current.value = value;
             }
           }
           if (currentTimeIndexRef.current) {
