@@ -151,14 +151,11 @@ const useLPControl = ({
             layers: [],
           };
           const newMainData = _.concat(mainData, newMotion);
-          storeLpData(
-            _.map(newMainData, (item) => ({
-              ...item,
-              isDragging: false,
-              isVisualized: _.isEqual(item?.key, newMotion?.key) ? true : false,
-            })),
-          );
           setShowsModal(false);
+          fnVisualizeFile({
+            key: newMotion?.key,
+            lpData: newMainData,
+          });
           return;
         }
       }
@@ -574,151 +571,6 @@ const useLPControl = ({
     return result;
   }, [getFilteredData, mainData, pages]);
 
-  const handleDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      setShowsModal(true);
-      setModalMessage('Importing the file');
-      if (_.isEmpty(acceptedFiles)) {
-        setModalMessage('파일이 존재하지 않습니다.');
-        return false;
-      }
-      if (
-        _.gt(
-          _.size(
-            _.filter(acceptedFiles, (acceptedFile) =>
-              _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(acceptedFile.name, '.'))),
-            ),
-          ),
-          1,
-        )
-      ) {
-        setModalMessage('영상 파일을 동시에 2개 이상 가져올 수 없습니다.');
-        return false;
-      }
-      let newLpData = _.clone(mainData);
-      // 비디오포맷은 마지막으로 재정렬
-      const sortedAcceptedFiles = _.concat(
-        _.filter(
-          acceptedFiles,
-          (file) => !_.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))),
-        ),
-        _.filter(acceptedFiles, (file) =>
-          _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))),
-        ),
-      );
-      for (const file of sortedAcceptedFiles) {
-        const extension = _.last(_.split(file.name, '.'));
-        if (!_.includes(ENABLE_FILE_FORMATS, extension)) {
-          setModalMessage('지원하지 않는 형식이 포함되어 있습니다.');
-          return false;
-        }
-        let overlappedFile: LPDataType | undefined;
-        if (_.isEqual(lpmode, LPModeType.iconview)) {
-          overlappedFile = _.find(
-            mainData,
-            (item) =>
-              _.isEqual(item.name, file?.name) && _.isEqual(item.parentKey, _.last(pages)?.key),
-          );
-        }
-        if (_.isEqual(lpmode, LPModeType.listview)) {
-          overlappedFile = _.find(
-            mainData,
-            (item) =>
-              _.isEqual(item.name, file?.name) && _.isEqual(item.parentKey, ROOT_FOLDER_NAME),
-          );
-        }
-        if (!_.isEmpty(overlappedFile)) {
-          const confirmed = await getConfirm({
-            title: `대상 폴더에 이름이 ${overlappedFile?.name}인 파일이 있습니다. 덮어쓰시겠습니까?`,
-          });
-
-          if (confirmed) {
-            newLpData = _.filter(newLpData, (item) => !_.isEqual(item?.key, overlappedFile?.key));
-            newLpData = fnDeleteFileByKeys({
-              lpData: newLpData,
-              keys: [overlappedFile?.key ?? ''],
-            });
-          } else {
-            continue;
-          }
-        }
-        let convertedFileUrl = DEFAULT_MODEL_URL;
-        if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
-          // fbx 파일 업로드 및 변환
-          const { url, error, msg } = await api.setConvertFbxToGlb({
-            file,
-            type: FORMAT_TYPES.glb,
-          });
-          if (error) {
-            setModalMessage('파일업로드에 실패하였습니다.');
-            return false;
-          }
-          convertedFileUrl = url;
-        }
-        const url = _.isEqual(extension, FORMAT_TYPES.fbx)
-          ? convertedFileUrl
-          : URL.createObjectURL(file);
-        if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
-          const confirmed = await getConfirm({
-            title: '모션을 추출하시겠습니까?',
-          });
-
-          if (confirmed) {
-            storeLpData(newLpData);
-            setShowsModal(false);
-            storeRecordingData(INITIAL_RECORDING_DATA);
-            storeCutImages([]);
-            storePageInfo({ page: PAGE_NAMES.extract, videoUrl: url, extension });
-            return false;
-          } else {
-            continue;
-          }
-        }
-        const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
-        if (error) {
-          setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
-          return false;
-        }
-        const motions: LPDataType[] = [];
-        const key = uuidv4();
-        _.forEach(animations, (clip, index) => {
-          if (bones) {
-            motions.push({
-              key: clip?.uuid,
-              name: clip?.name,
-              baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
-              layers: [],
-              type: FILE_TYPES.motion,
-              parentKey: key,
-              boneNames: _.map(bones, (bone) => bone.name),
-            });
-          }
-        });
-        let newData: LPDataType[] = [
-          {
-            key,
-            type: FILE_TYPES.file,
-            name: file.name,
-            url,
-            parentKey: _.isEqual(lpmode, LPModeType.iconview)
-              ? _.last(pages)?.key
-              : ROOT_FOLDER_NAME,
-            baseLayer: fnGetBaseLayerWithBoneNames({
-              boneNames: _.map(bones, (bone) => bone.name),
-            }),
-            layers: [],
-            boneNames: _.map(bones, (bone) => bone.name),
-          },
-        ];
-        newData = _.concat(newData, motions);
-        newLpData = _.concat(newLpData, newData);
-      }
-      storeLpData(newLpData);
-      setShowsModal(false);
-    },
-    [getConfirm, lpmode, mainData, pages, setModalMessage, setShowsModal],
-  );
-
   return {
     onClick,
     onDragStart,
@@ -728,7 +580,6 @@ const useLPControl = ({
     onPaste,
     onContextMenu,
     onEdit,
-    handleDrop,
     shortcutData,
     filteredData,
     getFilteredData,
