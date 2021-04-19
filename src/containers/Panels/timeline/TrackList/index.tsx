@@ -33,7 +33,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
-  const [trackList, setTrackList] = useState<TPTrackName[]>([]);
+  const [filteredTrackList, setFilteredTrackList] = useState<TPTrackName[]>([]);
   const prevTrackInput = useRef('');
 
   // debouned가 적용 된 track input 갱신
@@ -58,7 +58,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           );
           resetDopeSheetList[0].isClickedParentTrack = true;
           storeTPUpdateDopeSheetList({ updatedList: resetDopeSheetList, status: 'isFiltered' });
-          setTrackList(trackNameList);
+          setFilteredTrackList(trackNameList);
           return;
         }
 
@@ -124,7 +124,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
         });
         prevTrackInput.current = trimInput;
         storeTPUpdateDopeSheetList({ updatedList: filteredDopeSheetList, status: 'isFiltered' });
-        setTrackList(filterResult);
+        setFilteredTrackList(filterResult);
       }, DEBOUNCED_TIME),
     [trackNameList, dopeSheetList],
   );
@@ -161,11 +161,10 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   // 최초 Track List 적용
   useEffect(() => {
-    if (!trackNameList.length) return;
-    setTrackList(trackNameList);
+    setFilteredTrackList(trackNameList);
   }, [trackNameList]);
 
-  const isEmptyTrack = _.isEmpty(trackList);
+  const isEmptyTrack = _.isEmpty(filteredTrackList);
 
   const handleTrackListContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -189,7 +188,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
         </div>
         {!isEmptyTrack && (
           <div className={cx('list')}>
-            {_.map(trackList, (track, i) => {
+            {_.map(filteredTrackList, (track, i) => {
               const { childrenTrackList, isOpenedChildrenTrack, name, trackIndex } = track;
               const key = `${name}_${i}`;
               return (
@@ -198,7 +197,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                   childrenTrackList={childrenTrackList}
                   isOpenedParent={isOpenedChildrenTrack}
                   paddingLeft={18.5}
-                  title={name}
+                  trackName={name}
                   trackIndex={trackIndex}
                 />
               );

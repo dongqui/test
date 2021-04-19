@@ -38,11 +38,11 @@
   z-index: 3;
 
   path {
-    transform: translate3d(0, -108px, 0);
     cursor: pointer;
   }
 
-  rect {
-    transform: translate3d(10px, -85px, 0);
+  line {
+    stroke: #ecedee;
+    transform: translate3d(10px, 0, 0);
   }
 }
