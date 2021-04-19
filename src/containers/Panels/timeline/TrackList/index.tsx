@@ -19,6 +19,7 @@ import { SearchInput } from 'components/New_Input';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import Track from '../Track';
 import styles from './index.module.scss';
+import { AlertModalProvider } from 'components/New_Modal/AlertModal';
 
 interface Props {
   trackListRef: React.RefObject<HTMLDivElement>;
@@ -33,7 +34,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
-  const [trackList, setTrackList] = useState<TPTrackName[]>([]);
+  const [filteredTrackList, setFilteredTrackList] = useState<TPTrackName[]>([]);
   const prevTrackInput = useRef('');
 
   // debouned가 적용 된 track input 갱신
@@ -58,7 +59,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           );
           resetDopeSheetList[0].isClickedParentTrack = true;
           storeTPUpdateDopeSheetList({ updatedList: resetDopeSheetList, status: 'isFiltered' });
-          setTrackList(trackNameList);
+          setFilteredTrackList(trackNameList);
           return;
         }
 
@@ -124,7 +125,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
         });
         prevTrackInput.current = trimInput;
         storeTPUpdateDopeSheetList({ updatedList: filteredDopeSheetList, status: 'isFiltered' });
-        setTrackList(filterResult);
+        setFilteredTrackList(filterResult);
       }, DEBOUNCED_TIME),
     [trackNameList, dopeSheetList],
   );
@@ -140,15 +141,15 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
   // 레이어 버튼 클릭
   const clickLayerButton = useCallback(() => {
     if (skeletonHelper && currentVisualizedData) {
-      const layerNameRegex = /^layer[0-9]+/;
+      const layerNameRegex = /^Layer[0-9]+/;
       const defaultTypeNames = currentVisualizedData.layers
         .map((layer) => layer.name.match(layerNameRegex))
         .filter((res) => !_.isNull(res));
       const defaultTypeOrders = defaultTypeNames.map((item) =>
-        parseInt(item ? item[0].split('layer')[1] : '1'),
+        parseInt(item ? item[0].split('Layer')[1] : '1'),
       );
-      const nextOrder = fnGetSmallestNewNumber(defaultTypeOrders);
-      const newLayer = fnGetNewLayer({ name: `layer${nextOrder}`, bones: skeletonHelper.bones });
+      const nextOrder = fnGetSmallestNewNumber([0, ...defaultTypeOrders]);
+      const newLayer = fnGetNewLayer({ name: `Layer${nextOrder}`, bones: skeletonHelper.bones });
       const state = storeCurrentVisualizedData();
       if (state) {
         const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
@@ -161,18 +162,17 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   // 최초 Track List 적용
   useEffect(() => {
-    if (!trackNameList.length) return;
-    setTrackList(trackNameList);
+    setFilteredTrackList(trackNameList);
   }, [trackNameList]);
 
-  const isEmptyTrack = _.isEmpty(trackList);
+  const isEmptyTrack = _.isEmpty(filteredTrackList);
 
   const handleTrackListContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
   };
 
   return (
-    <>
+    <AlertModalProvider>
       <div className={cx('wrapper')} ref={trackListRef} onContextMenu={handleTrackListContextMenu}>
         <div className={cx('search-wrapper')}>
           <SearchInput
@@ -189,7 +189,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
         </div>
         {!isEmptyTrack && (
           <div className={cx('list')}>
-            {_.map(trackList, (track, i) => {
+            {_.map(filteredTrackList, (track, i) => {
               const { childrenTrackList, isOpenedChildrenTrack, name, trackIndex } = track;
               const key = `${name}_${i}`;
               return (
@@ -198,7 +198,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                   childrenTrackList={childrenTrackList}
                   isOpenedParent={isOpenedChildrenTrack}
                   paddingLeft={18.5}
-                  title={name}
+                  trackName={name}
                   trackIndex={trackIndex}
                 />
               );
@@ -206,7 +206,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           </div>
         )}
       </div>
-    </>
+    </AlertModalProvider>
   );
 };
 

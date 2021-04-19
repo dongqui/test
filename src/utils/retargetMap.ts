@@ -12,7 +12,7 @@ export const retargetMap = [
   {
     key: 'leftUpLeg',
     value: {
-      targetBone: 'mixamorigHips',
+      targetBone: 'mixamorigLegs',
       order: 'xyz',
       x: 0,
       y: 0,

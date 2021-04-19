@@ -6,7 +6,7 @@ import {
   axisName,
   RenderingDataPropertyName,
   RenderingDataType,
-  RetargetDataType,
+  RetargetMap,
 } from 'types/RP';
 
 export const isDebug = false;
@@ -186,17 +186,7 @@ export const INITIAL_RECORDING_DATA = {
   isRecording: undefined,
   count: undefined,
 };
-export const INITIAL_RETARGET_DATA: RetargetDataType[] = [
-  { boneName: 'Head', x: 60, y: 60, z: 60 },
-  { boneName: 'L Shoulder', x: 60, y: 60, z: 60 },
-  { boneName: 'R Shoulder', x: 60, y: 60, z: 60 },
-  { boneName: 'L Elbow', x: 60, y: 60, z: 60 },
-  { boneName: 'R Elbow', x: 60, y: 60, z: 60 },
-  { boneName: 'L Wrist', x: 60, y: 60, z: 60 },
-  { boneName: 'R Wrist', x: 60, y: 60, z: 60 },
-  { boneName: 'L Hand', x: 60, y: 60, z: 60 },
-  { boneName: 'R Hand', x: 60, y: 60, z: 60 },
-];
+
 export const DEFAULT_TARGETBONES = [
   'Source Bone1',
   'Source Bone2',

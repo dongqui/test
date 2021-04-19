@@ -22,15 +22,15 @@ const LayerSelect: React.FC = () => {
     });
 
     if (confirmed && skeletonHelper && currentVisualizedData) {
-      const defaultNameRegex = /^layer[0-9]+/;
+      const defaultNameRegex = /^Layer[0-9]+/;
       const defaultTypeNames = currentVisualizedData.layers
         .map((layer) => layer.name.match(defaultNameRegex))
         .filter((res) => !_.isNull(res));
       const defaultTypeOrders = defaultTypeNames.map((item) =>
-        parseInt(item ? item[0].split('layer')[1] : '1'),
+        parseInt(item ? item[0].split('Layer')[1] : '1'),
       );
-      const nextOrder = fnGetSmallestNewNumber(defaultTypeOrders);
-      const newLayer = fnGetNewLayer({ name: `layer${nextOrder}`, bones: skeletonHelper.bones });
+      const nextOrder = fnGetSmallestNewNumber([0, ...defaultTypeOrders]);
+      const newLayer = fnGetNewLayer({ name: `Layer${nextOrder}`, bones: skeletonHelper.bones });
       const state = storeCurrentVisualizedData();
       if (state) {
         const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {

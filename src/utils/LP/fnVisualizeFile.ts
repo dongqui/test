@@ -34,6 +34,7 @@ const fnVisualizeFile = ({ key, lpData }: FnVisualizeFileProps) => {
       _.map(lpData, (item) => ({
         ...item,
         isVisualized: _.isEqual(visualizedRow?.key, item.key),
+        isDragging: false,
       })),
     );
     if (_.isEqual(visualizedRow?.type, FILE_TYPES.motion)) {

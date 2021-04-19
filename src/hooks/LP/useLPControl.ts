@@ -110,12 +110,12 @@ const useLPControl = ({
         }
         if (_.isEqual(targetRow?.type, FILE_TYPES.file)) {
           setShowsModal(true);
-          setModalMessage('리타겟팅을 진행중입니다.');
+          setModalMessage('Retargeting motion to the model.');
           const { bones = [], error, msg } = await fnGetAnimationData({
             url: targetRow?.url ?? '',
           });
           if (error) {
-            setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
+            setModalMessage('Failed to export the animation data from the file.');
             return;
           }
           const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
@@ -124,7 +124,7 @@ const useLPControl = ({
           const retargetMap = result?.data?.result ?? [];
           if (error2 || _.isEqual(retargetMap, 'failed')) {
             // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
-            setModalMessage('리타겟맵을 불러오는 과정에서 오류가 발생하였습니다.');
+            setModalMessage('Auto-retargeting has failed. Would you retarget motion manually?');
             return;
           }
           const { result: result2, error: error3, msg: msg3 } = await api.getRetargetBaseLayer({
@@ -137,7 +137,7 @@ const useLPControl = ({
                 .toLowerCase() === '.fbx',
           });
           if (error3) {
-            setModalMessage('리타겟팅 과정에서 오류가 발생하였습니다.');
+            setModalMessage('An error has occurred while retargeting.');
             return;
           }
           const times = draggingRow?.baseLayer?.[0]?.times;
@@ -151,14 +151,11 @@ const useLPControl = ({
             layers: [],
           };
           const newMainData = _.concat(mainData, newMotion);
-          storeLpData(
-            _.map(newMainData, (item) => ({
-              ...item,
-              isDragging: false,
-              isVisualized: _.isEqual(item?.key, newMotion?.key) ? true : false,
-            })),
-          );
           setShowsModal(false);
+          fnVisualizeFile({
+            key: newMotion?.key,
+            lpData: newMainData,
+          });
           return;
         }
       }
@@ -169,10 +166,12 @@ const useLPControl = ({
         const childRows = _.filter(mainData, [LPDATA_PROPERTY_TYPES.parentKey, targetRow?.key]);
         const sameNameFile = _.find(childRows, [LPDATA_PROPERTY_TYPES.name, draggingRow?.name]);
         if (sameNameFile) {
-          const ok = window.confirm(
-            '디렉토리 내에 동일한 이름의 파일이 존재합니다. 덮어쓰시겠습니까?',
-          );
-          if (ok) {
+          const confirmed = await getConfirm({
+            title:
+              'You already have a file with this name in the same directory. Do you want to replace it?',
+          });
+
+          if (confirmed) {
             const filteredMainData = _.filter(
               mainData,
               (item) => !_.isEqual(item?.key, sameNameFile?.key),
@@ -201,7 +200,7 @@ const useLPControl = ({
         })),
       );
     },
-    [mainData, setModalMessage, setShowsModal],
+    [getConfirm, mainData, setModalMessage, setShowsModal],
   );
   const onCopy = useCallback(({ mainData }) => {
     storeLpData(
@@ -446,7 +445,7 @@ const useLPControl = ({
               break;
             case '8':
               setShowsModal(!showsModal);
-              setModalMessage('파일을 내보내는 중입니다. <br /> 잠시만 기다려주세요.');
+              setModalMessage('Please wait while exporting the file.');
 
               await fnExportModelToFbx({
                 modelName: targetRow?.name ?? '',
@@ -457,12 +456,12 @@ const useLPControl = ({
                   setShowsModal(false);
                 })
                 .catch(() => {
-                  setModalMessage('파일을 내보낼 수 없습니다.');
+                  setModalMessage('Cannot export file.');
                 });
               break;
             case '9':
               setShowsModal(!showsModal);
-              setModalMessage('파일을 내보내는 중입니다. <br /> 잠시만 기다려주세요.');
+              setModalMessage('Please wait while exporting the file.');
 
               await fnExportModelToGlb({
                 modelName: targetRow?.name ?? '',
@@ -473,7 +472,7 @@ const useLPControl = ({
                   setShowsModal(false);
                 })
                 .catch(() => {
-                  setModalMessage('파일을 내보낼 수 없습니다.');
+                  setModalMessage('Cannot export file.');
                 });
               break;
             default:
@@ -574,151 +573,6 @@ const useLPControl = ({
     return result;
   }, [getFilteredData, mainData, pages]);
 
-  const handleDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      setShowsModal(true);
-      setModalMessage('Importing the file');
-      if (_.isEmpty(acceptedFiles)) {
-        setModalMessage('파일이 존재하지 않습니다.');
-        return false;
-      }
-      if (
-        _.gt(
-          _.size(
-            _.filter(acceptedFiles, (acceptedFile) =>
-              _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(acceptedFile.name, '.'))),
-            ),
-          ),
-          1,
-        )
-      ) {
-        setModalMessage('영상 파일을 동시에 2개 이상 가져올 수 없습니다.');
-        return false;
-      }
-      let newLpData = _.clone(mainData);
-      // 비디오포맷은 마지막으로 재정렬
-      const sortedAcceptedFiles = _.concat(
-        _.filter(
-          acceptedFiles,
-          (file) => !_.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))),
-        ),
-        _.filter(acceptedFiles, (file) =>
-          _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))),
-        ),
-      );
-      for (const file of sortedAcceptedFiles) {
-        const extension = _.last(_.split(file.name, '.'));
-        if (!_.includes(ENABLE_FILE_FORMATS, extension)) {
-          setModalMessage('지원하지 않는 형식이 포함되어 있습니다.');
-          return false;
-        }
-        let overlappedFile: LPDataType | undefined;
-        if (_.isEqual(lpmode, LPModeType.iconview)) {
-          overlappedFile = _.find(
-            mainData,
-            (item) =>
-              _.isEqual(item.name, file?.name) && _.isEqual(item.parentKey, _.last(pages)?.key),
-          );
-        }
-        if (_.isEqual(lpmode, LPModeType.listview)) {
-          overlappedFile = _.find(
-            mainData,
-            (item) =>
-              _.isEqual(item.name, file?.name) && _.isEqual(item.parentKey, ROOT_FOLDER_NAME),
-          );
-        }
-        if (!_.isEmpty(overlappedFile)) {
-          const confirmed = await getConfirm({
-            title: `대상 폴더에 이름이 ${overlappedFile?.name}인 파일이 있습니다. 덮어쓰시겠습니까?`,
-          });
-
-          if (confirmed) {
-            newLpData = _.filter(newLpData, (item) => !_.isEqual(item?.key, overlappedFile?.key));
-            newLpData = fnDeleteFileByKeys({
-              lpData: newLpData,
-              keys: [overlappedFile?.key ?? ''],
-            });
-          } else {
-            continue;
-          }
-        }
-        let convertedFileUrl = DEFAULT_MODEL_URL;
-        if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
-          // fbx 파일 업로드 및 변환
-          const { url, error, msg } = await api.setConvertFbxToGlb({
-            file,
-            type: FORMAT_TYPES.glb,
-          });
-          if (error) {
-            setModalMessage('파일업로드에 실패하였습니다.');
-            return false;
-          }
-          convertedFileUrl = url;
-        }
-        const url = _.isEqual(extension, FORMAT_TYPES.fbx)
-          ? convertedFileUrl
-          : URL.createObjectURL(file);
-        if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
-          const confirmed = await getConfirm({
-            title: '모션을 추출하시겠습니까?',
-          });
-
-          if (confirmed) {
-            storeLpData(newLpData);
-            setShowsModal(false);
-            storeRecordingData(INITIAL_RECORDING_DATA);
-            storeCutImages([]);
-            storePageInfo({ page: PAGE_NAMES.extract, videoUrl: url, extension });
-            return false;
-          } else {
-            continue;
-          }
-        }
-        const { animations, bones = [], error, msg } = await fnGetAnimationData({ url });
-        if (error) {
-          setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
-          return false;
-        }
-        const motions: LPDataType[] = [];
-        const key = uuidv4();
-        _.forEach(animations, (clip, index) => {
-          if (bones) {
-            motions.push({
-              key: clip?.uuid,
-              name: clip?.name,
-              baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
-              layers: [],
-              type: FILE_TYPES.motion,
-              parentKey: key,
-              boneNames: _.map(bones, (bone) => bone.name),
-            });
-          }
-        });
-        let newData: LPDataType[] = [
-          {
-            key,
-            type: FILE_TYPES.file,
-            name: file.name,
-            url,
-            parentKey: _.isEqual(lpmode, LPModeType.iconview)
-              ? _.last(pages)?.key
-              : ROOT_FOLDER_NAME,
-            baseLayer: fnGetBaseLayerWithBoneNames({
-              boneNames: _.map(bones, (bone) => bone.name),
-            }),
-            layers: [],
-            boneNames: _.map(bones, (bone) => bone.name),
-          },
-        ];
-        newData = _.concat(newData, motions);
-        newLpData = _.concat(newLpData, newData);
-      }
-      storeLpData(newLpData);
-      setShowsModal(false);
-    },
-    [getConfirm, lpmode, mainData, pages, setModalMessage, setShowsModal],
-  );
-
   return {
     onClick,
     onDragStart,
@@ -728,7 +582,6 @@ const useLPControl = ({
     onPaste,
     onContextMenu,
     onEdit,
-    handleDrop,
     shortcutData,
     filteredData,
     getFilteredData,
