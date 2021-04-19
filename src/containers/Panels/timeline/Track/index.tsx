@@ -613,15 +613,15 @@ const Track: React.FC<TrackProps> = ({
             onClose={handleModalClose}
             onOutsideClose={handleModalClose}
             onSubmit={handleSubmit} // 현재 modal submit 이 안 먹음
-            title="레이어 이름을 입력해주세요"
+            title="Please enter the name of the layer."
             text={{
-              submit: '확인',
-              cancel: '취소',
+              submit: 'OK',
+              cancel: 'Cancel',
             }}
           >
             <BaseInput
               className={cx('form-name')}
-              placeholder="레이어 이름"
+              placeholder="Layer name"
               onBlur={handleInputBlur}
               fullSize
             />

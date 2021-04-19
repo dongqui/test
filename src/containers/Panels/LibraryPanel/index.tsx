@@ -95,7 +95,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     setShowsModal(true);
     setModalMessage('Importing the file');
     if (_.isEmpty(acceptedFiles)) {
-      setModalMessage('파일이 존재하지 않습니다.');
+      setModalMessage('File not found.');
       return false;
     }
     if (
@@ -165,7 +165,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
           type: FORMAT_TYPES.glb,
         });
         if (error) {
-          setModalMessage('파일업로드에 실패하였습니다.');
+          setModalMessage('Failed to upload the file.');
           return false;
         }
         convertedFileUrl = url;
@@ -191,7 +191,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
 
       const { animations, bones = [], error } = await fnGetAnimationData({ url });
       if (error) {
-        setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
+        setModalMessage('Failed to export the animation data from the file.');
         return false;
       }
       const motions: LPDataType[] = [];
