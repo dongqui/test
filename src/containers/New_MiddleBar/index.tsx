@@ -60,7 +60,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
       const { baseLayer, layers } = currentVisualizedData;
       const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
       const innerlastTime = summaryTimes[summaryTimes.length - 1];
-      setLastTime(innerlastTime);
+      setLastTime(innerlastTime || 0);
     }
   }, [currentVisualizedData]);
 
