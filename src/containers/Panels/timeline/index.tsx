@@ -7,6 +7,7 @@ import {
   storeTPDopeSheetList,
   storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
+  storeTPClearData,
 } from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
@@ -81,6 +82,12 @@ const TimelineContainer: React.FC<Props> = ({
       }
       prevModelKey.current = visualizedDataKey;
       prevLayerLength.current = layers.length;
+    }
+    // 모델을 삭제 한 경우(TP 초기화)
+    else if (prevModelKey.current && !visualizedDataKey) {
+      storeTPClearData();
+      prevModelKey.current = '';
+      prevLayerLength.current = 0;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseLayer]);
