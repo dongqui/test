@@ -75,12 +75,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
     onDragStart,
     onDragEnd,
     onDrop,
-    // handleDrop,
     shortcutData,
     filteredData,
-    // showsModal,
-    // setShowsModal,
-    // modalMessage,
   } = useLPControl({
     contextmenuInfo,
     mainData: lpData,
