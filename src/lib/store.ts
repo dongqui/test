@@ -126,3 +126,12 @@ export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDope
   });
   storeTPDopeSheetList(nextState);
 };
+
+export const storeTPClearData = () => {
+  storeTPTrackNameList([]);
+  storeTPDopeSheetList([]);
+  storeTPLastBoneList([]);
+  storeTPSelectedTrackList([]);
+  storeTPCurrnetClickedTrack(null);
+  storeDeleteTargetKeyframes([]);
+};

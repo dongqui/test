@@ -6,6 +6,7 @@ import {
   storeCurrentVisualizedData,
   storePageInfo,
   storeRecordingData,
+  storeBarPositionX,
 } from 'lib/store';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
@@ -30,6 +31,7 @@ export interface Props {}
 
 const PlayBox: FunctionComponent<Props> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
+  const barPositionX = useReactiveVar(storeBarPositionX);
   const animatingData = useReactiveVar(storeAnimatingData);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
@@ -43,10 +45,8 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
   const handleKeyDown = () => {};
 
   const handleRecord = useCallback(() => {
-    if (pageInfo.page === PAGE_NAMES.shoot) {
-      storePageInfo({ page: PAGE_NAMES.record });
-    }
-  }, [pageInfo.page]);
+    storePageInfo({ page: PAGE_NAMES.record });
+  }, []);
 
   const handleStop = useCallback(() => {
     if (isShootPage) {
@@ -57,14 +57,18 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
         });
       }
     }
-    // if (!isShootPage) {
-    //   storeRecordingData({
-    //     ...recordingData,
-    //     isPlaying: false,
-    //     rangeBoxInfo: { ...recordingData.rangeBoxInfo, barX: recordingData.rangeBoxInfo.x },
-    //   });
-    // }
-  }, [animatingData, currentVisualizedData, isShootPage]);
+    if (!isShootPage) {
+      storeRecordingData({
+        ...recordingData,
+        isPlaying: false,
+        rangeBoxInfo: {
+          ...recordingData.rangeBoxInfo,
+          barX: recordingData.rangeBoxInfo.x + Math.random(),
+        },
+      });
+      storeBarPositionX(recordingData.rangeBoxInfo.x);
+    }
+  }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
 
   const handleRewind = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
@@ -79,9 +83,6 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
 
     if (!isShootPage) {
       storeRecordingData({ ...recordingData, isPlaying: true });
-      setTimeout(() => {
-        storeRecordingData({ ...recordingData, isPlaying: false });
-      }, 1000 * recordingData.duration);
     }
   }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
 
@@ -98,9 +99,6 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
 
     if (!isShootPage) {
       storeRecordingData({ ...recordingData, isPlaying: true });
-      // setTimeout(() => {
-      //   storeRecordingData({ ...recordingData, isPlaying: false });
-      // }, 1000 * recordingData.duration);
     }
   }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
 
@@ -115,7 +113,10 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
     }
 
     if (!isShootPage) {
-      storeRecordingData({ ...recordingData, isPlaying: false });
+      storeRecordingData({
+        ...recordingData,
+        isPlaying: false,
+      });
     }
   }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
 
