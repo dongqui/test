@@ -109,7 +109,7 @@ const Track: React.FC<TrackProps> = ({
                 ...modalInfo,
                 isShow: true,
                 type: MODAL_TYPES.alert,
-                msg: '두 개 이상의 레이어를 함께 선택할 수 없습니다.',
+                msg: 'Cannot select or edit multiple layers at the same time.',
               });
               setTimeout(() => {
                 storeModalInfo({ ...modalInfo, isShow: false });
@@ -289,7 +289,7 @@ const Track: React.FC<TrackProps> = ({
     setShowsModal(false);
     if (newLayerName === '') {
       const confirmed = getConfirm({
-        title: '빈 이름을 사용할 수 없습니다.',
+        title: 'You cannot use an empty string as a name.',
       });
       if (confirmed) {
         return false;
@@ -299,7 +299,7 @@ const Track: React.FC<TrackProps> = ({
       _.map(currentVisualizedData?.layers, (layer) => layer.name).includes(newLayerName)
     ) {
       const confirmed = getConfirm({
-        title: '이미 존재하는 레이어 이름입니다.',
+        title: 'There is already a layer with the same name.',
       });
       if (confirmed) {
         return false;
@@ -333,7 +333,7 @@ const Track: React.FC<TrackProps> = ({
   // 레이어 삭제 함수 호출
   const deleteLayer = useCallback(async () => {
     const confirmed = await getConfirm({
-      title: '레이어를 삭제하시겠습니까?',
+      title: 'Are you sure you want to delete this layer?',
     });
     if (confirmed) {
       const state = storeCurrentVisualizedData();
