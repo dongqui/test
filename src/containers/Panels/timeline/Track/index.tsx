@@ -358,179 +358,178 @@ const Track: React.FC<TrackProps> = ({
 
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
 
-  let handleTrackContextMenu = ({
-    top,
-    left,
-    e,
-  }: {
-    top: number;
-    left: number;
-    e?: MouseEvent;
-  }) => {};
+  const handleLayerTrackContextMenu = useCallback(
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      e?.preventDefault();
+      storeContextMenuInfo({
+        isShow: true,
+        top,
+        left,
+        data: [
+          {
+            key: 'edit',
+            value: 'Edit Name',
+            isSelected: false,
+            isDisabled: trackIndex === 2,
+          },
+          {
+            key: 'delete',
+            value: 'Delete Layer',
+            isSelected: false,
+            isDisabled: trackIndex === 2,
+          },
+          {
+            key: 'select',
+            value: isSelected ? 'Unselect' : 'Select',
+            isSelected: false,
+          },
+          {
+            key: 'lock',
+            value: isLocked ? 'Unlock' : 'Lock',
+            isSelected: false,
+          },
+          {
+            key: 'include',
+            value: isIncluded ? 'Exclude' : 'Include',
+            isSelected: false,
+          },
+        ],
+        onClick: (key) => {
+          switch (key) {
+            case 'edit':
+              updateLayerName();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'delete':
+              deleteLayer();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'select':
+              if (e) {
+                if (isSelected) {
+                  multiKeyController.ctrl.pressed = true;
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  clickTrackBody(e);
+                  multiKeyController.ctrl.pressed = false;
+                } else {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  clickTrackBody(e);
+                }
+              }
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'lock':
+              clickLockButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'include':
+              clickRenderingButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            default:
+              break;
+          }
+        },
+      });
+    },
+    [
+      clickLockButton,
+      clickRenderingButton,
+      clickTrackBody,
+      contextMenuInfo,
+      deleteLayer,
+      isIncluded,
+      isLocked,
+      isSelected,
+      multiKeyController.ctrl,
+      trackIndex,
+      updateLayerName,
+    ],
+  );
 
-  switch (trackIndex % 10) {
-    // layer 트랙
-    case 2:
-      handleTrackContextMenu = ({
+  const handleBoneTransformTrackContextMenu = useCallback(
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      e?.preventDefault();
+      storeContextMenuInfo({
+        isShow: true,
         top,
         left,
-        e,
-      }: {
-        top: number;
-        left: number;
-        e?: MouseEvent;
-      }) => {
-        e?.preventDefault();
-        storeContextMenuInfo({
-          isShow: true,
-          top,
-          left,
-          data: [
-            {
-              key: 'edit',
-              value: 'Edit Name',
-              isSelected: false,
-              isDisabled: trackIndex === 2,
-            },
-            {
-              key: 'delete',
-              value: 'Delete Layer',
-              isSelected: false,
-              isDisabled: trackIndex === 2,
-            },
-            {
-              key: 'select',
-              value: isSelected ? 'Unselect' : 'Select',
-              isSelected: false,
-            },
-            {
-              key: 'lock',
-              value: isLocked ? 'Unlock' : 'Lock',
-              isSelected: false,
-            },
-            {
-              key: 'include',
-              value: isIncluded ? 'Exclude' : 'Include',
-              isSelected: false,
-            },
-          ],
-          onClick: (key) => {
-            switch (key) {
-              case 'edit':
-                updateLayerName();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'delete':
-                deleteLayer();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'select':
-                if (e) {
-                  if (isSelected) {
-                    multiKeyController.ctrl.pressed = true;
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    clickTrackBody(e);
-                    multiKeyController.ctrl.pressed = false;
-                  } else {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    clickTrackBody(e);
-                  }
-                }
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'lock':
-                clickLockButton();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'include':
-                clickRenderingButton();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              default:
-                break;
-            }
+        data: [
+          {
+            key: 'select',
+            value: isSelected ? 'Unselect' : 'Select',
+            isSelected: false,
           },
-        });
-      };
-      break;
-    // Bone 및 Transform 트랙
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 0:
-      handleTrackContextMenu = ({
-        top,
-        left,
-        e,
-      }: {
-        top: number;
-        left: number;
-        e?: MouseEvent;
-      }) => {
-        e?.preventDefault();
-        storeContextMenuInfo({
-          isShow: true,
-          top,
-          left,
-          data: [
-            {
-              key: 'select',
-              value: isSelected ? 'Unselect' : 'Select',
-              isSelected: false,
-            },
-            {
-              key: 'lock',
-              value: isLocked ? 'Unlock' : 'Lock',
-              isSelected: false,
-            },
-            {
-              key: 'include',
-              value: isIncluded ? 'Exclude' : 'Include',
-              isSelected: false,
-            },
-          ],
-          onClick: (key) => {
-            switch (key) {
-              case 'select':
-                if (e) {
-                  if (isSelected) {
-                    multiKeyController.ctrl.pressed = true;
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    clickTrackBody(e);
-                    multiKeyController.ctrl.pressed = false;
-                  } else {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    clickTrackBody(e);
-                  }
-                }
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'lock':
-                clickLockButton();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'include':
-                clickRenderingButton();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              default:
-                break;
-            }
+          {
+            key: 'lock',
+            value: isLocked ? 'Unlock' : 'Lock',
+            isSelected: false,
           },
-        });
-      };
-      break;
-    default:
-      break;
-  }
+          {
+            key: 'include',
+            value: isIncluded ? 'Exclude' : 'Include',
+            isSelected: false,
+          },
+        ],
+        onClick: (key) => {
+          switch (key) {
+            case 'select':
+              if (e) {
+                if (isSelected) {
+                  multiKeyController.ctrl.pressed = true;
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  clickTrackBody(e);
+                  multiKeyController.ctrl.pressed = false;
+                } else {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  clickTrackBody(e);
+                }
+              }
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'lock':
+              clickLockButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'include':
+              clickRenderingButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            default:
+              break;
+          }
+        },
+      });
+    },
+    [
+      clickLockButton,
+      clickRenderingButton,
+      clickTrackBody,
+      contextMenuInfo,
+      isIncluded,
+      isLocked,
+      isSelected,
+      multiKeyController.ctrl,
+    ],
+  );
+
+  const handleTrackContextMenu = useCallback(
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      e?.preventDefault();
+      if (trackIndex % 10 === 1) {
+        return;
+      } else if (trackIndex % 10 === 2) {
+        handleLayerTrackContextMenu({ top, left, e });
+      } else {
+        handleBoneTransformTrackContextMenu({ top, left, e });
+      }
+    },
+    [handleBoneTransformTrackContextMenu, handleLayerTrackContextMenu, trackIndex],
+  );
 
   useContextMenu({ targetRef: trackRef, event: handleTrackContextMenu });
 
@@ -573,7 +572,7 @@ const Track: React.FC<TrackProps> = ({
               <>
                 <IconWrapper
                   className={cx('track-icon', 'lock')}
-                  icon={isLocked ? SvgPath.LockOpen : SvgPath.LockClose}
+                  icon={isLocked ? SvgPath.LockClose : SvgPath.LockOpen}
                   hasFrame={false}
                   onClick={clickLockButton}
                 />
