@@ -130,8 +130,12 @@ const DopeSheet: React.FC<Props> = ({
 
     prevDopeSheetHeight.current = height;
     xScale.current = d3.scaleLinear().domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN]).range([0, width]); // x값 범위 설정
+    prevXScale.current = xScale.current.copy() as d3ScaleLinear; // 이전 x값 복사
     xScaleCopy.current = xScale.current.copy(); // x값 원본 복사
     xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear); // x축 위치 설정
+
+    const xScaleLinear = prevXScale.current as d3ScaleLinear;
+    const rangeRectWidth = xScaleLinear(300) - xScaleLinear(1);
 
     // grid line wrapper 생성
     d3.select('.grid-line-wrapper').remove();
@@ -177,6 +181,15 @@ const DopeSheet: React.FC<Props> = ({
           .attr('transform', `translate(0, -${X_AXIS_HEIGHT / 2})`)
           .style('fill', '#363636'),
       )
+      .call((xAxisG) => {
+        xAxisG
+          .append('rect')
+          .attr('class', 'range-rect')
+          .attr('width', rangeRectWidth)
+          .attr('height', X_AXIS_HEIGHT / 2)
+          .attr('transform', `translate(${xScaleLinear(1)}, -${X_AXIS_HEIGHT / 2})`)
+          .style('fill', '#3785F7');
+      })
       .call((xAxisG) =>
         xAxisG
           .append('rect')
@@ -186,9 +199,10 @@ const DopeSheet: React.FC<Props> = ({
           .style('fill', '#282727'),
       );
     d3.selectAll('.x-axis-g line').attr('y2', -24);
-  }, []);
+  }, [prevXScale]);
 
   // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
+  const testRef = useRef(INITIAL_SCALE_LEVEL);
   useEffect(() => {
     if (!dopeSheetRef.current) return;
     if (!xScale.current || !xScaleCopy.current) return;
@@ -207,6 +221,13 @@ const DopeSheet: React.FC<Props> = ({
       renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // grid line 다시 그리기
       d3.selectAll('.x-axis-g line').attr('y2', -24);
 
+      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      const rangeRectWidth = xScaleLinear(endTimeIndex) - xScaleLinear(startTimeIndex);
+      d3.select('.range-rect')
+        .attr('width', rangeRectWidth)
+        .attr('transform', `translate(${xScaleLinear(startTimeIndex)}, -${X_AXIS_HEIGHT / 2})`);
+      testRef.current = event.transform.k;
+
       // grid line 조정
       d3.selectAll('.grid-line').remove();
       d3.selectAll('.grid-line-wrapper .tick')
@@ -219,10 +240,7 @@ const DopeSheet: React.FC<Props> = ({
 
       d3.select('#play-bar-wrapper').attr(
         'transform',
-        `translate(
-          ${(prevXScale.current as d3ScaleLinear)(currentXAxisPosition.current) - 10},
-          ${X_AXIS_HEIGHT / 2}
-        )`,
+        `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
       );
     };
 
@@ -275,8 +293,31 @@ const DopeSheet: React.FC<Props> = ({
 
     d3.select(dopeSheetRef.current)
       .call(zoomBehavior as any)
-      .call(zoomBehavior.scaleTo as any, INITIAL_SCALE_LEVEL);
-  }, [currentXAxisPosition, prevXScale]);
+      .call(zoomBehavior.scaleTo as any, testRef.current);
+    // .call(zoomBehavior.scaleTo as any, INITIAL_SCALE_LEVEL);
+  }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex]);
+
+  // useEffect(() => {
+  //   if (dopeSheetRef.current && prevXScale.current) {
+  //     const xScaleLinear = prevXScale.current as d3ScaleLinear;
+  //     const xAxisPositionRef = xAxisPosition.current as d3Axis;
+  //     const width = xScaleLinear(endTimeIndex) - xScaleLinear(startTimeIndex);
+  //     d3.select('.range-rect').remove();
+  //     d3.select('.x-axis-g')
+  //       .append('rect')
+  //       .attr('class', 'range-rect')
+  //       .attr('width', width)
+  //       .attr('height', X_AXIS_HEIGHT / 2)
+  //       .attr(
+  //         'transform',
+  //         `translate(${xScaleLinear(startTimeIndex)},
+  //         -${X_AXIS_HEIGHT / 2})`,
+  //       )
+  //       .style('fill', '#3785F7');
+  //     renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // x축 다시 그리기
+  //     console.log(xScaleLinear(endTimeIndex), xScaleLinear(startTimeIndex));
+  //   }
+  // }, [endTimeIndex, prevXScale, startTimeIndex]);
 
   // timelineWrapper에 scroll 효과 적용
   useEffect(() => {
@@ -944,26 +985,6 @@ const DopeSheet: React.FC<Props> = ({
       document.removeEventListener('keypress', handleDopesheetKeyPress);
     };
   }, [handleDopesheetKeyDown, handleDopesheetKeyPress, handleDopesheetKeyUp]);
-
-  // // TP 높이 변경 감지
-  // useEffect(() => {
-  //   if (dopeSheetRef.current) {
-  //     const ro = new ResizeObserver(([entry]) => {
-  //       const { height, width } = entry.contentRect;
-  //       const xAxisPositionRef = xAxisPosition.current as d3Axis;
-
-  //       xScale.current = d3.scaleLinear().domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN]).range([0, width]); // x값 범위 설정
-  //       xScaleCopy.current = xScale.current.copy(); // x값 원본 복사
-  //       xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear); // x축 위치 설정
-  //       prevXScale.current = xScale.current?.copy() as d3ScaleLinear; // 이전 x값 복사
-
-  //       renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // 이전 값으로 scale 적용
-  //       renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear));
-  //       prevDopeSheetHeight.current = height;
-  //     });
-  //     ro.observe(dopeSheetRef.current);
-  //   }
-  // }, [prevXScale]);
 
   return (
     <>
