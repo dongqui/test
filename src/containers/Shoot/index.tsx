@@ -25,11 +25,9 @@ import Html from 'components/New_Typography/Html';
 import { Headline } from 'components/New_Typography';
 
 const ShootPage: FunctionComponent = () => {
-  const lpData = useReactiveVar(storeLpData);
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
-  const recordingData = useReactiveVar(storeRecordingData);
   const contextMenuRef = useRef<HTMLDivElement | any>(null);
 
   const handleClose = useCallback(() => {
