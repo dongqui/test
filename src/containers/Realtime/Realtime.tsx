@@ -14,20 +14,19 @@ import {
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox } from 'react-resizable';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
-import TimelineContainer from 'containers/Panels/timeline';
+import Timeline from 'containers/Realtime/Panel/Timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import { ConfirmModalProvider } from 'components/New_Modal/ConfirmModal';
-import { AlertModalProvider } from 'components/New_Modal/AlertModal';
 import useWindowSize from 'hooks/common/useWindowSize';
 import { d3ScaleLinear } from 'types/TP';
 import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 import classNames from 'classnames/bind';
-import styles from './MainPage.module.scss';
+import styles from './Realtime.module.scss';
 
 const cx = classNames.bind(styles);
 
-const MainContainer: FunctionComponent = () => {
+const Realtime: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const cpData = useReactiveVar(storeCPData);
@@ -84,21 +83,14 @@ const MainContainer: FunctionComponent = () => {
       storeCurrentVisualizedData(undefined);
     }
   }, [currentVisualizedData?.key, lpData]);
+
   return (
     <div className={cx('wrapper')}>
-      <ResizableBox
-        width={width}
-        height={height * 0.7}
-        minConstraints={[width, height * 0.5]}
-        maxConstraints={[width, height * 0.7]}
-        className={cx('upper-section')}
-        // resizeHandles={['s']}
-        // axis="y"
-      >
+      <div className={cx('upper-section')}>
         <ResizableBox
           width={248}
           minConstraints={[248, height * 0.5]}
-          maxConstraints={[450, height * 0.7]}
+          maxConstraints={[450, height - 48]}
           className={cx('panel-library')}
           resizeHandles={['e']}
           axis="both"
@@ -108,9 +100,9 @@ const MainContainer: FunctionComponent = () => {
           </ConfirmModalProvider>
         </ResizableBox>
         <ResizableBox
-          width={width - 248 - 264}
+          width={width}
           minConstraints={[150, height * 0.5]}
-          maxConstraints={[width - 248 - 264, height * 0.7]}
+          maxConstraints={[width, height - 48]}
           className={cx('panel-rendering')}
           axis="both"
         >
@@ -125,20 +117,10 @@ const MainContainer: FunctionComponent = () => {
             />
           </div>
         </ResizableBox>
-        <ResizableBox
-          width={264}
-          minConstraints={[264, height * 0.5]}
-          maxConstraints={[450, height * 0.7]}
-          className={cx('panel-control')}
-          resizeHandles={['w']}
-          axis="both"
-        >
-          <ControlPanel />
-        </ResizableBox>
-      </ResizableBox>
-      <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">
+      </div>
+      <div className={cx('lower-section')}>
         <ConfirmModalProvider>
-          <TimelineContainer
+          <Timeline
             visualizedDataKey={currentVisualizedData?.key}
             baseLayer={currentVisualizedData?.baseLayer}
             layers={currentVisualizedData?.layers}
@@ -148,9 +130,9 @@ const MainContainer: FunctionComponent = () => {
             prevXScale={prevXScale}
           />
         </ConfirmModalProvider>
-      </ResizableBox>
+      </div>
     </div>
   );
 };
 
-export default memo(MainContainer);
+export default memo(Realtime);

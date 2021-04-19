@@ -202,7 +202,13 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
 
   // 일시 정지 시 재생바 30fps 에 맞게 변경
   useEffect(() => {
-    if (playState === 'pause' && currentXAxisPosition && currentXAxisPosition.current) {
+    if (
+      playState === 'pause' &&
+      currentXAxisPosition &&
+      currentXAxisPosition.current &&
+      prevXScale &&
+      prevXScale.current
+    ) {
       currentXAxisPosition.current = _.round(currentXAxisPosition.current, 0);
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
       d3.select('#play-bar-wrapper').attr(
