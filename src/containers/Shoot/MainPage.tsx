@@ -92,8 +92,8 @@ const MainContainer: FunctionComponent = () => {
         minConstraints={[width, height * 0.5]}
         maxConstraints={[width, height * 0.7]}
         className={cx('upper-section')}
-        resizeHandles={['s']}
-        axis="y"
+        // resizeHandles={['s']}
+        // axis="y"
       >
         <ResizableBox
           width={248}
