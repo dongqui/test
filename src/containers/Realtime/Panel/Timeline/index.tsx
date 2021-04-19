@@ -1,19 +1,16 @@
-import React, { memo, MutableRefObject, RefObject, useEffect, useRef } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
+import { FunctionComponent, memo, useEffect, useRef, MutableRefObject, RefObject } from 'react';
+import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import {
   storeTPTrackNameList,
   storeTPDopeSheetList,
   storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
-  storeTPClearData,
 } from 'lib/store';
-import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
 import { fnSetDefaultDopeSheetList, fnSetLayerDopeSheet } from 'utils/TP/dopeSheetUtils';
 import { fnGetBinarySearch, fnSetDefaultTrackNameList, fnSetLayerTrack } from 'utils/TP/trackUtils';
-// import MiddleBar from 'containers/MiddleBar';
 import MiddleBar from 'containers/New_MiddleBar';
 import { ShootLayerType, ShootTrackType } from 'types';
 import produce from 'immer';
@@ -31,7 +28,7 @@ interface Props {
   prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
-const TimelineContainer: React.FC<Props> = ({
+const TimelineContainer: FunctionComponent<Props> = ({
   baseLayer,
   layers,
   visualizedDataKey,
@@ -82,12 +79,6 @@ const TimelineContainer: React.FC<Props> = ({
       }
       prevModelKey.current = visualizedDataKey;
       prevLayerLength.current = layers.length;
-    }
-    // 모델을 삭제 한 경우(TP 초기화)
-    else if (prevModelKey.current && !visualizedDataKey) {
-      storeTPClearData();
-      prevModelKey.current = '';
-      prevLayerLength.current = 0;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseLayer]);
@@ -208,22 +199,14 @@ const TimelineContainer: React.FC<Props> = ({
   }, [layers]);
 
   return (
-    <>
-      <div className={cx('timeline-panel')}>
-        <MiddleBar
-          currentTimeRef={currentTimeRef}
-          currentTimeIndexRef={currentTimeIndexRef}
-          currentXAxisPosition={currentXAxisPosition}
-          prevXScale={prevXScale}
-        />
-        <TimelineWrapper
-          currentTimeRef={currentTimeRef}
-          currentTimeIndexRef={currentTimeIndexRef}
-          currentXAxisPosition={currentXAxisPosition}
-          prevXScale={prevXScale}
-        />
-      </div>
-    </>
+    <div className={cx('wrapper')}>
+      <MiddleBar
+        currentTimeRef={currentTimeRef}
+        currentTimeIndexRef={currentTimeIndexRef}
+        currentXAxisPosition={currentXAxisPosition}
+        prevXScale={prevXScale}
+      />
+    </div>
   );
 };
 
