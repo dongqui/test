@@ -19,6 +19,7 @@ import { SearchInput } from 'components/New_Input';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import Track from '../Track';
 import styles from './index.module.scss';
+import { AlertModalProvider } from 'components/New_Modal/AlertModal';
 
 interface Props {
   trackListRef: React.RefObject<HTMLDivElement>;
@@ -172,7 +173,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
   };
 
   return (
-    <>
+    <AlertModalProvider>
       <div className={cx('wrapper')} ref={trackListRef} onContextMenu={handleTrackListContextMenu}>
         <div className={cx('search-wrapper')}>
           <SearchInput
@@ -206,7 +207,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           </div>
         )}
       </div>
-    </>
+    </AlertModalProvider>
   );
 };
 

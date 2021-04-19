@@ -29,6 +29,7 @@ import useContextMenu from 'hooks/common/useContextMenu';
 import { FormModal } from 'components/New_Modal';
 import { BaseInput } from 'components/New_Input';
 import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
+import { useAlertModal } from 'components/New_Modal/AlertModal';
 
 interface TrackProps {
   childrenTrackList: TPTrackName[];
@@ -60,6 +61,8 @@ const Track: React.FC<TrackProps> = ({
   const [newLayerName, setNewLayerName] = useState('');
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const modalInfo = useReactiveVar(storeModalInfo);
+
+  const { getConfirm } = useAlertModal();
 
   // 트랙 별 좌측 padding left 값 설정
   const calcPaddingLeft = useMemo(
@@ -102,7 +105,15 @@ const Track: React.FC<TrackProps> = ({
               storeTPSelectedTrackList(newClickedTrackList);
               storeTPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
             } else {
-              alert('다른 레이어를 클릭');
+              storeModalInfo({
+                ...modalInfo,
+                isShow: true,
+                type: MODAL_TYPES.alert,
+                msg: '두 개 이상의 레이어를 함께 선택할 수 없습니다.',
+              });
+              setTimeout(() => {
+                storeModalInfo({ ...modalInfo, isShow: false });
+              }, 150);
             }
           } else {
             const [updatedTrackList, newClickedTrackList] = fnClickTrackToMouse({
@@ -116,7 +127,7 @@ const Track: React.FC<TrackProps> = ({
         }
       }
     },
-    [clickedTrackList, lastBoneList, multiKeyController.ctrl.pressed, title, trackIndex],
+    [clickedTrackList, lastBoneList, modalInfo, multiKeyController.ctrl.pressed, title, trackIndex],
   );
 
   // 화살표 버튼 클릭
@@ -276,16 +287,23 @@ const Track: React.FC<TrackProps> = ({
   const handleSubmit = useCallback(() => {
     console.log('newLayerName: ', newLayerName);
     setShowsModal(false);
-    if (
-      newLayerName === '' ||
+    if (newLayerName === '') {
+      const confirmed = getConfirm({
+        title: '빈 이름을 사용할 수 없습니다.',
+      });
+      if (confirmed) {
+        return false;
+      }
+    } else if (
+      newLayerName === 'Base' ||
       _.map(currentVisualizedData?.layers, (layer) => layer.name).includes(newLayerName)
     ) {
-      storeModalInfo({
-        ...modalInfo,
-        isShow: true,
-        type: MODAL_TYPES.alert,
-        msg: '이미 존재하는 레이어 이름입니다.',
+      const confirmed = getConfirm({
+        title: '이미 존재하는 레이어 이름입니다.',
       });
+      if (confirmed) {
+        return false;
+      }
     } else {
       const state = storeCurrentVisualizedData();
       if (state) {
@@ -302,7 +320,7 @@ const Track: React.FC<TrackProps> = ({
         storeCurrentVisualizedData(nextState);
       }
     }
-  }, [currentVisualizedData?.layers, dopeSheetList, modalInfo, newLayerName, trackIndex]);
+  }, [currentVisualizedData?.layers, dopeSheetList, getConfirm, newLayerName, trackIndex]);
 
   const handleModalClose = () => {
     setShowsModal(false);
@@ -311,8 +329,6 @@ const Track: React.FC<TrackProps> = ({
   const handleInputBlur = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewLayerName(event.target.value);
   };
-
-  const { getConfirm } = useConfirmModal();
 
   // 레이어 삭제 함수 호출
   const deleteLayer = useCallback(async () => {
