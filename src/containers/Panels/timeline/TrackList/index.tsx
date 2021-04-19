@@ -140,15 +140,15 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
   // 레이어 버튼 클릭
   const clickLayerButton = useCallback(() => {
     if (skeletonHelper && currentVisualizedData) {
-      const layerNameRegex = /^layer[0-9]+/;
+      const layerNameRegex = /^Layer[0-9]+/;
       const defaultTypeNames = currentVisualizedData.layers
         .map((layer) => layer.name.match(layerNameRegex))
         .filter((res) => !_.isNull(res));
       const defaultTypeOrders = defaultTypeNames.map((item) =>
-        parseInt(item ? item[0].split('layer')[1] : '1'),
+        parseInt(item ? item[0].split('Layer')[1] : '1'),
       );
-      const nextOrder = fnGetSmallestNewNumber(defaultTypeOrders);
-      const newLayer = fnGetNewLayer({ name: `layer${nextOrder}`, bones: skeletonHelper.bones });
+      const nextOrder = fnGetSmallestNewNumber([0, ...defaultTypeOrders]);
+      const newLayer = fnGetNewLayer({ name: `Layer${nextOrder}`, bones: skeletonHelper.bones });
       const state = storeCurrentVisualizedData();
       if (state) {
         const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
