@@ -202,7 +202,7 @@ const DopeSheet: React.FC<Props> = ({
   }, [prevXScale]);
 
   // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
-  const testRef = useRef(INITIAL_SCALE_LEVEL);
+  const curScaleLevel = useRef(INITIAL_SCALE_LEVEL);
   useEffect(() => {
     if (!dopeSheetRef.current) return;
     if (!xScale.current || !xScaleCopy.current) return;
@@ -226,7 +226,7 @@ const DopeSheet: React.FC<Props> = ({
       d3.select('.range-rect')
         .attr('width', rangeRectWidth)
         .attr('transform', `translate(${xScaleLinear(startTimeIndex)}, -${X_AXIS_HEIGHT / 2})`);
-      testRef.current = event.transform.k;
+      curScaleLevel.current = event.transform.k;
 
       // grid line 조정
       d3.selectAll('.grid-line').remove();
@@ -293,31 +293,8 @@ const DopeSheet: React.FC<Props> = ({
 
     d3.select(dopeSheetRef.current)
       .call(zoomBehavior as any)
-      .call(zoomBehavior.scaleTo as any, testRef.current);
-    // .call(zoomBehavior.scaleTo as any, INITIAL_SCALE_LEVEL);
+      .call(zoomBehavior.scaleTo as any, curScaleLevel.current);
   }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex]);
-
-  // useEffect(() => {
-  //   if (dopeSheetRef.current && prevXScale.current) {
-  //     const xScaleLinear = prevXScale.current as d3ScaleLinear;
-  //     const xAxisPositionRef = xAxisPosition.current as d3Axis;
-  //     const width = xScaleLinear(endTimeIndex) - xScaleLinear(startTimeIndex);
-  //     d3.select('.range-rect').remove();
-  //     d3.select('.x-axis-g')
-  //       .append('rect')
-  //       .attr('class', 'range-rect')
-  //       .attr('width', width)
-  //       .attr('height', X_AXIS_HEIGHT / 2)
-  //       .attr(
-  //         'transform',
-  //         `translate(${xScaleLinear(startTimeIndex)},
-  //         -${X_AXIS_HEIGHT / 2})`,
-  //       )
-  //       .style('fill', '#3785F7');
-  //     renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // x축 다시 그리기
-  //     console.log(xScaleLinear(endTimeIndex), xScaleLinear(startTimeIndex));
-  //   }
-  // }, [endTimeIndex, prevXScale, startTimeIndex]);
 
   // timelineWrapper에 scroll 효과 적용
   useEffect(() => {
