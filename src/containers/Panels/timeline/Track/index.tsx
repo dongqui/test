@@ -101,8 +101,6 @@ const Track: React.FC<TrackProps> = ({
               const [updatedTrackList, newClickedTrackList] = clickTrackToCtrlKey;
               storeTPSelectedTrackList(newClickedTrackList);
               storeTPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
-            } else {
-              alert('다른 레이어를 클릭');
             }
           } else {
             const [updatedTrackList, newClickedTrackList] = fnClickTrackToMouse({

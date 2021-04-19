@@ -71,7 +71,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
   }, []);
 
   const handleRetargetRefresh = () => {
-    alert('Refresh');
+    console.log('Refresh');
   };
 
   return (
