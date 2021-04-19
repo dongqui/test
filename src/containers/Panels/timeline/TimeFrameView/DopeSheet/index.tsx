@@ -92,7 +92,7 @@ const DopeSheet: React.FC<Props> = ({
 
   const setPlayBarPosition = useCallback(() => {
     if (currentXAxisPosition && currentAction) {
-      currentXAxisPosition.current = currentAction.time * 30;
+      currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
       d3.select('#play-bar-wrapper').attr(
         'transform',
