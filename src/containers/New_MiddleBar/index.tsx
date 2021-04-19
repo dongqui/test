@@ -321,6 +321,24 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     }
   }, [currentAction, currentTimeRef, currentXAxisPosition, lastTime]);
 
+  // VM now 시간 변경 시 currentTime 변경
+  useEffect(() => {
+    const value = new Date(_.round(indicator.now, 0) * 1000)
+      .toISOString()
+      .substr(11, 8)
+      .substr(2)
+      .replace(':', '');
+    setCurrentTime(value);
+  }, [indicator.now]);
+  // VM end 시간 변경 시 lastInputTime 변경
+  useEffect(() => {
+    const value = new Date(_.round(recordingData.duration, 0) * 1000)
+      .toISOString()
+      .substr(11, 8)
+      .substr(2)
+      .replace(':', '');
+    setLastInputTime(value);
+  }, [indicator.end, recordingData.duration]);
   const currentTimeIndexReqIdRef = useRef<number | undefined>();
 
   const changeCurrentTimeIndexRef = useCallback(() => {
@@ -385,7 +403,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                   className={cx('indicator-input')}
                   prefix="START"
                   defaultValue={indicator.start}
-                  // value={indicator.start}
+                  value={indicator.start}
                   arrow
                   onBlur={handleStartInputBlur}
                   onKeyDown={handleInputKeyDown}
@@ -395,7 +413,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                   className={cx('indicator-input')}
                   prefix="END"
                   defaultValue={indicator.end}
-                  // value={indicator.end}
+                  value={indicator.end}
                   arrow
                   onBlur={handleEndInputBlur}
                   onKeyDown={handleInputKeyDown}
@@ -406,7 +424,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                   className={cx('indicator-input')}
                   prefix="NOW"
                   defaultValue={indicator.now}
-                  // value={indicator.now}
+                  value={indicator.now}
                   onBlur={handleNowInputBlur}
                   onKeyDown={handleInputKeyDown}
                   disabled={!currentVisualizedData}
