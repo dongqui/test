@@ -44,7 +44,8 @@ const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
     );
     if (sameNameFile) {
       const confirmed = await getConfirm({
-        title: '동일한 파일의 이름이 존재합니다. 덮어쓰시겠습니까?',
+        title:
+          'You already have a file with this name in the same directory. Do you want to replace it?',
       });
       if (confirmed) {
         filteredLpData = _.filter(

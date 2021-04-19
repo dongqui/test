@@ -544,7 +544,7 @@ const DopeSheet: React.FC<Props> = ({
                 if (!targetTrack) {
                   targetTrack = _.find(
                     layers[targetLayerIndex].tracks,
-                    (track) => (track.name = trackName),
+                    (track) => track.name === trackName,
                   ) as ShootTrackType;
                 }
                 if (targetTrack) {

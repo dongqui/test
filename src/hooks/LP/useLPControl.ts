@@ -123,7 +123,8 @@ const useLPControl = ({
           });
           const retargetMap = result?.data?.result ?? [];
           if (error2 || _.isEqual(retargetMap, 'failed')) {
-            // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
+            // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정 및 모달 메시지도 아래로 변경
+            // setModalMessage('Auto-retargeting has failed. Would you retarget motion manually?');
             setModalMessage('리타겟맵을 불러오는 과정에서 오류가 발생하였습니다.');
             return;
           }
@@ -167,7 +168,8 @@ const useLPControl = ({
         const sameNameFile = _.find(childRows, [LPDATA_PROPERTY_TYPES.name, draggingRow?.name]);
         if (sameNameFile) {
           const confirmed = await getConfirm({
-            title: '디렉토리 내에 동일한 이름의 파일이 존재합니다. 덮어쓰시겠습니까?',
+            title:
+              'You already have a file with this name in the same directory. Do you want to replace it?',
           });
 
           if (confirmed) {

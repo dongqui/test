@@ -142,7 +142,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
       ...modalInfo,
       isShow: true,
       type: MODAL_TYPES.loading,
-      msg: '모션 데이터를 추출중입니다.',
+      msg: 'Exporting motion from the video.',
     });
     const { error, msg, result } = await api.uploadFileToMotionData({
       url: `${pageInfo?.videoUrl}`,
