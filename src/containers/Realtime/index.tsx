@@ -3,7 +3,6 @@ import { FunctionComponent, memo, useState, useCallback, useRef, useEffect } fro
 import { useReactiveVar } from '@apollo/client';
 import { ContextMenu } from 'components/New_ContextMenu';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
-import { useRenderingModel } from 'hooks/RP/useRenderingModel';
 import { v4 as uuidv4 } from 'uuid';
 import { storeContextMenuInfo, storeModalInfo, storePageInfo } from 'lib/store';
 import { MODAL_TYPES } from 'types';
@@ -15,6 +14,7 @@ import {
   PAGE_NAMES,
   ENABLE_FILE_FORMATS,
 } from 'types';
+import * as THREE from 'three';
 import { FILE_TYPES, LPModeType } from 'types';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
@@ -58,11 +58,13 @@ const RealtimeContainer: FunctionComponent = () => {
 
   const [defaultModelKey, setDefaultModelKey] = useState<string>();
 
-  const modelURL =
-    'https://kr.object.ncloudstorage.com/shoot-bucket/fbx/tilda_rt_Tpose_fbx2020_binary.glb?AWSAccessKeyId=0oW8tCxsQUkrFqNhYVlu&Signature=%2F2yUIUn9BD6oj6STH8pmVrit8Ok%3D&Expires=1618833215';
-  // 'https://kr.object.ncloudstorage.com/shoot-bucket/tilda_rt_Tpose_fbx2020_binary.fbx';
+  const modelURL = '';
+  // 'https://res.cloudinary.com/dkp8v4ni8/raw/upload/v1618892241/tilda_rt_Tpose_fbx2020_binary_cnebgv.fbx';
+  ('https://kr.object.ncloudstorage.com/shoot-bucket/tilda_rt_Tpose_fbx2020_binary.fbx');
 
   const handleDefaultModelLoad = useCallback(async () => {
+    const convertedFileUrl = DEFAULT_MODEL_URL;
+
     const { animations, bones = [], error } = await fnGetAnimationData({
       url: modelURL,
     });
@@ -102,20 +104,23 @@ const RealtimeContainer: FunctionComponent = () => {
     storeLpData(newLpData);
   }, [lpData, lpmode, pages]);
 
+  const renderingData = useReactiveVar(storeRenderingData);
+
   useEffect(() => {
     if (_.isEmpty(lpData)) {
       handleDefaultModelLoad();
     } else {
       setDefaultModelKey(lpData[0].key);
     }
-  }, [handleDefaultModelLoad, lpData]);
+  }, [handleDefaultModelLoad, lpData, renderingData]);
 
   useEffect(() => {
     if (defaultModelKey && !defaultModelInitLoad) {
+      storeRenderingData({ ...renderingData, isBoneOn: false });
       setDefaultModelInitLoad(true);
       fnVisualizeFile({ key: defaultModelKey, lpData });
     }
-  }, [defaultModelInitLoad, defaultModelKey, lpData]);
+  }, [defaultModelInitLoad, defaultModelKey, lpData, renderingData]);
 
   return (
     <main>
