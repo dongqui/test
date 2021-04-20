@@ -6,9 +6,11 @@ import {
   useEffect,
   useCallback,
   useRef,
+  useMemo,
 } from 'react';
 import _ from 'lodash';
 import ContextMenuItem from './ContextMenuItem';
+import useWindowSize from 'hooks/common/useWindowSize';
 import classNames from 'classnames/bind';
 import styles from './ContextMenu.module.scss';
 
@@ -28,6 +30,13 @@ const focusableTargetList = [
   '[contenteditable]',
 ];
 
+const getNumberValue = (targetValue: string): number => {
+  const startUnitIndex = targetValue.indexOf('px');
+  const resultValue = Number(targetValue.substr(0, startUnitIndex));
+
+  return resultValue;
+};
+
 export interface Props {
   innerRef: MutableRefObject<HTMLDivElement>;
   onSelect: (key: string, value: string) => void;
@@ -38,8 +47,8 @@ export interface Props {
     isDisabled?: boolean;
   }[];
   position: {
-    top: string | number;
-    left: string | number;
+    top: string;
+    left: string;
   };
 }
 
@@ -64,8 +73,6 @@ const defaultProps: Partial<Props> = {
 };
 
 const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, position }) => {
-  // const wrapperRef = useRef<HTMLDivElement>(null);
-
   const defaultValue = _.find(list, { isSelected: true })?.value || list[0].value;
   const [selectedValue, setSelectedValue] = useState(defaultValue);
 
@@ -76,6 +83,40 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
     },
     [onSelect],
   );
+
+  const nextPosition = useMemo(() => {
+    return {
+      top: position.top.includes('px') ? position.top : `${position.top}px`,
+      left: position.left.includes('px') ? position.left : `${position.left}px`,
+    };
+  }, [position.left, position.top]);
+
+  const [injectedPosition, setInjectedPosition] = useState({
+    top: nextPosition.top,
+    left: nextPosition.left,
+  });
+
+  useEffect(() => {
+    const currentRef = innerRef?.current;
+
+    if (currentRef) {
+      const { top, y, bottom, height } = currentRef.getBoundingClientRect();
+
+      if (height + getNumberValue(injectedPosition.top) !== getNumberValue(nextPosition.top)) {
+        if (y + height >= window.innerHeight) {
+          setInjectedPosition({
+            top: `${y - height}px`,
+            left: nextPosition.left,
+          });
+        } else {
+          setInjectedPosition({
+            top: nextPosition.top,
+            left: nextPosition.left,
+          });
+        }
+      }
+    }
+  }, [injectedPosition, innerRef, nextPosition, position]);
 
   useEffect(() => {
     const currentRef = innerRef?.current;
@@ -153,7 +194,7 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
     <div
       ref={innerRef}
       className={cx('wrapper')}
-      style={{ top: position.top, left: position.left }}
+      style={{ top: injectedPosition.top, left: injectedPosition.left }}
     >
       <ul className={cx('menu')} role="menu">
         {_.map(list, (item, i) => {
