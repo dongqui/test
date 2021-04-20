@@ -24,12 +24,15 @@ const fnDeleteKeyframe = (props: FnDeleteKeyframe): ShootTrackType => {
     // 해당 time 이 track 의 times 내에 존재하지 않는다면 그냥 원래 track 을 return
     return track;
   } else {
-    if (timeIndex === 0) {
+    if (newTimes.length === 1) {
+      newTimes = [];
+      newValues = [];
+    } else if (timeIndex === 0) {
       newTimes = _.slice(newTimes, 1);
       newValues = _.slice(newValues, 3);
     } else if (timeIndex === track.times.length - 1) {
       newTimes = _.slice(newTimes, 0, track.times.length - 1);
-      newValues = _.slice(newValues, 0, track.times.length - 3);
+      newValues = _.slice(newValues, 0, 3 * (track.times.length - 1));
     } else {
       newTimes = [..._.slice(newTimes, 0, timeIndex), ..._.slice(newTimes, timeIndex + 1)];
       newValues = [
