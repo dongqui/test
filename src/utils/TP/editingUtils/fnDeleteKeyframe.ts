@@ -29,7 +29,7 @@ const fnDeleteKeyframe = (props: FnDeleteKeyframe): ShootTrackType => {
       newValues = _.slice(newValues, 3);
     } else if (timeIndex === track.times.length - 1) {
       newTimes = _.slice(newTimes, 0, track.times.length - 1);
-      newValues = _.slice(newValues, 0, track.times.length - 3);
+      newValues = _.slice(newValues, 0, 3 * (track.times.length - 1));
     } else {
       newTimes = [..._.slice(newTimes, 0, timeIndex), ..._.slice(newTimes, timeIndex + 1)];
       newValues = [
