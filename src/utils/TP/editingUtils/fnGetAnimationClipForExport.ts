@@ -29,7 +29,6 @@ const fnGetAnimationClipForExport = (props: FnGetAnimationClipForExport) => {
 
   const tracks: THREE.VectorKeyframeTrack[] = [];
   _.forEach(baseLayer, (track) => {
-    // union time 을 구하되 start 및 end timeIndex 가 있으면 길이를 조절해서 clip 생성
     const unionTimes = fnGetTrackUnionTimes({ track, baseLayer, layers });
     if (duration < unionTimes[unionTimes.length - 1]) {
       duration = unionTimes[unionTimes.length - 1];
