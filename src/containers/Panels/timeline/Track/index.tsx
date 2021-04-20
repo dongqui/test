@@ -15,7 +15,7 @@ import {
   storeModalInfo,
 } from 'lib/store';
 import { CurrentVisualizedDataType, MODAL_TYPES } from 'types';
-import { TPTrackName, TPDopeSheet } from 'types/TP';
+import { TPTrackName, TPDopeSheet, TPLastBone } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import {
   fnClickLockButton,
@@ -118,73 +118,67 @@ const Track: React.FC<TrackProps> = ({
   const clickArrowButton = useCallback(() => {
     const remainder = trackIndex % 10;
     const updatedTrackList: Partial<TPDopeSheet>[] = [];
-    setIsClickedArrowButton((prev) => {
-      switch (remainder) {
-        // Summary 트랙 화살표 클릭
-        case TP_TRACK_INDEX.SUMMARY: {
-          const updatedList = _.map(lastBoneList, (lastBone) => ({
-            trackIndex: lastBone.layerIndex,
-            isOpenedParentTrack: !prev,
-          }));
-          storeTPUpdateDopeSheetList({ updatedList, status: 'isOpenedParentTrack' });
-          break;
-        }
-        // Layer 트랙 화살표 클릭
-        case TP_TRACK_INDEX.LAYER: {
-          const targetIndex = fnGetBinarySearch({
-            collection: lastBoneList,
-            index: trackIndex,
-            key: 'layerIndex',
-          });
-          const layerTrack = lastBoneList[targetIndex];
-          let curBoneIndex = (layerTrack?.layerIndex as number) + 1;
-          while (curBoneIndex <= (layerTrack?.lastBoneIndex as number)) {
-            updatedTrackList.push({
-              trackIndex: curBoneIndex,
-              isOpenedParentTrack: !prev,
-            });
-            if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_A) {
-              curBoneIndex += 4; // 3 -> 7
-            } else if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_B) {
-              curBoneIndex += 6; // 7 -> 3
-            }
-          }
-          storeTPUpdateDopeSheetList({
-            updatedList: updatedTrackList,
-            status: 'isOpenedParentTrack',
-          });
-          break;
-        }
-        // Bone 트랙 화살표 클릭
-        case TP_TRACK_INDEX.BONE_A:
-        case TP_TRACK_INDEX.BONE_B: {
-          for (
-            let transformIndex = trackIndex;
-            transformIndex < trackIndex + 3;
-            transformIndex += 1
-          ) {
-            updatedTrackList.push({
-              trackIndex: transformIndex + 1,
-              isOpenedParentTrack: !prev,
-            });
-          }
-          storeTPUpdateDopeSheetList({
-            updatedList: updatedTrackList,
-            status: 'isOpenedParentTrack',
-          });
-          break;
-        }
-        default: {
-          break;
-        }
+    switch (remainder) {
+      // Summary 트랙 화살표 클릭
+      case TP_TRACK_INDEX.SUMMARY: {
+        const nextState = _.map(lastBoneList, (lastBone) => ({
+          trackIndex: lastBone.layerIndex,
+          isOpenedParentTrack: !isClickedArrowButton,
+        }));
+        updatedTrackList.push(...nextState);
+        break;
       }
-      storeTPCurrnetClickedTrack({
-        trackIndex,
-        isClickedArrow: !prev,
-      });
-      return !prev;
+      // Layer 트랙 화살표 클릭
+      case TP_TRACK_INDEX.LAYER: {
+        const targetIndex = fnGetBinarySearch({
+          collection: lastBoneList,
+          index: trackIndex,
+          key: 'layerIndex',
+        });
+        const layerTrack = lastBoneList[targetIndex];
+        let curBoneIndex = layerTrack.layerIndex + 1;
+        while (curBoneIndex <= layerTrack.lastBoneIndex) {
+          updatedTrackList.push({
+            trackIndex: curBoneIndex,
+            isOpenedParentTrack: !isClickedArrowButton,
+          });
+          if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_A) {
+            curBoneIndex += 4; // 3 -> 7
+          } else if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_B) {
+            curBoneIndex += 6; // 7 -> 3
+          }
+        }
+        break;
+      }
+      // Bone 트랙 화살표 클릭
+      case TP_TRACK_INDEX.BONE_A:
+      case TP_TRACK_INDEX.BONE_B: {
+        for (
+          let transformIndex = trackIndex;
+          transformIndex < trackIndex + 3;
+          transformIndex += 1
+        ) {
+          updatedTrackList.push({
+            trackIndex: transformIndex + 1,
+            isOpenedParentTrack: !isClickedArrowButton,
+          });
+        }
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+    storeTPUpdateDopeSheetList({
+      updatedList: updatedTrackList,
+      status: 'isOpenedParentTrack',
     });
-  }, [lastBoneList, trackIndex]);
+    storeTPCurrnetClickedTrack({
+      trackIndex,
+      isClickedArrow: !isClickedArrowButton,
+    });
+    setIsClickedArrowButton((prev) => !prev);
+  }, [lastBoneList, isClickedArrowButton, trackIndex]);
 
   // 수정불가 버튼 클릭
   const clickLockButton = useCallback(() => {
@@ -609,5 +603,5 @@ const Track: React.FC<TrackProps> = ({
   );
 };
 
-export default Track;
-// export default memo(Track);
+// export default Track;
+export default memo(Track);
