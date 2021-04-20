@@ -355,8 +355,16 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const stopCurrentTimeIndexLoop = useCallback(() => {
     if (currentTimeIndexReqIdRef.current) {
       window.cancelAnimationFrame(currentTimeIndexReqIdRef.current);
+      if (
+        currentTimeIndexRef &&
+        currentTimeIndexRef.current &&
+        currentXAxisPosition &&
+        currentXAxisPosition.current
+      ) {
+        currentTimeIndexRef.current.value = _.round(currentXAxisPosition.current, 0).toString();
+      }
     }
-  }, []);
+  }, [currentTimeIndexRef, currentXAxisPosition]);
 
   // 애니메이션 재생 시 now 변경
   useEffect(() => {
