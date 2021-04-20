@@ -86,18 +86,34 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       });
       mixer.stopAllAction();
       const action = mixer.clipAction(visualizedClip);
-      console.log('action: ', action);
       action.play();
       mixer.timeScale = 0;
-      if (currentXAxisPosition.current && currentXAxisPosition.current > startTimeIndex) {
+      if (
+        currentXAxisPosition &&
+        currentXAxisPosition.current &&
+        currentXAxisPosition.current > startTimeIndex
+      ) {
         action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
+        if (currentTimeIndexRef && currentTimeIndexRef.current) {
+          currentTimeIndexRef.current.value = currentXAxisPosition.current.toString(); // play bar 위치로 초기화
+        }
       } else {
         action.time = _.round(startTimeIndex / 30, 4);
+        if (currentTimeIndexRef && currentTimeIndexRef.current) {
+          currentTimeIndexRef.current.value = startTimeIndex.toString(); // startTime 으로 초기화
+        }
       }
       storeCurrentAction(action);
-      // console.log('action: ', action);
+      console.log('action: ', action);
     }
-  }, [currentVisualizedData, currentXAxisPosition, endTimeIndex, mixer, startTimeIndex]);
+  }, [
+    currentTimeIndexRef,
+    currentVisualizedData,
+    currentXAxisPosition,
+    endTimeIndex,
+    mixer,
+    startTimeIndex,
+  ]);
 
   // loop 했을 때 start index 로 보내줘야 함
   useEffect(() => {
