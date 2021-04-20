@@ -21,7 +21,6 @@ import { IconWrapper, SvgPath } from 'components/New_Icon';
 import Track from '../Track';
 import styles from './index.module.scss';
 import { AlertModalProvider } from 'components/New_Modal/AlertModal';
-import { index } from 'd3-array';
 
 interface Props {
   trackListRef: React.RefObject<HTMLDivElement>;
@@ -77,6 +76,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
             nextState[0].isOpenedParentTrack = true;
             return nextState;
           });
+          prevTrackInput.current = '';
           storeTPUpdateDopeSheetList({ updatedList: resetDopeSheetList, status: 'isFiltered' });
           setFilterTrackList(trackNameList);
           return;
@@ -139,10 +139,11 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           };
           recursive({
             trackList: filteredTrackList,
-            isOpenedParentTrack: filteredTrackList[0].isOpenedChildrenTrack,
+            isOpenedParentTrack: filteredTrackList[0]?.isOpenedChildrenTrack,
           });
           return nextState;
         });
+
         prevTrackInput.current = trimedInput;
         storeTPUpdateDopeSheetList({ updatedList: filteredDopeSheetList, status: 'isFiltered' });
         setFilterTrackList(filteredTrackList);

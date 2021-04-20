@@ -57,7 +57,7 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
 
   // circle 생성
   useEffect(() => {
-    if (circleGroupRef.current && dopeSheetData.times) {
+    if (circleGroupRef.current && dopeSheetData.times && prevXScale) {
       const { isLocked, times } = dopeSheetData;
       d3.select(circleGroupRef.current)
         .selectAll('circle')
@@ -112,11 +112,12 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
             index: time,
             key: 'time',
           });
-
-          // 클릭 효과 적용
-          const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
-          d3.select(targetCircle as Element).style('fill', '#F9D454');
-          prevClickedCircles.current.push(targetIndex + 1);
+          if (targetIndex !== -1) {
+            // 클릭 효과 적용
+            const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
+            d3.select(targetCircle as Element).style('fill', '#F9D454');
+            prevClickedCircles.current.push(targetIndex + 1);
+          }
         }
 
         for (let index = existed; 0 <= index; index -= 1) {
@@ -127,11 +128,12 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
             index: time,
             key: 'time',
           });
-
-          // 클릭 효과 적용
-          const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
-          d3.select(targetCircle as Element).style('fill', '#F9D454');
-          prevClickedCircles.current.push(targetIndex + 1);
+          if (targetIndex !== -1) {
+            // 클릭 효과 적용
+            const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
+            d3.select(targetCircle as Element).style('fill', '#F9D454');
+            prevClickedCircles.current.push(targetIndex + 1);
+          }
         }
       }
       // 이진 검색 결과가 -1인 경우(검색 대상을 찾지 못한 경우)
