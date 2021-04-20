@@ -11,10 +11,11 @@ import {
   storeCurrentVisualizedData,
   storeTPDopeSheetList,
 } from 'lib/store';
-import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
+import RenderingController from 'containers/Realtime/Panel/Rendering/RenderingController';
 import { ResizableBox } from 'react-resizable';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
-import Timeline from 'containers/Realtime/Panel/Timeline';
+import Timeline from 'containers/Panels/timeline';
+// import Timeline from 'containers/Realtime/Panel/Timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import { ConfirmModalProvider } from 'components/New_Modal/ConfirmModal';

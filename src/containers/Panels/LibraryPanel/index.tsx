@@ -4,7 +4,7 @@ import { useDropzone } from 'react-dropzone';
 import useLPControl from 'hooks/LP/useLPControl';
 import { v4 as uuidv4 } from 'uuid';
 import useContextMenu from 'hooks/common/useContextMenu';
-import { storeCutImages, storePageInfo, storeRecordingData } from 'lib/store';
+import { storeCutImages, storePageInfo, storeRecordingData, storeRetargetInfo } from 'lib/store';
 import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import { FILE_TYPES, LPModeType } from 'types';
 import * as api from 'utils/common/api';
@@ -49,6 +49,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
   const pages = useReactiveVar(storePages);
   const lpmode = useReactiveVar(storeLPMode);
+  const retargetInfo = useReactiveVar(storeRetargetInfo);
   const [originalLpmode, setOriginalLpmode] = useState<LPModeType | undefined>(undefined);
   const onChangeSearchText = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,6 +88,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     setShowsModal,
     modalMessage,
     setModalMessage,
+    retargetInfo,
   });
 
   const { getConfirm } = useConfirmModal();
@@ -186,6 +188,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
           storeRecordingData(INITIAL_RECORDING_DATA);
           storeCutImages([]);
           storePageInfo({ page: PAGE_NAMES.extract, videoUrl: url, extension });
+        } else {
+          continue;
         }
       }
 
