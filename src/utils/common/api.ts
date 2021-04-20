@@ -21,7 +21,7 @@ interface getRetargetMapProps {
 interface getRetargetBaseLayerProps {
   baseLayer: ShootTrackType[];
   name: string;
-  retargetMap: Array<any>;
+  retargetMap?: Array<any>;
   isFbx: boolean;
 }
 /**
