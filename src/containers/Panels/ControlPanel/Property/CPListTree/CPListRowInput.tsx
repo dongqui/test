@@ -22,15 +22,19 @@ const cx = classNames.bind(styles);
 export interface CPListRowInputProps {
   rowKey: string;
   name: string;
+  w?: RenderingDataPropertyName.QuaternionW;
   x?:
+    | RenderingDataPropertyName.QuaternionX
     | RenderingDataPropertyName.positionX
     | RenderingDataPropertyName.rotationX
     | RenderingDataPropertyName.scaleX;
   y?:
+    | RenderingDataPropertyName.QuaternionY
     | RenderingDataPropertyName.positionY
     | RenderingDataPropertyName.rotationY
     | RenderingDataPropertyName.scaleY;
   z?:
+    | RenderingDataPropertyName.QuaternionZ
     | RenderingDataPropertyName.positionZ
     | RenderingDataPropertyName.rotationZ
     | RenderingDataPropertyName.scaleZ;
@@ -38,18 +42,22 @@ export interface CPListRowInputProps {
 
 const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   name,
+  w = RenderingDataPropertyName.QuaternionW,
   x = RenderingDataPropertyName.positionX,
   y = RenderingDataPropertyName.positionY,
   z = RenderingDataPropertyName.positionZ,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+
   const currentBone = useReactiveVar(storeCurrentBone);
   const transformControls = useReactiveVar(storeTransformControls);
+
   const [initialValue, setInitialValue] = useState({
     x: 0,
     y: 0,
     z: 0,
   });
+
   const [values, setValue] = useState(initialValue);
 
   const [quaternionMode, setQuaternionMode] = useState(false);
@@ -191,10 +199,10 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   ];
 
   const quaternionList = [
+    { key: w, value: values.z, name: w, prefix: 'W' },
     { key: x, value: values.x, name: x, prefix: 'X' },
     { key: y, value: values.y, name: y, prefix: 'Y' },
     { key: z, value: values.z, name: z, prefix: 'Z' },
-    { key: 'w', value: values.z, name: 'w', prefix: 'W' },
   ];
 
   const iconClasses = cx('icon', {

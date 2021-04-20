@@ -29,8 +29,8 @@ const fnSetDefaultTrackNameList = ({
   trackNameList.push({
     name: 'Summary',
     trackIndex: TP_TRACK_INDEX.SUMMARY, // 1
-    isOpenedChildrenTrack: false,
-    childrenTrackList: [],
+    isOpenedChildrenTrack: true,
+    childrenTrack: [],
   });
 
   // Base 트랙 추가
@@ -41,7 +41,7 @@ const fnSetDefaultTrackNameList = ({
     trackName: 'Base',
   });
   lastBoneList.push(baseLastBone);
-  trackNameList[0].childrenTrackList.push(...base);
+  trackNameList[0].childrenTrack.push(...base);
 
   // Layers 트랙 추가
   _.forEach(layers, (layer, index) => {
@@ -52,7 +52,7 @@ const fnSetDefaultTrackNameList = ({
       trackName: layer.name,
     });
     lastBoneList.push(layerLastBone);
-    trackNameList[0].childrenTrackList.push(...childrenTrack);
+    trackNameList[0].childrenTrack.push(...childrenTrack);
   });
 
   return [trackNameList, lastBoneList];

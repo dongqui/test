@@ -4,7 +4,7 @@ import { Dropdown } from 'components/New_Dropdown';
 import { SuffixInput } from 'components/New_Input';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { useReactiveVar } from '@apollo/client';
-import { storeRetargetData } from 'lib/store';
+import { storeRetargetInfo, storeRetargetMap } from 'lib/store';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './RetargetPanel.module.scss';
@@ -16,13 +16,14 @@ interface BaseProps {}
 export type P = BaseProps;
 
 const RetargetPanel: FunctionComponent<P> = ({}) => {
-  const retargetData = useReactiveVar(storeRetargetData);
-
-  const [currentData, setCurrentData] = useState(retargetData);
+  const retargetMap = useReactiveVar(storeRetargetMap);
+  const retargetInfo = useReactiveVar(storeRetargetInfo);
+  const [currentData, setCurrentData] = useState(retargetMap);
   const [error, setError] = useState(false);
 
   const { register, handleSubmit } = useForm();
 
+  const defaultTargetBoneList = [{ key: '0', value: 'select a bone', isSelected: true }];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const boneName = [
     'hips',
@@ -62,7 +63,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
    * 패널에서 Retarget Data를 초기 데이터로 되돌리는 함수입니다.
    */
   const handleRetargetRefresh = () => {
-    storeRetargetData(currentData);
+    storeRetargetMap(currentData);
     alert('초기 값으로 변경되었습니다.');
   };
 
@@ -71,18 +72,18 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
    * @param key - targetBoneList에서 할당된 key value입니다.
    */
   const handleTargetBoneSelect = useCallback(
-    (key) => {
-      storeRetargetData(
-        _.map(retargetData, (item) => ({
+    (key, value) => {
+      storeRetargetMap(
+        _.map(retargetMap, (item) => ({
           ...item,
           value: {
             ...item.value,
-            targetBone: _.isEqual(item.key, boneName) ? key : item.value.targetBone,
+            targetBone: _.isEqual(item.key, key) ? value : item.value.targetBone,
           },
         })),
       );
     },
-    [boneName, retargetData],
+    [retargetMap],
   );
 
   /**
@@ -91,7 +92,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
    */
   const handleCoordSelect = useCallback(
     (key) => {
-      // storeRetargetData(
+      // storeRetargetMap(
       //   _.map(retargetData, (item) => ({
       //     ...item,
       //     value: {
@@ -113,8 +114,8 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
    */
   const handleChange = useCallback(
     ({ value, name, key }) => {
-      storeRetargetData(
-        _.map(retargetData, (item) => ({
+      storeRetargetMap(
+        _.map(retargetMap, (item) => ({
           ...item,
           value: {
             ...item.value,
@@ -123,14 +124,16 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
         })),
       );
     },
-    [retargetData],
+    [retargetMap],
   );
 
   /**
    * 24개 인풋이 모두 채워졌을 때 retargetData 값을 submit하는 함수입니다.
    */
   const handleSubmitData = () => {
-    storeRetargetData(retargetData);
+    if (!_.isEmpty(retargetMap)) {
+      storeRetargetInfo({ ...retargetInfo, retargetMap });
+    }
   };
 
   const coordList = [
@@ -171,11 +174,6 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
     },
   ];
 
-  useEffect(() => {
-    storeRetargetData(retargetData);
-    console.log(retargetData);
-  }, [retargetData]);
-
   return (
     <main className={cx('panel-wrap')}>
       <form onSubmit={handleSubmit(handleSubmitData)}>
@@ -196,26 +194,19 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
           </ul>
         </section>
         <section className={cx('section-retarget')}>
-          {_.map(retargetData, (item, idx) => {
-            const targetBoneList = _.fill(
-              [
-                {
-                  key: 'default',
-                  value: 'TargetBone',
-                  isSelected: true,
-                },
-              ],
-              {
-                key: item.value.targetBone,
-                value: item.value.targetBone,
-                isSelected: false,
-              },
-            );
+          {_.map(retargetMap, (item, idx) => {
+            const targetboneList = _.map(retargetInfo?.targetboneList, (targetbone) => ({
+              ...targetbone,
+              key: item?.key,
+            }));
             return (
               <div key={idx} className={cx('retarget-card')}>
                 <div className={cx('card-header')}>
                   <span>{item.key}</span>
-                  <Dropdown list={targetBoneList} onSelect={handleTargetBoneSelect} />
+                  <Dropdown
+                    list={targetboneList ?? defaultTargetBoneList}
+                    onSelect={handleTargetBoneSelect}
+                  />
                 </div>
                 <div className={cx('card-coord')}>
                   <Dropdown list={coordList} onSelect={handleCoordSelect} />

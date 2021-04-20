@@ -15,7 +15,7 @@ import {
   storeModalInfo,
 } from 'lib/store';
 import { CurrentVisualizedDataType, MODAL_TYPES } from 'types';
-import { TPTrackName, TPDopeSheet } from 'types/TP';
+import { TPTrackName, TPDopeSheet, TPLastBone } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import {
   fnClickLockButton,
@@ -32,20 +32,18 @@ import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import { useAlertModal } from 'components/New_Modal/AlertModal';
 
 interface TrackProps {
-  childrenTrackList: TPTrackName[];
+  childrenTrack: TPTrackName[];
   isOpenedParent: boolean; // 자식 트랙이 열려있는 상태로 출력여부
   trackName: 'Summary' | 'Base' | string; // 트랙 이름
-  paddingLeft: number; // 트랙 좌측 패딩 값
   trackIndex: number;
 }
 
 const cx = classNames.bind(styles);
 
 const Track: React.FC<TrackProps> = ({
-  childrenTrackList,
+  childrenTrack,
   isOpenedParent = false,
   trackName,
-  paddingLeft,
   trackIndex,
 }) => {
   const [isSelected, setIsSelected] = useState(false);
@@ -63,24 +61,6 @@ const Track: React.FC<TrackProps> = ({
   const modalInfo = useReactiveVar(storeModalInfo);
 
   const { getConfirm } = useAlertModal();
-
-  // 트랙 별 좌측 padding left 값 설정
-  const calcPaddingLeft = useMemo(
-    () => (trackIndex: number) => {
-      const remainder = trackIndex % 10;
-      switch (remainder) {
-        case TP_TRACK_INDEX.LAYER:
-          return 32;
-        case TP_TRACK_INDEX.BONE_A:
-        case TP_TRACK_INDEX.BONE_B:
-          return 48;
-        default:
-          return 84;
-      }
-    },
-    [],
-  );
-
   const multiKeyController = useMemo(
     () => ({
       ctrl: { pressed: false },
@@ -138,73 +118,67 @@ const Track: React.FC<TrackProps> = ({
   const clickArrowButton = useCallback(() => {
     const remainder = trackIndex % 10;
     const updatedTrackList: Partial<TPDopeSheet>[] = [];
-    setIsClickedArrowButton((prev) => {
-      switch (remainder) {
-        // Summary 트랙 화살표 클릭
-        case TP_TRACK_INDEX.SUMMARY: {
-          const updatedList = _.map(lastBoneList, (lastBone) => ({
-            trackIndex: lastBone.layerIndex,
-            isClickedParentTrack: !prev,
-          }));
-          storeTPUpdateDopeSheetList({ updatedList, status: 'isClickedParentTrack' });
-          break;
-        }
-        // Layer 트랙 화살표 클릭
-        case TP_TRACK_INDEX.LAYER: {
-          const targetIndex = fnGetBinarySearch({
-            collection: lastBoneList,
-            index: trackIndex,
-            key: 'layerIndex',
-          });
-          const layerTrack = lastBoneList[targetIndex];
-          let curBoneIndex = (layerTrack?.layerIndex as number) + 1;
-          while (curBoneIndex <= (layerTrack?.lastBoneIndex as number)) {
-            updatedTrackList.push({
-              trackIndex: curBoneIndex,
-              isClickedParentTrack: !prev,
-            });
-            if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_A) {
-              curBoneIndex += 4; // 3 -> 7
-            } else if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_B) {
-              curBoneIndex += 6; // 7 -> 3
-            }
-          }
-          storeTPUpdateDopeSheetList({
-            updatedList: updatedTrackList,
-            status: 'isClickedParentTrack',
-          });
-          break;
-        }
-        // Bone 트랙 화살표 클릭
-        case TP_TRACK_INDEX.BONE_A:
-        case TP_TRACK_INDEX.BONE_B: {
-          for (
-            let transformIndex = trackIndex;
-            transformIndex < trackIndex + 3;
-            transformIndex += 1
-          ) {
-            updatedTrackList.push({
-              trackIndex: transformIndex + 1,
-              isClickedParentTrack: !prev,
-            });
-          }
-          storeTPUpdateDopeSheetList({
-            updatedList: updatedTrackList,
-            status: 'isClickedParentTrack',
-          });
-          break;
-        }
-        default: {
-          break;
-        }
+    switch (remainder) {
+      // Summary 트랙 화살표 클릭
+      case TP_TRACK_INDEX.SUMMARY: {
+        const nextState = _.map(lastBoneList, (lastBone) => ({
+          trackIndex: lastBone.layerIndex,
+          isOpenedParentTrack: !isClickedArrowButton,
+        }));
+        updatedTrackList.push(...nextState);
+        break;
       }
-      storeTPCurrnetClickedTrack({
-        trackIndex,
-        isClickedArrow: !prev,
-      });
-      return !prev;
+      // Layer 트랙 화살표 클릭
+      case TP_TRACK_INDEX.LAYER: {
+        const targetIndex = fnGetBinarySearch({
+          collection: lastBoneList,
+          index: trackIndex,
+          key: 'layerIndex',
+        });
+        const layerTrack = lastBoneList[targetIndex];
+        let curBoneIndex = layerTrack.layerIndex + 1;
+        while (curBoneIndex <= layerTrack.lastBoneIndex) {
+          updatedTrackList.push({
+            trackIndex: curBoneIndex,
+            isOpenedParentTrack: !isClickedArrowButton,
+          });
+          if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_A) {
+            curBoneIndex += 4; // 3 -> 7
+          } else if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_B) {
+            curBoneIndex += 6; // 7 -> 3
+          }
+        }
+        break;
+      }
+      // Bone 트랙 화살표 클릭
+      case TP_TRACK_INDEX.BONE_A:
+      case TP_TRACK_INDEX.BONE_B: {
+        for (
+          let transformIndex = trackIndex;
+          transformIndex < trackIndex + 3;
+          transformIndex += 1
+        ) {
+          updatedTrackList.push({
+            trackIndex: transformIndex + 1,
+            isOpenedParentTrack: !isClickedArrowButton,
+          });
+        }
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+    storeTPUpdateDopeSheetList({
+      updatedList: updatedTrackList,
+      status: 'isOpenedParentTrack',
     });
-  }, [lastBoneList, trackIndex]);
+    storeTPCurrnetClickedTrack({
+      trackIndex,
+      isClickedArrow: !isClickedArrowButton,
+    });
+    setIsClickedArrowButton((prev) => !prev);
+  }, [lastBoneList, isClickedArrowButton, trackIndex]);
 
   // 수정불가 버튼 클릭
   const clickLockButton = useCallback(() => {
@@ -533,30 +507,32 @@ const Track: React.FC<TrackProps> = ({
 
   useContextMenu({ targetRef: trackRef, event: handleTrackContextMenu });
 
-  const classes = cx('track-body', {
-    'layer-selected': isSelected && trackIndex % 10 === 2,
-    'bone-selected': isSelected && (trackIndex % 10 === 3 || trackIndex % 10 === 7),
-    'transform-selected':
-      isSelected &&
-      (trackIndex % 10 === 4 ||
-        trackIndex % 10 === 5 ||
-        trackIndex % 10 === 6 ||
-        trackIndex % 10 === 8 ||
-        trackIndex % 10 === 9 ||
-        trackIndex % 10 === 0),
-  });
+  const classes = cx(
+    'track-body',
+    {
+      'layer-selected': isSelected && trackIndex % 10 === 2,
+      'bone-selected': isSelected && (trackIndex % 10 === 3 || trackIndex % 10 === 7),
+      'transform-selected':
+        isSelected &&
+        (trackIndex % 10 === 4 ||
+          trackIndex % 10 === 5 ||
+          trackIndex % 10 === 6 ||
+          trackIndex % 10 === 8 ||
+          trackIndex % 10 === 9 ||
+          trackIndex % 10 === 0),
+    },
+    {
+      'summary-track': trackIndex % 10 === 1,
+      'layer-track': trackIndex % 10 === 2,
+      'bone-track': trackIndex % 10 === 3 || trackIndex % 10 === 7,
+    },
+  );
 
   return (
     <>
       <div className={cx('track-wrapper')}>
-        <div
-          className={classes}
-          style={{ paddingLeft: `${paddingLeft}px` }}
-          onClick={clickTrackBody}
-          aria-hidden="true"
-          ref={trackRef}
-        >
-          {childrenTrackList.length ? (
+        <div className={classes} onClick={clickTrackBody} aria-hidden="true" ref={trackRef}>
+          {childrenTrack.length ? (
             <IconWrapper
               className={cx('track-icon', 'arrow-button', { opened: isClickedArrowButton })}
               icon={SvgPath.CaretDown}
@@ -588,18 +564,14 @@ const Track: React.FC<TrackProps> = ({
             )}
           </div>
         </div>
-        <div
-          className={cx('children-track-list')}
-          style={{ display: isClickedArrowButton ? 'block' : 'none' }}
-        >
-          {childrenTrackList?.map((childTrack) => {
-            const { childrenTrackList, isOpenedChildrenTrack, name, trackIndex } = childTrack;
+        <div className={cx('children-track-list', { displayed: isClickedArrowButton })}>
+          {childrenTrack?.map((childTrack) => {
+            const { childrenTrack, isOpenedChildrenTrack, name, trackIndex } = childTrack;
             return (
               <Track
                 key={name}
-                childrenTrackList={childrenTrackList}
+                childrenTrack={childrenTrack}
                 isOpenedParent={isOpenedChildrenTrack}
-                paddingLeft={calcPaddingLeft(trackIndex)}
                 trackName={name}
                 trackIndex={trackIndex}
               />
@@ -631,5 +603,5 @@ const Track: React.FC<TrackProps> = ({
   );
 };
 
-export default Track;
-// export default memo(Track);
+// export default Track;
+export default memo(Track);

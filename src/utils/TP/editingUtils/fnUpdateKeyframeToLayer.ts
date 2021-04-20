@@ -73,9 +73,9 @@ const fnUpdateKeyframeToLayer = (props: FnUpdateKeyframeToLayer): ShootTrackType
   // other layers 돌면서 값 빼기
   if (interpolatedOtherLayerTracks.length !== 0) {
     _.forEach(interpolatedOtherLayerTracks, (interpolatedOtherLayerTrack) => {
-      deltaX = deltaX - interpolatedOtherLayerTrack.values[unionTimeIndex + 3];
-      deltaY = deltaY - interpolatedOtherLayerTrack.values[unionTimeIndex + 3 + 1];
-      deltaZ = deltaZ - interpolatedOtherLayerTrack.values[unionTimeIndex + 3 + 2];
+      deltaX = deltaX - interpolatedOtherLayerTrack.values[unionTimeIndex * 3];
+      deltaY = deltaY - interpolatedOtherLayerTrack.values[unionTimeIndex * 3 + 1];
+      deltaZ = deltaZ - interpolatedOtherLayerTrack.values[unionTimeIndex * 3 + 2];
     });
   }
 

@@ -1,4 +1,12 @@
-import { FunctionComponent, Fragment, memo, useCallback, useState } from 'react';
+import {
+  FunctionComponent,
+  Fragment,
+  memo,
+  useCallback,
+  useState,
+  RefObject,
+  MutableRefObject,
+} from 'react';
 import { useReactiveVar } from '@apollo/client';
 import {
   storeAnimatingData,
@@ -7,6 +15,7 @@ import {
   storePageInfo,
   storeRecordingData,
   storeBarPositionX,
+  storeCurrentAction,
 } from 'lib/store';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
@@ -24,19 +33,38 @@ import { BaseInput } from 'components/New_Input';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
 import fnGetFileName from 'utils/LP/fnGetFileName';
+import sleep from 'utils/common/sleep';
+import { d3ScaleLinear } from 'types/TP';
+import * as d3 from 'd3';
 
 const cx = classNames.bind(styles);
 
-export interface Props {}
+const X_AXIS_HEIGHT = 48; // 트랙 높이
 
-const PlayBox: FunctionComponent<Props> = ({}) => {
+export interface Props {
+  currentTimeRef?: RefObject<HTMLInputElement>;
+  currentTimeIndexRef?: RefObject<HTMLInputElement>;
+  currentXAxisPosition?: MutableRefObject<number>;
+  prevXScale?: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  startTimeIndex: number;
+  lastTime: number;
+}
+
+const PlayBox: FunctionComponent<Props> = ({
+  currentXAxisPosition,
+  currentTimeRef,
+  currentTimeIndexRef,
+  prevXScale,
+  startTimeIndex,
+  lastTime,
+}) => {
   const recordingData = useReactiveVar(storeRecordingData);
-  const barPositionX = useReactiveVar(storeBarPositionX);
   const animatingData = useReactiveVar(storeAnimatingData);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
   const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  const currentAction = useReactiveVar(storeCurrentAction);
 
   const { getConfirm } = useAlertModal();
 
@@ -44,10 +72,27 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
 
   const handleKeyDown = () => {};
 
-  const handleRecord = useCallback(() => {
-    storePageInfo({ page: PAGE_NAMES.record });
-  }, []);
+  const handleRecord = useCallback(async () => {
+    if (!_.isEqual(pageInfo.page, PAGE_NAMES.record)) {
+      storePageInfo({ page: PAGE_NAMES.record });
+      return;
+    }
+    if (_.isUndefined(recordingData.count)) {
+      if (!recordingData.isRecording) {
+        for (const count of [5, 4, 3, 2, 1]) {
+          storeRecordingData({ ...recordingData, count });
+          await sleep(1000);
+        }
+      }
+      storeRecordingData({
+        ...recordingData,
+        isRecording: !recordingData.isRecording,
+        count: undefined,
+      });
+    }
+  }, [pageInfo.page, recordingData]);
 
+  // 정지 버튼 클릭 시 재생바 start 로 && current time 과 time index 시작점으로
   const handleStop = useCallback(() => {
     if (isShootPage) {
       if (animatingData.playState !== 'stop' && currentVisualizedData) {
@@ -55,6 +100,43 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
           ...animatingData,
           playState: 'stop',
         });
+      }
+      if (
+        currentXAxisPosition &&
+        currentTimeRef &&
+        currentTimeRef.current &&
+        currentTimeIndexRef &&
+        currentTimeIndexRef.current &&
+        prevXScale &&
+        prevXScale.current
+      ) {
+        if (_.round(startTimeIndex / 30, 4) <= lastTime) {
+          currentTimeRef.current.value = new Date(_.round(startTimeIndex / 30, 0) * 1000)
+            .toISOString()
+            .substr(11, 8)
+            .substr(2)
+            .replace(':', '');
+        } else {
+          currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
+            .toISOString()
+            .substr(11, 8)
+            .substr(2)
+            .replace(':', '');
+        }
+        currentTimeIndexRef.current.value = startTimeIndex.toString();
+
+        if (currentAction) {
+          currentAction.time = _.round(startTimeIndex / 30, 4);
+        }
+
+        currentXAxisPosition.current = startTimeIndex;
+
+        const xScaleLinear = prevXScale.current as d3ScaleLinear;
+        d3.select('#play-bar-wrapper').attr(
+          'transform',
+          `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+          ${X_AXIS_HEIGHT / 2})`,
+        );
       }
     }
     if (!isShootPage) {
@@ -68,7 +150,19 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
       });
       storeBarPositionX(recordingData.rangeBoxInfo.x);
     }
-  }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
+  }, [
+    animatingData,
+    currentAction,
+    currentTimeIndexRef,
+    currentTimeRef,
+    currentVisualizedData,
+    currentXAxisPosition,
+    isShootPage,
+    lastTime,
+    prevXScale,
+    recordingData,
+    startTimeIndex,
+  ]);
 
   const handleRewind = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
@@ -212,11 +306,15 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
     invisible: !isShootPage,
   });
 
+  const recordButtonClasses = cx('record', {
+    isRecording: recordingData.isRecording,
+  });
+
   return (
     <div className={cx('wrapper')}>
       <div className={cx('button-group')}>
         <span
-          className={cx('record')}
+          className={recordButtonClasses}
           onClick={handleRecord}
           onKeyDown={handleKeyDown}
           role="button"

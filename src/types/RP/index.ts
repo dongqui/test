@@ -11,6 +11,10 @@ export enum RenderingDataPropertyName {
   rotationX = 'rotationX',
   rotationY = 'rotationY',
   rotationZ = 'rotationZ',
+  QuaternionW = 'QuaternionW',
+  QuaternionX = 'QuaternionX',
+  QuaternionY = 'QuaternionY',
+  QuaternionZ = 'QuaternionZ',
   scaleX = 'scaleX',
   scaleY = 'scaleY',
   scaleZ = 'scaleZ',
@@ -44,6 +48,10 @@ export interface RenderingDataType {
   [RenderingDataPropertyName.positionX]: number;
   [RenderingDataPropertyName.positionY]: number;
   [RenderingDataPropertyName.positionZ]: number;
+  [RenderingDataPropertyName.QuaternionW]: number;
+  [RenderingDataPropertyName.QuaternionX]: number;
+  [RenderingDataPropertyName.QuaternionY]: number;
+  [RenderingDataPropertyName.QuaternionZ]: number;
   [RenderingDataPropertyName.rotationX]: number;
   [RenderingDataPropertyName.rotationY]: number;
   [RenderingDataPropertyName.rotationZ]: number;
@@ -90,15 +98,4 @@ export interface AnimatingDataType {
   playSpeed: number;
   startTimeIndex: number;
   endTimeIndex: number;
-}
-
-export interface RetargetMap {
-  key: string;
-  value: {
-    targetBone: string;
-    order: string;
-    x: number;
-    y: number;
-    z: number;
-  };
 }
