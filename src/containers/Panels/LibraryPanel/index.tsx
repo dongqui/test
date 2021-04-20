@@ -186,6 +186,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
           storeRecordingData(INITIAL_RECORDING_DATA);
           storeCutImages([]);
           storePageInfo({ page: PAGE_NAMES.extract, videoUrl: url, extension });
+        } else {
+          continue;
         }
       }
 
