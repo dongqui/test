@@ -973,13 +973,119 @@ const DopeSheet: React.FC<Props> = ({
     };
   }, [handleDopesheetKeyDown, handleDopesheetKeyPress, handleDopesheetKeyUp]);
 
+  // // TP 높이 변경 감지(관련 된 자료 찾으면 진행 예정)
+  // const curScaleLevel = useRef(INITIAL_SCALE_LEVEL);
+  // useEffect(() => {
+  //   if (dopeSheetRef.current) {
+  //     const ro = new ResizeObserver(([entry]) => {
+  //       const { height, width } = entry.contentRect;
+  //       prevDopeSheetHeight.current = height;
+
+  //       // x축 다시 그리기
+  //       const rescaleXAxis = (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
+  //         const resizeXAxis = d3
+  //           .scaleLinear()
+  //           .domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN])
+  //           .range([0, width]);
+  //         const rescaleX = event.transform.rescaleX(resizeXAxis); // x rescale
+  //         const test = event.transform.applyX(event.transform.x);
+  //         console.log(event, test);
+
+  //         xScale.current = rescaleX; // rescale한 값으로 갱신
+  //         xScaleCopy.current = xScale.current.copy(); // x값 원본 복사
+  //         prevXScale.current = xScale.current.copy() as d3ScaleLinear; // 이전 x값 복사
+
+  //         xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear); // x축 위치 설정
+  //         const xAxisPositionRef = xAxisPosition.current as d3Axis;
+
+  //         renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // x축 다시 그리기
+  //         renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // grid line 다시 그리기
+  //         d3.selectAll('.x-axis-g line').attr('y2', -24);
+
+  //         const xScaleLinear = prevXScale.current as d3ScaleLinear;
+  //         const rangeRectWidth = xScaleLinear(endTimeIndex) - xScaleLinear(startTimeIndex);
+  //         d3.select('.range-rect')
+  //           .attr('width', rangeRectWidth)
+  //           .attr('transform', `translate(${xScaleLinear(startTimeIndex)}, -${X_AXIS_HEIGHT / 2})`);
+  //         curScaleLevel.current = event.transform.k;
+
+  //         // grid line 조정
+  //         d3.selectAll('.grid-line').remove();
+  //         d3.selectAll('.grid-line-wrapper .tick')
+  //           .append('line')
+  //           .attr('class', 'grid-line')
+  //           .attr('x1', 0)
+  //           .attr('y1', height * 2)
+  //           .attr('x2', 0)
+  //           .attr('y2', 0);
+
+  //         d3.select('#play-bar-wrapper').attr(
+  //           'transform',
+  //           `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
+  //         );
+  //       };
+
+  //       // circle x값 rescale
+  //       const rescaleCircleX = () => {
+  //         d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
+  //           if (dopeSheetRef.current) {
+  //             const circleGroup = d3.select(this);
+  //             const circleGroupNode = circleGroup.node() as Element;
+  //             const xScaleLinear = xScale.current as d3ScaleLinear;
+  //             const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
+  //             const { top: dopeSheetTop } = dopeSheetRef.current.getBoundingClientRect();
+  //             if (
+  //               dopeSheetTop <= circleGroupTop &&
+  //               circleGroupTop <= dopeSheetTop + prevDopeSheetHeight.current
+  //             ) {
+  //               circleGroup.selectAll('circle').each(function () {
+  //                 d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
+  //               });
+  //             }
+  //           }
+  //         });
+  //       };
+
+  //       // zoom 이벤트 적용
+  //       const zoomBehavior = d3
+  //         .zoom()
+  //         .scaleExtent([1, 100000])
+  //         .translateExtent([
+  //           [0, 0],
+  //           [width, height],
+  //         ])
+  //         .filter((event: WheelEvent) => {
+  //           if (_.isEqual(event.type, 'dblclick')) return false;
+  //           if (
+  //             _.isEqual(event.type, 'mousedown') &&
+  //             _.isEqual(event.ctrlKey, false) &&
+  //             _.isEqual(event.metaKey, false)
+  //           )
+  //             return false;
+  //           return true;
+  //         })
+  //         .on(
+  //           'zoom',
+  //           _.throttle((event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
+  //             rescaleXAxis(event);
+  //             rescaleCircleX();
+  //           }, THROTTLE_TIMER),
+  //         );
+  //       d3.select(dopeSheetRef.current)
+  //         .call(zoomBehavior as any)
+  //         .call(zoomBehavior.scaleTo as any, curScaleLevel.current);
+  //     });
+  //     ro.observe(dopeSheetRef.current);
+  //   }
+  // }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex]);
+
   return (
     <>
       <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
         <div className={cx('circle-group-wrapper')}>
           {_.map(dopeSheetList, (dopeSheet) => {
             return (
-              dopeSheet.isClickedParentTrack &&
+              dopeSheet.isOpenedParentTrack &&
               dopeSheet.isFiltered && (
                 <CircleGroup
                   key={dopeSheet.trackIndex}

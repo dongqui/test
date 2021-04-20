@@ -146,13 +146,13 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
 
 export default memo(Circles, (prevProps, nextProps) => {
   const {
-    isClickedParentTrack: prevIsClickedParentTrack,
+    isOpenedParentTrack: prevIsOpenedParentTrack,
     isFiltered: prevIsFiltered,
     isLocked: prevIsLocked,
     times: prevTimes,
   } = prevProps.dopeSheetData;
   const {
-    isClickedParentTrack: nextIsClickedParentTrack,
+    isOpenedParentTrack: nextIsOpenedParentTrack,
     isFiltered: nextIsFiltered,
     isLocked: nextIsLocked,
     times: nextTimes,
@@ -160,7 +160,7 @@ export default memo(Circles, (prevProps, nextProps) => {
 
   if (!_.isEqual(prevTimes, nextTimes)) return false;
   if (prevIsLocked !== nextIsLocked) return false;
-  if (prevIsClickedParentTrack !== nextIsClickedParentTrack) return false;
+  if (prevIsOpenedParentTrack !== nextIsOpenedParentTrack) return false;
   if (prevIsFiltered !== nextIsFiltered) return false;
   return true;
 });

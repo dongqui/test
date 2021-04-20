@@ -21,7 +21,7 @@ const fnSetDefaultDopeSheetList = ({ baseLayer, layers }: FnSetDefaultDopeSheetL
 
   // Summary 트랙 status 추가
   const summaryTrack = fnSetDopeSheetStatus({
-    isClickedParentTrack: true,
+    isOpenedParentTrack: true,
     isTransformTrack: false,
     isIncluded: true,
     times: _.map(summaryTimes, (time) => ({ time, isClicked: false })),
