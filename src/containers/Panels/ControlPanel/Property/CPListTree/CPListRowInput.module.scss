@@ -14,6 +14,7 @@
   }
   .input-group {
     display: flex;
+    width: 100%;
     & > * {
       margin-left: 8px;
     }
@@ -40,14 +41,19 @@
 .rotation {
   visibility: visible;
   @extend .icon;
-  line-height: 16px;
-  width: 16px;
+  line-height: 14px;
+  width: 8px;
 }
 
+.segment {
+  width: 100%;
+}
+
+// 세그먼트 열었을 때
 .quaternion {
   @extend .icon;
-  line-height: 16px;
-  width: 6px;
+  line-height: 14px;
+  width: 8px;
 }
 
 .quaternionMode {
