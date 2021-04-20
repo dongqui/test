@@ -15,6 +15,7 @@ import {
   storePageInfo,
   storeRecordingData,
   storeBarPositionX,
+  storeCurrentAction,
 } from 'lib/store';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
@@ -63,6 +64,7 @@ const PlayBox: FunctionComponent<Props> = ({
   const pageInfo = useReactiveVar(storePageInfo);
   const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  const currentAction = useReactiveVar(storeCurrentAction);
 
   const { getConfirm } = useAlertModal();
 
@@ -123,6 +125,10 @@ const PlayBox: FunctionComponent<Props> = ({
         }
         currentTimeIndexRef.current.value = startTimeIndex.toString();
 
+        if (currentAction) {
+          currentAction.time = _.round(startTimeIndex / 30, 4);
+        }
+
         currentXAxisPosition.current = startTimeIndex;
 
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
@@ -146,6 +152,7 @@ const PlayBox: FunctionComponent<Props> = ({
     }
   }, [
     animatingData,
+    currentAction,
     currentTimeIndexRef,
     currentTimeRef,
     currentVisualizedData,
