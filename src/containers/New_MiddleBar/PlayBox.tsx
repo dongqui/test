@@ -24,6 +24,7 @@ import { BaseInput } from 'components/New_Input';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
 import fnGetFileName from 'utils/LP/fnGetFileName';
+import sleep from 'utils/common/sleep';
 
 const cx = classNames.bind(styles);
 
@@ -31,7 +32,6 @@ export interface Props {}
 
 const PlayBox: FunctionComponent<Props> = ({}) => {
   const recordingData = useReactiveVar(storeRecordingData);
-  const barPositionX = useReactiveVar(storeBarPositionX);
   const animatingData = useReactiveVar(storeAnimatingData);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
@@ -44,9 +44,25 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
 
   const handleKeyDown = () => {};
 
-  const handleRecord = useCallback(() => {
-    storePageInfo({ page: PAGE_NAMES.record });
-  }, []);
+  const handleRecord = useCallback(async () => {
+    if (!_.isEqual(pageInfo.page, PAGE_NAMES.record)) {
+      storePageInfo({ page: PAGE_NAMES.record });
+      return;
+    }
+    if (_.isUndefined(recordingData.count)) {
+      if (!recordingData.isRecording) {
+        for (const count of [5, 4, 3, 2, 1]) {
+          storeRecordingData({ ...recordingData, count });
+          await sleep(1000);
+        }
+      }
+      storeRecordingData({
+        ...recordingData,
+        isRecording: !recordingData.isRecording,
+        count: undefined,
+      });
+    }
+  }, [pageInfo.page, recordingData]);
 
   const handleStop = useCallback(() => {
     if (isShootPage) {
@@ -143,7 +159,7 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
       ...modalInfo,
       isShow: true,
       type: MODAL_TYPES.loading,
-      msg: '모션 데이터를 추출중입니다.',
+      msg: 'Exporting motion from the video.',
     });
     const { error, msg, result } = await api.uploadFileToMotionData({
       url: `${pageInfo?.videoUrl}`,
@@ -212,11 +228,15 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
     invisible: !isShootPage,
   });
 
+  const recordButtonClasses = cx('record', {
+    isRecording: recordingData.isRecording,
+  });
+
   return (
     <div className={cx('wrapper')}>
       <div className={cx('button-group')}>
         <span
-          className={cx('record')}
+          className={recordButtonClasses}
           onClick={handleRecord}
           onKeyDown={handleKeyDown}
           role="button"
@@ -268,15 +288,15 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
             onClose={handleModalClose}
             onOutsideClose={handleModalClose}
             onSubmit={handleSubmit}
-            title="모션의 이름을 입력해주세요"
+            title="Please enter the name of the motion."
             text={{
-              submit: '확인',
-              cancel: '취소',
+              submit: 'OK',
+              cancel: 'Cancel',
             }}
           >
             <BaseInput
               className={cx('form-name')}
-              placeholder="모션 이름"
+              placeholder="Motion name"
               onBlur={handleBlur}
               fullSize
             />

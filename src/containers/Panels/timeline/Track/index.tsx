@@ -29,11 +29,12 @@ import useContextMenu from 'hooks/common/useContextMenu';
 import { FormModal } from 'components/New_Modal';
 import { BaseInput } from 'components/New_Input';
 import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
+import { useAlertModal } from 'components/New_Modal/AlertModal';
 
 interface TrackProps {
   childrenTrackList: TPTrackName[];
   isOpenedParent: boolean; // 자식 트랙이 열려있는 상태로 출력여부
-  title: 'Summary' | 'Base' | string; // 트랙 이름
+  trackName: 'Summary' | 'Base' | string; // 트랙 이름
   paddingLeft: number; // 트랙 좌측 패딩 값
   trackIndex: number;
 }
@@ -43,7 +44,7 @@ const cx = classNames.bind(styles);
 const Track: React.FC<TrackProps> = ({
   childrenTrackList,
   isOpenedParent = false,
-  title,
+  trackName,
   paddingLeft,
   trackIndex,
 }) => {
@@ -60,6 +61,8 @@ const Track: React.FC<TrackProps> = ({
   const [newLayerName, setNewLayerName] = useState('');
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const modalInfo = useReactiveVar(storeModalInfo);
+
+  const { getConfirm } = useAlertModal();
 
   // 트랙 별 좌측 padding left 값 설정
   const calcPaddingLeft = useMemo(
@@ -90,7 +93,7 @@ const Track: React.FC<TrackProps> = ({
     (event: React.MouseEvent<Element>) => {
       const clickedTrack = event.target as Element;
       if (clickedTrack.nodeName === 'DIV' || clickedTrack.nodeName === 'P') {
-        if (title !== 'Summary') {
+        if (trackName !== 'Summary') {
           if (event.ctrlKey || event.metaKey || multiKeyController.ctrl.pressed) {
             const clickTrackToCtrlKey = fnClickTrackToCtrlKey({
               clickedTrackList,
@@ -101,6 +104,13 @@ const Track: React.FC<TrackProps> = ({
               const [updatedTrackList, newClickedTrackList] = clickTrackToCtrlKey;
               storeTPSelectedTrackList(newClickedTrackList);
               storeTPUpdateDopeSheetList({ updatedList: updatedTrackList, status: 'isSelected' });
+            } else {
+              const confirmed = getConfirm({
+                title: 'Cannot select or edit multiple layers at the same time.',
+              });
+              if (confirmed) {
+                return false;
+              }
             }
           } else {
             const [updatedTrackList, newClickedTrackList] = fnClickTrackToMouse({
@@ -114,7 +124,14 @@ const Track: React.FC<TrackProps> = ({
         }
       }
     },
-    [clickedTrackList, lastBoneList, multiKeyController.ctrl.pressed, title, trackIndex],
+    [
+      trackName,
+      multiKeyController.ctrl.pressed,
+      clickedTrackList,
+      lastBoneList,
+      trackIndex,
+      getConfirm,
+    ],
   );
 
   // 화살표 버튼 클릭
@@ -274,16 +291,23 @@ const Track: React.FC<TrackProps> = ({
   const handleSubmit = useCallback(() => {
     console.log('newLayerName: ', newLayerName);
     setShowsModal(false);
-    if (
-      newLayerName === '' ||
+    if (newLayerName === '') {
+      const confirmed = getConfirm({
+        title: 'You cannot use an empty string as a name.',
+      });
+      if (confirmed) {
+        return false;
+      }
+    } else if (
+      newLayerName === 'Base' ||
       _.map(currentVisualizedData?.layers, (layer) => layer.name).includes(newLayerName)
     ) {
-      storeModalInfo({
-        ...modalInfo,
-        isShow: true,
-        type: MODAL_TYPES.alert,
-        msg: '이미 존재하는 레이어 이름입니다.',
+      const confirmed = getConfirm({
+        title: 'There is already a layer with the same name.',
       });
+      if (confirmed) {
+        return false;
+      }
     } else {
       const state = storeCurrentVisualizedData();
       if (state) {
@@ -300,7 +324,7 @@ const Track: React.FC<TrackProps> = ({
         storeCurrentVisualizedData(nextState);
       }
     }
-  }, [currentVisualizedData?.layers, dopeSheetList, modalInfo, newLayerName, trackIndex]);
+  }, [currentVisualizedData?.layers, dopeSheetList, getConfirm, newLayerName, trackIndex]);
 
   const handleModalClose = () => {
     setShowsModal(false);
@@ -310,12 +334,10 @@ const Track: React.FC<TrackProps> = ({
     setNewLayerName(event.target.value);
   };
 
-  const { getConfirm } = useConfirmModal();
-
   // 레이어 삭제 함수 호출
   const deleteLayer = useCallback(async () => {
     const confirmed = await getConfirm({
-      title: '레이어를 삭제하시겠습니까?',
+      title: 'Are you sure you want to delete this layer?',
     });
     if (confirmed) {
       const state = storeCurrentVisualizedData();
@@ -336,179 +358,178 @@ const Track: React.FC<TrackProps> = ({
 
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
 
-  let handleTrackContextMenu = ({
-    top,
-    left,
-    e,
-  }: {
-    top: number;
-    left: number;
-    e?: MouseEvent;
-  }) => {};
+  const handleLayerTrackContextMenu = useCallback(
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      e?.preventDefault();
+      storeContextMenuInfo({
+        isShow: true,
+        top,
+        left,
+        data: [
+          {
+            key: 'edit',
+            value: 'Edit Name',
+            isSelected: false,
+            isDisabled: trackIndex === 2,
+          },
+          {
+            key: 'delete',
+            value: 'Delete Layer',
+            isSelected: false,
+            isDisabled: trackIndex === 2,
+          },
+          {
+            key: 'select',
+            value: isSelected ? 'Unselect' : 'Select',
+            isSelected: false,
+          },
+          {
+            key: 'lock',
+            value: isLocked ? 'Unlock' : 'Lock',
+            isSelected: false,
+          },
+          {
+            key: 'include',
+            value: isIncluded ? 'Exclude' : 'Include',
+            isSelected: false,
+          },
+        ],
+        onClick: (key) => {
+          switch (key) {
+            case 'edit':
+              updateLayerName();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'delete':
+              deleteLayer();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'select':
+              if (e) {
+                if (isSelected) {
+                  multiKeyController.ctrl.pressed = true;
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  clickTrackBody(e);
+                  multiKeyController.ctrl.pressed = false;
+                } else {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  clickTrackBody(e);
+                }
+              }
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'lock':
+              clickLockButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'include':
+              clickRenderingButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            default:
+              break;
+          }
+        },
+      });
+    },
+    [
+      clickLockButton,
+      clickRenderingButton,
+      clickTrackBody,
+      contextMenuInfo,
+      deleteLayer,
+      isIncluded,
+      isLocked,
+      isSelected,
+      multiKeyController.ctrl,
+      trackIndex,
+      updateLayerName,
+    ],
+  );
 
-  switch (trackIndex % 10) {
-    // layer 트랙
-    case 2:
-      handleTrackContextMenu = ({
+  const handleBoneTransformTrackContextMenu = useCallback(
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      e?.preventDefault();
+      storeContextMenuInfo({
+        isShow: true,
         top,
         left,
-        e,
-      }: {
-        top: number;
-        left: number;
-        e?: MouseEvent;
-      }) => {
-        e?.preventDefault();
-        storeContextMenuInfo({
-          isShow: true,
-          top,
-          left,
-          data: [
-            {
-              key: 'edit',
-              value: 'Edit Name',
-              isSelected: false,
-              isDisabled: trackIndex === 2,
-            },
-            {
-              key: 'delete',
-              value: 'Delete Layer',
-              isSelected: false,
-              isDisabled: trackIndex === 2,
-            },
-            {
-              key: 'select',
-              value: isSelected ? 'Unselect' : 'Select',
-              isSelected: false,
-            },
-            {
-              key: 'lock',
-              value: isLocked ? 'Unlock' : 'Lock',
-              isSelected: false,
-            },
-            {
-              key: 'include',
-              value: isIncluded ? 'Exclude' : 'Include',
-              isSelected: false,
-            },
-          ],
-          onClick: (key) => {
-            switch (key) {
-              case 'edit':
-                updateLayerName();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'delete':
-                deleteLayer();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'select':
-                if (e) {
-                  if (isSelected) {
-                    multiKeyController.ctrl.pressed = true;
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    clickTrackBody(e);
-                    multiKeyController.ctrl.pressed = false;
-                  } else {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    clickTrackBody(e);
-                  }
-                }
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'lock':
-                clickLockButton();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'include':
-                clickRenderingButton();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              default:
-                break;
-            }
+        data: [
+          {
+            key: 'select',
+            value: isSelected ? 'Unselect' : 'Select',
+            isSelected: false,
           },
-        });
-      };
-      break;
-    // Bone 및 Transform 트랙
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 0:
-      handleTrackContextMenu = ({
-        top,
-        left,
-        e,
-      }: {
-        top: number;
-        left: number;
-        e?: MouseEvent;
-      }) => {
-        e?.preventDefault();
-        storeContextMenuInfo({
-          isShow: true,
-          top,
-          left,
-          data: [
-            {
-              key: 'select',
-              value: isSelected ? 'Unselect' : 'Select',
-              isSelected: false,
-            },
-            {
-              key: 'lock',
-              value: isLocked ? 'Unlock' : 'Lock',
-              isSelected: false,
-            },
-            {
-              key: 'include',
-              value: isIncluded ? 'Exclude' : 'Include',
-              isSelected: false,
-            },
-          ],
-          onClick: (key) => {
-            switch (key) {
-              case 'select':
-                if (e) {
-                  if (isSelected) {
-                    multiKeyController.ctrl.pressed = true;
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    clickTrackBody(e);
-                    multiKeyController.ctrl.pressed = false;
-                  } else {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    clickTrackBody(e);
-                  }
-                }
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'lock':
-                clickLockButton();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              case 'include':
-                clickRenderingButton();
-                storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-                break;
-              default:
-                break;
-            }
+          {
+            key: 'lock',
+            value: isLocked ? 'Unlock' : 'Lock',
+            isSelected: false,
           },
-        });
-      };
-      break;
-    default:
-      break;
-  }
+          {
+            key: 'include',
+            value: isIncluded ? 'Exclude' : 'Include',
+            isSelected: false,
+          },
+        ],
+        onClick: (key) => {
+          switch (key) {
+            case 'select':
+              if (e) {
+                if (isSelected) {
+                  multiKeyController.ctrl.pressed = true;
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  clickTrackBody(e);
+                  multiKeyController.ctrl.pressed = false;
+                } else {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  clickTrackBody(e);
+                }
+              }
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'lock':
+              clickLockButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'include':
+              clickRenderingButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            default:
+              break;
+          }
+        },
+      });
+    },
+    [
+      clickLockButton,
+      clickRenderingButton,
+      clickTrackBody,
+      contextMenuInfo,
+      isIncluded,
+      isLocked,
+      isSelected,
+      multiKeyController.ctrl,
+    ],
+  );
+
+  const handleTrackContextMenu = useCallback(
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      e?.preventDefault();
+      if (trackIndex % 10 === 1) {
+        return;
+      } else if (trackIndex % 10 === 2) {
+        handleLayerTrackContextMenu({ top, left, e });
+      } else {
+        handleBoneTransformTrackContextMenu({ top, left, e });
+      }
+    },
+    [handleBoneTransformTrackContextMenu, handleLayerTrackContextMenu, trackIndex],
+  );
 
   useContextMenu({ targetRef: trackRef, event: handleTrackContextMenu });
 
@@ -545,13 +566,13 @@ const Track: React.FC<TrackProps> = ({
           ) : (
             ''
           )}
-          <p className={cx({ locked: isLocked })}>{title}</p>
+          <p className={cx({ locked: isLocked })}>{trackName}</p>
           <div className={cx('track-icon-wrapper', { locked: isLocked })}>
             {trackIndex !== 1 && (
               <>
                 <IconWrapper
                   className={cx('track-icon', 'lock')}
-                  icon={isLocked ? SvgPath.LockOpen : SvgPath.LockClose}
+                  icon={isLocked ? SvgPath.LockClose : SvgPath.LockOpen}
                   hasFrame={false}
                   onClick={clickLockButton}
                 />
@@ -579,7 +600,7 @@ const Track: React.FC<TrackProps> = ({
                 childrenTrackList={childrenTrackList}
                 isOpenedParent={isOpenedChildrenTrack}
                 paddingLeft={calcPaddingLeft(trackIndex)}
-                title={name}
+                trackName={name}
                 trackIndex={trackIndex}
               />
             );
@@ -591,15 +612,15 @@ const Track: React.FC<TrackProps> = ({
             onClose={handleModalClose}
             onOutsideClose={handleModalClose}
             onSubmit={handleSubmit} // 현재 modal submit 이 안 먹음
-            title="레이어 이름을 입력해주세요"
+            title="Please enter the name of the layer."
             text={{
-              submit: '확인',
-              cancel: '취소',
+              submit: 'OK',
+              cancel: 'Cancel',
             }}
           >
             <BaseInput
               className={cx('form-name')}
-              placeholder="레이어 이름"
+              placeholder="Layer name"
               onBlur={handleInputBlur}
               fullSize
             />

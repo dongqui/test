@@ -26,7 +26,7 @@ const PlayBoxComponent: React.FC<PlayBoxProps> = ({}) => {
     storeModalInfo({
       isShow: true,
       type: MODAL_TYPES.input,
-      msg: '모션의 이름을 입력해주세요.',
+      msg: 'Please enter the name of the motion.',
     });
   }, []);
   const backToHome = useCallback(() => {

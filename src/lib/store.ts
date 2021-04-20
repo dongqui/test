@@ -99,27 +99,48 @@ export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDope
       const index = status === 'isFiltered' ? key : binarySearchIndex;
       switch (status) {
         case 'isFiltered':
-          draft[index].isFiltered = target.isFiltered as boolean;
-          draft[index].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          if (draft[index]) {
+            draft[index].isFiltered = target.isFiltered as boolean;
+            draft[index].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          }
           break;
         case 'isClickedParentTrack':
-          draft[index].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          if (draft[index]) {
+            draft[index].isClickedParentTrack = target.isClickedParentTrack as boolean;
+          }
           break;
         case 'isSelected':
-          draft[index].isSelected = target.isSelected as boolean;
+          if (draft[index]) {
+            draft[index].isSelected = target.isSelected as boolean;
+          }
           break;
         case 'times':
-          draft[index].times = target.times as { time: number; isClicked: boolean }[];
+          if (draft[index]) {
+            draft[index].times = target.times as { time: number; isClicked: boolean }[];
+          }
           // draft[index as number].times = target.times as number[];
           break;
         case 'isLocked':
-          draft[index].isLocked = target.isLocked as boolean;
+          if (draft[index]) {
+            draft[index].isLocked = target.isLocked as boolean;
+          }
           break;
         case 'isIncluded':
-          draft[index].isIncluded = target.isIncluded as boolean;
+          if (draft[index]) {
+            draft[index].isIncluded = target.isIncluded as boolean;
+          }
           break;
       }
     });
   });
   storeTPDopeSheetList(nextState);
+};
+
+export const storeTPClearData = () => {
+  storeTPTrackNameList([]);
+  storeTPDopeSheetList([]);
+  storeTPLastBoneList([]);
+  storeTPSelectedTrackList([]);
+  storeTPCurrnetClickedTrack(null);
+  storeDeleteTargetKeyframes([]);
 };

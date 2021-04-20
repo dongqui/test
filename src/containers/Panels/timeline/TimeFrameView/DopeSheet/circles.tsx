@@ -160,7 +160,7 @@ export default memo(Circles, (prevProps, nextProps) => {
 
   if (!_.isEqual(prevTimes, nextTimes)) return false;
   if (prevIsLocked !== nextIsLocked) return false;
-  if (prevIsClickedParentTrack === nextIsClickedParentTrack) return true;
-  if (prevIsFiltered === nextIsFiltered) return true;
-  return false;
+  if (prevIsClickedParentTrack !== nextIsClickedParentTrack) return false;
+  if (prevIsFiltered !== nextIsFiltered) return false;
+  return true;
 });

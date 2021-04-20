@@ -54,10 +54,12 @@ const fnCheckSelectedTrackList = ({
           key: 'layerIndex',
         });
         const layerTrack = lastBoneList[layerIndex];
-        updatedTrackList.push({
-          trackIndex: layerTrack.layerIndex,
-          isSelected: false,
-        });
+        if (layerTrack) {
+          updatedTrackList.push({
+            trackIndex: layerTrack.layerIndex,
+            isSelected: false,
+          });
+        }
 
         // Position 트랙을 클릭 한 경우, 상위 트랙인 Bone에 선택 효과 제거
         if (remiander === POSITION_A || remiander === POSITION_B) {

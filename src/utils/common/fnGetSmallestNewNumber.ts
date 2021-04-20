@@ -7,19 +7,19 @@ import _ from 'lodash';
  */
 const fnGetSmallestNewNumber = (array: number[]): number => {
   let targetValue = 0;
+  const sortedArray = array.sort((a, b) => a - b);
 
-  _.map(array, (current, i) => {
-    if (array[i + 1] - current > 1) {
-      const minValue = _.min([array[i + 1], current]);
+  _.map(sortedArray, (current, i) => {
+    if (sortedArray[i + 1] - current > 1) {
+      const minValue = _.min([sortedArray[i + 1], current]);
 
-      if (minValue) {
-        const min = minValue + 1;
-        targetValue = min;
+      if (minValue || minValue === 0) {
+        targetValue = minValue + 1;
       }
     }
   });
 
-  const result = targetValue || (_.max(array) || 0) + 1;
+  const result = targetValue || (_.max(sortedArray) || 0) + 1;
 
   return result;
 };

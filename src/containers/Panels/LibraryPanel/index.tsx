@@ -95,7 +95,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     setShowsModal(true);
     setModalMessage('Importing the file');
     if (_.isEmpty(acceptedFiles)) {
-      setModalMessage('파일이 존재하지 않습니다.');
+      setModalMessage('File not found.');
       return false;
     }
     if (
@@ -108,7 +108,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         1,
       )
     ) {
-      setModalMessage('영상 파일을 동시에 2개 이상 가져올 수 없습니다.');
+      setModalMessage('NOT allowed to import multiple files at once.');
       return false;
     }
     let newLpData = _.clone(lpData);
@@ -125,7 +125,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     for (const file of sortedAcceptedFiles) {
       const extension = _.last(_.split(file.name, '.'));
       if (!_.includes(ENABLE_FILE_FORMATS, extension)) {
-        setModalMessage('지원하지 않는 형식이 포함되어 있습니다.');
+        setModalMessage('Unsupported file format.');
         return false;
       }
       let overlappedFile: LPDataType | undefined;
@@ -144,7 +144,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       }
       if (!_.isEmpty(overlappedFile)) {
         const confirmed = await getConfirm({
-          title: `대상 폴더에 이름이 ${overlappedFile?.name}인 파일이 있습니다. 덮어쓰시겠습니까?`,
+          title: `You already have a file with ${overlappedFile?.name} in the same folder. Do you want to replace it?`,
         });
 
         if (confirmed) {
@@ -165,7 +165,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
           type: FORMAT_TYPES.glb,
         });
         if (error) {
-          setModalMessage('파일업로드에 실패하였습니다.');
+          setModalMessage('Failed to upload the file.');
           return false;
         }
         convertedFileUrl = url;
@@ -178,7 +178,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
         setShowsModal(false);
         const confirmed = await getConfirm({
-          title: '모션을 추출하시겠습니까?',
+          title: 'Export motion from the video?',
         });
 
         if (confirmed) {
@@ -191,7 +191,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
 
       const { animations, bones = [], error } = await fnGetAnimationData({ url });
       if (error) {
-        setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
+        setModalMessage('Failed to export the animation data from the file.');
         return false;
       }
       const motions: LPDataType[] = [];

@@ -110,12 +110,12 @@ const useLPControl = ({
         }
         if (_.isEqual(targetRow?.type, FILE_TYPES.file)) {
           setShowsModal(true);
-          setModalMessage('리타겟팅을 진행중입니다.');
+          setModalMessage('Retargeting motion to the model.');
           const { bones = [], error, msg } = await fnGetAnimationData({
             url: targetRow?.url ?? '',
           });
           if (error) {
-            setModalMessage('애니메이션 데이터 추출에 실패하였습니다.');
+            setModalMessage('Failed to export the animation data from the file.');
             return;
           }
           const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
@@ -124,7 +124,7 @@ const useLPControl = ({
           const retargetMap = result?.data?.result ?? [];
           if (error2 || _.isEqual(retargetMap, 'failed')) {
             // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
-            setModalMessage('리타겟맵을 불러오는 과정에서 오류가 발생하였습니다.');
+            setModalMessage('Auto-retargeting has failed. Would you retarget motion manually?');
             return;
           }
           const { result: result2, error: error3, msg: msg3 } = await api.getRetargetBaseLayer({
@@ -137,7 +137,7 @@ const useLPControl = ({
                 .toLowerCase() === '.fbx',
           });
           if (error3) {
-            setModalMessage('리타겟팅 과정에서 오류가 발생하였습니다.');
+            setModalMessage('An error has occurred while retargeting.');
             return;
           }
           const times = draggingRow?.baseLayer?.[0]?.times;
@@ -167,7 +167,8 @@ const useLPControl = ({
         const sameNameFile = _.find(childRows, [LPDATA_PROPERTY_TYPES.name, draggingRow?.name]);
         if (sameNameFile) {
           const confirmed = await getConfirm({
-            title: '디렉토리 내에 동일한 이름의 파일이 존재합니다. 덮어쓰시겠습니까?',
+            title:
+              'You already have a file with this name in the same directory. Do you want to replace it?',
           });
 
           if (confirmed) {
@@ -444,7 +445,7 @@ const useLPControl = ({
               break;
             case '8':
               setShowsModal(!showsModal);
-              setModalMessage('파일을 내보내는 중입니다. <br /> 잠시만 기다려주세요.');
+              setModalMessage('Please wait while exporting the file.');
 
               await fnExportModelToFbx({
                 modelName: targetRow?.name ?? '',
@@ -455,12 +456,12 @@ const useLPControl = ({
                   setShowsModal(false);
                 })
                 .catch(() => {
-                  setModalMessage('파일을 내보낼 수 없습니다.');
+                  setModalMessage('Cannot export file.');
                 });
               break;
             case '9':
               setShowsModal(!showsModal);
-              setModalMessage('파일을 내보내는 중입니다. <br /> 잠시만 기다려주세요.');
+              setModalMessage('Please wait while exporting the file.');
 
               await fnExportModelToGlb({
                 modelName: targetRow?.name ?? '',
@@ -471,7 +472,7 @@ const useLPControl = ({
                   setShowsModal(false);
                 })
                 .catch(() => {
-                  setModalMessage('파일을 내보낼 수 없습니다.');
+                  setModalMessage('Cannot export file.');
                 });
               break;
             default:

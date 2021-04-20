@@ -60,7 +60,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
       const { baseLayer, layers } = currentVisualizedData;
       const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
       const innerlastTime = summaryTimes[summaryTimes.length - 1];
-      setLastTime(innerlastTime);
+      setLastTime(innerlastTime || 0);
     }
   }, [currentVisualizedData]);
 
@@ -200,7 +200,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
       const value = parseInt(event.currentTarget.value);
       if (value >= startTimeIndex && value <= endTimeIndex && prevXScale) {
         currentAction.time = _.round(value / 30, 4);
-        currentXAxisPosition.current = currentAction.time * 30;
+        currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
         d3.select('#play-bar-wrapper').attr(
           'transform',
