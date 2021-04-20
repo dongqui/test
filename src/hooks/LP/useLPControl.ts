@@ -151,11 +151,8 @@ const useLPControl = ({
             layers: [],
           };
           const newMainData = _.concat(mainData, newMotion);
+          storeLpData(newMainData);
           setShowsModal(false);
-          fnVisualizeFile({
-            key: newMotion?.key,
-            lpData: newMainData,
-          });
           return;
         }
       }
@@ -298,9 +295,6 @@ const useLPControl = ({
     },
     [getConfirm],
   );
-
-  // const [showsModal, setShowsModal] = useState(false);
-  // const [modalMessage, setModalMessage] = useState('');
 
   const onContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {

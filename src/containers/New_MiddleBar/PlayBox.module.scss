@@ -13,6 +13,10 @@
   cursor: pointer;
   outline: 0;
   margin-right: 16px;
+
+  &.isRecording {
+    background-color: $vivid-red;
+  }
 }
 
 .stop {
