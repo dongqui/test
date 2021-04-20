@@ -31,7 +31,7 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
 
   // Layer 트랙 status 추가
   const layerTrackStatus = fnSetDopeSheetStatus({
-    isClickedParentTrack: false,
+    isOpenedParentTrack: true,
     isTransformTrack: false,
     isIncluded: true,
     layerKey,
@@ -54,7 +54,7 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
 
     // Bone 트랙 status 추가
     const boneTrackStatus = fnSetDopeSheetStatus({
-      isClickedParentTrack: false,
+      isOpenedParentTrack: false,
       isTransformTrack: false,
       isIncluded: true,
       layerKey,
@@ -82,7 +82,7 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
       });
 
       const transformTrackStatus = fnSetDopeSheetStatus({
-        isClickedParentTrack: false,
+        isOpenedParentTrack: false,
         isIncluded: layer[transformIndex].isIncluded,
         isTransformTrack: true,
         layerKey,

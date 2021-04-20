@@ -35,7 +35,7 @@ const fnSetLayerTrack = ({
     name: trackName,
     trackIndex: layerIndex,
     isOpenedChildrenTrack: false,
-    childrenTrackList: [],
+    childrenTrack: [],
   });
 
   // Layer 트랙의 마지막 Bone 트랙 리스트
@@ -52,7 +52,7 @@ const fnSetLayerTrack = ({
     boneIndex < tracks.length;
     boneIndex += nextBoneIndex // 3
   ) {
-    const layerTrack = trackNameList[0].childrenTrackList;
+    const layerTrack = trackNameList[0].childrenTrack;
     const [boneName] = tracks[boneIndex].name.split('.');
 
     // 마지막 bone track index가 현재 track index보다 작은 경우 갱신
@@ -65,12 +65,12 @@ const fnSetLayerTrack = ({
       name: boneName,
       trackIndex: currentTrackIndex,
       isOpenedChildrenTrack: false,
-      childrenTrackList: [],
+      childrenTrack: [],
     });
     currentTrackIndex += 1;
 
     // Transform 트랙 추가
-    const boneTrack = layerTrack[boneIndex / 3].childrenTrackList;
+    const boneTrack = layerTrack[boneIndex / 3].childrenTrack;
     for (
       let transformIndex = boneIndex;
       transformIndex < boneIndex + nextBoneIndex;
@@ -82,7 +82,7 @@ const fnSetLayerTrack = ({
         name: transformName,
         trackIndex: currentTrackIndex,
         isOpenedChildrenTrack: false,
-        childrenTrackList: [],
+        childrenTrack: [],
       });
       currentTrackIndex += 1;
       if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2; // 11 -> 13, 21 -> 23

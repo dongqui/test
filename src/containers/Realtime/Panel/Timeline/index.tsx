@@ -101,10 +101,10 @@ const TimelineContainer: FunctionComponent<Props> = ({
 
         const filteredTrackNameList = produce(trackNameList, (draft) => {
           const summaryTrack = draft[0];
-          const filterdLayers = _.filter(summaryTrack.childrenTrackList, (layerTrack) =>
+          const filterdLayers = _.filter(summaryTrack.childrenTrack, (layerTrack) =>
             layerNames.includes(layerTrack.name),
           );
-          summaryTrack.childrenTrackList = filterdLayers;
+          summaryTrack.childrenTrack = filterdLayers;
         });
         const filteredDopeSheetList = produce(dopeSheetList, (draft) => {
           return _.filter(draft, (dopeSheet) => layerKeys.includes(dopeSheet.layerKey));
@@ -144,7 +144,7 @@ const TimelineContainer: FunctionComponent<Props> = ({
         };
 
         const updatedTrackNameList = produce(trackNameList, (draft) => {
-          const summaryTrackChildren = draft[0].childrenTrackList;
+          const summaryTrackChildren = draft[0].childrenTrack;
           summaryTrackChildren.push(...layerTrack);
         });
 
@@ -176,7 +176,7 @@ const TimelineContainer: FunctionComponent<Props> = ({
             });
             const nextTrackNameList = produce(trackNameList, (draft) => {
               const summaryTrack = draft[0];
-              const changeNameLayer = summaryTrack.childrenTrackList[layerIndex];
+              const changeNameLayer = summaryTrack.childrenTrack[layerIndex];
               changeNameLayer.name = newLayer.name;
             });
             storeTPTrackNameList(nextTrackNameList);
