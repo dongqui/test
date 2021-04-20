@@ -241,7 +241,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       <div className={cx('input-group')}>
         <Fragment>
           {quaternionMode ? (
-            <Segment list={modeList} />
+            <div>
+              <Segment list={modeList} />
+            </div>
           ) : quaternionTab ? (
             _.map(quaternionList, (item, idx) => {
               const key = `${item.key}_${idx}`;

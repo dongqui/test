@@ -39,14 +39,17 @@
 
 .rotation {
   visibility: visible;
+  @extend .icon;
+  line-height: 16px;
+  width: 16px;
 }
 
 .quaternion {
   @extend .icon;
-  line-height: 14px;
+  line-height: 16px;
   width: 6px;
 }
 
 .quaternionMode {
-    display: none;
+  display: none;
 }
