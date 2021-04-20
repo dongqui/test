@@ -8,6 +8,7 @@ import { TPTrackName, TPDopeSheet } from 'types/TP';
 import {
   storeTPTrackNameList,
   storeTPDopeSheetList,
+  storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
   storeCurrentVisualizedData,
   storeSkeletonHelper,
@@ -20,10 +21,18 @@ import { IconWrapper, SvgPath } from 'components/New_Icon';
 import Track from '../Track';
 import styles from './index.module.scss';
 import { AlertModalProvider } from 'components/New_Modal/AlertModal';
+import { index } from 'd3-array';
 
 interface Props {
   trackListRef: React.RefObject<HTMLDivElement>;
 }
+
+interface RecurDopeSheet {
+  trackList: TPTrackName[];
+  isOpenedParentTrack: boolean;
+}
+
+type FilterTrackList = [TPTrackName[], boolean];
 
 const DEBOUNCED_TIME = 300;
 const cx = classNames.bind(styles);
@@ -31,10 +40,11 @@ const cx = classNames.bind(styles);
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
   const trackNameList = useReactiveVar(storeTPTrackNameList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
+  const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
-  const [filteredTrackList, setFilteredTrackList] = useState<TPTrackName[]>([]);
+  const [filteredTrackList, setFilterTrackList] = useState<TPTrackName[]>([]);
   const prevTrackInput = useRef('');
 
   // debouned가 적용 된 track input 갱신
@@ -43,91 +53,101 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
       _.debounce((inputText: string) => {
         // 트랙 리스트가 없는 상태에서 검색하는 경우(아무 동작을 시키지 않음)
         if (!trackNameList.length) return;
-        const trimInput = _.toLower(_.trim(inputText));
 
         // 이전 검색 텍스트와 현재 검색 텍스트가 같은 경우(아무 동작을 시키지 않음)
-        if (prevTrackInput.current === trimInput) return;
+        const trimedInput = _.toLower(_.trim(inputText));
+        if (prevTrackInput.current === trimedInput) return;
 
-        // 이전 검색 텍스트가 있으면서, 현재 검색 텍스트가 비어있는 경우(디폴트 트랙 리스트로 갱신)
-        if (prevTrackInput.current !== trimInput && !trimInput) {
-          const resetDopeSheetList: Partial<TPDopeSheet>[] = _.map(
-            dopeSheetList,
-            ({ trackIndex }) => ({
+        // 이전 검색 텍스트가 있으면서, 현재 검색 텍스트가 비어있는 경우(디폴트 상태로 갱신)
+        if (prevTrackInput.current !== trimedInput && _.isEmpty(trimedInput)) {
+          const resetDopeSheetList = produce<Partial<TPDopeSheet>[]>(dopeSheetList, (draft) => {
+            const nextState = _.map(draft, ({ trackIndex }) => ({
               trackIndex,
+              isOpenedParentTrack: false,
               isFiltered: true,
-            }),
-          );
-          resetDopeSheetList[0].isClickedParentTrack = true;
+            }));
+            _.forEach(lastBoneList, ({ layerIndex }) => {
+              const targetIndex = fnGetBinarySearch({
+                collection: nextState,
+                index: layerIndex,
+                key: 'trackIndex',
+              });
+              nextState[targetIndex].isOpenedParentTrack = true;
+            });
+            nextState[0].isOpenedParentTrack = true;
+            return nextState;
+          });
           storeTPUpdateDopeSheetList({ updatedList: resetDopeSheetList, status: 'isFiltered' });
-          setFilteredTrackList(trackNameList);
+          setFilterTrackList(trackNameList);
           return;
         }
 
-        // Dope Sheet에서 필터링 적용시킬 리스트
-        const filteredDopeSheetList: Partial<TPDopeSheet>[] = _.map(
-          dopeSheetList,
-          ({ trackIndex }) => ({
-            trackIndex,
-            isFiltered: false,
-          }),
-        );
-
-        // 필터링 인덱스 찾기
-        const searchTargetIndex = ({ targetIndex }: { targetIndex: number }) => {
-          const index = fnGetBinarySearch({
-            collection: filteredDopeSheetList,
-            index: targetIndex,
-            key: 'trackIndex',
-          });
-          filteredDopeSheetList[index].isFiltered = true;
-          filteredDopeSheetList[index].isClickedParentTrack = true;
-        };
-
-        // 재귀를 걸어서 텍스트에 만족하는 트랙 필터링
-        const recursiveTrackSearch = ({ trackList }: { trackList: TPTrackName[] }) => {
-          const renewChildrenTrackList: TPTrackName[] = []; // 재귀가 끝날 때 리턴시킬 트랙 리스트
-          _.forEach(trackList, ({ name, childrenTrackList, trackIndex }) => {
-            const lowerTrackName = _.toLower(name);
-            // 트랙 이름에 inputText가 포함되면 현재 트랙 추가, 이후 하위 트랙 재귀
-            if (_.includes(lowerTrackName, trimInput)) {
-              searchTargetIndex({ targetIndex: trackIndex });
-              renewChildrenTrackList.push({
-                isOpenedChildrenTrack: true,
+        // 재귀로 트랙 리스트 필터링
+        const filterTrackList = ({ trackList }: { trackList: TPTrackName[] }): FilterTrackList => {
+          const filterResult: TPTrackName[] = []; // 재귀가 끝날 때 리턴시킬 트랙 리스트
+          let openParentTrack = false;
+          _.forEach(trackList, ({ name, childrenTrack, trackIndex }) => {
+            const loweredTrackName = _.toLower(name);
+            if (_.includes(loweredTrackName, trimedInput)) {
+              const [__, isOpened] = filterTrackList({
+                trackList: childrenTrack,
+              });
+              openParentTrack = true;
+              filterResult.push({
+                isOpenedChildrenTrack: isOpened,
                 name,
                 trackIndex,
-                childrenTrackList: recursiveTrackSearch({
-                  trackList: childrenTrackList,
-                }),
+                childrenTrack,
               });
             } else {
-              // 하위 트랙 재귀
-              const childrenRecursive = recursiveTrackSearch({
-                trackList: childrenTrackList,
+              const [filteredChildren, isOpened] = filterTrackList({
+                trackList: childrenTrack,
               });
-              // 재귀 결과가 있는 경우
-              if (childrenRecursive.length) {
-                searchTargetIndex({ targetIndex: trackIndex });
-                renewChildrenTrackList.push({
-                  isOpenedChildrenTrack: true,
+              if (!_.isEmpty(filteredChildren)) {
+                openParentTrack = true;
+                filterResult.push({
+                  isOpenedChildrenTrack: isOpened,
                   name,
                   trackIndex,
-                  childrenTrackList: childrenRecursive,
+                  childrenTrack: filteredChildren,
                 });
               }
             }
           });
-          return renewChildrenTrackList;
+          return [filterResult, openParentTrack];
         };
 
-        // 필터링 리스트 갱신
-        const filterResult = recursiveTrackSearch({
-          trackList: trackNameList,
+        // 필터링 된 트랙 리스트를 dope sheet에 반영
+        const [filteredTrackList] = filterTrackList({ trackList: trackNameList });
+        const filteredDopeSheetList = produce<Partial<TPDopeSheet>[]>(dopeSheetList, (draft) => {
+          const nextState = _.map(draft, ({ trackIndex, isOpenedParentTrack }) => ({
+            trackIndex,
+            isOpenedParentTrack,
+            isFiltered: false,
+          }));
+          const recursive = ({ trackList, isOpenedParentTrack }: RecurDopeSheet) => {
+            _.forEach(trackList, ({ trackIndex, childrenTrack, isOpenedChildrenTrack }) => {
+              const index = fnGetBinarySearch({
+                collection: nextState,
+                index: trackIndex,
+                key: 'trackIndex',
+              });
+              nextState[index].isFiltered = true;
+              nextState[index].isOpenedParentTrack = isOpenedParentTrack;
+              recursive({ trackList: childrenTrack, isOpenedParentTrack: isOpenedChildrenTrack });
+            });
+          };
+          recursive({
+            trackList: filteredTrackList,
+            isOpenedParentTrack: filteredTrackList[0].isOpenedChildrenTrack,
+          });
+          return nextState;
         });
-        prevTrackInput.current = trimInput;
+        prevTrackInput.current = trimedInput;
         storeTPUpdateDopeSheetList({ updatedList: filteredDopeSheetList, status: 'isFiltered' });
-        setFilteredTrackList(filterResult);
+        setFilterTrackList(filteredTrackList);
       }, DEBOUNCED_TIME),
-    [trackNameList, dopeSheetList],
+    [trackNameList, dopeSheetList, lastBoneList],
   );
 
   // 트랙 인풋 텍스트 변경
@@ -162,7 +182,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   // 최초 Track List 적용
   useEffect(() => {
-    setFilteredTrackList(trackNameList);
+    setFilterTrackList(trackNameList);
   }, [trackNameList]);
 
   const isEmptyTrack = _.isEmpty(filteredTrackList);
@@ -190,14 +210,13 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
         {!isEmptyTrack && (
           <div className={cx('list')}>
             {_.map(filteredTrackList, (track, i) => {
-              const { childrenTrackList, isOpenedChildrenTrack, name, trackIndex } = track;
+              const { childrenTrack, isOpenedChildrenTrack, name, trackIndex } = track;
               const key = `${name}_${i}`;
               return (
                 <Track
                   key={key}
-                  childrenTrackList={childrenTrackList}
+                  childrenTrack={childrenTrack}
                   isOpenedParent={isOpenedChildrenTrack}
-                  paddingLeft={18.5}
                   trackName={name}
                   trackIndex={trackIndex}
                 />
