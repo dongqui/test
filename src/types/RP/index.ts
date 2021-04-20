@@ -91,10 +91,14 @@ export interface AnimatingDataType {
   startTimeIndex: number;
   endTimeIndex: number;
 }
-export interface RetargetDataType {
-  [RetargetDataPropertyName.boneName]: string;
-  [RetargetDataPropertyName.targetBoneName]?: string;
-  [RetargetDataPropertyName.x]: number;
-  [RetargetDataPropertyName.y]: number;
-  [RetargetDataPropertyName.z]: number;
+
+export interface RetargetMap {
+  key: string;
+  value: {
+    targetBone: string;
+    order: string;
+    x: number;
+    y: number;
+    z: number;
+  };
 }

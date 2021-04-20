@@ -12,7 +12,7 @@ export interface ButtonDefaultProps {
 const ButtonDefaultComponent: React.FC<ButtonDefaultProps> = ({
   width = 320,
   height = 42,
-  text = '확인',
+  text = 'OK',
   onClick = () => {},
 }) => {
   return (

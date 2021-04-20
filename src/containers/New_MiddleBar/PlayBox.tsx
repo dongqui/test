@@ -268,15 +268,15 @@ const PlayBox: FunctionComponent<Props> = ({}) => {
             onClose={handleModalClose}
             onOutsideClose={handleModalClose}
             onSubmit={handleSubmit}
-            title="모션의 이름을 입력해주세요"
+            title="Please enter the name of the motion."
             text={{
-              submit: '확인',
-              cancel: '취소',
+              submit: 'OK',
+              cancel: 'Cancel',
             }}
           >
             <BaseInput
               className={cx('form-name')}
-              placeholder="모션 이름"
+              placeholder="Motion name"
               onBlur={handleBlur}
               fullSize
             />

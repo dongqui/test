@@ -18,3 +18,30 @@
     }
   }
 }
+
+.icon {
+  visibility: hidden;
+
+  width: 16px;
+  transform: rotate(180deg);
+
+  line-height: 14px;
+  margin: 0 4px;
+  & > svg {
+    color: #7A7A7A;
+  }
+  cursor: pointer;
+}
+
+.rotation {
+  visibility: visible;
+}
+
+.quaternion {
+  @extend .icon;
+  width: 6px;
+}
+
+.quaternionMode {
+  display: none;
+}
