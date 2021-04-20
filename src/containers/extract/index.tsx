@@ -7,6 +7,8 @@ import Webcam from 'containers/extract/Webcam';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { PAGE_NAMES } from 'types';
+import RecordWebcam from 'containers/record/RecordWebcam';
 
 const cx = classNames.bind(styles);
 
@@ -18,10 +20,15 @@ const Extract: FunctionComponent = () => {
   return (
     <Fragment>
       <div className={cx('wrapper')}>
-        <div className={cx('upper-section')}>{videoURL && <Webcam videoUrl={videoURL} />}</div>
+        <div className={cx('upper-section')}>
+          {_.isEqual(pageInfo?.page, PAGE_NAMES.record) && <RecordWebcam />}
+          {_.isEqual(pageInfo?.page, PAGE_NAMES.extract) && videoURL && (
+            <Webcam videoUrl={videoURL} />
+          )}
+        </div>
         <MiddleBar />
         <div className={cx('lower-section')}>
-          <CutEdit />
+          {_.isEqual(pageInfo?.page, PAGE_NAMES.extract) && <CutEdit />}
         </div>
       </div>
     </Fragment>
