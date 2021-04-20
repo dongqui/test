@@ -51,8 +51,8 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const barPositionX = useReactiveVar(storeBarPositionX);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
-  const [currentTime, setCurrentTime] = useState<string | number>(0);
-  const [lastInputTime, setLastInputTime] = useState<string | number>(0);
+  // const [currentTime, setCurrentTime] = useState<string | number>(0);
+  // const [lastInputTime, setLastInputTime] = useState<string | number>(0);
   const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
@@ -238,14 +238,19 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   useEffect(() => {
     // 총 시간
     if (lastTimeRef.current) {
-      // lastTimeRef.current.value = _.round(lastTime, 0).toString();
-      const value = new Date(_.round(lastTime, 0) * 1000)
+      lastTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
         .toISOString()
         .substr(11, 8)
         .substr(2)
         .replace(':', '');
 
-      setLastInputTime(value);
+      // const value = new Date(_.round(lastTime, 0) * 1000)
+      //   .toISOString()
+      //   .substr(11, 8)
+      //   .substr(2)
+      //   .replace(':', '');
+
+      // setLastInputTime(value);
     }
   }, [lastTime]);
 
@@ -254,24 +259,32 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const changeCurrentTimeRef = useCallback(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current) {
       if (currentAction.time <= lastTime) {
-        // currentTimeRef.current.value = _.round(currentAction.time, 0).toString();
-
-        const value = new Date(_.round(currentAction.time, 0) * 1000)
+        currentTimeRef.current.value = new Date(_.round(currentAction.time, 0) * 1000)
           .toISOString()
           .substr(11, 8)
           .substr(2)
           .replace(':', '');
 
-        setCurrentTime(value);
+        // const value = new Date(_.round(currentAction.time, 0) * 1000)
+        //   .toISOString()
+        // .substr(11, 8)
+        // .substr(2)
+        // .replace(':', '');
+
+        // setCurrentTime(value);
       } else {
-        // currentTimeRef.current.value = _.round(lastTime, 0).toString();
-        const value = new Date(_.round(lastTime, 0) * 1000)
+        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
           .toISOString()
           .substr(11, 8)
           .substr(2)
           .replace(':', '');
 
-        setCurrentTime(value);
+        // const value = new Date(_.round(lastTime, 0) * 1000)
+        //   .toISOString()
+        //   .substr(11, 8)
+        //   .substr(2)
+        //   .replace(':', '');
+        // setCurrentTime(value);
       }
     }
     currentTimeReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeRef);
@@ -300,44 +313,56 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   useEffect(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current && currentXAxisPosition) {
       if (_.round(currentXAxisPosition.current / 30, 4) > lastTime) {
-        // currentTimeRef.current.value = _.round(lastTime).toString();
-        const value = new Date(_.round(lastTime) * 1000)
+        currentTimeRef.current.value = new Date(_.round(lastTime) * 1000)
           .toISOString()
           .substr(11, 8)
           .substr(2)
           .replace(':', '');
 
-        setCurrentTime(value);
+        // const value = new Date(_.round(lastTime) * 1000)
+        //   .toISOString()
+        //   .substr(11, 8)
+        //   .substr(2)
+        //   .replace(':', '');
+
+        // setCurrentTime(value);
       } else {
-        // currentTimeRef.current.value = _.round(currentXAxisPosition.current / 30, 0).toString();
-        const value = new Date(_.round(currentXAxisPosition.current / 30, 0) * 1000)
+        currentTimeRef.current.value = new Date(
+          _.round(currentXAxisPosition.current / 30, 0) * 1000,
+        )
           .toISOString()
           .substr(11, 8)
           .substr(2)
           .replace(':', '');
 
-        setCurrentTime(value);
+        // const value = new Date(_.round(currentXAxisPosition.current / 30, 0) * 1000)
+        //   .toISOString()
+        //   .substr(11, 8)
+        //   .substr(2)
+        //   .replace(':', '');
+
+        // setCurrentTime(value);
       }
     }
   }, [currentAction, currentTimeRef, currentXAxisPosition, lastTime]);
 
   // VM now 시간 변경 시 currentTime 변경
   useEffect(() => {
-    const value = new Date(_.round(indicator.now, 0) * 1000)
-      .toISOString()
-      .substr(11, 8)
-      .substr(2)
-      .replace(':', '');
-    setCurrentTime(value);
+    // const value = new Date(_.round(indicator.now, 0) * 1000)
+    //   .toISOString()
+    //   .substr(11, 8)
+    //   .substr(2)
+    //   .replace(':', '');
+    // setCurrentTime(value);
   }, [indicator.now]);
   // VM end 시간 변경 시 lastInputTime 변경
   useEffect(() => {
-    const value = new Date(_.round(recordingData.duration, 0) * 1000)
-      .toISOString()
-      .substr(11, 8)
-      .substr(2)
-      .replace(':', '');
-    setLastInputTime(value);
+    // const value = new Date(_.round(recordingData.duration, 0) * 1000)
+    //   .toISOString()
+    //   .substr(11, 8)
+    //   .substr(2)
+    //   .replace(':', '');
+    // setLastInputTime(value);
   }, [indicator.end, recordingData.duration]);
   const currentTimeIndexReqIdRef = useRef<number | undefined>();
 
@@ -389,7 +414,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                   className={cx('time-current')}
                   mask="99:99"
                   maskChar="0"
-                  value={currentTime}
+                  // value={currentTime}
                   innerRef={currentTimeRef}
                 />
                 <div className={cx('divide')}>/</div>
@@ -397,7 +422,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                   className={cx('time-last')}
                   mask="99:99"
                   maskChar="0"
-                  value={lastInputTime}
+                  // value={lastInputTime}
                   innerRef={lastTimeRef}
                 />
                 {isShootPage && (
@@ -411,7 +436,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                   className={cx('indicator-input')}
                   prefix="START"
                   defaultValue={indicator.start}
-                  value={indicator.start}
+                  // value={indicator.start}
                   arrow
                   onBlur={handleStartInputBlur}
                   onKeyDown={handleInputKeyDown}
@@ -421,7 +446,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                   className={cx('indicator-input')}
                   prefix="END"
                   defaultValue={indicator.end}
-                  value={indicator.end}
+                  // value={indicator.end}
                   arrow
                   onBlur={handleEndInputBlur}
                   onKeyDown={handleInputKeyDown}
@@ -432,7 +457,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                   className={cx('indicator-input')}
                   prefix="NOW"
                   defaultValue={indicator.now}
-                  value={indicator.now}
+                  // value={indicator.now}
                   onBlur={handleNowInputBlur}
                   onKeyDown={handleInputKeyDown}
                   disabled={!currentVisualizedData}
