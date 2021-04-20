@@ -405,7 +405,14 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
       <div className={cx('wrapper')} onContextMenu={handleMiddleBarContextMenu}>
         <div className={cx('inner')} ref={scrollRef}>
           <div className={cx('left')}>
-            <PlayBox />
+            <PlayBox
+              currentXAxisPosition={currentXAxisPosition}
+              currentTimeRef={currentTimeRef}
+              currentTimeIndexRef={currentTimeIndexRef}
+              prevXScale={prevXScale}
+              startTimeIndex={startTimeIndex}
+              lastTime={lastTime}
+            />
           </div>
           <div className={cx('right')}>
             <div className={cx('right-inner')}>
