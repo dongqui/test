@@ -86,18 +86,34 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       });
       mixer.stopAllAction();
       const action = mixer.clipAction(visualizedClip);
-      console.log('action: ', action);
       action.play();
       mixer.timeScale = 0;
-      if (currentXAxisPosition.current && currentXAxisPosition.current > startTimeIndex) {
+      if (
+        currentXAxisPosition &&
+        currentXAxisPosition.current &&
+        currentXAxisPosition.current > startTimeIndex
+      ) {
         action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
+        if (currentTimeIndexRef && currentTimeIndexRef.current) {
+          currentTimeIndexRef.current.value = currentXAxisPosition.current.toString(); // play bar 위치로 초기화
+        }
       } else {
         action.time = _.round(startTimeIndex / 30, 4);
+        if (currentTimeIndexRef && currentTimeIndexRef.current) {
+          currentTimeIndexRef.current.value = startTimeIndex.toString(); // startTime 으로 초기화
+        }
       }
       storeCurrentAction(action);
-      // console.log('action: ', action);
+      console.log('action: ', action);
     }
-  }, [currentVisualizedData, currentXAxisPosition, endTimeIndex, mixer, startTimeIndex]);
+  }, [
+    currentTimeIndexRef,
+    currentVisualizedData,
+    currentXAxisPosition,
+    endTimeIndex,
+    mixer,
+    startTimeIndex,
+  ]);
 
   // loop 했을 때 start index 로 보내줘야 함
   useEffect(() => {
@@ -159,46 +175,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       setLastTime(innerlastTime || 0);
     }
   }, [currentVisualizedData]);
-
-  // 정지 시 재생바 start 로 && current time 과 time index 시작점으로
-  useEffect(() => {
-    if (
-      currentXAxisPosition &&
-      currentTimeRef &&
-      currentTimeRef.current &&
-      currentTimeIndexRef &&
-      currentTimeIndexRef.current &&
-      prevXScale &&
-      prevXScale.current &&
-      playState === 'stop'
-    ) {
-      if (_.round(startTimeIndex / 30, 4) <= lastTime) {
-        currentTimeRef.current.value = _.round(startTimeIndex / 30, 0).toString();
-      } else {
-        currentTimeRef.current.value = _.round(lastTime, 0).toString();
-      }
-      currentTimeIndexRef.current.value = startTimeIndex.toString();
-      if (currentXAxisPosition.current && _.round(startTimeIndex / 30, 4) <= lastTime) {
-        currentXAxisPosition.current = startTimeIndex;
-      } else {
-        currentXAxisPosition.current = _.round(lastTime * 30, 0);
-      }
-      const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').attr(
-        'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-        ${X_AXIS_HEIGHT / 2})`,
-      );
-    }
-  }, [
-    currentTimeIndexRef,
-    currentTimeRef,
-    currentXAxisPosition,
-    lastTime,
-    playState,
-    prevXScale,
-    startTimeIndex,
-  ]);
 
   // 일시 정지 시 재생바 30fps 에 맞게 변경
   useEffect(() => {

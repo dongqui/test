@@ -552,7 +552,7 @@ const DopeSheet: React.FC<Props> = ({
                   (track) => targetTrackIndex === track[1] && layerKey === track[3],
                 )?.[0];
                 const alreadyIncludedIndex = _.findIndex(
-                  resultBaseLayerTracks,
+                  resultLayersTracks,
                   (track) => targetTrackIndex === track[1],
                 );
                 if (!targetTrack) {
@@ -564,11 +564,18 @@ const DopeSheet: React.FC<Props> = ({
                 if (targetTrack) {
                   const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
                   if (alreadyIncludedIndex === -1) {
-                    resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
-                  } else {
-                    resultBaseLayerTracks.splice(alreadyIncludedIndex, 1, [
+                    resultLayersTracks.push([
                       resultTrack,
+                      targetLayerIndex,
                       targetTrackIndex,
+                      layerKey,
+                    ]);
+                  } else {
+                    resultLayersTracks.splice(alreadyIncludedIndex, 1, [
+                      resultTrack,
+                      targetLayerIndex,
+                      targetTrackIndex,
+                      layerKey,
                     ]);
                   }
                 }

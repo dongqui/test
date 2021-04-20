@@ -57,7 +57,7 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
 
   // circle 생성
   useEffect(() => {
-    if (circleGroupRef.current && dopeSheetData.times) {
+    if (circleGroupRef.current && dopeSheetData.times && prevXScale) {
       const { isLocked, times } = dopeSheetData;
       d3.select(circleGroupRef.current)
         .selectAll('circle')

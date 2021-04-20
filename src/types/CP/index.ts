@@ -14,6 +14,7 @@ export enum CPNameType {
   Transform = 'Transform',
   Position = 'Position',
   Rotation = 'Rotation',
+  Quaternion = 'Quaternion',
   Scale = 'Scale',
   // Camera = 'Camera',
   // Location = 'Location',
@@ -42,19 +43,23 @@ export interface CPDataType {
     | CPComponentType.slider;
   [CPDataPropertyNames.parentKey]?: string;
   isExpanded?: boolean;
+  w?: RenderingDataPropertyName.QuaternionW;
   x?:
+    | RenderingDataPropertyName.QuaternionX
     | RenderingDataPropertyName.positionX
     | RenderingDataPropertyName.rotationX
     | RenderingDataPropertyName.scaleX;
   // | RenderingDataPropertyName.locationX
   // | RenderingDataPropertyName.angleX;
   y?:
+    | RenderingDataPropertyName.QuaternionY
     | RenderingDataPropertyName.positionY
     | RenderingDataPropertyName.rotationY
     | RenderingDataPropertyName.scaleY;
   // | RenderingDataPropertyName.locationY
   // | RenderingDataPropertyName.angleY;
   z?:
+    | RenderingDataPropertyName.QuaternionZ
     | RenderingDataPropertyName.positionZ
     | RenderingDataPropertyName.rotationZ
     | RenderingDataPropertyName.scaleZ;
