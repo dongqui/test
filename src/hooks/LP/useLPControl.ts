@@ -8,18 +8,13 @@ import {
   LPDataType,
   LPDATA_PROPERTY_TYPES,
   ShootTrackType,
-  FORMAT_TYPES,
-  ENABLE_VIDEO_FORMATS,
-  PAGE_NAMES,
-  ENABLE_FILE_FORMATS,
 } from 'types';
 import {
   storeContextMenuInfo,
-  storeCutImages,
+  storeCPChangeTab,
   storeLpData,
-  storePageInfo,
   storePages,
-  storeRecordingData,
+  storeRetargetInfo,
 } from 'lib/store';
 import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import { PagesType } from 'containers/Panels/LibraryPanel';
@@ -33,7 +28,7 @@ import * as api from 'utils/common/api';
 import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
 import fnExportModelToGlb from 'utils/LP/fnExportModelToGlb';
-import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
+import { RetargetInfoType, TargetboneType } from 'types/CP';
 
 interface UseLPControlProps {
   mainData: LPDataType[];
@@ -45,6 +40,7 @@ interface UseLPControlProps {
   setShowsModal: Dispatch<SetStateAction<boolean>>;
   modalMessage: string;
   setModalMessage: Dispatch<SetStateAction<string>>;
+  retargetInfo: RetargetInfoType;
 }
 const useLPControl = ({
   mainData,
@@ -56,6 +52,7 @@ const useLPControl = ({
   setShowsModal,
   modalMessage,
   setModalMessage,
+  retargetInfo,
 }: UseLPControlProps) => {
   const { getConfirm } = useConfirmModal();
 
@@ -118,14 +115,35 @@ const useLPControl = ({
             setModalMessage('Failed to export the animation data from the file.');
             return;
           }
-          const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
-            bones,
-          });
-          const retargetMap = result?.data?.result ?? [];
-          if (error2 || _.isEqual(retargetMap, 'failed')) {
-            // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환예정
-            setModalMessage('Auto-retargeting has failed. Would you retarget motion manually?');
-            return;
+          let retargetMap = _.isEqual(retargetInfo?.modelKey, targetRow?.key)
+            ? retargetInfo?.retargetMap
+            : [];
+          // 해당 모델의 retarget map이 없을때는 api 를 통해 retarget map을 전달받는다
+          if (_.isEmpty(retargetMap)) {
+            const { result, error: error2, msg: msg2 } = await api.getRetargetMap({
+              bones,
+            });
+            retargetMap = result?.data?.result ?? [];
+            if (error2 || _.isEqual(retargetMap, 'failed')) {
+              // 자동리타겟팅 실패상황. 리타겟팅 패널 개발되면 전환하시겠습니까 팝업을 통해 수동리타겟팅으로 전환
+              const confirmed = await getConfirm({
+                title: 'Auto-retargeting has failed. Would you retarget motion manually?',
+              });
+              if (confirmed) {
+                const targetboneList: TargetboneType[] = _.map(
+                  targetRow?.boneNames ?? [],
+                  (item) => ({
+                    key: item,
+                    value: item,
+                    isSelected: false,
+                  }),
+                );
+                storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
+                storeCPChangeTab(1);
+              }
+              setShowsModal(false);
+              return;
+            }
           }
           const { result: result2, error: error3, msg: msg3 } = await api.getRetargetBaseLayer({
             name: draggingRow?.name ?? '',
@@ -197,7 +215,14 @@ const useLPControl = ({
         })),
       );
     },
-    [getConfirm, mainData, setModalMessage, setShowsModal],
+    [
+      getConfirm,
+      mainData,
+      retargetInfo?.modelKey,
+      retargetInfo?.retargetMap,
+      setModalMessage,
+      setShowsModal,
+    ],
   );
   const onCopy = useCallback(({ mainData }) => {
     storeLpData(
