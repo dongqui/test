@@ -27,6 +27,7 @@ const PropertyPanel: FunctionComponent<{}> = ({}) => {
                       <CPListRowInput
                         rowKey={item.key}
                         name={item.name}
+                        w={item.w}
                         x={item.x}
                         y={item.y}
                         z={item.z}
