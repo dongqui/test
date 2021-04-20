@@ -6,7 +6,6 @@ import {
   axisName,
   RenderingDataPropertyName,
   RenderingDataType,
-  RetargetMap,
 } from 'types/RP';
 
 export const isDebug = false;

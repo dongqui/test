@@ -9,9 +9,9 @@ import {
   KeyframeData,
 } from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
-import { CPDataType } from 'types/CP';
+import { CPDataType, RetargetInfoType, RetargetMap, TargetboneType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { AnimatingDataType, RecordingDataType, RenderingDataType, RetargetMap } from 'types/RP';
+import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
 import _ from 'lodash';
 import {
   INITIAL_ANIMATING_DATA,
@@ -77,7 +77,8 @@ export const storeCPMode = makeVar<CPModeType>(CPModeType.property);
 export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeCPChangeTab = makeVar<number>(0);
 // RETARGET
-export const storeRetargetData = makeVar<RetargetMap[]>(retargetMap);
+export const storeRetargetMap = makeVar<RetargetMap[]>(retargetMap);
+export const storeRetargetInfo = makeVar<RetargetInfoType>({});
 
 // TP
 export const storeTPTrackNameList = makeVar<TPTrackName[]>([]);

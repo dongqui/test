@@ -69,3 +69,25 @@ export interface CPDataType {
   //   | RenderingDataPropertyName.isFogOn;
   // slider?: RenderingDataPropertyName.fogNear | RenderingDataPropertyName.fogFar;
 }
+export interface RetargetMap {
+  key: string;
+  value: {
+    targetBone: string;
+    order: string;
+    x: number;
+    y: number;
+    z: number;
+  };
+}
+
+export interface TargetboneType {
+  key: string;
+  value: string;
+  isSelected: boolean;
+}
+
+export interface RetargetInfoType {
+  modelKey?: string;
+  targetboneList?: TargetboneType[];
+  retargetMap?: Array<any>;
+}
