@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, MouseEvent, useEffect, useState } from 'react';
 import _ from 'lodash';
 import { Tabs, Tab } from 'components/New_Tabs';
 import { PropertyPanel } from './Property';
@@ -13,8 +13,13 @@ const cx = classNames.bind(styles);
 export const ControlPanel: FunctionComponent<{}> = () => {
   const retargetInfo = useReactiveVar(storeRetargetInfo);
   const isDisabled = _.isEmpty(retargetInfo?.targetboneList);
+
+  const handleContextMenu = (event: MouseEvent) => {
+    event.preventDefault();
+  };
+
   return (
-    <main className={cx('panel-wrap')}>
+    <main className={cx('panel-wrap')} onContextMenu={handleContextMenu}>
       <Tabs>
         <Tab title="Property">
           <PropertyPanel />
