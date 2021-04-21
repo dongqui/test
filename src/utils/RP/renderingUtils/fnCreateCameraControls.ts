@@ -32,21 +32,21 @@ const fnCreateCameraControls = (props: FnCreateCameraControls) => {
   cameraControls.update();
   cameraControls.enabled = true;
   cameraControls.enablePan = true;
-  cameraControls.maxDistance = 100;
+  cameraControls.maxDistance = 10000; // 100
   cameraControls.minZoom = 1.0001;
   // camera controls 안 움직이는 버그 방지를 위한 이벤트 리스너 부착
-  cameraControls.addEventListener('change', () => {
-    if (cameraControls.object.position.y > -1.01 && cameraControls.object.position.y < 0) {
-      const { x, y, z } = cameraControls.object.position;
-      cameraControls.object.position.set(x, y - 0.01, z);
-    } else if (cameraControls.object.position.y < 1.01 && cameraControls.object.position.y > 0) {
-      const { x, y, z } = cameraControls.object.position;
-      cameraControls.object.position.set(x, y + 0.01, z);
-    } else if (cameraControls.object.position.y > 100) {
-      const { x, y, z } = cameraControls.object.position;
-      cameraControls.object.position.set(x, y - 1, z);
-    }
-  });
+  // cameraControls.addEventListener('change', () => {
+  //   if (cameraControls.object.position.y > -1.01 && cameraControls.object.position.y < 0) {
+  //     const { x, y, z } = cameraControls.object.position;
+  //     cameraControls.object.position.set(x, y - 0.01, z);
+  //   } else if (cameraControls.object.position.y < 1.01 && cameraControls.object.position.y > 0) {
+  //     const { x, y, z } = cameraControls.object.position;
+  //     cameraControls.object.position.set(x, y + 0.01, z);
+  //   } else if (cameraControls.object.position.y > 100) {
+  //     const { x, y, z } = cameraControls.object.position;
+  //     cameraControls.object.position.set(x, y - 1, z);
+  //   }
+  // });
   return cameraControls;
 };
 
