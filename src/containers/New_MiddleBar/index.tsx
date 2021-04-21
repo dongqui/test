@@ -51,8 +51,8 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const barPositionX = useReactiveVar(storeBarPositionX);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
-  // const [currentTime, setCurrentTime] = useState<string | number>(0);
-  // const [lastInputTime, setLastInputTime] = useState<string | number>(0);
+  const [currentTime, setCurrentTime] = useState<string | number>(0);
+  const [lastInputTime, setLastInputTime] = useState<string | number>(0);
   const [lastTime, setLastTime] = useState(0);
 
   useEffect(() => {
@@ -348,21 +348,21 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   // VM now 시간 변경 시 currentTime 변경
   useEffect(() => {
-    // const value = new Date(_.round(indicator.now, 0) * 1000)
-    //   .toISOString()
-    //   .substr(11, 8)
-    //   .substr(2)
-    //   .replace(':', '');
-    // setCurrentTime(value);
+    const value = new Date(_.round(indicator.now, 0) * 1000)
+      .toISOString()
+      .substr(11, 8)
+      .substr(2)
+      .replace(':', '');
+    setCurrentTime(value);
   }, [indicator.now]);
   // VM end 시간 변경 시 lastInputTime 변경
   useEffect(() => {
-    // const value = new Date(_.round(recordingData.duration, 0) * 1000)
-    //   .toISOString()
-    //   .substr(11, 8)
-    //   .substr(2)
-    //   .replace(':', '');
-    // setLastInputTime(value);
+    const value = new Date(_.round(recordingData.duration, 0) * 1000)
+      .toISOString()
+      .substr(11, 8)
+      .substr(2)
+      .replace(':', '');
+    setLastInputTime(value);
   }, [indicator.end, recordingData.duration]);
   const currentTimeIndexReqIdRef = useRef<number | undefined>();
 
@@ -417,21 +417,41 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
           <div className={cx('right')}>
             <div className={cx('right-inner')}>
               <div className={cx('playtime')}>
-                <BaseInput
-                  className={cx('time-current')}
-                  mask="99:99"
-                  maskChar="0"
-                  // value={currentTime}
-                  innerRef={currentTimeRef}
-                />
+                {isShootPage ? (
+                  <BaseInput
+                    className={cx('time-current')}
+                    mask="99:99"
+                    maskChar="0"
+                    // value={currentTime}
+                    innerRef={currentTimeRef}
+                  />
+                ) : (
+                  <BaseInput
+                    className={cx('time-current')}
+                    mask="99:99"
+                    maskChar="0"
+                    value={currentTime}
+                    // innerRef={currentTimeRef}
+                  />
+                )}
                 <div className={cx('divide')}>/</div>
-                <BaseInput
-                  className={cx('time-last')}
-                  mask="99:99"
-                  maskChar="0"
-                  // value={lastInputTime}
-                  innerRef={lastTimeRef}
-                />
+                {isShootPage ? (
+                  <BaseInput
+                    className={cx('time-last')}
+                    mask="99:99"
+                    maskChar="0"
+                    // value={lastInputTime}
+                    innerRef={lastTimeRef}
+                  />
+                ) : (
+                  <BaseInput
+                    className={cx('time-last')}
+                    mask="99:99"
+                    maskChar="0"
+                    value={lastInputTime}
+                    // innerRef={lastTimeRef}
+                  />
+                )}
                 {isShootPage && (
                   <div className={cx('faster')}>
                     <Dropdown list={fasterList} onSelect={handleFasterSelect} />
@@ -439,38 +459,77 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                 )}
               </div>
               <div className={cx('indicator')}>
-                <PrefixInput
-                  className={cx('indicator-input')}
-                  prefix="START"
-                  defaultValue={indicator.start}
-                  // value={indicator.start}
-                  arrow
-                  onBlur={handleStartInputBlur}
-                  onKeyDown={handleInputKeyDown}
-                  disabled={!currentVisualizedData}
-                />
-                <PrefixInput
-                  className={cx('indicator-input')}
-                  prefix="END"
-                  defaultValue={indicator.end}
-                  // value={indicator.end}
-                  arrow
-                  onBlur={handleEndInputBlur}
-                  onKeyDown={handleInputKeyDown}
-                  disabled={!currentVisualizedData}
-                />
-                <PrefixInput
-                  id="now"
-                  className={cx('indicator-input')}
-                  prefix="NOW"
-                  defaultValue={indicator.now}
-                  // value={indicator.now}
-                  onBlur={handleNowInputBlur}
-                  onKeyDown={handleInputKeyDown}
-                  disabled={!currentVisualizedData}
-                  innerRef={currentTimeIndexRef}
-                  arrow
-                />
+                {isShootPage ? (
+                  <>
+                    <PrefixInput
+                      className={cx('indicator-input')}
+                      prefix="START"
+                      defaultValue={indicator.start}
+                      // value={indicator.start}
+                      arrow
+                      onBlur={handleStartInputBlur}
+                      onKeyDown={handleInputKeyDown}
+                      disabled={!currentVisualizedData}
+                    />
+                    <PrefixInput
+                      className={cx('indicator-input')}
+                      prefix="END"
+                      defaultValue={indicator.end}
+                      // value={indicator.end}
+                      arrow
+                      onBlur={handleEndInputBlur}
+                      onKeyDown={handleInputKeyDown}
+                      disabled={!currentVisualizedData}
+                    />
+                    <PrefixInput
+                      id="now"
+                      className={cx('indicator-input')}
+                      prefix="NOW"
+                      defaultValue={indicator.now}
+                      // value={indicator.now}
+                      onBlur={handleNowInputBlur}
+                      onKeyDown={handleInputKeyDown}
+                      disabled={!currentVisualizedData}
+                      innerRef={currentTimeIndexRef}
+                      arrow
+                    />
+                  </>
+                ) : (
+                  <>
+                    <PrefixInput
+                      className={cx('indicator-input')}
+                      prefix="START"
+                      defaultValue={indicator.start}
+                      value={indicator.start}
+                      arrow
+                      onBlur={handleStartInputBlur}
+                      onKeyDown={handleInputKeyDown}
+                      disabled={!currentVisualizedData}
+                    />
+                    <PrefixInput
+                      className={cx('indicator-input')}
+                      prefix="END"
+                      defaultValue={indicator.end}
+                      value={indicator.end}
+                      arrow
+                      onBlur={handleEndInputBlur}
+                      onKeyDown={handleInputKeyDown}
+                      disabled={!currentVisualizedData}
+                    />
+                    <PrefixInput
+                      id="now"
+                      className={cx('indicator-input')}
+                      prefix="NOW"
+                      defaultValue={indicator.now}
+                      value={indicator.now}
+                      onBlur={handleNowInputBlur}
+                      onKeyDown={handleInputKeyDown}
+                      disabled={!currentVisualizedData}
+                      innerRef={currentTimeIndexRef}
+                      arrow
+                    />
+                  </>
+                )}
               </div>
             </div>
             <div className={cx('mode-selector')}>
