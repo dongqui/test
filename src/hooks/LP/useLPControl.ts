@@ -30,6 +30,7 @@ import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
 import fnExportModelToGlb from 'utils/LP/fnExportModelToGlb';
 import { RetargetInfoType, TargetboneType } from 'types/CP';
 import fnGetDeltaAppliedTracks from 'utils/LP/fnGetDeltaAppliedTracks';
+import { defaultTargetboneValue } from '../../containers/Panels/ControlPanel/Retarget/RetargetPanel';
 
 interface UseLPControlProps {
   mainData: LPDataType[];
@@ -131,13 +132,17 @@ const useLPControl = ({
                 title: 'Auto-retargeting has failed. Would you retarget motion manually?',
               });
               if (confirmed) {
-                const targetboneList: TargetboneType[] = _.map(
+                let targetboneList: TargetboneType[] = _.map(
                   targetRow?.boneNames ?? [],
                   (item) => ({
                     key: item,
                     value: item,
                     isSelected: false,
                   }),
+                );
+                targetboneList = _.concat(
+                  { key: '', value: defaultTargetboneValue, isSelected: true },
+                  targetboneList,
                 );
                 storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
                 storeCPChangeTab(1);
@@ -196,6 +201,7 @@ const useLPControl = ({
           });
           if (error3) {
             setModalMessage('An error has occurred while retargeting.');
+            storeCPChangeTab(1);
             return;
           }
           const times = draggingRow?.baseLayer?.[0]?.times;
@@ -208,7 +214,11 @@ const useLPControl = ({
             baseLayer: newBaseLayer,
             layers: [],
           };
-          const newMainData = _.concat(mainData, newMotion);
+          let newMainData = _.concat(mainData, newMotion);
+          newMainData = _.map(newMainData, (item) => ({
+            ...item,
+            isExpanded: _.isEqual(item?.key, targetRow?.key) ? true : false,
+          }));
           storeLpData(newMainData);
           setShowsModal(false);
           return;

@@ -1,4 +1,5 @@
-import { FunctionComponent, memo, useCallback, useEffect, useMemo, useRef } from 'react';
+/* eslint-disable jsx-a11y/media-has-caption */
+import { FunctionComponent, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import _ from 'lodash';
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
@@ -14,7 +15,7 @@ import {
 import RenderingController from 'containers/Realtime/Panel/Rendering/RenderingController';
 import { ResizableBox } from 'react-resizable';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
-import Timeline from 'containers/Panels/timeline';
+import Timeline from 'containers/Realtime/Panel/Timeline';
 // import Timeline from 'containers/Realtime/Panel/Timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
@@ -84,6 +85,44 @@ const Realtime: FunctionComponent = () => {
       storeCurrentVisualizedData(undefined);
     }
   }, [currentVisualizedData?.key, lpData]);
+
+  const canvas = document.querySelector('canvas');
+  const video = document.querySelector('video');
+
+  const [recorder, setRecorder] = useState<MediaRecorder>();
+
+  // useEffect(() => {
+  //   if (canvas) {
+  //     const videoStream = canvas.captureStream(144);
+  //     const mediaRecorder = new MediaRecorder(videoStream);
+  //     setRecorder(mediaRecorder);
+  //   }
+  // }, [canvas]);
+
+  // const handleCapture = useCallback(() => {
+  //   if (canvas && recorder && video) {
+  //     let chunks: any = [];
+  //     recorder.ondataavailable = function (e) {
+  //       chunks.push(e.data);
+  //     };
+  //     recorder.onstop = function (e) {
+  //       const blob = new Blob(chunks, { type: 'video/mp4' });
+  //       chunks = [];
+  //       const videoURL = URL.createObjectURL(blob);
+  //       video.src = videoURL;
+  //     };
+  //     recorder.ondataavailable = function (e) {
+  //       chunks.push(e.data);
+  //     };
+  //     recorder.start();
+  //   }
+  // }, [canvas, recorder, video]);
+
+  // const handleStop = useCallback(() => {
+  //   if (canvas && recorder && video) {
+  //     recorder.stop();
+  //   }
+  // }, [canvas, recorder, video]);
 
   return (
     <div className={cx('wrapper')}>

@@ -1,3 +1,5 @@
+@import 'styles/libraries/_colors';
+
 .panel-wrap {
   * {
     font-size: 12px;
@@ -7,17 +9,15 @@
 .section-setup {
   position: relative;
   display: flex;
-
   border-bottom: 1px solid #303030;
 
   .setup-group {
     width: 100%;
-
     padding-top: 4px;
     margin: 0;
 
     .icon {
-      &>svg {
+      & > svg {
         width: 32px;
       }
 
@@ -33,10 +33,11 @@
     .error {
       & > svg {
         & > path {
-          stroke: #E85757;
+          stroke: #e85757;
         }
+
         & > circle {
-          stroke: #E85757;
+          stroke: #e85757;
         }
       }
     }
@@ -44,19 +45,18 @@
 
   .apply-button {
     font-weight: 600;
-
     line-height: 24px;
-
-    color: #7A7A7A;
-
+    color: #7a7a7a;
     margin-right: 8px;
-
     cursor: pointer;
-
     appearance: none;
     background: none;
     outline: none;
     border: none;
+
+    &.submit {
+      color: $primaryColor;
+    }
   }
 }
 
@@ -69,12 +69,10 @@
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-
       padding: 8px 12px;
 
-      &>span {
+      & > span {
         font-weight: 700;
-
         color: #fff;
       }
     }
@@ -88,7 +86,7 @@
         display: flex;
         margin-left: 4px;
 
-        &>* {
+        & > * {
           margin-left: 8px;
         }
       }
