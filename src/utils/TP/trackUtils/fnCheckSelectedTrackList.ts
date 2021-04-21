@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { TPDopeSheet, TPLastBone } from 'types/TP';
 import { fnSelectTrackList, fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { TP_TRACK_INDEX } from 'utils/const';
@@ -27,6 +28,23 @@ const fnCheckSelectedTrackList = ({
   const updatedTrackList: Partial<TPDopeSheet>[] = [];
   const newClickedTrackList: number[] = [];
 
+  const numberBinarySearch = ({ collection, index }: { collection: number[]; index: number }) => {
+    const size = collection.length;
+    let left = 0;
+    let right = size - 1;
+    while (left <= right) {
+      const mid = Math.floor((left + right) / 2);
+      if (collection[mid] === index) {
+        return mid;
+      } else if (collection[mid] > index) {
+        right = mid - 1;
+      } else {
+        left = mid + 1;
+      }
+    }
+    return -1;
+  };
+
   for (let index = 0; index < clickedTrackList.length; index += 1) {
     const targetTrackIndex = clickedTrackList[index];
 
@@ -43,17 +61,22 @@ const fnCheckSelectedTrackList = ({
         lastBoneList,
         trackIndex,
       });
+      const filtered = _.filter(clickedTrackList, (clickedIndex) => {
+        const included = numberBinarySearch({ collection: newClickedList, index: clickedIndex });
+        return included === -1;
+      });
       updatedTrackList.push(...updatedList);
-      newClickedTrackList.push(...clickedTrackList, ...newClickedList);
+      newClickedTrackList.push(...filtered);
 
       // 상위 트랙인 Layer에 선택 효과 제거
       if (remiander !== LAYER) {
-        const layerIndex = fnGetBinarySearch({
+        const layerIndex = _.floor(trackIndex / 10000) * 10000 + 2;
+        const targetIndex = fnGetBinarySearch({
           collection: lastBoneList,
-          index: trackIndex,
+          index: layerIndex,
           key: 'layerIndex',
         });
-        const layerTrack = lastBoneList[layerIndex];
+        const layerTrack = lastBoneList[targetIndex];
         if (layerTrack) {
           updatedTrackList.push({
             trackIndex: layerTrack.layerIndex,
