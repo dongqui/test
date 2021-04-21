@@ -70,12 +70,10 @@ const DopeSheet: React.FC<Props> = ({
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList); // store에 저장 된 dope sheet data list
   const dopeSheetRef = useRef<HTMLDivElement>(null); // Dope Sheet의 Ref
   const prevScrollTop = useRef(0); // 직전 TP scroll 위치
-  const prevDopeSheetHeight = useRef(0); // 높이 조절 전의 TP 높이
   const prevModelKey = useRef('');
   const [playBarDisplayed, setPlayBarDisplayed] = useState(false);
 
   const xScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null); // x값 범위 저장
-  const xScaleCopy = useRef<d3ScaleLinear | d3.ZoomScale | null>(null); // x값 범위 copy
   const xAxisPosition = useRef<d3Axis | null>(null); // x축 위치 저장(axisTop)
   const renderXAxis = useRef<d3Selection | null>(null); // x축 랜더링
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null); // grid선 랜더링
@@ -126,12 +124,10 @@ const DopeSheet: React.FC<Props> = ({
   // svg로 x축 그리기
   useEffect(() => {
     if (!dopeSheetRef.current) return;
-    const { clientWidth: width, clientHeight: height } = dopeSheetRef.current;
+    const width = window.innerWidth - 248;
 
-    prevDopeSheetHeight.current = height;
     xScale.current = d3.scaleLinear().domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN]).range([0, width]); // x값 범위 설정
     prevXScale.current = xScale.current.copy() as d3ScaleLinear; // 이전 x값 복사
-    xScaleCopy.current = xScale.current.copy(); // x값 원본 복사
     xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear); // x축 위치 설정
 
     const xScaleLinear = prevXScale.current as d3ScaleLinear;
@@ -200,101 +196,6 @@ const DopeSheet: React.FC<Props> = ({
       );
     d3.selectAll('.x-axis-g line').attr('y2', -24);
   }, [prevXScale]);
-
-  // zoom in/out, 좌우 Pad 발생 시 circle x값, x축 눈금 치수 변경
-  const curScaleLevel = useRef(INITIAL_SCALE_LEVEL);
-  useEffect(() => {
-    if (!dopeSheetRef.current) return;
-    if (!xScale.current || !xScaleCopy.current) return;
-    if (!xAxisPosition.current || !renderXAxis.current || !renderYGrid.current) return;
-    const { clientWidth: width, clientHeight: height } = dopeSheetRef.current;
-
-    // x축 다시 그리기
-    const rescaleXAxis = (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-      const rescaleX = event.transform.rescaleX(xScaleCopy.current as d3.ZoomScale); // x rescale
-      const xAxisPositionRef = xAxisPosition.current as d3Axis;
-
-      xScale.current = rescaleX; // rescale한 값으로 갱신
-      prevXScale.current = xScale.current?.copy() as d3ScaleLinear; // 이전 x값 복사
-
-      renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // x축 다시 그리기
-      renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // grid line 다시 그리기
-      d3.selectAll('.x-axis-g line').attr('y2', -24);
-
-      const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      const rangeRectWidth = xScaleLinear(endTimeIndex) - xScaleLinear(startTimeIndex);
-      d3.select('.range-rect')
-        .attr('width', rangeRectWidth)
-        .attr('transform', `translate(${xScaleLinear(startTimeIndex)}, -${X_AXIS_HEIGHT / 2})`);
-      curScaleLevel.current = event.transform.k;
-
-      // grid line 조정
-      d3.selectAll('.grid-line').remove();
-      d3.selectAll('.grid-line-wrapper .tick')
-        .append('line')
-        .attr('class', 'grid-line')
-        .attr('x1', 0)
-        .attr('y1', height * 2)
-        .attr('x2', 0)
-        .attr('y2', 0);
-
-      d3.select('#play-bar-wrapper').attr(
-        'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
-      );
-    };
-
-    // circle x값 rescale
-    const rescaleCircleX = () => {
-      d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
-        if (dopeSheetRef.current) {
-          const circleGroup = d3.select(this);
-          const circleGroupNode = circleGroup.node() as Element;
-          const xScaleLinear = xScale.current as d3ScaleLinear;
-          const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
-          const { top: dopeSheetTop } = dopeSheetRef.current.getBoundingClientRect();
-          if (
-            dopeSheetTop <= circleGroupTop &&
-            circleGroupTop <= dopeSheetTop + prevDopeSheetHeight.current
-          ) {
-            circleGroup.selectAll('circle').each(function () {
-              d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
-            });
-          }
-        }
-      });
-    };
-
-    // zoom 이벤트 적용
-    const zoomBehavior = d3
-      .zoom()
-      .scaleExtent([1, 100000])
-      .translateExtent([
-        [0, 0],
-        [width, height],
-      ])
-      .filter((event: WheelEvent) => {
-        if (_.isEqual(event.type, 'dblclick')) return false;
-        if (
-          _.isEqual(event.type, 'mousedown') &&
-          _.isEqual(event.ctrlKey, false) &&
-          _.isEqual(event.metaKey, false)
-        )
-          return false;
-        return true;
-      })
-      .on(
-        'zoom',
-        _.throttle((event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-          rescaleXAxis(event);
-          rescaleCircleX();
-        }, THROTTLE_TIMER),
-      );
-
-    d3.select(dopeSheetRef.current)
-      .call(zoomBehavior as any)
-      .call(zoomBehavior.scaleTo as any, curScaleLevel.current);
-  }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex]);
 
   // timelineWrapper에 scroll 효과 적용
   useEffect(() => {
@@ -980,111 +881,116 @@ const DopeSheet: React.FC<Props> = ({
     };
   }, [handleDopesheetKeyDown, handleDopesheetKeyPress, handleDopesheetKeyUp]);
 
-  // // TP 높이 변경 감지(관련 된 자료 찾으면 진행 예정)
-  // const curScaleLevel = useRef(INITIAL_SCALE_LEVEL);
-  // useEffect(() => {
-  //   if (dopeSheetRef.current) {
-  //     const ro = new ResizeObserver(([entry]) => {
-  //       const { height, width } = entry.contentRect;
-  //       prevDopeSheetHeight.current = height;
+  const curScaleLevel = useRef(INITIAL_SCALE_LEVEL);
+  const prevWidth = useRef(0);
+  useEffect(() => {
+    if (dopeSheetRef.current) {
+      const ro = new ResizeObserver(([entry]) => {
+        const { width, height } = entry.contentRect;
+        if (width !== 0 && height !== 0 && prevWidth.current !== width) {
+          // x축 다시 그리기
+          const rescaleXAxis = (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
+            xScale.current = d3
+              .scaleLinear()
+              .domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN])
+              .range([0, width]); // x값 범위 설정
+            xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear); // x축 위치 설정
 
-  //       // x축 다시 그리기
-  //       const rescaleXAxis = (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-  //         const resizeXAxis = d3
-  //           .scaleLinear()
-  //           .domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN])
-  //           .range([0, width]);
-  //         const rescaleX = event.transform.rescaleX(resizeXAxis); // x rescale
-  //         const test = event.transform.applyX(event.transform.x);
-  //         console.log(event, test);
+            const rescaleX = event.transform.rescaleX(xScale.current as d3.ZoomScale); // x rescale
+            const xAxisPositionRef = xAxisPosition.current as d3Axis;
 
-  //         xScale.current = rescaleX; // rescale한 값으로 갱신
-  //         xScaleCopy.current = xScale.current.copy(); // x값 원본 복사
-  //         prevXScale.current = xScale.current.copy() as d3ScaleLinear; // 이전 x값 복사
+            curScaleLevel.current = event.transform.k;
+            prevWidth.current = width;
 
-  //         xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear); // x축 위치 설정
-  //         const xAxisPositionRef = xAxisPosition.current as d3Axis;
+            xScale.current = rescaleX; // rescale한 값으로 갱신
+            prevXScale.current = xScale.current?.copy() as d3ScaleLinear; // 이전 x값 복사
 
-  //         renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // x축 다시 그리기
-  //         renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // grid line 다시 그리기
-  //         d3.selectAll('.x-axis-g line').attr('y2', -24);
+            renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // x축 다시 그리기
+            renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // grid line 다시 그리기
+            d3.selectAll('.x-axis-g line').attr('y2', -24);
 
-  //         const xScaleLinear = prevXScale.current as d3ScaleLinear;
-  //         const rangeRectWidth = xScaleLinear(endTimeIndex) - xScaleLinear(startTimeIndex);
-  //         d3.select('.range-rect')
-  //           .attr('width', rangeRectWidth)
-  //           .attr('transform', `translate(${xScaleLinear(startTimeIndex)}, -${X_AXIS_HEIGHT / 2})`);
-  //         curScaleLevel.current = event.transform.k;
+            const xScaleLinear = prevXScale.current as d3ScaleLinear;
+            const rangeRectWidth = xScaleLinear(endTimeIndex) - xScaleLinear(startTimeIndex);
+            d3.select('.range-rect')
+              .attr('width', rangeRectWidth)
+              .attr(
+                'transform',
+                `translate(${xScaleLinear(startTimeIndex)}, -${X_AXIS_HEIGHT / 2})`,
+              );
 
-  //         // grid line 조정
-  //         d3.selectAll('.grid-line').remove();
-  //         d3.selectAll('.grid-line-wrapper .tick')
-  //           .append('line')
-  //           .attr('class', 'grid-line')
-  //           .attr('x1', 0)
-  //           .attr('y1', height * 2)
-  //           .attr('x2', 0)
-  //           .attr('y2', 0);
+            // grid line 조정
+            d3.selectAll('.grid-line').remove();
+            d3.selectAll('.grid-line-wrapper .tick')
+              .append('line')
+              .attr('class', 'grid-line')
+              .attr('x1', 0)
+              .attr('y1', height)
+              .attr('x2', 0)
+              .attr('y2', 0);
 
-  //         d3.select('#play-bar-wrapper').attr(
-  //           'transform',
-  //           `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
-  //         );
-  //       };
+            d3.select('#play-bar-wrapper').attr(
+              'transform',
+              `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
+            );
+          };
 
-  //       // circle x값 rescale
-  //       const rescaleCircleX = () => {
-  //         d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
-  //           if (dopeSheetRef.current) {
-  //             const circleGroup = d3.select(this);
-  //             const circleGroupNode = circleGroup.node() as Element;
-  //             const xScaleLinear = xScale.current as d3ScaleLinear;
-  //             const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
-  //             const { top: dopeSheetTop } = dopeSheetRef.current.getBoundingClientRect();
-  //             if (
-  //               dopeSheetTop <= circleGroupTop &&
-  //               circleGroupTop <= dopeSheetTop + prevDopeSheetHeight.current
-  //             ) {
-  //               circleGroup.selectAll('circle').each(function () {
-  //                 d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
-  //               });
-  //             }
-  //           }
-  //         });
-  //       };
+          // circle x값 rescale
+          const rescaleCircleX = () => {
+            d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
+              if (dopeSheetRef.current) {
+                const circleGroup = d3.select(this);
+                const circleGroupNode = circleGroup.node() as Element;
+                const xScaleLinear = xScale.current as d3ScaleLinear;
+                const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
+                const { top: dopeSheetTop } = dopeSheetRef.current.getBoundingClientRect();
+                if (
+                  dopeSheetTop <= circleGroupTop &&
+                  circleGroupTop <= dopeSheetTop + 300
+                  // circleGroupTop <= dopeSheetTop + prevDopeSheetHeight.current
+                ) {
+                  circleGroup.selectAll('circle').each(function () {
+                    d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
+                  });
+                }
+              }
+            });
+          };
 
-  //       // zoom 이벤트 적용
-  //       const zoomBehavior = d3
-  //         .zoom()
-  //         .scaleExtent([1, 100000])
-  //         .translateExtent([
-  //           [0, 0],
-  //           [width, height],
-  //         ])
-  //         .filter((event: WheelEvent) => {
-  //           if (_.isEqual(event.type, 'dblclick')) return false;
-  //           if (
-  //             _.isEqual(event.type, 'mousedown') &&
-  //             _.isEqual(event.ctrlKey, false) &&
-  //             _.isEqual(event.metaKey, false)
-  //           )
-  //             return false;
-  //           return true;
-  //         })
-  //         .on(
-  //           'zoom',
-  //           _.throttle((event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-  //             rescaleXAxis(event);
-  //             rescaleCircleX();
-  //           }, THROTTLE_TIMER),
-  //         );
-  //       d3.select(dopeSheetRef.current)
-  //         .call(zoomBehavior as any)
-  //         .call(zoomBehavior.scaleTo as any, curScaleLevel.current);
-  //     });
-  //     ro.observe(dopeSheetRef.current);
-  //   }
-  // }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex]);
+          // zoom 이벤트 적용
+          const zoomBehavior = d3
+            .zoom()
+            .scaleExtent([1, 100000])
+            .translateExtent([
+              [0, 0],
+              [width, height],
+            ])
+            .filter((event: WheelEvent) => {
+              if (_.isEqual(event.type, 'dblclick')) return false;
+              if (
+                _.isEqual(event.type, 'mousedown') &&
+                _.isEqual(event.ctrlKey, false) &&
+                _.isEqual(event.metaKey, false)
+              )
+                return false;
+              return true;
+            })
+            .on(
+              'zoom',
+              _.throttle((event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
+                rescaleXAxis(event);
+                rescaleCircleX();
+              }, THROTTLE_TIMER),
+            );
+
+          d3.select(dopeSheetRef.current)
+            .call(zoomBehavior.scaleTo as any, curScaleLevel.current)
+            .call(zoomBehavior.translateTo as any, width / 2, height / 2)
+            .call(zoomBehavior as any);
+        }
+      });
+      ro.observe(dopeSheetRef.current);
+    }
+  }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex]);
 
   return (
     <>
