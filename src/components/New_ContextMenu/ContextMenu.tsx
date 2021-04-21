@@ -7,6 +7,7 @@ import {
   useCallback,
   useRef,
   useMemo,
+  useLayoutEffect,
 } from 'react';
 import _ from 'lodash';
 import ContextMenuItem from './ContextMenuItem';
@@ -47,8 +48,8 @@ export interface Props {
     isDisabled?: boolean;
   }[];
   position: {
-    top: string;
-    left: string;
+    top: string | number;
+    left: string | number;
   };
 }
 
@@ -85,10 +86,17 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
   );
 
   const nextPosition = useMemo(() => {
-    return {
-      top: position.top.includes('px') ? position.top : `${position.top}px`,
-      left: position.left.includes('px') ? position.left : `${position.left}px`,
-    };
+    const nextTopValue = String(position.top).includes('px')
+      ? `${Math.floor(getNumberValue(String(position.top)))}px`
+      : `${Math.floor(Number(position.top))}px`;
+
+    const nextLeftValue = String(position.left).includes('px')
+      ? `${Math.floor(getNumberValue(String(position.left)))}px`
+      : `${Math.floor(Number(position.left))}px`;
+
+    const value = { top: nextTopValue, left: nextLeftValue };
+
+    return { ...value };
   }, [position.left, position.top]);
 
   const [injectedPosition, setInjectedPosition] = useState({
@@ -96,27 +104,113 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
     left: nextPosition.left,
   });
 
-  useEffect(() => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useLayoutEffect(() => {
     const currentRef = innerRef?.current;
 
     if (currentRef) {
-      const { top, y, bottom, height } = currentRef.getBoundingClientRect();
+      const { height } = currentRef.getBoundingClientRect();
 
-      if (height + getNumberValue(injectedPosition.top) !== getNumberValue(nextPosition.top)) {
-        if (y + height >= window.innerHeight) {
-          setInjectedPosition({
-            top: `${y - height}px`,
-            left: nextPosition.left,
-          });
+      const numberValue = {
+        nextPropsTop: getNumberValue(nextPosition.top),
+        nextPropsLeft: getNumberValue(nextPosition.left),
+        beforeStateTop: getNumberValue(injectedPosition.top),
+        beforeStateLeft: getNumberValue(injectedPosition.left),
+      };
+
+      const topDiff = Math.abs(numberValue.nextPropsTop - numberValue.beforeStateTop);
+
+      if (!isMounted) {
+        if (_.isEqual(topDiff, 0)) {
+          if (numberValue.beforeStateTop + height >= window.innerHeight) {
+            setInjectedPosition({
+              top: `${getNumberValue(injectedPosition.top) - height}px`,
+              left: nextPosition.left,
+            });
+          } else {
+            setInjectedPosition({
+              top: nextPosition.top,
+              left: nextPosition.left,
+            });
+          }
+
+          setIsMounted(true);
         } else {
-          setInjectedPosition({
-            top: nextPosition.top,
-            left: nextPosition.left,
-          });
+          if (numberValue.beforeStateTop + height >= window.innerHeight) {
+            setInjectedPosition({
+              top: `${getNumberValue(injectedPosition.top) - height}px`,
+              left: nextPosition.left,
+            });
+          } else {
+            setInjectedPosition({
+              top: nextPosition.top,
+              left: nextPosition.left,
+            });
+          }
         }
       }
+
+      if (isMounted) {
+        if (numberValue.nextPropsTop !== numberValue.beforeStateTop) {
+          if (numberValue.nextPropsTop + height >= window.innerHeight) {
+            setInjectedPosition({
+              top: `${numberValue.nextPropsTop - height}px`,
+              left: nextPosition.left,
+            });
+          } else {
+            setInjectedPosition({
+              top: nextPosition.top,
+              left: nextPosition.left,
+            });
+          }
+        }
+      }
+
+      // if (
+      //   Math.abs(getNumberValue(nextPosition.top) - getNumberValue(injectedPosition.top)) !==
+      //     height &&
+      //   Math.abs(getNumberValue(nextPosition.top) - getNumberValue(injectedPosition.top)) !== 0
+      // ) {
+      //   if (getNumberValue(injectedPosition.top) + height >= window.innerHeight) {
+      //     setInjectedPosition({
+      //       top: `${getNumberValue(injectedPosition.top) - height}px`,
+      //       left: nextPosition.left,
+      //     });
+      //   } else {
+      //     setInjectedPosition({
+      //       top: nextPosition.top,
+      //       left: nextPosition.left,
+      //     });
+      //   }
+      // }
+
+      // if (Math.abs(getNumberValue(nextPosition.top) - getNumberValue(injectedPosition.top)) === 0) {
+      //   if (nextPosition.top !== injectedPosition.top) {
+      //     if (getNumberValue(injectedPosition.top) + height >= window.innerHeight) {
+      //       setInjectedPosition({
+      //         top: `${getNumberValue(injectedPosition.top) - height}px`,
+      //         left: nextPosition.left,
+      //       });
+      //     } else {
+      //
+      //     }
+      //   } else {
+      //     setInjectedPosition({
+      //       top: nextPosition.top,
+      //       left: nextPosition.left,
+      //     });
+      //   }
+      // }
     }
-  }, [injectedPosition, innerRef, nextPosition, position]);
+  }, [
+    injectedPosition.left,
+    injectedPosition.top,
+    innerRef,
+    isMounted,
+    nextPosition.left,
+    nextPosition.top,
+  ]);
 
   useEffect(() => {
     const currentRef = innerRef?.current;
