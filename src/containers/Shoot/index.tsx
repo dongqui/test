@@ -30,17 +30,18 @@ const ShootPage: FunctionComponent = () => {
   });
 
   useEffect(() => {
-    const handleContextMenu = (e: any) => {
-      e.preventDefault();
-    };
     if (window) {
+      const handleContextMenu = (e: MouseEvent) => {
+        e.preventDefault();
+      };
+
       window.addEventListener('contextmenu', handleContextMenu);
 
       return () => {
         window.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, []);
+  }, [contextMenuInfo.isShow]);
 
   return (
     <main>
