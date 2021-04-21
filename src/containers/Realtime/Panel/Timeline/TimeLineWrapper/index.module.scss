@@ -1,0 +1,16 @@
+.timeline-wrapper {
+  width: 100%;
+  height: 100%;
+  // display: flex;
+  flex-flow: row nowrap;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  // background-color: #151515;
+  display: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

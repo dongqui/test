@@ -1,0 +1,41 @@
+@import 'styles/libraries/_colors';
+
+.wrapper {
+  position: relative;
+  width: 248px;
+  min-height: 100%;
+  height: fit-content;
+  border-right: 2px solid $gray300;
+  background-color: $panelColor;
+  z-index: 4;
+}
+
+.search-wrapper {
+  position: fixed;
+  width: inherit;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  // background-color: $gray100;
+  background-color: $panelColor;
+  z-index: 2;
+  border-right: 2px solid $gray300;
+  border-bottom: 2px solid $gray300;
+  height: 48px;
+  padding: 0 8px;
+
+  .layer {
+    width: 28px;
+    padding: 2px;
+    color: $gray500;
+  }
+}
+
+.search-joint {
+  height: 28px;
+  background-color: $gray300;
+}
+
+.list {
+  transform: translate3d(0, 48px, 0);
+}
