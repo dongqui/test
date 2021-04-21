@@ -1,8 +1,9 @@
+const defaultTargetBone = '';
 export const retargetMap = [
   {
     key: 'hips',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -12,7 +13,7 @@ export const retargetMap = [
   {
     key: 'leftUpLeg',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -22,7 +23,7 @@ export const retargetMap = [
   {
     key: 'rightUpLeg',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -32,7 +33,7 @@ export const retargetMap = [
   {
     key: 'spine',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -42,7 +43,7 @@ export const retargetMap = [
   {
     key: 'leftLeg',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -52,7 +53,7 @@ export const retargetMap = [
   {
     key: 'rightLeg',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -62,7 +63,7 @@ export const retargetMap = [
   {
     key: 'spine1',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -72,7 +73,7 @@ export const retargetMap = [
   {
     key: 'leftFoot',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -82,7 +83,7 @@ export const retargetMap = [
   {
     key: 'rightFoog',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -92,7 +93,7 @@ export const retargetMap = [
   {
     key: 'spine2',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -102,7 +103,7 @@ export const retargetMap = [
   {
     key: 'leftToeBase',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -112,7 +113,7 @@ export const retargetMap = [
   {
     key: 'rightToeBase',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -122,7 +123,7 @@ export const retargetMap = [
   {
     key: 'neck',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -132,7 +133,7 @@ export const retargetMap = [
   {
     key: 'leftShoulder',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -142,7 +143,7 @@ export const retargetMap = [
   {
     key: 'rightShoulder',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -152,7 +153,7 @@ export const retargetMap = [
   {
     key: 'head',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -162,7 +163,7 @@ export const retargetMap = [
   {
     key: 'leftArm',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -172,7 +173,7 @@ export const retargetMap = [
   {
     key: 'rightArm',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -182,7 +183,7 @@ export const retargetMap = [
   {
     key: 'leftForeArm',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -192,7 +193,7 @@ export const retargetMap = [
   {
     key: 'rightForeArm',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -202,7 +203,7 @@ export const retargetMap = [
   {
     key: 'leftHand',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -212,7 +213,7 @@ export const retargetMap = [
   {
     key: 'rightHand',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -222,7 +223,7 @@ export const retargetMap = [
   {
     key: 'leftHandIndex1',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
@@ -232,7 +233,7 @@ export const retargetMap = [
   {
     key: 'rightHandIndex1',
     value: {
-      targetBone: '',
+      targetBone: defaultTargetBone,
       order: 'xyz',
       x: 0,
       y: 0,
