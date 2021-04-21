@@ -68,8 +68,11 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
 
   const [values, setValue] = useState<InputValueType>(initialValue);
 
+  const [modeSelect, setModeSelect] = useState(false);
   const [quaternionMode, setQuaternionMode] = useState(false);
-  const [quaternionTab, setQuaternionTab] = useState(false);
+
+  console.log('modeSelect', modeSelect);
+  console.log('quaternionTab', quaternionMode);
 
   const handleBlur = useCallback(
     (e: any) => {
@@ -242,25 +245,25 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
 
   const iconClasses = cx('icon', {
     rotation: _.isEqual(name, 'Rotation'),
-    quaternion: quaternionMode,
+    quaternion: modeSelect,
   });
 
   const titleClasses = cx('property-title', {
-    quaternionMode: quaternionTab,
+    quaternionMode: quaternionMode,
   });
 
   const modeList = [
     {
       key: 'euler',
       value: 'Euler',
-      isSelected: !quaternionTab,
-      onClick: () => setQuaternionTab(false),
+      isSelected: !quaternionMode,
+      onClick: () => setQuaternionMode(false),
     },
     {
       key: 'quaternion',
       value: 'Quaternion',
-      isSelected: quaternionTab,
-      onClick: () => setQuaternionTab(true),
+      isSelected: quaternionMode,
+      onClick: () => setQuaternionMode(true),
     },
   ];
 
@@ -270,14 +273,16 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       <IconWrapper
         className={iconClasses}
         icon={SvgPath.ChevronLeft}
-        onClick={() => setQuaternionMode(!quaternionMode)}
+        onClick={() => setModeSelect(!modeSelect)}
         hasFrame={false}
       />
       <div className={cx('input-group')}>
         <Fragment>
-          {quaternionMode ? (
-            <Segment list={modeList} />
-          ) : quaternionTab ? (
+          {modeSelect ? (
+            <div className={cx('segment')}>
+              <Segment list={modeList} />
+            </div>
+          ) : quaternionMode ? (
             _.map(quaternionList, (item, idx) => {
               const key = `${item.key}_${idx}`;
               return (
