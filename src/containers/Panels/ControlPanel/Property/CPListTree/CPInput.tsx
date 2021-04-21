@@ -14,7 +14,6 @@ interface Props {
 }
 
 export const CPInput: FunctionComponent<Props> = ({
-  key,
   innerRef,
   value,
   prefix,
@@ -26,7 +25,6 @@ export const CPInput: FunctionComponent<Props> = ({
 }) => {
   return (
     <PrefixInput
-      key={key}
       innerRef={innerRef}
       value={value}
       prefix={prefix}

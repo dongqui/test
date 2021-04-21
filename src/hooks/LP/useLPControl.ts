@@ -385,8 +385,8 @@ const useLPControl = ({
         data,
         onClick: async (key, value) => {
           storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
-          const content = '';
           let motion: LPDataType | undefined;
+          let motions: LPDataType | LPDataType[];
           const parentKey = _.isEqual(lpmode, LPModeType.iconview)
             ? _.last(pages)?.key
             : ROOT_FOLDER_NAME;
@@ -465,11 +465,11 @@ const useLPControl = ({
             case '8':
               setShowsModal(!showsModal);
               setModalMessage('Please wait while exporting the file.');
-
+              motions = [_.last(_.filter(mainData, { parentKey: targetRow?.key })) as any];
               await fnExportModelToFbx({
                 modelName: targetRow?.name ?? '',
                 modelUrl: targetRow?.url ?? '',
-                motions: _.filter(mainData, [LPDATA_PROPERTY_TYPES.parentKey, targetRow?.key]),
+                motions,
               })
                 .then(() => {
                   setShowsModal(false);
