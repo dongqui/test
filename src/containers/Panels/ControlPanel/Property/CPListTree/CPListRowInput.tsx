@@ -4,6 +4,7 @@ import { CPNameType } from 'types/CP';
 import { RenderingDataPropertyName } from 'types/RP';
 import {
   fnChangeBonePosition,
+  fnChangeBoneQuaternion,
   fnChangeBoneRotation,
   fnChangeBoneScale,
 } from 'utils/CP/transformUtils';
@@ -40,6 +41,13 @@ export interface CPListRowInputProps {
     | RenderingDataPropertyName.scaleZ;
 }
 
+interface InputValueType {
+  w?: number;
+  x: number;
+  y: number;
+  z: number;
+}
+
 const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   name,
   w = RenderingDataPropertyName.QuaternionW,
@@ -52,22 +60,22 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   const currentBone = useReactiveVar(storeCurrentBone);
   const transformControls = useReactiveVar(storeTransformControls);
 
-  const [initialValue, setInitialValue] = useState({
+  const [initialValue, setInitialValue] = useState<InputValueType>({
     x: 0,
     y: 0,
     z: 0,
   });
 
-  const [values, setValue] = useState(initialValue);
+  const [values, setValue] = useState<InputValueType>(initialValue);
 
+  const [modeSelect, setModeSelect] = useState(false);
   const [quaternionMode, setQuaternionMode] = useState(false);
-  const [quaternionTab, setQuaternionTab] = useState(false);
 
   const handleBlur = useCallback(
     (e: any) => {
       const value = e.target.value;
-      const name = inputRef.current?.name;
-      const property = name?.slice(0, -1);
+      const name = e.target.name;
+      const property = name?.slice(0, -1).toLowerCase();
       const axis: any = name?.slice(-1).toLowerCase();
       switch (property) {
         case 'position':
@@ -76,12 +84,21 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
           }
           break;
         case 'rotation':
+        case 'quaternion':
           if (currentBone) {
-            fnChangeBoneRotation({
-              targetBone: currentBone,
-              axis,
-              value: fnConvertDegreeToEuler({ degreeValue: value }),
-            });
+            if (quaternionMode) {
+              fnChangeBoneQuaternion({
+                targetBone: currentBone,
+                axis,
+                value: parseFloat(value),
+              });
+            } else {
+              fnChangeBoneRotation({
+                targetBone: currentBone,
+                axis,
+                value: fnConvertDegreeToEuler({ degreeValue: value }),
+              });
+            }
           }
           break;
         case 'scale':
@@ -91,7 +108,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
           break;
       }
     },
-    [currentBone],
+    [currentBone, quaternionMode],
   );
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -125,17 +142,26 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
           });
         }
         if (_.isEqual(name, CPNameType.Rotation)) {
-          setInitialValue({
-            x: targetObject?.rotation?.x
-              ? _.round(fnConvertEulerToDegree({ eulerValue: targetObject?.rotation?.x }), 4)
-              : 0,
-            y: targetObject?.rotation?.y
-              ? _.round(fnConvertEulerToDegree({ eulerValue: targetObject?.rotation?.y }), 4)
-              : 0,
-            z: targetObject?.rotation?.z
-              ? _.round(fnConvertEulerToDegree({ eulerValue: targetObject?.rotation?.z }), 4)
-              : 0,
-          });
+          if (quaternionMode) {
+            setInitialValue({
+              w: targetObject?.quaternion?.w ? _.round(targetObject?.quaternion?.w, 4) : 1,
+              x: targetObject?.quaternion?.x ? _.round(targetObject?.quaternion?.x, 4) : 0,
+              y: targetObject?.quaternion?.y ? _.round(targetObject?.quaternion?.y, 4) : 0,
+              z: targetObject?.quaternion?.z ? _.round(targetObject?.quaternion?.z, 4) : 0,
+            });
+          } else {
+            setInitialValue({
+              x: targetObject?.rotation?.x
+                ? _.round(fnConvertEulerToDegree({ eulerValue: targetObject?.rotation?.x }), 4)
+                : 0,
+              y: targetObject?.rotation?.y
+                ? _.round(fnConvertEulerToDegree({ eulerValue: targetObject?.rotation?.y }), 4)
+                : 0,
+              z: targetObject?.rotation?.z
+                ? _.round(fnConvertEulerToDegree({ eulerValue: targetObject?.rotation?.z }), 4)
+                : 0,
+            });
+          }
         }
         if (_.isEqual(name, CPNameType.Scale)) {
           setInitialValue({
@@ -150,7 +176,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
         transformControls.removeEventListener('objectChange', handleObjectChange);
       };
     }
-  }, [name, transformControls]);
+  }, [name, quaternionMode, transformControls]);
 
   useEffect(() => {
     if (_.isEqual(name, CPNameType.Position)) {
@@ -161,17 +187,26 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       });
     }
     if (_.isEqual(name, CPNameType.Rotation)) {
-      setInitialValue({
-        x: currentBone?.rotation?.x
-          ? _.round(fnConvertEulerToDegree({ eulerValue: currentBone?.rotation?.x }), 4)
-          : 0,
-        y: currentBone?.rotation?.y
-          ? _.round(fnConvertEulerToDegree({ eulerValue: currentBone?.rotation?.y }), 4)
-          : 0,
-        z: currentBone?.rotation?.z
-          ? _.round(fnConvertEulerToDegree({ eulerValue: currentBone?.rotation?.z }), 4)
-          : 0,
-      });
+      if (quaternionMode) {
+        setInitialValue({
+          w: currentBone?.quaternion?.w ? _.round(currentBone?.quaternion?.w, 4) : 1,
+          x: currentBone?.quaternion?.x ? _.round(currentBone?.quaternion?.x, 4) : 0,
+          y: currentBone?.quaternion?.y ? _.round(currentBone?.quaternion?.y, 4) : 0,
+          z: currentBone?.quaternion?.z ? _.round(currentBone?.quaternion?.z, 4) : 0,
+        });
+      } else {
+        setInitialValue({
+          x: currentBone?.rotation?.x
+            ? _.round(fnConvertEulerToDegree({ eulerValue: currentBone?.rotation?.x }), 4)
+            : 0,
+          y: currentBone?.rotation?.y
+            ? _.round(fnConvertEulerToDegree({ eulerValue: currentBone?.rotation?.y }), 4)
+            : 0,
+          z: currentBone?.rotation?.z
+            ? _.round(fnConvertEulerToDegree({ eulerValue: currentBone?.rotation?.z }), 4)
+            : 0,
+        });
+      }
     }
     if (_.isEqual(name, CPNameType.Scale)) {
       setInitialValue({
@@ -180,7 +215,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
         z: currentBone?.scale?.z ? _.round(currentBone?.scale?.z, 4) : 0,
       });
     }
-  }, [currentBone, name]);
+  }, [currentBone, name, quaternionMode]);
 
   const handleChange = useCallback((e) => {
     if (!_.isNaN(Number(e.target.value))) {
@@ -199,7 +234,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   ];
 
   const quaternionList = [
-    { key: w, value: values.z, name: w, prefix: 'W' },
+    { key: w, value: values.w, name: w, prefix: 'W' },
     { key: x, value: values.x, name: x, prefix: 'X' },
     { key: y, value: values.y, name: y, prefix: 'Y' },
     { key: z, value: values.z, name: z, prefix: 'Z' },
@@ -207,25 +242,25 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
 
   const iconClasses = cx('icon', {
     rotation: _.isEqual(name, 'Rotation'),
-    quaternion: quaternionMode,
+    quaternion: modeSelect,
   });
 
   const titleClasses = cx('property-title', {
-    quaternionMode: quaternionTab,
+    quaternionMode: quaternionMode,
   });
 
   const modeList = [
     {
       key: 'euler',
       value: 'Euler',
-      isSelected: !quaternionTab,
-      onClick: () => setQuaternionTab(false),
+      isSelected: !quaternionMode,
+      onClick: () => setQuaternionMode(false),
     },
     {
       key: 'quaternion',
       value: 'Quaternion',
-      isSelected: quaternionTab,
-      onClick: () => setQuaternionTab(true),
+      isSelected: quaternionMode,
+      onClick: () => setQuaternionMode(true),
     },
   ];
 
@@ -235,21 +270,23 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       <IconWrapper
         className={iconClasses}
         icon={SvgPath.ChevronLeft}
-        onClick={() => setQuaternionMode(!quaternionMode)}
+        onClick={() => setModeSelect(!modeSelect)}
         hasFrame={false}
       />
       <div className={cx('input-group')}>
         <Fragment>
-          {quaternionMode ? (
-            <Segment list={modeList} />
-          ) : quaternionTab ? (
+          {modeSelect ? (
+            <div className={cx('segment')}>
+              <Segment list={modeList} />
+            </div>
+          ) : quaternionMode ? (
             _.map(quaternionList, (item, idx) => {
               const key = `${item.key}_${idx}`;
               return (
                 <CPInput
                   key={key}
                   innerRef={inputRef}
-                  value={item.value}
+                  value={item.value as number}
                   prefix={item.prefix}
                   onChange={handleChange}
                   onBlur={handleBlur}

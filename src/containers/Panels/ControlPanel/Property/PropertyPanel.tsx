@@ -19,11 +19,11 @@ const PropertyPanel: FunctionComponent<{}> = ({}) => {
       <section className={cx('panel-transform')}>
         <AccordionMenu title="Transform">
           {_.map(cpData, (item, idx) => (
-            <Fragment>
+            <Fragment key={`transform-${idx}`}>
               <div className={cx('transform-group')}>
                 {_.isEqual(item.type, CPComponentType.input) &&
                   _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
-                    <Fragment key={idx}>
+                    <Fragment>
                       <CPListRowInput
                         rowKey={item.key}
                         name={item.name}
@@ -42,11 +42,11 @@ const PropertyPanel: FunctionComponent<{}> = ({}) => {
       <section className={cx('panel-visibility')}>
         <AccordionMenu title="Visibility">
           {_.map(cpData, (item, idx) => (
-            <Fragment>
+            <Fragment key={`visibility-${idx}`}>
               <div className={cx('transform-group')}>
                 {_.isEqual(item.type, CPComponentType.select) &&
                   _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
-                    <Fragment key={idx}>
+                    <Fragment>
                       <CPListRowButton rowKey={item.key} name={item.name} button={item.button} />
                     </Fragment>
                   )}
