@@ -71,9 +71,6 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   const [modeSelect, setModeSelect] = useState(false);
   const [quaternionMode, setQuaternionMode] = useState(false);
 
-  console.log('modeSelect', modeSelect);
-  console.log('quaternionTab', quaternionMode);
-
   const handleBlur = useCallback(
     (e: any) => {
       const value = e.target.value;
@@ -89,7 +86,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
         case 'rotation':
         case 'quaternion':
           if (currentBone) {
-            if (quaternionTab) {
+            if (quaternionMode) {
               fnChangeBoneQuaternion({
                 targetBone: currentBone,
                 axis,
@@ -111,7 +108,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
           break;
       }
     },
-    [currentBone, quaternionTab],
+    [currentBone, quaternionMode],
   );
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -145,7 +142,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
           });
         }
         if (_.isEqual(name, CPNameType.Rotation)) {
-          if (quaternionTab) {
+          if (quaternionMode) {
             setInitialValue({
               w: targetObject?.quaternion?.w ? _.round(targetObject?.quaternion?.w, 4) : 1,
               x: targetObject?.quaternion?.x ? _.round(targetObject?.quaternion?.x, 4) : 0,
@@ -179,7 +176,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
         transformControls.removeEventListener('objectChange', handleObjectChange);
       };
     }
-  }, [name, quaternionTab, transformControls]);
+  }, [name, quaternionMode, transformControls]);
 
   useEffect(() => {
     if (_.isEqual(name, CPNameType.Position)) {
@@ -190,7 +187,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       });
     }
     if (_.isEqual(name, CPNameType.Rotation)) {
-      if (quaternionTab) {
+      if (quaternionMode) {
         setInitialValue({
           w: currentBone?.quaternion?.w ? _.round(currentBone?.quaternion?.w, 4) : 1,
           x: currentBone?.quaternion?.x ? _.round(currentBone?.quaternion?.x, 4) : 0,
@@ -218,7 +215,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
         z: currentBone?.scale?.z ? _.round(currentBone?.scale?.z, 4) : 0,
       });
     }
-  }, [currentBone, name, quaternionTab]);
+  }, [currentBone, name, quaternionMode]);
 
   const handleChange = useCallback((e) => {
     if (!_.isNaN(Number(e.target.value))) {
