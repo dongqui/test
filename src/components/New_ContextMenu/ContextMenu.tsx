@@ -47,8 +47,8 @@ export interface Props {
     isDisabled?: boolean;
   }[];
   position: {
-    top: string;
-    left: string;
+    top: string | number;
+    left: string | number;
   };
 }
 
@@ -85,10 +85,17 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
   );
 
   const nextPosition = useMemo(() => {
-    return {
-      top: position.top.includes('px') ? position.top : `${position.top}px`,
-      left: position.left.includes('px') ? position.left : `${position.left}px`,
-    };
+    const nextTopValue = String(position.top).includes('px')
+      ? `${Math.floor(getNumberValue(String(position.top)))}px`
+      : `${Math.floor(Number(position.top))}px`;
+
+    const nextLeftValue = String(position.left).includes('px')
+      ? `${Math.floor(getNumberValue(String(position.left)))}px`
+      : `${Math.floor(Number(position.left))}px`;
+
+    const value = { top: nextTopValue, left: nextLeftValue };
+
+    return { ...value };
   }, [position.left, position.top]);
 
   const [injectedPosition, setInjectedPosition] = useState({
