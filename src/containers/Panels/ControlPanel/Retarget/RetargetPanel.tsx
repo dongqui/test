@@ -1,10 +1,10 @@
-import { FunctionComponent, useCallback, useState, useEffect } from 'react';
+import { FunctionComponent, useCallback, useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { Dropdown } from 'components/New_Dropdown';
 import { SuffixInput } from 'components/New_Input';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { useReactiveVar } from '@apollo/client';
-import { storeRetargetInfo, storeRetargetMap } from 'lib/store';
+import { storeCPChangeTab, storeRetargetInfo, storeRetargetMap } from 'lib/store';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './RetargetPanel.module.scss';
@@ -15,15 +15,18 @@ interface BaseProps {}
 
 export type P = BaseProps;
 
+export const defaultTargetboneValue = 'select a bone';
 const RetargetPanel: FunctionComponent<P> = ({}) => {
   const retargetMap = useReactiveVar(storeRetargetMap);
   const retargetInfo = useReactiveVar(storeRetargetInfo);
   const [currentData, setCurrentData] = useState(retargetMap);
-  const [error, setError] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const error = useMemo(() => _.some(retargetMap, (item) => _.isEmpty(item?.value?.targetBone)), [
+    retargetMap,
+  ]);
 
   const { register, handleSubmit } = useForm();
 
-  const defaultTargetBoneList = [{ key: '0', value: 'select a bone', isSelected: true }];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const boneName = [
     'hips',
@@ -60,11 +63,17 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
   });
 
   /**
+   * submit을 했을때 apply 버튼의 색깔이 변경됩니다
+   */
+  const applyButtonClasses = cx('apply-button', 'right', {
+    submit: isSubmitted,
+  });
+
+  /**
    * 패널에서 Retarget Data를 초기 데이터로 되돌리는 함수입니다.
    */
   const handleRetargetRefresh = () => {
     storeRetargetMap(currentData);
-    alert('초기 값으로 변경되었습니다.');
   };
 
   /**
@@ -73,12 +82,16 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
    */
   const handleTargetBoneSelect = useCallback(
     (key, value) => {
+      let newValue = _.clone(value);
+      if (_.isEqual(newValue, defaultTargetboneValue)) {
+        newValue = '';
+      }
       storeRetargetMap(
         _.map(retargetMap, (item) => ({
           ...item,
           value: {
             ...item.value,
-            targetBone: _.isEqual(item.key, key) ? value : item.value.targetBone,
+            targetBone: _.isEqual(item.key, key) ? newValue : item.value.targetBone,
           },
         })),
       );
@@ -133,6 +146,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
   const handleSubmitData = () => {
     if (!_.isEmpty(retargetMap)) {
       storeRetargetInfo({ ...retargetInfo, retargetMap });
+      setIsSubmitted(true);
     }
   };
 
@@ -174,6 +188,10 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
     },
   ];
 
+  useEffect(() => {
+    setIsSubmitted(false);
+  }, []);
+
   return (
     <main className={cx('panel-wrap')}>
       <form onSubmit={handleSubmit(handleSubmitData)}>
@@ -188,7 +206,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
             <IconWrapper className={claases} icon={SvgPath.Error} hasFrame={false} />
           </ul>
           <ul className={cx('setup-group')}>
-            <button type="submit" className={cx('apply-button', 'right')}>
+            <button type="submit" className={applyButtonClasses} disabled={error}>
               Apply
             </button>
           </ul>
@@ -203,10 +221,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
               <div key={idx} className={cx('retarget-card')}>
                 <div className={cx('card-header')}>
                   <span>{item.key}</span>
-                  <Dropdown
-                    list={targetboneList ?? defaultTargetBoneList}
-                    onSelect={handleTargetBoneSelect}
-                  />
+                  <Dropdown list={targetboneList} onSelect={handleTargetBoneSelect} />
                 </div>
                 <div className={cx('card-coord')}>
                   <Dropdown list={coordList} onSelect={handleCoordSelect} />
@@ -219,6 +234,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
                         handleChange({ key: item.key, name: 'x', value: e.target.value })
                       }
                       innerRef={register}
+                      disabled
                     />
                     <SuffixInput
                       name="y"
@@ -228,6 +244,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
                         handleChange({ key: item.key, name: 'y', value: e.target.value })
                       }
                       innerRef={register}
+                      disabled
                     />
                     <SuffixInput
                       name="z"
@@ -237,6 +254,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
                         handleChange({ key: item.key, name: 'z', value: e.target.value })
                       }
                       innerRef={register}
+                      disabled
                     />
                   </div>
                 </div>
