@@ -99,12 +99,12 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     });
 
     leftBulbLight.add(new THREE.Mesh(bulbGeometry, bulbMat));
-    leftBulbLight.position.set(-3, 4, 3);
+    leftBulbLight.position.set(-300, 400, 300);
     leftBulbLight.castShadow = true;
     leftBulbLight.target.position.set(0, 0, 0);
 
     rightBulbLight.add(new THREE.Mesh(bulbGeometry, bulbMat));
-    rightBulbLight.position.set(6, 4, 3);
+    rightBulbLight.position.set(600, 400, 300);
     rightBulbLight.castShadow = true;
     rightBulbLight.target.position.set(0, 0, 0);
 
