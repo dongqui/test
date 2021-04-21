@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo, useCallback, useRef } from 'react';
+import React, { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import { useReactiveVar } from '@apollo/client';
 import { ContextMenu } from 'components/New_ContextMenu';
@@ -28,6 +28,20 @@ const ShootPage: FunctionComponent = () => {
       storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
     },
   });
+
+  useEffect(() => {
+    if (window) {
+      const handleContextMenu = (e: MouseEvent) => {
+        e.preventDefault();
+      };
+
+      window.addEventListener('contextmenu', handleContextMenu);
+
+      return () => {
+        window.removeEventListener('contextmenu', handleContextMenu);
+      };
+    }
+  }, [contextMenuInfo.isShow]);
 
   return (
     <main>
