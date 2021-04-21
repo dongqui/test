@@ -1,7 +1,7 @@
-import { ShootTrackType } from 'types';
-import fnEulerToQuaternionShootTracks from 'utils/common/fnEulerToQuaternionShootTracks';
 import _ from 'lodash';
-import fnQuaternionToEulerShootTracks from 'utils/common/fnQuaternionToEulerShootTracks';
+import * as THREE from 'three';
+import fnEulerToQuaternionTracks from 'utils/common/fnEulerToQuaternionTracks';
+import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
 
 type StandardBoneName =
   | 'hips'
@@ -84,7 +84,7 @@ const STANDARD_QUATERNIONS = {
 };
 
 interface FnGetDeltaAppliedTracks {
-  sourceRotationTracks: ShootTrackType[];
+  sourceRotationTracks: THREE.VectorKeyframeTrack[];
   retargetMap: any[]; // 선행 코드의 any 타입 선언으로 인해 불가피하게 사용
   tPoseAnimation: THREE.AnimationClip;
 }
@@ -102,7 +102,7 @@ interface FnGetDeltaAppliedTracks {
 const fnGetDeltaAppliedTracks = (props: FnGetDeltaAppliedTracks) => {
   const { sourceRotationTracks, retargetMap, tPoseAnimation } = props;
 
-  const sourceQuaternionTracks = fnEulerToQuaternionShootTracks({
+  const sourceQuaternionTracks = fnEulerToQuaternionTracks({
     eulerTracks: sourceRotationTracks,
   });
 
@@ -156,30 +156,27 @@ const fnGetDeltaAppliedTracks = (props: FnGetDeltaAppliedTracks) => {
     }
   });
 
-  const deltaAddedSourceQuaternionTracks: ShootTrackType[] = [];
+  const deltaAddedSourceQuaternionTracks: THREE.QuaternionKeyframeTrack[] = [];
 
-  sourceQuaternionTracks.forEach((track: any) => {
-    const { name, times, values, isIncluded, interpolation } = track;
+  sourceQuaternionTracks.forEach((track: THREE.QuaternionKeyframeTrack) => {
+    const { name, times, values } = track;
     const boneName = name.substring(0, name.lastIndexOf('.'));
-
-    const newValues = values.map(
-      (value: number, idx: number) =>
-        value -
-        STANDARD_QUATERNIONS[boneName as StandardBoneName][idx % 4] +
-        targetQuaternions[boneName as StandardBoneName][idx % 4],
+    const newTimes = _.toArray(_.cloneDeep(times));
+    const newValues = _.toArray(
+      values.map(
+        (value: number, idx: number) =>
+          value -
+          STANDARD_QUATERNIONS[boneName as StandardBoneName][idx % 4] +
+          targetQuaternions[boneName as StandardBoneName][idx % 4],
+      ),
     );
 
-    const newTrack: ShootTrackType = {
-      name,
-      times: _.cloneDeep(times),
-      values: newValues,
-      isIncluded,
-      interpolation,
-    };
+    const newTrack = new THREE.QuaternionKeyframeTrack(name, newTimes, newValues);
+
     deltaAddedSourceQuaternionTracks.push(newTrack);
   });
 
-  const deltaAddedSourceRotationTracks: ShootTrackType[] = fnQuaternionToEulerShootTracks({
+  const deltaAddedSourceRotationTracks: THREE.VectorKeyframeTrack[] = fnQuaternionToEulerTracks({
     quaternionTracks: deltaAddedSourceQuaternionTracks,
   });
 
