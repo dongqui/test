@@ -174,7 +174,11 @@ const useLPControl = ({
             baseLayer: newBaseLayer,
             layers: [],
           };
-          const newMainData = _.concat(mainData, newMotion);
+          let newMainData = _.concat(mainData, newMotion);
+          newMainData = _.map(newMainData, (item) => ({
+            ...item,
+            isExpanded: _.isEqual(item?.key, targetRow?.key) ? true : false,
+          }));
           storeLpData(newMainData);
           setShowsModal(false);
           return;
