@@ -214,7 +214,9 @@ const Track: React.FC<TrackProps> = ({
                 draft.baseLayer,
                 (currentVisualizedData) => currentVisualizedData.name === updated.name,
               );
-              draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
+              if (transformIndex !== -1) {
+                draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
+              }
             });
           });
           storeCurrentVisualizedData(nextState);
@@ -227,7 +229,9 @@ const Track: React.FC<TrackProps> = ({
                   targetLayer.tracks,
                   (currentVisualizedData) => currentVisualizedData.name === updated.name,
                 );
-                targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
+                if (transformIndex !== -1) {
+                  targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
+                }
               });
             }
           });
@@ -250,9 +254,11 @@ const Track: React.FC<TrackProps> = ({
         key: 'trackIndex',
       });
       const targetTrack = dopeSheetList[targetIndex];
-      setIsSelected(targetTrack?.isSelected);
-      setIsLocked(targetTrack?.isLocked);
-      setisIncluded(targetTrack?.isIncluded);
+      if (targetTrack) {
+        setIsSelected(targetTrack.isSelected);
+        setIsLocked(targetTrack.isLocked);
+        setisIncluded(targetTrack.isIncluded);
+      }
     }
   }, [dopeSheetList, trackIndex]);
 

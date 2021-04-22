@@ -134,7 +134,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                 index: trackIndex,
                 key: 'trackIndex',
               });
-              if (index) {
+              if (index !== -1) {
                 nextState[index].isFiltered = true;
                 nextState[index].isOpenedParentTrack = isOpenedParentTrack;
                 recursive({ trackList: childrenTrack, isOpenedParentTrack: isOpenedChildrenTrack });
