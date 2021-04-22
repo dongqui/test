@@ -104,7 +104,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
         }
       }
       storeCurrentAction(action);
-      console.log('action: ', action);
+      // console.log('action: ', action);
     }
   }, [
     currentTimeIndexRef,
