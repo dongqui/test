@@ -9,12 +9,22 @@ const cx = classNames.bind(styles);
 
 const ImageList: FunctionComponent = () => {
   const images = useReactiveVar(storeCutImages);
+  const defaultList = Array.from(Array(20).keys());
+
   return (
     <div className={cx('wrapper')}>
-      {_.map(images, (image, i) => (
+      {_.map(defaultList, (_cell, i) => (
         <div className={cx('image-wrapper')} key={i}>
           <div className={cx('image-inner')}>
-            <img className={cx('image')} draggable={false} key={i} src={image} alt="cut_image" />
+            {images[i] && (
+              <img
+                className={cx('image')}
+                draggable={false}
+                key={i}
+                src={images[i]}
+                alt="cut_image"
+              />
+            )}
           </div>
         </div>
       ))}
