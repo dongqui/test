@@ -57,29 +57,34 @@ const RealtimeContainer: FunctionComponent = () => {
     },
   });
 
-  const getDefaultModel = async () => {
-    const result = await axios({
-      method: 'get',
-      url: 'https://shootapi.myplask.com:6500/tilda-url-api',
-      // headers: {
-      //   Accept: 'application/json',
-      //   'Content-Type': 'application/json; charset=utf-8',
-      // },
-    });
+  // const getDefaultModel = async () => {
+  //   const result = await axios({
+  //     method: 'get',
+  //     url: 'https://shootapi.myplask.com:6500/tilda-url-api',
+  //     // headers: {
+  //     //   Accept: 'application/json',
+  //     //   'Content-Type': 'application/json; charset=utf-8',
+  //     // },
+  //   });
 
-    return {
-      url: result.data.result,
-      errors: false,
-    };
-  };
+  //   return {
+  //     url: result.data.result,
+  //     errors: false,
+  //   };
+  // };
 
   const [defaultModelURL, setDefaultModelURL] = useState<string>('');
 
+  const renderingData = useReactiveVar(storeRenderingData);
+
   useEffect(() => {
-    getDefaultModel().then((response) => {
-      setDefaultModelURL(response.url);
-    });
-  }, []);
+    if (renderingData.isBoneOn) {
+      storeRenderingData({ ...renderingData, isBoneOn: false });
+    }
+    // getDefaultModel().then((response) => {
+    //   setDefaultModelURL(response.url);
+    // });
+  }, [renderingData]);
 
   const [defaultModelKey, setDefaultModelKey] = useState<string>();
   const [isDone, setIsDone] = useState(false);
@@ -124,8 +129,6 @@ const RealtimeContainer: FunctionComponent = () => {
     storeLpData(newLpData);
     setIsDone(true);
   }, [defaultModelURL, lpData, lpmode, pages]);
-
-  const renderingData = useReactiveVar(storeRenderingData);
 
   useEffect(() => {
     if (!isDone) {
