@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { storeContextMenuInfo, storeModalInfo, storePageInfo } from 'lib/store';
 import { MODAL_TYPES } from 'types';
 import { BaseModal } from 'components/New_Modal';
+import axios from 'axios';
 import {
   LPDataType,
   FORMAT_TYPES,
@@ -56,17 +57,41 @@ const RealtimeContainer: FunctionComponent = () => {
     },
   });
 
-  const [defaultModelKey, setDefaultModelKey] = useState<string>();
+  // const getDefaultModel = async () => {
+  //   const result = await axios({
+  //     method: 'get',
+  //     url: 'https://shootapi.myplask.com:6500/tilda-url-api',
+  //     // headers: {
+  //     //   Accept: 'application/json',
+  //     //   'Content-Type': 'application/json; charset=utf-8',
+  //     // },
+  //   });
 
-  const modelURL = '';
-  // 'https://res.cloudinary.com/dkp8v4ni8/raw/upload/v1618892241/tilda_rt_Tpose_fbx2020_binary_cnebgv.fbx';
-  ('https://kr.object.ncloudstorage.com/shoot-bucket/tilda_rt_Tpose_fbx2020_binary.fbx');
+  //   return {
+  //     url: result.data.result,
+  //     errors: false,
+  //   };
+  // };
+
+  const [defaultModelURL, setDefaultModelURL] = useState<string>('');
+
+  const renderingData = useReactiveVar(storeRenderingData);
+
+  useEffect(() => {
+    if (renderingData.isBoneOn) {
+      storeRenderingData({ ...renderingData, isBoneOn: false });
+    }
+    // getDefaultModel().then((response) => {
+    //   setDefaultModelURL(response.url);
+    // });
+  }, [renderingData]);
+
+  const [defaultModelKey, setDefaultModelKey] = useState<string>();
+  const [isDone, setIsDone] = useState(false);
 
   const handleDefaultModelLoad = useCallback(async () => {
-    const convertedFileUrl = DEFAULT_MODEL_URL;
-
     const { animations, bones = [], error } = await fnGetAnimationData({
-      url: modelURL,
+      url: defaultModelURL,
     });
     let newLpData = _.clone(lpData);
 
@@ -90,7 +115,7 @@ const RealtimeContainer: FunctionComponent = () => {
         key,
         type: FILE_TYPES.file,
         name: 'tilda_rt_Tpose_fbx2020_binary.fbx',
-        url: modelURL,
+        url: defaultModelURL,
         parentKey: _.isEqual(lpmode, LPModeType.iconview) ? _.last(pages)?.key : 'root',
         baseLayer: fnGetBaseLayerWithBoneNames({
           boneNames: _.map(bones, (bone) => bone.name),
@@ -102,17 +127,24 @@ const RealtimeContainer: FunctionComponent = () => {
     newData = _.concat(newData, motions);
     newLpData = _.concat(newLpData, newData);
     storeLpData(newLpData);
-  }, [lpData, lpmode, pages]);
-
-  const renderingData = useReactiveVar(storeRenderingData);
+    setIsDone(true);
+  }, [defaultModelURL, lpData, lpmode, pages]);
 
   useEffect(() => {
-    if (_.isEmpty(lpData)) {
-      handleDefaultModelLoad();
-    } else {
-      setDefaultModelKey(lpData[0].key);
+    if (!isDone) {
+      if (defaultModelURL) {
+        if (_.isEmpty(lpData)) {
+          // handleDefaultModelLoad();
+        }
+      }
     }
-  }, [handleDefaultModelLoad, lpData, renderingData]);
+
+    if (isDone) {
+      if (!_.isEmpty(lpData)) {
+        setDefaultModelKey(lpData[0].key);
+      }
+    }
+  }, [defaultModelURL, handleDefaultModelLoad, isDone, lpData, renderingData]);
 
   useEffect(() => {
     if (defaultModelKey && !defaultModelInitLoad) {

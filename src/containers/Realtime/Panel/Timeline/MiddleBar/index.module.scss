@@ -1,0 +1,103 @@
+@import 'styles/libraries/_colors';
+@import 'styles/libraries/_responsive';
+
+.wrapper {
+  width: 100%;
+  height: 48px;
+  background-color: $panelColor;
+  padding: 8px 16px;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  flex-basis: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-basis: 50%;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  // justify-content: space-between;
+  flex-basis: 50%;
+
+  .right-inner {
+    display: flex;
+    justify-content: space-between;
+    flex-basis: calc(100% - 264px);
+  }
+}
+
+.playtime {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  font-size: 14px;
+  padding: 0 8px;
+
+  .time-current {
+    width: 45px;
+    text-align: right;
+  }
+
+  .time-last {
+    width: 45px;
+  }
+
+  .divide {
+    margin: 0 4px;
+    font-size: 11px;
+  }
+}
+
+.faster {
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+.indicator {
+  display: flex;
+  justify-content: space-evenly;
+
+  .indicator-input {
+    width: 136px;
+    height: 28px;
+    margin-right: 8px;
+
+    & > span {
+      font-size: 11px;
+    }
+
+    & > input {
+      font-size: 14px;
+      padding: 0 8px;
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+.mode-selector {
+  display: flex;
+  flex-basis: 264px;
+  justify-content: flex-end;
+}

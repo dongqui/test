@@ -26,6 +26,7 @@ import { storeLpData } from 'lib/store';
 import { FILE_TYPES, LPDataType } from 'types';
 import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
+import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
 import { FormModal } from 'components/New_Modal';
 import { useAlertModal } from 'components/New_Modal/AlertModal';
 import { BaseInput } from 'components/New_Input';
@@ -35,7 +36,6 @@ import fnGetFileName from 'utils/LP/fnGetFileName';
 import sleep from 'utils/common/sleep';
 import { d3ScaleLinear } from 'types/TP';
 import * as d3 from 'd3';
-import fnQuaternionToEulerTrack from 'utils/common/fnQuaternionToEulerTrack';
 
 const cx = classNames.bind(styles);
 
@@ -275,13 +275,7 @@ const PlayBox: FunctionComponent<Props> = ({
         name,
         parentKey: ROOT_FOLDER_NAME,
         baseLayer: result?.data?.result
-          ? _.map(result.data.result, (track) => {
-              if (track.name.includes('quaternion')) {
-                return fnQuaternionToEulerTrack({ quaternionTrack: track });
-              } else {
-                return track;
-              }
-            })
+          ? fnQuaternionToEulerTracks({ quaternionTracks: result?.data?.result })
           : [],
         layers: [],
         isExportedMotion: true,
