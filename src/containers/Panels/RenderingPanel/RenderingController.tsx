@@ -87,7 +87,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       mixer.stopAllAction();
       const action = mixer.clipAction(visualizedClip);
       action.play();
-      mixer.timeScale = 0;
+      action.timeScale = 0;
       if (
         currentXAxisPosition &&
         currentXAxisPosition.current &&

@@ -584,7 +584,6 @@ export const useRendering = (props: UseRendering) => {
               renderer,
               cameraControls,
               transformControls,
-              innerMixer,
               innerCurrentBone,
               setInnerCurrentBone,
               storeCurrentBone,

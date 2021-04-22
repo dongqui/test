@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import _ from 'lodash';
 
-const DEFAULT_SPEED = 0.4;
+const DEFAULT_SPEED = 0.3;
 
 type PlayDirection = 1 | -1;
 type PlayState = 'play' | 'pause' | 'stop';
@@ -25,23 +25,23 @@ interface FnSetPlayState {
  */
 const fnSetPlayState = (props: FnSetPlayState) => {
   const { mixer, currentAction, playState, playSpeed, playDirection } = props;
-  console.log('mixer.timeScale: ', mixer.timeScale);
-  console.log('currentAction.timeScale: ', currentAction.timeScale);
   switch (playState) {
     case 'play':
       if (playDirection === 1) {
-        mixer.timeScale = 1 * DEFAULT_SPEED * playSpeed;
+        mixer.timeScale = 1;
+        currentAction.timeScale = 1 * DEFAULT_SPEED * playSpeed;
         currentAction.play();
       } else if (playDirection === -1) {
-        mixer.timeScale = -1 * DEFAULT_SPEED * playSpeed;
+        mixer.timeScale = 1;
+        currentAction.timeScale = -1 * DEFAULT_SPEED * playSpeed;
         currentAction.play();
       }
       break;
     case 'pause':
-      mixer.timeScale = 0;
+      currentAction.timeScale = 0;
       break;
     case 'stop':
-      mixer.timeScale = 0;
+      currentAction.timeScale = 0;
       break;
     default:
       break;
