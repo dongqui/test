@@ -454,7 +454,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                 )}
                 {isShootPage && (
                   <div className={cx('faster')}>
-                    <Dropdown list={fasterList} onSelect={handleFasterSelect} />
+                    <Dropdown list={fasterList} onSelect={handleFasterSelect} fixed />
                   </div>
                 )}
               </div>
