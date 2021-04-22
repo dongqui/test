@@ -566,6 +566,7 @@ export const useRendering = (props: UseRendering) => {
             setContents((prevContents) => [...prevContents, model]);
             // skeleton helper 생성 및 scene에 추가
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
+            innerSkeletonHelper.bones[0].position.set(0, 0, 0);
             // innerSkeletonHelper.bones[0].scale.setX(innerSkeletonHelper.bones[0].scale.x / 5);
             // innerSkeletonHelper.bones[0].scale.setY(innerSkeletonHelper.bones[0].scale.y / 5);
             // innerSkeletonHelper.bones[0].scale.setZ(innerSkeletonHelper.bones[0].scale.z / 5);

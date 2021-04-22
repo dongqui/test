@@ -145,3 +145,6 @@ export const storeTPClearData = () => {
   storeTPCurrnetClickedTrack(null);
   storeDeleteTargetKeyframes([]);
 };
+
+// RT
+export const storeLPhide = makeVar<boolean>(false);

@@ -1,0 +1,30 @@
+@import 'styles/libraries/_colors';
+
+.explorer {
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  flex-basis: 100%;
+  margin-right: 12px;
+}
+
+.icon-wrapper {
+  display: flex;
+
+  .icon {
+    &:focus {
+      border: 1px solid transparent;
+    }
+
+    &:first-child {
+      margin-right: 10px;
+    }
+
+    & > svg {
+      width: 14px;
+      color: $gray500;
+    }
+  }
+}

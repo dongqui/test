@@ -101,3 +101,13 @@
   flex-basis: 264px;
   justify-content: flex-end;
 }
+
+.arrow-left {
+  position: absolute;
+  left: 12px;
+
+  & > svg {
+    color: $gray500;
+    width: 12px;
+  }
+}
