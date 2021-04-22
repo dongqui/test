@@ -21,7 +21,7 @@ import {
 } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
-import { fnSetPlayState } from 'utils/RP/animatingUtils';
+import fnSetPlayState from 'containers/Realtime/hooks/fnSetPlayState';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { fnAddGround } from 'utils/RP/renderingUtils';
 import {
