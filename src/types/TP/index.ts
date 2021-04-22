@@ -11,6 +11,7 @@ export interface TPTrackName {
   isOpenedChildrenTrack: boolean; // 트랙 생성 시 하위 트랙을 펼친 상태로 출력여부(true면 펼친 상태로 출력)
   name: string; // 트랙 이름
   trackIndex: number; // 트랙 index
+  visualizedDataKey: string;
 }
 
 export interface TPDopeSheet {
@@ -26,6 +27,7 @@ export interface TPDopeSheet {
   trackName: string;
   // times?: number[];
   times: { time: number; isClicked: boolean }[];
+  visualizedDataKey: string;
   x?: number[];
   y?: number[];
   z?: number[];

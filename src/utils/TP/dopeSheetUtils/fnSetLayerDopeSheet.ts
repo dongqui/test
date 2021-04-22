@@ -10,6 +10,7 @@ interface SetyLayerDopeSheet {
   layerIndex: number;
   layerName: string;
   layerKey?: string;
+  visualizedDataKey: string;
 }
 
 /**
@@ -19,9 +20,16 @@ interface SetyLayerDopeSheet {
  * @param layerIndex - layer 트랙의 index
  * @param layerName - layer 트랙의 name
  * @param layerKey - 각 layer의 key(optional)
+ * @param visualizedDataKey -
  * @return layerDopeSheet
  */
-const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLayerDopeSheet) => {
+const fnSetyLayerDopeSheet = ({
+  layer,
+  layerIndex,
+  layerName,
+  layerKey,
+  visualizedDataKey,
+}: SetyLayerDopeSheet) => {
   const layerTimes = fnGetLayerTimes({ targetLayer: layer });
   const dopeSheetList: TPDopeSheet[] = [];
   const boneIncluded: boolean[] = [];
@@ -38,6 +46,7 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
     times: _.map(layerTimes, (time) => ({ time, isClicked: false })),
     trackIndex: trackIndex,
     trackName: layerName,
+    visualizedDataKey,
   });
   dopeSheetList.push(layerTrackStatus);
   trackIndex += 1;
@@ -61,6 +70,7 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
       times: _.map(boneTimes, (time) => ({ time, isClicked: false })),
       trackIndex: trackIndex,
       trackName: _.split(currnetBoneTrack.name, '.')[0],
+      visualizedDataKey,
     });
     dopeSheetList.push(boneTrackStatus);
     trackIndex += 1;
@@ -93,6 +103,7 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
         })),
         trackIndex,
         trackName: layer[transformIndex].name,
+        visualizedDataKey,
       });
       transformIncluded.push(layer[transformIndex].isIncluded);
       dopeSheetList.push(transformTrackStatus);

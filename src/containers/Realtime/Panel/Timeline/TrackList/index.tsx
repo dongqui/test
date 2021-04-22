@@ -82,6 +82,13 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           return;
         }
 
+        const targetIndex = fnGetBinarySearch({
+          collection: dopeSheetList,
+          index: 0,
+          key: 'trackIndex',
+        });
+        const visualizedDataKey = dopeSheetList[targetIndex].visualizedDataKey;
+
         // 재귀로 트랙 리스트 필터링
         const filterTrackList = ({ trackList }: { trackList: TPTrackName[] }): FilterTrackList => {
           const filterResult: TPTrackName[] = []; // 재귀가 끝날 때 리턴시킬 트랙 리스트
@@ -98,6 +105,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                 name,
                 trackIndex,
                 childrenTrack,
+                visualizedDataKey,
               });
             } else {
               const [filteredChildren, isOpened] = filterTrackList({
@@ -110,6 +118,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                   name,
                   trackIndex,
                   childrenTrack: filteredChildren,
+                  visualizedDataKey,
                 });
               }
             }

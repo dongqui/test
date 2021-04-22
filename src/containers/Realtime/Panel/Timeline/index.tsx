@@ -53,7 +53,7 @@ const TimelineContainer: React.FC<Props> = ({
         // 현재 모델에서 keyframe에 변경사항이 생긴 경우
         if (prevModelKey.current === visualizedDataKey) {
           const updatedTimes = _.map(
-            fnSetDefaultDopeSheetList({ baseLayer, layers }),
+            fnSetDefaultDopeSheetList({ baseLayer, layers, visualizedDataKey }),
             (dopeSheet) => ({
               trackIndex: dopeSheet.trackIndex,
               times: dopeSheet.times,
@@ -63,8 +63,16 @@ const TimelineContainer: React.FC<Props> = ({
         }
         // 다른 모델로 변경 된 경우
         else {
-          const defaultDopeSheetList = fnSetDefaultDopeSheetList({ baseLayer, layers });
-          const [trackNameList, lastBoneList] = fnSetDefaultTrackNameList({ baseLayer, layers });
+          const defaultDopeSheetList = fnSetDefaultDopeSheetList({
+            baseLayer,
+            layers,
+            visualizedDataKey,
+          });
+          const [trackNameList, lastBoneList] = fnSetDefaultTrackNameList({
+            baseLayer,
+            layers,
+            visualizedDataKey,
+          });
 
           storeTPDopeSheetList(defaultDopeSheetList);
           storeTPTrackNameList(trackNameList);
@@ -73,8 +81,16 @@ const TimelineContainer: React.FC<Props> = ({
       }
       // 최초 visualize
       else {
-        const defaultDopeSheetList = fnSetDefaultDopeSheetList({ baseLayer, layers });
-        const [trackNameList, lastBoneList] = fnSetDefaultTrackNameList({ baseLayer, layers });
+        const defaultDopeSheetList = fnSetDefaultDopeSheetList({
+          baseLayer,
+          layers,
+          visualizedDataKey,
+        });
+        const [trackNameList, lastBoneList] = fnSetDefaultTrackNameList({
+          baseLayer,
+          layers,
+          visualizedDataKey,
+        });
 
         storeTPDopeSheetList(defaultDopeSheetList);
         storeTPTrackNameList(trackNameList);
@@ -136,6 +152,7 @@ const TimelineContainer: React.FC<Props> = ({
           layerKey: newLayer.key,
           tracks: newLayer.tracks,
           trackName: newLayer.name,
+          visualizedDataKey,
         });
 
         const layerDopeSheet = fnSetLayerDopeSheet({
@@ -143,6 +160,7 @@ const TimelineContainer: React.FC<Props> = ({
           layerIndex: layerIndex + 10000,
           layerName: newLayer.name,
           layerKey: newLayer.key,
+          visualizedDataKey,
         });
 
         const lastBone = {
@@ -195,7 +213,7 @@ const TimelineContainer: React.FC<Props> = ({
           }
         }
         const updatedTimes = _.map(
-          fnSetDefaultDopeSheetList({ baseLayer, layers }),
+          fnSetDefaultDopeSheetList({ baseLayer, layers, visualizedDataKey }),
           (dopeSheet) => ({
             trackIndex: dopeSheet.trackIndex,
             times: dopeSheet.times,
