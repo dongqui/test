@@ -17,14 +17,14 @@ const RenderingPresenter: React.FC<RenderingPresenterProps> = (props: RenderingP
   return (
     <div className={cx('rendering-panel')}>
       <div className={cx('rendering-div')} id={id} />
-      <div className={cx('camera-reset-background')}>
+      {/* <div className={cx('camera-reset-background')}>
         <IconWrapper
           className={cx('camera-reset')}
           icon={SvgPath.CameraReset}
           hasFrame={false}
           onClick={onCameraReset}
         />
-      </div>
+      </div> */}
     </div>
   );
 };
