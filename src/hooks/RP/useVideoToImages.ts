@@ -22,7 +22,7 @@ const useVideoToImages = ({ videoRef, videoUrl, action, active }: UseVideoToImag
     tempImages = [];
     for (const i of _.range(20)) {
       if (video) {
-        video.currentTime = interval * i;
+        video.currentTime = interval * (i + 1);
       }
       await video?.pause();
       document.getElementsByTagName('canvas')?.[0]?.remove();

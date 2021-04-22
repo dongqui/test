@@ -213,6 +213,7 @@ const useLPControl = ({
             parentKey: key,
             baseLayer: newBaseLayer,
             layers: [],
+            isExportedMotion: false,
           };
           let newMainData = _.concat(mainData, newMotion);
           newMainData = _.map(newMainData, (item) => ({
