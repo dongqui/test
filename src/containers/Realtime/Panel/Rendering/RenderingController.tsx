@@ -118,7 +118,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     });
 
     const groundTexture = new THREE.TextureLoader().load(
-      'images/realtime/neon_ground.jpeg',
+      'images/realtime/neon_background.jpeg',
       (map) => {
         map.wrapS = THREE.RepeatWrapping;
         map.wrapT = THREE.RepeatWrapping;
