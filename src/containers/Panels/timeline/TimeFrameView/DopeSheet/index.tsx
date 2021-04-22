@@ -56,7 +56,8 @@ const X_AXIS_SVG_CLASSNAME = 'x-axis-svg';
 const CIRCLE_GROUP_CLASSNAME = 'circle-group';
 
 const X_AXIS_DOMAIN = 500000;
-const X_AXIS_HEIGHT = 48; // 트랙 높이
+const X_AXIS_HEIGHT = 48; // x축 높이
+const TRACK_HEIGHT = 32; // 트랙 높이
 const THROTTLE_TIMER = 75;
 const INITIAL_SCALE_LEVEL = 7500;
 
@@ -941,16 +942,16 @@ const DopeSheet: React.FC<Props> = ({
                 const circleGroup = d3.select(this);
                 const circleGroupNode = circleGroup.node() as Element;
                 const xScaleLinear = xScale.current as d3ScaleLinear;
-                const { top: circleGroupTop } = circleGroupNode.getBoundingClientRect();
-                const { top: dopeSheetTop } = dopeSheetRef.current.getBoundingClientRect();
-                if (
-                  dopeSheetTop <= circleGroupTop &&
-                  circleGroupTop <= dopeSheetTop + 300
-                  // circleGroupTop <= dopeSheetTop + prevDopeSheetHeight.current
-                ) {
-                  circleGroup.selectAll('circle').each(function () {
-                    d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
-                  });
+                const circleGroupTop = circleGroupNode.getBoundingClientRect().top;
+                const timelineWrapperTop = timelineWrapperRef.current?.getBoundingClientRect().top;
+                if (timelineWrapperTop) {
+                  const minimum = timelineWrapperTop - TRACK_HEIGHT * 4;
+                  const manimum = window.innerHeight + TRACK_HEIGHT * 4;
+                  if (minimum <= circleGroupTop && circleGroupTop <= manimum) {
+                    circleGroup.selectAll('circle').each(function () {
+                      d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
+                    });
+                  }
                 }
               }
             });
