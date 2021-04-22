@@ -616,12 +616,6 @@ export const useRendering = (props: UseRendering) => {
         requestAnimationFrame(animate);
       };
       animate();
-
-      setTimeout(() => {
-        console.log('camera');
-        console.log(camera.position);
-        console.log(camera.up);
-      }, 50000);
     }
 
     return () => {
