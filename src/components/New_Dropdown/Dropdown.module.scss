@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 3px 8px;
+  padding: 4px 8px;
   background-color: #303030;
   color: #fff;
   min-width: 72px;
@@ -51,7 +51,7 @@
 }
 
 .menu {
-  position: fixed;
+  position: absolute;
   background-color: #282727;
   min-width: 72px;
   color: #a7a7a7;
@@ -62,4 +62,14 @@
   overflow: hidden;
   z-index: 999;
   letter-spacing: 1px;
+
+  overflow-y: scroll;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.fixed {
+  position: fixed;
 }

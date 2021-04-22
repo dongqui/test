@@ -141,7 +141,10 @@ const useLPControl = ({
                   }),
                 );
                 targetboneList = _.concat(
-                  { key: '', value: defaultTargetboneValue, isSelected: true },
+                  [
+                    { key: '', value: defaultTargetboneValue, isSelected: true },
+                    { key: 'none', value: 'none', isSelected: false },
+                  ],
                   targetboneList,
                 );
                 storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
