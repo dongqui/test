@@ -16,9 +16,10 @@ import {
   storePageInfo,
   storeBarPositionX,
   storeRecordingData,
+  storeLPhide,
   storeCurrentVisualizedData,
 } from 'lib/store';
-import { SvgPath } from 'components/New_Icon';
+import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { SegmentButton } from 'components/New_Button';
 import { PrefixInput, BaseInput } from 'components/New_Input';
 import { Dropdown } from 'components/New_Dropdown';
@@ -30,6 +31,7 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { d3ScaleLinear } from 'types/TP';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
+import store from 'redux/store';
 
 const cx = classNames.bind(styles);
 
@@ -400,11 +402,23 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     }
   }, [playState, startCurrentTimeIndexLoop, stopCurrentTimeIndexLoop]);
 
+  const lpHide = useReactiveVar(storeLPhide);
+
+  const handleHide = () => {
+    storeLPhide(!lpHide);
+  };
+
   return (
     <AlertModalProvider>
       <div className={cx('wrapper')} onContextMenu={handleMiddleBarContextMenu}>
         <div className={cx('inner')} ref={scrollRef}>
           <div className={cx('left')}>
+            <IconWrapper
+              className={cx('arrow-left')}
+              icon={SvgPath.ChevronLeft}
+              onClick={handleHide}
+              hasFrame={false}
+            />
             <PlayBox
               currentXAxisPosition={currentXAxisPosition}
               currentTimeRef={currentTimeRef}
