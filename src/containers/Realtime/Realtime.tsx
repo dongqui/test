@@ -3,7 +3,7 @@ import { FunctionComponent, memo, useCallback, useEffect, useMemo, useRef, useSt
 import _ from 'lodash';
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
-import { LibraryPanel } from 'containers/Panels/LibraryPanel';
+import { LibraryPanel } from './Panel/Library/index';
 import {
   storeRenderingData,
   storeLpData,
