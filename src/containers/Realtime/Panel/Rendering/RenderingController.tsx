@@ -33,6 +33,7 @@ import {
   fnRemoveShadow,
 } from 'utils/CP/visibilityUtils';
 import { d3ScaleLinear } from 'types/TP';
+import { NearestFilter } from 'three/src/constants';
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 
@@ -116,15 +117,18 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       bumpScale: 0.0005,
     });
 
-    const groundTexture = new THREE.TextureLoader().load('images/realtime/hardwood.jpg', (map) => {
-      map.wrapS = THREE.RepeatWrapping;
-      map.wrapT = THREE.RepeatWrapping;
-      map.anisotropy = 16;
-      map.repeat.set(100, 240);
-      map.encoding = THREE.sRGBEncoding;
-      groundMat.map = map;
-      groundMat.needsUpdate = true;
-    });
+    const groundTexture = new THREE.TextureLoader().load(
+      'images/realtime/neon_ground.jpeg',
+      (map) => {
+        map.wrapS = THREE.RepeatWrapping;
+        map.wrapT = THREE.RepeatWrapping;
+        map.anisotropy = 16;
+        map.repeat.set(100, 240);
+        map.encoding = THREE.sRGBEncoding;
+        groundMat.map = map;
+        groundMat.needsUpdate = true;
+      },
+    );
     // groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
     // groundTexture.repeat.set(500, 500);
     // groundTexture.anisotropy = 16;
@@ -139,14 +143,16 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     groundMesh.receiveShadow = true;
 
     // background
-    const backgroundTexture = new THREE.TextureLoader().load('texture/texture_01.png');
+    const backgroundTexture = new THREE.TextureLoader().load(
+      'images/realtime/neon_background.jpeg',
+    );
+    // backgroundTexture.minFilter = THREE.LinearFilter;
 
     // light
 
     if (scene) {
       // scene.background = new THREE.Color(0x050505);
-      // scene.background = backgroundTexture;
-
+      scene.background = backgroundTexture;
       // scene.add(groundMesh);
       scene.add(leftBulbLight);
       scene.add(rightBulbLight);

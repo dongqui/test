@@ -6,7 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import {
   fnAddAxes,
-  fnAddGround,
+  // fnAddGround,
   fnAddJointMeshes,
   fnAddLights,
   fnAddModel,
@@ -22,6 +22,7 @@ import {
 } from 'utils/RP/renderingUtils';
 import fnCreateCamera from './fnCreateCamera';
 import fnCreateCameraControls from './fnCreateCameraControls';
+import fnAddGround from './fnAddGround';
 import { useHistory } from 'hooks/RP/useHistory';
 import {
   storeCurrentBone,
@@ -485,8 +486,9 @@ export const useRendering = (props: UseRendering) => {
       setContents((prevContents) => [...prevContents, hemiLight, dirLight]);
       setDirLight(dirLight);
       // scene에 바닥 추가
-      const { ground, texture } = fnAddGround({ scene, camera, renderer, upDirection: axis });
-      setContents((prevContents) => [...prevContents, ground, texture]);
+      // const { ground, texture } = fnAddGround({ scene, camera, renderer, upDirection: axis });
+      // const { ground } = fnAddGround({ scene, camera, renderer, upDirection: axis });
+      setContents((prevContents) => [...prevContents]);
       // const { xAxis, yAxis, zAxis } = fnAddAxes({ scene, upDirection: axis });
       // setContents((prevContents) => [...prevContents, xAxis, yAxis, zAxis]);
       // cameraControls 생성 및 설정
