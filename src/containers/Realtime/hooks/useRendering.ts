@@ -566,6 +566,7 @@ export const useRendering = (props: UseRendering) => {
             setContents((prevContents) => [...prevContents, model]);
             // skeleton helper 생성 및 scene에 추가
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
+
             innerSkeletonHelper.bones[0].position.set(0, 0, 0);
             cameraControls.target.set(
               (innerSkeletonHelper.bones[59].position.x +
@@ -589,10 +590,24 @@ export const useRendering = (props: UseRendering) => {
                 innerSkeletonHelper.bones[64].position.z) /
                 2,
             );
-            // innerSkeletonHelper.bones[0].scale.setX(innerSkeletonHelper.bones[0].scale.x / 5);
-            // innerSkeletonHelper.bones[0].scale.setY(innerSkeletonHelper.bones[0].scale.y / 5);
-            // innerSkeletonHelper.bones[0].scale.setZ(innerSkeletonHelper.bones[0].scale.z / 5);
-            // innerSkeletonHelper.bones[0].position.setY(10);
+
+            const camera_pivot = new THREE.Object3D();
+
+            scene.add(camera_pivot);
+            camera_pivot.add(camera);
+            camera.position.set(500, 0, 0);
+            camera.lookAt(camera_pivot.position);
+
+            setInterval(() => {
+              camera_pivot.rotation.set(
+                camera_pivot.rotation.x,
+                camera_pivot.rotation.y + 0.05,
+                camera_pivot.rotation.z,
+              );
+            }, 50);
+
+            innerSkeletonHelper.bones[0].scale.set(100, 100, 100); // dying.glb 로 개발하기 위한 코드 -> 이후 삭제
+
             // setSkeletonHelper(innerSkeletonHelper);
             storeSkeletonHelper(innerSkeletonHelper);
 
@@ -623,6 +638,7 @@ export const useRendering = (props: UseRendering) => {
       renderer.domElement.tabIndex = 0;
       renderer.domElement.className = 'canvas';
       renderingDiv.appendChild(renderer.domElement);
+
       const animate = () => {
         if (innerMixer) {
           innerMixer.update(clock.getDelta());
@@ -632,6 +648,7 @@ export const useRendering = (props: UseRendering) => {
           camera.aspect = canvas.clientWidth / canvas.clientHeight;
           camera.updateProjectionMatrix();
         }
+
         // animate loop를 통해 렌더링
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
