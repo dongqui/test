@@ -31,7 +31,9 @@ const fnCreateCameraControls = (props: FnCreateCameraControls) => {
   cameraControls.target.set(0, 0, 0);
   cameraControls.update();
   cameraControls.enabled = true;
-  cameraControls.enablePan = true;
+  cameraControls.enablePan = false;
+  // cameraControls.enableZoom = false;
+  cameraControls.enableZoom = true;
   cameraControls.maxDistance = 10000;
   cameraControls.minZoom = 1.0001;
   // camera controls 안 움직이는 버그 방지를 위한 이벤트 리스너 부착

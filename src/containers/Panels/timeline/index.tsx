@@ -171,14 +171,16 @@ const TimelineContainer: React.FC<Props> = ({
             (lastBone) => lastBone.layerKey === newLayer.key,
           );
           const layer = lastBoneList[layerIndex];
-          if (newLayer.key === layer.layerKey && newLayer.name !== layer.trackName) {
+          if (layer && newLayer.key === layer.layerKey && newLayer.name !== layer.trackName) {
             const nextDopeSheetList = produce(dopeSheetList, (draft) => {
               const dopeSheetIndex = fnGetBinarySearch({
                 collection: dopeSheetList,
                 index: layer.layerIndex,
                 key: 'trackIndex',
               });
-              draft[dopeSheetIndex].trackName = newLayer.name;
+              if (dopeSheetIndex !== -1) {
+                draft[dopeSheetIndex].trackName = newLayer.name;
+              }
             });
             const nextLastBoneList = produce(lastBoneList, (draft) => {
               draft[index + 1].trackName = newLayer.name;

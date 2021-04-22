@@ -110,7 +110,7 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
     const currentRef = innerRef?.current;
 
     if (currentRef) {
-      const { height } = currentRef.getBoundingClientRect();
+      const { width, height } = currentRef.getBoundingClientRect();
 
       const numberValue = {
         nextPropsTop: getNumberValue(nextPosition.top),
@@ -120,33 +120,70 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
       };
 
       const topDiff = Math.abs(numberValue.nextPropsTop - numberValue.beforeStateTop);
+      const leftDiff = Math.abs(numberValue.nextPropsLeft - numberValue.beforeStateLeft);
+
+      let resultPositionTop = nextPosition.top;
+      let resultPositionLeft = nextPosition.left;
 
       if (!isMounted) {
         if (_.isEqual(topDiff, 0)) {
           if (numberValue.beforeStateTop + height >= window.innerHeight) {
-            setInjectedPosition({
-              top: `${getNumberValue(injectedPosition.top) - height}px`,
-              left: nextPosition.left,
-            });
+            // setInjectedPosition({
+            //   top: `${getNumberValue(injectedPosition.top) - height}px`,
+            //   left: nextPosition.left,
+            // });
+            resultPositionTop = `${getNumberValue(injectedPosition.top) - height}px`;
           } else {
-            setInjectedPosition({
-              top: nextPosition.top,
-              left: nextPosition.left,
-            });
+            // setInjectedPosition({
+            //   top: nextPosition.top,
+            //   left: nextPosition.left,
+            // });
           }
 
           setIsMounted(true);
         } else {
           if (numberValue.beforeStateTop + height >= window.innerHeight) {
-            setInjectedPosition({
-              top: `${getNumberValue(injectedPosition.top) - height}px`,
-              left: nextPosition.left,
-            });
+            // setInjectedPosition({
+            //   top: `${getNumberValue(injectedPosition.top) - height}px`,
+            //   left: nextPosition.left,
+            // });
+            resultPositionTop = `${getNumberValue(injectedPosition.top) - height}px`;
           } else {
-            setInjectedPosition({
-              top: nextPosition.top,
-              left: nextPosition.left,
-            });
+            // setInjectedPosition({
+            //   top: nextPosition.top,
+            //   left: nextPosition.left,
+            // });
+          }
+        }
+
+        //
+        if (_.isEqual(leftDiff, 0)) {
+          if (numberValue.beforeStateLeft + width >= window.innerWidth) {
+            // setInjectedPosition({
+            //   top: nextPosition.top,
+            //   left: `${getNumberValue(injectedPosition.left) - width}px`,
+            // });
+            resultPositionLeft = `${getNumberValue(injectedPosition.left) - width}px`;
+          } else {
+            // setInjectedPosition({
+            //   top: nextPosition.top,
+            //   left: nextPosition.left,
+            // });
+          }
+
+          setIsMounted(true);
+        } else {
+          if (numberValue.beforeStateLeft + width >= window.innerWidth) {
+            // setInjectedPosition({
+            //   top: nextPosition.top,
+            //   left: `${getNumberValue(injectedPosition.left) - width}px`,
+            // });
+            resultPositionLeft = `${getNumberValue(injectedPosition.left) - width}px`;
+          } else {
+            // setInjectedPosition({
+            //   top: nextPosition.top,
+            //   left: nextPosition.left,
+            // });
           }
         }
       }
@@ -154,18 +191,39 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
       if (isMounted) {
         if (numberValue.nextPropsTop !== numberValue.beforeStateTop) {
           if (numberValue.nextPropsTop + height >= window.innerHeight) {
-            setInjectedPosition({
-              top: `${numberValue.nextPropsTop - height}px`,
-              left: nextPosition.left,
-            });
+            // setInjectedPosition({
+            //   top: `${numberValue.nextPropsTop - height}px`,
+            //   left: nextPosition.left,
+            // });
+            resultPositionTop = `${numberValue.nextPropsTop - height}px`;
           } else {
-            setInjectedPosition({
-              top: nextPosition.top,
-              left: nextPosition.left,
-            });
+            // setInjectedPosition({
+            //   top: nextPosition.top,
+            //   left: nextPosition.left,
+            // });
+          }
+        }
+
+        if (numberValue.nextPropsLeft !== numberValue.beforeStateLeft) {
+          if (numberValue.nextPropsLeft + width >= window.innerWidth) {
+            // setInjectedPosition({
+            //   top: nextPosition.top,
+            //   left: `${numberValue.nextPropsLeft - width}px`,
+            // });
+            resultPositionLeft = `${numberValue.nextPropsLeft - width}px`;
+          } else {
+            // setInjectedPosition({
+            //   top: nextPosition.top,
+            //   left: nextPosition.left,
+            // });
           }
         }
       }
+
+      setInjectedPosition({
+        top: resultPositionTop,
+        left: resultPositionLeft,
+      });
     }
   }, [
     injectedPosition.left,

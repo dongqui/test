@@ -191,10 +191,10 @@ const PlayBox: FunctionComponent<Props> = ({
       }
     }
 
-    if (!isShootPage) {
+    if (_.isEqual(pageInfo.page, PAGE_NAMES.extract)) {
       storeRecordingData({ ...recordingData, isPlaying: true });
     }
-  }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
+  }, [animatingData, currentVisualizedData, isShootPage, pageInfo.page, recordingData]);
 
   const handlePause = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
@@ -228,8 +228,10 @@ const PlayBox: FunctionComponent<Props> = ({
   );
 
   const handleExport = useCallback(() => {
-    setShowsModal(true);
-  }, []);
+    if (_.isEqual(pageInfo.page, PAGE_NAMES.extract)) {
+      setShowsModal(true);
+    }
+  }, [pageInfo.page]);
 
   const handleSubmit = useCallback(async () => {
     setShowsModal(false);

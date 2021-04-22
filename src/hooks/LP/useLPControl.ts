@@ -141,7 +141,10 @@ const useLPControl = ({
                   }),
                 );
                 targetboneList = _.concat(
-                  { key: '', value: defaultTargetboneValue, isSelected: true },
+                  [
+                    { key: '', value: defaultTargetboneValue, isSelected: true },
+                    { key: 'None', value: 'None', isSelected: false },
+                  ],
                   targetboneList,
                 );
                 storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
@@ -213,6 +216,7 @@ const useLPControl = ({
             parentKey: key,
             baseLayer: newBaseLayer,
             layers: [],
+            isExportedMotion: false,
           };
           let newMainData = _.concat(mainData, newMotion);
           newMainData = _.map(newMainData, (item) => ({

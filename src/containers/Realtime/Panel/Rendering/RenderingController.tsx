@@ -21,7 +21,7 @@ import {
 } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
-import { fnSetPlayState } from 'utils/RP/animatingUtils';
+import fnSetPlayState from 'containers/Realtime/hooks/fnSetPlayState';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { fnAddGround } from 'utils/RP/renderingUtils';
 import {
@@ -175,14 +175,13 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       const action = mixer.clipAction(visualizedClip);
       console.log('action: ', action);
       action.play();
-      mixer.timeScale = 0;
+      action.timeScale = 0;
       if (currentXAxisPosition.current && currentXAxisPosition.current > startTimeIndex) {
         action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
       } else {
         action.time = _.round(startTimeIndex / 30, 4);
       }
       storeCurrentAction(action);
-      // console.log('action: ', action);
     }
   }, [currentVisualizedData, currentXAxisPosition, endTimeIndex, mixer, startTimeIndex]);
 
@@ -232,7 +231,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   // animation 재생 관련 로직
   useEffect(() => {
     if (mixer && currentAction) {
-      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection, startTimeIndex });
+      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection });
     }
   }, [currentAction, mixer, playDirection, playSpeed, playState, startTimeIndex]);
 

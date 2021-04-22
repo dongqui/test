@@ -198,8 +198,19 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleNowInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     if (currentXAxisPosition && currentAction) {
       const value = parseInt(event.currentTarget.value);
-      if (value >= startTimeIndex && value <= endTimeIndex && prevXScale) {
+      if (
+        value >= startTimeIndex &&
+        value <= endTimeIndex &&
+        prevXScale &&
+        currentTimeRef &&
+        currentTimeRef.current
+      ) {
         currentAction.time = _.round(value / 30, 4);
+        currentTimeRef.current.value = new Date(_.round(value / 30, 0) * 1000)
+          .toISOString()
+          .substr(11, 8)
+          .substr(2)
+          .replace(':', '');
         currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
         d3.select('#play-bar-wrapper').attr(
@@ -454,7 +465,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                 )}
                 {isShootPage && (
                   <div className={cx('faster')}>
-                    <Dropdown list={fasterList} onSelect={handleFasterSelect} />
+                    <Dropdown list={fasterList} onSelect={handleFasterSelect} fixed />
                   </div>
                 )}
               </div>
