@@ -143,7 +143,7 @@ const useLPControl = ({
                 targetboneList = _.concat(
                   [
                     { key: '', value: defaultTargetboneValue, isSelected: true },
-                    { key: 'none', value: 'none', isSelected: false },
+                    { key: 'None', value: 'None', isSelected: false },
                   ],
                   targetboneList,
                 );
