@@ -136,16 +136,18 @@ const Track: React.FC<TrackProps> = ({
           key: 'layerIndex',
         });
         const layerTrack = lastBoneList[targetIndex];
-        let curBoneIndex = layerTrack.layerIndex + 1;
-        while (curBoneIndex <= layerTrack.lastBoneIndex) {
-          updatedTrackList.push({
-            trackIndex: curBoneIndex,
-            isOpenedParentTrack: !isClickedArrowButton,
-          });
-          if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_A) {
-            curBoneIndex += 4; // 3 -> 7
-          } else if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_B) {
-            curBoneIndex += 6; // 7 -> 3
+        if (layerTrack) {
+          let curBoneIndex = layerTrack.layerIndex + 1;
+          while (curBoneIndex <= layerTrack.lastBoneIndex) {
+            updatedTrackList.push({
+              trackIndex: curBoneIndex,
+              isOpenedParentTrack: !isClickedArrowButton,
+            });
+            if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_A) {
+              curBoneIndex += 4; // 3 -> 7
+            } else if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_B) {
+              curBoneIndex += 6; // 7 -> 3
+            }
           }
         }
         break;
@@ -204,31 +206,33 @@ const Track: React.FC<TrackProps> = ({
         key: 'trackIndex',
       });
       const targetTrack = dopeSheetList[targetIndex];
-      if (targetTrack.layerKey === 'baseLayer') {
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          _.forEach(updatedState, (updated) => {
-            const transformIndex = _.findIndex(
-              draft.baseLayer,
-              (currentVisualizedData) => currentVisualizedData.name === updated.name,
-            );
-            draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
-          });
-        });
-        storeCurrentVisualizedData(nextState);
-      } else {
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          const targetLayer = _.find(draft.layers, (layer) => layer.key === targetTrack.layerKey);
-          if (targetLayer) {
+      if (targetTrack) {
+        if (targetTrack.layerKey === 'baseLayer') {
+          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
             _.forEach(updatedState, (updated) => {
               const transformIndex = _.findIndex(
-                targetLayer.tracks,
+                draft.baseLayer,
                 (currentVisualizedData) => currentVisualizedData.name === updated.name,
               );
-              targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
+              draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
             });
-          }
-        });
-        storeCurrentVisualizedData(nextState);
+          });
+          storeCurrentVisualizedData(nextState);
+        } else {
+          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+            const targetLayer = _.find(draft.layers, (layer) => layer.key === targetTrack.layerKey);
+            if (targetLayer) {
+              _.forEach(updatedState, (updated) => {
+                const transformIndex = _.findIndex(
+                  targetLayer.tracks,
+                  (currentVisualizedData) => currentVisualizedData.name === updated.name,
+                );
+                targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
+              });
+            }
+          });
+          storeCurrentVisualizedData(nextState);
+        }
       }
       storeTPUpdateDopeSheetList({
         updatedList: updatedDopeSheetList,
@@ -291,11 +295,13 @@ const Track: React.FC<TrackProps> = ({
           key: 'trackIndex',
         });
         const curTrack = dopeSheetList[targetIndex];
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          const targetLayer = _.find(draft.layers, (layer) => layer.key === curTrack.layerKey);
-          if (targetLayer) targetLayer.name = newLayerName;
-        });
-        storeCurrentVisualizedData(nextState);
+        if (curTrack) {
+          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+            const targetLayer = _.find(draft.layers, (layer) => layer.key === curTrack.layerKey);
+            if (targetLayer) targetLayer.name = newLayerName;
+          });
+          storeCurrentVisualizedData(nextState);
+        }
       }
     }
   }, [currentVisualizedData?.layers, dopeSheetList, getConfirm, newLayerName, trackIndex]);
@@ -322,10 +328,12 @@ const Track: React.FC<TrackProps> = ({
           key: 'trackIndex',
         });
         const curTrack = dopeSheetList[targetIndex];
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          draft.layers = _.filter(draft.layers, (layer) => layer.key !== curTrack.layerKey);
-        });
-        storeCurrentVisualizedData(nextState);
+        if (curTrack) {
+          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+            draft.layers = _.filter(draft.layers, (layer) => layer.key !== curTrack.layerKey);
+          });
+          storeCurrentVisualizedData(nextState);
+        }
       }
     }
   }, [dopeSheetList, getConfirm, trackIndex]);
