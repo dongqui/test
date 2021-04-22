@@ -161,9 +161,9 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   // animation 재생 관련 로직
   useEffect(() => {
     if (mixer && currentAction) {
-      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection, startTimeIndex });
+      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection });
     }
-  }, [currentAction, mixer, playDirection, playSpeed, playState, startTimeIndex]);
+  }, [currentAction, mixer, playDirection, playSpeed, playState]);
 
   const [lastTime, setLastTime] = useState(0);
 
