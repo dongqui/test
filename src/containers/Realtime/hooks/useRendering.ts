@@ -103,8 +103,8 @@ export const useRendering = (props: UseRendering) => {
       event: KeyboardEvent;
       transformControls: TransformControls;
     }) => {
-      const target = event.currentTarget as Element;
-      if (target.tagName === 'INPUT') {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
         return;
       }
       switch (event.key) {
@@ -606,7 +606,6 @@ export const useRendering = (props: UseRendering) => {
               renderer,
               cameraControls,
               transformControls,
-              innerMixer,
               innerCurrentBone,
               setInnerCurrentBone,
               storeCurrentBone,
