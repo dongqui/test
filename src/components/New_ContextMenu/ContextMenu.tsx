@@ -166,42 +166,6 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
           }
         }
       }
-
-      // if (
-      //   Math.abs(getNumberValue(nextPosition.top) - getNumberValue(injectedPosition.top)) !==
-      //     height &&
-      //   Math.abs(getNumberValue(nextPosition.top) - getNumberValue(injectedPosition.top)) !== 0
-      // ) {
-      //   if (getNumberValue(injectedPosition.top) + height >= window.innerHeight) {
-      //     setInjectedPosition({
-      //       top: `${getNumberValue(injectedPosition.top) - height}px`,
-      //       left: nextPosition.left,
-      //     });
-      //   } else {
-      //     setInjectedPosition({
-      //       top: nextPosition.top,
-      //       left: nextPosition.left,
-      //     });
-      //   }
-      // }
-
-      // if (Math.abs(getNumberValue(nextPosition.top) - getNumberValue(injectedPosition.top)) === 0) {
-      //   if (nextPosition.top !== injectedPosition.top) {
-      //     if (getNumberValue(injectedPosition.top) + height >= window.innerHeight) {
-      //       setInjectedPosition({
-      //         top: `${getNumberValue(injectedPosition.top) - height}px`,
-      //         left: nextPosition.left,
-      //       });
-      //     } else {
-      //
-      //     }
-      //   } else {
-      //     setInjectedPosition({
-      //       top: nextPosition.top,
-      //       left: nextPosition.left,
-      //     });
-      //   }
-      // }
     }
   }, [
     injectedPosition.left,

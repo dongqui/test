@@ -27,7 +27,7 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
   const boneIncluded: boolean[] = [];
   const nextBoneIndex = TP_TRACK_INDEX.BONE_A; // 3
   let trackIndex = layerIndex;
-  let dpIndex = 1;
+  let count = 1;
 
   // Layer 트랙 status 추가
   const layerTrackStatus = fnSetDopeSheetStatus({
@@ -81,12 +81,13 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
         else z.push(transform);
       });
 
+      const transformTimes = layer[transformIndex].times;
       const transformTrackStatus = fnSetDopeSheetStatus({
         isOpenedParentTrack: false,
         isIncluded: layer[transformIndex].isIncluded,
         isTransformTrack: true,
         layerKey,
-        times: _.map(currnetBoneTrack.times, (time) => ({
+        times: _.map(transformTimes, (time) => ({
           time: _.round(time, 4),
           isClicked: false,
         })),
@@ -98,9 +99,9 @@ const fnSetyLayerDopeSheet = ({ layer, layerIndex, layerName, layerKey }: SetyLa
       trackIndex += 1;
       if ((trackIndex - 1) % 10 === 0) trackIndex += 2; // ex) 11 -> 13, 21 -> 23
     }
-    dopeSheetList[boneIndex + dpIndex].isIncluded = _.every(transformIncluded); // bone isIncluded 값 설정
+    dopeSheetList[boneIndex + count].isIncluded = _.every(transformIncluded); // bone isIncluded 값 설정
     boneIncluded.push(dopeSheetList[boneIndex].isIncluded);
-    dpIndex += 1;
+    count += 1;
   }
   dopeSheetList[0].isIncluded = _.every(boneIncluded); // layer isIncluded 값 설정
 

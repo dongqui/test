@@ -31,7 +31,6 @@ const fnAddModel = (props: FnAddModel) => {
   }, SKIN_CHECK_DURATION);
   model.traverse((obj: any) => {
     if (obj.isMesh) {
-      // eslint-disable-next-line no-param-reassign
       obj.castShadow = true;
     }
   });
