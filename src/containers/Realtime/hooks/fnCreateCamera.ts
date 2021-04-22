@@ -21,7 +21,7 @@ const fnCreateCamera = (props: FnCreateCamera) => {
 
   if (upDirection === 'y') {
     // camera.position.set(-4, 8, 20);
-    camera.position.set(-65.03773435604916, 124.04739606949197, 345.85610628614825);
+    camera.position.set(0, 130, 400);
   } else if (upDirection === 'z') {
     // camera.position.set(-4, -2, 10);
     camera.up.set(0, 0, 1);

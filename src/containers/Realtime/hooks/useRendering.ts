@@ -566,10 +566,29 @@ export const useRendering = (props: UseRendering) => {
             setContents((prevContents) => [...prevContents, model]);
             // skeleton helper 생성 및 scene에 추가
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
-            // innerSkeletonHelper.bones[0].scale.setX(innerSkeletonHelper.bones[0].scale.x / 5);
-            // innerSkeletonHelper.bones[0].scale.setY(innerSkeletonHelper.bones[0].scale.y / 5);
-            // innerSkeletonHelper.bones[0].scale.setZ(innerSkeletonHelper.bones[0].scale.z / 5);
-            // innerSkeletonHelper.bones[0].position.setY(10);
+            innerSkeletonHelper.bones[0].position.set(0, 0, 0);
+            cameraControls.target.set(
+              (innerSkeletonHelper.bones[59].position.x +
+                innerSkeletonHelper.bones[64].position.x) /
+                2,
+              (innerSkeletonHelper.bones[59].position.y +
+                innerSkeletonHelper.bones[64].position.y) /
+                2,
+              (innerSkeletonHelper.bones[59].position.z +
+                innerSkeletonHelper.bones[64].position.z) /
+                2,
+            );
+            cameraControls.object.lookAt(
+              (innerSkeletonHelper.bones[59].position.x +
+                innerSkeletonHelper.bones[64].position.x) /
+                2,
+              (innerSkeletonHelper.bones[59].position.y +
+                innerSkeletonHelper.bones[64].position.y) /
+                2,
+              (innerSkeletonHelper.bones[59].position.z +
+                innerSkeletonHelper.bones[64].position.z) /
+                2,
+            );
             // setSkeletonHelper(innerSkeletonHelper);
             storeSkeletonHelper(innerSkeletonHelper);
 
