@@ -29,6 +29,7 @@ import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
 import fnExportModelToGlb from 'utils/LP/fnExportModelToGlb';
 import { RetargetInfoType, TargetboneType } from 'types/CP';
+import fnGetDeltaAppliedTracks from 'utils/LP/fnGetDeltaAppliedTracks';
 import { defaultTargetboneValue } from '../../containers/Panels/ControlPanel/Retarget/RetargetPanel';
 
 interface UseLPControlProps {
@@ -109,7 +110,7 @@ const useLPControl = ({
         if (_.isEqual(targetRow?.type, FILE_TYPES.file)) {
           setShowsModal(true);
           setModalMessage('Retargeting motion to the model.');
-          const { bones = [], error, msg } = await fnGetAnimationData({
+          const { bones = [], animations = [], error, msg } = await fnGetAnimationData({
             url: targetRow?.url ?? '',
           });
           if (error) {
@@ -140,7 +141,10 @@ const useLPControl = ({
                   }),
                 );
                 targetboneList = _.concat(
-                  { key: '', value: defaultTargetboneValue, isSelected: true },
+                  [
+                    { key: '', value: defaultTargetboneValue, isSelected: true },
+                    { key: 'None', value: 'None', isSelected: false },
+                  ],
                   targetboneList,
                 );
                 storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
@@ -150,9 +154,48 @@ const useLPControl = ({
               return;
             }
           }
+
+          let targetBaseLayer: any = draggingRow?.baseLayer || [];
+
+          // everyframe api 쏘는 곳
+          // 여기에서 delta 값 보완해주면 됨
+          if (animations.length !== 0 && retargetMap) {
+            // animations 가 비어있는 경우에는 delta 적용하지 않음
+            // 있는 경우에는 첫번째 모션이 무조건 t pose 애니메이션인 것으로 전제하고 delta 적용 진행
+            // 추후 팝업으로 t pose 애니메이션 선택할 수 있도록 추가해야 함
+            const targetBaseLayerPositionTracks = targetBaseLayer.filter(
+              (track: THREE.VectorKeyframeTrack) =>
+                track.name
+                  .substring(track.name.lastIndexOf('.'), track.name.length)
+                  .toLowerCase() === '.position',
+            );
+            const targetBaseLayerRotationTracks = targetBaseLayer.filter(
+              (track: THREE.VectorKeyframeTrack) =>
+                track.name
+                  .substring(track.name.lastIndexOf('.'), track.name.length)
+                  .toLowerCase() === '.rotation',
+            );
+            const targetBaseLayerScaleTracks = targetBaseLayer.filter(
+              (track: THREE.VectorKeyframeTrack) =>
+                track.name
+                  .substring(track.name.lastIndexOf('.'), track.name.length)
+                  .toLowerCase() === '.scale',
+            );
+            targetBaseLayer = [
+              ...targetBaseLayerPositionTracks,
+              ...targetBaseLayerScaleTracks,
+              ...fnGetDeltaAppliedTracks({
+                sourceRotationTracks: targetBaseLayerRotationTracks,
+                retargetMap,
+                tPoseAnimation: animations[0],
+              }),
+            ];
+          }
+
+          // hip position 정보 보내는 방식으로 바꾸는 것은 아래에 필드 추가하면 될 듯
           const { result: result2, error: error3, msg: msg3 } = await api.getRetargetBaseLayer({
             name: draggingRow?.name ?? '',
-            baseLayer: draggingRow?.baseLayer ?? [],
+            baseLayer: targetBaseLayer,
             retargetMap,
             isFbx:
               targetRow?.name
@@ -173,6 +216,7 @@ const useLPControl = ({
             parentKey: key,
             baseLayer: newBaseLayer,
             layers: [],
+            isExportedMotion: false,
           };
           let newMainData = _.concat(mainData, newMotion);
           newMainData = _.map(newMainData, (item) => ({

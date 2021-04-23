@@ -11,7 +11,6 @@ interface FnAddJointMeshes {
   renderer: THREE.Renderer;
   cameraControls: OrbitControls;
   transformControls: TransformControls;
-  innerMixer: THREE.AnimationMixer;
   innerCurrentBone: THREE.Bone | undefined;
   setInnerCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
   storeCurrentBone: any;
@@ -26,7 +25,6 @@ interface FnAddJointMeshes {
  * @param renderer - The renderer whose domElement is canvas
  * @param cameraControls - The camera controls attached to the canvas
  * @param transformControls - The transform controls added to the scene, and will be attached to the selected joint mesh
- * @param innerMixer - The animation mixer defined within the useRendering.ts file (not the global state mixer)
  * @param innerCurrentBone - The current selected bone
  * @param setInnerCurrentBone - A function setting the innerCurrentBone
  * @param setCurrentBoneIndex - A function setting the current Bone index
@@ -39,7 +37,6 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
     renderer,
     cameraControls,
     transformControls,
-    innerMixer,
     innerCurrentBone,
     setInnerCurrentBone,
     storeCurrentBone,
@@ -74,9 +71,6 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
         setInnerCurrentBone(event.object.parent);
         storeCurrentBone(event.object.parent);
         dragControls.enabled = false;
-      }
-      if (innerMixer) {
-        innerMixer.timeScale = 0;
       }
     });
     dragControls.addEventListener('dragend', (event) => {

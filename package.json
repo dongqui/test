@@ -95,6 +95,7 @@
     "@types/react-redux": "^7.1.16",
     "@types/react-rnd": "^8.0.0",
     "@types/redux": "^3.6.0",
+    "@types/resize-observer-browser": "^0.1.5",
     "@types/sha1": "^1.1.2",
     "@types/sha256": "^0.2.0",
     "@types/styled-components": "^5.1.7",

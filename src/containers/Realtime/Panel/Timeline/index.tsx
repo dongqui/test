@@ -178,7 +178,9 @@ const TimelineContainer: React.FC<Props> = ({
                 index: layer.layerIndex,
                 key: 'trackIndex',
               });
-              draft[dopeSheetIndex].trackName = newLayer.name;
+              if (dopeSheetIndex !== -1) {
+                draft[dopeSheetIndex].trackName = newLayer.name;
+              }
             });
             const nextLastBoneList = produce(lastBoneList, (draft) => {
               draft[index + 1].trackName = newLayer.name;
