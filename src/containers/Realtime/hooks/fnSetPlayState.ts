@@ -29,10 +29,8 @@ const fnSetPlayState = (props: FnSetPlayState) => {
     case 'play':
       if (playDirection === 1) {
         mixer.timeScale = 1 * DEFAULT_SPEED * playSpeed;
-        currentAction.play();
       } else if (playDirection === -1) {
         mixer.timeScale = -1 * DEFAULT_SPEED * playSpeed;
-        currentAction.play();
       }
       break;
     case 'pause':
