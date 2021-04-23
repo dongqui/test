@@ -7,15 +7,21 @@ import { fnSetDopeSheetStatus, fnSetLayerDopeSheet } from './index';
 interface FnSetDefaultDopeSheetList {
   baseLayer: ShootTrackType[];
   layers: ShootLayerType[];
+  visualizedDataKey: string;
 }
 /**
  * 최초에 visualized 되거나 모델이 변경 되었을 때, dope sheet의 status를 생성하는 함수입니다.
  *
  * @param baseLayer
  * @param layers
+ * @param visualizedDataKey
  * @return dopeSheetList - dope sheet status를 저장하고 있는 1차원 배열
  */
-const fnSetDefaultDopeSheetList = ({ baseLayer, layers }: FnSetDefaultDopeSheetList) => {
+const fnSetDefaultDopeSheetList = ({
+  baseLayer,
+  layers,
+  visualizedDataKey,
+}: FnSetDefaultDopeSheetList) => {
   const dopeSheetList: TPDopeSheet[] = [];
   const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
 
@@ -27,6 +33,7 @@ const fnSetDefaultDopeSheetList = ({ baseLayer, layers }: FnSetDefaultDopeSheetL
     times: _.map(summaryTimes, (time) => ({ time, isClicked: false })),
     trackIndex: 1,
     trackName: 'Summary',
+    visualizedDataKey,
   });
   dopeSheetList.push(summaryTrack);
 
@@ -35,6 +42,7 @@ const fnSetDefaultDopeSheetList = ({ baseLayer, layers }: FnSetDefaultDopeSheetL
     layer: baseLayer,
     layerIndex: 2,
     layerName: 'Base',
+    visualizedDataKey,
   });
   dopeSheetList.push(...baseBoneTrackStatus);
 
@@ -45,6 +53,7 @@ const fnSetDefaultDopeSheetList = ({ baseLayer, layers }: FnSetDefaultDopeSheetL
       layerIndex: (index + 1) * 10000 + 2,
       layerName: layer.name,
       layerKey: layer.key,
+      visualizedDataKey,
     });
     dopeSheetList.push(...layerBoneTrackStatus);
   });

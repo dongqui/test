@@ -290,13 +290,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
-      {showsModal && (
-        <BaseModal
-          title={modalMessage}
-          onClose={handleModalClose}
-          onOutsideClose={handleModalClose}
-        />
-      )}
+      {showsModal && <BaseModal title={modalMessage} onClose={handleModalClose} />}
     </div>
   );
 };

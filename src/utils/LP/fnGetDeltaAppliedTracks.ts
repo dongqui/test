@@ -5,82 +5,82 @@ import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
 
 type StandardBoneName =
   | 'hips'
-  | 'spine'
-  | 'spine1'
-  | 'spine2'
-  | 'neck'
-  | 'head'
-  | 'leftShoulder'
-  | 'leftArm'
-  | 'leftForeArm'
-  | 'leftHand'
-  | 'leftHandIndex1'
-  | 'rightShoulder'
-  | 'rightArm'
-  | 'rightForeArm'
-  | 'rightHand'
-  | 'rightHandIndex1'
   | 'leftUpLeg'
-  | 'leftLeg'
-  | 'leftFoot'
-  | 'leftToeBase'
   | 'rightUpLeg'
+  | 'spine'
+  | 'leftLeg'
   | 'rightLeg'
+  | 'spine1'
+  | 'leftFoot'
   | 'rightFoot'
-  | 'rightToeBase';
+  | 'spine2'
+  | 'leftToeBase'
+  | 'rightToeBase'
+  | 'neck'
+  | 'leftShoulder'
+  | 'rightShoulder'
+  | 'head'
+  | 'leftArm'
+  | 'rightArm'
+  | 'leftForeArm'
+  | 'rightForeArm'
+  | 'leftHand'
+  | 'rightHand'
+  | 'leftHandIndex1'
+  | 'rightHandIndex1';
 
 const STANDARD_BONE_NAMES = [
   'hips',
-  'spine',
-  'spine1',
-  'spine2',
-  'neck',
-  'head',
-  'leftShoulder',
-  'leftArm',
-  'leftForeArm',
-  'leftHand',
-  'leftHandIndex1',
-  'rightShoulder',
-  'rightArm',
-  'rightForeArm',
-  'rightHand',
-  'rightHandIndex1',
   'leftUpLeg',
-  'leftLeg',
-  'leftFoot',
-  'leftToeBase',
   'rightUpLeg',
+  'spine',
+  'leftLeg',
   'rightLeg',
+  'spine1',
+  'leftFoot',
   'rightFoot',
+  'spine2',
+  'leftToeBase',
   'rightToeBase',
+  'neck',
+  'leftShoulder',
+  'rightShoulder',
+  'head',
+  'leftArm',
+  'rightArm',
+  'leftForeArm',
+  'rightForeArm',
+  'leftHand',
+  'rightHand',
+  'leftHandIndex1',
+  'rightHandIndex1',
 ];
 
 const STANDARD_QUATERNIONS = {
   hips: [-0.7071068286895752, 0, 0, 0.7071068286895752],
-  spine: [0, 0, 0, 1],
-  spine1: [0, 0, 0, 1],
-  spine2: [0, 0, 0, 1],
-  neck: [0, 0, 0, 1],
-  head: [0, 0, 0, 1],
-  leftShoulder: [0, 0, 0, 1],
-  leftArm: [0, 0, 0, 1],
-  leftForeArm: [0, 0, 0, 1],
-  leftHand: [0, 0, 0, 1],
-  leftHandIndex1: [0, 0, 0, 1],
-  rightShoulder: [0, 0, 0, 1],
-  rightArm: [0, 0, 0, 1],
-  rightForeArm: [0, 0, 0, 1],
-  rightHand: [0, 0, 0, 1],
-  rightHandIndex1: [0, 0, 0, 1],
   leftUpLeg: [0, 0, 0, 1],
-  leftLeg: [0, 0, 0, 1],
-  leftFoot: [0, 0, 0, 1],
-  leftToeBase: [1, 0, 0, 0],
   rightUpLeg: [0, 0, 0, 1],
+  spine: [0, 0, 0, 1],
+  leftLeg: [0, 0, 0, 1],
   rightLeg: [0, 0, 0, 1],
+  spine1: [0, 0, 0, 1],
+  leftFoot: [0, 0, 0, 1],
   rightFoot: [0, 0, 0, 1],
+  spine2: [0, 0, 0, 1],
+  leftToeBase: [1, 0, 0, 0],
   rightToeBase: [1, 0, 0, 0],
+  neck: [0, 0, 0, 1],
+  leftShoulder: [0, 0, 0, 1],
+  rightShoulder: [0, 0, 0, 1],
+  head: [0, 0, 0, 1],
+  leftArm: [0, 0, 0, 1],
+  rightArm: [0, 0, 0, 1],
+  leftForeArm: [0, 0, 0, 1],
+  rightForeArm: [0, 0, 0, 1],
+  leftHand: [0, 0, 0, 1],
+  rightHand: [0, 0, 0, 1],
+  leftHandIndex1: [0, 0, 0, 1],
+  rightHandIndex1: [0, 0, 0, 1],
 };
 
 interface FnGetDeltaAppliedTracks {
@@ -114,29 +114,29 @@ const fnGetDeltaAppliedTracks = (props: FnGetDeltaAppliedTracks) => {
 
   const targetQuaternions = {
     hips: [-0.7071068286895752, 0, 0, 0.7071068286895752],
-    spine: [0, 0, 0, 1],
-    spine1: [0, 0, 0, 1],
-    spine2: [0, 0, 0, 1],
-    neck: [0, 0, 0, 1],
-    head: [0, 0, 0, 1],
-    leftShoulder: [0, 0, 0, 1],
-    leftArm: [0, 0, 0, 1],
-    leftForeArm: [0, 0, 0, 1],
-    leftHand: [0, 0, 0, 1],
-    leftHandIndex1: [0, 0, 0, 1],
-    rightShoulder: [0, 0, 0, 1],
-    rightArm: [0, 0, 0, 1],
-    rightForeArm: [0, 0, 0, 1],
-    rightHand: [0, 0, 0, 1],
-    rightHandIndex1: [0, 0, 0, 1],
     leftUpLeg: [0, 0, 0, 1],
-    leftLeg: [0, 0, 0, 1],
-    leftFoot: [0, 0, 0, 1],
-    leftToeBase: [1, 0, 0, 0],
     rightUpLeg: [0, 0, 0, 1],
+    spine: [0, 0, 0, 1],
+    leftLeg: [0, 0, 0, 1],
     rightLeg: [0, 0, 0, 1],
+    spine1: [0, 0, 0, 1],
+    leftFoot: [0, 0, 0, 1],
     rightFoot: [0, 0, 0, 1],
+    spine2: [0, 0, 0, 1],
+    leftToeBase: [1, 0, 0, 0],
     rightToeBase: [1, 0, 0, 0],
+    neck: [0, 0, 0, 1],
+    leftShoulder: [0, 0, 0, 1],
+    rightShoulder: [0, 0, 0, 1],
+    head: [0, 0, 0, 1],
+    leftArm: [0, 0, 0, 1],
+    rightArm: [0, 0, 0, 1],
+    leftForeArm: [0, 0, 0, 1],
+    rightForeArm: [0, 0, 0, 1],
+    leftHand: [0, 0, 0, 1],
+    rightHand: [0, 0, 0, 1],
+    leftHandIndex1: [0, 0, 0, 1],
+    rightHandIndex1: [0, 0, 0, 1],
   };
 
   _.forEach(STANDARD_BONE_NAMES, (standardBoneName) => {

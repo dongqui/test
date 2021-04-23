@@ -175,7 +175,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       const action = mixer.clipAction(visualizedClip);
       console.log('action: ', action);
       action.play();
-      action.timeScale = 0;
+      mixer.timeScale = 0;
       if (currentXAxisPosition.current && currentXAxisPosition.current > startTimeIndex) {
         action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
       } else {

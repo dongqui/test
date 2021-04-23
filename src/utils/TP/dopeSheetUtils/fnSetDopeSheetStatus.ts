@@ -6,6 +6,7 @@ interface SetDopeSheetStatus {
   times: { time: number; isClicked: boolean }[];
   trackIndex: number;
   trackName: string;
+  visualizedDataKey: string;
 }
 
 /**
@@ -19,6 +20,7 @@ interface SetDopeSheetStatus {
  * @param times -
  * @param trackIndex -
  * @param trackName -
+ * @param visualizedDataKey -
  * @return dopeSheetStatus
  */
 const setDopeSheetStatus = ({
@@ -29,6 +31,7 @@ const setDopeSheetStatus = ({
   times,
   trackIndex,
   trackName,
+  visualizedDataKey,
 }: SetDopeSheetStatus) => ({
   isSelected: false,
   isLocked: false,
@@ -40,6 +43,7 @@ const setDopeSheetStatus = ({
   trackIndex,
   trackName,
   times,
+  visualizedDataKey,
 });
 
 export default setDopeSheetStatus;
