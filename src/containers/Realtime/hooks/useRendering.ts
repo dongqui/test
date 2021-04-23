@@ -600,13 +600,13 @@ export const useRendering = (props: UseRendering) => {
             // camera.position.set(500, 0, 0);
             camera.lookAt(camera_pivot.position);
 
-            cameraIntervalRef.current = setInterval(() => {
-              camera_pivot.rotation.set(
-                camera_pivot.rotation.x,
-                camera_pivot.rotation.y + 0.05,
-                camera_pivot.rotation.z,
-              );
-            }, 50);
+            // cameraIntervalRef.current = setInterval(() => {
+            //   camera_pivot.rotation.set(
+            //     camera_pivot.rotation.x,
+            //     camera_pivot.rotation.y + 0.05,
+            //     camera_pivot.rotation.z,
+            //   );
+            // }, 50);
 
             // innerSkeletonHelper.bones[0].scale.set(100, 100, 100); // dying.glb 로 개발하기 위한 코드 -> 이후 삭제
 
@@ -659,9 +659,9 @@ export const useRendering = (props: UseRendering) => {
     }
 
     return () => {
-      if (cameraIntervalRef.current) {
-        clearInterval(cameraIntervalRef.current);
-      }
+      // if (cameraIntervalRef.current) {
+      //   clearInterval(cameraIntervalRef.current);
+      // }
       // 단축키 제거
       if (keyDownRef.current && keyUpRef.current) {
         document.removeEventListener('keydown', keyDownRef.current);
