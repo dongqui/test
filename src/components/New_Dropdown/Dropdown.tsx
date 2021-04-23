@@ -28,20 +28,21 @@ export interface Props {
     value: string;
     isSelected: boolean;
   }[];
+  fixed?: boolean;
 }
 
 /**
  *
  * @todo 추후, Sub Menu를 위한 Cascading 기능 추가 예정
  */
-const Dropdown: FunctionComponent<Props> = ({ list, onSelect }) => {
+const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [transform, setTransform] = useState<string>();
 
-  const defaultValue = _.find(list, { isSelected: true })?.value || list[0].value;
+  const defaultValue = _.find(list, { isSelected: true })?.value || list[0]?.value;
   const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   const handleToggle = useCallback(() => {
@@ -65,7 +66,7 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect }) => {
     if (buttonRef && buttonRef.current) {
       setTransform(`translate3d(0px, ${buttonRef.current.offsetHeight - 21}px, 0px)`);
     }
-  }, []);
+  }, [isOpen]);
 
   useEffect(() => {
     const currentRef = wrapperRef?.current;
@@ -147,6 +148,10 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect }) => {
     open: isOpen,
   });
 
+  const dropdownClasses = cx('menu', {
+    fixed: fixed,
+  });
+
   return (
     <div ref={wrapperRef} className={cx('wrapper')}>
       <div className={cx('header')}>
@@ -156,7 +161,7 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect }) => {
         </button>
       </div>
       {isOpen && (
-        <ul className={cx('menu')} style={{ transform }} role="menu">
+        <ul className={dropdownClasses} style={{ transform }} role="menu">
           {_.map(list, (item, i) => {
             const key = `${item.key}_${i}`;
             return (

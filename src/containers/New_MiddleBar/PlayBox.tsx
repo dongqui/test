@@ -228,8 +228,10 @@ const PlayBox: FunctionComponent<Props> = ({
   );
 
   const handleExport = useCallback(() => {
-    setShowsModal(true);
-  }, []);
+    if (_.isEqual(pageInfo.page, PAGE_NAMES.extract)) {
+      setShowsModal(true);
+    }
+  }, [pageInfo.page]);
 
   const handleSubmit = useCallback(async () => {
     setShowsModal(false);
