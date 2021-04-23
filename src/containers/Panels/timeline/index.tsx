@@ -226,7 +226,6 @@ const TimelineContainer: React.FC<Props> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layers]);
-  console.log('sldfhuisdayhfuiosdyhfiosurfiowearyoiaweyhfio', visualizedDataKey);
 
   return (
     <>

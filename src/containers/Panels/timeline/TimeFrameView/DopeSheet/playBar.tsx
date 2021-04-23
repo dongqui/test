@@ -23,4 +23,4 @@ const PlayBar: React.FC<Props> = () => {
   );
 };
 
-export default memo(PlayBar);
+export default PlayBar;
