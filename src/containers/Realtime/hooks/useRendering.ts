@@ -455,6 +455,8 @@ export const useRendering = (props: UseRendering) => {
     }
   }, [id, renderer]);
 
+  const cameraIntervalRef = useRef<any>();
+
   // canvas 내부를 그려내는 로직
   useEffect(() => {
     // rendering할 div요소 선택
@@ -595,10 +597,10 @@ export const useRendering = (props: UseRendering) => {
 
             scene.add(camera_pivot);
             camera_pivot.add(camera);
-            camera.position.set(500, 0, 0);
+            // camera.position.set(500, 0, 0);
             camera.lookAt(camera_pivot.position);
 
-            setInterval(() => {
+            cameraIntervalRef.current = setInterval(() => {
               camera_pivot.rotation.set(
                 camera_pivot.rotation.x,
                 camera_pivot.rotation.y + 0.05,
@@ -606,7 +608,7 @@ export const useRendering = (props: UseRendering) => {
               );
             }, 50);
 
-            innerSkeletonHelper.bones[0].scale.set(100, 100, 100); // dying.glb 로 개발하기 위한 코드 -> 이후 삭제
+            // innerSkeletonHelper.bones[0].scale.set(100, 100, 100); // dying.glb 로 개발하기 위한 코드 -> 이후 삭제
 
             // setSkeletonHelper(innerSkeletonHelper);
             storeSkeletonHelper(innerSkeletonHelper);
@@ -657,6 +659,9 @@ export const useRendering = (props: UseRendering) => {
     }
 
     return () => {
+      if (cameraIntervalRef.current) {
+        clearInterval(cameraIntervalRef.current);
+      }
       // 단축키 제거
       if (keyDownRef.current && keyUpRef.current) {
         document.removeEventListener('keydown', keyDownRef.current);
