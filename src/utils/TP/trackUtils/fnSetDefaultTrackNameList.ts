@@ -7,6 +7,7 @@ import { fnSetLayerTrack } from './index';
 interface FnSetDefaultTrackNameList {
   baseLayer: ShootTrackType[];
   layers: ShootLayerType[];
+  visualizedDataKey: string;
 }
 
 type DefaultTrackNameList = [TPTrackName[], TPLastBone[]];
@@ -16,11 +17,13 @@ type DefaultTrackNameList = [TPTrackName[], TPLastBone[]];
  *
  * @param baseLayer
  * @param layers
+ * @param visualizedDataKey - 현재 vsialized 된 model의 key
  * @return defaultTrackNameList
  */
 const fnSetDefaultTrackNameList = ({
   baseLayer,
   layers,
+  visualizedDataKey,
 }: FnSetDefaultTrackNameList): DefaultTrackNameList => {
   const trackNameList: TPTrackName[] = [];
   const lastBoneList: TPLastBone[] = [];
@@ -31,6 +34,7 @@ const fnSetDefaultTrackNameList = ({
     trackIndex: TP_TRACK_INDEX.SUMMARY, // 1
     isOpenedChildrenTrack: true,
     childrenTrack: [],
+    visualizedDataKey,
   });
 
   // Base 트랙 추가
@@ -39,6 +43,7 @@ const fnSetDefaultTrackNameList = ({
     layerKey: 'baseLayer',
     tracks: baseLayer,
     trackName: 'Base',
+    visualizedDataKey,
   });
   lastBoneList.push(baseLastBone);
   trackNameList[0].childrenTrack.push(...base);
@@ -50,6 +55,7 @@ const fnSetDefaultTrackNameList = ({
       layerKey: layer.key,
       tracks: layer.tracks,
       trackName: layer.name,
+      visualizedDataKey,
     });
     lastBoneList.push(layerLastBone);
     trackNameList[0].childrenTrack.push(...childrenTrack);

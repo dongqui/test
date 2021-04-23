@@ -43,7 +43,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
-  const [filteredTrackList, setFilterTrackList] = useState<TPTrackName[]>([]);
+  const [filteredTrackList, setFilteredTrackList] = useState<TPTrackName[]>([]);
   const prevTrackInput = useRef('');
 
   // debouned가 적용 된 track input 갱신
@@ -80,9 +80,16 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           });
           prevTrackInput.current = '';
           storeTPUpdateDopeSheetList({ updatedList: resetDopeSheetList, status: 'isFiltered' });
-          setFilterTrackList(trackNameList);
+          setFilteredTrackList(trackNameList);
           return;
         }
+
+        const targetIndex = fnGetBinarySearch({
+          collection: dopeSheetList,
+          index: 0,
+          key: 'trackIndex',
+        });
+        const visualizedDataKey = dopeSheetList[targetIndex].visualizedDataKey;
 
         // 재귀로 트랙 리스트 필터링
         const filterTrackList = ({ trackList }: { trackList: TPTrackName[] }): FilterTrackList => {
@@ -100,6 +107,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                 name,
                 trackIndex,
                 childrenTrack,
+                visualizedDataKey,
               });
             } else {
               const [filteredChildren, isOpened] = filterTrackList({
@@ -112,6 +120,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                   name,
                   trackIndex,
                   childrenTrack: filteredChildren,
+                  visualizedDataKey,
                 });
               }
             }
@@ -150,7 +159,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         prevTrackInput.current = trimedInput;
         storeTPUpdateDopeSheetList({ updatedList: filteredDopeSheetList, status: 'isFiltered' });
-        setFilterTrackList(filteredTrackList);
+        setFilteredTrackList(filteredTrackList);
       }, DEBOUNCED_TIME),
     [trackNameList, dopeSheetList, lastBoneList],
   );
@@ -187,9 +196,8 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   // 최초 Track List 적용
   useEffect(() => {
-    setFilterTrackList(trackNameList);
+    setFilteredTrackList(trackNameList);
   }, [trackNameList]);
-
   const isEmptyTrack = _.isEmpty(filteredTrackList);
 
   const handleTrackListContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -212,11 +220,17 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
             onClick={clickLayerButton}
           />
         </div>
-        {!isEmptyTrack && (
-          <div className={cx('list')}>
-            {_.map(filteredTrackList, (track, i) => {
-              const { childrenTrack, isOpenedChildrenTrack, name, trackIndex } = track;
-              const key = `${name}_${i}`;
+        <div className={cx('list')}>
+          {!isEmptyTrack &&
+            _.map(filteredTrackList, (track, i) => {
+              const {
+                childrenTrack,
+                isOpenedChildrenTrack,
+                name,
+                trackIndex,
+                visualizedDataKey,
+              } = track;
+              const key = `${name}_${visualizedDataKey}`;
               return (
                 <Track
                   key={key}
@@ -224,11 +238,11 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                   isOpenedParent={isOpenedChildrenTrack}
                   trackName={name}
                   trackIndex={trackIndex}
+                  visualizedDataKey={visualizedDataKey}
                 />
               );
             })}
-          </div>
-        )}
+        </div>
       </div>
     </AlertModalProvider>
   );
