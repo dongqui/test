@@ -57,8 +57,8 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
 
   // circle 생성
   useEffect(() => {
-    if (circleGroupRef.current && dopeSheetData.times && prevXScale) {
-      const { isLocked, times } = dopeSheetData;
+    if (circleGroupRef.current && dopeSheetData && prevXScale) {
+      const { isLocked, times, trackIndex } = dopeSheetData;
       d3.select(circleGroupRef.current)
         .selectAll('circle')
         .data(times)
@@ -146,23 +146,4 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
   return <></>;
 };
 
-export default memo(Circles, (prevProps, nextProps) => {
-  const {
-    isOpenedParentTrack: prevIsOpenedParentTrack,
-    isFiltered: prevIsFiltered,
-    isLocked: prevIsLocked,
-    times: prevTimes,
-  } = prevProps.dopeSheetData;
-  const {
-    isOpenedParentTrack: nextIsOpenedParentTrack,
-    isFiltered: nextIsFiltered,
-    isLocked: nextIsLocked,
-    times: nextTimes,
-  } = nextProps.dopeSheetData;
-
-  if (!_.isEqual(prevTimes, nextTimes)) return false;
-  if (prevIsLocked !== nextIsLocked) return false;
-  if (prevIsOpenedParentTrack !== nextIsOpenedParentTrack) return false;
-  if (prevIsFiltered !== nextIsFiltered) return false;
-  return true;
-});
+export default Circles;
