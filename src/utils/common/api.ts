@@ -23,6 +23,11 @@ interface getRetargetBaseLayerProps {
   name: string;
   retargetMap?: Array<any>;
   isFbx: boolean;
+  hip: {
+    x: number;
+    y: number;
+    z: number;
+  };
 }
 /**
  * fbx를 업로드하여 glb를 받는 api
@@ -174,6 +179,8 @@ export const getRetargetMap = async ({ bones }: getRetargetMapProps) => {
  * @param baseLayer - baseLayer 값
  * @param name - 모션이름
  * @param retargetMap - 리타겟맵
+ * @param isFbx - blender api 를 거친 fbx 파일인지
+ * @param hip - hip 의 첫번째 position 값
  *
  * @returns 리타겟팅된 모션데이터
  */
@@ -182,12 +189,14 @@ export const getRetargetBaseLayer = async ({
   name,
   retargetMap,
   isFbx,
+  hip,
 }: getRetargetBaseLayerProps) => {
   try {
     const formData = new FormData();
     formData.append('isFbx', `${isFbx}`);
     formData.append('sourceMotion', JSON.stringify({ name, tracks: baseLayer }));
     formData.append('retargetMap', JSON.stringify(retargetMap));
+    formData.append('hip', JSON.stringify({ x: hip.x, y: hip.y, z: hip.z }));
     const result = await axios({
       method: 'POST',
       url: `${RETARGETIING_URL}/retargeting-everyframe2`,

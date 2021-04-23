@@ -201,6 +201,7 @@ const useLPControl = ({
               targetRow?.name
                 .substring(targetRow?.name.lastIndexOf('.'), targetRow.name.length)
                 .toLowerCase() === '.fbx',
+            hip: bones[0].position,
           });
           if (error3) {
             setModalMessage('An error has occurred while retargeting.');
