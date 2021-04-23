@@ -81,7 +81,7 @@ export const retargetMap = [
     },
   },
   {
-    key: 'rightFoog',
+    key: 'rightFoot',
     value: {
       targetBone: defaultTargetBone,
       order: 'xyz',
