@@ -899,11 +899,30 @@ const DopeSheet: React.FC<Props> = ({
     };
   }, [handleDopesheetKeyDown, handleDopesheetKeyPress, handleDopesheetKeyUp]);
 
+  const startTimeIndexRef = useRef(0);
+  const endTimeIndexRef = useRef(0);
+  useEffect(() => {
+    startTimeIndexRef.current = startTimeIndex;
+    endTimeIndexRef.current = endTimeIndex;
+  }, [startTimeIndex, endTimeIndex]);
+
   const curScaleLevel = useRef(INITIAL_SCALE_LEVEL);
   const prevWidth = useRef(0);
   useEffect(() => {
     if (dopeSheetRef.current) {
-      let asd = 1;
+      const redrawRangeRect = () => {
+        const xScaleLinear = prevXScale.current as d3ScaleLinear;
+        const rangeRectWidth =
+          xScaleLinear(endTimeIndexRef.current) - xScaleLinear(startTimeIndexRef.current);
+        console.log('sdsdsdsdsdsdsdsdsdsdsd', rangeRectWidth);
+        d3.select('.range-rect')
+          .attr('width', rangeRectWidth)
+          .attr(
+            'transform',
+            `translate(${xScaleLinear(startTimeIndexRef.current)}, -${X_AXIS_HEIGHT / 2})`,
+          );
+      };
+
       const ro = new ResizeObserver((entries: ResizeObserverEntry[]) => {
         const [entry] = entries;
         const { width, height } = entry.contentRect;
@@ -915,7 +934,7 @@ const DopeSheet: React.FC<Props> = ({
               .domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN])
               .range([0, width]); // x값 범위 설정
             xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear); // x축 위치 설정
-            asd += 1;
+            console.log(startTimeIndex, endTimeIndex);
 
             const rescaleX = event.transform.rescaleX(xScale.current as d3.ZoomScale); // x rescale
             const xAxisPositionRef = xAxisPosition.current as d3Axis;
@@ -931,13 +950,7 @@ const DopeSheet: React.FC<Props> = ({
             d3.selectAll('.x-axis-g line').attr('y2', -24);
 
             const xScaleLinear = prevXScale.current as d3ScaleLinear;
-            const rangeRectWidth = xScaleLinear(endTimeIndex) - xScaleLinear(startTimeIndex);
-            d3.select('.range-rect')
-              .attr('width', rangeRectWidth)
-              .attr(
-                'transform',
-                `translate(${xScaleLinear(startTimeIndex)}, -${X_AXIS_HEIGHT / 2})`,
-              );
+            redrawRangeRect();
 
             // grid line 조정
             d3.selectAll('.grid-line').remove();
@@ -1009,6 +1022,7 @@ const DopeSheet: React.FC<Props> = ({
         }
       });
 
+      redrawRangeRect();
       ro.observe(dopeSheetRef.current);
     }
   }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex, timelineWrapperRef]);
