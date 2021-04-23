@@ -7,6 +7,7 @@ interface FnSetLayerTrack {
   layerKey: string;
   tracks: ShootTrackType[];
   trackName: string;
+  visualizedDataKey: string;
 }
 
 type LayerTrack = [TPTrackName[], TPLastBone];
@@ -18,6 +19,7 @@ type LayerTrack = [TPTrackName[], TPLastBone];
  * @param layerKey - layer 트랙의 key
  * @param tracks - layerTrack을 생성시킬 트랙 리스트
  * @param trackName - layer 트랙 name
+ * @param visualizedDataKey - 현재 vsialized 된 model의 key
  * @return layerTrack
  */
 const fnSetLayerTrack = ({
@@ -25,6 +27,7 @@ const fnSetLayerTrack = ({
   layerKey,
   tracks,
   trackName,
+  visualizedDataKey,
 }: FnSetLayerTrack): LayerTrack => {
   const trackNameList: TPTrackName[] = [];
   const nextBoneIndex = 3;
@@ -36,6 +39,7 @@ const fnSetLayerTrack = ({
     trackIndex: layerIndex,
     isOpenedChildrenTrack: false,
     childrenTrack: [],
+    visualizedDataKey,
   });
 
   // Layer 트랙의 마지막 Bone 트랙 리스트
@@ -66,6 +70,7 @@ const fnSetLayerTrack = ({
       trackIndex: currentTrackIndex,
       isOpenedChildrenTrack: false,
       childrenTrack: [],
+      visualizedDataKey,
     });
     currentTrackIndex += 1;
 
@@ -83,6 +88,7 @@ const fnSetLayerTrack = ({
         trackIndex: currentTrackIndex,
         isOpenedChildrenTrack: false,
         childrenTrack: [],
+        visualizedDataKey,
       });
       currentTrackIndex += 1;
       if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2; // 11 -> 13, 21 -> 23
