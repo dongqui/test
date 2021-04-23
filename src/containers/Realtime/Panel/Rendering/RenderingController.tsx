@@ -21,7 +21,7 @@ import {
 } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
-import { fnSetPlayState } from 'utils/RP/animatingUtils';
+import fnSetPlayState from 'containers/Realtime/hooks/fnSetPlayState';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { fnAddGround } from 'utils/RP/renderingUtils';
 import {
@@ -33,6 +33,7 @@ import {
   fnRemoveShadow,
 } from 'utils/CP/visibilityUtils';
 import { d3ScaleLinear } from 'types/TP';
+import { NearestFilter } from 'three/src/constants';
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 
@@ -116,15 +117,18 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       bumpScale: 0.0005,
     });
 
-    const groundTexture = new THREE.TextureLoader().load('images/realtime/hardwood.jpg', (map) => {
-      map.wrapS = THREE.RepeatWrapping;
-      map.wrapT = THREE.RepeatWrapping;
-      map.anisotropy = 16;
-      map.repeat.set(100, 240);
-      map.encoding = THREE.sRGBEncoding;
-      groundMat.map = map;
-      groundMat.needsUpdate = true;
-    });
+    const groundTexture = new THREE.TextureLoader().load(
+      'images/realtime/neon_background.jpeg',
+      (map) => {
+        map.wrapS = THREE.RepeatWrapping;
+        map.wrapT = THREE.RepeatWrapping;
+        map.anisotropy = 16;
+        map.repeat.set(100, 240);
+        map.encoding = THREE.sRGBEncoding;
+        groundMat.map = map;
+        groundMat.needsUpdate = true;
+      },
+    );
     // groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
     // groundTexture.repeat.set(500, 500);
     // groundTexture.anisotropy = 16;
@@ -139,14 +143,16 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     groundMesh.receiveShadow = true;
 
     // background
-    const backgroundTexture = new THREE.TextureLoader().load('texture/texture_01.png');
+    const backgroundTexture = new THREE.TextureLoader().load(
+      'images/realtime/neon_background.jpeg',
+    );
+    // backgroundTexture.minFilter = THREE.LinearFilter;
 
     // light
 
     if (scene) {
       // scene.background = new THREE.Color(0x050505);
-      // scene.background = backgroundTexture;
-
+      scene.background = backgroundTexture;
       // scene.add(groundMesh);
       scene.add(leftBulbLight);
       scene.add(rightBulbLight);
@@ -169,14 +175,13 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       const action = mixer.clipAction(visualizedClip);
       console.log('action: ', action);
       action.play();
-      mixer.timeScale = 0;
+      action.timeScale = 0;
       if (currentXAxisPosition.current && currentXAxisPosition.current > startTimeIndex) {
         action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
       } else {
         action.time = _.round(startTimeIndex / 30, 4);
       }
       storeCurrentAction(action);
-      // console.log('action: ', action);
     }
   }, [currentVisualizedData, currentXAxisPosition, endTimeIndex, mixer, startTimeIndex]);
 
@@ -226,7 +231,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   // animation 재생 관련 로직
   useEffect(() => {
     if (mixer && currentAction) {
-      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection, startTimeIndex });
+      fnSetPlayState({ mixer, currentAction, playState, playSpeed, playDirection });
     }
   }, [currentAction, mixer, playDirection, playSpeed, playState, startTimeIndex]);
 

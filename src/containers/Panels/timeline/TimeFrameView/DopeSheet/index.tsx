@@ -509,9 +509,17 @@ const DopeSheet: React.FC<Props> = ({
       );
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
-        currentTimeRef.current.value = _.round(lastTime, 0).toString();
+        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
+          .toISOString()
+          .substr(11, 8)
+          .substr(2)
+          .replace(':', '');
       } else {
-        currentTimeRef.current.value = _.round(nextValue / 30, 0).toString();
+        currentTimeRef.current.value = new Date(_.round(nextValue / 30, 0) * 1000)
+          .toISOString()
+          .substr(11, 8)
+          .substr(2)
+          .replace(':', '');
       }
       currentTimeIndexRef.current.value = nextValue.toString();
       // 액션 time 업데이트
@@ -559,9 +567,17 @@ const DopeSheet: React.FC<Props> = ({
       );
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
-        currentTimeRef.current.value = _.round(lastTime, 0).toString();
+        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
+          .toISOString()
+          .substr(11, 8)
+          .substr(2)
+          .replace(':', '');
       } else {
-        currentTimeRef.current.value = _.round(nextValue / 30, 0).toString();
+        currentTimeRef.current.value = new Date(_.round(nextValue / 30, 0) * 1000)
+          .toISOString()
+          .substr(11, 8)
+          .substr(2)
+          .replace(':', '');
       }
       currentTimeIndexRef.current.value = nextValue.toString();
       // 액션 time 업데이트

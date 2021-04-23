@@ -71,7 +71,9 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                 index: layerIndex,
                 key: 'trackIndex',
               });
-              nextState[targetIndex].isOpenedParentTrack = true;
+              if (targetIndex !== -1) {
+                nextState[targetIndex].isOpenedParentTrack = true;
+              }
             });
             nextState[0].isOpenedParentTrack = true;
             return nextState;
@@ -141,8 +143,10 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                 index: trackIndex,
                 key: 'trackIndex',
               });
-              nextState[index].isFiltered = true;
-              nextState[index].isOpenedParentTrack = isOpenedParentTrack;
+              if (index !== -1) {
+                nextState[index].isFiltered = true;
+                nextState[index].isOpenedParentTrack = isOpenedParentTrack;
+              }
               recursive({ trackList: childrenTrack, isOpenedParentTrack: isOpenedChildrenTrack });
             });
           };

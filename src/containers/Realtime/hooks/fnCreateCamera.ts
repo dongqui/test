@@ -18,10 +18,12 @@ const fnCreateCamera = (props: FnCreateCamera) => {
   const { upDirection } = props;
   const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 500);
   camera.lookAt(0, 0, 0);
+
   if (upDirection === 'y') {
-    camera.position.set(-4, 8, 20);
+    // camera.position.set(-4, 8, 20);
+    camera.position.set(0, 130, 400);
   } else if (upDirection === 'z') {
-    camera.position.set(-4, -2, 10);
+    // camera.position.set(-4, -2, 10);
     camera.up.set(0, 0, 1);
   }
 
