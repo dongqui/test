@@ -914,7 +914,6 @@ const DopeSheet: React.FC<Props> = ({
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
         const rangeRectWidth =
           xScaleLinear(endTimeIndexRef.current) - xScaleLinear(startTimeIndexRef.current);
-        console.log('sdsdsdsdsdsdsdsdsdsdsd', rangeRectWidth);
         d3.select('.range-rect')
           .attr('width', rangeRectWidth)
           .attr(
