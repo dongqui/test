@@ -477,7 +477,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="START"
                       defaultValue={indicator.start}
                       // value={indicator.start}
-                      arrow
+                      // arrow
                       onBlur={handleStartInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
@@ -487,7 +487,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="END"
                       defaultValue={indicator.end}
                       // value={indicator.end}
-                      arrow
+                      // arrow
                       onBlur={handleEndInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
@@ -502,7 +502,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
                       innerRef={currentTimeIndexRef}
-                      arrow
+                      // arrow
                     />
                   </>
                 ) : (
@@ -512,7 +512,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="START"
                       defaultValue={indicator.start}
                       value={indicator.start}
-                      arrow
+                      // arrow
                       onBlur={handleStartInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
@@ -522,7 +522,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="END"
                       defaultValue={indicator.end}
                       value={indicator.end}
-                      arrow
+                      // arrow
                       onBlur={handleEndInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
@@ -537,7 +537,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
                       innerRef={currentTimeIndexRef}
-                      arrow
+                      // arrow
                     />
                   </>
                 )}
