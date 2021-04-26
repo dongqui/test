@@ -11,6 +11,7 @@ import {
 } from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
 import styles from './index.module.scss';
+import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetDefaultDopeSheetList, fnSetLayerDopeSheet } from 'utils/TP/dopeSheetUtils';
 import { fnGetBinarySearch, fnSetDefaultTrackNameList, fnSetLayerTrack } from 'utils/TP/trackUtils';
 // import MiddleBar from 'containers/MiddleBar';
@@ -131,9 +132,16 @@ const TimelineContainer: React.FC<Props> = ({
           );
           summaryTrack.childrenTrack = filterdLayers;
         });
-        const filteredDopeSheetList = produce(dopeSheetList, (draft) => {
-          return _.filter(draft, (dopeSheet) => layerKeys.includes(dopeSheet.layerKey));
+        const nextSummaryTimes = produce(dopeSheetList, (draft) => {
+          const summaryTimes = fnGetSummaryTimes({ baseLayer, layers }).map((time) => ({
+            time,
+            isClicked: false,
+          }));
+          draft[0].times = summaryTimes;
         });
+        const filteredDopeSheetList = _.filter(nextSummaryTimes, (dopeSheet) =>
+          layerKeys.includes(dopeSheet.layerKey),
+        );
         const filteredLastBoneList = produce(lastBoneList, (draft) => {
           return _.filter(draft, (lastBone) => layerNames.includes(lastBone.trackName));
         });

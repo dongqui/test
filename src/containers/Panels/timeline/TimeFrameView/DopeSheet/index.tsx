@@ -99,12 +99,6 @@ const DopeSheet: React.FC<Props> = ({
         `translate3d(
           ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
-      // .attr(
-      //   'transform',
-      //   `translate(
-      //     ${xScaleLinear(currentXAxisPosition.current) - 10},
-      //     ${X_AXIS_HEIGHT / 2})`,
-      // );
     }
     playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
   }, [currentAction, currentXAxisPosition, prevXScale]);
@@ -512,11 +506,7 @@ const DopeSheet: React.FC<Props> = ({
         `translate3d(
           ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
-      // .attr(
-      //   'transform',
-      //   `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-      //   ${X_AXIS_HEIGHT / 2})`,
-      // );
+
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
         currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
@@ -575,11 +565,7 @@ const DopeSheet: React.FC<Props> = ({
         `translate3d(
           ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
-      // .attr(
-      //   'transform',
-      //   `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-      //   ${X_AXIS_HEIGHT / 2})`,
-      // );
+
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
         currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
@@ -734,18 +720,10 @@ const DopeSheet: React.FC<Props> = ({
             currentTimeIndexRef.current.value = setPlayBarX(currentX).toString();
           }
           currentXAxisPosition.current = setPlayBarX(currentX);
-
-          console.log(
-            `translate3d(${xScaleLinear(setPlayBarX(currentX)) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
-          );
           d3.select(this).style(
             'transform',
             `translate3d(${xScaleLinear(setPlayBarX(currentX)) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
           );
-          // .attr(
-          //   'transform',
-          //   `translate(${xScaleLinear(setPlayBarX(currentX)) - 10}, ${X_AXIS_HEIGHT / 2})`,
-          // );
         });
 
       const initialXScale = setPlayBarX(currentXAxisPosition.current);
@@ -756,7 +734,6 @@ const DopeSheet: React.FC<Props> = ({
           'transform',
           `translate3d(${xScaleLinear(initialXScale) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
         )
-        // .attr('transform', `translate(${xScaleLinear(initialXScale) - 10}, ${X_AXIS_HEIGHT / 2})`)
         .call(dragBehavior as any);
     }
   }, [
@@ -986,16 +963,11 @@ const DopeSheet: React.FC<Props> = ({
               .attr('x2', 0)
               .attr('y2', 0);
 
-            d3.select('#play-bar-wrapper')
-              // .attr(
-              //   'transform',
-              //   `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
-              // );
-              .style(
-                'transform',
-                `translate3d(
+            d3.select('#play-bar-wrapper').style(
+              'transform',
+              `translate3d(
                   ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
-              );
+            );
           };
 
           // circle x값 rescale
