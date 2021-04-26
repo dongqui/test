@@ -94,12 +94,17 @@ const DopeSheet: React.FC<Props> = ({
     if (currentXAxisPosition && currentAction) {
       currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').attr(
+      d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate(
-          ${xScaleLinear(currentXAxisPosition.current) - 10},
-          ${X_AXIS_HEIGHT / 2})`,
+        `translate3d(
+          ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
+      // .attr(
+      //   'transform',
+      //   `translate(
+      //     ${xScaleLinear(currentXAxisPosition.current) - 10},
+      //     ${X_AXIS_HEIGHT / 2})`,
+      // );
     }
     playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
   }, [currentAction, currentXAxisPosition, prevXScale]);
@@ -211,6 +216,9 @@ const DopeSheet: React.FC<Props> = ({
         const circleGroup = d3.select(this);
         const circleGroupNode = circleGroup.node() as Element;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
+        const rootMargin = `${isBelowPrevScrollTop ? 0 : X_AXIS_HEIGHT * 20}px 0px ${
+          isBelowPrevScrollTop ? X_AXIS_HEIGHT * 20 : 0
+        }px 0px`;
 
         const observer = new IntersectionObserver(
           ([entry], observer) => {
@@ -222,10 +230,7 @@ const DopeSheet: React.FC<Props> = ({
           },
           {
             root: document.getElementById('timeline-wrapper'),
-            rootMargin: `
-            ${isBelowPrevScrollTop ? 0 : X_AXIS_HEIGHT * 20}px 0px
-            ${isBelowPrevScrollTop ? X_AXIS_HEIGHT * 20 : 0}px 0px
-            `,
+            rootMargin: rootMargin,
           },
         );
         observer.observe(circleGroupNode);
@@ -502,11 +507,16 @@ const DopeSheet: React.FC<Props> = ({
       // 미들바 업데이트
       currentXAxisPosition.current = nextValue;
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').attr(
+      d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-        ${X_AXIS_HEIGHT / 2})`,
+        `translate3d(
+          ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
+      // .attr(
+      //   'transform',
+      //   `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+      //   ${X_AXIS_HEIGHT / 2})`,
+      // );
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
         currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
@@ -560,11 +570,16 @@ const DopeSheet: React.FC<Props> = ({
       // 미들바 업데이트
       currentXAxisPosition.current = nextValue;
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').attr(
+      d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-        ${X_AXIS_HEIGHT / 2})`,
+        `translate3d(
+          ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
+      // .attr(
+      //   'transform',
+      //   `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
+      //   ${X_AXIS_HEIGHT / 2})`,
+      // );
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
         currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
@@ -720,17 +735,28 @@ const DopeSheet: React.FC<Props> = ({
           }
           currentXAxisPosition.current = setPlayBarX(currentX);
 
-          d3.select(this).attr(
-            'transform',
-            `translate(${xScaleLinear(setPlayBarX(currentX)) - 10}, ${X_AXIS_HEIGHT / 2})`,
+          console.log(
+            `translate3d(${xScaleLinear(setPlayBarX(currentX)) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
           );
+          d3.select(this).style(
+            'transform',
+            `translate3d(${xScaleLinear(setPlayBarX(currentX)) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
+          );
+          // .attr(
+          //   'transform',
+          //   `translate(${xScaleLinear(setPlayBarX(currentX)) - 10}, ${X_AXIS_HEIGHT / 2})`,
+          // );
         });
 
       const initialXScale = setPlayBarX(currentXAxisPosition.current);
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
       currentXAxisPosition.current = setPlayBarX(initialXScale);
       d3.select('#play-bar-wrapper')
-        .attr('transform', `translate(${xScaleLinear(initialXScale) - 10}, ${X_AXIS_HEIGHT / 2})`)
+        .style(
+          'transform',
+          `translate3d(${xScaleLinear(initialXScale) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
+        )
+        // .attr('transform', `translate(${xScaleLinear(initialXScale) - 10}, ${X_AXIS_HEIGHT / 2})`)
         .call(dragBehavior as any);
     }
   }, [
@@ -914,7 +940,6 @@ const DopeSheet: React.FC<Props> = ({
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
         const rangeRectWidth =
           xScaleLinear(endTimeIndexRef.current) - xScaleLinear(startTimeIndexRef.current);
-        console.log('sdsdsdsdsdsdsdsdsdsdsd', rangeRectWidth);
         d3.select('.range-rect')
           .attr('width', rangeRectWidth)
           .attr(
@@ -934,7 +959,6 @@ const DopeSheet: React.FC<Props> = ({
               .domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN])
               .range([0, width]); // x값 범위 설정
             xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear); // x축 위치 설정
-            console.log(startTimeIndex, endTimeIndex);
 
             const rescaleX = event.transform.rescaleX(xScale.current as d3.ZoomScale); // x rescale
             const xAxisPositionRef = xAxisPosition.current as d3Axis;
@@ -962,10 +986,16 @@ const DopeSheet: React.FC<Props> = ({
               .attr('x2', 0)
               .attr('y2', 0);
 
-            d3.select('#play-bar-wrapper').attr(
-              'transform',
-              `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
-            );
+            d3.select('#play-bar-wrapper')
+              // .attr(
+              //   'transform',
+              //   `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
+              // );
+              .style(
+                'transform',
+                `translate3d(
+                  ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
+              );
           };
 
           // circle x값 rescale
