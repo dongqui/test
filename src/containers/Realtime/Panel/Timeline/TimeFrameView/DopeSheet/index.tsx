@@ -308,6 +308,9 @@ const DopeSheet: React.FC<Props> = ({
         const circleGroup = d3.select(this);
         const circleGroupNode = circleGroup.node() as Element;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
+        const rootMargin = `${isBelowPrevScrollTop ? 0 : X_AXIS_HEIGHT * 20}px 0px ${
+          isBelowPrevScrollTop ? X_AXIS_HEIGHT * 20 : 0
+        }px 0px`;
 
         const observer = new IntersectionObserver(
           ([entry], observer) => {
@@ -319,10 +322,7 @@ const DopeSheet: React.FC<Props> = ({
           },
           {
             root: document.getElementById('timeline-wrapper'),
-            rootMargin: `
-            ${isBelowPrevScrollTop ? 0 : X_AXIS_HEIGHT * 20}px 0px
-            ${isBelowPrevScrollTop ? X_AXIS_HEIGHT * 20 : 0}px 0px
-            `,
+            rootMargin: rootMargin,
           },
         );
         observer.observe(circleGroupNode);
