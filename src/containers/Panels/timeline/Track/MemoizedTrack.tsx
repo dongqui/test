@@ -276,7 +276,6 @@ const MemoizedTrack: React.FC<TrackProps> = ({
   }, []);
 
   const handleSubmit = useCallback(() => {
-    console.log('newLayerName: ', newLayerName);
     setShowsModal(false);
     if (newLayerName === '') {
       const confirmed = getConfirm({

@@ -86,10 +86,10 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         const targetIndex = fnGetBinarySearch({
           collection: dopeSheetList,
-          index: 0,
+          index: 1,
           key: 'trackIndex',
         });
-        const visualizedDataKey = dopeSheetList[targetIndex].visualizedDataKey;
+        const { visualizedDataKey } = dopeSheetList[targetIndex];
 
         // 재귀로 트랙 리스트 필터링
         const filterTrackList = ({ trackList }: { trackList: TPTrackName[] }): FilterTrackList => {
