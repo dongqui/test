@@ -213,10 +213,10 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
           .replace(':', '');
         currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
-        d3.select('#play-bar-wrapper').attr(
+        d3.select('#play-bar-wrapper').style(
           'transform',
-          `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-            ${X_AXIS_HEIGHT / 2})`,
+          `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+          ${X_AXIS_HEIGHT / 2}px, 0)`,
         );
       } else {
         event.currentTarget.value = _.round(currentAction.time * 30, 0).toString();
@@ -477,7 +477,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="START"
                       defaultValue={indicator.start}
                       // value={indicator.start}
-                      arrow
+                      // arrow
                       onBlur={handleStartInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
@@ -487,7 +487,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="END"
                       defaultValue={indicator.end}
                       // value={indicator.end}
-                      arrow
+                      // arrow
                       onBlur={handleEndInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
@@ -502,7 +502,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
                       innerRef={currentTimeIndexRef}
-                      arrow
+                      // arrow
                     />
                   </>
                 ) : (
@@ -512,7 +512,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="START"
                       defaultValue={indicator.start}
                       value={indicator.start}
-                      arrow
+                      // arrow
                       onBlur={handleStartInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled
@@ -522,7 +522,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="END"
                       defaultValue={indicator.end}
                       value={indicator.end}
-                      arrow
+                      // arrow
                       onBlur={handleEndInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled
@@ -537,7 +537,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       onKeyDown={handleInputKeyDown}
                       disabled
                       innerRef={currentTimeIndexRef}
-                      arrow
+                      // arrow
                     />
                   </>
                 )}

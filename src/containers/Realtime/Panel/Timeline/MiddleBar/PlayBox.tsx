@@ -132,10 +132,10 @@ const PlayBox: FunctionComponent<Props> = ({
         currentXAxisPosition.current = startTimeIndex;
 
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
-        d3.select('#play-bar-wrapper').attr(
+        d3.select('#play-bar-wrapper').style(
           'transform',
-          `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-          ${X_AXIS_HEIGHT / 2})`,
+          `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+          ${X_AXIS_HEIGHT / 2}px, 0)`,
         );
       }
     }
