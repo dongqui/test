@@ -515,7 +515,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       // arrow
                       onBlur={handleStartInputBlur}
                       onKeyDown={handleInputKeyDown}
-                      disabled={!currentVisualizedData}
+                      disabled
                     />
                     <PrefixInput
                       className={cx('indicator-input')}
@@ -525,7 +525,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       // arrow
                       onBlur={handleEndInputBlur}
                       onKeyDown={handleInputKeyDown}
-                      disabled={!currentVisualizedData}
+                      disabled
                     />
                     <PrefixInput
                       id="now"
@@ -535,7 +535,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       value={indicator.now}
                       onBlur={handleNowInputBlur}
                       onKeyDown={handleInputKeyDown}
-                      disabled={!currentVisualizedData}
+                      disabled
                       innerRef={currentTimeIndexRef}
                       // arrow
                     />
