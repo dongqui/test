@@ -213,10 +213,10 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
           .replace(':', '');
         currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
-        d3.select('#play-bar-wrapper').attr(
+        d3.select('#play-bar-wrapper').style(
           'transform',
-          `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-            ${X_AXIS_HEIGHT / 2})`,
+          `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+          ${X_AXIS_HEIGHT / 2}px, 0)`,
         );
       } else {
         event.currentTarget.value = _.round(currentAction.time * 30, 0).toString();

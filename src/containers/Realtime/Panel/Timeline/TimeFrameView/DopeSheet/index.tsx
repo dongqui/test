@@ -94,11 +94,10 @@ const DopeSheet: React.FC<Props> = ({
     if (currentXAxisPosition && currentAction) {
       currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').attr(
+      d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate(
-          ${xScaleLinear(currentXAxisPosition.current) - 10},
-          ${X_AXIS_HEIGHT / 2})`,
+        `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+        ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
     }
     playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
@@ -238,9 +237,10 @@ const DopeSheet: React.FC<Props> = ({
         .attr('x2', 0)
         .attr('y2', 0);
 
-      d3.select('#play-bar-wrapper').attr(
+      d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
+        `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+          ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
     };
 
@@ -599,11 +599,12 @@ const DopeSheet: React.FC<Props> = ({
       // 미들바 업데이트
       currentXAxisPosition.current = nextValue;
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').attr(
+      d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-        ${X_AXIS_HEIGHT / 2})`,
+        `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+        ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
+
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
         currentTimeRef.current.value = _.round(lastTime, 0).toString();
@@ -649,11 +650,12 @@ const DopeSheet: React.FC<Props> = ({
       // 미들바 업데이트
       currentXAxisPosition.current = nextValue;
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').attr(
+      d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-        ${X_AXIS_HEIGHT / 2})`,
+        `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+        ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
+
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
         currentTimeRef.current.value = _.round(lastTime, 0).toString();
@@ -1026,9 +1028,10 @@ const DopeSheet: React.FC<Props> = ({
   //           .attr('x2', 0)
   //           .attr('y2', 0);
 
-  //         d3.select('#play-bar-wrapper').attr(
+  //         d3.select('#play-bar-wrapper').style(
   //           'transform',
-  //           `translate(${xScaleLinear(currentXAxisPosition.current) - 10}, ${X_AXIS_HEIGHT / 2})`,
+  //           `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+  //           ${X_AXIS_HEIGHT / 2}px, 0)`,
   //         );
   //       };
 

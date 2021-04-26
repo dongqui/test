@@ -270,10 +270,10 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
         currentXAxisPosition.current = _.round(lastTime * 30, 0);
       }
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').attr(
+      d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-        ${X_AXIS_HEIGHT / 2})`,
+        `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+        ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
     }
   }, [
@@ -297,10 +297,10 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     ) {
       currentXAxisPosition.current = _.round(currentXAxisPosition.current, 0);
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').attr(
+      d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate(${xScaleLinear(currentXAxisPosition.current) - 10},
-        ${X_AXIS_HEIGHT / 2})`,
+        `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+        ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
