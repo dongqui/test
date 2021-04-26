@@ -29,6 +29,26 @@ interface getRetargetBaseLayerProps {
     z: number;
   };
 }
+
+export const getDefaultModelList = async () => {
+  try {
+    const result = await axios({
+      method: 'GET',
+      url: `${BASE_URL}/LPmodel-url-api`,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Accept: 'application/json',
+      },
+      responseType: 'json',
+    });
+    console.log(result);
+    return result.data.result;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
 /**
  * fbx를 업로드하여 glb를 받는 api
  *
