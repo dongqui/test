@@ -1,14 +1,5 @@
-import Container from 'containers/Shoot';
-import * as api from '../utils/common/api';
+import dynamic from 'next/dynamic';
 
-export const getStaticProps = async () => {
-  const defaultModelList = await api.getDefaultModelList();
+const DynamicWithNoSSR = dynamic(() => import('containers/Shoot'), { ssr: false });
 
-  return {
-    props: {
-      defaultModelList,
-    },
-  };
-};
-
-export default Container;
+export default DynamicWithNoSSR;
