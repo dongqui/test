@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Fragment, useEffect } from 'react';
 import Head from 'next/head';
 import { NextComponentType } from 'next';
 import { Provider } from 'react-redux';
@@ -30,7 +30,7 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   }, []);
 
   return (
-    <>
+    <Fragment>
       <Head>
         <title>shoot</title>
         <meta
@@ -38,23 +38,14 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
           content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
         />
       </Head>
-      <Provider store={store}>
+      <Component {...pageProps} />
+      {/* <Provider store={store}>
         <ApolloProvider client={apolloClient}>
           <Component {...pageProps} />
         </ApolloProvider>
-      </Provider>
-    </>
+      </Provider> */}
+    </Fragment>
   );
-};
-
-App.getInitialProps = async ({ Component, ctx }) => {
-  let pageProps: any = {};
-
-  if (Component.getInitialProps) {
-    pageProps = await Component.getInitialProps(ctx);
-  }
-
-  return { pageProps };
 };
 
 export default wrapper.withRedux(App);

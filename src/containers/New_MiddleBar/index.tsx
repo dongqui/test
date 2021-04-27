@@ -9,6 +9,10 @@ import {
   useState,
 } from 'react';
 import * as d3 from 'd3';
+import { RootState } from 'reducers';
+import { Dispatch } from 'redux';
+import { connect } from 'react-redux';
+import { changeMode, Mode } from 'actions/mode';
 import { useReactiveVar } from '@apollo/client';
 import {
   storeAnimatingData,
@@ -36,6 +40,8 @@ const cx = classNames.bind(styles);
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 
 export interface Props {
+  dispatch: Dispatch;
+  storeMode: { mode: Mode };
   currentTimeRef?: RefObject<HTMLInputElement>;
   currentTimeIndexRef?: RefObject<HTMLInputElement>;
   currentXAxisPosition?: MutableRefObject<number>;
@@ -43,7 +49,14 @@ export interface Props {
 }
 
 const MiddleBar: FunctionComponent<Props> = (props) => {
-  const { currentTimeRef, currentTimeIndexRef, currentXAxisPosition, prevXScale } = props;
+  const {
+    currentTimeRef,
+    currentTimeIndexRef,
+    currentXAxisPosition,
+    prevXScale,
+    dispatch,
+    storeMode,
+  } = props;
 
   const currentAction = useReactiveVar(storeCurrentAction);
   const animatingData = useReactiveVar(storeAnimatingData);
@@ -157,6 +170,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         if (pageInfo.page !== PAGE_NAMES.shoot) {
           storePageInfo({ page: PAGE_NAMES.shoot });
         }
+        // if (_.isEqual(storeMode.mode, 'video')) {
+        //   dispatch(changeMode('shoot'));
+        // }
       },
     },
     {
@@ -167,6 +183,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         if (pageInfo.page === PAGE_NAMES.shoot) {
           storePageInfo({ page: PAGE_NAMES.record });
         }
+        // if (_.isEqual(storeMode.mode, 'shoot')) {
+        //   dispatch(changeMode('video'));
+        // }
       },
     },
   ];
@@ -553,4 +572,10 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   );
 };
 
-export default memo(MiddleBar);
+const mapStateToProps = (state: RootState) => {
+  return {
+    storeMode: state.mode,
+  };
+};
+
+export default memo(connect(mapStateToProps)(MiddleBar));

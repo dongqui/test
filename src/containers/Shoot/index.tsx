@@ -1,5 +1,8 @@
 import React, { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
 import _ from 'lodash';
+import { RootState } from 'reducers';
+import { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 import { useReactiveVar } from '@apollo/client';
 import { ContextMenu } from 'components/New_ContextMenu';
 import MainPage from './MainPage';
@@ -80,4 +83,10 @@ const Shoot: FunctionComponent = () => {
   );
 };
 
-export default memo(Shoot);
+const mapStateToProps = (state: RootState) => {
+  return {
+    storeMode: state.mode,
+  };
+};
+
+export default memo(connect(mapStateToProps)(Shoot));
