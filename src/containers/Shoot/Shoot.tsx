@@ -12,13 +12,9 @@ import RecordPage from 'containers/record';
 import Html from 'components/New_Typography/Html';
 import { Headline } from 'components/New_Typography';
 
-interface Props {
-  data: string[];
-}
+interface Props {}
 
-const Shoot: FunctionComponent<Props> = ({ data }) => {
-  console.log('data: ', data);
-
+const Shoot: FunctionComponent<Props> = () => {
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);

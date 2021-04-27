@@ -4,12 +4,10 @@ import dynamic from 'next/dynamic';
 
 const DynamicWithNoSSR = dynamic(() => import('containers/Shoot/Shoot'), { ssr: false });
 
-export interface Props {
-  defaultModelList: string[];
-}
+export interface Props {}
 
-const ShootPage: FunctionComponent<Props> = ({ defaultModelList }) => {
-  return <DynamicWithNoSSR data={defaultModelList} />;
+const ShootPage: FunctionComponent<Props> = () => {
+  return <DynamicWithNoSSR />;
 };
 
 export default memo(ShootPage);
