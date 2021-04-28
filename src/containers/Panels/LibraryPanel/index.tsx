@@ -238,6 +238,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
     if (!_.isEmpty(lpData)) {
       return;
     }
+    setShowsModal(true);
+    setModalMessage('Importing the file');
     for (const model of DEFAULT_MODELS) {
       const isExists = _.some(lpData, { key: model?.key });
       if (isExists) {
@@ -288,6 +290,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         console.log('error', error);
       }
       storeLpData(newLpData);
+      setShowsModal(false);
     }
   }, [lpData, lpmode, pages]);
 
