@@ -1,11 +1,11 @@
-import { FunctionComponent, memo, useCallback, useState, useRef } from 'react';
+import { FunctionComponent, memo, useCallback, useState, useRef, useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import { useDropzone } from 'react-dropzone';
 import useLPControl from 'hooks/LP/useLPControl';
 import { v4 as uuidv4 } from 'uuid';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { storeCutImages, storePageInfo, storeRecordingData, storeRetargetInfo } from 'lib/store';
-import { DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
+import { DEFAULT_MODELS, DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import { FILE_TYPES, LPModeType } from 'types';
 import * as api from 'utils/common/api';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
@@ -233,6 +233,63 @@ const LibraryPanelComponent: FunctionComponent = () => {
     storeLpData(newLpData);
     setShowsModal(false);
   };
+  const handleDefaultModel = useCallback(async () => {
+    let newLpData: LPDataType[] = [];
+    if (!_.isEmpty(lpData)) {
+      return;
+    }
+    for (const model of DEFAULT_MODELS) {
+      const isExists = _.some(lpData, { key: model?.key });
+      if (isExists) {
+        continue;
+      }
+      try {
+        const { animations, bones = [], error } = await fnGetAnimationData({
+          url: model?.url ?? '',
+        });
+        if (error) {
+          // setModalMessage('Failed to export the animation data from the file.');
+          return false;
+        }
+        const motions: LPDataType[] = [];
+        const key = uuidv4();
+        _.forEach(animations, (clip, index) => {
+          if (bones) {
+            motions.push({
+              key: clip?.uuid,
+              name: clip?.name,
+              baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
+              layers: [],
+              type: FILE_TYPES.motion,
+              parentKey: key,
+              boneNames: _.map(bones, (bone) => bone.name),
+            });
+          }
+        });
+        let newData: LPDataType[] = [
+          {
+            key,
+            type: FILE_TYPES.file,
+            name: model?.name,
+            url: model?.url,
+            parentKey: _.isEqual(lpmode, LPModeType.iconview)
+              ? _.last(pages)?.key
+              : ROOT_FOLDER_NAME,
+            baseLayer: fnGetBaseLayerWithBoneNames({
+              boneNames: _.map(bones, (bone) => bone.name),
+            }),
+            layers: [],
+            boneNames: _.map(bones, (bone) => bone.name),
+          },
+        ];
+        newData = _.concat(newData, motions);
+        newLpData = _.concat(newLpData, newData);
+      } catch (error) {
+        console.log('error', error);
+      }
+      storeLpData(newLpData);
+    }
+  }, [lpData, lpmode, pages]);
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
@@ -262,6 +319,11 @@ const LibraryPanelComponent: FunctionComponent = () => {
     onDrop,
     shortcutData,
   };
+
+  useEffect(() => {
+    handleDefaultModel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className={cx('hidden-wrapper')} ref={panelWrapperRef}>
