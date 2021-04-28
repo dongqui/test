@@ -492,7 +492,7 @@ const useLPControl = ({
                   parentKey: targetIcon?.id || _.last(pages)?.key,
                 }),
                 isVisualized: false,
-                baseLayer: fnGetBaseLayerWithBoneNames({ boneNames: motion?.boneNames ?? [] }),
+                baseLayer: fnGetBaseLayerWithBoneNames({ boneNames: targetRow?.boneNames ?? [] }),
                 layers: [],
                 type: FILE_TYPES.motion,
                 parentKey: targetIcon?.id || _.last(pages)?.key,
