@@ -1,5 +1,5 @@
 import { CUTIMAGE_HEIGHT } from 'containers/extract/CutEdit/CutEdit.styles';
-import { LPDataType } from 'types';
+import { FILE_TYPES, LPDataType } from 'types';
 import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
 import {
   AnimatingDataType,
@@ -15,6 +15,32 @@ export const DEFAULT_MODEL_URL =
 export const DEFAULT_FILE_URL = '/video/exo.mp4';
 export const CUT_IMAGES_CNT = 20;
 export const STANDARD_TIME_UNIT = 1 / 30;
+export const DEFAULT_MODELS: LPDataType[] = [
+  {
+    key: 'defaultmodel1',
+    name: 'zombie.glb',
+    url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493576/zombie_bkqv8g.glb',
+    type: FILE_TYPES.file,
+    baseLayer: [],
+    layers: [],
+  },
+  {
+    key: 'defaultmodel2',
+    name: 'knight.glb',
+    url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493584/knight_zizg5n.glb',
+    type: FILE_TYPES.file,
+    baseLayer: [],
+    layers: [],
+  },
+  {
+    key: 'defaultmodel3',
+    name: 'vanguard.glb',
+    url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619494583/vanguard_t_cslcnl.glb',
+    type: FILE_TYPES.file,
+    baseLayer: [],
+    layers: [],
+  },
+];
 export const INITIAL_LP_DATA: LPDataType[] = [];
 export const INITIAL_ANIMATING_DATA: AnimatingDataType = {
   playState: 'stop',
