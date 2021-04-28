@@ -63,9 +63,10 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
   });
 
   /**
-   * submit을 했을때 apply 버튼의 색깔이 변경됩니다
+   * error가 없을때, submit을 했을때 apply 버튼의 색깔이 변경됩니다
    */
   const applyButtonClasses = cx('apply-button', 'right', {
+    ready: !error,
     submit: isSubmitted,
   });
 
