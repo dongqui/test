@@ -38,12 +38,11 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
           content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
         />
       </Head>
-      <Component {...pageProps} />
-      {/* <Provider store={store}>
+      <Provider store={store}>
         <ApolloProvider client={apolloClient}>
           <Component {...pageProps} />
         </ApolloProvider>
-      </Provider> */}
+      </Provider>
     </Fragment>
   );
 };
