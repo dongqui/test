@@ -11,7 +11,6 @@ import { storeContextMenuInfo, storeModalInfo, storePageInfo } from 'lib/store';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import { BaseModal } from 'components/New_Modal';
 import ExtractPage from 'containers/extract';
-import RecordPage from 'containers/record';
 import Html from 'components/New_Typography/Html';
 import { Headline } from 'components/New_Typography';
 
