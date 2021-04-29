@@ -1,15 +1,36 @@
 export type Mode = 'shoot' | 'video';
-export type ModeAction = ReturnType<typeof changeMode>;
-
-export type ModeState = {
+export interface ModeState {
   mode: Mode;
-};
+  videoURL?: string;
+  extension?: string;
+}
 
-export const CHANGE_MODE = 'CHANGE_MODE';
+export type ModeAction = ReturnType<typeof changeMode> | ReturnType<typeof setVideo>;
 
-export const changeMode = (mode: Mode) => {
-  return {
-    type: CHANGE_MODE,
-    mode,
-  };
-};
+export const CHANGE_MODE = 'mode/CHANGE_MODE' as const;
+export const SET_VIDEO = 'mode/SET_VIDEO' as const;
+
+interface ChangeMode {
+  mode: Mode;
+  videoURL: string;
+  extension: string;
+}
+
+export const changeMode = (params: ChangeMode) => ({
+  type: CHANGE_MODE,
+  payload: {
+    ...params,
+  },
+});
+
+interface SetVideo {
+  videoURL: string;
+  extension: string;
+}
+
+export const setVideo = (params: SetVideo) => ({
+  type: SET_VIDEO,
+  payload: {
+    ...params,
+  },
+});
