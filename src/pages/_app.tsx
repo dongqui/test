@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Fragment, useEffect } from 'react';
 import Head from 'next/head';
 import { NextComponentType } from 'next';
 import { Provider } from 'react-redux';
@@ -6,6 +6,7 @@ import { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { ApolloProvider } from '@apollo/client';
 import { cache, useApollo } from 'lib/apolloClient';
+import { wrapper } from 'store';
 import 'styles/core.scss';
 import 'styles/timeline/_curve.scss';
 import _ from 'lodash';
@@ -29,7 +30,7 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   }, []);
 
   return (
-    <>
+    <Fragment>
       <Head>
         <title>shoot</title>
         <meta
@@ -42,18 +43,8 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
           <Component {...pageProps} />
         </ApolloProvider>
       </Provider>
-    </>
+    </Fragment>
   );
 };
 
-App.getInitialProps = async ({ Component, ctx }) => {
-  let pageProps: any = {};
-
-  if (Component.getInitialProps) {
-    pageProps = await Component.getInitialProps(ctx);
-  }
-
-  return { pageProps };
-};
-
-export default App;
+export default wrapper.withRedux(App);

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
+import { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import { useReactiveVar } from '@apollo/client';
 import { ContextMenu } from 'components/New_ContextMenu';
@@ -11,7 +11,7 @@ import ExtractPage from 'containers/extract';
 import Html from 'components/New_Typography/Html';
 import { Headline } from 'components/New_Typography';
 
-const ShootPage: FunctionComponent = () => {
+const Shoot: FunctionComponent = () => {
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
@@ -79,4 +79,4 @@ const ShootPage: FunctionComponent = () => {
   );
 };
 
-export default memo(ShootPage);
+export default memo(Shoot);

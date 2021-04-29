@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import _ from 'lodash';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {
   fnAddAxes,
   fnAddGround,
@@ -27,7 +28,6 @@ import {
   storeTransformControls,
   storeSkeletonHelper,
 } from '../../lib/store';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { useReactiveVar } from '@apollo/client';
 
 let innerMixer: THREE.AnimationMixer | undefined;
