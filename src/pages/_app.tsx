@@ -6,7 +6,7 @@ import { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { ApolloProvider } from '@apollo/client';
 import { cache, useApollo } from 'lib/apolloClient';
-import { wrapper } from 'store/store';
+import { wrapper } from 'store';
 import 'styles/core.scss';
 import 'styles/timeline/_curve.scss';
 import _ from 'lodash';
