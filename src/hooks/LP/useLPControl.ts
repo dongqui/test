@@ -15,6 +15,7 @@ import {
   storeLpData,
   storePages,
   storeRetargetInfo,
+  storeRetargetMap,
 } from 'lib/store';
 import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import { PagesType } from 'containers/Panels/LibraryPanel';
@@ -31,6 +32,7 @@ import fnExportModelToGlb from 'utils/LP/fnExportModelToGlb';
 import { RetargetInfoType, TargetboneType } from 'types/CP';
 import fnGetDeltaAppliedTracks from 'utils/LP/fnGetDeltaAppliedTracks';
 import { defaultTargetboneValue } from '../../containers/Panels/ControlPanel/Retarget/RetargetPanel';
+import { initialRetargetMap } from 'utils/retargetMap';
 
 interface UseLPControlProps {
   mainData: LPDataType[];
@@ -147,11 +149,28 @@ const useLPControl = ({
                   ],
                   targetboneList,
                 );
+                storeRetargetMap(initialRetargetMap);
                 storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
                 storeCPChangeTab(1);
               }
               setShowsModal(false);
               return;
+            } else {
+              let targetboneList: TargetboneType[] = _.map(targetRow?.boneNames ?? [], (item) => ({
+                key: item,
+                value: item,
+                isSelected: false,
+              }));
+              targetboneList = _.concat(
+                [
+                  { key: '', value: defaultTargetboneValue, isSelected: true },
+                  { key: 'None', value: 'None', isSelected: false },
+                ],
+                targetboneList,
+              );
+              storeRetargetMap(retargetMap);
+              storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
+              storeCPChangeTab(1);
             }
           }
 
