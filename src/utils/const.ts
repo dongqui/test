@@ -18,7 +18,7 @@ export const STANDARD_TIME_UNIT = 1 / 30;
 export const DEFAULT_MODELS: LPDataType[] = [
   {
     key: 'defaultmodel1',
-    name: 'zombie.glb',
+    name: 'zombie.fbx',
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493576/zombie_bkqv8g.glb',
     type: FILE_TYPES.file,
     baseLayer: [],
@@ -26,7 +26,7 @@ export const DEFAULT_MODELS: LPDataType[] = [
   },
   {
     key: 'defaultmodel2',
-    name: 'knight.glb',
+    name: 'knight.fbx',
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493584/knight_zizg5n.glb',
     type: FILE_TYPES.file,
     baseLayer: [],
@@ -34,7 +34,7 @@ export const DEFAULT_MODELS: LPDataType[] = [
   },
   {
     key: 'defaultmodel3',
-    name: 'vanguard.glb',
+    name: 'vanguard.fbx',
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619494583/vanguard_t_cslcnl.glb',
     type: FILE_TYPES.file,
     baseLayer: [],
