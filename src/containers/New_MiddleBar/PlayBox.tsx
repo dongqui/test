@@ -36,6 +36,7 @@ import sleep from 'utils/common/sleep';
 import { d3ScaleLinear } from 'types/TP';
 import * as d3 from 'd3';
 import fnQuaternionToEulerTrack from 'utils/common/fnQuaternionToEulerTrack';
+import fnDetectSafari from 'utils/common/fnDetectSafari';
 
 const cx = classNames.bind(styles);
 
@@ -73,6 +74,9 @@ const PlayBox: FunctionComponent<Props> = ({
   const handleKeyDown = () => {};
 
   const handleRecord = useCallback(async () => {
+    if (fnDetectSafari()) {
+      return;
+    }
     if (!_.isEqual(pageInfo.page, PAGE_NAMES.record)) {
       storePageInfo({ page: PAGE_NAMES.record });
       return;
