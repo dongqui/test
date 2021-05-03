@@ -30,6 +30,7 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { d3ScaleLinear } from 'types/TP';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
+import fnDetectSafari from 'utils/common/fnDetectSafari';
 
 const cx = classNames.bind(styles);
 
@@ -164,6 +165,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
       value: SvgPath.Camera,
       isSelected: pageInfo.page !== PAGE_NAMES.shoot,
       onClick: () => {
+        if (fnDetectSafari()) {
+          return;
+        }
         if (pageInfo.page === PAGE_NAMES.shoot) {
           storePageInfo({ page: PAGE_NAMES.record });
         }
