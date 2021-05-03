@@ -140,6 +140,10 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
     }
   }, [handleClose, handleToggle, isOpen]);
 
+  useEffect(() => {
+    setSelectedValue(defaultValue);
+  }, [defaultValue]);
+
   const buttonClasses = cx('button-toggle', {
     open: isOpen,
   });

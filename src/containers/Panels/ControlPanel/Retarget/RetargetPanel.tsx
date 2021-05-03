@@ -217,6 +217,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
             const targetboneList = _.map(retargetInfo?.targetboneList, (targetbone) => ({
               ...targetbone,
               key: item?.key,
+              isSelected: _.isEqual(item?.value?.targetBone, targetbone?.value),
             }));
             return (
               <div key={idx} className={cx('retarget-card')}>

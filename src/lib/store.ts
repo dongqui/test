@@ -35,7 +35,7 @@ import { CPModeType } from '../types/CP';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 
-import { retargetMap } from 'utils/retargetMap';
+import { initialRetargetMap } from 'utils/retargetMap';
 
 export enum StoreDataNames {
   mainData = 'mainData',
@@ -77,7 +77,7 @@ export const storeCPMode = makeVar<CPModeType>(CPModeType.property);
 export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeCPChangeTab = makeVar<number>(0);
 // RETARGET
-export const storeRetargetMap = makeVar<RetargetMap[]>(retargetMap);
+export const storeRetargetMap = makeVar<RetargetMap[]>(initialRetargetMap);
 export const storeRetargetInfo = makeVar<RetargetInfoType>({});
 
 // TP

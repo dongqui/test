@@ -1,5 +1,5 @@
 const defaultTargetBone = '';
-export const retargetMap = [
+export const initialRetargetMap = [
   {
     key: 'hips',
     value: {
