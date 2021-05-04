@@ -1,17 +1,24 @@
 /* eslint-disable no-case-declarations */
 import { Reducer } from 'redux';
 
-const withUndoable = (reducer: Reducer) => {
+/**
+ * reducer를 감싸는 고차함수로, 대상 reducer의 history 관리가 가능하도록 만들어줍니다.
+ *
+ * @param reducer - undo를 사용할 수 있도록 감쌀 대상 reducer
+ *
+ * @returns history 관리가 가능한 reducer
+ */
+const withUndoable = (reducer: Reducer<any, any>) => {
   const initialState = {
     past: [],
-    present: reducer(undefined, { type: undefined }), // 빈 type 사용해서 initial reducer 생성
+    present: reducer(undefined, {}), // 빈 type 사용해서 initial reducer 생성
     future: [],
   };
 
   // undo, redo 가능한 reducer를 반환
   return function (
     state: { past: Reducer[]; present: Reducer; future: Reducer[] } = initialState,
-    action: { type: string; payload: any },
+    action: { type: string; payload?: any },
   ) {
     const { past, present, future } = state;
 
