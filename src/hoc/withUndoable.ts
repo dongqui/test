@@ -1,0 +1,49 @@
+/* eslint-disable no-case-declarations */
+import { Reducer } from 'redux';
+
+const withUndoable = (reducer: Reducer) => {
+  const initialState = {
+    past: [],
+    present: reducer(undefined, { type: undefined }), // 빈 type 사용해서 initial reducer 생성
+    future: [],
+  };
+
+  // undo, redo 가능한 reducer를 반환
+  return function (
+    state: { past: Reducer[]; present: Reducer; future: Reducer[] } = initialState,
+    action: { type: string; payload: any },
+  ) {
+    const { past, present, future } = state;
+
+    switch (action.type) {
+      case 'UNDO':
+        const previous = past[past.length - 1];
+        const newPast = past.slice(0, past.length - 1);
+        return {
+          past: newPast,
+          present: previous,
+          future: [present, ...future],
+        };
+      case 'REDO':
+        const next = future[0];
+        const newFuture = future.slice(1);
+        return {
+          past: [...past, present],
+          present: next,
+          future: newFuture,
+        };
+      default:
+        const newPresent = reducer(present, action);
+        if (present === newPresent) {
+          return state;
+        }
+        return {
+          past: [...past, present],
+          present: newPresent,
+          future: [],
+        };
+    }
+  };
+};
+
+export default withUndoable;
