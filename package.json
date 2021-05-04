@@ -20,8 +20,6 @@
     "precodegen": "node ./src/scripts/precodegen.js",
     "codegen": "graphql-codegen --config codegen.yml",
     "postcodegen": "node ./src/scripts/postcodegen.js",
-    "generated:svgs": "cd ./src/components/Icons/svg && npx @svgr/cli --template ../format-template.js --config-file ../.svgrrc  *.svg --out-dir ../generated --ext tsx && node ../generated-option.js && yarn generated:format",
-    "generated:format": "prettier --write ./src/components/Icons/generated",
     "bundle-clean": "dist-size _next"
   },
   "dependencies": {
