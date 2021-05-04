@@ -5,8 +5,11 @@ import _ from 'lodash';
 import React, { useEffect, useRef } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { useRecordWebcam } from '../../../hooks/RP/useRecordWebcam';
-import * as S from './RecordStyle';
 import { DEFAULT_FILE_URL, INITIAL_RECORDING_DATA } from 'utils/const';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
 
 const RecordWebcam: React.FC = () => {
   const recordingData = useReactiveVar(storeRecordingData);
@@ -36,10 +39,10 @@ const RecordWebcam: React.FC = () => {
     }
   }, [mediaBlobUrl, status]);
   return (
-    <S.VideoWrapper>
-      {recordingData.count && <S.VideoTimerWrapper>{recordingData.count}</S.VideoTimerWrapper>}
+    <div className={cx('wrapper')}>
+      {recordingData.count && <div className={cx('time')}>{recordingData.count}</div>}
       <video width="100%" height="100%" ref={videoRef} muted></video>
-    </S.VideoWrapper>
+    </div>
   );
 };
 

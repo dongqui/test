@@ -5,7 +5,7 @@ import { storeBarPositionX, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { storeCutImages } from '../../../lib/store';
-import { WebcamPresenter } from './WebcamPresenter';
+import { WebcamPresenter } from './Webcam';
 
 export interface WebcamProps {
   videoUrl: string;

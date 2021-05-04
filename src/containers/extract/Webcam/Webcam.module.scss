@@ -1,6 +1,4 @@
-import styled from '@emotion/styled';
-
-export const WebcamWrapper = styled.video`
+.wrapper {
   position: absolute;
   top: 0;
   left: 0;
@@ -9,8 +7,9 @@ export const WebcamWrapper = styled.video`
   z-index: 100;
   outline: 0;
   border: 0;
-`;
-export const WebcamSubWrapper = styled.video`
+}
+
+.sub {
   position: absolute;
   top: 0;
   left: 0;
@@ -19,4 +18,4 @@ export const WebcamSubWrapper = styled.video`
   z-index: 0;
   outline: 0;
   border: 0;
-`;
+}
