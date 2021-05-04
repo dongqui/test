@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 interface FnChangeFogFar {
   fog: THREE.Fog;
   value: number;
