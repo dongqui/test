@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 interface FnResizeRendererToDisplaySize {
   renderer: THREE.WebGL1Renderer;
   renderingDiv: HTMLElement;

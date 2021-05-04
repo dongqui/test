@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-import * as THREE from 'three';
+
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 

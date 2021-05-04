@@ -5,10 +5,10 @@ import { storeCutImages, storePageInfo } from 'lib/store';
 import MiddleBar from 'containers/New_MiddleBar';
 import Webcam from 'containers/extract/Webcam';
 import _ from 'lodash';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { PAGE_NAMES } from 'types';
 import RecordWebcam from 'containers/record/RecordWebcam';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 

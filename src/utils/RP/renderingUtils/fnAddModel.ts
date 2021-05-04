@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { fnApplyDefaultSkin } from 'utils/RP/renderingUtils';
 
 const SKIN_CHECK_DURATION = 1000;

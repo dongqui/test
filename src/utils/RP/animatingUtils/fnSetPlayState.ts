@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import _ from 'lodash';
 
 const DEFAULT_SPEED = 0.3;

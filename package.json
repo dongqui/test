@@ -1,6 +1,6 @@
 {
   "name": "shoot",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "main/index.js",
   "productName": "shoot",
   "scripts": {
@@ -20,19 +20,13 @@
     "precodegen": "node ./src/scripts/precodegen.js",
     "codegen": "graphql-codegen --config codegen.yml",
     "postcodegen": "node ./src/scripts/postcodegen.js",
-    "generated:svgs": "cd ./src/components/Icons/svg && npx @svgr/cli --template ../format-template.js --config-file ../.svgrrc  *.svg --out-dir ../generated --ext tsx && node ../generated-option.js && yarn generated:format",
-    "generated:format": "prettier --write ./src/components/Icons/generated",
     "bundle-clean": "dist-size _next"
   },
   "dependencies": {
     "@apollo/client": "^3.3.6",
-    "@emotion/react": "^11.1.4",
-    "@emotion/styled": "^11.0.0",
     "@reduxjs/toolkit": "^1.5.0",
     "apollo3-cache-persist": "^0.9.1",
     "axios": "^0.21.1",
-    "babylonjs": "^4.2.0",
-    "babylonjs-loaders": "^4.2.0",
     "classnames": "^2.2.6",
     "d3": "^6.5.0",
     "dist-size": "^0.4.0",
@@ -64,13 +58,11 @@
     "sass-loader": "10.1.1",
     "sha1": "^1.1.1",
     "sha256": "^0.2.0",
-    "styled-components": "^5.2.1",
     "three": "^0.125.2",
     "url-parse": "^1.5.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@emotion/babel-preset-css-prop": "^11.0.0",
     "@graphql-codegen/cli": "1.20.0",
     "@graphql-codegen/introspection": "1.18.1",
     "@graphql-codegen/typescript": "1.20.0",
@@ -83,7 +75,6 @@
     "@storybook/react": "^6.1.15",
     "@types/aws-sdk": "^2.7.0",
     "@types/axios": "^0.14.0",
-    "@types/babylonjs": "^2.4.1",
     "@types/classnames": "^2.2.11",
     "@types/d3": "^6.3.0",
     "@types/dom-mediacapture-record": "^1.0.7",
@@ -104,7 +95,6 @@
     "@types/resize-observer-browser": "^0.1.5",
     "@types/sha1": "^1.1.2",
     "@types/sha256": "^0.2.0",
-    "@types/styled-components": "^5.1.7",
     "@types/three": "^0.103.2",
     "@types/url-parse": "^1.4.3",
     "@types/uuid": "^8.3.0",

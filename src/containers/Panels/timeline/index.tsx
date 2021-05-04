@@ -14,7 +14,6 @@ import styles from './index.module.scss';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetDefaultDopeSheetList, fnSetLayerDopeSheet } from 'utils/TP/dopeSheetUtils';
 import { fnGetBinarySearch, fnSetDefaultTrackNameList, fnSetLayerTrack } from 'utils/TP/trackUtils';
-// import MiddleBar from 'containers/MiddleBar';
 import MiddleBar from 'containers/New_MiddleBar';
 import { ShootLayerType, ShootTrackType } from 'types';
 import produce from 'immer';
