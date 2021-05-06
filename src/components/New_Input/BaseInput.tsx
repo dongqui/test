@@ -26,6 +26,7 @@ const defaultProps: Partial<Props> = {
   maskChar: '',
   spellCheck: 'false',
   arrow: false,
+  autoComplete: 'off',
 };
 
 const BaseInput: FunctionComponent<Props> = ({
