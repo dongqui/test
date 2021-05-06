@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef, Fragment } from 'react';
+import * as THREE from 'three';
 import { useReactiveVar } from '@apollo/client';
 import { CPNameType } from 'types/CP';
 import { RenderingDataPropertyName } from 'types/RP';
@@ -123,6 +124,19 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
                 value: parseFloat(value),
               });
               boneTransformValues.quaternion[axis as QuaternionAxisType] = parseFloat(value);
+              // q -> r 해서 적용
+              const e = new THREE.Euler().setFromQuaternion(
+                new THREE.Quaternion(
+                  boneTransformValues.quaternion.x,
+                  boneTransformValues.quaternion.y,
+                  boneTransformValues.quaternion.z,
+                  boneTransformValues.quaternion.w,
+                ).normalize(),
+                'XYZ',
+              );
+              boneTransformValues.rotation.x = e.x;
+              boneTransformValues.rotation.y = e.y;
+              boneTransformValues.rotation.z = e.z;
               dispatch(changeBoneTransform(boneTransformValues));
             } else {
               fnChangeBoneRotation({
@@ -130,7 +144,21 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
                 axis,
                 value: fnConvertDegreeToEuler({ degreeValue: parseFloat(value) }),
               });
-              boneTransformValues.rotation[axis as NormalAxisType] = parseFloat(value);
+              boneTransformValues.rotation[axis as NormalAxisType] = fnConvertDegreeToEuler({
+                degreeValue: parseFloat(value),
+              });
+              // d -> r -> q 해서 적용
+              const q = new THREE.Quaternion().setFromEuler(
+                new THREE.Euler(
+                  boneTransformValues.rotation.x,
+                  boneTransformValues.rotation.y,
+                  boneTransformValues.rotation.z,
+                ),
+              );
+              boneTransformValues.quaternion.x = q.x;
+              boneTransformValues.quaternion.y = q.y;
+              boneTransformValues.quaternion.z = q.z;
+              boneTransformValues.quaternion.w = q.w;
               dispatch(changeBoneTransform(boneTransformValues));
             }
             break;

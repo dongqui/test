@@ -11,6 +11,8 @@ export interface BoneTransformState {
 export type BoneTransfromAction = ReturnType<typeof changeBoneTransform>;
 
 export const CHANGE_BONE_TRANSFORM = 'boneTransform/CHANGE_BONE_TRANSFORM' as const;
+export const UNDO = 'UNDO';
+export const REDO = 'REDO';
 
 interface ChangeBoneTransform {
   bone: THREE.Bone;
@@ -25,4 +27,12 @@ export const changeBoneTransform = (params: ChangeBoneTransform) => ({
   payload: {
     ...params,
   },
+});
+
+export const unDo = () => ({
+  type: UNDO,
+});
+
+export const reDo = () => ({
+  type: REDO,
 });

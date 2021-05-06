@@ -4,6 +4,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { DragControls } from 'three/examples/jsm/controls/DragControls';
 import _ from 'lodash';
 import { Dispatch, SetStateAction } from 'react';
+import { BoneTransfromAction, changeBoneTransform } from 'actions/boneTransform';
 
 interface FnAddJointMeshes {
   skeletonHelper: THREE.SkeletonHelper;
@@ -14,6 +15,7 @@ interface FnAddJointMeshes {
   innerCurrentBone: THREE.Bone | undefined;
   setInnerCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
   storeCurrentBone: any;
+  dispatch: Dispatch<BoneTransfromAction>;
 }
 
 /**
@@ -28,6 +30,7 @@ interface FnAddJointMeshes {
  * @param innerCurrentBone - The current selected bone
  * @param setInnerCurrentBone - A function setting the innerCurrentBone
  * @param setCurrentBoneIndex - A function setting the current Bone index
+ * @param dispatch - redux store 변경을 위한 dispatch
  *
  */
 const fnAddJointMeshes = (props: FnAddJointMeshes) => {
@@ -40,6 +43,7 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
     innerCurrentBone,
     setInnerCurrentBone,
     storeCurrentBone,
+    dispatch,
   } = props;
   const innerBones: THREE.Bone[] = [];
   _.forEach(skeletonHelper.bones, (bone) => {
@@ -70,6 +74,34 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
         transformControls.attach(event.object.parent);
         setInnerCurrentBone(event.object.parent);
         storeCurrentBone(event.object.parent);
+
+        const bone = event.object.parent;
+        const value = {
+          bone,
+          position: {
+            x: bone.position.x,
+            y: bone.position.y,
+            z: bone.position.z,
+          },
+          quaternion: {
+            x: bone.quaternion.x,
+            y: bone.quaternion.y,
+            z: bone.quaternion.z,
+            w: bone.quaternion.w,
+          },
+          rotation: {
+            x: bone.rotation.x,
+            y: bone.rotation.y,
+            z: bone.rotation.z,
+          },
+          scale: {
+            x: bone.scale.x,
+            y: bone.scale.y,
+            z: bone.scale.z,
+          },
+        };
+
+        dispatch(changeBoneTransform(value));
         dragControls.enabled = false;
       }
     });

@@ -21,7 +21,6 @@ import {
   fnCreateScene,
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
-import { useHistory } from './useHistory';
 import {
   storeCurrentBone,
   storeRenderingData,
@@ -29,9 +28,10 @@ import {
   storeSkeletonHelper,
 } from '../../lib/store';
 import { useReactiveVar } from '@apollo/client';
-import { useDispatch, useSelector } from 'react-redux';
-import { changeBoneTransform } from 'actions/boneTransform';
-import { RootState } from 'reducers';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
+import { BoneTransformState, changeBoneTransform, reDo, unDo } from 'actions/boneTransform';
+import { undoableBoneTransform } from 'reducers/boneTransform';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -92,14 +92,39 @@ export const useRendering = (props: UseRendering) => {
     }),
     [],
   );
+
   const dispatch = useDispatch();
-  const boneTransform = useSelector<RootState>((state) => state.undoableBoneTransform);
+  const boneTransform: ReturnType<typeof undoableBoneTransform> = useSelector(
+    (state) => state.undoableBoneTransform,
+  );
 
   useEffect(() => {
-    console.log('boneTransform: ', boneTransform);
+    if (boneTransform) {
+      if (boneTransform.present) {
+        const {
+          bone,
+          position,
+          rotation,
+          quaternion,
+          scale,
+        }: BoneTransformState = boneTransform.present;
+        if (bone && position && rotation && quaternion && scale) {
+          bone.position.set(position.x, position.y, position.z);
+          bone.rotation.set(rotation.x, rotation.y, rotation.z);
+          bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+          bone.scale.set(scale.x, scale.y, scale.z);
+        }
+      }
+    }
   }, [boneTransform]);
 
-  const { pushToUndoArray, popFromUndoArray, pushToRedoArray, popFromRedoArray } = useHistory();
+  const handleRedo = useCallback(() => {
+    dispatch(reDo());
+  }, [dispatch]);
+
+  const handleUndo = useCallback(() => {
+    dispatch(unDo());
+  }, [dispatch]);
 
   const handleTransformControlsShortcutDown = useCallback(
     ({
@@ -410,36 +435,18 @@ export const useRendering = (props: UseRendering) => {
         case 'ㅋ':
           // redo
           if (event.ctrlKey && event.shiftKey) {
-            const info = popFromRedoArray();
-            if (info) {
-              const { panel, value } = info;
-              if (panel === 'RP') {
-                const { bone, position, quaternion, scale } = value;
-                bone.position.set(position.x, position.y, position.z);
-                bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-                bone.scale.set(scale.x, scale.y, scale.z);
-              }
-            }
+            handleRedo();
           }
           // undo
           if (event.ctrlKey && !event.shiftKey) {
-            const info = popFromUndoArray();
-            if (info) {
-              const { panel, value } = info;
-              if (panel === 'RP') {
-                const { bone, position, quaternion, scale } = value;
-                bone.position.set(position.x, position.y, position.z);
-                bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-                bone.scale.set(scale.x, scale.y, scale.z);
-              }
-            }
+            handleUndo();
           }
           break;
         default:
           break;
       }
     },
-    [popFromRedoArray, popFromUndoArray],
+    [handleRedo, handleUndo],
   );
 
   const clock = new THREE.Clock();
@@ -512,8 +519,8 @@ export const useRendering = (props: UseRendering) => {
       // https://spectrum.chat/apollo/apollo-link-state/undo-redo-functionality-proposal~48be8143-c460-4655-8e44-b41df3e00a12
       // https://redux.js.org/recipes/implementing-undo-history#understanding-undo-history
       transformControls.addEventListener('dragging-changed', (event: any) => {
-        if (event.value) {
-          const bone: THREE.Bone = event.target.object;
+        const bone: THREE.Bone = event.target.object;
+        if (!event.value) {
           const value = {
             bone,
             position: {
@@ -538,7 +545,6 @@ export const useRendering = (props: UseRendering) => {
               z: bone.scale.z,
             },
           };
-          // pushToUndoArray({ panel: 'RP', value });
           dispatch(changeBoneTransform(value));
         }
       });
@@ -579,7 +585,6 @@ export const useRendering = (props: UseRendering) => {
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
             // setSkeletonHelper(innerSkeletonHelper);
             storeSkeletonHelper(innerSkeletonHelper);
-
             // eslint-disable-next-line no-console
             console.log('skeletonHelper: ', innerSkeletonHelper);
             storeCurrentBone(innerSkeletonHelper.bones[0]);
@@ -593,6 +598,7 @@ export const useRendering = (props: UseRendering) => {
               innerCurrentBone,
               setInnerCurrentBone,
               storeCurrentBone,
+              dispatch,
             });
           },
           () => {},
