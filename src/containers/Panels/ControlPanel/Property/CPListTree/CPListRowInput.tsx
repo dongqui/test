@@ -20,6 +20,8 @@ import fnConvertEulerToDegree from 'utils/common/fnConvertEulerToDegree';
 import fnConvertDegreeToEuler from 'utils/common/fnConvertDegreeToEuler';
 import { useDispatch } from 'react-redux';
 import { changeBoneTransform } from 'actions/boneTransform';
+import { undoableBoneTransform } from 'reducers/boneTransform';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -190,6 +192,48 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
         break;
     }
   };
+
+  const boneTransform: ReturnType<typeof undoableBoneTransform> = useSelector(
+    (state) => state.undoableBoneTransform,
+  );
+
+  useEffect(() => {
+    if (boneTransform && !Object.values(boneTransform.present).includes(undefined)) {
+      const {
+        present: { position, rotation, quaternion, scale },
+      } = boneTransform;
+      if (_.isEqual(name, CPNameType.Position) && position) {
+        setInitialValue({
+          x: position.x ? _.round(position.x, 4) : 0,
+          y: position.y ? _.round(position.y, 4) : 0,
+          z: position.z ? _.round(position.z, 4) : 0,
+        });
+      }
+      if (_.isEqual(name, CPNameType.Rotation) && quaternion && rotation) {
+        if (quaternionMode) {
+          setInitialValue({
+            w: quaternion.w ? _.round(quaternion.w, 4) : 1,
+            x: quaternion.x ? _.round(quaternion.x, 4) : 0,
+            y: quaternion.y ? _.round(quaternion.y, 4) : 0,
+            z: quaternion.z ? _.round(quaternion.z, 4) : 0,
+          });
+        } else {
+          setInitialValue({
+            x: rotation.x ? _.round(fnConvertEulerToDegree({ eulerValue: rotation.x }), 4) : 0,
+            y: rotation.y ? _.round(fnConvertEulerToDegree({ eulerValue: rotation.y }), 4) : 0,
+            z: rotation.z ? _.round(fnConvertEulerToDegree({ eulerValue: rotation.z }), 4) : 0,
+          });
+        }
+      }
+      if (_.isEqual(name, CPNameType.Scale) && scale) {
+        setInitialValue({
+          x: scale.x ? _.round(scale.x, 4) : 0,
+          y: scale.y ? _.round(scale.y, 4) : 0,
+          z: scale.z ? _.round(scale.z, 4) : 0,
+        });
+      }
+    }
+  }, [boneTransform, name, quaternionMode]);
 
   useEffect(() => {
     if (transformControls) {
