@@ -22,11 +22,11 @@ import useWindowSize from 'hooks/common/useWindowSize';
 import { d3ScaleLinear } from 'types/TP';
 import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 import classNames from 'classnames/bind';
-import styles from './MainPage.module.scss';
+import styles from './Shoot.module.scss';
 
 const cx = classNames.bind(styles);
 
-const MainContainer: FunctionComponent = () => {
+const Shoot: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const cpData = useReactiveVar(storeCPData);
@@ -152,4 +152,4 @@ const MainContainer: FunctionComponent = () => {
   );
 };
 
-export default memo(MainContainer);
+export default memo(Shoot);

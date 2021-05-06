@@ -1,16 +1,16 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import MainPage from 'containers/Shoot/MainPage';
+import Shoot from 'containers/Shoot';
 
 export default {
   title: 'Pages/MainPage',
-  component: MainPage,
+  component: Shoot,
   argTypes: {},
   args: {},
 } as Meta;
 
-const Template: Story = (args) => <MainPage {...args} />;
+const Template: Story = (args) => <Shoot {...args} />;
 
 export const Default = Template.bind({});
 // Default.args = {

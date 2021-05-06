@@ -1,21 +1,20 @@
-import { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
+import { FunctionComponent, memo, Fragment, useCallback, useEffect, useRef } from 'react';
 import _ from 'lodash';
-import { useReactiveVar } from '@apollo/client';
-import { ContextMenu } from 'components/New_ContextMenu';
-import MainPage from './MainPage';
-import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import { storeContextMenuInfo, storeModalInfo, storePageInfo } from 'lib/store';
+import { useReactiveVar } from '@apollo/client';
+import { useOutsideClick } from 'hooks/common/useOutsideClick';
+import { ContextMenu } from 'components/New_ContextMenu';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import { BaseModal } from 'components/New_Modal';
-import ExtractPage from 'containers/extract';
-import Html from 'components/New_Typography/Html';
-import { Headline } from 'components/New_Typography';
+import { Headline, Html } from 'components/New_Typography';
+import ShootContainer from './Shoot';
+import ExtractContainer from 'containers/extract';
 
 const Shoot: FunctionComponent = () => {
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
-  const contextMenuRef = useRef<HTMLDivElement | any>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
 
   const handleClose = useCallback(() => {
     storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
@@ -56,7 +55,7 @@ const Shoot: FunctionComponent = () => {
         />
       )}
       {modalInfo.isShow && (
-        <>
+        <Fragment>
           {_.isEqual(modalInfo.type, MODAL_TYPES.alert) && (
             <BaseModal onClose={handleClose}>
               <Headline level="5" align="center">
@@ -71,10 +70,10 @@ const Shoot: FunctionComponent = () => {
               </Headline>
             </BaseModal>
           )}
-        </>
+        </Fragment>
       )}
-      {_.isEqual(pageInfo.page, PAGE_NAMES.shoot) && <MainPage />}
-      {_.includes([PAGE_NAMES.extract, PAGE_NAMES.record], pageInfo.page) && <ExtractPage />}
+      {_.isEqual(pageInfo.page, PAGE_NAMES.shoot) && <ShootContainer />}
+      {_.includes([PAGE_NAMES.extract, PAGE_NAMES.record], pageInfo.page) && <ExtractContainer />}
     </main>
   );
 };

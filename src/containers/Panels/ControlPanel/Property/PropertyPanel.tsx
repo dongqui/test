@@ -15,7 +15,7 @@ const PropertyPanel: FunctionComponent<{}> = ({}) => {
   const cpData = useReactiveVar(storeCPData);
 
   return (
-    <main className={cx('panel-wrap')}>
+    <div className={cx('panel-wrap')}>
       <section className={cx('panel-transform')}>
         <AccordionMenu title="Transform">
           {_.map(cpData, (item, idx) => (
@@ -55,7 +55,7 @@ const PropertyPanel: FunctionComponent<{}> = ({}) => {
           ))}
         </AccordionMenu>
       </section>
-    </main>
+    </div>
   );
 };
 

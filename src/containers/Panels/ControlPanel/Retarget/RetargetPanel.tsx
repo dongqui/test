@@ -194,7 +194,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
   }, []);
 
   return (
-    <main className={cx('panel-wrap')}>
+    <div className={cx('panel-wrap')}>
       <form onSubmit={handleSubmit(handleSubmitData)}>
         <section className={cx('section-setup')}>
           <ul className={cx('setup-group')}>
@@ -265,7 +265,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
           })}
         </section>
       </form>
-    </main>
+    </div>
   );
 };
 
