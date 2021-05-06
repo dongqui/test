@@ -31,7 +31,6 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { d3ScaleLinear } from 'types/TP';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
-import store from 'redux/store';
 
 const cx = classNames.bind(styles);
 

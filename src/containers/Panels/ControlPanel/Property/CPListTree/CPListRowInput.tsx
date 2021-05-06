@@ -17,6 +17,8 @@ import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';
 import fnConvertEulerToDegree from 'utils/common/fnConvertEulerToDegree';
 import fnConvertDegreeToEuler from 'utils/common/fnConvertDegreeToEuler';
+import { useDispatch } from 'react-redux';
+import { changeBoneTransform } from 'actions/boneTransform';
 
 const cx = classNames.bind(styles);
 
@@ -68,8 +70,12 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
 
   const [values, setValue] = useState<InputValueType>(initialValue);
 
-  const [modeSelect, setModeSelect] = useState(false);
+  const [isModeSelectOpen, setIsModeSelectOpen] = useState(false);
   const [quaternionMode, setQuaternionMode] = useState(false);
+
+  const dispatch = useDispatch();
+  type NormalAxisType = 'x' | 'y' | 'z';
+  type QuaternionAxisType = 'x' | 'y' | 'z' | 'w';
 
   const handleBlur = useCallback(
     (e: any) => {
@@ -77,38 +83,68 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       const name = e.target.name;
       const property = name?.slice(0, -1).toLowerCase();
       const axis: any = name?.slice(-1).toLowerCase();
-      switch (property) {
-        case 'position':
-          if (currentBone) {
-            fnChangeBonePosition({ targetBone: currentBone, axis, value });
-          }
-          break;
-        case 'rotation':
-        case 'quaternion':
-          if (currentBone) {
+
+      if (currentBone) {
+        const boneTransformValues = {
+          bone: currentBone,
+          position: {
+            x: currentBone.position.x,
+            y: currentBone.position.y,
+            z: currentBone.position.z,
+          },
+          quaternion: {
+            x: currentBone.quaternion.x,
+            y: currentBone.quaternion.y,
+            z: currentBone.quaternion.z,
+            w: currentBone.quaternion.w,
+          },
+          rotation: {
+            x: currentBone.rotation.x,
+            y: currentBone.rotation.y,
+            z: currentBone.rotation.z,
+          },
+          scale: { x: currentBone.scale.x, y: currentBone.scale.y, z: currentBone.scale.z },
+        };
+
+        switch (property) {
+          case 'position':
+            if (currentBone) {
+              fnChangeBonePosition({ targetBone: currentBone, axis, value: parseFloat(value) });
+              boneTransformValues.position[axis as NormalAxisType] = parseFloat(value);
+              dispatch(changeBoneTransform(boneTransformValues));
+            }
+            break;
+          case 'rotation':
+          case 'quaternion':
             if (quaternionMode) {
               fnChangeBoneQuaternion({
                 targetBone: currentBone,
                 axis,
                 value: parseFloat(value),
               });
+              boneTransformValues.quaternion[axis as QuaternionAxisType] = parseFloat(value);
+              dispatch(changeBoneTransform(boneTransformValues));
             } else {
               fnChangeBoneRotation({
                 targetBone: currentBone,
                 axis,
-                value: fnConvertDegreeToEuler({ degreeValue: value }),
+                value: fnConvertDegreeToEuler({ degreeValue: parseFloat(value) }),
               });
+              boneTransformValues.rotation[axis as NormalAxisType] = parseFloat(value);
+              dispatch(changeBoneTransform(boneTransformValues));
             }
-          }
-          break;
-        case 'scale':
-          if (currentBone) {
-            fnChangeBoneScale({ targetBone: currentBone, axis, value });
-          }
-          break;
+            break;
+          case 'scale':
+            fnChangeBoneScale({ targetBone: currentBone, axis, value: parseFloat(value) });
+            boneTransformValues.scale[axis as NormalAxisType] = parseFloat(value);
+            dispatch(changeBoneTransform(boneTransformValues));
+            break;
+          default:
+            break;
+        }
       }
     },
-    [currentBone, quaternionMode],
+    [currentBone, dispatch, quaternionMode],
   );
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -242,7 +278,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
 
   const iconClasses = cx('icon', {
     rotation: _.isEqual(name, 'Rotation'),
-    quaternion: modeSelect,
+    quaternion: isModeSelectOpen,
   });
 
   const titleClasses = cx('property-title', {
@@ -270,12 +306,12 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       <IconWrapper
         className={iconClasses}
         icon={SvgPath.ChevronLeft}
-        onClick={() => setModeSelect(!modeSelect)}
+        onClick={() => setIsModeSelectOpen(!isModeSelectOpen)}
         hasFrame={false}
       />
       <div className={cx('input-group')}>
         <Fragment>
-          {modeSelect ? (
+          {isModeSelectOpen ? (
             <div className={cx('segment')}>
               <Segment list={modeList} />
             </div>

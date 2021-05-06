@@ -29,6 +29,9 @@ import {
   storeSkeletonHelper,
 } from '../../lib/store';
 import { useReactiveVar } from '@apollo/client';
+import { useDispatch, useSelector } from 'react-redux';
+import { changeBoneTransform } from 'actions/boneTransform';
+import { RootState } from 'reducers';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -89,6 +92,12 @@ export const useRendering = (props: UseRendering) => {
     }),
     [],
   );
+  const dispatch = useDispatch();
+  const boneTransform = useSelector<RootState>((state) => state.undoableBoneTransform);
+
+  useEffect(() => {
+    console.log('boneTransform: ', boneTransform);
+  }, [boneTransform]);
 
   const { pushToUndoArray, popFromUndoArray, pushToRedoArray, popFromRedoArray } = useHistory();
 
@@ -518,13 +527,19 @@ export const useRendering = (props: UseRendering) => {
               z: bone.quaternion.z,
               w: bone.quaternion.w,
             },
+            rotation: {
+              x: bone.rotation.x,
+              y: bone.rotation.y,
+              z: bone.rotation.z,
+            },
             scale: {
               x: bone.scale.x,
               y: bone.scale.y,
               z: bone.scale.z,
             },
           };
-          pushToUndoArray({ panel: 'RP', value });
+          // pushToUndoArray({ panel: 'RP', value });
+          dispatch(changeBoneTransform(value));
         }
       });
       setContents((prevContents) => [...prevContents, transformControls]);

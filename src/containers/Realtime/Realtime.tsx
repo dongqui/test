@@ -53,15 +53,6 @@ const Realtime: FunctionComponent = () => {
     fnVisualizeFile({ key: draggingRow?.key ?? '', lpData });
   }, [lpData]);
 
-  useDebuggingData({
-    lpData,
-    cpData,
-    renderingData,
-    animatingData,
-    currentVisualizedData,
-    tpDopeSheetList,
-  });
-
   const [width, height] = useWindowSize();
 
   useEffect(() => {
