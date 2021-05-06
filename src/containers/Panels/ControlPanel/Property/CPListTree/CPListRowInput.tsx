@@ -77,6 +77,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       const name = e.target.name;
       const property = name?.slice(0, -1).toLowerCase();
       const axis: any = name?.slice(-1).toLowerCase();
+      if (_.isNaN(parseFloat(value))) {
+        return;
+      }
       switch (property) {
         case 'position':
           if (currentBone) {
