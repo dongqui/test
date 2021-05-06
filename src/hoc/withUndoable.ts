@@ -30,7 +30,7 @@ const withUndoable = (reducer: Reducer<any, any>) => {
         const previous = past[past.length - 1];
         const newPast = past.slice(0, past.length - 1);
         return {
-          past: [...newPast],
+          past: newPast,
           present: previous,
           future: [present, ...future],
         };
@@ -43,7 +43,7 @@ const withUndoable = (reducer: Reducer<any, any>) => {
         return {
           past: [...past, present],
           present: next,
-          future: [...newFuture],
+          future: newFuture,
         };
       default:
         const newPresent = reducer(present, action);
@@ -54,13 +54,13 @@ const withUndoable = (reducer: Reducer<any, any>) => {
           return {
             past: [...past],
             present: newPresent,
-            future: [],
+            future: [...future],
           };
         }
         return {
           past: [...past, present],
           present: newPresent,
-          future: [],
+          future: [...future],
         };
     }
   };
