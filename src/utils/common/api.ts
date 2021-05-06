@@ -3,9 +3,9 @@ import { ShootTrackType, VIDEO_FORMAT_TYPES } from 'types';
 import _ from 'lodash';
 import fnConvertBloburlToFile from './fnConvertBloburlToFile';
 
-const BASE_URL = 'https://shootapi.myplask.com:6500';
-const RETARGETIING_URL = 'https://shootapi.myplask.com:6500';
-const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:6500';
+const BASE_URL = 'https://shootapi.myplask.com:5000';
+const RETARGETIING_URL = 'https://shootapi.myplask.com:5000';
+const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:5000';
 
 interface uploadFileToMotionDataProps {
   type: VIDEO_FORMAT_TYPES | string;
