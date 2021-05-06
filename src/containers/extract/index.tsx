@@ -2,7 +2,7 @@ import { FunctionComponent, Fragment, memo, useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import CutEdit from 'containers/extract/CutEdit';
 import { storeCutImages, storePageInfo } from 'lib/store';
-import MiddleBar from 'containers/New_MiddleBar';
+import MiddleBar from 'containers/MiddleBar';
 import Webcam from 'containers/extract/Webcam';
 import _ from 'lodash';
 import { PAGE_NAMES } from 'types';
