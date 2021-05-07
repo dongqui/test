@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import _ from 'lodash';
 
-const DEFAULT_SPEED = 0.3;
+const DEFAULT_SPEED = 1;
 
 type PlayDirection = 1 | -1;
 type PlayState = 'play' | 'pause' | 'stop';
