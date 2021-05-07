@@ -32,6 +32,7 @@ import {
 } from 'lib/store';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { useReactiveVar } from '@apollo/client';
+import { useDispatch } from 'react-redux';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -94,6 +95,8 @@ export const useRendering = (props: UseRendering) => {
   );
 
   const { pushToUndoArray, popFromUndoArray, pushToRedoArray, popFromRedoArray } = useHistory();
+
+  const dispatch = useDispatch();
 
   const handleTransformControlsShortcutDown = useCallback(
     ({
@@ -626,6 +629,7 @@ export const useRendering = (props: UseRendering) => {
               innerCurrentBone,
               setInnerCurrentBone,
               storeCurrentBone,
+              dispatch,
             });
           },
           () => {},
