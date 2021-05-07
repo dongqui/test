@@ -8,7 +8,7 @@ import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import { BaseModal } from 'components/Modal';
 import { Headline, Html } from 'components/Typography';
 import ShootContainer from './Shoot';
-import ExtractContainer from 'containers/extract';
+import ExtractContainer from 'containers/Extract';
 
 const Shoot: FunctionComponent = () => {
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
