@@ -74,6 +74,7 @@ export const useRendering = (props: UseRendering) => {
   const [theScene, setTheScene] = useState<THREE.Scene | undefined>(undefined); // clear 함수에서 사용하기 위해 component state로 관리
   const keyDownRef = useRef<(event: any) => void>();
   const keyUpRef = useRef<(event: any) => void>();
+  const animateReqIdRef = useRef<number | undefined>();
 
   const multiKeyController = useMemo(
     () => ({
@@ -603,12 +604,15 @@ export const useRendering = (props: UseRendering) => {
         }
         // animate loop를 통해 렌더링
         renderer.render(scene, camera);
-        requestAnimationFrame(animate);
+        animateReqIdRef.current = requestAnimationFrame(animate);
       };
       animate();
     }
 
     return () => {
+      if (animateReqIdRef.current) {
+        cancelAnimationFrame(animateReqIdRef.current);
+      }
       // 단축키 제거
       if (keyDownRef.current && keyUpRef.current) {
         document.removeEventListener('keydown', keyDownRef.current);
