@@ -1,8 +1,9 @@
 import { FunctionComponent, Fragment, memo, createContext, useContext, useState } from 'react';
-import { BaseModal } from 'components/New_Modal';
-import { FilledButton } from 'components/New_Button';
+import { BaseModal } from 'components/Modal';
+import { IconWrapper, SvgPath } from 'components/Icon';
+import { FilledButton } from 'components/Button';
 import classnames from 'classnames/bind';
-import styles from './ConfirmModal.module.scss';
+import styles from './AlertModal.module.scss';
 
 const cx = classnames.bind(styles);
 
@@ -12,46 +13,41 @@ interface Props {
   onConfirm: () => void;
   onOutsideClose?: () => void;
   title: string;
-  text: {
-    confirm: string;
-    cancel: string;
-  };
+  text: string;
+  isAlert?: boolean;
 }
 
-const ConfirmModal: FunctionComponent<Props> = ({
+// 버튼 3개 이상인 경우 세로 fullSize 배치
+// 버튼 3개는 props로 받고 1개는 primary color
+// 입력 양식 또한 props
+// 버튼 1개는 fullSize배치
+const AlertModal: FunctionComponent<Props> = ({
   isOpen,
   title,
-  text,
   onClose,
   onConfirm,
   onOutsideClose,
+  isAlert,
+  text,
+  children,
 }) => {
   return (
     <Fragment>
       {isOpen && (
-        <BaseModal onClose={onClose} onOutsideClose={onOutsideClose} title={title}>
-          <div className={cx('inner')}>
-            <FilledButton
-              className={cx('button-cancel')}
-              onClick={onClose}
-              color="secondary"
-              fullSize
-            >
-              {text.cancel}
-            </FilledButton>
-            <FilledButton onClick={onConfirm} color="primary" fullSize>
-              {text.confirm}
-            </FilledButton>
-          </div>
+        <BaseModal title={title} isAlert>
+          <div className={cx('inner')}>{children}</div>
+          <FilledButton onClick={onConfirm} fullSize>
+            {text}
+          </FilledButton>
         </BaseModal>
       )}
     </Fragment>
   );
 };
 
-const ConfirmModalContext = createContext<any>({});
+const AlertModalContext = createContext<any>({});
 
-const ConfirmModalProvider = ({ children }: any) => {
+const AlertModalProvider = ({ children }: any) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<any>({});
 
@@ -76,21 +72,21 @@ const ConfirmModalProvider = ({ children }: any) => {
   };
 
   return (
-    <ConfirmModalContext.Provider value={{ handleOpen }}>
-      <ConfirmModal
+    <AlertModalContext.Provider value={{ handleOpen }}>
+      <AlertModal
         isOpen={dialogOpen}
         title={dialogConfig?.title}
         onConfirm={handleConfirm}
         onClose={handleDismiss}
-        text={{ confirm: 'OK', cancel: 'Cancel' }}
+        text="OK"
       />
       {children}
-    </ConfirmModalContext.Provider>
+    </AlertModalContext.Provider>
   );
 };
 
-const useConfirmModal = () => {
-  const { handleOpen } = useContext(ConfirmModalContext);
+const useAlertModal = () => {
+  const { handleOpen } = useContext(AlertModalContext);
 
   const getConfirm = ({ ...options }) =>
     new Promise((res) => {
@@ -100,5 +96,5 @@ const useConfirmModal = () => {
   return { getConfirm };
 };
 
-export { ConfirmModalProvider, useConfirmModal };
-export default memo(ConfirmModal);
+export { AlertModalProvider, useAlertModal };
+export default memo(AlertModal);

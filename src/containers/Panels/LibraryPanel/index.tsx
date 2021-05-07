@@ -22,9 +22,9 @@ import _ from 'lodash';
 import { IconView } from './IconTree/IconView';
 import { ListView } from './ListTree/ListView';
 import Breadcrumb from './Breadcrumb';
-import { Headline } from 'components/New_Typography';
-import { BaseModal, AlertModal } from 'components/New_Modal';
-import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
+import { Headline } from 'components/Typography';
+import { BaseModal, AlertModal } from 'components/Modal';
+import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import {
   LPDataType,

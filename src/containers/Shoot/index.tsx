@@ -3,10 +3,10 @@ import _ from 'lodash';
 import { storeContextMenuInfo, storeModalInfo, storePageInfo } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
-import { ContextMenu } from 'components/New_ContextMenu';
+import { ContextMenu } from 'components/ContextMenu';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
-import { BaseModal } from 'components/New_Modal';
-import { Headline, Html } from 'components/New_Typography';
+import { BaseModal } from 'components/Modal';
+import { Headline, Html } from 'components/Typography';
 import ShootContainer from './Shoot';
 import ExtractContainer from 'containers/extract';
 

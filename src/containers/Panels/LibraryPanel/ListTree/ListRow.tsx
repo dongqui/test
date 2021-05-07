@@ -1,10 +1,10 @@
 import { FunctionComponent, memo, Fragment, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import useLPRowControl from 'hooks/LP/useLPRowControl';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import { storeLpData } from 'lib/store';
-import { BaseInput } from 'components/New_Input';
+import { BaseInput } from 'components/Input';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListRow.module.scss';

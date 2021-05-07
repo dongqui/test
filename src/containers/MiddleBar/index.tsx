@@ -18,12 +18,12 @@ import {
   storeRecordingData,
   storeCurrentVisualizedData,
 } from 'lib/store';
-import { SvgPath } from 'components/New_Icon';
-import { SegmentButton } from 'components/New_Button';
-import { PrefixInput, BaseInput } from 'components/New_Input';
-import { Dropdown } from 'components/New_Dropdown';
+import { SvgPath } from 'components/Icon';
+import { SegmentButton } from 'components/Button';
+import { PrefixInput, BaseInput } from 'components/Input';
+import { Dropdown } from 'components/Dropdown';
 import { PAGE_NAMES } from 'types';
-import { AlertModalProvider } from 'components/New_Modal/AlertModal';
+import { AlertModalProvider } from 'components/Modal/AlertModal';
 import PlayBox from './PlayBox';
 import _ from 'lodash';
 import classNames from 'classnames/bind';

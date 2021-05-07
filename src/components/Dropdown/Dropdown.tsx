@@ -3,7 +3,7 @@ import _ from 'lodash';
 import DropdownItem from './DropdownItem';
 import classNames from 'classnames/bind';
 import styles from './Dropdown.module.scss';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { IconWrapper, SvgPath } from 'components/Icon';
 
 const cx = classNames.bind(styles);
 

@@ -1,6 +1,6 @@
 import { FunctionComponent, Fragment } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { AccordionMenu } from 'components/New_AccordionMenu';
+import { AccordionMenu } from 'components/AccordionMenu';
 import { storeCPData } from 'lib/store';
 import _ from 'lodash';
 import classNames from 'classnames/bind';

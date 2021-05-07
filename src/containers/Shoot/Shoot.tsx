@@ -17,7 +17,7 @@ import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
 import { useDebuggingData } from 'hooks/common/useDebuggingData';
-import { ConfirmModalProvider } from 'components/New_Modal/ConfirmModal';
+import { ConfirmModalProvider } from 'components/Modal/ConfirmModal';
 import useWindowSize from 'hooks/common/useWindowSize';
 import { d3ScaleLinear } from 'types/TP';
 import fnVisualizeFile from 'utils/LP/fnVisualizeFile';

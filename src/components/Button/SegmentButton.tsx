@@ -1,5 +1,5 @@
 import { FunctionComponent, memo, ButtonHTMLAttributes, ReactNode } from 'react';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './SegmentButton.module.scss';
