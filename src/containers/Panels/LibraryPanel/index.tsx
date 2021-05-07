@@ -19,8 +19,8 @@ import {
 } from 'lib/store';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import _ from 'lodash';
-import { IconView } from '../../IconTree/IconView';
-import { ListView } from 'containers/ListTree/ListView';
+import { IconView } from './IconTree/IconView';
+import { ListView } from './ListTree/ListView';
 import Breadcrumb from './Breadcrumb';
 import { Headline } from 'components/New_Typography';
 import { BaseModal, AlertModal } from 'components/New_Modal';

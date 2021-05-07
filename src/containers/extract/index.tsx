@@ -6,7 +6,7 @@ import MiddleBar from 'containers/MiddleBar';
 import Webcam from 'containers/extract/Webcam';
 import _ from 'lodash';
 import { PAGE_NAMES } from 'types';
-import RecordWebcam from 'containers/record/RecordWebcam';
+import RecordWebcam from 'containers/extract/RecordWebcam';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
