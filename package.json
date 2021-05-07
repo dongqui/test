@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "preprod": "rimraf ./_next",
-    "prod": "next build && yarn bundle-clean",
+    "prod": "next build",
     "start": "next start",
     "storybook": "start-storybook",
     "build-storybook": "build-storybook",
@@ -15,12 +15,11 @@
     "build": "npm run build-src && npm run build-electron",
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
-    "clean": "rimraf dist main src/out out src/_next pwa _next storybook-static",
+    "clean": "rimraf dist main src/out out src/_next _next storybook-static",
     "type-check": "tsc",
     "precodegen": "node ./src/scripts/precodegen.js",
     "codegen": "graphql-codegen --config codegen.yml",
-    "postcodegen": "node ./src/scripts/postcodegen.js",
-    "bundle-clean": "dist-size _next"
+    "postcodegen": "node ./src/scripts/postcodegen.js"
   },
   "dependencies": {
     "@apollo/client": "^3.3.6",
@@ -29,7 +28,6 @@
     "axios": "^0.21.1",
     "classnames": "^2.2.6",
     "d3": "^6.5.0",
-    "dist-size": "^0.4.0",
     "electron-is-dev": "^1.1.0",
     "electron-next": "^3.1.5",
     "get-blob-duration": "^1.2.0",
@@ -39,7 +37,6 @@
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
     "next": "^10.0.5",
-    "next-pwa": "^5.0.4",
     "next-redux-wrapper": "^6.0.2",
     "react": "^17.0.0",
     "react-cookies": "^0.1.1",
