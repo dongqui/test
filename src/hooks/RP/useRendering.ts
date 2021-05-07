@@ -99,6 +99,42 @@ export const useRendering = (props: UseRendering) => {
     (state) => state.undoableBoneTransform,
   );
 
+  // history 관련 단축키 추가
+  useEffect(() => {
+    const handleHistoryShortcutDown = (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+      switch (event.key) {
+        case 'z':
+        case 'Z':
+        case 'ㅋ':
+          // redo
+          if (event.ctrlKey && event.shiftKey) {
+            if (boneTransform && boneTransform.future.length !== 0) {
+              dispatch(reDo());
+            }
+          }
+          // undo
+          if (event.ctrlKey && !event.shiftKey) {
+            if (boneTransform && boneTransform.past.length !== 0) {
+              dispatch(unDo());
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    };
+    document.addEventListener('keydown', handleHistoryShortcutDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleHistoryShortcutDown);
+    };
+  }, [boneTransform, dispatch]);
+
+  // 현재 boneTransform state 가 변했을 때 RP, CP 에 적용
   useEffect(() => {
     if (boneTransform) {
       if (boneTransform.present) {
@@ -118,14 +154,6 @@ export const useRendering = (props: UseRendering) => {
       }
     }
   }, [boneTransform]);
-
-  const handleRedo = useCallback(() => {
-    dispatch(reDo());
-  }, [dispatch]);
-
-  const handleUndo = useCallback(() => {
-    dispatch(unDo());
-  }, [dispatch]);
 
   const handleTransformControlsShortcutDown = useCallback(
     ({
@@ -424,32 +452,6 @@ export const useRendering = (props: UseRendering) => {
     [multiKeyController],
   );
 
-  const handleHistoryShortcutDown = useCallback(
-    ({ event }: { event: KeyboardEvent }) => {
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-      switch (event.key) {
-        case 'z':
-        case 'Z':
-        case 'ㅋ':
-          // redo
-          if (event.ctrlKey && event.shiftKey) {
-            handleRedo();
-          }
-          // undo
-          if (event.ctrlKey && !event.shiftKey) {
-            handleUndo();
-          }
-          break;
-        default:
-          break;
-      }
-    },
-    [handleRedo, handleUndo],
-  );
-
   const clock = new THREE.Clock();
 
   // renderer 최초 생성 (id 는 renderingDiv 의 id 라 바뀌지 않음)
@@ -554,7 +556,6 @@ export const useRendering = (props: UseRendering) => {
       const handleKeyDown = (event: any) => {
         handleTransformControlsShortcutDown({ event, transformControls });
         handleCameraControlsShortcutDown({ event, cameraControls });
-        handleHistoryShortcutDown({ event });
       };
 
       const handleKeyUp = (event: any) => {
