@@ -17,7 +17,7 @@ import {
   storeBarPositionX,
   storeCurrentAction,
 } from 'lib/store';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,9 +26,9 @@ import { storeLpData } from 'lib/store';
 import { FILE_TYPES, LPDataType } from 'types';
 import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { FormModal } from 'components/New_Modal';
-import { useAlertModal } from 'components/New_Modal/AlertModal';
-import { BaseInput } from 'components/New_Input';
+import { FormModal } from 'components/Modal';
+import { useAlertModal } from 'components/Modal/AlertModal';
+import { BaseInput } from 'components/Input';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
 import fnGetFileName from 'utils/LP/fnGetFileName';

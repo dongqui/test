@@ -8,10 +8,10 @@ import {
   fnChangeBoneRotation,
   fnChangeBoneScale,
 } from 'utils/CP/transformUtils';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import { storeCurrentBone, storeTransformControls } from 'lib/store';
 import { CPInput } from './CPInput';
-import { Segment } from 'components/New_Segment';
+import { Segment } from 'components/Segment';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';

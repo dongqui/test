@@ -1,7 +1,7 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import CutEdit from 'containers/extract/CutEdit';
+import CutEdit from 'containers/Extract/CutEdit';
 
 export default {
   title: 'Component API/Container/CutEdit',

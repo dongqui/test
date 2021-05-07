@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React, { FunctionComponent, ReactNode, useState } from 'react';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
 import styles from './AccordionMenu.module.scss';
 

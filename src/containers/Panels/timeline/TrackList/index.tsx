@@ -16,11 +16,11 @@ import {
 import fnGetSmallestNewNumber from 'utils/common/fnGetSmallestNewNumber';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { fnGetNewLayer } from 'utils/TP/editingUtils';
-import { SearchInput } from 'components/New_Input';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { SearchInput } from 'components/Input';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import Track from '../Track';
 import styles from './index.module.scss';
-import { AlertModalProvider } from 'components/New_Modal/AlertModal';
+import { AlertModalProvider } from 'components/Modal/AlertModal';
 
 interface Props {
   trackListRef: React.RefObject<HTMLDivElement>;

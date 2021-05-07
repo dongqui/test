@@ -1,8 +1,8 @@
 import { FunctionComponent } from 'react';
 import { useForm } from 'react-hook-form';
-import { BaseModal } from 'components/New_Modal';
-import { FilledButton } from 'components/New_Button';
-import { BaseInput } from 'components/New_Input';
+import { BaseModal } from 'components/Modal';
+import { FilledButton } from 'components/Button';
+import { BaseInput } from 'components/Input';
 import classnames from 'classnames/bind';
 import styles from './FormModal.module.scss';
 const cx = classnames.bind(styles);

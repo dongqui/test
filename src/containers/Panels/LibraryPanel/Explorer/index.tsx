@@ -1,7 +1,7 @@
 import { FunctionComponent, memo, useCallback, ChangeEvent } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { SearchInput } from 'components/New_Input';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { SearchInput } from 'components/Input';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import { FILE_TYPES, LPModeType } from 'types';
 import { storeLPMode, storeLpData, storePages } from 'lib/store';
 import { v4 as uuidv4 } from 'uuid';

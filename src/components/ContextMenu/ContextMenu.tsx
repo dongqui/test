@@ -8,6 +8,7 @@ import {
   useRef,
   useMemo,
   useLayoutEffect,
+  RefObject,
 } from 'react';
 import _ from 'lodash';
 import ContextMenuItem from './ContextMenuItem';
@@ -39,7 +40,7 @@ const getNumberValue = (targetValue: string): number => {
 };
 
 export interface Props {
-  innerRef: MutableRefObject<HTMLDivElement>;
+  innerRef: RefObject<HTMLDivElement>;
   onSelect: (key: string, value: string) => void;
   list: {
     key: string;

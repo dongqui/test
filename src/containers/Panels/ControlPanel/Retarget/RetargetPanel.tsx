@@ -1,8 +1,8 @@
 import { FunctionComponent, useCallback, useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { Dropdown } from 'components/New_Dropdown';
-import { SuffixInput } from 'components/New_Input';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { Dropdown } from 'components/Dropdown';
+import { SuffixInput } from 'components/Input';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import { useReactiveVar } from '@apollo/client';
 import { storeCPChangeTab, storeRetargetInfo, storeRetargetMap } from 'lib/store';
 import _ from 'lodash';
@@ -194,7 +194,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
   }, []);
 
   return (
-    <main className={cx('panel-wrap')}>
+    <div className={cx('panel-wrap')}>
       <form onSubmit={handleSubmit(handleSubmitData)}>
         <section className={cx('section-setup')}>
           <ul className={cx('setup-group')}>
@@ -265,7 +265,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
           })}
         </section>
       </form>
-    </main>
+    </div>
   );
 };
 
