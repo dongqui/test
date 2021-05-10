@@ -19,12 +19,12 @@ import {
 } from 'lib/store';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import _ from 'lodash';
-import { IconView } from '../../IconTree/IconView';
-import { ListView } from 'containers/ListTree/ListView';
+import { IconView } from './IconTree/IconView';
+import { ListView } from './ListTree/ListView';
 import Breadcrumb from './Breadcrumb';
-import { Headline } from 'components/New_Typography';
-import { BaseModal, AlertModal } from 'components/New_Modal';
-import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
+import { Headline } from 'components/Typography';
+import { BaseModal, AlertModal } from 'components/Modal';
+import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import {
   LPDataType,
@@ -51,6 +51,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const lpmode = useReactiveVar(storeLPMode);
   const retargetInfo = useReactiveVar(storeRetargetInfo);
   const [originalLpmode, setOriginalLpmode] = useState<LPModeType | undefined>(undefined);
+  const [isOutsideClose, setIsOutsideClose] = useState(false);
   const onChangeSearchText = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       storeSearchWord(e.target.value);
@@ -98,6 +99,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     setModalMessage('Importing the file');
     if (_.isEmpty(acceptedFiles)) {
       setModalMessage('File not found.');
+      setIsOutsideClose(true);
       return false;
     }
     if (
@@ -111,6 +113,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       )
     ) {
       setModalMessage('NOT allowed to import multiple files at once.');
+      setIsOutsideClose(true);
       return false;
     }
     let newLpData = _.clone(lpData);
@@ -128,6 +131,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       const extension = _.last(_.split(file.name, '.'));
       if (!_.includes(ENABLE_FILE_FORMATS, extension)) {
         setModalMessage('Unsupported file format.');
+        setIsOutsideClose(true);
         return false;
       }
       let overlappedFile: LPDataType | undefined;
@@ -168,6 +172,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         });
         if (error) {
           setModalMessage('Failed to upload the file.');
+          setIsOutsideClose(true);
           return false;
         }
         convertedFileUrl = url;
@@ -196,6 +201,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       const { animations, bones = [], error } = await fnGetAnimationData({ url });
       if (error) {
         setModalMessage('Failed to export the animation data from the file.');
+        setIsOutsideClose(true);
         return false;
       }
       const motions: LPDataType[] = [];
@@ -251,6 +257,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         });
         if (error) {
           // setModalMessage('Failed to export the animation data from the file.');
+          setShowsModal(false);
           return false;
         }
         const motions: LPDataType[] = [];
@@ -348,7 +355,9 @@ const LibraryPanelComponent: FunctionComponent = () => {
           </div>
         </div>
       </div>
-      {showsModal && <BaseModal title={modalMessage} onClose={handleModalClose} />}
+      {showsModal && (
+        <BaseModal title={modalMessage} onClose={handleModalClose} hasCloseIcon={isOutsideClose} />
+      )}
     </div>
   );
 };

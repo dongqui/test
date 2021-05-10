@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
-import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
+import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { storeCurrentVisualizedData, storeLpData } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
 

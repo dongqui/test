@@ -1,7 +1,10 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { IconView as IconViewComponent, IconViewProps } from '../../containers/IconTree/IconView';
+import {
+  IconView as IconViewComponent,
+  IconViewProps,
+} from 'containers/Panels/LibraryPanel/IconTree/IconView';
 import { useApollo } from 'lib/apolloClient';
 import { ApolloProvider } from '@apollo/client';
 

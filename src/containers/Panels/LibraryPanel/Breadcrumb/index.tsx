@@ -1,6 +1,6 @@
 import { FunctionComponent, Fragment, memo, useEffect, useState, useCallback } from 'react';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
-// import { Dropdown } from 'components/New_Dropdown';
+import { IconWrapper, SvgPath } from 'components/Icon';
+// import { Dropdown } from 'components/Dropdown';
 import { useReactiveVar } from '@apollo/client';
 import { storePages } from 'lib/store';
 import BreadcrumbItem from './BreadcrumbItem';

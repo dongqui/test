@@ -6,6 +6,7 @@
     "esbenp.prettier-vscode",
     "stylelint.vscode-stylelint",
     "eamodio.gitlens",
-    "mrmlnc.vscode-scss"
+    "mrmlnc.vscode-scss",
+    "wix.vscode-import-cost"
   ]
 }

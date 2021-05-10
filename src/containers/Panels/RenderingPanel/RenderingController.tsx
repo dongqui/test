@@ -8,7 +8,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import * as THREE from 'three';
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
