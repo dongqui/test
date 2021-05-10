@@ -1,5 +1,15 @@
-/* eslint-disable no-case-declarations */
 import { Reducer } from 'redux';
+
+interface State {
+  past: Reducer[];
+  present: Reducer;
+  future: Reducer[];
+}
+
+interface Action {
+  type: string;
+  payload?: any;
+}
 
 /**
  * reducer를 감싸는 고차함수로, 대상 reducer의 history 관리가 가능하도록 만들어줍니다.
@@ -16,14 +26,11 @@ const withUndoable = (reducer: Reducer<any, any>) => {
   };
 
   // undo, redo 가능한 reducer를 반환
-  return function (
-    state: { past: Reducer[]; present: Reducer; future: Reducer[] } = initialState,
-    action: { type: string; payload?: any },
-  ) {
+  return function (state: State = initialState, action: Action) {
     const { past, present, future } = state;
 
     switch (action.type) {
-      case 'UNDO':
+      case 'UNDO': {
         if (past.length === 0) {
           return state;
         }
@@ -34,7 +41,8 @@ const withUndoable = (reducer: Reducer<any, any>) => {
           present: previous,
           future: [present, ...future],
         };
-      case 'REDO':
+      }
+      case 'REDO': {
         if (future.length === 0) {
           return state;
         }
@@ -45,7 +53,11 @@ const withUndoable = (reducer: Reducer<any, any>) => {
           present: next,
           future: newFuture,
         };
-      default:
+      }
+      case 'RESET_HISTORY': {
+        return initialState;
+      }
+      default: {
         const newPresent = reducer(present, action);
         if (present === newPresent) {
           return state;
@@ -62,6 +74,7 @@ const withUndoable = (reducer: Reducer<any, any>) => {
           present: newPresent,
           future: [...future],
         };
+      }
     }
   };
 };

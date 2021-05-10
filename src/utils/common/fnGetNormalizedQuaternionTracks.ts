@@ -1,10 +1,6 @@
 import * as THREE from 'three';
 import _ from 'lodash';
 
-interface FnGetNormalizedQuaternionTracks {
-  quaternionTracks: THREE.QuaternionKeyframeTrack[];
-}
-
 /**
  * Quaternion 트랙들을 normalize 합니다.
  *
@@ -12,7 +8,7 @@ interface FnGetNormalizedQuaternionTracks {
  *
  * @returns 정규화를 거친 quaternion tracks
  */
-const fnGetNormalizedQuaternionTracks = ({ quaternionTracks }: FnGetNormalizedQuaternionTracks) => {
+const fnGetNormalizedQuaternionTracks = (quaternionTracks: THREE.QuaternionKeyframeTrack[]) => {
   const normalizedQuaternionTracks: THREE.QuaternionKeyframeTrack[] = [];
 
   _.forEach(quaternionTracks, (track) => {

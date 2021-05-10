@@ -30,7 +30,13 @@ import {
 import { useReactiveVar } from '@apollo/client';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import { BoneTransformState, changeBoneTransform, reDo, unDo } from 'actions/boneTransform';
+import {
+  BoneTransformState,
+  changeBoneTransform,
+  redo,
+  resetHistory,
+  undo,
+} from 'actions/boneTransform';
 import { undoableBoneTransform } from 'reducers/boneTransform';
 
 let innerMixer: THREE.AnimationMixer | undefined;
@@ -113,13 +119,13 @@ export const useRendering = (props: UseRendering) => {
           // redo
           if (event.ctrlKey && event.shiftKey) {
             if (boneTransform && boneTransform.future.length !== 0) {
-              dispatch(reDo());
+              dispatch(redo());
             }
           }
           // undo
           if (event.ctrlKey && !event.shiftKey) {
             if (boneTransform && boneTransform.past.length !== 0) {
-              dispatch(unDo());
+              dispatch(undo());
             }
           }
           break;
@@ -154,6 +160,13 @@ export const useRendering = (props: UseRendering) => {
       }
     }
   }, [boneTransform]);
+
+  // 모델 파일 변경 시 history reset
+  useEffect(() => {
+    if (fileUrl) {
+      dispatch(resetHistory());
+    }
+  }, [dispatch, fileUrl]);
 
   const handleTransformControlsShortcutDown = useCallback(
     ({

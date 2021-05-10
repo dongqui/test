@@ -3,10 +3,6 @@ import _ from 'lodash';
 
 const TWO_PI = 2 * Math.PI;
 
-interface FnGetNormalizedEulerTracks {
-  eulerTracks: THREE.VectorKeyframeTrack[];
-}
-
 /**
  * Euler 트랙들을 normalize 합니다.
  *
@@ -14,7 +10,7 @@ interface FnGetNormalizedEulerTracks {
  *
  * @returns 정규화를 거친 euler tracks
  */
-const fnGetNormalizedEulerTracks = ({ eulerTracks }: FnGetNormalizedEulerTracks) => {
+const fnGetNormalizedEulerTracks = (eulerTracks: THREE.VectorKeyframeTrack[]) => {
   const normalizedEulerTracks: THREE.VectorKeyframeTrack[] = [];
 
   _.forEach(eulerTracks, (track, idx) => {
