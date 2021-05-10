@@ -12,13 +12,14 @@ interface BaseProps {
   maskChar?: string | null;
   color?: 'primary' | 'default';
   className?: string;
+  autoComplete?: boolean;
 }
 
 const defaultProps: Partial<Props> = {
   color: 'default',
 };
 
-export type Props = BaseProps & Omit<Input.BaseInputProps, 'prefix'>;
+export type Props = BaseProps & Omit<Input.BaseInputProps, 'prefix' | 'autoComplete'>;
 
 const PrefixInput: FunctionComponent<Props> = ({ prefix, arrow, color, className, ...rest }) => {
   const classes = cx('input-wrapper', className);

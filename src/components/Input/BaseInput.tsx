@@ -17,16 +17,17 @@ interface BaseProps {
   mask?: string | Array<string | RegExp>;
   maskChar?: string | null;
   fullSize?: boolean;
+  autoComplete?: boolean;
 }
 
-type Props = BaseProps & Input.BaseInputProps;
+type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete'>;
 
 const defaultProps: Partial<Props> = {
   type: 'text',
   maskChar: '',
   spellCheck: 'false',
   arrow: false,
-  autoComplete: 'off',
+  autoComplete: false,
 };
 
 const BaseInput: FunctionComponent<Props> = ({
@@ -39,6 +40,7 @@ const BaseInput: FunctionComponent<Props> = ({
   invalid,
   arrow,
   fullSize,
+  autoComplete,
   onBlur,
   onChange,
   onKeyUp,
@@ -75,7 +77,14 @@ const BaseInput: FunctionComponent<Props> = ({
   if (mask) {
     return (
       <MaskedInput className={classes} mask={mask} maskChar={maskChar} alwaysShowMask {...rest}>
-        {(inputProps: unknown) => <input type={type} ref={innerRef} {...inputProps} />}
+        {(inputProps: unknown) => (
+          <input
+            type={type}
+            ref={innerRef}
+            autoComplete={autoComplete ? 'on' : 'off'}
+            {...inputProps}
+          />
+        )}
       </MaskedInput>
     );
   }
@@ -85,6 +94,7 @@ const BaseInput: FunctionComponent<Props> = ({
       className={classes}
       type={type}
       disabled={disabled}
+      autoComplete={autoComplete ? 'on' : 'off'}
       onBlur={handleBlur}
       onChange={handleChange}
       onKeyUp={handleKeyUp}

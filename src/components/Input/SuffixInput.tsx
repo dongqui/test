@@ -12,9 +12,10 @@ interface BaseProps {
   maskChar?: string | null;
   color?: 'primary' | 'default';
   className?: string;
+  autoComplete?: boolean;
 }
 
-export type Props = BaseProps & Omit<Input.BaseInputProps, 'suffix'>;
+export type Props = BaseProps & Omit<Input.BaseInputProps, 'suffix' | 'autoComplete'>;
 
 const SuffixInput: FunctionComponent<Props> = ({ suffix, arrow, color, className, ...rest }) => {
   const classes = cx('input-wrapper', className);
