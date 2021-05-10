@@ -12,7 +12,8 @@ import {
   storeTPDopeSheetList,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
-import { ResizableBox } from 'react-resizable';
+// import { ResizableBox } from 'react-resizable';
+import { ResizableBox } from 'components/Resizable';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
@@ -96,6 +97,7 @@ const Shoot: FunctionComponent = () => {
       >
         <ResizableBox
           width={248}
+          height={height * 0.7}
           minConstraints={[248, height * 0.5]}
           maxConstraints={[450, height * 0.7]}
           className={cx('panel-library')}
@@ -107,9 +109,11 @@ const Shoot: FunctionComponent = () => {
           </ConfirmModalProvider>
         </ResizableBox>
         <ResizableBox
-          width={width - 248 - 264}
+          // width={width - 248 - 264}
+          width={width}
           minConstraints={[150, height * 0.5]}
-          maxConstraints={[width - 248 - 264, height * 0.7]}
+          // maxConstraints={[width - 248 - 264, height * 0.7]}
+          maxConstraints={[width, height * 0.7]}
           className={cx('panel-rendering')}
           axis="both"
         >
@@ -126,6 +130,7 @@ const Shoot: FunctionComponent = () => {
         </ResizableBox>
         <ResizableBox
           width={264}
+          height={height * 0.7}
           minConstraints={[264, height * 0.5]}
           maxConstraints={[450, height * 0.7]}
           className={cx('panel-control')}
