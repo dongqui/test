@@ -27,34 +27,6 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
 
   const { register, handleSubmit } = useForm();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const boneName = [
-    'hips',
-    'leftUpLeg',
-    'rightUpLeg',
-    'spine',
-    'leftLeg',
-    'rightLeg',
-    'spine1',
-    'leftFoot',
-    'rightFoog',
-    'spine2',
-    'leftToeBase',
-    'rightToeBase',
-    'neck',
-    'leftShoulder',
-    'rightShoulder',
-    'head',
-    'leftArm',
-    'rightArm',
-    'leftForeArm',
-    'rightForeArm',
-    'leftHand',
-    'rightHand',
-    'leftHandIndex1',
-    'rightHandIndex1',
-  ];
-
   /**
    * error, setError - true로 변경되었을 때 패널에 있는 에러 아이콘이 변경됩니다.
    */
@@ -96,8 +68,11 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
           },
         })),
       );
+      if (isSubmitted) {
+        setIsSubmitted(false);
+      }
     },
-    [retargetMap],
+    [isSubmitted, retargetMap],
   );
 
   /**
@@ -105,19 +80,19 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
    * @param key - coordList에서 할당된 key value입니다.
    */
   const handleCoordSelect = useCallback(
-    (key) => {
-      // storeRetargetMap(
-      //   _.map(retargetData, (item) => ({
-      //     ...item,
-      //     value: {
-      //       ...item.value,
-      //       order: _.isEqual(item.key, boneName) ? key : item.value.order,
-      //     },
-      //   })),
-      // );
+    (key, value) => {
+      storeRetargetMap(
+        _.map(retargetMap, (item) => ({
+          ...item,
+          value: {
+            ...item.value,
+            order: _.isEqual(item.key, key) ? value : item.value.order,
+          },
+        })),
+      );
+      setIsSubmitted(false);
     },
-    [],
-    // [boneName, retargetData],
+    [retargetMap],
   );
 
   /**
@@ -151,40 +126,35 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
     }
   };
 
-  const coordList = [
+  const initialCoordList = [
     {
       key: 'xyz',
-      value: 'XYZ',
+      value: 'xyz',
       isSelected: true,
     },
     {
       key: 'xzy',
-      value: 'XZY',
+      value: 'xzy',
       isSelected: false,
     },
     {
       key: 'yzx',
-      value: 'YZX',
+      value: 'yzx',
       isSelected: false,
     },
     {
       key: 'zxy',
-      value: 'ZXY',
+      value: 'zxy',
       isSelected: false,
     },
     {
       key: 'zyx',
-      value: 'ZYX',
-      isSelected: false,
-    },
-    {
-      key: 'yzx',
-      value: 'YZX',
+      value: 'zyx',
       isSelected: false,
     },
     {
       key: 'yxz',
-      value: 'YXZ',
+      value: 'yxz',
       isSelected: false,
     },
   ];
@@ -218,6 +188,11 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
               ...targetbone,
               key: item?.key,
               isSelected: _.isEqual(item?.value?.targetBone, targetbone?.value),
+            }));
+            const coordList = _.map(initialCoordList, (coord) => ({
+              ...coord,
+              key: item?.key,
+              isSelected: _.isEqual(coord.value, item?.value?.order),
             }));
             return (
               <div key={idx} className={cx('retarget-card')}>
