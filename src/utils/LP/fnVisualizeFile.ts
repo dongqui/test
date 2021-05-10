@@ -28,6 +28,9 @@ const fnVisualizeFile = ({ key, lpData }: FnVisualizeFileProps) => {
       visualizedKey = defaultVisulizedMotionRow?.key;
     }
   }
+  if (targetRow?.isExportedMotion) {
+    return;
+  }
   const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedKey]);
   if (visualizedRow) {
     storeLpData(
