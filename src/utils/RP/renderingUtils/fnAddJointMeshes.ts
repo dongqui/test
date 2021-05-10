@@ -79,25 +79,25 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
         const value = {
           bone,
           position: {
-            x: bone.position.x,
-            y: bone.position.y,
-            z: bone.position.z,
+            x: _.round(bone.position.x, 4),
+            y: _.round(bone.position.y, 4),
+            z: _.round(bone.position.z, 4),
           },
           quaternion: {
-            x: bone.quaternion.x,
-            y: bone.quaternion.y,
-            z: bone.quaternion.z,
-            w: bone.quaternion.w,
+            x: _.round(bone.quaternion.x, 4),
+            y: _.round(bone.quaternion.y, 4),
+            z: _.round(bone.quaternion.z, 4),
+            w: _.round(bone.quaternion.w, 4),
           },
           rotation: {
-            x: bone.rotation.x,
-            y: bone.rotation.y,
-            z: bone.rotation.z,
+            x: _.round(bone.rotation.x, 4),
+            y: _.round(bone.rotation.y, 4),
+            z: _.round(bone.rotation.z, 4),
           },
           scale: {
-            x: bone.scale.x,
-            y: bone.scale.y,
-            z: bone.scale.z,
+            x: _.round(bone.scale.x, 4),
+            y: _.round(bone.scale.y, 4),
+            z: _.round(bone.scale.z, 4),
           },
         };
 

@@ -95,22 +95,26 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
         const boneTransformValues = {
           bone: currentBone,
           position: {
-            x: currentBone.position.x,
-            y: currentBone.position.y,
-            z: currentBone.position.z,
+            x: _.round(currentBone.position.x, 4),
+            y: _.round(currentBone.position.y, 4),
+            z: _.round(currentBone.position.z, 4),
           },
           quaternion: {
-            x: currentBone.quaternion.x,
-            y: currentBone.quaternion.y,
-            z: currentBone.quaternion.z,
-            w: currentBone.quaternion.w,
+            x: _.round(currentBone.quaternion.x, 4),
+            y: _.round(currentBone.quaternion.y, 4),
+            z: _.round(currentBone.quaternion.z, 4),
+            w: _.round(currentBone.quaternion.w, 4),
           },
           rotation: {
-            x: currentBone.rotation.x,
-            y: currentBone.rotation.y,
-            z: currentBone.rotation.z,
+            x: _.round(currentBone.rotation.x, 4),
+            y: _.round(currentBone.rotation.y, 4),
+            z: _.round(currentBone.rotation.z, 4),
           },
-          scale: { x: currentBone.scale.x, y: currentBone.scale.y, z: currentBone.scale.z },
+          scale: {
+            x: _.round(currentBone.scale.x, 4),
+            y: _.round(currentBone.scale.y, 4),
+            z: _.round(currentBone.scale.z, 4),
+          },
         };
 
         switch (property) {
@@ -129,7 +133,10 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
                 axis,
                 value: parseFloat(value),
               });
-              boneTransformValues.quaternion[axis as QuaternionAxisType] = parseFloat(value);
+              boneTransformValues.quaternion[axis as QuaternionAxisType] = _.round(
+                parseFloat(value),
+                4,
+              );
               // q -> r 해서 적용
               const e = new THREE.Euler().setFromQuaternion(
                 new THREE.Quaternion(
@@ -140,9 +147,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
                 ).normalize(),
                 'XYZ',
               );
-              boneTransformValues.rotation.x = e.x;
-              boneTransformValues.rotation.y = e.y;
-              boneTransformValues.rotation.z = e.z;
+              boneTransformValues.rotation.x = _.round(e.x, 4);
+              boneTransformValues.rotation.y = _.round(e.y, 4);
+              boneTransformValues.rotation.z = _.round(e.z, 4);
               dispatch(changeBoneTransform(boneTransformValues));
             } else {
               fnChangeBoneRotation({
@@ -150,9 +157,12 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
                 axis,
                 value: fnConvertDegreeToEuler({ degreeValue: parseFloat(value) }),
               });
-              boneTransformValues.rotation[axis as NormalAxisType] = fnConvertDegreeToEuler({
-                degreeValue: parseFloat(value),
-              });
+              boneTransformValues.rotation[axis as NormalAxisType] = _.round(
+                fnConvertDegreeToEuler({
+                  degreeValue: parseFloat(value),
+                }),
+                4,
+              );
               // d -> r -> q 해서 적용
               const q = new THREE.Quaternion().setFromEuler(
                 new THREE.Euler(
@@ -161,16 +171,16 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
                   boneTransformValues.rotation.z,
                 ),
               );
-              boneTransformValues.quaternion.x = q.x;
-              boneTransformValues.quaternion.y = q.y;
-              boneTransformValues.quaternion.z = q.z;
-              boneTransformValues.quaternion.w = q.w;
+              boneTransformValues.quaternion.x = _.round(q.x, 4);
+              boneTransformValues.quaternion.y = _.round(q.y, 4);
+              boneTransformValues.quaternion.z = _.round(q.z, 4);
+              boneTransformValues.quaternion.w = _.round(q.w, 4);
               dispatch(changeBoneTransform(boneTransformValues));
             }
             break;
           case 'scale':
             fnChangeBoneScale({ targetBone: currentBone, axis, value: parseFloat(value) });
-            boneTransformValues.scale[axis as NormalAxisType] = parseFloat(value);
+            boneTransformValues.scale[axis as NormalAxisType] = _.round(parseFloat(value), 4);
             dispatch(changeBoneTransform(boneTransformValues));
             break;
           default:
@@ -201,6 +211,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     (state) => state.undoableBoneTransform,
   );
 
+  // undo/redo 시 input 값 변경
   useEffect(() => {
     if (boneTransform && !Object.values(boneTransform.present).includes(undefined)) {
       const {
@@ -239,6 +250,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     }
   }, [boneTransform, name, quaternionMode]);
 
+  // transformControls 드래그 조작 시
   useEffect(() => {
     if (transformControls) {
       // THREE example 소스라 타입 지원하지 않습니다
@@ -290,6 +302,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     }
   }, [name, quaternionMode, transformControls]);
 
+  // currentBone 변경 시 input 값 변경
   useEffect(() => {
     if (_.isEqual(name, CPNameType.Position)) {
       setInitialValue({

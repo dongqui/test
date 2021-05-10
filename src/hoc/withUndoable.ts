@@ -1,4 +1,5 @@
 import { Reducer } from 'redux';
+import _ from 'lodash';
 
 interface State {
   past: Reducer[];
@@ -59,7 +60,7 @@ const withUndoable = (reducer: Reducer<any, any>) => {
       }
       default: {
         const newPresent = reducer(present, action);
-        if (present === newPresent) {
+        if (_.isEqual(present, newPresent)) {
           return state;
         }
         if (Object.values(present).includes(undefined)) {
