@@ -72,13 +72,13 @@ const withUndoable = (reducer: Reducer<any, any>) => {
           return {
             past: [...past],
             present: newPresent,
-            future: [...future],
+            future: [],
           };
         }
         return {
           past: [...past, present],
           present: newPresent,
-          future: [...future],
+          future: [],
         };
       }
     }
