@@ -30,13 +30,8 @@ import {
 import { useReactiveVar } from '@apollo/client';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import {
-  BoneTransformState,
-  changeBoneTransform,
-  redo,
-  resetHistory,
-  undo,
-} from 'actions/boneTransform';
+import { BoneTransformState, changeBoneTransform } from 'actions/boneTransform';
+import { redo, resetHistory, undo } from 'actions/withUndoable';
 import { undoableBoneTransform } from 'reducers/boneTransform';
 
 let innerMixer: THREE.AnimationMixer | undefined;

@@ -4,7 +4,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { DragControls } from 'three/examples/jsm/controls/DragControls';
 import _ from 'lodash';
 import { Dispatch, SetStateAction } from 'react';
-import { BoneTransfromAction, changeBoneTransform } from 'actions/boneTransform';
+import { BoneTransformAction, changeBoneTransform } from 'actions/boneTransform';
 
 interface FnAddJointMeshes {
   skeletonHelper: THREE.SkeletonHelper;
@@ -15,7 +15,7 @@ interface FnAddJointMeshes {
   innerCurrentBone: THREE.Bone | undefined;
   setInnerCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
   storeCurrentBone: any;
-  dispatch: Dispatch<BoneTransfromAction>;
+  dispatch: Dispatch<BoneTransformAction>;
 }
 
 /**

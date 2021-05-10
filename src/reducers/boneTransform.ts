@@ -1,4 +1,4 @@
-import { BoneTransformState, BoneTransfromAction } from 'actions/boneTransform';
+import { BoneTransformState, BoneTransformAction } from 'actions/boneTransform';
 import { withUndoable } from 'hoc';
 
 const defaultState: BoneTransformState = {
@@ -9,7 +9,7 @@ const defaultState: BoneTransformState = {
   scale: undefined,
 };
 
-const boneTransform = (state: BoneTransformState = defaultState, action: BoneTransfromAction) => {
+const boneTransform = (state: BoneTransformState = defaultState, action: BoneTransformAction) => {
   switch (action.type) {
     case 'boneTransform/CHANGE_BONE_TRANSFORM': {
       return Object.assign({}, state, {
