@@ -231,9 +231,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       }
       if (_.isEqual(name, CPNameType.Scale) && scale) {
         setInitialValue({
-          x: scale.x ? _.round(scale.x, 4) : 0,
-          y: scale.y ? _.round(scale.y, 4) : 0,
-          z: scale.z ? _.round(scale.z, 4) : 0,
+          x: scale.x ? _.round(scale.x, 4) : 1,
+          y: scale.y ? _.round(scale.y, 4) : 1,
+          z: scale.z ? _.round(scale.z, 4) : 1,
         });
       }
     }
@@ -277,9 +277,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
         }
         if (_.isEqual(name, CPNameType.Scale)) {
           setInitialValue({
-            x: targetObject?.scale?.x ? _.round(targetObject?.scale?.x, 4) : 0,
-            y: targetObject?.scale?.y ? _.round(targetObject?.scale?.y, 4) : 0,
-            z: targetObject?.scale?.z ? _.round(targetObject?.scale?.z, 4) : 0,
+            x: targetObject?.scale?.x ? _.round(targetObject?.scale?.x, 4) : 1,
+            y: targetObject?.scale?.y ? _.round(targetObject?.scale?.y, 4) : 1,
+            z: targetObject?.scale?.z ? _.round(targetObject?.scale?.z, 4) : 1,
           });
         }
       };
@@ -322,9 +322,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     }
     if (_.isEqual(name, CPNameType.Scale)) {
       setInitialValue({
-        x: currentBone?.scale?.x ? _.round(currentBone?.scale?.x, 4) : 0,
-        y: currentBone?.scale?.y ? _.round(currentBone?.scale?.y, 4) : 0,
-        z: currentBone?.scale?.z ? _.round(currentBone?.scale?.z, 4) : 0,
+        x: currentBone?.scale?.x ? _.round(currentBone?.scale?.x, 4) : 1,
+        y: currentBone?.scale?.y ? _.round(currentBone?.scale?.y, 4) : 1,
+        z: currentBone?.scale?.z ? _.round(currentBone?.scale?.z, 4) : 1,
       });
     }
   }, [currentBone, name, quaternionMode]);
