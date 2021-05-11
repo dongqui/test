@@ -12,8 +12,7 @@ import {
   storeTPDopeSheetList,
 } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
-// import { ResizableBox } from 'react-resizable';
-import { ResizableBox } from 'components/Resizable';
+import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
@@ -84,6 +83,11 @@ const Shoot: FunctionComponent = () => {
       storeCurrentVisualizedData(undefined);
     }
   }, [currentVisualizedData?.key, lpData]);
+
+  const handleResize = (e: React.SyntheticEvent, data: ResizeCallbackData) => {
+    console.log(data);
+  };
+
   return (
     <div className={cx('wrapper')}>
       <ResizableBox
@@ -111,6 +115,7 @@ const Shoot: FunctionComponent = () => {
         <ResizableBox
           // width={width - 248 - 264}
           width={width}
+          height={height * 0.7}
           minConstraints={[150, height * 0.5]}
           // maxConstraints={[width - 248 - 264, height * 0.7]}
           maxConstraints={[width, height * 0.7]}
@@ -140,7 +145,14 @@ const Shoot: FunctionComponent = () => {
           <ControlPanel />
         </ResizableBox>
       </ResizableBox>
-      <ResizableBox width={width} height={height * 0.3} className={cx('lower-section')} axis="none">
+      <ResizableBox
+        width={width}
+        height={height * 0.3}
+        className={cx('lower-section')}
+        onResize={handleResize}
+        axis="both"
+        resizeHandles={['n']}
+      >
         <ConfirmModalProvider>
           <TimelineContainer
             visualizedDataKey={currentVisualizedData?.key}

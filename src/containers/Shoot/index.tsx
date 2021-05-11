@@ -10,7 +10,7 @@ import { Headline, Html } from 'components/Typography';
 import ShootContainer from './Shoot';
 import ExtractContainer from 'containers/Extract';
 
-const Shoot: FunctionComponent = () => {
+const Index: FunctionComponent = () => {
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
@@ -78,4 +78,4 @@ const Shoot: FunctionComponent = () => {
   );
 };
 
-export default memo(Shoot);
+export default memo(Index);
