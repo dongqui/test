@@ -23,7 +23,7 @@ type Action = InitialAction | WithUndoableAction | BoneTransformAction;
  *
  * @returns history 관리가 가능한 reducer
  */
-const withUndoable = (reducer: Reducer<any, Action>) => {
+const withUndoable = (reducer: Reducer<any, any>) => {
   const initialState = {
     past: [],
     present: reducer(undefined, { type: undefined, payload: undefined }), // 빈 type 사용해서 initial reducer 생성
@@ -31,8 +31,9 @@ const withUndoable = (reducer: Reducer<any, Action>) => {
   };
 
   // undo, redo 가능한 reducer를 반환
-  return function (state: State = initialState, action: Action) {
+  return function (state: State = initialState, incomingAction: any) {
     const { past, present, future } = state;
+    const action = incomingAction as Action;
 
     switch (action.type) {
       case 'UNDO': {
@@ -71,13 +72,13 @@ const withUndoable = (reducer: Reducer<any, Action>) => {
           return {
             past: [...past],
             present: newPresent,
-            future: [...future],
+            future: [],
           };
         }
         return {
           past: [...past, present],
           present: newPresent,
-          future: [...future],
+          future: [],
         };
       }
     }
