@@ -4,25 +4,37 @@ import styles from './DragBox.module.scss';
 
 interface Props {
   covered: 'partial' | 'whole';
+  onChangeIsUpdated: () => void;
   parentRef: RefObject<Element>;
-  selectors: string;
 }
 
 const cx = classNames.bind(styles);
-const GRABBED_ID = 'grabbed';
 
 /**
  * - 드래그 박스 안에 포함 된 요소에다가 selected 효과를 적용시키는 컴포넌트 입니다.
- * - 박스 안에 포함 된 요소인지 구별하기 위해 id에다가 selected를 부여하였습니다. #selected가 적용 된 tag에다가 style을 적용하면 됩니다.
+ * - 드래그 박스에 포함 여부를 체크 할 태그에는, 반드시 grabbable이라는 이름으로 id를 추가 시킵니다.
+ * - 박스 안에 포함 된 요소인 경우, id가 grabbable -> grabbed로 전환됩니다. #grabbed가 있는 tag에다가 style을 적용하면 됩니다.
+ *   grabbed였다가 드래그 박스에 포함되지 않은 경우, 다시 grabbed -> grabbable로 전환됩니다.
  * - 한가지 주의사항으로, 드래그 박스를 호출 한 부모 컴포넌트에는 반드시 아래와 같은 style을 적용해야 합니다.
  *   1) position: relative -> 호출 한 컴포넌트 기준으로 드래그 박스 위치가 결졍되기 때문에, 부모 컴포넌트는 relative를, 드래그 박스는 absolute.
  *   2) user-select: none -> 다른 태그에다가 텍스트를 선택하지 못하도록 막음
  *
  * @param covered - 드래그 박스에 일부만 포함시킬지, 전체 포함시킬지 선택(partial=일부 포함, whole=전체 포함)
+ * @param onChangeIsUpdated - useDragBox hooks를 동작시키기 위한 callback 함수입니다.
  * @param parentRef - 드래그 박스 컴포넌트를 호출시킨 부모 컴포넌트 ref
- * @param selectors - 드래그 박스에 포함 여부를 확인 할 요소
+ * 
+ * 아래와 같이 callback을 내려주고 useDragBox hooks를 사용하면, 선택 된 태그 리스트를 확인 할 수 있습니다.
+    const [isUpdated, setIsUpdated] = useState(false);
+    const handleChange = useCallback(() => {
+      setIsUpdated(!isUpdated);
+    }, [isUpdated]);
+    const list = useDragBox({ ref: dopeSheetRef, isUpdated });
+    <DragBox
+      covered="partial"
+      onChangeIsUpdated={handleChange} />
+      parentRef={dopeSheetRef}
  */
-const DragBox = ({ covered, parentRef, selectors }: Props) => {
+const DragBox = ({ covered, onChangeIsUpdated, parentRef }: Props) => {
   const [isShowedDragBox, setIsShowedDragBox] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const rectRef = useRef<SVGRectElement>(null);
@@ -112,11 +124,11 @@ const DragBox = ({ covered, parentRef, selectors }: Props) => {
           const boxRight = calcBoxRightBottom(maxX, parentLeft, parentWidth);
           const boxBottom = calcBoxRightBottom(maxY, parentTop, parentHeight);
 
-          parentRef.current.querySelectorAll(`#${GRABBED_ID}`).forEach((element) => {
-            element.removeAttribute('id');
+          parentRef.current.querySelectorAll('#grabbed').forEach((element) => {
+            element.id = 'grabbable';
           });
 
-          parentRef.current.querySelectorAll(selectors).forEach((element) => {
+          parentRef.current.querySelectorAll('#grabbable').forEach((element) => {
             const {
               x: elementLeft,
               y: elementTop,
@@ -132,7 +144,7 @@ const DragBox = ({ covered, parentRef, selectors }: Props) => {
                 elementTop < boxBottom &&
                 boxTop < elementBottom
               ) {
-                element.id = GRABBED_ID;
+                element.id = 'grabbed';
               }
             } else if (covered === 'whole') {
               if (
@@ -141,10 +153,11 @@ const DragBox = ({ covered, parentRef, selectors }: Props) => {
                 boxTop < elementTop &&
                 elementBottom < boxBottom
               ) {
-                element.id = GRABBED_ID;
+                element.id = 'grabbed';
               }
             }
           });
+          onChangeIsUpdated();
 
           originX.current = 0;
           originY.current = 0;
@@ -160,7 +173,7 @@ const DragBox = ({ covered, parentRef, selectors }: Props) => {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
-  }, [covered, isShowedDragBox, parentRef, selectors, updateTranslate]);
+  }, [covered, isShowedDragBox, onChangeIsUpdated, parentRef, updateTranslate]);
 
   return (
     <div className={cx('drag-box-wrapper')}>
