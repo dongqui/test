@@ -33,6 +33,7 @@ import {
 } from 'utils/TP/editingUtils';
 import produce from 'immer';
 import useContextMenu from 'hooks/common/useContextMenu';
+import { DragBox } from 'components/DragBox';
 
 interface Props {
   timelineWrapperRef: RefObject<HTMLDivElement>;
@@ -1049,6 +1050,7 @@ const DopeSheet: React.FC<Props> = ({
           })}
         </div>
         {playBarDisplayed && <PlayBar />}
+        <DragBox parentRef={dopeSheetRef} selectors=".circle-group circle" covered="whole" />
       </div>
     </>
   );
