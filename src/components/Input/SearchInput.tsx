@@ -9,9 +9,10 @@ const cx = classNames.bind(styles);
 interface BaseProps {
   mask?: string | Array<string | RegExp>;
   maskChar?: string | null;
+  autoComplete?: boolean;
 }
 
-type Props = BaseProps & Input.BaseInputProps;
+type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete'>;
 
 const SearchInput: FunctionComponent<Props> = ({ className, ...rest }) => {
   const classes = cx('input-wrapper', className);
