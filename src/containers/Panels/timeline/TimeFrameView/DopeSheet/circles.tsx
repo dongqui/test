@@ -65,6 +65,7 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
         .join('circle')
         .attr('cx', ({ time }) => prevXScale(time * 30))
         .attr('cy', TRACK_HEIGHT / 2)
+        .attr('id', 'grabbable')
         .attr('r', CIRCLE_RADIUS)
         .style('fill', isLocked ? '#404040' : '#7A7A7A');
     }
@@ -146,4 +147,4 @@ const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale })
   return <></>;
 };
 
-export default Circles;
+export default memo(Circles);
