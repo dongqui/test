@@ -1,4 +1,13 @@
-import { FunctionComponent, memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import {
+  FunctionComponent,
+  memo,
+  Fragment,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import _ from 'lodash';
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
@@ -60,7 +69,7 @@ const Shoot: FunctionComponent = () => {
     tpDopeSheetList,
   });
 
-  const [width, height] = useWindowSize();
+  const [windowWidth, windowHeight] = useWindowSize();
 
   useEffect(() => {
     if (currentVisualizedData?.baseLayer) {
@@ -84,70 +93,85 @@ const Shoot: FunctionComponent = () => {
     }
   }, [currentVisualizedData?.key, lpData]);
 
-  const handleResize = (e: React.SyntheticEvent, data: ResizeCallbackData) => {
-    console.log(data);
+  const [sectionHeight, setSectionHeight] = useState({
+    upperSection: windowHeight * 0.7,
+    lowerSection: windowHeight * 0.3,
+  });
+
+  useEffect(() => {
+    setSectionHeight({
+      upperSection: windowHeight * 0.7,
+      lowerSection: windowHeight * 0.3,
+    });
+  }, [windowHeight]);
+
+  const handleResize = (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
+    setSectionHeight({
+      upperSection: windowHeight - data.size.height,
+      lowerSection: data.size.height,
+    });
   };
 
   return (
     <div className={cx('wrapper')}>
       <ResizableBox
-        width={width}
-        height={height * 0.7}
-        minConstraints={[width, height * 0.5]}
-        maxConstraints={[width, height * 0.7]}
+        width={windowWidth}
+        height={sectionHeight.upperSection}
+        minConstraints={[windowWidth, windowHeight * 0.5]}
+        maxConstraints={[windowWidth, windowHeight * 0.7]}
         className={cx('upper-section')}
-        // resizeHandles={['s']}
-        // axis="y"
       >
-        <ResizableBox
-          width={248}
-          height={height * 0.7}
-          minConstraints={[248, height * 0.5]}
-          maxConstraints={[450, height * 0.7]}
-          className={cx('panel-library')}
-          resizeHandles={['e']}
-          axis="both"
-        >
-          <ConfirmModalProvider>
-            <LibraryPanel />
-          </ConfirmModalProvider>
-        </ResizableBox>
-        <ResizableBox
-          // width={width - 248 - 264}
-          width={width}
-          height={height * 0.7}
-          minConstraints={[150, height * 0.5]}
-          // maxConstraints={[width - 248 - 264, height * 0.7]}
-          maxConstraints={[width, height * 0.7]}
-          className={cx('panel-rendering')}
-          axis="both"
-        >
-          <div style={{ width: '100%', height: '100%' }} onDrop={handleDrop}>
-            <RenderingController
-              id="renderingDiv"
-              fileUrl={fileUrl}
-              currentTimeRef={currentTimeRef}
-              currentTimeIndexRef={currentTimeIndexRef}
-              currentXAxisPosition={currentXAxisPosition}
-              prevXScale={prevXScale}
-            />
-          </div>
-        </ResizableBox>
-        <ResizableBox
-          width={264}
-          height={height * 0.7}
-          minConstraints={[264, height * 0.5]}
-          maxConstraints={[450, height * 0.7]}
-          className={cx('panel-control')}
-          resizeHandles={['w']}
-          axis="both"
-        >
-          <ControlPanel />
-        </ResizableBox>
+        <Fragment>
+          <ResizableBox
+            width={248}
+            height={sectionHeight.upperSection}
+            minConstraints={[248, windowHeight * 0.5]}
+            maxConstraints={[450, windowHeight * 0.7]}
+            className={cx('panel-library')}
+            resizeHandles={['e']}
+            axis="both"
+          >
+            <ConfirmModalProvider>
+              <LibraryPanel />
+            </ConfirmModalProvider>
+          </ResizableBox>
+          <ResizableBox
+            width={windowWidth}
+            height={sectionHeight.upperSection}
+            minConstraints={[150, windowHeight * 0.5]}
+            maxConstraints={[windowWidth, windowHeight * 0.7]}
+            className={cx('panel-rendering')}
+            axis="both"
+          >
+            <div style={{ width: '100%', height: '100%' }} onDrop={handleDrop}>
+              <RenderingController
+                id="renderingDiv"
+                fileUrl={fileUrl}
+                currentTimeRef={currentTimeRef}
+                currentTimeIndexRef={currentTimeIndexRef}
+                currentXAxisPosition={currentXAxisPosition}
+                prevXScale={prevXScale}
+              />
+            </div>
+          </ResizableBox>
+          <ResizableBox
+            width={264}
+            height={sectionHeight.upperSection}
+            minConstraints={[264, windowHeight * 0.5]}
+            maxConstraints={[450, windowHeight * 0.7]}
+            className={cx('panel-control')}
+            resizeHandles={['w']}
+            axis="both"
+          >
+            <ControlPanel />
+          </ResizableBox>
+        </Fragment>
       </ResizableBox>
       <ResizableBox
-        width={width}
-        height={height * 0.3}
+        width={windowWidth}
+        height={sectionHeight.lowerSection}
+        minConstraints={[windowWidth, windowHeight * 0.3]}
+        maxConstraints={[windowWidth, windowHeight * 0.5]}
         className={cx('lower-section')}
         onResize={handleResize}
         axis="both"
