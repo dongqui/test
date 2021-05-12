@@ -108,10 +108,11 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
           ...item,
           value: {
             ...item.value,
-            [name]: _.isEqual(item.key, key) ? parseFloat(value) : (item as any)[name],
+            [name]: _.isEqual(item.key, key) ? parseFloat(value) : (item.value as any)[name],
           },
         })),
       );
+      setIsSubmitted(false);
     },
     [retargetMap],
   );
@@ -207,31 +208,31 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
                       name="x"
                       suffix="°"
                       defaultValue={item.value.x}
+                      value={item.value.x}
                       onChange={(e) =>
                         handleChange({ key: item.key, name: 'x', value: e.target.value })
                       }
                       innerRef={register}
-                      disabled
                     />
                     <SuffixInput
                       name="y"
                       suffix="°"
                       defaultValue={item.value.y}
+                      value={item.value.y}
                       onChange={(e) =>
                         handleChange({ key: item.key, name: 'y', value: e.target.value })
                       }
                       innerRef={register}
-                      disabled
                     />
                     <SuffixInput
                       name="z"
                       suffix="°"
                       defaultValue={item.value.z}
+                      value={item.value.z}
                       onChange={(e) =>
                         handleChange({ key: item.key, name: 'z', value: e.target.value })
                       }
                       innerRef={register}
-                      disabled
                     />
                   </div>
                 </div>
