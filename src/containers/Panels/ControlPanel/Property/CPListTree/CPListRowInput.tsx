@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef, Fragment } from 'react';
+import * as THREE from 'three';
 import { useReactiveVar } from '@apollo/client';
 import { CPNameType } from 'types/CP';
 import { RenderingDataPropertyName } from 'types/RP';
@@ -17,6 +18,10 @@ import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';
 import fnConvertEulerToDegree from 'utils/common/fnConvertEulerToDegree';
 import fnConvertDegreeToEuler from 'utils/common/fnConvertDegreeToEuler';
+import { useDispatch } from 'react-redux';
+import { changeBoneTransform } from 'actions/boneTransform';
+import { undoableBoneTransform } from 'reducers/boneTransform';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -68,8 +73,12 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
 
   const [values, setValue] = useState<InputValueType>(initialValue);
 
-  const [modeSelect, setModeSelect] = useState(false);
+  const [isModeSelectOpen, setIsModeSelectOpen] = useState(false);
   const [quaternionMode, setQuaternionMode] = useState(false);
+
+  const dispatch = useDispatch();
+  type NormalAxisType = 'x' | 'y' | 'z';
+  type QuaternionAxisType = 'x' | 'y' | 'z' | 'w';
 
   const handleBlur = useCallback(
     (e: any) => {
@@ -77,41 +86,109 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       const name = e.target.name;
       const property = name?.slice(0, -1).toLowerCase();
       const axis: any = name?.slice(-1).toLowerCase();
+
       if (_.isNaN(parseFloat(value))) {
         return;
       }
-      switch (property) {
-        case 'position':
-          if (currentBone) {
-            fnChangeBonePosition({ targetBone: currentBone, axis, value });
-          }
-          break;
-        case 'rotation':
-        case 'quaternion':
-          if (currentBone) {
+
+      if (currentBone) {
+        const boneTransformValues = {
+          bone: currentBone,
+          position: {
+            x: _.round(currentBone.position.x, 4),
+            y: _.round(currentBone.position.y, 4),
+            z: _.round(currentBone.position.z, 4),
+          },
+          quaternion: {
+            x: _.round(currentBone.quaternion.x, 4),
+            y: _.round(currentBone.quaternion.y, 4),
+            z: _.round(currentBone.quaternion.z, 4),
+            w: _.round(currentBone.quaternion.w, 4),
+          },
+          rotation: {
+            x: _.round(currentBone.rotation.x, 4),
+            y: _.round(currentBone.rotation.y, 4),
+            z: _.round(currentBone.rotation.z, 4),
+          },
+          scale: {
+            x: _.round(currentBone.scale.x, 4),
+            y: _.round(currentBone.scale.y, 4),
+            z: _.round(currentBone.scale.z, 4),
+          },
+        };
+
+        switch (property) {
+          case 'position':
+            if (currentBone) {
+              fnChangeBonePosition({ targetBone: currentBone, axis, value: parseFloat(value) });
+              boneTransformValues.position[axis as NormalAxisType] = parseFloat(value);
+              dispatch(changeBoneTransform(boneTransformValues));
+            }
+            break;
+          case 'rotation':
+          case 'quaternion':
             if (quaternionMode) {
               fnChangeBoneQuaternion({
                 targetBone: currentBone,
                 axis,
                 value: parseFloat(value),
               });
+              boneTransformValues.quaternion[axis as QuaternionAxisType] = _.round(
+                parseFloat(value),
+                4,
+              );
+              // q -> r 해서 적용
+              const e = new THREE.Euler().setFromQuaternion(
+                new THREE.Quaternion(
+                  boneTransformValues.quaternion.x,
+                  boneTransformValues.quaternion.y,
+                  boneTransformValues.quaternion.z,
+                  boneTransformValues.quaternion.w,
+                ).normalize(),
+                'XYZ',
+              );
+              boneTransformValues.rotation.x = _.round(e.x, 4);
+              boneTransformValues.rotation.y = _.round(e.y, 4);
+              boneTransformValues.rotation.z = _.round(e.z, 4);
+              dispatch(changeBoneTransform(boneTransformValues));
             } else {
               fnChangeBoneRotation({
                 targetBone: currentBone,
                 axis,
-                value: fnConvertDegreeToEuler({ degreeValue: value }),
+                value: fnConvertDegreeToEuler({ degreeValue: parseFloat(value) }),
               });
+              boneTransformValues.rotation[axis as NormalAxisType] = _.round(
+                fnConvertDegreeToEuler({
+                  degreeValue: parseFloat(value),
+                }),
+                4,
+              );
+              // d -> r -> q 해서 적용
+              const q = new THREE.Quaternion().setFromEuler(
+                new THREE.Euler(
+                  boneTransformValues.rotation.x,
+                  boneTransformValues.rotation.y,
+                  boneTransformValues.rotation.z,
+                ),
+              );
+              boneTransformValues.quaternion.x = _.round(q.x, 4);
+              boneTransformValues.quaternion.y = _.round(q.y, 4);
+              boneTransformValues.quaternion.z = _.round(q.z, 4);
+              boneTransformValues.quaternion.w = _.round(q.w, 4);
+              dispatch(changeBoneTransform(boneTransformValues));
             }
-          }
-          break;
-        case 'scale':
-          if (currentBone) {
-            fnChangeBoneScale({ targetBone: currentBone, axis, value });
-          }
-          break;
+            break;
+          case 'scale':
+            fnChangeBoneScale({ targetBone: currentBone, axis, value: parseFloat(value) });
+            boneTransformValues.scale[axis as NormalAxisType] = _.round(parseFloat(value), 4);
+            dispatch(changeBoneTransform(boneTransformValues));
+            break;
+          default:
+            break;
+        }
       }
     },
-    [currentBone, quaternionMode],
+    [currentBone, dispatch, quaternionMode],
   );
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -130,6 +207,50 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     }
   };
 
+  const boneTransform: ReturnType<typeof undoableBoneTransform> = useSelector(
+    (state) => state.undoableBoneTransform,
+  );
+
+  // undo/redo 시 input 값 변경
+  useEffect(() => {
+    if (boneTransform && !Object.values(boneTransform.present).includes(undefined)) {
+      const {
+        present: { position, rotation, quaternion, scale },
+      } = boneTransform;
+      if (_.isEqual(name, CPNameType.Position) && position) {
+        setInitialValue({
+          x: position.x ? _.round(position.x, 4) : 0,
+          y: position.y ? _.round(position.y, 4) : 0,
+          z: position.z ? _.round(position.z, 4) : 0,
+        });
+      }
+      if (_.isEqual(name, CPNameType.Rotation) && quaternion && rotation) {
+        if (quaternionMode) {
+          setInitialValue({
+            w: quaternion.w ? _.round(quaternion.w, 4) : 1,
+            x: quaternion.x ? _.round(quaternion.x, 4) : 0,
+            y: quaternion.y ? _.round(quaternion.y, 4) : 0,
+            z: quaternion.z ? _.round(quaternion.z, 4) : 0,
+          });
+        } else {
+          setInitialValue({
+            x: rotation.x ? _.round(fnConvertEulerToDegree({ eulerValue: rotation.x }), 4) : 0,
+            y: rotation.y ? _.round(fnConvertEulerToDegree({ eulerValue: rotation.y }), 4) : 0,
+            z: rotation.z ? _.round(fnConvertEulerToDegree({ eulerValue: rotation.z }), 4) : 0,
+          });
+        }
+      }
+      if (_.isEqual(name, CPNameType.Scale) && scale) {
+        setInitialValue({
+          x: scale.x ? _.round(scale.x, 4) : 1,
+          y: scale.y ? _.round(scale.y, 4) : 1,
+          z: scale.z ? _.round(scale.z, 4) : 1,
+        });
+      }
+    }
+  }, [boneTransform, name, quaternionMode]);
+
+  // transformControls 드래그 조작 시
   useEffect(() => {
     if (transformControls) {
       // THREE example 소스라 타입 지원하지 않습니다
@@ -168,9 +289,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
         }
         if (_.isEqual(name, CPNameType.Scale)) {
           setInitialValue({
-            x: targetObject?.scale?.x ? _.round(targetObject?.scale?.x, 4) : 0,
-            y: targetObject?.scale?.y ? _.round(targetObject?.scale?.y, 4) : 0,
-            z: targetObject?.scale?.z ? _.round(targetObject?.scale?.z, 4) : 0,
+            x: targetObject?.scale?.x ? _.round(targetObject?.scale?.x, 4) : 1,
+            y: targetObject?.scale?.y ? _.round(targetObject?.scale?.y, 4) : 1,
+            z: targetObject?.scale?.z ? _.round(targetObject?.scale?.z, 4) : 1,
           });
         }
       };
@@ -181,6 +302,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     }
   }, [name, quaternionMode, transformControls]);
 
+  // currentBone 변경 시 input 값 변경
   useEffect(() => {
     if (_.isEqual(name, CPNameType.Position)) {
       setInitialValue({
@@ -213,9 +335,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     }
     if (_.isEqual(name, CPNameType.Scale)) {
       setInitialValue({
-        x: currentBone?.scale?.x ? _.round(currentBone?.scale?.x, 4) : 0,
-        y: currentBone?.scale?.y ? _.round(currentBone?.scale?.y, 4) : 0,
-        z: currentBone?.scale?.z ? _.round(currentBone?.scale?.z, 4) : 0,
+        x: currentBone?.scale?.x ? _.round(currentBone?.scale?.x, 4) : 1,
+        y: currentBone?.scale?.y ? _.round(currentBone?.scale?.y, 4) : 1,
+        z: currentBone?.scale?.z ? _.round(currentBone?.scale?.z, 4) : 1,
       });
     }
   }, [currentBone, name, quaternionMode]);
@@ -245,7 +367,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
 
   const iconClasses = cx('icon', {
     rotation: _.isEqual(name, 'Rotation'),
-    quaternion: modeSelect,
+    quaternion: isModeSelectOpen,
   });
 
   const titleClasses = cx('property-title', {
@@ -273,12 +395,12 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
       <IconWrapper
         className={iconClasses}
         icon={SvgPath.ChevronLeft}
-        onClick={() => setModeSelect(!modeSelect)}
+        onClick={() => setIsModeSelectOpen(!isModeSelectOpen)}
         hasFrame={false}
       />
       <div className={cx('input-group')}>
         <Fragment>
-          {modeSelect ? (
+          {isModeSelectOpen ? (
             <div className={cx('segment')}>
               <Segment list={modeList} />
             </div>

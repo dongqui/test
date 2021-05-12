@@ -60,14 +60,14 @@ const Shoot: FunctionComponent = () => {
     fnVisualizeFile({ key: draggingRow?.key ?? '', lpData });
   }, [lpData]);
 
-  useDebuggingData({
-    lpData,
-    cpData,
-    renderingData,
-    animatingData,
-    currentVisualizedData,
-    tpDopeSheetList,
-  });
+  // useDebuggingData({
+  //   lpData,
+  //   cpData,
+  //   renderingData,
+  //   animatingData,
+  //   currentVisualizedData,
+  //   tpDopeSheetList,
+  // });
 
   const [windowWidth, windowHeight] = useWindowSize();
 

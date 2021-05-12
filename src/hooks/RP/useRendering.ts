@@ -21,7 +21,6 @@ import {
   fnCreateScene,
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
-import { useHistory } from './useHistory';
 import {
   storeCurrentBone,
   storeRenderingData,
@@ -29,6 +28,11 @@ import {
   storeSkeletonHelper,
 } from '../../lib/store';
 import { useReactiveVar } from '@apollo/client';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
+import { BoneTransformState, changeBoneTransform } from 'actions/boneTransform';
+import { redo, resetHistory, undo } from 'actions/withUndoable';
+import { undoableBoneTransform } from 'reducers/boneTransform';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -91,7 +95,73 @@ export const useRendering = (props: UseRendering) => {
     [],
   );
 
-  const { pushToUndoArray, popFromUndoArray, pushToRedoArray, popFromRedoArray } = useHistory();
+  const dispatch = useDispatch();
+  const boneTransform: ReturnType<typeof undoableBoneTransform> = useSelector(
+    (state) => state.undoableBoneTransform,
+  );
+
+  // history 관련 단축키 추가
+  useEffect(() => {
+    const handleHistoryShortcutDown = (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+      switch (event.key) {
+        case 'z':
+        case 'Z':
+        case 'ㅋ':
+          // redo
+          if (event.ctrlKey && event.shiftKey) {
+            if (boneTransform && boneTransform.future.length !== 0) {
+              dispatch(redo());
+            }
+          }
+          // undo
+          if (event.ctrlKey && !event.shiftKey) {
+            if (boneTransform && boneTransform.past.length !== 0) {
+              dispatch(undo());
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    };
+    document.addEventListener('keydown', handleHistoryShortcutDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleHistoryShortcutDown);
+    };
+  }, [boneTransform, dispatch]);
+
+  // 현재 boneTransform state 가 변했을 때 RP, CP 에 적용
+  useEffect(() => {
+    if (boneTransform) {
+      if (boneTransform.present) {
+        const {
+          bone,
+          position,
+          rotation,
+          quaternion,
+          scale,
+        }: BoneTransformState = boneTransform.present;
+        if (bone && position && rotation && quaternion && scale) {
+          bone.position.set(position.x, position.y, position.z);
+          bone.rotation.set(rotation.x, rotation.y, rotation.z);
+          bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+          bone.scale.set(scale.x, scale.y, scale.z);
+        }
+      }
+    }
+  }, [boneTransform]);
+
+  // 모델 파일 변경 시 history reset
+  useEffect(() => {
+    if (fileUrl) {
+      dispatch(resetHistory());
+    }
+  }, [dispatch, fileUrl]);
 
   const handleTransformControlsShortcutDown = useCallback(
     ({
@@ -390,50 +460,6 @@ export const useRendering = (props: UseRendering) => {
     [multiKeyController],
   );
 
-  const handleHistoryShortcutDown = useCallback(
-    ({ event }: { event: KeyboardEvent }) => {
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-      switch (event.key) {
-        case 'z':
-        case 'Z':
-        case 'ㅋ':
-          // redo
-          if (event.ctrlKey && event.shiftKey) {
-            const info = popFromRedoArray();
-            if (info) {
-              const { panel, value } = info;
-              if (panel === 'RP') {
-                const { bone, position, quaternion, scale } = value;
-                bone.position.set(position.x, position.y, position.z);
-                bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-                bone.scale.set(scale.x, scale.y, scale.z);
-              }
-            }
-          }
-          // undo
-          if (event.ctrlKey && !event.shiftKey) {
-            const info = popFromUndoArray();
-            if (info) {
-              const { panel, value } = info;
-              if (panel === 'RP') {
-                const { bone, position, quaternion, scale } = value;
-                bone.position.set(position.x, position.y, position.z);
-                bone.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-                bone.scale.set(scale.x, scale.y, scale.z);
-              }
-            }
-          }
-          break;
-        default:
-          break;
-      }
-    },
-    [popFromRedoArray, popFromUndoArray],
-  );
-
   const clock = new THREE.Clock();
 
   // renderer 최초 생성 (id 는 renderingDiv 의 id 라 바뀌지 않음)
@@ -504,28 +530,33 @@ export const useRendering = (props: UseRendering) => {
       // https://spectrum.chat/apollo/apollo-link-state/undo-redo-functionality-proposal~48be8143-c460-4655-8e44-b41df3e00a12
       // https://redux.js.org/recipes/implementing-undo-history#understanding-undo-history
       transformControls.addEventListener('dragging-changed', (event: any) => {
-        if (event.value) {
-          const bone: THREE.Bone = event.target.object;
+        const bone: THREE.Bone = event.target.object;
+        if (!event.value) {
           const value = {
             bone,
             position: {
-              x: bone.position.x,
-              y: bone.position.y,
-              z: bone.position.z,
+              x: _.round(bone.position.x, 4),
+              y: _.round(bone.position.y, 4),
+              z: _.round(bone.position.z, 4),
             },
             quaternion: {
-              x: bone.quaternion.x,
-              y: bone.quaternion.y,
-              z: bone.quaternion.z,
-              w: bone.quaternion.w,
+              x: _.round(bone.quaternion.x, 4),
+              y: _.round(bone.quaternion.y, 4),
+              z: _.round(bone.quaternion.z, 4),
+              w: _.round(bone.quaternion.w, 4),
+            },
+            rotation: {
+              x: _.round(bone.rotation.x, 4),
+              y: _.round(bone.rotation.y, 4),
+              z: _.round(bone.rotation.z, 4),
             },
             scale: {
-              x: bone.scale.x,
-              y: bone.scale.y,
-              z: bone.scale.z,
+              x: _.round(bone.scale.x, 4),
+              y: _.round(bone.scale.y, 4),
+              z: _.round(bone.scale.z, 4),
             },
           };
-          pushToUndoArray({ panel: 'RP', value });
+          dispatch(changeBoneTransform(value));
         }
       });
       setContents((prevContents) => [...prevContents, transformControls]);
@@ -533,7 +564,6 @@ export const useRendering = (props: UseRendering) => {
       const handleKeyDown = (event: any) => {
         handleTransformControlsShortcutDown({ event, transformControls });
         handleCameraControlsShortcutDown({ event, cameraControls });
-        handleHistoryShortcutDown({ event });
       };
 
       const handleKeyUp = (event: any) => {
@@ -563,9 +593,34 @@ export const useRendering = (props: UseRendering) => {
             setContents((prevContents) => [...prevContents, model]);
             // skeleton helper 생성 및 scene에 추가
             const innerSkeletonHelper = fnAddSkeletonHelper({ scene, model });
-            // setSkeletonHelper(innerSkeletonHelper);
+            // 첫 visualize 순간의 CP값들 history에 등록
+            const bone: THREE.Bone = innerSkeletonHelper.bones[0];
+            const value = {
+              bone,
+              position: {
+                x: _.round(bone.position.x, 4),
+                y: _.round(bone.position.y, 4),
+                z: _.round(bone.position.z, 4),
+              },
+              quaternion: {
+                x: _.round(bone.quaternion.x, 4),
+                y: _.round(bone.quaternion.y, 4),
+                z: _.round(bone.quaternion.z, 4),
+                w: _.round(bone.quaternion.w, 4),
+              },
+              rotation: {
+                x: _.round(bone.rotation.x, 4),
+                y: _.round(bone.rotation.y, 4),
+                z: _.round(bone.rotation.z, 4),
+              },
+              scale: {
+                x: _.round(bone.scale.x, 4),
+                y: _.round(bone.scale.y, 4),
+                z: _.round(bone.scale.z, 4),
+              },
+            };
+            dispatch(changeBoneTransform(value));
             storeSkeletonHelper(innerSkeletonHelper);
-
             // eslint-disable-next-line no-console
             console.log('skeletonHelper: ', innerSkeletonHelper);
             storeCurrentBone(innerSkeletonHelper.bones[0]);
@@ -579,6 +634,7 @@ export const useRendering = (props: UseRendering) => {
               innerCurrentBone,
               setInnerCurrentBone,
               storeCurrentBone,
+              dispatch,
             });
           },
           () => {},
@@ -606,7 +662,7 @@ export const useRendering = (props: UseRendering) => {
         renderer.render(scene, camera);
         animateReqIdRef.current = requestAnimationFrame(animate);
       };
-      animate();
+      requestAnimationFrame(animate);
     }
 
     return () => {

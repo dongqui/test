@@ -32,7 +32,9 @@ import {
   fnUpdateKeyframeToLayer,
 } from 'utils/TP/editingUtils';
 import produce from 'immer';
+import { useDragBox } from 'hooks/common';
 import useContextMenu from 'hooks/common/useContextMenu';
+import { DragBox } from 'components/DragBox';
 
 interface Props {
   timelineWrapperRef: RefObject<HTMLDivElement>;
@@ -1029,6 +1031,12 @@ const DopeSheet: React.FC<Props> = ({
     }
   }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex, timelineWrapperRef]);
 
+  const [isUpdated, setIsUpdated] = useState(false);
+  const handleIsUpdated = useCallback(() => {
+    setIsUpdated((prev) => !prev);
+  }, []);
+  const list = useDragBox({ ref: dopeSheetRef, isUpdated, onChangeIsUpdated: handleIsUpdated });
+
   return (
     <>
       <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
@@ -1049,6 +1057,7 @@ const DopeSheet: React.FC<Props> = ({
           })}
         </div>
         {playBarDisplayed && <PlayBar />}
+        <DragBox parentRef={dopeSheetRef} isAllCovered onChangeIsUpdated={handleIsUpdated} />
       </div>
     </>
   );
