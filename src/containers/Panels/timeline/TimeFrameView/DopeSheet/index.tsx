@@ -1032,10 +1032,10 @@ const DopeSheet: React.FC<Props> = ({
   }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex, timelineWrapperRef]);
 
   const [isUpdated, setIsUpdated] = useState(false);
-  const handleChange = useCallback(() => {
+  const handleIsUpdated = useCallback(() => {
     setIsUpdated((prev) => !prev);
   }, []);
-  const list = useDragBox({ ref: dopeSheetRef, isUpdated });
+  const list = useDragBox({ ref: dopeSheetRef, isUpdated, onChangeIsUpdated: handleIsUpdated });
 
   return (
     <>
@@ -1057,7 +1057,7 @@ const DopeSheet: React.FC<Props> = ({
           })}
         </div>
         {playBarDisplayed && <PlayBar />}
-        <DragBox parentRef={dopeSheetRef} covered="whole" onChangeIsUpdated={handleChange} />
+        <DragBox parentRef={dopeSheetRef} isAllCovered onChangeIsUpdated={handleIsUpdated} />
       </div>
     </>
   );
