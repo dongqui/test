@@ -147,24 +147,22 @@ const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, pa
             const isSmallerThanBoxCoord = (box: number, element: number) => box < element;
             const isBiggerThanBoxCoord = (box: number, element: number) => element < box;
 
-            if (isAllCovered) {
-              if (
-                isSmallerThanBoxCoord(boxLeft, elementLeft) &&
-                isSmallerThanBoxCoord(boxTop, elementTop) &&
-                isBiggerThanBoxCoord(boxRight, elementRight) &&
-                isBiggerThanBoxCoord(boxBottom, elementBottom)
-              ) {
-                element.id = 'grabbed';
-              }
-            } else {
-              if (
-                isSmallerThanBoxCoord(boxLeft, elementRight) &&
-                isSmallerThanBoxCoord(boxTop, elementBottom) &&
-                isBiggerThanBoxCoord(boxRight, elementLeft) &&
-                isBiggerThanBoxCoord(boxBottom, elementTop)
-              ) {
-                element.id = 'grabbed';
-              }
+            const allContains =
+              isSmallerThanBoxCoord(boxLeft, elementLeft) &&
+              isSmallerThanBoxCoord(boxTop, elementTop) &&
+              isBiggerThanBoxCoord(boxRight, elementRight) &&
+              isBiggerThanBoxCoord(boxBottom, elementBottom);
+
+            const partialContains =
+              isSmallerThanBoxCoord(boxLeft, elementRight) &&
+              isSmallerThanBoxCoord(boxTop, elementBottom) &&
+              isBiggerThanBoxCoord(boxRight, elementLeft) &&
+              isBiggerThanBoxCoord(boxBottom, elementTop);
+
+            if (isAllCovered && allContains) {
+              element.id = 'grabbed';
+            } else if (!isAllCovered && partialContains) {
+              element.id = 'grabbed';
             }
           });
 
