@@ -12,20 +12,12 @@ import _ from 'lodash';
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-import {
-  storeRenderingData,
-  storeLpData,
-  storeCPData,
-  storeAnimatingData,
-  storeCurrentVisualizedData,
-  storeTPDopeSheetList,
-} from 'lib/store';
+import { storeLpData, storeCurrentVisualizedData } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
 import { ControlPanel } from 'containers/Panels/ControlPanel';
-import { useDebuggingData } from 'hooks/common/useDebuggingData';
 import { ConfirmModalProvider } from 'components/Modal/ConfirmModal';
 import useWindowSize from 'hooks/common/useWindowSize';
 import { d3ScaleLinear } from 'types/TP';
@@ -38,10 +30,6 @@ const cx = classNames.bind(styles);
 const Shoot: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
-  const cpData = useReactiveVar(storeCPData);
-  const renderingData = useReactiveVar(storeRenderingData);
-  const animatingData = useReactiveVar(storeAnimatingData);
-  const tpDopeSheetList = useReactiveVar(storeTPDopeSheetList);
 
   const currentTimeRef = useRef<HTMLInputElement>(null);
   const currentTimeIndexRef = useRef<HTMLInputElement>(null);
@@ -50,24 +38,18 @@ const Shoot: FunctionComponent = () => {
 
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
+
     if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
       return visualizedRow?.url;
     }
+
     return _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
   }, [lpData]);
+
   const handleDrop = useCallback(() => {
     const draggingRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
     fnVisualizeFile({ key: draggingRow?.key ?? '', lpData });
   }, [lpData]);
-
-  // useDebuggingData({
-  //   lpData,
-  //   cpData,
-  //   renderingData,
-  //   animatingData,
-  //   currentVisualizedData,
-  //   tpDopeSheetList,
-  // });
 
   const [windowWidth, windowHeight] = useWindowSize();
 
@@ -85,8 +67,8 @@ const Shoot: FunctionComponent = () => {
         })),
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentVisualizedData?.baseLayer, currentVisualizedData?.key, currentVisualizedData?.layers]);
+  }, [currentVisualizedData, lpData]);
+
   useEffect(() => {
     if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.key, currentVisualizedData?.key])) {
       storeCurrentVisualizedData(undefined);
@@ -104,11 +86,13 @@ const Shoot: FunctionComponent = () => {
   });
 
   useEffect(() => {
-    setSectionHeight({
-      upperSection: windowHeight * 0.7,
-      lowerSection: windowHeight * 0.3,
-    });
-  }, [windowHeight]);
+    if (sectionHeight.upperSection + sectionHeight.lowerSection !== windowHeight) {
+      setSectionHeight({
+        upperSection: windowHeight * 0.7,
+        lowerSection: windowHeight * 0.3,
+      });
+    }
+  }, [sectionHeight.lowerSection, sectionHeight.upperSection, windowHeight]);
 
   const handleLPResizeStop = useCallback(
     (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
