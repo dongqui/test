@@ -111,7 +111,7 @@ const Shoot: FunctionComponent = () => {
   }, [windowHeight]);
 
   const handleLPResizeStop = useCallback(
-    (e: React.SyntheticEvent, data: ResizeCallbackData) => {
+    (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
       setPanelWidth({
         library: data.size.width,
         control: panelWidth.control,
