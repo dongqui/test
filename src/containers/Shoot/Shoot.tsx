@@ -98,6 +98,11 @@ const Shoot: FunctionComponent = () => {
     lowerSection: windowHeight * 0.3,
   });
 
+  const [panelWidth, setPanelWidth] = useState({
+    library: 248,
+    control: 264,
+  });
+
   useEffect(() => {
     setSectionHeight({
       upperSection: windowHeight * 0.7,
@@ -105,12 +110,35 @@ const Shoot: FunctionComponent = () => {
     });
   }, [windowHeight]);
 
-  const handleResize = (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
-    setSectionHeight({
-      upperSection: windowHeight - data.size.height,
-      lowerSection: data.size.height,
-    });
-  };
+  const handleLPResizeStop = useCallback(
+    (e: React.SyntheticEvent, data: ResizeCallbackData) => {
+      setPanelWidth({
+        library: data.size.width,
+        control: panelWidth.control,
+      });
+    },
+    [panelWidth.control],
+  );
+
+  const handleCPResizeStop = useCallback(
+    (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
+      setPanelWidth({
+        library: panelWidth.library,
+        control: data.size.width,
+      });
+    },
+    [panelWidth.library],
+  );
+
+  const handleResize = useCallback(
+    (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
+      setSectionHeight({
+        upperSection: windowHeight - data.size.height,
+        lowerSection: data.size.height,
+      });
+    },
+    [windowHeight],
+  );
 
   return (
     <div className={cx('wrapper')}>
@@ -123,11 +151,12 @@ const Shoot: FunctionComponent = () => {
       >
         <Fragment>
           <ResizableBox
-            width={248}
+            width={panelWidth.library}
             height={sectionHeight.upperSection}
             minConstraints={[248, windowHeight * 0.5]}
             maxConstraints={[450, windowHeight * 0.7]}
             className={cx('panel-library')}
+            onResizeStop={handleLPResizeStop}
             resizeHandles={['e']}
             axis="both"
           >
@@ -155,11 +184,12 @@ const Shoot: FunctionComponent = () => {
             </div>
           </ResizableBox>
           <ResizableBox
-            width={264}
+            width={panelWidth.control}
             height={sectionHeight.upperSection}
             minConstraints={[264, windowHeight * 0.5]}
             maxConstraints={[450, windowHeight * 0.7]}
             className={cx('panel-control')}
+            onResizeStop={handleCPResizeStop}
             resizeHandles={['w']}
             axis="both"
           >
