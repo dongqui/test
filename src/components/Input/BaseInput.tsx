@@ -41,6 +41,7 @@ const BaseInput: FunctionComponent<Props> = ({
   arrow,
   fullSize,
   autoComplete,
+  readOnly,
   onBlur,
   onChange,
   onKeyUp,
@@ -76,12 +77,20 @@ const BaseInput: FunctionComponent<Props> = ({
 
   if (mask) {
     return (
-      <MaskedInput className={classes} mask={mask} maskChar={maskChar} alwaysShowMask {...rest}>
+      <MaskedInput
+        className={classes}
+        mask={mask}
+        maskChar={maskChar}
+        readOnly={readOnly}
+        alwaysShowMask
+        {...rest}
+      >
         {(inputProps: unknown) => (
           <input
             type={type}
             ref={innerRef}
             autoComplete={autoComplete ? 'on' : 'off'}
+            readOnly={readOnly}
             {...inputProps}
           />
         )}
@@ -93,12 +102,13 @@ const BaseInput: FunctionComponent<Props> = ({
     <input
       className={classes}
       type={type}
+      ref={innerRef}
       disabled={disabled}
       autoComplete={autoComplete ? 'on' : 'off'}
+      readOnly={readOnly}
       onBlur={handleBlur}
       onChange={handleChange}
       onKeyUp={handleKeyUp}
-      ref={innerRef}
       {...rest}
     />
   );

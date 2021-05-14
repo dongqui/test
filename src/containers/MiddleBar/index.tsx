@@ -235,8 +235,6 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
         currentTimeIndexRef.current.value = value.toString();
       }
-    } else {
-      event.target.value = startTimeIndex.toString();
     }
   }, 1500);
 
@@ -247,8 +245,6 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
         currentTimeIndexRef.current.value = value.toString();
       }
-    } else {
-      event.target.value = endTimeIndex.toString();
     }
   }, 1500);
 
@@ -275,8 +271,6 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
           `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
           ${X_AXIS_HEIGHT / 2}px, 0)`,
         );
-      } else {
-        event.target.value = _.round(currentAction.time * 30, 0).toString();
       }
     }
   }, 1500);
@@ -480,6 +474,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
               <div className={cx('playtime')}>
                 {isShootPage ? (
                   <BaseInput
+                    readOnly
                     className={cx('time-current')}
                     mask="99:99"
                     maskChar="0"
@@ -498,6 +493,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                 <div className={cx('divide')}>/</div>
                 {isShootPage ? (
                   <BaseInput
+                    readOnly
                     className={cx('time-last')}
                     mask="99:99"
                     maskChar="0"
