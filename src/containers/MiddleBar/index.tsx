@@ -176,32 +176,32 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   ];
 
   const handleStartInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    const value = parseInt(event.currentTarget.value);
+    const value = parseInt(event.target.value);
     if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, startTimeIndex: value });
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
         currentTimeIndexRef.current.value = value.toString();
       }
     } else {
-      event.currentTarget.value = startTimeIndex.toString();
+      event.target.value = startTimeIndex.toString();
     }
   };
 
   const handleEndInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    const value = parseInt(event.currentTarget.value);
+    const value = parseInt(event.target.value);
     if (value > startTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, endTimeIndex: value });
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
         currentTimeIndexRef.current.value = value.toString();
       }
     } else {
-      event.currentTarget.value = endTimeIndex.toString();
+      event.target.value = endTimeIndex.toString();
     }
   };
 
   const handleNowInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     if (currentXAxisPosition && currentAction) {
-      const value = parseInt(event.currentTarget.value);
+      const value = parseInt(event.target.value);
       if (
         value >= startTimeIndex &&
         value <= endTimeIndex &&
@@ -223,18 +223,63 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
           ${X_AXIS_HEIGHT / 2}px, 0)`,
         );
       } else {
-        event.currentTarget.value = _.round(currentAction.time * 30, 0).toString();
+        event.target.value = _.round(currentAction.time * 30, 0).toString();
       }
-      // } else {
-      //   // 애니메이션 없는 경우
-      //   const value = parseInt(event.currentTarget.value);
-      //   if (value <= startTimeIndex) {
-      //     event.currentTarget.value = startTimeIndex.toString();
-      //   } else if (value >= endTimeIndex) {
-      //     event.currentTarget.value = endTimeIndex.toString();
-      //   }
     }
   };
+
+  const handleStartInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value);
+    if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
+      storeAnimatingData({ ...animatingData, startTimeIndex: value });
+      if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
+        currentTimeIndexRef.current.value = value.toString();
+      }
+    } else {
+      event.target.value = startTimeIndex.toString();
+    }
+  }, 1500);
+
+  const handleEndInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value);
+    if (value > startTimeIndex && currentTimeIndexRef) {
+      storeAnimatingData({ ...animatingData, endTimeIndex: value });
+      if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
+        currentTimeIndexRef.current.value = value.toString();
+      }
+    } else {
+      event.target.value = endTimeIndex.toString();
+    }
+  }, 1500);
+
+  const handleNowInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+    if (currentXAxisPosition && currentAction) {
+      const value = parseInt(event.target.value);
+      if (
+        value >= startTimeIndex &&
+        value <= endTimeIndex &&
+        prevXScale &&
+        currentTimeRef &&
+        currentTimeRef.current
+      ) {
+        currentAction.time = _.round(value / 30, 4);
+        currentTimeRef.current.value = new Date(_.round(value / 30, 0) * 1000)
+          .toISOString()
+          .substr(11, 8)
+          .substr(2)
+          .replace(':', '');
+        currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
+        const xScaleLinear = prevXScale.current as d3ScaleLinear;
+        d3.select('#play-bar-wrapper').style(
+          'transform',
+          `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+          ${X_AXIS_HEIGHT / 2}px, 0)`,
+        );
+      } else {
+        event.target.value = _.round(currentAction.time * 30, 0).toString();
+      }
+    }
+  }, 1500);
 
   const handleInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     switch (event.key) {
@@ -370,6 +415,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
       .replace(':', '');
     setCurrentTime(value);
   }, [indicator.now]);
+
   // VM end 시간 변경 시 lastInputTime 변경
   useEffect(() => {
     const value = new Date(_.round(recordingData.duration, 0) * 1000)
@@ -481,7 +527,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="START"
                       defaultValue={indicator.start}
                       // value={indicator.start}
-                      // arrow
+                      arrow
+                      min={1}
+                      onChange={handleStartInputChange}
                       onBlur={handleStartInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
@@ -491,7 +539,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="END"
                       defaultValue={indicator.end}
                       // value={indicator.end}
-                      // arrow
+                      arrow
+                      min={startTimeIndex}
+                      onChange={handleEndInputChange}
                       onBlur={handleEndInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
@@ -506,7 +556,10 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
                       innerRef={currentTimeIndexRef}
-                      // arrow
+                      arrow
+                      min={startTimeIndex}
+                      max={endTimeIndex}
+                      onChange={handleNowInputChange}
                     />
                   </>
                 ) : (
