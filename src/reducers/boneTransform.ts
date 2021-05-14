@@ -1,5 +1,13 @@
-import { BoneTransformState, BoneTransformAction } from 'actions/boneTransform';
+import { BoneTransformAction } from 'actions/boneTransform';
 import { withUndoable } from 'hoc';
+
+interface BoneTransformState {
+  bone?: THREE.Bone;
+  position?: Transform.Normal;
+  quaternion?: Transform.Quaternion;
+  rotation?: Transform.Normal;
+  scale?: Transform.Normal;
+}
 
 const defaultState: BoneTransformState = {
   bone: undefined,
@@ -9,7 +17,7 @@ const defaultState: BoneTransformState = {
   scale: undefined,
 };
 
-const boneTransform = (state: BoneTransformState = defaultState, action: BoneTransformAction) => {
+const boneTransform = (state = defaultState, action: BoneTransformAction) => {
   switch (action.type) {
     case 'boneTransform/CHANGE_BONE_TRANSFORM': {
       return Object.assign({}, state, {

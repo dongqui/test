@@ -1,21 +1,13 @@
-export interface BoneTransformState {
-  bone?: THREE.Bone;
-  position?: { x: number; y: number; z: number };
-  quaternion?: { x: number; y: number; z: number; w: number };
-  rotation?: { x: number; y: number; z: number };
-  scale?: { x: number; y: number; z: number };
-}
-
 export type BoneTransformAction = ReturnType<typeof changeBoneTransform>;
 
 export const CHANGE_BONE_TRANSFORM = 'boneTransform/CHANGE_BONE_TRANSFORM' as const;
 
 interface ChangeBoneTransform {
   bone: THREE.Bone;
-  position: { x: number; y: number; z: number };
-  quaternion: { x: number; y: number; z: number; w: number };
-  rotation: { x: number; y: number; z: number };
-  scale: { x: number; y: number; z: number };
+  position: Transform.Normal;
+  quaternion: Transform.Quaternion;
+  rotation: Transform.Normal;
+  scale: Transform.Normal;
 }
 
 export const changeBoneTransform = (params: ChangeBoneTransform) => ({
