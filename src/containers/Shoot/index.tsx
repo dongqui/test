@@ -41,6 +41,8 @@ const Index: FunctionComponent = () => {
     }
   }, [contextMenuInfo.isShow]);
 
+  const isShootMode = _.isEqual(pageInfo.page, 'shoot');
+
   return (
     <main>
       {contextMenuInfo.isShow && (
@@ -72,8 +74,7 @@ const Index: FunctionComponent = () => {
           )}
         </Fragment>
       )}
-      {_.isEqual(pageInfo.page, PAGE_NAMES.shoot) && <ShootContainer />}
-      {_.includes([PAGE_NAMES.extract, PAGE_NAMES.record], pageInfo.page) && <ExtractContainer />}
+      {isShootMode ? <ShootContainer /> : <ExtractContainer />}
     </main>
   );
 };
