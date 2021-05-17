@@ -1,7 +1,7 @@
 import { BoneTransformAction } from 'actions/boneTransform';
 import { withUndoable } from 'hoc';
 
-interface BoneTransformState {
+export interface BoneTransformState {
   bone?: THREE.Bone;
   position?: Transform.Normal;
   quaternion?: Transform.Quaternion;
