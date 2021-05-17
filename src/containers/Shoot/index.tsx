@@ -1,80 +1,209 @@
-import { FunctionComponent, memo, Fragment, useCallback, useEffect, useRef } from 'react';
+import {
+  FunctionComponent,
+  memo,
+  Fragment,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import _ from 'lodash';
-import { storeContextMenuInfo, storeModalInfo, storePageInfo } from 'lib/store';
+import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
-import { useOutsideClick } from 'hooks/common/useOutsideClick';
-import { ContextMenu } from 'components/ContextMenu';
-import { MODAL_TYPES, PAGE_NAMES } from 'types';
-import { BaseModal } from 'components/Modal';
-import { Headline, Html } from 'components/Typography';
-import ShootContainer from './Shoot';
-import ExtractContainer from 'containers/Extract';
+import { LibraryPanel } from 'containers/Panels/LibraryPanel';
+import { storeLpData, storeCurrentVisualizedData } from 'lib/store';
+import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
+import { ResizableBox, ResizeCallbackData } from 'react-resizable';
+import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import TimelineContainer from 'containers/Panels/timeline';
+import { ControlPanel } from 'containers/Panels/ControlPanel';
+import { ConfirmModalProvider } from 'components/Modal/ConfirmModal';
+import useWindowSize from 'hooks/common/useWindowSize';
+import { d3ScaleLinear } from 'types/TP';
+import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
 
 const Shoot: FunctionComponent = () => {
-  const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
-  const modalInfo = useReactiveVar(storeModalInfo);
-  const pageInfo = useReactiveVar(storePageInfo);
-  const contextMenuRef = useRef<HTMLDivElement>(null);
+  const lpData = useReactiveVar(storeLpData);
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
-  const handleClose = useCallback(() => {
-    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
-  }, [modalInfo]);
+  const currentTimeRef = useRef<HTMLInputElement>(null);
+  const currentTimeIndexRef = useRef<HTMLInputElement>(null);
+  const currentXAxisPosition = useRef(1);
+  const prevXScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
 
-  useOutsideClick({
-    ref: contextMenuRef,
-    event: () => {
-      storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-    },
+  const fileUrl = useMemo(() => {
+    const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
+
+    if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
+      return visualizedRow?.url;
+    }
+
+    return _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
+  }, [lpData]);
+
+  const handleDrop = useCallback(() => {
+    const draggingRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
+    fnVisualizeFile({ key: draggingRow?.key ?? '', lpData });
+  }, [lpData]);
+
+  const [windowWidth, windowHeight] = useWindowSize();
+
+  useEffect(() => {
+    if (currentVisualizedData?.baseLayer) {
+      storeLpData(
+        _.map(lpData, (item) => ({
+          ...item,
+          baseLayer: _.isEqual(item?.key, currentVisualizedData?.key)
+            ? currentVisualizedData?.baseLayer
+            : item?.baseLayer,
+          layers: _.isEqual(item?.key, currentVisualizedData?.key)
+            ? currentVisualizedData?.layers
+            : item?.layers,
+        })),
+      );
+    }
+  }, [currentVisualizedData, lpData]);
+
+  useEffect(() => {
+    if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.key, currentVisualizedData?.key])) {
+      storeCurrentVisualizedData(undefined);
+    }
+  }, [currentVisualizedData?.key, lpData]);
+
+  const [sectionHeight, setSectionHeight] = useState({
+    upperSection: windowHeight * 0.7,
+    lowerSection: windowHeight * 0.3,
+  });
+
+  const [panelWidth, setPanelWidth] = useState({
+    library: 248,
+    control: 264,
   });
 
   useEffect(() => {
-    if (window) {
-      const handleContextMenu = (e: MouseEvent) => {
-        e.preventDefault();
-      };
-
-      window.addEventListener('contextmenu', handleContextMenu);
-
-      return () => {
-        window.removeEventListener('contextmenu', handleContextMenu);
-      };
+    if (sectionHeight.upperSection + sectionHeight.lowerSection !== windowHeight) {
+      setSectionHeight({
+        upperSection: windowHeight * 0.7,
+        lowerSection: windowHeight * 0.3,
+      });
     }
-  }, [contextMenuInfo.isShow]);
+  }, [sectionHeight.lowerSection, sectionHeight.upperSection, windowHeight]);
+
+  const handleLPResizeStop = useCallback(
+    (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
+      setPanelWidth({
+        library: data.size.width,
+        control: panelWidth.control,
+      });
+    },
+    [panelWidth.control],
+  );
+
+  const handleCPResizeStop = useCallback(
+    (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
+      setPanelWidth({
+        library: panelWidth.library,
+        control: data.size.width,
+      });
+    },
+    [panelWidth.library],
+  );
+
+  const handleResize = useCallback(
+    (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
+      setSectionHeight({
+        upperSection: windowHeight - data.size.height,
+        lowerSection: data.size.height,
+      });
+    },
+    [windowHeight],
+  );
 
   return (
-    <main>
-      {contextMenuInfo.isShow && (
-        <ContextMenu
-          innerRef={contextMenuRef}
-          position={{
-            top: `${contextMenuInfo.top}px`,
-            left: `${contextMenuInfo.left}px`,
-          }}
-          onSelect={contextMenuInfo.onClick}
-          list={contextMenuInfo.data}
-        />
-      )}
-      {modalInfo.isShow && (
+    <div className={cx('wrapper')}>
+      <ResizableBox
+        width={windowWidth}
+        height={sectionHeight.upperSection}
+        minConstraints={[windowWidth, windowHeight * 0.5]}
+        maxConstraints={[windowWidth, windowHeight * 0.7]}
+        className={cx('upper-section')}
+      >
         <Fragment>
-          {_.isEqual(modalInfo.type, MODAL_TYPES.alert) && (
-            <BaseModal onClose={handleClose}>
-              <Headline level="5" align="center">
-                <Html content={modalInfo.msg} />
-              </Headline>
-            </BaseModal>
-          )}
-          {_.isEqual(modalInfo.type, MODAL_TYPES.loading) && (
-            <BaseModal onClose={handleClose}>
-              <Headline level="5" align="center">
-                <Html content={modalInfo.msg} />
-              </Headline>
-            </BaseModal>
-          )}
+          <ResizableBox
+            width={panelWidth.library}
+            height={sectionHeight.upperSection}
+            minConstraints={[248, windowHeight * 0.5]}
+            maxConstraints={[450, windowHeight * 0.7]}
+            className={cx('panel-library')}
+            onResizeStop={handleLPResizeStop}
+            resizeHandles={['e']}
+            axis="both"
+          >
+            <ConfirmModalProvider>
+              <LibraryPanel />
+            </ConfirmModalProvider>
+          </ResizableBox>
+          <ResizableBox
+            width={windowWidth}
+            height={sectionHeight.upperSection}
+            minConstraints={[150, windowHeight * 0.5]}
+            maxConstraints={[windowWidth, windowHeight * 0.7]}
+            className={cx('panel-rendering')}
+            axis="both"
+          >
+            <div style={{ width: '100%', height: '100%' }} onDrop={handleDrop}>
+              <RenderingController
+                id="renderingDiv"
+                fileUrl={fileUrl}
+                currentTimeRef={currentTimeRef}
+                currentTimeIndexRef={currentTimeIndexRef}
+                currentXAxisPosition={currentXAxisPosition}
+                prevXScale={prevXScale}
+              />
+            </div>
+          </ResizableBox>
+          <ResizableBox
+            width={panelWidth.control}
+            height={sectionHeight.upperSection}
+            minConstraints={[264, windowHeight * 0.5]}
+            maxConstraints={[450, windowHeight * 0.7]}
+            className={cx('panel-control')}
+            onResizeStop={handleCPResizeStop}
+            resizeHandles={['w']}
+            axis="both"
+          >
+            <ControlPanel />
+          </ResizableBox>
         </Fragment>
-      )}
-      {_.isEqual(pageInfo.page, PAGE_NAMES.shoot) && <ShootContainer />}
-      {_.includes([PAGE_NAMES.extract, PAGE_NAMES.record], pageInfo.page) && <ExtractContainer />}
-    </main>
+      </ResizableBox>
+      <ResizableBox
+        width={windowWidth}
+        height={sectionHeight.lowerSection}
+        minConstraints={[windowWidth, windowHeight * 0.3]}
+        maxConstraints={[windowWidth, windowHeight * 0.5]}
+        className={cx('lower-section')}
+        onResize={handleResize}
+        axis="both"
+        resizeHandles={['n']}
+      >
+        <ConfirmModalProvider>
+          <TimelineContainer
+            visualizedDataKey={currentVisualizedData?.key}
+            baseLayer={currentVisualizedData?.baseLayer}
+            layers={currentVisualizedData?.layers}
+            currentTimeRef={currentTimeRef}
+            currentTimeIndexRef={currentTimeIndexRef}
+            currentXAxisPosition={currentXAxisPosition}
+            prevXScale={prevXScale}
+          />
+        </ConfirmModalProvider>
+      </ResizableBox>
+    </div>
   );
 };
 
