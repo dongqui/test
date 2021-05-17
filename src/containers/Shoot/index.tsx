@@ -67,7 +67,7 @@ const Shoot: FunctionComponent = () => {
         })),
       );
     }
-  }, [currentVisualizedData, lpData]);
+  }, [currentVisualizedData]);
 
   useEffect(() => {
     if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.key, currentVisualizedData?.key])) {
