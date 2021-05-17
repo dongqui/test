@@ -15,10 +15,6 @@ interface BaseProps {
   autoComplete?: boolean;
 }
 
-const defaultProps: Partial<Props> = {
-  color: 'default',
-};
-
 export type Props = BaseProps & Omit<Input.BaseInputProps, 'prefix' | 'autoComplete'>;
 
 const PrefixInput = forwardRef<HTMLInputElement, Props>(
