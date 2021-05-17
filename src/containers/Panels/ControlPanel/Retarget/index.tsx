@@ -1,22 +1,18 @@
-import { FunctionComponent, useCallback, useState, useEffect, useMemo } from 'react';
+import { FunctionComponent, memo, useCallback, useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { Dropdown } from 'components/Dropdown';
 import { SuffixInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useReactiveVar } from '@apollo/client';
-import { storeCPChangeTab, storeRetargetInfo, storeRetargetMap } from 'lib/store';
+import { storeRetargetInfo, storeRetargetMap } from 'lib/store';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
-import styles from './RetargetPanel.module.scss';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface BaseProps {}
-
-export type P = BaseProps;
-
 export const defaultTargetboneValue = 'select a bone';
-const RetargetPanel: FunctionComponent<P> = ({}) => {
+const RetargetPanel: FunctionComponent = () => {
   const retargetMap = useReactiveVar(storeRetargetMap);
   const retargetInfo = useReactiveVar(storeRetargetInfo);
   const [currentData, setCurrentData] = useState(retargetMap);
@@ -245,4 +241,4 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
   );
 };
 
-export default RetargetPanel;
+export default memo(RetargetPanel);

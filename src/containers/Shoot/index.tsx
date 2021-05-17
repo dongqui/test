@@ -17,7 +17,7 @@ import RenderingController from 'containers/Panels/RenderingPanel/RenderingContr
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelineContainer from 'containers/Panels/timeline';
-import { ControlPanel } from 'containers/Panels/ControlPanel';
+import ControlPanel from 'containers/Panels/ControlPanel';
 import { ConfirmModalProvider } from 'components/Modal/ConfirmModal';
 import useWindowSize from 'hooks/common/useWindowSize';
 import { d3ScaleLinear } from 'types/TP';
@@ -67,6 +67,7 @@ const Shoot: FunctionComponent = () => {
         })),
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentVisualizedData]);
 
   useEffect(() => {

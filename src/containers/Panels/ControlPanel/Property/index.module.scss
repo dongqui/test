@@ -1,22 +1,18 @@
 @mixin common-panel {
   display: flex;
   height: auto;
-  
-  border-bottom: 1px solid #303030;  
-  
+  border-bottom: 1px solid #303030;
   padding: 12px;
-} 
+}
 
 .panel-wrap {
   background-color: #282727;
-
   overflow-y: auto;
 }
 
 .segment-group {
   display: flex;
   justify-content: space-between;
-
   align-items: center;
 
   & > * {
@@ -25,12 +21,10 @@
 
   span {
     min-width: 56px;
-    
     font-size: 12px;
     letter-spacing: 0.2px;
     line-height: 24px;
     font-weight: 400;
-
     color: var(--gray500);
   }
 }
@@ -38,13 +32,12 @@
 .panel-top-header {
   padding: 12px 8px;
   border-bottom: 1px solid #303030;
+
   span {
     font-size: 12px;
     line-height: 16px;
     font-weight: 700;
-
     vertical-align: text-top;
-
     color: var(--gray700);
   }
 }
@@ -52,31 +45,33 @@
 .panel-transform {
   @include common-panel;
   flex-direction: column;
+
   .panel-title {
     font-size: 12px;
     line-height: 16px;
     font-weight: 700;
-
     vertical-align: text-top;
-
     color: var(--gray700);
   }
+
   .transform-inner {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     margin-top: 10px;
+
     .property-title {
       min-width: 50px;
       font-size: 12px;
       letter-spacing: 0.2px;
       line-height: 24px;
       font-weight: 400;
-
       color: var(--gray500);
     }
+
     .transform-group {
       display: flex;
+
       & > * {
         margin-left: 8px;
       }
@@ -87,13 +82,12 @@
 .panel-camera {
   @include common-panel;
   height: 130px;
+
   span {
     font-size: 12px;
     line-height: 16px;
     font-weight: 700;
-
     vertical-align: text-top;
-
     color: var(--gray700);
   }
 }
@@ -101,13 +95,12 @@
 .panel-visibility {
   @include common-panel;
   flex-direction: column;
+
   .property-header {
     font-size: 12px;
     line-height: 16px;
     font-weight: 700;
-
     vertical-align: text-top;
-
     color: var(--gray700);
   }
 }
@@ -115,13 +108,12 @@
 .panel-fog {
   @include common-panel;
   height: 200px;
+
   span {
     font-size: 12px;
     line-height: 16px;
     font-weight: 700;
-
     vertical-align: text-top;
-
     color: var(--gray700);
   }
 }
