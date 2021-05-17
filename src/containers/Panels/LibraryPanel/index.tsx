@@ -297,8 +297,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
         console.log('error', error);
       }
       storeLpData(newLpData);
-      setShowsModal(false);
     }
+    setShowsModal(false);
   }, [lpData, lpmode, pages]);
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
