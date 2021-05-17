@@ -1,4 +1,4 @@
-import { FunctionComponent, memo } from 'react';
+import { forwardRef, FunctionComponent, memo } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import BaseInput from './BaseInput';
 import classNames from 'classnames/bind';
@@ -14,15 +14,15 @@ interface BaseProps {
 
 type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete'>;
 
-const SearchInput: FunctionComponent<Props> = ({ className, ...rest }) => {
+const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, ...rest }, ref) => {
   const classes = cx('input-wrapper', className);
 
   return (
     <div className={classes}>
-      <BaseInput className={cx('input')} {...rest} />
+      <BaseInput className={cx('input')} ref={ref} {...rest} />
       <IconWrapper className={cx('search')} icon={SvgPath.Search} hasFrame={false} />
     </div>
   );
-};
+});
 
 export default memo(SearchInput);

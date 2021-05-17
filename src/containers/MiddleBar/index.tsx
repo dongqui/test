@@ -479,7 +479,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                     mask="99:99"
                     maskChar="0"
                     // value={currentTime}
-                    innerRef={currentTimeRef}
+                    ref={currentTimeRef}
                   />
                 ) : (
                   <BaseInput
@@ -487,7 +487,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                     mask="99:99"
                     maskChar="0"
                     value={currentTime}
-                    // innerRef={currentTimeRef}
+                    // ref={currentTimeRef}
                   />
                 )}
                 <div className={cx('divide')}>/</div>
@@ -498,7 +498,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                     mask="99:99"
                     maskChar="0"
                     // value={lastInputTime}
-                    innerRef={lastTimeRef}
+                    ref={lastTimeRef}
                   />
                 ) : (
                   <BaseInput
@@ -506,7 +506,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                     mask="99:99"
                     maskChar="0"
                     value={lastInputTime}
-                    // innerRef={lastTimeRef}
+                    // ref={lastTimeRef}
                   />
                 )}
                 {isShootPage && (
@@ -551,7 +551,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       onBlur={handleNowInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
-                      innerRef={currentTimeIndexRef}
+                      ref={currentTimeIndexRef}
                       arrow
                       min={startTimeIndex}
                       max={endTimeIndex}
@@ -589,7 +589,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       onBlur={handleNowInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled
-                      innerRef={currentTimeIndexRef}
+                      ref={currentTimeIndexRef}
                       // arrow
                     />
                   </>
