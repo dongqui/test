@@ -35,7 +35,7 @@ import fnGetFileName from 'utils/LP/fnGetFileName';
 import sleep from 'utils/common/sleep';
 import { d3ScaleLinear } from 'types/TP';
 import * as d3 from 'd3';
-import fnQuaternionToEulerTrack from 'utils/common/fnQuaternionToEulerTrack';
+import { fnQuaternionToEulerTrack } from 'utils/common';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
 
 const cx = classNames.bind(styles);

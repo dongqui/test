@@ -19,19 +19,18 @@ import {
 } from 'lib/store';
 import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import { PagesType } from 'containers/Panels/LibraryPanel';
+import { defaultTargetboneValue } from 'containers/Panels/ControlPanel/Retarget/RetargetPanel';
+import * as api from 'utils/common/api';
+import { fnExportModelToFbx, fnExportModelToGlb } from 'utils/LP';
 import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import fnGetFileName from 'utils/LP/fnGetFileName';
-import fnExportModelToFbx from 'utils/LP/fnExportModelToFbx';
-import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
-import { ROOT_FOLDER_NAME } from 'types/LP';
 import fnPasteFile from 'utils/LP/fnPasteFile';
-import * as api from 'utils/common/api';
 import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
-import fnExportModelToGlb from 'utils/LP/fnExportModelToGlb';
+import fnGetDeltaProductedTracks from 'utils/LP/fnGetDeltaProductedTracks';
+import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
+import { ROOT_FOLDER_NAME } from 'types/LP';
 import { RetargetInfoType, TargetboneType } from 'types/CP';
-import fnGetDeltaAppliedTracks from 'utils/LP/fnGetDeltaAppliedTracks';
-import { defaultTargetboneValue } from '../../containers/Panels/ControlPanel/Retarget/RetargetPanel';
 import { initialRetargetMap } from 'utils/retargetMap';
 
 interface UseLPControlProps {
@@ -203,7 +202,7 @@ const useLPControl = ({
             targetBaseLayer = [
               ...targetBaseLayerPositionTracks,
               ...targetBaseLayerScaleTracks,
-              ...fnGetDeltaAppliedTracks({
+              ...fnGetDeltaProductedTracks({
                 sourceRotationTracks: targetBaseLayerRotationTracks,
                 retargetMap,
                 tPoseAnimation: animations[0],

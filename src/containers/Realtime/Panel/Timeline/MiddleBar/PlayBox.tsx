@@ -26,7 +26,7 @@ import { storeLpData } from 'lib/store';
 import { FILE_TYPES, LPDataType } from 'types';
 import { STANDARD_TIME_UNIT } from 'utils/const';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
+import { fnQuaternionToEulerTracks } from 'utils/common';
 import { FormModal } from 'components/New_Modal';
 import { useAlertModal } from 'components/New_Modal/AlertModal';
 import { BaseInput } from 'components/New_Input';

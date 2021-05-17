@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useState, useRef, Fragment } from 'react';
+import _ from 'lodash';
+import classNames from 'classnames/bind';
 import { useReactiveVar } from '@apollo/client';
 import { CPNameType } from 'types/CP';
 import { RenderingDataPropertyName } from 'types/RP';
+import { fnConvertDegreeToEuler, fnConvertEulerToDegree } from 'utils/common';
 import {
   fnChangeBonePosition,
   fnChangeBoneQuaternion,
@@ -12,11 +15,7 @@ import { IconWrapper, SvgPath } from 'components/New_Icon';
 import { storeCurrentBone, storeTransformControls } from 'lib/store';
 import { CPInput } from './CPInput';
 import { Segment } from 'components/New_Segment';
-import _ from 'lodash';
-import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';
-import fnConvertEulerToDegree from 'utils/common/fnConvertEulerToDegree';
-import fnConvertDegreeToEuler from 'utils/common/fnConvertDegreeToEuler';
 
 const cx = classNames.bind(styles);
 

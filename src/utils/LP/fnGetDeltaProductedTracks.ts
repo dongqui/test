@@ -1,6 +1,10 @@
 import _ from 'lodash';
 import * as THREE from 'three';
-import { fnEulerToQuaternionTracks, fnQuaternionToEulerTracks } from 'utils/common';
+import {
+  fnDotProductQuaternion,
+  fnEulerToQuaternionTracks,
+  fnQuaternionToEulerTracks,
+} from 'utils/common';
 
 type StandardBoneName =
   | 'hips'
@@ -55,50 +59,23 @@ const STANDARD_BONE_NAMES = [
   'rightHandIndex1',
 ];
 
-const STANDARD_QUATERNIONS = {
-  hips: [-0.7071068286895752, 0, 0, 0.7071068286895752],
-  leftUpLeg: [0, 0, 0, 1],
-  rightUpLeg: [0, 0, 0, 1],
-  spine: [0, 0, 0, 1],
-  leftLeg: [0, 0, 0, 1],
-  rightLeg: [0, 0, 0, 1],
-  spine1: [0, 0, 0, 1],
-  leftFoot: [0, 0, 0, 1],
-  rightFoot: [0, 0, 0, 1],
-  spine2: [0, 0, 0, 1],
-  leftToeBase: [1, 0, 0, 0],
-  rightToeBase: [1, 0, 0, 0],
-  neck: [0, 0, 0, 1],
-  leftShoulder: [0, 0, 0, 1],
-  rightShoulder: [0, 0, 0, 1],
-  head: [0, 0, 0, 1],
-  leftArm: [0, 0, 0, 1],
-  rightArm: [0, 0, 0, 1],
-  leftForeArm: [0, 0, 0, 1],
-  rightForeArm: [0, 0, 0, 1],
-  leftHand: [0, 0, 0, 1],
-  rightHand: [0, 0, 0, 1],
-  leftHandIndex1: [0, 0, 0, 1],
-  rightHandIndex1: [0, 0, 0, 1],
-};
-
-interface FnGetDeltaAppliedTracks {
+interface FnGetDeltaProductedTracks {
   sourceRotationTracks: THREE.VectorKeyframeTrack[];
   retargetMap: any[]; // 선행 코드의 any 타입 선언으로 인해 불가피하게 사용
   tPoseAnimation: THREE.AnimationClip;
 }
 
 /**
- * 리타게팅 대상 rotation 트랙들을 받아, Bone 의 dalta 값을 적용한 rotation 트랙들을 반환합니다.
+ * 리타게팅 대상 rotation 트랙들을 받아, Bone 의 quaternion delta 값을 적용한 rotation 트랙들을 반환합니다.
  *
  * @param sourceRotationTracks - 리타게팅 대상 rotaion 트랙들
  * @param retargetMap - mapper api 및 수동 리타게팅을 거친 retarget map
  * @param tPoseAnimation - delta 값을 구하기 위한 t-pose 애니메이션
  *
- * @returns delta 값을 적용한 트랙들
+ * @returns quaternion delta 값을 적용한 트랙들
  *
  */
-const fnGetDeltaAppliedTracks = (props: FnGetDeltaAppliedTracks) => {
+const fnGetDeltaProductedTracks = (props: FnGetDeltaProductedTracks) => {
   const { sourceRotationTracks, retargetMap, tPoseAnimation } = props;
 
   const sourceQuaternionTracks = fnEulerToQuaternionTracks({
@@ -112,7 +89,7 @@ const fnGetDeltaAppliedTracks = (props: FnGetDeltaAppliedTracks) => {
   );
 
   const targetQuaternions = {
-    hips: [-0.7071068286895752, 0, 0, 0.7071068286895752],
+    hips: [0, 0, 0, 1],
     leftUpLeg: [0, 0, 0, 1],
     rightUpLeg: [0, 0, 0, 1],
     spine: [0, 0, 0, 1],
@@ -122,8 +99,8 @@ const fnGetDeltaAppliedTracks = (props: FnGetDeltaAppliedTracks) => {
     leftFoot: [0, 0, 0, 1],
     rightFoot: [0, 0, 0, 1],
     spine2: [0, 0, 0, 1],
-    leftToeBase: [1, 0, 0, 0],
-    rightToeBase: [1, 0, 0, 0],
+    leftToeBase: [0, 0, 0, 1],
+    rightToeBase: [0, 0, 0, 1],
     neck: [0, 0, 0, 1],
     leftShoulder: [0, 0, 0, 1],
     rightShoulder: [0, 0, 0, 1],
@@ -139,7 +116,7 @@ const fnGetDeltaAppliedTracks = (props: FnGetDeltaAppliedTracks) => {
   };
 
   _.forEach(STANDARD_BONE_NAMES, (standardBoneName) => {
-    // bone name 돌면서 targetQuaternions 만들기
+    // bone name 돌면서 targetQuaternions(Rpre) 만들기
     const targetBoneMapInfo = _.find(retargetMap, (item) => item.key === standardBoneName);
     if (targetBoneMapInfo) {
       const targetBoneName = targetBoneMapInfo.value.targetBone;
@@ -155,31 +132,38 @@ const fnGetDeltaAppliedTracks = (props: FnGetDeltaAppliedTracks) => {
     }
   });
 
-  const deltaAddedSourceQuaternionTracks: THREE.QuaternionKeyframeTrack[] = [];
+  const deltaProductedSourceQuaternionTracks: THREE.QuaternionKeyframeTrack[] = [];
 
   sourceQuaternionTracks.forEach((track: THREE.QuaternionKeyframeTrack) => {
     const { name, times, values } = track;
     const boneName = name.substring(0, name.lastIndexOf('.'));
     const newTimes = _.toArray(_.cloneDeep(times));
-    const newValues = _.toArray(
-      values.map(
-        (value: number, idx: number) =>
-          value -
-          STANDARD_QUATERNIONS[boneName as StandardBoneName][idx % 4] +
-          targetQuaternions[boneName as StandardBoneName][idx % 4],
-      ),
-    );
+    const newValues: number[] = [];
+    const targetQuaternion = targetQuaternions[boneName as StandardBoneName];
+
+    // 4개씩 자르고, dotProduct 계산해서 다시 넣어줘야 함
+    let inner: number[] = [];
+    values.forEach((value: number, idx: number) => {
+      inner.push(value);
+      if (idx % 4 === 3) {
+        newValues.push(...fnDotProductQuaternion(targetQuaternion, inner));
+        // inner 초기화
+        inner = [];
+      }
+    });
 
     const newTrack = new THREE.QuaternionKeyframeTrack(name, newTimes, newValues);
 
-    deltaAddedSourceQuaternionTracks.push(newTrack);
+    deltaProductedSourceQuaternionTracks.push(newTrack);
   });
 
-  const deltaAddedSourceRotationTracks: THREE.VectorKeyframeTrack[] = fnQuaternionToEulerTracks({
-    quaternionTracks: deltaAddedSourceQuaternionTracks,
-  });
+  const deltaProductedSourceRotationTracks: THREE.VectorKeyframeTrack[] = fnQuaternionToEulerTracks(
+    {
+      quaternionTracks: deltaProductedSourceQuaternionTracks,
+    },
+  );
 
-  return deltaAddedSourceRotationTracks;
+  return deltaProductedSourceRotationTracks;
 };
 
-export default fnGetDeltaAppliedTracks;
+export default fnGetDeltaProductedTracks;
