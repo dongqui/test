@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 type Axis = 'w' | 'x' | 'y' | 'z';
 
 interface FnChangeBoneQuaternion {

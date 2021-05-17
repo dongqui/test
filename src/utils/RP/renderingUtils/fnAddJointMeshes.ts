@@ -4,6 +4,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { DragControls } from 'three/examples/jsm/controls/DragControls';
 import _ from 'lodash';
 import { Dispatch, SetStateAction } from 'react';
+import { BoneTransformAction, changeBoneTransform } from 'actions/boneTransform';
 
 interface FnAddJointMeshes {
   skeletonHelper: THREE.SkeletonHelper;
@@ -14,6 +15,7 @@ interface FnAddJointMeshes {
   innerCurrentBone: THREE.Bone | undefined;
   setInnerCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
   storeCurrentBone: any;
+  dispatch: Dispatch<BoneTransformAction>;
 }
 
 /**
@@ -28,6 +30,7 @@ interface FnAddJointMeshes {
  * @param innerCurrentBone - The current selected bone
  * @param setInnerCurrentBone - A function setting the innerCurrentBone
  * @param setCurrentBoneIndex - A function setting the current Bone index
+ * @param dispatch - redux store 변경을 위한 dispatch
  *
  */
 const fnAddJointMeshes = (props: FnAddJointMeshes) => {
@@ -40,6 +43,7 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
     innerCurrentBone,
     setInnerCurrentBone,
     storeCurrentBone,
+    dispatch,
   } = props;
   const innerBones: THREE.Bone[] = [];
   _.forEach(skeletonHelper.bones, (bone) => {
@@ -70,6 +74,34 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
         transformControls.attach(event.object.parent);
         setInnerCurrentBone(event.object.parent);
         storeCurrentBone(event.object.parent);
+
+        const bone = event.object.parent;
+        const value = {
+          bone,
+          position: {
+            x: _.round(bone.position.x, 4),
+            y: _.round(bone.position.y, 4),
+            z: _.round(bone.position.z, 4),
+          },
+          quaternion: {
+            x: _.round(bone.quaternion.x, 4),
+            y: _.round(bone.quaternion.y, 4),
+            z: _.round(bone.quaternion.z, 4),
+            w: _.round(bone.quaternion.w, 4),
+          },
+          rotation: {
+            x: _.round(bone.rotation.x, 4),
+            y: _.round(bone.rotation.y, 4),
+            z: _.round(bone.rotation.z, 4),
+          },
+          scale: {
+            x: _.round(bone.scale.x, 4),
+            y: _.round(bone.scale.y, 4),
+            z: _.round(bone.scale.z, 4),
+          },
+        };
+
+        dispatch(changeBoneTransform(value));
         dragControls.enabled = false;
       }
     });

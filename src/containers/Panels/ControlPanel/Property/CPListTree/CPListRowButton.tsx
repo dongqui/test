@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Segment } from 'components/New_Segment';
+import { Segment } from 'components/Segment';
 import { useReactiveVar } from '@apollo/client';
 import { storeRenderingData } from 'lib/store';
 import { axisName, RenderingDataPropertyName } from 'types/RP';

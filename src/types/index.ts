@@ -1,4 +1,9 @@
-import { ContextmenuDataTypes } from '../components/Contextmenu';
+export interface ContextmenuDataTypes {
+  key: string;
+  value: string;
+  isSelected?: boolean;
+  isDisabled?: boolean;
+}
 
 export enum PAGE_NAMES {
   extract = 'extract',

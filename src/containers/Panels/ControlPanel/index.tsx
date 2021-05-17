@@ -1,6 +1,6 @@
 import { FunctionComponent, MouseEvent, useEffect, useState } from 'react';
 import _ from 'lodash';
-import { Tabs, Tab } from 'components/New_Tabs';
+import { Tabs, Tab } from 'components/Tabs';
 import { PropertyPanel } from './Property';
 import { RetargetPanel } from './Retarget';
 import classNames from 'classnames/bind';

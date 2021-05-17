@@ -1,7 +1,7 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { ListView, ListViewProps } from 'containers/ListTree/ListView';
+import { ListView, ListViewProps } from 'containers/Panels/LibraryPanel/ListTree/ListView';
 
 export default {
   title: 'Component API/Container/ListView/ListView',

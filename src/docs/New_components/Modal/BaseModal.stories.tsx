@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { FilledButton } from 'components/New_Button';
-import styled from '@emotion/styled';
-import Component, { Props } from 'components/New_Modal/BaseModal';
+import { FilledButton } from 'components/Button';
+import Component, { Props } from 'components/Modal/BaseModal';
 
 export default {
-  title: 'Component API/Component/New_Modal',
+  title: 'Component API/Component/Modal',
   component: Component,
   args: {},
 } as Meta;
@@ -28,7 +27,7 @@ const Template: Story<Props> = ({ onClose, ...args }) => {
         <FilledButton onClick={handleToggle}>Open Modal</FilledButton>
         {isModalOpen && (
           <Component onClose={handleToggle} {...args}>
-            <ModalInner>BaseModal</ModalInner>
+            BaseModal
           </Component>
         )}
       </div>
@@ -42,7 +41,3 @@ export const BaseModal = Template.bind({});
 BaseModal.args = {
   hasCloseIcon: true,
 };
-
-export const ModalInner = styled.div`
-  text-align: center;
-`;

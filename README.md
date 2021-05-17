@@ -41,10 +41,6 @@ npx yarn dev
 "clean": "필요없는 dist 파일 삭제",
 "type-check": "타입스크립트 타입 체크",
 
-// svgs
-"generated:svgs": "지정된 경로에 아이콘 컴포넌트화",
-"generated:format": "지정된 경로에 아이콘 prettier로 코드 정렬"
-
 // Gql
 "precodegen": "node ./scripts/precodegen.js",
 "codegen": "graphql-codegen --config codegen.yml",

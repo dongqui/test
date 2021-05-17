@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { ShootLayerType, ShootTrackType } from 'types';

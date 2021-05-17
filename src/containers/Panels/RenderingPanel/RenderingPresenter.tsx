@@ -1,4 +1,4 @@
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
 import React, { memo } from 'react';
 import classNames from 'classnames/bind';

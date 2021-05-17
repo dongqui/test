@@ -17,7 +17,7 @@ import {
   storeRetargetInfo,
   storeRetargetMap,
 } from 'lib/store';
-import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
+import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { defaultTargetboneValue } from 'containers/Panels/ControlPanel/Retarget/RetargetPanel';
 import * as api from 'utils/common/api';
@@ -176,7 +176,6 @@ const useLPControl = ({
           let targetBaseLayer: any = draggingRow?.baseLayer || [];
 
           // everyframe api 쏘는 곳
-          // 여기에서 delta 값 보완해주면 됨
           if (animations.length !== 0 && retargetMap) {
             // animations 가 비어있는 경우에는 delta 적용하지 않음
             // 있는 경우에는 첫번째 모션이 무조건 t pose 애니메이션인 것으로 전제하고 delta 적용 진행
@@ -210,7 +209,6 @@ const useLPControl = ({
             ];
           }
 
-          // hip position 정보 보내는 방식으로 바꾸는 것은 아래에 필드 추가하면 될 듯
           const { result: result2, error: error3, msg: msg3 } = await api.getRetargetBaseLayer({
             name: draggingRow?.name ?? '',
             baseLayer: targetBaseLayer,

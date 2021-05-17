@@ -1,11 +1,11 @@
 import { Fragment, useState, useRef, MutableRefObject } from 'react';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { FilledButton } from 'components/New_Button';
+import { FilledButton } from 'components/Button';
 import useContextMenu from 'hooks/common/useContextMenu';
-import Component, { Props } from 'components/New_ContextMenu/ContextMenu';
+import Component, { Props } from 'components/ContextMenu/ContextMenu';
 
 export default {
-  title: 'Component API/Component/New_ContextMenu',
+  title: 'Component API/Component/ContextMenu',
   component: Component,
   args: {},
 } as Meta;

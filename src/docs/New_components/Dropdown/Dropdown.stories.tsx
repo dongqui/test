@@ -1,8 +1,8 @@
 import { Story, Meta } from '@storybook/react/types-6-0';
-import Component, { Props } from 'components/New_Dropdown/Dropdown';
+import Component, { Props } from 'components/Dropdown/Dropdown';
 
 export default {
-  title: 'Component API/Component/New_Dropdown',
+  title: 'Component API/Component/Dropdown',
   component: Component,
   args: {},
 } as Meta;
