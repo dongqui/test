@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import * as THREE from 'three';
-import fnEulerToQuaternionTracks from 'utils/common/fnEulerToQuaternionTracks';
-import fnQuaternionToEulerTracks from 'utils/common/fnQuaternionToEulerTracks';
+import { fnEulerToQuaternionTracks, fnQuaternionToEulerTracks } from 'utils/common';
 
 type StandardBoneName =
   | 'hips'

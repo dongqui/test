@@ -6,7 +6,7 @@ import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import _ from 'lodash';
 import React, { memo } from 'react';
 import { CurrentVisualizedDataType } from 'types';
-import fnGetSmallestNewNumber from 'utils/common/fnGetSmallestNewNumber';
+import { fnGetSmallestNewNumber } from 'utils/common';
 import { fnGetNewLayer } from 'utils/TP/editingUtils';
 import * as S from './PlayBarStyles';
 
