@@ -1,9 +1,8 @@
 import * as THREE from 'three';
 import _ from 'lodash';
 import { ShootLayerType, ShootTrackType } from 'types';
-import fnGetTrackUnionTimes from './fnGetTrackUnionTimes';
-import fnGetInterpolatedTrackLinear from './fnGetInterpolatedTrackLinear';
-import fnEulerToQuaternionTrack from 'utils/common/fnEulerToQuaternionTrack';
+import { fnGetTrackUnionTimes, fnGetInterpolatedTrackLinear } from 'utils/TP/editingUtils';
+import { fnEulerToQuaternionTrack } from 'utils/common';
 
 interface FnGetAnimationClipForPlay {
   name: string;

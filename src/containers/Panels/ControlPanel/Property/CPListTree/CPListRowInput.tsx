@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { useReactiveVar } from '@apollo/client';
 import { CPNameType } from 'types/CP';
 import { RenderingDataPropertyName } from 'types/RP';
+import { fnConvertDegreeToEuler, fnConvertEulerToDegree } from 'utils/common';
 import {
   fnChangeBonePosition,
   fnChangeBoneQuaternion,
@@ -16,8 +17,6 @@ import { Segment } from 'components/Segment';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';
-import fnConvertEulerToDegree from 'utils/common/fnConvertEulerToDegree';
-import fnConvertDegreeToEuler from 'utils/common/fnConvertDegreeToEuler';
 import { useDispatch } from 'react-redux';
 import { changeBoneTransform } from 'actions/boneTransform';
 import { undoableBoneTransform } from 'reducers/boneTransform';
