@@ -4,3 +4,41 @@
   width: 100%;
   height: 100%;
 }
+
+.inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+}
+
+.text {
+  padding: 8px 24px;
+
+  &.service {
+    background-color: #4fc7f2;
+  }
+
+  &.token {
+    background-color: #42c58b;
+  }
+
+  &.denied {
+    background-color: #dc153c;
+  }
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.bottom {
+  .paragraph {
+    display: inline-block;
+  }
+
+  .button {
+    display: inline-block;
+  }
+}
