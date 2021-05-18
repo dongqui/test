@@ -1,17 +1,39 @@
-import React, { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
+import { FunctionComponent, memo, Fragment, useCallback, useEffect, useState, useRef } from 'react';
 import _ from 'lodash';
 import { useReactiveVar } from '@apollo/client';
 import { ContextMenu } from 'components/New_ContextMenu';
 import MainPage from './MainPage';
+import { useRouter } from 'next/router';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import { storeContextMenuInfo, storeModalInfo, storePageInfo } from 'lib/store';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import { BaseModal } from 'components/New_Modal';
 import ExtractPage from 'containers/extract';
 import Html from 'components/New_Typography/Html';
+import Process from 'containers/Shoot/Process';
 import { Headline } from 'components/New_Typography';
 
 const ShootPage: FunctionComponent = () => {
+  const router = useRouter();
+
+  const [isAccessible, setIsAccessible] = useState(false);
+
+  useEffect(() => {
+    const isTokenLoaded = localStorage.getItem('token');
+
+    if (isTokenLoaded) {
+      setIsAccessible(true);
+    }
+
+    if (!isTokenLoaded) {
+      if (router.query.token) {
+        setIsAccessible(true);
+
+        localStorage.setItem('token', JSON.stringify(router.query.token));
+      }
+    }
+  }, [router.query.token]);
+
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
@@ -42,6 +64,14 @@ const ShootPage: FunctionComponent = () => {
     }
   }, [contextMenuInfo.isShow]);
 
+  if (!isAccessible) {
+    return (
+      <main>
+        <Process />
+      </main>
+    );
+  }
+
   return (
     <main>
       {contextMenuInfo.isShow && (
@@ -56,7 +86,7 @@ const ShootPage: FunctionComponent = () => {
         />
       )}
       {modalInfo.isShow && (
-        <>
+        <Fragment>
           {_.isEqual(modalInfo.type, MODAL_TYPES.alert) && (
             <BaseModal onClose={handleClose}>
               <Headline level="5" align="center">
@@ -71,7 +101,7 @@ const ShootPage: FunctionComponent = () => {
               </Headline>
             </BaseModal>
           )}
-        </>
+        </Fragment>
       )}
       {_.isEqual(pageInfo.page, PAGE_NAMES.shoot) && <MainPage />}
       {_.includes([PAGE_NAMES.extract, PAGE_NAMES.record], pageInfo.page) && <ExtractPage />}
