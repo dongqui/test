@@ -36,9 +36,11 @@ const FormModal: FunctionComponent<Props> = ({
     handleSubmit,
     formState: { errors },
   } = useForm();
+
   const handleFormSubmit = (data: unknown) => {
     onSubmit && onSubmit();
   };
+
   return (
     <BaseModal title={title} onClose={onClose} onOutsideClose={onOutsideClose}>
       <form onSubmit={handleSubmit(handleFormSubmit)}>

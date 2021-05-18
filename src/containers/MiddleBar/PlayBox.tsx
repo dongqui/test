@@ -388,6 +388,7 @@ const PlayBox: FunctionComponent<Props> = ({
               className={cx('form-name')}
               placeholder="Motion name"
               onBlur={handleBlur}
+              autoFocus={true}
               fullSize
             />
           </FormModal>

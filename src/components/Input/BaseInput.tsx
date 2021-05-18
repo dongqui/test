@@ -21,6 +21,7 @@ const defaultProps: Partial<Props> = {
   spellCheck: 'false',
   arrow: false,
   autoComplete: false,
+  autoFocus: false,
 };
 
 const BaseInput = forwardRef<HTMLInputElement, Props>(
