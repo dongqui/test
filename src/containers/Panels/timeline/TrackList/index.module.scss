@@ -28,6 +28,11 @@
     width: 28px;
     padding: 2px;
     color: $gray500;
+    border: 0;
+    
+    &:focus {
+      border: 0;
+    }
   }
 }
 
