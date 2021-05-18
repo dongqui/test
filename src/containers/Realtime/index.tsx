@@ -22,9 +22,9 @@ import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 import ExtractPage from 'containers/extract';
 import RecordPage from 'containers/record';
 import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
-import Html from 'components/New_Typography/Html';
+import Html from 'components/Typography/Html';
 import * as api from 'utils/common/api';
-import { Headline } from 'components/New_Typography';
+import { Headline } from 'components/Typography';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import {
   storeAnimatingData,

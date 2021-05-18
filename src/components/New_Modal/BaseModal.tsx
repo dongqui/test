@@ -9,8 +9,8 @@ import {
   useCallback,
 } from 'react';
 import _ from 'lodash';
-import { Overlay } from 'components/New_Overlay';
-import { Headline, Html } from 'components/New_Typography';
+import { Overlay } from 'components/Overlay';
+import { Headline, Html } from 'components/Typography';
 import { IconWrapper, SvgPath } from 'components/New_Icon';
 import BasePortal from './BasePortal';
 import classnames from 'classnames/bind';

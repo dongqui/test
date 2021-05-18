@@ -22,7 +22,7 @@ import _ from 'lodash';
 import { IconView } from '../../IconTree/IconView';
 import { ListView } from 'containers/ListTree/ListView';
 import Breadcrumb from './Breadcrumb';
-import { Headline } from 'components/New_Typography';
+import { Headline } from 'components/Typography';
 import { BaseModal, AlertModal } from 'components/New_Modal';
 import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
