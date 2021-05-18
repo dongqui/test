@@ -1,4 +1,13 @@
-import { FunctionComponent, memo, Fragment, useCallback, useEffect, useState, useRef } from 'react';
+import {
+  FunctionComponent,
+  memo,
+  Fragment,
+  useLayoutEffect,
+  useCallback,
+  useEffect,
+  useState,
+  useRef,
+} from 'react';
 import _ from 'lodash';
 import { useReactiveVar } from '@apollo/client';
 import { ContextMenu } from 'components/New_ContextMenu';
@@ -23,7 +32,7 @@ const ShootPage: FunctionComponent = () => {
   const [procedure, setProcedure] = useState<Procedure>('service');
   const [_message, setMessage] = useState('');
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const isTokenLoaded = localStorage.getItem('token');
 
     const authToken = async (token: string) => {
@@ -46,10 +55,7 @@ const ShootPage: FunctionComponent = () => {
     };
 
     if (isTokenLoaded) {
-      // 강제로 1초 딜레이를 줘서 애니메이션을 보여주기 위함
-      setTimeout(() => {
-        setProcedure('success');
-      }, 1000);
+      setProcedure('success');
     }
 
     if (!isTokenLoaded) {
