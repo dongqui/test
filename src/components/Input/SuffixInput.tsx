@@ -13,9 +13,11 @@ interface BaseProps {
   color?: 'primary' | 'default';
   className?: string;
   autoComplete?: boolean;
+  spellCheck?: boolean;
 }
 
-export type Props = BaseProps & Omit<Input.BaseInputProps, 'suffix' | 'autoComplete'>;
+export type Props = BaseProps &
+  Omit<Input.BaseInputProps, 'suffix' | 'autoComplete' | 'spellCheck'>;
 
 const SuffixInput = forwardRef<HTMLInputElement, Props>(
   ({ suffix, arrow, color, className, ...rest }, ref) => {

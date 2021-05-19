@@ -13,9 +13,11 @@ interface BaseProps {
   color?: 'primary' | 'default';
   className?: string;
   autoComplete?: boolean;
+  spellCheck?: boolean;
 }
 
-export type Props = BaseProps & Omit<Input.BaseInputProps, 'prefix' | 'autoComplete'>;
+export type Props = BaseProps &
+  Omit<Input.BaseInputProps, 'prefix' | 'autoComplete' | 'spellCheck'>;
 
 const PrefixInput = forwardRef<HTMLInputElement, Props>(
   ({ prefix, arrow, color, className, ...rest }, ref) => {

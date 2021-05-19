@@ -10,9 +10,10 @@ interface BaseProps {
   mask?: string | Array<string | RegExp>;
   maskChar?: string | null;
   autoComplete?: boolean;
+  spellCheck?: boolean;
 }
 
-type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete'>;
+type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete' | 'spellCheck'>;
 
 const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, ...rest }, ref) => {
   const classes = cx('input-wrapper', className);

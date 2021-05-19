@@ -11,15 +11,16 @@ interface BaseProps {
   maskChar?: string | null;
   fullSize?: boolean;
   autoComplete?: boolean;
+  spellCheck?: boolean;
   isChild?: boolean;
 }
 
-type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete'>;
+type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete' | 'spellCheck'>;
 
 const defaultProps: Partial<Props> = {
   type: 'text',
   maskChar: '',
-  spellCheck: 'false',
+  spellCheck: false,
   arrow: false,
   autoComplete: false,
   autoFocus: false,
@@ -38,6 +39,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
       arrow,
       fullSize,
       autoComplete,
+      spellCheck,
       readOnly,
       isChild,
       onBlur,
@@ -91,6 +93,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
               type={type}
               ref={ref}
               autoComplete={autoComplete ? 'on' : 'off'}
+              spellCheck={spellCheck ? 'true' : 'false'}
               readOnly={readOnly}
               {...inputProps}
             />
@@ -106,6 +109,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
         ref={ref}
         disabled={disabled}
         autoComplete={autoComplete ? 'on' : 'off'}
+        spellCheck={spellCheck ? 'true' : 'false'}
         readOnly={readOnly}
         onBlur={handleBlur}
         onChange={handleChange}
