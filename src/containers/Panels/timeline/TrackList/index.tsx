@@ -13,7 +13,7 @@ import {
   storeCurrentVisualizedData,
   storeSkeletonHelper,
 } from 'lib/store';
-import fnGetSmallestNewNumber from 'utils/common/fnGetSmallestNewNumber';
+import { fnGetSmallestNewNumber } from 'utils/common';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { fnGetNewLayer } from 'utils/TP/editingUtils';
 import { SearchInput } from 'components/Input';

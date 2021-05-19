@@ -8,12 +8,14 @@
 
 .upper-section {
   display: flex;
-  // flex-basis: 50%;
 }
 
 .panel-library {
+  position: absolute;
+  left: 0;
   display: flex;
   height: 100%;
+  z-index: 1;
 }
 
 .panel-rendering {
@@ -26,8 +28,5 @@
   right: 0;
   display: flex;
   height: 100%;
-}
-
-.lower-section {
-  // flex-basis: 50%;
+  z-index: 1;
 }

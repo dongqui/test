@@ -16,7 +16,8 @@
 .camera-reset-background {
   position: absolute;
   top: 32px;
-  right: 48px;
+  left: calc(100% - 264px);
+  transform: translateX(-150%);
   border-radius: 5px;
   width: 36px;
   height: 36px;
