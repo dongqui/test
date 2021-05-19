@@ -1,4 +1,35 @@
 @import 'styles/libraries/_responsive';
+@import 'styles/libraries/_mixins';
+
+@mixin fadeDown($speed: 1, $delay: 0) {
+  animation-name: fade-down;
+  animation-duration: #{$speed}s;
+  animation-delay: #{$delay}s;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fade-down {
+  0% {
+    margin-top: -201px;
+  }
+
+  5% {
+    margin-top: -134px;
+  }
+
+  50% {
+    margin-top: -134px;
+  }
+
+  55% {
+    margin-top: -67px;
+  }
+
+  100% {
+    margin-top: -67px;
+  }
+}
 
 .wrapper {
   width: 100%;
@@ -16,21 +47,30 @@
 .text {
   padding: 8px 24px;
 
-  &.service {
-    background-color: #4fc7f2;
-  }
-
-  &.token {
-    background-color: #42c58b;
-  }
-
-  &.denied {
-    background-color: #dc153c;
+  &.uppercase {
+    text-transform: uppercase;
   }
 }
 
-.uppercase {
-  text-transform: uppercase;
+.status {
+  height: 67px;
+  overflow: hidden;
+  margin-bottom: 24px;
+
+  & > .animation {
+    &:first-child {
+      @include fadeDown(4, 2);
+      background-color: #4fc7f2;
+    }
+
+    &:nth-child(2) {
+      background-color: #dc153c;
+    }
+
+    &:last-child {
+      background-color: #42c58b;
+    }
+  }
 }
 
 .bottom {

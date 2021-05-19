@@ -65,20 +65,20 @@ const ShootPage: FunctionComponent = () => {
       // 단. 그동안 1초는 반드시 delay 시키고 + api 통신 시간 만큼 process container 요청 패턴 로드
       setTimeout(() => {
         setProcedure('token');
-      }, 1000);
+      }, 2000);
 
       // 2. 쿼리스트링 토큰 자체가 없는 경우 token 프로세스를 먼저 밟고 denied 처리
       if (!token) {
         setTimeout(() => {
           setProcedure('denied');
-        }, 2000);
+        }, 4000);
       }
 
       if (token && typeof token === 'string') {
         // 3. 강제로 2초 딜레이를 줘서 동일 흐름에서 token 프로세스를 먼저 밟고 이후 api 통신
         setTimeout(() => {
           authToken(token);
-        }, 2000);
+        }, 4000);
       }
     }
   }, [token]);
