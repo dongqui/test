@@ -41,13 +41,13 @@ const ShootPage: FunctionComponent = () => {
         url: 'http://115.85.182.106/verify',
         params: { token },
       })
-        .then((response) => {
-          console.log(response);
-
+        .then(() => {
+          // 3. 인증 성공 시 로컬스토리지에 토큰 저장 후 shoot 페이지 로드
           localStorage.setItem('token', JSON.stringify(token));
           setProcedure('success');
         })
         .catch((error) => {
+          // 4. 인증 실패 시 process container의 실패 패턴 로드
           const { message } = error;
           setProcedure('denied');
           setMessage(message);
@@ -55,24 +55,30 @@ const ShootPage: FunctionComponent = () => {
     };
 
     if (isTokenLoaded) {
+      // 로컬스토리지에 토큰이 있는 경우는 이미 인증이 최소 1번 성공한 케이스로 바로 shoot 로드
       setProcedure('success');
     }
 
     if (!isTokenLoaded) {
-      if (token && typeof token === 'string') {
-        // 토근 인증 절차
-        // 1. API로 쿼리스트링에 있는 토큰을 인증
-        // 단. 그동안 1초는 반드시 delay 시키고 + api 통신 시간 만큼 process container 요청 패턴 로드
-        setTimeout(() => {
-          setProcedure('token');
-        }, 1000);
+      // 토근 인증 절차
+      // 1. API로 쿼리스트링에 있는 토큰을 인증
+      // 단. 그동안 1초는 반드시 delay 시키고 + api 통신 시간 만큼 process container 요청 패턴 로드
+      setTimeout(() => {
+        setProcedure('token');
+      }, 1000);
 
-        // 강제로 2초 딜레이를 줘서 동일 흐름에서 token 프로세스를 먼저 밟고 이후 api 통신
+      // 2. 쿼리스트링 토큰 자체가 없는 경우 token 프로세스를 먼저 밟고 denied 처리
+      if (!token) {
+        setTimeout(() => {
+          setProcedure('denied');
+        }, 2000);
+      }
+
+      if (token && typeof token === 'string') {
+        // 3. 강제로 2초 딜레이를 줘서 동일 흐름에서 token 프로세스를 먼저 밟고 이후 api 통신
         setTimeout(() => {
           authToken(token);
         }, 2000);
-        // 2. 인증 성공 시 로컬스토리지에 토큰 저장 후 shoot 페이지 로드
-        // 3. 인증 실패 시 process container의 실패 패턴 로드
       }
     }
   }, [token]);
