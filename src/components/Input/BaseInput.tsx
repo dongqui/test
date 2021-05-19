@@ -55,6 +55,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
       disabled,
       fullSize,
       isChild,
+      readOnly,
     });
 
     const handleBlur = useCallback(

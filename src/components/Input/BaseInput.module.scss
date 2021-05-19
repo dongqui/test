@@ -72,6 +72,10 @@
   &.isChild {
     border: 0;
   }
+
+  &.readOnly {
+    border: 0 !important;
+  }
 }
 
 .input {
