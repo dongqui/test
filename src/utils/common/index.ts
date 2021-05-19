@@ -11,3 +11,4 @@ export { default as fnQuaternionToEulerTrack } from './fnQuaternionToEulerTrack'
 export { default as fnQuaternionToEulerTracks } from './fnQuaternionToEulerTracks';
 
 export { default as fnGetSmallestNewNumber } from './fnGetSmallestNewNumber';
+export { default as fnGetMaskedValue } from './fnGetMaskedValue';

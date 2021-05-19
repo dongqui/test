@@ -31,6 +31,7 @@ import styles from './index.module.scss';
 import { d3ScaleLinear } from 'types/TP';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
+import { fnGetMaskedValue } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
@@ -210,11 +211,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         currentTimeRef.current
       ) {
         currentAction.time = _.round(value / 30, 4);
-        currentTimeRef.current.value = new Date(_.round(value / 30, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        currentTimeRef.current.value = fnGetMaskedValue(_.round(value / 30, 0));
         currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
         d3.select('#play-bar-wrapper').style(
@@ -259,11 +256,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         currentTimeRef.current
       ) {
         currentAction.time = _.round(value / 30, 4);
-        currentTimeRef.current.value = new Date(_.round(value / 30, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        currentTimeRef.current.value = fnGetMaskedValue(_.round(value / 30, 0));
         currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
         d3.select('#play-bar-wrapper').style(
@@ -292,17 +285,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   useEffect(() => {
     // 총 시간
     if (lastTimeRef.current) {
-      lastTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-        .toISOString()
-        .substr(11, 8)
-        .substr(2)
-        .replace(':', '');
+      lastTimeRef.current.value = fnGetMaskedValue(_.round(lastTime, 0));
 
-      // const value = new Date(_.round(lastTime, 0) * 1000)
-      //   .toISOString()
-      //   .substr(11, 8)
-      //   .substr(2)
-      //   .replace(':', '');
+      // const value = fnGetMaskedValue(_.round(lastTime, 0))
 
       // setLastInputTime(value);
     }
@@ -313,31 +298,16 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const changeCurrentTimeRef = useCallback(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current) {
       if (currentAction.time <= lastTime) {
-        currentTimeRef.current.value = new Date(_.round(currentAction.time, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        currentTimeRef.current.value = fnGetMaskedValue(_.round(currentAction.time, 0));
 
-        // const value = new Date(_.round(currentAction.time, 0) * 1000)
-        //   .toISOString()
-        // .substr(11, 8)
-        // .substr(2)
-        // .replace(':', '');
+        // const value = fnGetMaskedValue(_.round(currentAction.time, 0));
 
         // setCurrentTime(value);
       } else {
-        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        currentTimeRef.current.value = fnGetMaskedValue(_.round(lastTime, 0));
 
-        // const value = new Date(_.round(lastTime, 0) * 1000)
-        //   .toISOString()
-        //   .substr(11, 8)
-        //   .substr(2)
-        //   .replace(':', '');
+        // const value = fnGetMaskedValue(_.round(lastTime, 0))
+
         // setCurrentTime(value);
       }
     }
@@ -367,33 +337,17 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   useEffect(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current && currentXAxisPosition) {
       if (_.round(currentXAxisPosition.current / 30, 4) > lastTime) {
-        currentTimeRef.current.value = new Date(_.round(lastTime) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        currentTimeRef.current.value = fnGetMaskedValue(_.round(lastTime));
 
-        // const value = new Date(_.round(lastTime) * 1000)
-        //   .toISOString()
-        //   .substr(11, 8)
-        //   .substr(2)
-        //   .replace(':', '');
+        // const value = fnGetMaskedValue(_.round(lastTime))
 
         // setCurrentTime(value);
       } else {
-        currentTimeRef.current.value = new Date(
-          _.round(currentXAxisPosition.current / 30, 0) * 1000,
-        )
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        currentTimeRef.current.value = fnGetMaskedValue(
+          _.round(currentXAxisPosition.current / 30, 0),
+        );
 
-        // const value = new Date(_.round(currentXAxisPosition.current / 30, 0) * 1000)
-        //   .toISOString()
-        //   .substr(11, 8)
-        //   .substr(2)
-        //   .replace(':', '');
+        // const value = fnGetMaskedValue(_.round(currentXAxisPosition.current / 30, 0))
 
         // setCurrentTime(value);
       }
@@ -402,21 +356,13 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   // VM now 시간 변경 시 currentTime 변경
   useEffect(() => {
-    const value = new Date(_.round(indicator.now, 0) * 1000)
-      .toISOString()
-      .substr(11, 8)
-      .substr(2)
-      .replace(':', '');
+    const value = fnGetMaskedValue(_.round(indicator.now, 0));
     setCurrentTime(value);
   }, [indicator.now]);
 
   // VM end 시간 변경 시 lastInputTime 변경
   useEffect(() => {
-    const value = new Date(_.round(recordingData.duration, 0) * 1000)
-      .toISOString()
-      .substr(11, 8)
-      .substr(2)
-      .replace(':', '');
+    const value = fnGetMaskedValue(_.round(recordingData.duration, 0));
     setLastInputTime(value);
   }, [indicator.end, recordingData.duration]);
   const currentTimeIndexReqIdRef = useRef<number | undefined>();
