@@ -42,7 +42,7 @@ const FormModal: FunctionComponent<Props> = ({
   };
 
   return (
-    <BaseModal title={title} onClose={onClose} onOutsideClose={onOutsideClose}>
+    <BaseModal title={title} hasInputChild onClose={onClose} onOutsideClose={onOutsideClose}>
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         {children}
         <div className={cx('inner')}>
