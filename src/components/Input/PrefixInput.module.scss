@@ -5,6 +5,11 @@
   background-color: $gray300;
   border-radius: 4px;
   padding: 2px 8px;
+  border: 1px solid transparent;
+
+  &:focus-within {
+    border: 1px solid $primaryColor;
+  }
 }
 
 .prefix {

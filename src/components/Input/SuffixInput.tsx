@@ -24,7 +24,14 @@ const SuffixInput = forwardRef<HTMLInputElement, Props>(
 
     return (
       <div className={classes}>
-        <BaseInput className={cx('input')} type="number" ref={ref} arrow={arrow} {...rest} />
+        <BaseInput
+          className={cx('input')}
+          type="number"
+          ref={ref}
+          arrow={arrow}
+          isChild
+          {...rest}
+        />
         <span className={suffixClasses}>{suffix}</span>
       </div>
     );

@@ -25,7 +25,14 @@ const PrefixInput = forwardRef<HTMLInputElement, Props>(
     return (
       <div className={classes}>
         <span className={prefixClasses}>{prefix}</span>
-        <BaseInput className={cx('input')} type="number" ref={ref} arrow={arrow} {...rest} />
+        <BaseInput
+          className={cx('input')}
+          type="number"
+          ref={ref}
+          arrow={arrow}
+          isChild
+          {...rest}
+        />
       </div>
     );
   },

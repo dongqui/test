@@ -19,7 +19,7 @@ const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, ...rest },
 
   return (
     <div className={classes}>
-      <BaseInput className={cx('input')} ref={ref} {...rest} />
+      <BaseInput className={cx('input')} ref={ref} isChild {...rest} />
       <IconWrapper className={cx('search')} icon={SvgPath.Search} hasFrame={false} />
     </div>
   );

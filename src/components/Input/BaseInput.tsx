@@ -11,6 +11,7 @@ interface BaseProps {
   maskChar?: string | null;
   fullSize?: boolean;
   autoComplete?: boolean;
+  isChild?: boolean;
 }
 
 type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete'>;
@@ -22,6 +23,7 @@ const defaultProps: Partial<Props> = {
   arrow: false,
   autoComplete: false,
   autoFocus: false,
+  isChild: false,
 };
 
 const BaseInput = forwardRef<HTMLInputElement, Props>(
@@ -37,6 +39,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
       fullSize,
       autoComplete,
       readOnly,
+      isChild,
       onBlur,
       onChange,
       onKeyUp,
@@ -49,6 +52,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
       invalid,
       disabled,
       fullSize,
+      isChild,
     });
 
     const handleBlur = useCallback(

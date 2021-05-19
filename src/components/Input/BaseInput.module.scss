@@ -2,7 +2,6 @@
 
 %input {
   position: relative;
-  border: 0;
   outline: 0;
   margin: 0;
   padding: 0;
@@ -10,6 +9,11 @@
   caret-color: #fff;
   color: #fff;
   transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+  border: 1px solid transparent;
+
+  &:focus-within {
+    border: 1px solid $primaryColor;
+  }
 
   &:-webkit-autofill,
   &:-webkit-autofill:hover,
@@ -63,6 +67,10 @@
 
   &.invalid {
     color: $pastel-red;
+  }
+
+  &.isChild {
+    border: 0;
   }
 }
 

@@ -4,6 +4,11 @@
   position: relative;
   background-color: $gray300;
   border-radius: 4px;
+  border: 1px solid transparent;
+
+  &:focus-within {
+    border: 1px solid $primaryColor;
+  }
 }
 
 .input {
