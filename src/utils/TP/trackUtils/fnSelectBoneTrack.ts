@@ -1,10 +1,10 @@
-import { TPDopeSheet } from 'types/TP';
+import { UpdatedTrack } from 'types/TP';
 interface FnSelectBoneTrack {
   trackIndex: number;
   isSelected: boolean;
 }
 
-type Return = [Partial<TPDopeSheet>[], number[]];
+type Return = [UpdatedTrack<'isSelected'>[], number[]];
 
 /**
  * 클릭한 bone 트랙과 하위 트랙에 선택 효과를 적용하는 함수입니다.
@@ -17,7 +17,7 @@ type Return = [Partial<TPDopeSheet>[], number[]];
  */
 
 const fnSelectBoneTrack = ({ trackIndex, isSelected }: FnSelectBoneTrack): Return => {
-  const updatedTrackList: Partial<TPDopeSheet>[] = [];
+  const updatedTrackList: UpdatedTrack<'isSelected'>[] = [];
   const newClickedTrackList = [];
 
   // 클릭 한 bone 트랙에 선택 효과 적용

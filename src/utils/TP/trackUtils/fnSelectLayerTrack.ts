@@ -1,12 +1,12 @@
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
-import { TPDopeSheet, TPLastBone } from 'types/TP';
+import { TPLastBone, UpdatedTrack } from 'types/TP';
 interface FnSelectLayerTrack {
   isSelected: boolean;
   lastBoneList: TPLastBone[];
   trackIndex: number;
 }
 
-type Return = [Partial<TPDopeSheet>[], number[]];
+type Return = [UpdatedTrack<'isSelected'>[], number[]];
 
 /**
  * 선택 한 트랙이 Layer인 경우, 클릭 한 Layer와 하위 트랙들에 선택 효과를 적용시키는 함수입니다.
@@ -24,7 +24,7 @@ const fnSelectLayerTrack = ({
   lastBoneList,
   trackIndex,
 }: FnSelectLayerTrack): Return => {
-  const updatedTrackList: Partial<TPDopeSheet>[] = [];
+  const updatedTrackList: UpdatedTrack<'isSelected'>[] = [];
   const newClickedTrackList = [];
 
   const targetIndex = fnGetBinarySearch({

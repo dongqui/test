@@ -1,11 +1,11 @@
-import { TPDopeSheet } from 'types/TP';
+import { UpdatedTrack } from 'types/TP';
 
 interface FnSelectTransformTrack {
   isSelected: boolean;
   trackIndex: number;
 }
 
-type Return = [Partial<TPDopeSheet>[], number[]];
+type Return = [UpdatedTrack<'isSelected'>[], number[]];
 
 /**
  * 클릭한 transform 트랙에 선택 효과를 적용하는 함수입니다.
@@ -18,7 +18,7 @@ type Return = [Partial<TPDopeSheet>[], number[]];
  */
 
 const fnSelectTransformTrack = ({ isSelected, trackIndex }: FnSelectTransformTrack): Return => {
-  const updatedTrackList: Partial<TPDopeSheet>[] = [];
+  const updatedTrackList: UpdatedTrack<'isSelected'>[] = [];
   const newClickedTrackList = [];
 
   // 새로 선택 효과 적용시킬 리스트에 track index 추가
