@@ -102,12 +102,12 @@ export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDope
         case 'isFiltered':
           if (draft[index]) {
             draft[index].isFiltered = target.isFiltered as boolean;
-            draft[index].isOpenedParentTrack = target.isOpenedParentTrack as boolean;
+            draft[index].isShowed = target.isShowed as boolean;
           }
           break;
-        case 'isOpenedParentTrack':
+        case 'isShowed':
           if (draft[index]) {
-            draft[index].isOpenedParentTrack = target.isOpenedParentTrack as boolean;
+            draft[index].isShowed = target.isShowed as boolean;
           }
           break;
         case 'isSelected':
