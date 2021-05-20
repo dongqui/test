@@ -1,5 +1,5 @@
 import { Story, Meta } from '@storybook/react/types-6-0';
-import Component, { Props } from 'components/New_Typography/Headline';
+import Component, { Props } from 'components/Typography/Headline';
 
 export default {
   title: 'Component API/Component/New_Typography',

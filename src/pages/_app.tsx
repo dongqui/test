@@ -6,6 +6,7 @@ import { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { ApolloProvider } from '@apollo/client';
 import { cache, useApollo } from 'lib/apolloClient';
+import { hotjar } from 'analytics';
 import 'styles/core.scss';
 import 'styles/timeline/_curve.scss';
 import _ from 'lodash';
@@ -25,6 +26,7 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   };
 
   useEffect(() => {
+    hotjar.initialize();
     initialAction();
   }, []);
 
