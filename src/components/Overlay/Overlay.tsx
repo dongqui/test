@@ -8,7 +8,7 @@ type Theme = 'light' | 'dark';
 
 interface Props {
   theme?: Theme;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 const defaultProps: Partial<Props> = {
@@ -21,7 +21,11 @@ const Overlay: FunctionComponent<Props> = ({ theme, onClose }) => {
    */
   const classes = cx('overlay', theme);
 
-  return <div className={classes} onClick={onClose} aria-hidden="true" />;
+  const handleClose = () => {
+    onClose && onClose();
+  };
+
+  return <div className={classes} onClick={handleClose} aria-hidden="true" />;
 };
 
 Overlay.defaultProps = defaultProps;
