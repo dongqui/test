@@ -3,10 +3,6 @@
 .dark {
   background-color: $gray300;
 
-  .suffix {
-    color: $gray500;
-  }
-
   &.disabled {
     color: rgba(255, 255, 255, 0.2) !important;
   }
@@ -14,10 +10,6 @@
 
 .light {
   background-color: $gray600;
-
-  .suffix {
-    color: $gray200;
-  }
 
   &.disabled {
     color: rgba(0, 0, 0, 0.2) !important;
@@ -40,6 +32,7 @@
   display: flex;
   align-items: center;
   font-size: 14px;
+  color: $primaryColor;
 }
 
 .input {
