@@ -13,6 +13,7 @@ interface BaseProps {
   autoComplete?: boolean;
   spellCheck?: boolean;
   isChild?: boolean;
+  theme?: 'dark' | 'light';
 }
 
 type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete' | 'spellCheck'>;
@@ -25,6 +26,7 @@ const defaultProps: Partial<Props> = {
   autoComplete: false,
   autoFocus: false,
   isChild: false,
+  theme: 'dark',
 };
 
 const BaseInput = forwardRef<HTMLInputElement, Props>(
@@ -42,6 +44,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
       spellCheck,
       readOnly,
       isChild,
+      theme,
       onBlur,
       onChange,
       onKeyUp,
@@ -49,7 +52,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
     },
     ref,
   ) => {
-    const classes = cx('input', className, {
+    const classes = cx('input', className, theme, {
       arrow,
       invalid,
       disabled,
