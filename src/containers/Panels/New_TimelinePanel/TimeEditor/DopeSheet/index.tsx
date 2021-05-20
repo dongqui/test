@@ -21,7 +21,6 @@ import {
   storeTPDopeSheetList,
   storePageInfo,
 } from 'lib/store';
-import CircleGroup from './circleGroup';
 import PlayBar from './playBar';
 import styles from './index.module.scss';
 import { CurrentVisualizedDataType, PAGE_NAMES, ShootTrackType } from 'types';
@@ -35,9 +34,11 @@ import produce from 'immer';
 import { useDragBox } from 'hooks/common';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { DragBox } from 'components/DragBox';
+import { useSelector } from 'reducers';
+import CircleGroup from './CircleGroup';
 
 interface Props {
-  timelineWrapperRef: RefObject<HTMLDivElement>;
+  panelWrapperRef: RefObject<HTMLDivElement>;
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
   currentXAxisPosition: MutableRefObject<number>;
@@ -65,13 +66,13 @@ const THROTTLE_TIMER = 75;
 const INITIAL_SCALE_LEVEL = 7500;
 
 const DopeSheet: React.FC<Props> = ({
-  timelineWrapperRef,
+  panelWrapperRef,
   currentTimeRef,
   currentTimeIndexRef,
   currentXAxisPosition,
   prevXScale,
 }) => {
-  const dopeSheetList = useReactiveVar(storeTPDopeSheetList); // store에 저장 된 dope sheet data list
+  const trackList = useSelector((state) => state.dopeSheet.trackList);
   const dopeSheetRef = useRef<HTMLDivElement>(null); // Dope Sheet의 Ref
   const prevScrollTop = useRef(0); // 직전 TP scroll 위치
   const prevModelKey = useRef('');
@@ -202,8 +203,8 @@ const DopeSheet: React.FC<Props> = ({
 
   // timelineWrapper에 scroll 효과 적용
   useEffect(() => {
-    if (!dopeSheetRef.current || !timelineWrapperRef.current) return;
-    const timelineWrapper = timelineWrapperRef.current;
+    if (!dopeSheetRef.current || !panelWrapperRef.current) return;
+    const timelineWrapper = panelWrapperRef.current;
 
     // circle x값 rescale
     const rescaleCircleX = () => {
@@ -235,7 +236,7 @@ const DopeSheet: React.FC<Props> = ({
     };
 
     d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
-  }, [prevXScale, timelineWrapperRef]);
+  }, [prevXScale, panelWrapperRef]);
 
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
@@ -295,6 +296,7 @@ const DopeSheet: React.FC<Props> = ({
             }
           }
         });
+        console.log(resultTracks);
         const state = storeCurrentVisualizedData();
         if (state && resultTracks.length !== 0) {
           const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
@@ -980,7 +982,7 @@ const DopeSheet: React.FC<Props> = ({
                 const circleGroupNode = circleGroup.node() as Element;
                 const xScaleLinear = xScale.current as d3ScaleLinear;
                 const circleGroupTop = circleGroupNode.getBoundingClientRect().top;
-                const timelineWrapperTop = timelineWrapperRef.current?.getBoundingClientRect().top;
+                const timelineWrapperTop = panelWrapperRef.current?.getBoundingClientRect().top;
                 if (timelineWrapperTop) {
                   const minimum = timelineWrapperTop - TRACK_HEIGHT * 4;
                   const manimum = window.innerHeight + TRACK_HEIGHT * 4;
@@ -1029,7 +1031,7 @@ const DopeSheet: React.FC<Props> = ({
       redrawRangeRect();
       ro.observe(dopeSheetRef.current);
     }
-  }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex, timelineWrapperRef]);
+  }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex, panelWrapperRef]);
 
   const [isUpdated, setIsUpdated] = useState(false);
   const handleIsUpdated = useCallback(() => {
@@ -1041,7 +1043,7 @@ const DopeSheet: React.FC<Props> = ({
     <>
       <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
         <div className={cx('circle-group-wrapper')}>
-          {_.map(dopeSheetList, (dopeSheet) => {
+          {_.map(trackList, (dopeSheet) => {
             const { trackName, visualizedDataKey } = dopeSheet;
             const key = `${trackName}_${visualizedDataKey}`;
             return (

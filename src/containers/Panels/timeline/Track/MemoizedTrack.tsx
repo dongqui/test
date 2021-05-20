@@ -126,7 +126,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
       case TP_TRACK_INDEX.SUMMARY: {
         const nextState = _.map(lastBoneList, (lastBone) => ({
           trackIndex: lastBone.layerIndex,
-          isOpenedParentTrack: !isClickedArrowButton,
+          isShowed: !isClickedArrowButton,
         }));
         updatedTrackList.push(...nextState);
         break;
@@ -144,7 +144,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
           while (curBoneIndex <= layerTrack.lastBoneIndex) {
             updatedTrackList.push({
               trackIndex: curBoneIndex,
-              isOpenedParentTrack: !isClickedArrowButton,
+              isShowed: !isClickedArrowButton,
             });
             if (curBoneIndex % 10 === TP_TRACK_INDEX.BONE_A) {
               curBoneIndex += 4; // 3 -> 7
@@ -165,7 +165,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
         ) {
           updatedTrackList.push({
             trackIndex: transformIndex + 1,
-            isOpenedParentTrack: !isClickedArrowButton,
+            isShowed: !isClickedArrowButton,
           });
         }
         break;
@@ -176,7 +176,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
     }
     storeTPUpdateDopeSheetList({
       updatedList: updatedTrackList,
-      status: 'isOpenedParentTrack',
+      status: 'isShowed',
     });
     storeTPCurrnetClickedTrack({
       trackIndex,

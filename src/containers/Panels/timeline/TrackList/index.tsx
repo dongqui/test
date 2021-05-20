@@ -28,7 +28,7 @@ interface Props {
 
 interface RecurDopeSheet {
   trackList: TPTrackName[];
-  isOpenedParentTrack: boolean;
+  isShowed: boolean;
 }
 
 type FilterTrackList = [TPTrackName[], boolean];
@@ -62,7 +62,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
           const resetDopeSheetList = produce<Partial<TPDopeSheet>[]>(dopeSheetList, (draft) => {
             const nextState = _.map(draft, ({ trackIndex }) => ({
               trackIndex,
-              isOpenedParentTrack: false,
+              isShowed: false,
               isFiltered: true,
             }));
             _.forEach(lastBoneList, ({ layerIndex }) => {
@@ -72,10 +72,10 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
                 key: 'trackIndex',
               });
               if (targetIndex !== -1) {
-                nextState[targetIndex].isOpenedParentTrack = true;
+                nextState[targetIndex].isShowed = true;
               }
             });
-            nextState[0].isOpenedParentTrack = true;
+            nextState[0].isShowed = true;
             return nextState;
           });
           prevTrackInput.current = '';
@@ -131,12 +131,12 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
         // 필터링 된 트랙 리스트를 dope sheet에 반영
         const [filteredTrackList] = filterTrackList({ trackList: trackNameList });
         const filteredDopeSheetList = produce<Partial<TPDopeSheet>[]>(dopeSheetList, (draft) => {
-          const nextState = _.map(draft, ({ trackIndex, isOpenedParentTrack }) => ({
+          const nextState = _.map(draft, ({ trackIndex, isShowed }) => ({
             trackIndex,
-            isOpenedParentTrack,
+            isShowed,
             isFiltered: false,
           }));
-          const recursive = ({ trackList, isOpenedParentTrack }: RecurDopeSheet) => {
+          const recursive = ({ trackList, isShowed }: RecurDopeSheet) => {
             _.forEach(trackList, ({ trackIndex, childrenTrack, isOpenedChildrenTrack }) => {
               const index = fnGetBinarySearch({
                 collection: nextState,
@@ -145,14 +145,14 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
               });
               if (index !== -1) {
                 nextState[index].isFiltered = true;
-                nextState[index].isOpenedParentTrack = isOpenedParentTrack;
+                nextState[index].isShowed = isShowed;
               }
-              recursive({ trackList: childrenTrack, isOpenedParentTrack: isOpenedChildrenTrack });
+              recursive({ trackList: childrenTrack, isShowed: isOpenedChildrenTrack });
             });
           };
           recursive({
             trackList: filteredTrackList,
-            isOpenedParentTrack: filteredTrackList[0]?.isOpenedChildrenTrack,
+            isShowed: filteredTrackList[0]?.isOpenedChildrenTrack,
           });
           return nextState;
         });
