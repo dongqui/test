@@ -62,7 +62,7 @@ const ShootPage: FunctionComponent = () => {
     if (!isTokenLoaded) {
       // 토근 인증 절차
       // 1. API로 쿼리스트링에 있는 토큰을 인증
-      // 단. 그동안 1초는 반드시 delay 시키고 + api 통신 시간 만큼 process container 요청 패턴 로드
+      // 단. 그동안 2초는 반드시 delay 시키고 + api 통신 시간 만큼 process container 요청 패턴 로드
       setTimeout(() => {
         setProcedure('token');
       }, 2000);
@@ -75,7 +75,7 @@ const ShootPage: FunctionComponent = () => {
       }
 
       if (token && typeof token === 'string') {
-        // 3. 강제로 2초 딜레이를 줘서 동일 흐름에서 token 프로세스를 먼저 밟고 이후 api 통신
+        // 3. 강제로 4초 딜레이를 줘서 동일 흐름에서 token 프로세스를 먼저 밟고 이후 api 통신
         setTimeout(() => {
           authToken(token);
         }, 4000);

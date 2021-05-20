@@ -41,6 +41,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 100%;
+  text-align: center;
   color: #fff;
 }
 
@@ -53,6 +55,7 @@
 }
 
 .status {
+  display: inline-block;
   height: 67px;
   overflow: hidden;
   margin-bottom: 24px;
