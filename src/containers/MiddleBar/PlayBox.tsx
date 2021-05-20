@@ -37,7 +37,7 @@ import { d3ScaleLinear } from 'types/TP';
 import * as d3 from 'd3';
 import fnQuaternionToEulerTrack from 'utils/common/fnQuaternionToEulerTrack';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
-import { fnGetMaskedValue } from 'utils/common';
+import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
@@ -116,11 +116,11 @@ const PlayBox: FunctionComponent<Props> = ({
         prevXScale.current
       ) {
         if (_.round(startTimeIndex / 30, 4) <= lastTime) {
-          currentTimeRef.current.value = fnGetMaskedValue(_.round(startTimeIndex / 30, 0));
+          fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(startTimeIndex / 30, 0)));
         } else {
-          currentTimeRef.current.value = fnGetMaskedValue(_.round(lastTime, 0));
+          fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
         }
-        currentTimeIndexRef.current.value = startTimeIndex.toString();
+        fnSetValue(currentTimeIndexRef, startTimeIndex);
 
         if (currentAction) {
           currentAction.time = _.round(startTimeIndex / 30, 4);

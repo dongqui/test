@@ -31,7 +31,7 @@ import styles from './index.module.scss';
 import { d3ScaleLinear } from 'types/TP';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
-import { fnGetMaskedValue } from 'utils/common';
+import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
@@ -181,7 +181,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, startTimeIndex: value });
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
-        currentTimeIndexRef.current.value = value.toString();
+        fnSetValue(currentTimeIndexRef, value);
       }
     } else {
       event.target.value = startTimeIndex.toString();
@@ -193,7 +193,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     if (value > startTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, endTimeIndex: value });
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
-        currentTimeIndexRef.current.value = value.toString();
+        fnSetValue(currentTimeIndexRef, value);
       }
     } else {
       event.target.value = endTimeIndex.toString();
@@ -211,7 +211,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         currentTimeRef.current
       ) {
         currentAction.time = _.round(value / 30, 4);
-        currentTimeRef.current.value = fnGetMaskedValue(_.round(value / 30, 0));
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(value / 30, 0)));
         currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
         d3.select('#play-bar-wrapper').style(
@@ -230,7 +230,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, startTimeIndex: value });
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
-        currentTimeIndexRef.current.value = value.toString();
+        fnSetValue(currentTimeIndexRef, value);
       }
     }
   }, 1500);
@@ -240,7 +240,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     if (value > startTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, endTimeIndex: value });
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
-        currentTimeIndexRef.current.value = value.toString();
+        fnSetValue(currentTimeIndexRef, value);
       }
     }
   }, 1500);
@@ -256,7 +256,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         currentTimeRef.current
       ) {
         currentAction.time = _.round(value / 30, 4);
-        currentTimeRef.current.value = fnGetMaskedValue(_.round(value / 30, 0));
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(value / 30, 0)));
         currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
         d3.select('#play-bar-wrapper').style(
@@ -285,7 +285,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   useEffect(() => {
     // 총 시간
     if (lastTimeRef.current) {
-      lastTimeRef.current.value = fnGetMaskedValue(_.round(lastTime, 0));
+      fnSetValue(lastTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
 
       // const value = fnGetMaskedValue(_.round(lastTime, 0))
 
@@ -298,13 +298,13 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const changeCurrentTimeRef = useCallback(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current) {
       if (currentAction.time <= lastTime) {
-        currentTimeRef.current.value = fnGetMaskedValue(_.round(currentAction.time, 0));
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(currentAction.time, 0)));
 
         // const value = fnGetMaskedValue(_.round(currentAction.time, 0));
 
         // setCurrentTime(value);
       } else {
-        currentTimeRef.current.value = fnGetMaskedValue(_.round(lastTime, 0));
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
 
         // const value = fnGetMaskedValue(_.round(lastTime, 0))
 
@@ -337,15 +337,13 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   useEffect(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current && currentXAxisPosition) {
       if (_.round(currentXAxisPosition.current / 30, 4) > lastTime) {
-        currentTimeRef.current.value = fnGetMaskedValue(_.round(lastTime));
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime)));
 
         // const value = fnGetMaskedValue(_.round(lastTime))
 
         // setCurrentTime(value);
       } else {
-        currentTimeRef.current.value = fnGetMaskedValue(
-          _.round(currentXAxisPosition.current / 30, 0),
-        );
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(currentXAxisPosition.current / 30, 0)));
 
         // const value = fnGetMaskedValue(_.round(currentXAxisPosition.current / 30, 0))
 
@@ -369,7 +367,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   const changeCurrentTimeIndexRef = useCallback(() => {
     if (currentAction && currentTimeIndexRef && currentTimeIndexRef.current) {
-      currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
+      fnSetValue(currentTimeIndexRef, _.round(currentAction.time * 30, 0));
     }
     currentTimeIndexReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeIndexRef);
   }, [currentAction, currentTimeIndexRef]);
@@ -387,7 +385,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         currentXAxisPosition &&
         currentXAxisPosition.current
       ) {
-        currentTimeIndexRef.current.value = _.round(currentXAxisPosition.current, 0).toString();
+        fnSetValue(currentTimeIndexRef, _.round(currentXAxisPosition.current, 0));
       }
     }
   }, [currentTimeIndexRef, currentXAxisPosition]);

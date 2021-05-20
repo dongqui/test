@@ -35,7 +35,7 @@ import produce from 'immer';
 import { useDragBox } from 'hooks/common';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { DragBox } from 'components/DragBox';
-import { fnGetMaskedValue } from 'utils/common';
+import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 
 interface Props {
   timelineWrapperRef: RefObject<HTMLDivElement>;
@@ -512,11 +512,11 @@ const DopeSheet: React.FC<Props> = ({
 
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
-        currentTimeRef.current.value = fnGetMaskedValue(_.round(lastTime, 0));
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
       } else {
-        currentTimeRef.current.value = fnGetMaskedValue(_.round(nextValue / 30, 0));
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(nextValue / 30, 0)));
       }
-      currentTimeIndexRef.current.value = nextValue.toString();
+      fnSetValue(currentTimeIndexRef, nextValue);
       // 액션 time 업데이트
       currentAction.time = _.round(nextValue / 30, 4);
     }
@@ -563,11 +563,11 @@ const DopeSheet: React.FC<Props> = ({
 
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
-        currentTimeRef.current.value = fnGetMaskedValue(_.round(lastTime, 0));
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
       } else {
-        currentTimeRef.current.value = fnGetMaskedValue(_.round(nextValue / 30, 0));
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(nextValue / 30, 0)));
       }
-      currentTimeIndexRef.current.value = nextValue.toString();
+      fnSetValue(currentTimeIndexRef, nextValue);
       // 액션 time 업데이트
       currentAction.time = _.round(nextValue / 30, 4);
     }
@@ -688,15 +688,13 @@ const DopeSheet: React.FC<Props> = ({
 
           if (currentTimeRef.current) {
             if (_.round(setPlayBarX(currentX) / 30, 4) <= lastTime) {
-              const value = fnGetMaskedValue(_.round(setPlayBarX(currentX) / 30, 0));
-              currentTimeRef.current.value = value;
+              fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(setPlayBarX(currentX) / 30, 0)));
             } else {
-              const value = fnGetMaskedValue(_.round(lastTime, 0));
-              currentTimeRef.current.value = value;
+              fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
             }
           }
           if (currentTimeIndexRef.current) {
-            currentTimeIndexRef.current.value = setPlayBarX(currentX).toString();
+            fnSetValue(currentTimeIndexRef, setPlayBarX(currentX));
           }
           currentXAxisPosition.current = setPlayBarX(currentX);
           d3.select(this).style(

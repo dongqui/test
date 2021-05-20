@@ -488,6 +488,7 @@ export const useRendering = (props: UseRendering) => {
     // renderingDiv?.addEventListener('contextmenu', (e) => {
     //   console.log('contextmenu e: ', e);
     // });
+
     if (renderingDiv && renderer) {
       // scene 생성 및 설정
       const scene = fnCreateScene();
