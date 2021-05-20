@@ -52,29 +52,48 @@
   &.uppercase {
     text-transform: uppercase;
   }
+
+  &.service {
+    display: inline-block;
+    background-color: #4fc7f2;
+  }
+
+  &.denied {
+    display: inline-block;
+    background-color: #dc153c;
+  }
+
+  &.token {
+    display: inline-block;
+    background-color: #42c58b;
+  }
 }
 
 .status {
-  display: inline-block;
-  height: 67px;
-  overflow: hidden;
-  margin-bottom: 24px;
-
-  & > .animation {
-    &:first-child {
-      @include fadeDown(4, 2);
-      background-color: #4fc7f2;
-    }
-
-    &:nth-child(2) {
-      background-color: #dc153c;
-    }
-
-    &:last-child {
-      background-color: #42c58b;
-    }
-  }
+  width: 100%;
 }
+
+// .status {
+//   // display: inline-block;
+//   height: 67px;
+//   overflow: hidden;
+//   margin-bottom: 24px;
+
+//   // & > .animation {
+//   //   &:first-child {
+//   //     // @include fadeDown(4, 2);
+//   //     background-color: #4fc7f2;
+//   //   }
+
+//   //   &:nth-child(2) {
+//   //     background-color: #dc153c;
+//   //   }
+
+//   //   &:last-child {
+//   //     background-color: #42c58b;
+//   //   }
+//   // }
+// }
 
 .bottom {
   .paragraph {
