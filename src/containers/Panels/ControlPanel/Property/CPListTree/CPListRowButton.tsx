@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { Segment } from 'components/Segment';
 import { useReactiveVar } from '@apollo/client';
 import { storeRenderingData } from 'lib/store';
-import { axisName, RenderingDataPropertyName } from 'types/RP';
+import { AxisName, RenderingDataPropertyName } from 'types/RP';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './CPListRowButton.module.scss';
@@ -15,7 +15,6 @@ export interface CPListRowButtonProps {
   button?:
     | RenderingDataPropertyName.axis
     | RenderingDataPropertyName.isBoneOn
-    // | RenderingDataPropertyName.isJointOn
     | RenderingDataPropertyName.isMeshOn
     | RenderingDataPropertyName.isShadowOn;
 }
@@ -29,14 +28,14 @@ const CPListRowButtonComponent: React.FC<CPListRowButtonProps> = ({
   const isSelectedOn = useMemo(() => {
     let result: boolean = renderingData[button] as boolean;
     if (_.isEqual(button, RenderingDataPropertyName.axis)) {
-      result = _.isEqual(renderingData.axis, axisName.y);
+      result = _.isEqual(renderingData.axis, AxisName.y);
     }
     return result;
   }, [button, renderingData]);
   const isSelectedOff = useMemo(() => {
-    let result: boolean | axisName = !renderingData[button] as boolean;
+    let result: boolean | AxisName = !renderingData[button] as boolean;
     if (_.isEqual(button, RenderingDataPropertyName.axis)) {
-      result = _.isEqual(renderingData.axis, axisName.z);
+      result = _.isEqual(renderingData.axis, AxisName.z);
     }
     return result;
   }, [button, renderingData]);
@@ -44,7 +43,7 @@ const CPListRowButtonComponent: React.FC<CPListRowButtonProps> = ({
     ({ payload }) => {
       let result = _.clone(payload);
       if (_.isEqual(button, RenderingDataPropertyName.axis)) {
-        result = payload ? axisName.y : axisName.z;
+        result = payload ? AxisName.y : AxisName.z;
       }
       if (!_.isEqual(renderingData.isBoneOn, renderingData.isMeshOn)) {
         result = true;

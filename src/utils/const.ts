@@ -2,7 +2,7 @@ import { FILE_TYPES, LPDataType } from 'types';
 import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
 import {
   AnimatingDataType,
-  axisName,
+  AxisName,
   RenderingDataPropertyName,
   RenderingDataType,
 } from 'types/RP';
@@ -52,24 +52,20 @@ export const INITIAL_RENDERING_DATA: RenderingDataType = {
   positionX: 0,
   positionY: 0,
   positionZ: 0,
-  QuaternionW: 0,
-  QuaternionX: 0,
-  QuaternionY: 0,
-  QuaternionZ: 0,
+  quaternionW: 0,
+  quaternionX: 0,
+  quaternionY: 0,
+  quaternionZ: 0,
   rotationX: 0,
   rotationY: 0,
   rotationZ: 0,
   scaleX: 0,
   scaleY: 0,
   scaleZ: 0,
-  axis: axisName.y,
+  axis: AxisName.y,
   isBoneOn: true,
-  // isJointOn: true,
   isMeshOn: true,
   isShadowOn: true,
-  // isFogOn: false,
-  // fogNear: 10,
-  // fogFar: 80,
 };
 export const INITIAL_CP_DATA: CPDataType[] = [
   {
@@ -105,30 +101,6 @@ export const INITIAL_CP_DATA: CPDataType[] = [
     z: RenderingDataPropertyName.scaleZ,
     parentKey: '0',
   },
-  // {
-  //   key: '1',
-  //   name: CPNameType.Camera,
-  //   type: CPComponentType.parent,
-  //   isExpanded: true,
-  // },
-  // {
-  //   key: '1-1',
-  //   name: CPNameType.Location,
-  //   type: CPComponentType.input,
-  //   x: RenderingDataPropertyName.locationX,
-  //   y: RenderingDataPropertyName.locationY,
-  //   z: RenderingDataPropertyName.locationZ,
-  //   parentKey: '1',
-  // },
-  // {
-  //   key: '1-2',
-  //   name: CPNameType.Angle,
-  //   type: CPComponentType.input,
-  //   x: RenderingDataPropertyName.angleX,
-  //   y: RenderingDataPropertyName.angleY,
-  //   z: RenderingDataPropertyName.angleZ,
-  //   parentKey: '1',
-  // },
   {
     key: '2',
     name: CPNameType.Visibility,
@@ -149,13 +121,6 @@ export const INITIAL_CP_DATA: CPDataType[] = [
     button: RenderingDataPropertyName.isBoneOn,
     parentKey: '2',
   },
-  // {
-  //   key: '2-3',
-  //   name: CPNameType.Joint,
-  //   type: CPComponentType.select,
-  //   button: RenderingDataPropertyName.isJointOn,
-  //   parentKey: '2',
-  // },
   {
     key: '2-4',
     name: CPNameType.Mesh,
@@ -170,33 +135,6 @@ export const INITIAL_CP_DATA: CPDataType[] = [
     button: RenderingDataPropertyName.isShadowOn,
     parentKey: '2',
   },
-  // {
-  //   key: '3',
-  //   name: CPNameType.Fog,
-  //   type: CPComponentType.parent,
-  //   isExpanded: true,
-  // },
-  // {
-  //   key: '3-1',
-  //   name: CPNameType.Fog,
-  //   type: CPComponentType.select,
-  //   button: RenderingDataPropertyName.isFogOn,
-  //   parentKey: '3',
-  // },
-  // {
-  //   key: '3-2',
-  //   name: CPNameType.Near,
-  //   type: CPComponentType.slider,
-  //   slider: RenderingDataPropertyName.fogNear,
-  //   parentKey: '3',
-  // },
-  // {
-  //   key: '3-3',
-  //   name: CPNameType.Far,
-  //   type: CPComponentType.slider,
-  //   slider: RenderingDataPropertyName.fogFar,
-  //   parentKey: '3',
-  // },
 ];
 export const INITIAL_RECORDING_DATA = {
   duration: 10,

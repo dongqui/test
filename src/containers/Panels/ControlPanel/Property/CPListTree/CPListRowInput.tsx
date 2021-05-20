@@ -27,19 +27,19 @@ const cx = classNames.bind(styles);
 export interface CPListRowInputProps {
   rowKey: string;
   name: string;
-  w?: RenderingDataPropertyName.QuaternionW;
+  w?: RenderingDataPropertyName.quaternionW;
   x?:
-    | RenderingDataPropertyName.QuaternionX
+    | RenderingDataPropertyName.quaternionX
     | RenderingDataPropertyName.positionX
     | RenderingDataPropertyName.rotationX
     | RenderingDataPropertyName.scaleX;
   y?:
-    | RenderingDataPropertyName.QuaternionY
+    | RenderingDataPropertyName.quaternionY
     | RenderingDataPropertyName.positionY
     | RenderingDataPropertyName.rotationY
     | RenderingDataPropertyName.scaleY;
   z?:
-    | RenderingDataPropertyName.QuaternionZ
+    | RenderingDataPropertyName.quaternionZ
     | RenderingDataPropertyName.positionZ
     | RenderingDataPropertyName.rotationZ
     | RenderingDataPropertyName.scaleZ;
@@ -54,7 +54,7 @@ interface InputValueType {
 
 const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   name,
-  w = RenderingDataPropertyName.QuaternionW,
+  w = RenderingDataPropertyName.quaternionW,
   x = RenderingDataPropertyName.positionX,
   y = RenderingDataPropertyName.positionY,
   z = RenderingDataPropertyName.positionZ,
