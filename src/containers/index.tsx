@@ -37,7 +37,7 @@ const Index: FunctionComponent = () => {
     const authToken = async (token: string) => {
       await axios({
         method: 'GET',
-        url: 'http://115.85.182.106/verify',
+        url: 'https://api.plask.ai/verify',
         params: { token },
       })
         .then(() => {
