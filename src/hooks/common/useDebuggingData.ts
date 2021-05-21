@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import {
-  setAnimatingData,
   setCurrentVisualizedData,
   setLpData,
   setRenderingData,
@@ -17,7 +16,6 @@ interface useDebuggingDataProps {
   lpData: LPDataType[];
   cpData: CPDataType[];
   renderingData: RenderingDataType;
-  animatingData: AnimatingDataType;
   currentVisualizedData: CurrentVisualizedDataType | undefined;
   tpDopeSheetList: TPDopeSheet[];
 }
@@ -26,7 +24,6 @@ export const useDebuggingData = ({
   lpData,
   cpData,
   renderingData,
-  animatingData,
   currentVisualizedData,
   tpDopeSheetList,
 }: useDebuggingDataProps) => {
@@ -41,11 +38,6 @@ export const useDebuggingData = ({
       dispatch(setRenderingData(renderingData));
     }
   }, [dispatch, renderingData]);
-  useEffect(() => {
-    if (isDebug) {
-      dispatch(setAnimatingData(animatingData));
-    }
-  }, [animatingData, dispatch]);
   useEffect(() => {
     if (isDebug) {
       dispatch(setCurrentVisualizedData(currentVisualizedData));

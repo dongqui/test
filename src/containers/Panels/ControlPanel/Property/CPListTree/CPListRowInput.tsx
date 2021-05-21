@@ -206,9 +206,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     }
   };
 
-  const boneTransform: ReturnType<typeof undoableBoneTransform> = useSelector(
-    (state) => state.undoableBoneTransform,
-  );
+  const boneTransform = useSelector((state) => state.undoableBoneTransform);
 
   // undo/redo 시 input 값 변경
   useEffect(() => {

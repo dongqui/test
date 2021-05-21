@@ -27,7 +27,7 @@ export const animatingData = (state = defaultState, action: AnimatingDataAction)
   switch (action.type) {
     case 'animatingData/SET_PLAY_STATE': {
       return Object.assign({}, state, {
-        playstate: action.payload.playState,
+        playState: action.payload.playState,
       });
     }
     case 'animatingData/SET_PLAY_DIRECTION': {

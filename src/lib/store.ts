@@ -14,7 +14,6 @@ import { ROOT_FOLDER_NAME } from 'types/LP';
 import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
 import _ from 'lodash';
 import {
-  INITIAL_ANIMATING_DATA,
   INITIAL_CP_DATA,
   INITIAL_LP_DATA,
   INITIAL_RECORDING_DATA,
@@ -62,7 +61,6 @@ export const storePages = makeVar<PagesType[]>([
 export const storeSearchWord = makeVar<string>('');
 export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 // RP
-export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_DATA);
 export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 export const storeCurrentBone = makeVar<THREE.Bone | undefined>(undefined);
 export const storeCurrentAction = makeVar<THREE.AnimationAction | undefined>(undefined);

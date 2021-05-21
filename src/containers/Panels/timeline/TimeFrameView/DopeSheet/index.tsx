@@ -12,7 +12,6 @@ import * as d3 from 'd3';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import {
-  storeAnimatingData,
   storeContextMenuInfo,
   storeCurrentAction,
   storeCurrentVisualizedData,
@@ -38,6 +37,7 @@ import { DragBox } from 'components/DragBox';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 import { setPlayState } from 'actions/animatingData';
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
 
 interface Props {
   timelineWrapperRef: RefObject<HTMLDivElement>;
@@ -86,8 +86,8 @@ const DopeSheet: React.FC<Props> = ({
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null); // grid선 랜더링
 
   const currentAction = useReactiveVar(storeCurrentAction);
-  const animatingData = useReactiveVar(storeAnimatingData);
-  const { startTimeIndex, endTimeIndex, playState } = animatingData;
+
+  const { startTimeIndex, endTimeIndex, playState } = useSelector((state) => state.animatingData);
 
   const [lastTime, setLastTime] = useState(0);
   const dispatch = useDispatch();
@@ -792,10 +792,8 @@ const DopeSheet: React.FC<Props> = ({
           if (multiKeyController[event.key] && !multiKeyController[event.key].pressed) {
             if (pageInfo.page === PAGE_NAMES.shoot && currentVisualizedData) {
               if (playState === 'play') {
-                storeAnimatingData({ ...animatingData, playState: 'pause' });
                 dispatch(setPlayState({ playState: 'pause' }));
               } else {
-                storeAnimatingData({ ...animatingData, playState: 'play' });
                 dispatch(setPlayState({ playState: 'play' }));
               }
             }
@@ -807,7 +805,6 @@ const DopeSheet: React.FC<Props> = ({
       }
     },
     [
-      animatingData,
       currentVisualizedData,
       deleteTargetKeyframes.length,
       dispatch,

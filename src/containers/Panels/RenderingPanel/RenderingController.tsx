@@ -12,7 +12,6 @@ import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
 import {
-  storeAnimatingData,
   storeCurrentAction,
   storeCurrentVisualizedData,
   storeRenderingData,
@@ -32,6 +31,7 @@ import {
 } from 'utils/CP/visibilityUtils';
 import { d3ScaleLinear } from 'types/TP';
 import { fnSetValue } from 'utils/common';
+import { useSelector } from 'reducers';
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 
@@ -53,7 +53,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
 }) => {
   // store data
   const renderingData = useReactiveVar(storeRenderingData);
-  const animatingData = useReactiveVar(storeAnimatingData);
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const currentAction = useReactiveVar(storeCurrentAction);
@@ -72,7 +71,9 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     setDirLight,
   });
 
-  const { startTimeIndex, endTimeIndex, playState, playDirection, playSpeed } = animatingData;
+  const { startTimeIndex, endTimeIndex, playState, playDirection, playSpeed } = useSelector(
+    (state) => state.animatingData,
+  );
 
   // animation 생성 로직
   useEffect(() => {

@@ -11,7 +11,6 @@ import {
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
 import {
-  storeAnimatingData,
   storeCurrentAction,
   storePageInfo,
   storeBarPositionX,
@@ -34,6 +33,7 @@ import fnDetectSafari from 'utils/common/fnDetectSafari';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 import { useDispatch } from 'react-redux';
 import { setEndTimeIndex, setPlaySpeed, setStartTimeIndex } from 'actions/animatingData';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -50,7 +50,6 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const { currentTimeRef, currentTimeIndexRef, currentXAxisPosition, prevXScale } = props;
 
   const currentAction = useReactiveVar(storeCurrentAction);
-  const animatingData = useReactiveVar(storeAnimatingData);
   const recordingData = useReactiveVar(storeRecordingData);
   const barPositionX = useReactiveVar(storeBarPositionX);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
@@ -76,7 +75,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
-  const { startTimeIndex, endTimeIndex, playState } = animatingData;
+  const { startTimeIndex, endTimeIndex, playState, playSpeed } = useSelector(
+    (state) => state.animatingData,
+  );
 
   const indicator = isShootPage
     ? {
@@ -118,41 +119,40 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     {
       key: '0.25',
       value: '0.25X',
-      isSelected: _.isEqual(animatingData.playSpeed, 0.25),
+      isSelected: _.isEqual(playSpeed, 0.25),
     },
     {
       key: '0.5',
       value: '0.5X',
-      isSelected: _.isEqual(animatingData.playSpeed, 0.5),
+      isSelected: _.isEqual(playSpeed, 0.5),
     },
     {
       key: '1',
       value: '1X',
-      isSelected: _.isEqual(animatingData.playSpeed, 1),
+      isSelected: _.isEqual(playSpeed, 1),
     },
     {
       key: '1.25',
       value: '1.25X',
-      isSelected: _.isEqual(animatingData.playSpeed, 1.25),
+      isSelected: _.isEqual(playSpeed, 1.25),
     },
     {
       key: '1.75',
       value: '1.75X',
-      isSelected: _.isEqual(animatingData.playSpeed, 1.75),
+      isSelected: _.isEqual(playSpeed, 1.75),
     },
     {
       key: '2',
       value: '2X',
-      isSelected: _.isEqual(animatingData.playSpeed, 2),
+      isSelected: _.isEqual(playSpeed, 2),
     },
   ];
 
   const handleFasterSelect = useCallback(
     (key: string, _value: string) => {
-      storeAnimatingData({ ...animatingData, playSpeed: Number(key) });
       dispatch(setPlaySpeed({ playSpeed: Number(key) }));
     },
-    [animatingData, dispatch],
+    [dispatch],
   );
 
   const modeList = [
@@ -184,7 +184,6 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleStartInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
     if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
-      storeAnimatingData({ ...animatingData, startTimeIndex: value });
       dispatch(setStartTimeIndex({ startTimeIndex: value }));
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
@@ -197,7 +196,6 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleEndInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
     if (value > startTimeIndex && currentTimeIndexRef) {
-      storeAnimatingData({ ...animatingData, endTimeIndex: value });
       dispatch(setEndTimeIndex({ endTimeIndex: value }));
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
@@ -235,7 +233,6 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleStartInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
     if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
-      storeAnimatingData({ ...animatingData, startTimeIndex: value });
       dispatch(setStartTimeIndex({ startTimeIndex: value }));
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
@@ -246,7 +243,6 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleEndInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
     if (value > startTimeIndex && currentTimeIndexRef) {
-      storeAnimatingData({ ...animatingData, endTimeIndex: value });
       dispatch(setEndTimeIndex({ endTimeIndex: value }));
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
