@@ -3,10 +3,6 @@
 .dark {
   background-color: $gray300;
 
-  .prefix {
-    color: $gray500;
-  }
-
   &.disabled {
     color: rgba(255, 255, 255, 0.2) !important;
   }
@@ -14,10 +10,6 @@
 
 .light {
   background-color: $gray600;
-
-  .prefix {
-    color: $gray200;
-  }
 
   &.disabled {
     color: rgba(0, 0, 0, 0.2) !important;
@@ -41,6 +33,7 @@
   align-items: center;
   font-size: 10px;
   margin-right: 8px;
+  color: $primaryColor;
 }
 
 .input {

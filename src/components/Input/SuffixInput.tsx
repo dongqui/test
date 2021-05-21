@@ -36,9 +36,9 @@ const SuffixInput = forwardRef<HTMLInputElement, Props>(
           type="number"
           ref={ref}
           arrow={arrow}
-          isChild
           theme={theme}
           disabled={disabled}
+          isChild
           {...rest}
         />
         <span className={suffixClasses}>{suffix}</span>

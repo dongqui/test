@@ -78,6 +78,7 @@ const BaseModal: FunctionComponent<Props> = ({
     const firstFocusTarget = focusableElementList[0];
 
     // 초기 Modal Open시 focus 가능한 element에 기본 focus -> input 을 포함할때는 안하도록 분기처리 필요
+    // prop으로 내려주는 방식보다, 컴포넌트가 자체 판단할 수 있는 방식이 더 좋음 -> focusableElementList에 input이 포함되는지 판단 등의 방식으로 추후 수정 계획
     if (!hasInputChild) {
       firstFocusTarget.focus();
     }
