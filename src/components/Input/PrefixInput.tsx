@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode, MutableRefObject } from 'react';
+import { ReactNode, forwardRef } from 'react';
 import BaseInput from './BaseInput';
 import classNames from 'classnames/bind';
 import styles from './PrefixInput.module.scss';
@@ -12,24 +12,41 @@ interface BaseProps {
   maskChar?: string | null;
   color?: 'primary' | 'default';
   className?: string;
+  autoComplete?: boolean;
+  spellCheck?: boolean;
+  theme?: 'dark' | 'light';
 }
 
+export type Props = BaseProps &
+  Omit<Input.BaseInputProps, 'prefix' | 'autoComplete' | 'spellCheck'>;
+
 const defaultProps: Partial<Props> = {
-  color: 'default',
+  theme: 'dark',
 };
 
-export type Props = BaseProps & Omit<Input.BaseInputProps, 'prefix'>;
+const PrefixInput = forwardRef<HTMLInputElement, Props>(
+  ({ prefix, arrow, color, className, theme, disabled, ...rest }, ref) => {
+    const classes = cx('input-wrapper', className, theme, { disabled });
+    const prefixClasses = cx('prefix', color);
 
-const PrefixInput: FunctionComponent<Props> = ({ prefix, arrow, color, className, ...rest }) => {
-  const classes = cx('input-wrapper', className);
-  const prefixClasses = cx('prefix', color);
+    return (
+      <div className={classes}>
+        <span className={prefixClasses}>{prefix}</span>
+        <BaseInput
+          className={cx('input')}
+          type="number"
+          ref={ref}
+          arrow={arrow}
+          theme={theme}
+          disabled={disabled}
+          isChild
+          {...rest}
+        />
+      </div>
+    );
+  },
+);
 
-  return (
-    <div className={classes}>
-      <span className={prefixClasses}>{prefix}</span>
-      <BaseInput className={cx('input')} type="number" arrow={arrow} {...rest} />
-    </div>
-  );
-};
+PrefixInput.defaultProps = defaultProps;
 
 export default PrefixInput;

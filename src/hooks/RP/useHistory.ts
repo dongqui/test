@@ -4,9 +4,9 @@ type TargetPanel = 'RP' | 'TP';
 
 interface RPValue {
   bone: THREE.Bone;
-  position: { x: number; y: number; z: number };
-  quaternion: { x: number; y: number; z: number; w: number };
-  scale: { x: number; y: number; z: number };
+  position: Transform.Normal;
+  quaternion: Transform.Quaternion;
+  scale: Transform.Normal;
 }
 
 interface HistoryItem {

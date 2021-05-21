@@ -1,11 +1,4 @@
-import {
-  FunctionComponent,
-  memo,
-  useCallback,
-  FocusEvent,
-  KeyboardEvent,
-  ChangeEvent,
-} from 'react';
+import { memo, useCallback, FocusEvent, KeyboardEvent, ChangeEvent, forwardRef } from 'react';
 import MaskedInput from 'react-input-mask';
 import classNames from 'classnames/bind';
 import styles from './BaseInput.module.scss';
@@ -17,82 +10,119 @@ interface BaseProps {
   mask?: string | Array<string | RegExp>;
   maskChar?: string | null;
   fullSize?: boolean;
+  autoComplete?: boolean;
+  spellCheck?: boolean;
+  isChild?: boolean;
+  theme?: 'dark' | 'light';
 }
 
-type Props = BaseProps & Input.BaseInputProps;
+type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete' | 'spellCheck'>;
 
 const defaultProps: Partial<Props> = {
   type: 'text',
   maskChar: '',
-  spellCheck: 'false',
+  spellCheck: false,
   arrow: false,
-  autoComplete: 'off',
+  autoComplete: false,
+  autoFocus: false,
+  isChild: false,
+  theme: 'dark',
 };
 
-const BaseInput: FunctionComponent<Props> = ({
-  type,
-  className,
-  mask,
-  maskChar,
-  innerRef,
-  disabled,
-  invalid,
-  arrow,
-  fullSize,
-  onBlur,
-  onChange,
-  onKeyUp,
-  ...rest
-}) => {
-  const classes = cx('input', className, {
-    arrow,
-    invalid,
-    disabled,
-    fullSize,
-  });
-
-  const handleBlur = useCallback(
-    (e: FocusEvent<HTMLInputElement>) => {
-      onBlur && onBlur(e);
+const BaseInput = forwardRef<HTMLInputElement, Props>(
+  (
+    {
+      type,
+      className,
+      mask,
+      maskChar,
+      disabled,
+      invalid,
+      arrow,
+      fullSize,
+      autoComplete,
+      spellCheck,
+      readOnly,
+      isChild,
+      theme,
+      onBlur,
+      onChange,
+      onKeyUp,
+      ...rest
     },
-    [onBlur],
-  );
+    ref,
+  ) => {
+    const classes = cx('input', className, theme, {
+      arrow,
+      invalid,
+      disabled,
+      fullSize,
+      isChild,
+      readOnly,
+    });
 
-  const handleChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      onChange && onChange(e);
-    },
-    [onChange],
-  );
-
-  const handleKeyUp = useCallback(
-    (e: KeyboardEvent<HTMLInputElement>) => {
-      onKeyUp && onKeyUp(e);
-    },
-    [onKeyUp],
-  );
-
-  if (mask) {
-    return (
-      <MaskedInput className={classes} mask={mask} maskChar={maskChar} alwaysShowMask {...rest}>
-        {(inputProps: unknown) => <input type={type} ref={innerRef} {...inputProps} />}
-      </MaskedInput>
+    const handleBlur = useCallback(
+      (e: FocusEvent<HTMLInputElement>) => {
+        onBlur && onBlur(e);
+      },
+      [onBlur],
     );
-  }
 
-  return (
-    <input
-      className={classes}
-      type={type}
-      disabled={disabled}
-      onBlur={handleBlur}
-      onChange={handleChange}
-      onKeyUp={handleKeyUp}
-      ref={innerRef}
-      {...rest}
-    />
-  );
-};
+    const handleChange = useCallback(
+      (e: ChangeEvent<HTMLInputElement>) => {
+        onChange && onChange(e);
+      },
+      [onChange],
+    );
+
+    const handleKeyUp = useCallback(
+      (e: KeyboardEvent<HTMLInputElement>) => {
+        onKeyUp && onKeyUp(e);
+      },
+      [onKeyUp],
+    );
+
+    if (mask) {
+      return (
+        <MaskedInput
+          className={classes}
+          mask={mask}
+          maskChar={maskChar}
+          readOnly={readOnly}
+          alwaysShowMask
+          {...rest}
+        >
+          {(inputProps: unknown) => (
+            <input
+              type={type}
+              ref={ref}
+              autoComplete={autoComplete ? 'on' : 'off'}
+              spellCheck={spellCheck ? 'true' : 'false'}
+              readOnly={readOnly}
+              {...inputProps}
+            />
+          )}
+        </MaskedInput>
+      );
+    }
+
+    return (
+      <input
+        className={classes}
+        type={type}
+        ref={ref}
+        disabled={disabled}
+        autoComplete={autoComplete ? 'on' : 'off'}
+        spellCheck={spellCheck ? 'true' : 'false'}
+        readOnly={readOnly}
+        onBlur={handleBlur}
+        onChange={handleChange}
+        onKeyUp={handleKeyUp}
+        {...rest}
+      />
+    );
+  },
+);
 
 BaseInput.defaultProps = defaultProps;
 

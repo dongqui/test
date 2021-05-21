@@ -31,6 +31,7 @@ import styles from './index.module.scss';
 import { d3ScaleLinear } from 'types/TP';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
+import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
@@ -176,32 +177,32 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   ];
 
   const handleStartInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    const value = parseInt(event.currentTarget.value);
+    const value = parseInt(event.target.value);
     if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, startTimeIndex: value });
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
-        currentTimeIndexRef.current.value = value.toString();
+        fnSetValue(currentTimeIndexRef, value);
       }
     } else {
-      event.currentTarget.value = startTimeIndex.toString();
+      event.target.value = startTimeIndex.toString();
     }
   };
 
   const handleEndInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    const value = parseInt(event.currentTarget.value);
+    const value = parseInt(event.target.value);
     if (value > startTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, endTimeIndex: value });
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
-        currentTimeIndexRef.current.value = value.toString();
+        fnSetValue(currentTimeIndexRef, value);
       }
     } else {
-      event.currentTarget.value = endTimeIndex.toString();
+      event.target.value = endTimeIndex.toString();
     }
   };
 
   const handleNowInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     if (currentXAxisPosition && currentAction) {
-      const value = parseInt(event.currentTarget.value);
+      const value = parseInt(event.target.value);
       if (
         value >= startTimeIndex &&
         value <= endTimeIndex &&
@@ -210,11 +211,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         currentTimeRef.current
       ) {
         currentAction.time = _.round(value / 30, 4);
-        currentTimeRef.current.value = new Date(_.round(value / 30, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(value / 30, 0)));
         currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
         const xScaleLinear = prevXScale.current as d3ScaleLinear;
         d3.select('#play-bar-wrapper').style(
@@ -223,18 +220,53 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
           ${X_AXIS_HEIGHT / 2}px, 0)`,
         );
       } else {
-        event.currentTarget.value = _.round(currentAction.time * 30, 0).toString();
+        event.target.value = _.round(currentAction.time * 30, 0).toString();
       }
-      // } else {
-      //   // 애니메이션 없는 경우
-      //   const value = parseInt(event.currentTarget.value);
-      //   if (value <= startTimeIndex) {
-      //     event.currentTarget.value = startTimeIndex.toString();
-      //   } else if (value >= endTimeIndex) {
-      //     event.currentTarget.value = endTimeIndex.toString();
-      //   }
     }
   };
+
+  const handleStartInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value);
+    if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
+      storeAnimatingData({ ...animatingData, startTimeIndex: value });
+      if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
+        fnSetValue(currentTimeIndexRef, value);
+      }
+    }
+  }, 1500);
+
+  const handleEndInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value);
+    if (value > startTimeIndex && currentTimeIndexRef) {
+      storeAnimatingData({ ...animatingData, endTimeIndex: value });
+      if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
+        fnSetValue(currentTimeIndexRef, value);
+      }
+    }
+  }, 1500);
+
+  const handleNowInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+    if (currentXAxisPosition && currentAction) {
+      const value = parseInt(event.target.value);
+      if (
+        value >= startTimeIndex &&
+        value <= endTimeIndex &&
+        prevXScale &&
+        currentTimeRef &&
+        currentTimeRef.current
+      ) {
+        currentAction.time = _.round(value / 30, 4);
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(value / 30, 0)));
+        currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
+        const xScaleLinear = prevXScale.current as d3ScaleLinear;
+        d3.select('#play-bar-wrapper').style(
+          'transform',
+          `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+          ${X_AXIS_HEIGHT / 2}px, 0)`,
+        );
+      }
+    }
+  }, 1500);
 
   const handleInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     switch (event.key) {
@@ -253,17 +285,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   useEffect(() => {
     // 총 시간
     if (lastTimeRef.current) {
-      lastTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-        .toISOString()
-        .substr(11, 8)
-        .substr(2)
-        .replace(':', '');
+      fnSetValue(lastTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
 
-      // const value = new Date(_.round(lastTime, 0) * 1000)
-      //   .toISOString()
-      //   .substr(11, 8)
-      //   .substr(2)
-      //   .replace(':', '');
+      // const value = fnGetMaskedValue(_.round(lastTime, 0))
 
       // setLastInputTime(value);
     }
@@ -274,31 +298,16 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const changeCurrentTimeRef = useCallback(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current) {
       if (currentAction.time <= lastTime) {
-        currentTimeRef.current.value = new Date(_.round(currentAction.time, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(currentAction.time, 0)));
 
-        // const value = new Date(_.round(currentAction.time, 0) * 1000)
-        //   .toISOString()
-        // .substr(11, 8)
-        // .substr(2)
-        // .replace(':', '');
+        // const value = fnGetMaskedValue(_.round(currentAction.time, 0));
 
         // setCurrentTime(value);
       } else {
-        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
 
-        // const value = new Date(_.round(lastTime, 0) * 1000)
-        //   .toISOString()
-        //   .substr(11, 8)
-        //   .substr(2)
-        //   .replace(':', '');
+        // const value = fnGetMaskedValue(_.round(lastTime, 0))
+
         // setCurrentTime(value);
       }
     }
@@ -328,33 +337,15 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   useEffect(() => {
     if (currentAction && currentTimeRef && currentTimeRef.current && currentXAxisPosition) {
       if (_.round(currentXAxisPosition.current / 30, 4) > lastTime) {
-        currentTimeRef.current.value = new Date(_.round(lastTime) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime)));
 
-        // const value = new Date(_.round(lastTime) * 1000)
-        //   .toISOString()
-        //   .substr(11, 8)
-        //   .substr(2)
-        //   .replace(':', '');
+        // const value = fnGetMaskedValue(_.round(lastTime))
 
         // setCurrentTime(value);
       } else {
-        currentTimeRef.current.value = new Date(
-          _.round(currentXAxisPosition.current / 30, 0) * 1000,
-        )
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(currentXAxisPosition.current / 30, 0)));
 
-        // const value = new Date(_.round(currentXAxisPosition.current / 30, 0) * 1000)
-        //   .toISOString()
-        //   .substr(11, 8)
-        //   .substr(2)
-        //   .replace(':', '');
+        // const value = fnGetMaskedValue(_.round(currentXAxisPosition.current / 30, 0))
 
         // setCurrentTime(value);
       }
@@ -363,27 +354,20 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   // VM now 시간 변경 시 currentTime 변경
   useEffect(() => {
-    const value = new Date(_.round(indicator.now, 0) * 1000)
-      .toISOString()
-      .substr(11, 8)
-      .substr(2)
-      .replace(':', '');
+    const value = fnGetMaskedValue(_.round(indicator.now, 0));
     setCurrentTime(value);
   }, [indicator.now]);
+
   // VM end 시간 변경 시 lastInputTime 변경
   useEffect(() => {
-    const value = new Date(_.round(recordingData.duration, 0) * 1000)
-      .toISOString()
-      .substr(11, 8)
-      .substr(2)
-      .replace(':', '');
+    const value = fnGetMaskedValue(_.round(recordingData.duration, 0));
     setLastInputTime(value);
   }, [indicator.end, recordingData.duration]);
   const currentTimeIndexReqIdRef = useRef<number | undefined>();
 
   const changeCurrentTimeIndexRef = useCallback(() => {
     if (currentAction && currentTimeIndexRef && currentTimeIndexRef.current) {
-      currentTimeIndexRef.current.value = _.round(currentAction.time * 30, 0).toString();
+      fnSetValue(currentTimeIndexRef, _.round(currentAction.time * 30, 0));
     }
     currentTimeIndexReqIdRef.current = window.requestAnimationFrame(changeCurrentTimeIndexRef);
   }, [currentAction, currentTimeIndexRef]);
@@ -401,7 +385,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         currentXAxisPosition &&
         currentXAxisPosition.current
       ) {
-        currentTimeIndexRef.current.value = _.round(currentXAxisPosition.current, 0).toString();
+        fnSetValue(currentTimeIndexRef, _.round(currentXAxisPosition.current, 0));
       }
     }
   }, [currentTimeIndexRef, currentXAxisPosition]);
@@ -434,11 +418,12 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
               <div className={cx('playtime')}>
                 {isShootPage ? (
                   <BaseInput
+                    readOnly
                     className={cx('time-current')}
                     mask="99:99"
                     maskChar="0"
                     // value={currentTime}
-                    innerRef={currentTimeRef}
+                    ref={currentTimeRef}
                   />
                 ) : (
                   <BaseInput
@@ -446,17 +431,18 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                     mask="99:99"
                     maskChar="0"
                     value={currentTime}
-                    // innerRef={currentTimeRef}
+                    // ref={currentTimeRef}
                   />
                 )}
                 <div className={cx('divide')}>/</div>
                 {isShootPage ? (
                   <BaseInput
+                    readOnly
                     className={cx('time-last')}
                     mask="99:99"
                     maskChar="0"
                     // value={lastInputTime}
-                    innerRef={lastTimeRef}
+                    ref={lastTimeRef}
                   />
                 ) : (
                   <BaseInput
@@ -464,7 +450,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                     mask="99:99"
                     maskChar="0"
                     value={lastInputTime}
-                    // innerRef={lastTimeRef}
+                    // ref={lastTimeRef}
                   />
                 )}
                 {isShootPage && (
@@ -481,7 +467,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="START"
                       defaultValue={indicator.start}
                       // value={indicator.start}
-                      // arrow
+                      arrow
+                      min={1}
+                      onChange={handleStartInputChange}
                       onBlur={handleStartInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
@@ -491,7 +479,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       prefix="END"
                       defaultValue={indicator.end}
                       // value={indicator.end}
-                      // arrow
+                      arrow
+                      min={startTimeIndex}
+                      onChange={handleEndInputChange}
                       onBlur={handleEndInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
@@ -505,8 +495,11 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       onBlur={handleNowInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled={!currentVisualizedData}
-                      innerRef={currentTimeIndexRef}
-                      // arrow
+                      ref={currentTimeIndexRef}
+                      arrow
+                      min={startTimeIndex}
+                      max={endTimeIndex}
+                      onChange={handleNowInputChange}
                     />
                   </>
                 ) : (
@@ -540,7 +533,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
                       onBlur={handleNowInputBlur}
                       onKeyDown={handleInputKeyDown}
                       disabled
-                      innerRef={currentTimeIndexRef}
+                      ref={currentTimeIndexRef}
                       // arrow
                     />
                   </>

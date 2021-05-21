@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import BaseInput from './BaseInput';
 import classNames from 'classnames/bind';
 import styles from './SuffixInput.module.scss';
@@ -12,20 +12,41 @@ interface BaseProps {
   maskChar?: string | null;
   color?: 'primary' | 'default';
   className?: string;
+  autoComplete?: boolean;
+  spellCheck?: boolean;
+  theme?: 'dark' | 'light';
 }
 
-export type Props = BaseProps & Omit<Input.BaseInputProps, 'suffix'>;
+export type Props = BaseProps &
+  Omit<Input.BaseInputProps, 'suffix' | 'autoComplete' | 'spellCheck'>;
 
-const SuffixInput: FunctionComponent<Props> = ({ suffix, arrow, color, className, ...rest }) => {
-  const classes = cx('input-wrapper', className);
-  const suffixClasses = cx('suffix', color);
-
-  return (
-    <div className={classes}>
-      <BaseInput className={cx('input')} type="number" arrow={arrow} {...rest} />
-      <span className={suffixClasses}>{suffix}</span>
-    </div>
-  );
+const defaultProps: Partial<Props> = {
+  theme: 'dark',
 };
+
+const SuffixInput = forwardRef<HTMLInputElement, Props>(
+  ({ suffix, arrow, color, className, theme, disabled, ...rest }, ref) => {
+    const classes = cx('input-wrapper', className, theme, { disabled });
+    const suffixClasses = cx('suffix', color);
+
+    return (
+      <div className={classes}>
+        <BaseInput
+          className={cx('input')}
+          type="number"
+          ref={ref}
+          arrow={arrow}
+          theme={theme}
+          disabled={disabled}
+          isChild
+          {...rest}
+        />
+        <span className={suffixClasses}>{suffix}</span>
+      </div>
+    );
+  },
+);
+
+SuffixInput.defaultProps = defaultProps;
 
 export default SuffixInput;

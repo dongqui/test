@@ -1,22 +1,77 @@
 @import 'styles/libraries/_colors';
 
-%input {
-  position: relative;
-  border: 0;
-  outline: 0;
-  margin: 0;
-  padding: 0;
+.dark {
   background: none;
   caret-color: #fff;
   color: #fff;
+
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    box-shadow: 0 0 0 1000px #fff inset;
+  }
+
+  &.disabled {
+    color: rgba(255, 255, 255, 0.2) !important;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.2) !important;
+    }
+  }
+
+  &.invalid {
+    color: $pastel-red;
+  }
+}
+
+.light {
+  background: none;
+  caret-color: $gray200;
+  color: $gray200;
+
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    box-shadow: 0 0 0 1000px $gray200 inset;
+  }
+
+  &.disabled {
+    color: rgba(0, 0, 0, 0.2) !important;
+
+    &::placeholder {
+      color: rgba(0, 0, 0, 0.2) !important;
+    }
+  }
+
+  &.invalid {
+    color: $pastel-red;
+  }
+}
+
+%input {
+  position: relative;
+  outline: 0;
+  margin: 0;
+  padding: 0;
   transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+  border: 1px solid transparent;
+
+  &:focus-within {
+    border: 1px solid $primaryColor;
+  }
 
   &:-webkit-autofill,
   &:-webkit-autofill:hover,
   &:-webkit-autofill:focus {
     -webkit-text-fill-color: none;
-    box-shadow: 0 0 0 1000px #fff inset;
     transition: background-color 500000s ease-in-out 0s;
+  }
+
+  &::placeholder {
+    text-align: left;
+    opacity: 1;
+    color: $gray500 !important;
+    transition: color 0.3s;
   }
 
   &:not(.arrow) {
@@ -46,23 +101,12 @@
     width: 100%;
   }
 
-  &::placeholder {
-    color: $gray500 !important;
-    text-align: left;
-    opacity: 1;
-    transition: color 0.3s;
+  &.isChild {
+    border: 0;
   }
 
-  &.disabled {
-    color: rgba(255, 255, 255, 0.2) !important;
-
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.2) !important;
-    }
-  }
-
-  &.invalid {
-    color: $pastel-red;
+  &.readOnly {
+    border: 0 !important;
   }
 }
 

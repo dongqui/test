@@ -212,7 +212,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
                       onChange={(e) =>
                         handleChange({ key: item.key, name: 'x', value: e.target.value })
                       }
-                      innerRef={register}
+                      ref={register}
                     />
                     <SuffixInput
                       name="y"
@@ -222,7 +222,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
                       onChange={(e) =>
                         handleChange({ key: item.key, name: 'y', value: e.target.value })
                       }
-                      innerRef={register}
+                      ref={register}
                     />
                     <SuffixInput
                       name="z"
@@ -232,7 +232,7 @@ const RetargetPanel: FunctionComponent<P> = ({}) => {
                       onChange={(e) =>
                         handleChange({ key: item.key, name: 'z', value: e.target.value })
                       }
-                      innerRef={register}
+                      ref={register}
                     />
                   </div>
                 </div>
