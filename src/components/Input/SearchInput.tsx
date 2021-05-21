@@ -29,9 +29,9 @@ const SearchInput = forwardRef<HTMLInputElement, Props>(
         <BaseInput
           className={cx('input')}
           ref={ref}
-          isChild
           theme={theme}
           disabled={disabled}
+          isChild
           {...rest}
         />
         <IconWrapper className={cx('search')} icon={SvgPath.Search} hasFrame={false} />
