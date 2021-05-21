@@ -1,4 +1,3 @@
-import { ShootLayerType, ShootTrackType } from 'types';
 import { PlayDirection, PlayState } from 'types/RP';
 
 export type AnimatingDataAction =
@@ -8,8 +7,7 @@ export type AnimatingDataAction =
   | ReturnType<typeof setStartTimeIndex>
   | ReturnType<typeof setEndTimeIndex>
   | ReturnType<typeof setMixer>
-  | ReturnType<typeof setCurrentAction>
-  | ReturnType<typeof setCurrentVisualizedData>;
+  | ReturnType<typeof setCurrentAction>;
 
 // 애니메이션 재생 상태
 interface SetPlayState {
@@ -90,27 +88,6 @@ interface SetCurrentAction {
 export const SET_CURRENT_ACTION = 'animatingData/SET_CURRENT_ACTION' as const;
 export const setCurrentAction = (params: SetCurrentAction) => ({
   type: SET_CURRENT_ACTION,
-  payload: {
-    ...params,
-  },
-});
-
-// 현재 애니메이션을 만들기 위한 RP 내 Visualize 된 데이터
-type FileTypes = 'folder' | 'file' | 'motion';
-export interface CurrentVisualizedData {
-  key: string;
-  name: string;
-  type: FileTypes;
-  boneNames: string[];
-  baseLayer: ShootTrackType[];
-  layers: ShootLayerType[];
-}
-interface SetCurrentVisualizedData {
-  data: CurrentVisualizedData;
-}
-export const SET_CURRENT_VISUALIZED_DATA = 'animationData/SET_CURRENT_VISUALIZED_DATA' as const;
-export const setCurrentVisualizedData = (params: SetCurrentVisualizedData) => ({
-  type: SET_CURRENT_VISUALIZED_DATA,
   payload: {
     ...params,
   },

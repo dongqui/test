@@ -11,12 +11,7 @@ import React, {
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import {
-  storeCurrentAction,
-  storeCurrentVisualizedData,
-  storeRenderingData,
-  storeSkeletonHelper,
-} from 'lib/store';
+import { storeCurrentAction, storeRenderingData, storeSkeletonHelper } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetPlayState } from 'utils/RP/animatingUtils';
@@ -32,6 +27,7 @@ import {
 import { d3ScaleLinear } from 'types/TP';
 import { fnSetValue } from 'utils/common';
 import { useSelector } from 'reducers';
+import { CurrentVisualizedData } from 'actions/currentVisualizedData';
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 
@@ -54,7 +50,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   // store data
   const renderingData = useReactiveVar(storeRenderingData);
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const currentAction = useReactiveVar(storeCurrentAction);
   // component state
   const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
@@ -73,6 +68,9 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
 
   const { startTimeIndex, endTimeIndex, playState, playDirection, playSpeed } = useSelector(
     (state) => state.animatingData,
+  );
+  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
   );
 
   // animation 생성 로직

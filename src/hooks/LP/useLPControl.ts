@@ -32,6 +32,7 @@ import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { RetargetInfoType, TargetboneType } from 'types/CP';
 import { initialRetargetMap } from 'utils/retargetMap';
+import { useDispatch } from 'react-redux';
 
 interface UseLPControlProps {
   mainData: LPDataType[];
@@ -58,6 +59,7 @@ const useLPControl = ({
   retargetInfo,
 }: UseLPControlProps) => {
   const { getConfirm } = useConfirmModal();
+  const dispatch = useDispatch();
 
   const onClick = useCallback(
     (e) => {
@@ -493,6 +495,7 @@ const useLPControl = ({
               fnVisualizeFile({
                 key: _.find(newMainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
                 lpData: mainData,
+                dispatch,
               });
               break;
             case '5':
@@ -573,6 +576,7 @@ const useLPControl = ({
     },
     [
       contextmenuInfo,
+      dispatch,
       handleDelete,
       lpmode,
       mainData,

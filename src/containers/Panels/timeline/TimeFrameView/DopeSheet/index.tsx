@@ -14,7 +14,6 @@ import classNames from 'classnames/bind';
 import {
   storeContextMenuInfo,
   storeCurrentAction,
-  storeCurrentVisualizedData,
   storeDeleteTargetKeyframes,
   storeSkeletonHelper,
   storeTPDopeSheetList,
@@ -23,14 +22,13 @@ import {
 import CircleGroup from './circleGroup';
 import PlayBar from './playBar';
 import styles from './index.module.scss';
-import { CurrentVisualizedDataType, PAGE_NAMES, ShootTrackType } from 'types';
+import { PAGE_NAMES, ShootTrackType } from 'types';
 import {
   fnDeleteKeyframe,
   fnGetSummaryTimes,
   fnUpdateKeyframeToBase,
   fnUpdateKeyframeToLayer,
 } from 'utils/TP/editingUtils';
-import produce from 'immer';
 import { useDragBox } from 'hooks/common';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { DragBox } from 'components/DragBox';
@@ -38,6 +36,12 @@ import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 import { setPlayState } from 'actions/animatingData';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import {
+  CurrentVisualizedData,
+  deleteKeyframe,
+  updateKeyframeToBase,
+  updateKeyframeToLayer,
+} from 'actions/currentVisualizedData';
 
 interface Props {
   timelineWrapperRef: RefObject<HTMLDivElement>;
@@ -242,7 +246,6 @@ const DopeSheet: React.FC<Props> = ({
   }, [prevXScale, timelineWrapperRef]);
 
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
   const tpDopesheetList = storeTPDopeSheetList();
   const selectedBaseDopeSheets = useMemo(
@@ -266,6 +269,10 @@ const DopeSheet: React.FC<Props> = ({
           item.layerKey !== 'baseLayer',
       ),
     [tpDopesheetList],
+  );
+
+  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
   );
 
   const handleUpdateKeyframeToBase = useCallback(() => {
@@ -299,20 +306,13 @@ const DopeSheet: React.FC<Props> = ({
             }
           }
         });
-        const state = storeCurrentVisualizedData();
-        if (state && resultTracks.length !== 0) {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-              draft.baseLayer[targetTrackIndex] = resultTrack;
-            });
-          });
-          storeCurrentVisualizedData(nextState);
-        }
+        dispatch(updateKeyframeToBase({ resultTracks }));
       }
     }
   }, [
     currentVisualizedData,
     currentXAxisPosition,
+    dispatch,
     playState,
     selectedBaseDopeSheets,
     skeletonHelper,
@@ -372,21 +372,14 @@ const DopeSheet: React.FC<Props> = ({
               }
             }
           });
-          const state = storeCurrentVisualizedData();
-          if (state && resultTracks.length !== 0) {
-            const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-              resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-                draft.layers[targetLayerIndex].tracks[targetTrackIndex] = resultTrack;
-              });
-            });
-            storeCurrentVisualizedData(nextState);
-          }
+          dispatch(updateKeyframeToLayer({ targetLayerIndex, resultTracks }));
         }
       }
     }
   }, [
     currentVisualizedData,
     currentXAxisPosition,
+    dispatch,
     playState,
     selectedLayerDopeSheets,
     skeletonHelper,
@@ -469,21 +462,10 @@ const DopeSheet: React.FC<Props> = ({
           }
         });
         storeDeleteTargetKeyframes([]);
-        const state = storeCurrentVisualizedData();
-        if (state && (resultBaseLayerTracks.length !== 0 || resultLayersTracks.length !== 0)) {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            resultBaseLayerTracks.forEach(([resultTrack, targetTrackIndex]) => {
-              draft.baseLayer[targetTrackIndex] = resultTrack;
-            });
-            resultLayersTracks.forEach(([resultTrack, targetLayerIndex, targetTrackIndex]) => {
-              draft.layers[targetLayerIndex].tracks[targetTrackIndex] = resultTrack;
-            });
-          });
-          storeCurrentVisualizedData(nextState);
-        }
+        dispatch(deleteKeyframe({ resultBaseLayerTracks, resultLayersTracks }));
       }
     }
-  }, [currentVisualizedData, deleteTargetKeyframes, playState]);
+  }, [currentVisualizedData, deleteTargetKeyframes, dispatch, playState]);
 
   const handleMovePlayBarLeft = useCallback(() => {
     if (

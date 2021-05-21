@@ -119,14 +119,7 @@ export interface LPDataType {
   [LPDATA_PROPERTY_TYPES.retargetMap]?: Array<any>;
   [LPDATA_PROPERTY_TYPES.isExportedMotion]?: boolean;
 }
-export interface CurrentVisualizedDataType {
-  [LPDATA_PROPERTY_TYPES.key]: string;
-  [LPDATA_PROPERTY_TYPES.name]: string;
-  [LPDATA_PROPERTY_TYPES.type]: FILE_TYPES;
-  [LPDATA_PROPERTY_TYPES.boneNames]: string[];
-  [LPDATA_PROPERTY_TYPES.baseLayer]: ShootTrackType[];
-  [LPDATA_PROPERTY_TYPES.layers]: ShootLayerType[];
-}
+
 export interface BonesTypes {
   name: string;
   positionX: number;

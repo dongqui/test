@@ -15,7 +15,6 @@ import {
   storePageInfo,
   storeBarPositionX,
   storeRecordingData,
-  storeCurrentVisualizedData,
 } from 'lib/store';
 import { SvgPath } from 'components/Icon';
 import { SegmentButton } from 'components/Button';
@@ -52,7 +51,8 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const currentAction = useReactiveVar(storeCurrentAction);
   const recordingData = useReactiveVar(storeRecordingData);
   const barPositionX = useReactiveVar(storeBarPositionX);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+
+  const currentVisualizedData = useSelector((state) => state.currentVisualizedData);
 
   const [currentTime, setCurrentTime] = useState<string | number>(0);
   const [lastInputTime, setLastInputTime] = useState<string | number>(0);

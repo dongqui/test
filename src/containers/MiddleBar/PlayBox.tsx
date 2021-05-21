@@ -10,7 +10,6 @@ import {
 import { useReactiveVar } from '@apollo/client';
 import {
   storeModalInfo,
-  storeCurrentVisualizedData,
   storePageInfo,
   storeRecordingData,
   storeBarPositionX,
@@ -66,12 +65,12 @@ const PlayBox: FunctionComponent<Props> = ({
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
   const lpData = useReactiveVar(storeLpData);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const currentAction = useReactiveVar(storeCurrentAction);
 
   const dispatch = useDispatch();
 
   const { playState, playDirection } = useSelector((state) => state.animatingData);
+  const currentVisualizedData = useSelector((state) => state.currentVisualizedData);
 
   const { getConfirm } = useAlertModal();
 

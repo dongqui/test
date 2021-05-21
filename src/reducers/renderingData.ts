@@ -4,21 +4,21 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 
 interface RenderingDataState {
   // 기존 renderingData 들어가야 함
-  currentBone: THREE.Bone | undefined;
-  scene: THREE.Scene | undefined;
-  directionalLight: THREE.DirectionalLight | undefined;
-  skeletonHelper: THREE.SkeletonHelper | undefined;
-  cameraControls: OrbitControls | undefined;
-  transformControls: TransformControls | undefined;
+  currentBone: THREE.Bone | null;
+  scene: THREE.Scene | null;
+  directionalLight: THREE.DirectionalLight | null;
+  skeletonHelper: THREE.SkeletonHelper | null;
+  cameraControls: OrbitControls | null;
+  transformControls: TransformControls | null;
 }
 
 const defaultState: RenderingDataState = {
-  currentBone: undefined,
-  scene: undefined,
-  directionalLight: undefined,
-  skeletonHelper: undefined,
-  cameraControls: undefined,
-  transformControls: undefined,
+  currentBone: null,
+  scene: null,
+  directionalLight: null,
+  skeletonHelper: null,
+  cameraControls: null,
+  transformControls: null,
 };
 
 export const renderingData = (state = defaultState, action: RenderingDataAction) => {

@@ -1,4 +1,4 @@
-import { AnimatingDataAction, CurrentVisualizedData } from 'actions/animatingData';
+import { AnimatingDataAction } from 'actions/animatingData';
 import { PlayDirection, PlayState } from 'types/RP';
 
 interface AnimatingDataState {
@@ -7,9 +7,8 @@ interface AnimatingDataState {
   playSpeed: number;
   startTimeIndex: number;
   endTimeIndex: number;
-  mixer: THREE.AnimationMixer | undefined;
-  currentAction: THREE.AnimationAction | undefined;
-  currentVisualizedData: CurrentVisualizedData | undefined;
+  mixer: THREE.AnimationMixer | null;
+  currentAction: THREE.AnimationAction | null;
 }
 
 const defaultState: AnimatingDataState = {
@@ -18,9 +17,8 @@ const defaultState: AnimatingDataState = {
   playSpeed: 1,
   startTimeIndex: 1,
   endTimeIndex: 300,
-  mixer: undefined,
-  currentAction: undefined,
-  currentVisualizedData: undefined,
+  mixer: null,
+  currentAction: null,
 };
 
 export const animatingData = (state = defaultState, action: AnimatingDataAction) => {
@@ -58,11 +56,6 @@ export const animatingData = (state = defaultState, action: AnimatingDataAction)
     case 'animatingData/SET_CURRENT_ACTION': {
       return Object.assign({}, state, {
         currentAction: action.payload.action,
-      });
-    }
-    case 'animationData/SET_CURRENT_VISUALIZED_DATA': {
-      return Object.assign({}, state, {
-        currentVisualizedData: action.payload.data,
       });
     }
     default: {
