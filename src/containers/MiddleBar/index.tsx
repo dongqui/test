@@ -32,6 +32,8 @@ import { d3ScaleLinear } from 'types/TP';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
+import { useDispatch } from 'react-redux';
+import { setEndTimeIndex, setPlaySpeed, setStartTimeIndex } from 'actions/animatingData';
 
 const cx = classNames.bind(styles);
 
@@ -56,6 +58,8 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const [currentTime, setCurrentTime] = useState<string | number>(0);
   const [lastInputTime, setLastInputTime] = useState<string | number>(0);
   const [lastTime, setLastTime] = useState(0);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (currentVisualizedData) {
@@ -146,8 +150,9 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleFasterSelect = useCallback(
     (key: string, _value: string) => {
       storeAnimatingData({ ...animatingData, playSpeed: Number(key) });
+      dispatch(setPlaySpeed({ playSpeed: Number(key) }));
     },
-    [animatingData],
+    [animatingData, dispatch],
   );
 
   const modeList = [
@@ -180,6 +185,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     const value = parseInt(event.target.value);
     if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, startTimeIndex: value });
+      dispatch(setStartTimeIndex({ startTimeIndex: value }));
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
       }
@@ -192,6 +198,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     const value = parseInt(event.target.value);
     if (value > startTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, endTimeIndex: value });
+      dispatch(setEndTimeIndex({ endTimeIndex: value }));
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
       }
@@ -229,6 +236,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     const value = parseInt(event.target.value);
     if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, startTimeIndex: value });
+      dispatch(setStartTimeIndex({ startTimeIndex: value }));
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
       }
@@ -239,6 +247,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     const value = parseInt(event.target.value);
     if (value > startTimeIndex && currentTimeIndexRef) {
       storeAnimatingData({ ...animatingData, endTimeIndex: value });
+      dispatch(setEndTimeIndex({ endTimeIndex: value }));
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
       }

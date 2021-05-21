@@ -38,6 +38,8 @@ import * as d3 from 'd3';
 import fnQuaternionToEulerTrack from 'utils/common/fnQuaternionToEulerTrack';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
+import { useDispatch } from 'react-redux';
+import { setPlayDirection, setPlayState } from 'actions/animatingData';
 
 const cx = classNames.bind(styles);
 
@@ -67,6 +69,8 @@ const PlayBox: FunctionComponent<Props> = ({
   const lpData = useReactiveVar(storeLpData);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const currentAction = useReactiveVar(storeCurrentAction);
+
+  const dispatch = useDispatch();
 
   const { getConfirm } = useAlertModal();
 
@@ -105,6 +109,7 @@ const PlayBox: FunctionComponent<Props> = ({
           ...animatingData,
           playState: 'stop',
         });
+        dispatch(setPlayState({ playState: 'stop' }));
       }
       if (
         currentXAxisPosition &&
@@ -154,6 +159,7 @@ const PlayBox: FunctionComponent<Props> = ({
     currentTimeRef,
     currentVisualizedData,
     currentXAxisPosition,
+    dispatch,
     isShootPage,
     lastTime,
     prevXScale,
@@ -169,13 +175,15 @@ const PlayBox: FunctionComponent<Props> = ({
           playDirection: -1,
           playState: 'play',
         });
+        dispatch(setPlayState({ playState: 'play' }));
+        dispatch(setPlayDirection({ playDirection: -1 }));
       }
     }
 
     if (!isShootPage) {
       storeRecordingData({ ...recordingData, isPlaying: true });
     }
-  }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
+  }, [animatingData, currentVisualizedData, dispatch, isShootPage, recordingData]);
 
   const handlePlay = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
@@ -185,13 +193,15 @@ const PlayBox: FunctionComponent<Props> = ({
           playDirection: 1,
           playState: 'play',
         });
+        dispatch(setPlayState({ playState: 'play' }));
+        dispatch(setPlayDirection({ playDirection: 1 }));
       }
     }
 
     if (_.isEqual(pageInfo.page, PAGE_NAMES.extract)) {
       storeRecordingData({ ...recordingData, isPlaying: true });
     }
-  }, [animatingData, currentVisualizedData, isShootPage, pageInfo.page, recordingData]);
+  }, [animatingData, currentVisualizedData, dispatch, isShootPage, pageInfo.page, recordingData]);
 
   const handlePause = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
@@ -200,6 +210,7 @@ const PlayBox: FunctionComponent<Props> = ({
           ...animatingData,
           playState: 'pause',
         });
+        dispatch(setPlayState({ playState: 'pause' }));
       }
     }
 
@@ -209,7 +220,7 @@ const PlayBox: FunctionComponent<Props> = ({
         isPlaying: false,
       });
     }
-  }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
+  }, [animatingData, currentVisualizedData, dispatch, isShootPage, recordingData]);
 
   const [showsModal, setShowsModal] = useState(false);
 

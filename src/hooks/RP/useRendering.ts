@@ -527,9 +527,6 @@ export const useRendering = (props: UseRendering) => {
         cameraControls,
       });
       storeTransformControls(transformControls);
-      // 아래 링크처럼 store 사용하는 방법으로 바꿔야 함
-      // https://spectrum.chat/apollo/apollo-link-state/undo-redo-functionality-proposal~48be8143-c460-4655-8e44-b41df3e00a12
-      // https://redux.js.org/recipes/implementing-undo-history#understanding-undo-history
       transformControls.addEventListener('dragging-changed', (event: any) => {
         const bone: THREE.Bone = event.target.object;
         if (!event.value) {

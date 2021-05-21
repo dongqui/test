@@ -65,7 +65,8 @@ export const animatingData = (state = defaultState, action: AnimatingDataAction)
         currentVisualizedData: action.payload.data,
       });
     }
-    default:
+    default: {
       return state;
+    }
   }
 };

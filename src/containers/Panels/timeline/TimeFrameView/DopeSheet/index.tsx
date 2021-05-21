@@ -36,6 +36,8 @@ import { useDragBox } from 'hooks/common';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { DragBox } from 'components/DragBox';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
+import { setPlayState } from 'actions/animatingData';
+import { useDispatch } from 'react-redux';
 
 interface Props {
   timelineWrapperRef: RefObject<HTMLDivElement>;
@@ -88,6 +90,7 @@ const DopeSheet: React.FC<Props> = ({
   const { startTimeIndex, endTimeIndex, playState } = animatingData;
 
   const [lastTime, setLastTime] = useState(0);
+  const dispatch = useDispatch();
 
   const pageInfo = useReactiveVar(storePageInfo);
 
@@ -790,8 +793,10 @@ const DopeSheet: React.FC<Props> = ({
             if (pageInfo.page === PAGE_NAMES.shoot && currentVisualizedData) {
               if (playState === 'play') {
                 storeAnimatingData({ ...animatingData, playState: 'pause' });
+                dispatch(setPlayState({ playState: 'pause' }));
               } else {
                 storeAnimatingData({ ...animatingData, playState: 'play' });
+                dispatch(setPlayState({ playState: 'play' }));
               }
             }
             multiKeyController[event.key].pressed = true;
@@ -805,6 +810,7 @@ const DopeSheet: React.FC<Props> = ({
       animatingData,
       currentVisualizedData,
       deleteTargetKeyframes.length,
+      dispatch,
       handleDeleteKeyframe,
       handleUpdateKeyframeToBase,
       handleUpdateKeyframeToLayer,
