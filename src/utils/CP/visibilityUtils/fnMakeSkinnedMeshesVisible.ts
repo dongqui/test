@@ -17,7 +17,6 @@ const fnMakeSkinnedMeshesVisible = (props: FnMakeSkinnedMeshesVisible) => {
   const skinnedMeshes = _.filter(scene.children, (child) => child.type === 'SkinnedMesh');
   if (_.isEmpty(skinnedMeshes)) {
     _.forEach(scene.children, (child) => {
-      skinnedMeshes.push(...child.children);
       skinnedMeshes.push(..._.filter(child.children, (item) => item.type === 'Object3D'));
     });
   }
