@@ -1,0 +1,15 @@
+.play-bar {
+  position: fixed;
+  z-index: 3;
+
+  g {
+    path {
+      cursor: pointer;
+    }
+
+    line {
+      stroke: #ecedee;
+      transform: translate3d(10px, 0, 0);
+    }
+  }
+}

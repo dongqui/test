@@ -21,7 +21,7 @@ import {
   storeTPDopeSheetList,
   storePageInfo,
 } from 'lib/store';
-import PlayBar from './playBar';
+import PlayBar from './PlayBar';
 import styles from './index.module.scss';
 import { CurrentVisualizedDataType, PAGE_NAMES, ShootTrackType } from 'types';
 import {
@@ -38,11 +38,11 @@ import { useSelector } from 'reducers';
 import CircleGroup from './CircleGroup';
 
 interface Props {
-  panelWrapperRef: RefObject<HTMLDivElement>;
-  currentTimeRef: RefObject<HTMLInputElement>;
-  currentTimeIndexRef: RefObject<HTMLInputElement>;
-  currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  panelWrapperRef: RefObject<HTMLDivElement>; // 필요 없음
+  currentTimeRef: RefObject<HTMLInputElement>; // 협의 필요
+  currentTimeIndexRef: RefObject<HTMLInputElement>; // 협의 필요
+  currentXAxisPosition: MutableRefObject<number>; // 협의 필요
+  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>; // 함수인데 어떻게 전달할지 고민이 필요
 }
 
 interface Datum {
@@ -699,10 +699,12 @@ const DopeSheet: React.FC<Props> = ({
           const xScaleLinear = prevXScale.current as d3ScaleLinear;
           const currentX = _.floor(prevXScale.current?.invert(drag.x + 20) as number);
 
+          // 협의 필요
           if (currentAction) {
             currentAction.time = _.round(setPlayBarX(currentX) / 30, 4);
           }
 
+          // 협의 필요
           if (currentTimeRef.current) {
             if (_.round(setPlayBarX(currentX) / 30, 4) <= lastTime) {
               const value = new Date(_.round(setPlayBarX(currentX) / 30, 0) * 1000)
@@ -720,6 +722,8 @@ const DopeSheet: React.FC<Props> = ({
               currentTimeRef.current.value = value;
             }
           }
+
+          // 협의 필요
           if (currentTimeIndexRef.current) {
             currentTimeIndexRef.current.value = setPlayBarX(currentX).toString();
           }

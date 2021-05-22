@@ -33,17 +33,3 @@
     transform: translate3d(0, 24px, 0);
   }
 }
-
-.play-bar-wrapper {
-  position: fixed;
-  z-index: 3;
-
-  path {
-    cursor: pointer;
-  }
-
-  line {
-    stroke: #ecedee;
-    transform: translate3d(10px, 0, 0);
-  }
-}
