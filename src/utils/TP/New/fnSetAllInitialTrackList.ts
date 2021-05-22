@@ -22,7 +22,7 @@ const fnSetAllInitialTrackList = (params: FnSetAllInitialTrackList): Return => {
   const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
   const summaryTrackStatus = fnSetTrackStatus({
     isIncluded: true,
-    times: _.map(summaryTimes, (time) => ({ time, isClicked: false })),
+    times: summaryTimes,
     trackIndex: TP_TRACK_INDEX.SUMMARY,
     trackName: 'Summary',
     visualizedDataKey,

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo, useCallback, useMemo } from 'react';
+import React, { FunctionComponent, memo, useCallback, useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
 import classNames from 'classnames/bind';
@@ -53,7 +53,8 @@ const Track: FunctionComponent<Props> = ({
   const dispatch = useDispatch();
   const trackList = useSelector((state) => state.dopeSheet.trackList);
   const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
-  const prevSelectedIndexes = useSelector((state) => state.dopeSheet.prevSelectedIndexes);
+  const selectedChannels = useSelector((state) => state.dopeSheet.selectedChannels);
+  const currentClickedChannel = useSelector((state) => state.dopeSheet.currentClickedChannel);
   const multiKeyController = useMemo(
     () => ({
       ctrl: { pressed: false },
@@ -135,7 +136,15 @@ const Track: FunctionComponent<Props> = ({
         }
       });
     });
-    dispatch(dopeSheetActions.clickTrackArrowButton({ trackList: nextState }));
+    dispatch(
+      dopeSheetActions.clickTrackArrowButton({
+        trackList: nextState,
+        currentClickedChannel: {
+          trackIndex,
+          isPointedDownArrow: !isPointedDownArrow,
+        },
+      }),
+    );
   }, [dispatch, trackList, isPointedDownArrow, lastBoneOfLayers, trackIndex]);
 
   // 트랙 클릭
@@ -150,7 +159,7 @@ const Track: FunctionComponent<Props> = ({
       ) => {
         const state = {
           trackList,
-          prevSelectedIndexes,
+          selectedChannels,
         };
         const nextState = produce(state, (draft) => {
           _.forEach(updatedTrackList, ({ trackIndex, isSelected }) => {
@@ -163,19 +172,19 @@ const Track: FunctionComponent<Props> = ({
               draft.trackList[targetIndex].isSelected = isSelected;
             }
           });
-          draft.prevSelectedIndexes = selectedIndexes;
+          draft.selectedChannels = selectedIndexes;
         });
         dispatch(dopeSheetActions.clickTrackBody(nextState));
       };
 
       if (isNotClickablehNode || trackName === 'Summary') return;
       if (isMutipleSelected) {
-        for (let index = 0; index < prevSelectedIndexes.length; index += 1) {
-          const targetIndex = prevSelectedIndexes[index];
+        for (let index = 0; index < selectedChannels.length; index += 1) {
+          const targetIndex = selectedChannels[index];
           const targetLayerIndex = fnGetLayerTrackIndex({ trackIndex: targetIndex });
           const trackLayerIndex = fnGetLayerTrackIndex({ trackIndex });
           const isNotSameLayer = targetLayerIndex !== trackLayerIndex;
-          const isClickedSelf = prevSelectedIndexes[index] === trackIndex;
+          const isClickedSelf = selectedChannels[index] === trackIndex;
 
           if (isNotSameLayer) {
             const confirmed = getConfirm({
@@ -206,7 +215,7 @@ const Track: FunctionComponent<Props> = ({
                 });
               }
             }
-            const filteredIndexes = _.filter(prevSelectedIndexes, (index) => {
+            const filteredIndexes = _.filter(selectedChannels, (index) => {
               const result = fnGetBinarySearch({
                 collection: _.sortBy(deselectedIndexes),
                 index,
@@ -224,7 +233,7 @@ const Track: FunctionComponent<Props> = ({
         });
         dispatchClickTrackBody(selected, selectedIndexes);
       } else if (!isMutipleSelected) {
-        const deselected = _.map(prevSelectedIndexes, (index) => ({
+        const deselected = _.map(selectedChannels, (index) => ({
           trackIndex: index,
           isSelected: false,
         }));
@@ -242,7 +251,7 @@ const Track: FunctionComponent<Props> = ({
       getConfirm,
       lastBoneOfLayers,
       multiKeyController.ctrl.pressed,
-      prevSelectedIndexes,
+      selectedChannels,
       trackIndex,
       trackName,
     ],
@@ -352,6 +361,33 @@ const Track: FunctionComponent<Props> = ({
     },
   );
 
+  if (currentClickedChannel.trackIndex !== 0) {
+    const remainder = trackIndex % 10;
+    const isSummaryTrack = currentClickedChannel.trackIndex === TP_TRACK_INDEX.SUMMARY;
+    const isClosed = !currentClickedChannel.isPointedDownArrow;
+    switch (remainder) {
+      case TP_TRACK_INDEX.SUMMARY:
+      case TP_TRACK_INDEX.LAYER: {
+        break;
+      }
+      case TP_TRACK_INDEX.BONE_A:
+      case TP_TRACK_INDEX.BONE_B: {
+        if (isSummaryTrack && isClosed) {
+          return null;
+        }
+        break;
+      }
+      default: {
+        const layerIndex = fnGetLayerTrackIndex({ trackIndex });
+        const isLayerTrack = layerIndex === currentClickedChannel.trackIndex;
+        if (isClosed && (isSummaryTrack || isLayerTrack)) {
+          return null;
+        }
+        break;
+      }
+    }
+  }
+
   return (
     <li
       className={classes}
@@ -380,26 +416,6 @@ const Track: FunctionComponent<Props> = ({
           </>
         )}
       </div>
-      {/* <div className={cx('right-icons', { locked: isLocked })}>
-          {trackIndex !== SUMMARY && (
-            <>
-              <IconWrapper
-                className={cx('track-icon', 'lock')}
-                icon={isLocked ? SvgPath.LockClose : SvgPath.LockOpen}
-                hasFrame={false}
-                onClick={clickLockButton}
-              />
-              <div className={cx('check-wrapper')}>
-                <IconWrapper
-                  className={cx('track-icon', 'check', { rendered: isIncluded })}
-                  icon={SvgPath.Check}
-                  hasFrame={false}
-                  onClick={clickRenderingButton}
-                />
-              </div>
-            </>
-          )}
-        </div> */}
     </li>
   );
 };

@@ -6,7 +6,7 @@ interface SetDopeSheetStatus {
   isTransformTrack: boolean;
   isIncluded: boolean;
   layerKey?: string;
-  times: { time: number; isClicked: boolean }[];
+  times: number[];
   trackIndex: number;
   trackName: string;
   visualizedDataKey: string;

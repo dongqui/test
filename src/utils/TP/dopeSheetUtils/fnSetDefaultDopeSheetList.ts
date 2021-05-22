@@ -30,7 +30,7 @@ const fnSetDefaultDopeSheetList = ({
     isShowed: true,
     isTransformTrack: false,
     isIncluded: true,
-    times: _.map(summaryTimes, (time) => ({ time, isClicked: false })),
+    times: summaryTimes,
     trackIndex: 1,
     trackName: 'Summary',
     visualizedDataKey,

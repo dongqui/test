@@ -132,10 +132,7 @@ const TimelineContainer: React.FC<Props> = ({
           summaryTrack.childrenTrack = filterdLayers;
         });
         const nextSummaryTimes = produce(dopeSheetList, (draft) => {
-          const summaryTimes = fnGetSummaryTimes({ baseLayer, layers }).map((time) => ({
-            time,
-            isClicked: false,
-          }));
+          const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
           draft[0].times = summaryTimes;
         });
         const filteredDopeSheetList = _.filter(nextSummaryTimes, (dopeSheet) =>

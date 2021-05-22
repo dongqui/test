@@ -28,6 +28,8 @@ const TimelinePanel: React.FC<Props> = (props) => {
   const prevLayerCount = useRef(0);
   const isStoreedTPData = useRef(false);
   const panelWrapperRef = useRef<HTMLDivElement>(null);
+
+  // To Do...apollo -> redux
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
   useEffect(() => {
@@ -41,8 +43,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
     } else if (currentVisualizedData) {
       const { baseLayer, layers, key } = currentVisualizedData;
       const isChangedModel = isStoreedTPData.current && prevModelKey.current !== key;
-      const isAddedLayer = isStoreedTPData.current && prevLayerCount.current < layers.length;
-      const isDelectedLayer = isStoreedTPData.current && layers.length < prevLayerCount.current;
+      const isInitialVisualized = !isStoreedTPData.current;
       // 모델 변경
       if (isChangedModel) {
         const [trackList, lastBoneOfLayers] = fnSetAllInitialTrackList({
@@ -54,16 +55,8 @@ const TimelinePanel: React.FC<Props> = (props) => {
         prevModelKey.current = key;
         prevLayerCount.current = layers.length;
       }
-      // 레이어 추가
-      else if (isAddedLayer) {
-        prevLayerCount.current += 1;
-      }
-      // 레이어 삭제
-      else if (isDelectedLayer) {
-        prevLayerCount.current -= 1;
-      }
       // 최초 visualize
-      else if (!isStoreedTPData.current) {
+      else if (isInitialVisualized) {
         const [trackList, lastBoneOfLayers] = fnSetAllInitialTrackList({
           baseLayer,
           layers,
@@ -87,13 +80,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
         />
         <div id="timeline-wrapper" className={cx('wrapper')} ref={panelWrapperRef}>
           <ChannelList />
-          <TimeEditor
-            panelWrapperRef={panelWrapperRef}
-            currentTimeRef={currentTimeRef}
-            currentTimeIndexRef={currentTimeIndexRef}
-            currentXAxisPosition={currentXAxisPosition}
-            prevXScale={prevXScale}
-          />
+          <TimeEditor />
         </div>
       </div>
     </>

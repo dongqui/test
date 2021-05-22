@@ -29,6 +29,8 @@ const ChannelList: React.FC<{}> = () => {
   const trackList = useSelector((state) => state.dopeSheet.trackList);
   const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
   const prevInputText = useRef('');
+
+  // To Do... apollo -> redux
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
@@ -203,7 +205,7 @@ const ChannelList: React.FC<{}> = () => {
     }
   }, [skeletonHelper, currentVisualizedData]);
 
-  const isEmptyTrack = _.isEmpty(trackList);
+  const isEmptyTrackList = _.isEmpty(trackList);
 
   const handleTrackListContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -230,8 +232,8 @@ const ChannelList: React.FC<{}> = () => {
           />
         </div>
         <ul className={cx('list')}>
-          {!isEmptyTrack &&
-            _.map(trackList, (dopeSheet) => {
+          {!isEmptyTrackList &&
+            _.map(trackList, (track) => {
               const {
                 isFiltered,
                 isLocked,
@@ -241,7 +243,7 @@ const ChannelList: React.FC<{}> = () => {
                 isTransformTrack,
                 renderedTrackName,
                 trackIndex,
-              } = dopeSheet;
+              } = track;
               const key = `${trackIndex}_${renderedTrackName}`;
               return (
                 isFiltered &&

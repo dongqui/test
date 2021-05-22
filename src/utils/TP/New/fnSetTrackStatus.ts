@@ -5,7 +5,7 @@ import { TP_TRACK_INDEX } from 'utils/const';
 interface SetDopeSheetStatus {
   isIncluded: boolean;
   layerKey?: string;
-  times: { time: number; isClicked: boolean }[];
+  times: number[];
   trackIndex: number;
   trackName: string;
   visualizedDataKey: string;

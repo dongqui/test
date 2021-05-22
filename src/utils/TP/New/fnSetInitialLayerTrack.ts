@@ -28,7 +28,7 @@ const fnSetLayerChildrenTracks = (params: FnSetLayerChildrenTracks): Return => {
   const layerTrackStatus = fnSetTrackStatus({
     isIncluded: setIncluded(layer),
     layerKey,
-    times: _.map(layerTimes, (time) => ({ time, isClicked: false })),
+    times: layerTimes,
     trackIndex: layerIndex,
     trackName: layerName,
     visualizedDataKey,
@@ -51,7 +51,7 @@ const fnSetLayerChildrenTracks = (params: FnSetLayerChildrenTracks): Return => {
     const boneTrackStatus = fnSetTrackStatus({
       isIncluded: setIncluded(transformTrackList),
       layerKey,
-      times: _.map(boneTimes, (time) => ({ time, isClicked: false })),
+      times: boneTimes,
       trackIndex: trackIndex,
       trackName: _.split(layer[positionTrackIndex].name, '.')[0],
       visualizedDataKey,
@@ -64,10 +64,7 @@ const fnSetLayerChildrenTracks = (params: FnSetLayerChildrenTracks): Return => {
       const transformTrackStatus = fnSetTrackStatus({
         isIncluded: setIncluded([transformTrack]),
         layerKey,
-        times: _.map(transformTrack.times, (time) => ({
-          time: _.round(time, 4),
-          isClicked: false,
-        })),
+        times: _.map(transformTrack.times, (time) => _.round(time, 4)),
         trackIndex: trackIndex,
         trackName: transformTrack.name,
         visualizedDataKey,

@@ -117,7 +117,7 @@ export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDope
           break;
         case 'times':
           if (draft[index]) {
-            draft[index].times = target.times as { time: number; isClicked: boolean }[];
+            // draft[index].times = target.times as { time: number; isClicked: boolean }[];
           }
           // draft[index as number].times = target.times as number[];
           break;
