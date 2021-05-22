@@ -1,4 +1,4 @@
-import { TPDopeSheet, TPLastBone } from 'types/TP';
+import { TPDopeSheet, TPLastBone, TPCurrentClickedChannel, KeyframeData } from 'types/TP';
 
 export type DopeSheetAction =
   | ReturnType<typeof setTrackList>
@@ -8,6 +8,7 @@ export type DopeSheetAction =
   | ReturnType<typeof modifyLayerName>
   | ReturnType<typeof addKeyframes>
   | ReturnType<typeof deleteKeyframes>
+  | ReturnType<typeof selectKeyframes>
   | ReturnType<typeof searchTrackList>
   | ReturnType<typeof clickTrackBody>
   | ReturnType<typeof clickTrackArrowButton>
@@ -89,6 +90,19 @@ export const deleteKeyframes = (params: DeleteKeyframes) => ({
   },
 });
 
+// 키프레임 선택
+interface SelectKeyframes {
+  selectedKeyframes: KeyframeData[];
+}
+
+export const SELECT_KEYFRAMES = 'dopeSheet/SELECT_KEYFRAMES' as const;
+export const selectKeyframes = (params: SelectKeyframes) => ({
+  type: SELECT_KEYFRAMES,
+  payload: {
+    ...params,
+  },
+});
+
 // 트랙 검색
 interface SearchTrackList {
   trackList: TPDopeSheet[];
@@ -105,6 +119,7 @@ export const searchTrackList = (params: SearchTrackList) => ({
 // 화살표 버튼 클릭
 interface ClickTrackArrowButton {
   trackList: TPDopeSheet[];
+  currentClickedChannel: TPCurrentClickedChannel;
 }
 
 export const CLICK_TRACK_ARROW_BUTTON = 'dopeSheet/CLICK_TRACK_ARROW_BUTTON' as const;
@@ -118,7 +133,7 @@ export const clickTrackArrowButton = (params: ClickTrackArrowButton) => ({
 // 트랙 클릭
 interface ClickTrackBody {
   trackList: TPDopeSheet[];
-  prevSelectedIndexes: number[];
+  selectedChannels: number[];
 }
 
 export const CLICK_TRACK_BODY = 'dopeSheet/CLICK_TRACK_BODY' as const;

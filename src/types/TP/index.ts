@@ -1,3 +1,4 @@
+// To Do...리팩토링 완료하면 같이 없앨 예정
 export type TPDopeSheetStatus =
   | 'isSelected'
   | 'isLocked'
@@ -6,12 +7,18 @@ export type TPDopeSheetStatus =
   | 'isFiltered'
   | 'times';
 
+// To Do...리팩토링 완료하면 같이 없앨 예정
 export interface TPTrackName {
   childrenTrack: TPTrackName[]; // 하위 트랙 리스트
   isOpenedChildrenTrack: boolean; // 트랙 생성 시 하위 트랙을 펼친 상태로 출력여부(true면 펼친 상태로 출력)
   name: string; // 트랙 이름
   trackIndex: number; // 트랙 index
   visualizedDataKey: string;
+}
+
+export interface TPTimes {
+  time: number;
+  isSelected: boolean;
 }
 
 export interface TPDopeSheet {
@@ -25,8 +32,8 @@ export interface TPDopeSheet {
   renderedTrackName: string;
   trackIndex: number; // 트랙 index
   trackName: string;
-  // times?: number[];
-  times: { time: number; isClicked: boolean }[];
+  times: number[];
+  // times: TPTimes[];
   visualizedDataKey: string;
   x?: number[];
   y?: number[];
@@ -45,11 +52,18 @@ export interface TPLastBone {
   lastBoneIndex: number;
 }
 
+export interface TPCurrentClickedChannel {
+  trackIndex: number;
+  isPointedDownArrow: boolean;
+}
+
+// To Do...리팩토링 완료하면 같이 없앨 예정
 export interface TPUpdateDopeSheet {
   updatedList: Partial<TPDopeSheet>[];
   status: TPDopeSheetStatus;
 }
 
+// To Do...리팩토링 완료하면 같이 없앨 예정
 export interface TPCurrnetClickedTrack {
   trackIndex: number;
   isClickedArrow: boolean;

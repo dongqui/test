@@ -1,17 +1,21 @@
 import _ from 'lodash';
-import { TPDopeSheet, TPLastBone } from 'types/TP';
+import { TPDopeSheet, TPLastBone, TPCurrentClickedChannel, KeyframeData } from 'types/TP';
 import { DopeSheetAction } from 'actions/dopeSheet';
 
 interface DopeSheetState {
   trackList: TPDopeSheet[];
   lastBoneOfLayers: TPLastBone[];
-  prevSelectedIndexes: number[];
+  selectedChannels: number[];
+  selectedKeyframes: KeyframeData[];
+  currentClickedChannel: TPCurrentClickedChannel;
 }
 
 const defaultState: DopeSheetState = {
   trackList: [],
   lastBoneOfLayers: [],
-  prevSelectedIndexes: [],
+  selectedChannels: [],
+  selectedKeyframes: [],
+  currentClickedChannel: { trackIndex: 0, isPointedDownArrow: true },
 };
 
 export const dopeSheet = (state = defaultState, action: DopeSheetAction) => {
@@ -26,17 +30,20 @@ export const dopeSheet = (state = defaultState, action: DopeSheetAction) => {
       return Object.assign({}, state, {
         trackList: [],
         lastBoneOfLayers: [],
+        selectedChannels: [],
+        currentClickedChannel: 0,
       });
     }
     case 'dopeSheet/CLICK_TRACK_ARROW_BUTTON': {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
+        currentClickedChannel: action.payload.currentClickedChannel,
       });
     }
     case 'dopeSheet/CLICK_TRACK_BODY': {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
-        prevSelectedIndexes: action.payload.prevSelectedIndexes,
+        selectedChannels: action.payload.selectedChannels,
       });
     }
     case 'dopeSheet/CLICK_TRACK_LOCK_BUTTON': {
@@ -47,6 +54,11 @@ export const dopeSheet = (state = defaultState, action: DopeSheetAction) => {
     case 'dopeSheet/SEARCH_TRACK_LIST': {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
+      });
+    }
+    case 'dopeSheet/SELECT_KEYFRAMES': {
+      return Object.assign({}, state, {
+        selectedKeyframes: action.payload.selectedKeyframes,
       });
     }
     default: {
