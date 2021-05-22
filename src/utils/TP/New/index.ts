@@ -5,3 +5,4 @@ export { default as fnSetAllInitialTrackList } from './fnSetAllInitialTrackList'
 export { default as fnSetInitialLayerTrack } from './fnSetInitialLayerTrack';
 export { default as fnSetTrackStatus } from './fnSetTrackStatus';
 export { default as fnUpdateIsSelected } from './fnUpdateIsSelected';
+export { default as fnUpdateSelectedKeyframes } from './fnUpdateSelectedKeyframes';
