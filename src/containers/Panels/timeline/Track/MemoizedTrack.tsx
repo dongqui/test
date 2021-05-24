@@ -612,6 +612,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
               className={cx('form-name')}
               placeholder="Layer name"
               onBlur={handleInputBlur}
+              autoFocus={true}
               fullSize
             />
           </FormModal>

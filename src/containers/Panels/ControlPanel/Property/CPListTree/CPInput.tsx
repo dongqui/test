@@ -25,7 +25,7 @@ export const CPInput: FunctionComponent<Props> = ({
 }) => {
   return (
     <PrefixInput
-      innerRef={innerRef}
+      ref={innerRef}
       value={value}
       prefix={prefix}
       name={name}

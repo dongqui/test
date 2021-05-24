@@ -121,7 +121,7 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
         <BaseInput
           className={cx('input-name')}
           value={name}
-          innerRef={inputRef}
+          ref={inputRef}
           autoFocus
           onFocus={handleFocus}
           onChange={onChangeInput}

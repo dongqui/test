@@ -1,10 +1,30 @@
 @import 'styles/libraries/_colors';
 
+.dark {
+  background-color: $gray300;
+
+  &.disabled {
+    color: rgba(255, 255, 255, 0.2) !important;
+  }
+}
+
+.light {
+  background-color: $gray600;
+
+  &.disabled {
+    color: rgba(0, 0, 0, 0.2) !important;
+  }
+}
+
 .input-wrapper {
   display: flex;
-  background-color: $gray300;
   border-radius: 4px;
   padding: 2px 8px;
+  border: 1px solid transparent;
+
+  &:focus-within {
+    border: 1px solid $primaryColor;
+  }
 }
 
 .prefix {
@@ -12,8 +32,8 @@
   display: flex;
   align-items: center;
   font-size: 10px;
-  color: $primaryColor;
   margin-right: 8px;
+  color: $primaryColor;
 }
 
 .input {

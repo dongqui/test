@@ -37,6 +37,7 @@ import { d3ScaleLinear } from 'types/TP';
 import * as d3 from 'd3';
 import fnQuaternionToEulerTrack from 'utils/common/fnQuaternionToEulerTrack';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
+import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
@@ -115,19 +116,11 @@ const PlayBox: FunctionComponent<Props> = ({
         prevXScale.current
       ) {
         if (_.round(startTimeIndex / 30, 4) <= lastTime) {
-          currentTimeRef.current.value = new Date(_.round(startTimeIndex / 30, 0) * 1000)
-            .toISOString()
-            .substr(11, 8)
-            .substr(2)
-            .replace(':', '');
+          fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(startTimeIndex / 30, 0)));
         } else {
-          currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-            .toISOString()
-            .substr(11, 8)
-            .substr(2)
-            .replace(':', '');
+          fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
         }
-        currentTimeIndexRef.current.value = startTimeIndex.toString();
+        fnSetValue(currentTimeIndexRef, startTimeIndex);
 
         if (currentAction) {
           currentAction.time = _.round(startTimeIndex / 30, 4);
@@ -388,6 +381,7 @@ const PlayBox: FunctionComponent<Props> = ({
               className={cx('form-name')}
               placeholder="Motion name"
               onBlur={handleBlur}
+              autoFocus={true}
               fullSize
             />
           </FormModal>

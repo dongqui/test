@@ -30,9 +30,9 @@ import {
 import { useReactiveVar } from '@apollo/client';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import { BoneTransformState, changeBoneTransform } from 'actions/boneTransform';
+import { changeBoneTransform } from 'actions/boneTransform';
 import { redo, resetHistory, undo } from 'actions/withUndoable';
-import { undoableBoneTransform } from 'reducers/boneTransform';
+import { BoneTransformState, undoableBoneTransform } from 'reducers/boneTransform';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
@@ -488,6 +488,7 @@ export const useRendering = (props: UseRendering) => {
     // renderingDiv?.addEventListener('contextmenu', (e) => {
     //   console.log('contextmenu e: ', e);
     // });
+
     if (renderingDiv && renderer) {
       // scene 생성 및 설정
       const scene = fnCreateScene();
