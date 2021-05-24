@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 type Axis = 'x' | 'y' | 'z';
 
 interface FnChangeBoneRotation {

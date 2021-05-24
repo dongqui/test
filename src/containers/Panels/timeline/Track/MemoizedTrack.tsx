@@ -3,7 +3,7 @@ import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
 import produce from 'immer';
-import { IconWrapper, SvgPath } from 'components/New_Icon';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import {
   storeTPSelectedTrackList,
   storeTPDopeSheetList,
@@ -26,10 +26,10 @@ import {
 } from 'utils/TP/trackUtils';
 import styles from './index.module.scss';
 import useContextMenu from 'hooks/common/useContextMenu';
-import { FormModal } from 'components/New_Modal';
-import { BaseInput } from 'components/New_Input';
-import { useConfirmModal } from 'components/New_Modal/ConfirmModal';
-import { useAlertModal } from 'components/New_Modal/AlertModal';
+import { FormModal } from 'components/Modal';
+import { BaseInput } from 'components/Input';
+import { useConfirmModal } from 'components/Modal/ConfirmModal';
+import { useAlertModal } from 'components/Modal/AlertModal';
 import Track from './index';
 
 interface TrackProps {
@@ -612,6 +612,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
               className={cx('form-name')}
               placeholder="Layer name"
               onBlur={handleInputBlur}
+              autoFocus={true}
               fullSize
             />
           </FormModal>

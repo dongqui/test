@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { PrefixInput } from 'components/New_Input';
+import { PrefixInput } from 'components/Input';
 
 interface Props {
   key: string;
@@ -25,7 +25,7 @@ export const CPInput: FunctionComponent<Props> = ({
 }) => {
   return (
     <PrefixInput
-      innerRef={innerRef}
+      ref={innerRef}
       value={value}
       prefix={prefix}
       name={name}

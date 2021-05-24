@@ -1,0 +1,54 @@
+@import 'styles/libraries/_colors';
+
+.dark {
+  background-color: $gray300;
+
+  .search {
+    color: $gray500;
+  }
+
+  &.disabled {
+    color: rgba(255, 255, 255, 0.2) !important;
+  }
+}
+
+.light {
+  background-color: $gray600;
+
+  .search {
+    color: $gray200;
+  }
+
+  &.disabled {
+    color: rgba(0, 0, 0, 0.2) !important;
+  }
+}
+
+.input-wrapper {
+  position: relative;
+  border-radius: 4px;
+  border: 1px solid transparent;
+
+  &:focus-within {
+    border: 1px solid $primaryColor;
+  }
+}
+
+.input {
+  width: 100%;
+  height: 28px;
+  padding-inline-start: 35px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.search {
+  position: absolute;
+  left: 10px;
+  top: 55%;
+  transform: translateY(-50%);
+
+  & > svg {
+    width: 13px;
+  }
+}

@@ -1,4 +1,3 @@
-// const withPWA = require('next-pwa');
 const webpack = require('webpack');
 const path = require('path');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
@@ -8,10 +7,6 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({ enabled: false });
 
 module.exports = withBundleAnalyzer({
   distDir: '_next',
-  // pwa: {
-  //   disable: true,
-  //   dest: 'pwa',
-  // },
   typescript: {
     ignoreBuildErrors: true,
   },

@@ -1,8 +1,8 @@
 import { Story, Meta } from '@storybook/react/types-6-0';
-import Component, { Props } from 'components/New_Button/FilledButton';
+import Component, { Props } from 'components/Button/FilledButton';
 
 export default {
-  title: 'Component API/Component/New_Button',
+  title: 'Component API/Component/Button',
   component: Component,
   args: {},
 } as Meta;

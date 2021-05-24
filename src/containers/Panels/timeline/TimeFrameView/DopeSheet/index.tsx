@@ -32,7 +32,10 @@ import {
   fnUpdateKeyframeToLayer,
 } from 'utils/TP/editingUtils';
 import produce from 'immer';
+import { useDragBox } from 'hooks/common';
 import useContextMenu from 'hooks/common/useContextMenu';
+import { DragBox } from 'components/DragBox';
+import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 
 interface Props {
   timelineWrapperRef: RefObject<HTMLDivElement>;
@@ -509,19 +512,11 @@ const DopeSheet: React.FC<Props> = ({
 
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
-        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
       } else {
-        currentTimeRef.current.value = new Date(_.round(nextValue / 30, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(nextValue / 30, 0)));
       }
-      currentTimeIndexRef.current.value = nextValue.toString();
+      fnSetValue(currentTimeIndexRef, nextValue);
       // 액션 time 업데이트
       currentAction.time = _.round(nextValue / 30, 4);
     }
@@ -568,19 +563,11 @@ const DopeSheet: React.FC<Props> = ({
 
       // currentTime 및 timeIndex 인풋 업데이트
       if (_.round(nextValue / 30, 4) >= lastTime) {
-        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
       } else {
-        currentTimeRef.current.value = new Date(_.round(nextValue / 30, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(nextValue / 30, 0)));
       }
-      currentTimeIndexRef.current.value = nextValue.toString();
+      fnSetValue(currentTimeIndexRef, nextValue);
       // 액션 time 업데이트
       currentAction.time = _.round(nextValue / 30, 4);
     }
@@ -701,23 +688,13 @@ const DopeSheet: React.FC<Props> = ({
 
           if (currentTimeRef.current) {
             if (_.round(setPlayBarX(currentX) / 30, 4) <= lastTime) {
-              const value = new Date(_.round(setPlayBarX(currentX) / 30, 0) * 1000)
-                .toISOString()
-                .substr(11, 8)
-                .substr(2)
-                .replace(':', '');
-              currentTimeRef.current.value = value;
+              fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(setPlayBarX(currentX) / 30, 0)));
             } else {
-              const value = new Date(_.round(lastTime, 0) * 1000)
-                .toISOString()
-                .substr(11, 8)
-                .substr(2)
-                .replace(':', '');
-              currentTimeRef.current.value = value;
+              fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
             }
           }
           if (currentTimeIndexRef.current) {
-            currentTimeIndexRef.current.value = setPlayBarX(currentX).toString();
+            fnSetValue(currentTimeIndexRef, setPlayBarX(currentX));
           }
           currentXAxisPosition.current = setPlayBarX(currentX);
           d3.select(this).style(
@@ -1029,6 +1006,12 @@ const DopeSheet: React.FC<Props> = ({
     }
   }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex, timelineWrapperRef]);
 
+  const [isUpdated, setIsUpdated] = useState(false);
+  const handleIsUpdated = useCallback(() => {
+    setIsUpdated((prev) => !prev);
+  }, []);
+  const list = useDragBox({ ref: dopeSheetRef, isUpdated, onChangeIsUpdated: handleIsUpdated });
+
   return (
     <>
       <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
@@ -1049,6 +1032,7 @@ const DopeSheet: React.FC<Props> = ({
           })}
         </div>
         {playBarDisplayed && <PlayBar />}
+        <DragBox parentRef={dopeSheetRef} isAllCovered onChangeIsUpdated={handleIsUpdated} />
       </div>
     </>
   );

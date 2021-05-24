@@ -1,7 +1,7 @@
 import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
-import { Icon as IconComponent, IconProps } from '../../containers/IconTree/Icon';
+import { Icon as IconComponent, IconProps } from 'containers/Panels/LibraryPanel/IconTree/Icon';
 import { rem } from 'utils/rem';
 import { FILE_TYPES } from 'types';
 

@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import _ from 'lodash';
 import { fnQuaternionToEulerTrack } from 'utils/common';
 import { ShootTrackType } from 'types';

@@ -8,7 +8,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import * as THREE from 'three';
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
@@ -32,6 +31,7 @@ import {
   fnRemoveShadow,
 } from 'utils/CP/visibilityUtils';
 import { d3ScaleLinear } from 'types/TP';
+import { fnSetValue } from 'utils/common';
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 
@@ -95,12 +95,12 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       ) {
         action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
         if (currentTimeIndexRef && currentTimeIndexRef.current) {
-          currentTimeIndexRef.current.value = currentXAxisPosition.current.toString(); // play bar 위치로 초기화
+          fnSetValue(currentTimeIndexRef, currentXAxisPosition.current); // play bar 위치로 초기화
         }
       } else {
         action.time = _.round(startTimeIndex / 30, 4);
         if (currentTimeIndexRef && currentTimeIndexRef.current) {
-          currentTimeIndexRef.current.value = startTimeIndex.toString(); // startTime 으로 초기화
+          fnSetValue(currentTimeIndexRef, startTimeIndex); // startTime 으로 초기화
         }
       }
       storeCurrentAction(action);

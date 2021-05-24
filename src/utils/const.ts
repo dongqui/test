@@ -1,4 +1,3 @@
-import { CUTIMAGE_HEIGHT } from 'containers/extract/CutEdit/CutEdit.styles';
 import { FILE_TYPES, LPDataType } from 'types';
 import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
 import {
@@ -205,7 +204,7 @@ export const INITIAL_RECORDING_DATA = {
     // width: window.innerWidth * 0.9,
     // width: 1700,
     width: 0,
-    height: CUTIMAGE_HEIGHT,
+    height: 128,
     x: 0,
     barX: 0,
     y: 0,

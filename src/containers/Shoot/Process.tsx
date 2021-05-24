@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import { Video } from 'components/Video';
 import { Overlay } from 'components/Overlay';
 import { Headline } from 'components/Typography';
-import { TextButton } from 'components/New_Button';
-import { Procedure } from 'containers/Shoot';
+import { TextButton } from 'components/Button';
+import { Procedure } from 'containers/index';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './Process.module.scss';
@@ -46,7 +46,6 @@ const Process: FunctionComponent<Props> = ({ procedure }) => {
             const classes = cx('text', {
               uppercase: item === 'service' || item === 'token',
             });
-
             return (
               <div className={cx('animation')} key={`${item}_${i}`}>
                 <Headline className={classes} level="3" align="center" bold>

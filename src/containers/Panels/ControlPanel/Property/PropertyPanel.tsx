@@ -1,6 +1,6 @@
 import { FunctionComponent, Fragment } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { AccordionMenu } from 'components/New_AccordionMenu';
+import { AccordionMenu } from 'components/AccordionMenu';
 import { storeCPData } from 'lib/store';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
@@ -15,7 +15,7 @@ const PropertyPanel: FunctionComponent<{}> = ({}) => {
   const cpData = useReactiveVar(storeCPData);
 
   return (
-    <main className={cx('panel-wrap')}>
+    <div className={cx('panel-wrap')}>
       <section className={cx('panel-transform')}>
         <AccordionMenu title="Transform">
           {_.map(cpData, (item, idx) => (
@@ -55,7 +55,7 @@ const PropertyPanel: FunctionComponent<{}> = ({}) => {
           ))}
         </AccordionMenu>
       </section>
-    </main>
+    </div>
   );
 };
 

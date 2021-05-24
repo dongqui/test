@@ -1,19 +1,28 @@
 import { useEffect, useState } from 'react';
 
-const useWindowSize = () => {
-  const [size, setSize] = useState([0, 0]);
+/**
+ * 해당 hook은 SSR을 지원하지 않습니다.
+ *
+ * @returns {[number, number]} window width, window height
+ */
+const useWindowSize = (): [number, number] => {
+  const [size, setSize] = useState<[number, number]>([window.innerWidth, window.innerHeight]);
 
   useEffect(() => {
     const updateSize = () => {
       setSize([window.innerWidth, window.innerHeight]);
     };
 
+    const isResizeOccurred = size[0] !== window.innerWidth || size[1] !== window.innerHeight;
+
+    if (isResizeOccurred) {
+      updateSize();
+    }
+
     window.addEventListener('resize', updateSize);
 
-    updateSize();
-
     return () => window.removeEventListener('resize', updateSize);
-  }, []);
+  }, [size]);
 
   return size;
 };
