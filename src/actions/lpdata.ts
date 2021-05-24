@@ -1,0 +1,30 @@
+import { ShootLayerType, ShootTrackType } from 'types';
+
+export type FileType = 'Folder' | 'File' | 'Motion';
+
+interface LPDataState {
+  key: string;
+  name: string;
+  type: FileType;
+  parentKey: string;
+  url?: string;
+  isSelected?: boolean;
+  isVisualized?: boolean;
+  baseLayer: ShootTrackType[];
+  layers: ShootLayerType[];
+  boneNames: string[];
+}
+export interface LPDatasState extends Array<LPDataState> {}
+
+export type LPDataAction = ReturnType<typeof setLPData>;
+
+export const SET_LPDATA = 'lpdata/SET_LPDATA' as const;
+
+interface SetLPData extends LPDataState {}
+
+export const setLPData = (params: SetLPData) => ({
+  type: SET_LPDATA,
+  payload: {
+    ...params,
+  },
+});
