@@ -12,7 +12,12 @@ import { AlertModalProvider } from 'components/Modal/AlertModal';
 import fnGetSmallestNewNumber from 'utils/common/fnGetSmallestNewNumber';
 import { fnGetNewLayer } from 'utils/TP/editingUtils';
 import { TP_TRACK_INDEX } from 'utils/const';
-import { fnGetBinarySearch, fnGetBoneTrackIndex, fnGetLayerTrackIndex } from 'utils/TP/New';
+import {
+  fnGetBinarySearch,
+  fnGetBoneTrackIndex,
+  fnGetLayerTrackIndex,
+  fnSetInitialLayerTrack,
+} from 'utils/TP/New';
 import { CurrentVisualizedDataType } from 'types';
 import { UpdatedTrack } from 'types/TP';
 import Channel from './Channel';
@@ -202,8 +207,28 @@ const ChannelList: React.FC<{}> = () => {
         });
         storeCurrentVisualizedData(nextState);
       }
+      const newLayerIndex = lastBoneOfLayers[lastBoneOfLayers.length - 1].layerIndex + 10000;
+      const visualizedDataKey = trackList[0].visualizedDataKey;
+      const [newTPLayer, lastBone] = fnSetInitialLayerTrack({
+        layer: newLayer.tracks,
+        layerIndex: newLayerIndex,
+        layerKey: newLayer.key,
+        layerName: newLayer.name,
+        visualizedDataKey: visualizedDataKey,
+      });
+      const prevState = {
+        trackList,
+        lastBoneOfLayers,
+      };
+      const nextState = produce(prevState, (draft) => {
+        _.forEach(newTPLayer, (track) => {
+          draft.trackList.push(track);
+        });
+        draft.lastBoneOfLayers.push(lastBone);
+      });
+      dispatch(dopeSheetActions.addLayer(nextState));
     }
-  }, [skeletonHelper, currentVisualizedData]);
+  }, [skeletonHelper, currentVisualizedData, dispatch, lastBoneOfLayers, trackList]);
 
   const isEmptyTrackList = _.isEmpty(trackList);
 
@@ -213,11 +238,7 @@ const ChannelList: React.FC<{}> = () => {
 
   return (
     <AlertModalProvider>
-      <div
-        className={cx('wrapper')}
-        // ref={channelListRef}
-        // onContextMenu={handleTrackListContextMenu}
-      >
+      <div className={cx('wrapper')} onContextMenu={handleTrackListContextMenu}>
         <div className={cx('search-wrapper')}>
           <SearchInput
             className={cx('search-joint')}
@@ -228,7 +249,7 @@ const ChannelList: React.FC<{}> = () => {
             className={cx('layer')}
             icon={SvgPath.Layer}
             hasFrame={false}
-            // onClick={clickLayerButton}
+            onClick={clickLayerButton}
           />
         </div>
         <ul className={cx('list')}>
@@ -236,11 +257,13 @@ const ChannelList: React.FC<{}> = () => {
             _.map(trackList, (track) => {
               const {
                 isFiltered,
+                isIncluded,
                 isLocked,
                 isPointedDownArrow,
                 isSelected,
                 isShowed,
                 isTransformTrack,
+                layerKey,
                 renderedTrackName,
                 trackIndex,
               } = track;
@@ -250,10 +273,12 @@ const ChannelList: React.FC<{}> = () => {
                 isShowed && (
                   <Channel
                     key={key}
+                    isIncluded={isIncluded}
                     isLocked={isLocked}
                     isPointedDownArrow={isPointedDownArrow}
                     isSelected={isSelected}
                     isTransformTrack={isTransformTrack}
+                    layerKey={layerKey}
                     trackIndex={trackIndex}
                     trackName={renderedTrackName}
                   />

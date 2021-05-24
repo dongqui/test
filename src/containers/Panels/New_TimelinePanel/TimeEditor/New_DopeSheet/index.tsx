@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames/bind';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -162,7 +162,8 @@ const DopeSheet: React.FC<{}> = () => {
       const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
         const [entry] = entries;
         const { width, height } = entry.contentRect;
-        if (width === 0 || (height === 0 && prevDoepSheetWidth.current === width)) return;
+        const isNotChangedWidth = prevDoepSheetWidth.current === width;
+        if (width === 0 || height === 0 || isNotChangedWidth) return;
         const zoomBehavior = d3
           .zoom()
           .scaleExtent([1, 100000])
@@ -203,7 +204,7 @@ const DopeSheet: React.FC<{}> = () => {
   const prevScrollTop = useRef(0);
   useEffect(() => {
     if (dopeSheetRef.current) {
-      const rescaleCircles = (event: MouseEvent) => {
+      const arrangeKeyframes = (event: MouseEvent) => {
         if (!dopeSheetScale.current) return;
         const scaleXLineaer = dopeSheetScale.current;
         const scrollTop = (event.target as Element).scrollTop;
@@ -211,6 +212,7 @@ const DopeSheet: React.FC<{}> = () => {
         const rootMarginTop = isSmallPrevScrollTop ? 0 : TRACK_HEIGHT * 20;
         const rootMarginBottom = isSmallPrevScrollTop ? TRACK_HEIGHT * 20 : 0;
         const rootMargin = `${rootMarginTop}px 0px ${rootMarginBottom}px 0px`;
+
         const observerOptions: IntersectionObserverInit = {
           root: document.getElementById('timeline-wrapper'),
           rootMargin: rootMargin,
@@ -231,7 +233,8 @@ const DopeSheet: React.FC<{}> = () => {
         });
         prevScrollTop.current = scrollTop;
       };
-      d3.select('#timeline-wrapper').on('scroll', rescaleCircles);
+
+      d3.select('#timeline-wrapper').on('scroll', arrangeKeyframes);
     }
   }, []);
 
@@ -253,13 +256,12 @@ const DopeSheet: React.FC<{}> = () => {
   // 재생바 드레그 이벤트
   const currentPlayBarTime = useRef(1);
   useEffect(() => {
-    if (isShowedPlayBar && dopeSheetScale.current) {
+    if (dopeSheetScale.current && isShowedPlayBar) {
       const setPlayBarTime = (time: number) => {
         if (time < startTimeIndex) return startTimeIndex;
         if (endTimeIndex < time) return endTimeIndex;
         return time;
       };
-
       const dragBehavior = d3
         .drag()
         .filter((playBar) => {

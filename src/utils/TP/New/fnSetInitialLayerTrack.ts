@@ -36,24 +36,24 @@ const fnSetLayerChildrenTracks = (params: FnSetLayerChildrenTracks): Return => {
   dopeSheetList.push(layerTrackStatus);
   trackIndex += 1;
 
-  for (let positionTrackIndex = 0; positionTrackIndex < layer.length; positionTrackIndex += 3) {
+  for (let currentTrackIndex = 0; currentTrackIndex < layer.length; currentTrackIndex += 3) {
     const transformTrackList = [
-      layer[positionTrackIndex],
-      layer[positionTrackIndex + 1],
-      layer[positionTrackIndex + 2],
+      layer[currentTrackIndex],
+      layer[currentTrackIndex + 1],
+      layer[currentTrackIndex + 2],
     ];
     // Bone 트랙 세팅
     const boneTimes = fnGetBoneTimes({
-      positionTrack: layer[positionTrackIndex],
-      rotationTrack: layer[positionTrackIndex + 1],
-      scaleTrack: layer[positionTrackIndex + 2],
+      positionTrack: layer[currentTrackIndex],
+      rotationTrack: layer[currentTrackIndex + 1],
+      scaleTrack: layer[currentTrackIndex + 2],
     });
     const boneTrackStatus = fnSetTrackStatus({
       isIncluded: setIncluded(transformTrackList),
       layerKey,
       times: boneTimes,
       trackIndex: trackIndex,
-      trackName: _.split(layer[positionTrackIndex].name, '.')[0],
+      trackName: _.split(layer[currentTrackIndex].name, '.')[0],
       visualizedDataKey,
     });
     dopeSheetList.push(boneTrackStatus);

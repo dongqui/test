@@ -51,6 +51,11 @@ export const dopeSheet = (state = defaultState, action: DopeSheetAction) => {
         trackList: action.payload.trackList,
       });
     }
+    case 'dopeSheet/CLICK_TRACK_CHECK_BUTTON': {
+      return Object.assign({}, state, {
+        trackList: action.payload.trackList,
+      });
+    }
     case 'dopeSheet/SEARCH_TRACK_LIST': {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
@@ -59,6 +64,23 @@ export const dopeSheet = (state = defaultState, action: DopeSheetAction) => {
     case 'dopeSheet/SELECT_KEYFRAMES': {
       return Object.assign({}, state, {
         selectedKeyframes: action.payload.selectedKeyframes,
+      });
+    }
+    case 'dopeSheet/ADD_LAYER': {
+      return Object.assign({}, state, {
+        trackList: action.payload.trackList,
+        lastBoneOfLayers: action.payload.lastBoneOfLayers,
+      });
+    }
+    case 'dopeSheet/DELETE_LAYER': {
+      return Object.assign({}, state, {
+        trackList: action.payload.trackList,
+        lastBoneOfLayers: action.payload.lastBoneOfLayers,
+      });
+    }
+    case 'dopeSheet/MODIFY_LAYER_NAME': {
+      return Object.assign({}, state, {
+        trackList: action.payload.trackList,
       });
     }
     default: {

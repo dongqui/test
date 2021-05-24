@@ -36,7 +36,10 @@ export const clearAll = () => ({
 });
 
 // 레이어 추가
-interface AddLayer {}
+interface AddLayer {
+  trackList: TPDopeSheet[];
+  lastBoneOfLayers: TPLastBone[];
+}
 
 export const ADD_LAYER = 'dopeSheet/ADD_LAYER' as const;
 export const addLayer = (params: AddLayer) => ({
@@ -47,7 +50,10 @@ export const addLayer = (params: AddLayer) => ({
 });
 
 // 레이어 삭제
-interface DeleteLayer {}
+interface DeleteLayer {
+  trackList: TPDopeSheet[];
+  lastBoneOfLayers: TPLastBone[];
+}
 
 export const DELETE_LAYER = 'dopeSheet/DELETE_LAYER' as const;
 export const deleteLayer = (params: DeleteLayer) => ({
@@ -58,7 +64,9 @@ export const deleteLayer = (params: DeleteLayer) => ({
 });
 
 // 레이어 이름 변경
-interface ModifyLayerName {}
+interface ModifyLayerName {
+  trackList: TPDopeSheet[];
+}
 
 export const MODIFY_LAYER_NAME = 'dopeSheet/MODIFY_LAYER_NAME' as const;
 export const modifyLayerName = (params: ModifyLayerName) => ({
@@ -158,7 +166,9 @@ export const clickTrackLockButton = (params: ClickTrackLockButton) => ({
 });
 
 // 랜더링 체크 버튼 클릭
-interface ClickTrackCheckButton {}
+interface ClickTrackCheckButton {
+  trackList: TPDopeSheet[];
+}
 
 export const CLICK_TRACK_CHECK_BUTTON = 'dopeSheet/CLICK_TRACK_CHECK_BUTTON' as const;
 export const clickTrackCheckButton = (params: ClickTrackCheckButton) => ({

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo, useCallback, useEffect, useMemo } from 'react';
+import React, { FunctionComponent, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
 import classNames from 'classnames/bind';
@@ -16,6 +16,12 @@ import { TP_TRACK_INDEX } from 'utils/const';
 import { UpdatedTrack } from 'types/TP';
 import * as dopeSheetActions from 'actions/dopeSheet';
 import styles from './index.module.scss';
+import { storeContextMenuInfo, storeCurrentVisualizedData } from 'lib/store';
+import { CurrentVisualizedDataType } from 'types';
+import useContextMenu from 'hooks/common/useContextMenu';
+import { useReactiveVar } from '@apollo/client';
+import { FormModal } from 'components/Modal';
+import { BaseInput } from 'components/Input';
 
 const cx = classNames.bind(styles);
 
@@ -33,19 +39,23 @@ const {
 } = TP_TRACK_INDEX;
 
 interface Props {
+  isIncluded: boolean;
   isLocked: boolean;
   isPointedDownArrow: boolean;
   isSelected: boolean;
   isTransformTrack: boolean;
+  layerKey: string;
   trackIndex: number;
   trackName: string;
 }
 
 const Track: FunctionComponent<Props> = ({
+  isIncluded,
   isLocked,
   isPointedDownArrow,
   isSelected,
   isTransformTrack,
+  layerKey,
   trackIndex,
   trackName,
 }) => {
@@ -55,6 +65,7 @@ const Track: FunctionComponent<Props> = ({
   const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
   const selectedChannels = useSelector((state) => state.dopeSheet.selectedChannels);
   const currentClickedChannel = useSelector((state) => state.dopeSheet.currentClickedChannel);
+  const channelRef = useRef<HTMLLIElement>(null);
   const multiKeyController = useMemo(
     () => ({
       ctrl: { pressed: false },
@@ -136,13 +147,11 @@ const Track: FunctionComponent<Props> = ({
         }
       });
     });
+    const currentClickedChannel = { trackIndex, isPointedDownArrow: !isPointedDownArrow };
     dispatch(
       dopeSheetActions.clickTrackArrowButton({
         trackList: nextState,
-        currentClickedChannel: {
-          trackIndex,
-          isPointedDownArrow: !isPointedDownArrow,
-        },
+        currentClickedChannel,
       }),
     );
   }, [dispatch, trackList, isPointedDownArrow, lastBoneOfLayers, trackIndex]);
@@ -168,7 +177,7 @@ const Track: FunctionComponent<Props> = ({
               index: trackIndex,
               key: 'trackIndex',
             });
-            if (!_.isUndefined(isSelected)) {
+            if (targetIndex !== -1 && !_.isUndefined(isSelected)) {
               draft.trackList[targetIndex].isSelected = isSelected;
             }
           });
@@ -258,9 +267,9 @@ const Track: FunctionComponent<Props> = ({
   );
 
   // 잠금 버튼 클릭
-  const handleClickLockButton = useCallback(() => {
+  const handleclickLockButton = useCallback(() => {
     const remainder = trackIndex % 10;
-    const updatedTrackList: Required<UpdatedTrack<'isLocked'>>[] = [];
+    const updatedTrackList: UpdatedTrack<'isLocked'>[] = [];
     switch (remainder) {
       case LAYER: {
         const targetIndex = fnGetBinarySearch({
@@ -340,6 +349,432 @@ const Track: FunctionComponent<Props> = ({
     dispatch(dopeSheetActions.clickTrackLockButton({ trackList: nextState }));
   }, [dispatch, trackList, isLocked, lastBoneOfLayers, trackIndex]);
 
+  // 랜더링 제외 버튼 클릭
+  const handleClickRenderingButton = useCallback(() => {
+    const state = storeCurrentVisualizedData();
+    if (state) {
+      const updatedTrackList: UpdatedTrack<'isIncluded' | 'trackIndex' | 'trackName'>[] = [];
+      const remainder = trackIndex % 10;
+      switch (remainder) {
+        case LAYER: {
+          const targetLastBoneIndex = fnGetBinarySearch({
+            collection: lastBoneOfLayers,
+            index: trackIndex,
+            key: 'layerIndex',
+          });
+          const lastBone = lastBoneOfLayers[targetLastBoneIndex];
+          const lastTransformIndex = lastBone.lastBoneIndex + 3;
+          let currentTrackIndex = trackIndex;
+          let trackListIndex = fnGetBinarySearch({
+            collection: trackList,
+            index: trackIndex,
+            key: 'trackIndex',
+          });
+          while (currentTrackIndex <= lastTransformIndex) {
+            updatedTrackList.push({
+              isIncluded: isIncluded ? false : true,
+              trackIndex: trackList[trackListIndex].trackIndex,
+              trackName: trackList[trackListIndex].trackName,
+            });
+            currentTrackIndex += 1;
+            trackListIndex += 1;
+            if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2;
+          }
+          break;
+        }
+        case BONE_A:
+        case BONE_B: {
+          if (isIncluded) {
+            const layerIndex = fnGetLayerTrackIndex({ trackIndex });
+            const targetIndex = fnGetBinarySearch({
+              collection: trackList,
+              index: layerIndex,
+              key: 'trackIndex',
+            });
+            updatedTrackList.push({
+              isIncluded: false,
+              trackIndex: trackList[targetIndex].trackIndex,
+              trackName: trackList[targetIndex].trackName,
+            });
+          }
+          const targetIndex = fnGetBinarySearch({
+            collection: trackList,
+            index: trackIndex,
+            key: 'trackIndex',
+          });
+          for (let index = targetIndex; index <= targetIndex + 3; index += 1) {
+            updatedTrackList.push({
+              isIncluded: isIncluded ? false : true,
+              trackIndex: trackList[index].trackIndex,
+              trackName: trackList[index].trackName,
+            });
+          }
+          break;
+        }
+        default: {
+          if (isIncluded) {
+            _.forEach([0, 1], (index) => {
+              const parentTrackIndex =
+                index === 0
+                  ? fnGetLayerTrackIndex({ trackIndex })
+                  : fnGetBoneTrackIndex({ trackIndex });
+              const targetIndex = fnGetBinarySearch({
+                collection: trackList,
+                index: parentTrackIndex,
+                key: 'trackIndex',
+              });
+              updatedTrackList.push({
+                isIncluded: false,
+                trackIndex: trackList[targetIndex].trackIndex,
+                trackName: trackList[targetIndex].trackName,
+              });
+            });
+          }
+          const targetIndex = fnGetBinarySearch({
+            collection: trackList,
+            index: trackIndex,
+            key: 'trackIndex',
+          });
+          updatedTrackList.push({
+            isIncluded: isIncluded ? false : true,
+            trackIndex: trackList[targetIndex].trackIndex,
+            trackName: trackList[targetIndex].trackName,
+          });
+          break;
+        }
+      }
+      if (layerKey === 'baseLayer') {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          _.forEach(updatedTrackList, (updated) => {
+            const transformIndex = _.findIndex(
+              draft.baseLayer,
+              (currentVisualizedData) => currentVisualizedData.name === updated.trackName,
+            );
+            if (transformIndex !== -1) {
+              draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
+            }
+          });
+        });
+        storeCurrentVisualizedData(nextState);
+      } else {
+        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+          const targetLayer = _.find(draft.layers, (layer) => layer.key === layerKey);
+          if (targetLayer) {
+            _.forEach(updatedTrackList, (updated) => {
+              const transformIndex = _.findIndex(
+                targetLayer.tracks,
+                (currentVisualizedData) => currentVisualizedData.name === updated.trackName,
+              );
+              if (transformIndex !== -1) {
+                targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
+              }
+            });
+          }
+        });
+        storeCurrentVisualizedData(nextState);
+      }
+      const nextTrackList = produce(trackList, (draft) => {
+        _.forEach(updatedTrackList, (track) => {
+          const targetIndex = fnGetBinarySearch({
+            collection: trackList,
+            index: track.trackIndex,
+            key: 'trackIndex',
+          });
+          draft[targetIndex].isIncluded = track.isIncluded;
+        });
+      });
+      dispatch(
+        dopeSheetActions.clickTrackCheckButton({
+          trackList: nextTrackList,
+        }),
+      );
+    }
+  }, [dispatch, isIncluded, lastBoneOfLayers, layerKey, trackIndex, trackList]);
+
+  // 레이어 이름 변경 함수 호출
+  const [showsModal, setShowsModal] = useState(false);
+  const updateLayerName = useCallback(() => {
+    setShowsModal(true);
+  }, []);
+
+  // 레이어 삭제
+  const deleteLayer = useCallback(async () => {
+    const confirmed = await getConfirm({
+      title: 'Are you sure you want to delete this layer?',
+    });
+    if (confirmed) {
+      const state = storeCurrentVisualizedData();
+      if (state) {
+        const targetIndex = fnGetBinarySearch({
+          collection: trackList,
+          index: trackIndex,
+          key: 'trackIndex',
+        });
+        const curTrack = trackList[targetIndex];
+        if (curTrack) {
+          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+            draft.layers = _.filter(draft.layers, (layer) => layer.key !== curTrack.layerKey);
+          });
+          storeCurrentVisualizedData(nextState);
+          const layerIndex = fnGetLayerTrackIndex({ trackIndex });
+          const targetIndex = fnGetBinarySearch({
+            collection: trackList,
+            index: layerIndex,
+            key: 'trackIndex',
+          });
+          const layerKey = trackList[targetIndex].layerKey;
+          const prevState = {
+            trackList,
+            lastBoneOfLayers,
+          };
+          const nextTrackList = produce(prevState, (draft) => {
+            const filteredTrackList = draft.trackList.filter(
+              (track) => layerKey !== track.layerKey,
+            );
+            const filteredLastBoneOfLayers = draft.lastBoneOfLayers.filter(
+              (lastBone) => layerKey !== lastBone.layerKey,
+            );
+            draft.trackList = filteredTrackList;
+            draft.lastBoneOfLayers = filteredLastBoneOfLayers;
+          });
+          dispatch(dopeSheetActions.deleteLayer(nextTrackList));
+        }
+      }
+    }
+  }, [getConfirm, trackList, trackIndex, lastBoneOfLayers, dispatch]);
+
+  const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
+  const handleLayerTrackContextMenu = useCallback(
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      e?.preventDefault();
+      storeContextMenuInfo({
+        isShow: true,
+        top,
+        left,
+        data: [
+          {
+            key: 'edit',
+            value: 'Edit Name',
+            isSelected: false,
+            isDisabled: trackIndex === 2,
+          },
+          {
+            key: 'delete',
+            value: 'Delete Layer',
+            isSelected: false,
+            isDisabled: trackIndex === 2,
+          },
+          {
+            key: 'select',
+            value: isSelected ? 'Unselect' : 'Select',
+            isSelected: false,
+          },
+          {
+            key: 'lock',
+            value: isLocked ? 'Unlock' : 'Lock',
+            isSelected: false,
+          },
+          {
+            key: 'include',
+            value: isIncluded ? 'Exclude' : 'Include',
+            isSelected: false,
+          },
+        ],
+        onClick: (key) => {
+          switch (key) {
+            case 'edit':
+              updateLayerName();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'delete':
+              deleteLayer();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'select':
+              if (e) {
+                if (isSelected) {
+                  multiKeyController.ctrl.pressed = true;
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  handleClickTrackBody(e);
+                  multiKeyController.ctrl.pressed = false;
+                } else {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  handleClickTrackBody(e);
+                }
+              }
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'lock':
+              handleclickLockButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'include':
+              handleClickRenderingButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            default:
+              break;
+          }
+        },
+      });
+    },
+    [
+      handleclickLockButton,
+      handleClickRenderingButton,
+      handleClickTrackBody,
+      contextMenuInfo,
+      deleteLayer,
+      isIncluded,
+      isLocked,
+      isSelected,
+      multiKeyController.ctrl,
+      trackIndex,
+      updateLayerName,
+    ],
+  );
+
+  const handleBoneTransformTrackContextMenu = useCallback(
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      e?.preventDefault();
+      storeContextMenuInfo({
+        isShow: true,
+        top,
+        left,
+        data: [
+          {
+            key: 'select',
+            value: isSelected ? 'Unselect' : 'Select',
+            isSelected: false,
+          },
+          {
+            key: 'lock',
+            value: isLocked ? 'Unlock' : 'Lock',
+            isSelected: false,
+          },
+          {
+            key: 'include',
+            value: isIncluded ? 'Exclude' : 'Include',
+            isSelected: false,
+          },
+        ],
+        onClick: (key) => {
+          switch (key) {
+            case 'select':
+              if (e) {
+                if (isSelected) {
+                  multiKeyController.ctrl.pressed = true;
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  handleClickTrackBody(e);
+                  multiKeyController.ctrl.pressed = false;
+                } else {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  handleClickTrackBody(e);
+                }
+              }
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'lock':
+              handleclickLockButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            case 'include':
+              handleClickRenderingButton();
+              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+              break;
+            default:
+              break;
+          }
+        },
+      });
+    },
+    [
+      handleclickLockButton,
+      handleClickRenderingButton,
+      handleClickTrackBody,
+      contextMenuInfo,
+      isIncluded,
+      isLocked,
+      isSelected,
+      multiKeyController.ctrl,
+    ],
+  );
+
+  // 컨텍스트 메뉴 로직
+  const handleTrackContextMenu = useCallback(
+    ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
+      e?.preventDefault();
+      if (trackIndex % 10 === 1) {
+        return;
+      } else if (trackIndex % 10 === 2) {
+        handleLayerTrackContextMenu({ top, left, e });
+      } else {
+        handleBoneTransformTrackContextMenu({ top, left, e });
+      }
+    },
+    [handleBoneTransformTrackContextMenu, handleLayerTrackContextMenu, trackIndex],
+  );
+
+  // 컨텍스트 메뉴 생성 custom hooks
+  useContextMenu({ targetRef: channelRef, event: handleTrackContextMenu });
+
+  const [newLayerName, setNewLayerName] = useState('');
+  const handleModalClose = () => {
+    setShowsModal(false);
+  };
+
+  const handleInputBlur = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewLayerName(event.target.value);
+  };
+
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  const handleSubmit = useCallback(() => {
+    setShowsModal(false);
+    if (newLayerName === '') {
+      const confirmed = getConfirm({
+        title: 'You cannot use an empty string as a name.',
+      });
+      if (confirmed) {
+        return false;
+      }
+    } else if (
+      newLayerName === 'Base' ||
+      _.map(currentVisualizedData?.layers, (layer) => layer.name).includes(newLayerName)
+    ) {
+      const confirmed = getConfirm({
+        title: 'There is already a layer with the same name.',
+      });
+      if (confirmed) {
+        return false;
+      }
+    } else {
+      const state = storeCurrentVisualizedData();
+      if (state) {
+        const targetIndex = fnGetBinarySearch({
+          collection: trackList,
+          index: trackIndex,
+          key: 'trackIndex',
+        });
+        const curTrack = trackList[targetIndex];
+        if (curTrack) {
+          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
+            const targetLayer = _.find(draft.layers, (layer) => layer.key === curTrack.layerKey);
+            if (targetLayer) targetLayer.name = newLayerName;
+          });
+          storeCurrentVisualizedData(nextState);
+          const nextTrackList = produce(trackList, (draft) => {
+            draft[targetIndex].trackName = newLayerName;
+            draft[targetIndex].renderedTrackName = newLayerName;
+          });
+          dispatch(dopeSheetActions.modifyLayerName({ trackList: nextTrackList }));
+        }
+      }
+    }
+  }, [newLayerName, currentVisualizedData?.layers, getConfirm, trackList, trackIndex, dispatch]);
+
   const classes = cx(
     'track-body',
     {
@@ -389,12 +824,7 @@ const Track: FunctionComponent<Props> = ({
   }
 
   return (
-    <li
-      className={classes}
-      onClick={handleClickTrackBody}
-      aria-hidden="true"
-      //  ref={trackRef}
-    >
+    <li className={classes} onClick={handleClickTrackBody} aria-hidden="true" ref={channelRef}>
       {!isTransformTrack && (
         <IconWrapper
           className={cx('track-icon', 'arrow', { 'point-down': isPointedDownArrow })}
@@ -411,11 +841,40 @@ const Track: FunctionComponent<Props> = ({
               className={cx('track-icon', 'lock')}
               icon={isLocked ? SvgPath.LockClose : SvgPath.LockOpen}
               hasFrame={false}
-              onClick={handleClickLockButton}
+              onClick={handleclickLockButton}
             />
+            <div className={cx('check-wrapper')}>
+              <IconWrapper
+                className={cx('track-icon', 'check', { checked: isIncluded })}
+                icon={SvgPath.Check}
+                hasFrame={false}
+                onClick={handleClickRenderingButton}
+              />
+            </div>
           </>
         )}
       </div>
+      {showsModal && (
+        <FormModal
+          isOpen={showsModal}
+          onClose={handleModalClose}
+          onOutsideClose={handleModalClose}
+          onSubmit={handleSubmit} // 현재 modal submit 이 안 먹음
+          title="Please enter the name of the layer."
+          text={{
+            submit: 'OK',
+            cancel: 'Cancel',
+          }}
+        >
+          <BaseInput
+            className={cx('form-name')}
+            placeholder="Layer name"
+            onBlur={handleInputBlur}
+            autoFocus={true}
+            fullSize
+          />
+        </FormModal>
+      )}
     </li>
   );
 };

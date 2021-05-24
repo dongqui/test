@@ -26,7 +26,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
   const dispatch = useDispatch();
   const prevModelKey = useRef('');
   const prevLayerCount = useRef(0);
-  const isStoreedTPData = useRef(false);
+  const isStoredDopeSheetData = useRef(false);
   const panelWrapperRef = useRef<HTMLDivElement>(null);
 
   // To Do...apollo -> redux
@@ -37,14 +37,13 @@ const TimelinePanel: React.FC<Props> = (props) => {
     // 모델 삭제
     if (isClearedModel) {
       dispatch(dopeSheetActions.clearAll());
-      isStoreedTPData.current = false;
+      isStoredDopeSheetData.current = false;
       prevModelKey.current = '';
       prevLayerCount.current = 0;
     } else if (currentVisualizedData) {
       const { baseLayer, layers, key } = currentVisualizedData;
-      const isChangedModel = isStoreedTPData.current && prevModelKey.current !== key;
-      const isInitialVisualized = !isStoreedTPData.current;
-      // 모델 변경
+      const isChangedModel = isStoredDopeSheetData.current && prevModelKey.current !== key;
+      const isInitialVisualized = !isStoredDopeSheetData.current;
       if (isChangedModel) {
         const [trackList, lastBoneOfLayers] = fnSetAllInitialTrackList({
           baseLayer,
@@ -54,9 +53,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
         dispatch(dopeSheetActions.setTrackList({ trackList, lastBoneOfLayers }));
         prevModelKey.current = key;
         prevLayerCount.current = layers.length;
-      }
-      // 최초 visualize
-      else if (isInitialVisualized) {
+      } else if (isInitialVisualized) {
         const [trackList, lastBoneOfLayers] = fnSetAllInitialTrackList({
           baseLayer,
           layers,
@@ -64,7 +61,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
         });
         dispatch(dopeSheetActions.setTrackList({ trackList, lastBoneOfLayers }));
         prevModelKey.current = key;
-        isStoreedTPData.current = true;
+        isStoredDopeSheetData.current = true;
       }
     }
   }, [currentVisualizedData, dispatch]);
@@ -80,7 +77,12 @@ const TimelinePanel: React.FC<Props> = (props) => {
         />
         <div id="timeline-wrapper" className={cx('wrapper')} ref={panelWrapperRef}>
           <ChannelList />
-          <TimeEditor />
+          <TimeEditor
+            currentTimeRef={currentTimeRef}
+            currentTimeIndexRef={currentTimeIndexRef}
+            currentXAxisPosition={currentXAxisPosition}
+            prevXScale={prevXScale}
+          />
         </div>
       </div>
     </>
