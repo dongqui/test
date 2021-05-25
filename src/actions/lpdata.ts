@@ -2,7 +2,7 @@ import { ShootLayerType, ShootTrackType } from 'types';
 
 export type FileType = 'Folder' | 'File' | 'Motion';
 
-interface LPDataState {
+export interface LPDataState {
   key: string;
   name: string;
   type: FileType;
