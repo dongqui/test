@@ -251,6 +251,13 @@ const PlayBox: FunctionComponent<Props> = ({
           ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth)) /
           STANDARD_TIME_UNIT,
       ),
+      startTime: Math.round(
+        recordingData.duration * (recordingData.rangeBoxInfo.x / window.innerWidth),
+      ),
+      endTime: Math.round(
+        recordingData.duration *
+          ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth),
+      ),
       fileName: recordingData?.motionName,
     });
     if (error) {
