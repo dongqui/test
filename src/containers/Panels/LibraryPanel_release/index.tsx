@@ -3,8 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useDropzone } from 'react-dropzone';
 import { v4 as uuidv4 } from 'uuid';
 import classNames from 'classnames/bind';
-import includes from 'lodash/includes';
-import concat from 'lodash/concat';
+import _ from 'lodash';
 import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { setSearchword } from 'actions/lpSearchword';
@@ -16,7 +15,7 @@ import { BaseModal } from 'components/Modal';
 import { useSelector } from 'reducers';
 import { ROOT_KEY } from 'reducers/lpdata';
 import getAnimationData from './utils/getAnimationData';
-import { LPDatasState, setLPData } from 'actions/lpdata';
+import { deleteLPData, LPDatasState, setLPData } from 'actions/lpdata';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import { LPDataState } from '../../../actions/lpdata';
 
@@ -120,7 +119,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       const mustDeleteKeys: string[] = [];
       let newLPData: LPDatasState = [];
       const isMultipleVideoFiles =
-        files.filter((file) => includes(EnableVideoFormats, getFileExtension(file.name))).length >
+        files.filter((file) => _.includes(EnableVideoFormats, getFileExtension(file.name))).length >
         1;
       if (isMultipleVideoFiles) {
         setModalInfo((state) => ({
@@ -133,7 +132,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       }
       // 비디오파일이 마지막으로 오도록 재정렬
       const sortedFiles = files.sort((file) => {
-        const isVideoFile = includes(EnableVideoFormats, getFileExtension(file.name));
+        const isVideoFile = _.includes(EnableVideoFormats, getFileExtension(file.name));
         if (isVideoFile) {
           return 1;
         }
@@ -141,7 +140,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       });
       for (const file of sortedFiles) {
         const extension = getFileExtension(file.name);
-        const isValidFileFormat = includes(EnableFileFormats, extension);
+        const isValidFileFormat = _.includes(EnableFileFormats, extension);
         if (!isValidFileFormat) {
           setModalInfo((state) => ({
             ...state,
@@ -199,8 +198,12 @@ const LibraryPanelComponent: FunctionComponent = () => {
           name: file.name,
           url: fileUrl,
         });
-        newLPData = concat(newLPData, newData);
+        newLPData = _.concat(newLPData, newData);
       }
+      if (!_.isEmpty(mustDeleteKeys)) {
+        dispatch(deleteLPData(mustDeleteKeys));
+      }
+      dispatch(setLPData(newLPData));
       setModalInfo((state) => ({
         ...state,
         showModal: false,
@@ -208,7 +211,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         loading: false,
       }));
     },
-    [convertToAnimationDataToLPData, getConfirm, validateSameFileName],
+    [convertToAnimationDataToLPData, dispatch, getConfirm, validateSameFileName],
   );
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
