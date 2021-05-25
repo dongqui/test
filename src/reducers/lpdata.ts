@@ -16,7 +16,7 @@ const defaultState: LPDatasState = [
 export const lpdata = (state: LPDatasState = defaultState, action: LPDataAction): LPDatasState => {
   switch (action.type) {
     case 'lpdata/SET_LPDATA': {
-      return [...state, action.payload];
+      return [...state, ...action.payload];
     }
     default: {
       return state;

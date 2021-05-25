@@ -20,7 +20,7 @@ export type LPDataAction = ReturnType<typeof setLPData>;
 
 export const SET_LPDATA = 'lpdata/SET_LPDATA' as const;
 
-interface SetLPData extends LPDataState {}
+interface SetLPData extends LPDatasState {}
 
 export const setLPData = (params: SetLPData) => ({
   type: SET_LPDATA,

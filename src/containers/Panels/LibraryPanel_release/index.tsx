@@ -16,7 +16,7 @@ import { BaseModal } from 'components/Modal';
 import { useSelector } from 'reducers';
 import { ROOT_KEY } from 'reducers/lpdata';
 import getAnimationData from './utils/getAnimationData';
-import { LPDatasState } from 'actions/lpdata';
+import { LPDatasState, setLPData } from 'actions/lpdata';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import { LPDataState } from '../../../actions/lpdata';
 
