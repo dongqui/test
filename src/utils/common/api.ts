@@ -13,6 +13,8 @@ interface uploadFileToMotionDataProps {
   id: string;
   start: number;
   end: number;
+  startTime: number;
+  endTime: number;
   fileName: string;
 }
 interface getRetargetMapProps {
@@ -126,6 +128,8 @@ export const setConvertGlbToFbx = async (props: SetConvertGlbToFbx) => {
 export const uploadFileToMotionData = async ({
   start,
   end,
+  startTime,
+  endTime,
   fileName,
   id,
   type,
@@ -143,6 +147,8 @@ export const uploadFileToMotionData = async ({
     formData.append('id', id);
     formData.append('start', start.toString());
     formData.append('end', end.toString());
+    formData.append('startTime', startTime.toString());
+    formData.append('endTime', endTime.toString());
     const result = await axios({
       method: 'POST',
       url: `${BASE_URL}/mocap-upload-api`,
