@@ -42,6 +42,7 @@ import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 const cx = classNames.bind(styles);
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
+const DECIMAL_PLACES = 10000; // 반올림할 소수점 자리수
 
 export interface Props {
   currentTimeRef?: RefObject<HTMLInputElement>;
@@ -251,13 +252,19 @@ const PlayBox: FunctionComponent<Props> = ({
           ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth)) /
           STANDARD_TIME_UNIT,
       ),
-      startTime: Math.round(
-        recordingData.duration * (recordingData.rangeBoxInfo.x / window.innerWidth),
-      ),
-      endTime: Math.round(
-        recordingData.duration *
-          ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth),
-      ),
+      startTime:
+        Math.round(
+          recordingData.duration *
+            (recordingData.rangeBoxInfo.x / window.innerWidth) *
+            DECIMAL_PLACES,
+        ) / DECIMAL_PLACES,
+      endTime:
+        Math.round(
+          recordingData.duration *
+            ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) /
+              window.innerWidth) *
+            DECIMAL_PLACES,
+        ) / DECIMAL_PLACES,
       fileName: recordingData?.motionName,
     });
     if (error) {
