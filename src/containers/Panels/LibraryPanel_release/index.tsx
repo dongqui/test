@@ -1,4 +1,11 @@
-import React, { ChangeEvent, FunctionComponent, memo, useCallback, useState } from 'react';
+import React, {
+  ChangeEvent,
+  FunctionComponent,
+  memo,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import { useDispatch } from 'react-redux';
 import { useDropzone } from 'react-dropzone';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,6 +30,39 @@ const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];
 const EnableFileFormats = [...EnableVideoFormats, 'glb', 'fbx'];
 const cx = classNames.bind(styles);
 
+export const DefaultModels: Required<LPDatasState> = [
+  {
+    key: 'defaultmodel1',
+    name: 'zombie.fbx',
+    url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493576/zombie_bkqv8g.glb',
+    type: 'File',
+    parentKey: ROOT_KEY,
+    baseLayer: [],
+    layers: [],
+    boneNames: [],
+  },
+  {
+    key: 'defaultmodel2',
+    name: 'knight.fbx',
+    url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493584/knight_zizg5n.glb',
+    type: 'File',
+    parentKey: ROOT_KEY,
+    baseLayer: [],
+    layers: [],
+    boneNames: [],
+  },
+  {
+    key: 'defaultmodel3',
+    name: 'vanguard.fbx',
+    url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619494583/vanguard_t_cslcnl.glb',
+    type: 'File',
+    parentKey: ROOT_KEY,
+    baseLayer: [],
+    layers: [],
+    boneNames: [],
+  },
+];
+
 export interface PagesType {
   key: string;
   name: string;
@@ -33,6 +73,18 @@ interface ConvertToAnimationDataToLPData {
   bones: THREE.Bone[];
   name: string;
   url: string;
+}
+
+interface ChangeFileToLPData {
+  fileUrl: string;
+  name: string;
+  isDispatch?: boolean;
+}
+
+interface ChangeFileToLPDataResponse {
+  result: LPDatasState;
+  isError: boolean;
+  errorMsg: string;
 }
 
 const LibraryPanelComponent: FunctionComponent = () => {
@@ -99,6 +151,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
             name: item.name,
             type: 'Motion',
             parentKey: key,
+            url,
             baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: item.tracks }),
             layers: [],
             boneNames,
@@ -107,6 +160,34 @@ const LibraryPanelComponent: FunctionComponent = () => {
       return [file, ...motions];
     },
     [findParentKey],
+  );
+  const changeFileToLPData = useCallback(
+    async (params: ChangeFileToLPData): Promise<ChangeFileToLPDataResponse> => {
+      const { fileUrl, name, isDispatch = false } = params;
+      const { animations, bones, isError, errorMsg } = await getAnimationData({ url: fileUrl });
+      if (isError) {
+        return {
+          isError,
+          errorMsg,
+          result: [],
+        };
+      }
+      const newData: LPDatasState = convertToAnimationDataToLPData({
+        animations,
+        bones,
+        name,
+        url: fileUrl,
+      });
+      if (isDispatch) {
+        dispatch(setLPData(newData));
+      }
+      return {
+        isError: false,
+        errorMsg: '',
+        result: newData,
+      };
+    },
+    [convertToAnimationDataToLPData, dispatch],
   );
   const handleDrop = useCallback(
     async (files: File[]) => {
@@ -183,7 +264,10 @@ const LibraryPanelComponent: FunctionComponent = () => {
           });
           return;
         }
-        const { animations, bones, isError, errorMsg } = await getAnimationData({ url: fileUrl });
+        const { result: newData, isError, errorMsg } = await changeFileToLPData({
+          fileUrl,
+          name: file.name,
+        });
         if (isError) {
           setModalInfo((state) => ({
             ...state,
@@ -192,12 +276,6 @@ const LibraryPanelComponent: FunctionComponent = () => {
             loading: false,
           }));
         }
-        const newData: LPDatasState = convertToAnimationDataToLPData({
-          animations,
-          bones,
-          name: file.name,
-          url: fileUrl,
-        });
         newLPData = _.concat(newLPData, newData);
       }
       if (!_.isEmpty(mustDeleteKeys)) {
@@ -211,7 +289,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         loading: false,
       }));
     },
-    [convertToAnimationDataToLPData, dispatch, getConfirm, validateSameFileName],
+    [changeFileToLPData, dispatch, getConfirm, validateSameFileName],
   );
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
@@ -220,6 +298,27 @@ const LibraryPanelComponent: FunctionComponent = () => {
       setModalInfo((state) => ({ ...state, showModal: false, message: '' }));
     }
   }, [modalInfo.loading]);
+
+  useEffect(() => {
+    const setDefaultModels = async () => {
+      setModalInfo((state) => ({
+        ...state,
+        showModal: true,
+        message: 'Importing the file.',
+        loading: true,
+      }));
+      await Promise.all(
+        DefaultModels.map((item) =>
+          changeFileToLPData({ fileUrl: item.url, name: item.name, isDispatch: true }),
+        ),
+      );
+      setModalInfo((state) => ({ ...state, showModal: false, message: '', loading: false }));
+    };
+    if (_.isEmpty(lpdata)) {
+      // 기본모델 로드
+      setDefaultModels();
+    }
+  }, [changeFileToLPData, lpdata]);
 
   return (
     <div className={cx('hidden-wrapper')}>

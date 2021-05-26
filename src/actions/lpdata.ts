@@ -7,7 +7,7 @@ export interface LPDataState {
   name: string;
   type: FileType;
   parentKey: string;
-  url?: string;
+  url: string;
   isSelected?: boolean;
   isVisualized?: boolean;
   baseLayer: ShootTrackType[];
