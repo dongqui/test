@@ -106,7 +106,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
         }
       }
       dispatch(setCurrentAction({ action }));
-      console.log('action: ', action);
     }
   }, [
     currentTimeIndexRef,
@@ -117,10 +116,6 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     mixer,
     startTimeIndex,
   ]);
-
-  useEffect(() => {
-    console.log('currentAction: ', currentAction);
-  }, [currentAction]);
 
   // loop 했을 때 start index 로 보내줘야 함
   useEffect(() => {

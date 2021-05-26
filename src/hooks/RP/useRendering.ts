@@ -620,7 +620,6 @@ export const useRendering = (props: UseRendering) => {
             dispatch(changeBoneTransform(value));
             dispatch(setSkeletonHelper({ skeletonHelper: innerSkeletonHelper }));
             // eslint-disable-next-line no-console
-            console.log('skeletonHelper: ', innerSkeletonHelper);
             dispatch(setCurrentBone({ bone: innerSkeletonHelper.bones[0] }));
             setContents((prevContents) => [...prevContents, innerSkeletonHelper]);
             fnAddJointMeshes({
