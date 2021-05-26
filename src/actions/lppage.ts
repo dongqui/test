@@ -3,13 +3,13 @@ export interface LPPageState {
   name: string;
 }
 
-export type LPPageAction = ReturnType<typeof setLPMode>;
+export type LPPageAction = ReturnType<typeof setLPPage>;
 
 export const SET_LPPAGE = 'lppage/SET_LPPAGE' as const;
 
 interface SetLPPage extends LPPageState {}
 
-export const setLPMode = (params: SetLPPage) => ({
+export const setLPPage = (params: SetLPPage) => ({
   type: SET_LPPAGE,
   payload: {
     ...params,
