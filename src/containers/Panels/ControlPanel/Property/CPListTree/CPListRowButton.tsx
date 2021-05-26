@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { Segment } from 'components/Segment';
 import { AxisName } from 'types/RP';
-import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './CPListRowButton.module.scss';
 import { useSelector } from 'reducers';
@@ -27,7 +26,7 @@ const CPListRowButtonComponent: React.FC<CPListRowButtonProps> = ({
   const isSelectedOn = useMemo(() => {
     let result: boolean = renderingData[button] as boolean;
     if (button === 'axis') {
-      result = _.isEqual(renderingData.axis, AxisName.y);
+      result = renderingData.axis === 'y';
     }
     return result;
   }, [button, renderingData]);
