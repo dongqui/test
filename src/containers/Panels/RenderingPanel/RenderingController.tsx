@@ -11,11 +11,10 @@ import React, {
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { storeCurrentAction, storeRenderingData, storeSkeletonHelper } from 'lib/store';
+import { storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetPlayState } from 'utils/RP/animatingUtils';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {
   fnAddShadow,
   fnMakeBoneAndJointInvisible,
@@ -28,6 +27,8 @@ import { d3ScaleLinear } from 'types/TP';
 import { fnSetValue } from 'utils/common';
 import { useSelector } from 'reducers';
 import { CurrentVisualizedData } from 'actions/currentVisualizedData';
+import { useDispatch } from 'react-redux';
+import { setCurrentAction } from 'actions/animatingData';
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 
@@ -49,29 +50,31 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
 }) => {
   // store data
   const renderingData = useReactiveVar(storeRenderingData);
-  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
-  const currentAction = useReactiveVar(storeCurrentAction);
-  // component state
-  const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
-  const [cameraControls, setCameraControls] = useState<OrbitControls | undefined>(undefined);
-  const [scene, setScene] = useState<THREE.Scene | undefined>(undefined);
-  const [dirLight, setDirLight] = useState<THREE.DirectionalLight | undefined>(undefined);
 
   useRendering({
     id,
     fileUrl,
-    setMixer,
-    setCameraControls,
-    setScene,
-    setDirLight,
   });
 
-  const { startTimeIndex, endTimeIndex, playState, playDirection, playSpeed } = useSelector(
-    (state) => state.animatingData,
+  const {
+    startTimeIndex,
+    endTimeIndex,
+    playState,
+    playDirection,
+    playSpeed,
+    mixer,
+    currentAction,
+  } = useSelector((state) => state.animatingData);
+
+  const { skeletonHelper, scene, directionalLight, cameraControls } = useSelector(
+    (state) => state.renderingData,
   );
+
   const currentVisualizedData = useSelector<CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
+
+  const dispatch = useDispatch();
 
   // animation 생성 로직
   useEffect(() => {
@@ -102,17 +105,22 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
           fnSetValue(currentTimeIndexRef, startTimeIndex); // startTime 으로 초기화
         }
       }
-      storeCurrentAction(action);
+      dispatch(setCurrentAction({ action }));
       console.log('action: ', action);
     }
   }, [
     currentTimeIndexRef,
     currentVisualizedData,
     currentXAxisPosition,
+    dispatch,
     endTimeIndex,
     mixer,
     startTimeIndex,
   ]);
+
+  useEffect(() => {
+    console.log('currentAction: ', currentAction);
+  }, [currentAction]);
 
   // loop 했을 때 start index 로 보내줘야 함
   useEffect(() => {
@@ -220,14 +228,14 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   }, [isMeshOn, scene]);
 
   useEffect(() => {
-    if (dirLight) {
+    if (directionalLight) {
       if (isShadowOn) {
-        fnAddShadow({ dirLight });
+        fnAddShadow({ directionalLight });
       } else {
-        fnRemoveShadow({ dirLight });
+        fnRemoveShadow({ directionalLight });
       }
     }
-  }, [dirLight, isShadowOn]);
+  }, [directionalLight, isShadowOn]);
 
   const handleCameraReset = useCallback(() => {
     if (cameraControls) {

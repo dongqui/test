@@ -9,7 +9,6 @@ import {
   storeTPDopeSheetList,
   storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
-  storeSkeletonHelper,
 } from 'lib/store';
 import { fnGetSmallestNewNumber } from 'utils/common';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
@@ -41,12 +40,13 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
   const trackNameList = useReactiveVar(storeTPTrackNameList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
-  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
 
   const [filteredTrackList, setFilteredTrackList] = useState<TPTrackName[]>([]);
   const prevTrackInput = useRef('');
 
   const dispatch = useDispatch();
+
+  const { skeletonHelper } = useSelector((state) => state.renderingData);
 
   const currentVisualizedData = useSelector<CurrentVisualizedData>(
     (state) => state.currentVisualizedData,

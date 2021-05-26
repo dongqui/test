@@ -10,12 +10,7 @@ import {
 } from 'react';
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
-import {
-  storeCurrentAction,
-  storePageInfo,
-  storeBarPositionX,
-  storeRecordingData,
-} from 'lib/store';
+import { storePageInfo, storeBarPositionX, storeRecordingData } from 'lib/store';
 import { SvgPath } from 'components/Icon';
 import { SegmentButton } from 'components/Button';
 import { PrefixInput, BaseInput } from 'components/Input';
@@ -48,10 +43,10 @@ export interface Props {
 const MiddleBar: FunctionComponent<Props> = (props) => {
   const { currentTimeRef, currentTimeIndexRef, currentXAxisPosition, prevXScale } = props;
 
-  const currentAction = useReactiveVar(storeCurrentAction);
   const recordingData = useReactiveVar(storeRecordingData);
   const barPositionX = useReactiveVar(storeBarPositionX);
 
+  const { currentAction } = useSelector((state) => state.animatingData);
   const currentVisualizedData = useSelector((state) => state.currentVisualizedData);
 
   const [currentTime, setCurrentTime] = useState<string | number>(0);

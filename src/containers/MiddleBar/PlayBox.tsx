@@ -8,13 +8,7 @@ import {
   MutableRefObject,
 } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import {
-  storeModalInfo,
-  storePageInfo,
-  storeRecordingData,
-  storeBarPositionX,
-  storeCurrentAction,
-} from 'lib/store';
+import { storeModalInfo, storePageInfo, storeRecordingData, storeBarPositionX } from 'lib/store';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import _ from 'lodash';
@@ -66,11 +60,10 @@ const PlayBox: FunctionComponent<Props> = ({
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
   const lpData = useReactiveVar(storeLpData);
-  const currentAction = useReactiveVar(storeCurrentAction);
 
   const dispatch = useDispatch();
 
-  const { playState, playDirection } = useSelector((state) => state.animatingData);
+  const { playState, playDirection, currentAction } = useSelector((state) => state.animatingData);
   const currentVisualizedData = useSelector((state) => state.currentVisualizedData);
 
   const { getConfirm } = useAlertModal();

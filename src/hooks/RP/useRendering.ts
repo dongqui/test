@@ -21,28 +21,28 @@ import {
   fnCreateScene,
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
-import {
-  storeCurrentBone,
-  storeRenderingData,
-  storeTransformControls,
-  storeSkeletonHelper,
-} from '../../lib/store';
+import { storeRenderingData } from '../../lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { changeBoneTransform } from 'actions/boneTransform';
 import { redo, resetHistory, undo } from 'actions/withUndoable';
 import { BoneTransformState, undoableBoneTransform } from 'reducers/boneTransform';
+import {
+  setCameraControls,
+  setCurrentBone,
+  setDirectionalLight,
+  setScene,
+  setSkeletonHelper,
+  setTransformControls,
+} from 'actions/renderingData';
+import { setMixer } from 'actions/animatingData';
 
 let innerMixer: THREE.AnimationMixer | undefined;
 
 interface UseRendering {
   id: string;
   fileUrl?: string;
-  setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
-  setCameraControls: Dispatch<SetStateAction<OrbitControls | undefined>>;
-  setScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
-  setDirLight: Dispatch<SetStateAction<THREE.DirectionalLight | undefined>>;
 }
 
 /**
@@ -54,11 +54,11 @@ interface UseRendering {
  * @param setMixer - RenderingController 내 state 인 mixer 의 set 함수
  * @param setCameraControls - RenderingController 내 state 인 cameraControls 의 set 함수
  * @param setScene - RenderingController 내 state 인 scene 의 set 함수
- * @param setDirLight - RenderingController 내 state 인 dirLight 의 set 함수
+ * @param setDirLight - RenderingController 내 state 인 directionalLight 의 set 함수
  *
  */
 export const useRendering = (props: UseRendering) => {
-  const { id, fileUrl, setMixer, setCameraControls, setScene, setDirLight } = props;
+  const { id, fileUrl } = props;
   // store data
   const { axis } = useReactiveVar(storeRenderingData);
   // component state
@@ -492,7 +492,7 @@ export const useRendering = (props: UseRendering) => {
     if (renderingDiv && renderer) {
       // scene 생성 및 설정
       const scene = fnCreateScene();
-      setScene(scene);
+      dispatch(setScene({ scene }));
       setTheScene(scene);
 
       // camera 생성 및 설정
@@ -507,9 +507,9 @@ export const useRendering = (props: UseRendering) => {
       }
 
       // scene에 조명 추가
-      const { hemiLight, dirLight } = fnAddLights({ scene, upDirection: axis });
-      setContents((prevContents) => [...prevContents, hemiLight, dirLight]);
-      setDirLight(dirLight);
+      const { hemiLight, directionalLight } = fnAddLights({ scene, upDirection: axis });
+      setContents((prevContents) => [...prevContents, hemiLight, directionalLight]);
+      dispatch(setDirectionalLight({ directionalLight }));
       // scene에 바닥 추가
       const { ground, texture } = fnAddGround({ scene, camera, renderer, upDirection: axis });
       setContents((prevContents) => [...prevContents, ground, texture]);
@@ -518,7 +518,7 @@ export const useRendering = (props: UseRendering) => {
       // cameraControls 생성 및 설정
       const cameraControls = fnCreateCameraControls({ camera, renderer });
       setContents((prevContents) => [...prevContents, cameraControls]);
-      setCameraControls(cameraControls);
+      dispatch(setCameraControls({ cameraControls }));
       // scene에 transformControls 추가
       const transformControls = fnAddTransformControls({
         scene,
@@ -526,7 +526,7 @@ export const useRendering = (props: UseRendering) => {
         renderer,
         cameraControls,
       });
-      storeTransformControls(transformControls);
+      dispatch(setTransformControls({ transformControls }));
       transformControls.addEventListener('dragging-changed', (event: any) => {
         const bone: THREE.Bone = event.target.object;
         if (!event.value) {
@@ -585,7 +585,7 @@ export const useRendering = (props: UseRendering) => {
             console.log('object: ', object);
             // animation mixer 생성 및 set
             innerMixer = fnCreateMixer({ object });
-            setMixer(innerMixer);
+            dispatch(setMixer({ mixer: innerMixer }));
             // scene에 model 추가
             const model = fnAddModel({ scene, object });
             setContents((prevContents) => [...prevContents, model]);
@@ -618,10 +618,10 @@ export const useRendering = (props: UseRendering) => {
               },
             };
             dispatch(changeBoneTransform(value));
-            storeSkeletonHelper(innerSkeletonHelper);
+            dispatch(setSkeletonHelper({ skeletonHelper: innerSkeletonHelper }));
             // eslint-disable-next-line no-console
             console.log('skeletonHelper: ', innerSkeletonHelper);
-            storeCurrentBone(innerSkeletonHelper.bones[0]);
+            dispatch(setCurrentBone({ bone: innerSkeletonHelper.bones[0] }));
             setContents((prevContents) => [...prevContents, innerSkeletonHelper]);
             fnAddJointMeshes({
               skeletonHelper: innerSkeletonHelper,
@@ -631,7 +631,6 @@ export const useRendering = (props: UseRendering) => {
               transformControls,
               innerCurrentBone,
               setInnerCurrentBone,
-              storeCurrentBone,
               dispatch,
             });
           },

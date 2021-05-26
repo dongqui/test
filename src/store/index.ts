@@ -7,10 +7,10 @@ import rootReducer from 'reducers';
 import middleware from 'store/middleware';
 
 const bindMiddleware = (middleware: Middleware[]) => {
-  if (process.env.NODE_ENV !== 'production') {
-    const { composeWithDevTools } = require('redux-devtools-extension');
-    return composeWithDevTools(applyMiddleware(...middleware));
-  }
+  // if (process.env.NODE_ENV !== 'production') {
+  //   const { composeWithDevTools } = require('redux-devtools-extension');
+  //   return composeWithDevTools(applyMiddleware(...middleware));
+  // }
 
   return applyMiddleware(...middleware);
 };

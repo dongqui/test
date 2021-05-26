@@ -13,9 +13,7 @@ import _ from 'lodash';
 import classNames from 'classnames/bind';
 import {
   storeContextMenuInfo,
-  storeCurrentAction,
   storeDeleteTargetKeyframes,
-  storeSkeletonHelper,
   storeTPDopeSheetList,
   storePageInfo,
 } from 'lib/store';
@@ -89,9 +87,9 @@ const DopeSheet: React.FC<Props> = ({
   const renderXAxis = useRef<d3Selection | null>(null); // x축 랜더링
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null); // grid선 랜더링
 
-  const currentAction = useReactiveVar(storeCurrentAction);
-
-  const { startTimeIndex, endTimeIndex, playState } = useSelector((state) => state.animatingData);
+  const { startTimeIndex, endTimeIndex, playState, currentAction } = useSelector(
+    (state) => state.animatingData,
+  );
 
   const [lastTime, setLastTime] = useState(0);
   const dispatch = useDispatch();
@@ -245,7 +243,6 @@ const DopeSheet: React.FC<Props> = ({
     d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
   }, [prevXScale, timelineWrapperRef]);
 
-  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
   const tpDopesheetList = storeTPDopeSheetList();
   const selectedBaseDopeSheets = useMemo(
@@ -270,6 +267,8 @@ const DopeSheet: React.FC<Props> = ({
       ),
     [tpDopesheetList],
   );
+
+  const { skeletonHelper } = useSelector((state) => state.renderingData);
 
   const currentVisualizedData = useSelector<CurrentVisualizedData>(
     (state) => state.currentVisualizedData,

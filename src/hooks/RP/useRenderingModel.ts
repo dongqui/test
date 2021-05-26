@@ -46,7 +46,7 @@ const RENDERING_OPTION = {
         z: 0,
       },
     },
-    dirLight: {
+    directionalLight: {
       color: 0xffffff,
       intensity: 0.54,
       position: {
@@ -240,30 +240,30 @@ export const useRenderingModel = ({
       scene.add(hemiLight);
 
       // 방향 조명
-      const dirLight = new THREE.DirectionalLight(
-        RENDERING_OPTION.light.dirLight.color,
-        RENDERING_OPTION.light.dirLight.intensity,
+      const directionalLight = new THREE.DirectionalLight(
+        RENDERING_OPTION.light.directionalLight.color,
+        RENDERING_OPTION.light.directionalLight.intensity,
       );
-      dirLight.position.set(
-        RENDERING_OPTION.light.dirLight.position.x,
-        RENDERING_OPTION.light.dirLight.position.y,
-        RENDERING_OPTION.light.dirLight.position.z,
+      directionalLight.position.set(
+        RENDERING_OPTION.light.directionalLight.position.x,
+        RENDERING_OPTION.light.directionalLight.position.y,
+        RENDERING_OPTION.light.directionalLight.position.z,
       );
-      dirLight.castShadow = _.find(renderingOptions, (item, index) =>
-        _.isEqual(item.key, 'dirLightCastShadow'),
+      directionalLight.castShadow = _.find(renderingOptions, (item, index) =>
+        _.isEqual(item.key, 'directionalLightCastShadow'),
       )?.value;
       if (
-        _.find(renderingOptions, (item, index) => _.isEqual(item.key, 'dirLightCastShadow'))?.value
+        _.find(renderingOptions, (item, index) => _.isEqual(item.key, 'directionalLightCastShadow'))?.value
       ) {
-        dirLight.shadow.mapSize = RENDERING_OPTION.light.dirLight.shadow.mapSize;
-        dirLight.shadow.camera.near = RENDERING_OPTION.light.dirLight.shadow.camera.near;
-        dirLight.shadow.camera.far = RENDERING_OPTION.light.dirLight.shadow.camera.far;
-        dirLight.shadow.camera.left = RENDERING_OPTION.light.dirLight.shadow.camera.left;
-        dirLight.shadow.camera.right = RENDERING_OPTION.light.dirLight.shadow.camera.right;
-        dirLight.shadow.camera.top = RENDERING_OPTION.light.dirLight.shadow.camera.top;
-        dirLight.shadow.camera.bottom = RENDERING_OPTION.light.dirLight.shadow.camera.bottom;
+        directionalLight.shadow.mapSize = RENDERING_OPTION.light.directionalLight.shadow.mapSize;
+        directionalLight.shadow.camera.near = RENDERING_OPTION.light.directionalLight.shadow.camera.near;
+        directionalLight.shadow.camera.far = RENDERING_OPTION.light.directionalLight.shadow.camera.far;
+        directionalLight.shadow.camera.left = RENDERING_OPTION.light.directionalLight.shadow.camera.left;
+        directionalLight.shadow.camera.right = RENDERING_OPTION.light.directionalLight.shadow.camera.right;
+        directionalLight.shadow.camera.top = RENDERING_OPTION.light.directionalLight.shadow.camera.top;
+        directionalLight.shadow.camera.bottom = RENDERING_OPTION.light.directionalLight.shadow.camera.bottom;
       }
-      scene.add(dirLight);
+      scene.add(directionalLight);
     },
     [renderingOptions],
   );

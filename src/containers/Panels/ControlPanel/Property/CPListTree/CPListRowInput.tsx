@@ -11,7 +11,6 @@ import {
   fnChangeBoneScale,
 } from 'utils/CP/transformUtils';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { storeCurrentBone, storeTransformControls } from 'lib/store';
 import { CPInput } from './CPInput';
 import { Segment } from 'components/Segment';
 import _ from 'lodash';
@@ -61,8 +60,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const currentBone = useReactiveVar(storeCurrentBone);
-  const transformControls = useReactiveVar(storeTransformControls);
+  const { currentBone, transformControls } = useSelector((state) => state.renderingData);
 
   const [initialValue, setInitialValue] = useState<InputValueType>({
     x: 0,
