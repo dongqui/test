@@ -11,7 +11,6 @@ import React, {
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { storeRenderingData } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetPlayState } from 'utils/RP/animatingUtils';
@@ -49,12 +48,8 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   prevXScale,
 }) => {
   // store data
-  const renderingData = useReactiveVar(storeRenderingData);
 
-  useRendering({
-    id,
-    fileUrl,
-  });
+  const renderingData = useSelector((state) => state.renderingData);
 
   const {
     startTimeIndex,
@@ -73,6 +68,8 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   const currentVisualizedData = useSelector<CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
+
+  useRendering({ id, fileUrl });
 
   const dispatch = useDispatch();
 

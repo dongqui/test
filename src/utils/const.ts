@@ -41,25 +41,6 @@ export const DEFAULT_MODELS: LPDataType[] = [
   },
 ];
 export const INITIAL_LP_DATA: LPDataType[] = [];
-export const INITIAL_RENDERING_DATA: RenderingDataType = {
-  positionX: 0,
-  positionY: 0,
-  positionZ: 0,
-  quaternionW: 0,
-  quaternionX: 0,
-  quaternionY: 0,
-  quaternionZ: 0,
-  rotationX: 0,
-  rotationY: 0,
-  rotationZ: 0,
-  scaleX: 0,
-  scaleY: 0,
-  scaleZ: 0,
-  axis: AxisName.y,
-  isBoneOn: true,
-  isMeshOn: true,
-  isShadowOn: true,
-};
 export const INITIAL_CP_DATA: CPDataType[] = [
   {
     key: '0',

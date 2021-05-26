@@ -13,12 +13,7 @@ import { CPDataType, RetargetInfoType, RetargetMap, TargetboneType } from 'types
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { RecordingDataType, RenderingDataType } from 'types/RP';
 import _ from 'lodash';
-import {
-  INITIAL_CP_DATA,
-  INITIAL_LP_DATA,
-  INITIAL_RECORDING_DATA,
-  INITIAL_RENDERING_DATA,
-} from 'utils/const';
+import { INITIAL_CP_DATA, INITIAL_LP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
 import {
   ContextmenuType,
   FILE_TYPES,
@@ -57,8 +52,6 @@ export const storePages = makeVar<PagesType[]>([
 ]);
 export const storeSearchWord = makeVar<string>('');
 export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
-// RP
-export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);

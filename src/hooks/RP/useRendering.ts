@@ -21,7 +21,6 @@ import {
   fnCreateScene,
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
-import { storeRenderingData } from '../../lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
@@ -60,7 +59,7 @@ interface UseRendering {
 export const useRendering = (props: UseRendering) => {
   const { id, fileUrl } = props;
   // store data
-  const { axis } = useReactiveVar(storeRenderingData);
+  const { axis } = useSelector((state) => state.renderingData);
   // component state
   const [renderer, setRenderer] = useState<THREE.WebGL1Renderer | undefined>(undefined);
   const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
