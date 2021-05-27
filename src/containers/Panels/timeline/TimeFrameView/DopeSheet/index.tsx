@@ -390,6 +390,7 @@ const DopeSheet: React.FC<Props> = ({
       if (deleteTargetKeyframes && baseLayer && layers) {
         const resultBaseLayerTracks: [ShootTrackType, number][] = [];
         const resultLayersTracks: [ShootTrackType, number, number, string][] = [];
+        const isAlreadyIncluded: { time: number; trackIndex: number; layerIndex: number }[] = [];
         _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
           if (targetKeyframe.isTransformTrack && !targetKeyframe.isLocked) {
             const { trackName, time, layerKey } = targetKeyframe;
@@ -422,39 +423,33 @@ const DopeSheet: React.FC<Props> = ({
               if (layers.length !== 0 && targetLayerIndex !== -1) {
                 const targetTrackIndex = _.findIndex(
                   layers[targetLayerIndex].tracks,
-                  (t) => t.name === trackName,
+                  (track) => track.name === trackName,
                 );
-                let targetTrack = _.find(
-                  resultLayersTracks,
-                  (track) => targetTrackIndex === track[1] && layerKey === track[3],
-                )?.[0];
-                const alreadyIncludedIndex = _.findIndex(
-                  resultLayersTracks,
-                  (track) => targetTrackIndex === track[1],
+                const isIncluded = _.findIndex(
+                  isAlreadyIncluded,
+                  (track) =>
+                    track.layerIndex === targetLayerIndex &&
+                    track.trackIndex === targetTrackIndex &&
+                    track.time !== time,
                 );
-                if (!targetTrack) {
-                  targetTrack = _.find(
-                    layers[targetLayerIndex].tracks,
-                    (track) => track.name === trackName,
-                  ) as ShootTrackType;
-                }
-                if (targetTrack) {
+                if (isIncluded === -1) {
+                  const targetTrack = layers[targetLayerIndex].tracks[targetTrackIndex];
                   const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
-                  if (alreadyIncludedIndex === -1) {
-                    resultLayersTracks.push([
-                      resultTrack,
-                      targetLayerIndex,
-                      targetTrackIndex,
-                      layerKey,
-                    ]);
-                  } else {
-                    resultLayersTracks.splice(alreadyIncludedIndex, 1, [
-                      resultTrack,
-                      targetLayerIndex,
-                      targetTrackIndex,
-                      layerKey,
-                    ]);
-                  }
+                  isAlreadyIncluded.push({
+                    layerIndex: targetLayerIndex,
+                    trackIndex: targetTrackIndex,
+                    time,
+                  });
+                  resultLayersTracks.push([
+                    resultTrack,
+                    targetLayerIndex,
+                    targetTrackIndex,
+                    layerKey,
+                  ]);
+                } else {
+                  const targetTrack = resultLayersTracks[isIncluded][0];
+                  const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
+                  resultLayersTracks[isIncluded][0] = resultTrack;
                 }
               }
             }
@@ -990,12 +985,6 @@ const DopeSheet: React.FC<Props> = ({
     }
   }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex, timelineWrapperRef]);
 
-  const [isUpdated, setIsUpdated] = useState(false);
-  const handleIsUpdated = useCallback(() => {
-    setIsUpdated((prev) => !prev);
-  }, []);
-  const list = useDragBox({ ref: dopeSheetRef, isUpdated, onChangeIsUpdated: handleIsUpdated });
-
   return (
     <>
       <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
@@ -1016,7 +1005,6 @@ const DopeSheet: React.FC<Props> = ({
           })}
         </div>
         {playBarDisplayed && <PlayBar />}
-        <DragBox parentRef={dopeSheetRef} isAllCovered onChangeIsUpdated={handleIsUpdated} />
       </div>
     </>
   );
