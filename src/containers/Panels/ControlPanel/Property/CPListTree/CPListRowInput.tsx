@@ -17,8 +17,7 @@ import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';
 import { useDispatch } from 'react-redux';
-import { changeBoneTransform } from 'actions/boneTransform';
-import { undoableBoneTransform } from 'reducers/boneTransform';
+import * as boneTransformActions from 'actions/boneTransform';
 import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
@@ -119,7 +118,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
             if (currentBone) {
               fnChangeBonePosition({ targetBone: currentBone, axis, value: parseFloat(value) });
               boneTransformValues.position[axis as NormalAxisType] = parseFloat(value);
-              dispatch(changeBoneTransform(boneTransformValues));
+              dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             }
             break;
           case 'rotation':
@@ -147,7 +146,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
               boneTransformValues.rotation.x = _.round(e.x, 4);
               boneTransformValues.rotation.y = _.round(e.y, 4);
               boneTransformValues.rotation.z = _.round(e.z, 4);
-              dispatch(changeBoneTransform(boneTransformValues));
+              dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             } else {
               fnChangeBoneRotation({
                 targetBone: currentBone,
@@ -172,13 +171,13 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
               boneTransformValues.quaternion.y = _.round(q.y, 4);
               boneTransformValues.quaternion.z = _.round(q.z, 4);
               boneTransformValues.quaternion.w = _.round(q.w, 4);
-              dispatch(changeBoneTransform(boneTransformValues));
+              dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             }
             break;
           case 'scale':
             fnChangeBoneScale({ targetBone: currentBone, axis, value: parseFloat(value) });
             boneTransformValues.scale[axis as NormalAxisType] = _.round(parseFloat(value), 4);
-            dispatch(changeBoneTransform(boneTransformValues));
+            dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             break;
           default:
             break;

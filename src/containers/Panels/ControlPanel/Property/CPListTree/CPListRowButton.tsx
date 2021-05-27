@@ -5,7 +5,7 @@ import classNames from 'classnames/bind';
 import styles from './CPListRowButton.module.scss';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import { setAxis, setIsBoneOn, setIsMeshOn, setIsShadowOn } from 'actions/renderingData';
+import * as renderingDataActions from 'actions/renderingData';
 
 const cx = classNames.bind(styles);
 
@@ -44,21 +44,21 @@ const CPListRowButtonComponent: React.FC<CPListRowButtonProps> = ({
       let result: boolean | 'y' | 'z' = payload;
       if (button === 'axis') {
         result = payload ? 'y' : 'z';
-        dispatch(setAxis({ axis: result }));
+        dispatch(renderingDataActions.setAxis({ axis: result }));
       } else if (button === 'isBoneOn') {
         if (!renderingData.isMeshOn && !payload) {
           // mesh 꺼져있고 bone 도 끄려고 할 때
           return;
         }
-        dispatch(setIsBoneOn({ isBoneOn: payload }));
+        dispatch(renderingDataActions.setIsBoneOn({ isBoneOn: payload }));
       } else if (button === 'isMeshOn') {
         if (!renderingData.isBoneOn && !payload) {
           // bone 꺼져있고 mesh 도 끄려고 할 때
           return;
         }
-        dispatch(setIsMeshOn({ isMeshOn: payload }));
+        dispatch(renderingDataActions.setIsMeshOn({ isMeshOn: payload }));
       } else if (button === 'isShadowOn') {
-        dispatch(setIsShadowOn({ isShadowOn: payload }));
+        dispatch(renderingDataActions.setIsShadowOn({ isShadowOn: payload }));
       }
     },
     [button, dispatch, renderingData.isBoneOn, renderingData.isMeshOn],

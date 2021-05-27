@@ -31,7 +31,7 @@ import fnQuaternionToEulerTrack from 'utils/common/fnQuaternionToEulerTrack';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 import { useDispatch } from 'react-redux';
-import { setPlayDirection, setPlayState } from 'actions/animatingData';
+import * as animatingDataActions from 'actions/animatingData';
 import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
@@ -99,7 +99,7 @@ const PlayBox: FunctionComponent<Props> = ({
   const handleStop = useCallback(() => {
     if (isShootPage) {
       if (playState !== 'stop' && currentVisualizedData) {
-        dispatch(setPlayState({ playState: 'stop' }));
+        dispatch(animatingDataActions.setPlayState({ playState: 'stop' }));
       }
       if (
         currentXAxisPosition &&
@@ -160,8 +160,8 @@ const PlayBox: FunctionComponent<Props> = ({
   const handleRewind = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
       if (!(playState === 'play' && playDirection === -1)) {
-        dispatch(setPlayState({ playState: 'play' }));
-        dispatch(setPlayDirection({ playDirection: -1 }));
+        dispatch(animatingDataActions.setPlayState({ playState: 'play' }));
+        dispatch(animatingDataActions.setPlayDirection({ playDirection: -1 }));
       }
     }
 
@@ -173,8 +173,8 @@ const PlayBox: FunctionComponent<Props> = ({
   const handlePlay = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
       if (!(playState === 'play' && playDirection === 1)) {
-        dispatch(setPlayState({ playState: 'play' }));
-        dispatch(setPlayDirection({ playDirection: 1 }));
+        dispatch(animatingDataActions.setPlayState({ playState: 'play' }));
+        dispatch(animatingDataActions.setPlayDirection({ playDirection: 1 }));
       }
     }
 
@@ -194,7 +194,7 @@ const PlayBox: FunctionComponent<Props> = ({
   const handlePause = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
       if (playState !== 'pause') {
-        dispatch(setPlayState({ playState: 'pause' }));
+        dispatch(animatingDataActions.setPlayState({ playState: 'pause' }));
       }
     }
 

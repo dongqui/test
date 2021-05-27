@@ -25,7 +25,7 @@ import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { useDispatch } from 'react-redux';
-import { CurrentVisualizedData, resetCurrentVisualizedData } from 'actions/currentVisualizedData';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
@@ -35,7 +35,7 @@ const Shoot: FunctionComponent = () => {
 
   const dispatch = useDispatch();
 
-  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
 
@@ -80,7 +80,7 @@ const Shoot: FunctionComponent = () => {
 
   useEffect(() => {
     if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.key, currentVisualizedData?.key])) {
-      dispatch(resetCurrentVisualizedData());
+      dispatch(currentVisualizedDataActions.resetCurrentVisualizedData());
     }
   }, [currentVisualizedData?.key, dispatch, lpData]);
 

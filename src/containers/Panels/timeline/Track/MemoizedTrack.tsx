@@ -30,12 +30,7 @@ import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { useAlertModal } from 'components/Modal/AlertModal';
 import Track from './index';
 import { useDispatch } from 'react-redux';
-import {
-  CurrentVisualizedData,
-  deleteLayer,
-  excludeTrack,
-  setLayerName,
-} from 'actions/currentVisualizedData';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { useSelector } from 'reducers';
 
 interface TrackProps {
@@ -77,7 +72,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
     [],
   );
 
-  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
 
@@ -217,7 +212,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
       key: 'trackIndex',
     });
     const targetTrack = dopeSheetList[targetIndex];
-    dispatch(excludeTrack({ targetTrack, updatedState }));
+    dispatch(currentVisualizedDataActions.excludeTrack({ targetTrack, updatedState }));
   }, [dispatch, dopeSheetList, lastBoneList, trackIndex]);
 
   // 트랙 선택 효과 변경
@@ -273,7 +268,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
         key: 'trackIndex',
       });
       const targetTrack = dopeSheetList[targetIndex];
-      dispatch(setLayerName({ targetTrack, newLayerName }));
+      dispatch(currentVisualizedDataActions.setLayerName({ targetTrack, newLayerName }));
     }
   }, [
     currentVisualizedData?.layers,
@@ -304,7 +299,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
         key: 'trackIndex',
       });
       const targetTrack = dopeSheetList[targetIndex];
-      dispatch(deleteLayer({ targetTrack }));
+      dispatch(currentVisualizedDataActions.deleteLayer({ targetTrack }));
     }
   }, [dispatch, dopeSheetList, getConfirm, trackIndex]);
 

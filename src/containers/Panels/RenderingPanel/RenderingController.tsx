@@ -25,9 +25,9 @@ import {
 import { d3ScaleLinear } from 'types/TP';
 import { fnSetValue } from 'utils/common';
 import { useSelector } from 'reducers';
-import { CurrentVisualizedData } from 'actions/currentVisualizedData';
+import * as currentVisualizedData from 'actions/currentVisualizedData';
 import { useDispatch } from 'react-redux';
-import { setCurrentAction } from 'actions/animatingData';
+import * as animatingDataActions from 'actions/animatingData';
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 
@@ -65,7 +65,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
     (state) => state.renderingData,
   );
 
-  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+  const currentVisualizedData = useSelector<currentVisualizedData.CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
 
@@ -102,7 +102,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
           fnSetValue(currentTimeIndexRef, startTimeIndex); // startTime 으로 초기화
         }
       }
-      dispatch(setCurrentAction({ action }));
+      dispatch(animatingDataActions.setCurrentAction({ action }));
     }
   }, [
     currentTimeIndexRef,
