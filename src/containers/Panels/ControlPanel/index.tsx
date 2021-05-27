@@ -1,25 +1,21 @@
-import { FunctionComponent, MouseEvent, useEffect, useState } from 'react';
+import { FunctionComponent, memo } from 'react';
 import _ from 'lodash';
 import { Tabs, Tab } from 'components/Tabs';
-import { PropertyPanel } from './Property';
-import { RetargetPanel } from './Retarget';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { useReactiveVar } from '@apollo/client';
 import { storeRetargetInfo } from 'lib/store';
+import PropertyPanel from './Property';
+import RetargetPanel from './Retarget';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-export const ControlPanel: FunctionComponent<{}> = () => {
+const ControlPanel: FunctionComponent = () => {
   const retargetInfo = useReactiveVar(storeRetargetInfo);
   const isDisabled = _.isEmpty(retargetInfo?.targetboneList);
 
-  const handleContextMenu = (event: MouseEvent) => {
-    event.preventDefault();
-  };
-
   return (
-    <main className={cx('panel-wrap')} onContextMenu={handleContextMenu}>
+    <div className={cx('wrapper')}>
       <Tabs>
         <Tab title="Property">
           <PropertyPanel />
@@ -28,6 +24,8 @@ export const ControlPanel: FunctionComponent<{}> = () => {
           <RetargetPanel />
         </Tab>
       </Tabs>
-    </main>
+    </div>
   );
 };
+
+export default memo(ControlPanel);

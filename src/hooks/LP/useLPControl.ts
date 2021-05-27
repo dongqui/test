@@ -19,7 +19,7 @@ import {
 } from 'lib/store';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { PagesType } from 'containers/Panels/LibraryPanel';
-import { defaultTargetboneValue } from 'containers/Panels/ControlPanel/Retarget/RetargetPanel';
+import { defaultTargetboneValue } from 'containers/Panels/ControlPanel/Retarget';
 import * as api from 'utils/common/api';
 import { fnExportModelToFbx, fnExportModelToGlb } from 'utils/LP';
 import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
