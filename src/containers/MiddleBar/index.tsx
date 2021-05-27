@@ -26,7 +26,7 @@ import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 import { useDispatch } from 'react-redux';
-import { setEndTimeIndex, setPlaySpeed, setStartTimeIndex } from 'actions/animatingData';
+import * as animatingDataActions from 'actions/animatingData';
 import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
@@ -145,7 +145,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   const handleFasterSelect = useCallback(
     (key: string, _value: string) => {
-      dispatch(setPlaySpeed({ playSpeed: Number(key) }));
+      dispatch(animatingDataActions.setPlaySpeed({ playSpeed: Number(key) }));
     },
     [dispatch],
   );
@@ -179,7 +179,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleStartInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
     if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
-      dispatch(setStartTimeIndex({ startTimeIndex: value }));
+      dispatch(animatingDataActions.setStartTimeIndex({ startTimeIndex: value }));
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
       }
@@ -191,7 +191,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleEndInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
     if (value > startTimeIndex && currentTimeIndexRef) {
-      dispatch(setEndTimeIndex({ endTimeIndex: value }));
+      dispatch(animatingDataActions.setEndTimeIndex({ endTimeIndex: value }));
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
       }
@@ -228,7 +228,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleStartInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
     if (value > 0 && value < endTimeIndex && currentTimeIndexRef) {
-      dispatch(setStartTimeIndex({ startTimeIndex: value }));
+      dispatch(animatingDataActions.setStartTimeIndex({ startTimeIndex: value }));
       if (currentTimeIndexRef.current && value > parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
       }
@@ -238,7 +238,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   const handleEndInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
     if (value > startTimeIndex && currentTimeIndexRef) {
-      dispatch(setEndTimeIndex({ endTimeIndex: value }));
+      dispatch(animatingDataActions.setEndTimeIndex({ endTimeIndex: value }));
       if (currentTimeIndexRef.current && value < parseInt(currentTimeIndexRef.current.value)) {
         fnSetValue(currentTimeIndexRef, value);
       }

@@ -4,8 +4,8 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { DragControls } from 'three/examples/jsm/controls/DragControls';
 import _ from 'lodash';
 import { Dispatch, SetStateAction } from 'react';
-import { BoneTransformAction, changeBoneTransform } from 'actions/boneTransform';
-import { RenderingDataAction, setCurrentBone } from 'actions/renderingData';
+import * as boneTransformActions from 'actions/boneTransform';
+import * as renderingDataActions from 'actions/renderingData';
 
 interface FnAddJointMeshes {
   skeletonHelper: THREE.SkeletonHelper;
@@ -15,7 +15,9 @@ interface FnAddJointMeshes {
   transformControls: TransformControls;
   innerCurrentBone: THREE.Bone | undefined;
   setInnerCurrentBone: Dispatch<SetStateAction<THREE.Bone | undefined>>;
-  dispatch: Dispatch<BoneTransformAction | RenderingDataAction>;
+  dispatch: Dispatch<
+    boneTransformActions.BoneTransformAction | renderingDataActions.RenderingDataAction
+  >;
 }
 
 /**
@@ -72,7 +74,7 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
       if (innerCurrentBone !== event.object.parent) {
         transformControls.attach(event.object.parent);
         setInnerCurrentBone(event.object.parent);
-        dispatch(setCurrentBone({ bone: event.object.parent }));
+        dispatch(renderingDataActions.setCurrentBone({ bone: event.object.parent }));
 
         const bone = event.object.parent;
         const value = {
@@ -100,7 +102,7 @@ const fnAddJointMeshes = (props: FnAddJointMeshes) => {
           },
         };
 
-        dispatch(changeBoneTransform(value));
+        dispatch(boneTransformActions.changeBoneTransform(value));
         dragControls.enabled = false;
       }
     });

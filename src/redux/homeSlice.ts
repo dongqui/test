@@ -1,10 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import _ from 'lodash';
-import { INITIAL_LP_DATA, INITIAL_RECORDING_DATA, INITIAL_RENDERING_DATA } from 'utils/const';
+import { INITIAL_LP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
 
 const initialState = {
   lpData: INITIAL_LP_DATA,
-  renderingData: INITIAL_RENDERING_DATA,
+  // renderingData: INITIAL_RENDERING_DATA,
   recordingData: INITIAL_RECORDING_DATA,
   currentVisualizedData: undefined,
   TPDopeSheetList: [],
@@ -16,9 +16,9 @@ const homeSlice = createSlice({
     setLpData(state, action) {
       state.lpData = action.payload;
     },
-    setRenderingData(state, action) {
-      state.renderingData = action.payload;
-    },
+    // setRenderingData(state, action) {
+    //   state.renderingData = action.payload;
+    // },
     setRecordingData(state, action) {
       state.recordingData = action.payload;
     },
@@ -35,7 +35,7 @@ const homeSlice = createSlice({
 export const {
   setLpData,
   setRecordingData,
-  setRenderingData,
+  // setRenderingData,
   setCurrentVisualizedData,
   setTPDopeSheetList,
 } = homeSlice.actions;

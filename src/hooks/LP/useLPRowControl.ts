@@ -5,7 +5,7 @@ import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { storeLpData } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
 import { useDispatch } from 'react-redux';
-import { CurrentVisualizedData, setCurrentVisualizedData } from 'actions/currentVisualizedData';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { useSelector } from 'reducers';
 
 interface UseLPControlProps {
@@ -16,7 +16,7 @@ const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
   const { getConfirm } = useConfirmModal();
   const dispatch = useDispatch();
 
-  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
 
@@ -110,7 +110,7 @@ const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
       const targetRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, key]);
       if (targetRow) {
         dispatch(
-          setCurrentVisualizedData({
+          currentVisualizedDataActions.setCurrentVisualizedData({
             data: {
               key: targetRow.key ?? '',
               name: targetRow.name ?? '',

@@ -19,7 +19,7 @@ import Track from '../Track';
 import styles from './index.module.scss';
 import { AlertModalProvider } from 'components/Modal/AlertModal';
 import { useDispatch } from 'react-redux';
-import { addNewLayer, CurrentVisualizedData } from 'actions/currentVisualizedData';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { useSelector } from 'reducers';
 
 interface Props {
@@ -48,7 +48,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   const { skeletonHelper } = useSelector((state) => state.renderingData);
 
-  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
 
@@ -190,7 +190,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
       );
       const nextOrder = fnGetSmallestNewNumber([0, ...defaultTypeOrders]);
       const newLayer = fnGetNewLayer({ name: `Layer${nextOrder}`, bones: skeletonHelper.bones });
-      dispatch(addNewLayer({ newLayer }));
+      dispatch(currentVisualizedDataActions.addNewLayer({ newLayer }));
     }
   }, [skeletonHelper, currentVisualizedData, dispatch]);
 

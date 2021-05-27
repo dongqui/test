@@ -31,15 +31,10 @@ import { useDragBox } from 'hooks/common';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { DragBox } from 'components/DragBox';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
-import { setPlayState } from 'actions/animatingData';
+import * as animatingDataActions from 'actions/animatingData';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import {
-  CurrentVisualizedData,
-  deleteKeyframe,
-  updateKeyframeToBase,
-  updateKeyframeToLayer,
-} from 'actions/currentVisualizedData';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 
 interface Props {
   timelineWrapperRef: RefObject<HTMLDivElement>;
@@ -270,7 +265,7 @@ const DopeSheet: React.FC<Props> = ({
 
   const { skeletonHelper } = useSelector((state) => state.renderingData);
 
-  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
 
@@ -305,7 +300,7 @@ const DopeSheet: React.FC<Props> = ({
             }
           }
         });
-        dispatch(updateKeyframeToBase({ resultTracks }));
+        dispatch(currentVisualizedDataActions.updateKeyframeToBase({ resultTracks }));
       }
     }
   }, [
@@ -371,7 +366,9 @@ const DopeSheet: React.FC<Props> = ({
               }
             }
           });
-          dispatch(updateKeyframeToLayer({ targetLayerIndex, resultTracks }));
+          dispatch(
+            currentVisualizedDataActions.updateKeyframeToLayer({ targetLayerIndex, resultTracks }),
+          );
         }
       }
     }
@@ -456,7 +453,12 @@ const DopeSheet: React.FC<Props> = ({
           }
         });
         storeDeleteTargetKeyframes([]);
-        dispatch(deleteKeyframe({ resultBaseLayerTracks, resultLayersTracks }));
+        dispatch(
+          currentVisualizedDataActions.deleteKeyframe({
+            resultBaseLayerTracks,
+            resultLayersTracks,
+          }),
+        );
       }
     }
   }, [currentVisualizedData, deleteTargetKeyframes, dispatch, playState]);
@@ -768,9 +770,9 @@ const DopeSheet: React.FC<Props> = ({
           if (multiKeyController[event.key] && !multiKeyController[event.key].pressed) {
             if (pageInfo.page === PAGE_NAMES.shoot && currentVisualizedData) {
               if (playState === 'play') {
-                dispatch(setPlayState({ playState: 'pause' }));
+                dispatch(animatingDataActions.setPlayState({ playState: 'pause' }));
               } else {
-                dispatch(setPlayState({ playState: 'play' }));
+                dispatch(animatingDataActions.setPlayState({ playState: 'play' }));
               }
             }
             multiKeyController[event.key].pressed = true;
