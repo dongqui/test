@@ -40,19 +40,32 @@ const CPListRowButtonComponent: React.FC<CPListRowButtonProps> = ({
     }
     return result;
   }, [button, renderingData]);
+
   const handleCLick = useCallback(
     ({ payload }) => {
-      let result = _.clone(payload);
-      if (_.isEqual(button, RenderingDataPropertyName.axis)) {
+      let result = payload;
+      if (button === 'axis') {
         result = payload ? axisName.y : axisName.z;
+        storeRenderingData({ ...renderingData, [button]: result });
+      } else if (button === 'isBoneOn') {
+        if (!renderingData.isMeshOn && !payload) {
+          // mesh 꺼져있고 bone 도 끄려고 할 때
+          return;
+        }
+        storeRenderingData({ ...renderingData, [button]: result });
+      } else if (button === 'isMeshOn') {
+        if (!renderingData.isBoneOn && !payload) {
+          // bone 꺼져있고 mesh 도 끄려고 할 때
+          return;
+        }
+        storeRenderingData({ ...renderingData, [button]: result });
+      } else if (button === 'isShadowOn') {
+        storeRenderingData({ ...renderingData, [button]: result });
       }
-      if (!_.isEqual(renderingData.isBoneOn, renderingData.isMeshOn)) {
-        result = true;
-      }
-      storeRenderingData({ ...renderingData, [button]: result });
     },
     [button, renderingData],
   );
+
   const modeList = [
     {
       key: 'on',
