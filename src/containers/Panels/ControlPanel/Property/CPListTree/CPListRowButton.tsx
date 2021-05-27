@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Segment } from 'components/Segment';
 import { AxisName } from 'types/RP';
 import classNames from 'classnames/bind';
@@ -15,11 +15,7 @@ export interface CPListRowButtonProps {
   button?: 'axis' | 'isBoneOn' | 'isMeshOn' | 'isShadowOn';
 }
 
-const CPListRowButtonComponent: React.FC<CPListRowButtonProps> = ({
-  rowKey,
-  name,
-  button = 'axis',
-}) => {
+const CPListRowButton: React.FC<CPListRowButtonProps> = ({ rowKey, name, button = 'axis' }) => {
   const renderingData = useSelector((state) => state.renderingData);
   const dispatch = useDispatch();
 
@@ -86,4 +82,4 @@ const CPListRowButtonComponent: React.FC<CPListRowButtonProps> = ({
     </div>
   );
 };
-export const CPListRowButton = React.memo(CPListRowButtonComponent);
+export default memo(CPListRowButton);

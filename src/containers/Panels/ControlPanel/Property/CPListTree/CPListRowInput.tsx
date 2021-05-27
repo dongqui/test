@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useState, useRef, Fragment } from 'react';
+import React, { useCallback, useEffect, useState, useRef, Fragment, memo } from 'react';
 import * as THREE from 'three';
-import { useReactiveVar } from '@apollo/client';
 import { CPNameType } from 'types/CP';
 import { RenderingDataPropertyName } from 'types/RP';
 import { fnConvertDegreeToEuler, fnConvertEulerToDegree } from 'utils/common';
@@ -11,7 +10,6 @@ import {
   fnChangeBoneScale,
 } from 'utils/CP/transformUtils';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { CPInput } from './CPInput';
 import { Segment } from 'components/Segment';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
@@ -19,6 +17,7 @@ import styles from './CPListRowInput.module.scss';
 import { useDispatch } from 'react-redux';
 import * as boneTransformActions from 'actions/boneTransform';
 import { useSelector } from 'reducers';
+import { PrefixInput } from 'components/Input';
 
 const cx = classNames.bind(styles);
 
@@ -50,7 +49,7 @@ interface InputValueType {
   z: number;
 }
 
-const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
+const CPListRowInput: React.FC<CPListRowInputProps> = ({
   name,
   w = RenderingDataPropertyName.quaternionW,
   x = RenderingDataPropertyName.positionX,
@@ -402,9 +401,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
             _.map(quaternionList, (item, idx) => {
               const key = `${item.key}_${idx}`;
               return (
-                <CPInput
+                <PrefixInput
                   key={key}
-                  innerRef={inputRef}
+                  ref={inputRef}
                   value={item.value as number}
                   prefix={item.prefix}
                   onChange={handleChange}
@@ -419,9 +418,9 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
             _.map(valueList, (item, idx) => {
               const key = `${item.key}_${idx}`;
               return (
-                <CPInput
+                <PrefixInput
                   key={key}
-                  innerRef={inputRef}
+                  ref={inputRef}
                   value={item.value}
                   prefix={item.prefix}
                   onChange={handleChange}
@@ -438,4 +437,4 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     </div>
   );
 };
-export const CPListRowInput = React.memo(CPListRowInputComponent);
+export default memo(CPListRowInput);

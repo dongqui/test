@@ -4,8 +4,8 @@ import { useReactiveVar } from '@apollo/client';
 import { AccordionMenu } from 'components/AccordionMenu';
 import { storeCPData } from 'lib/store';
 import { CPComponentType, CPDataPropertyNames } from 'types/CP';
-import { CPListRowInput } from './CPListTree/CPListRowInput';
-import { CPListRowButton } from './CPListTree/CPListRowButton';
+import CPListRowInput from './CPListTree/CPListRowInput';
+import CPListRowButton from './CPListTree/CPListRowButton';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
