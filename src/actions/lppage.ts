@@ -1,6 +1,5 @@
 export interface LPPageState {
   key: string;
-  name: string;
 }
 
 export type LPPageAction = ReturnType<typeof setLPPage>;

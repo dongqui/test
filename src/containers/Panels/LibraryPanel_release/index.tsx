@@ -4,26 +4,28 @@ import React, {
   memo,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import { useDispatch } from 'react-redux';
 import { useDropzone } from 'react-dropzone';
+import { useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { setSearchword } from 'actions/lpSearchword';
+import { deleteLPData, LPDatasState, setLPData, LPDataState } from 'actions/lpdata';
 import Explorer from './Explorer/index';
 import styles from './index.module.scss';
 import { getFileExtension, getAnimationData } from './utils';
 import { setConvertFbxToGlb } from './api';
 import { BaseModal } from 'components/Modal';
-import { useSelector } from 'reducers';
 import { ROOT_KEY } from 'reducers/lpdata';
-import { deleteLPData, LPDatasState, setLPData } from 'actions/lpdata';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
-import { LPDataState } from '../../../actions/lpdata';
+import Breadcrumb, { PathList } from './Breadcrumb';
+import IconView from './IconTree/IconView';
 
 const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];
 const EnableFileFormats = [...EnableVideoFormats, 'glb', 'fbx'];
@@ -91,6 +93,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const lpdata = useSelector((state) => state.lpdata);
   const lpmode = useSelector((state) => state.lpmode.mode);
   const lppage = useSelector((state) => state.lppage);
+  const lpSearchword = useSelector((state) => state.lpSearchword);
   const [modalInfo, setModalInfo] = useState({ showModal: false, message: '', loading: false });
 
   const { getConfirm } = useConfirmModal();
@@ -298,6 +301,50 @@ const LibraryPanelComponent: FunctionComponent = () => {
     }
   }, [modalInfo.loading]);
 
+  const filteredIconviewData = useMemo((): LPDatasState => {
+    let data = _.clone(lpdata);
+    if (!_.isEmpty(lpSearchword)) {
+      data = data.filter((item) =>
+        item.name.toLowerCase().includes(lpSearchword.word.toLowerCase()),
+      );
+    }
+    // 현재 페이지를 기준으로 필터링
+    data = data.filter((item) => item.parentKey === lppage.key);
+    return data;
+  }, [lpSearchword, lpdata, lppage.key]);
+
+  const pathList = useMemo((): PathList => {
+    const result: PathList = [];
+    const currentPageRow = lpdata.find((item) => item.key === lppage.key);
+    if (currentPageRow) {
+      result.push({
+        key: currentPageRow.key,
+        name: currentPageRow.name,
+        type: currentPageRow.type,
+      });
+      let row: typeof currentPageRow | undefined = _.clone(currentPageRow);
+      // 최상위까지 부모 row 들을 담아준다
+      while (row?.parentKey !== ROOT_KEY) {
+        row = lpdata.find((item) => item.key === row?.parentKey);
+        if (row) {
+          result.unshift({ key: row.key, name: row.name, type: row.type });
+        }
+      }
+    }
+    return result;
+  }, [lpdata, lppage.key]);
+
+  // 이전페이지의 키값
+  const prevPageKey = useMemo((): string => {
+    let result = ROOT_KEY;
+    const currentPageRow = lpdata.find((item) => item.key === lppage.key);
+    const currentPageParentRow = lpdata.find((item) => item.key === currentPageRow?.parentKey);
+    if (currentPageParentRow) {
+      result = currentPageParentRow.key;
+    }
+    return result;
+  }, [lpdata, lppage.key]);
+
   useEffect(() => {
     const setDefaultModels = async () => {
       setModalInfo((state) => ({
@@ -319,6 +366,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
     }
   }, [changeFileToLPData, lpdata]);
 
+  const isIconView = lpmode === 'iconview';
+
   return (
     <div className={cx('hidden-wrapper')}>
       <div className={cx('wrapper')} {...getRootProps()}>
@@ -329,7 +378,18 @@ const LibraryPanelComponent: FunctionComponent = () => {
             </Headline>
             <Explorer onChange={handleChangeSearchword} />
           </div>
-          <div className={cx('content')}></div>
+          {isIconView && (
+            <div className={cx('breadcrumb')}>
+              <Breadcrumb
+                pathList={pathList}
+                prevPageKey={prevPageKey}
+                currentPageKey={lppage.key}
+              />
+            </div>
+          )}
+          <div className={cx('content')}>
+            {isIconView && <IconView data={filteredIconviewData} />}
+          </div>
         </div>
       </div>
       {modalInfo.showModal && (

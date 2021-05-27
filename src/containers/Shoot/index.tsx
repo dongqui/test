@@ -11,7 +11,7 @@ import {
 import _ from 'lodash';
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
-import { LibraryPanel } from 'containers/Panels/LibraryPanel';
+import { LibraryPanel } from 'containers/Panels/LibraryPanel_release';
 import { storeLpData, storeCurrentVisualizedData } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';

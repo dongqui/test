@@ -1,7 +1,7 @@
 import { LPModeState, LPModeAction } from 'actions/lpmode';
 
 const defaultState: LPModeState = {
-  mode: 'listview',
+  mode: 'iconview',
 };
 
 export const lpmode = (state: LPModeState = defaultState, action: LPModeAction): LPModeState => {
