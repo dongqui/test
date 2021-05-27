@@ -110,7 +110,7 @@ const useLPControl = ({
         }
         if (_.isEqual(targetRow?.type, FILE_TYPES.file)) {
           setShowsModal(true);
-          setModalMessage('Retargeting motion to the model.');
+          setModalMessage('Retargeting motion to the model.<br />This can take up to 30 seconds');
           const { bones = [], animations = [], error, msg } = await fnGetAnimationData({
             url: targetRow?.url ?? '',
           });
@@ -535,7 +535,9 @@ const useLPControl = ({
               break;
             case '8':
               setShowsModal(!showsModal);
-              setModalMessage('Please wait while exporting the file.');
+              setModalMessage(
+                'Please wait while exporting the file.<br />This can take up to 30 seconds',
+              );
               motions = [_.last(_.filter(mainData, { parentKey: targetRow?.key })) as any];
               await fnExportModelToFbx({
                 modelName: targetRow?.name ?? '',
@@ -551,7 +553,9 @@ const useLPControl = ({
               break;
             case '9':
               setShowsModal(!showsModal);
-              setModalMessage('Please wait while exporting the file.');
+              setModalMessage(
+                'Please wait while exporting the file.<br />This can take up to 30 seconds',
+              );
 
               await fnExportModelToGlb({
                 modelName: targetRow?.name ?? '',
