@@ -11,8 +11,10 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const PropertyPanel: FunctionComponent = () => {
+const PropertyTab: FunctionComponent = () => {
   const cpData = useReactiveVar(storeCPData);
+
+  console.log('cpData: ', cpData);
 
   return (
     <div className={cx('panel-wrap')}>
@@ -51,4 +53,4 @@ const PropertyPanel: FunctionComponent = () => {
   );
 };
 
-export default memo(PropertyPanel);
+export default memo(PropertyTab);

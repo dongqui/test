@@ -3,8 +3,8 @@ import _ from 'lodash';
 import { Tabs, Tab } from 'components/Tabs';
 import { useReactiveVar } from '@apollo/client';
 import { storeRetargetInfo } from 'lib/store';
-import PropertyPanel from './Property';
-import RetargetPanel from './Retarget';
+import PropertyTab from './PropertyTab';
+import RetargetTab from './RetargetTab';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -18,10 +18,10 @@ const ControlPanel: FunctionComponent = () => {
     <div className={cx('wrapper')}>
       <Tabs>
         <Tab title="Property">
-          <PropertyPanel />
+          <PropertyTab />
         </Tab>
         <Tab title="Retarget" disabled={isDisabled}>
-          <RetargetPanel />
+          <RetargetTab />
         </Tab>
       </Tabs>
     </div>

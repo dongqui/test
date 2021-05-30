@@ -12,7 +12,7 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 export const defaultTargetboneValue = 'select a bone';
-const RetargetPanel: FunctionComponent = () => {
+const RetargetTab: FunctionComponent = () => {
   const retargetMap = useReactiveVar(storeRetargetMap);
   const retargetInfo = useReactiveVar(storeRetargetInfo);
   const [currentData, setCurrentData] = useState(retargetMap);
@@ -241,4 +241,4 @@ const RetargetPanel: FunctionComponent = () => {
   );
 };
 
-export default memo(RetargetPanel);
+export default memo(RetargetTab);
