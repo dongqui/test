@@ -21,6 +21,7 @@ import axios from 'axios';
 import Process from 'containers/Shoot/Process';
 import ShootContainer from 'containers/Shoot';
 import ExtractContainer from 'containers/Extract';
+import { FilledButton } from 'components/Button';
 
 export type Procedure = 'service' | 'token' | 'success' | 'denied';
 
@@ -151,6 +152,11 @@ const Index: FunctionComponent = () => {
               <Headline level="5" align="center">
                 <Html content={modalInfo.msg} />
               </Headline>
+              {modalInfo.cancel && (
+                <FilledButton onClick={modalInfo.onClose} color="secondary" fullSize>
+                  cancel
+                </FilledButton>
+              )}
             </BaseModal>
           )}
         </Fragment>

@@ -148,6 +148,8 @@ export interface ModalType {
   msg: string;
   isShow: boolean;
   type?: MODAL_TYPES;
+  cancel?: boolean;
+  onClose?: () => void;
 }
 export interface ShootTrackType {
   name: string;
