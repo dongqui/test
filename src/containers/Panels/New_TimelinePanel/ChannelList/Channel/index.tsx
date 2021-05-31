@@ -49,23 +49,25 @@ interface Props {
   trackName: string;
 }
 
-const Track: FunctionComponent<Props> = ({
-  isIncluded,
-  isLocked,
-  isPointedDownArrow,
-  isSelected,
-  isTransformTrack,
-  layerKey,
-  trackIndex,
-  trackName,
-}) => {
-  const { getConfirm } = useAlertModal();
+const Track: FunctionComponent<Props> = (props) => {
+  const {
+    isIncluded,
+    isLocked,
+    isPointedDownArrow,
+    isSelected,
+    isTransformTrack,
+    layerKey,
+    trackIndex,
+    trackName,
+  } = props;
   const dispatch = useDispatch();
   const trackList = useSelector((state) => state.dopeSheet.trackList);
   const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
-  const selectedChannels = useSelector((state) => state.dopeSheet.selectedChannels);
-  const currentClickedChannel = useSelector((state) => state.dopeSheet.currentClickedChannel);
+  const prevSelectedIndices = useSelector((state) => state.dopeSheet.selectedTrackIndices);
+  const currentClickedTrack = useSelector((state) => state.dopeSheet.currentClickedTrack);
   const channelRef = useRef<HTMLLIElement>(null);
+  const { getConfirm } = useAlertModal();
+
   const multiKeyController = useMemo(
     () => ({
       ctrl: { pressed: false },
@@ -147,62 +149,62 @@ const Track: FunctionComponent<Props> = ({
         }
       });
     });
-    const currentClickedChannel = { trackIndex, isPointedDownArrow: !isPointedDownArrow };
+    const currentClickedTrack = { trackIndex, isPointedDownArrow: !isPointedDownArrow };
     dispatch(
       dopeSheetActions.clickTrackArrowButton({
         trackList: nextState,
-        currentClickedChannel,
+        currentClickedTrack,
       }),
     );
   }, [dispatch, trackList, isPointedDownArrow, lastBoneOfLayers, trackIndex]);
+
+  // 트랙 선택 state 변경
+  const setClickedTrackList = useCallback(
+    (updatedTrackList: UpdatedTrack<'isSelected'>[], selectedTrackIndices: number[]) => {
+      const state = {
+        trackList,
+        selectedTrackIndices,
+      };
+      const nextState = produce(state, (draft) => {
+        _.forEach(updatedTrackList, ({ trackIndex, isSelected }) => {
+          const targetIndex = fnGetBinarySearch({
+            collection: trackList,
+            index: trackIndex,
+            key: 'trackIndex',
+          });
+          if (targetIndex !== -1 && !_.isUndefined(isSelected)) {
+            draft.trackList[targetIndex].isSelected = isSelected;
+          }
+        });
+        draft.selectedTrackIndices = selectedTrackIndices;
+      });
+      dispatch(dopeSheetActions.clickTrackBody(nextState));
+    },
+    [dispatch, trackList],
+  );
 
   // 트랙 클릭
   const handleClickTrackBody = useCallback(
     (event: React.MouseEvent<Element>) => {
       const { nodeName } = event.target as Element;
-      const isNotClickablehNode = nodeName !== 'LI' && nodeName !== 'DIV' && nodeName !== 'P';
+      const isClickableNode = nodeName === 'LI' || nodeName === 'P';
       const isMutipleSelected = event.ctrlKey || event.metaKey || multiKeyController.ctrl.pressed;
-      const dispatchClickTrackBody = (
-        updatedTrackList: UpdatedTrack<'isSelected'>[],
-        selectedIndexes: number[],
-      ) => {
-        const state = {
-          trackList,
-          selectedChannels,
-        };
-        const nextState = produce(state, (draft) => {
-          _.forEach(updatedTrackList, ({ trackIndex, isSelected }) => {
-            const targetIndex = fnGetBinarySearch({
-              collection: trackList,
-              index: trackIndex,
-              key: 'trackIndex',
-            });
-            if (targetIndex !== -1 && !_.isUndefined(isSelected)) {
-              draft.trackList[targetIndex].isSelected = isSelected;
-            }
-          });
-          draft.selectedChannels = selectedIndexes;
-        });
-        dispatch(dopeSheetActions.clickTrackBody(nextState));
-      };
-
-      if (isNotClickablehNode || trackName === 'Summary') return;
+      if (!isClickableNode || trackName === 'Summary') return;
       if (isMutipleSelected) {
-        for (let index = 0; index < selectedChannels.length; index += 1) {
-          const targetIndex = selectedChannels[index];
-          const targetLayerIndex = fnGetLayerTrackIndex({ trackIndex: targetIndex });
-          const trackLayerIndex = fnGetLayerTrackIndex({ trackIndex });
-          const isNotSameLayer = targetLayerIndex !== trackLayerIndex;
-          const isClickedSelf = selectedChannels[index] === trackIndex;
-
+        for (let index = 0; index < prevSelectedIndices.length; index += 1) {
+          const targetTrackIndex = prevSelectedIndices[index];
+          const targetLayerIndex = fnGetLayerTrackIndex({ trackIndex: targetTrackIndex });
+          const ownLayerIndex = fnGetLayerTrackIndex({ trackIndex });
+          const isNotSameLayer = targetLayerIndex !== ownLayerIndex;
+          const isClickedOwnTrack = prevSelectedIndices[index] === trackIndex;
           if (isNotSameLayer) {
             const confirmed = getConfirm({
               title: 'Cannot select or edit multiple layers at the same time.',
             });
             if (confirmed) return false;
-          } else if (isClickedSelf) {
+          } else if (isClickedOwnTrack) {
             const remainder = trackIndex % 10;
-            const [deselected, deselectedIndexes] = fnUpdateIsSelected({
+            const [deselectedTrackList, deselectedIndices] = fnUpdateIsSelected({
               isSelected: false,
               lastBoneOfLayers,
               trackIndex,
@@ -210,59 +212,63 @@ const Track: FunctionComponent<Props> = ({
             if (remainder !== LAYER) {
               const layerIndex = fnGetLayerTrackIndex({ trackIndex });
               const isTransformTrack = remainder !== BONE_A && remainder !== BONE_B;
-              deselectedIndexes.push(layerIndex);
-              deselected.push({
+              deselectedIndices.push(layerIndex);
+              deselectedTrackList.push({
                 trackIndex: layerIndex,
                 isSelected: false,
               });
               if (isTransformTrack) {
                 const boneIndex = fnGetBoneTrackIndex({ trackIndex });
-                deselectedIndexes.push(boneIndex);
-                deselected.push({
+                deselectedIndices.push(boneIndex);
+                deselectedTrackList.push({
                   trackIndex: boneIndex,
                   isSelected: false,
                 });
               }
             }
-            const filteredIndexes = _.filter(selectedChannels, (index) => {
-              const result = fnGetBinarySearch({
-                collection: _.sortBy(deselectedIndexes),
+            const sortedIndices = _.sortBy(deselectedIndices);
+            const filteredIndices = _.filter(prevSelectedIndices, (index) => {
+              const targetIndex = fnGetBinarySearch({
+                collection: sortedIndices,
                 index,
               });
-              return result === -1;
+              return targetIndex === -1;
             });
-            dispatchClickTrackBody(deselected, filteredIndexes);
+            setClickedTrackList(deselectedTrackList, filteredIndices);
             return;
           }
         }
-        const [selected, selectedIndexes] = fnUpdateIsSelected({
+        const [selected, selectedIndices] = fnUpdateIsSelected({
           isSelected: true,
           lastBoneOfLayers,
           trackIndex,
         });
-        dispatchClickTrackBody(selected, selectedIndexes);
+        const nextSelectedIndices = new Set<number>();
+        _.forEach([...prevSelectedIndices, ...selectedIndices], (index) => {
+          nextSelectedIndices.add(index);
+        });
+        setClickedTrackList(selected, [...nextSelectedIndices]);
       } else if (!isMutipleSelected) {
-        const deselected = _.map(selectedChannels, (index) => ({
+        const deselectedTrackList = _.map(prevSelectedIndices, (index) => ({
           trackIndex: index,
           isSelected: false,
         }));
-        const [selected, selectedIndexes] = fnUpdateIsSelected({
+        const [selectedTrackList, selectedIndices] = fnUpdateIsSelected({
           isSelected: true,
           lastBoneOfLayers,
           trackIndex,
         });
-        dispatchClickTrackBody([...deselected, ...selected], selectedIndexes);
+        setClickedTrackList([...deselectedTrackList, ...selectedTrackList], selectedIndices);
       }
     },
     [
-      dispatch,
-      trackList,
-      getConfirm,
-      lastBoneOfLayers,
       multiKeyController.ctrl.pressed,
-      selectedChannels,
-      trackIndex,
       trackName,
+      lastBoneOfLayers,
+      trackIndex,
+      prevSelectedIndices,
+      setClickedTrackList,
+      getConfirm,
     ],
   );
 
@@ -279,18 +285,18 @@ const Track: FunctionComponent<Props> = ({
         });
         const lastBone = lastBoneOfLayers[targetIndex];
         const lastTransformIndex = lastBone.lastBoneIndex + 3;
-        let currentIndex = lastBone.layerIndex + 1;
+        let currentTrackIndex = lastBone.layerIndex + 1;
         updatedTrackList.push({
           trackIndex,
           isLocked: !isLocked,
         });
-        while (currentIndex <= lastTransformIndex) {
+        while (currentTrackIndex <= lastTransformIndex) {
           updatedTrackList.push({
-            trackIndex: currentIndex,
+            trackIndex: currentTrackIndex,
             isLocked: !isLocked,
           });
-          currentIndex += 1;
-          if ((currentIndex - 1) % 10 === 0) currentIndex += 2;
+          currentTrackIndex += 1;
+          if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2;
         }
         break;
       }
@@ -303,9 +309,17 @@ const Track: FunctionComponent<Props> = ({
             isLocked: false,
           });
         }
-        for (let index = trackIndex; index <= trackIndex + 3; index += 1) {
+        updatedTrackList.push({
+          trackIndex: trackIndex,
+          isLocked: !isLocked,
+        });
+        for (
+          let transformIndex = trackIndex;
+          transformIndex < trackIndex + 3;
+          transformIndex += 1
+        ) {
           updatedTrackList.push({
-            trackIndex: index,
+            trackIndex: transformIndex,
             isLocked: !isLocked,
           });
         }
@@ -796,10 +810,10 @@ const Track: FunctionComponent<Props> = ({
     },
   );
 
-  if (currentClickedChannel.trackIndex !== 0) {
+  if (currentClickedTrack.trackIndex !== 0) {
     const remainder = trackIndex % 10;
-    const isSummaryTrack = currentClickedChannel.trackIndex === TP_TRACK_INDEX.SUMMARY;
-    const isClosed = !currentClickedChannel.isPointedDownArrow;
+    const isSummaryTrack = currentClickedTrack.trackIndex === TP_TRACK_INDEX.SUMMARY;
+    const isClosed = !currentClickedTrack.isPointedDownArrow;
     switch (remainder) {
       case TP_TRACK_INDEX.SUMMARY:
       case TP_TRACK_INDEX.LAYER: {
@@ -814,7 +828,7 @@ const Track: FunctionComponent<Props> = ({
       }
       default: {
         const layerIndex = fnGetLayerTrackIndex({ trackIndex });
-        const isLayerTrack = layerIndex === currentClickedChannel.trackIndex;
+        const isLayerTrack = layerIndex === currentClickedTrack.trackIndex;
         if (isClosed && (isSummaryTrack || isLayerTrack)) {
           return null;
         }
@@ -843,7 +857,7 @@ const Track: FunctionComponent<Props> = ({
               hasFrame={false}
               onClick={handleclickLockButton}
             />
-            <div className={cx('check-wrapper')}>
+            <div className={cx('check-box-wrapper')}>
               <IconWrapper
                 className={cx('track-icon', 'check', { checked: isIncluded })}
                 icon={SvgPath.Check}

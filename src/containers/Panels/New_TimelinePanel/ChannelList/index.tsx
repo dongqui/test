@@ -44,11 +44,8 @@ const ChannelList: React.FC<{}> = () => {
     () =>
       _.debounce((inputText: string) => {
         const loweredInput = _.toLower(_.trim(inputText));
-        const isEqualPrevInputText = prevInputText.current === loweredInput;
+        const isEqualPrevInputText = _.isEqual(prevInputText.current, loweredInput);
         const isClearedInputText = _.isEmpty(loweredInput) && !isEqualPrevInputText;
-        const updatedtrackList: Partial<UpdatedTrack<Pick>>[] = [];
-        const visited = Array(trackList.length).fill(true);
-
         if (_.isEmpty(trackList) || isEqualPrevInputText) return;
         if (isClearedInputText) {
           const nextState = produce(trackList, (draft) => {
@@ -57,8 +54,8 @@ const ChannelList: React.FC<{}> = () => {
               track.isShowed = false;
               track.isPointedDownArrow = false;
             });
-            draft[0].isShowed = true;
-            draft[0].isPointedDownArrow = true;
+            draft[0].isShowed = true; // Summary 트랙
+            draft[0].isPointedDownArrow = true; // Summary 트랙
             _.forEach(lastBoneOfLayers, (layer) => {
               const layerIndex = fnGetBinarySearch({
                 collection: trackList,
@@ -71,19 +68,20 @@ const ChannelList: React.FC<{}> = () => {
           dispatch(dopeSheetActions.searchTrackList({ trackList: nextState }));
           return;
         }
-
-        const checkVisited = (target: number, self: number) => {
-          const isAncestorTrack = target < self;
-          const isChildTrack = self < target;
+        const updatedtrackList: Partial<UpdatedTrack<Pick>>[] = [];
+        const alreadyVisitedList = Array(trackList.length).fill(false) as boolean[];
+        const checkAlreadyVisited = (comparedIndex: number, myIndex: number) => {
+          const isAncestorTrack = comparedIndex < myIndex;
+          const isChildTrack = myIndex < comparedIndex;
           const targetIndex = fnGetBinarySearch({
             collection: trackList,
-            index: target,
+            index: comparedIndex,
             key: 'trackIndex',
           });
-          if (visited[targetIndex]) {
-            visited[targetIndex] = false;
+          if (!alreadyVisitedList[targetIndex]) {
+            alreadyVisitedList[targetIndex] = true;
             updatedtrackList.push({
-              trackIndex: target,
+              trackIndex: comparedIndex,
               isFiltered: true,
               isPointedDownArrow: isAncestorTrack ? true : undefined,
               isShowed: isChildTrack ? undefined : true,
@@ -95,14 +93,14 @@ const ChannelList: React.FC<{}> = () => {
           const targetIndex = trackList[reverseIndex].trackIndex;
           const remainder = targetIndex % 10;
           if (_.includes(targetTrackName, loweredInput)) {
-            checkVisited(targetIndex, targetIndex);
+            checkAlreadyVisited(targetIndex, targetIndex);
             switch (remainder) {
               case TP_TRACK_INDEX.SUMMARY: {
                 _.forEach(lastBoneOfLayers, (layer) => {
                   const lastTransformIndex = layer.lastBoneIndex + 3;
                   let currentTrackIndex = layer.layerIndex;
                   while (currentTrackIndex <= lastTransformIndex) {
-                    checkVisited(currentTrackIndex, targetIndex);
+                    checkAlreadyVisited(currentTrackIndex, targetIndex);
                     if (currentTrackIndex % 10 === 0) currentTrackIndex += 2;
                     currentTrackIndex += 1;
                   }
@@ -117,9 +115,9 @@ const ChannelList: React.FC<{}> = () => {
                 });
                 const lastTransformIndex = lastBoneOfLayers[layerIndex].lastBoneIndex + 3;
                 let currentTrackIndex = targetIndex + 1;
-                checkVisited(TP_TRACK_INDEX.SUMMARY, targetIndex);
+                checkAlreadyVisited(TP_TRACK_INDEX.SUMMARY, targetIndex);
                 while (currentTrackIndex <= lastTransformIndex) {
-                  checkVisited(currentTrackIndex, targetIndex);
+                  checkAlreadyVisited(currentTrackIndex, targetIndex);
                   if (currentTrackIndex % 10 === 0) currentTrackIndex += 2;
                   currentTrackIndex += 1;
                 }
@@ -128,23 +126,23 @@ const ChannelList: React.FC<{}> = () => {
               case TP_TRACK_INDEX.BONE_A:
               case TP_TRACK_INDEX.BONE_B: {
                 const layerIndex = fnGetLayerTrackIndex({ trackIndex: targetIndex });
-                checkVisited(TP_TRACK_INDEX.SUMMARY, targetIndex);
-                checkVisited(layerIndex, targetIndex);
+                checkAlreadyVisited(TP_TRACK_INDEX.SUMMARY, targetIndex);
+                checkAlreadyVisited(layerIndex, targetIndex);
                 for (
                   let transformIndex = targetIndex + 1;
                   transformIndex <= targetIndex + 3;
                   transformIndex += 1
                 ) {
-                  checkVisited(transformIndex, targetIndex);
+                  checkAlreadyVisited(transformIndex, targetIndex);
                 }
                 break;
               }
               default: {
                 const layerIndex = fnGetLayerTrackIndex({ trackIndex: targetIndex });
                 const boneIndex = fnGetBoneTrackIndex({ trackIndex: targetIndex });
-                checkVisited(TP_TRACK_INDEX.SUMMARY, targetIndex);
-                checkVisited(layerIndex, targetIndex);
-                checkVisited(boneIndex, targetIndex);
+                checkAlreadyVisited(TP_TRACK_INDEX.SUMMARY, targetIndex);
+                checkAlreadyVisited(layerIndex, targetIndex);
+                checkAlreadyVisited(boneIndex, targetIndex);
                 break;
               }
             }
@@ -230,11 +228,11 @@ const ChannelList: React.FC<{}> = () => {
     }
   }, [skeletonHelper, currentVisualizedData, dispatch, lastBoneOfLayers, trackList]);
 
-  const isEmptyTrackList = _.isEmpty(trackList);
-
   const handleTrackListContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
   };
+
+  const isEmptyTrackList = _.isEmpty(trackList);
 
   return (
     <AlertModalProvider>

@@ -210,7 +210,7 @@ const Circles: React.FC<Props> = ({
             index: selectedKeyframes[index].time,
           });
           const isNotEqualTrackIndex = selectedKeyframes[index].trackIndex !== trackIndex;
-          if (isNotEqualTrackIndex) break;
+          if (isNotEqualTrackIndex || targetIndex === -1) break;
           const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
           d3.select(targetCircle as Element).style('fill', KEYFRAME_COLOR.selected);
           selectedKeyframesInMyTrack.current.add(targetIndex + 1);
@@ -221,7 +221,7 @@ const Circles: React.FC<Props> = ({
             index: selectedKeyframes[index].time,
           });
           const isNotEqualTrackIndex = selectedKeyframes[index].trackIndex !== trackIndex;
-          if (isNotEqualTrackIndex) break;
+          if (isNotEqualTrackIndex || targetIndex === -1) break;
           const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
           d3.select(targetCircle as Element).style('fill', KEYFRAME_COLOR.selected);
           selectedKeyframesInMyTrack.current.add(targetIndex + 1);

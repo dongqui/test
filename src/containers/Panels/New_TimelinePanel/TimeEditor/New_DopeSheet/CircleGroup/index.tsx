@@ -31,7 +31,7 @@ const CircleGroup: React.FC<Props> = ({
   trackIndex,
   dopeSheetScale,
 }) => {
-  const currentClickedChannel = useSelector((state) => state.dopeSheet.currentClickedChannel);
+  const currentClickedTrack = useSelector((state) => state.dopeSheet.currentClickedTrack);
   const circleGroupRef = useRef<SVGSVGElement>(null);
 
   let fillColor = 'transparent';
@@ -57,10 +57,10 @@ const CircleGroup: React.FC<Props> = ({
     }
   }
 
-  if (currentClickedChannel.trackIndex !== 0) {
+  if (currentClickedTrack.trackIndex !== 0) {
     const remainder = trackIndex % 10;
-    const isSummaryTrack = currentClickedChannel.trackIndex === TP_TRACK_INDEX.SUMMARY;
-    const isClosed = !currentClickedChannel.isPointedDownArrow;
+    const isSummaryTrack = currentClickedTrack.trackIndex === TP_TRACK_INDEX.SUMMARY;
+    const isClosed = !currentClickedTrack.isPointedDownArrow;
     switch (remainder) {
       case TP_TRACK_INDEX.SUMMARY:
       case TP_TRACK_INDEX.LAYER: {
@@ -75,7 +75,7 @@ const CircleGroup: React.FC<Props> = ({
       }
       default: {
         const layerIndex = fnGetLayerTrackIndex({ trackIndex });
-        const isLayerTrack = layerIndex === currentClickedChannel.trackIndex;
+        const isLayerTrack = layerIndex === currentClickedTrack.trackIndex;
         if (isClosed && (isSummaryTrack || isLayerTrack)) {
           return null;
         }

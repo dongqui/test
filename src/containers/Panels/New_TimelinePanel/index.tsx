@@ -25,21 +25,17 @@ const TimelinePanel: React.FC<Props> = (props) => {
   const { currentTimeRef, currentTimeIndexRef, currentXAxisPosition, prevXScale } = props;
   const dispatch = useDispatch();
   const prevModelKey = useRef('');
-  const prevLayerCount = useRef(0);
   const isStoredDopeSheetData = useRef(false);
-  const panelWrapperRef = useRef<HTMLDivElement>(null);
 
   // To Do...apollo -> redux
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
   useEffect(() => {
     const isClearedModel = prevModelKey.current && !currentVisualizedData;
-    // 모델 삭제
     if (isClearedModel) {
       dispatch(dopeSheetActions.clearAll());
       isStoredDopeSheetData.current = false;
       prevModelKey.current = '';
-      prevLayerCount.current = 0;
     } else if (currentVisualizedData) {
       const { baseLayer, layers, key } = currentVisualizedData;
       const isChangedModel = isStoredDopeSheetData.current && prevModelKey.current !== key;
@@ -52,7 +48,6 @@ const TimelinePanel: React.FC<Props> = (props) => {
         });
         dispatch(dopeSheetActions.setTrackList({ trackList, lastBoneOfLayers }));
         prevModelKey.current = key;
-        prevLayerCount.current = layers.length;
       } else if (isInitialVisualized) {
         const [trackList, lastBoneOfLayers] = fnSetAllInitialTrackList({
           baseLayer,
@@ -75,7 +70,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
           currentXAxisPosition={currentXAxisPosition}
           prevXScale={prevXScale}
         />
-        <div id="timeline-wrapper" className={cx('wrapper')} ref={panelWrapperRef}>
+        <div id="timeline-wrapper" className={cx('wrapper')}>
           <ChannelList />
           <TimeEditor
             currentTimeRef={currentTimeRef}
