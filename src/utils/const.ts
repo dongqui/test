@@ -1,5 +1,5 @@
 import { FILE_TYPES, LPDataType } from 'types';
-import { CPDataType } from 'types/CP';
+import { CPItemType } from 'types/CP';
 
 export const isClient = typeof window !== 'undefined';
 
@@ -36,7 +36,7 @@ export const DEFAULT_MODELS: LPDataType[] = [
 
 export const INITIAL_LP_DATA: LPDataType[] = [];
 
-export const INITIAL_CP_DATA: CPDataType[] = [
+export const CP_ITEMS: CPItemType[] = [
   {
     key: '0',
     name: 'Transform',

@@ -1,9 +1,8 @@
-import { FunctionComponent, useState, ReactElement } from 'react';
-import { useReactiveVar } from '@apollo/client';
-import { storeCPChangeTab } from 'lib/store';
+import { FunctionComponent, ReactElement } from 'react';
 import TabTitle from './TabTitle';
 import classNames from 'classnames/bind';
 import styles from './Tabs.module.scss';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -12,7 +11,8 @@ interface Props {
 }
 
 const Tabs: FunctionComponent<Props> = ({ children }) => {
-  const changeTabs = useReactiveVar(storeCPChangeTab);
+  const { tabIndex } = useSelector((state) => state.cpData);
+
   return (
     <>
       <div className={cx('tabs-wrap')}>
@@ -20,7 +20,7 @@ const Tabs: FunctionComponent<Props> = ({ children }) => {
           <TabTitle key={idx} tabID={idx} title={item.props.title} disabled={item.props.disabled} />
         ))}
       </div>
-      <div>{children[changeTabs]}</div>
+      <div>{children[tabIndex]}</div>
     </>
   );
 };

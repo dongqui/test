@@ -14,9 +14,7 @@ export type CPNameType =
   | 'Mesh'
   | 'Shadow';
 
-export type CPModeType = 'property' | 'retarget';
-
-export interface CPDataType {
+export interface CPItemType {
   key: string;
   name: CPNameType;
   type: CPComponentType;

@@ -9,11 +9,11 @@ import {
   KeyframeData,
 } from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
-import { CPDataType, RetargetInfoType, RetargetMap } from 'types/CP';
+import { RetargetInfoType, RetargetMap } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { RecordingDataType } from 'types/RP';
 import _ from 'lodash';
-import { INITIAL_CP_DATA, INITIAL_LP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
+import { INITIAL_LP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
 import {
   ContextmenuType,
   FILE_TYPES,
@@ -23,10 +23,7 @@ import {
   PageInfoType,
   PAGE_NAMES,
 } from '../types';
-// import { INITIAL_RETARGET_DATA } from '../utils/const';
-import { CPModeType } from '../types/CP';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
-
 import { initialRetargetMap } from 'utils/retargetMap';
 
 export enum StoreDataNames {
@@ -56,10 +53,6 @@ export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);
 export const storeBarPositionX = makeVar<number>(0);
-// CP
-export const storeCPMode = makeVar<CPModeType>('property');
-export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
-export const storeCPChangeTab = makeVar<number>(0);
 // RETARGET
 export const storeRetargetMap = makeVar<RetargetMap[]>(initialRetargetMap);
 export const storeRetargetInfo = makeVar<RetargetInfoType>({});

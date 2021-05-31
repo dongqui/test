@@ -11,7 +11,6 @@ import {
 } from 'types';
 import {
   storeContextMenuInfo,
-  storeCPChangeTab,
   storeLpData,
   storePages,
   storeRetargetInfo,
@@ -33,6 +32,7 @@ import { ROOT_FOLDER_NAME } from 'types/LP';
 import { RetargetInfoType, TargetboneType } from 'types/CP';
 import { initialRetargetMap } from 'utils/retargetMap';
 import { useDispatch } from 'react-redux';
+import { setCPTab } from 'actions/cpData';
 
 interface UseLPControlProps {
   mainData: LPDataType[];
@@ -152,7 +152,7 @@ const useLPControl = ({
                 );
                 storeRetargetMap(initialRetargetMap);
                 storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
-                storeCPChangeTab(1);
+                dispatch(setCPTab({ tabIndex: 1 }));
               }
               setShowsModal(false);
               return;
@@ -171,7 +171,7 @@ const useLPControl = ({
               );
               storeRetargetMap(retargetMap);
               storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
-              storeCPChangeTab(1);
+              dispatch(setCPTab({ tabIndex: 1 }));
             }
           }
 
@@ -223,7 +223,7 @@ const useLPControl = ({
           });
           if (error3) {
             setModalMessage('An error has occurred while retargeting.');
-            storeCPChangeTab(1);
+            dispatch(setCPTab({ tabIndex: 1 }));
             return;
           }
           const times = draggingRow?.baseLayer?.[0]?.times;
@@ -289,6 +289,7 @@ const useLPControl = ({
       );
     },
     [
+      dispatch,
       getConfirm,
       mainData,
       retargetInfo?.modelKey,
