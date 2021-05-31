@@ -26,7 +26,7 @@ export interface CPListRowInputProps {
   name: string;
 }
 
-interface InputValueType {
+interface InputAxisType {
   w?: number;
   x: number;
   y: number;
@@ -34,19 +34,17 @@ interface InputValueType {
 }
 
 const CPListRowInput: React.FC<CPListRowInputProps> = ({ name }) => {
-  console.log('name: ', name);
-
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { currentBone, transformControls } = useSelector((state) => state.renderingData);
 
-  const [initialValue, setInitialValue] = useState<InputValueType>({
+  const [initialValue, setInitialValue] = useState<InputAxisType>({
     x: 0,
     y: 0,
     z: 0,
   });
 
-  const [values, setValue] = useState<InputValueType>(initialValue);
+  const [values, setValue] = useState<InputAxisType>(initialValue);
 
   const [isModeSelectOpen, setIsModeSelectOpen] = useState(false);
   const [quaternionMode, setQuaternionMode] = useState(false);
@@ -58,9 +56,8 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({ name }) => {
   const handleBlur = useCallback(
     (e: any) => {
       const value = e.target.value;
-      const name = e.target.name;
-      const property = name?.slice(0, -1).toLowerCase();
-      const axis: any = name?.slice(-1).toLowerCase();
+      const property = name.toLowerCase();
+      const axis = e.target.name;
 
       if (_.isNaN(parseFloat(value))) {
         return;
@@ -163,7 +160,7 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({ name }) => {
         }
       }
     },
-    [currentBone, dispatch, quaternionMode],
+    [currentBone, dispatch, name, quaternionMode],
   );
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
