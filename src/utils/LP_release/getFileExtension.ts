@@ -14,6 +14,7 @@ const getFileExtension = (fileName: string): string => {
     return extension;
   }
   extension = last(fileName.split('.')) || '';
+  extension = extension.toLowerCase();
   return extension;
 };
 
