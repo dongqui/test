@@ -111,6 +111,11 @@ const LibraryPanel: FunctionComponent = () => {
     [dispatch],
   );
 
+  /**
+   * 현재 기준이 되는 페이지 (기준이 되는 부모키)를 찾아주는 함수입니다.
+   *
+   * @return 현재 페이지를 나타내는 부모 키.
+   */
   const findParentKey = useCallback((): string => {
     let parentKey = ROOT_KEY;
     if (lpMode === 'iconView') {
@@ -125,6 +130,11 @@ const LibraryPanel: FunctionComponent = () => {
     return parentKey;
   }, [lpData, lpMode, lpPage.key]);
 
+  /**
+   * 덮어쓰기할 파일(동일한 파일이름)을 찾아주는 함수입니다.
+   *
+   * @return 덮어쓰기할 파일들의 키.
+   */
   const validateSameFileName = useCallback(
     (name: string): string | undefined => {
       let mustDeleteKey;
@@ -139,6 +149,16 @@ const LibraryPanel: FunctionComponent = () => {
     [findParentKey, lpData],
   );
 
+  /**
+   * 모델파일로부터 추출한 애니메이션 데이터를 lpModelDataList 로 바꿔주는 함수입니다.
+   *
+   * @param animations - animation clip array
+   * @param bones - bone array
+   * @param name - 파일이름
+   * @param url - 모델파일의 url
+   *
+   * @return lpModelDataList.
+   */
   const convertToAnimationDataTolpData = useCallback(
     (params: ConvertToAnimationDataTolpData): LPModelDataListState => {
       const { animations, bones, name, url } = params;
@@ -169,6 +189,15 @@ const LibraryPanel: FunctionComponent = () => {
     [findParentKey],
   );
 
+  /**
+   * 파일을 lpModelDataList로 바꿔주는 함수입니다.
+   *
+   * @param fileUrl - 파일의 url
+   * @param name - 파일이름
+   * @param isDispatch - 곧바로 dispatch를 해줄 것인지에 대한 여부
+   *
+   * @return lpModelDataList, 에러여부, 에러메시지
+   */
   const changeFileTolpData = useCallback(
     async (params: ChangeFileTolpData): Promise<ChangeFileTolpDataResponse> => {
       const { fileUrl, name, isDispatch = false } = params;
@@ -198,6 +227,37 @@ const LibraryPanel: FunctionComponent = () => {
     [convertToAnimationDataTolpData, dispatch],
   );
 
+  /**
+   * 2개 이상의 비디오 파일이 있는지 체크해주는 함수입니다.
+   *
+   * @param files - file array
+   *
+   * @return 2개 이상의 비디오 파일이 있는지 여부
+   */
+  const validateMultipleVideoFiles = useCallback((files: File[]): boolean => {
+    return (
+      files.filter((file) => _.includes(EnableVideoFormats, getFileExtension(file.name))).length > 1
+    );
+  }, []);
+
+  /**
+   * 비디오 파일을 마지막으로 정렬해주는 함수입니다.
+   *
+   * @param files - file array
+   *
+   * @return 정렬 후 file array
+   */
+  const sortVideoFileLast = useCallback((files: File[]) => {
+    return files.sort((file) => {
+      const isVideoFile = _.includes(EnableVideoFormats, getFileExtension(file.name));
+      if (isVideoFile) {
+        return 1;
+      } else {
+        return -1;
+      }
+    });
+  }, []);
+
   const handleDrop = useCallback(
     async (files: File[]) => {
       setModalInfo((state) => ({
@@ -208,9 +268,7 @@ const LibraryPanel: FunctionComponent = () => {
       }));
       const mustDeleteKeys: string[] = [];
       let newlpData: LPModelDataListState = [];
-      const isMultipleVideoFiles =
-        files.filter((file) => _.includes(EnableVideoFormats, getFileExtension(file.name))).length >
-        1;
+      const isMultipleVideoFiles = validateMultipleVideoFiles(files);
       if (isMultipleVideoFiles) {
         setModalInfo((state) => ({
           ...state,
@@ -222,14 +280,7 @@ const LibraryPanel: FunctionComponent = () => {
       }
       // 비디오파일이 마지막으로 오도록 재정렬
       const targetFiles = _.clone(files);
-      const sortedFiles = targetFiles.sort((file) => {
-        const isVideoFile = _.includes(EnableVideoFormats, getFileExtension(file.name));
-        if (isVideoFile) {
-          return 1;
-        } else {
-          return -1;
-        }
-      });
+      const sortedFiles = sortVideoFileLast(targetFiles);
       for (const file of sortedFiles) {
         const extension = getFileExtension(file.name);
         const isValidFileFormat = _.includes(EnableFileFormats, extension);
@@ -308,7 +359,14 @@ const LibraryPanel: FunctionComponent = () => {
         loading: false,
       }));
     },
-    [changeFileTolpData, dispatch, getConfirm, validateSameFileName],
+    [
+      changeFileTolpData,
+      dispatch,
+      getConfirm,
+      sortVideoFileLast,
+      validateMultipleVideoFiles,
+      validateSameFileName,
+    ],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
@@ -319,6 +377,10 @@ const LibraryPanel: FunctionComponent = () => {
     }
   }, [modalInfo.loading]);
 
+  /**
+   * 아이콘뷰로 전달할 가공데이터입니다.
+   * @return 검색어 필터링 후 lpModelDataList
+   */
   const filteredIconviewData = useMemo((): LPModelDataListState => {
     let data = _.clone(lpData);
     if (!_.isEmpty(lpSearchword)) {
@@ -331,6 +393,10 @@ const LibraryPanel: FunctionComponent = () => {
     return data;
   }, [lpSearchword, lpData, lpPage.key]);
 
+  /**
+   * Breadcrumb 로 전달하기 위한 페이지 가공데이터
+   * @return 페이지 가공데이터 (최상단 -> 현재페이지로 거치는 페이지 배열)
+   */
   const pathList = useMemo((): PathList => {
     const result: PathList = [];
     const currentPageRow = lpData.find((item) => item.key === lpPage.key);
