@@ -1,8 +1,8 @@
-import { TPDopeSheet } from 'types/TP';
+import { TPTrackList } from 'types/TP';
 import { fnGetBinarySearch } from './index';
 
 interface FnLockBoneTrack {
-  dopeSheetList: TPDopeSheet[];
+  dopeSheetList: TPTrackList[];
   trackIndex: number;
 }
 
@@ -14,7 +14,7 @@ interface FnLockBoneTrack {
  * @returns updatedList - isLocked를 변경시킬 dope sheet status list
  */
 const fnLockBoneTrack = ({ dopeSheetList, trackIndex }: FnLockBoneTrack) => {
-  const updatedList: Partial<TPDopeSheet>[] = [];
+  const updatedList: Partial<TPTrackList>[] = [];
 
   const targetIndex = fnGetBinarySearch({
     collection: dopeSheetList,

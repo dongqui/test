@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { TPDopeSheet } from 'types/TP';
+import { TPTrackList } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 
 interface SetDopeSheetStatus {
@@ -29,7 +29,7 @@ const setDopeSheetStatus = ({
   trackIndex,
   trackName,
   visualizedDataKey,
-}: SetDopeSheetStatus): TPDopeSheet => {
+}: SetDopeSheetStatus): TPTrackList => {
   const { SUMMARY, LAYER, BONE_A, BONE_B } = TP_TRACK_INDEX;
   const remainder = trackIndex % 10;
   const isPointedDownArrow = trackIndex === SUMMARY ? true : false;

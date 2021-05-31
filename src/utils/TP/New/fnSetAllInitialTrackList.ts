@@ -3,7 +3,7 @@ import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetTrackStatus, fnSetInitialLayerTrack } from 'utils/TP/New';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { ShootLayerType, ShootTrackType } from 'types';
-import { TPDopeSheet, TPLastBone } from 'types/TP';
+import { TPTrackList, TPLastBone } from 'types/TP';
 
 interface FnSetAllInitialTrackList {
   baseLayer: ShootTrackType[];
@@ -11,11 +11,11 @@ interface FnSetAllInitialTrackList {
   visualizedDataKey: string;
 }
 
-type Return = [TPDopeSheet[], TPLastBone[]];
+type Return = [TPTrackList[], TPLastBone[]];
 
 const fnSetAllInitialTrackList = (params: FnSetAllInitialTrackList): Return => {
   const { baseLayer, layers, visualizedDataKey } = params;
-  const dopeSheetList: TPDopeSheet[] = [];
+  const dopeSheetList: TPTrackList[] = [];
   const lastBoneList: TPLastBone[] = [];
 
   // Summary 트랙 세팅

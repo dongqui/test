@@ -1,9 +1,9 @@
 import { TP_TRACK_INDEX } from 'utils/const';
-import { TPDopeSheet, TPLastBone } from 'types/TP';
+import { TPTrackList, TPLastBone } from 'types/TP';
 import { fnLockBoneTrack, fnLockLayerTrack, fnLockTransformTrack } from './index';
 
 interface FnClickLockButton {
-  dopeSheetList: TPDopeSheet[];
+  dopeSheetList: TPTrackList[];
   lastBoneList: TPLastBone[];
   trackIndex: number;
 }
@@ -16,7 +16,7 @@ interface FnClickLockButton {
  */
 const fnClickLockButton = ({ dopeSheetList, lastBoneList, trackIndex }: FnClickLockButton) => {
   const remainder = trackIndex % 10;
-  const updatedList: Partial<TPDopeSheet>[] = [];
+  const updatedList: Partial<TPTrackList>[] = [];
 
   switch (remainder) {
     // Layer 트랙 잠금 버튼 클릭

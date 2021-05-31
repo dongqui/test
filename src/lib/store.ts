@@ -2,7 +2,7 @@ import { makeVar } from '@apollo/client';
 import produce from 'immer';
 import {
   TPTrackName,
-  TPDopeSheet,
+  TPTrackList,
   TPLastBone,
   TPUpdateDopeSheet,
   TPCurrnetClickedTrack,
@@ -82,15 +82,15 @@ export const storeRetargetInfo = makeVar<RetargetInfoType>({});
 
 // TP
 export const storeTPTrackNameList = makeVar<TPTrackName[]>([]);
-export const storeTPDopeSheetList = makeVar<TPDopeSheet[]>([]);
+export const storeTPTrackListList = makeVar<TPTrackList[]>([]);
 export const storeTPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
 export const storeTPSelectedTrackList = makeVar<number[]>([]);
 export const storeTPCurrnetClickedTrack = makeVar<TPCurrnetClickedTrack | null>(null);
 export const storeDeleteTargetKeyframes = makeVar<KeyframeData[]>([]);
 
 export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
-  const state = storeTPDopeSheetList();
-  const nextState = produce<TPDopeSheet[]>(state, (draft) => {
+  const state = storeTPTrackListList();
+  const nextState = produce<TPTrackList[]>(state, (draft) => {
     _.forEach(updatedList, (target, key) => {
       const binarySearchIndex = fnGetBinarySearch({
         collection: state,
@@ -134,12 +134,12 @@ export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDope
       }
     });
   });
-  storeTPDopeSheetList(nextState);
+  storeTPTrackListList(nextState);
 };
 
 export const storeTPClearData = () => {
   storeTPTrackNameList([]);
-  storeTPDopeSheetList([]);
+  storeTPTrackListList([]);
   storeTPLastBoneList([]);
   storeTPSelectedTrackList([]);
   storeTPCurrnetClickedTrack(null);

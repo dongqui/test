@@ -1,15 +1,15 @@
-import { TPDopeSheet, IsIncludedChange } from 'types/TP';
+import { TPTrackList, IsIncludedChange } from 'types/TP';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 
 interface FnRenderBoneTrack {
-  dopeSheetList: TPDopeSheet[];
+  dopeSheetList: TPTrackList[];
   trackIndex: number;
 }
 
-type RenderBoneTrack = [Partial<TPDopeSheet>[], IsIncludedChange[]];
+type RenderBoneTrack = [Partial<TPTrackList>[], IsIncludedChange[]];
 
 const fnRenderBoneTrack = ({ dopeSheetList, trackIndex }: FnRenderBoneTrack): RenderBoneTrack => {
-  const updatedDopeSheetList: Partial<TPDopeSheet>[] = [];
+  const updatedDopeSheetList: Partial<TPTrackList>[] = [];
   const updatedCurrentVisualizedList: IsIncludedChange[] = [];
 
   const targetIndex = fnGetBinarySearch({

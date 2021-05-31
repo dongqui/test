@@ -1,4 +1,4 @@
-import { TPDopeSheet, TPLastBone, KeyframeData } from 'types/TP';
+import { TPTrackList, TPLastBone, KeyframeData } from 'types/TP';
 import { fnSelectTrackList, fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { TP_TRACK_INDEX } from 'utils/const';
 
@@ -28,7 +28,7 @@ const fnCheckClickedKeyframes = ({
     console.log(curTrackIndex, clickedTrackList[curTrackIndex]);
   }
 
-  // const updatedTrackList: Partial<TPDopeSheet>[] = [];
+  // const updatedTrackList: Partial<TPTrackList>[] = [];
   // const newClickedTrackList: number[] = [];
 
   // for (let index = 0; index < clickedTrackList.length; index += 1) {

@@ -1,8 +1,8 @@
-import { TPDopeSheet, KeyframeData } from 'types/TP';
+import { TPTrackList, KeyframeData } from 'types/TP';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 
 interface FnClickBoneKeyframe {
-  dopeSheetList: TPDopeSheet[];
+  dopeSheetList: TPTrackList[];
   layerKey: string;
   time: number;
   trackIndex: number;

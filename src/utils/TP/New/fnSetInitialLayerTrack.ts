@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { ShootTrackType } from 'types';
-import { TPDopeSheet, TPLastBone } from 'types/TP';
+import { TPTrackList, TPLastBone } from 'types/TP';
 import { fnSetTrackStatus } from 'utils/TP/New';
 import { fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
 
@@ -12,21 +12,21 @@ interface FnSetLayerChildrenTracks {
   visualizedDataKey: string;
 }
 
-type Return = [TPDopeSheet[], TPLastBone];
+type Return = [TPTrackList[], TPLastBone];
 
-const setIncluded = (trackList: ShootTrackType[]) => {
+const getIsIncluded = (trackList: ShootTrackType[]) => {
   return trackList.every((track) => track.isIncluded === true);
 };
 
 const fnSetLayerChildrenTracks = (params: FnSetLayerChildrenTracks): Return => {
   const { layer, layerIndex, layerName, layerKey, visualizedDataKey } = params;
-  const dopeSheetList: TPDopeSheet[] = [];
+  const dopeSheetList: TPTrackList[] = [];
   let trackIndex = layerIndex;
 
   // Layer 트랙 세팅
   const layerTimes = fnGetLayerTimes({ targetLayer: layer });
   const layerTrackStatus = fnSetTrackStatus({
-    isIncluded: setIncluded(layer),
+    isIncluded: getIsIncluded(layer),
     layerKey,
     times: layerTimes,
     trackIndex: layerIndex,
@@ -49,7 +49,7 @@ const fnSetLayerChildrenTracks = (params: FnSetLayerChildrenTracks): Return => {
       scaleTrack: layer[currentTrackIndex + 2],
     });
     const boneTrackStatus = fnSetTrackStatus({
-      isIncluded: setIncluded(transformTrackList),
+      isIncluded: getIsIncluded(transformTrackList),
       layerKey,
       times: boneTimes,
       trackIndex: trackIndex,
@@ -62,7 +62,7 @@ const fnSetLayerChildrenTracks = (params: FnSetLayerChildrenTracks): Return => {
     // Transform 트랙 세팅
     for (const transformTrack of transformTrackList) {
       const transformTrackStatus = fnSetTrackStatus({
-        isIncluded: setIncluded([transformTrack]),
+        isIncluded: getIsIncluded([transformTrack]),
         layerKey,
         times: _.map(transformTrack.times, (time) => _.round(time, 4)),
         trackIndex: trackIndex,
@@ -76,13 +76,13 @@ const fnSetLayerChildrenTracks = (params: FnSetLayerChildrenTracks): Return => {
   }
 
   const lastBone = dopeSheetList[dopeSheetList.length - 4];
-  const lastBoneValue: TPLastBone = {
+  const lastBonesStatus: TPLastBone = {
     layerIndex,
     layerKey,
     trackName: lastBone.trackName,
     lastBoneIndex: lastBone.trackIndex,
   };
-  return [dopeSheetList, lastBoneValue];
+  return [dopeSheetList, lastBonesStatus];
 };
 
 export default fnSetLayerChildrenTracks;

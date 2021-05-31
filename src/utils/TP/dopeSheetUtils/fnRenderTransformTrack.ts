@@ -1,20 +1,20 @@
-import { TPDopeSheet, IsIncludedChange } from 'types/TP';
+import { TPTrackList, IsIncludedChange } from 'types/TP';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { TP_TRACK_INDEX } from 'utils/const';
 
 interface FnRenderTransformTrack {
-  dopeSheetList: TPDopeSheet[];
+  dopeSheetList: TPTrackList[];
   trackIndex: number;
 }
 
-type RenderTransformTrack = [Partial<TPDopeSheet>[], IsIncludedChange[]];
+type RenderTransformTrack = [Partial<TPTrackList>[], IsIncludedChange[]];
 
 const fnRenderTransformTrack = ({
   dopeSheetList,
   trackIndex,
 }: FnRenderTransformTrack): RenderTransformTrack => {
   const remainder = trackIndex % 10;
-  const updatedDopeSheetList: Partial<TPDopeSheet>[] = [];
+  const updatedDopeSheetList: Partial<TPTrackList>[] = [];
   const updatedCurrentVisualizedList: IsIncludedChange[] = [];
 
   const targetIndex = fnGetBinarySearch({

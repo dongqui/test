@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { TPDopeSheet, TPLastBone } from 'types/TP';
+import { TPTrackList, TPLastBone } from 'types/TP';
 import { fnSelectTrackList, fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { TP_TRACK_INDEX } from 'utils/const';
 
@@ -9,7 +9,7 @@ interface FnCheckSelectedTrackList {
   trackIndex: number;
 }
 
-type Return = [Partial<TPDopeSheet>[], number[]] | false;
+type Return = [Partial<TPTrackList>[], number[]] | false;
 
 const fnCheckSelectedTrackList = ({
   clickedTrackList,
@@ -25,7 +25,7 @@ const fnCheckSelectedTrackList = ({
     SCALE_A,
     SCALE_B,
   } = TP_TRACK_INDEX;
-  const updatedTrackList: Partial<TPDopeSheet>[] = [];
+  const updatedTrackList: Partial<TPTrackList>[] = [];
   const newClickedTrackList: number[] = [];
 
   const numberBinarySearch = ({ collection, index }: { collection: number[]; index: number }) => {

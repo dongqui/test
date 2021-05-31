@@ -1,4 +1,4 @@
-import { TPDopeSheet } from 'types/TP';
+import { TPTrackList } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 
 interface SetDopeSheetStatus {
@@ -35,7 +35,7 @@ const setDopeSheetStatus = ({
   trackIndex,
   trackName,
   visualizedDataKey,
-}: SetDopeSheetStatus): TPDopeSheet => ({
+}: SetDopeSheetStatus): TPTrackList => ({
   isSelected: false,
   isLocked: false,
   isIncluded,

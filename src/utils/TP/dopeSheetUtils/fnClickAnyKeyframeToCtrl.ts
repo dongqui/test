@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import produce from 'immer';
-import { TPDopeSheet, TPLastBone, KeyframeData } from 'types/TP';
+import { TPTrackList, TPLastBone, KeyframeData } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { fnClickBoneKeyframe, fnClickLayerKeyframe } from './index';
 interface FnClickAnyKeyframeToCtrl {
   deleteTargetKeyframes: KeyframeData[];
-  dopeSheetList: TPDopeSheet[];
+  dopeSheetList: TPTrackList[];
   lastBoneList: TPLastBone[];
   layerKey: string;
   time: number;

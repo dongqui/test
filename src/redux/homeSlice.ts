@@ -13,7 +13,7 @@ const initialState = {
   recordingData: INITIAL_RECORDING_DATA,
   animatingData: INITIAL_ANIMATING_DATA,
   currentVisualizedData: undefined,
-  TPDopeSheetList: [],
+  TPTrackListList: [],
 };
 const homeSlice = createSlice({
   name: 'homeReducer',
@@ -34,8 +34,8 @@ const homeSlice = createSlice({
     setCurrentVisualizedData(state, action) {
       state.currentVisualizedData = action.payload;
     },
-    setTPDopeSheetList(state, action) {
-      state.TPDopeSheetList = action.payload;
+    setTPTrackListList(state, action) {
+      state.TPTrackListList = action.payload;
     },
   },
   extraReducers: {},
@@ -47,7 +47,7 @@ export const {
   setRenderingData,
   setAnimatingData,
   setCurrentVisualizedData,
-  setTPDopeSheetList,
+  setTPTrackListList,
 } = homeSlice.actions;
 
 export default homeSlice.reducer;

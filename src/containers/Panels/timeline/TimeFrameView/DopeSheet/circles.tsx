@@ -1,15 +1,15 @@
 import React, { memo, useCallback, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
-import { TPDopeSheet } from 'types/TP';
+import { TPTrackList } from 'types/TP';
 import { useReactiveVar } from '@apollo/client';
-import { storeDeleteTargetKeyframes, storeTPDopeSheetList, storeTPLastBoneList } from 'lib/store';
+import { storeDeleteTargetKeyframes, storeTPTrackListList, storeTPLastBoneList } from 'lib/store';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { fnClickAnyKeyframeToMouse, fnClickAnyKeyframeToCtrl } from 'utils/TP/dopeSheetUtils';
 
 interface Props {
   circleGroupRef: React.RefObject<SVGSVGElement>;
-  dopeSheetData: TPDopeSheet;
+  dopeSheetData: TPTrackList;
   prevXScale: d3.ScaleLinear<number, number, never>;
 }
 
@@ -19,7 +19,7 @@ const CIRCLE_RADIUS = 4; // 원 반지름 크기
 const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale }) => {
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
-  const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
+  const dopeSheetList = useReactiveVar(storeTPTrackListList);
   const prevClickedCircles = useRef<number[]>([]);
 
   // circle 클릭 이벤트

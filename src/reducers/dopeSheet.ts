@@ -1,21 +1,21 @@
 import _ from 'lodash';
-import { TPDopeSheet, TPLastBone, TPCurrentClickedChannel, KeyframeData } from 'types/TP';
+import { TPTrackList, TPLastBone, TPcurrentClickedTrack, KeyframeData } from 'types/TP';
 import { DopeSheetAction } from 'actions/dopeSheet';
 
 interface DopeSheetState {
-  trackList: TPDopeSheet[];
+  trackList: TPTrackList[];
   lastBoneOfLayers: TPLastBone[];
-  selectedChannels: number[];
+  selectedTrackIndices: number[];
   selectedKeyframes: KeyframeData[];
-  currentClickedChannel: TPCurrentClickedChannel;
+  currentClickedTrack: TPcurrentClickedTrack;
 }
 
 const defaultState: DopeSheetState = {
   trackList: [],
   lastBoneOfLayers: [],
-  selectedChannels: [],
+  selectedTrackIndices: [],
   selectedKeyframes: [],
-  currentClickedChannel: { trackIndex: 0, isPointedDownArrow: true },
+  currentClickedTrack: { trackIndex: 0, isPointedDownArrow: true },
 };
 
 export const dopeSheet = (state = defaultState, action: DopeSheetAction) => {
@@ -30,20 +30,20 @@ export const dopeSheet = (state = defaultState, action: DopeSheetAction) => {
       return Object.assign({}, state, {
         trackList: [],
         lastBoneOfLayers: [],
-        selectedChannels: [],
-        currentClickedChannel: 0,
+        selectedTrackIndices: [],
+        currentClickedTrack: 0,
       });
     }
     case 'dopeSheet/CLICK_TRACK_ARROW_BUTTON': {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
-        currentClickedChannel: action.payload.currentClickedChannel,
+        currentClickedTrack: action.payload.currentClickedTrack,
       });
     }
     case 'dopeSheet/CLICK_TRACK_BODY': {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
-        selectedChannels: action.payload.selectedChannels,
+        selectedTrackIndices: action.payload.selectedTrackIndices,
       });
     }
     case 'dopeSheet/CLICK_TRACK_LOCK_BUTTON': {
@@ -59,6 +59,17 @@ export const dopeSheet = (state = defaultState, action: DopeSheetAction) => {
     case 'dopeSheet/SEARCH_TRACK_LIST': {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
+      });
+    }
+    case 'dopeSheet/ADD_KEYFRAMES': {
+      return Object.assign({}, state, {
+        trackList: action.payload.trackList,
+      });
+    }
+    case 'dopeSheet/DELETE_KEYFRAMES': {
+      return Object.assign({}, state, {
+        trackList: action.payload.trackList,
+        selectedKeyframes: action.payload.selectedKeyframes,
       });
     }
     case 'dopeSheet/SELECT_KEYFRAMES': {

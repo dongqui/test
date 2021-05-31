@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { fnSelectBoneTrack, fnSelectLayerTrack, fnSelectTransformTrack } from './index';
-import { TPDopeSheet, TPLastBone } from 'types/TP';
+import { TPTrackList, TPLastBone } from 'types/TP';
 
 interface FnClickTrackToMouse {
   clickedTrackList: number[];
@@ -9,7 +9,7 @@ interface FnClickTrackToMouse {
   trackIndex: number;
 }
 
-type Return = [Partial<TPDopeSheet>[], number[]];
+type Return = [Partial<TPTrackList>[], number[]];
 
 /**
  * 마우스 좌클릭을 했을 때, 클릭 한 트랙에 선택 효과를 적용시키는 함수입니다.
@@ -30,7 +30,7 @@ const fnClickTrackToMouse = ({
   trackIndex,
 }: FnClickTrackToMouse): Return => {
   const remainder = trackIndex % 10;
-  const updatedTrackList: Partial<TPDopeSheet>[] = [];
+  const updatedTrackList: Partial<TPTrackList>[] = [];
   const newClickedTrackList = [];
 
   // 선택 적용 된 트랙들이 있는 경우, isSelected를 false로

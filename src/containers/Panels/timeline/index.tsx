@@ -4,7 +4,7 @@ import _ from 'lodash';
 import classNames from 'classnames/bind';
 import {
   storeTPTrackNameList,
-  storeTPDopeSheetList,
+  storeTPTrackListList,
   storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
   storeTPClearData,
@@ -42,7 +42,7 @@ const TimelineContainer: React.FC<Props> = ({
 }) => {
   const prevModelKey = useRef('');
   const prevLayerLength = useRef(0);
-  const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
+  const dopeSheetList = useReactiveVar(storeTPTrackListList);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const trackNameList = useReactiveVar(storeTPTrackNameList);
 
@@ -74,7 +74,7 @@ const TimelineContainer: React.FC<Props> = ({
             visualizedDataKey,
           });
 
-          storeTPDopeSheetList(defaultDopeSheetList);
+          storeTPTrackListList(defaultDopeSheetList);
           storeTPTrackNameList(trackNameList);
           storeTPLastBoneList(lastBoneList);
         }
@@ -92,7 +92,7 @@ const TimelineContainer: React.FC<Props> = ({
           visualizedDataKey,
         });
 
-        storeTPDopeSheetList(defaultDopeSheetList);
+        storeTPTrackListList(defaultDopeSheetList);
         storeTPTrackNameList(trackNameList);
         storeTPLastBoneList(lastBoneList);
       }
@@ -143,7 +143,7 @@ const TimelineContainer: React.FC<Props> = ({
         });
 
         storeTPTrackNameList(filteredTrackNameList);
-        storeTPDopeSheetList(filteredDopeSheetList);
+        storeTPTrackListList(filteredDopeSheetList);
         storeTPLastBoneList(filteredLastBoneList);
         prevLayerLength.current -= 1;
       }
@@ -181,7 +181,7 @@ const TimelineContainer: React.FC<Props> = ({
 
         storeTPTrackNameList(updatedTrackNameList);
         storeTPLastBoneList([...lastBoneList, lastBone]);
-        storeTPDopeSheetList([...dopeSheetList, ...layerDopeSheet]);
+        storeTPTrackListList([...dopeSheetList, ...layerDopeSheet]);
         prevLayerLength.current += 1;
       }
       // 현재 layers 길이보다 이전 layers 길이가 같은 경우(레이어 내 데이터 변경)
@@ -214,7 +214,7 @@ const TimelineContainer: React.FC<Props> = ({
             });
             storeTPTrackNameList(nextTrackNameList);
             storeTPLastBoneList(nextLastBoneList);
-            storeTPDopeSheetList(nextDopeSheetList);
+            storeTPTrackListList(nextDopeSheetList);
             return;
           }
         }

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { ShootLayerType, ShootTrackType } from 'types';
-import { TPDopeSheet } from 'types/TP';
+import { TPTrackList } from 'types/TP';
 import { fnSetDopeSheetStatus, fnSetLayerDopeSheet } from './index';
 
 interface FnSetDefaultDopeSheetList {
@@ -22,7 +22,7 @@ const fnSetDefaultDopeSheetList = ({
   layers,
   visualizedDataKey,
 }: FnSetDefaultDopeSheetList) => {
-  const dopeSheetList: TPDopeSheet[] = [];
+  const dopeSheetList: TPTrackList[] = [];
   const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
 
   // Summary 트랙 status 추가

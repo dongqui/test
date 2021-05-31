@@ -1,4 +1,4 @@
-import { TPDopeSheet, TPLastBone, TPCurrentClickedChannel, KeyframeData } from 'types/TP';
+import { TPTrackList, TPLastBone, TPcurrentClickedTrack, KeyframeData } from 'types/TP';
 
 export type DopeSheetAction =
   | ReturnType<typeof setTrackList>
@@ -17,7 +17,7 @@ export type DopeSheetAction =
 
 // 모델 변경 시 dope sheet 데이터 set
 interface SetTrackList {
-  trackList: TPDopeSheet[];
+  trackList: TPTrackList[];
   lastBoneOfLayers: TPLastBone[];
 }
 
@@ -37,7 +37,7 @@ export const clearAll = () => ({
 
 // 레이어 추가
 interface AddLayer {
-  trackList: TPDopeSheet[];
+  trackList: TPTrackList[];
   lastBoneOfLayers: TPLastBone[];
 }
 
@@ -51,7 +51,7 @@ export const addLayer = (params: AddLayer) => ({
 
 // 레이어 삭제
 interface DeleteLayer {
-  trackList: TPDopeSheet[];
+  trackList: TPTrackList[];
   lastBoneOfLayers: TPLastBone[];
 }
 
@@ -65,7 +65,7 @@ export const deleteLayer = (params: DeleteLayer) => ({
 
 // 레이어 이름 변경
 interface ModifyLayerName {
-  trackList: TPDopeSheet[];
+  trackList: TPTrackList[];
 }
 
 export const MODIFY_LAYER_NAME = 'dopeSheet/MODIFY_LAYER_NAME' as const;
@@ -77,7 +77,9 @@ export const modifyLayerName = (params: ModifyLayerName) => ({
 });
 
 // 키프레임 추가
-interface AddKeyframes {}
+interface AddKeyframes {
+  trackList: TPTrackList[];
+}
 
 export const ADD_KEYFRAMES = 'dopeSheet/ADD_KEYFRAMES' as const;
 export const addKeyframes = (params: AddKeyframes) => ({
@@ -88,7 +90,10 @@ export const addKeyframes = (params: AddKeyframes) => ({
 });
 
 // 키프레임 삭제
-interface DeleteKeyframes {}
+interface DeleteKeyframes {
+  trackList: TPTrackList[];
+  selectedKeyframes: KeyframeData[];
+}
 
 export const DELETE_KEYFRAMES = 'dopeSheet/DELETE_KEYFRAMES' as const;
 export const deleteKeyframes = (params: DeleteKeyframes) => ({
@@ -113,7 +118,7 @@ export const selectKeyframes = (params: SelectKeyframes) => ({
 
 // 트랙 검색
 interface SearchTrackList {
-  trackList: TPDopeSheet[];
+  trackList: TPTrackList[];
 }
 
 export const SEARCH_TRACK_LIST = 'dopeSheet/SEARCH_TRACK_LIST' as const;
@@ -126,8 +131,8 @@ export const searchTrackList = (params: SearchTrackList) => ({
 
 // 화살표 버튼 클릭
 interface ClickTrackArrowButton {
-  trackList: TPDopeSheet[];
-  currentClickedChannel: TPCurrentClickedChannel;
+  trackList: TPTrackList[];
+  currentClickedTrack: TPcurrentClickedTrack;
 }
 
 export const CLICK_TRACK_ARROW_BUTTON = 'dopeSheet/CLICK_TRACK_ARROW_BUTTON' as const;
@@ -140,8 +145,8 @@ export const clickTrackArrowButton = (params: ClickTrackArrowButton) => ({
 
 // 트랙 클릭
 interface ClickTrackBody {
-  trackList: TPDopeSheet[];
-  selectedChannels: number[];
+  trackList: TPTrackList[];
+  selectedTrackIndices: number[];
 }
 
 export const CLICK_TRACK_BODY = 'dopeSheet/CLICK_TRACK_BODY' as const;
@@ -154,7 +159,7 @@ export const clickTrackBody = (params: ClickTrackBody) => ({
 
 // 잠금 버튼 클릭
 interface ClickTrackLockButton {
-  trackList: TPDopeSheet[];
+  trackList: TPTrackList[];
 }
 
 export const CLICK_TRACK_LOCK_BUTTON = 'dopeSheet/CLICK_TRACK_LOCK_BUTTON' as const;
@@ -167,7 +172,7 @@ export const clickTrackLockButton = (params: ClickTrackLockButton) => ({
 
 // 랜더링 체크 버튼 클릭
 interface ClickTrackCheckButton {
-  trackList: TPDopeSheet[];
+  trackList: TPTrackList[];
 }
 
 export const CLICK_TRACK_CHECK_BUTTON = 'dopeSheet/CLICK_TRACK_CHECK_BUTTON' as const;

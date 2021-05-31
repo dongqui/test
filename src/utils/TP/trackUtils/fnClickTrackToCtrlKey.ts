@@ -1,5 +1,5 @@
 import { fnCheckSelectedTrackList, fnSelectTrackList } from './index';
-import { TPDopeSheet, TPLastBone } from 'types/TP';
+import { TPTrackList, TPLastBone } from 'types/TP';
 
 interface FnClickTrackToCtrlKey {
   clickedTrackList: number[];
@@ -7,7 +7,7 @@ interface FnClickTrackToCtrlKey {
   trackIndex: number;
 }
 
-type Return = [Partial<TPDopeSheet>[], number[]] | false;
+type Return = [Partial<TPTrackList>[], number[]] | false;
 
 /**
  * 트랙에다가 ctrl key와 함께 마우스 좌클릭을 할 경우, 클릭 한 트랙에 선택 효과를 적용시키는 함수입니다.
@@ -29,7 +29,7 @@ const fnClickTrackToCtrlKey = ({
   lastBoneList,
   trackIndex,
 }: FnClickTrackToCtrlKey): Return => {
-  const updatedTrackList: Partial<TPDopeSheet>[] = [];
+  const updatedTrackList: Partial<TPTrackList>[] = [];
   const newClickedTrackList = [];
 
   // 선택 된 트랙이 없을 경우

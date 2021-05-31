@@ -4,10 +4,10 @@ import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { CurrentVisualizedDataType } from 'types';
-import { TPTrackName, TPDopeSheet } from 'types/TP';
+import { TPTrackName, TPTrackList } from 'types/TP';
 import {
   storeTPTrackNameList,
-  storeTPDopeSheetList,
+  storeTPTrackListList,
   storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
   storeCurrentVisualizedData,
@@ -38,7 +38,7 @@ const cx = classNames.bind(styles);
 
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
   const trackNameList = useReactiveVar(storeTPTrackNameList);
-  const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
+  const dopeSheetList = useReactiveVar(storeTPTrackListList);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
@@ -59,7 +59,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         // 이전 검색 텍스트가 있으면서, 현재 검색 텍스트가 비어있는 경우(디폴트 상태로 갱신)
         if (prevTrackInput.current !== trimedInput && _.isEmpty(trimedInput)) {
-          const resetDopeSheetList = produce<Partial<TPDopeSheet>[]>(dopeSheetList, (draft) => {
+          const resetDopeSheetList = produce<Partial<TPTrackList>[]>(dopeSheetList, (draft) => {
             const nextState = _.map(draft, ({ trackIndex }) => ({
               trackIndex,
               isShowed: false,
@@ -130,7 +130,7 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
         // 필터링 된 트랙 리스트를 dope sheet에 반영
         const [filteredTrackList] = filterTrackList({ trackList: trackNameList });
-        const filteredDopeSheetList = produce<Partial<TPDopeSheet>[]>(dopeSheetList, (draft) => {
+        const filteredDopeSheetList = produce<Partial<TPTrackList>[]>(dopeSheetList, (draft) => {
           const nextState = _.map(draft, ({ trackIndex, isShowed }) => ({
             trackIndex,
             isShowed,

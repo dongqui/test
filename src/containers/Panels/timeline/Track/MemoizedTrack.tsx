@@ -6,7 +6,7 @@ import produce from 'immer';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import {
   storeTPSelectedTrackList,
-  storeTPDopeSheetList,
+  storeTPTrackListList,
   storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
   storeTPCurrnetClickedTrack,
@@ -15,7 +15,7 @@ import {
   storeModalInfo,
 } from 'lib/store';
 import { CurrentVisualizedDataType, MODAL_TYPES } from 'types';
-import { TPTrackName, TPDopeSheet, TPLastBone } from 'types/TP';
+import { TPTrackName, TPTrackList, TPLastBone } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import {
   fnClickLockButton,
@@ -54,7 +54,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
   const [isIncluded, setisIncluded] = useState(true);
   const [isClickedArrowButton, setIsClickedArrowButton] = useState(false); // 화살표 토글 버튼(true면 하위 트랙 open)
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
-  const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
+  const dopeSheetList = useReactiveVar(storeTPTrackListList);
   const clickedTrackList = useReactiveVar(storeTPSelectedTrackList);
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -120,7 +120,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
   // 화살표 버튼 클릭
   const clickArrowButton = useCallback(() => {
     const remainder = trackIndex % 10;
-    const updatedTrackList: Partial<TPDopeSheet>[] = [];
+    const updatedTrackList: Partial<TPTrackList>[] = [];
     switch (remainder) {
       // Summary 트랙 화살표 클릭
       case TP_TRACK_INDEX.SUMMARY: {

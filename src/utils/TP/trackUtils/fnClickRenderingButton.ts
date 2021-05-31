@@ -1,4 +1,4 @@
-import { TPDopeSheet, TPLastBone, IsIncludedChange } from 'types/TP';
+import { TPTrackList, TPLastBone, IsIncludedChange } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import {
   fnRenderBoneTrack,
@@ -7,12 +7,12 @@ import {
 } from 'utils/TP/dopeSheetUtils';
 
 interface FnClickRenderingButton {
-  dopeSheetList: TPDopeSheet[];
+  dopeSheetList: TPTrackList[];
   lastBoneList: TPLastBone[];
   trackIndex: number;
 }
 
-type RenderingButton = [Partial<TPDopeSheet>[], IsIncludedChange[]];
+type RenderingButton = [Partial<TPTrackList>[], IsIncludedChange[]];
 
 const fnClickRenderingButton = ({
   dopeSheetList,
@@ -20,7 +20,7 @@ const fnClickRenderingButton = ({
   trackIndex,
 }: FnClickRenderingButton): RenderingButton => {
   const remainder = trackIndex % 10;
-  const updatedDopeSheetList: Partial<TPDopeSheet>[] = [];
+  const updatedDopeSheetList: Partial<TPTrackList>[] = [];
   const updatedCurrentVisualizedList: IsIncludedChange[] = [];
 
   switch (remainder) {

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
 import { ShootTrackType } from 'types';
-import { TPDopeSheet } from 'types/TP';
+import { TPTrackList } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { fnSetDopeSheetStatus } from './index';
 
@@ -31,7 +31,7 @@ const fnSetyLayerDopeSheet = ({
   visualizedDataKey,
 }: SetyLayerDopeSheet) => {
   const layerTimes = fnGetLayerTimes({ targetLayer: layer });
-  const dopeSheetList: TPDopeSheet[] = [];
+  const dopeSheetList: TPTrackList[] = [];
   const boneIncluded: boolean[] = [];
   const nextBoneIndex = TP_TRACK_INDEX.BONE_A; // 3
   let trackIndex = layerIndex;

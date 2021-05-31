@@ -1,9 +1,9 @@
 import { TP_TRACK_INDEX } from 'utils/const';
-import { TPDopeSheet } from 'types/TP';
+import { TPTrackList } from 'types/TP';
 import { fnGetBinarySearch } from './index';
 
 interface FnLockTransformTrack {
-  dopeSheetList: TPDopeSheet[];
+  dopeSheetList: TPTrackList[];
   trackIndex: number;
 }
 
@@ -15,7 +15,7 @@ interface FnLockTransformTrack {
  */
 const fnLockTransformTrack = ({ dopeSheetList, trackIndex }: FnLockTransformTrack) => {
   const remainder = trackIndex % 10;
-  const updatedList: Partial<TPDopeSheet>[] = [];
+  const updatedList: Partial<TPTrackList>[] = [];
 
   const targetIndex = fnGetBinarySearch({
     collection: dopeSheetList,

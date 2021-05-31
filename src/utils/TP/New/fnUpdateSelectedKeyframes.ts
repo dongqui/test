@@ -1,4 +1,4 @@
-import { KeyframeData, TPDopeSheet, TPLastBone } from 'types/TP';
+import { KeyframeData, TPTrackList, TPLastBone } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { fnGetBinarySearch } from './index';
 
@@ -6,7 +6,7 @@ interface FnUpdateSelectedKeyframes {
   lastBoneOfLayers: TPLastBone[];
   time: number;
   trackIndex: number;
-  trackList: TPDopeSheet[];
+  trackList: TPTrackList[];
 }
 
 const fnUpdateSelectedKeyframes = (params: FnUpdateSelectedKeyframes) => {

@@ -18,7 +18,7 @@ import {
   storeCurrentVisualizedData,
   storeDeleteTargetKeyframes,
   storeSkeletonHelper,
-  storeTPDopeSheetList,
+  storeTPTrackListList,
   storePageInfo,
 } from 'lib/store';
 import CircleGroup from './circleGroup';
@@ -72,7 +72,7 @@ const DopeSheet: React.FC<Props> = ({
   currentXAxisPosition,
   prevXScale,
 }) => {
-  const dopeSheetList = useReactiveVar(storeTPDopeSheetList); // store에 저장 된 dope sheet data list
+  const dopeSheetList = useReactiveVar(storeTPTrackListList); // store에 저장 된 dope sheet data list
   const dopeSheetRef = useRef<HTMLDivElement>(null); // Dope Sheet의 Ref
   const prevScrollTop = useRef(0); // 직전 TP scroll 위치
   const prevModelKey = useRef('');
@@ -241,28 +241,28 @@ const DopeSheet: React.FC<Props> = ({
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
-  const tpDopesheetList = storeTPDopeSheetList();
+  const TPTrackListList = storeTPTrackListList();
   const selectedBaseDopeSheets = useMemo(
     () =>
-      tpDopesheetList.filter(
+      TPTrackListList.filter(
         (item) =>
           item.isSelected &&
           !item.isLocked &&
           item.isTransformTrack &&
           item.layerKey === 'baseLayer',
       ),
-    [tpDopesheetList],
+    [TPTrackListList],
   );
   const selectedLayerDopeSheets = useMemo(
     () =>
-      tpDopesheetList.filter(
+      TPTrackListList.filter(
         (item) =>
           item.isSelected &&
           !item.isLocked &&
           item.isTransformTrack &&
           item.layerKey !== 'baseLayer',
       ),
-    [tpDopesheetList],
+    [TPTrackListList],
   );
 
   const handleUpdateKeyframeToBase = useCallback(() => {

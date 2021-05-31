@@ -5,10 +5,10 @@ import _ from 'lodash';
 import Circles from './circles';
 import { storeTPCurrnetClickedTrack } from 'lib/store';
 import { TP_TRACK_INDEX } from 'utils/const';
-import { TPDopeSheet } from 'types/TP';
+import { TPTrackList } from 'types/TP';
 
 interface Props {
-  dopeSheetData: TPDopeSheet;
+  dopeSheetData: TPTrackList;
   prevXScale: d3.ScaleLinear<number, number, never>;
 }
 
