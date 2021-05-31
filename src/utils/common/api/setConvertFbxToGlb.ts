@@ -34,10 +34,14 @@ const setConvertFbxToGlb = async (params: SetConvertFbxToGlb): Promise<ResponseT
       url: '/fbx2glb-upload-api',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    if (result?.data?.result) {
+    })
+      .then((result) => result?.data.result)
+      .catch((e) => {
+        throw Error(e);
+      });
+    if (result) {
       return {
-        result: result.data.result,
+        result,
         isError: false,
         errorMessage: '',
       };

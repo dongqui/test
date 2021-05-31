@@ -230,7 +230,6 @@ const LibraryPanel: FunctionComponent = () => {
           return -1;
         }
       });
-      console.log('sortedFiles', sortedFiles);
       for (const file of sortedFiles) {
         const extension = getFileExtension(file.name);
         const isValidFileFormat = _.includes(EnableFileFormats, extension);
