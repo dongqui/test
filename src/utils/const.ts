@@ -1,19 +1,12 @@
 import { FILE_TYPES, LPDataType } from 'types';
-import { CPComponentType, CPDataType, CPNameType } from 'types/CP';
-import {
-  AnimatingDataType,
-  AxisName,
-  RenderingDataPropertyName,
-  RenderingDataType,
-} from 'types/RP';
+import { CPDataType } from 'types/CP';
 
-export const isDebug = false;
 export const isClient = typeof window !== 'undefined';
-export const DEFAULT_MODEL_URL =
-  'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1612095825/DyingToGlb_fqke1a.glb';
-export const DEFAULT_FILE_URL = '/video/exo.mp4';
+
 export const CUT_IMAGES_CNT = 20;
+
 export const STANDARD_TIME_UNIT = 1 / 30;
+
 export const DEFAULT_MODELS: LPDataType[] = [
   {
     key: 'defaultmodel1',
@@ -40,76 +33,70 @@ export const DEFAULT_MODELS: LPDataType[] = [
     layers: [],
   },
 ];
+
 export const INITIAL_LP_DATA: LPDataType[] = [];
+
 export const INITIAL_CP_DATA: CPDataType[] = [
   {
     key: '0',
-    name: CPNameType.Transform,
-    type: CPComponentType.parent,
+    name: 'Transform',
+    type: 'parent',
     isExpanded: true,
   },
   {
     key: '0-1',
-    name: CPNameType.Position,
-    type: CPComponentType.input,
-    x: RenderingDataPropertyName.positionX,
-    y: RenderingDataPropertyName.positionY,
-    z: RenderingDataPropertyName.positionZ,
+    name: 'Position',
+    type: 'input',
     parentKey: '0',
   },
   {
     key: '0-2',
-    name: CPNameType.Rotation,
-    type: CPComponentType.input,
-    x: RenderingDataPropertyName.rotationX,
-    y: RenderingDataPropertyName.rotationY,
-    z: RenderingDataPropertyName.rotationZ,
+    name: 'Rotation',
+    type: 'input',
     parentKey: '0',
   },
   {
     key: '0-3',
-    name: CPNameType.Scale,
-    type: CPComponentType.input,
-    x: RenderingDataPropertyName.scaleX,
-    y: RenderingDataPropertyName.scaleY,
-    z: RenderingDataPropertyName.scaleZ,
+    name: 'Scale',
+    type: 'input',
     parentKey: '0',
   },
   {
     key: '2',
-    name: CPNameType.Visibility,
-    type: CPComponentType.parent,
+    name: 'Visibility',
+    type: 'parent',
     isExpanded: true,
   },
   {
     key: '2-1',
-    name: CPNameType.Axis,
-    type: CPComponentType.select,
-    button: RenderingDataPropertyName.axis,
+    name: 'Axis',
+    type: 'select',
+    button: 'axis',
     parentKey: '2',
   },
   {
     key: '2-2',
-    name: CPNameType.Bone,
-    type: CPComponentType.select,
-    button: RenderingDataPropertyName.isBoneOn,
+    name: 'Bone',
+    type: 'select',
+    button: 'isBoneOn',
     parentKey: '2',
   },
   {
     key: '2-4',
-    name: CPNameType.Mesh,
-    type: CPComponentType.select,
-    button: RenderingDataPropertyName.isMeshOn,
+    name: 'Mesh',
+    type: 'select',
+    button: 'isMeshOn',
     parentKey: '2',
   },
   {
     key: '2-5',
-    name: CPNameType.Shadow,
-    type: CPComponentType.select,
-    button: RenderingDataPropertyName.isShadowOn,
+    name: 'Shadow',
+    type: 'select',
+    button: 'isShadowOn',
     parentKey: '2',
   },
 ];
+
 export const INITIAL_RECORDING_DATA = {
   duration: 10,
   rangeBoxInfo: {

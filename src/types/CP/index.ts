@@ -1,79 +1,30 @@
-import { RenderingDataPropertyName } from 'types/RP';
+export type CPComponentType = 'parent' | 'input' | 'select' | 'slider';
 
-export enum CPComponentType {
-  parent = 'parent',
-  input = 'input',
-  select = 'select',
-  slider = 'slider',
-}
-export enum CPDataPropertyNames {
-  key = 'key',
-  parentKey = 'parentKey',
-}
-export enum CPNameType {
-  Transform = 'Transform',
-  Position = 'Position',
-  Rotation = 'Rotation',
-  Quaternion = 'Quaternion',
-  Scale = 'Scale',
-  // Camera = 'Camera',
-  // Location = 'Location',
-  // Angle = 'Angle',
-  Visibility = 'Visibility',
-  Axis = 'Axis',
-  Bone = 'Bone',
-  // Joint = 'Joint',
-  Mesh = 'Mesh',
-  Shadow = 'Shadow',
-  // Fog = 'Fog',
-  // Near = 'Near',
-  // Far = 'Far',
-}
-export enum CPModeType {
-  property = 'property',
-  retarget = 'retarget',
-}
+export type CPDataPropertyNames = 'key' | 'parentKey';
+
+export type CPNameType =
+  | 'Transform'
+  | 'Position'
+  | 'Rotation'
+  | 'Quaternion'
+  | 'Scale'
+  | 'Visibility'
+  | 'Axis'
+  | 'Bone'
+  | 'Mesh'
+  | 'Shadow';
+
+export type CPModeType = 'property' | 'retarget';
+
 export interface CPDataType {
-  [CPDataPropertyNames.key]: string;
+  key: string;
   name: CPNameType;
-  type:
-    | CPComponentType.parent
-    | CPComponentType.input
-    | CPComponentType.select
-    | CPComponentType.slider;
-  [CPDataPropertyNames.parentKey]?: string;
+  type: CPComponentType;
+  parentKey?: string;
+  button?: 'axis' | 'isBoneOn' | 'isMeshOn' | 'isShadowOn';
   isExpanded?: boolean;
-  w?: RenderingDataPropertyName.quaternionW;
-  x?:
-    | RenderingDataPropertyName.quaternionX
-    | RenderingDataPropertyName.positionX
-    | RenderingDataPropertyName.rotationX
-    | RenderingDataPropertyName.scaleX;
-  // | RenderingDataPropertyName.locationX
-  // | RenderingDataPropertyName.angleX;
-  y?:
-    | RenderingDataPropertyName.quaternionY
-    | RenderingDataPropertyName.positionY
-    | RenderingDataPropertyName.rotationY
-    | RenderingDataPropertyName.scaleY;
-  // | RenderingDataPropertyName.locationY
-  // | RenderingDataPropertyName.angleY;
-  z?:
-    | RenderingDataPropertyName.quaternionZ
-    | RenderingDataPropertyName.positionZ
-    | RenderingDataPropertyName.rotationZ
-    | RenderingDataPropertyName.scaleZ;
-  // | RenderingDataPropertyName.locationZ
-  // | RenderingDataPropertyName.angleZ;
-  button?:
-    | RenderingDataPropertyName.axis
-    | RenderingDataPropertyName.isBoneOn
-    // | RenderingDataPropertyName.isJointOn
-    | RenderingDataPropertyName.isMeshOn
-    | RenderingDataPropertyName.isShadowOn;
-  //   | RenderingDataPropertyName.isFogOn;
-  // slider?: RenderingDataPropertyName.fogNear | RenderingDataPropertyName.fogFar;
 }
+
 export interface RetargetMap {
   key: string;
   value: {

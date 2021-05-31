@@ -22,16 +22,9 @@ const PropertyTab: FunctionComponent = () => {
         <AccordionMenu title="Transform">
           {_.map(cpData, (item, idx) => (
             <div className={cx('transform-group')} key={`transform-${idx}`}>
-              {_.isEqual(item.type, CPComponentType.input) &&
-                _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
-                  <CPListRowInput
-                    rowKey={item.key}
-                    name={item.name}
-                    w={item.w}
-                    x={item.x}
-                    y={item.y}
-                    z={item.z}
-                  />
+              {_.isEqual(item.type, 'input') &&
+                _.find(cpData, ['key', item?.parentKey])?.isExpanded && (
+                  <CPListRowInput rowKey={item.key} name={item.name} />
                 )}
             </div>
           ))}
@@ -41,8 +34,8 @@ const PropertyTab: FunctionComponent = () => {
         <AccordionMenu title="Visibility">
           {_.map(cpData, (item, idx) => (
             <div className={cx('transform-group')} key={`visibility-${idx}`}>
-              {_.isEqual(item.type, CPComponentType.select) &&
-                _.find(cpData, [CPDataPropertyNames.key, item?.parentKey])?.isExpanded && (
+              {_.isEqual(item.type, 'select') &&
+                _.find(cpData, ['key', item?.parentKey])?.isExpanded && (
                   <CPListRowButton rowKey={item.key} name={item.name} button={item.button} />
                 )}
             </div>

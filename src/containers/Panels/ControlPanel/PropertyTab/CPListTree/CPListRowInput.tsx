@@ -24,22 +24,6 @@ const cx = classNames.bind(styles);
 export interface CPListRowInputProps {
   rowKey: string;
   name: string;
-  w?: RenderingDataPropertyName.quaternionW;
-  x?:
-    | RenderingDataPropertyName.quaternionX
-    | RenderingDataPropertyName.positionX
-    | RenderingDataPropertyName.rotationX
-    | RenderingDataPropertyName.scaleX;
-  y?:
-    | RenderingDataPropertyName.quaternionY
-    | RenderingDataPropertyName.positionY
-    | RenderingDataPropertyName.rotationY
-    | RenderingDataPropertyName.scaleY;
-  z?:
-    | RenderingDataPropertyName.quaternionZ
-    | RenderingDataPropertyName.positionZ
-    | RenderingDataPropertyName.rotationZ
-    | RenderingDataPropertyName.scaleZ;
 }
 
 interface InputValueType {
@@ -49,13 +33,9 @@ interface InputValueType {
   z: number;
 }
 
-const CPListRowInput: React.FC<CPListRowInputProps> = ({
-  name,
-  w = RenderingDataPropertyName.quaternionW,
-  x = RenderingDataPropertyName.positionX,
-  y = RenderingDataPropertyName.positionY,
-  z = RenderingDataPropertyName.positionZ,
-}) => {
+const CPListRowInput: React.FC<CPListRowInputProps> = ({ name }) => {
+  console.log('name: ', name);
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { currentBone, transformControls } = useSelector((state) => state.renderingData);
@@ -210,14 +190,14 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({
       const {
         present: { position, rotation, quaternion, scale },
       } = boneTransform;
-      if (_.isEqual(name, CPNameType.Position) && position) {
+      if (_.isEqual(name, 'Position') && position) {
         setInitialValue({
           x: position.x ? _.round(position.x, 4) : 0,
           y: position.y ? _.round(position.y, 4) : 0,
           z: position.z ? _.round(position.z, 4) : 0,
         });
       }
-      if (_.isEqual(name, CPNameType.Rotation) && quaternion && rotation) {
+      if (_.isEqual(name, 'Rotation') && quaternion && rotation) {
         if (quaternionMode) {
           setInitialValue({
             w: quaternion.w ? _.round(quaternion.w, 4) : 1,
@@ -233,7 +213,7 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({
           });
         }
       }
-      if (_.isEqual(name, CPNameType.Scale) && scale) {
+      if (_.isEqual(name, 'Scale') && scale) {
         setInitialValue({
           x: scale.x ? _.round(scale.x, 4) : 1,
           y: scale.y ? _.round(scale.y, 4) : 1,
@@ -251,14 +231,14 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({
         // event.target 이 transformControls,
         // event.target.object 가 컨트롤 한 Bone 입니다
         const targetObject = event.target.object;
-        if (_.isEqual(name, CPNameType.Position)) {
+        if (_.isEqual(name, 'Position')) {
           setInitialValue({
             x: targetObject?.position?.x ? _.round(targetObject?.position?.x, 4) : 0,
             y: targetObject?.position?.y ? _.round(targetObject?.position?.y, 4) : 0,
             z: targetObject?.position?.z ? _.round(targetObject?.position?.z, 4) : 0,
           });
         }
-        if (_.isEqual(name, CPNameType.Rotation)) {
+        if (_.isEqual(name, 'Rotation')) {
           if (quaternionMode) {
             setInitialValue({
               w: targetObject?.quaternion?.w ? _.round(targetObject?.quaternion?.w, 4) : 1,
@@ -280,7 +260,7 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({
             });
           }
         }
-        if (_.isEqual(name, CPNameType.Scale)) {
+        if (_.isEqual(name, 'Scale')) {
           setInitialValue({
             x: targetObject?.scale?.x ? _.round(targetObject?.scale?.x, 4) : 1,
             y: targetObject?.scale?.y ? _.round(targetObject?.scale?.y, 4) : 1,
@@ -297,14 +277,14 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({
 
   // currentBone 변경 시 input 값 변경
   useEffect(() => {
-    if (_.isEqual(name, CPNameType.Position)) {
+    if (_.isEqual(name, 'Position')) {
       setInitialValue({
         x: currentBone?.position?.x ? _.round(currentBone?.position?.x, 4) : 0,
         y: currentBone?.position?.y ? _.round(currentBone?.position?.y, 4) : 0,
         z: currentBone?.position?.z ? _.round(currentBone?.position?.z, 4) : 0,
       });
     }
-    if (_.isEqual(name, CPNameType.Rotation)) {
+    if (_.isEqual(name, 'Rotation')) {
       if (quaternionMode) {
         setInitialValue({
           w: currentBone?.quaternion?.w ? _.round(currentBone?.quaternion?.w, 4) : 1,
@@ -326,7 +306,7 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({
         });
       }
     }
-    if (_.isEqual(name, CPNameType.Scale)) {
+    if (_.isEqual(name, 'Scale')) {
       setInitialValue({
         x: currentBone?.scale?.x ? _.round(currentBone?.scale?.x, 4) : 1,
         y: currentBone?.scale?.y ? _.round(currentBone?.scale?.y, 4) : 1,
@@ -346,16 +326,16 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({
   }, [initialValue]);
 
   const valueList = [
-    { key: x, value: values.x, name: x, prefix: 'X' },
-    { key: y, value: values.y, name: y, prefix: 'Y' },
-    { key: z, value: values.z, name: z, prefix: 'Z' },
+    { key: 'x', value: values.x, name: 'x', prefix: 'X' },
+    { key: 'y', value: values.y, name: 'y', prefix: 'Y' },
+    { key: 'z', value: values.z, name: 'z', prefix: 'Z' },
   ];
 
   const quaternionList = [
-    { key: w, value: values.w, name: w, prefix: 'W' },
-    { key: x, value: values.x, name: x, prefix: 'X' },
-    { key: y, value: values.y, name: y, prefix: 'Y' },
-    { key: z, value: values.z, name: z, prefix: 'Z' },
+    { key: 'w', value: values.w, name: 'w', prefix: 'W' },
+    { key: 'x', value: values.x, name: 'x', prefix: 'X' },
+    { key: 'y', value: values.y, name: 'y', prefix: 'Y' },
+    { key: 'z', value: values.z, name: 'z', prefix: 'Z' },
   ];
 
   const iconClasses = cx('icon', {

@@ -9,9 +9,9 @@ import {
   KeyframeData,
 } from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
-import { CPDataType, RetargetInfoType, RetargetMap, TargetboneType } from 'types/CP';
+import { CPDataType, RetargetInfoType, RetargetMap } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { RecordingDataType, RenderingDataType } from 'types/RP';
+import { RecordingDataType } from 'types/RP';
 import _ from 'lodash';
 import { INITIAL_CP_DATA, INITIAL_LP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
 import {
@@ -57,7 +57,7 @@ export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_D
 export const storeCutImages = makeVar<string[]>([]);
 export const storeBarPositionX = makeVar<number>(0);
 // CP
-export const storeCPMode = makeVar<CPModeType>(CPModeType.property);
+export const storeCPMode = makeVar<CPModeType>('property');
 export const storeCPData = makeVar<CPDataType[]>(INITIAL_CP_DATA);
 export const storeCPChangeTab = makeVar<number>(0);
 // RETARGET

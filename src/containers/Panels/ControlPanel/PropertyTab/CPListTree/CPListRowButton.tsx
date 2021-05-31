@@ -16,6 +16,8 @@ export interface CPListRowButtonProps {
 }
 
 const CPListRowButton: React.FC<CPListRowButtonProps> = ({ rowKey, name, button = 'axis' }) => {
+  console.log('name: ', name, 'button: ', button);
+
   const renderingData = useSelector((state) => state.renderingData);
   const dispatch = useDispatch();
 

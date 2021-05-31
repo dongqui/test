@@ -5,7 +5,7 @@ import useLPControl from 'hooks/LP/useLPControl';
 import { v4 as uuidv4 } from 'uuid';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { storeCutImages, storePageInfo, storeRecordingData, storeRetargetInfo } from 'lib/store';
-import { DEFAULT_MODELS, DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
+import { DEFAULT_MODELS, INITIAL_RECORDING_DATA } from 'utils/const';
 import { FILE_TYPES, LPModeType } from 'types';
 import * as api from 'utils/common/api';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
@@ -166,10 +166,11 @@ const LibraryPanelComponent: FunctionComponent = () => {
           continue;
         }
       }
-      let convertedFileUrl = DEFAULT_MODEL_URL;
+
+      let url = URL.createObjectURL(file);
       if (_.isEqual(extension?.toLowerCase(), FORMAT_TYPES.fbx)) {
         // fbx 파일 업로드 및 변환
-        const { url, error } = await api.setConvertFbxToGlb({
+        const { url: convertedUrl, error } = await api.setConvertFbxToGlb({
           file,
           type: FORMAT_TYPES.glb,
         });
@@ -178,12 +179,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
           setIsOutsideClose(true);
           return false;
         }
-        convertedFileUrl = url;
+        url = convertedUrl;
       }
-
-      const url = _.isEqual(extension?.toLowerCase(), FORMAT_TYPES.fbx)
-        ? convertedFileUrl
-        : URL.createObjectURL(file);
 
       if (_.includes(ENABLE_VIDEO_FORMATS, extension?.toLowerCase())) {
         setShowsModal(false);
