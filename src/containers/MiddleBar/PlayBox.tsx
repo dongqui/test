@@ -21,7 +21,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import * as api from 'utils/common/api';
+import * as api from 'utils/common/api/api';
 import { storeLpData } from 'lib/store';
 import { FILE_TYPES, LPDataType } from 'types';
 import { STANDARD_TIME_UNIT } from 'utils/const';

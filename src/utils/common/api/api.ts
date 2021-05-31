@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ShootTrackType, VIDEO_FORMAT_TYPES } from 'types';
 import _ from 'lodash';
-import fnConvertBloburlToFile from './fnConvertBloburlToFile';
+import fnConvertBloburlToFile from '../fnConvertBloburlToFile';
 
 const BASE_URL = 'https://shootapi.myplask.com:5000';
 const RETARGETIING_URL = 'https://shootapi.myplask.com:5000';

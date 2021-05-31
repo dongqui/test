@@ -2,11 +2,10 @@ import { FunctionComponent, memo } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { Tooltip } from 'components/Tooltip';
 import { useHover } from 'hooks/common';
-import { FILE_TYPES } from 'types';
 import _ from 'lodash';
+import { FileType } from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './BreadcrumbItem.module.scss';
-import { FileType } from 'actions/lpdata';
 
 const cx = classNames.bind(styles);
 

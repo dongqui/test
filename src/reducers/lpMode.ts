@@ -1,10 +1,10 @@
-import { LPModeState, LPModeAction } from 'actions/lpmode';
+import { LPModeState, LPModeAction } from 'actions/lpMode';
 
 const defaultState: LPModeState = {
-  mode: 'iconview',
+  mode: 'iconView',
 };
 
-export const lpmode = (state: LPModeState = defaultState, action: LPModeAction): LPModeState => {
+export const lpMode = (state: LPModeState = defaultState, action: LPModeAction) => {
   switch (action.type) {
     case 'lpmode/SET_LPMODE': {
       return Object.assign({}, state, {

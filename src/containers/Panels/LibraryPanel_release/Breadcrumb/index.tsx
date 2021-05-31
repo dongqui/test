@@ -2,12 +2,12 @@ import { FunctionComponent, Fragment, memo, useEffect, useState, useCallback } f
 import { IconWrapper, SvgPath } from 'components/Icon';
 import BreadcrumbItem from './BreadcrumbItem';
 import _ from 'lodash';
+import { FileType } from 'actions/lpData';
+import { ROOT_KEY } from 'reducers/lpData';
+import { useDispatch } from 'react-redux';
+import { setLPPage } from 'actions/lpPage';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { FileType } from 'actions/lpdata';
-import { ROOT_KEY } from 'reducers/lpdata';
-import { useDispatch } from 'react-redux';
-import { setLPPage } from 'actions/lppage';
 
 const cx = classNames.bind(styles);
 

@@ -1,11 +1,11 @@
 import { FunctionComponent, memo, useCallback, ChangeEvent } from 'react';
-import classNames from 'classnames/bind';
 import { useDispatch } from 'react-redux';
 import { SearchInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import styles from './index.module.scss';
 import { useSelector } from 'reducers';
-import { setLPMode } from 'actions/lpmode';
+import { setLPMode } from 'actions/lpMode';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -14,15 +14,16 @@ export interface Props {
 }
 
 const Explorer: FunctionComponent<Props> = ({ onChange }) => {
-  const lpmode = useSelector((state) => state.lpmode.mode);
+  const lpMode = useSelector((state) => state.lpMode.mode);
   const dispatch = useDispatch();
+
   const handleChangeMode = useCallback(() => {
-    dispatch(setLPMode({ mode: lpmode === 'listview' ? 'iconview' : 'listview' }));
-  }, [dispatch, lpmode]);
+    dispatch(setLPMode({ mode: lpMode === 'listView' ? 'iconView' : 'listView' }));
+  }, [dispatch, lpMode]);
 
   const handleAddGroup = useCallback(() => {}, []);
 
-  const icon = lpmode === 'listview' ? SvgPath.ListView : SvgPath.IconView;
+  const icon = lpMode === 'listView' ? SvgPath.ListView : SvgPath.IconView;
 
   return (
     <div className={cx('explorer')}>

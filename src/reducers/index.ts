@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux';
 import { TypedUseSelectorHook, useSelector as useReduxSelector } from 'react-redux';
 import { mode } from './mode';
-import { lpmode } from './lpmode';
-import { lppage } from './lppage';
+import { lpMode } from './lpMode';
+import { lpPage } from './lpPage';
 import { lpSearchword } from './lpSearchword';
-import { lpdata } from './lpdata';
+import { lpData } from './lpData';
 import { undoableBoneTransform } from './boneTransform';
 
 export type RootState = ReturnType<typeof rootReducer>;
@@ -12,10 +12,10 @@ export type RootState = ReturnType<typeof rootReducer>;
 const rootReducer = combineReducers({
   mode,
   undoableBoneTransform,
-  lpmode,
-  lppage,
+  lpMode,
+  lpPage,
   lpSearchword,
-  lpdata,
+  lpData,
 });
 
 // type 적용된 useSelector

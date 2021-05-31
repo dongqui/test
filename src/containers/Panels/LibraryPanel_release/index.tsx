@@ -11,27 +11,33 @@ import { useDispatch } from 'react-redux';
 import { useDropzone } from 'react-dropzone';
 import { useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
-import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { setSearchword } from 'actions/lpSearchword';
-import { deleteLPData, LPDatasState, setLPData, LPDataState } from 'actions/lpdata';
-import Explorer from './Explorer/index';
-import styles from './index.module.scss';
-import { getFileExtension, getAnimationData } from './utils';
-import { setConvertFbxToGlb } from './api';
+import {
+  deleteLPModelData,
+  LPModelDataListState,
+  setLPModelData,
+  LPModelDataState,
+} from 'actions/lpData';
+import Explorer from './Explorer';
+import { getFileExtension, getAnimationData } from '../../../utils/LP_release';
+import { setConvertFbxToGlb } from '../../../utils/common/api';
 import { BaseModal } from 'components/Modal';
-import { ROOT_KEY } from 'reducers/lpdata';
+import { ROOT_KEY } from 'reducers/lpData';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import Breadcrumb, { PathList } from './Breadcrumb';
 import IconView from './IconTree/IconView';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
 
 const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];
 const EnableFileFormats = [...EnableVideoFormats, 'glb', 'fbx'];
-const cx = classNames.bind(styles);
 
-export const DefaultModels: Required<LPDatasState> = [
+export const DefaultModels: Required<LPModelDataListState> = [
   {
     key: 'defaultmodel1',
     name: 'zombie.fbx',
@@ -69,30 +75,30 @@ export interface PagesType {
   name: string;
 }
 
-interface ConvertToAnimationDataToLPData {
+interface ConvertToAnimationDataTolpData {
   animations: THREE.AnimationClip[];
   bones: THREE.Bone[];
   name: string;
   url: string;
 }
 
-interface ChangeFileToLPData {
+interface ChangeFileTolpData {
   fileUrl: string;
   name: string;
   isDispatch?: boolean;
 }
 
-interface ChangeFileToLPDataResponse {
-  result: LPDatasState;
+interface ChangeFileTolpDataResponse {
+  result: LPModelDataListState;
   isError: boolean;
   errorMsg: string;
 }
 
-const LibraryPanelComponent: FunctionComponent = () => {
+const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
-  const lpdata = useSelector((state) => state.lpdata);
-  const lpmode = useSelector((state) => state.lpmode.mode);
-  const lppage = useSelector((state) => state.lppage);
+  const lpData = useSelector((state) => state.lpData);
+  const lpMode = useSelector((state) => state.lpMode.mode);
+  const lpPage = useSelector((state) => state.lpPage);
   const lpSearchword = useSelector((state) => state.lpSearchword);
   const [modalInfo, setModalInfo] = useState({ showModal: false, message: '', loading: false });
 
@@ -107,36 +113,38 @@ const LibraryPanelComponent: FunctionComponent = () => {
 
   const findParentKey = useCallback((): string => {
     let parentKey = ROOT_KEY;
-    if (lpmode === 'iconview') {
-      parentKey = lppage.key;
+    if (lpMode === 'iconView') {
+      parentKey = lpPage.key;
     }
-    if (lpmode === 'listview') {
-      const selectedRow = lpdata.find((item) => item?.isSelected === true);
+    if (lpMode === 'listView') {
+      const selectedRow = lpData.find((item) => item?.isSelected === true);
       if (selectedRow) {
         parentKey = selectedRow.key;
       }
     }
     return parentKey;
-  }, [lpdata, lpmode, lppage.key]);
+  }, [lpData, lpMode, lpPage.key]);
+
   const validateSameFileName = useCallback(
     (name: string): string | undefined => {
       let mustDeleteKey;
       const parentKey = findParentKey();
-      const currentPageRows = lpdata.filter((item) => item.parentKey === parentKey);
+      const currentPageRows = lpData.filter((item) => item.parentKey === parentKey);
       const sameFileNameRows = currentPageRows.find((item) => item.name === name);
       if (sameFileNameRows) {
         mustDeleteKey = sameFileNameRows.key;
       }
       return mustDeleteKey;
     },
-    [findParentKey, lpdata],
+    [findParentKey, lpData],
   );
-  const convertToAnimationDataToLPData = useCallback(
-    (params: ConvertToAnimationDataToLPData): LPDatasState => {
+
+  const convertToAnimationDataTolpData = useCallback(
+    (params: ConvertToAnimationDataTolpData): LPModelDataListState => {
       const { animations, bones, name, url } = params;
       const boneNames = bones.map((bone) => bone.name);
       const key = uuidv4();
-      const file: LPDataState = {
+      const file: LPModelDataState = {
         key,
         type: 'File',
         name,
@@ -146,25 +154,23 @@ const LibraryPanelComponent: FunctionComponent = () => {
         layers: [],
         boneNames,
       };
-      const motions: LPDatasState = animations.map(
-        (item) =>
-          ({
-            key: item.uuid,
-            name: item.name,
-            type: 'Motion',
-            parentKey: key,
-            url,
-            baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: item.tracks }),
-            layers: [],
-            boneNames,
-          } as LPDataState),
-      );
+      const motions: LPModelDataListState = animations.map((item) => ({
+        key: item.uuid,
+        name: item.name,
+        type: 'Motion',
+        parentKey: key,
+        url,
+        baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: item.tracks }),
+        layers: [],
+        boneNames,
+      }));
       return [file, ...motions];
     },
     [findParentKey],
   );
-  const changeFileToLPData = useCallback(
-    async (params: ChangeFileToLPData): Promise<ChangeFileToLPDataResponse> => {
+
+  const changeFileTolpData = useCallback(
+    async (params: ChangeFileTolpData): Promise<ChangeFileTolpDataResponse> => {
       const { fileUrl, name, isDispatch = false } = params;
       const { animations, bones, isError, errorMsg } = await getAnimationData({ url: fileUrl });
       if (isError) {
@@ -174,14 +180,14 @@ const LibraryPanelComponent: FunctionComponent = () => {
           result: [],
         };
       }
-      const newData: LPDatasState = convertToAnimationDataToLPData({
+      const newData: LPModelDataListState = convertToAnimationDataTolpData({
         animations,
         bones,
         name,
         url: fileUrl,
       });
       if (isDispatch) {
-        dispatch(setLPData(newData));
+        dispatch(setLPModelData(newData));
       }
       return {
         isError: false,
@@ -189,8 +195,9 @@ const LibraryPanelComponent: FunctionComponent = () => {
         result: newData,
       };
     },
-    [convertToAnimationDataToLPData, dispatch],
+    [convertToAnimationDataTolpData, dispatch],
   );
+
   const handleDrop = useCallback(
     async (files: File[]) => {
       setModalInfo((state) => ({
@@ -200,7 +207,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         loading: true,
       }));
       const mustDeleteKeys: string[] = [];
-      let newLPData: LPDatasState = [];
+      let newlpData: LPModelDataListState = [];
       const isMultipleVideoFiles =
         files.filter((file) => _.includes(EnableVideoFormats, getFileExtension(file.name))).length >
         1;
@@ -214,13 +221,16 @@ const LibraryPanelComponent: FunctionComponent = () => {
         return;
       }
       // 비디오파일이 마지막으로 오도록 재정렬
-      const sortedFiles = files.sort((file) => {
+      const targetFiles = _.clone(files);
+      const sortedFiles = targetFiles.sort((file) => {
         const isVideoFile = _.includes(EnableVideoFormats, getFileExtension(file.name));
         if (isVideoFile) {
           return 1;
+        } else {
+          return -1;
         }
-        return -1;
       });
+      console.log('sortedFiles', sortedFiles);
       for (const file of sortedFiles) {
         const extension = getFileExtension(file.name);
         const isValidFileFormat = _.includes(EnableFileFormats, extension);
@@ -247,12 +257,12 @@ const LibraryPanelComponent: FunctionComponent = () => {
         let fileUrl = URL.createObjectURL(file);
         // fbx 파일일 경우 glb로 먼저 변환한다
         if (extension === 'fbx') {
-          const { result, isError, errorMsg } = await setConvertFbxToGlb({ file, type: 'fbx' });
+          const { result, isError, errorMessage } = await setConvertFbxToGlb({ file });
           if (isError) {
             setModalInfo((state) => ({
               ...state,
               showModal: true,
-              message: errorMsg,
+              message: errorMessage,
               loading: false,
             }));
             return;
@@ -264,9 +274,17 @@ const LibraryPanelComponent: FunctionComponent = () => {
           const confirmed = await getConfirm({
             title: 'Export motion from the video?',
           });
+          if (!confirmed) {
+            setModalInfo((state) => ({
+              ...state,
+              showModal: true,
+              message: '',
+              loading: false,
+            }));
+          }
           return;
         }
-        const { result: newData, isError, errorMsg } = await changeFileToLPData({
+        const { result: newData, isError, errorMsg } = await changeFileTolpData({
           fileUrl,
           name: file.name,
         });
@@ -278,12 +296,12 @@ const LibraryPanelComponent: FunctionComponent = () => {
             loading: false,
           }));
         }
-        newLPData = _.concat(newLPData, newData);
+        newlpData = _.concat(newlpData, newData);
       }
       if (!_.isEmpty(mustDeleteKeys)) {
-        dispatch(deleteLPData(mustDeleteKeys));
+        dispatch(deleteLPModelData(mustDeleteKeys));
       }
-      dispatch(setLPData(newLPData));
+      dispatch(setLPModelData(newlpData));
       setModalInfo((state) => ({
         ...state,
         showModal: false,
@@ -291,8 +309,9 @@ const LibraryPanelComponent: FunctionComponent = () => {
         loading: false,
       }));
     },
-    [changeFileToLPData, dispatch, getConfirm, validateSameFileName],
+    [changeFileTolpData, dispatch, getConfirm, validateSameFileName],
   );
+
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
   const handleOutsideClose = useCallback(() => {
@@ -301,21 +320,21 @@ const LibraryPanelComponent: FunctionComponent = () => {
     }
   }, [modalInfo.loading]);
 
-  const filteredIconviewData = useMemo((): LPDatasState => {
-    let data = _.clone(lpdata);
+  const filteredIconviewData = useMemo((): LPModelDataListState => {
+    let data = _.clone(lpData);
     if (!_.isEmpty(lpSearchword)) {
       data = data.filter((item) =>
         item.name.toLowerCase().includes(lpSearchword.word.toLowerCase()),
       );
     }
     // 현재 페이지를 기준으로 필터링
-    data = data.filter((item) => item.parentKey === lppage.key);
+    data = data.filter((item) => item.parentKey === lpPage.key);
     return data;
-  }, [lpSearchword, lpdata, lppage.key]);
+  }, [lpSearchword, lpData, lpPage.key]);
 
   const pathList = useMemo((): PathList => {
     const result: PathList = [];
-    const currentPageRow = lpdata.find((item) => item.key === lppage.key);
+    const currentPageRow = lpData.find((item) => item.key === lpPage.key);
     if (currentPageRow) {
       result.push({
         key: currentPageRow.key,
@@ -325,48 +344,48 @@ const LibraryPanelComponent: FunctionComponent = () => {
       let row: typeof currentPageRow | undefined = _.clone(currentPageRow);
       // 최상위까지 부모 row 들을 담아준다
       while (row?.parentKey !== ROOT_KEY) {
-        row = lpdata.find((item) => item.key === row?.parentKey);
+        row = lpData.find((item) => item.key === row?.parentKey);
         if (row) {
           result.unshift({ key: row.key, name: row.name, type: row.type });
         }
       }
     }
     return result;
-  }, [lpdata, lppage.key]);
+  }, [lpData, lpPage.key]);
 
   // 이전페이지의 키값
   const prevPageKey = useMemo((): string => {
     let result = ROOT_KEY;
-    const currentPageRow = lpdata.find((item) => item.key === lppage.key);
-    const currentPageParentRow = lpdata.find((item) => item.key === currentPageRow?.parentKey);
+    const currentPageRow = lpData.find((item) => item.key === lpPage.key);
+    const currentPageParentRow = lpData.find((item) => item.key === currentPageRow?.parentKey);
     if (currentPageParentRow) {
       result = currentPageParentRow.key;
     }
     return result;
-  }, [lpdata, lppage.key]);
+  }, [lpData, lpPage.key]);
 
   useEffect(() => {
     const setDefaultModels = async () => {
       setModalInfo((state) => ({
         ...state,
         showModal: true,
-        message: 'Importing the file.',
+        message: 'Importing default files.',
         loading: true,
       }));
       await Promise.all(
         DefaultModels.map((item) =>
-          changeFileToLPData({ fileUrl: item.url, name: item.name, isDispatch: true }),
+          changeFileTolpData({ fileUrl: item.url, name: item.name, isDispatch: true }),
         ),
       );
       setModalInfo((state) => ({ ...state, showModal: false, message: '', loading: false }));
     };
-    if (_.isEmpty(lpdata)) {
+    if (_.isEmpty(lpData)) {
       // 기본모델 로드
       setDefaultModels();
     }
-  }, [changeFileToLPData, lpdata]);
+  }, [changeFileTolpData, lpData]);
 
-  const isIconView = lpmode === 'iconview';
+  const isIconView = lpMode === 'iconView';
 
   return (
     <div className={cx('hidden-wrapper')}>
@@ -383,7 +402,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
               <Breadcrumb
                 pathList={pathList}
                 prevPageKey={prevPageKey}
-                currentPageKey={lppage.key}
+                currentPageKey={lpPage.key}
               />
             </div>
           )}
@@ -398,4 +417,4 @@ const LibraryPanelComponent: FunctionComponent = () => {
     </div>
   );
 };
-export const LibraryPanel = memo(LibraryPanelComponent);
+export default memo(LibraryPanel);

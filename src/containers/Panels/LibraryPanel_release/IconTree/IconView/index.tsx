@@ -1,14 +1,14 @@
-import { FunctionComponent, memo, useCallback } from 'react';
+import { FunctionComponent, memo } from 'react';
 import _ from 'lodash';
 import IconNode from './IconNode';
+import { LPModelDataListState } from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { LPDatasState } from 'actions/lpdata';
 
 const cx = classNames.bind(styles);
 
 export interface IconViewProps {
-  data: LPDatasState;
+  data: LPModelDataListState;
 }
 
 const IconView: FunctionComponent<IconViewProps> = ({ data }) => {

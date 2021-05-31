@@ -7,7 +7,7 @@ import useContextMenu from 'hooks/common/useContextMenu';
 import { storeCutImages, storePageInfo, storeRecordingData, storeRetargetInfo } from 'lib/store';
 import { DEFAULT_MODELS, DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
 import { FILE_TYPES, LPModeType } from 'types';
-import * as api from 'utils/common/api';
+import * as api from 'utils/common/api/api';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
 import {

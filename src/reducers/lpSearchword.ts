@@ -7,7 +7,7 @@ const defaultState: LPSearchwordState = {
 export const lpSearchword = (
   state: LPSearchwordState = defaultState,
   action: LPSearchwordAction,
-): LPSearchwordState => {
+) => {
   switch (action.type) {
     case 'lpSearchword/SET_SEARCHWORD': {
       return Object.assign({}, state, {

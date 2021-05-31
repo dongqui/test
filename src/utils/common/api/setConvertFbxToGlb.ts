@@ -13,20 +13,19 @@ const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:5000';
 
 interface SetConvertFbxToGlb {
   file: File;
-  type: 'fbx';
 }
 
 interface ResponseType {
   result: string;
   isError: boolean;
-  errorMsg: string;
+  errorMessage: string;
 }
 
 const setConvertFbxToGlb = async (params: SetConvertFbxToGlb): Promise<ResponseType> => {
-  const { file, type } = params;
+  const { file } = params;
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('type', type);
+  formData.append('type', 'fbx');
   formData.append('id', String(Date.now() / 1000));
   try {
     const result = await axios({
@@ -40,20 +39,20 @@ const setConvertFbxToGlb = async (params: SetConvertFbxToGlb): Promise<ResponseT
       return {
         result: result.data.result,
         isError: false,
-        errorMsg: '',
+        errorMessage: '',
       };
     } else {
       return {
         result: '',
         isError: true,
-        errorMsg: 'Data does not exist',
+        errorMessage: 'Data does not exist',
       };
     }
   } catch (error) {
     return {
       result: '',
       isError: true,
-      errorMsg: error,
+      errorMessage: error,
     };
   }
 };

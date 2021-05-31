@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { LPDataType } from 'types';
 import { fnGetAnimationClipForExport } from 'utils/TP/editingUtils';
 import _ from 'lodash';
-import { setConvertGlbToFbx } from 'utils/common/api';
+import { setConvertGlbToFbx } from 'utils/common/api/api';
 
 interface FnExportModelToFbx {
   modelName: string;

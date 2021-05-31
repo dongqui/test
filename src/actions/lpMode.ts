@@ -1,4 +1,4 @@
-export type LPMode = 'listview' | 'iconview';
+export type LPMode = 'listView' | 'iconView';
 export interface LPModeState {
   mode: LPMode;
 }

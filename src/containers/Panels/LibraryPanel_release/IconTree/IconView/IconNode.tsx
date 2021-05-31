@@ -1,13 +1,13 @@
-import { FunctionComponent, memo, useCallback } from 'react';
-import classNames from 'classnames/bind';
-import { LPDataState } from 'actions/lpdata';
-import styles from './IconNode.module.scss';
+import { FunctionComponent, memo } from 'react';
+import { LPModelDataState } from 'actions/lpData';
 import Icon from '../Icon';
+import classNames from 'classnames/bind';
+import styles from './IconNode.module.scss';
 
 const cx = classNames.bind(styles);
 
 interface Props {
-  item: LPDataState;
+  item: LPModelDataState;
 }
 
 const IconNode: FunctionComponent<Props> = ({ item }) => {

@@ -1,11 +1,11 @@
 import { FunctionComponent, Fragment, memo, useRef, MutableRefObject, useCallback } from 'react';
 import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { FileType } from 'actions/lpData';
+import { useDispatch } from 'react-redux';
+import { setLPPage } from 'actions/lpPage';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { FileType } from 'actions/lpdata';
-import { useDispatch } from 'react-redux';
-import { setLPPage } from 'actions/lppage';
 
 const cx = classNames.bind(styles);
 
@@ -31,6 +31,7 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name }) => {
       dispatch(setLPPage({ key: rowKey }));
     }
   }, [dispatch, rowKey, type]);
+
   return (
     <Fragment>
       <div
