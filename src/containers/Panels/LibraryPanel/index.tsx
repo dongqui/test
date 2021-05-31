@@ -96,7 +96,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
 
   const handleDrop = async (acceptedFiles: File[]) => {
     setShowsModal(true);
-    setModalMessage('Importing the file');
+    setModalMessage('Importing the file.<br />This can take up to 30 seconds');
     if (_.isEmpty(acceptedFiles)) {
       setModalMessage('File not found.');
       setIsOutsideClose(true);
@@ -106,7 +106,10 @@ const LibraryPanelComponent: FunctionComponent = () => {
       _.gt(
         _.size(
           _.filter(acceptedFiles, (acceptedFile) =>
-            _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(acceptedFile.name, '.'))),
+            _.includes(
+              ENABLE_VIDEO_FORMATS,
+              _.last(_.split(acceptedFile.name, '.'))?.toLowerCase(),
+            ),
           ),
         ),
         1,
@@ -121,15 +124,15 @@ const LibraryPanelComponent: FunctionComponent = () => {
     const sortedAcceptedFiles = _.concat(
       _.filter(
         acceptedFiles,
-        (file) => !_.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))),
+        (file) => !_.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))?.toLowerCase()),
       ),
       _.filter(acceptedFiles, (file) =>
-        _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))),
+        _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))?.toLowerCase()),
       ),
     );
     for (const file of sortedAcceptedFiles) {
       const extension = _.last(_.split(file.name, '.'));
-      if (!_.includes(ENABLE_FILE_FORMATS, extension)) {
+      if (!_.includes(ENABLE_FILE_FORMATS, extension?.toLowerCase())) {
         setModalMessage('Unsupported file format.');
         setIsOutsideClose(true);
         return false;
@@ -164,7 +167,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         }
       }
       let convertedFileUrl = DEFAULT_MODEL_URL;
-      if (_.isEqual(extension, FORMAT_TYPES.fbx)) {
+      if (_.isEqual(extension?.toLowerCase(), FORMAT_TYPES.fbx)) {
         // fbx 파일 업로드 및 변환
         const { url, error } = await api.setConvertFbxToGlb({
           file,
@@ -178,11 +181,11 @@ const LibraryPanelComponent: FunctionComponent = () => {
         convertedFileUrl = url;
       }
 
-      const url = _.isEqual(extension, FORMAT_TYPES.fbx)
+      const url = _.isEqual(extension?.toLowerCase(), FORMAT_TYPES.fbx)
         ? convertedFileUrl
         : URL.createObjectURL(file);
 
-      if (_.includes(ENABLE_VIDEO_FORMATS, extension)) {
+      if (_.includes(ENABLE_VIDEO_FORMATS, extension?.toLowerCase())) {
         setShowsModal(false);
         const confirmed = await getConfirm({
           title: 'Export motion from the video?',
@@ -245,7 +248,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       return;
     }
     setShowsModal(true);
-    setModalMessage('Importing the file');
+    setModalMessage('Importing the file.<br />This can take up to 30 seconds');
     for (const model of DEFAULT_MODELS) {
       const isExists = _.some(lpData, { key: model?.key });
       if (isExists) {
@@ -304,6 +307,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
   const handleModalClose = useCallback(() => {
+    setIsOutsideClose(false);
     setShowsModal(false);
   }, []);
 

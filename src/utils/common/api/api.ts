@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { Canceler } from 'axios';
 import { ShootTrackType, VIDEO_FORMAT_TYPES } from 'types';
 import _ from 'lodash';
 import fnConvertBloburlToFile from '../fnConvertBloburlToFile';
@@ -13,7 +13,10 @@ interface uploadFileToMotionDataProps {
   id: string;
   start: number;
   end: number;
+  startTime: number;
+  endTime: number;
   fileName: string;
+  timeout: number;
 }
 interface getRetargetMapProps {
   bones: THREE.Bone[];
@@ -30,6 +33,8 @@ interface getRetargetBaseLayerProps {
   };
 }
 
+export let cancelTokenSource: Canceler; // 현재 request중인 api를 axios로 취소
+
 export const getDefaultModelList = async () => {
   try {
     const result = await axios({
@@ -40,6 +45,7 @@ export const getDefaultModelList = async () => {
         Accept: 'application/json',
       },
       responseType: 'json',
+      timeout: 30 * 1000,
     });
     console.log(result);
     return result.data.result;
@@ -68,6 +74,7 @@ export const setConvertFbxToGlb = async ({ file, type }: { file: File; type: str
       url: `${BLENDER_BASE_URL}/fbx2glb-upload-api`,
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 30 * 1000,
     });
     return {
       url: result?.data?.result,
@@ -106,6 +113,7 @@ export const setConvertGlbToFbx = async (props: SetConvertGlbToFbx) => {
     url: `${BLENDER_BASE_URL}/glb2fbx-upload-api`,
     data: formData,
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 30 * 1000,
   })
     .then((res) => res.data.result)
     .catch((err) => err);
@@ -126,10 +134,13 @@ export const setConvertGlbToFbx = async (props: SetConvertGlbToFbx) => {
 export const uploadFileToMotionData = async ({
   start,
   end,
+  startTime,
+  endTime,
   fileName,
   id,
   type,
   url,
+  timeout,
 }: uploadFileToMotionDataProps) => {
   try {
     const formData = new FormData();
@@ -143,11 +154,17 @@ export const uploadFileToMotionData = async ({
     formData.append('id', id);
     formData.append('start', start.toString());
     formData.append('end', end.toString());
+    formData.append('startTime', startTime.toString());
+    formData.append('endTime', endTime.toString());
     const result = await axios({
       method: 'POST',
       url: `${BASE_URL}/mocap-upload-api`,
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
+      cancelToken: new axios.CancelToken((cancel) => {
+        cancelTokenSource = cancel;
+      }),
+      timeout,
     });
     return {
       result,
@@ -180,6 +197,10 @@ export const getRetargetMap = async ({ bones }: getRetargetMapProps) => {
         bones,
       },
       responseType: 'json',
+      cancelToken: new axios.CancelToken((cancel) => {
+        cancelTokenSource = cancel;
+      }),
+      timeout: 30 * 1000,
     });
     return {
       result,
@@ -222,6 +243,10 @@ export const getRetargetBaseLayer = async ({
       url: `${RETARGETIING_URL}/retargeting-everyframe2`,
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
+      cancelToken: new axios.CancelToken((cancel) => {
+        cancelTokenSource = cancel;
+      }),
+      timeout: 30 * 1000,
     });
     return {
       result,

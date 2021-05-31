@@ -42,6 +42,7 @@ import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 const cx = classNames.bind(styles);
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
+const DECIMAL_PLACES = 10000; // 반올림할 소수점 자리수
 
 export interface Props {
   currentTimeRef?: RefObject<HTMLInputElement>;
@@ -232,11 +233,38 @@ const PlayBox: FunctionComponent<Props> = ({
 
   const handleSubmit = useCallback(async () => {
     setShowsModal(false);
+    const startTime = _.round(
+      recordingData.duration * (recordingData.rangeBoxInfo.x / window.innerWidth),
+      4,
+    );
+    const endTime = _.round(
+      recordingData.duration *
+        ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth),
+      4,
+    );
+    const maxDurationSec = (endTime - startTime) * 30;
+    const modalMsg =
+      maxDurationSec >= 60
+        ? `Exporting motion from the video.<br />This can take up to ${_.ceil(
+            maxDurationSec / 60,
+          )} minutes`
+        : `Exporting motion from the video.<br />This can take up to ${_.ceil(
+            maxDurationSec,
+          )} seconds`;
+
     storeModalInfo({
       ...modalInfo,
       isShow: true,
       type: MODAL_TYPES.loading,
-      msg: 'Exporting motion from the video.',
+      msg: modalMsg,
+      cancel: true,
+      onClose: () => {
+        api.cancelTokenSource();
+        storeModalInfo({
+          ...modalInfo,
+          isShow: false,
+        });
+      },
     });
     const { error, msg, result } = await api.uploadFileToMotionData({
       url: `${pageInfo?.videoUrl}`,
@@ -251,7 +279,10 @@ const PlayBox: FunctionComponent<Props> = ({
           ((recordingData.rangeBoxInfo.x + recordingData.rangeBoxInfo.width) / window.innerWidth)) /
           STANDARD_TIME_UNIT,
       ),
+      startTime,
+      endTime,
       fileName: recordingData?.motionName,
+      timeout: maxDurationSec * 1000 * 10,
     });
     if (error) {
       storeModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert });
