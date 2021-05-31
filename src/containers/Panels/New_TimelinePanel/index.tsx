@@ -6,7 +6,7 @@ import classNames from 'classnames/bind';
 import MiddleBar from 'containers/MiddleBar';
 import { fnSetAllInitialTrackList } from 'utils/TP/New';
 import { d3ScaleLinear } from 'types/TP';
-import * as dopeSheetActions from 'actions/dopeSheet';
+import * as timelineActions from 'actions/timeline';
 import TrackList from './TrackList';
 import TimeEditor from './TimeEditor';
 import styles from './index.module.scss';
@@ -33,7 +33,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
   useEffect(() => {
     const isClearedModel = prevModelKey.current && !currentVisualizedData;
     if (isClearedModel) {
-      dispatch(dopeSheetActions.clearAll());
+      dispatch(timelineActions.clearAll());
       isStoredDopeSheetData.current = false;
       prevModelKey.current = '';
     } else if (currentVisualizedData) {
@@ -46,7 +46,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
           layers,
           visualizedDataKey: key,
         });
-        dispatch(dopeSheetActions.setTrackList({ trackList, lastBoneOfLayers }));
+        dispatch(timelineActions.setTrackList({ trackList, lastBoneOfLayers }));
         prevModelKey.current = key;
       } else if (isInitialVisualized) {
         const [trackList, lastBoneOfLayers] = fnSetAllInitialTrackList({
@@ -54,7 +54,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
           layers,
           visualizedDataKey: key,
         });
-        dispatch(dopeSheetActions.setTrackList({ trackList, lastBoneOfLayers }));
+        dispatch(timelineActions.setTrackList({ trackList, lastBoneOfLayers }));
         prevModelKey.current = key;
         isStoredDopeSheetData.current = true;
       }

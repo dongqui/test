@@ -14,7 +14,7 @@ import {
 } from 'utils/TP/New';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { UpdatedTrack } from 'types/TP';
-import * as dopeSheetActions from 'actions/dopeSheet';
+import * as timelineActions from 'actions/timeline';
 import styles from './index.module.scss';
 import { storeContextMenuInfo, storeCurrentVisualizedData } from 'lib/store';
 import { CurrentVisualizedDataType } from 'types';
@@ -61,10 +61,10 @@ const TrackItem: FunctionComponent<Props> = (props) => {
     trackName,
   } = props;
   const dispatch = useDispatch();
-  const trackList = useSelector((state) => state.dopeSheet.trackList);
-  const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
-  const prevSelectedIndices = useSelector((state) => state.dopeSheet.selectedTrackIndices);
-  const currentClickedTrack = useSelector((state) => state.dopeSheet.currentClickedTrack);
+  const trackList = useSelector((state) => state.timeline.trackList);
+  const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);
+  const prevSelectedIndices = useSelector((state) => state.timeline.selectedTrackIndices);
+  const currentClickedTrack = useSelector((state) => state.timeline.currentClickedTrack);
   const trackItemRef = useRef<HTMLLIElement>(null);
   const { getConfirm } = useAlertModal();
 
@@ -152,7 +152,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
     });
     const currentClickedTrack = { trackIndex, isPointedDownArrow: !isPointedDownArrow };
     dispatch(
-      dopeSheetActions.clickTrackArrowButton({
+      timelineActions.clickTrackArrowButton({
         trackList: nextState,
         currentClickedTrack,
       }),
@@ -179,7 +179,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         });
         draft.selectedTrackIndices = selectedTrackIndices;
       });
-      dispatch(dopeSheetActions.clickTrackBody(nextState));
+      dispatch(timelineActions.clickTrackBody(nextState));
     },
     [dispatch, trackList],
   );
@@ -361,7 +361,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         draft[targetIndex].isLocked = isLocked;
       });
     });
-    dispatch(dopeSheetActions.clickTrackLockButton({ trackList: nextState }));
+    dispatch(timelineActions.clickTrackLockButton({ trackList: nextState }));
   }, [dispatch, trackList, isLocked, lastBoneOfLayers, trackIndex]);
 
   // 랜더링 제외 버튼 클릭
@@ -499,7 +499,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         });
       });
       dispatch(
-        dopeSheetActions.clickTrackCheckButton({
+        timelineActions.clickTrackCheckButton({
           trackList: nextTrackList,
         }),
       );
@@ -552,7 +552,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
             draft.trackList = filteredTrackList;
             draft.lastBoneOfLayers = filteredLastBoneOfLayers;
           });
-          dispatch(dopeSheetActions.deleteLayer(nextTrackList));
+          dispatch(timelineActions.deleteLayer(nextTrackList));
         }
       }
     }
@@ -784,7 +784,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
             draft[targetIndex].trackName = newLayerName;
             draft[targetIndex].renderedTrackName = newLayerName;
           });
-          dispatch(dopeSheetActions.modifyLayerName({ trackList: nextTrackList }));
+          dispatch(timelineActions.modifyLayerName({ trackList: nextTrackList }));
         }
       }
     }

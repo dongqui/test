@@ -1,6 +1,6 @@
 import { TPTrackList, TPLastBone, TPcurrentClickedTrack, KeyframeData } from 'types/TP';
 
-export type DopeSheetAction =
+export type TimelineAction =
   | ReturnType<typeof setTrackList>
   | ReturnType<typeof clearAll>
   | ReturnType<typeof addLayer>
@@ -21,7 +21,7 @@ interface SetTrackList {
   lastBoneOfLayers: TPLastBone[];
 }
 
-export const SET_TRACK_LIST = 'dopeSheet/SET_TRACK_LIST' as const;
+export const SET_TRACK_LIST = 'timeline/SET_TRACK_LIST' as const;
 export const setTrackList = (params: SetTrackList) => ({
   type: SET_TRACK_LIST,
   payload: {
@@ -30,7 +30,7 @@ export const setTrackList = (params: SetTrackList) => ({
 });
 
 // model 삭제 dope sheet 리셋
-export const CLEAR_ALL = 'dopeSheet/CLEAR_ALL' as const;
+export const CLEAR_ALL = 'timeline/CLEAR_ALL' as const;
 export const clearAll = () => ({
   type: CLEAR_ALL,
 });
@@ -41,7 +41,7 @@ interface AddLayer {
   lastBoneOfLayers: TPLastBone[];
 }
 
-export const ADD_LAYER = 'dopeSheet/ADD_LAYER' as const;
+export const ADD_LAYER = 'timeline/ADD_LAYER' as const;
 export const addLayer = (params: AddLayer) => ({
   type: ADD_LAYER,
   payload: {
@@ -55,7 +55,7 @@ interface DeleteLayer {
   lastBoneOfLayers: TPLastBone[];
 }
 
-export const DELETE_LAYER = 'dopeSheet/DELETE_LAYER' as const;
+export const DELETE_LAYER = 'timeline/DELETE_LAYER' as const;
 export const deleteLayer = (params: DeleteLayer) => ({
   type: DELETE_LAYER,
   payload: {
@@ -68,7 +68,7 @@ interface ModifyLayerName {
   trackList: TPTrackList[];
 }
 
-export const MODIFY_LAYER_NAME = 'dopeSheet/MODIFY_LAYER_NAME' as const;
+export const MODIFY_LAYER_NAME = 'timeline/MODIFY_LAYER_NAME' as const;
 export const modifyLayerName = (params: ModifyLayerName) => ({
   type: MODIFY_LAYER_NAME,
   payload: {
@@ -81,7 +81,7 @@ interface AddKeyframes {
   trackList: TPTrackList[];
 }
 
-export const ADD_KEYFRAMES = 'dopeSheet/ADD_KEYFRAMES' as const;
+export const ADD_KEYFRAMES = 'timeline/ADD_KEYFRAMES' as const;
 export const addKeyframes = (params: AddKeyframes) => ({
   type: ADD_KEYFRAMES,
   payload: {
@@ -95,7 +95,7 @@ interface DeleteKeyframes {
   selectedKeyframes: KeyframeData[];
 }
 
-export const DELETE_KEYFRAMES = 'dopeSheet/DELETE_KEYFRAMES' as const;
+export const DELETE_KEYFRAMES = 'timeline/DELETE_KEYFRAMES' as const;
 export const deleteKeyframes = (params: DeleteKeyframes) => ({
   type: DELETE_KEYFRAMES,
   payload: {
@@ -108,7 +108,7 @@ interface SelectKeyframes {
   selectedKeyframes: KeyframeData[];
 }
 
-export const SELECT_KEYFRAMES = 'dopeSheet/SELECT_KEYFRAMES' as const;
+export const SELECT_KEYFRAMES = 'timeline/SELECT_KEYFRAMES' as const;
 export const selectKeyframes = (params: SelectKeyframes) => ({
   type: SELECT_KEYFRAMES,
   payload: {
@@ -121,7 +121,7 @@ interface SearchTrackList {
   trackList: TPTrackList[];
 }
 
-export const SEARCH_TRACK_LIST = 'dopeSheet/SEARCH_TRACK_LIST' as const;
+export const SEARCH_TRACK_LIST = 'timeline/SEARCH_TRACK_LIST' as const;
 export const searchTrackList = (params: SearchTrackList) => ({
   type: SEARCH_TRACK_LIST,
   payload: {
@@ -135,7 +135,7 @@ interface ClickTrackArrowButton {
   currentClickedTrack: TPcurrentClickedTrack;
 }
 
-export const CLICK_TRACK_ARROW_BUTTON = 'dopeSheet/CLICK_TRACK_ARROW_BUTTON' as const;
+export const CLICK_TRACK_ARROW_BUTTON = 'timeline/CLICK_TRACK_ARROW_BUTTON' as const;
 export const clickTrackArrowButton = (params: ClickTrackArrowButton) => ({
   type: CLICK_TRACK_ARROW_BUTTON,
   payload: {
@@ -149,7 +149,7 @@ interface ClickTrackBody {
   selectedTrackIndices: number[];
 }
 
-export const CLICK_TRACK_BODY = 'dopeSheet/CLICK_TRACK_BODY' as const;
+export const CLICK_TRACK_BODY = 'timeline/CLICK_TRACK_BODY' as const;
 export const clickTrackBody = (params: ClickTrackBody) => ({
   type: CLICK_TRACK_BODY,
   payload: {
@@ -162,7 +162,7 @@ interface ClickTrackLockButton {
   trackList: TPTrackList[];
 }
 
-export const CLICK_TRACK_LOCK_BUTTON = 'dopeSheet/CLICK_TRACK_LOCK_BUTTON' as const;
+export const CLICK_TRACK_LOCK_BUTTON = 'timeline/CLICK_TRACK_LOCK_BUTTON' as const;
 export const clickTrackLockButton = (params: ClickTrackLockButton) => ({
   type: CLICK_TRACK_LOCK_BUTTON,
   payload: {
@@ -175,7 +175,7 @@ interface ClickTrackCheckButton {
   trackList: TPTrackList[];
 }
 
-export const CLICK_TRACK_CHECK_BUTTON = 'dopeSheet/CLICK_TRACK_CHECK_BUTTON' as const;
+export const CLICK_TRACK_CHECK_BUTTON = 'timeline/CLICK_TRACK_CHECK_BUTTON' as const;
 export const clickTrackCheckButton = (params: ClickTrackCheckButton) => ({
   type: CLICK_TRACK_CHECK_BUTTON,
   payload: {

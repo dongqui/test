@@ -9,7 +9,7 @@ import {
   fnGetLayerTrackIndex,
   fnUpdateSelectedKeyframes,
 } from 'utils/TP/New';
-import * as dopeSheetActions from 'actions/dopeSheet';
+import * as timelineActions from 'actions/timeline';
 import { TP_TRACK_INDEX } from 'utils/const';
 import produce from 'immer';
 
@@ -41,9 +41,9 @@ const Circles: React.FC<Props> = ({
   dopeSheetScale,
 }) => {
   const dispatch = useDispatch();
-  const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
-  const trackList = useSelector((state) => state.dopeSheet.trackList);
-  const selectedKeyframes = useSelector((state) => state.dopeSheet.selectedKeyframes);
+  const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);
+  const trackList = useSelector((state) => state.timeline.trackList);
+  const selectedKeyframes = useSelector((state) => state.timeline.selectedKeyframes);
   const selectedKeyframesInMyTrack = useRef(new Set());
 
   // circle 생성
@@ -77,9 +77,7 @@ const Circles: React.FC<Props> = ({
                   selectedKeyframes,
                   (keyframe) => keyframe.time !== time,
                 );
-                dispatch(
-                  dopeSheetActions.selectKeyframes({ selectedKeyframes: filteredKeyframes }),
-                );
+                dispatch(timelineActions.selectKeyframes({ selectedKeyframes: filteredKeyframes }));
                 break;
               }
               case TP_TRACK_INDEX.BONE_A:
@@ -104,9 +102,7 @@ const Circles: React.FC<Props> = ({
                     return true;
                   return false;
                 });
-                dispatch(
-                  dopeSheetActions.selectKeyframes({ selectedKeyframes: filteredKeyframes }),
-                );
+                dispatch(timelineActions.selectKeyframes({ selectedKeyframes: filteredKeyframes }));
                 break;
               }
               default: {
@@ -127,9 +123,7 @@ const Circles: React.FC<Props> = ({
                     return true;
                   return false;
                 });
-                dispatch(
-                  dopeSheetActions.selectKeyframes({ selectedKeyframes: filteredKeyframes }),
-                );
+                dispatch(timelineActions.selectKeyframes({ selectedKeyframes: filteredKeyframes }));
                 break;
               }
             }
@@ -149,7 +143,7 @@ const Circles: React.FC<Props> = ({
           });
         });
         dispatch(
-          dopeSheetActions.selectKeyframes({
+          timelineActions.selectKeyframes({
             selectedKeyframes: _.sortBy(nextState, ['trackIndex', 'time']),
           }),
         );
@@ -160,7 +154,7 @@ const Circles: React.FC<Props> = ({
           trackList,
           time,
         });
-        dispatch(dopeSheetActions.selectKeyframes({ selectedKeyframes }));
+        dispatch(timelineActions.selectKeyframes({ selectedKeyframes }));
       }
     };
 

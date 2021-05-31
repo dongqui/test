@@ -5,7 +5,7 @@ import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { useSelector } from 'reducers';
-import * as dopeSheetActions from 'actions/dopeSheet';
+import * as timelineActions from 'actions/timeline';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { SearchInput } from 'components/Input';
 import { AlertModalProvider } from 'components/Modal/AlertModal';
@@ -29,8 +29,8 @@ const cx = classNames.bind(styles);
 
 const TrackList: React.FC<{}> = () => {
   const dispatch = useDispatch();
-  const trackList = useSelector((state) => state.dopeSheet.trackList);
-  const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
+  const trackList = useSelector((state) => state.timeline.trackList);
+  const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);
   const prevInputText = useRef('');
 
   // To Do... apollo -> redux
@@ -63,7 +63,7 @@ const TrackList: React.FC<{}> = () => {
               draft[layerIndex].isShowed = true;
             });
           });
-          dispatch(dopeSheetActions.searchTrackList({ trackList: nextState }));
+          dispatch(timelineActions.searchTrackList({ trackList: nextState }));
           return;
         }
         const updatedtrackList: Partial<
@@ -172,7 +172,7 @@ const TrackList: React.FC<{}> = () => {
             }
           });
         });
-        dispatch(dopeSheetActions.searchTrackList({ trackList: nextState }));
+        dispatch(timelineActions.searchTrackList({ trackList: nextState }));
         prevInputText.current = loweredInput;
       }, DEBOUNCED_TIME),
     [dispatch, lastBoneOfLayers, trackList],
@@ -224,7 +224,7 @@ const TrackList: React.FC<{}> = () => {
         });
         draft.lastBoneOfLayers.push(lastBone);
       });
-      dispatch(dopeSheetActions.addLayer(nextState));
+      dispatch(timelineActions.addLayer(nextState));
     }
   }, [skeletonHelper, currentVisualizedData, dispatch, lastBoneOfLayers, trackList]);
 

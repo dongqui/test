@@ -24,7 +24,7 @@ import { fnGetBinarySearch, fnGetBoneTrackIndex, fnGetLayerTrackIndex } from 'ut
 import PlayBar from './PlayBar';
 import CircleGroup from './CircleGroup';
 import styles from './index.module.scss';
-import * as dopeSheetActions from 'actions/dopeSheet';
+import * as timelineActions from 'actions/timeline';
 
 // ToDo...없애야 됨
 import { useReactiveVar } from '@apollo/client';
@@ -63,9 +63,9 @@ interface Props {
 const DopeSheet: React.FC<Props> = (props) => {
   const { currentPlayBarTime, currentTimeIndexRef, currentTimeRef, dopeSheetScale } = props;
   const dispatch = useDispatch();
-  const trackList = useSelector((state) => state.dopeSheet.trackList);
-  const selectedKeyframes = useSelector((state) => state.dopeSheet.selectedKeyframes);
-  const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
+  const trackList = useSelector((state) => state.timeline.trackList);
+  const selectedKeyframes = useSelector((state) => state.timeline.selectedKeyframes);
+  const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);
   const dopeSheetRef = useRef<HTMLDivElement>(null);
 
   // ToDo...없애야 됨
@@ -186,7 +186,7 @@ const DopeSheet: React.FC<Props> = (props) => {
               draft[targetBoneIndex].times = boneTimes;
             }
           });
-          dispatch(dopeSheetActions.addKeyframes({ trackList: nextTrackList }));
+          dispatch(timelineActions.addKeyframes({ trackList: nextTrackList }));
         }
       }
     }
@@ -307,7 +307,7 @@ const DopeSheet: React.FC<Props> = (props) => {
                 draft[targetBoneIndex].times = boneTimes;
               }
             });
-            dispatch(dopeSheetActions.addKeyframes({ trackList: nextTrackList }));
+            dispatch(timelineActions.addKeyframes({ trackList: nextTrackList }));
           }
         }
       }
@@ -485,7 +485,7 @@ const DopeSheet: React.FC<Props> = (props) => {
             }
           });
           dispatch(
-            dopeSheetActions.deleteKeyframes({ trackList: nextTrackList, selectedKeyframes: [] }),
+            timelineActions.deleteKeyframes({ trackList: nextTrackList, selectedKeyframes: [] }),
           );
         }
       }

@@ -31,7 +31,7 @@ const CircleGroup: React.FC<Props> = ({
   trackIndex,
   dopeSheetScale,
 }) => {
-  const currentClickedTrack = useSelector((state) => state.dopeSheet.currentClickedTrack);
+  const currentClickedTrack = useSelector((state) => state.timeline.currentClickedTrack);
   const circleGroupRef = useRef<SVGSVGElement>(null);
 
   let fillColor = 'transparent';
