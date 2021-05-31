@@ -17,12 +17,12 @@ const cx = classNames.bind(styles);
 interface Props {
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
-  currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  currentPlayBarTime: MutableRefObject<number>;
+  dopeSheetScale: React.MutableRefObject<d3ScaleLinear | null>;
 }
 
 const TimelinePanel: React.FC<Props> = (props) => {
-  const { currentTimeRef, currentTimeIndexRef, currentXAxisPosition, prevXScale } = props;
+  const { currentTimeRef, currentTimeIndexRef, currentPlayBarTime, dopeSheetScale } = props;
   const dispatch = useDispatch();
   const prevModelKey = useRef('');
   const isStoredDopeSheetData = useRef(false);
@@ -67,16 +67,16 @@ const TimelinePanel: React.FC<Props> = (props) => {
         <MiddleBar
           currentTimeRef={currentTimeRef}
           currentTimeIndexRef={currentTimeIndexRef}
-          currentXAxisPosition={currentXAxisPosition}
-          prevXScale={prevXScale}
+          currentPlayBarTime={currentPlayBarTime}
+          dopeSheetScale={dopeSheetScale}
         />
         <div id="timeline-wrapper" className={cx('wrapper')}>
           <ChannelList />
           <TimeEditor
             currentTimeRef={currentTimeRef}
             currentTimeIndexRef={currentTimeIndexRef}
-            currentXAxisPosition={currentXAxisPosition}
-            prevXScale={prevXScale}
+            currentPlayBarTime={currentPlayBarTime}
+            dopeSheetScale={dopeSheetScale}
           />
         </div>
       </div>

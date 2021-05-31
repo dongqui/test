@@ -1,31 +1,25 @@
-import React, { MutableRefObject, RefObject, useRef } from 'react';
+import React, { MutableRefObject, RefObject } from 'react';
 import dynamic from 'next/dynamic';
 import { d3ScaleLinear } from 'types/TP';
 
-// const DynamicDopeSheet = dynamic(() => import('./DopeSheet'));
 const DynamicDopeSheet = dynamic(() => import('./New_DopeSheet'));
 
 interface Props {
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
-  currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  currentPlayBarTime: MutableRefObject<number>;
+  dopeSheetScale: MutableRefObject<d3ScaleLinear | null>;
 }
 
-const TimeEditor: React.FC<Props> = ({
-  currentTimeIndexRef,
-  currentTimeRef,
-  currentXAxisPosition,
-  prevXScale,
-}) => {
+const TimeEditor: React.FC<Props> = (props) => {
+  const { currentTimeIndexRef, currentTimeRef, currentPlayBarTime, dopeSheetScale } = props;
   return (
-    // <DynamicDopeSheet
-    //   currentTimeRef={currentTimeRef}
-    //   currentTimeIndexRef={currentTimeIndexRef}
-    //   currentXAxisPosition={currentXAxisPosition}
-    //   prevXScale={prevXScale}
-    // />
-    <DynamicDopeSheet />
+    <DynamicDopeSheet
+      currentTimeIndexRef={currentTimeIndexRef}
+      currentTimeRef={currentTimeRef}
+      currentPlayBarTime={currentPlayBarTime}
+      dopeSheetScale={dopeSheetScale}
+    />
   );
 };
 

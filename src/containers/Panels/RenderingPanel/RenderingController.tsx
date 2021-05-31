@@ -40,16 +40,16 @@ export interface RenderingControllerProps {
   fileUrl?: string;
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
-  currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  currentPlayBarTime: MutableRefObject<number>;
+  dopeSheetScale: React.MutableRefObject<d3ScaleLinear | null>;
 }
 const RenderingController: React.FC<RenderingControllerProps> = ({
   id,
   fileUrl,
   currentTimeRef,
   currentTimeIndexRef,
-  currentXAxisPosition,
-  prevXScale,
+  currentPlayBarTime,
+  dopeSheetScale,
 }) => {
   // store data
   const renderingData = useReactiveVar(storeRenderingData);
@@ -89,13 +89,13 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       action.play();
       mixer.timeScale = 0;
       if (
-        currentXAxisPosition &&
-        currentXAxisPosition.current &&
-        currentXAxisPosition.current > startTimeIndex
+        currentPlayBarTime &&
+        currentPlayBarTime.current &&
+        currentPlayBarTime.current > startTimeIndex
       ) {
-        action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
+        action.time = _.round(currentPlayBarTime.current / 30, 4); // play bar 위치로 초기화
         if (currentTimeIndexRef && currentTimeIndexRef.current) {
-          fnSetValue(currentTimeIndexRef, currentXAxisPosition.current); // play bar 위치로 초기화
+          fnSetValue(currentTimeIndexRef, currentPlayBarTime.current); // play bar 위치로 초기화
         }
       } else {
         action.time = _.round(startTimeIndex / 30, 4);
@@ -109,7 +109,7 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   }, [
     currentTimeIndexRef,
     currentVisualizedData,
-    currentXAxisPosition,
+    currentPlayBarTime,
     endTimeIndex,
     mixer,
     startTimeIndex,
@@ -180,21 +180,21 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   useEffect(() => {
     if (
       playState === 'pause' &&
-      currentXAxisPosition &&
-      currentXAxisPosition.current &&
-      prevXScale &&
-      prevXScale.current
+      currentPlayBarTime &&
+      currentPlayBarTime.current &&
+      dopeSheetScale &&
+      dopeSheetScale.current
     ) {
-      currentXAxisPosition.current = _.round(currentXAxisPosition.current, 0);
-      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      currentPlayBarTime.current = _.round(currentPlayBarTime.current, 0);
+      const xScaleLinear = dopeSheetScale.current as d3ScaleLinear;
       d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+        `translate3d(${xScaleLinear(currentPlayBarTime.current) - 10}px,
         ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentXAxisPosition, currentXAxisPosition.current, playState, prevXScale]);
+  }, [currentPlayBarTime, currentPlayBarTime.current, playState, dopeSheetScale]);
 
   const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 
