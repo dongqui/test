@@ -23,7 +23,7 @@ import {
 } from 'actions/lpData';
 import Explorer from './Explorer';
 import { getFileExtension, getAnimationData } from '../../../utils/LP_release';
-import { setConvertFbxToGlb } from '../../../utils/common/api';
+import { setConvertFbxToGlb } from '../../../utils/common/api/index';
 import { BaseModal } from 'components/Modal';
 import { ROOT_KEY } from 'reducers/lpData';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';

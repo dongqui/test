@@ -20,7 +20,7 @@ import {
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { defaultTargetboneValue } from 'containers/Panels/ControlPanel/Retarget/RetargetPanel';
-import * as api from 'utils/common/api/api';
+import * as api from 'utils/common/api';
 import { fnExportModelToFbx, fnExportModelToGlb } from 'utils/LP';
 import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import fnGetFileName from 'utils/LP/fnGetFileName';
