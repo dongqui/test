@@ -1,85 +1,84 @@
 import React, { useCallback, useMemo } from 'react';
 import { Segment } from 'components/Segment';
-import { useReactiveVar } from '@apollo/client';
-import { storeRenderingData } from 'lib/store';
-import { axisName, RenderingDataPropertyName } from 'types/RP';
-import _ from 'lodash';
+import { AxisName } from 'types/RP';
 import classNames from 'classnames/bind';
 import styles from './CPListRowButton.module.scss';
+import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import * as renderingDataActions from 'actions/renderingData';
 
 const cx = classNames.bind(styles);
 
 export interface CPListRowButtonProps {
   rowKey: string;
   name: string;
-  button?:
-    | RenderingDataPropertyName.axis
-    | RenderingDataPropertyName.isBoneOn
-    // | RenderingDataPropertyName.isJointOn
-    | RenderingDataPropertyName.isMeshOn
-    | RenderingDataPropertyName.isShadowOn;
+  button?: 'axis' | 'isBoneOn' | 'isMeshOn' | 'isShadowOn';
 }
 
 const CPListRowButtonComponent: React.FC<CPListRowButtonProps> = ({
   rowKey,
   name,
-  button = RenderingDataPropertyName.axis,
+  button = 'axis',
 }) => {
-  const renderingData = useReactiveVar(storeRenderingData);
+  const renderingData = useSelector((state) => state.renderingData);
+  const dispatch = useDispatch();
+
   const isSelectedOn = useMemo(() => {
     let result: boolean = renderingData[button] as boolean;
-    if (_.isEqual(button, RenderingDataPropertyName.axis)) {
-      result = _.isEqual(renderingData.axis, axisName.y);
+    if (button === 'axis') {
+      result = renderingData.axis === 'y';
     }
     return result;
   }, [button, renderingData]);
+
   const isSelectedOff = useMemo(() => {
-    let result: boolean | axisName = !renderingData[button] as boolean;
-    if (_.isEqual(button, RenderingDataPropertyName.axis)) {
-      result = _.isEqual(renderingData.axis, axisName.z);
+    let result: boolean | AxisName = !renderingData[button] as boolean;
+    if (button === 'axis') {
+      result = renderingData.axis === 'z';
     }
     return result;
   }, [button, renderingData]);
 
   const handleCLick = useCallback(
     ({ payload }) => {
-      let result = payload;
+      let result: boolean | 'y' | 'z' = payload;
       if (button === 'axis') {
-        result = payload ? axisName.y : axisName.z;
-        storeRenderingData({ ...renderingData, [button]: result });
+        result = payload ? 'y' : 'z';
+        dispatch(renderingDataActions.setAxis({ axis: result }));
       } else if (button === 'isBoneOn') {
         if (!renderingData.isMeshOn && !payload) {
           // mesh 꺼져있고 bone 도 끄려고 할 때
           return;
         }
-        storeRenderingData({ ...renderingData, [button]: result });
+        dispatch(renderingDataActions.setIsBoneOn({ isBoneOn: payload }));
       } else if (button === 'isMeshOn') {
         if (!renderingData.isBoneOn && !payload) {
           // bone 꺼져있고 mesh 도 끄려고 할 때
           return;
         }
-        storeRenderingData({ ...renderingData, [button]: result });
+        dispatch(renderingDataActions.setIsMeshOn({ isMeshOn: payload }));
       } else if (button === 'isShadowOn') {
-        storeRenderingData({ ...renderingData, [button]: result });
+        dispatch(renderingDataActions.setIsShadowOn({ isShadowOn: payload }));
       }
     },
-    [button, renderingData],
+    [button, dispatch, renderingData.isBoneOn, renderingData.isMeshOn],
   );
 
   const modeList = [
     {
       key: 'on',
-      value: _.isEqual(button, RenderingDataPropertyName.axis) ? `Y-UP` : 'ON',
+      value: button === 'axis' ? `Y-UP` : 'ON',
       isSelected: isSelectedOn,
       onClick: () => handleCLick({ payload: true }),
     },
     {
       key: 'off',
-      value: _.isEqual(button, RenderingDataPropertyName.axis) ? `Z-UP` : 'OFF',
+      value: button === 'axis' ? `Z-UP` : 'OFF',
       isSelected: isSelectedOff,
       onClick: () => handleCLick({ payload: false }),
     },
   ];
+
   return (
     <div className={cx('segment-group')}>
       <span>{name}</span>

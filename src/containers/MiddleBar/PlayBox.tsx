@@ -8,15 +8,7 @@ import {
   MutableRefObject,
 } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import {
-  storeAnimatingData,
-  storeModalInfo,
-  storeCurrentVisualizedData,
-  storePageInfo,
-  storeRecordingData,
-  storeBarPositionX,
-  storeCurrentAction,
-} from 'lib/store';
+import { storeModalInfo, storePageInfo, storeRecordingData, storeBarPositionX } from 'lib/store';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import _ from 'lodash';
@@ -38,6 +30,9 @@ import * as d3 from 'd3';
 import fnQuaternionToEulerTrack from 'utils/common/fnQuaternionToEulerTrack';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
+import { useDispatch } from 'react-redux';
+import * as animatingDataActions from 'actions/animatingData';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -62,12 +57,14 @@ const PlayBox: FunctionComponent<Props> = ({
   lastTime,
 }) => {
   const recordingData = useReactiveVar(storeRecordingData);
-  const animatingData = useReactiveVar(storeAnimatingData);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
   const lpData = useReactiveVar(storeLpData);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
-  const currentAction = useReactiveVar(storeCurrentAction);
+
+  const dispatch = useDispatch();
+
+  const { playState, playDirection, currentAction } = useSelector((state) => state.animatingData);
+  const currentVisualizedData = useSelector((state) => state.currentVisualizedData);
 
   const { getConfirm } = useAlertModal();
 
@@ -101,11 +98,8 @@ const PlayBox: FunctionComponent<Props> = ({
   // 정지 버튼 클릭 시 재생바 start 로 && current time 과 time index 시작점으로
   const handleStop = useCallback(() => {
     if (isShootPage) {
-      if (animatingData.playState !== 'stop' && currentVisualizedData) {
-        storeAnimatingData({
-          ...animatingData,
-          playState: 'stop',
-        });
+      if (playState !== 'stop' && currentVisualizedData) {
+        dispatch(animatingDataActions.setPlayState({ playState: 'stop' }));
       }
       if (
         currentPlayBarTime &&
@@ -149,14 +143,15 @@ const PlayBox: FunctionComponent<Props> = ({
       storeBarPositionX(recordingData.rangeBoxInfo.x);
     }
   }, [
-    animatingData,
     currentAction,
     currentTimeIndexRef,
     currentTimeRef,
     currentVisualizedData,
     currentPlayBarTime,
+    dispatch,
     isShootPage,
     lastTime,
+    playState,
     dopeSheetScale,
     recordingData,
     startTimeIndex,
@@ -164,43 +159,42 @@ const PlayBox: FunctionComponent<Props> = ({
 
   const handleRewind = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
-      if (!(animatingData.playState === 'play' && animatingData.playDirection === -1)) {
-        storeAnimatingData({
-          ...animatingData,
-          playDirection: -1,
-          playState: 'play',
-        });
+      if (!(playState === 'play' && playDirection === -1)) {
+        dispatch(animatingDataActions.setPlayState({ playState: 'play' }));
+        dispatch(animatingDataActions.setPlayDirection({ playDirection: -1 }));
       }
     }
 
     if (!isShootPage) {
       storeRecordingData({ ...recordingData, isPlaying: true });
     }
-  }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
+  }, [currentVisualizedData, dispatch, isShootPage, playDirection, playState, recordingData]);
 
   const handlePlay = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
-      if (!(animatingData.playState === 'play' && animatingData.playDirection === 1)) {
-        storeAnimatingData({
-          ...animatingData,
-          playDirection: 1,
-          playState: 'play',
-        });
+      if (!(playState === 'play' && playDirection === 1)) {
+        dispatch(animatingDataActions.setPlayState({ playState: 'play' }));
+        dispatch(animatingDataActions.setPlayDirection({ playDirection: 1 }));
       }
     }
 
     if (_.isEqual(pageInfo.page, PAGE_NAMES.extract)) {
       storeRecordingData({ ...recordingData, isPlaying: true });
     }
-  }, [animatingData, currentVisualizedData, isShootPage, pageInfo.page, recordingData]);
+  }, [
+    currentVisualizedData,
+    dispatch,
+    isShootPage,
+    pageInfo.page,
+    playDirection,
+    playState,
+    recordingData,
+  ]);
 
   const handlePause = useCallback(() => {
     if (isShootPage && currentVisualizedData) {
-      if (animatingData.playState !== 'pause') {
-        storeAnimatingData({
-          ...animatingData,
-          playState: 'pause',
-        });
+      if (playState !== 'pause') {
+        dispatch(animatingDataActions.setPlayState({ playState: 'pause' }));
       }
     }
 
@@ -210,7 +204,7 @@ const PlayBox: FunctionComponent<Props> = ({
         isPlaying: false,
       });
     }
-  }, [animatingData, currentVisualizedData, isShootPage, recordingData]);
+  }, [currentVisualizedData, dispatch, isShootPage, playState, recordingData]);
 
   const [showsModal, setShowsModal] = useState(false);
 
@@ -332,7 +326,7 @@ const PlayBox: FunctionComponent<Props> = ({
     recordingData.rangeBoxInfo.x,
   ]);
 
-  const isPlaying = _.isEqual(animatingData.playState, 'play') || recordingData.isPlaying;
+  const isPlaying = _.isEqual(playState, 'play') || recordingData.isPlaying;
 
   const pauseButtonClasses = cx('pause', {
     center: isShootPage,

@@ -11,15 +11,9 @@ import {
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType, RetargetInfoType, RetargetMap, TargetboneType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { AnimatingDataType, RecordingDataType, RenderingDataType } from 'types/RP';
+import { RecordingDataType, RenderingDataType } from 'types/RP';
 import _ from 'lodash';
-import {
-  INITIAL_ANIMATING_DATA,
-  INITIAL_CP_DATA,
-  INITIAL_LP_DATA,
-  INITIAL_RECORDING_DATA,
-  INITIAL_RENDERING_DATA,
-} from 'utils/const';
+import { INITIAL_CP_DATA, INITIAL_LP_DATA, INITIAL_RECORDING_DATA } from 'utils/const';
 import {
   ContextmenuType,
   FILE_TYPES,
@@ -28,11 +22,9 @@ import {
   ModalType,
   PageInfoType,
   PAGE_NAMES,
-  CurrentVisualizedDataType,
 } from '../types';
 // import { INITIAL_RETARGET_DATA } from '../utils/const';
 import { CPModeType } from '../types/CP';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 
 import { initialRetargetMap } from 'utils/retargetMap';
@@ -41,7 +33,6 @@ export enum StoreDataNames {
   mainData = 'mainData',
 }
 // common
-export const storeCurrentVisualizedData = makeVar<CurrentVisualizedDataType | undefined>(undefined);
 export const storeContextMenuInfo = makeVar<ContextmenuType>({
   isShow: false,
   top: 0,
@@ -61,13 +52,6 @@ export const storePages = makeVar<PagesType[]>([
 ]);
 export const storeSearchWord = makeVar<string>('');
 export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
-// RP
-export const storeAnimatingData = makeVar<AnimatingDataType>(INITIAL_ANIMATING_DATA);
-export const storeRenderingData = makeVar<RenderingDataType>(INITIAL_RENDERING_DATA);
-export const storeCurrentBone = makeVar<THREE.Bone | undefined>(undefined);
-export const storeCurrentAction = makeVar<THREE.AnimationAction | undefined>(undefined);
-export const storeTransformControls = makeVar<TransformControls | undefined>(undefined);
-export const storeSkeletonHelper = makeVar<THREE.SkeletonHelper | undefined>(undefined);
 // WEBCAM
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);

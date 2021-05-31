@@ -43,23 +43,23 @@ export interface CPDataType {
     | CPComponentType.slider;
   [CPDataPropertyNames.parentKey]?: string;
   isExpanded?: boolean;
-  w?: RenderingDataPropertyName.QuaternionW;
+  w?: RenderingDataPropertyName.quaternionW;
   x?:
-    | RenderingDataPropertyName.QuaternionX
+    | RenderingDataPropertyName.quaternionX
     | RenderingDataPropertyName.positionX
     | RenderingDataPropertyName.rotationX
     | RenderingDataPropertyName.scaleX;
   // | RenderingDataPropertyName.locationX
   // | RenderingDataPropertyName.angleX;
   y?:
-    | RenderingDataPropertyName.QuaternionY
+    | RenderingDataPropertyName.quaternionY
     | RenderingDataPropertyName.positionY
     | RenderingDataPropertyName.rotationY
     | RenderingDataPropertyName.scaleY;
   // | RenderingDataPropertyName.locationY
   // | RenderingDataPropertyName.angleY;
   z?:
-    | RenderingDataPropertyName.QuaternionZ
+    | RenderingDataPropertyName.quaternionZ
     | RenderingDataPropertyName.positionZ
     | RenderingDataPropertyName.rotationZ
     | RenderingDataPropertyName.scaleZ;

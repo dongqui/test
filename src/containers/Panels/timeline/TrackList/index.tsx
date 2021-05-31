@@ -3,15 +3,12 @@ import produce from 'immer';
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
-import { CurrentVisualizedDataType } from 'types';
 import { TPTrackName, TPTrackList } from 'types/TP';
 import {
   storeTPTrackNameList,
   storeTPTrackListList,
   storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
-  storeCurrentVisualizedData,
-  storeSkeletonHelper,
 } from 'lib/store';
 import { fnGetSmallestNewNumber } from 'utils/common';
 import { fnGetBinarySearch } from 'utils/TP/trackUtils';
@@ -21,6 +18,9 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import Track from '../Track';
 import styles from './index.module.scss';
 import { AlertModalProvider } from 'components/Modal/AlertModal';
+import { useDispatch } from 'react-redux';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
+import { useSelector } from 'reducers';
 
 interface Props {
   trackListRef: React.RefObject<HTMLDivElement>;
@@ -40,11 +40,17 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
   const trackNameList = useReactiveVar(storeTPTrackNameList);
   const dopeSheetList = useReactiveVar(storeTPTrackListList);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
-  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
 
   const [filteredTrackList, setFilteredTrackList] = useState<TPTrackName[]>([]);
   const prevTrackInput = useRef('');
+
+  const dispatch = useDispatch();
+
+  const { skeletonHelper } = useSelector((state) => state.renderingData);
+
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
+  );
 
   // debouned가 적용 된 track input 갱신
   const changeDebounedTrackInput = useMemo(
@@ -184,15 +190,9 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
       );
       const nextOrder = fnGetSmallestNewNumber([0, ...defaultTypeOrders]);
       const newLayer = fnGetNewLayer({ name: `Layer${nextOrder}`, bones: skeletonHelper.bones });
-      const state = storeCurrentVisualizedData();
-      if (state) {
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          draft?.layers.push(newLayer);
-        });
-        storeCurrentVisualizedData(nextState);
-      }
+      dispatch(currentVisualizedDataActions.addNewLayer({ newLayer }));
     }
-  }, [skeletonHelper, currentVisualizedData]);
+  }, [skeletonHelper, currentVisualizedData, dispatch]);
 
   // 최초 Track List 적용
   useEffect(() => {

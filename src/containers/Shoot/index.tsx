@@ -11,7 +11,7 @@ import {
 import _ from 'lodash';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-import { storeLpData, storeCurrentVisualizedData } from 'lib/store';
+import { storeLpData } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
@@ -23,12 +23,20 @@ import { d3ScaleLinear } from 'types/TP';
 import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { useDispatch } from 'react-redux';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
 const Shoot: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+
+  const dispatch = useDispatch();
+
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
+  );
 
   const currentTimeRef = useRef<HTMLInputElement>(null);
   const currentTimeIndexRef = useRef<HTMLInputElement>(null);
@@ -47,8 +55,8 @@ const Shoot: FunctionComponent = () => {
 
   const handleDrop = useCallback(() => {
     const draggingRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
-    fnVisualizeFile({ key: draggingRow?.key ?? '', lpData });
-  }, [lpData]);
+    fnVisualizeFile({ key: draggingRow?.key ?? '', lpData, dispatch });
+  }, [dispatch, lpData]);
 
   const [windowWidth, windowHeight] = useWindowSize();
 
@@ -71,9 +79,9 @@ const Shoot: FunctionComponent = () => {
 
   useEffect(() => {
     if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.key, currentVisualizedData?.key])) {
-      storeCurrentVisualizedData(undefined);
+      dispatch(currentVisualizedDataActions.resetCurrentVisualizedData());
     }
-  }, [currentVisualizedData?.key, lpData]);
+  }, [currentVisualizedData?.key, dispatch, lpData]);
 
   const [sectionHeight, setSectionHeight] = useState({
     upperSection: windowHeight * 0.7,
