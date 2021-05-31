@@ -35,17 +35,17 @@ import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
-const X_AXIS_HEIGHT = 48; // 트랙 높이
+const TIME_FRAME_HEIGHT = 48; // 트랙 높이
 
 export interface Props {
   currentTimeRef?: RefObject<HTMLInputElement>;
   currentTimeIndexRef?: RefObject<HTMLInputElement>;
-  currentXAxisPosition?: MutableRefObject<number>;
-  prevXScale?: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  currentPlayBarTime?: MutableRefObject<number>;
+  dopeSheetScale?: React.MutableRefObject<d3ScaleLinear | null>;
 }
 
 const MiddleBar: FunctionComponent<Props> = (props) => {
-  const { currentTimeRef, currentTimeIndexRef, currentXAxisPosition, prevXScale } = props;
+  const { currentTimeRef, currentTimeIndexRef, currentPlayBarTime, dopeSheetScale } = props;
 
   const currentAction = useReactiveVar(storeCurrentAction);
   const animatingData = useReactiveVar(storeAnimatingData);
@@ -201,23 +201,24 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   };
 
   const handleNowInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    if (currentXAxisPosition && currentAction) {
+    if (currentPlayBarTime && currentAction) {
       const value = parseInt(event.target.value);
       if (
         value >= startTimeIndex &&
         value <= endTimeIndex &&
-        prevXScale &&
+        dopeSheetScale &&
         currentTimeRef &&
         currentTimeRef.current
       ) {
         currentAction.time = _.round(value / 30, 4);
         fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(value / 30, 0)));
-        currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
-        const xScaleLinear = prevXScale.current as d3ScaleLinear;
-        d3.select('#play-bar-wrapper').style(
+        currentPlayBarTime.current = currentAction.time ? currentAction.time * 30 : 1;
+        const scaleXLineaer = dopeSheetScale.current as d3ScaleLinear;
+        const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
+        const translateY = TIME_FRAME_HEIGHT / 2;
+        d3.select('#play-bar').style(
           'transform',
-          `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
-          ${X_AXIS_HEIGHT / 2}px, 0)`,
+          `translate3d(${translateX}px,${translateY}px, 0)`,
         );
       } else {
         event.target.value = _.round(currentAction.time * 30, 0).toString();
@@ -246,27 +247,28 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
   }, 1500);
 
   const handleNowInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
-    if (currentXAxisPosition && currentAction) {
+    if (currentPlayBarTime && currentAction) {
       const value = parseInt(event.target.value);
       if (
         value >= startTimeIndex &&
         value <= endTimeIndex &&
-        prevXScale &&
+        dopeSheetScale &&
         currentTimeRef &&
         currentTimeRef.current
       ) {
         currentAction.time = _.round(value / 30, 4);
         fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(value / 30, 0)));
-        currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
-        const xScaleLinear = prevXScale.current as d3ScaleLinear;
-        d3.select('#play-bar-wrapper').style(
+        currentPlayBarTime.current = currentAction.time ? currentAction.time * 30 : 1;
+        const scaleXLineaer = dopeSheetScale.current as d3ScaleLinear;
+        const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
+        const translateY = TIME_FRAME_HEIGHT / 2;
+        d3.select('#play-bar').style(
           'transform',
-          `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
-          ${X_AXIS_HEIGHT / 2}px, 0)`,
+          `translate3d(${translateX}px,${translateY}px, 0)`,
         );
       }
     }
-  }, 1500);
+  }, 1000);
 
   const handleInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     switch (event.key) {
@@ -335,22 +337,22 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
 
   // start <-> end 구간 변경 시 current time 변경
   useEffect(() => {
-    if (currentAction && currentTimeRef && currentTimeRef.current && currentXAxisPosition) {
-      if (_.round(currentXAxisPosition.current / 30, 4) > lastTime) {
+    if (currentAction && currentTimeRef && currentTimeRef.current && currentPlayBarTime) {
+      if (_.round(currentPlayBarTime.current / 30, 4) > lastTime) {
         fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime)));
 
         // const value = fnGetMaskedValue(_.round(lastTime))
 
         // setCurrentTime(value);
       } else {
-        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(currentXAxisPosition.current / 30, 0)));
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(currentPlayBarTime.current / 30, 0)));
 
-        // const value = fnGetMaskedValue(_.round(currentXAxisPosition.current / 30, 0))
+        // const value = fnGetMaskedValue(_.round(currentPlayBarTime.current / 30, 0))
 
         // setCurrentTime(value);
       }
     }
-  }, [currentAction, currentTimeRef, currentXAxisPosition, lastTime]);
+  }, [currentAction, currentTimeRef, currentPlayBarTime, lastTime]);
 
   // VM now 시간 변경 시 currentTime 변경
   useEffect(() => {
@@ -382,13 +384,13 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
       if (
         currentTimeIndexRef &&
         currentTimeIndexRef.current &&
-        currentXAxisPosition &&
-        currentXAxisPosition.current
+        currentPlayBarTime &&
+        currentPlayBarTime.current
       ) {
-        fnSetValue(currentTimeIndexRef, _.round(currentXAxisPosition.current, 0));
+        fnSetValue(currentTimeIndexRef, _.round(currentPlayBarTime.current, 0));
       }
     }
-  }, [currentTimeIndexRef, currentXAxisPosition]);
+  }, [currentTimeIndexRef, currentPlayBarTime]);
 
   // 애니메이션 재생 시 now 변경
   useEffect(() => {
@@ -405,10 +407,10 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         <div className={cx('inner')} ref={scrollRef}>
           <div className={cx('left')}>
             <PlayBox
-              currentXAxisPosition={currentXAxisPosition}
+              currentPlayBarTime={currentPlayBarTime}
               currentTimeRef={currentTimeRef}
               currentTimeIndexRef={currentTimeIndexRef}
-              prevXScale={prevXScale}
+              dopeSheetScale={dopeSheetScale}
               startTimeIndex={startTimeIndex}
               lastTime={lastTime}
             />

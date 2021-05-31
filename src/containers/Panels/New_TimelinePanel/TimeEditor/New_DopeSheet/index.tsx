@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  MutableRefObject,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useDispatch } from 'react-redux';
 import classNames from 'classnames/bind';
 import produce from 'immer';
@@ -25,8 +33,11 @@ import {
   storeCurrentVisualizedData,
   storeSkeletonHelper,
   storePageInfo,
+  storeContextMenuInfo,
 } from 'lib/store';
 import { CurrentVisualizedDataType, PAGE_NAMES, ShootTrackType } from 'types';
+import { d3ScaleLinear } from 'types/TP';
+import useContextMenu from 'hooks/common/useContextMenu';
 
 const cx = classNames.bind(styles);
 
@@ -36,21 +47,26 @@ const TRACK_HEIGHT = 32;
 const ZOOM_THROTTLE_TIMER = 75;
 const INITIAL_ZOOM_LEVEL = 7500;
 
-type d3ScaleLinear = d3.ScaleLinear<number, number, never>;
-
 interface Datum {
   name: string;
   times: number[];
   values: number[];
 }
 
-const DopeSheet: React.FC<{}> = () => {
+interface Props {
+  currentTimeRef: RefObject<HTMLInputElement>;
+  currentTimeIndexRef: RefObject<HTMLInputElement>;
+  currentPlayBarTime: MutableRefObject<number>;
+  dopeSheetScale: MutableRefObject<d3ScaleLinear | null>;
+}
+
+const DopeSheet: React.FC<Props> = (props) => {
+  const { currentPlayBarTime, currentTimeIndexRef, currentTimeRef, dopeSheetScale } = props;
   const dispatch = useDispatch();
   const trackList = useSelector((state) => state.dopeSheet.trackList);
   const selectedKeyframes = useSelector((state) => state.dopeSheet.selectedKeyframes);
   const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
   const dopeSheetRef = useRef<HTMLDivElement>(null);
-  const dopeSheetScale = useRef<d3ScaleLinear | null>(null);
 
   // ToDo...없애야 됨
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
@@ -59,6 +75,7 @@ const DopeSheet: React.FC<{}> = () => {
   const pageInfo = useReactiveVar(storePageInfo);
   const { startTimeIndex, endTimeIndex, playState } = animatingData;
 
+  // 다중 키 컨트롤러
   const multiKeyController = useMemo(
     () => ({
       v: { pressed: false },
@@ -70,6 +87,7 @@ const DopeSheet: React.FC<{}> = () => {
     [],
   );
 
+  // base 트랙에서 선택 된 transform 트랙만 필터링
   const selectedBaseDopeSheets = useMemo(
     () =>
       trackList.filter(
@@ -82,6 +100,7 @@ const DopeSheet: React.FC<{}> = () => {
     [trackList],
   );
 
+  // layer 트랙에서 선택 된 transform 트랙만 필터링
   const selectedLayerDopeSheets = useMemo(
     () =>
       trackList.filter(
@@ -172,6 +191,7 @@ const DopeSheet: React.FC<{}> = () => {
       }
     }
   }, [
+    currentPlayBarTime,
     currentVisualizedData,
     dispatch,
     playState,
@@ -293,6 +313,7 @@ const DopeSheet: React.FC<{}> = () => {
       }
     }
   }, [
+    currentPlayBarTime,
     currentVisualizedData,
     dispatch,
     playState,
@@ -471,6 +492,59 @@ const DopeSheet: React.FC<{}> = () => {
     }
   }, [currentVisualizedData, dispatch, lastBoneOfLayers, playState, selectedKeyframes, trackList]);
 
+  // dope sheet에 컨텍스트 메뉴 적용
+  const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
+  const handleDopsheetContextMenu = ({
+    top,
+    left,
+    e,
+  }: {
+    top: number;
+    left: number;
+    e?: MouseEvent;
+  }) => {
+    e?.preventDefault();
+    storeContextMenuInfo({
+      isShow: true,
+      top,
+      left,
+      data: [
+        {
+          key: 'edit',
+          value: 'Edit Keyframe',
+          isSelected: false,
+          isDisabled: selectedBaseDopeSheets.length === 0 && selectedLayerDopeSheets.length === 0,
+        },
+        {
+          key: 'delete',
+          value: 'Delete Keyframe',
+          isSelected: false,
+          isDisabled: selectedKeyframes.length === 0,
+        },
+      ],
+      onClick: (key) => {
+        switch (key) {
+          case 'edit':
+            if (selectedBaseDopeSheets.length !== 0) {
+              handleUpdateKeyframeToBase();
+            }
+            if (selectedLayerDopeSheets.length !== 0) {
+              handleUpdateKeyframeToLayer();
+            }
+            storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+            break;
+          case 'delete':
+            handleDeleteKeyframe();
+            storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+            break;
+          default:
+            break;
+        }
+      },
+    });
+  };
+  useContextMenu({ targetRef: dopeSheetRef, event: handleDopsheetContextMenu });
+
   // dope sheet key down 이벤트
   const handleDopesheetKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -584,36 +658,15 @@ const DopeSheet: React.FC<{}> = () => {
     [multiKeyController],
   );
 
-  // dope sheet key press 이벤트
-  const handleDopesheetKeyPress = useCallback((event: KeyboardEvent) => {
-    const target = event.target as Element;
-    if (target.tagName.toLowerCase() === 'input') {
-      return;
-    }
-    switch (event.key) {
-      case ',':
-      case '<':
-        // handleMovePlayBarLeft();
-        break;
-      case '.':
-      case '>':
-        // handleMovePlayBarRight();
-        break;
-    }
-  }, []);
-
   // key down, key up, key press 이벤트 추가
   useEffect(() => {
     document.addEventListener('keydown', handleDopesheetKeyDown);
     document.addEventListener('keyup', handleDopesheetKeyUp);
-    document.addEventListener('keypress', handleDopesheetKeyPress);
-
     return () => {
       document.removeEventListener('keydown', handleDopesheetKeyDown);
       document.removeEventListener('keyup', handleDopesheetKeyUp);
-      document.removeEventListener('keypress', handleDopesheetKeyPress);
     };
-  }, [handleDopesheetKeyDown, handleDopesheetKeyPress, handleDopesheetKeyUp]);
+  }, [handleDopesheetKeyDown, handleDopesheetKeyUp]);
 
   // dope sheet zoom 적용
   const prevDoepSheetWidth = useRef(0);
@@ -626,7 +679,7 @@ const DopeSheet: React.FC<{}> = () => {
           .scaleLinear()
           .domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN])
           .range([0, resizedWidth]);
-        const rescaleXLineer = event.transform.rescaleX(dopeSheetScale.current) as d3ScaleLinear;
+        const rescaleXLineer = event.transform.rescaleX(dopeSheetScale.current);
         dopeSheetScale.current = rescaleXLineer;
       };
 
@@ -711,7 +764,6 @@ const DopeSheet: React.FC<{}> = () => {
           const circleGroupNode = circleGroup.node() as Element;
           const circleGroupTop = circleGroupNode.getBoundingClientRect().top;
           const parentWrapperTop = circleGroupNode.parentElement?.getBoundingClientRect().top;
-
           if (parentWrapperTop && dopeSheetScale.current) {
             const scaleXLineaer = dopeSheetScale.current;
             const rangeTop = parentWrapperTop - TRACK_HEIGHT * 4;
@@ -770,7 +822,6 @@ const DopeSheet: React.FC<{}> = () => {
               arrangePlayBar();
             }, ZOOM_THROTTLE_TIMER),
           );
-
         d3.select(dopeSheetRef.current)
           .call(zoomBehavior.scaleTo as any, currentZoomLevel.current)
           .call(zoomBehavior.translateTo as any, width / 2, height / 2)
@@ -778,9 +829,9 @@ const DopeSheet: React.FC<{}> = () => {
       });
       resizeObserver.observe(dopeSheetRef.current);
     }
-  }, [endTimeIndex, startTimeIndex]);
+  }, [currentPlayBarTime, dopeSheetScale, endTimeIndex, startTimeIndex]);
 
-  // 채널 리스트에 커서를 놓고 스크롤 시, 키프레임 위치 조정
+  // 트랙 리스트에 커서를 놓고 스크롤 시, 키프레임 위치 조정
   const prevScrollTop = useRef(0);
   useEffect(() => {
     if (dopeSheetRef.current) {
@@ -797,7 +848,6 @@ const DopeSheet: React.FC<{}> = () => {
           root: document.getElementById('timeline-wrapper'),
           rootMargin: rootMargin,
         };
-
         d3.selectAll('.circle-group').each(function () {
           const circleGroup = d3.select(this);
           const circleGroupNode = circleGroup.node() as Element;
@@ -816,7 +866,7 @@ const DopeSheet: React.FC<{}> = () => {
 
       d3.select('#timeline-wrapper').on('scroll', arrangeKeyframes);
     }
-  }, []);
+  }, [dopeSheetScale]);
 
   // 재생바 출력 여부
   const [isShowedPlayBar, setIsShowedPlayBar] = useState(false);
@@ -832,44 +882,6 @@ const DopeSheet: React.FC<{}> = () => {
       setIsShowedPlayBar(false);
     }
   }, [trackList]);
-
-  // 재생바 드레그 이벤트
-  const currentPlayBarTime = useRef(1);
-  useEffect(() => {
-    if (dopeSheetScale.current && isShowedPlayBar) {
-      const setPlayBarTime = (time: number) => {
-        if (time < startTimeIndex) return startTimeIndex;
-        if (endTimeIndex < time) return endTimeIndex;
-        return time;
-      };
-      const dragBehavior = d3
-        .drag()
-        .filter((playBar) => {
-          if (playBar.target.tagName !== 'path') return false;
-          return true;
-        })
-        .on('drag', function (drag: MouseEvent) {
-          if (!dopeSheetScale.current) return;
-          const scaleXLineaer = dopeSheetScale.current;
-          const playBarTime = _.floor(dopeSheetScale.current.invert(drag.x + 20) as number);
-          const translateX = scaleXLineaer(setPlayBarTime(playBarTime)) - 10;
-          const translateY = TIME_FRAME_HEIGHT / 2;
-
-          d3.select(this).style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`);
-          currentPlayBarTime.current = setPlayBarTime(playBarTime);
-        });
-
-      const scaleXLineaer = dopeSheetScale.current;
-      const initialPlayBarTime = setPlayBarTime(currentPlayBarTime.current);
-      const translateX = scaleXLineaer(initialPlayBarTime) - 10;
-      const translateY = TIME_FRAME_HEIGHT / 2;
-
-      d3.select('#play-bar')
-        .style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`)
-        .call(dragBehavior as any);
-      currentPlayBarTime.current = initialPlayBarTime;
-    }
-  }, [endTimeIndex, isShowedPlayBar, startTimeIndex]);
 
   return (
     <div className={cx('dopesheet-wrapper')} ref={dopeSheetRef}>
@@ -903,7 +915,14 @@ const DopeSheet: React.FC<{}> = () => {
           );
         })}
       </div>
-      {isShowedPlayBar && <PlayBar />}
+      {isShowedPlayBar && (
+        <PlayBar
+          currentTimeIndexRef={currentTimeIndexRef}
+          currentTimeRef={currentTimeRef}
+          currentPlayBarTime={currentPlayBarTime}
+          dopeSheetScale={dopeSheetScale}
+        />
+      )}
     </div>
   );
 };
