@@ -18,10 +18,10 @@ import {
   storeCurrentVisualizedData,
   storeDeleteTargetKeyframes,
   storeSkeletonHelper,
-  storeTPDopeSheetList,
+  storeTPTrackListList,
   storePageInfo,
 } from 'lib/store';
-import PlayBar from './PlayBar';
+import PlayBar from './playBar';
 import styles from './index.module.scss';
 import { CurrentVisualizedDataType, PAGE_NAMES, ShootTrackType } from 'types';
 import {
@@ -38,7 +38,7 @@ import { useSelector } from 'reducers';
 import CircleGroup from './CircleGroup';
 
 interface Props {
-  panelWrapperRef: RefObject<HTMLDivElement>; // 필요 없음
+  // panelWrapperRef: RefObject<HTMLDivElement>; // 필요 없음
   currentTimeRef: RefObject<HTMLInputElement>; // 협의 필요
   currentTimeIndexRef: RefObject<HTMLInputElement>; // 협의 필요
   currentXAxisPosition: MutableRefObject<number>; // 협의 필요
@@ -66,7 +66,7 @@ const THROTTLE_TIMER = 75;
 const INITIAL_SCALE_LEVEL = 7500;
 
 const DopeSheet: React.FC<Props> = ({
-  panelWrapperRef,
+  // panelWrapperRef,
   currentTimeRef,
   currentTimeIndexRef,
   currentXAxisPosition,
@@ -95,6 +95,7 @@ const DopeSheet: React.FC<Props> = ({
 
   const setPlayBarPosition = useCallback(() => {
     if (currentXAxisPosition && currentAction) {
+      console.log('4', currentAction.time, currentAction);
       currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
       const xScaleLinear = prevXScale.current as d3ScaleLinear;
       d3.select('#play-bar-wrapper').style(
@@ -107,6 +108,7 @@ const DopeSheet: React.FC<Props> = ({
   }, [currentAction, currentXAxisPosition, prevXScale]);
 
   const startPlayBarPositionLoop = useCallback(() => {
+    console.log('3');
     playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
   }, [setPlayBarPosition]);
 
@@ -119,6 +121,7 @@ const DopeSheet: React.FC<Props> = ({
   // 미들바 애니메이션 싱크
   useEffect(() => {
     if (playState === 'play') {
+      console.log('2');
       startPlayBarPositionLoop();
     } else if (playState === 'pause' || playState === 'stop') {
       stopPlayBarPositionLoop();
@@ -202,67 +205,67 @@ const DopeSheet: React.FC<Props> = ({
   }, [prevXScale]);
 
   // timelineWrapper에 scroll 효과 적용
-  useEffect(() => {
-    if (!dopeSheetRef.current || !panelWrapperRef.current) return;
-    const timelineWrapper = panelWrapperRef.current;
+  // useEffect(() => {
+  //   if (!dopeSheetRef.current || !panelWrapperRef.current) return;
+  //   const timelineWrapper = panelWrapperRef.current;
 
-    // circle x값 rescale
-    const rescaleCircleX = () => {
-      const isBelowPrevScrollTop = prevScrollTop.current < timelineWrapper.scrollTop;
-      d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
-        const circleGroup = d3.select(this);
-        const circleGroupNode = circleGroup.node() as Element;
-        const xScaleLinear = prevXScale.current as d3ScaleLinear;
-        const rootMargin = `${isBelowPrevScrollTop ? 0 : X_AXIS_HEIGHT * 20}px 0px ${
-          isBelowPrevScrollTop ? X_AXIS_HEIGHT * 20 : 0
-        }px 0px`;
+  //   // circle x값 rescale
+  //   const rescaleCircleX = () => {
+  //     const isBelowPrevScrollTop = prevScrollTop.current < timelineWrapper.scrollTop;
+  //     d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
+  //       const circleGroup = d3.select(this);
+  //       const circleGroupNode = circleGroup.node() as Element;
+  //       const xScaleLinear = prevXScale.current as d3ScaleLinear;
+  //       const rootMargin = `${isBelowPrevScrollTop ? 0 : X_AXIS_HEIGHT * 20}px 0px ${
+  //         isBelowPrevScrollTop ? X_AXIS_HEIGHT * 20 : 0
+  //       }px 0px`;
 
-        const observer = new IntersectionObserver(
-          ([entry], observer) => {
-            if (!entry.isIntersecting) return observer.unobserve(entry.target);
-            circleGroup.selectAll('circle').each(function () {
-              d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
-            });
-            observer.unobserve(entry.target);
-          },
-          {
-            root: document.getElementById('timeline-wrapper'),
-            rootMargin: rootMargin,
-          },
-        );
-        observer.observe(circleGroupNode);
-      });
-      prevScrollTop.current = timelineWrapper.scrollTop;
-    };
+  //       const observer = new IntersectionObserver(
+  //         ([entry], observer) => {
+  //           if (!entry.isIntersecting) return observer.unobserve(entry.target);
+  //           circleGroup.selectAll('circle').each(function () {
+  //             d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
+  //           });
+  //           observer.unobserve(entry.target);
+  //         },
+  //         {
+  //           root: document.getElementById('timeline-wrapper'),
+  //           rootMargin: rootMargin,
+  //         },
+  //       );
+  //       observer.observe(circleGroupNode);
+  //     });
+  //     prevScrollTop.current = timelineWrapper.scrollTop;
+  //   };
 
-    d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
-  }, [prevXScale, panelWrapperRef]);
+  //   d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
+  // }, [prevXScale, panelWrapperRef]);
 
   const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
-  const tpDopesheetList = storeTPDopeSheetList();
+  const TPTrackListList = storeTPTrackListList();
   const selectedBaseDopeSheets = useMemo(
     () =>
-      tpDopesheetList.filter(
+      TPTrackListList.filter(
         (item) =>
           item.isSelected &&
           !item.isLocked &&
           item.isTransformTrack &&
           item.layerKey === 'baseLayer',
       ),
-    [tpDopesheetList],
+    [TPTrackListList],
   );
   const selectedLayerDopeSheets = useMemo(
     () =>
-      tpDopesheetList.filter(
+      TPTrackListList.filter(
         (item) =>
           item.isSelected &&
           !item.isLocked &&
           item.isTransformTrack &&
           item.layerKey !== 'baseLayer',
       ),
-    [tpDopesheetList],
+    [TPTrackListList],
   );
 
   const handleUpdateKeyframeToBase = useCallback(() => {
@@ -296,7 +299,6 @@ const DopeSheet: React.FC<Props> = ({
             }
           }
         });
-        console.log(resultTracks);
         const state = storeCurrentVisualizedData();
         if (state && resultTracks.length !== 0) {
           const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
@@ -978,27 +980,27 @@ const DopeSheet: React.FC<Props> = ({
             );
           };
 
-          // circle x값 rescale
-          const rescaleCircleX = () => {
-            d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
-              if (dopeSheetRef.current) {
-                const circleGroup = d3.select(this);
-                const circleGroupNode = circleGroup.node() as Element;
-                const xScaleLinear = xScale.current as d3ScaleLinear;
-                const circleGroupTop = circleGroupNode.getBoundingClientRect().top;
-                const timelineWrapperTop = panelWrapperRef.current?.getBoundingClientRect().top;
-                if (timelineWrapperTop) {
-                  const minimum = timelineWrapperTop - TRACK_HEIGHT * 4;
-                  const manimum = window.innerHeight + TRACK_HEIGHT * 4;
-                  if (minimum <= circleGroupTop && circleGroupTop <= manimum) {
-                    circleGroup.selectAll('circle').each(function () {
-                      d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
-                    });
-                  }
-                }
-              }
-            });
-          };
+          // // circle x값 rescale
+          // const rescaleCircleX = () => {
+          //   d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
+          //     if (dopeSheetRef.current) {
+          //       const circleGroup = d3.select(this);
+          //       const circleGroupNode = circleGroup.node() as Element;
+          //       const xScaleLinear = xScale.current as d3ScaleLinear;
+          //       const circleGroupTop = circleGroupNode.getBoundingClientRect().top;
+          //       const timelineWrapperTop = panelWrapperRef.current?.getBoundingClientRect().top;
+          //       if (timelineWrapperTop) {
+          //         const minimum = timelineWrapperTop - TRACK_HEIGHT * 4;
+          //         const manimum = window.innerHeight + TRACK_HEIGHT * 4;
+          //         if (minimum <= circleGroupTop && circleGroupTop <= manimum) {
+          //           circleGroup.selectAll('circle').each(function () {
+          //             d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
+          //           });
+          //         }
+          //       }
+          //     }
+          //   });
+          // };
 
           // zoom 이벤트 적용
           const zoomBehavior = d3
@@ -1022,7 +1024,7 @@ const DopeSheet: React.FC<Props> = ({
               'zoom',
               _.throttle((event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
                 rescaleXAxis(event);
-                rescaleCircleX();
+                // rescaleCircleX();
               }, THROTTLE_TIMER),
             );
           d3.select(dopeSheetRef.current)
@@ -1035,7 +1037,7 @@ const DopeSheet: React.FC<Props> = ({
       redrawRangeRect();
       ro.observe(dopeSheetRef.current);
     }
-  }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex, panelWrapperRef]);
+  }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex]);
 
   const [isUpdated, setIsUpdated] = useState(false);
   const handleIsUpdated = useCallback(() => {
