@@ -49,7 +49,7 @@ interface Props {
   trackName: string;
 }
 
-const Track: FunctionComponent<Props> = (props) => {
+const TrackItem: FunctionComponent<Props> = (props) => {
   const {
     isIncluded,
     isLocked,
@@ -65,9 +65,10 @@ const Track: FunctionComponent<Props> = (props) => {
   const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
   const prevSelectedIndices = useSelector((state) => state.dopeSheet.selectedTrackIndices);
   const currentClickedTrack = useSelector((state) => state.dopeSheet.currentClickedTrack);
-  const channelRef = useRef<HTMLLIElement>(null);
+  const trackItemRef = useRef<HTMLLIElement>(null);
   const { getConfirm } = useAlertModal();
 
+  // 멀티 키 컨트롤러
   const multiKeyController = useMemo(
     () => ({
       ctrl: { pressed: false },
@@ -733,7 +734,7 @@ const Track: FunctionComponent<Props> = (props) => {
   );
 
   // 컨텍스트 메뉴 생성 custom hooks
-  useContextMenu({ targetRef: channelRef, event: handleTrackContextMenu });
+  useContextMenu({ targetRef: trackItemRef, event: handleTrackContextMenu });
 
   const [newLayerName, setNewLayerName] = useState('');
   const handleModalClose = () => {
@@ -838,7 +839,7 @@ const Track: FunctionComponent<Props> = (props) => {
   }
 
   return (
-    <li className={classes} onClick={handleClickTrackBody} aria-hidden="true" ref={channelRef}>
+    <li className={classes} onClick={handleClickTrackBody} aria-hidden="true" ref={trackItemRef}>
       {!isTransformTrack && (
         <IconWrapper
           className={cx('track-icon', 'arrow', { 'point-down': isPointedDownArrow })}
@@ -893,4 +894,4 @@ const Track: FunctionComponent<Props> = (props) => {
   );
 };
 
-export default memo(Track);
+export default memo(TrackItem);

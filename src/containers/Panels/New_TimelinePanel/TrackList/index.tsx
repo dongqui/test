@@ -20,16 +20,14 @@ import {
 } from 'utils/TP/New';
 import { CurrentVisualizedDataType } from 'types';
 import { UpdatedTrack } from 'types/TP';
-import Channel from './Channel';
+import TrackItem from './TrackItem';
 import styles from './index.module.scss';
 import { storeCurrentVisualizedData, storeSkeletonHelper } from 'lib/store';
-
-type Pick = 'isFiltered' | 'isShowed' | 'isPointedDownArrow';
 
 const DEBOUNCED_TIME = 300;
 const cx = classNames.bind(styles);
 
-const ChannelList: React.FC<{}> = () => {
+const TrackList: React.FC<{}> = () => {
   const dispatch = useDispatch();
   const trackList = useSelector((state) => state.dopeSheet.trackList);
   const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
@@ -45,7 +43,7 @@ const ChannelList: React.FC<{}> = () => {
       _.debounce((inputText: string) => {
         const loweredInput = _.toLower(_.trim(inputText));
         const isEqualPrevInputText = _.isEqual(prevInputText.current, loweredInput);
-        const isClearedInputText = _.isEmpty(loweredInput) && !isEqualPrevInputText;
+        const isClearedInputText = _.isEmpty(loweredInput) && !_.isEmpty(isEqualPrevInputText);
         if (_.isEmpty(trackList) || isEqualPrevInputText) return;
         if (isClearedInputText) {
           const nextState = produce(trackList, (draft) => {
@@ -68,7 +66,9 @@ const ChannelList: React.FC<{}> = () => {
           dispatch(dopeSheetActions.searchTrackList({ trackList: nextState }));
           return;
         }
-        const updatedtrackList: Partial<UpdatedTrack<Pick>>[] = [];
+        const updatedtrackList: Partial<
+          UpdatedTrack<'isFiltered' | 'isShowed' | 'isPointedDownArrow'>
+        >[] = [];
         const alreadyVisitedList = Array(trackList.length).fill(false) as boolean[];
         const checkAlreadyVisited = (comparedIndex: number, myIndex: number) => {
           const isAncestorTrack = comparedIndex < myIndex;
@@ -269,7 +269,7 @@ const ChannelList: React.FC<{}> = () => {
               return (
                 isFiltered &&
                 isShowed && (
-                  <Channel
+                  <TrackItem
                     key={key}
                     isIncluded={isIncluded}
                     isLocked={isLocked}
@@ -289,4 +289,4 @@ const ChannelList: React.FC<{}> = () => {
   );
 };
 
-export default ChannelList;
+export default TrackList;

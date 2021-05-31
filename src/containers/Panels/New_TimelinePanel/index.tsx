@@ -7,7 +7,7 @@ import MiddleBar from 'containers/MiddleBar';
 import { fnSetAllInitialTrackList } from 'utils/TP/New';
 import { d3ScaleLinear } from 'types/TP';
 import * as dopeSheetActions from 'actions/dopeSheet';
-import ChannelList from './ChannelList';
+import TrackList from './TrackList';
 import TimeEditor from './TimeEditor';
 import styles from './index.module.scss';
 import { storeCurrentVisualizedData } from 'lib/store';
@@ -71,7 +71,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
           dopeSheetScale={dopeSheetScale}
         />
         <div id="timeline-wrapper" className={cx('wrapper')}>
-          <ChannelList />
+          <TrackList />
           <TimeEditor
             currentTimeRef={currentTimeRef}
             currentTimeIndexRef={currentTimeIndexRef}

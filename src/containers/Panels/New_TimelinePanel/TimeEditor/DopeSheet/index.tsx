@@ -7,43 +7,45 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useReactiveVar } from '@apollo/client';
+import { useDispatch } from 'react-redux';
+import classNames from 'classnames/bind';
+import produce from 'immer';
 import * as d3 from 'd3';
 import _ from 'lodash';
-import classNames from 'classnames/bind';
+import { useSelector } from 'reducers';
+import {
+  fnUpdateKeyframeToBase,
+  fnGetLayerTimes,
+  fnGetSummaryTimes,
+  fnUpdateKeyframeToLayer,
+  fnDeleteKeyframe,
+} from 'utils/TP/editingUtils';
+import { fnGetBinarySearch, fnGetBoneTrackIndex, fnGetLayerTrackIndex } from 'utils/TP/New';
+import PlayBar from './PlayBar';
+import CircleGroup from './CircleGroup';
+import styles from './index.module.scss';
+import * as dopeSheetActions from 'actions/dopeSheet';
+
+// ToDo...없애야 됨
+import { useReactiveVar } from '@apollo/client';
 import {
   storeAnimatingData,
-  storeContextMenuInfo,
-  storeCurrentAction,
   storeCurrentVisualizedData,
-  storeDeleteTargetKeyframes,
   storeSkeletonHelper,
-  storeTPTrackListList,
   storePageInfo,
+  storeContextMenuInfo,
 } from 'lib/store';
-import PlayBar from './playBar';
-import styles from './index.module.scss';
 import { CurrentVisualizedDataType, PAGE_NAMES, ShootTrackType } from 'types';
-import {
-  fnDeleteKeyframe,
-  fnGetSummaryTimes,
-  fnUpdateKeyframeToBase,
-  fnUpdateKeyframeToLayer,
-} from 'utils/TP/editingUtils';
-import produce from 'immer';
-import { useDragBox } from 'hooks/common';
+import { d3ScaleLinear } from 'types/TP';
 import useContextMenu from 'hooks/common/useContextMenu';
-import { DragBox } from 'components/DragBox';
-import { useSelector } from 'reducers';
-import CircleGroup from './CircleGroup';
 
-interface Props {
-  // panelWrapperRef: RefObject<HTMLDivElement>; // 필요 없음
-  currentTimeRef: RefObject<HTMLInputElement>; // 협의 필요
-  currentTimeIndexRef: RefObject<HTMLInputElement>; // 협의 필요
-  currentXAxisPosition: MutableRefObject<number>; // 협의 필요
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>; // 함수인데 어떻게 전달할지 고민이 필요
-}
+const cx = classNames.bind(styles);
+
+const X_AXIS_DOMAIN = 500000;
+const TIME_FRAME_HEIGHT = 48;
+const TRACK_HEIGHT = 32;
+const ZOOM_THROTTLE_TIMER = 75;
+const INITIAL_ZOOM_LEVEL = 7500;
 
 interface Datum {
   name: string;
@@ -51,236 +53,79 @@ interface Datum {
   values: number[];
 }
 
-type d3ScaleLinear = d3.ScaleLinear<number, number, never>;
-type d3Selection = d3.Selection<SVGGElement, unknown, HTMLElement, any>;
-type d3Axis = d3.Axis<d3.NumberValue>;
+interface Props {
+  currentTimeRef: RefObject<HTMLInputElement>;
+  currentTimeIndexRef: RefObject<HTMLInputElement>;
+  currentPlayBarTime: MutableRefObject<number>;
+  dopeSheetScale: MutableRefObject<d3ScaleLinear | null>;
+}
 
-const cx = classNames.bind(styles);
-const X_AXIS_SVG_CLASSNAME = 'x-axis-svg';
-const CIRCLE_GROUP_CLASSNAME = 'circle-group';
-
-const X_AXIS_DOMAIN = 500000;
-const X_AXIS_HEIGHT = 48; // x축 높이
-const TRACK_HEIGHT = 32; // 트랙 높이
-const THROTTLE_TIMER = 75;
-const INITIAL_SCALE_LEVEL = 7500;
-
-const DopeSheet: React.FC<Props> = ({
-  // panelWrapperRef,
-  currentTimeRef,
-  currentTimeIndexRef,
-  currentXAxisPosition,
-  prevXScale,
-}) => {
+const DopeSheet: React.FC<Props> = (props) => {
+  const { currentPlayBarTime, currentTimeIndexRef, currentTimeRef, dopeSheetScale } = props;
+  const dispatch = useDispatch();
   const trackList = useSelector((state) => state.dopeSheet.trackList);
-  const dopeSheetRef = useRef<HTMLDivElement>(null); // Dope Sheet의 Ref
-  const prevScrollTop = useRef(0); // 직전 TP scroll 위치
-  const prevModelKey = useRef('');
-  const [playBarDisplayed, setPlayBarDisplayed] = useState(false);
+  const selectedKeyframes = useSelector((state) => state.dopeSheet.selectedKeyframes);
+  const lastBoneOfLayers = useSelector((state) => state.dopeSheet.lastBoneOfLayers);
+  const dopeSheetRef = useRef<HTMLDivElement>(null);
 
-  const xScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null); // x값 범위 저장
-  const xAxisPosition = useRef<d3Axis | null>(null); // x축 위치 저장(axisTop)
-  const renderXAxis = useRef<d3Selection | null>(null); // x축 랜더링
-  const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null); // grid선 랜더링
-
-  const currentAction = useReactiveVar(storeCurrentAction);
+  // ToDo...없애야 됨
+  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
   const animatingData = useReactiveVar(storeAnimatingData);
+  const pageInfo = useReactiveVar(storePageInfo);
   const { startTimeIndex, endTimeIndex, playState } = animatingData;
 
-  const [lastTime, setLastTime] = useState(0);
+  // 다중 키 컨트롤러
+  const multiKeyController = useMemo(
+    () => ({
+      v: { pressed: false },
+      V: { pressed: false },
+      ㅍ: { pressed: false },
+      Alt: { pressed: false },
+      ' ': { pressed: false },
+    }),
+    [],
+  );
 
-  const pageInfo = useReactiveVar(storePageInfo);
-
-  const playBarPositionReqIdRef = useRef<number | undefined>();
-
-  const setPlayBarPosition = useCallback(() => {
-    if (currentXAxisPosition && currentAction) {
-      console.log('4', currentAction.time, currentAction);
-      currentXAxisPosition.current = currentAction.time ? currentAction.time * 30 : 1;
-      const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').style(
-        'transform',
-        `translate3d(
-          ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
-      );
-    }
-    playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
-  }, [currentAction, currentXAxisPosition, prevXScale]);
-
-  const startPlayBarPositionLoop = useCallback(() => {
-    console.log('3');
-    playBarPositionReqIdRef.current = window.requestAnimationFrame(setPlayBarPosition);
-  }, [setPlayBarPosition]);
-
-  const stopPlayBarPositionLoop = useCallback(() => {
-    if (playBarPositionReqIdRef.current) {
-      window.cancelAnimationFrame(playBarPositionReqIdRef.current);
-    }
-  }, []);
-
-  // 미들바 애니메이션 싱크
-  useEffect(() => {
-    if (playState === 'play') {
-      console.log('2');
-      startPlayBarPositionLoop();
-    } else if (playState === 'pause' || playState === 'stop') {
-      stopPlayBarPositionLoop();
-    }
-  }, [playState, startPlayBarPositionLoop, stopPlayBarPositionLoop]);
-
-  // svg로 x축 그리기
-  useEffect(() => {
-    if (!dopeSheetRef.current) return;
-    const width = window.innerWidth - 248;
-
-    xScale.current = d3.scaleLinear().domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN]).range([0, width]); // x값 범위 설정
-    prevXScale.current = xScale.current.copy() as d3ScaleLinear; // 이전 x값 복사
-    xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear); // x축 위치 설정
-
-    const xScaleLinear = prevXScale.current as d3ScaleLinear;
-    const rangeRectWidth = xScaleLinear(300) - xScaleLinear(1);
-
-    // grid line wrapper 생성
-    d3.select('.grid-line-wrapper').remove();
-    renderYGrid.current = d3
-      .select(dopeSheetRef.current)
-      .append('svg')
-      .attr('class', 'grid-line-wrapper')
-      .attr('width', '100vw')
-      .attr('height', '100%')
-      .style('position', 'fixed')
-      .append('g');
-
-    // grid line 생성
-    d3.selectAll('.grid-line-wrapper .tick')
-      .append('line')
-      .attr('class', 'grid-line')
-      .attr('x1', 0)
-      .attr('y1', '100%')
-      .attr('x2', 0)
-      .attr('y2', 0);
-
-    // x축 svg 태그 추가
-    d3.select(dopeSheetRef.current)
-      .call((dopeSheet) => dopeSheet.select(`.${X_AXIS_SVG_CLASSNAME}`).remove())
-      .append('svg')
-      .attr('class', `${X_AXIS_SVG_CLASSNAME}`)
-      .attr('width', '100vw')
-      .attr('height', X_AXIS_HEIGHT)
-      .style('position', 'fixed')
-      .style('z-index', 2);
-
-    // x축 g 태그 랜더링
-    renderXAxis.current = d3
-      .select(`.${X_AXIS_SVG_CLASSNAME}`)
-      .append('g')
-      .attr('class', 'x-axis-g')
-      .attr('transform', `translate(0, ${X_AXIS_HEIGHT / 2})`)
-      .call((xAxisG) =>
-        xAxisG
-          .append('rect')
-          .attr('width', '100%')
-          .attr('height', X_AXIS_HEIGHT / 2)
-          .attr('transform', `translate(0, -${X_AXIS_HEIGHT / 2})`)
-          .style('fill', '#363636'),
-      )
-      .call((xAxisG) => {
-        xAxisG
-          .append('rect')
-          .attr('class', 'range-rect')
-          .attr('width', rangeRectWidth)
-          .attr('height', X_AXIS_HEIGHT / 2)
-          .attr('transform', `translate(${xScaleLinear(1)}, -${X_AXIS_HEIGHT / 2})`)
-          .style('fill', '#3785F7');
-      })
-      .call((xAxisG) =>
-        xAxisG
-          .append('rect')
-          .attr('width', '100%')
-          .attr('height', X_AXIS_HEIGHT / 2)
-          .attr('transform', `translate(0, 0)`)
-          .style('fill', '#282727'),
-      );
-    d3.selectAll('.x-axis-g line').attr('y2', -24);
-  }, [prevXScale]);
-
-  // timelineWrapper에 scroll 효과 적용
-  // useEffect(() => {
-  //   if (!dopeSheetRef.current || !panelWrapperRef.current) return;
-  //   const timelineWrapper = panelWrapperRef.current;
-
-  //   // circle x값 rescale
-  //   const rescaleCircleX = () => {
-  //     const isBelowPrevScrollTop = prevScrollTop.current < timelineWrapper.scrollTop;
-  //     d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
-  //       const circleGroup = d3.select(this);
-  //       const circleGroupNode = circleGroup.node() as Element;
-  //       const xScaleLinear = prevXScale.current as d3ScaleLinear;
-  //       const rootMargin = `${isBelowPrevScrollTop ? 0 : X_AXIS_HEIGHT * 20}px 0px ${
-  //         isBelowPrevScrollTop ? X_AXIS_HEIGHT * 20 : 0
-  //       }px 0px`;
-
-  //       const observer = new IntersectionObserver(
-  //         ([entry], observer) => {
-  //           if (!entry.isIntersecting) return observer.unobserve(entry.target);
-  //           circleGroup.selectAll('circle').each(function () {
-  //             d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
-  //           });
-  //           observer.unobserve(entry.target);
-  //         },
-  //         {
-  //           root: document.getElementById('timeline-wrapper'),
-  //           rootMargin: rootMargin,
-  //         },
-  //       );
-  //       observer.observe(circleGroupNode);
-  //     });
-  //     prevScrollTop.current = timelineWrapper.scrollTop;
-  //   };
-
-  //   d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
-  // }, [prevXScale, panelWrapperRef]);
-
-  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
-  const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
-  const TPTrackListList = storeTPTrackListList();
+  // base 트랙에서 선택 된 transform 트랙만 필터링
   const selectedBaseDopeSheets = useMemo(
     () =>
-      TPTrackListList.filter(
+      trackList.filter(
         (item) =>
           item.isSelected &&
           !item.isLocked &&
           item.isTransformTrack &&
           item.layerKey === 'baseLayer',
       ),
-    [TPTrackListList],
+    [trackList],
   );
+
+  // layer 트랙에서 선택 된 transform 트랙만 필터링
   const selectedLayerDopeSheets = useMemo(
     () =>
-      TPTrackListList.filter(
+      trackList.filter(
         (item) =>
           item.isSelected &&
           !item.isLocked &&
           item.isTransformTrack &&
           item.layerKey !== 'baseLayer',
       ),
-    [TPTrackListList],
+    [trackList],
   );
 
+  // base 트랙 키프레임 추가
   const handleUpdateKeyframeToBase = useCallback(() => {
     if (currentVisualizedData && playState !== 'play') {
-      const { baseLayer, layers } = currentVisualizedData;
-      const updateTargetTime = _.round(_.round(currentXAxisPosition.current, 0) / 30, 4);
+      const { baseLayer } = currentVisualizedData;
+      const updateTargetTime = _.round(_.round(currentPlayBarTime.current, 0) / 30, 4);
       if (updateTargetTime && baseLayer && skeletonHelper) {
-        const selectedDopesheetNames = selectedBaseDopeSheets.map(
-          (dopesheet) => dopesheet.trackName,
-        );
-        const resultTracks: [ShootTrackType, number][] = [];
+        const selectedDopesheetNames = selectedBaseDopeSheets.map(({ trackName }) => trackName);
+        const selectedTrackIndexes = selectedBaseDopeSheets.map(({ trackIndex }) => trackIndex);
+        const resultTracks: [ShootTrackType, number, number][] = [];
         const targetTracks = baseLayer.filter((track) =>
           selectedDopesheetNames.includes(track.name),
         );
-        targetTracks.forEach((track) => {
+        targetTracks.forEach((track, index) => {
           const [boneName, propertyName] = track.name.split('.');
           const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
           if (bone) {
@@ -295,7 +140,7 @@ const DopeSheet: React.FC<Props> = ({
             if (values) {
               const resultTrack = fnUpdateKeyframeToBase({ track, time: updateTargetTime, values });
               const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
-              resultTracks.push([resultTrack, targetTrackIndex]);
+              resultTracks.push([resultTrack, targetTrackIndex, selectedTrackIndexes[index]]);
             }
           }
         });
@@ -307,21 +152,59 @@ const DopeSheet: React.FC<Props> = ({
             });
           });
           storeCurrentVisualizedData(nextState);
+          const nextTrackList = produce(trackList, (draft) => {
+            const summaryTimes = fnGetSummaryTimes({
+              baseLayer: nextState.baseLayer,
+              layers: nextState.layers,
+            });
+            draft[0].times = summaryTimes;
+            const layerTimes = fnGetLayerTimes({
+              targetLayer: nextState.baseLayer,
+            });
+            draft[1].times = layerTimes;
+            for (let index = 0; index < resultTracks.length; index += 1) {
+              const transformIndex = resultTracks[index][2];
+              const times = resultTracks[index][0].times;
+              const targetTransformIndex = fnGetBinarySearch({
+                collection: trackList,
+                index: transformIndex,
+                key: 'trackIndex',
+              });
+              draft[targetTransformIndex].times = times;
+              const boneIndex = fnGetBoneTrackIndex({ trackIndex: transformIndex });
+              const targetBoneIndex = fnGetBinarySearch({
+                collection: trackList,
+                index: boneIndex,
+                key: 'trackIndex',
+              });
+              const transformTracks = [
+                draft[targetBoneIndex + 1].times,
+                draft[targetBoneIndex + 2].times,
+                draft[targetBoneIndex + 3].times,
+              ];
+              const boneTimes = _.union(...transformTracks).sort((a, b) => a - b);
+              draft[targetBoneIndex].times = boneTimes;
+            }
+          });
+          dispatch(dopeSheetActions.addKeyframes({ trackList: nextTrackList }));
         }
       }
     }
   }, [
+    currentPlayBarTime,
     currentVisualizedData,
-    currentXAxisPosition,
+    dispatch,
     playState,
     selectedBaseDopeSheets,
     skeletonHelper,
+    trackList,
   ]);
 
+  // layers 트랙 키프레임 추가
   const handleUpdateKeyframeToLayer = useCallback(() => {
     if (currentVisualizedData && playState !== 'play') {
       const { baseLayer, layers } = currentVisualizedData;
-      const updateTargetTime = _.round(_.round(currentXAxisPosition.current, 0) / 30, 4);
+      const updateTargetTime = _.round(_.round(currentPlayBarTime.current, 0) / 30, 4);
       if (
         updateTargetTime &&
         baseLayer &&
@@ -335,15 +218,16 @@ const DopeSheet: React.FC<Props> = ({
           (layer) => layer.key === selectedLayerDopeSheets[0].layerKey,
         );
         if (targetLayerIndex !== -1) {
-          const resultTracks: [ShootTrackType, number][] = [];
+          const resultTracks: [ShootTrackType, number, number][] = [];
           const selectedDopesheetNames = selectedLayerDopeSheets.map(
             (dopesheet) => dopesheet.trackName,
           );
+          const selectedTrackIndexes = selectedLayerDopeSheets.map(({ trackIndex }) => trackIndex);
           const targetTracks = layers[targetLayerIndex].tracks.filter((track) =>
             selectedDopesheetNames.includes(track.name),
           );
 
-          targetTracks.forEach((track) => {
+          targetTracks.forEach((track, index) => {
             const [boneName, propertyName] = track.name.split('.');
             const bone = _.find(skeletonHelper.bones, (b) => b.name === boneName);
             if (bone) {
@@ -368,7 +252,7 @@ const DopeSheet: React.FC<Props> = ({
                   layers[targetLayerIndex].tracks,
                   (t) => t.name === track.name,
                 );
-                resultTracks.push([resultTrack, targetTrackIndex]);
+                resultTracks.push([resultTrack, targetTrackIndex, selectedTrackIndexes[index]]);
               }
             }
           });
@@ -380,25 +264,73 @@ const DopeSheet: React.FC<Props> = ({
               });
             });
             storeCurrentVisualizedData(nextState);
+            const nextTrackList = produce(trackList, (draft) => {
+              const summaryTimes = fnGetSummaryTimes({
+                baseLayer: nextState.baseLayer,
+                layers: nextState.layers,
+              });
+              draft[0].times = summaryTimes;
+              const layerIndex = _.findIndex(
+                layers,
+                (layer) => layer.key === selectedLayerDopeSheets[0].layerKey,
+              );
+              const targetLayerIndex = fnGetBinarySearch({
+                collection: trackList,
+                index: fnGetLayerTrackIndex({ trackIndex: selectedLayerDopeSheets[0].trackIndex }),
+                key: 'trackIndex',
+              });
+              const layerTimes = fnGetLayerTimes({
+                targetLayer: nextState.layers[layerIndex].tracks,
+              });
+              draft[targetLayerIndex].times = layerTimes;
+              for (let index = 0; index < resultTracks.length; index += 1) {
+                const transformIndex = resultTracks[index][2];
+                const times = resultTracks[index][0].times;
+                const targetTransformIndex = fnGetBinarySearch({
+                  collection: trackList,
+                  index: transformIndex,
+                  key: 'trackIndex',
+                });
+                draft[targetTransformIndex].times = times;
+                const boneIndex = fnGetBoneTrackIndex({ trackIndex: transformIndex });
+                const targetBoneIndex = fnGetBinarySearch({
+                  collection: trackList,
+                  index: boneIndex,
+                  key: 'trackIndex',
+                });
+                const transformTracks = [
+                  draft[targetBoneIndex + 1].times,
+                  draft[targetBoneIndex + 2].times,
+                  draft[targetBoneIndex + 3].times,
+                ];
+                const boneTimes = _.union(...transformTracks).sort((a, b) => a - b);
+                draft[targetBoneIndex].times = boneTimes;
+              }
+            });
+            dispatch(dopeSheetActions.addKeyframes({ trackList: nextTrackList }));
           }
         }
       }
     }
   }, [
+    currentPlayBarTime,
     currentVisualizedData,
-    currentXAxisPosition,
+    dispatch,
     playState,
     selectedLayerDopeSheets,
     skeletonHelper,
+    trackList,
   ]);
 
+  // 선택 된 키프레임 삭제
   const handleDeleteKeyframe = useCallback(() => {
     if (currentVisualizedData && playState !== 'play') {
       const { baseLayer, layers } = currentVisualizedData;
-      if (deleteTargetKeyframes && baseLayer && layers) {
-        const resultBaseLayerTracks: [ShootTrackType, number][] = [];
-        const resultLayersTracks: [ShootTrackType, number, number, string][] = [];
-        _.forEach(deleteTargetKeyframes, (targetKeyframe) => {
+      if (selectedKeyframes && baseLayer && layers) {
+        const resultBaseLayerTracks: [ShootTrackType, number, number][] = [];
+        const resultLayersTracks: [ShootTrackType, number, number, string, number][] = [];
+        const isAlreadyIncluded: { time: number; trackIndex: number; layerIndex: number }[] = [];
+        _.forEach(selectedKeyframes, (targetKeyframe) => {
           if (targetKeyframe.isTransformTrack && !targetKeyframe.isLocked) {
             const { trackName, time, layerKey } = targetKeyframe;
             if (layerKey === 'baseLayer') {
@@ -417,11 +349,16 @@ const DopeSheet: React.FC<Props> = ({
               if (targetTrack) {
                 const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
                 if (alreadyIncludedIndex === -1) {
-                  resultBaseLayerTracks.push([resultTrack, targetTrackIndex]);
+                  resultBaseLayerTracks.push([
+                    resultTrack,
+                    targetTrackIndex,
+                    targetKeyframe.trackIndex,
+                  ]);
                 } else {
                   resultBaseLayerTracks.splice(alreadyIncludedIndex, 1, [
                     resultTrack,
                     targetTrackIndex,
+                    targetKeyframe.trackIndex,
                   ]);
                 }
               }
@@ -430,45 +367,39 @@ const DopeSheet: React.FC<Props> = ({
               if (layers.length !== 0 && targetLayerIndex !== -1) {
                 const targetTrackIndex = _.findIndex(
                   layers[targetLayerIndex].tracks,
-                  (t) => t.name === trackName,
+                  (track) => track.name === trackName,
                 );
-                let targetTrack = _.find(
-                  resultLayersTracks,
-                  (track) => targetTrackIndex === track[1] && layerKey === track[3],
-                )?.[0];
-                const alreadyIncludedIndex = _.findIndex(
-                  resultLayersTracks,
-                  (track) => targetTrackIndex === track[1],
+                const isIncluded = _.findIndex(
+                  isAlreadyIncluded,
+                  (track) =>
+                    track.layerIndex === targetLayerIndex &&
+                    track.trackIndex === targetTrackIndex &&
+                    track.time !== time,
                 );
-                if (!targetTrack) {
-                  targetTrack = _.find(
-                    layers[targetLayerIndex].tracks,
-                    (track) => track.name === trackName,
-                  ) as ShootTrackType;
-                }
-                if (targetTrack) {
+                if (isIncluded === -1) {
+                  const targetTrack = layers[targetLayerIndex].tracks[targetTrackIndex];
                   const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
-                  if (alreadyIncludedIndex === -1) {
-                    resultLayersTracks.push([
-                      resultTrack,
-                      targetLayerIndex,
-                      targetTrackIndex,
-                      layerKey,
-                    ]);
-                  } else {
-                    resultLayersTracks.splice(alreadyIncludedIndex, 1, [
-                      resultTrack,
-                      targetLayerIndex,
-                      targetTrackIndex,
-                      layerKey,
-                    ]);
-                  }
+                  isAlreadyIncluded.push({
+                    layerIndex: targetLayerIndex,
+                    trackIndex: targetTrackIndex,
+                    time,
+                  });
+                  resultLayersTracks.push([
+                    resultTrack,
+                    targetLayerIndex,
+                    targetTrackIndex,
+                    layerKey,
+                    targetKeyframe.trackIndex,
+                  ]);
+                } else {
+                  const targetTrack = resultLayersTracks[isIncluded][0];
+                  const resultTrack = fnDeleteKeyframe({ track: targetTrack, time });
+                  resultLayersTracks[isIncluded][0] = resultTrack;
                 }
               }
             }
           }
         });
-        storeDeleteTargetKeyframes([]);
         const state = storeCurrentVisualizedData();
         if (state && (resultBaseLayerTracks.length !== 0 || resultLayersTracks.length !== 0)) {
           const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
@@ -480,131 +411,89 @@ const DopeSheet: React.FC<Props> = ({
             });
           });
           storeCurrentVisualizedData(nextState);
+          const nextTrackList = produce(trackList, (draft) => {
+            const summaryTimes = fnGetSummaryTimes({
+              baseLayer: nextState.baseLayer,
+              layers: nextState.layers,
+            });
+            draft[0].times = summaryTimes;
+            const baseLayerTimes = fnGetLayerTimes({
+              targetLayer: nextState.baseLayer,
+            });
+            draft[1].times = baseLayerTimes;
+            if (!_.isEmpty(nextState.layers)) {
+              _.forEach(lastBoneOfLayers, (track, index) => {
+                const isNotBaseLayer = index !== 0;
+                if (isNotBaseLayer) {
+                  const targetLayerIndex = fnGetBinarySearch({
+                    collection: trackList,
+                    index: track.layerIndex,
+                    key: 'trackIndex',
+                  });
+                  const layerTimes = fnGetLayerTimes({
+                    targetLayer: nextState.layers[index - 1].tracks,
+                  });
+                  draft[targetLayerIndex].times = layerTimes;
+                }
+              });
+            }
+            for (let index = 0; index < resultBaseLayerTracks.length; index += 1) {
+              const transformIndex = resultBaseLayerTracks[index][2];
+              const transformTimes = resultBaseLayerTracks[index][0].times;
+              const targetTransformIndex = fnGetBinarySearch({
+                collection: trackList,
+                index: transformIndex,
+                key: 'trackIndex',
+              });
+              draft[targetTransformIndex].times = transformTimes;
+              const boneIndex = fnGetBoneTrackIndex({ trackIndex: transformIndex });
+              const targetBoneIndex = fnGetBinarySearch({
+                collection: trackList,
+                index: boneIndex,
+                key: 'trackIndex',
+              });
+              const transformTracks = [
+                draft[targetBoneIndex + 1].times,
+                draft[targetBoneIndex + 2].times,
+                draft[targetBoneIndex + 3].times,
+              ];
+              const boneTimes = _.union(...transformTracks).sort((a, b) => a - b);
+              draft[targetBoneIndex].times = boneTimes;
+            }
+            for (let index = 0; index < resultLayersTracks.length; index += 1) {
+              const transformIndex = resultLayersTracks[index][4];
+              const transformTimes = resultLayersTracks[index][0].times;
+              const targetTransformIndex = fnGetBinarySearch({
+                collection: trackList,
+                index: transformIndex,
+                key: 'trackIndex',
+              });
+              draft[targetTransformIndex].times = transformTimes;
+              const boneIndex = fnGetBoneTrackIndex({ trackIndex: transformIndex });
+              const targetBoneIndex = fnGetBinarySearch({
+                collection: trackList,
+                index: boneIndex,
+                key: 'trackIndex',
+              });
+              const transformTracks = [
+                draft[targetBoneIndex + 1].times,
+                draft[targetBoneIndex + 2].times,
+                draft[targetBoneIndex + 3].times,
+              ];
+              const boneTimes = _.union(...transformTracks).sort((a, b) => a - b);
+              draft[targetBoneIndex].times = boneTimes;
+            }
+          });
+          dispatch(
+            dopeSheetActions.deleteKeyframes({ trackList: nextTrackList, selectedKeyframes: [] }),
+          );
         }
       }
     }
-  }, [currentVisualizedData, deleteTargetKeyframes, playState]);
+  }, [currentVisualizedData, dispatch, lastBoneOfLayers, playState, selectedKeyframes, trackList]);
 
-  const handleMovePlayBarLeft = useCallback(() => {
-    if (
-      playState !== 'play' &&
-      currentVisualizedData &&
-      currentXAxisPosition &&
-      currentTimeRef &&
-      currentTimeIndexRef &&
-      currentXAxisPosition.current &&
-      currentTimeRef.current &&
-      currentTimeIndexRef.current &&
-      currentAction
-    ) {
-      const currentValue = currentXAxisPosition.current;
-      let nextValue: number;
-      if (currentValue === startTimeIndex) {
-        nextValue = endTimeIndex;
-      } else {
-        nextValue = currentValue - 1;
-      }
-      // 미들바 업데이트
-      currentXAxisPosition.current = nextValue;
-      const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').style(
-        'transform',
-        `translate3d(
-          ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
-      );
-
-      // currentTime 및 timeIndex 인풋 업데이트
-      if (_.round(nextValue / 30, 4) >= lastTime) {
-        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
-      } else {
-        currentTimeRef.current.value = new Date(_.round(nextValue / 30, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
-      }
-      currentTimeIndexRef.current.value = nextValue.toString();
-      // 액션 time 업데이트
-      currentAction.time = _.round(nextValue / 30, 4);
-    }
-  }, [
-    currentAction,
-    currentTimeIndexRef,
-    currentTimeRef,
-    currentVisualizedData,
-    currentXAxisPosition,
-    endTimeIndex,
-    lastTime,
-    playState,
-    prevXScale,
-    startTimeIndex,
-  ]);
-
-  const handleMovePlayBarRight = useCallback(() => {
-    if (
-      playState !== 'play' &&
-      currentVisualizedData &&
-      currentXAxisPosition &&
-      currentTimeRef &&
-      currentTimeIndexRef &&
-      currentXAxisPosition.current &&
-      currentTimeRef.current &&
-      currentTimeIndexRef.current &&
-      currentAction
-    ) {
-      const currentValue = currentXAxisPosition.current;
-      let nextValue: number;
-      if (currentValue === endTimeIndex) {
-        nextValue = startTimeIndex;
-      } else {
-        nextValue = currentValue + 1;
-      }
-      // 미들바 업데이트
-      currentXAxisPosition.current = nextValue;
-      const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      d3.select('#play-bar-wrapper').style(
-        'transform',
-        `translate3d(
-          ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
-      );
-
-      // currentTime 및 timeIndex 인풋 업데이트
-      if (_.round(nextValue / 30, 4) >= lastTime) {
-        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
-      } else {
-        currentTimeRef.current.value = new Date(_.round(nextValue / 30, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
-      }
-      currentTimeIndexRef.current.value = nextValue.toString();
-      // 액션 time 업데이트
-      currentAction.time = _.round(nextValue / 30, 4);
-    }
-  }, [
-    currentAction,
-    currentTimeIndexRef,
-    currentTimeRef,
-    currentVisualizedData,
-    currentXAxisPosition,
-    endTimeIndex,
-    lastTime,
-    playState,
-    prevXScale,
-    startTimeIndex,
-  ]);
-
+  // dope sheet에 컨텍스트 메뉴 적용
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
-
   const handleDopsheetContextMenu = ({
     top,
     left,
@@ -630,7 +519,7 @@ const DopeSheet: React.FC<Props> = ({
           key: 'delete',
           value: 'Delete Keyframe',
           isSelected: false,
-          isDisabled: deleteTargetKeyframes.length === 0,
+          isDisabled: selectedKeyframes.length === 0,
         },
       ],
       onClick: (key) => {
@@ -654,121 +543,9 @@ const DopeSheet: React.FC<Props> = ({
       },
     });
   };
-
   useContextMenu({ targetRef: dopeSheetRef, event: handleDopsheetContextMenu });
 
-  // 최초 visualize, 모델 변경 시 재생바 출력
-  useEffect(() => {
-    if (currentVisualizedData) {
-      const { key } = currentVisualizedData;
-      if (prevModelKey.current !== key) {
-        prevModelKey.current = key;
-        setPlayBarDisplayed(true);
-      }
-    } else {
-      prevModelKey.current = '';
-      setPlayBarDisplayed(false);
-    }
-  }, [currentVisualizedData]);
-
-  useEffect(() => {
-    if (currentVisualizedData) {
-      const { baseLayer, layers } = currentVisualizedData;
-      const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
-      const innerlastTime = summaryTimes[summaryTimes.length - 1];
-      setLastTime(innerlastTime || 0);
-    }
-  }, [currentVisualizedData]);
-
-  // 재생 바 드래그 event
-  useEffect(() => {
-    if (playBarDisplayed) {
-      const setPlayBarX = (currentX: number) => {
-        if (currentX < startTimeIndex) {
-          return startTimeIndex;
-        } else if (endTimeIndex < currentX) {
-          return endTimeIndex;
-        }
-        return currentX;
-      };
-      const dragBehavior = d3
-        .drag()
-        .filter((playBar) => {
-          if (playBar.target.tagName !== 'path') return false;
-          return true;
-        })
-        .on('drag', function (drag: any) {
-          const xScaleLinear = prevXScale.current as d3ScaleLinear;
-          const currentX = _.floor(prevXScale.current?.invert(drag.x + 20) as number);
-
-          // 협의 필요
-          if (currentAction) {
-            currentAction.time = _.round(setPlayBarX(currentX) / 30, 4);
-          }
-
-          // 협의 필요
-          if (currentTimeRef.current) {
-            if (_.round(setPlayBarX(currentX) / 30, 4) <= lastTime) {
-              const value = new Date(_.round(setPlayBarX(currentX) / 30, 0) * 1000)
-                .toISOString()
-                .substr(11, 8)
-                .substr(2)
-                .replace(':', '');
-              currentTimeRef.current.value = value;
-            } else {
-              const value = new Date(_.round(lastTime, 0) * 1000)
-                .toISOString()
-                .substr(11, 8)
-                .substr(2)
-                .replace(':', '');
-              currentTimeRef.current.value = value;
-            }
-          }
-
-          // 협의 필요
-          if (currentTimeIndexRef.current) {
-            currentTimeIndexRef.current.value = setPlayBarX(currentX).toString();
-          }
-          currentXAxisPosition.current = setPlayBarX(currentX);
-          d3.select(this).style(
-            'transform',
-            `translate3d(${xScaleLinear(setPlayBarX(currentX)) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
-          );
-        });
-
-      const initialXScale = setPlayBarX(currentXAxisPosition.current);
-      const xScaleLinear = prevXScale.current as d3ScaleLinear;
-      currentXAxisPosition.current = setPlayBarX(initialXScale);
-      d3.select('#play-bar-wrapper')
-        .style(
-          'transform',
-          `translate3d(${xScaleLinear(initialXScale) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
-        )
-        .call(dragBehavior as any);
-    }
-  }, [
-    currentAction,
-    currentTimeIndexRef,
-    currentTimeRef,
-    currentXAxisPosition,
-    playBarDisplayed,
-    prevXScale,
-    endTimeIndex,
-    startTimeIndex,
-    lastTime,
-  ]);
-
-  const multiKeyController = useMemo(
-    () => ({
-      v: { pressed: false },
-      V: { pressed: false },
-      ㅍ: { pressed: false },
-      Alt: { pressed: false },
-      ' ': { pressed: false },
-    }),
-    [],
-  );
-
+  // dope sheet key down 이벤트
   const handleDopesheetKeyDown = useCallback(
     (event: KeyboardEvent) => {
       const target = event.target as Element;
@@ -809,12 +586,12 @@ const DopeSheet: React.FC<Props> = ({
         case 'd': // keyframe update
         case 'D':
         case 'ㅇ':
-          if (multiKeyController['Alt'].pressed && deleteTargetKeyframes.length !== 0) {
+          if (multiKeyController['Alt'].pressed && selectedKeyframes.length !== 0) {
             handleDeleteKeyframe();
           }
           break;
         case '∂': // keyframe update
-          if (deleteTargetKeyframes.length !== 0) {
+          if (selectedKeyframes.length !== 0) {
             handleDeleteKeyframe();
           }
           break;
@@ -837,7 +614,6 @@ const DopeSheet: React.FC<Props> = ({
     [
       animatingData,
       currentVisualizedData,
-      deleteTargetKeyframes.length,
       handleDeleteKeyframe,
       handleUpdateKeyframeToBase,
       handleUpdateKeyframeToLayer,
@@ -845,10 +621,12 @@ const DopeSheet: React.FC<Props> = ({
       pageInfo.page,
       playState,
       selectedBaseDopeSheets.length,
+      selectedKeyframes.length,
       selectedLayerDopeSheets.length,
     ],
   );
 
+  // dope sheet key up 이벤트
   const handleDopesheetKeyUp = useCallback(
     (event: KeyboardEvent) => {
       const target = event.target as Element;
@@ -880,194 +658,272 @@ const DopeSheet: React.FC<Props> = ({
     [multiKeyController],
   );
 
-  const handleDopesheetKeyPress = useCallback(
-    (event: KeyboardEvent) => {
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-      switch (event.key) {
-        case ',':
-        case '<':
-          handleMovePlayBarLeft();
-          break;
-        case '.':
-        case '>':
-          handleMovePlayBarRight();
-          break;
-      }
-    },
-    [handleMovePlayBarLeft, handleMovePlayBarRight],
-  );
-
+  // key down, key up, key press 이벤트 추가
   useEffect(() => {
     document.addEventListener('keydown', handleDopesheetKeyDown);
     document.addEventListener('keyup', handleDopesheetKeyUp);
-    document.addEventListener('keypress', handleDopesheetKeyPress);
-
     return () => {
       document.removeEventListener('keydown', handleDopesheetKeyDown);
       document.removeEventListener('keyup', handleDopesheetKeyUp);
-      document.removeEventListener('keypress', handleDopesheetKeyPress);
     };
-  }, [handleDopesheetKeyDown, handleDopesheetKeyPress, handleDopesheetKeyUp]);
+  }, [handleDopesheetKeyDown, handleDopesheetKeyUp]);
 
-  const startTimeIndexRef = useRef(0);
-  const endTimeIndexRef = useRef(0);
-  useEffect(() => {
-    startTimeIndexRef.current = startTimeIndex;
-    endTimeIndexRef.current = endTimeIndex;
-  }, [startTimeIndex, endTimeIndex]);
-
-  const curScaleLevel = useRef(INITIAL_SCALE_LEVEL);
-  const prevWidth = useRef(0);
+  // dope sheet zoom 적용
+  const prevDoepSheetWidth = useRef(0);
+  const currentZoomLevel = useRef(INITIAL_ZOOM_LEVEL);
   useEffect(() => {
     if (dopeSheetRef.current) {
-      const redrawRangeRect = () => {
-        const xScaleLinear = prevXScale.current as d3ScaleLinear;
-        const rangeRectWidth =
-          xScaleLinear(endTimeIndexRef.current) - xScaleLinear(startTimeIndexRef.current);
-        d3.select('.range-rect')
-          .attr('width', rangeRectWidth)
-          .attr(
-            'transform',
-            `translate(${xScaleLinear(startTimeIndexRef.current)}, -${X_AXIS_HEIGHT / 2})`,
-          );
+      // 현재 zoom level로 scale 조정
+      const rescaleDopeSheet = (resizedWidth: number, event: d3.D3ZoomEvent<Element, Datum>) => {
+        dopeSheetScale.current = d3
+          .scaleLinear()
+          .domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN])
+          .range([0, resizedWidth]);
+        const rescaleXLineer = event.transform.rescaleX(dopeSheetScale.current);
+        dopeSheetScale.current = rescaleXLineer;
       };
 
-      const ro = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+      // time frame, 세로 선 생성
+      const arrangeTimeFrame = () => {
+        if (!dopeSheetScale.current) return;
+        const scaleXLineaer = dopeSheetScale.current;
+        const rangeRectWidth = scaleXLineaer(endTimeIndex) - scaleXLineaer(startTimeIndex);
+
+        // 세로 선 생성
+        d3.select('.vertical-line-wrapper').remove();
+        d3.select(dopeSheetRef.current)
+          .append('svg')
+          .attr('class', 'vertical-line-wrapper')
+          .attr('width', '100%')
+          .attr('height', '100%')
+          .style('position', 'fixed')
+          .style('z-index', 1)
+          .append('g')
+          .call(d3.axisTop(dopeSheetScale.current).scale(scaleXLineaer))
+          .call((wrapper) =>
+            wrapper
+              .selectAll('.tick')
+              .append('line')
+              .attr('class', 'vertical-line')
+              .attr('y1', '100%'),
+          );
+
+        // 타임 프레임 생성
+        d3.select('.time-frame-wrapper').remove();
+        d3.select(dopeSheetRef.current)
+          .append('svg')
+          .attr('class', 'time-frame-wrapper')
+          .attr('width', '100%')
+          .attr('height', TIME_FRAME_HEIGHT)
+          .style('position', 'fixed')
+          .style('z-index', 2)
+          .append('g')
+          .attr('transform', `translate(0, ${TIME_FRAME_HEIGHT / 2})`)
+          .call((wrapper) =>
+            wrapper
+              .append('rect')
+              .attr('width', '100%')
+              .attr('height', TIME_FRAME_HEIGHT / 2)
+              .attr('transform', `translate(0, -${TIME_FRAME_HEIGHT / 2})`)
+              .style('fill', '#363636'),
+          )
+          .call((wrapper) =>
+            wrapper
+              .append('rect')
+              .attr('width', '100%')
+              .attr('height', TIME_FRAME_HEIGHT / 2)
+              .attr('transform', `translate(0, 0)`)
+              .style('fill', '#282727'),
+          )
+          .call((wrapper) =>
+            wrapper
+              .append('rect')
+              .attr('class', 'range-rect')
+              .attr('width', rangeRectWidth)
+              .attr('height', TIME_FRAME_HEIGHT / 2)
+              .attr(
+                'transform',
+                `translate(${scaleXLineaer(startTimeIndex)}, -${TIME_FRAME_HEIGHT / 2})`,
+              )
+              .style('fill', '#3785F7'),
+          )
+          .call(d3.axisTop(dopeSheetScale.current).scale(scaleXLineaer))
+          .call((wrapper) => {
+            wrapper
+              .append('line')
+              .attr('x2', '100%')
+              .style('stroke', '#303030')
+              .style('stroke-width', 4);
+          });
+      };
+
+      // 키프레임 위치 조정
+      const arrangeKeyframes = () => {
+        d3.selectAll('.circle-group').each(function () {
+          const circleGroup = d3.select(this);
+          const circleGroupNode = circleGroup.node() as Element;
+          const circleGroupTop = circleGroupNode.getBoundingClientRect().top;
+          const parentWrapperTop = circleGroupNode.parentElement?.getBoundingClientRect().top;
+          if (parentWrapperTop && dopeSheetScale.current) {
+            const scaleXLineaer = dopeSheetScale.current;
+            const rangeTop = parentWrapperTop - TRACK_HEIGHT * 4;
+            const rangeBottom = window.innerHeight + TRACK_HEIGHT * 4;
+            if (rangeTop <= circleGroupTop && circleGroupTop <= rangeBottom) {
+              circleGroup.selectAll('circle').each(function () {
+                const times = d3.select(this).data() as number[];
+                d3.select(this).attr('cx', scaleXLineaer(times[0] * 30));
+              });
+            }
+          }
+        });
+      };
+
+      // 재생바 위치 조정
+      const arrangePlayBar = () => {
+        if (!dopeSheetScale.current) return;
+        const scaleXLineaer = dopeSheetScale.current;
+        const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
+        const translateY = TIME_FRAME_HEIGHT / 2;
+        d3.select('#play-bar').style(
+          'transform',
+          `translate3d(${translateX}px, ${translateY}px, 0)`,
+        );
+      };
+
+      // TP 리사이즈 감지
+      const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
         const [entry] = entries;
         const { width, height } = entry.contentRect;
-        if (width !== 0 && height !== 0 && prevWidth.current !== width) {
-          // x축 다시 그리기
-          const rescaleXAxis = (event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-            xScale.current = d3
-              .scaleLinear()
-              .domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN])
-              .range([0, width]); // x값 범위 설정
-            xAxisPosition.current = d3.axisTop(xScale.current as d3ScaleLinear); // x축 위치 설정
-
-            const rescaleX = event.transform.rescaleX(xScale.current as d3.ZoomScale); // x rescale
-            const xAxisPositionRef = xAxisPosition.current as d3Axis;
-
-            curScaleLevel.current = event.transform.k;
-            prevWidth.current = width;
-
-            xScale.current = rescaleX; // rescale한 값으로 갱신
-            prevXScale.current = xScale.current?.copy() as d3ScaleLinear; // 이전 x값 복사
-
-            renderXAxis.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // x축 다시 그리기
-            renderYGrid.current?.call(xAxisPositionRef.scale(xScale.current as d3ScaleLinear)); // grid line 다시 그리기
-            d3.selectAll('.x-axis-g line').attr('y2', -24);
-
-            const xScaleLinear = prevXScale.current as d3ScaleLinear;
-            redrawRangeRect();
-
-            // grid line 조정
-            d3.selectAll('.grid-line').remove();
-            d3.selectAll('.grid-line-wrapper .tick')
-              .append('line')
-              .attr('class', 'grid-line')
-              .attr('x1', 0)
-              .attr('y1', height)
-              .attr('x2', 0)
-              .attr('y2', 0);
-
-            d3.select('#play-bar-wrapper').style(
-              'transform',
-              `translate3d(
-                  ${xScaleLinear(currentXAxisPosition.current) - 10}px, ${X_AXIS_HEIGHT / 2}px, 0)`,
-            );
-          };
-
-          // // circle x값 rescale
-          // const rescaleCircleX = () => {
-          //   d3.selectAll(`.${CIRCLE_GROUP_CLASSNAME}`).each(function () {
-          //     if (dopeSheetRef.current) {
-          //       const circleGroup = d3.select(this);
-          //       const circleGroupNode = circleGroup.node() as Element;
-          //       const xScaleLinear = xScale.current as d3ScaleLinear;
-          //       const circleGroupTop = circleGroupNode.getBoundingClientRect().top;
-          //       const timelineWrapperTop = panelWrapperRef.current?.getBoundingClientRect().top;
-          //       if (timelineWrapperTop) {
-          //         const minimum = timelineWrapperTop - TRACK_HEIGHT * 4;
-          //         const manimum = window.innerHeight + TRACK_HEIGHT * 4;
-          //         if (minimum <= circleGroupTop && circleGroupTop <= manimum) {
-          //           circleGroup.selectAll('circle').each(function () {
-          //             d3.select(this).attr('cx', (times: any) => xScaleLinear(times.time * 30));
-          //           });
-          //         }
-          //       }
-          //     }
-          //   });
-          // };
-
-          // zoom 이벤트 적용
-          const zoomBehavior = d3
-            .zoom()
-            .scaleExtent([1, 100000])
-            .translateExtent([
-              [0, 0],
-              [width, height],
-            ])
-            .filter((event: WheelEvent) => {
-              if (_.isEqual(event.type, 'dblclick')) return false;
-              if (
-                _.isEqual(event.type, 'mousedown') &&
-                _.isEqual(event.ctrlKey, false) &&
-                _.isEqual(event.metaKey, false)
-              )
-                return false;
-              return true;
-            })
-            .on(
-              'zoom',
-              _.throttle((event: d3.D3ZoomEvent<HTMLDivElement, Datum>) => {
-                rescaleXAxis(event);
-                // rescaleCircleX();
-              }, THROTTLE_TIMER),
-            );
-          d3.select(dopeSheetRef.current)
-            .call(zoomBehavior.scaleTo as any, curScaleLevel.current)
-            .call(zoomBehavior.translateTo as any, width / 2, height / 2)
-            .call(zoomBehavior as any);
-        }
+        const isNotChangedWidth = prevDoepSheetWidth.current === width;
+        if (width === 0 || height === 0 || isNotChangedWidth) return;
+        const zoomBehavior = d3
+          .zoom()
+          .scaleExtent([1, 100000])
+          .translateExtent([
+            [0, 0],
+            [width, height],
+          ])
+          .filter((event: WheelEvent) => {
+            if (_.isEqual(event.type, 'dblclick')) return false;
+            if (
+              _.isEqual(event.type, 'mousedown') &&
+              _.isEqual(event.ctrlKey, false) &&
+              _.isEqual(event.metaKey, false)
+            )
+              return false;
+            return true;
+          })
+          .on(
+            'zoom',
+            _.throttle((event: d3.D3ZoomEvent<Element, Datum>) => {
+              rescaleDopeSheet(width, event);
+              arrangeTimeFrame();
+              arrangeKeyframes();
+              arrangePlayBar();
+            }, ZOOM_THROTTLE_TIMER),
+          );
+        d3.select(dopeSheetRef.current)
+          .call(zoomBehavior.scaleTo as any, currentZoomLevel.current)
+          .call(zoomBehavior.translateTo as any, width / 2, height / 2)
+          .call(zoomBehavior as any);
       });
-
-      redrawRangeRect();
-      ro.observe(dopeSheetRef.current);
+      resizeObserver.observe(dopeSheetRef.current);
     }
-  }, [currentXAxisPosition, endTimeIndex, prevXScale, startTimeIndex]);
+  }, [currentPlayBarTime, dopeSheetScale, endTimeIndex, startTimeIndex]);
 
-  const [isUpdated, setIsUpdated] = useState(false);
-  const handleIsUpdated = useCallback(() => {
-    setIsUpdated((prev) => !prev);
-  }, []);
-  const list = useDragBox({ ref: dopeSheetRef, isUpdated, onChangeIsUpdated: handleIsUpdated });
+  // 트랙 리스트에 커서를 놓고 스크롤 시, 키프레임 위치 조정
+  const prevScrollTop = useRef(0);
+  useEffect(() => {
+    if (dopeSheetRef.current) {
+      const arrangeKeyframes = (event: MouseEvent) => {
+        if (!dopeSheetScale.current) return;
+        const scaleXLineaer = dopeSheetScale.current;
+        const scrollTop = (event.target as Element).scrollTop;
+        const isSmallPrevScrollTop = prevScrollTop.current < scrollTop;
+        const rootMarginTop = isSmallPrevScrollTop ? 0 : TRACK_HEIGHT * 20;
+        const rootMarginBottom = isSmallPrevScrollTop ? TRACK_HEIGHT * 20 : 0;
+        const rootMargin = `${rootMarginTop}px 0px ${rootMarginBottom}px 0px`;
+
+        const observerOptions: IntersectionObserverInit = {
+          root: document.getElementById('timeline-wrapper'),
+          rootMargin: rootMargin,
+        };
+        d3.selectAll('.circle-group').each(function () {
+          const circleGroup = d3.select(this);
+          const circleGroupNode = circleGroup.node() as Element;
+          const intersectionObserver = new IntersectionObserver(([entry], observer) => {
+            if (!entry.isIntersecting) return observer.unobserve(entry.target);
+            circleGroup.selectAll('circle').each(function () {
+              const times = d3.select(this).data() as number[];
+              d3.select(this).attr('cx', scaleXLineaer(times[0] * 30));
+            });
+            observer.unobserve(entry.target);
+          }, observerOptions);
+          intersectionObserver.observe(circleGroupNode);
+        });
+        prevScrollTop.current = scrollTop;
+      };
+
+      d3.select('#timeline-wrapper').on('scroll', arrangeKeyframes);
+    }
+  }, [dopeSheetScale]);
+
+  // 재생바 출력 여부
+  const [isShowedPlayBar, setIsShowedPlayBar] = useState(false);
+  const prevModelKey = useRef('');
+  useEffect(() => {
+    const modelKey = trackList[0]?.visualizedDataKey;
+    const isChangedModel = trackList.length && modelKey !== prevModelKey.current;
+    if (isChangedModel) {
+      prevModelKey.current = modelKey;
+      setIsShowedPlayBar(true);
+    } else if (!trackList.length) {
+      prevModelKey.current = '';
+      setIsShowedPlayBar(false);
+    }
+  }, [trackList]);
 
   return (
-    <>
-      <div className={cx('dopesheet-wrapper')} id="dopesheet-wrapper" ref={dopeSheetRef}>
-        <div className={cx('circle-group-wrapper')}>
-          {_.map(trackList, (dopeSheet) => {
-            const { trackName, visualizedDataKey } = dopeSheet;
-            const key = `${trackName}_${visualizedDataKey}`;
-            return (
-              dopeSheet.isShowed &&
-              dopeSheet.isFiltered && (
-                <CircleGroup
-                  key={key}
-                  dopeSheetData={dopeSheet}
-                  prevXScale={prevXScale.current as d3ScaleLinear}
-                />
-              )
-            );
-          })}
-        </div>
-        {playBarDisplayed && <PlayBar />}
-        <DragBox parentRef={dopeSheetRef} isAllCovered onChangeIsUpdated={handleIsUpdated} />
+    <div className={cx('dopesheet-wrapper')} ref={dopeSheetRef}>
+      <div className={cx('circle-group-wrapper')}>
+        {_.map(trackList, (track) => {
+          const {
+            isLocked,
+            isSelected,
+            isShowed,
+            isFiltered,
+            layerKey,
+            times,
+            trackName,
+            trackIndex,
+          } = track;
+          const key = `${trackIndex}_${trackName}`;
+          return (
+            isShowed &&
+            isFiltered && (
+              <CircleGroup
+                key={key}
+                isLocked={isLocked}
+                isSelected={isSelected}
+                layerKey={layerKey}
+                times={times}
+                trackIndex={trackIndex}
+                trackName={trackName}
+                dopeSheetScale={dopeSheetScale.current as d3ScaleLinear}
+              />
+            )
+          );
+        })}
       </div>
-    </>
+      {isShowedPlayBar && (
+        <PlayBar
+          currentTimeIndexRef={currentTimeIndexRef}
+          currentTimeRef={currentTimeRef}
+          currentPlayBarTime={currentPlayBarTime}
+          dopeSheetScale={dopeSheetScale}
+        />
+      )}
+    </div>
   );
 };
 

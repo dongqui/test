@@ -1,8 +1,7 @@
 import React, { MutableRefObject, RefObject } from 'react';
 import dynamic from 'next/dynamic';
 import { d3ScaleLinear } from 'types/TP';
-
-const DynamicDopeSheet = dynamic(() => import('./New_DopeSheet'));
+import DopeSheet from './DopeSheet';
 
 interface Props {
   currentTimeRef: RefObject<HTMLInputElement>;
@@ -14,7 +13,7 @@ interface Props {
 const TimeEditor: React.FC<Props> = (props) => {
   const { currentTimeIndexRef, currentTimeRef, currentPlayBarTime, dopeSheetScale } = props;
   return (
-    <DynamicDopeSheet
+    <DopeSheet
       currentTimeIndexRef={currentTimeIndexRef}
       currentTimeRef={currentTimeRef}
       currentPlayBarTime={currentPlayBarTime}
