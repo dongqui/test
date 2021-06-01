@@ -1,5 +1,5 @@
 import { FunctionComponent, memo } from 'react';
-import { LPModelDataState } from 'actions/lpData';
+import { LPItemState } from 'actions/lpData';
 import Icon from '../Icon';
 import classNames from 'classnames/bind';
 import styles from './IconNode.module.scss';
@@ -7,7 +7,7 @@ import styles from './IconNode.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
-  item: LPModelDataState;
+  item: LPItemState;
 }
 
 const IconNode: FunctionComponent<Props> = ({ item }) => {

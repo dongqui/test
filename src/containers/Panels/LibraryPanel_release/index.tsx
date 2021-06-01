@@ -15,12 +15,7 @@ import _ from 'lodash';
 import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { setSearchword } from 'actions/lpSearchword';
-import {
-  deleteLPModelData,
-  LPModelDataListState,
-  setLPModelData,
-  LPModelDataState,
-} from 'actions/lpData';
+import { deleteItems, LPItemsState, setItems, LPItemState } from 'actions/lpData';
 import Explorer from './Explorer';
 import { getFileExtension, getAnimationData } from '../../../utils/LP_release';
 import { setConvertFbxToGlb } from '../../../utils/common/api/index';
@@ -37,7 +32,7 @@ const cx = classNames.bind(styles);
 const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];
 const EnableFileFormats = [...EnableVideoFormats, 'glb', 'fbx'];
 
-export const DefaultModels: Required<LPModelDataListState> = [
+export const DefaultModels: Required<LPItemsState> = [
   {
     key: 'defaultmodel1',
     name: 'zombie.fbx',
@@ -89,7 +84,7 @@ interface ChangeFileTolpData {
 }
 
 interface ChangeFileTolpDataResponse {
-  result: LPModelDataListState;
+  result: LPItemsState;
   isError: boolean;
   errorMsg: string;
 }
@@ -160,11 +155,11 @@ const LibraryPanel: FunctionComponent = () => {
    * @return lpModelDataList.
    */
   const convertToAnimationDataTolpData = useCallback(
-    (params: ConvertToAnimationDataTolpData): LPModelDataListState => {
+    (params: ConvertToAnimationDataTolpData): LPItemsState => {
       const { animations, bones, name, url } = params;
       const boneNames = bones.map((bone) => bone.name);
       const key = uuidv4();
-      const file: LPModelDataState = {
+      const file: LPItemState = {
         key,
         type: 'File',
         name,
@@ -174,7 +169,7 @@ const LibraryPanel: FunctionComponent = () => {
         layers: [],
         boneNames,
       };
-      const motions: LPModelDataListState = animations.map((item) => ({
+      const motions: LPItemsState = animations.map((item) => ({
         key: item.uuid,
         name: item.name,
         type: 'Motion',
@@ -209,14 +204,14 @@ const LibraryPanel: FunctionComponent = () => {
           result: [],
         };
       }
-      const newData: LPModelDataListState = convertToAnimationDataTolpData({
+      const newData: LPItemsState = convertToAnimationDataTolpData({
         animations,
         bones,
         name,
         url: fileUrl,
       });
       if (isDispatch) {
-        dispatch(setLPModelData(newData));
+        dispatch(setItems(newData));
       }
       return {
         isError: false,
@@ -267,7 +262,7 @@ const LibraryPanel: FunctionComponent = () => {
         loading: true,
       }));
       const mustDeleteKeys: string[] = [];
-      let newlpData: LPModelDataListState = [];
+      let newlpData: LPItemsState = [];
       const isMultipleVideoFiles = validateMultipleVideoFiles(files);
       if (isMultipleVideoFiles) {
         setModalInfo((state) => ({
@@ -349,9 +344,9 @@ const LibraryPanel: FunctionComponent = () => {
         newlpData = _.concat(newlpData, newData);
       }
       if (!_.isEmpty(mustDeleteKeys)) {
-        dispatch(deleteLPModelData(mustDeleteKeys));
+        dispatch(deleteItems(mustDeleteKeys));
       }
-      dispatch(setLPModelData(newlpData));
+      dispatch(setItems(newlpData));
       setModalInfo((state) => ({
         ...state,
         showModal: false,
@@ -381,7 +376,7 @@ const LibraryPanel: FunctionComponent = () => {
    * 아이콘뷰로 전달할 가공데이터입니다.
    * @return 검색어 필터링 후 lpModelDataList
    */
-  const filteredIconviewData = useMemo((): LPModelDataListState => {
+  const filteredIconviewData = useMemo((): LPItemsState => {
     let data = _.clone(lpData);
     if (!_.isEmpty(lpSearchword)) {
       data = data.filter((item) =>

@@ -2,7 +2,7 @@ import { ShootLayerType, ShootTrackType } from 'types';
 
 export type FileType = 'Folder' | 'File' | 'Motion';
 
-export interface LPModelDataState {
+export interface LPItemState {
   key: string;
   name: string;
   type: FileType;
@@ -14,23 +14,21 @@ export interface LPModelDataState {
   layers: ShootLayerType[];
   boneNames: string[];
 }
-export interface LPModelDataListState extends Array<LPModelDataState> {}
+export interface LPItemsState extends Array<LPItemState> {}
 
-export type LPModelDataAction =
-  | ReturnType<typeof setLPModelData>
-  | ReturnType<typeof deleteLPModelData>;
+export type LPModelDataAction = ReturnType<typeof setItems> | ReturnType<typeof deleteItems>;
 
-export const SET_LP_MODELDATA = 'lpdata/SET_LP_MODELDATA' as const;
-export const DELETE_LP_MODELDATA = 'lpdata/DELETE_LP_MODELDATA' as const;
+export const SET_LP_ITEMS = 'lpdata/SET_LP_ITEMS' as const;
+export const DELETE_LP_ITEMS = 'lpdata/DELETE_LP_ITEMS' as const;
 
-interface SetLPModelData extends LPModelDataListState {}
+interface SetLPItems extends LPItemsState {}
 
-export const setLPModelData = (params: SetLPModelData) => ({
-  type: SET_LP_MODELDATA,
+export const setItems = (params: SetLPItems) => ({
+  type: SET_LP_ITEMS,
   payload: [...params],
 });
 
-export const deleteLPModelData = (params: string[]) => ({
-  type: DELETE_LP_MODELDATA,
+export const deleteItems = (params: string[]) => ({
+  type: DELETE_LP_ITEMS,
   payload: params,
 });
