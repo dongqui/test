@@ -11,15 +11,13 @@ import {
   fnChangeBoneScale,
 } from 'utils/CP/transformUtils';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { storeCurrentBone, storeTransformControls } from 'lib/store';
 import { CPInput } from './CPInput';
 import { Segment } from 'components/Segment';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './CPListRowInput.module.scss';
 import { useDispatch } from 'react-redux';
-import { changeBoneTransform } from 'actions/boneTransform';
-import { undoableBoneTransform } from 'reducers/boneTransform';
+import * as boneTransformActions from 'actions/boneTransform';
 import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
@@ -27,19 +25,19 @@ const cx = classNames.bind(styles);
 export interface CPListRowInputProps {
   rowKey: string;
   name: string;
-  w?: RenderingDataPropertyName.QuaternionW;
+  w?: RenderingDataPropertyName.quaternionW;
   x?:
-    | RenderingDataPropertyName.QuaternionX
+    | RenderingDataPropertyName.quaternionX
     | RenderingDataPropertyName.positionX
     | RenderingDataPropertyName.rotationX
     | RenderingDataPropertyName.scaleX;
   y?:
-    | RenderingDataPropertyName.QuaternionY
+    | RenderingDataPropertyName.quaternionY
     | RenderingDataPropertyName.positionY
     | RenderingDataPropertyName.rotationY
     | RenderingDataPropertyName.scaleY;
   z?:
-    | RenderingDataPropertyName.QuaternionZ
+    | RenderingDataPropertyName.quaternionZ
     | RenderingDataPropertyName.positionZ
     | RenderingDataPropertyName.rotationZ
     | RenderingDataPropertyName.scaleZ;
@@ -54,15 +52,14 @@ interface InputValueType {
 
 const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
   name,
-  w = RenderingDataPropertyName.QuaternionW,
+  w = RenderingDataPropertyName.quaternionW,
   x = RenderingDataPropertyName.positionX,
   y = RenderingDataPropertyName.positionY,
   z = RenderingDataPropertyName.positionZ,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const currentBone = useReactiveVar(storeCurrentBone);
-  const transformControls = useReactiveVar(storeTransformControls);
+  const { currentBone, transformControls } = useSelector((state) => state.renderingData);
 
   const [initialValue, setInitialValue] = useState<InputValueType>({
     x: 0,
@@ -121,7 +118,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
             if (currentBone) {
               fnChangeBonePosition({ targetBone: currentBone, axis, value: parseFloat(value) });
               boneTransformValues.position[axis as NormalAxisType] = parseFloat(value);
-              dispatch(changeBoneTransform(boneTransformValues));
+              dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             }
             break;
           case 'rotation':
@@ -149,7 +146,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
               boneTransformValues.rotation.x = _.round(e.x, 4);
               boneTransformValues.rotation.y = _.round(e.y, 4);
               boneTransformValues.rotation.z = _.round(e.z, 4);
-              dispatch(changeBoneTransform(boneTransformValues));
+              dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             } else {
               fnChangeBoneRotation({
                 targetBone: currentBone,
@@ -174,13 +171,13 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
               boneTransformValues.quaternion.y = _.round(q.y, 4);
               boneTransformValues.quaternion.z = _.round(q.z, 4);
               boneTransformValues.quaternion.w = _.round(q.w, 4);
-              dispatch(changeBoneTransform(boneTransformValues));
+              dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             }
             break;
           case 'scale':
             fnChangeBoneScale({ targetBone: currentBone, axis, value: parseFloat(value) });
             boneTransformValues.scale[axis as NormalAxisType] = _.round(parseFloat(value), 4);
-            dispatch(changeBoneTransform(boneTransformValues));
+            dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             break;
           default:
             break;
@@ -206,9 +203,7 @@ const CPListRowInputComponent: React.FC<CPListRowInputProps> = ({
     }
   };
 
-  const boneTransform: ReturnType<typeof undoableBoneTransform> = useSelector(
-    (state) => state.undoableBoneTransform,
-  );
+  const boneTransform = useSelector((state) => state.undoableBoneTransform);
 
   // undo/redo 시 input 값 변경
   useEffect(() => {

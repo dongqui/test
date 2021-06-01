@@ -11,29 +11,19 @@ export enum RenderingDataPropertyName {
   rotationX = 'rotationX',
   rotationY = 'rotationY',
   rotationZ = 'rotationZ',
-  QuaternionW = 'QuaternionW',
-  QuaternionX = 'QuaternionX',
-  QuaternionY = 'QuaternionY',
-  QuaternionZ = 'QuaternionZ',
+  quaternionW = 'quaternionW',
+  quaternionX = 'quaternionX',
+  quaternionY = 'quaternionY',
+  quaternionZ = 'quaternionZ',
   scaleX = 'scaleX',
   scaleY = 'scaleY',
   scaleZ = 'scaleZ',
-  // locationX = 'locationX',
-  // locationY = 'locationY',
-  // locationZ = 'locationZ',
-  // angleX = 'angleX',
-  // angleY = 'angleY',
-  // angleZ = 'angleZ',
   axis = 'axis',
   isBoneOn = 'isBoneOn',
-  // isJointOn = 'isJointOn',
   isMeshOn = 'isMeshOn',
   isShadowOn = 'isShadowOn',
-  // isFogOn = 'isFogOn',
-  // fogNear = 'fogNear',
-  // fogFar = 'fogFar',
 }
-export enum axisName {
+export enum AxisName {
   y = 'y',
   z = 'z',
 }
@@ -48,30 +38,20 @@ export interface RenderingDataType {
   [RenderingDataPropertyName.positionX]: number;
   [RenderingDataPropertyName.positionY]: number;
   [RenderingDataPropertyName.positionZ]: number;
-  [RenderingDataPropertyName.QuaternionW]: number;
-  [RenderingDataPropertyName.QuaternionX]: number;
-  [RenderingDataPropertyName.QuaternionY]: number;
-  [RenderingDataPropertyName.QuaternionZ]: number;
+  [RenderingDataPropertyName.quaternionW]: number;
+  [RenderingDataPropertyName.quaternionX]: number;
+  [RenderingDataPropertyName.quaternionY]: number;
+  [RenderingDataPropertyName.quaternionZ]: number;
   [RenderingDataPropertyName.rotationX]: number;
   [RenderingDataPropertyName.rotationY]: number;
   [RenderingDataPropertyName.rotationZ]: number;
   [RenderingDataPropertyName.scaleX]: number;
   [RenderingDataPropertyName.scaleY]: number;
   [RenderingDataPropertyName.scaleZ]: number;
-  // [RenderingDataPropertyName.locationX]: number;
-  // [RenderingDataPropertyName.locationY]: number;
-  // [RenderingDataPropertyName.locationZ]: number;
-  // [RenderingDataPropertyName.angleX]: number;
-  // [RenderingDataPropertyName.angleY]: number;
-  // [RenderingDataPropertyName.angleZ]: number;
-  [RenderingDataPropertyName.axis]: axisName;
+  [RenderingDataPropertyName.axis]: AxisName;
   [RenderingDataPropertyName.isBoneOn]: boolean;
-  // [RenderingDataPropertyName.isJointOn]: boolean;
   [RenderingDataPropertyName.isMeshOn]: boolean;
   [RenderingDataPropertyName.isShadowOn]: boolean;
-  // [RenderingDataPropertyName.isFogOn]: boolean;
-  // [RenderingDataPropertyName.fogNear]: number;
-  // [RenderingDataPropertyName.fogFar]: number;
 }
 interface RANGEBOX_INFO_TYPES {
   width: number;
@@ -89,11 +69,11 @@ export interface RecordingDataType {
   count?: number | undefined;
 }
 
-type playState = 'play' | 'pause' | 'stop';
-type PlayDirection = 1 | -1;
+export type PlayState = 'play' | 'pause' | 'stop';
+export type PlayDirection = 1 | -1;
 
 export interface AnimatingDataType {
-  playState: playState;
+  playState: PlayState;
   playDirection: PlayDirection;
   playSpeed: number;
   startTimeIndex: number;

@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import _ from 'lodash';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -21,17 +21,12 @@ import {
   fnCreateScene,
   fnResizeRendererToDisplaySize,
 } from 'utils/RP/renderingUtils';
-import {
-  storeCurrentBone,
-  storeRenderingData,
-  storeTransformControls,
-  storeSkeletonHelper,
-} from '../../lib/store';
-import { useReactiveVar } from '@apollo/client';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import { changeBoneTransform } from 'actions/boneTransform';
-import { redo, resetHistory, undo } from 'actions/withUndoable';
+import * as boneTransformActions from 'actions/boneTransform';
+import * as withUndoableActions from 'actions/withUndoable';
+import * as renderingDataActions from 'actions/renderingData';
+import * as animatingDataActions from 'actions/animatingData';
 import { BoneTransformState, undoableBoneTransform } from 'reducers/boneTransform';
 
 let innerMixer: THREE.AnimationMixer | undefined;
@@ -39,10 +34,6 @@ let innerMixer: THREE.AnimationMixer | undefined;
 interface UseRendering {
   id: string;
   fileUrl?: string;
-  setMixer: Dispatch<SetStateAction<THREE.AnimationMixer | undefined>>;
-  setCameraControls: Dispatch<SetStateAction<OrbitControls | undefined>>;
-  setScene: Dispatch<SetStateAction<THREE.Scene | undefined>>;
-  setDirLight: Dispatch<SetStateAction<THREE.DirectionalLight | undefined>>;
 }
 
 /**
@@ -54,13 +45,13 @@ interface UseRendering {
  * @param setMixer - RenderingController 내 state 인 mixer 의 set 함수
  * @param setCameraControls - RenderingController 내 state 인 cameraControls 의 set 함수
  * @param setScene - RenderingController 내 state 인 scene 의 set 함수
- * @param setDirLight - RenderingController 내 state 인 dirLight 의 set 함수
+ * @param setDirLight - RenderingController 내 state 인 directionalLight 의 set 함수
  *
  */
 export const useRendering = (props: UseRendering) => {
-  const { id, fileUrl, setMixer, setCameraControls, setScene, setDirLight } = props;
+  const { id, fileUrl } = props;
   // store data
-  const { axis } = useReactiveVar(storeRenderingData);
+  const { axis } = useSelector((state) => state.renderingData);
   // component state
   const [renderer, setRenderer] = useState<THREE.WebGL1Renderer | undefined>(undefined);
   const [innerCurrentBone, setInnerCurrentBone] = useState<THREE.Bone | undefined>(undefined); // 현재 드래그한 Bone
@@ -114,13 +105,13 @@ export const useRendering = (props: UseRendering) => {
           // redo
           if (event.ctrlKey && event.shiftKey) {
             if (boneTransform && boneTransform.future.length !== 0) {
-              dispatch(redo());
+              dispatch(withUndoableActions.redo());
             }
           }
           // undo
           if (event.ctrlKey && !event.shiftKey) {
             if (boneTransform && boneTransform.past.length !== 0) {
-              dispatch(undo());
+              dispatch(withUndoableActions.undo());
             }
           }
           break;
@@ -159,7 +150,7 @@ export const useRendering = (props: UseRendering) => {
   // 모델 파일 변경 시 history reset
   useEffect(() => {
     if (fileUrl) {
-      dispatch(resetHistory());
+      dispatch(withUndoableActions.resetHistory());
     }
   }, [dispatch, fileUrl]);
 
@@ -492,7 +483,7 @@ export const useRendering = (props: UseRendering) => {
     if (renderingDiv && renderer) {
       // scene 생성 및 설정
       const scene = fnCreateScene();
-      setScene(scene);
+      dispatch(renderingDataActions.setScene({ scene }));
       setTheScene(scene);
 
       // camera 생성 및 설정
@@ -507,9 +498,9 @@ export const useRendering = (props: UseRendering) => {
       }
 
       // scene에 조명 추가
-      const { hemiLight, dirLight } = fnAddLights({ scene, upDirection: axis });
-      setContents((prevContents) => [...prevContents, hemiLight, dirLight]);
-      setDirLight(dirLight);
+      const { hemiLight, directionalLight } = fnAddLights({ scene, upDirection: axis });
+      setContents((prevContents) => [...prevContents, hemiLight, directionalLight]);
+      dispatch(renderingDataActions.setDirectionalLight({ directionalLight }));
       // scene에 바닥 추가
       const { ground, texture } = fnAddGround({ scene, camera, renderer, upDirection: axis });
       setContents((prevContents) => [...prevContents, ground, texture]);
@@ -518,7 +509,7 @@ export const useRendering = (props: UseRendering) => {
       // cameraControls 생성 및 설정
       const cameraControls = fnCreateCameraControls({ camera, renderer });
       setContents((prevContents) => [...prevContents, cameraControls]);
-      setCameraControls(cameraControls);
+      dispatch(renderingDataActions.setCameraControls({ cameraControls }));
       // scene에 transformControls 추가
       const transformControls = fnAddTransformControls({
         scene,
@@ -526,10 +517,7 @@ export const useRendering = (props: UseRendering) => {
         renderer,
         cameraControls,
       });
-      storeTransformControls(transformControls);
-      // 아래 링크처럼 store 사용하는 방법으로 바꿔야 함
-      // https://spectrum.chat/apollo/apollo-link-state/undo-redo-functionality-proposal~48be8143-c460-4655-8e44-b41df3e00a12
-      // https://redux.js.org/recipes/implementing-undo-history#understanding-undo-history
+      dispatch(renderingDataActions.setTransformControls({ transformControls }));
       transformControls.addEventListener('dragging-changed', (event: any) => {
         const bone: THREE.Bone = event.target.object;
         if (!event.value) {
@@ -557,7 +545,7 @@ export const useRendering = (props: UseRendering) => {
               z: _.round(bone.scale.z, 4),
             },
           };
-          dispatch(changeBoneTransform(value));
+          dispatch(boneTransformActions.changeBoneTransform(value));
         }
       });
       setContents((prevContents) => [...prevContents, transformControls]);
@@ -588,7 +576,7 @@ export const useRendering = (props: UseRendering) => {
             console.log('object: ', object);
             // animation mixer 생성 및 set
             innerMixer = fnCreateMixer({ object });
-            setMixer(innerMixer);
+            dispatch(animatingDataActions.setMixer({ mixer: innerMixer }));
             // scene에 model 추가
             const model = fnAddModel({ scene, object });
             setContents((prevContents) => [...prevContents, model]);
@@ -620,11 +608,12 @@ export const useRendering = (props: UseRendering) => {
                 z: _.round(bone.scale.z, 4),
               },
             };
-            dispatch(changeBoneTransform(value));
-            storeSkeletonHelper(innerSkeletonHelper);
+            dispatch(boneTransformActions.changeBoneTransform(value));
+            dispatch(
+              renderingDataActions.setSkeletonHelper({ skeletonHelper: innerSkeletonHelper }),
+            );
             // eslint-disable-next-line no-console
-            console.log('skeletonHelper: ', innerSkeletonHelper);
-            storeCurrentBone(innerSkeletonHelper.bones[0]);
+            dispatch(renderingDataActions.setCurrentBone({ bone: innerSkeletonHelper.bones[0] }));
             setContents((prevContents) => [...prevContents, innerSkeletonHelper]);
             fnAddJointMeshes({
               skeletonHelper: innerSkeletonHelper,
@@ -634,7 +623,6 @@ export const useRendering = (props: UseRendering) => {
               transformControls,
               innerCurrentBone,
               setInnerCurrentBone,
-              storeCurrentBone,
               dispatch,
             });
           },

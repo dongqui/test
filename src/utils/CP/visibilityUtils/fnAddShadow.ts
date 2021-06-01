@@ -1,25 +1,25 @@
 import * as THREE from 'three';
 
 interface FnAddShadow {
-  dirLight: THREE.DirectionalLight;
+  directionalLight: THREE.DirectionalLight;
 }
 
 /**
  * 현재 scene 에 그림자를 표시합니다.
  *
- * @param dirLight - The target directional light
+ * @param directionalLight - The target directional light
  *
  */
 const fnAddShadow = (props: FnAddShadow) => {
-  const { dirLight } = props;
-  dirLight.castShadow = true;
-  dirLight.shadow.mapSize = new THREE.Vector2(1000, 1000);
-  dirLight.shadow.camera.near = 0.1;
-  dirLight.shadow.camera.far = 1500;
-  dirLight.shadow.camera.left = 8.25 * -1;
-  dirLight.shadow.camera.right = 8.25;
-  dirLight.shadow.camera.top = 8.25;
-  dirLight.shadow.camera.bottom = 8.25 * -1;
+  const { directionalLight } = props;
+  directionalLight.castShadow = true;
+  directionalLight.shadow.mapSize = new THREE.Vector2(1000, 1000);
+  directionalLight.shadow.camera.near = 0.1;
+  directionalLight.shadow.camera.far = 1500;
+  directionalLight.shadow.camera.left = 8.25 * -1;
+  directionalLight.shadow.camera.right = 8.25;
+  directionalLight.shadow.camera.top = 8.25;
+  directionalLight.shadow.camera.bottom = 8.25 * -1;
 };
 
 export default fnAddShadow;

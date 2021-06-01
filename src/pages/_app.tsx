@@ -11,7 +11,6 @@ import { hotjar } from 'analytics';
 import 'styles/core.scss';
 import 'styles/timeline/_curve.scss';
 import _ from 'lodash';
-import store from 'redux/store';
 
 const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   Component,
@@ -40,11 +39,9 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
           content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
         />
       </Head>
-      <Provider store={store}>
-        <ApolloProvider client={apolloClient}>
-          <Component {...pageProps} />
-        </ApolloProvider>
-      </Provider>
+      <ApolloProvider client={apolloClient}>
+        <Component {...pageProps} />
+      </ApolloProvider>
     </Fragment>
   );
 };
