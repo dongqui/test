@@ -8,7 +8,7 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import { setRetargetInfo, setRetargetMap } from 'actions/retargetData';
+import * as retargetDataActions from 'actions/retargetData';
 
 const cx = classNames.bind(styles);
 
@@ -44,7 +44,7 @@ const RetargetTab: FunctionComponent = () => {
    * 패널에서 Retarget Data를 초기 데이터로 되돌리는 함수입니다.
    */
   const handleRetargetRefresh = () => {
-    dispatch(setRetargetMap({ retargetMap: currentData }));
+    dispatch(retargetDataActions.setRetargetMap({ retargetMap: currentData }));
   };
 
   /**
@@ -58,7 +58,7 @@ const RetargetTab: FunctionComponent = () => {
         newValue = '';
       }
       dispatch(
-        setRetargetMap({
+        retargetDataActions.setRetargetMap({
           retargetMap: _.map(retargetMap, (item) => ({
             ...item,
             value: {
@@ -82,7 +82,7 @@ const RetargetTab: FunctionComponent = () => {
   const handleCoordSelect = useCallback(
     (key, value) => {
       dispatch(
-        setRetargetMap({
+        retargetDataActions.setRetargetMap({
           retargetMap: _.map(retargetMap, (item) => ({
             ...item,
             value: {
@@ -106,7 +106,7 @@ const RetargetTab: FunctionComponent = () => {
   const handleChange = useCallback(
     ({ value, name, key }) => {
       dispatch(
-        setRetargetMap({
+        retargetDataActions.setRetargetMap({
           retargetMap: _.map(retargetMap, (item) => ({
             ...item,
             value: {
@@ -127,7 +127,7 @@ const RetargetTab: FunctionComponent = () => {
   const handleSubmitData = () => {
     const { modelKey, targetboneList } = retargetInfo;
     if (modelKey && !_.isEmpty(retargetMap)) {
-      dispatch(setRetargetInfo({ modelKey, targetboneList, retargetMap }));
+      dispatch(retargetDataActions.setRetargetInfo({ modelKey, targetboneList, retargetMap }));
       setIsSubmitted(true);
     }
   };

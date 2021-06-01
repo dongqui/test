@@ -3,7 +3,7 @@ import classNames from 'classnames/bind';
 import styles from './TabTitle.module.scss';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import { setCPTab } from 'actions/cpData';
+import * as cpDataActions from 'actions/cpData';
 
 const cx = classNames.bind(styles);
 
@@ -18,7 +18,7 @@ const TabTitle: FunctionComponent<Props> = ({ tabID, title, disabled }) => {
   const { tabIndex } = useSelector((state) => state.cpData);
 
   const handleClick = useCallback(() => {
-    dispatch(setCPTab({ tabIndex: tabID }));
+    dispatch(cpDataActions.setCPTab({ tabIndex: tabID }));
   }, [dispatch, tabID]);
 
   const classes = cx('tab-header', tabIndex === tabID ? cx('active') : undefined, {

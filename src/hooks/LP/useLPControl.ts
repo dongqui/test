@@ -26,8 +26,8 @@ import { ROOT_FOLDER_NAME } from 'types/LP';
 import { RetargetInfoType, TargetBoneType } from 'types/CP';
 import { initialRetargetMap } from 'utils/retargetMap';
 import { useDispatch } from 'react-redux';
-import { setCPTab } from 'actions/cpData';
-import { setRetargetInfo, setRetargetMap } from 'actions/retargetData';
+import * as cpDataActions from 'actions/cpData';
+import * as retargetDataActions from 'actions/retargetData';
 
 interface UseLPControlProps {
   mainData: LPDataType[];
@@ -147,10 +147,14 @@ const useLPControl = ({
                 );
                 if (targetRow?.key) {
                   dispatch(
-                    setRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] }),
+                    retargetDataActions.setRetargetInfo({
+                      modelKey: targetRow?.key,
+                      targetboneList,
+                      retargetMap: [],
+                    }),
                   );
                 }
-                setRetargetMap({ retargetMap: initialRetargetMap });
+                retargetDataActions.setRetargetMap({ retargetMap: initialRetargetMap });
               }
               setShowsModal(false);
               return;
@@ -167,13 +171,17 @@ const useLPControl = ({
                 ],
                 targetboneList,
               );
-              dispatch(setRetargetMap({ retargetMap }));
+              dispatch(retargetDataActions.setRetargetMap({ retargetMap }));
               if (targetRow?.key) {
                 dispatch(
-                  setRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] }),
+                  retargetDataActions.setRetargetInfo({
+                    modelKey: targetRow?.key,
+                    targetboneList,
+                    retargetMap: [],
+                  }),
                 );
               }
-              dispatch(setCPTab({ tabIndex: 1 }));
+              dispatch(cpDataActions.setCPTab({ tabIndex: 1 }));
             }
           }
 
@@ -225,7 +233,7 @@ const useLPControl = ({
           });
           if (error3) {
             setModalMessage('An error has occurred while retargeting.');
-            dispatch(setCPTab({ tabIndex: 1 }));
+            dispatch(cpDataActions.setCPTab({ tabIndex: 1 }));
             return;
           }
           const times = draggingRow?.baseLayer?.[0]?.times;
