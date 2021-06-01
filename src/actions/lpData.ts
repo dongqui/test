@@ -16,7 +16,7 @@ export interface LPItemState {
 }
 export interface LPItemsState extends Array<LPItemState> {}
 
-export type LPModelDataAction = ReturnType<typeof setItems> | ReturnType<typeof deleteItems>;
+export type LPItemsAction = ReturnType<typeof setItems> | ReturnType<typeof deleteItems>;
 
 export const SET_LP_ITEMS = 'lpdata/SET_LP_ITEMS' as const;
 export const DELETE_LP_ITEMS = 'lpdata/DELETE_LP_ITEMS' as const;
