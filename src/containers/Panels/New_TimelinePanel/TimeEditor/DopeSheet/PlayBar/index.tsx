@@ -12,9 +12,10 @@ import * as d3 from 'd3';
 import _ from 'lodash';
 import styles from './index.module.scss';
 import { d3ScaleLinear } from 'types/TP';
-import { useReactiveVar } from '@apollo/client';
-import { storeAnimatingData, storeCurrentAction, storeCurrentVisualizedData } from 'lib/store';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
+import { useSelector } from 'reducers';
+import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 
 const cx = classNames.bind(styles);
 const PLAY_BAR_COLOR = '#ECEDEE';
@@ -31,11 +32,12 @@ const PlayBar: React.FC<Props> = (props) => {
   const { currentPlayBarTime, currentTimeIndexRef, currentTimeRef, dopeSheetScale } = props;
   const [lastTime, setLastTime] = useState(0);
 
-  // ToDo...없애야 됨
-  const animatingData = useReactiveVar(storeAnimatingData);
-  const currentAction = useReactiveVar(storeCurrentAction);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
-  const { startTimeIndex, endTimeIndex, playState } = animatingData;
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
+  );
+  const { startTimeIndex, endTimeIndex, playState, currentAction } = useSelector(
+    (state) => state.animatingData,
+  );
 
   // 재생바 위치 변경
   const playBarReqId = useRef<number | undefined>();
@@ -99,19 +101,11 @@ const PlayBar: React.FC<Props> = (props) => {
       d3.select('#play-bar').style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`);
 
       if (_.round(nextValue / 30, 4) >= lastTime) {
-        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
       } else {
-        currentTimeRef.current.value = new Date(_.round(nextValue / 30, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(nextValue / 30, 0)));
       }
-      currentTimeIndexRef.current.value = nextValue.toString();
+      fnSetValue(currentTimeIndexRef, nextValue);
       currentAction.time = _.round(nextValue / 30, 4);
     }
   }, [
@@ -155,19 +149,11 @@ const PlayBar: React.FC<Props> = (props) => {
       d3.select('#play-bar').style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`);
 
       if (_.round(nextValue / 30, 4) >= lastTime) {
-        currentTimeRef.current.value = new Date(_.round(lastTime, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
       } else {
-        currentTimeRef.current.value = new Date(_.round(nextValue / 30, 0) * 1000)
-          .toISOString()
-          .substr(11, 8)
-          .substr(2)
-          .replace(':', '');
+        fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(nextValue / 30, 0)));
       }
-      currentTimeIndexRef.current.value = nextValue.toString();
+      fnSetValue(currentTimeIndexRef, nextValue);
       currentAction.time = _.round(nextValue / 30, 4);
     }
   }, [

@@ -1,16 +1,16 @@
 import React, { memo, useEffect, useRef, MutableRefObject, RefObject } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import MiddleBar from 'containers/MiddleBar';
+import { useSelector } from 'reducers';
 import { fnSetAllInitialTrackList } from 'utils/TP/New';
 import { d3ScaleLinear } from 'types/TP';
 import * as timelineActions from 'actions/timeline';
+import { CurrentVisualizedData } from 'actions/currentVisualizedData';
 import TrackList from './TrackList';
 import TimeEditor from './TimeEditor';
 import styles from './index.module.scss';
-import { storeCurrentVisualizedData } from 'lib/store';
 
 const cx = classNames.bind(styles);
 
@@ -25,21 +25,21 @@ const TimelinePanel: React.FC<Props> = (props) => {
   const { currentTimeRef, currentTimeIndexRef, currentPlayBarTime, dopeSheetScale } = props;
   const dispatch = useDispatch();
   const prevModelKey = useRef('');
-  const isStoredDopeSheetData = useRef(false);
-
-  // To Do...apollo -> redux
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  const isStoredTrackListData = useRef(false);
+  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
+  );
 
   useEffect(() => {
     const isClearedModel = prevModelKey.current && !currentVisualizedData;
     if (isClearedModel) {
       dispatch(timelineActions.clearAll());
-      isStoredDopeSheetData.current = false;
+      isStoredTrackListData.current = false;
       prevModelKey.current = '';
     } else if (currentVisualizedData) {
       const { baseLayer, layers, key } = currentVisualizedData;
-      const isChangedModel = isStoredDopeSheetData.current && prevModelKey.current !== key;
-      const isInitialVisualized = !isStoredDopeSheetData.current;
+      const isChangedModel = isStoredTrackListData.current && prevModelKey.current !== key;
+      const isInitialVisualized = !isStoredTrackListData.current;
       if (isChangedModel) {
         const [trackList, lastBoneOfLayers] = fnSetAllInitialTrackList({
           baseLayer,
@@ -56,7 +56,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
         });
         dispatch(timelineActions.setTrackList({ trackList, lastBoneOfLayers }));
         prevModelKey.current = key;
-        isStoredDopeSheetData.current = true;
+        isStoredTrackListData.current = true;
       }
     }
   }, [currentVisualizedData, dispatch]);

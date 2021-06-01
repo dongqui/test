@@ -15,9 +15,10 @@ import {
 import { TP_TRACK_INDEX } from 'utils/const';
 import { UpdatedTrack } from 'types/TP';
 import * as timelineActions from 'actions/timeline';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
+import { CurrentVisualizedData } from 'actions/currentVisualizedData';
 import styles from './index.module.scss';
-import { storeContextMenuInfo, storeCurrentVisualizedData } from 'lib/store';
-import { CurrentVisualizedDataType } from 'types';
+import { storeContextMenuInfo } from 'lib/store';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { useReactiveVar } from '@apollo/client';
 import { FormModal } from 'components/Modal';
@@ -61,11 +62,14 @@ const TrackItem: FunctionComponent<Props> = (props) => {
     trackName,
   } = props;
   const dispatch = useDispatch();
+  const trackItemRef = useRef<HTMLLIElement>(null);
   const trackList = useSelector((state) => state.timeline.trackList);
   const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);
   const prevSelectedIndices = useSelector((state) => state.timeline.selectedTrackIndices);
   const currentClickedTrack = useSelector((state) => state.timeline.currentClickedTrack);
-  const trackItemRef = useRef<HTMLLIElement>(null);
+  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
+  );
   const { getConfirm } = useAlertModal();
 
   // 멀티 키 컨트롤러
@@ -366,44 +370,74 @@ const TrackItem: FunctionComponent<Props> = (props) => {
 
   // 랜더링 제외 버튼 클릭
   const handleClickRenderingButton = useCallback(() => {
-    const state = storeCurrentVisualizedData();
-    if (state) {
-      const updatedTrackList: UpdatedTrack<'isIncluded' | 'trackIndex' | 'trackName'>[] = [];
-      const remainder = trackIndex % 10;
-      switch (remainder) {
-        case LAYER: {
-          const targetLastBoneIndex = fnGetBinarySearch({
-            collection: lastBoneOfLayers,
-            index: trackIndex,
-            key: 'layerIndex',
+    const updatedTrackList: UpdatedTrack<'isIncluded' | 'trackIndex' | 'trackName'>[] = [];
+    const remainder = trackIndex % 10;
+    switch (remainder) {
+      case LAYER: {
+        const targetLastBoneIndex = fnGetBinarySearch({
+          collection: lastBoneOfLayers,
+          index: trackIndex,
+          key: 'layerIndex',
+        });
+        const lastBone = lastBoneOfLayers[targetLastBoneIndex];
+        const lastTransformIndex = lastBone.lastBoneIndex + 3;
+        let currentTrackIndex = trackIndex;
+        let trackListIndex = fnGetBinarySearch({
+          collection: trackList,
+          index: trackIndex,
+          key: 'trackIndex',
+        });
+        while (currentTrackIndex <= lastTransformIndex) {
+          updatedTrackList.push({
+            isIncluded: isIncluded ? false : true,
+            trackIndex: trackList[trackListIndex].trackIndex,
+            trackName: trackList[trackListIndex].trackName,
           });
-          const lastBone = lastBoneOfLayers[targetLastBoneIndex];
-          const lastTransformIndex = lastBone.lastBoneIndex + 3;
-          let currentTrackIndex = trackIndex;
-          let trackListIndex = fnGetBinarySearch({
+          currentTrackIndex += 1;
+          trackListIndex += 1;
+          if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2;
+        }
+        break;
+      }
+      case BONE_A:
+      case BONE_B: {
+        if (isIncluded) {
+          const layerIndex = fnGetLayerTrackIndex({ trackIndex });
+          const targetIndex = fnGetBinarySearch({
             collection: trackList,
-            index: trackIndex,
+            index: layerIndex,
             key: 'trackIndex',
           });
-          while (currentTrackIndex <= lastTransformIndex) {
-            updatedTrackList.push({
-              isIncluded: isIncluded ? false : true,
-              trackIndex: trackList[trackListIndex].trackIndex,
-              trackName: trackList[trackListIndex].trackName,
-            });
-            currentTrackIndex += 1;
-            trackListIndex += 1;
-            if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2;
-          }
-          break;
+          updatedTrackList.push({
+            isIncluded: false,
+            trackIndex: trackList[targetIndex].trackIndex,
+            trackName: trackList[targetIndex].trackName,
+          });
         }
-        case BONE_A:
-        case BONE_B: {
-          if (isIncluded) {
-            const layerIndex = fnGetLayerTrackIndex({ trackIndex });
+        const targetIndex = fnGetBinarySearch({
+          collection: trackList,
+          index: trackIndex,
+          key: 'trackIndex',
+        });
+        for (let index = targetIndex; index <= targetIndex + 3; index += 1) {
+          updatedTrackList.push({
+            isIncluded: isIncluded ? false : true,
+            trackIndex: trackList[index].trackIndex,
+            trackName: trackList[index].trackName,
+          });
+        }
+        break;
+      }
+      default: {
+        if (isIncluded) {
+          _.forEach([0, 1], (index) => {
+            const parentTrackIndex =
+              index === 0
+                ? fnGetLayerTrackIndex({ trackIndex })
+                : fnGetBoneTrackIndex({ trackIndex });
             const targetIndex = fnGetBinarySearch({
               collection: trackList,
-              index: layerIndex,
+              index: parentTrackIndex,
               key: 'trackIndex',
             });
             updatedTrackList.push({
@@ -411,99 +445,39 @@ const TrackItem: FunctionComponent<Props> = (props) => {
               trackIndex: trackList[targetIndex].trackIndex,
               trackName: trackList[targetIndex].trackName,
             });
-          }
-          const targetIndex = fnGetBinarySearch({
-            collection: trackList,
-            index: trackIndex,
-            key: 'trackIndex',
           });
-          for (let index = targetIndex; index <= targetIndex + 3; index += 1) {
-            updatedTrackList.push({
-              isIncluded: isIncluded ? false : true,
-              trackIndex: trackList[index].trackIndex,
-              trackName: trackList[index].trackName,
-            });
-          }
-          break;
         }
-        default: {
-          if (isIncluded) {
-            _.forEach([0, 1], (index) => {
-              const parentTrackIndex =
-                index === 0
-                  ? fnGetLayerTrackIndex({ trackIndex })
-                  : fnGetBoneTrackIndex({ trackIndex });
-              const targetIndex = fnGetBinarySearch({
-                collection: trackList,
-                index: parentTrackIndex,
-                key: 'trackIndex',
-              });
-              updatedTrackList.push({
-                isIncluded: false,
-                trackIndex: trackList[targetIndex].trackIndex,
-                trackName: trackList[targetIndex].trackName,
-              });
-            });
-          }
-          const targetIndex = fnGetBinarySearch({
-            collection: trackList,
-            index: trackIndex,
-            key: 'trackIndex',
-          });
-          updatedTrackList.push({
-            isIncluded: isIncluded ? false : true,
-            trackIndex: trackList[targetIndex].trackIndex,
-            trackName: trackList[targetIndex].trackName,
-          });
-          break;
-        }
+        const targetIndex = fnGetBinarySearch({
+          collection: trackList,
+          index: trackIndex,
+          key: 'trackIndex',
+        });
+        updatedTrackList.push({
+          isIncluded: isIncluded ? false : true,
+          trackIndex: trackList[targetIndex].trackIndex,
+          trackName: trackList[targetIndex].trackName,
+        });
+        break;
       }
-      if (layerKey === 'baseLayer') {
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          _.forEach(updatedTrackList, (updated) => {
-            const transformIndex = _.findIndex(
-              draft.baseLayer,
-              (currentVisualizedData) => currentVisualizedData.name === updated.trackName,
-            );
-            if (transformIndex !== -1) {
-              draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
-            }
-          });
-        });
-        storeCurrentVisualizedData(nextState);
-      } else {
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          const targetLayer = _.find(draft.layers, (layer) => layer.key === layerKey);
-          if (targetLayer) {
-            _.forEach(updatedTrackList, (updated) => {
-              const transformIndex = _.findIndex(
-                targetLayer.tracks,
-                (currentVisualizedData) => currentVisualizedData.name === updated.trackName,
-              );
-              if (transformIndex !== -1) {
-                targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
-              }
-            });
-          }
-        });
-        storeCurrentVisualizedData(nextState);
-      }
-      const nextTrackList = produce(trackList, (draft) => {
-        _.forEach(updatedTrackList, (track) => {
-          const targetIndex = fnGetBinarySearch({
-            collection: trackList,
-            index: track.trackIndex,
-            key: 'trackIndex',
-          });
-          draft[targetIndex].isIncluded = track.isIncluded;
-        });
-      });
-      dispatch(
-        timelineActions.clickTrackCheckButton({
-          trackList: nextTrackList,
-        }),
-      );
     }
+    const nextTrackList = produce(trackList, (draft) => {
+      _.forEach(updatedTrackList, (track) => {
+        const targetIndex = fnGetBinarySearch({
+          collection: trackList,
+          index: track.trackIndex,
+          key: 'trackIndex',
+        });
+        draft[targetIndex].isIncluded = track.isIncluded;
+      });
+    });
+    dispatch(
+      timelineActions.clickTrackCheckButton({
+        trackList: nextTrackList,
+      }),
+    );
+    dispatch(
+      currentVisualizedDataActions.excludeTrack({ layerKey, updatedState: updatedTrackList }),
+    );
   }, [dispatch, isIncluded, lastBoneOfLayers, layerKey, trackIndex, trackList]);
 
   // 레이어 이름 변경 함수 호출
@@ -518,43 +492,27 @@ const TrackItem: FunctionComponent<Props> = (props) => {
       title: 'Are you sure you want to delete this layer?',
     });
     if (confirmed) {
-      const state = storeCurrentVisualizedData();
-      if (state) {
-        const targetIndex = fnGetBinarySearch({
-          collection: trackList,
-          index: trackIndex,
-          key: 'trackIndex',
-        });
-        const curTrack = trackList[targetIndex];
-        if (curTrack) {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            draft.layers = _.filter(draft.layers, (layer) => layer.key !== curTrack.layerKey);
-          });
-          storeCurrentVisualizedData(nextState);
-          const layerIndex = fnGetLayerTrackIndex({ trackIndex });
-          const targetIndex = fnGetBinarySearch({
-            collection: trackList,
-            index: layerIndex,
-            key: 'trackIndex',
-          });
-          const layerKey = trackList[targetIndex].layerKey;
-          const prevState = {
-            trackList,
-            lastBoneOfLayers,
-          };
-          const nextTrackList = produce(prevState, (draft) => {
-            const filteredTrackList = draft.trackList.filter(
-              (track) => layerKey !== track.layerKey,
-            );
-            const filteredLastBoneOfLayers = draft.lastBoneOfLayers.filter(
-              (lastBone) => layerKey !== lastBone.layerKey,
-            );
-            draft.trackList = filteredTrackList;
-            draft.lastBoneOfLayers = filteredLastBoneOfLayers;
-          });
-          dispatch(timelineActions.deleteLayer(nextTrackList));
-        }
-      }
+      const layerIndex = fnGetLayerTrackIndex({ trackIndex });
+      const targetIndex = fnGetBinarySearch({
+        collection: trackList,
+        index: layerIndex,
+        key: 'trackIndex',
+      });
+      const layerKey = trackList[targetIndex].layerKey;
+      const prevState = {
+        trackList,
+        lastBoneOfLayers,
+      };
+      const nextTrackList = produce(prevState, (draft) => {
+        const filteredTrackList = draft.trackList.filter((track) => layerKey !== track.layerKey);
+        const filteredLastBoneOfLayers = draft.lastBoneOfLayers.filter(
+          (lastBone) => layerKey !== lastBone.layerKey,
+        );
+        draft.trackList = filteredTrackList;
+        draft.lastBoneOfLayers = filteredLastBoneOfLayers;
+      });
+      dispatch(timelineActions.deleteLayer(nextTrackList));
+      dispatch(currentVisualizedDataActions.deleteLayer({ layerKey }));
     }
   }, [getConfirm, trackList, trackIndex, lastBoneOfLayers, dispatch]);
 
@@ -737,15 +695,16 @@ const TrackItem: FunctionComponent<Props> = (props) => {
   useContextMenu({ targetRef: trackItemRef, event: handleTrackContextMenu });
 
   const [newLayerName, setNewLayerName] = useState('');
-  const handleModalClose = () => {
-    setShowsModal(false);
-  };
-
   const handleInputBlur = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewLayerName(event.target.value);
   };
 
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  // 레이어 이름 변경 모달 닫기
+  const handleModalClose = () => {
+    setShowsModal(false);
+  };
+
+  // 작성한 레이어 이름 전달
   const handleSubmit = useCallback(() => {
     setShowsModal(false);
     if (newLayerName === '') {
@@ -766,27 +725,18 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         return false;
       }
     } else {
-      const state = storeCurrentVisualizedData();
-      if (state) {
-        const targetIndex = fnGetBinarySearch({
-          collection: trackList,
-          index: trackIndex,
-          key: 'trackIndex',
-        });
-        const curTrack = trackList[targetIndex];
-        if (curTrack) {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            const targetLayer = _.find(draft.layers, (layer) => layer.key === curTrack.layerKey);
-            if (targetLayer) targetLayer.name = newLayerName;
-          });
-          storeCurrentVisualizedData(nextState);
-          const nextTrackList = produce(trackList, (draft) => {
-            draft[targetIndex].trackName = newLayerName;
-            draft[targetIndex].renderedTrackName = newLayerName;
-          });
-          dispatch(timelineActions.modifyLayerName({ trackList: nextTrackList }));
-        }
-      }
+      const targetIndex = fnGetBinarySearch({
+        collection: trackList,
+        index: trackIndex,
+        key: 'trackIndex',
+      });
+      const layerKey = trackList[targetIndex].layerKey;
+      const nextTrackList = produce(trackList, (draft) => {
+        draft[targetIndex].trackName = newLayerName;
+        draft[targetIndex].renderedTrackName = newLayerName;
+      });
+      dispatch(timelineActions.modifyLayerName({ trackList: nextTrackList }));
+      dispatch(currentVisualizedDataActions.setLayerName({ layerKey, newLayerName }));
     }
   }, [newLayerName, currentVisualizedData?.layers, getConfirm, trackList, trackIndex, dispatch]);
 

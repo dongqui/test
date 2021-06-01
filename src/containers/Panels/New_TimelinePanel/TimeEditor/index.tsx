@@ -1,5 +1,4 @@
 import React, { MutableRefObject, RefObject } from 'react';
-import dynamic from 'next/dynamic';
 import { d3ScaleLinear } from 'types/TP';
 import DopeSheet from './DopeSheet';
 

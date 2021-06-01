@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
-import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { useSelector } from 'reducers';
 import * as timelineActions from 'actions/timeline';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
+import { CurrentVisualizedData } from 'actions/currentVisualizedData';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { SearchInput } from 'components/Input';
 import { AlertModalProvider } from 'components/Modal/AlertModal';
@@ -18,24 +19,22 @@ import {
   fnGetLayerTrackIndex,
   fnSetInitialLayerTrack,
 } from 'utils/TP/New';
-import { CurrentVisualizedDataType } from 'types';
 import { UpdatedTrack } from 'types/TP';
 import TrackItem from './TrackItem';
 import styles from './index.module.scss';
-import { storeCurrentVisualizedData, storeSkeletonHelper } from 'lib/store';
 
 const DEBOUNCED_TIME = 300;
 const cx = classNames.bind(styles);
 
 const TrackList: React.FC<{}> = () => {
   const dispatch = useDispatch();
+  const prevInputText = useRef('');
   const trackList = useSelector((state) => state.timeline.trackList);
   const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);
-  const prevInputText = useRef('');
-
-  // To Do... apollo -> redux
-  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
+  const { skeletonHelper } = useSelector((state) => state.renderingData);
+  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
+  );
 
   // debouned가 적용 된 track input 갱신
   const debouncedTrackInput = useMemo(
@@ -198,13 +197,6 @@ const TrackList: React.FC<{}> = () => {
       );
       const nextOrder = fnGetSmallestNewNumber([0, ...defaultTypeOrders]);
       const newLayer = fnGetNewLayer({ name: `Layer${nextOrder}`, bones: skeletonHelper.bones });
-      const state = storeCurrentVisualizedData();
-      if (state) {
-        const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-          draft?.layers.push(newLayer);
-        });
-        storeCurrentVisualizedData(nextState);
-      }
       const newLayerIndex = lastBoneOfLayers[lastBoneOfLayers.length - 1].layerIndex + 10000;
       const visualizedDataKey = trackList[0].visualizedDataKey;
       const [newTPLayer, lastBone] = fnSetInitialLayerTrack({
@@ -224,6 +216,7 @@ const TrackList: React.FC<{}> = () => {
         });
         draft.lastBoneOfLayers.push(lastBone);
       });
+      dispatch(currentVisualizedDataActions.addNewLayer({ newLayer }));
       dispatch(timelineActions.addLayer(nextState));
     }
   }, [skeletonHelper, currentVisualizedData, dispatch, lastBoneOfLayers, trackList]);
