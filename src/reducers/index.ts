@@ -6,7 +6,6 @@ import { lpPage } from './lpPage';
 import { lpSearchword } from './lpSearchword';
 import { lpData } from './lpData';
 import { undoableBoneTransform } from './boneTransform';
-import { undoableBoneTransform } from './boneTransform';
 import { animatingData } from './animatingData';
 import { renderingData } from './renderingData';
 import { currentVisualizedData } from './currentVisualizedData';
