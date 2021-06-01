@@ -26,23 +26,23 @@ const fnAddLights = (props: FnAddLights) => {
   }
   scene.add(hemiLight);
 
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.54);
-  dirLight.castShadow = true;
-  dirLight.shadow.mapSize = new THREE.Vector2(1000, 1000);
-  dirLight.shadow.camera.near = 0.1;
-  dirLight.shadow.camera.far = 1500;
-  dirLight.shadow.camera.left = 8.25 * -1;
-  dirLight.shadow.camera.right = 8.25;
-  dirLight.shadow.camera.top = 8.25;
-  dirLight.shadow.camera.bottom = 8.25 * -1;
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.54);
+  directionalLight.castShadow = true;
+  directionalLight.shadow.mapSize = new THREE.Vector2(1000, 1000);
+  directionalLight.shadow.camera.near = 0.1;
+  directionalLight.shadow.camera.far = 1500;
+  directionalLight.shadow.camera.left = 8.25 * -1;
+  directionalLight.shadow.camera.right = 8.25;
+  directionalLight.shadow.camera.top = 8.25;
+  directionalLight.shadow.camera.bottom = 8.25 * -1;
   if (upDirection === 'y') {
-    dirLight.position.set(0, 20, 0);
+    directionalLight.position.set(0, 20, 0);
   } else if (upDirection === 'z') {
-    dirLight.position.set(0, 0, 20);
+    directionalLight.position.set(0, 0, 20);
   }
-  scene.add(dirLight);
+  scene.add(directionalLight);
 
-  return { hemiLight, dirLight };
+  return { hemiLight, directionalLight };
 };
 
 export default fnAddLights;

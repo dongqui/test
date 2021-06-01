@@ -2,8 +2,11 @@ import _ from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
-import { storeCurrentVisualizedData, storeLpData } from 'lib/store';
+import { storeLpData } from 'lib/store';
 import { MAX_FILE_LENGTH } from 'styles/constants/common';
+import { useDispatch } from 'react-redux';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
+import { useSelector } from 'reducers';
 
 interface UseLPControlProps {
   lpData: LPDataType[];
@@ -11,6 +14,12 @@ interface UseLPControlProps {
 }
 const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
   const { getConfirm } = useConfirmModal();
+  const dispatch = useDispatch();
+
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
+  );
+
   const fileName =
     useMemo(() => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name, [rowKey, lpData]) ??
     'Model';
@@ -100,17 +109,21 @@ const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
     ({ key }: { key: string }) => {
       const targetRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, key]);
       if (targetRow) {
-        storeCurrentVisualizedData({
-          key: targetRow.key ?? '',
-          name: targetRow.name ?? '',
-          type: targetRow.type ?? FILE_TYPES.file,
-          boneNames: targetRow.boneNames ?? [],
-          baseLayer: targetRow.baseLayer ?? [],
-          layers: targetRow.layers ?? [],
-        });
+        dispatch(
+          currentVisualizedDataActions.setCurrentVisualizedData({
+            data: {
+              key: targetRow.key ?? '',
+              name: targetRow.name ?? '',
+              type: targetRow.type ?? FILE_TYPES.file,
+              boneNames: targetRow.boneNames ?? [],
+              baseLayer: targetRow.baseLayer ?? [],
+              layers: targetRow.layers ?? [],
+            },
+          }),
+        );
       }
     },
-    [lpData],
+    [dispatch, lpData],
   );
   return {
     onChangeInput,

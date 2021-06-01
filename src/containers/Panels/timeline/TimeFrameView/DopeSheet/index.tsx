@@ -12,30 +12,29 @@ import * as d3 from 'd3';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import {
-  storeAnimatingData,
   storeContextMenuInfo,
-  storeCurrentAction,
-  storeCurrentVisualizedData,
   storeDeleteTargetKeyframes,
-  storeSkeletonHelper,
   storeTPDopeSheetList,
   storePageInfo,
 } from 'lib/store';
 import CircleGroup from './circleGroup';
 import PlayBar from './playBar';
 import styles from './index.module.scss';
-import { CurrentVisualizedDataType, PAGE_NAMES, ShootTrackType } from 'types';
+import { PAGE_NAMES, ShootTrackType } from 'types';
 import {
   fnDeleteKeyframe,
   fnGetSummaryTimes,
   fnUpdateKeyframeToBase,
   fnUpdateKeyframeToLayer,
 } from 'utils/TP/editingUtils';
-import produce from 'immer';
 import { useDragBox } from 'hooks/common';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { DragBox } from 'components/DragBox';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
+import * as animatingDataActions from 'actions/animatingData';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 
 interface Props {
   timelineWrapperRef: RefObject<HTMLDivElement>;
@@ -83,11 +82,12 @@ const DopeSheet: React.FC<Props> = ({
   const renderXAxis = useRef<d3Selection | null>(null); // x축 랜더링
   const renderYGrid = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null); // grid선 랜더링
 
-  const currentAction = useReactiveVar(storeCurrentAction);
-  const animatingData = useReactiveVar(storeAnimatingData);
-  const { startTimeIndex, endTimeIndex, playState } = animatingData;
+  const { startTimeIndex, endTimeIndex, playState, currentAction } = useSelector(
+    (state) => state.animatingData,
+  );
 
   const [lastTime, setLastTime] = useState(0);
+  const dispatch = useDispatch();
 
   const pageInfo = useReactiveVar(storePageInfo);
 
@@ -238,8 +238,6 @@ const DopeSheet: React.FC<Props> = ({
     d3.select('#timeline-wrapper').on('scroll', rescaleCircleX);
   }, [prevXScale, timelineWrapperRef]);
 
-  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
   const tpDopesheetList = storeTPDopeSheetList();
   const selectedBaseDopeSheets = useMemo(
@@ -263,6 +261,12 @@ const DopeSheet: React.FC<Props> = ({
           item.layerKey !== 'baseLayer',
       ),
     [tpDopesheetList],
+  );
+
+  const { skeletonHelper } = useSelector((state) => state.renderingData);
+
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
   );
 
   const handleUpdateKeyframeToBase = useCallback(() => {
@@ -296,20 +300,13 @@ const DopeSheet: React.FC<Props> = ({
             }
           }
         });
-        const state = storeCurrentVisualizedData();
-        if (state && resultTracks.length !== 0) {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-              draft.baseLayer[targetTrackIndex] = resultTrack;
-            });
-          });
-          storeCurrentVisualizedData(nextState);
-        }
+        dispatch(currentVisualizedDataActions.updateKeyframeToBase({ resultTracks }));
       }
     }
   }, [
     currentVisualizedData,
     currentXAxisPosition,
+    dispatch,
     playState,
     selectedBaseDopeSheets,
     skeletonHelper,
@@ -369,21 +366,16 @@ const DopeSheet: React.FC<Props> = ({
               }
             }
           });
-          const state = storeCurrentVisualizedData();
-          if (state && resultTracks.length !== 0) {
-            const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-              resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-                draft.layers[targetLayerIndex].tracks[targetTrackIndex] = resultTrack;
-              });
-            });
-            storeCurrentVisualizedData(nextState);
-          }
+          dispatch(
+            currentVisualizedDataActions.updateKeyframeToLayer({ targetLayerIndex, resultTracks }),
+          );
         }
       }
     }
   }, [
     currentVisualizedData,
     currentXAxisPosition,
+    dispatch,
     playState,
     selectedLayerDopeSheets,
     skeletonHelper,
@@ -461,21 +453,15 @@ const DopeSheet: React.FC<Props> = ({
           }
         });
         storeDeleteTargetKeyframes([]);
-        const state = storeCurrentVisualizedData();
-        if (state && (resultBaseLayerTracks.length !== 0 || resultLayersTracks.length !== 0)) {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            resultBaseLayerTracks.forEach(([resultTrack, targetTrackIndex]) => {
-              draft.baseLayer[targetTrackIndex] = resultTrack;
-            });
-            resultLayersTracks.forEach(([resultTrack, targetLayerIndex, targetTrackIndex]) => {
-              draft.layers[targetLayerIndex].tracks[targetTrackIndex] = resultTrack;
-            });
-          });
-          storeCurrentVisualizedData(nextState);
-        }
+        dispatch(
+          currentVisualizedDataActions.deleteKeyframe({
+            resultBaseLayerTracks,
+            resultLayersTracks,
+          }),
+        );
       }
     }
-  }, [currentVisualizedData, deleteTargetKeyframes, playState]);
+  }, [currentVisualizedData, deleteTargetKeyframes, dispatch, playState]);
 
   const handleMovePlayBarLeft = useCallback(() => {
     if (
@@ -784,9 +770,9 @@ const DopeSheet: React.FC<Props> = ({
           if (multiKeyController[event.key] && !multiKeyController[event.key].pressed) {
             if (pageInfo.page === PAGE_NAMES.shoot && currentVisualizedData) {
               if (playState === 'play') {
-                storeAnimatingData({ ...animatingData, playState: 'pause' });
+                dispatch(animatingDataActions.setPlayState({ playState: 'pause' }));
               } else {
-                storeAnimatingData({ ...animatingData, playState: 'play' });
+                dispatch(animatingDataActions.setPlayState({ playState: 'play' }));
               }
             }
             multiKeyController[event.key].pressed = true;
@@ -797,9 +783,9 @@ const DopeSheet: React.FC<Props> = ({
       }
     },
     [
-      animatingData,
       currentVisualizedData,
       deleteTargetKeyframes.length,
+      dispatch,
       handleDeleteKeyframe,
       handleUpdateKeyframeToBase,
       handleUpdateKeyframeToLayer,

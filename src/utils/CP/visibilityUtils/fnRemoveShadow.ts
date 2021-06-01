@@ -1,16 +1,16 @@
 interface FnRemoveShadow {
-  dirLight: THREE.DirectionalLight;
+  directionalLight: THREE.DirectionalLight;
 }
 
 /**
  * 현재 scene에 그림자를 보이지 않도록 변경합니다.
  *
- * @param dirLight - The target directional light
+ * @param directionalLight - The target directional light
  *
  */
 const fnRemoveShadow = (props: FnRemoveShadow) => {
-  const { dirLight } = props;
-  dirLight.castShadow = false;
+  const { directionalLight } = props;
+  directionalLight.castShadow = false;
 };
 
 export default fnRemoveShadow;
