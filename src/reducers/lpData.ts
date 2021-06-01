@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { LPItemsState, LPModelDataAction } from 'actions/lpData';
+import { LPItemsState, LPItemsAction } from 'actions/lpData';
 
 export const ROOT_KEY = 'root';
 const defaultState: LPItemsState = [];
@@ -26,7 +26,7 @@ const findDeleteKeys = (params: FindDeleteKeys): string[] => {
   return deleteKeys;
 };
 
-export const lpData = (state: LPItemsState = defaultState, action: LPModelDataAction) => {
+export const lpData = (state: LPItemsState = defaultState, action: LPItemsAction) => {
   switch (action.type) {
     case 'lpdata/SET_LP_ITEMS': {
       return [...state, ...action.payload];

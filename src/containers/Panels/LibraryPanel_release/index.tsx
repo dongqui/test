@@ -146,14 +146,14 @@ const LibraryPanel: FunctionComponent = () => {
   );
 
   /**
-   * 모델파일로부터 추출한 애니메이션 데이터를 lpModelDataList 로 바꿔주는 함수입니다.
+   * 모델파일로부터 추출한 애니메이션 데이터를 lpItems 로 바꿔주는 함수입니다.
    *
    * @param animations - animation clip array
    * @param bones - bone array
    * @param name - 파일이름
    * @param url - 모델파일의 url
    *
-   * @return lpModelDataList.
+   * @return lpItems.
    */
   const convertToAnimationDataTolpData = useCallback(
     (params: ConvertToAnimationDataTolpData): LPItemsState => {
@@ -186,13 +186,13 @@ const LibraryPanel: FunctionComponent = () => {
   );
 
   /**
-   * 파일을 lpModelDataList로 바꿔주는 함수입니다.
+   * 파일을 lpItems 바꿔주는 함수입니다.
    *
    * @param fileUrl - 파일의 url
    * @param name - 파일이름
    * @param isDispatch - 곧바로 dispatch를 해줄 것인지에 대한 여부
    *
-   * @return lpModelDataList, 에러여부, 에러메시지
+   * @return lpItems, 에러여부, 에러메시지
    */
   const changeFileTolpData = useCallback(
     async (params: ChangeFileTolpData): Promise<ChangeFileTolpDataResponse> => {
@@ -375,7 +375,7 @@ const LibraryPanel: FunctionComponent = () => {
 
   /**
    * 아이콘뷰로 전달할 가공데이터입니다.
-   * @return 검색어 필터링 후 lpModelDataList
+   * @return 검색어 필터링 후 lpItems
    */
   const filteredIconviewData = useMemo((): LPItemsState => {
     let data = _.clone(lpData);
