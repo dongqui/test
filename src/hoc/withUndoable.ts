@@ -45,15 +45,6 @@ const withUndoable = (reducer: Reducer<any, any>) => {
         }
         const previous = past[past.length - 1];
         const newPast = past.slice(0, past.length - 1);
-        // present 와 previous 의 currentBone 이 다르고, newPast 가 빈 배열이 아닐 때 한번 더 호출하는 것과 같은 로직
-        if (present.bone !== previous.bone && newPast.length !== 0) {
-          const newPrevious = newPast[newPast.length - 1];
-          return {
-            past: newPast.slice(0, newPast.length - 1),
-            present: newPrevious,
-            future: [previous, present, ...future],
-          };
-        }
         return {
           past: newPast,
           present: previous,
@@ -66,15 +57,6 @@ const withUndoable = (reducer: Reducer<any, any>) => {
         }
         const next = future[0];
         const newFuture = future.slice(1);
-        // present 와 next 의 currentBone 이 다르고, newFuture 가 빈 배열이 아닐 때 한번 더 호출하는 것과 같은 로직
-        if (present.bone !== next.bone && newFuture.length !== 0) {
-          const newNext = newFuture[0];
-          return {
-            past: [...past, present, next],
-            present: newNext,
-            future: newFuture.slice(1),
-          };
-        }
         return {
           past: [...past, present],
           present: next,
