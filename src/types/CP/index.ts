@@ -23,7 +23,7 @@ export interface CPItemType {
   isExpanded?: boolean;
 }
 
-export interface RetargetMap {
+export interface RetargetMapItem {
   key: string;
   value: {
     targetBone: string;
@@ -34,14 +34,14 @@ export interface RetargetMap {
   };
 }
 
-export interface TargetboneType {
+export interface TargetBoneType {
   key: string;
   value: string;
   isSelected: boolean;
 }
 
 export interface RetargetInfoType {
-  modelKey?: string;
-  targetboneList?: TargetboneType[];
-  retargetMap?: Array<any>;
+  modelKey: string | null;
+  targetboneList: Array<TargetBoneType>;
+  retargetMap: Array<RetargetMapItem>;
 }

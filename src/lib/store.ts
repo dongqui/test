@@ -9,7 +9,6 @@ import {
   KeyframeData,
 } from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
-import { RetargetInfoType, RetargetMap } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
 import { RecordingDataType } from 'types/RP';
 import _ from 'lodash';
@@ -53,9 +52,6 @@ export const storeLPMode = makeVar<LPModeType>(LPModeType.listview);
 export const storeRecordingData = makeVar<RecordingDataType>(INITIAL_RECORDING_DATA);
 export const storeCutImages = makeVar<string[]>([]);
 export const storeBarPositionX = makeVar<number>(0);
-// RETARGET
-export const storeRetargetMap = makeVar<RetargetMap[]>(initialRetargetMap);
-export const storeRetargetInfo = makeVar<RetargetInfoType>({});
 
 // TP
 export const storeTPTrackNameList = makeVar<TPTrackName[]>([]);

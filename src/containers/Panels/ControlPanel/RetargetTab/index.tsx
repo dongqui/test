@@ -3,18 +3,20 @@ import { useForm } from 'react-hook-form';
 import { Dropdown } from 'components/Dropdown';
 import { SuffixInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { useReactiveVar } from '@apollo/client';
-import { storeRetargetInfo, storeRetargetMap } from 'lib/store';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import { setRetargetInfo, setRetargetMap } from 'actions/retargetData';
 
 const cx = classNames.bind(styles);
 
 export const defaultTargetboneValue = 'select a bone';
 const RetargetTab: FunctionComponent = () => {
-  const retargetMap = useReactiveVar(storeRetargetMap);
-  const retargetInfo = useReactiveVar(storeRetargetInfo);
+  const dispatch = useDispatch();
+  const { retargetMap, retargetInfo } = useSelector((state) => state.retargetData);
+
   const [currentData, setCurrentData] = useState(retargetMap);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const error = useMemo(() => _.some(retargetMap, (item) => _.isEmpty(item?.value?.targetBone)), [
@@ -42,7 +44,7 @@ const RetargetTab: FunctionComponent = () => {
    * 패널에서 Retarget Data를 초기 데이터로 되돌리는 함수입니다.
    */
   const handleRetargetRefresh = () => {
-    storeRetargetMap(currentData);
+    dispatch(setRetargetMap({ retargetMap: currentData }));
   };
 
   /**
@@ -55,20 +57,22 @@ const RetargetTab: FunctionComponent = () => {
       if (_.isEqual(newValue, defaultTargetboneValue)) {
         newValue = '';
       }
-      storeRetargetMap(
-        _.map(retargetMap, (item) => ({
-          ...item,
-          value: {
-            ...item.value,
-            targetBone: _.isEqual(item.key, key) ? newValue : item.value.targetBone,
-          },
-        })),
+      dispatch(
+        setRetargetMap({
+          retargetMap: _.map(retargetMap, (item) => ({
+            ...item,
+            value: {
+              ...item.value,
+              targetBone: _.isEqual(item.key, key) ? newValue : item.value.targetBone,
+            },
+          })),
+        }),
       );
       if (isSubmitted) {
         setIsSubmitted(false);
       }
     },
-    [isSubmitted, retargetMap],
+    [dispatch, isSubmitted, retargetMap],
   );
 
   /**
@@ -77,18 +81,20 @@ const RetargetTab: FunctionComponent = () => {
    */
   const handleCoordSelect = useCallback(
     (key, value) => {
-      storeRetargetMap(
-        _.map(retargetMap, (item) => ({
-          ...item,
-          value: {
-            ...item.value,
-            order: _.isEqual(item.key, key) ? value : item.value.order,
-          },
-        })),
+      dispatch(
+        setRetargetMap({
+          retargetMap: _.map(retargetMap, (item) => ({
+            ...item,
+            value: {
+              ...item.value,
+              order: _.isEqual(item.key, key) ? value : item.value.order,
+            },
+          })),
+        }),
       );
       setIsSubmitted(false);
     },
-    [retargetMap],
+    [dispatch, retargetMap],
   );
 
   /**
@@ -99,26 +105,29 @@ const RetargetTab: FunctionComponent = () => {
    */
   const handleChange = useCallback(
     ({ value, name, key }) => {
-      storeRetargetMap(
-        _.map(retargetMap, (item) => ({
-          ...item,
-          value: {
-            ...item.value,
-            [name]: _.isEqual(item.key, key) ? parseFloat(value) : (item.value as any)[name],
-          },
-        })),
+      dispatch(
+        setRetargetMap({
+          retargetMap: _.map(retargetMap, (item) => ({
+            ...item,
+            value: {
+              ...item.value,
+              [name]: _.isEqual(item.key, key) ? parseFloat(value) : (item.value as any)[name],
+            },
+          })),
+        }),
       );
       setIsSubmitted(false);
     },
-    [retargetMap],
+    [dispatch, retargetMap],
   );
 
   /**
    * 24개 인풋이 모두 채워졌을 때 retargetData 값을 submit하는 함수입니다.
    */
   const handleSubmitData = () => {
-    if (!_.isEmpty(retargetMap)) {
-      storeRetargetInfo({ ...retargetInfo, retargetMap });
+    const { modelKey, targetboneList } = retargetInfo;
+    if (modelKey && !_.isEmpty(retargetMap)) {
+      dispatch(setRetargetInfo({ modelKey, targetboneList, retargetMap }));
       setIsSubmitted(true);
     }
   };
@@ -191,6 +200,7 @@ const RetargetTab: FunctionComponent = () => {
               key: item?.key,
               isSelected: _.isEqual(coord.value, item?.value?.order),
             }));
+
             return (
               <div key={idx} className={cx('retarget-card')}>
                 <div className={cx('card-header')}>
