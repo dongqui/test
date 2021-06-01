@@ -53,6 +53,104 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({ name }) => {
   type NormalAxisType = 'x' | 'y' | 'z';
   type QuaternionAxisType = 'x' | 'y' | 'z' | 'w';
 
+  const handleFocus = useCallback(
+    (e: any) => {
+      const value = e.target.value;
+      const property = name.toLowerCase();
+      const axis = e.target.name;
+
+      if (_.isNaN(parseFloat(value))) {
+        return;
+      }
+
+      if (currentBone) {
+        const boneTransformValues = {
+          bone: currentBone,
+          position: {
+            x: _.round(currentBone.position.x, 4),
+            y: _.round(currentBone.position.y, 4),
+            z: _.round(currentBone.position.z, 4),
+          },
+          quaternion: {
+            x: _.round(currentBone.quaternion.x, 4),
+            y: _.round(currentBone.quaternion.y, 4),
+            z: _.round(currentBone.quaternion.z, 4),
+            w: _.round(currentBone.quaternion.w, 4),
+          },
+          rotation: {
+            x: _.round(currentBone.rotation.x, 4),
+            y: _.round(currentBone.rotation.y, 4),
+            z: _.round(currentBone.rotation.z, 4),
+          },
+          scale: {
+            x: _.round(currentBone.scale.x, 4),
+            y: _.round(currentBone.scale.y, 4),
+            z: _.round(currentBone.scale.z, 4),
+          },
+        };
+
+        switch (property) {
+          case 'position':
+            if (currentBone) {
+              boneTransformValues.position[axis as NormalAxisType] = parseFloat(value);
+              dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
+            }
+            break;
+          case 'rotation':
+          case 'quaternion':
+            if (quaternionMode) {
+              boneTransformValues.quaternion[axis as QuaternionAxisType] = _.round(
+                parseFloat(value),
+                4,
+              );
+              // q -> r 해서 적용
+              const e = new THREE.Euler().setFromQuaternion(
+                new THREE.Quaternion(
+                  boneTransformValues.quaternion.x,
+                  boneTransformValues.quaternion.y,
+                  boneTransformValues.quaternion.z,
+                  boneTransformValues.quaternion.w,
+                ).normalize(),
+                'XYZ',
+              );
+              boneTransformValues.rotation.x = _.round(e.x, 4);
+              boneTransformValues.rotation.y = _.round(e.y, 4);
+              boneTransformValues.rotation.z = _.round(e.z, 4);
+              dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
+            } else {
+              boneTransformValues.rotation[axis as NormalAxisType] = _.round(
+                fnConvertDegreeToEuler({
+                  degreeValue: parseFloat(value),
+                }),
+                4,
+              );
+              // d -> r -> q 해서 적용
+              const q = new THREE.Quaternion().setFromEuler(
+                new THREE.Euler(
+                  boneTransformValues.rotation.x,
+                  boneTransformValues.rotation.y,
+                  boneTransformValues.rotation.z,
+                ),
+              );
+              boneTransformValues.quaternion.x = _.round(q.x, 4);
+              boneTransformValues.quaternion.y = _.round(q.y, 4);
+              boneTransformValues.quaternion.z = _.round(q.z, 4);
+              boneTransformValues.quaternion.w = _.round(q.w, 4);
+              dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
+            }
+            break;
+          case 'scale':
+            boneTransformValues.scale[axis as NormalAxisType] = _.round(parseFloat(value), 4);
+            dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
+            break;
+          default:
+            break;
+        }
+      }
+    },
+    [currentBone, dispatch, name, quaternionMode],
+  );
+
   const handleBlur = useCallback(
     (e: any) => {
       const value = e.target.value;
@@ -385,6 +483,7 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({ name }) => {
                   prefix={item.prefix}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  onFocus={handleFocus}
                   onKeyPress={handleKeyPress}
                   onKeyDown={handleKeyDown}
                   name={item.name}
@@ -402,6 +501,7 @@ const CPListRowInput: React.FC<CPListRowInputProps> = ({ name }) => {
                   prefix={item.prefix}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  onFocus={handleFocus}
                   onKeyPress={handleKeyPress}
                   onKeyDown={handleKeyDown}
                   name={item.name}
