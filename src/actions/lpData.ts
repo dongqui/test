@@ -7,6 +7,7 @@ export interface LPItemState {
   name: string;
   type: FileType;
   parentKey: string;
+  groupKey: string;
   url: string;
   isSelected?: boolean;
   isVisualized?: boolean;

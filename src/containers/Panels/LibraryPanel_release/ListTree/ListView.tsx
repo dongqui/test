@@ -14,12 +14,17 @@ export interface GrouppedData extends Array<LPItemsState> {}
 
 const ListView: FunctionComponent<ListViewProps> = ({ data }) => {
   /**
-   * 아이콘뷰로 전달할 가공데이터입니다.
-   * @return 검색어 필터링 후 lpModelDataList
+   * 그룹별로 묶는 가공을 거친 데이터입니다.
+   * @return 그룹별 가공 후 데이터
    */
-  const groupppedData = useMemo((): GrouppedData => {
-    return [];
-  }, []);
+  const grouppedData = useMemo((): GrouppedData => {
+    const groupKeys: string[] = Object.keys(_.groupBy(data, 'groupKey'));
+    const result: GrouppedData = _.map(groupKeys, (groupKey) =>
+      data.filter((item) => item.groupKey === groupKey),
+    );
+    console.log('result', result);
+    return result;
+  }, [data]);
 
   return <div className={cx('wrapper')}></div>;
 };
