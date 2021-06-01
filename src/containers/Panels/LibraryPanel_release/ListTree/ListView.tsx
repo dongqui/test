@@ -3,6 +3,7 @@ import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
 import { LPItemsState } from 'actions/lpData';
+import ListGroup from './ListGroup';
 
 const cx = classNames.bind(styles);
 
@@ -22,11 +23,17 @@ const ListView: FunctionComponent<ListViewProps> = ({ data }) => {
     const result: GrouppedData = _.map(groupKeys, (groupKey) =>
       data.filter((item) => item.groupKey === groupKey),
     );
-    console.log('result', result);
     return result;
   }, [data]);
 
-  return <div className={cx('wrapper')}></div>;
+  return (
+    <div className={cx('wrapper')}>
+      {_.map(grouppedData, (item, index) => {
+        const key = `${item.length}_${index}`;
+        return <ListGroup key={key} item={item} />;
+      })}
+    </div>
+  );
 };
 
 export default memo(ListView);
