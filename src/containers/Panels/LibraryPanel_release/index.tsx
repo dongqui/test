@@ -26,6 +26,7 @@ import Breadcrumb, { PathList } from './Breadcrumb';
 import IconView from './IconTree/IconView';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { ListView } from './ListTree';
 
 const cx = classNames.bind(styles);
 
@@ -446,6 +447,7 @@ const LibraryPanel: FunctionComponent = () => {
   }, [changeFileTolpData, lpData]);
 
   const isIconView = lpMode === 'iconView';
+  const isListView = lpMode === 'listView';
 
   return (
     <div className={cx('hidden-wrapper')}>
@@ -468,6 +470,7 @@ const LibraryPanel: FunctionComponent = () => {
           )}
           <div className={cx('content')}>
             {isIconView && <IconView data={filteredIconviewData} />}
+            {isListView && <ListView data={lpData} />}
           </div>
         </div>
       </div>
