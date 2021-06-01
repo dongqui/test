@@ -1,13 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-  setAnimatingData,
-  setCurrentVisualizedData,
-  setLpData,
-  setRenderingData,
-  setTPDopeSheetList,
-} from 'redux/homeSlice';
-import { CurrentVisualizedDataType, LPDataType } from 'types';
+import { setCurrentVisualizedData, setLpData, setTPDopeSheetList } from 'redux/homeSlice';
+import { LPDataType } from 'types';
 import { CPDataType } from 'types/CP';
 import { AnimatingDataType, RenderingDataType } from 'types/RP';
 import { TPDopeSheet } from 'types/TP';
@@ -17,8 +11,6 @@ interface useDebuggingDataProps {
   lpData: LPDataType[];
   cpData: CPDataType[];
   renderingData: RenderingDataType;
-  animatingData: AnimatingDataType;
-  currentVisualizedData: CurrentVisualizedDataType | undefined;
   tpDopeSheetList: TPDopeSheet[];
 }
 
@@ -26,8 +18,6 @@ export const useDebuggingData = ({
   lpData,
   cpData,
   renderingData,
-  animatingData,
-  currentVisualizedData,
   tpDopeSheetList,
 }: useDebuggingDataProps) => {
   const dispatch = useDispatch();
@@ -36,21 +26,11 @@ export const useDebuggingData = ({
       dispatch(setLpData(lpData));
     }
   }, [dispatch, lpData]);
-  useEffect(() => {
-    if (isDebug) {
-      dispatch(setRenderingData(renderingData));
-    }
-  }, [dispatch, renderingData]);
-  useEffect(() => {
-    if (isDebug) {
-      dispatch(setAnimatingData(animatingData));
-    }
-  }, [animatingData, dispatch]);
-  useEffect(() => {
-    if (isDebug) {
-      dispatch(setCurrentVisualizedData(currentVisualizedData));
-    }
-  }, [currentVisualizedData, dispatch]);
+  // useEffect(() => {
+  //   if (isDebug) {
+  //     dispatch(setRenderingData(renderingData));
+  //   }
+  // }, [dispatch, renderingData]);
   useEffect(() => {
     if (isDebug) {
       dispatch(setTPDopeSheetList(tpDopeSheetList));

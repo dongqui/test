@@ -1,13 +1,17 @@
 import { combineReducers } from 'redux';
-import { mode } from './mode';
-import { undoableBoneTransform } from './boneTransform';
 import { TypedUseSelectorHook, useSelector as useReduxSelector } from 'react-redux';
+import { undoableBoneTransform } from './boneTransform';
+import { animatingData } from './animatingData';
+import { renderingData } from './renderingData';
+import { currentVisualizedData } from './currentVisualizedData';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
 const rootReducer = combineReducers({
-  mode,
   undoableBoneTransform,
+  animatingData,
+  renderingData,
+  currentVisualizedData,
 });
 
 // type 적용된 useSelector

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useReactiveVar } from '@apollo/client';
 import classNames from 'classnames/bind';
 import _ from 'lodash';
-import produce from 'immer';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import {
   storeTPSelectedTrackList,
@@ -10,11 +9,10 @@ import {
   storeTPLastBoneList,
   storeTPUpdateDopeSheetList,
   storeTPCurrnetClickedTrack,
-  storeCurrentVisualizedData,
   storeContextMenuInfo,
   storeModalInfo,
 } from 'lib/store';
-import { CurrentVisualizedDataType, MODAL_TYPES } from 'types';
+import { MODAL_TYPES } from 'types';
 import { TPTrackName, TPDopeSheet, TPLastBone } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import {
@@ -31,6 +29,9 @@ import { BaseInput } from 'components/Input';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { useAlertModal } from 'components/Modal/AlertModal';
 import Track from './index';
+import { useDispatch } from 'react-redux';
+import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
+import { useSelector } from 'reducers';
 
 interface TrackProps {
   childrenTrack: TPTrackName[];
@@ -60,15 +61,19 @@ const MemoizedTrack: React.FC<TrackProps> = ({
 
   const [showsModal, setShowsModal] = useState(false);
   const [newLayerName, setNewLayerName] = useState('');
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
   const modalInfo = useReactiveVar(storeModalInfo);
 
   const { getConfirm } = useAlertModal();
+  const dispatch = useDispatch();
   const multiKeyController = useMemo(
     () => ({
       ctrl: { pressed: false },
     }),
     [],
+  );
+
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
   );
 
   // 트랙 클릭
@@ -196,57 +201,19 @@ const MemoizedTrack: React.FC<TrackProps> = ({
 
   // 랜더링 제외 버튼 클릭
   const clickRenderingButton = useCallback(() => {
-    const state = storeCurrentVisualizedData();
-    if (state) {
-      const [updatedDopeSheetList, updatedState] = fnClickRenderingButton({
-        dopeSheetList,
-        lastBoneList,
-        trackIndex,
-      });
-      const targetIndex = fnGetBinarySearch({
-        collection: dopeSheetList,
-        index: trackIndex,
-        key: 'trackIndex',
-      });
-      const targetTrack = dopeSheetList[targetIndex];
-      if (targetTrack) {
-        if (targetTrack.layerKey === 'baseLayer') {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            _.forEach(updatedState, (updated) => {
-              const transformIndex = _.findIndex(
-                draft.baseLayer,
-                (currentVisualizedData) => currentVisualizedData.name === updated.name,
-              );
-              if (transformIndex !== -1) {
-                draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
-              }
-            });
-          });
-          storeCurrentVisualizedData(nextState);
-        } else {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            const targetLayer = _.find(draft.layers, (layer) => layer.key === targetTrack.layerKey);
-            if (targetLayer) {
-              _.forEach(updatedState, (updated) => {
-                const transformIndex = _.findIndex(
-                  targetLayer.tracks,
-                  (currentVisualizedData) => currentVisualizedData.name === updated.name,
-                );
-                if (transformIndex !== -1) {
-                  targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
-                }
-              });
-            }
-          });
-          storeCurrentVisualizedData(nextState);
-        }
-      }
-      storeTPUpdateDopeSheetList({
-        updatedList: updatedDopeSheetList,
-        status: 'isIncluded',
-      });
-    }
-  }, [dopeSheetList, lastBoneList, trackIndex]);
+    const [updatedDopeSheetList, updatedState] = fnClickRenderingButton({
+      dopeSheetList,
+      lastBoneList,
+      trackIndex,
+    });
+    const targetIndex = fnGetBinarySearch({
+      collection: dopeSheetList,
+      index: trackIndex,
+      key: 'trackIndex',
+    });
+    const targetTrack = dopeSheetList[targetIndex];
+    dispatch(currentVisualizedDataActions.excludeTrack({ targetTrack, updatedState }));
+  }, [dispatch, dopeSheetList, lastBoneList, trackIndex]);
 
   // 트랙 선택 효과 변경
   useEffect(() => {
@@ -295,24 +262,22 @@ const MemoizedTrack: React.FC<TrackProps> = ({
         return false;
       }
     } else {
-      const state = storeCurrentVisualizedData();
-      if (state) {
-        const targetIndex = fnGetBinarySearch({
-          collection: dopeSheetList,
-          index: trackIndex,
-          key: 'trackIndex',
-        });
-        const curTrack = dopeSheetList[targetIndex];
-        if (curTrack) {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            const targetLayer = _.find(draft.layers, (layer) => layer.key === curTrack.layerKey);
-            if (targetLayer) targetLayer.name = newLayerName;
-          });
-          storeCurrentVisualizedData(nextState);
-        }
-      }
+      const targetIndex = fnGetBinarySearch({
+        collection: dopeSheetList,
+        index: trackIndex,
+        key: 'trackIndex',
+      });
+      const targetTrack = dopeSheetList[targetIndex];
+      dispatch(currentVisualizedDataActions.setLayerName({ targetTrack, newLayerName }));
     }
-  }, [currentVisualizedData?.layers, dopeSheetList, getConfirm, newLayerName, trackIndex]);
+  }, [
+    currentVisualizedData?.layers,
+    dispatch,
+    dopeSheetList,
+    getConfirm,
+    newLayerName,
+    trackIndex,
+  ]);
 
   const handleModalClose = () => {
     setShowsModal(false);
@@ -323,28 +288,20 @@ const MemoizedTrack: React.FC<TrackProps> = ({
   };
 
   // 레이어 삭제 함수 호출
-  const deleteLayer = useCallback(async () => {
+  const handleDeleteLayer = useCallback(async () => {
     const confirmed = await getConfirm({
       title: 'Are you sure you want to delete this layer?',
     });
     if (confirmed) {
-      const state = storeCurrentVisualizedData();
-      if (state) {
-        const targetIndex = fnGetBinarySearch({
-          collection: dopeSheetList,
-          index: trackIndex,
-          key: 'trackIndex',
-        });
-        const curTrack = dopeSheetList[targetIndex];
-        if (curTrack) {
-          const nextState = produce<CurrentVisualizedDataType>(state, (draft) => {
-            draft.layers = _.filter(draft.layers, (layer) => layer.key !== curTrack.layerKey);
-          });
-          storeCurrentVisualizedData(nextState);
-        }
-      }
+      const targetIndex = fnGetBinarySearch({
+        collection: dopeSheetList,
+        index: trackIndex,
+        key: 'trackIndex',
+      });
+      const targetTrack = dopeSheetList[targetIndex];
+      dispatch(currentVisualizedDataActions.deleteLayer({ targetTrack }));
     }
-  }, [dopeSheetList, getConfirm, trackIndex]);
+  }, [dispatch, dopeSheetList, getConfirm, trackIndex]);
 
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
 
@@ -391,7 +348,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
               storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
               break;
             case 'delete':
-              deleteLayer();
+              handleDeleteLayer();
               storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
               break;
             case 'select':
@@ -429,7 +386,7 @@ const MemoizedTrack: React.FC<TrackProps> = ({
       clickRenderingButton,
       clickTrackBody,
       contextMenuInfo,
-      deleteLayer,
+      handleDeleteLayer,
       isIncluded,
       isLocked,
       isSelected,
