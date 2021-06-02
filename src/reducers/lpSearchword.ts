@@ -1,13 +1,13 @@
-import { LPSearchwordState, LPSearchwordAction } from 'actions/lpSearchword';
+import { LPSearchwordAction } from 'actions/lpSearchword';
+import { LPSearchwordType } from 'types/LP';
+
+type LPSearchwordState = LPSearchwordType;
 
 const defaultState: LPSearchwordState = {
   word: '',
 };
 
-export const lpSearchword = (
-  state: LPSearchwordState = defaultState,
-  action: LPSearchwordAction,
-) => {
+export const lpSearchword = (state = defaultState, action: LPSearchwordAction) => {
   switch (action.type) {
     case 'lpSearchword/SET_SEARCHWORD': {
       return Object.assign({}, state, {

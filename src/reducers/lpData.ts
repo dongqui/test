@@ -1,11 +1,9 @@
 import _ from 'lodash';
-import { LPItemsState, LPItemsAction } from 'actions/lpData';
-
-export const ROOT_KEY = 'root';
-const defaultState: LPItemsState = [];
+import { LPItemListAction } from 'actions/lpData';
+import { LPItemListType } from 'types/LP';
 
 interface FindDeleteKeys {
-  data: LPItemsState;
+  data: LPItemListType;
   keys: string[];
 }
 
@@ -26,14 +24,18 @@ const findDeleteKeys = (params: FindDeleteKeys): string[] => {
   return deleteKeys;
 };
 
-export const lpData = (state: LPItemsState = defaultState, action: LPItemsAction) => {
+type LPDataState = LPItemListType;
+
+const defaultState: LPDataState = [];
+
+export const lpData = (state = defaultState, action: LPItemListAction) => {
   switch (action.type) {
-    case 'lpdata/SET_LP_ITEMS': {
-      return [...state, ...action.payload];
+    case 'lpdata/ADD_ITEMLIST': {
+      return [...state, ...action.payload.itemList];
     }
-    case 'lpdata/DELETE_LP_ITEMS': {
+    case 'lpdata/DELETE_ITEMLIST': {
       // 하위 키들을 함께 지워준다
-      const deleteKeys = findDeleteKeys({ data: state, keys: action.payload });
+      const deleteKeys = findDeleteKeys({ data: state, keys: action.payload.keys });
       return state.filter((item) => !deleteKeys.includes(item.key));
     }
     default: {

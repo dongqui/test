@@ -11,7 +11,7 @@ const BLENDER_BASE_URL = 'https://blenderapi.myplask.com:5000';
  * @returns glb 파일의 url
  */
 
-interface SetConvertFbxToGlb {
+interface FnSetConvertFbxToGlb {
   file: File;
 }
 
@@ -21,7 +21,7 @@ interface ResponseType {
   errorMessage: string;
 }
 
-const setConvertFbxToGlb = async (params: SetConvertFbxToGlb): Promise<ResponseType> => {
+const fnSetConvertFbxToGlb = async (params: FnSetConvertFbxToGlb): Promise<ResponseType> => {
   const { file } = params;
   const formData = new FormData();
   formData.append('file', file);
@@ -61,4 +61,4 @@ const setConvertFbxToGlb = async (params: SetConvertFbxToGlb): Promise<ResponseT
   }
 };
 
-export default setConvertFbxToGlb;
+export default fnSetConvertFbxToGlb;

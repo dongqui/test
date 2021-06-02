@@ -1,16 +1,10 @@
-export interface LPPageState {
-  key: string;
-}
+import { LPPageType } from 'types/LP';
 
 export type LPPageAction = ReturnType<typeof setLPPage>;
 
+type SetLPPage = Pick<LPPageType, 'key'>;
 export const SET_LPPAGE = 'lppage/SET_LPPAGE' as const;
-
-interface SetLPPage extends LPPageState {}
-
 export const setLPPage = (params: SetLPPage) => ({
   type: SET_LPPAGE,
-  payload: {
-    ...params,
-  },
+  payload: params,
 });

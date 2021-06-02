@@ -14,16 +14,16 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
-import { setSearchword } from 'actions/lpSearchword';
-import { deleteItems, LPItemsState, setItems, LPItemState } from 'actions/lpData';
+import * as lpSearchwordActions from 'actions/lpSearchword';
 import Explorer from './Explorer';
 import { getFileExtension, getAnimationData } from '../../../utils/LP_release';
 import { setConvertFbxToGlb } from '../../../utils/common/api/index';
 import { BaseModal } from 'components/Modal';
-import { ROOT_KEY } from 'reducers/lpData';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import Breadcrumb, { PathList } from './Breadcrumb';
 import IconView from './IconTree/IconView';
+import { LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
+import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -32,7 +32,7 @@ const cx = classNames.bind(styles);
 const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];
 const EnableFileFormats = [...EnableVideoFormats, 'glb', 'fbx'];
 
-export const DefaultModels: Required<LPItemsState> = [
+export const DefaultModels: Required<LPItemListType> = [
   {
     key: 'defaultmodel1',
     name: 'zombie.fbx',
@@ -70,23 +70,29 @@ export interface PagesType {
   name: string;
 }
 
-interface ConvertToAnimationDataTolpData {
+interface ConvertToAnimationDataToLpData {
   animations: THREE.AnimationClip[];
   bones: THREE.Bone[];
   name: string;
   url: string;
 }
 
-interface ChangeFileTolpData {
+interface ChangeFileToLpData {
   fileUrl: string;
   name: string;
   isDispatch?: boolean;
 }
 
-interface ChangeFileTolpDataResponse {
-  result: LPItemsState;
+interface ChangeFileToLpDataResponse {
+  result: LPItemListType;
   isError: boolean;
-  errorMsg: string;
+  errorMessage: string;
+}
+
+interface ModalInfo {
+  showModal: boolean;
+  message: string;
+  loading: boolean;
 }
 
 const LibraryPanel: FunctionComponent = () => {
@@ -95,13 +101,17 @@ const LibraryPanel: FunctionComponent = () => {
   const lpMode = useSelector((state) => state.lpMode.mode);
   const lpPage = useSelector((state) => state.lpPage);
   const lpSearchword = useSelector((state) => state.lpSearchword);
-  const [modalInfo, setModalInfo] = useState({ showModal: false, message: '', loading: false });
+  const [modalInfo, setModalInfo] = useState<ModalInfo>({
+    showModal: false,
+    message: '',
+    loading: false,
+  });
 
   const { getConfirm } = useConfirmModal();
 
   const handleChangeSearchword = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      dispatch(setSearchword({ word: e.target.value }));
+      dispatch(lpSearchwordActions.setSearchword({ word: e.target.value }));
     },
     [dispatch],
   );
@@ -154,12 +164,12 @@ const LibraryPanel: FunctionComponent = () => {
    *
    * @return lpItems.
    */
-  const convertToAnimationDataTolpData = useCallback(
-    (params: ConvertToAnimationDataTolpData): LPItemsState => {
+  const convertToAnimationDataToLpData = useCallback(
+    (params: ConvertToAnimationDataToLpData): LPItemListType => {
       const { animations, bones, name, url } = params;
       const boneNames = bones.map((bone) => bone.name);
       const key = uuidv4();
-      const file: LPItemState = {
+      const file: LPItemType = {
         key,
         type: 'File',
         name,
@@ -169,7 +179,7 @@ const LibraryPanel: FunctionComponent = () => {
         layers: [],
         boneNames,
       };
-      const motions: LPItemsState = animations.map((item) => ({
+      const motions: LPItemListType = animations.map((item) => ({
         key: item.uuid,
         name: item.name,
         type: 'Motion',
@@ -193,33 +203,33 @@ const LibraryPanel: FunctionComponent = () => {
    *
    * @return lpItems, 에러여부, 에러메시지
    */
-  const changeFileTolpData = useCallback(
-    async (params: ChangeFileTolpData): Promise<ChangeFileTolpDataResponse> => {
+  const changeFileToLpData = useCallback(
+    async (params: ChangeFileToLpData): Promise<ChangeFileToLpDataResponse> => {
       const { fileUrl, name, isDispatch = false } = params;
-      const { animations, bones, isError, errorMsg } = await getAnimationData({ url: fileUrl });
+      const { animations, bones, isError, errorMessage } = await getAnimationData({ url: fileUrl });
       if (isError) {
         return {
           isError,
-          errorMsg,
+          errorMessage,
           result: [],
         };
       }
-      const newData: LPItemsState = convertToAnimationDataTolpData({
+      const newItemList: LPItemListType = convertToAnimationDataToLpData({
         animations,
         bones,
         name,
         url: fileUrl,
       });
       if (isDispatch) {
-        dispatch(setItems(newData));
+        dispatch(lpDataActions.addItemList({ itemList: newItemList }));
       }
       return {
         isError: false,
-        errorMsg: '',
-        result: newData,
+        errorMessage: '',
+        result: newItemList,
       };
     },
-    [convertToAnimationDataTolpData, dispatch],
+    [convertToAnimationDataToLpData, dispatch],
   );
 
   /**
@@ -262,7 +272,7 @@ const LibraryPanel: FunctionComponent = () => {
         loading: true,
       }));
       const mustDeleteKeys: string[] = [];
-      let newlpData: LPItemsState = [];
+      let newLpData: LPItemListType = [];
       const isMultipleVideoFiles = validateMultipleVideoFiles(files);
       if (isMultipleVideoFiles) {
         setModalInfo((state) => ({
@@ -329,7 +339,7 @@ const LibraryPanel: FunctionComponent = () => {
           }
           return;
         }
-        const { result: newData, isError, errorMsg } = await changeFileTolpData({
+        const { result: newData, isError, errorMessage } = await changeFileToLpData({
           fileUrl,
           name: file.name,
         });
@@ -337,16 +347,16 @@ const LibraryPanel: FunctionComponent = () => {
           setModalInfo((state) => ({
             ...state,
             showModal: true,
-            message: errorMsg,
+            message: errorMessage,
             loading: false,
           }));
         }
-        newlpData = _.concat(newlpData, newData);
+        newLpData = _.concat(newLpData, newData);
       }
       if (!_.isEmpty(mustDeleteKeys)) {
-        dispatch(deleteItems(mustDeleteKeys));
+        dispatch(lpDataActions.deleteItemList({ keys: mustDeleteKeys }));
       }
-      dispatch(setItems(newlpData));
+      dispatch(lpDataActions.addItemList({ itemList: newLpData }));
       setModalInfo((state) => ({
         ...state,
         showModal: false,
@@ -355,7 +365,7 @@ const LibraryPanel: FunctionComponent = () => {
       }));
     },
     [
-      changeFileTolpData,
+      changeFileToLpData,
       dispatch,
       getConfirm,
       sortVideoFileLast,
@@ -376,7 +386,7 @@ const LibraryPanel: FunctionComponent = () => {
    * 아이콘뷰로 전달할 가공데이터입니다.
    * @return 검색어 필터링 후 lpItems
    */
-  const filteredIconviewData = useMemo((): LPItemsState => {
+  const filteredIconviewData = useMemo((): LPItemListType => {
     let data = _.clone(lpData);
     if (!_.isEmpty(lpSearchword)) {
       data = data.filter((item) =>
@@ -434,7 +444,7 @@ const LibraryPanel: FunctionComponent = () => {
       }));
       await Promise.all(
         DefaultModels.map((item) =>
-          changeFileTolpData({ fileUrl: item.url, name: item.name, isDispatch: true }),
+          changeFileToLpData({ fileUrl: item.url, name: item.name, isDispatch: true }),
         ),
       );
       setModalInfo((state) => ({ ...state, showModal: false, message: '', loading: false }));
@@ -443,7 +453,7 @@ const LibraryPanel: FunctionComponent = () => {
       // 기본모델 로드
       setDefaultModels();
     }
-  }, [changeFileTolpData, lpData]);
+  }, [changeFileToLpData, lpData]);
 
   const isIconView = lpMode === 'iconView';
 

@@ -2,12 +2,11 @@ import { FunctionComponent, Fragment, memo, useEffect, useState, useCallback } f
 import { IconWrapper, SvgPath } from 'components/Icon';
 import BreadcrumbItem from './BreadcrumbItem';
 import _ from 'lodash';
-import { FileType } from 'actions/lpData';
-import { ROOT_KEY } from 'reducers/lpData';
 import { useDispatch } from 'react-redux';
-import { setLPPage } from 'actions/lpPage';
+import * as LPPageActions from 'actions/lpPage';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { FileType, ROOT_KEY } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
@@ -35,7 +34,7 @@ const Breadcrumb: FunctionComponent<BreadcrumbProps> = ({
 
   const handleBack = useCallback(() => {
     if (currentPageKey !== ROOT_KEY) {
-      dispatch(setLPPage({ key: prevPageKey }));
+      dispatch(LPPageActions.setLPPage({ key: prevPageKey }));
     }
   }, [currentPageKey, dispatch, prevPageKey]);
 
