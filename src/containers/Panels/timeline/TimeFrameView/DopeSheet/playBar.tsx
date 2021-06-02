@@ -2,10 +2,11 @@ import React, { memo } from 'react';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
-interface Props {}
-
 const cx = classNames.bind(styles);
+
 const PLAY_BAR_COLOR = '#ECEDEE';
+
+interface Props {}
 
 const PlayBar: React.FC<Props> = () => {
   return (

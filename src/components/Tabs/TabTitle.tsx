@@ -1,9 +1,9 @@
 import { FunctionComponent, useCallback } from 'react';
-import classNames from 'classnames/bind';
-import styles from './TabTitle.module.scss';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import * as cpDataActions from 'actions/cpData';
+import classNames from 'classnames/bind';
+import styles from './TabTitle.module.scss';
 
 const cx = classNames.bind(styles);
 

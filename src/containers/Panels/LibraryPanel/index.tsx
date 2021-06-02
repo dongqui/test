@@ -34,9 +34,9 @@ import {
   ENABLE_FILE_FORMATS,
 } from 'types';
 import Explorer from './Explorer/index';
+import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 

@@ -1,11 +1,11 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { Segment } from 'components/Segment';
 import { AxisName } from 'types/RP';
-import classNames from 'classnames/bind';
-import styles from './CPListRowButton.module.scss';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import * as renderingDataActions from 'actions/renderingData';
+import classNames from 'classnames/bind';
+import styles from './CPListRowButton.module.scss';
 
 const cx = classNames.bind(styles);
 

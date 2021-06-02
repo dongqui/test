@@ -19,8 +19,6 @@ import { PAGE_NAMES } from 'types';
 import { AlertModalProvider } from 'components/Modal/AlertModal';
 import PlayBox from './PlayBox';
 import _ from 'lodash';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { d3ScaleLinear } from 'types/TP';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import fnDetectSafari from 'utils/common/fnDetectSafari';
@@ -28,6 +26,8 @@ import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 import { useDispatch } from 'react-redux';
 import * as animatingDataActions from 'actions/animatingData';
 import { useSelector } from 'reducers';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 

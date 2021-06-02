@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import produce from 'immer';
 import { useReactiveVar } from '@apollo/client';
-import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { TPTrackName, TPDopeSheet } from 'types/TP';
 import {
@@ -16,11 +15,16 @@ import { fnGetNewLayer } from 'utils/TP/editingUtils';
 import { SearchInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import Track from '../Track';
-import styles from './index.module.scss';
 import { AlertModalProvider } from 'components/Modal/AlertModal';
 import { useDispatch } from 'react-redux';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { useSelector } from 'reducers';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
+
+const DEBOUNCED_TIME = 300;
 
 interface Props {
   trackListRef: React.RefObject<HTMLDivElement>;
@@ -32,9 +36,6 @@ interface RecurDopeSheet {
 }
 
 type FilterTrackList = [TPTrackName[], boolean];
-
-const DEBOUNCED_TIME = 300;
-const cx = classNames.bind(styles);
 
 const TrackList: React.FC<Props> = ({ trackListRef }) => {
   const trackNameList = useReactiveVar(storeTPTrackNameList);

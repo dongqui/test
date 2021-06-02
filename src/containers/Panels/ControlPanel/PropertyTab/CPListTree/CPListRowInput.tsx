@@ -12,12 +12,12 @@ import {
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { Segment } from 'components/Segment';
 import _ from 'lodash';
-import classNames from 'classnames/bind';
-import styles from './CPListRowInput.module.scss';
 import { useDispatch } from 'react-redux';
 import * as boneTransformActions from 'actions/boneTransform';
 import { useSelector } from 'reducers';
 import { PrefixInput } from 'components/Input';
+import classNames from 'classnames/bind';
+import styles from './CPListRowInput.module.scss';
 
 const cx = classNames.bind(styles);
 

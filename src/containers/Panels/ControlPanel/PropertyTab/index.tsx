@@ -3,9 +3,9 @@ import _ from 'lodash';
 import { AccordionMenu } from 'components/AccordionMenu';
 import CPListRowInput from './CPListTree/CPListRowInput';
 import CPListRowButton from './CPListTree/CPListRowButton';
+import { CP_ITEMS } from 'utils/const';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { CP_ITEMS } from 'utils/const';
 
 const cx = classNames.bind(styles);
 

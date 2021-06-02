@@ -1,9 +1,9 @@
 import { FunctionComponent, memo, useState, useEffect, useCallback, useRef } from 'react';
 import _ from 'lodash';
 import DropdownItem from './DropdownItem';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
 import styles from './Dropdown.module.scss';
-import { IconWrapper, SvgPath } from 'components/Icon';
 
 const cx = classNames.bind(styles);
 

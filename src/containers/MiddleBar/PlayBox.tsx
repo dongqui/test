@@ -21,8 +21,6 @@ import { ROOT_FOLDER_NAME } from 'types/LP';
 import { FormModal } from 'components/Modal';
 import { useAlertModal } from 'components/Modal/AlertModal';
 import { BaseInput } from 'components/Input';
-import classNames from 'classnames/bind';
-import styles from './PlayBox.module.scss';
 import fnGetFileName from 'utils/LP/fnGetFileName';
 import sleep from 'utils/common/sleep';
 import { d3ScaleLinear } from 'types/TP';
@@ -33,6 +31,8 @@ import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 import { useDispatch } from 'react-redux';
 import * as animatingDataActions from 'actions/animatingData';
 import { useSelector } from 'reducers';
+import classNames from 'classnames/bind';
+import styles from './PlayBox.module.scss';
 
 const cx = classNames.bind(styles);
 

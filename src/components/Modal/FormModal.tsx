@@ -5,7 +5,9 @@ import { FilledButton } from 'components/Button';
 import { BaseInput } from 'components/Input';
 import classnames from 'classnames/bind';
 import styles from './FormModal.module.scss';
+
 const cx = classnames.bind(styles);
+
 export interface Props {
   isOpen?: boolean;
   onClose: () => void;

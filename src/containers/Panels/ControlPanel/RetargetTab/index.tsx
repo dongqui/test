@@ -4,11 +4,11 @@ import { Dropdown } from 'components/Dropdown';
 import { SuffixInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import * as retargetDataActions from 'actions/retargetData';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 

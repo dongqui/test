@@ -3,9 +3,9 @@ import _ from 'lodash';
 import { Tabs, Tab } from 'components/Tabs';
 import PropertyTab from './PropertyTab';
 import RetargetTab from './RetargetTab';
+import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
