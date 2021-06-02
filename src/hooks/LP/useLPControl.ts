@@ -154,7 +154,7 @@ const useLPControl = ({
                     }),
                   );
                 }
-                retargetDataActions.setRetargetMap({ retargetMap: initialRetargetMap });
+                dispatch(retargetDataActions.setRetargetMap({ retargetMap: initialRetargetMap }));
               }
               setShowsModal(false);
               return;
