@@ -1,13 +1,5 @@
 import { makeVar } from '@apollo/client';
 import produce from 'immer';
-import {
-  TPTrackName,
-  TPTrackList,
-  TPLastBone,
-  TPUpdateDopeSheet,
-  TPCurrnetClickedTrack,
-  KeyframeData,
-} from 'types/TP';
 import { PagesType } from 'containers/Panels/LibraryPanel';
 import { CPDataType, RetargetInfoType, RetargetMap, TargetboneType } from 'types/CP';
 import { ROOT_FOLDER_NAME } from 'types/LP';
@@ -63,72 +55,6 @@ export const storeCPChangeTab = makeVar<number>(0);
 // RETARGET
 export const storeRetargetMap = makeVar<RetargetMap[]>(initialRetargetMap);
 export const storeRetargetInfo = makeVar<RetargetInfoType>({});
-
-// TP
-export const storeTPTrackNameList = makeVar<TPTrackName[]>([]);
-export const storeTPTrackListList = makeVar<TPTrackList[]>([]);
-export const storeTPLastBoneList = makeVar<TPLastBone[]>([]); // layer 트랙 별 bone track의 마지막 index 저장
-export const storeTPSelectedTrackList = makeVar<number[]>([]);
-export const storeTPCurrnetClickedTrack = makeVar<TPCurrnetClickedTrack | null>(null);
-export const storeDeleteTargetKeyframes = makeVar<KeyframeData[]>([]);
-
-export const storeTPUpdateDopeSheetList = ({ updatedList, status }: TPUpdateDopeSheet) => {
-  const state = storeTPTrackListList();
-  const nextState = produce<TPTrackList[]>(state, (draft) => {
-    _.forEach(updatedList, (target, key) => {
-      const binarySearchIndex = fnGetBinarySearch({
-        collection: state,
-        index: target.trackIndex as number,
-        key: 'trackIndex',
-      });
-      const index = status === 'isFiltered' ? key : binarySearchIndex;
-      switch (status) {
-        case 'isFiltered':
-          if (draft[index]) {
-            draft[index].isFiltered = target.isFiltered as boolean;
-            draft[index].isShowed = target.isShowed as boolean;
-          }
-          break;
-        case 'isShowed':
-          if (draft[index]) {
-            draft[index].isShowed = target.isShowed as boolean;
-          }
-          break;
-        case 'isSelected':
-          if (draft[index]) {
-            draft[index].isSelected = target.isSelected as boolean;
-          }
-          break;
-        case 'times':
-          if (draft[index]) {
-            // draft[index].times = target.times as { time: number; isClicked: boolean }[];
-          }
-          // draft[index as number].times = target.times as number[];
-          break;
-        case 'isLocked':
-          if (draft[index]) {
-            draft[index].isLocked = target.isLocked as boolean;
-          }
-          break;
-        case 'isIncluded':
-          if (draft[index]) {
-            draft[index].isIncluded = target.isIncluded as boolean;
-          }
-          break;
-      }
-    });
-  });
-  storeTPTrackListList(nextState);
-};
-
-export const storeTPClearData = () => {
-  storeTPTrackNameList([]);
-  storeTPTrackListList([]);
-  storeTPLastBoneList([]);
-  storeTPSelectedTrackList([]);
-  storeTPCurrnetClickedTrack(null);
-  storeDeleteTargetKeyframes([]);
-};
 
 // RT
 export const storeLPhide = makeVar<boolean>(false);
