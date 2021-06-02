@@ -10,13 +10,12 @@ import {
   fnGetBinarySearch,
   fnGetBoneTrackIndex,
   fnGetLayerTrackIndex,
-  fnUpdateIsSelected,
+  fnUpdateSelectedTrackList,
 } from 'utils/TP/New';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { UpdatedTrack } from 'types/TP';
 import * as timelineActions from 'actions/timeline';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
-import { CurrentVisualizedData } from 'actions/currentVisualizedData';
 import styles from './index.module.scss';
 import { storeContextMenuInfo } from 'lib/store';
 import useContextMenu from 'hooks/common/useContextMenu';
@@ -67,7 +66,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
   const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);
   const prevSelectedIndices = useSelector((state) => state.timeline.selectedTrackIndices);
   const currentClickedTrack = useSelector((state) => state.timeline.currentClickedTrack);
-  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
   const { getConfirm } = useAlertModal();
@@ -138,7 +137,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         break;
       }
     }
-    const nextState = produce(trackList, (draft) => {
+    const nextTrackList = produce(trackList, (draft) => {
       _.forEach(updatedTrackList, ({ isShowed, isPointedDownArrow, trackIndex }) => {
         if (trackIndex) {
           const targetIndex = fnGetBinarySearch({
@@ -146,9 +145,9 @@ const TrackItem: FunctionComponent<Props> = (props) => {
             index: trackIndex,
             key: 'trackIndex',
           });
-          if (!_.isUndefined(isPointedDownArrow)) {
+          if (_.isBoolean(isPointedDownArrow)) {
             draft[targetIndex].isPointedDownArrow = isPointedDownArrow;
-          } else if (!_.isUndefined(isShowed)) {
+          } else if (_.isBoolean(isShowed)) {
             draft[targetIndex].isShowed = isShowed;
           }
         }
@@ -157,7 +156,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
     const currentClickedTrack = { trackIndex, isPointedDownArrow: !isPointedDownArrow };
     dispatch(
       timelineActions.clickTrackArrowButton({
-        trackList: nextState,
+        trackList: nextTrackList,
         currentClickedTrack,
       }),
     );
@@ -192,24 +191,24 @@ const TrackItem: FunctionComponent<Props> = (props) => {
   const handleClickTrackBody = useCallback(
     (event: React.MouseEvent<Element>) => {
       const { nodeName } = event.target as Element;
-      const isClickableNode = nodeName === 'LI' || nodeName === 'P';
+      const isNotClickableNode = nodeName !== 'LI' && nodeName !== 'P';
       const isMutipleSelected = event.ctrlKey || event.metaKey || multiKeyController.ctrl.pressed;
-      if (!isClickableNode || trackName === 'Summary') return;
+      if (isNotClickableNode || trackName === 'Summary') return;
       if (isMutipleSelected) {
         for (let index = 0; index < prevSelectedIndices.length; index += 1) {
           const targetTrackIndex = prevSelectedIndices[index];
           const targetLayerIndex = fnGetLayerTrackIndex({ trackIndex: targetTrackIndex });
-          const ownLayerIndex = fnGetLayerTrackIndex({ trackIndex });
-          const isNotSameLayer = targetLayerIndex !== ownLayerIndex;
-          const isClickedOwnTrack = prevSelectedIndices[index] === trackIndex;
+          const myLayerIndex = fnGetLayerTrackIndex({ trackIndex });
+          const isNotSameLayer = targetLayerIndex !== myLayerIndex;
+          const isClickedMe = prevSelectedIndices[index] === trackIndex;
           if (isNotSameLayer) {
             const confirmed = getConfirm({
               title: 'Cannot select or edit multiple layers at the same time.',
             });
             if (confirmed) return false;
-          } else if (isClickedOwnTrack) {
+          } else if (isClickedMe) {
             const remainder = trackIndex % 10;
-            const [deselectedTrackList, deselectedIndices] = fnUpdateIsSelected({
+            const [deselectedTrackList, deselectedIndices] = fnUpdateSelectedTrackList({
               isSelected: false,
               lastBoneOfLayers,
               trackIndex,
@@ -219,15 +218,15 @@ const TrackItem: FunctionComponent<Props> = (props) => {
               const isTransformTrack = remainder !== BONE_A && remainder !== BONE_B;
               deselectedIndices.push(layerIndex);
               deselectedTrackList.push({
-                trackIndex: layerIndex,
                 isSelected: false,
+                trackIndex: layerIndex,
               });
               if (isTransformTrack) {
                 const boneIndex = fnGetBoneTrackIndex({ trackIndex });
                 deselectedIndices.push(boneIndex);
                 deselectedTrackList.push({
-                  trackIndex: boneIndex,
                   isSelected: false,
+                  trackIndex: boneIndex,
                 });
               }
             }
@@ -240,10 +239,11 @@ const TrackItem: FunctionComponent<Props> = (props) => {
               return targetIndex === -1;
             });
             setClickedTrackList(deselectedTrackList, filteredIndices);
-            return;
+            return; // layer가 다른 트랙인 경우 이후 로직을 처리하지 않고 return
           }
         }
-        const [selected, selectedIndices] = fnUpdateIsSelected({
+        // 위 반복문에서 return되지 않은 경우, 기존 트랙 리스트에다가 방금 클릭한 트랙에 선택 효과 적용
+        const [selectedTrackList, selectedIndices] = fnUpdateSelectedTrackList({
           isSelected: true,
           lastBoneOfLayers,
           trackIndex,
@@ -252,13 +252,13 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         _.forEach([...prevSelectedIndices, ...selectedIndices], (index) => {
           nextSelectedIndices.add(index);
         });
-        setClickedTrackList(selected, [...nextSelectedIndices]);
+        setClickedTrackList(selectedTrackList, [...nextSelectedIndices]);
       } else if (!isMutipleSelected) {
         const deselectedTrackList = _.map(prevSelectedIndices, (index) => ({
           trackIndex: index,
           isSelected: false,
         }));
-        const [selectedTrackList, selectedIndices] = fnUpdateIsSelected({
+        const [selectedTrackList, selectedIndices] = fnUpdateSelectedTrackList({
           isSelected: true,
           lastBoneOfLayers,
           trackIndex,
@@ -279,8 +279,8 @@ const TrackItem: FunctionComponent<Props> = (props) => {
 
   // 잠금 버튼 클릭
   const handleclickLockButton = useCallback(() => {
-    const remainder = trackIndex % 10;
     const updatedTrackList: UpdatedTrack<'isLocked'>[] = [];
+    const remainder = trackIndex % 10;
     switch (remainder) {
       case LAYER: {
         const targetIndex = fnGetBinarySearch({
@@ -308,7 +308,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
       case BONE_A:
       case BONE_B: {
         const layerIndex = fnGetLayerTrackIndex({ trackIndex });
-        if (isLocked) {
+        if (isLocked === true) {
           updatedTrackList.push({
             trackIndex: layerIndex,
             isLocked: false,
@@ -331,7 +331,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         break;
       }
       default: {
-        if (!isLocked) {
+        if (isLocked === false) {
           updatedTrackList.push({
             trackIndex,
             isLocked: true,
@@ -355,7 +355,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         break;
       }
     }
-    const nextState = produce(trackList, (draft) => {
+    const nextTrackList = produce(trackList, (draft) => {
       _.forEach(updatedTrackList, ({ isLocked, trackIndex }) => {
         const targetIndex = fnGetBinarySearch({
           collection: trackList,
@@ -365,7 +365,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         draft[targetIndex].isLocked = isLocked;
       });
     });
-    dispatch(timelineActions.clickTrackLockButton({ trackList: nextState }));
+    dispatch(timelineActions.clickTrackLockButton({ trackList: nextTrackList }));
   }, [dispatch, trackList, isLocked, lastBoneOfLayers, trackIndex]);
 
   // 랜더링 제외 버튼 클릭
@@ -374,44 +374,44 @@ const TrackItem: FunctionComponent<Props> = (props) => {
     const remainder = trackIndex % 10;
     switch (remainder) {
       case LAYER: {
-        const targetLastBoneIndex = fnGetBinarySearch({
+        const targetLayerIndex = fnGetBinarySearch({
           collection: lastBoneOfLayers,
           index: trackIndex,
           key: 'layerIndex',
         });
-        const lastBone = lastBoneOfLayers[targetLastBoneIndex];
-        const lastTransformIndex = lastBone.lastBoneIndex + 3;
-        let currentTrackIndex = trackIndex;
-        let trackListIndex = fnGetBinarySearch({
+        const lastTransformIndex = lastBoneOfLayers[targetLayerIndex].lastBoneIndex + 3;
+        const startIndex = fnGetBinarySearch({
           collection: trackList,
           index: trackIndex,
           key: 'trackIndex',
         });
-        while (currentTrackIndex <= lastTransformIndex) {
+        const endIndex = fnGetBinarySearch({
+          collection: trackList,
+          index: lastTransformIndex,
+          key: 'trackIndex',
+        });
+        for (let index = startIndex; index <= endIndex; index += 1) {
           updatedTrackList.push({
             isIncluded: isIncluded ? false : true,
-            trackIndex: trackList[trackListIndex].trackIndex,
-            trackName: trackList[trackListIndex].trackName,
+            trackIndex: trackList[index].trackIndex,
+            trackName: trackList[index].trackName,
           });
-          currentTrackIndex += 1;
-          trackListIndex += 1;
-          if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2;
         }
         break;
       }
       case BONE_A:
       case BONE_B: {
-        if (isIncluded) {
+        if (isIncluded === true) {
           const layerIndex = fnGetLayerTrackIndex({ trackIndex });
-          const targetIndex = fnGetBinarySearch({
+          const targetLayerIndex = fnGetBinarySearch({
             collection: trackList,
             index: layerIndex,
             key: 'trackIndex',
           });
           updatedTrackList.push({
             isIncluded: false,
-            trackIndex: trackList[targetIndex].trackIndex,
-            trackName: trackList[targetIndex].trackName,
+            trackIndex: trackList[targetLayerIndex].trackIndex,
+            trackName: trackList[targetLayerIndex].trackName,
           });
         }
         const targetIndex = fnGetBinarySearch({
@@ -429,20 +429,22 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         break;
       }
       default: {
-        if (isIncluded) {
-          _.forEach([0, 1], (index) => {
+        if (isIncluded === true) {
+          const layerTrack = 0;
+          const boneTrack = 1;
+          _.forEach([layerTrack, boneTrack], (index) => {
             const parentTrackIndex =
-              index === 0
+              index === layerTrack
                 ? fnGetLayerTrackIndex({ trackIndex })
                 : fnGetBoneTrackIndex({ trackIndex });
-            const targetIndex = fnGetBinarySearch({
+            const targetParentIndex = fnGetBinarySearch({
               collection: trackList,
               index: parentTrackIndex,
               key: 'trackIndex',
             });
             updatedTrackList.push({
               isIncluded: false,
-              trackIndex: trackList[targetIndex].trackIndex,
+              trackIndex: trackList[targetParentIndex].trackIndex,
               trackName: trackList[targetIndex].trackName,
             });
           });
@@ -453,7 +455,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
           key: 'trackIndex',
         });
         updatedTrackList.push({
-          isIncluded: isIncluded ? false : true,
+          isIncluded: !isIncluded,
           trackIndex: trackList[targetIndex].trackIndex,
           trackName: trackList[targetIndex].trackName,
         });
@@ -480,12 +482,6 @@ const TrackItem: FunctionComponent<Props> = (props) => {
     );
   }, [dispatch, isIncluded, lastBoneOfLayers, layerKey, trackIndex, trackList]);
 
-  // 레이어 이름 변경 함수 호출
-  const [showsModal, setShowsModal] = useState(false);
-  const updateLayerName = useCallback(() => {
-    setShowsModal(true);
-  }, []);
-
   // 레이어 삭제
   const deleteLayer = useCallback(async () => {
     const confirmed = await getConfirm({
@@ -503,7 +499,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         trackList,
         lastBoneOfLayers,
       };
-      const nextTrackList = produce(prevState, (draft) => {
+      const nextState = produce(prevState, (draft) => {
         const filteredTrackList = draft.trackList.filter((track) => layerKey !== track.layerKey);
         const filteredLastBoneOfLayers = draft.lastBoneOfLayers.filter(
           (lastBone) => layerKey !== lastBone.layerKey,
@@ -511,11 +507,25 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         draft.trackList = filteredTrackList;
         draft.lastBoneOfLayers = filteredLastBoneOfLayers;
       });
-      dispatch(timelineActions.deleteLayer(nextTrackList));
+      dispatch(timelineActions.deleteLayer(nextState));
       dispatch(currentVisualizedDataActions.deleteLayer({ layerKey }));
     }
   }, [getConfirm, trackList, trackIndex, lastBoneOfLayers, dispatch]);
 
+  const [isShowedFormModal, setIsShowedFormModal] = useState(false);
+  const [newLayerName, setNewLayerName] = useState('');
+
+  // 레이어 이름 변경 input에 blur 적용
+  const handleInputBlur = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewLayerName(event.target.value);
+  }, []);
+
+  // 레이어 이름 변경 모달 닫기
+  const handleModalClose = useCallback(() => {
+    setIsShowedFormModal(false);
+  }, []);
+
+  // layer 트랙 컨텍스트 메뉴 출력
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const handleLayerTrackContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
@@ -556,7 +566,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         onClick: (key) => {
           switch (key) {
             case 'edit':
-              updateLayerName();
+              setIsShowedFormModal(true);
               storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
               break;
             case 'delete':
@@ -567,14 +577,10 @@ const TrackItem: FunctionComponent<Props> = (props) => {
               if (e) {
                 if (isSelected) {
                   multiKeyController.ctrl.pressed = true;
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  handleClickTrackBody(e);
+                  handleClickTrackBody(e as any);
                   multiKeyController.ctrl.pressed = false;
                 } else {
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  handleClickTrackBody(e);
+                  handleClickTrackBody(e as any);
                 }
               }
               storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
@@ -604,10 +610,10 @@ const TrackItem: FunctionComponent<Props> = (props) => {
       isSelected,
       multiKeyController.ctrl,
       trackIndex,
-      updateLayerName,
     ],
   );
 
+  // base 트랙 컨텍스트 메뉴 출력
   const handleBoneTransformTrackContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
       e?.preventDefault();
@@ -638,14 +644,10 @@ const TrackItem: FunctionComponent<Props> = (props) => {
               if (e) {
                 if (isSelected) {
                   multiKeyController.ctrl.pressed = true;
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  handleClickTrackBody(e);
+                  handleClickTrackBody(e as any);
                   multiKeyController.ctrl.pressed = false;
                 } else {
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  handleClickTrackBody(e);
+                  handleClickTrackBody(e as any);
                 }
               }
               storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
@@ -676,7 +678,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
     ],
   );
 
-  // 컨텍스트 메뉴 로직
+  // 분기 별 컨텍스트 메뉴 출력
   const handleTrackContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
       e?.preventDefault();
@@ -690,23 +692,11 @@ const TrackItem: FunctionComponent<Props> = (props) => {
     },
     [handleBoneTransformTrackContextMenu, handleLayerTrackContextMenu, trackIndex],
   );
-
-  // 컨텍스트 메뉴 생성 custom hooks
   useContextMenu({ targetRef: trackItemRef, event: handleTrackContextMenu });
 
-  const [newLayerName, setNewLayerName] = useState('');
-  const handleInputBlur = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewLayerName(event.target.value);
-  };
-
-  // 레이어 이름 변경 모달 닫기
-  const handleModalClose = () => {
-    setShowsModal(false);
-  };
-
   // 작성한 레이어 이름 전달
-  const handleSubmit = useCallback(() => {
-    setShowsModal(false);
+  const handleSubmitLayerName = useCallback(() => {
+    setIsShowedFormModal(false);
     if (newLayerName === '') {
       const confirmed = getConfirm({
         title: 'You cannot use an empty string as a name.',
@@ -735,7 +725,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         draft[targetIndex].trackName = newLayerName;
         draft[targetIndex].renderedTrackName = newLayerName;
       });
-      dispatch(timelineActions.modifyLayerName({ trackList: nextTrackList }));
+      dispatch(timelineActions.setLayerName({ trackList: nextTrackList }));
       dispatch(currentVisualizedDataActions.setLayerName({ layerKey, newLayerName }));
     }
   }, [newLayerName, currentVisualizedData?.layers, getConfirm, trackList, trackIndex, dispatch]);
@@ -764,7 +754,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
   if (currentClickedTrack.trackIndex !== 0) {
     const remainder = trackIndex % 10;
     const isSummaryTrack = currentClickedTrack.trackIndex === TP_TRACK_INDEX.SUMMARY;
-    const isClosed = !currentClickedTrack.isPointedDownArrow;
+    const isClosedTrack = !currentClickedTrack.isPointedDownArrow;
     switch (remainder) {
       case TP_TRACK_INDEX.SUMMARY:
       case TP_TRACK_INDEX.LAYER: {
@@ -772,17 +762,13 @@ const TrackItem: FunctionComponent<Props> = (props) => {
       }
       case TP_TRACK_INDEX.BONE_A:
       case TP_TRACK_INDEX.BONE_B: {
-        if (isSummaryTrack && isClosed) {
-          return null;
-        }
+        if (isClosedTrack && isSummaryTrack) return null;
         break;
       }
       default: {
         const layerIndex = fnGetLayerTrackIndex({ trackIndex });
         const isLayerTrack = layerIndex === currentClickedTrack.trackIndex;
-        if (isClosed && (isSummaryTrack || isLayerTrack)) {
-          return null;
-        }
+        if (isClosedTrack && (isSummaryTrack || isLayerTrack)) return null;
         break;
       }
     }
@@ -819,12 +805,12 @@ const TrackItem: FunctionComponent<Props> = (props) => {
           </>
         )}
       </div>
-      {showsModal && (
+      {isShowedFormModal && (
         <FormModal
-          isOpen={showsModal}
+          isOpen={isShowedFormModal}
           onClose={handleModalClose}
           onOutsideClose={handleModalClose}
-          onSubmit={handleSubmit} // 현재 modal submit 이 안 먹음
+          onSubmit={handleSubmitLayerName} // 현재 modal submit 이 안 먹음
           title="Please enter the name of the layer."
           text={{
             submit: 'OK',

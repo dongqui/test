@@ -31,7 +31,6 @@ interface Props {
 const PlayBar: React.FC<Props> = (props) => {
   const { currentPlayBarTime, currentTimeIndexRef, currentTimeRef, dopeSheetScale } = props;
   const [lastTime, setLastTime] = useState(0);
-
   const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
@@ -88,12 +87,7 @@ const PlayBar: React.FC<Props> = (props) => {
       dopeSheetScale.current
     ) {
       const currentValue = currentPlayBarTime.current;
-      let nextValue: number;
-      if (currentValue === startTimeIndex) {
-        nextValue = endTimeIndex;
-      } else {
-        nextValue = currentValue - 1;
-      }
+      const nextValue = currentValue === startTimeIndex ? endTimeIndex : currentValue - 1;
       currentPlayBarTime.current = nextValue;
       const scaleXLineaer = dopeSheetScale.current;
       const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
@@ -136,12 +130,7 @@ const PlayBar: React.FC<Props> = (props) => {
       dopeSheetScale.current
     ) {
       const currentValue = currentPlayBarTime.current;
-      let nextValue: number;
-      if (currentValue === endTimeIndex) {
-        nextValue = startTimeIndex;
-      } else {
-        nextValue = currentValue + 1;
-      }
+      const nextValue = currentValue === startTimeIndex ? endTimeIndex : currentValue - 1;
       currentPlayBarTime.current = nextValue;
       const scaleXLineaer = dopeSheetScale.current;
       const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
@@ -173,9 +162,7 @@ const PlayBar: React.FC<Props> = (props) => {
   const handleDopesheetKeyPress = useCallback(
     (event: KeyboardEvent) => {
       const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
+      if (target.tagName.toLowerCase() === 'input') return;
       switch (event.key) {
         case ',':
         case '<':
@@ -214,44 +201,39 @@ const PlayBar: React.FC<Props> = (props) => {
         })
         .on('drag', function (drag: MouseEvent) {
           if (!dopeSheetScale.current) return;
-          const playBarTime = _.floor(dopeSheetScale.current.invert(drag.x + 20) as number);
+          const playBarTime = _.floor(dopeSheetScale.current.invert(drag.x + 20));
           if (currentAction) {
             currentAction.time = _.round(setPlayBarTime(playBarTime) / 30, 4);
           }
           if (currentTimeRef.current) {
             if (_.round(setPlayBarTime(playBarTime) / 30, 4) <= lastTime) {
-              const value = new Date(_.round(setPlayBarTime(playBarTime) / 30, 0) * 1000)
-                .toISOString()
-                .substr(11, 8)
-                .substr(2)
-                .replace(':', '');
-              currentTimeRef.current.value = value;
+              fnSetValue(
+                currentTimeRef,
+                fnGetMaskedValue(_.round(setPlayBarTime(playBarTime) / 30, 0)),
+              );
             } else {
-              const value = new Date(_.round(lastTime, 0) * 1000)
-                .toISOString()
-                .substr(11, 8)
-                .substr(2)
-                .replace(':', '');
-              currentTimeRef.current.value = value;
+              fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(lastTime, 0)));
             }
           }
           if (currentTimeIndexRef.current) {
-            currentTimeIndexRef.current.value = setPlayBarTime(playBarTime).toString();
+            fnSetValue(currentTimeIndexRef, setPlayBarTime(playBarTime));
           }
           const scaleXLineaer = dopeSheetScale.current;
           const translateX = scaleXLineaer(setPlayBarTime(playBarTime)) - 10;
           const translateY = TIME_FRAME_HEIGHT / 2;
-          d3.select(this).style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`);
           currentPlayBarTime.current = setPlayBarTime(playBarTime);
+          d3.select(this).style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`);
         });
+
+      // 최초 재생바 출력
       const scaleXLineaer = dopeSheetScale.current;
       const initialPlayBarTime = setPlayBarTime(currentPlayBarTime.current);
       const translateX = scaleXLineaer(initialPlayBarTime) - 10;
       const translateY = TIME_FRAME_HEIGHT / 2;
+      currentPlayBarTime.current = initialPlayBarTime;
       d3.select('#play-bar')
         .style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`)
         .call(dragBehavior as any);
-      currentPlayBarTime.current = initialPlayBarTime;
     }
   }, [
     currentAction,

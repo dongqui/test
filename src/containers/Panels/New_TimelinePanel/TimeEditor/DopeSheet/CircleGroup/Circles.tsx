@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
+import produce from 'immer';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import { useSelector } from 'reducers';
@@ -9,27 +10,27 @@ import {
   fnGetLayerTrackIndex,
   fnUpdateSelectedKeyframes,
 } from 'utils/TP/New';
-import * as timelineActions from 'actions/timeline';
 import { TP_TRACK_INDEX } from 'utils/const';
-import produce from 'immer';
+import { d3ScaleLinear } from 'types/TP';
+import * as timelineActions from 'actions/timeline';
 
 interface Props {
   circleGroupRef: React.RefObject<SVGSVGElement>;
+  dopeSheetScale: d3ScaleLinear;
   isLocked: boolean;
-  layerKey: string;
   times: number[];
+  layerKey: string;
   trackIndex: number;
   trackName: string;
-  dopeSheetScale: d3.ScaleLinear<number, number, never>;
 }
 
-const TRACK_HEIGHT = 32; // 트랙 높이
-const CIRCLE_RADIUS = 4; // 원 반지름 크기
+const CIRCLE_RADIUS = 4;
 const KEYFRAME_COLOR = {
   default: '#7A7A7A',
   locked: '#404040',
   selected: '#F9D454',
 };
+const TRACK_HEIGHT = 32;
 
 const Circles: React.FC<Props> = ({
   circleGroupRef,
@@ -44,7 +45,7 @@ const Circles: React.FC<Props> = ({
   const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);
   const trackList = useSelector((state) => state.timeline.trackList);
   const selectedKeyframes = useSelector((state) => state.timeline.selectedKeyframes);
-  const selectedKeyframesInMyTrack = useRef(new Set());
+  const selectedKeyframeIndices = useRef(new Set());
 
   // circle 생성
   useEffect(() => {
@@ -69,8 +70,8 @@ const Circles: React.FC<Props> = ({
       if (isMultipleClick) {
         const remainder = trackIndex % 10;
         for (const keyframe of selectedKeyframes) {
-          const isClickedOwnKeyframe = trackIndex === keyframe.trackIndex && time === keyframe.time;
-          if (isClickedOwnKeyframe) {
+          const isClickedMe = trackIndex === keyframe.trackIndex && time === keyframe.time;
+          if (isClickedMe) {
             switch (remainder) {
               case TP_TRACK_INDEX.LAYER: {
                 const filteredKeyframes = _.filter(
@@ -85,21 +86,13 @@ const Circles: React.FC<Props> = ({
                 const layerIndex = fnGetLayerTrackIndex({ trackIndex });
                 const filteredKeyframes = _.filter(selectedKeyframes, (keyframe) => {
                   const isEqualTimeIndex = keyframe.time === time;
-                  const isNotParentLayerTrack = keyframe.trackIndex !== layerIndex;
-                  const isNotOwnTrack = keyframe.trackIndex !== trackIndex;
-                  const isNotChildPositionTrack = keyframe.trackIndex !== trackIndex + 1;
-                  const isNotChildRotationTrack = keyframe.trackIndex !== trackIndex + 2;
-                  const isNotChildScaleTrack = keyframe.trackIndex !== trackIndex + 3;
+                  const childrenTrackIndices = [trackIndex + 1, trackIndex + 2, trackIndex + 3];
+                  const isNotEqualKeyframeIndex = _.every(
+                    [layerIndex, trackIndex, ...childrenTrackIndices],
+                    (index) => keyframe.trackIndex !== index,
+                  );
                   if (!isEqualTimeIndex) return true;
-                  if (
-                    isEqualTimeIndex &&
-                    isNotParentLayerTrack &&
-                    isNotOwnTrack &&
-                    isNotChildPositionTrack &&
-                    isNotChildRotationTrack &&
-                    isNotChildScaleTrack
-                  )
-                    return true;
+                  if (isEqualTimeIndex && isNotEqualKeyframeIndex) return true;
                   return false;
                 });
                 dispatch(timelineActions.selectKeyframes({ selectedKeyframes: filteredKeyframes }));
@@ -110,27 +103,22 @@ const Circles: React.FC<Props> = ({
                 const boneIndex = fnGetBoneTrackIndex({ trackIndex });
                 const filteredKeyframes = _.filter(selectedKeyframes, (keyframe) => {
                   const isEqualTimeIndex = keyframe.time === time;
-                  const isNotParentLayerTrack = keyframe.trackIndex !== layerIndex;
-                  const isNotParentBoneTrack = keyframe.trackIndex !== boneIndex;
-                  const isNotOwnTrack = keyframe.trackIndex !== trackIndex;
+                  const isNotEqualKeyframeIndex = _.every(
+                    [layerIndex, boneIndex, trackIndex],
+                    (index) => keyframe.trackIndex !== index,
+                  );
                   if (!isEqualTimeIndex) return true;
-                  if (
-                    isEqualTimeIndex &&
-                    isNotParentLayerTrack &&
-                    isNotParentBoneTrack &&
-                    isNotOwnTrack
-                  )
-                    return true;
+                  if (isEqualTimeIndex && isNotEqualKeyframeIndex) return true;
                   return false;
                 });
                 dispatch(timelineActions.selectKeyframes({ selectedKeyframes: filteredKeyframes }));
                 break;
               }
             }
-            return; // isClickedOwnKeyframe === true이면 clickCircle 함수 종료
+            return; // 자기 자신을 클릭한 경우 반목문과 함수 종료. 이후 아래 로직은 동작하지 않음 -> 선택 효과 해제
           }
         }
-        // 반복문이 중간에 멈추지 않은 경우(다른 time index에 있는 키프레임을 클릭한 경우)
+        // 반복문이 중간에 멈추지 않은 경우(다른 time index에 있는 키프레임을 클릭한 경우) -> 키프레임 다중 선택
         const newSelectedKeyframes = fnUpdateSelectedKeyframes({
           lastBoneOfLayers,
           trackIndex,
@@ -157,7 +145,6 @@ const Circles: React.FC<Props> = ({
         dispatch(timelineActions.selectKeyframes({ selectedKeyframes }));
       }
     };
-
     d3.select(circleGroupRef.current)
       .selectAll('circle')
       .on('mouseenter', (event) => {
@@ -166,9 +153,7 @@ const Circles: React.FC<Props> = ({
       .on('mouseout', (event) => {
         event.target.style.cursor = '';
       })
-      .on('click', (event, time) => {
-        return clickCircle(event, time as number);
-      });
+      .on('click', (event, time) => clickCircle(event, time as number));
   }, [
     circleGroupRef,
     dispatch,
@@ -184,21 +169,23 @@ const Circles: React.FC<Props> = ({
   // 키프레임 색상 적용, 해제
   useEffect(() => {
     if (circleGroupRef.current) {
-      selectedKeyframesInMyTrack.current.forEach((keyframeIndex) => {
+      // 키프레임 선택 색상 제거
+      selectedKeyframeIndices.current.forEach((keyframeIndex) => {
         const selectedKeyframe = circleGroupRef.current?.childNodes[keyframeIndex as number];
-        const color = isLocked ? KEYFRAME_COLOR.locked : KEYFRAME_COLOR.default;
-        d3.select(selectedKeyframe as Element).style('fill', color);
+        const keyframeColor = isLocked ? KEYFRAME_COLOR.locked : KEYFRAME_COLOR.default;
+        d3.select(selectedKeyframe as Element).style('fill', keyframeColor);
       });
-      const targetIndex = fnGetBinarySearch({
+      const targetKeyframeIndex = fnGetBinarySearch({
         collection: selectedKeyframes,
         index: trackIndex,
         key: 'trackIndex',
       });
-      const hasNotSelectedKeyframes = targetIndex === -1;
-      if (hasNotSelectedKeyframes) {
-        selectedKeyframesInMyTrack.current.clear();
+      const hasNotSelectedKeyframeInTrack = targetKeyframeIndex === -1; // selectedKeyframes에서 자신의 트랙에 선택 된 키프레임이 없을 경우
+      if (hasNotSelectedKeyframeInTrack) {
+        selectedKeyframeIndices.current.clear();
       } else {
-        for (let index = targetIndex; index < selectedKeyframes.length; index += 1) {
+        // 이진 탐색으로 찾은 인덱스 기준으로 순회
+        for (let index = targetKeyframeIndex; index < selectedKeyframes.length; index += 1) {
           const targetIndex = fnGetBinarySearch({
             collection: times,
             index: selectedKeyframes[index].time,
@@ -206,10 +193,11 @@ const Circles: React.FC<Props> = ({
           const isNotEqualTrackIndex = selectedKeyframes[index].trackIndex !== trackIndex;
           if (isNotEqualTrackIndex || targetIndex === -1) break;
           const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
+          selectedKeyframeIndices.current.add(targetIndex + 1);
           d3.select(targetCircle as Element).style('fill', KEYFRAME_COLOR.selected);
-          selectedKeyframesInMyTrack.current.add(targetIndex + 1);
         }
-        for (let index = targetIndex; 0 <= index; index -= 1) {
+        // 이진 탐색으로 찾은 인덱스 기준으로 역방향 순회
+        for (let index = targetKeyframeIndex; 0 <= index; index -= 1) {
           const targetIndex = fnGetBinarySearch({
             collection: times,
             index: selectedKeyframes[index].time,
@@ -217,8 +205,8 @@ const Circles: React.FC<Props> = ({
           const isNotEqualTrackIndex = selectedKeyframes[index].trackIndex !== trackIndex;
           if (isNotEqualTrackIndex || targetIndex === -1) break;
           const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
+          selectedKeyframeIndices.current.add(targetIndex + 1);
           d3.select(targetCircle as Element).style('fill', KEYFRAME_COLOR.selected);
-          selectedKeyframesInMyTrack.current.add(targetIndex + 1);
         }
       }
     }

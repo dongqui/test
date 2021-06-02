@@ -1,26 +1,27 @@
-import React, { memo, useRef } from 'react';
+import React, { memo, useEffect, useMemo, useRef } from 'react';
 import _ from 'lodash';
 import { useSelector } from 'reducers';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { fnGetLayerTrackIndex } from 'utils/TP/New';
+import { d3ScaleLinear } from 'types/TP';
 import Circles from './Circles';
 
 interface Props {
+  dopeSheetScale: d3ScaleLinear;
   isLocked: boolean;
   isSelected: boolean;
   layerKey: string;
   times: number[];
   trackIndex: number;
   trackName: string;
-  dopeSheetScale: d3.ScaleLinear<number, number, never>;
 }
 
-const TRACK_HEIGHT = 32; // 트랙 높이
 const SELECTED_COLOR = {
   layer: '#4e452b',
   bone: '#373226',
   transform: '#2b2823',
 };
+const TRACK_HEIGHT = 32;
 
 const CircleGroup: React.FC<Props> = ({
   isLocked,
@@ -33,34 +34,25 @@ const CircleGroup: React.FC<Props> = ({
 }) => {
   const currentClickedTrack = useSelector((state) => state.timeline.currentClickedTrack);
   const circleGroupRef = useRef<SVGSVGElement>(null);
-
-  let fillColor = 'transparent';
-  if (isSelected) {
-    switch (trackIndex % 10) {
-      case 2:
-        fillColor = SELECTED_COLOR.layer;
-        break;
-      case 3:
-      case 7:
-        fillColor = SELECTED_COLOR.bone;
-        break;
-      case 4:
-      case 5:
-      case 6:
-      case 8:
-      case 9:
-      case 0:
-        fillColor = SELECTED_COLOR.transform;
-        break;
-      default:
-        break;
+  const trackColor = useMemo(() => {
+    if (isSelected && trackIndex % 10 !== TP_TRACK_INDEX.SUMMARY) {
+      switch (trackIndex % 10) {
+        case TP_TRACK_INDEX.LAYER:
+          return SELECTED_COLOR.layer;
+        case TP_TRACK_INDEX.BONE_A:
+        case TP_TRACK_INDEX.BONE_B:
+          return SELECTED_COLOR.bone;
+        default:
+          return SELECTED_COLOR.transform;
+      }
     }
-  }
+    return 'transparent';
+  }, [isSelected, trackIndex]);
 
   if (currentClickedTrack.trackIndex !== 0) {
     const remainder = trackIndex % 10;
     const isSummaryTrack = currentClickedTrack.trackIndex === TP_TRACK_INDEX.SUMMARY;
-    const isClosed = !currentClickedTrack.isPointedDownArrow;
+    const isClosedTrack = !currentClickedTrack.isPointedDownArrow;
     switch (remainder) {
       case TP_TRACK_INDEX.SUMMARY:
       case TP_TRACK_INDEX.LAYER: {
@@ -68,17 +60,13 @@ const CircleGroup: React.FC<Props> = ({
       }
       case TP_TRACK_INDEX.BONE_A:
       case TP_TRACK_INDEX.BONE_B: {
-        if (isSummaryTrack && isClosed) {
-          return null;
-        }
+        if (isClosedTrack && isSummaryTrack) return null;
         break;
       }
       default: {
         const layerIndex = fnGetLayerTrackIndex({ trackIndex });
         const isLayerTrack = layerIndex === currentClickedTrack.trackIndex;
-        if (isClosed && (isSummaryTrack || isLayerTrack)) {
-          return null;
-        }
+        if (isClosedTrack && (isSummaryTrack || isLayerTrack)) return null;
         break;
       }
     }
@@ -86,15 +74,15 @@ const CircleGroup: React.FC<Props> = ({
 
   return (
     <svg className="circle-group" width="100%" height={TRACK_HEIGHT} ref={circleGroupRef}>
-      <rect width="100%" height={TRACK_HEIGHT} fill={fillColor} strokeDasharray="100, 50" />
+      <rect width="100%" height={TRACK_HEIGHT} fill={trackColor} strokeDasharray="100, 50" />
       <Circles
         circleGroupRef={circleGroupRef}
+        dopeSheetScale={dopeSheetScale}
         isLocked={isLocked}
         layerKey={layerKey}
         times={times}
         trackIndex={trackIndex}
         trackName={trackName}
-        dopeSheetScale={dopeSheetScale}
       />
     </svg>
   );

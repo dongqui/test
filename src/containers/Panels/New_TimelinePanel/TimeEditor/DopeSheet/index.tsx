@@ -58,19 +58,15 @@ interface Props {
 const DopeSheet: React.FC<Props> = (props) => {
   const { currentPlayBarTime, currentTimeIndexRef, currentTimeRef, dopeSheetScale } = props;
   const dispatch = useDispatch();
+  const dopeSheetRef = useRef<HTMLDivElement>(null);
+  const pageInfo = useReactiveVar(storePageInfo);
   const trackList = useSelector((state) => state.timeline.trackList);
   const selectedKeyframes = useSelector((state) => state.timeline.selectedKeyframes);
   const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);
-  const dopeSheetRef = useRef<HTMLDivElement>(null);
-
-  // ToDo...없애야 됨
-  const pageInfo = useReactiveVar(storePageInfo);
   const { skeletonHelper } = useSelector((state) => state.renderingData);
+  const { startTimeIndex, endTimeIndex, playState } = useSelector((state) => state.animatingData);
   const currentVisualizedData = useSelector<CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
-  );
-  const { startTimeIndex, endTimeIndex, playState, currentAction } = useSelector(
-    (state) => state.animatingData,
   );
 
   // 다중 키 컨트롤러
@@ -86,7 +82,7 @@ const DopeSheet: React.FC<Props> = (props) => {
   );
 
   // base 트랙에서 선택 된 transform 트랙만 필터링
-  const selectedBaseDopeSheets = useMemo(
+  const selectedTransformInBase = useMemo(
     () =>
       trackList.filter(
         (item) =>
@@ -99,7 +95,7 @@ const DopeSheet: React.FC<Props> = (props) => {
   );
 
   // layer 트랙에서 선택 된 transform 트랙만 필터링
-  const selectedLayerDopeSheets = useMemo(
+  const selectedTransformInLayer = useMemo(
     () =>
       trackList.filter(
         (item) =>
@@ -117,11 +113,11 @@ const DopeSheet: React.FC<Props> = (props) => {
       const { baseLayer } = currentVisualizedData;
       const updateTargetTime = _.round(_.round(currentPlayBarTime.current, 0) / 30, 4);
       if (updateTargetTime && baseLayer && skeletonHelper) {
-        const selectedDopesheetNames = selectedBaseDopeSheets.map(({ trackName }) => trackName);
-        const selectedTrackIndexes = selectedBaseDopeSheets.map(({ trackIndex }) => trackIndex);
+        const selectedTransformTracks = selectedTransformInBase.map(({ trackName }) => trackName);
+        const selectedTrackIndices = selectedTransformInBase.map(({ trackIndex }) => trackIndex);
         const resultTracks: [ShootTrackType, number, number][] = [];
         const targetTracks = baseLayer.filter((track) =>
-          selectedDopesheetNames.includes(track.name),
+          selectedTransformTracks.includes(track.name),
         );
         targetTracks.forEach((track, index) => {
           const [boneName, propertyName] = track.name.split('.');
@@ -138,7 +134,7 @@ const DopeSheet: React.FC<Props> = (props) => {
             if (values) {
               const resultTrack = fnUpdateKeyframeToBase({ track, time: updateTargetTime, values });
               const targetTrackIndex = _.findIndex(baseLayer, (t) => t.name === track.name);
-              resultTracks.push([resultTrack, targetTrackIndex, selectedTrackIndexes[index]]);
+              resultTracks.push([resultTrack, targetTrackIndex, selectedTrackIndices[index]]);
             }
           }
         });
@@ -162,12 +158,12 @@ const DopeSheet: React.FC<Props> = (props) => {
             draft[1].times = layerTimes;
             for (let index = 0; index < resultTracks.length; index += 1) {
               const transformIndex = resultTracks[index][2];
-              const times = resultTracks[index][0].times;
               const targetTransformIndex = fnGetBinarySearch({
                 collection: trackList,
                 index: transformIndex,
                 key: 'trackIndex',
               });
+              const times = resultTracks[index][0].times;
               draft[targetTransformIndex].times = times;
               const boneIndex = fnGetBoneTrackIndex({ trackIndex: transformIndex });
               const targetBoneIndex = fnGetBinarySearch({
@@ -194,7 +190,7 @@ const DopeSheet: React.FC<Props> = (props) => {
     currentVisualizedData,
     dispatch,
     playState,
-    selectedBaseDopeSheets,
+    selectedTransformInBase,
     skeletonHelper,
     trackList,
   ]);
@@ -210,20 +206,20 @@ const DopeSheet: React.FC<Props> = (props) => {
         layers &&
         layers.length !== 0 &&
         skeletonHelper &&
-        selectedLayerDopeSheets.length !== 0
+        selectedTransformInLayer.length !== 0
       ) {
         const targetLayerIndex = _.findIndex(
           layers,
-          (layer) => layer.key === selectedLayerDopeSheets[0].layerKey,
+          (layer) => layer.key === selectedTransformInLayer[0].layerKey,
         );
         if (targetLayerIndex !== -1) {
           const resultTracks: [ShootTrackType, number, number][] = [];
-          const selectedDopesheetNames = selectedLayerDopeSheets.map(
+          const selectedTransformTracks = selectedTransformInLayer.map(
             (dopesheet) => dopesheet.trackName,
           );
-          const selectedTrackIndexes = selectedLayerDopeSheets.map(({ trackIndex }) => trackIndex);
+          const selectedTrackIndices = selectedTransformInLayer.map(({ trackIndex }) => trackIndex);
           const targetTracks = layers[targetLayerIndex].tracks.filter((track) =>
-            selectedDopesheetNames.includes(track.name),
+            selectedTransformTracks.includes(track.name),
           );
           targetTracks.forEach((track, index) => {
             const [boneName, propertyName] = track.name.split('.');
@@ -250,7 +246,7 @@ const DopeSheet: React.FC<Props> = (props) => {
                   layers[targetLayerIndex].tracks,
                   (t) => t.name === track.name,
                 );
-                resultTracks.push([resultTrack, targetTrackIndex, selectedTrackIndexes[index]]);
+                resultTracks.push([resultTrack, targetTrackIndex, selectedTrackIndices[index]]);
               }
             }
           });
@@ -270,11 +266,11 @@ const DopeSheet: React.FC<Props> = (props) => {
               draft[0].times = summaryTimes;
               const layerIndex = _.findIndex(
                 layers,
-                (layer) => layer.key === selectedLayerDopeSheets[0].layerKey,
+                (layer) => layer.key === selectedTransformInLayer[0].layerKey,
               );
               const targetLayerIndex = fnGetBinarySearch({
                 collection: trackList,
-                index: fnGetLayerTrackIndex({ trackIndex: selectedLayerDopeSheets[0].trackIndex }),
+                index: fnGetLayerTrackIndex({ trackIndex: selectedTransformInLayer[0].trackIndex }),
                 key: 'trackIndex',
               });
               const layerTimes = fnGetLayerTimes({
@@ -316,7 +312,7 @@ const DopeSheet: React.FC<Props> = (props) => {
     currentVisualizedData,
     dispatch,
     playState,
-    selectedLayerDopeSheets,
+    selectedTransformInLayer,
     skeletonHelper,
     trackList,
   ]);
@@ -422,7 +418,7 @@ const DopeSheet: React.FC<Props> = (props) => {
             draft[1].times = baseLayerTimes;
             if (!_.isEmpty(nextState.layers)) {
               _.forEach(lastBoneOfLayers, (track, index) => {
-                const isNotBaseLayer = index !== 0;
+                const isNotBaseLayer = track.layerIndex !== 2;
                 if (isNotBaseLayer) {
                   const targetLayerIndex = fnGetBinarySearch({
                     collection: trackList,
@@ -517,22 +513,22 @@ const DopeSheet: React.FC<Props> = (props) => {
           key: 'edit',
           value: 'Edit Keyframe',
           isSelected: false,
-          isDisabled: selectedBaseDopeSheets.length === 0 && selectedLayerDopeSheets.length === 0,
+          isDisabled: _.isEmpty(selectedTransformInBase) && _.isEmpty(selectedTransformInLayer),
         },
         {
           key: 'delete',
           value: 'Delete Keyframe',
           isSelected: false,
-          isDisabled: selectedKeyframes.length === 0,
+          isDisabled: _.isEmpty(selectedKeyframes),
         },
       ],
       onClick: (key) => {
         switch (key) {
           case 'edit':
-            if (selectedBaseDopeSheets.length !== 0) {
+            if (selectedTransformInBase.length !== 0) {
               handleUpdateKeyframeToBase();
             }
-            if (selectedLayerDopeSheets.length !== 0) {
+            if (selectedTransformInLayer.length !== 0) {
               handleUpdateKeyframeToLayer();
             }
             storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
@@ -579,10 +575,10 @@ const DopeSheet: React.FC<Props> = (props) => {
               multiKeyController['ㅍ'].pressed
             )
           ) {
-            if (selectedBaseDopeSheets.length !== 0) {
+            if (selectedTransformInBase.length !== 0) {
               handleUpdateKeyframeToBase();
             }
-            if (selectedLayerDopeSheets.length !== 0) {
+            if (selectedTransformInLayer.length !== 0) {
               handleUpdateKeyframeToLayer();
             }
           }
@@ -624,9 +620,9 @@ const DopeSheet: React.FC<Props> = (props) => {
       multiKeyController,
       pageInfo.page,
       playState,
-      selectedBaseDopeSheets.length,
+      selectedTransformInBase.length,
       selectedKeyframes.length,
-      selectedLayerDopeSheets.length,
+      selectedTransformInLayer.length,
     ],
   );
 
