@@ -77,7 +77,7 @@ export const timeline = (state = defaultState, action: TimelineAction) => {
         selectedKeyframes: action.payload.selectedKeyframes,
       });
     }
-    case 'timeline/ADD_LAYER': {
+    case 'timeline/ADD_NEW_LAYER': {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
         lastBoneOfLayers: action.payload.lastBoneOfLayers,
@@ -89,7 +89,7 @@ export const timeline = (state = defaultState, action: TimelineAction) => {
         lastBoneOfLayers: action.payload.lastBoneOfLayers,
       });
     }
-    case 'timeline/MODIFY_LAYER_NAME': {
+    case 'timeline/SET_LAYER_NAME': {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
       });

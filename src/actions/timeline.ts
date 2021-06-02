@@ -3,9 +3,9 @@ import { TPTrackList, TPLastBone, TPcurrentClickedTrack, KeyframeData } from 'ty
 export type TimelineAction =
   | ReturnType<typeof setTrackList>
   | ReturnType<typeof clearAll>
-  | ReturnType<typeof addLayer>
+  | ReturnType<typeof addNewLayer>
   | ReturnType<typeof deleteLayer>
-  | ReturnType<typeof modifyLayerName>
+  | ReturnType<typeof setLayerName>
   | ReturnType<typeof addKeyframes>
   | ReturnType<typeof deleteKeyframes>
   | ReturnType<typeof selectKeyframes>
@@ -36,14 +36,14 @@ export const clearAll = () => ({
 });
 
 // 레이어 추가
-interface AddLayer {
+interface AddNewLayer {
   trackList: TPTrackList[];
   lastBoneOfLayers: TPLastBone[];
 }
 
-export const ADD_LAYER = 'timeline/ADD_LAYER' as const;
-export const addLayer = (params: AddLayer) => ({
-  type: ADD_LAYER,
+export const ADD_NEW_LAYER = 'timeline/ADD_NEW_LAYER' as const;
+export const addNewLayer = (params: AddNewLayer) => ({
+  type: ADD_NEW_LAYER,
   payload: {
     ...params,
   },
@@ -64,13 +64,13 @@ export const deleteLayer = (params: DeleteLayer) => ({
 });
 
 // 레이어 이름 변경
-interface ModifyLayerName {
+interface SetLayerName {
   trackList: TPTrackList[];
 }
 
-export const MODIFY_LAYER_NAME = 'timeline/MODIFY_LAYER_NAME' as const;
-export const modifyLayerName = (params: ModifyLayerName) => ({
-  type: MODIFY_LAYER_NAME,
+export const SET_LAYER_NAME = 'timeline/SET_LAYER_NAME' as const;
+export const setLayerName = (params: SetLayerName) => ({
+  type: SET_LAYER_NAME,
   payload: {
     ...params,
   },
