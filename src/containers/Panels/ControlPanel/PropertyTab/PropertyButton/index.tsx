@@ -5,17 +5,17 @@ import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import * as renderingDataActions from 'actions/renderingData';
 import classNames from 'classnames/bind';
-import styles from './CPListRowButton.module.scss';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-export interface CPListRowButtonProps {
+export interface PropertyButtonProps {
   rowKey: string;
   name: string;
   button?: 'axis' | 'isBoneOn' | 'isMeshOn' | 'isShadowOn';
 }
 
-const CPListRowButton: FunctionComponent<CPListRowButtonProps> = ({
+const PropertyButton: FunctionComponent<PropertyButtonProps> = ({
   rowKey,
   name,
   button = 'axis',
@@ -86,4 +86,4 @@ const CPListRowButton: FunctionComponent<CPListRowButtonProps> = ({
     </div>
   );
 };
-export default memo(CPListRowButton);
+export default memo(PropertyButton);

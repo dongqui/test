@@ -6,7 +6,6 @@ export type CPNameType =
   | 'Transform'
   | 'Position'
   | 'Rotation'
-  | 'Quaternion'
   | 'Scale'
   | 'Visibility'
   | 'Axis'

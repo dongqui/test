@@ -8,8 +8,6 @@ import React, {
   FunctionComponent,
 } from 'react';
 import * as THREE from 'three';
-import { CPNameType } from 'types/CP';
-import { RenderingDataPropertyName } from 'types/RP';
 import { fnConvertDegreeToEuler, fnConvertEulerToDegree } from 'utils/common';
 import {
   fnChangeBonePosition,
@@ -24,14 +22,15 @@ import { useDispatch } from 'react-redux';
 import * as boneTransformActions from 'actions/boneTransform';
 import { useSelector } from 'reducers';
 import { PrefixInput } from 'components/Input';
+import { PropertyType } from 'types';
 import classNames from 'classnames/bind';
-import styles from './CPListRowInput.module.scss';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-export interface CPListRowInputProps {
+export interface PropertyInputProps {
   rowKey: string;
-  name: string;
+  name: PropertyType;
 }
 
 interface InputAxisType {
@@ -41,7 +40,7 @@ interface InputAxisType {
   z: number;
 }
 
-const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
+const PropertyInput: FunctionComponent<PropertyInputProps> = ({ name }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { currentBone, transformControls } = useSelector((state) => state.renderingData);
@@ -64,7 +63,6 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
   const handleFocus = useCallback(
     (e: any) => {
       const value = e.target.value;
-      const property = name.toLowerCase();
       const axis = e.target.name;
 
       if (_.isNaN(parseFloat(value))) {
@@ -97,15 +95,14 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
           },
         };
 
-        switch (property) {
-          case 'position':
+        switch (name) {
+          case 'Position':
             if (currentBone) {
               boneTransformValues.position[axis as NormalAxisType] = parseFloat(value);
               dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             }
             break;
-          case 'rotation':
-          case 'quaternion':
+          case 'Rotation':
             if (quaternionMode) {
               boneTransformValues.quaternion[axis as QuaternionAxisType] = _.round(
                 parseFloat(value),
@@ -147,7 +144,7 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
               dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             }
             break;
-          case 'scale':
+          case 'Scale':
             boneTransformValues.scale[axis as NormalAxisType] = _.round(parseFloat(value), 4);
             dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             break;
@@ -162,7 +159,6 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
   const handleBlur = useCallback(
     (e: any) => {
       const value = e.target.value;
-      const property = name.toLowerCase();
       const axis = e.target.name;
 
       if (_.isNaN(parseFloat(value))) {
@@ -195,16 +191,15 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
           },
         };
 
-        switch (property) {
-          case 'position':
+        switch (name) {
+          case 'Position':
             if (currentBone) {
               fnChangeBonePosition({ targetBone: currentBone, axis, value: parseFloat(value) });
               boneTransformValues.position[axis as NormalAxisType] = parseFloat(value);
               dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             }
             break;
-          case 'rotation':
-          case 'quaternion':
+          case 'Rotation':
             if (quaternionMode) {
               fnChangeBoneQuaternion({
                 targetBone: currentBone,
@@ -256,7 +251,7 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
               dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
             }
             break;
-          case 'scale':
+          case 'Scale':
             fnChangeBoneScale({ targetBone: currentBone, axis, value: parseFloat(value) });
             boneTransformValues.scale[axis as NormalAxisType] = _.round(parseFloat(value), 4);
             dispatch(boneTransformActions.changeBoneTransform(boneTransformValues));
@@ -270,7 +265,7 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
   );
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (_.isEqual(e.key, 'Enter')) {
+    if (e.key === 'Enter') {
       e.currentTarget.blur();
     }
   }, []);
@@ -293,14 +288,14 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
       const {
         present: { position, rotation, quaternion, scale },
       } = boneTransform;
-      if (_.isEqual(name, 'Position') && position) {
+      if (name === 'Position' && position) {
         setInitialValue({
           x: position.x ? _.round(position.x, 4) : 0,
           y: position.y ? _.round(position.y, 4) : 0,
           z: position.z ? _.round(position.z, 4) : 0,
         });
       }
-      if (_.isEqual(name, 'Rotation') && quaternion && rotation) {
+      if (name === 'Rotation' && quaternion && rotation) {
         if (quaternionMode) {
           setInitialValue({
             w: quaternion.w ? _.round(quaternion.w, 4) : 1,
@@ -316,7 +311,7 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
           });
         }
       }
-      if (_.isEqual(name, 'Scale') && scale) {
+      if (name === 'Scale' && scale) {
         setInitialValue({
           x: scale.x ? _.round(scale.x, 4) : 1,
           y: scale.y ? _.round(scale.y, 4) : 1,
@@ -334,14 +329,14 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
         // event.target 이 transformControls,
         // event.target.object 가 컨트롤 한 Bone 입니다
         const targetObject = event.target.object;
-        if (_.isEqual(name, 'Position')) {
+        if (name === 'Position') {
           setInitialValue({
             x: targetObject?.position?.x ? _.round(targetObject?.position?.x, 4) : 0,
             y: targetObject?.position?.y ? _.round(targetObject?.position?.y, 4) : 0,
             z: targetObject?.position?.z ? _.round(targetObject?.position?.z, 4) : 0,
           });
         }
-        if (_.isEqual(name, 'Rotation')) {
+        if (name === 'Rotation') {
           if (quaternionMode) {
             setInitialValue({
               w: targetObject?.quaternion?.w ? _.round(targetObject?.quaternion?.w, 4) : 1,
@@ -363,7 +358,7 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
             });
           }
         }
-        if (_.isEqual(name, 'Scale')) {
+        if (name === 'Scale') {
           setInitialValue({
             x: targetObject?.scale?.x ? _.round(targetObject?.scale?.x, 4) : 1,
             y: targetObject?.scale?.y ? _.round(targetObject?.scale?.y, 4) : 1,
@@ -380,14 +375,14 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
 
   // currentBone 변경 시 input 값 변경
   useEffect(() => {
-    if (_.isEqual(name, 'Position')) {
+    if (name === 'Position') {
       setInitialValue({
         x: currentBone?.position?.x ? _.round(currentBone?.position?.x, 4) : 0,
         y: currentBone?.position?.y ? _.round(currentBone?.position?.y, 4) : 0,
         z: currentBone?.position?.z ? _.round(currentBone?.position?.z, 4) : 0,
       });
     }
-    if (_.isEqual(name, 'Rotation')) {
+    if (name === 'Rotation') {
       if (quaternionMode) {
         setInitialValue({
           w: currentBone?.quaternion?.w ? _.round(currentBone?.quaternion?.w, 4) : 1,
@@ -409,7 +404,7 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
         });
       }
     }
-    if (_.isEqual(name, 'Scale')) {
+    if (name === 'Scale') {
       setInitialValue({
         x: currentBone?.scale?.x ? _.round(currentBone?.scale?.x, 4) : 1,
         y: currentBone?.scale?.y ? _.round(currentBone?.scale?.y, 4) : 1,
@@ -442,7 +437,7 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
   ];
 
   const iconClasses = cx('icon', {
-    rotation: _.isEqual(name, 'Rotation'),
+    rotation: name === 'Rotation',
     quaternion: isModeSelectOpen,
   });
 
@@ -522,4 +517,4 @@ const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
     </div>
   );
 };
-export default memo(CPListRowInput);
+export default memo(PropertyInput);
