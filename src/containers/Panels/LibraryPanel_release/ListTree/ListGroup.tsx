@@ -2,12 +2,12 @@ import { FunctionComponent, memo } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
-import { LPItemsState } from 'actions/lpData';
+import { LPItemListType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
 interface Props {
-  item: LPItemsState;
+  item: LPItemListType;
 }
 
 const ListGroup: FunctionComponent<Props> = ({ item }) => {

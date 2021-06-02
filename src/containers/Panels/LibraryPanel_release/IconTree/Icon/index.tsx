@@ -1,11 +1,11 @@
 import { FunctionComponent, Fragment, memo, useRef, MutableRefObject, useCallback } from 'react';
 import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { FileType } from 'actions/lpData';
 import { useDispatch } from 'react-redux';
 import { setLPPage } from 'actions/lpPage';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { FileType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 

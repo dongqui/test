@@ -8,7 +8,7 @@ import last from 'lodash/last';
  * @returns 파일의 확장자
  *
  */
-const getFileExtension = (fileName: string): string => {
+const fnGetFileExtension = (fileName: string): string => {
   let extension = '';
   if (!fileName.includes('.')) {
     return extension;
@@ -18,4 +18,4 @@ const getFileExtension = (fileName: string): string => {
   return extension;
 };
 
-export default getFileExtension;
+export default fnGetFileExtension;

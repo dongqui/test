@@ -2,16 +2,16 @@ import { FunctionComponent, memo, useMemo } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
-import { LPItemsState } from 'actions/lpData';
 import ListGroup from './ListGroup';
+import { LPItemListType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
 export interface ListViewProps {
-  data: LPItemsState;
+  data: LPItemListType;
 }
 
-export interface GrouppedData extends Array<LPItemsState> {}
+export type GrouppedData = Array<LPItemListType>;
 
 const ListView: FunctionComponent<ListViewProps> = ({ data }) => {
   /**

@@ -1,14 +1,14 @@
 import { FunctionComponent, memo } from 'react';
 import _ from 'lodash';
 import IconNode from './IconNode';
-import { LPItemsState } from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { LPItemListType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
 export interface IconViewProps {
-  data: LPItemsState;
+  data: LPItemListType;
 }
 
 const IconView: FunctionComponent<IconViewProps> = ({ data }) => {
