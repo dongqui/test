@@ -69,7 +69,7 @@ export const timeline = (state = defaultState, action: TimelineAction) => {
     case 'timeline/DELETE_KEYFRAMES': {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
-        selectedKeyframes: action.payload.selectedKeyframes,
+        selectedKeyframes: [],
       });
     }
     case 'timeline/SELECT_KEYFRAMES': {

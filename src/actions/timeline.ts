@@ -92,7 +92,6 @@ export const addKeyframes = (params: AddKeyframes) => ({
 // 키프레임 삭제
 interface DeleteKeyframes {
   trackList: TPTrackList[];
-  selectedKeyframes: KeyframeData[];
 }
 
 export const DELETE_KEYFRAMES = 'timeline/DELETE_KEYFRAMES' as const;

@@ -30,7 +30,7 @@ import { CurrentVisualizedData } from 'actions/currentVisualizedData';
 import { PAGE_NAMES, ShootTrackType } from 'types';
 import { d3ScaleLinear } from 'types/TP';
 import PlayBar from './PlayBar';
-import CircleGroup from './CircleGroup';
+import KeyframeGroup from './KeyframeGroup';
 import styles from './index.module.scss';
 import useContextMenu from 'hooks/common/useContextMenu';
 
@@ -434,7 +434,9 @@ const DopeSheet: React.FC<Props> = (props) => {
             }
             for (let index = 0; index < resultBaseLayerTracks.length; index += 1) {
               const transformIndex = resultBaseLayerTracks[index][2];
-              const transformTimes = resultBaseLayerTracks[index][0].times;
+              const transformTimes = _.map(resultBaseLayerTracks[index][0].times, (time) =>
+                _.round(time, 4),
+              );
               const targetTransformIndex = fnGetBinarySearch({
                 collection: trackList,
                 index: transformIndex,
@@ -457,7 +459,9 @@ const DopeSheet: React.FC<Props> = (props) => {
             }
             for (let index = 0; index < resultLayersTracks.length; index += 1) {
               const transformIndex = resultLayersTracks[index][4];
-              const transformTimes = resultLayersTracks[index][0].times;
+              const transformTimes = _.map(resultLayersTracks[index][0].times, (time) =>
+                _.round(time, 4),
+              );
               const targetTransformIndex = fnGetBinarySearch({
                 collection: trackList,
                 index: transformIndex,
@@ -484,9 +488,7 @@ const DopeSheet: React.FC<Props> = (props) => {
               data: nextState,
             }),
           );
-          dispatch(
-            timelineActions.deleteKeyframes({ trackList: nextTrackList, selectedKeyframes: [] }),
-          );
+          dispatch(timelineActions.deleteKeyframes({ trackList: nextTrackList }));
         }
       }
     }
@@ -681,13 +683,14 @@ const DopeSheet: React.FC<Props> = (props) => {
           .range([0, resizedWidth]);
         const rescaleXLineer = event.transform.rescaleX(dopeSheetScale.current);
         dopeSheetScale.current = rescaleXLineer;
+        currentZoomLevel.current = event.transform.k;
       };
 
       // time frame, 세로 선 생성
       const arrangeTimeFrame = () => {
         if (!dopeSheetScale.current) return;
-        const scaleXLineaer = dopeSheetScale.current;
-        const rangeRectWidth = scaleXLineaer(endTimeIndex) - scaleXLineaer(startTimeIndex);
+        const scaleXLinear = dopeSheetScale.current;
+        const rangeRectWidth = scaleXLinear(endTimeIndex) - scaleXLinear(startTimeIndex);
 
         // 세로 선 생성
         d3.select('.vertical-line-wrapper').remove();
@@ -699,7 +702,7 @@ const DopeSheet: React.FC<Props> = (props) => {
           .style('position', 'fixed')
           .style('z-index', 1)
           .append('g')
-          .call(d3.axisTop(dopeSheetScale.current).scale(scaleXLineaer))
+          .call(d3.axisTop(dopeSheetScale.current).scale(scaleXLinear))
           .call((wrapper) =>
             wrapper
               .selectAll('.tick')
@@ -743,11 +746,11 @@ const DopeSheet: React.FC<Props> = (props) => {
               .attr('height', TIME_FRAME_HEIGHT / 2)
               .attr(
                 'transform',
-                `translate(${scaleXLineaer(startTimeIndex)}, -${TIME_FRAME_HEIGHT / 2})`,
+                `translate(${scaleXLinear(startTimeIndex)}, -${TIME_FRAME_HEIGHT / 2})`,
               )
               .style('fill', '#3785F7'),
           )
-          .call(d3.axisTop(dopeSheetScale.current).scale(scaleXLineaer))
+          .call(d3.axisTop(dopeSheetScale.current).scale(scaleXLinear))
           .call((wrapper) => {
             wrapper
               .append('line')
@@ -759,19 +762,19 @@ const DopeSheet: React.FC<Props> = (props) => {
 
       // 키프레임 위치 조정
       const arrangeKeyframes = () => {
-        d3.selectAll('.circle-group').each(function () {
-          const circleGroup = d3.select(this);
-          const circleGroupNode = circleGroup.node() as Element;
-          const circleGroupTop = circleGroupNode.getBoundingClientRect().top;
-          const parentWrapperTop = circleGroupNode.parentElement?.getBoundingClientRect().top;
-          if (parentWrapperTop && dopeSheetScale.current) {
-            const scaleXLineaer = dopeSheetScale.current;
-            const rangeTop = parentWrapperTop - TRACK_HEIGHT * 4;
+        d3.selectAll('.keyframe-group').each(function () {
+          const keyframeGroup = d3.select(this);
+          const keyframeGroupNode = keyframeGroup.node() as Element;
+          const timelineWrapperDOM = document.getElementById('timeline-wrapper');
+          const timelineWrapperTop = timelineWrapperDOM?.getBoundingClientRect().top;
+          if (timelineWrapperTop && dopeSheetScale.current) {
+            const scaleXLinear = dopeSheetScale.current;
+            const rangeTop = timelineWrapperTop - TRACK_HEIGHT * 4;
             const rangeBottom = window.innerHeight + TRACK_HEIGHT * 4;
-            if (rangeTop <= circleGroupTop && circleGroupTop <= rangeBottom) {
-              circleGroup.selectAll('circle').each(function () {
-                const times = d3.select(this).data() as number[];
-                d3.select(this).attr('cx', scaleXLineaer(times[0] * 30));
+            const keyframeGroupTop = keyframeGroupNode.getBoundingClientRect().top;
+            if (rangeTop <= keyframeGroupTop && keyframeGroupTop <= rangeBottom) {
+              keyframeGroup.selectAll('circle').each(function () {
+                d3.select(this).attr('cx', (time: any) => scaleXLinear(time * 30));
               });
             }
           }
@@ -781,8 +784,8 @@ const DopeSheet: React.FC<Props> = (props) => {
       // 재생바 위치 조정
       const arrangePlayBar = () => {
         if (!dopeSheetScale.current) return;
-        const scaleXLineaer = dopeSheetScale.current;
-        const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
+        const scaleXLinear = dopeSheetScale.current;
+        const translateX = scaleXLinear(currentPlayBarTime.current) - 10;
         const translateY = TIME_FRAME_HEIGHT / 2;
         d3.select('#play-bar').style(
           'transform',
@@ -826,6 +829,7 @@ const DopeSheet: React.FC<Props> = (props) => {
           .call(zoomBehavior.scaleTo as any, currentZoomLevel.current)
           .call(zoomBehavior.translateTo as any, width / 2, height / 2)
           .call(zoomBehavior as any);
+        prevDoepSheetWidth.current = width;
       });
       resizeObserver.observe(dopeSheetRef.current);
     }
@@ -837,29 +841,28 @@ const DopeSheet: React.FC<Props> = (props) => {
     if (dopeSheetRef.current) {
       const arrangeKeyframes = (event: MouseEvent) => {
         if (!dopeSheetScale.current) return;
-        const scaleXLineaer = dopeSheetScale.current;
+        const scaleXLinear = dopeSheetScale.current;
         const scrollTop = (event.target as Element).scrollTop;
-        const isSmallPrevScrollTop = prevScrollTop.current < scrollTop;
-        const rootMarginTop = isSmallPrevScrollTop ? 0 : TRACK_HEIGHT * 20;
-        const rootMarginBottom = isSmallPrevScrollTop ? TRACK_HEIGHT * 20 : 0;
+        const compareScrollTop = prevScrollTop.current < scrollTop;
+        const rootMarginTop = compareScrollTop ? 0 : TRACK_HEIGHT * 20;
+        const rootMarginBottom = compareScrollTop ? TRACK_HEIGHT * 20 : 0;
         const rootMargin = `${rootMarginTop}px 0px ${rootMarginBottom}px 0px`;
 
         const observerOptions: IntersectionObserverInit = {
           root: document.getElementById('timeline-wrapper'),
           rootMargin: rootMargin,
         };
-        d3.selectAll('.circle-group').each(function () {
-          const circleGroup = d3.select(this);
-          const circleGroupNode = circleGroup.node() as Element;
+        d3.selectAll('.keyframe-group').each(function () {
+          const keyframeGroup = d3.select(this);
+          const keyframeGroupNode = keyframeGroup.node() as Element;
           const intersectionObserver = new IntersectionObserver(([entry], observer) => {
             if (!entry.isIntersecting) return observer.unobserve(entry.target);
-            circleGroup.selectAll('circle').each(function () {
-              const times = d3.select(this).data() as number[];
-              d3.select(this).attr('cx', scaleXLineaer(times[0] * 30));
+            keyframeGroup.selectAll('circle').each(function () {
+              d3.select(this).attr('cx', (time: any) => scaleXLinear(time * 30));
             });
             observer.unobserve(entry.target);
           }, observerOptions);
-          intersectionObserver.observe(circleGroupNode);
+          intersectionObserver.observe(keyframeGroupNode);
         });
         prevScrollTop.current = scrollTop;
       };
@@ -885,7 +888,7 @@ const DopeSheet: React.FC<Props> = (props) => {
 
   return (
     <div className={cx('dopesheet-wrapper')} ref={dopeSheetRef}>
-      <div className={cx('circle-group-wrapper')}>
+      <div className={cx('keyframe-group-wrapper')}>
         {_.map(trackList, (track) => {
           const {
             isLocked,
@@ -901,7 +904,7 @@ const DopeSheet: React.FC<Props> = (props) => {
           return (
             isShowed &&
             isFiltered && (
-              <CircleGroup
+              <KeyframeGroup
                 key={key}
                 isLocked={isLocked}
                 isSelected={isSelected}
