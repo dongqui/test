@@ -2,7 +2,7 @@ import React, { memo, useEffect, useMemo, useRef } from 'react';
 import _ from 'lodash';
 import { useSelector } from 'reducers';
 import { TP_TRACK_INDEX } from 'utils/const';
-import { fnGetLayerTrackIndex } from 'utils/TP/New';
+import { fnGetLayerTrackIndex } from 'utils/TP/trackUtils';
 import { d3ScaleLinear } from 'types/TP';
 import Circles from './Circles';
 

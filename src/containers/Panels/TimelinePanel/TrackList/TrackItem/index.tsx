@@ -11,7 +11,7 @@ import {
   fnGetBoneTrackIndex,
   fnGetLayerTrackIndex,
   fnUpdateSelectedTrackList,
-} from 'utils/TP/New';
+} from 'utils/TP/trackUtils';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { UpdatedTrack } from 'types/TP';
 import * as timelineActions from 'actions/timeline';
@@ -483,7 +483,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
   }, [dispatch, isIncluded, lastBoneOfLayers, layerKey, trackIndex, trackList]);
 
   // 레이어 삭제
-  const deleteLayer = useCallback(async () => {
+  const handleDeleteLayer = useCallback(async () => {
     const confirmed = await getConfirm({
       title: 'Are you sure you want to delete this layer?',
     });
@@ -570,7 +570,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
               storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
               break;
             case 'delete':
-              deleteLayer();
+              handleDeleteLayer();
               storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
               break;
             case 'select':
@@ -604,7 +604,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
       handleClickRenderingButton,
       handleClickTrackBody,
       contextMenuInfo,
-      deleteLayer,
+      handleDeleteLayer,
       isIncluded,
       isLocked,
       isSelected,

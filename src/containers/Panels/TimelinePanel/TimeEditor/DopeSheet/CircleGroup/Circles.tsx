@@ -9,7 +9,7 @@ import {
   fnGetBoneTrackIndex,
   fnGetLayerTrackIndex,
   fnUpdateSelectedKeyframes,
-} from 'utils/TP/New';
+} from 'utils/TP/trackUtils';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { d3ScaleLinear } from 'types/TP';
 import * as timelineActions from 'actions/timeline';

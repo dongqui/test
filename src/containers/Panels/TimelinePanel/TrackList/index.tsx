@@ -17,7 +17,7 @@ import {
   fnGetBoneTrackIndex,
   fnGetLayerTrackIndex,
   fnSetNewLayerTrack,
-} from 'utils/TP/New';
+} from 'utils/TP/trackUtils';
 import { UpdatedTrack } from 'types/TP';
 import TrackItem from './TrackItem';
 import styles from './index.module.scss';

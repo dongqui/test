@@ -21,7 +21,7 @@ import {
   fnUpdateKeyframeToLayer,
   fnDeleteKeyframe,
 } from 'utils/TP/editingUtils';
-import { fnGetBinarySearch, fnGetBoneTrackIndex, fnGetLayerTrackIndex } from 'utils/TP/New';
+import { fnGetBinarySearch, fnGetBoneTrackIndex, fnGetLayerTrackIndex } from 'utils/TP/trackUtils';
 import { storeContextMenuInfo, storePageInfo } from 'lib/store';
 import * as timelineActions from 'actions/timeline';
 import * as animatingDataActions from 'actions/animatingData';

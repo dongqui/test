@@ -4,7 +4,7 @@ import _ from 'lodash';
 import classNames from 'classnames/bind';
 import MiddleBar from 'containers/MiddleBar';
 import { useSelector } from 'reducers';
-import { fnSetInitialTrackList } from 'utils/TP/New';
+import { fnSetInitialTrackList } from 'utils/TP/trackUtils';
 import { d3ScaleLinear } from 'types/TP';
 import * as timelineActions from 'actions/timeline';
 import { CurrentVisualizedData } from 'actions/currentVisualizedData';
