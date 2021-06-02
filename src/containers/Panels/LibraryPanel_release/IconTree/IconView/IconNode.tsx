@@ -1,8 +1,8 @@
 import { FunctionComponent, memo } from 'react';
 import Icon from '../Icon';
+import { LPItemType } from 'types/LP';
 import classNames from 'classnames/bind';
 import styles from './IconNode.module.scss';
-import { LPItemType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 

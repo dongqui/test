@@ -1,9 +1,9 @@
 import { FunctionComponent, memo, useMemo } from 'react';
+import ListGroup from './ListGroup';
+import { LPItemListType } from 'types/LP';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
-import ListGroup from './ListGroup';
-import { LPItemListType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
@@ -28,9 +28,9 @@ const ListView: FunctionComponent<ListViewProps> = ({ data }) => {
 
   return (
     <div className={cx('wrapper')}>
-      {_.map(grouppedData, (item, index) => {
-        const key = `${item.length}_${index}`;
-        return <ListGroup key={key} item={item} />;
+      {_.map(grouppedData, (items, index) => {
+        const key = `${items.length}_${index}`;
+        return <ListGroup key={key} items={items} />;
       })}
     </div>
   );

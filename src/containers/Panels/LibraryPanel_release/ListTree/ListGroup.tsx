@@ -1,23 +1,29 @@
 import { FunctionComponent, memo } from 'react';
 import _ from 'lodash';
-import classNames from 'classnames/bind';
-import styles from './ListNode.module.scss';
 import { LPItemListType } from 'types/LP';
+import ListRow from './ListRow';
+import classNames from 'classnames/bind';
+import styles from './ListGroup.module.scss';
 
 const cx = classNames.bind(styles);
 
 interface Props {
-  item: LPItemListType;
+  items: LPItemListType;
 }
 
-const ListGroup: FunctionComponent<Props> = ({ item }) => {
+const ListGroup: FunctionComponent<Props> = ({ items }) => {
   return (
-    <div className={cx('list-wrapper')}>
-      <div
-        className="icon"
-        // id={item.key}
-        draggable
-      ></div>
+    <div className={cx('group-wrapper')}>
+      {items.map((item, index) => {
+        const key = `${item.key}_${index}`;
+        return (
+          <div key={key} className={cx('list-wrapper')}>
+            <div className="icon" draggable>
+              <ListRow item={item} depth={1} />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

@@ -18,6 +18,7 @@ export interface LPItemType {
   layers: ShootLayerType[];
   boneNames: string[];
   groupKey: string;
+  depth: number;
 }
 
 export type LPItemListType = Array<LPItemType>;

@@ -44,6 +44,7 @@ export const DefaultModels: Required<LPItemListType> = [
     baseLayer: [],
     layers: [],
     boneNames: [],
+    depth: 1,
   },
   {
     key: 'defaultmodel2',
@@ -55,6 +56,7 @@ export const DefaultModels: Required<LPItemListType> = [
     baseLayer: [],
     layers: [],
     boneNames: [],
+    depth: 1,
   },
   {
     key: 'defaultmodel3',
@@ -66,6 +68,7 @@ export const DefaultModels: Required<LPItemListType> = [
     baseLayer: [],
     layers: [],
     boneNames: [],
+    depth: 1,
   },
 ];
 
@@ -183,6 +186,7 @@ const LibraryPanel: FunctionComponent = () => {
         baseLayer: fnGetBaseLayerWithBoneNames({ boneNames }),
         layers: [],
         boneNames,
+        depth: 1,
       };
       const motions: LPItemListType = animations.map((item) => ({
         key: item.uuid,
@@ -194,6 +198,7 @@ const LibraryPanel: FunctionComponent = () => {
         baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: item.tracks }),
         layers: [],
         boneNames,
+        depth: 2,
       }));
       return [file, ...motions];
     },
