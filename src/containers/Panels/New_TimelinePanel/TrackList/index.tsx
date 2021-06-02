@@ -6,7 +6,6 @@ import _ from 'lodash';
 import { useSelector } from 'reducers';
 import * as timelineActions from 'actions/timeline';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
-import { CurrentVisualizedData } from 'actions/currentVisualizedData';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { SearchInput } from 'components/Input';
 import { AlertModalProvider } from 'components/Modal/AlertModal';
@@ -17,13 +16,13 @@ import {
   fnGetBinarySearch,
   fnGetBoneTrackIndex,
   fnGetLayerTrackIndex,
-  fnSetInitialLayerTrack,
+  fnSetNewLayerTrack,
 } from 'utils/TP/New';
 import { UpdatedTrack } from 'types/TP';
 import TrackItem from './TrackItem';
 import styles from './index.module.scss';
 
-const DEBOUNCED_TIME = 300;
+const INPUT_DEBOUNCE_TIME = 300;
 const cx = classNames.bind(styles);
 
 const TrackList: React.FC<{}> = () => {
@@ -32,7 +31,7 @@ const TrackList: React.FC<{}> = () => {
   const trackList = useSelector((state) => state.timeline.trackList);
   const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);
   const { skeletonHelper } = useSelector((state) => state.renderingData);
-  const currentVisualizedData = useSelector<CurrentVisualizedData>(
+  const currentVisualizedData = useSelector<currentVisualizedDataActions.CurrentVisualizedData>(
     (state) => state.currentVisualizedData,
   );
 
@@ -42,10 +41,10 @@ const TrackList: React.FC<{}> = () => {
       _.debounce((inputText: string) => {
         const loweredInput = _.toLower(_.trim(inputText));
         const isEqualPrevInputText = _.isEqual(prevInputText.current, loweredInput);
-        const isClearedInputText = _.isEmpty(loweredInput) && !_.isEmpty(isEqualPrevInputText);
+        const isClearedInputText = _.isEmpty(loweredInput) && !_.isEmpty(prevInputText.current);
         if (_.isEmpty(trackList) || isEqualPrevInputText) return;
         if (isClearedInputText) {
-          const nextState = produce(trackList, (draft) => {
+          const nextTrackList = produce(trackList, (draft) => {
             _.forEach(draft, (track) => {
               track.isFiltered = true;
               track.isShowed = false;
@@ -62,16 +61,17 @@ const TrackList: React.FC<{}> = () => {
               draft[layerIndex].isShowed = true;
             });
           });
-          dispatch(timelineActions.searchTrackList({ trackList: nextState }));
-          return;
+          console.log('sdkfsdlfnk', nextTrackList);
+          dispatch(timelineActions.searchTrackList({ trackList: nextTrackList }));
+          return; // 입력 된 검색어를 지울 경우, 트랙 리스트를 초기 상태로 전환. return으로 이후에 있는 로직은 종료
         }
         const updatedtrackList: Partial<
           UpdatedTrack<'isFiltered' | 'isShowed' | 'isPointedDownArrow'>
         >[] = [];
         const alreadyVisitedList = Array(trackList.length).fill(false) as boolean[];
         const checkAlreadyVisited = (comparedIndex: number, myIndex: number) => {
-          const isAncestorTrack = comparedIndex < myIndex;
-          const isChildTrack = myIndex < comparedIndex;
+          const isParentTrack = comparedIndex < myIndex;
+          const isMyTrack = comparedIndex === myIndex;
           const targetIndex = fnGetBinarySearch({
             collection: trackList,
             index: comparedIndex,
@@ -82,8 +82,8 @@ const TrackList: React.FC<{}> = () => {
             updatedtrackList.push({
               trackIndex: comparedIndex,
               isFiltered: true,
-              isPointedDownArrow: isAncestorTrack ? true : undefined,
-              isShowed: isChildTrack ? undefined : true,
+              isPointedDownArrow: isParentTrack ? true : undefined, // 자신의 조상 트랙은 화살표를 아래로 향함
+              isShowed: isParentTrack || isMyTrack ? true : undefined, // 조상 or 본인 트랙인 경우 화면에 보이도록 함
             });
           }
         };
@@ -92,9 +92,9 @@ const TrackList: React.FC<{}> = () => {
           const targetIndex = trackList[reverseIndex].trackIndex;
           const remainder = targetIndex % 10;
           if (_.includes(targetTrackName, loweredInput)) {
-            checkAlreadyVisited(targetIndex, targetIndex);
             switch (remainder) {
               case TP_TRACK_INDEX.SUMMARY: {
+                checkAlreadyVisited(targetIndex, targetIndex);
                 _.forEach(lastBoneOfLayers, (layer) => {
                   const lastTransformIndex = layer.lastBoneIndex + 3;
                   let currentTrackIndex = layer.layerIndex;
@@ -115,6 +115,7 @@ const TrackList: React.FC<{}> = () => {
                 const lastTransformIndex = lastBoneOfLayers[layerIndex].lastBoneIndex + 3;
                 let currentTrackIndex = targetIndex + 1;
                 checkAlreadyVisited(TP_TRACK_INDEX.SUMMARY, targetIndex);
+                checkAlreadyVisited(targetIndex, targetIndex);
                 while (currentTrackIndex <= lastTransformIndex) {
                   checkAlreadyVisited(currentTrackIndex, targetIndex);
                   if (currentTrackIndex % 10 === 0) currentTrackIndex += 2;
@@ -127,6 +128,7 @@ const TrackList: React.FC<{}> = () => {
                 const layerIndex = fnGetLayerTrackIndex({ trackIndex: targetIndex });
                 checkAlreadyVisited(TP_TRACK_INDEX.SUMMARY, targetIndex);
                 checkAlreadyVisited(layerIndex, targetIndex);
+                checkAlreadyVisited(targetIndex, targetIndex);
                 for (
                   let transformIndex = targetIndex + 1;
                   transformIndex <= targetIndex + 3;
@@ -142,12 +144,13 @@ const TrackList: React.FC<{}> = () => {
                 checkAlreadyVisited(TP_TRACK_INDEX.SUMMARY, targetIndex);
                 checkAlreadyVisited(layerIndex, targetIndex);
                 checkAlreadyVisited(boneIndex, targetIndex);
+                checkAlreadyVisited(targetIndex, targetIndex);
                 break;
               }
             }
           }
         }
-        const nextState = produce(trackList, (draft) => {
+        const nextTrackList = produce(trackList, (draft) => {
           _.forEach(draft, (track) => {
             track.isFiltered = false;
             track.isShowed = false;
@@ -160,20 +163,20 @@ const TrackList: React.FC<{}> = () => {
               key: 'trackIndex',
             });
             if (targetIndex === -1) return;
-            if (!_.isUndefined(track.isFiltered)) {
+            if (_.isBoolean(track.isFiltered)) {
               draft[targetIndex].isFiltered = track.isFiltered;
             }
-            if (!_.isUndefined(track.isPointedDownArrow)) {
+            if (_.isBoolean(track.isPointedDownArrow)) {
               draft[targetIndex].isPointedDownArrow = track.isPointedDownArrow;
             }
-            if (!_.isUndefined(track.isShowed)) {
+            if (_.isBoolean(track.isShowed)) {
               draft[targetIndex].isShowed = track.isShowed;
             }
           });
         });
-        dispatch(timelineActions.searchTrackList({ trackList: nextState }));
+        dispatch(timelineActions.searchTrackList({ trackList: nextTrackList }));
         prevInputText.current = loweredInput;
-      }, DEBOUNCED_TIME),
+      }, INPUT_DEBOUNCE_TIME),
     [dispatch, lastBoneOfLayers, trackList],
   );
 
@@ -199,7 +202,7 @@ const TrackList: React.FC<{}> = () => {
       const newLayer = fnGetNewLayer({ name: `Layer${nextOrder}`, bones: skeletonHelper.bones });
       const newLayerIndex = lastBoneOfLayers[lastBoneOfLayers.length - 1].layerIndex + 10000;
       const visualizedDataKey = trackList[0].visualizedDataKey;
-      const [newTPLayer, lastBone] = fnSetInitialLayerTrack({
+      const [newTPLayer, lastBone] = fnSetNewLayerTrack({
         layer: newLayer.tracks,
         layerIndex: newLayerIndex,
         layerKey: newLayer.key,
@@ -217,10 +220,11 @@ const TrackList: React.FC<{}> = () => {
         draft.lastBoneOfLayers.push(lastBone);
       });
       dispatch(currentVisualizedDataActions.addNewLayer({ newLayer }));
-      dispatch(timelineActions.addLayer(nextState));
+      dispatch(timelineActions.addNewLayer(nextState));
     }
   }, [skeletonHelper, currentVisualizedData, dispatch, lastBoneOfLayers, trackList]);
 
+  // 트랙 리스트 우클릭 시 컨텍스트 메뉴 출력 방지
   const handleTrackListContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
   };

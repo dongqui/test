@@ -4,7 +4,7 @@ import { TPTrackList, TPLastBone } from 'types/TP';
 import { fnSetTrackStatus } from 'utils/TP/New';
 import { fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
 
-interface FnSetLayerChildrenTracks {
+interface FnSetNewLayerTrack {
   layer: ShootTrackType[];
   layerIndex: number;
   layerName: string;
@@ -18,7 +18,7 @@ const getIsIncluded = (trackList: ShootTrackType[]) => {
   return trackList.every((track) => track.isIncluded === true);
 };
 
-const fnSetLayerChildrenTracks = (params: FnSetLayerChildrenTracks): Return => {
+const fnSetNewLayerTrack = (params: FnSetNewLayerTrack): Return => {
   const { layer, layerIndex, layerName, layerKey, visualizedDataKey } = params;
   const dopeSheetList: TPTrackList[] = [];
   let trackIndex = layerIndex;
@@ -85,4 +85,4 @@ const fnSetLayerChildrenTracks = (params: FnSetLayerChildrenTracks): Return => {
   return [dopeSheetList, lastBonesStatus];
 };
 
-export default fnSetLayerChildrenTracks;
+export default fnSetNewLayerTrack;

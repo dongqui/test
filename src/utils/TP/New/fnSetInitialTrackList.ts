@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
-import { fnSetTrackStatus, fnSetInitialLayerTrack } from 'utils/TP/New';
+import { fnSetTrackStatus, fnSetNewLayerTrack } from 'utils/TP/New';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { ShootLayerType, ShootTrackType } from 'types';
 import { TPTrackList, TPLastBone } from 'types/TP';
 
-interface FnSetAllInitialTrackList {
+interface FnSetInitialTrackList {
   baseLayer: ShootTrackType[];
   layers: ShootLayerType[];
   visualizedDataKey: string;
@@ -13,7 +13,7 @@ interface FnSetAllInitialTrackList {
 
 type Return = [TPTrackList[], TPLastBone[]];
 
-const fnSetAllInitialTrackList = (params: FnSetAllInitialTrackList): Return => {
+const fnSetInitialTrackList = (params: FnSetInitialTrackList): Return => {
   const { baseLayer, layers, visualizedDataKey } = params;
   const dopeSheetList: TPTrackList[] = [];
   const lastBoneList: TPLastBone[] = [];
@@ -30,7 +30,7 @@ const fnSetAllInitialTrackList = (params: FnSetAllInitialTrackList): Return => {
   dopeSheetList.push(summaryTrackStatus);
 
   // base layer 트랙 세팅
-  const [baseLayerTrack, lastBone] = fnSetInitialLayerTrack({
+  const [baseLayerTrack, lastBone] = fnSetNewLayerTrack({
     layer: baseLayer,
     layerIndex: TP_TRACK_INDEX.LAYER,
     layerName: 'Base',
@@ -43,7 +43,7 @@ const fnSetAllInitialTrackList = (params: FnSetAllInitialTrackList): Return => {
   // layers 트랙 세팅
   _.forEach(layers, (layer, index) => {
     const layerIndex = (index + 1) * 10000 + TP_TRACK_INDEX.LAYER;
-    const [layerTrack, lastBone] = fnSetInitialLayerTrack({
+    const [layerTrack, lastBone] = fnSetNewLayerTrack({
       layer: layer.tracks,
       layerIndex,
       layerName: layer.name,
@@ -57,4 +57,4 @@ const fnSetAllInitialTrackList = (params: FnSetAllInitialTrackList): Return => {
   return [dopeSheetList, lastBoneList];
 };
 
-export default fnSetAllInitialTrackList;
+export default fnSetInitialTrackList;

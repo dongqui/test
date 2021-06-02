@@ -4,7 +4,7 @@ import _ from 'lodash';
 import classNames from 'classnames/bind';
 import MiddleBar from 'containers/MiddleBar';
 import { useSelector } from 'reducers';
-import { fnSetAllInitialTrackList } from 'utils/TP/New';
+import { fnSetInitialTrackList } from 'utils/TP/New';
 import { d3ScaleLinear } from 'types/TP';
 import * as timelineActions from 'actions/timeline';
 import { CurrentVisualizedData } from 'actions/currentVisualizedData';
@@ -41,7 +41,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
       const isChangedModel = isStoredTrackListData.current && prevModelKey.current !== key;
       const isInitialVisualized = !isStoredTrackListData.current;
       if (isChangedModel) {
-        const [trackList, lastBoneOfLayers] = fnSetAllInitialTrackList({
+        const [trackList, lastBoneOfLayers] = fnSetInitialTrackList({
           baseLayer,
           layers,
           visualizedDataKey: key,
@@ -49,7 +49,7 @@ const TimelinePanel: React.FC<Props> = (props) => {
         dispatch(timelineActions.setTrackList({ trackList, lastBoneOfLayers }));
         prevModelKey.current = key;
       } else if (isInitialVisualized) {
-        const [trackList, lastBoneOfLayers] = fnSetAllInitialTrackList({
+        const [trackList, lastBoneOfLayers] = fnSetInitialTrackList({
           baseLayer,
           layers,
           visualizedDataKey: key,

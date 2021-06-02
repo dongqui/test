@@ -2,7 +2,7 @@ import { TPLastBone, UpdatedTrack } from 'types/TP';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { fnGetBinarySearch } from './index';
 
-interface FnUpdateIsSelected {
+interface FnUpdateSelectedTrackList {
   isSelected: boolean;
   lastBoneOfLayers: TPLastBone[];
   trackIndex: number;
@@ -10,11 +10,11 @@ interface FnUpdateIsSelected {
 
 type Return = [UpdatedTrack<'isSelected'>[], number[]];
 
-const fnUpdateIsSelected = ({
+const fnUpdateSelectedTrackList = ({
   isSelected,
   lastBoneOfLayers,
   trackIndex,
-}: FnUpdateIsSelected): Return => {
+}: FnUpdateSelectedTrackList): Return => {
   const remainder = trackIndex % 10;
   const selectedTracks: UpdatedTrack<'isSelected'>[] = [];
   const selectedIndexes = [];
@@ -77,4 +77,4 @@ const fnUpdateIsSelected = ({
   }
 };
 
-export default fnUpdateIsSelected;
+export default fnUpdateSelectedTrackList;
