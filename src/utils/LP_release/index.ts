@@ -1,2 +1,2 @@
-export { default as getAnimationData } from './fnGetAnimationData';
-export { default as getFileExtension } from './fnGetFileExtension';
+export { default as fnGetAnimationData } from './fnGetAnimationData';
+export { default as fnGetFileExtension } from './fnGetFileExtension';

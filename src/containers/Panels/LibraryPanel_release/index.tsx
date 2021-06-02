@@ -16,8 +16,8 @@ import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
 import Explorer from './Explorer';
-import { getFileExtension, getAnimationData } from '../../../utils/LP_release';
-import { setConvertFbxToGlb } from '../../../utils/common/api/index';
+import { fnGetFileExtension, fnGetAnimationData } from '../../../utils/LP_release';
+import { fnSetConvertFbxToGlb } from '../../../utils/common/api/index';
 import { BaseModal } from 'components/Modal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import Breadcrumb, { PathList } from './Breadcrumb';
@@ -206,7 +206,9 @@ const LibraryPanel: FunctionComponent = () => {
   const changeFileToLpData = useCallback(
     async (params: ChangeFileToLpData): Promise<ChangeFileToLpDataResponse> => {
       const { fileUrl, name, isDispatch = false } = params;
-      const { animations, bones, isError, errorMessage } = await getAnimationData({ url: fileUrl });
+      const { animations, bones, isError, errorMessage } = await fnGetAnimationData({
+        url: fileUrl,
+      });
       if (isError) {
         return {
           isError,
@@ -241,7 +243,8 @@ const LibraryPanel: FunctionComponent = () => {
    */
   const validateMultipleVideoFiles = useCallback((files: File[]): boolean => {
     return (
-      files.filter((file) => _.includes(EnableVideoFormats, getFileExtension(file.name))).length > 1
+      files.filter((file) => _.includes(EnableVideoFormats, fnGetFileExtension(file.name))).length >
+      1
     );
   }, []);
 
@@ -254,7 +257,7 @@ const LibraryPanel: FunctionComponent = () => {
    */
   const sortVideoFileLast = useCallback((files: File[]) => {
     return files.sort((file) => {
-      const isVideoFile = _.includes(EnableVideoFormats, getFileExtension(file.name));
+      const isVideoFile = _.includes(EnableVideoFormats, fnGetFileExtension(file.name));
       if (isVideoFile) {
         return 1;
       } else {
@@ -287,7 +290,7 @@ const LibraryPanel: FunctionComponent = () => {
       const targetFiles = _.clone(files);
       const sortedFiles = sortVideoFileLast(targetFiles);
       for (const file of sortedFiles) {
-        const extension = getFileExtension(file.name);
+        const extension = fnGetFileExtension(file.name);
         const isValidFileFormat = _.includes(EnableFileFormats, extension);
         if (!isValidFileFormat) {
           setModalInfo((state) => ({
@@ -312,7 +315,7 @@ const LibraryPanel: FunctionComponent = () => {
         let fileUrl = URL.createObjectURL(file);
         // fbx 파일일 경우 glb로 먼저 변환한다
         if (extension === 'fbx') {
-          const { result, isError, errorMessage } = await setConvertFbxToGlb({ file });
+          const { result, isError, errorMessage } = await fnSetConvertFbxToGlb({ file });
           if (isError) {
             setModalInfo((state) => ({
               ...state,

@@ -1,1 +1,1 @@
-export { default as setConvertFbxToGlb } from './fnSetConvertFbxToGlb';
+export { default as fnSetConvertFbxToGlb } from './fnSetConvertFbxToGlb';
