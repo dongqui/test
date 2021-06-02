@@ -15,7 +15,7 @@ import { d3ScaleLinear } from 'types/TP';
 import * as timelineActions from 'actions/timeline';
 
 interface Props {
-  circleGroupRef: React.RefObject<SVGSVGElement>;
+  keyframeGroupRef: React.RefObject<SVGSVGElement>;
   dopeSheetScale: d3ScaleLinear;
   isLocked: boolean;
   times: number[];
@@ -24,7 +24,7 @@ interface Props {
   trackName: string;
 }
 
-const CIRCLE_RADIUS = 4;
+const KEYFRAME_RADIUS = 4;
 const KEYFRAME_COLOR = {
   default: '#7A7A7A',
   locked: '#404040',
@@ -32,8 +32,8 @@ const KEYFRAME_COLOR = {
 };
 const TRACK_HEIGHT = 32;
 
-const Circles: React.FC<Props> = ({
-  circleGroupRef,
+const Keyframes: React.FC<Props> = ({
+  keyframeGroupRef,
   isLocked,
   layerKey,
   times,
@@ -47,24 +47,24 @@ const Circles: React.FC<Props> = ({
   const selectedKeyframes = useSelector((state) => state.timeline.selectedKeyframes);
   const selectedKeyframeIndices = useRef(new Set());
 
-  // circle 생성
+  // 키프레임 생성
   useEffect(() => {
-    if (circleGroupRef.current && dopeSheetScale) {
-      d3.select(circleGroupRef.current)
+    if (keyframeGroupRef.current && dopeSheetScale) {
+      d3.select(keyframeGroupRef.current)
         .selectAll('circle')
         .data(times)
         .join('circle')
         .attr('cx', (time) => dopeSheetScale(time * 30))
         .attr('cy', TRACK_HEIGHT / 2)
         .attr('id', 'grabbable')
-        .attr('r', CIRCLE_RADIUS)
+        .attr('r', KEYFRAME_RADIUS)
         .style('fill', isLocked ? KEYFRAME_COLOR.locked : KEYFRAME_COLOR.default);
     }
-  }, [circleGroupRef, isLocked, dopeSheetScale, times]);
+  }, [keyframeGroupRef, isLocked, dopeSheetScale, times]);
 
-  // circle 클릭 이벤트 추가
+  // 키프레임 클릭 이벤트 추가
   useEffect(() => {
-    const clickCircle = (event: MouseEvent, time: number) => {
+    const handleClickKeyframe = (event: MouseEvent, time: number) => {
       const isMultipleClick = event.ctrlKey || event.metaKey;
       if (trackIndex === 1) return;
       if (isMultipleClick) {
@@ -145,7 +145,7 @@ const Circles: React.FC<Props> = ({
         dispatch(timelineActions.selectKeyframes({ selectedKeyframes }));
       }
     };
-    d3.select(circleGroupRef.current)
+    d3.select(keyframeGroupRef.current)
       .selectAll('circle')
       .on('mouseenter', (event) => {
         event.target.style.cursor = 'pointer';
@@ -153,9 +153,9 @@ const Circles: React.FC<Props> = ({
       .on('mouseout', (event) => {
         event.target.style.cursor = '';
       })
-      .on('click', (event, time) => clickCircle(event, time as number));
+      .on('click', (event, time) => handleClickKeyframe(event, time as number));
   }, [
-    circleGroupRef,
+    keyframeGroupRef,
     dispatch,
     isLocked,
     lastBoneOfLayers,
@@ -168,51 +168,70 @@ const Circles: React.FC<Props> = ({
 
   // 키프레임 색상 적용, 해제
   useEffect(() => {
-    if (circleGroupRef.current) {
+    if (keyframeGroupRef.current) {
       // 키프레임 선택 색상 제거
       selectedKeyframeIndices.current.forEach((keyframeIndex) => {
-        const selectedKeyframe = circleGroupRef.current?.childNodes[keyframeIndex as number];
+        const selectedKeyframe = keyframeGroupRef.current?.childNodes[keyframeIndex as number];
         const keyframeColor = isLocked ? KEYFRAME_COLOR.locked : KEYFRAME_COLOR.default;
         d3.select(selectedKeyframe as Element).style('fill', keyframeColor);
       });
+      // const targetKeyframeIndex = fnGetBinarySearch({
+      //   collection: selectedKeyframes,
+      //   index: trackIndex,
+      //   key: 'trackIndex',
+      // });
+      // if (targetKeyframeIndex === -1) {
+      //   selectedKeyframeIndices.current.clear();
+      // } else {
+      //   for (let index = targetKeyframeIndex; index < selectedKeyframes.length; index += 1) {
+      //     const keyframeTime = selectedKeyframes[index].time;
+      //     const isNotEqualTrackIndex = selectedKeyframes[index].trackIndex !== trackIndex;
+      //     if (isNotEqualTrackIndex) break;
+      //     console.log(trackIndex, targetKeyframeIndex, times, keyframeTime);
+      //   }
+      // }
       const targetKeyframeIndex = fnGetBinarySearch({
         collection: selectedKeyframes,
         index: trackIndex,
         key: 'trackIndex',
       });
-      const hasNotSelectedKeyframeInTrack = targetKeyframeIndex === -1; // selectedKeyframes에서 자신의 트랙에 선택 된 키프레임이 없을 경우
-      if (hasNotSelectedKeyframeInTrack) {
+      if (targetKeyframeIndex === -1) {
         selectedKeyframeIndices.current.clear();
       } else {
-        // 이진 탐색으로 찾은 인덱스 기준으로 순회
+        // 이진 탐색으로 찾은 인덱스부터 순회
         for (let index = targetKeyframeIndex; index < selectedKeyframes.length; index += 1) {
           const targetIndex = fnGetBinarySearch({
             collection: times,
             index: selectedKeyframes[index].time,
           });
           const isNotEqualTrackIndex = selectedKeyframes[index].trackIndex !== trackIndex;
-          if (isNotEqualTrackIndex || targetIndex === -1) break;
-          const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
-          selectedKeyframeIndices.current.add(targetIndex + 1);
-          d3.select(targetCircle as Element).style('fill', KEYFRAME_COLOR.selected);
+          console.log(trackIndex, targetKeyframeIndex, times, selectedKeyframes[index].time);
+          if (isNotEqualTrackIndex) break;
+          if (targetIndex !== -1) {
+            const targetKeyframe = keyframeGroupRef.current.childNodes[targetIndex + 1];
+            selectedKeyframeIndices.current.add(targetIndex + 1);
+            d3.select(targetKeyframe as Element).style('fill', KEYFRAME_COLOR.selected);
+          }
         }
-        // 이진 탐색으로 찾은 인덱스 기준으로 역방향 순회
+        // 이진 탐색으로 찾은 인덱스 기준부터 역방향 순회
         for (let index = targetKeyframeIndex; 0 <= index; index -= 1) {
           const targetIndex = fnGetBinarySearch({
             collection: times,
             index: selectedKeyframes[index].time,
           });
           const isNotEqualTrackIndex = selectedKeyframes[index].trackIndex !== trackIndex;
-          if (isNotEqualTrackIndex || targetIndex === -1) break;
-          const targetCircle = circleGroupRef.current.childNodes[targetIndex + 1];
-          selectedKeyframeIndices.current.add(targetIndex + 1);
-          d3.select(targetCircle as Element).style('fill', KEYFRAME_COLOR.selected);
+          if (isNotEqualTrackIndex) break;
+          if (targetIndex !== -1) {
+            const targetKeyframe = keyframeGroupRef.current.childNodes[targetIndex + 1];
+            selectedKeyframeIndices.current.add(targetIndex + 1);
+            d3.select(targetKeyframe as Element).style('fill', KEYFRAME_COLOR.selected);
+          }
         }
       }
     }
-  }, [circleGroupRef, isLocked, selectedKeyframes, times, trackIndex]);
+  }, [keyframeGroupRef, isLocked, selectedKeyframes, times, trackIndex]);
 
   return <></>;
 };
 
-export default memo(Circles);
+export default memo(Keyframes);

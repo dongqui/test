@@ -1,10 +1,10 @@
-import React, { memo, useEffect, useMemo, useRef } from 'react';
+import React, { memo, useMemo, useRef } from 'react';
 import _ from 'lodash';
 import { useSelector } from 'reducers';
 import { TP_TRACK_INDEX } from 'utils/const';
 import { fnGetLayerTrackIndex } from 'utils/TP/trackUtils';
 import { d3ScaleLinear } from 'types/TP';
-import Circles from './Circles';
+import Keyframes from './Keyframes';
 
 interface Props {
   dopeSheetScale: d3ScaleLinear;
@@ -23,7 +23,7 @@ const SELECTED_COLOR = {
 };
 const TRACK_HEIGHT = 32;
 
-const CircleGroup: React.FC<Props> = ({
+const KeyframeGroup: React.FC<Props> = ({
   isLocked,
   isSelected,
   layerKey,
@@ -33,7 +33,7 @@ const CircleGroup: React.FC<Props> = ({
   dopeSheetScale,
 }) => {
   const currentClickedTrack = useSelector((state) => state.timeline.currentClickedTrack);
-  const circleGroupRef = useRef<SVGSVGElement>(null);
+  const keyframeGroupRef = useRef<SVGSVGElement>(null);
   const trackColor = useMemo(() => {
     if (isSelected && trackIndex % 10 !== TP_TRACK_INDEX.SUMMARY) {
       switch (trackIndex % 10) {
@@ -73,10 +73,10 @@ const CircleGroup: React.FC<Props> = ({
   }
 
   return (
-    <svg className="circle-group" width="100%" height={TRACK_HEIGHT} ref={circleGroupRef}>
+    <svg className="keyframe-group" width="100%" height={TRACK_HEIGHT} ref={keyframeGroupRef}>
       <rect width="100%" height={TRACK_HEIGHT} fill={trackColor} strokeDasharray="100, 50" />
-      <Circles
-        circleGroupRef={circleGroupRef}
+      <Keyframes
+        keyframeGroupRef={keyframeGroupRef}
         dopeSheetScale={dopeSheetScale}
         isLocked={isLocked}
         layerKey={layerKey}
@@ -88,7 +88,7 @@ const CircleGroup: React.FC<Props> = ({
   );
 };
 
-export default memo(CircleGroup, (prev, next) => {
+export default memo(KeyframeGroup, (prev, next) => {
   const { times: prevTimes, isLocked: prevIsLocked, isSelected: prevIsSelected } = prev;
   const { times: nextTimes, isLocked: nextIsLocked, isSelected: nextIsSelected } = next;
   if (!_.isEqual(prevTimes, nextTimes)) return false;
