@@ -4,6 +4,13 @@ interface FnGetBoneTrackIndex {
   trackIndex: number;
 }
 
+/**
+ * transform track의 bone track index을 찾을 때 사용하는 함수입니다.
+ *
+ * @param trackIndex
+ * @returns
+ */
+
 const fnGetBoneTrackIndex = ({ trackIndex }: FnGetBoneTrackIndex) => {
   const remainder = trackIndex % 10;
   switch (remainder) {

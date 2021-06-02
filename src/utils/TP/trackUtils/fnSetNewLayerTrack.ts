@@ -1,8 +1,8 @@
 import _ from 'lodash';
+import { fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
+import { fnSetTrackDataField } from 'utils/TP/trackUtils';
 import { ShootTrackType } from 'types';
 import { TPTrackList, TPLastBone } from 'types/TP';
-import { fnSetTrackStatus } from 'utils/TP/New';
-import { fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
 
 interface FnSetNewLayerTrack {
   layer: ShootTrackType[];
@@ -13,6 +13,19 @@ interface FnSetNewLayerTrack {
 }
 
 type Return = [TPTrackList[], TPLastBone];
+
+/**
+ * base layer, layers를 기준으로 track list를 가공하는 함수입니다.
+ * fnSetInitialTrackList에서 함수를 호출하고, 레이어를 추가 할 때도 사용됩니다.
+ *
+ * @param layer - base layer와 layers의 layer
+ * @param layerIndex
+ * @param layerName
+ * @param layerKey - base layer의 key는 "baseLayer"
+ * @param visualizedDataKey
+ * @returns TPTrackList[] - baseLayer, layers 기준으로 가공 된 track list
+ * @returns TPLastBone - 각 layer의 마지막 bone status
+ */
 
 const getIsIncluded = (trackList: ShootTrackType[]) => {
   return trackList.every((track) => track.isIncluded === true);
@@ -25,7 +38,7 @@ const fnSetNewLayerTrack = (params: FnSetNewLayerTrack): Return => {
 
   // Layer 트랙 세팅
   const layerTimes = fnGetLayerTimes({ targetLayer: layer });
-  const layerTrackStatus = fnSetTrackStatus({
+  const layerTrackStatus = fnSetTrackDataField({
     isIncluded: getIsIncluded(layer),
     layerKey,
     times: layerTimes,
@@ -48,7 +61,7 @@ const fnSetNewLayerTrack = (params: FnSetNewLayerTrack): Return => {
       rotationTrack: layer[currentTrackIndex + 1],
       scaleTrack: layer[currentTrackIndex + 2],
     });
-    const boneTrackStatus = fnSetTrackStatus({
+    const boneTrackStatus = fnSetTrackDataField({
       isIncluded: getIsIncluded(transformTrackList),
       layerKey,
       times: boneTimes,
@@ -61,7 +74,7 @@ const fnSetNewLayerTrack = (params: FnSetNewLayerTrack): Return => {
 
     // Transform 트랙 세팅
     for (const transformTrack of transformTrackList) {
-      const transformTrackStatus = fnSetTrackStatus({
+      const transformTrackStatus = fnSetTrackDataField({
         isIncluded: getIsIncluded([transformTrack]),
         layerKey,
         times: _.map(transformTrack.times, (time) => _.round(time, 4)),

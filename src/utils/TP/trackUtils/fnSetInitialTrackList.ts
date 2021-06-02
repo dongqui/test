@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
-import { fnSetTrackStatus, fnSetNewLayerTrack } from 'utils/TP/New';
 import { TP_TRACK_INDEX } from 'utils/const';
+import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
+import { fnSetTrackDataField, fnSetNewLayerTrack } from 'utils/TP/trackUtils';
 import { ShootLayerType, ShootTrackType } from 'types';
 import { TPTrackList, TPLastBone } from 'types/TP';
 
@@ -13,6 +13,17 @@ interface FnSetInitialTrackList {
 
 type Return = [TPTrackList[], TPLastBone[]];
 
+/**
+ * 현재 visualized 된 모델을 기준으로 track list 데이터를 가공하는 함수입니다.
+ * 최초 visualize, 모델 변경 시에서 사용 됩니다.
+ *
+ * @param baseLayer
+ * @param layers
+ * @param visualizedDataKey
+ * @returns TPTrackList[] - baseLayer, layers 기준으로 가공 된 track list
+ * @returns TPLastBone[] - 각 layer의 마지막 bone status
+ */
+
 const fnSetInitialTrackList = (params: FnSetInitialTrackList): Return => {
   const { baseLayer, layers, visualizedDataKey } = params;
   const dopeSheetList: TPTrackList[] = [];
@@ -20,8 +31,9 @@ const fnSetInitialTrackList = (params: FnSetInitialTrackList): Return => {
 
   // Summary 트랙 세팅
   const summaryTimes = fnGetSummaryTimes({ baseLayer, layers });
-  const summaryTrackStatus = fnSetTrackStatus({
+  const summaryTrackStatus = fnSetTrackDataField({
     isIncluded: true,
+    layerKey: 'baseLayer',
     times: summaryTimes,
     trackIndex: TP_TRACK_INDEX.SUMMARY,
     trackName: 'Summary',
