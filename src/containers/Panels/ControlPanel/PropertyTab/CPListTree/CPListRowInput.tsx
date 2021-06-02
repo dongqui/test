@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useState, useRef, Fragment, memo } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  useRef,
+  Fragment,
+  memo,
+  FunctionComponent,
+} from 'react';
 import * as THREE from 'three';
 import { CPNameType } from 'types/CP';
 import { RenderingDataPropertyName } from 'types/RP';
@@ -33,7 +41,7 @@ interface InputAxisType {
   z: number;
 }
 
-const CPListRowInput: React.FC<CPListRowInputProps> = ({ name }) => {
+const CPListRowInput: FunctionComponent<CPListRowInputProps> = ({ name }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { currentBone, transformControls } = useSelector((state) => state.renderingData);

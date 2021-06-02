@@ -1,4 +1,4 @@
-import React, { MutableRefObject, RefObject } from 'react';
+import React, { FunctionComponent, MutableRefObject, RefObject } from 'react';
 import dynamic from 'next/dynamic';
 import { d3ScaleLinear } from 'types/TP';
 
@@ -9,10 +9,10 @@ interface Props {
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
   currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  prevXScale: MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
-const TimeFrameView: React.FC<Props> = ({
+const TimeFrameView: FunctionComponent<Props> = ({
   timelineWrapperRef,
   currentTimeRef,
   currentTimeIndexRef,

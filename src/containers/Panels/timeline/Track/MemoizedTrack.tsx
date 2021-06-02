@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -43,7 +43,7 @@ interface TrackProps {
   visualizedDataKey: string;
 }
 
-const MemoizedTrack: React.FC<TrackProps> = ({
+const MemoizedTrack: FunctionComponent<TrackProps> = ({
   childrenTrack,
   isOpenedParent = false,
   trackName,

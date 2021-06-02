@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { FunctionComponent } from 'react';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -6,9 +6,7 @@ const cx = classNames.bind(styles);
 
 const PLAY_BAR_COLOR = '#ECEDEE';
 
-interface Props {}
-
-const PlayBar: React.FC<Props> = () => {
+const PlayBar: FunctionComponent = () => {
   return (
     <>
       <svg width="20" height="480" className={cx('play-bar-wrapper')} id="play-bar-wrapper">

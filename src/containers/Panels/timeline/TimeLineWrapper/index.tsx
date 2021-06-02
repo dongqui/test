@@ -1,4 +1,4 @@
-import React, { MutableRefObject, RefObject, useEffect, useRef } from 'react';
+import React, { FunctionComponent, MutableRefObject, RefObject, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import TrackList from '../TrackList';
 import TimeFrameView from '../TimeFrameView';
@@ -12,12 +12,15 @@ interface Props {
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
   currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  prevXScale: MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
-const TimelineWrapper: React.FC<Props> = (props) => {
-  const { currentTimeRef, currentTimeIndexRef, currentXAxisPosition, prevXScale } = props;
-
+const TimelineWrapper: FunctionComponent<Props> = ({
+  currentTimeRef,
+  currentTimeIndexRef,
+  currentXAxisPosition,
+  prevXScale,
+}) => {
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
   const trackListRef = useRef<HTMLDivElement>(null);
 

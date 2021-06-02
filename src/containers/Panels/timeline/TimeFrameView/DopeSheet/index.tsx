@@ -1,4 +1,5 @@
 import React, {
+  FunctionComponent,
   MutableRefObject,
   RefObject,
   useCallback,
@@ -43,7 +44,7 @@ interface Props {
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
   currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  prevXScale: MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
 interface Datum {
@@ -65,7 +66,7 @@ const TRACK_HEIGHT = 32; // 트랙 높이
 const THROTTLE_TIMER = 75;
 const INITIAL_SCALE_LEVEL = 7500;
 
-const DopeSheet: React.FC<Props> = ({
+const DopeSheet: FunctionComponent<Props> = ({
   timelineWrapperRef,
   currentTimeRef,
   currentTimeIndexRef,

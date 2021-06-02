@@ -3,7 +3,7 @@ import getBlobDuration from 'get-blob-duration';
 import useVideoToImages from 'hooks/RP/useVideoToImages';
 import { storeBarPositionX, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
 import { storeCutImages } from '../../../lib/store';
 import { WebcamPresenter } from './Webcam';
 
@@ -11,7 +11,7 @@ export interface WebcamProps {
   videoUrl: string;
 }
 
-const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
+const WebcamComponent: FunctionComponent<WebcamProps> = ({ videoUrl }) => {
   const recordingData = useReactiveVar(storeRecordingData);
   const cutImages = useReactiveVar(storeCutImages);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -86,4 +86,4 @@ const WebcamComponent: React.FC<WebcamProps> = ({ videoUrl }) => {
   return <WebcamPresenter showVideoRef={showVideoRef} videoRef={videoRef} videoUrl={videoUrl} />;
 };
 
-export default React.memo(WebcamComponent);
+export default memo(WebcamComponent);

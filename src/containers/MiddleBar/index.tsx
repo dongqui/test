@@ -37,7 +37,7 @@ export interface Props {
   currentTimeRef?: RefObject<HTMLInputElement>;
   currentTimeIndexRef?: RefObject<HTMLInputElement>;
   currentXAxisPosition?: MutableRefObject<number>;
-  prevXScale?: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  prevXScale?: MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
 const MiddleBar: FunctionComponent<Props> = (props) => {

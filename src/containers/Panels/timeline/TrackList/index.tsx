@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  FunctionComponent,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import produce from 'immer';
 import { useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
@@ -27,7 +35,7 @@ const cx = classNames.bind(styles);
 const DEBOUNCED_TIME = 300;
 
 interface Props {
-  trackListRef: React.RefObject<HTMLDivElement>;
+  trackListRef: RefObject<HTMLDivElement>;
 }
 
 interface RecurDopeSheet {
@@ -37,7 +45,7 @@ interface RecurDopeSheet {
 
 type FilterTrackList = [TPTrackName[], boolean];
 
-const TrackList: React.FC<Props> = ({ trackListRef }) => {
+const TrackList: FunctionComponent<Props> = ({ trackListRef }) => {
   const trackNameList = useReactiveVar(storeTPTrackNameList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);

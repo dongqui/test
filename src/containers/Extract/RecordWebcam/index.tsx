@@ -2,7 +2,7 @@ import { useReactiveVar } from '@apollo/client';
 import { PAGE_NAMES, VIDEO_FORMAT_TYPES } from 'types';
 import { storeCutImages, storePageInfo, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
-import React, { useEffect, useRef } from 'react';
+import React, { FunctionComponent, memo, useEffect, useRef } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { useRecordWebcam } from '../../../hooks/RP/useRecordWebcam';
 import { INITIAL_RECORDING_DATA } from 'utils/const';
@@ -11,7 +11,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const RecordWebcam: React.FC = () => {
+const RecordWebcam: FunctionComponent = () => {
   const recordingData = useReactiveVar(storeRecordingData);
   const videoRef = useRef<HTMLVideoElement>(null);
   useRecordWebcam({ ref: videoRef });
@@ -46,4 +46,4 @@ const RecordWebcam: React.FC = () => {
   );
 };
 
-export default React.memo(RecordWebcam);
+export default memo(RecordWebcam);

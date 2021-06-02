@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import React, {
+  FunctionComponent,
   memo,
   MutableRefObject,
   RefObject,
@@ -11,7 +12,6 @@ import React, {
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetPlayState } from 'utils/RP/animatingUtils';
 import {
@@ -25,8 +25,8 @@ import {
 import { d3ScaleLinear } from 'types/TP';
 import { fnSetValue } from 'utils/common';
 import { useSelector } from 'reducers';
-import * as currentVisualizedData from 'actions/currentVisualizedData';
 import { useDispatch } from 'react-redux';
+import * as currentVisualizedData from 'actions/currentVisualizedData';
 import * as animatingDataActions from 'actions/animatingData';
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
@@ -37,9 +37,9 @@ export interface RenderingControllerProps {
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
   currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  prevXScale: MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
-const RenderingController: React.FC<RenderingControllerProps> = ({
+const RenderingController: FunctionComponent<RenderingControllerProps> = ({
   id,
   fileUrl,
   currentTimeRef,

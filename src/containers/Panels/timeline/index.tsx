@@ -1,4 +1,11 @@
-import React, { memo, MutableRefObject, RefObject, useEffect, useRef } from 'react';
+import React, {
+  FunctionComponent,
+  memo,
+  MutableRefObject,
+  RefObject,
+  useEffect,
+  useRef,
+} from 'react';
 import { useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
 import {
@@ -28,10 +35,10 @@ interface Props {
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
   currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  prevXScale: MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
-const TimelineContainer: React.FC<Props> = ({
+const TimelineContainer: FunctionComponent<Props> = ({
   baseLayer,
   layers,
   visualizedDataKey,
