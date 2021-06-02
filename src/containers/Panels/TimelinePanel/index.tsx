@@ -61,6 +61,18 @@ const TimelinePanel: React.FC<Props> = (props) => {
     }
   }, [currentVisualizedData, dispatch]);
 
+  // dope sheet에 커서를 올리고 wheel을 굴릴 때 TP 스크롤 방지
+  const timelineWrapperRef = useRef<HTMLDivElement>(null);
+  const trackListRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleWheelTimelineWrapper = (event: WheelEvent) => {
+      if (!trackListRef.current?.contains(event.target as Node)) {
+        event.preventDefault();
+      }
+    };
+    timelineWrapperRef.current?.addEventListener('wheel', handleWheelTimelineWrapper);
+  }, []);
+
   return (
     <>
       <div className={cx('panel')}>
@@ -70,8 +82,8 @@ const TimelinePanel: React.FC<Props> = (props) => {
           currentPlayBarTime={currentPlayBarTime}
           dopeSheetScale={dopeSheetScale}
         />
-        <div id="timeline-wrapper" className={cx('wrapper')}>
-          <TrackList />
+        <div id="timeline-wrapper" className={cx('wrapper')} ref={timelineWrapperRef}>
+          <TrackList trackListRef={trackListRef} />
           <TimeEditor
             currentTimeRef={currentTimeRef}
             currentTimeIndexRef={currentTimeIndexRef}

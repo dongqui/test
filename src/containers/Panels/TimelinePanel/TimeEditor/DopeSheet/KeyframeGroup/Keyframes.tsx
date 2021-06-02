@@ -175,21 +175,6 @@ const Keyframes: React.FC<Props> = ({
         const keyframeColor = isLocked ? KEYFRAME_COLOR.locked : KEYFRAME_COLOR.default;
         d3.select(selectedKeyframe as Element).style('fill', keyframeColor);
       });
-      // const targetKeyframeIndex = fnGetBinarySearch({
-      //   collection: selectedKeyframes,
-      //   index: trackIndex,
-      //   key: 'trackIndex',
-      // });
-      // if (targetKeyframeIndex === -1) {
-      //   selectedKeyframeIndices.current.clear();
-      // } else {
-      //   for (let index = targetKeyframeIndex; index < selectedKeyframes.length; index += 1) {
-      //     const keyframeTime = selectedKeyframes[index].time;
-      //     const isNotEqualTrackIndex = selectedKeyframes[index].trackIndex !== trackIndex;
-      //     if (isNotEqualTrackIndex) break;
-      //     console.log(trackIndex, targetKeyframeIndex, times, keyframeTime);
-      //   }
-      // }
       const targetKeyframeIndex = fnGetBinarySearch({
         collection: selectedKeyframes,
         index: trackIndex,
@@ -205,7 +190,6 @@ const Keyframes: React.FC<Props> = ({
             index: selectedKeyframes[index].time,
           });
           const isNotEqualTrackIndex = selectedKeyframes[index].trackIndex !== trackIndex;
-          console.log(trackIndex, targetKeyframeIndex, times, selectedKeyframes[index].time);
           if (isNotEqualTrackIndex) break;
           if (targetIndex !== -1) {
             const targetKeyframe = keyframeGroupRef.current.childNodes[targetIndex + 1];

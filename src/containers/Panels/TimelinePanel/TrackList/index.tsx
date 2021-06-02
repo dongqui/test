@@ -22,10 +22,14 @@ import { UpdatedTrack } from 'types/TP';
 import TrackItem from './TrackItem';
 import styles from './index.module.scss';
 
+interface Props {
+  trackListRef: React.RefObject<HTMLDivElement>;
+}
+
 const INPUT_DEBOUNCE_TIME = 300;
 const cx = classNames.bind(styles);
 
-const TrackList: React.FC<{}> = () => {
+const TrackList: React.FC<Props> = ({ trackListRef }) => {
   const dispatch = useDispatch();
   const prevInputText = useRef('');
   const trackList = useSelector((state) => state.timeline.trackList);
@@ -61,7 +65,6 @@ const TrackList: React.FC<{}> = () => {
               draft[layerIndex].isShowed = true;
             });
           });
-          console.log('sdkfsdlfnk', nextTrackList);
           dispatch(timelineActions.searchTrackList({ trackList: nextTrackList }));
           return; // 입력 된 검색어를 지울 경우, 트랙 리스트를 초기 상태로 전환. return으로 이후에 있는 로직은 종료
         }
@@ -233,7 +236,7 @@ const TrackList: React.FC<{}> = () => {
 
   return (
     <AlertModalProvider>
-      <div className={cx('wrapper')} onContextMenu={handleTrackListContextMenu}>
+      <div className={cx('wrapper')} onContextMenu={handleTrackListContextMenu} ref={trackListRef}>
         <div className={cx('search-wrapper')}>
           <SearchInput
             className={cx('search-joint')}
