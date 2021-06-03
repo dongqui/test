@@ -236,6 +236,21 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   return (
     <AlertModalProvider>
+      {/* <div>
+        <div className={cx('search-wrapper')}>
+          <SearchInput
+            className={cx('search-joint')}
+            placeholder="Search Joints"
+            onChange={handleChangeTrackInput}
+          />
+          <IconWrapper
+            className={cx('layer')}
+            icon={SvgPath.Layer}
+            hasFrame={false}
+            onClick={clickLayerButton}
+          />
+        </div>
+      </div> */}
       <div className={cx('wrapper')} onContextMenu={handleTrackListContextMenu} ref={trackListRef}>
         <div className={cx('search-wrapper')}>
           <SearchInput
