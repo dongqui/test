@@ -217,30 +217,38 @@ const LibraryPanel: FunctionComponent = () => {
   const changeFileToLpData = useCallback(
     async (params: ChangeFileToLpData): Promise<ChangeFileToLpDataResponse> => {
       const { fileUrl, name, isDispatch = false } = params;
-      const { animations, bones, isError, errorMessage } = await fnGetAnimationData({
-        url: fileUrl,
-      });
-      if (isError) {
+      try {
+        const { animations, bones, isError, errorMessage } = await fnGetAnimationData({
+          url: fileUrl,
+        });
+        if (isError) {
+          return {
+            isError,
+            errorMessage,
+            result: [],
+          };
+        }
+        const newItemList: LPItemListType = convertToAnimationDataToLpData({
+          animations,
+          bones,
+          name,
+          url: fileUrl,
+        });
+        if (isDispatch) {
+          dispatch(lpDataActions.addItemList({ itemList: newItemList }));
+        }
         return {
-          isError,
-          errorMessage,
+          isError: false,
+          errorMessage: '',
+          result: newItemList,
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          errorMessage: error,
           result: [],
         };
       }
-      const newItemList: LPItemListType = convertToAnimationDataToLpData({
-        animations,
-        bones,
-        name,
-        url: fileUrl,
-      });
-      if (isDispatch) {
-        dispatch(lpDataActions.addItemList({ itemList: newItemList }));
-      }
-      return {
-        isError: false,
-        errorMessage: '',
-        result: newItemList,
-      };
     },
     [convertToAnimationDataToLpData, dispatch],
   );
@@ -326,17 +334,27 @@ const LibraryPanel: FunctionComponent = () => {
         let fileUrl = URL.createObjectURL(file);
         // fbx 파일일 경우 glb로 먼저 변환한다
         if (extension === 'fbx') {
-          const { result, isError, errorMessage } = await fnSetConvertFbxToGlb({ file });
-          if (isError) {
+          try {
+            const { result, isError, errorMessage } = await fnSetConvertFbxToGlb({ file });
+            if (isError) {
+              setModalInfo((state) => ({
+                ...state,
+                showModal: true,
+                message: errorMessage,
+                loading: false,
+              }));
+              return;
+            }
+            fileUrl = result;
+          } catch (error) {
             setModalInfo((state) => ({
               ...state,
               showModal: true,
-              message: errorMessage,
+              message: error,
               loading: false,
             }));
             return;
           }
-          fileUrl = result;
         }
         // 비디오파일은 추출화면으로 전환시킨다.
         if (EnableVideoFormats.includes(extension)) {

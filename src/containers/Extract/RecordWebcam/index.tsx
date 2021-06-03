@@ -2,16 +2,16 @@ import { useReactiveVar } from '@apollo/client';
 import { PAGE_NAMES, VIDEO_FORMAT_TYPES } from 'types';
 import { storeCutImages, storePageInfo, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
-import React, { useEffect, useRef } from 'react';
+import React, { FunctionComponent, memo, useEffect, useRef } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { useRecordWebcam } from '../../../hooks/RP/useRecordWebcam';
-import { DEFAULT_FILE_URL, INITIAL_RECORDING_DATA } from 'utils/const';
+import { INITIAL_RECORDING_DATA } from 'utils/const';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const RecordWebcam: React.FC = () => {
+const RecordWebcam: FunctionComponent = () => {
   const recordingData = useReactiveVar(storeRecordingData);
   const videoRef = useRef<HTMLVideoElement>(null);
   useRecordWebcam({ ref: videoRef });
@@ -28,12 +28,12 @@ const RecordWebcam: React.FC = () => {
     }
   }, [mediaBlobUrl, recordingData.isRecording, startRecording, stopRecording]);
   useEffect(() => {
-    if (_.isEqual(status, 'stopped') && !_.isEmpty(mediaBlobUrl)) {
+    if (_.isEqual(status, 'stopped') && mediaBlobUrl && !_.isEmpty(mediaBlobUrl)) {
       storeRecordingData(INITIAL_RECORDING_DATA);
       storeCutImages([]);
       storePageInfo({
         page: PAGE_NAMES.extract,
-        videoUrl: mediaBlobUrl ?? DEFAULT_FILE_URL,
+        videoUrl: mediaBlobUrl,
         extension: VIDEO_FORMAT_TYPES.mp4,
       });
     }
@@ -46,4 +46,4 @@ const RecordWebcam: React.FC = () => {
   );
 };
 
-export default React.memo(RecordWebcam);
+export default memo(RecordWebcam);

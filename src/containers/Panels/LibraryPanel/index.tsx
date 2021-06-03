@@ -4,8 +4,8 @@ import { useDropzone } from 'react-dropzone';
 import useLPControl from 'hooks/LP/useLPControl';
 import { v4 as uuidv4 } from 'uuid';
 import useContextMenu from 'hooks/common/useContextMenu';
-import { storeCutImages, storePageInfo, storeRecordingData, storeRetargetInfo } from 'lib/store';
-import { DEFAULT_MODELS, DEFAULT_MODEL_URL, INITIAL_RECORDING_DATA } from 'utils/const';
+import { storeCutImages, storePageInfo, storeRecordingData } from 'lib/store';
+import { DEFAULT_MODELS, INITIAL_RECORDING_DATA } from 'utils/const';
 import { FILE_TYPES, LPModeType } from 'types';
 import * as api from 'utils/common/api';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
@@ -34,6 +34,7 @@ import {
   ENABLE_FILE_FORMATS,
 } from 'types';
 import Explorer from './Explorer/index';
+import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -49,7 +50,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
   const lpData = useReactiveVar(storeLpData);
   const pages = useReactiveVar(storePages);
   const lpmode = useReactiveVar(storeLPMode);
-  const retargetInfo = useReactiveVar(storeRetargetInfo);
+  const { retargetInfo } = useSelector((state) => state.retargetData);
   const [originalLpmode, setOriginalLpmode] = useState<LPModeType | undefined>(undefined);
   const [isOutsideClose, setIsOutsideClose] = useState(false);
   const onChangeSearchText = useCallback(
@@ -166,10 +167,11 @@ const LibraryPanelComponent: FunctionComponent = () => {
           continue;
         }
       }
-      let convertedFileUrl = DEFAULT_MODEL_URL;
+
+      let url = URL.createObjectURL(file);
       if (_.isEqual(extension?.toLowerCase(), FORMAT_TYPES.fbx)) {
         // fbx 파일 업로드 및 변환
-        const { url, error } = await api.setConvertFbxToGlb({
+        const { url: convertedUrl, error } = await api.setConvertFbxToGlb({
           file,
           type: FORMAT_TYPES.glb,
         });
@@ -178,12 +180,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
           setIsOutsideClose(true);
           return false;
         }
-        convertedFileUrl = url;
+        url = convertedUrl;
       }
-
-      const url = _.isEqual(extension?.toLowerCase(), FORMAT_TYPES.fbx)
-        ? convertedFileUrl
-        : URL.createObjectURL(file);
 
       if (_.includes(ENABLE_VIDEO_FORMATS, extension?.toLowerCase())) {
         setShowsModal(false);

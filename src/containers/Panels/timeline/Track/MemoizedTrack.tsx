@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import {
@@ -22,7 +21,6 @@ import {
   fnClickTrackToMouse,
   fnGetBinarySearch,
 } from 'utils/TP/trackUtils';
-import styles from './index.module.scss';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { FormModal } from 'components/Modal';
 import { BaseInput } from 'components/Input';
@@ -32,6 +30,10 @@ import Track from './index';
 import { useDispatch } from 'react-redux';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { useSelector } from 'reducers';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
 
 interface TrackProps {
   childrenTrack: TPTrackName[];
@@ -41,9 +43,7 @@ interface TrackProps {
   visualizedDataKey: string;
 }
 
-const cx = classNames.bind(styles);
-
-const MemoizedTrack: React.FC<TrackProps> = ({
+const MemoizedTrack: FunctionComponent<TrackProps> = ({
   childrenTrack,
   isOpenedParent = false,
   trackName,

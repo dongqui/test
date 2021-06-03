@@ -71,7 +71,7 @@ const withUndoable = (reducer: Reducer<any, any>) => {
         if (_.isEqual(present, newPresent)) {
           return state;
         }
-        if (Object.values(present).includes(undefined)) {
+        if (Object.values(present).includes(null)) {
           return {
             past: [...past],
             present: newPresent,
