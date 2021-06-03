@@ -676,14 +676,14 @@ const DopeSheet: React.FC<Props> = (props) => {
   useEffect(() => {
     if (dopeSheetRef.current) {
       // 현재 zoom level로 scale 조정
-      const rescaleDopeSheet = (resizedWidth: number, event: d3.D3ZoomEvent<Element, Datum>) => {
+      const rescaleDopeSheet = (resizedWidth: number, event: d3.ZoomTransform) => {
         dopeSheetScale.current = d3
           .scaleLinear()
           .domain([-X_AXIS_DOMAIN, X_AXIS_DOMAIN])
           .range([0, resizedWidth]);
-        const rescaleXLineer = event.transform.rescaleX(dopeSheetScale.current);
+        const rescaleXLineer = event.rescaleX(dopeSheetScale.current);
         dopeSheetScale.current = rescaleXLineer;
-        currentZoomLevel.current = event.transform.k;
+        currentZoomLevel.current = event.k;
       };
 
       // time frame, 세로 선 생성
@@ -819,7 +819,8 @@ const DopeSheet: React.FC<Props> = (props) => {
           .on(
             'zoom',
             _.throttle((event: d3.D3ZoomEvent<Element, Datum>) => {
-              rescaleDopeSheet(width, event);
+              if (!event.sourceEvent) return;
+              rescaleDopeSheet(width, event.transform);
               arrangeTimeFrame();
               arrangeKeyframes();
               arrangePlayBar();
@@ -830,6 +831,19 @@ const DopeSheet: React.FC<Props> = (props) => {
           .call(zoomBehavior.translateTo as any, width / 2, height / 2)
           .call(zoomBehavior as any);
         prevDoepSheetWidth.current = width;
+
+        // 리사이즈 시 dope sheet 요소 재배치
+        const initialZoom = d3.zoomIdentity
+          .scale(currentZoomLevel.current)
+          .translate(-(width / 2), 0);
+        const rescaledZoom = d3.zoomIdentity
+          .scale(1)
+          .translate(initialZoom.x + width / 2, 0)
+          .scale(currentZoomLevel.current);
+        rescaleDopeSheet(width, rescaledZoom);
+        arrangeTimeFrame();
+        arrangeKeyframes();
+        arrangePlayBar();
       });
       resizeObserver.observe(dopeSheetRef.current);
     }
@@ -866,7 +880,6 @@ const DopeSheet: React.FC<Props> = (props) => {
         });
         prevScrollTop.current = scrollTop;
       };
-
       d3.select('#timeline-wrapper').on('scroll', arrangeKeyframes);
     }
   }, [dopeSheetScale]);
