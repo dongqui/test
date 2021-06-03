@@ -1,4 +1,5 @@
 import React, {
+  FunctionComponent,
   MutableRefObject,
   RefObject,
   useCallback,
@@ -10,7 +11,6 @@ import React, {
 import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
-import classNames from 'classnames/bind';
 import {
   storeContextMenuInfo,
   storeDeleteTargetKeyframes,
@@ -19,7 +19,6 @@ import {
 } from 'lib/store';
 import CircleGroup from './circleGroup';
 import PlayBar from './playBar';
-import styles from './index.module.scss';
 import { PAGE_NAMES, ShootTrackType } from 'types';
 import {
   fnDeleteKeyframe,
@@ -35,13 +34,17 @@ import * as animatingDataActions from 'actions/animatingData';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
 
 interface Props {
   timelineWrapperRef: RefObject<HTMLDivElement>;
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
   currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  prevXScale: MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
 interface Datum {
@@ -54,7 +57,6 @@ type d3ScaleLinear = d3.ScaleLinear<number, number, never>;
 type d3Selection = d3.Selection<SVGGElement, unknown, HTMLElement, any>;
 type d3Axis = d3.Axis<d3.NumberValue>;
 
-const cx = classNames.bind(styles);
 const X_AXIS_SVG_CLASSNAME = 'x-axis-svg';
 const CIRCLE_GROUP_CLASSNAME = 'circle-group';
 
@@ -64,7 +66,7 @@ const TRACK_HEIGHT = 32; // 트랙 높이
 const THROTTLE_TIMER = 75;
 const INITIAL_SCALE_LEVEL = 7500;
 
-const DopeSheet: React.FC<Props> = ({
+const DopeSheet: FunctionComponent<Props> = ({
   timelineWrapperRef,
   currentTimeRef,
   currentTimeIndexRef,

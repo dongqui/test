@@ -2,19 +2,19 @@ import { BoneTransformAction } from 'actions/boneTransform';
 import { withUndoable } from 'hoc';
 
 export interface BoneTransformState {
-  bone?: THREE.Bone;
-  position?: Transform.Normal;
-  quaternion?: Transform.Quaternion;
-  rotation?: Transform.Normal;
-  scale?: Transform.Normal;
+  bone: THREE.Bone | null;
+  position: Transform.Normal | null;
+  quaternion: Transform.Quaternion | null;
+  rotation: Transform.Normal | null;
+  scale: Transform.Normal | null;
 }
 
 const defaultState: BoneTransformState = {
-  bone: undefined,
-  position: undefined,
-  quaternion: undefined,
-  rotation: undefined,
-  scale: undefined,
+  bone: null,
+  position: null,
+  quaternion: null,
+  rotation: null,
+  scale: null,
 };
 
 const boneTransform = (state = defaultState, action: BoneTransformAction) => {

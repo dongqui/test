@@ -163,3 +163,5 @@ export interface PageInfoType {
   extension?: string;
   duration?: number;
 }
+
+export type PropertyType = 'Position' | 'Rotation' | 'Scale';

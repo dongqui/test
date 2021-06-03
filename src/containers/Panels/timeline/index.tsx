@@ -1,7 +1,13 @@
-import React, { memo, MutableRefObject, RefObject, useEffect, useRef } from 'react';
+import React, {
+  FunctionComponent,
+  memo,
+  MutableRefObject,
+  RefObject,
+  useEffect,
+  useRef,
+} from 'react';
 import { useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
-import classNames from 'classnames/bind';
 import {
   storeTPTrackNameList,
   storeTPDopeSheetList,
@@ -10,7 +16,6 @@ import {
   storeTPClearData,
 } from 'lib/store';
 import TimelineWrapper from './TimeLineWrapper';
-import styles from './index.module.scss';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetDefaultDopeSheetList, fnSetLayerDopeSheet } from 'utils/TP/dopeSheetUtils';
 import { fnGetBinarySearch, fnSetDefaultTrackNameList, fnSetLayerTrack } from 'utils/TP/trackUtils';
@@ -18,6 +23,8 @@ import MiddleBar from 'containers/MiddleBar';
 import { ShootLayerType, ShootTrackType } from 'types';
 import produce from 'immer';
 import { d3ScaleLinear } from 'types/TP';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -28,10 +35,10 @@ interface Props {
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
   currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  prevXScale: MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
 }
 
-const TimelineContainer: React.FC<Props> = ({
+const TimelineContainer: FunctionComponent<Props> = ({
   baseLayer,
   layers,
   visualizedDataKey,

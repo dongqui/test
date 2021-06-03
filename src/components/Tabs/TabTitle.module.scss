@@ -1,12 +1,10 @@
 .tab-header {
   padding: 12px 8px;
+  cursor: default;
 }
 
 .tab-btn {
   border: 0;
-
-  cursor: pointer;
-
   background: none;
   outline: none;
   appearance: none;
@@ -15,11 +13,10 @@
     font-size: 12px;
     line-height: 16px;
     font-weight: 500;
-
     vertical-align: text-top;
-
     color: #7a7a7a;
     transition: color 0.15s;
+
     &:hover {
       color: var(--gray700);
       transition: color 0.15s;
@@ -30,21 +27,29 @@
 .active {
   @extend .tab-btn;
   transition: color 0.15s;
+
   span {
     font-weight: 700;
     color: var(--gray700);
+  }
+
+  & > button {
+    cursor: pointer;
   }
 }
 
 .disabled {
   @extend .tab-btn;
+
   span {
     font-weight: 700;
     color: #7a7a7a;
+
     &:hover {
       color: #7a7a7a;
     }
   }
+
   & > button {
     cursor: not-allowed;
   }
