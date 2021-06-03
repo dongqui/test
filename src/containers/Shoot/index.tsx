@@ -11,21 +11,22 @@ import {
 import _ from 'lodash';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
+// import LibraryPanel from 'containers/Panels/LibraryPanel_release';
 import { storeLpData } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
 import TimelinePanel from 'containers/Panels/TimelinePanel';
-import { ControlPanel } from 'containers/Panels/ControlPanel';
+import ControlPanel from 'containers/Panels/ControlPanel';
 import { ConfirmModalProvider } from 'components/Modal/ConfirmModal';
 import useWindowSize from 'hooks/common/useWindowSize';
 import { d3ScaleLinear } from 'types/TP';
 import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { useDispatch } from 'react-redux';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { useSelector } from 'reducers';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 

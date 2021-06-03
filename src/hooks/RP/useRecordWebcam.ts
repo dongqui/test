@@ -1,7 +1,7 @@
-import { useCallback, useEffect } from 'react';
+import { RefObject, useCallback, useEffect } from 'react';
 
 interface useRecordWebcamProps {
-  ref: React.RefObject<HTMLVideoElement>;
+  ref: RefObject<HTMLVideoElement>;
 }
 const OPTIONS = {
   audio: false,
