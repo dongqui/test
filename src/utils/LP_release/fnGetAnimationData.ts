@@ -21,28 +21,19 @@ const fnGetAnimationData = async (params: FnGetAnimationData): Promise<ResultTyp
   const { url } = params;
   const loader = new GLTFLoader();
 
-  try {
-    const { scene, animations } = await loader
-      .loadAsync(url)
-      .then((result) => result)
-      .catch((e) => {
-        throw Error(e);
-      });
-    const { bones } = new THREE.SkeletonHelper(scene);
+  const { scene, animations } = await loader
+    .loadAsync(url)
+    .then((result) => result)
+    .catch((e) => {
+      throw Error(e);
+    });
+  const { bones } = new THREE.SkeletonHelper(scene);
 
-    return {
-      animations,
-      bones,
-      isError: false,
-      errorMessage: '',
-    };
-  } catch (error) {
-    return {
-      animations: [],
-      bones: [],
-      isError: true,
-      errorMessage: error,
-    };
-  }
+  return {
+    animations,
+    bones,
+    isError: false,
+    errorMessage: '',
+  };
 };
 export default fnGetAnimationData;

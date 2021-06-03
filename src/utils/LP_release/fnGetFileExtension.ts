@@ -9,13 +9,13 @@ import last from 'lodash/last';
  *
  */
 const fnGetFileExtension = (fileName: string): string => {
-  let extension = '';
   if (!fileName.includes('.')) {
+    return '';
+  } else {
+    let extension = last(fileName.split('.')) || '';
+    extension = extension.toLowerCase();
     return extension;
   }
-  extension = last(fileName.split('.')) || '';
-  extension = extension.toLowerCase();
-  return extension;
 };
 
 export default fnGetFileExtension;

@@ -27,36 +27,28 @@ const fnSetConvertFbxToGlb = async (params: FnSetConvertFbxToGlb): Promise<Respo
   formData.append('file', file);
   formData.append('type', 'fbx');
   formData.append('id', String(Date.now() / 1000));
-  try {
-    const result = await axios({
-      method: 'POST',
-      baseURL: BLENDER_BASE_URL,
-      url: '/fbx2glb-upload-api',
-      data: formData,
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-      .then((result) => result?.data.result)
-      .catch((e) => {
-        throw Error(e);
-      });
-    if (result) {
-      return {
-        result,
-        isError: false,
-        errorMessage: '',
-      };
-    } else {
-      return {
-        result: '',
-        isError: true,
-        errorMessage: 'Data does not exist',
-      };
-    }
-  } catch (error) {
+  const result = await axios({
+    method: 'POST',
+    baseURL: BLENDER_BASE_URL,
+    url: '/fbx2glb-upload-api',
+    data: formData,
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+    .then((result) => result?.data.result)
+    .catch((e) => {
+      throw Error(e);
+    });
+  if (result) {
+    return {
+      result,
+      isError: false,
+      errorMessage: '',
+    };
+  } else {
     return {
       result: '',
       isError: true,
-      errorMessage: error,
+      errorMessage: 'Data does not exist',
     };
   }
 };
