@@ -9,17 +9,10 @@ import {
   LPDATA_PROPERTY_TYPES,
   ShootTrackType,
 } from 'types';
-import {
-  storeContextMenuInfo,
-  storeCPChangeTab,
-  storeLpData,
-  storePages,
-  storeRetargetInfo,
-  storeRetargetMap,
-} from 'lib/store';
+import { storeContextMenuInfo, storeLpData, storePages } from 'lib/store';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { PagesType } from 'containers/Panels/LibraryPanel';
-import { defaultTargetboneValue } from 'containers/Panels/ControlPanel/Retarget/RetargetPanel';
+import { defaultTargetboneValue } from 'containers/Panels/ControlPanel/RetargetTab';
 import * as api from 'utils/common/api';
 import { fnExportModelToFbx, fnExportModelToGlb } from 'utils/LP';
 import { fnDeleteFile, fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
@@ -30,9 +23,11 @@ import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
 import fnGetDeltaProductedTracks from 'utils/LP/fnGetDeltaProductedTracks';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import { ROOT_FOLDER_NAME } from 'types/LP';
-import { RetargetInfoType, TargetboneType } from 'types/CP';
+import { RetargetInfoType, TargetBoneType } from 'types/CP';
 import { initialRetargetMap } from 'utils/retargetMap';
 import { useDispatch } from 'react-redux';
+import * as cpDataActions from 'actions/cpData';
+import * as retargetDataActions from 'actions/retargetData';
 
 interface UseLPControlProps {
   mainData: LPDataType[];
@@ -135,7 +130,7 @@ const useLPControl = ({
                 title: 'Auto-retargeting has failed. Would you retarget motion manually?',
               });
               if (confirmed) {
-                let targetboneList: TargetboneType[] = _.map(
+                let targetboneList: TargetBoneType[] = _.map(
                   targetRow?.boneNames ?? [],
                   (item) => ({
                     key: item,
@@ -150,14 +145,21 @@ const useLPControl = ({
                   ],
                   targetboneList,
                 );
-                storeRetargetMap(initialRetargetMap);
-                storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
-                storeCPChangeTab(1);
+                if (targetRow?.key) {
+                  dispatch(
+                    retargetDataActions.setRetargetInfo({
+                      modelKey: targetRow?.key,
+                      targetboneList,
+                      retargetMap: [],
+                    }),
+                  );
+                }
+                dispatch(retargetDataActions.setRetargetMap({ retargetMap: initialRetargetMap }));
               }
               setShowsModal(false);
               return;
             } else {
-              let targetboneList: TargetboneType[] = _.map(targetRow?.boneNames ?? [], (item) => ({
+              let targetboneList: TargetBoneType[] = _.map(targetRow?.boneNames ?? [], (item) => ({
                 key: item,
                 value: item,
                 isSelected: false,
@@ -169,9 +171,17 @@ const useLPControl = ({
                 ],
                 targetboneList,
               );
-              storeRetargetMap(retargetMap);
-              storeRetargetInfo({ modelKey: targetRow?.key, targetboneList, retargetMap: [] });
-              storeCPChangeTab(1);
+              dispatch(retargetDataActions.setRetargetMap({ retargetMap }));
+              if (targetRow?.key) {
+                dispatch(
+                  retargetDataActions.setRetargetInfo({
+                    modelKey: targetRow?.key,
+                    targetboneList,
+                    retargetMap: [],
+                  }),
+                );
+              }
+              dispatch(cpDataActions.setCPTab({ tabIndex: 1 }));
             }
           }
 
@@ -223,7 +233,7 @@ const useLPControl = ({
           });
           if (error3) {
             setModalMessage('An error has occurred while retargeting.');
-            storeCPChangeTab(1);
+            dispatch(cpDataActions.setCPTab({ tabIndex: 1 }));
             return;
           }
           const times = draggingRow?.baseLayer?.[0]?.times;
@@ -289,6 +299,7 @@ const useLPControl = ({
       );
     },
     [
+      dispatch,
       getConfirm,
       mainData,
       retargetInfo?.modelKey,

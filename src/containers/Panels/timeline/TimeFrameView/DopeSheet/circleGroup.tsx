@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -19,7 +19,7 @@ const SELECTED_COLOR = {
   transform: '#2b2823',
 };
 
-const CircleGroup: React.FC<Props> = ({ dopeSheetData, prevXScale }) => {
+const CircleGroup: FunctionComponent<Props> = ({ dopeSheetData, prevXScale }) => {
   const [isDisplayed, setIsDisplayed] = useState(true);
   const [isSelected, setIsSelected] = useState(false);
   const circleGroupRef = useRef<SVGSVGElement>(null);

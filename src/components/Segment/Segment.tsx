@@ -18,9 +18,12 @@ interface BaseProps {
 
 export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
 
-const Segment: FunctionComponent<Props> = ({ list }) => {
+const Segment: FunctionComponent<Props> = ({ list, disabled }) => {
   const child = _.map(list, (item, idx: number) => {
     const handleClick = () => {
+      if (disabled) {
+        return;
+      }
       item.onClick(item.key);
     };
 

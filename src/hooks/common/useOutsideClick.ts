@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { MutableRefObject, useCallback, useEffect } from 'react';
 
 export const useOutsideClick = ({
   ref,
   event,
 }: {
-  ref: React.MutableRefObject<any>;
+  ref: MutableRefObject<any>;
   event: Function;
 }) => {
   const onClick = useCallback(

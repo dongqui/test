@@ -8,7 +8,9 @@ import { lpData } from './lpData';
 import { undoableBoneTransform } from './boneTransform';
 import { animatingData } from './animatingData';
 import { renderingData } from './renderingData';
+import { retargetData } from './retargetData';
 import { currentVisualizedData } from './currentVisualizedData';
+import { cpData } from './cpData';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -20,7 +22,9 @@ const rootReducer = combineReducers({
   lpData,
   animatingData,
   renderingData,
+  retargetData,
   currentVisualizedData,
+  cpData,
 });
 
 // type 적용된 useSelector

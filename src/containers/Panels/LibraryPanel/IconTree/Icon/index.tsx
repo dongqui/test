@@ -41,7 +41,7 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
       rowKey,
       lpData,
     ]) ?? false;
-  const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
+  const iconRef: MutableRefObject<HTMLDivElement> | any = useRef(null);
   const onClick = useCallback(
     (e) => {
       storeLpData(

@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useRef } from 'react';
+import React, { FunctionComponent, memo, RefObject, useCallback, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import { TPDopeSheet } from 'types/TP';
@@ -8,7 +8,7 @@ import { fnGetBinarySearch } from 'utils/TP/trackUtils';
 import { fnClickAnyKeyframeToMouse, fnClickAnyKeyframeToCtrl } from 'utils/TP/dopeSheetUtils';
 
 interface Props {
-  circleGroupRef: React.RefObject<SVGSVGElement>;
+  circleGroupRef: RefObject<SVGSVGElement>;
   dopeSheetData: TPDopeSheet;
   prevXScale: d3.ScaleLinear<number, number, never>;
 }
@@ -16,7 +16,7 @@ interface Props {
 const TRACK_HEIGHT = 32; // 트랙 높이
 const CIRCLE_RADIUS = 4; // 원 반지름 크기
 
-const Circles: React.FC<Props> = ({ circleGroupRef, dopeSheetData, prevXScale }) => {
+const Circles: FunctionComponent<Props> = ({ circleGroupRef, dopeSheetData, prevXScale }) => {
   const deleteTargetKeyframes = useReactiveVar(storeDeleteTargetKeyframes);
   const lastBoneList = useReactiveVar(storeTPLastBoneList);
   const dopeSheetList = useReactiveVar(storeTPDopeSheetList);

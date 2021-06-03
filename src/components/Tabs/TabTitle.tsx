@@ -1,8 +1,9 @@
 import { FunctionComponent, useCallback } from 'react';
+import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import * as cpDataActions from 'actions/cpData';
 import classNames from 'classnames/bind';
 import styles from './TabTitle.module.scss';
-import { storeCPChangeTab } from 'lib/store';
-import { useReactiveVar } from '@apollo/client';
 
 const cx = classNames.bind(styles);
 
@@ -13,13 +14,17 @@ interface Props {
 }
 
 const TabTitle: FunctionComponent<Props> = ({ tabID, title, disabled }) => {
-  const changeTabs = useReactiveVar(storeCPChangeTab);
+  const dispatch = useDispatch();
+  const { tabIndex } = useSelector((state) => state.cpData);
+
   const handleClick = useCallback(() => {
-    storeCPChangeTab(tabID);
-  }, [tabID]);
-  const classes = cx('tab-header', changeTabs === tabID ? cx('active') : undefined, {
+    dispatch(cpDataActions.setCPTab({ tabIndex: tabID }));
+  }, [dispatch, tabID]);
+
+  const classes = cx('tab-header', tabIndex === tabID ? cx('active') : undefined, {
     disabled,
   });
+
   return (
     <div className={classes}>
       <button className={cx('tab-btn')} disabled={disabled} onClick={handleClick}>
