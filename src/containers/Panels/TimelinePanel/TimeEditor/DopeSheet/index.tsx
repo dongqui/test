@@ -672,7 +672,6 @@ const DopeSheet: React.FC<Props> = (props) => {
 
   // dope sheet zoom 적용
   const prevDoepSheetWidth = useRef(0);
-  const prevTranslateX = useRef({ start: 0, end: 0 });
   const currentZoomLevel = useRef(INITIAL_ZOOM_LEVEL);
   useEffect(() => {
     if (dopeSheetRef.current) {
