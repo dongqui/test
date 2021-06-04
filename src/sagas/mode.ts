@@ -1,5 +1,5 @@
-import * as actions from 'actions/mode';
-import { ModeState, CHANGE_MODE } from 'actions/mode';
+import * as actions from 'actions/SAMPLE_mode';
+import { ModeState, CHANGE_MODE } from 'actions/SAMPLE_mode';
 import { put, takeLatest } from 'redux-saga/effects';
 
 interface SagaParams {
