@@ -672,6 +672,7 @@ const DopeSheet: React.FC<Props> = (props) => {
 
   // dope sheet zoom 적용
   const prevDoepSheetWidth = useRef(0);
+  const prevTranslateX = useRef({ start: 0, end: 0 });
   const currentZoomLevel = useRef(INITIAL_ZOOM_LEVEL);
   useEffect(() => {
     if (dopeSheetRef.current) {
@@ -769,8 +770,8 @@ const DopeSheet: React.FC<Props> = (props) => {
           const timelineWrapperTop = timelineWrapperDOM?.getBoundingClientRect().top;
           if (timelineWrapperTop && dopeSheetScale.current) {
             const scaleXLinear = dopeSheetScale.current;
-            const rangeTop = timelineWrapperTop - TRACK_HEIGHT * 4;
-            const rangeBottom = window.innerHeight + TRACK_HEIGHT * 4;
+            const rangeTop = timelineWrapperTop - TRACK_HEIGHT * 6; // range 범위를 늘림
+            const rangeBottom = window.innerHeight + TRACK_HEIGHT * 6; // range 범위를 늘림
             const keyframeGroupTop = keyframeGroupNode.getBoundingClientRect().top;
             if (rangeTop <= keyframeGroupTop && keyframeGroupTop <= rangeBottom) {
               keyframeGroup.selectAll('circle').each(function () {
