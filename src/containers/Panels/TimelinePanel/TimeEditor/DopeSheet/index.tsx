@@ -43,7 +43,7 @@ const TRACK_HEIGHT = 32;
 const ZOOM_THROTTLE_TIMER = 75;
 const INITIAL_ZOOM_LEVEL = 7500;
 
-interface d3ZoomDatum {
+interface D3ZoomDatum {
   name: string;
   times: number[];
   values: number[];
@@ -819,7 +819,7 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
           })
           .on(
             'zoom',
-            _.throttle((event: d3.D3ZoomEvent<Element, d3ZoomDatum>) => {
+            _.throttle((event: d3.D3ZoomEvent<Element, D3ZoomDatum>) => {
               if (!event.sourceEvent) return;
               rescaleDopeSheet(width, event.transform);
               arrangeTimeFrame();
