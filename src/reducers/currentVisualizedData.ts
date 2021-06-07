@@ -25,34 +25,13 @@ export const currentVisualizedData = (
       });
     }
     case 'currentVisualizedData/UPDATE_KEYFRAME_TO_BASE': {
-      return Object.assign({}, state, {
-        key: action.payload.data.key,
-        name: action.payload.data.name,
-        type: action.payload.data.type,
-        boneNames: action.payload.data.boneNames,
-        baseLayer: action.payload.data.baseLayer,
-        layers: action.payload.data.layers,
-      });
+      return action.payload.data; // action을 보낼 때 data에 CurrentVisualizedData가 담긴 채로 전달
     }
     case 'currentVisualizedData/UPDATE_KEYFRAME_TO_LAYER': {
-      return Object.assign({}, state, {
-        key: action.payload.data.key,
-        name: action.payload.data.name,
-        type: action.payload.data.type,
-        boneNames: action.payload.data.boneNames,
-        baseLayer: action.payload.data.baseLayer,
-        layers: action.payload.data.layers,
-      });
+      return action.payload.data; // action을 보낼 때 data에 CurrentVisualizedData가 담긴 채로 전달
     }
     case 'currentVisualizedData/DELETE_KEYFRAME': {
-      return Object.assign({}, state, {
-        key: action.payload.data.key,
-        name: action.payload.data.name,
-        type: action.payload.data.type,
-        boneNames: action.payload.data.boneNames,
-        baseLayer: action.payload.data.baseLayer,
-        layers: action.payload.data.layers,
-      });
+      return action.payload.data; // action을 보낼 때 data에 CurrentVisualizedData가 담긴 채로 전달
     }
     case 'currentVisualizedData/EXCLUDE_TRACK': {
       const { layerKey, updatedState } = action.payload;
