@@ -1,7 +1,6 @@
 import React, { FunctionComponent, RefObject, useCallback, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
-import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { useSelector } from 'reducers';
 import * as timelineActions from 'actions/timeline';
@@ -20,14 +19,16 @@ import {
 } from 'utils/TP/trackUtils';
 import { UpdatedTrack } from 'types/TP';
 import TrackItem from './TrackItem';
+import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
 
 interface Props {
   trackListRef: RefObject<HTMLDivElement>;
 }
 
 const INPUT_DEBOUNCE_TIME = 300;
-const cx = classNames.bind(styles);
 
 const TrackList: FunctionComponent<Props> = ({ trackListRef }) => {
   const dispatch = useDispatch();

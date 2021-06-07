@@ -8,15 +8,15 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import classNames from 'classnames/bind';
 import * as d3 from 'd3';
 import _ from 'lodash';
-import styles from './index.module.scss';
 import { d3ScaleLinear } from 'types/TP';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { useSelector } from 'reducers';
 import { fnGetMaskedValue, fnSetValue } from 'utils/common';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 const PLAY_BAR_COLOR = '#ECEDEE';

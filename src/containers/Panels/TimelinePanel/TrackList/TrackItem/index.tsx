@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
-import classNames from 'classnames/bind';
 import _ from 'lodash';
 import { useSelector } from 'reducers';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -24,12 +23,13 @@ import { TP_TRACK_INDEX } from 'utils/const';
 import { UpdatedTrack } from 'types/TP';
 import * as timelineActions from 'actions/timeline';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
-import styles from './index.module.scss';
 import { storeContextMenuInfo } from 'lib/store';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { useReactiveVar } from '@apollo/client';
 import { FormModal } from 'components/Modal';
 import { BaseInput } from 'components/Input';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 

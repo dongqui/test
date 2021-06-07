@@ -9,7 +9,6 @@ import React, {
   useState,
 } from 'react';
 import { useDispatch } from 'react-redux';
-import classNames from 'classnames/bind';
 import produce from 'immer';
 import _ from 'lodash';
 import * as d3 from 'd3';
@@ -32,8 +31,9 @@ import { PAGE_NAMES, ShootTrackType } from 'types';
 import { d3ScaleLinear } from 'types/TP';
 import PlayBar from './PlayBar';
 import KeyframeGroup from './KeyframeGroup';
-import styles from './index.module.scss';
 import useContextMenu from 'hooks/common/useContextMenu';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -43,7 +43,7 @@ const TRACK_HEIGHT = 32;
 const ZOOM_THROTTLE_TIMER = 75;
 const INITIAL_ZOOM_LEVEL = 7500;
 
-interface Datum {
+interface d3ZoomDatum {
   name: string;
   times: number[];
   values: number[];
@@ -819,7 +819,7 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
           })
           .on(
             'zoom',
-            _.throttle((event: d3.D3ZoomEvent<Element, Datum>) => {
+            _.throttle((event: d3.D3ZoomEvent<Element, d3ZoomDatum>) => {
               if (!event.sourceEvent) return;
               rescaleDopeSheet(width, event.transform);
               arrangeTimeFrame();

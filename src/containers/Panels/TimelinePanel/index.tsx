@@ -2,14 +2,12 @@ import React, {
   memo,
   useEffect,
   useRef,
-  Fragment,
   FunctionComponent,
   MutableRefObject,
   RefObject,
 } from 'react';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
-import classNames from 'classnames/bind';
 import MiddleBar from 'containers/MiddleBar';
 import { useSelector } from 'reducers';
 import { fnSetInitialTrackList } from 'utils/TP/trackUtils';
@@ -18,6 +16,7 @@ import * as timelineActions from 'actions/timeline';
 import { CurrentVisualizedData } from 'actions/currentVisualizedData';
 import TrackList from './TrackList';
 import TimeEditor from './TimeEditor';
+import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
