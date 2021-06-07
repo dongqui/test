@@ -43,7 +43,7 @@ export interface Props {
   currentTimeRef?: RefObject<HTMLInputElement>;
   currentTimeIndexRef?: RefObject<HTMLInputElement>;
   currentPlayBarTime?: MutableRefObject<number>;
-  dopeSheetScale?: React.MutableRefObject<d3ScaleLinear | null>;
+  dopeSheetScale?: MutableRefObject<d3ScaleLinear | null>;
   startTimeIndex: number;
   lastTime: number;
 }

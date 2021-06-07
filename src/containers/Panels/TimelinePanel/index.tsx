@@ -1,4 +1,12 @@
-import React, { memo, useEffect, useRef, MutableRefObject, RefObject } from 'react';
+import React, {
+  memo,
+  useEffect,
+  useRef,
+  Fragment,
+  FunctionComponent,
+  MutableRefObject,
+  RefObject,
+} from 'react';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
@@ -21,7 +29,7 @@ interface Props {
   dopeSheetScale: React.MutableRefObject<d3ScaleLinear | null>;
 }
 
-const TimelinePanel: React.FC<Props> = (props) => {
+const TimelinePanel: FunctionComponent<Props> = (props) => {
   const { currentTimeRef, currentTimeIndexRef, currentPlayBarTime, dopeSheetScale } = props;
   const dispatch = useDispatch();
   const prevModelKey = useRef('');
@@ -74,25 +82,23 @@ const TimelinePanel: React.FC<Props> = (props) => {
   }, []);
 
   return (
-    <>
-      <div className={cx('panel')}>
-        <MiddleBar
+    <div className={cx('panel')}>
+      <MiddleBar
+        currentTimeRef={currentTimeRef}
+        currentTimeIndexRef={currentTimeIndexRef}
+        currentPlayBarTime={currentPlayBarTime}
+        dopeSheetScale={dopeSheetScale}
+      />
+      <div id="timeline-wrapper" className={cx('wrapper')} ref={timelineWrapperRef}>
+        <TrackList trackListRef={trackListRef} />
+        <TimeEditor
           currentTimeRef={currentTimeRef}
           currentTimeIndexRef={currentTimeIndexRef}
           currentPlayBarTime={currentPlayBarTime}
           dopeSheetScale={dopeSheetScale}
         />
-        <div id="timeline-wrapper" className={cx('wrapper')} ref={timelineWrapperRef}>
-          <TrackList trackListRef={trackListRef} />
-          <TimeEditor
-            currentTimeRef={currentTimeRef}
-            currentTimeIndexRef={currentTimeIndexRef}
-            currentPlayBarTime={currentPlayBarTime}
-            dopeSheetScale={dopeSheetScale}
-          />
-        </div>
       </div>
-    </>
+    </div>
   );
 };
 

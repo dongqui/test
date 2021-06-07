@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useRef } from 'react';
+import React, { FunctionComponent, memo, useMemo, useRef } from 'react';
 import _ from 'lodash';
 import { useSelector } from 'reducers';
 import { TP_TRACK_INDEX } from 'utils/const';
@@ -23,14 +23,14 @@ const SELECTED_COLOR = {
 };
 const TRACK_HEIGHT = 32;
 
-const KeyframeGroup: React.FC<Props> = ({
+const KeyframeGroup: FunctionComponent<Props> = ({
+  dopeSheetScale,
   isLocked,
   isSelected,
   layerKey,
   times,
-  trackName,
   trackIndex,
-  dopeSheetScale,
+  trackName,
 }) => {
   const currentClickedTrack = useSelector((state) => state.timeline.currentClickedTrack);
   const keyframeGroupRef = useRef<SVGSVGElement>(null);
@@ -76,10 +76,10 @@ const KeyframeGroup: React.FC<Props> = ({
     <svg className="keyframe-group" width="100%" height={TRACK_HEIGHT} ref={keyframeGroupRef}>
       <rect width="100%" height={TRACK_HEIGHT} fill={trackColor} strokeDasharray="100, 50" />
       <Keyframes
-        keyframeGroupRef={keyframeGroupRef}
         dopeSheetScale={dopeSheetScale}
         isLocked={isLocked}
         layerKey={layerKey}
+        keyframeGroupRef={keyframeGroupRef}
         times={times}
         trackIndex={trackIndex}
         trackName={trackName}

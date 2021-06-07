@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { FunctionComponent, RefObject, useCallback, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
 import classNames from 'classnames/bind';
@@ -23,13 +23,13 @@ import TrackItem from './TrackItem';
 import styles from './index.module.scss';
 
 interface Props {
-  trackListRef: React.RefObject<HTMLDivElement>;
+  trackListRef: RefObject<HTMLDivElement>;
 }
 
 const INPUT_DEBOUNCE_TIME = 300;
 const cx = classNames.bind(styles);
 
-const TrackList: React.FC<Props> = ({ trackListRef }) => {
+const TrackList: FunctionComponent<Props> = ({ trackListRef }) => {
   const dispatch = useDispatch();
   const prevInputText = useRef('');
   const trackList = useSelector((state) => state.timeline.trackList);
@@ -236,21 +236,6 @@ const TrackList: React.FC<Props> = ({ trackListRef }) => {
 
   return (
     <AlertModalProvider>
-      {/* <div>
-        <div className={cx('search-wrapper')}>
-          <SearchInput
-            className={cx('search-joint')}
-            placeholder="Search Joints"
-            onChange={handleChangeTrackInput}
-          />
-          <IconWrapper
-            className={cx('layer')}
-            icon={SvgPath.Layer}
-            hasFrame={false}
-            onClick={clickLayerButton}
-          />
-        </div>
-      </div> */}
       <div className={cx('wrapper')} onContextMenu={handleTrackListContextMenu} ref={trackListRef}>
         <div className={cx('search-wrapper')}>
           <SearchInput

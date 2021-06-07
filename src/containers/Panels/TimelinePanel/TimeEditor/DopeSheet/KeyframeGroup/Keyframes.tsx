@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef } from 'react';
+import React, { Fragment, FunctionComponent, RefObject, memo, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
 import * as d3 from 'd3';
@@ -15,11 +15,11 @@ import { d3ScaleLinear } from 'types/TP';
 import * as timelineActions from 'actions/timeline';
 
 interface Props {
-  keyframeGroupRef: React.RefObject<SVGSVGElement>;
   dopeSheetScale: d3ScaleLinear;
   isLocked: boolean;
-  times: number[];
   layerKey: string;
+  keyframeGroupRef: RefObject<SVGSVGElement>;
+  times: number[];
   trackIndex: number;
   trackName: string;
 }
@@ -32,7 +32,7 @@ const KEYFRAME_COLOR = {
 };
 const TRACK_HEIGHT = 32;
 
-const Keyframes: React.FC<Props> = ({
+const Keyframes: FunctionComponent<Props> = ({
   keyframeGroupRef,
   isLocked,
   layerKey,
@@ -215,7 +215,7 @@ const Keyframes: React.FC<Props> = ({
     }
   }, [keyframeGroupRef, isLocked, selectedKeyframes, times, trackIndex]);
 
-  return <></>;
+  return <Fragment />;
 };
 
 export default memo(Keyframes);

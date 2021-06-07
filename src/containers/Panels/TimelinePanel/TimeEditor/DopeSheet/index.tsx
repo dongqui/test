@@ -1,4 +1,5 @@
 import React, {
+  FunctionComponent,
   MutableRefObject,
   RefObject,
   useCallback,
@@ -55,7 +56,7 @@ interface Props {
   dopeSheetScale: MutableRefObject<d3ScaleLinear | null>;
 }
 
-const DopeSheet: React.FC<Props> = (props) => {
+const DopeSheet: FunctionComponent<Props> = (props) => {
   const { currentPlayBarTime, currentTimeIndexRef, currentTimeRef, dopeSheetScale } = props;
   const dispatch = useDispatch();
   const dopeSheetRef = useRef<HTMLDivElement>(null);
