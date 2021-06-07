@@ -20,7 +20,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 const PLAY_BAR_COLOR = '#ECEDEE';
-const TIME_FRAME_HEIGHT = 48;
+const TIME_FRAME_BAR_HEIGHT = 48;
 
 interface Props {
   currentPlayBarTime: MutableRefObject<number>;
@@ -46,7 +46,7 @@ const PlayBar: FunctionComponent<Props> = (props) => {
       currentPlayBarTime.current = currentAction.time ? currentAction.time * 30 : 1;
       const scaleXLineaer = dopeSheetScale.current;
       const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
-      const translateY = TIME_FRAME_HEIGHT / 2;
+      const translateY = TIME_FRAME_BAR_HEIGHT / 2;
       d3.select('#play-bar').style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`);
     }
     playBarReqId.current = window.requestAnimationFrame(setPlayBarPosition);
@@ -92,7 +92,7 @@ const PlayBar: FunctionComponent<Props> = (props) => {
       currentPlayBarTime.current = nextValue;
       const scaleXLineaer = dopeSheetScale.current;
       const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
-      const translateY = TIME_FRAME_HEIGHT / 2;
+      const translateY = TIME_FRAME_BAR_HEIGHT / 2;
       d3.select('#play-bar').style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`);
 
       if (_.round(nextValue / 30, 4) >= lastTime) {
@@ -135,7 +135,7 @@ const PlayBar: FunctionComponent<Props> = (props) => {
       currentPlayBarTime.current = nextValue;
       const scaleXLineaer = dopeSheetScale.current;
       const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
-      const translateY = TIME_FRAME_HEIGHT / 2;
+      const translateY = TIME_FRAME_BAR_HEIGHT / 2;
       d3.select('#play-bar').style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`);
 
       if (_.round(nextValue / 30, 4) >= lastTime) {
@@ -221,7 +221,7 @@ const PlayBar: FunctionComponent<Props> = (props) => {
           }
           const scaleXLineaer = dopeSheetScale.current;
           const translateX = scaleXLineaer(setPlayBarTime(playBarTime)) - 10;
-          const translateY = TIME_FRAME_HEIGHT / 2;
+          const translateY = TIME_FRAME_BAR_HEIGHT / 2;
           currentPlayBarTime.current = setPlayBarTime(playBarTime);
           d3.select(this).style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`);
         });
@@ -230,7 +230,7 @@ const PlayBar: FunctionComponent<Props> = (props) => {
       const scaleXLineaer = dopeSheetScale.current;
       const initialPlayBarTime = setPlayBarTime(currentPlayBarTime.current);
       const translateX = scaleXLineaer(initialPlayBarTime) - 10;
-      const translateY = TIME_FRAME_HEIGHT / 2;
+      const translateY = TIME_FRAME_BAR_HEIGHT / 2;
       currentPlayBarTime.current = initialPlayBarTime;
       d3.select('#play-bar')
         .style('transform', `translate3d(${translateX}px, ${translateY}px, 0)`)

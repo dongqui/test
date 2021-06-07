@@ -31,7 +31,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const TIME_FRAME_HEIGHT = 48; // 트랙 높이
+const TIME_FRAME_BAR_HEIGHT = 48;
 
 export interface Props {
   currentTimeRef?: RefObject<HTMLInputElement>;
@@ -215,7 +215,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         currentPlayBarTime.current = currentAction.time ? currentAction.time * 30 : 1;
         const scaleXLineaer = dopeSheetScale.current as d3ScaleLinear;
         const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
-        const translateY = TIME_FRAME_HEIGHT / 2;
+        const translateY = TIME_FRAME_BAR_HEIGHT / 2;
         d3.select('#play-bar').style(
           'transform',
           `translate3d(${translateX}px,${translateY}px, 0)`,
@@ -261,7 +261,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
         currentPlayBarTime.current = currentAction.time ? currentAction.time * 30 : 1;
         const scaleXLineaer = dopeSheetScale.current as d3ScaleLinear;
         const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
-        const translateY = TIME_FRAME_HEIGHT / 2;
+        const translateY = TIME_FRAME_BAR_HEIGHT / 2;
         d3.select('#play-bar').style(
           'transform',
           `translate3d(${translateX}px,${translateY}px, 0)`,

@@ -38,7 +38,7 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const X_AXIS_DOMAIN = 500000;
-const TIME_FRAME_HEIGHT = 48;
+const TIME_FRAME_BAR_HEIGHT = 48;
 const TRACK_HEIGHT = 32;
 const ZOOM_THROTTLE_TIMER = 75;
 const INITIAL_ZOOM_LEVEL = 7500;
@@ -671,6 +671,9 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
     };
   }, [handleDopesheetKeyDown, handleDopesheetKeyUp]);
 
+  const startTimeIndexRef = useRef(0);
+  const endTimeIndexRef = useRef(0);
+
   // dope sheet zoom 적용
   const prevDoepSheetWidth = useRef(0);
   const currentZoomLevel = useRef(INITIAL_ZOOM_LEVEL);
@@ -688,10 +691,11 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
       };
 
       // time frame, 세로 선 생성
-      const arrangeTimeFrame = () => {
+      const arrangeTimeFrameBar = () => {
         if (!dopeSheetScale.current) return;
         const scaleXLinear = dopeSheetScale.current;
-        const rangeRectWidth = scaleXLinear(endTimeIndex) - scaleXLinear(startTimeIndex);
+        const rangeRectWidth =
+          scaleXLinear(endTimeIndexRef.current) - scaleXLinear(startTimeIndexRef.current);
 
         // 세로 선 생성
         d3.select('.vertical-line-wrapper').remove();
@@ -718,24 +722,24 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
           .append('svg')
           .attr('class', 'time-frame-wrapper')
           .attr('width', '100%')
-          .attr('height', TIME_FRAME_HEIGHT)
+          .attr('height', TIME_FRAME_BAR_HEIGHT)
           .style('position', 'fixed')
           .style('z-index', 2)
           .append('g')
-          .attr('transform', `translate(0, ${TIME_FRAME_HEIGHT / 2})`)
+          .attr('transform', `translate(0, ${TIME_FRAME_BAR_HEIGHT / 2})`)
           .call((wrapper) =>
             wrapper
               .append('rect')
               .attr('width', '100%')
-              .attr('height', TIME_FRAME_HEIGHT / 2)
-              .attr('transform', `translate(0, -${TIME_FRAME_HEIGHT / 2})`)
+              .attr('height', TIME_FRAME_BAR_HEIGHT / 2)
+              .attr('transform', `translate(0, -${TIME_FRAME_BAR_HEIGHT / 2})`)
               .style('fill', '#363636'),
           )
           .call((wrapper) =>
             wrapper
               .append('rect')
               .attr('width', '100%')
-              .attr('height', TIME_FRAME_HEIGHT / 2)
+              .attr('height', TIME_FRAME_BAR_HEIGHT / 2)
               .attr('transform', `translate(0, 0)`)
               .style('fill', '#282727'),
           )
@@ -744,10 +748,12 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
               .append('rect')
               .attr('class', 'range-rect')
               .attr('width', rangeRectWidth)
-              .attr('height', TIME_FRAME_HEIGHT / 2)
+              .attr('height', TIME_FRAME_BAR_HEIGHT / 2)
               .attr(
                 'transform',
-                `translate(${scaleXLinear(startTimeIndex)}, -${TIME_FRAME_HEIGHT / 2})`,
+                `translate(${scaleXLinear(startTimeIndexRef.current)}, -${
+                  TIME_FRAME_BAR_HEIGHT / 2
+                })`,
               )
               .style('fill', '#3785F7'),
           )
@@ -787,7 +793,7 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
         if (!dopeSheetScale.current) return;
         const scaleXLinear = dopeSheetScale.current;
         const translateX = scaleXLinear(currentPlayBarTime.current) - 10;
-        const translateY = TIME_FRAME_HEIGHT / 2;
+        const translateY = TIME_FRAME_BAR_HEIGHT / 2;
         d3.select('#play-bar').style(
           'transform',
           `translate3d(${translateX}px, ${translateY}px, 0)`,
@@ -822,7 +828,7 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
             _.throttle((event: d3.D3ZoomEvent<Element, D3ZoomDatum>) => {
               if (!event.sourceEvent) return;
               rescaleDopeSheet(width, event.transform);
-              arrangeTimeFrame();
+              arrangeTimeFrameBar();
               arrangeKeyframes();
               arrangePlayBar();
             }, ZOOM_THROTTLE_TIMER),
@@ -842,7 +848,7 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
           .translate(initialZoom.x + width / 2, 0)
           .scale(currentZoomLevel.current);
         rescaleDopeSheet(width, rescaledZoom);
-        arrangeTimeFrame();
+        arrangeTimeFrameBar();
         arrangeKeyframes();
         arrangePlayBar();
       });
@@ -884,6 +890,21 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
       d3.select('#timeline-wrapper').on('scroll', arrangeKeyframes);
     }
   }, [dopeSheetScale]);
+
+  // 재생바 구간 범위 rect 크기 조정
+  useEffect(() => {
+    if (!dopeSheetScale.current) return;
+    const scaleXLinear = dopeSheetScale.current;
+    const rangeRectWidth = scaleXLinear(endTimeIndex) - scaleXLinear(startTimeIndex);
+    d3.select('.range-rect')
+      .attr('width', rangeRectWidth)
+      .attr(
+        'transform',
+        `translate(${scaleXLinear(startTimeIndex)}, -${TIME_FRAME_BAR_HEIGHT / 2})`,
+      );
+    startTimeIndexRef.current = startTimeIndex;
+    endTimeIndexRef.current = endTimeIndex;
+  }, [dopeSheetScale, endTimeIndex, startTimeIndex]);
 
   // 재생바 출력 여부
   const [isShowedPlayBar, setIsShowedPlayBar] = useState(false);
