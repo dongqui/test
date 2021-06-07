@@ -1,0 +1,124 @@
+@import 'styles/libraries/_mixins';
+@import 'styles/libraries/_colors';
+
+// 트랙 본 부분
+.track-body {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding-left: 72px;
+  padding-right: 10px;
+  border-bottom: 2px solid $gray300;
+  background: transparent;
+  width: 100%;
+
+  &.summary-track {
+    padding-left: 18px;
+  }
+
+  &.layer-track {
+    padding-left: 32px;
+  }
+
+  &.bone-track {
+    padding-left: 48px;
+  }
+
+  &.layer-selected {
+    background: #4e452b;
+  }
+
+  &.bone-selected {
+    background: #373226;
+  }
+
+  &.transform-selected {
+    background: #2b2823;
+  }
+
+  p {
+    flex-grow: 1;
+    margin: 0 8px;
+    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    height: 32px;
+    line-height: 32px;
+
+    &.locked {
+      color: #5c5c5c;
+    }
+  }
+
+  svg {
+    width: 10px;
+  }
+
+  // 트랙에 포함되는 아이콘 common style
+  .track-icon {
+    @include reset-button-style();
+    display: flex;
+  }
+
+  // 화살표 버튼
+  .arrow {
+    color: #7a7a7a;
+
+    svg {
+      transform: rotate(-90deg);
+    }
+
+    &.point-down {
+      svg {
+        transform: rotate(0deg);
+      }
+    }
+  }
+}
+
+// 숨기기, 잠그기 버튼 wrapper
+.right-icons {
+  display: flex;
+  align-items: center;
+
+  &.locked .lock {
+    margin-right: 4px;
+
+    svg {
+      margin-right: 4px;
+    }
+  }
+
+  .check-box-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    background: #7a7a7a;
+    border-radius: 2px;
+  }
+
+  .lock {
+    color: #7a7a7a;
+    margin-right: 8px;
+  }
+
+  .check {
+    color: #7a7a7a;
+  }
+
+  .check.checked {
+    color: black;
+  }
+}
+
+.form-name {
+  background-color: #f7f7f7;
+  color: $gray200;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 32px;
+  caret-color: #000;
+}

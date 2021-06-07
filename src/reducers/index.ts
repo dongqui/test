@@ -10,12 +10,14 @@ import { animatingData } from './animatingData';
 import { renderingData } from './renderingData';
 import { retargetData } from './retargetData';
 import { currentVisualizedData } from './currentVisualizedData';
+import { timeline } from './timeline';
 import { cpData } from './cpData';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
 const rootReducer = combineReducers({
   undoableBoneTransform,
+  timeline,
   lpMode,
   lpPage,
   lpSearchword,

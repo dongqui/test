@@ -1,5 +1,5 @@
 import { ShootLayerType, ShootTrackType } from 'types';
-import { IsIncludedChange, TPDopeSheet } from 'types/TP';
+import { UpdatedTrack } from 'types/TP';
 
 export type CurrentVisualizedDataAction =
   | ReturnType<typeof setCurrentVisualizedData>
@@ -40,7 +40,7 @@ export const setCurrentVisualizedData = (params: SetCurrentVisualizedData) => ({
 });
 
 interface UpdateKeyframeToBase {
-  resultTracks: [ShootTrackType, number][];
+  data: CurrentVisualizedData;
 }
 export const UPDATE_KEYFRAME_TO_BASE = 'currentVisualizedData/UPDATE_KEYFRAME_TO_BASE' as const;
 export const updateKeyframeToBase = (params: UpdateKeyframeToBase) => ({
@@ -51,8 +51,7 @@ export const updateKeyframeToBase = (params: UpdateKeyframeToBase) => ({
 });
 
 interface UpdateKeyframeToLayer {
-  targetLayerIndex: number;
-  resultTracks: [ShootTrackType, number][];
+  data: CurrentVisualizedData;
 }
 export const UPDATE_KEYFRAME_TO_LAYER = 'currentVisualizedData/UPDATE_KEYFRAME_TO_LAYER' as const;
 export const updateKeyframeToLayer = (params: UpdateKeyframeToLayer) => ({
@@ -63,8 +62,7 @@ export const updateKeyframeToLayer = (params: UpdateKeyframeToLayer) => ({
 });
 
 interface DeleteKeyframe {
-  resultBaseLayerTracks: [ShootTrackType, number][];
-  resultLayersTracks: [ShootTrackType, number, number, string][];
+  data: CurrentVisualizedData;
 }
 export const DELETE_KEYFRAME = 'currentVisualizedData/DELETE_KEYFRAME' as const;
 export const deleteKeyframe = (params: DeleteKeyframe) => ({
@@ -75,8 +73,8 @@ export const deleteKeyframe = (params: DeleteKeyframe) => ({
 });
 
 interface ExcludeTrack {
-  targetTrack: TPDopeSheet;
-  updatedState: IsIncludedChange[];
+  layerKey: string;
+  updatedState: UpdatedTrack<'isIncluded' | 'trackIndex' | 'trackName'>[];
 }
 export const EXCLUDE_TRACK = 'currentVisualizedData/EXCLUDE_TRACK' as const;
 export const excludeTrack = (params: ExcludeTrack) => ({
@@ -87,7 +85,7 @@ export const excludeTrack = (params: ExcludeTrack) => ({
 });
 
 interface SetLayerName {
-  targetTrack: TPDopeSheet;
+  layerKey: string;
   newLayerName: string;
 }
 export const SET_LAYER_NAME = 'currentVisualizedData/SET_LAYER_NAME' as const;
@@ -110,7 +108,7 @@ export const addNewLayer = (params: AddNewLayer) => ({
 });
 
 interface DeleteLayer {
-  targetTrack: TPDopeSheet;
+  layerKey: string;
 }
 export const DELETE_LAYER = 'currentVisualizedData/DELETE_LAYER' as const;
 export const deleteLayer = (params: DeleteLayer) => ({
