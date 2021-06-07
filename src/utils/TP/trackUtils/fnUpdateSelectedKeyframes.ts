@@ -48,13 +48,12 @@ const fnUpdateSelectedKeyframes = (params: FnUpdateSelectedKeyframes) => {
           trackIndex: targetTrack.trackIndex,
           trackName: targetTrack.trackName,
         });
-        if (currentTrackIndex % 10 === 0) currentTrackIndex += 2;
-        currentTrackIndex += 1;
+        const nextTrackIndex = currentTrackIndex % 10 === TP_TRACK_INDEX.SCALE ? 7 : 1; // 6 -> 13, 16 -> 23
+        currentTrackIndex += nextTrackIndex;
       }
       break;
     }
-    case TP_TRACK_INDEX.BONE_A:
-    case TP_TRACK_INDEX.BONE_B: {
+    case TP_TRACK_INDEX.BONE: {
       const targetIndex = fnGetBinarySearch({
         collection: trackList,
         index: trackIndex,

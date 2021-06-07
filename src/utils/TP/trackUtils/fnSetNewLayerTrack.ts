@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { TP_TRACK_INDEX } from 'utils/const';
 import { fnGetLayerTimes, fnGetBoneTimes } from 'utils/TP/editingUtils';
 import { fnSetTrackDataField } from 'utils/TP/trackUtils';
 import { ShootTrackType } from 'types';
@@ -82,9 +83,9 @@ const fnSetNewLayerTrack = (params: FnSetNewLayerTrack): Return => {
         trackName: transformTrack.name,
         visualizedDataKey,
       });
+      const nextTrackIndex = trackIndex % 10 === TP_TRACK_INDEX.SCALE ? 7 : 1; // 6 -> 13, 16 -> 23
+      trackIndex += nextTrackIndex;
       dopeSheetList.push(transformTrackStatus);
-      trackIndex += 1;
-      if ((trackIndex - 1) % 10 === 0) trackIndex += 2;
     }
   }
 

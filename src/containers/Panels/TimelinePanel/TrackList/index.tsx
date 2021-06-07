@@ -126,8 +126,7 @@ const TrackList: FunctionComponent<Props> = ({ trackListRef }) => {
                 }
                 break;
               }
-              case TP_TRACK_INDEX.BONE_A:
-              case TP_TRACK_INDEX.BONE_B: {
+              case TP_TRACK_INDEX.BONE: {
                 const layerIndex = fnGetLayerTrackIndex({ trackIndex: targetIndex });
                 checkAlreadyVisited(TP_TRACK_INDEX.SUMMARY, targetIndex);
                 checkAlreadyVisited(layerIndex, targetIndex);

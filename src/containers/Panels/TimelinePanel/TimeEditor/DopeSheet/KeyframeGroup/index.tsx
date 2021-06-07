@@ -39,8 +39,7 @@ const KeyframeGroup: FunctionComponent<Props> = ({
       switch (trackIndex % 10) {
         case TP_TRACK_INDEX.LAYER:
           return SELECTED_COLOR.layer;
-        case TP_TRACK_INDEX.BONE_A:
-        case TP_TRACK_INDEX.BONE_B:
+        case TP_TRACK_INDEX.BONE:
           return SELECTED_COLOR.bone;
         default:
           return SELECTED_COLOR.transform;
@@ -58,8 +57,7 @@ const KeyframeGroup: FunctionComponent<Props> = ({
       case TP_TRACK_INDEX.LAYER: {
         break;
       }
-      case TP_TRACK_INDEX.BONE_A:
-      case TP_TRACK_INDEX.BONE_B: {
+      case TP_TRACK_INDEX.BONE: {
         if (isClosedTrack && isSummaryTrack) return null;
         break;
       }

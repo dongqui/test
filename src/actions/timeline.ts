@@ -51,8 +51,9 @@ export const addNewLayer = (params: AddNewLayer) => ({
 
 // 레이어 삭제
 interface DeleteLayer {
-  trackList: TPTrackList[];
   lastBoneOfLayers: TPLastBone[];
+  selectedTrackIndices: number[];
+  trackList: TPTrackList[];
 }
 
 export const DELETE_LAYER = 'timeline/DELETE_LAYER' as const;

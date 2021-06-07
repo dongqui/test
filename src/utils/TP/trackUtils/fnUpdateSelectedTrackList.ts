@@ -38,26 +38,25 @@ const fnUpdateSelectedTrackList = ({
       });
       const lastBone = lastBoneOfLayers[targetLayerIndex];
       const lastTransformIndex = lastBone.lastBoneIndex + 3;
-      let currentIndex = lastBone.layerIndex + 1;
+      let currentTrackIndex = lastBone.layerIndex + 1;
 
       selectedIndexes.push(trackIndex);
       selectedTracks.push({
         trackIndex,
         isSelected,
       });
-      while (currentIndex <= lastTransformIndex) {
-        selectedIndexes.push(currentIndex);
+      while (currentTrackIndex <= lastTransformIndex) {
+        selectedIndexes.push(currentTrackIndex);
         selectedTracks.push({
-          trackIndex: currentIndex,
+          trackIndex: currentTrackIndex,
           isSelected,
         });
-        currentIndex += 1;
-        if ((currentIndex - 1) % 10 === 0) currentIndex += 2;
+        const nextTrackIndex = currentTrackIndex % 10 === TP_TRACK_INDEX.SCALE ? 7 : 1; // 6 -> 13, 16 -> 23
+        currentTrackIndex += nextTrackIndex;
       }
       return [selectedTracks, selectedIndexes];
     }
-    case TP_TRACK_INDEX.BONE_A:
-    case TP_TRACK_INDEX.BONE_B: {
+    case TP_TRACK_INDEX.BONE: {
       selectedIndexes.push(trackIndex);
       selectedTracks.push({
         trackIndex,

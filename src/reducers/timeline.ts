@@ -15,7 +15,7 @@ const defaultState: TimelineState = {
   lastBoneOfLayers: [],
   selectedTrackIndices: [],
   selectedKeyframes: [],
-  currentClickedTrack: { trackIndex: 0, isPointedDownArrow: true },
+  currentClickedTrack: { trackIndex: 0, isPointedDownArrow: false },
 };
 
 export const timeline = (state = defaultState, action: TimelineAction) => {
@@ -31,7 +31,8 @@ export const timeline = (state = defaultState, action: TimelineAction) => {
         trackList: [],
         lastBoneOfLayers: [],
         selectedTrackIndices: [],
-        currentClickedTrack: 0,
+        selectedKeyframes: [],
+        currentClickedTrack: { trackIndex: 0, isPointedDownArrow: false },
       });
     }
     case 'timeline/CLICK_TRACK_ARROW_BUTTON': {
@@ -87,6 +88,7 @@ export const timeline = (state = defaultState, action: TimelineAction) => {
       return Object.assign({}, state, {
         trackList: action.payload.trackList,
         lastBoneOfLayers: action.payload.lastBoneOfLayers,
+        selectedTrackIndices: action.payload.selectedTrackIndices,
       });
     }
     case 'timeline/SET_LAYER_NAME': {

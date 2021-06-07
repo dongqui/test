@@ -1,4 +1,12 @@
-import React, { FunctionComponent, memo, useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  Fragment,
+  FunctionComponent,
+  memo,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
 import classNames from 'classnames/bind';
@@ -24,19 +32,6 @@ import { FormModal } from 'components/Modal';
 import { BaseInput } from 'components/Input';
 
 const cx = classNames.bind(styles);
-
-const {
-  SUMMARY,
-  LAYER,
-  BONE_A,
-  BONE_B,
-  POSITION_A,
-  POSITION_B,
-  ROTATION_A,
-  ROTATION_B,
-  SCALE_A,
-  SCALE_B,
-} = TP_TRACK_INDEX;
 
 interface Props {
   isIncluded: boolean;
@@ -88,7 +83,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
       isPointedDownArrow: !isPointedDownArrow,
     });
     switch (remainder) {
-      case SUMMARY: {
+      case TP_TRACK_INDEX.SUMMARY: {
         const layerTrackList = _.map(lastBoneOfLayers, (lastBone) => ({
           trackIndex: lastBone.layerIndex,
           isShowed: !isPointedDownArrow,
@@ -96,7 +91,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         updatedTrackList.push(...layerTrackList);
         break;
       }
-      case LAYER: {
+      case TP_TRACK_INDEX.LAYER: {
         const layerIndex = fnGetBinarySearch({
           collection: lastBoneOfLayers,
           index: trackIndex,
@@ -110,17 +105,12 @@ const TrackItem: FunctionComponent<Props> = (props) => {
               trackIndex: currentBoneIndex,
               isShowed: !isPointedDownArrow,
             });
-            if (currentBoneIndex % 10 === BONE_A) {
-              currentBoneIndex += 4; // 3 -> 7
-            } else if (currentBoneIndex % 10 === BONE_B) {
-              currentBoneIndex += 6; // 7 -> 3
-            }
+            currentBoneIndex += 10; // 3 -> 13 -> 23 -> 33(bone index는 끝자리가 3으로 끝남)
           }
         }
         break;
       }
-      case BONE_A:
-      case BONE_B: {
+      case TP_TRACK_INDEX.BONE: {
         for (
           let transformIndex = trackIndex;
           transformIndex < trackIndex + 3;
@@ -163,7 +153,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
   }, [dispatch, trackList, isPointedDownArrow, lastBoneOfLayers, trackIndex]);
 
   // 트랙 선택 state 변경
-  const setClickedTrackList = useCallback(
+  const setSelectedTrackList = useCallback(
     (updatedTrackList: UpdatedTrack<'isSelected'>[], selectedTrackIndices: number[]) => {
       const state = {
         trackList,
@@ -213,9 +203,12 @@ const TrackItem: FunctionComponent<Props> = (props) => {
               lastBoneOfLayers,
               trackIndex,
             });
-            if (remainder !== LAYER) {
+            if (remainder !== TP_TRACK_INDEX.LAYER) {
               const layerIndex = fnGetLayerTrackIndex({ trackIndex });
-              const isTransformTrack = remainder !== BONE_A && remainder !== BONE_B;
+              const isTransformTrack =
+                remainder === TP_TRACK_INDEX.POSITION ||
+                remainder === TP_TRACK_INDEX.ROTATION ||
+                remainder === TP_TRACK_INDEX.SCALE;
               deselectedIndices.push(layerIndex);
               deselectedTrackList.push({
                 isSelected: false,
@@ -238,7 +231,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
               });
               return targetIndex === -1;
             });
-            setClickedTrackList(deselectedTrackList, filteredIndices);
+            setSelectedTrackList(deselectedTrackList, filteredIndices);
             return; // layer가 다른 트랙인 경우 이후 로직을 처리하지 않고 return
           }
         }
@@ -252,7 +245,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         _.forEach([...prevSelectedIndices, ...selectedIndices], (index) => {
           nextSelectedIndices.add(index);
         });
-        setClickedTrackList(selectedTrackList, [...nextSelectedIndices]);
+        setSelectedTrackList(selectedTrackList, [...nextSelectedIndices]);
       } else if (!isMutipleSelected) {
         const deselectedTrackList = _.map(prevSelectedIndices, (index) => ({
           trackIndex: index,
@@ -263,7 +256,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
           lastBoneOfLayers,
           trackIndex,
         });
-        setClickedTrackList([...deselectedTrackList, ...selectedTrackList], selectedIndices);
+        setSelectedTrackList([...deselectedTrackList, ...selectedTrackList], selectedIndices);
       }
     },
     [
@@ -272,7 +265,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
       lastBoneOfLayers,
       trackIndex,
       prevSelectedIndices,
-      setClickedTrackList,
+      setSelectedTrackList,
       getConfirm,
     ],
   );
@@ -282,7 +275,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
     const updatedTrackList: UpdatedTrack<'isLocked'>[] = [];
     const remainder = trackIndex % 10;
     switch (remainder) {
-      case LAYER: {
+      case TP_TRACK_INDEX.LAYER: {
         const targetIndex = fnGetBinarySearch({
           collection: lastBoneOfLayers,
           index: trackIndex,
@@ -300,13 +293,12 @@ const TrackItem: FunctionComponent<Props> = (props) => {
             trackIndex: currentTrackIndex,
             isLocked: !isLocked,
           });
-          currentTrackIndex += 1;
-          if ((currentTrackIndex - 1) % 10 === 0) currentTrackIndex += 2;
+          const nextTrackIndex = currentTrackIndex % 10 === TP_TRACK_INDEX.SCALE ? 7 : 1; // 6 -> 13, 16 -> 23
+          currentTrackIndex += nextTrackIndex;
         }
         break;
       }
-      case BONE_A:
-      case BONE_B: {
+      case TP_TRACK_INDEX.BONE: {
         const layerIndex = fnGetLayerTrackIndex({ trackIndex });
         if (isLocked === true) {
           updatedTrackList.push({
@@ -319,8 +311,8 @@ const TrackItem: FunctionComponent<Props> = (props) => {
           isLocked: !isLocked,
         });
         for (
-          let transformIndex = trackIndex;
-          transformIndex < trackIndex + 3;
+          let transformIndex = trackIndex + 1;
+          transformIndex <= trackIndex + 3;
           transformIndex += 1
         ) {
           updatedTrackList.push({
@@ -373,7 +365,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
     const updatedTrackList: UpdatedTrack<'isIncluded' | 'trackIndex' | 'trackName'>[] = [];
     const remainder = trackIndex % 10;
     switch (remainder) {
-      case LAYER: {
+      case TP_TRACK_INDEX.LAYER: {
         const targetLayerIndex = fnGetBinarySearch({
           collection: lastBoneOfLayers,
           index: trackIndex,
@@ -399,8 +391,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         }
         break;
       }
-      case BONE_A:
-      case BONE_B: {
+      case TP_TRACK_INDEX.BONE: {
         if (isIncluded === true) {
           const layerIndex = fnGetLayerTrackIndex({ trackIndex });
           const targetLayerIndex = fnGetBinarySearch({
@@ -445,7 +436,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
             updatedTrackList.push({
               isIncluded: false,
               trackIndex: trackList[targetParentIndex].trackIndex,
-              trackName: trackList[targetIndex].trackName,
+              trackName: trackList[targetParentIndex].trackName,
             });
           });
         }
@@ -495,22 +486,23 @@ const TrackItem: FunctionComponent<Props> = (props) => {
         key: 'trackIndex',
       });
       const layerKey = trackList[targetIndex].layerKey;
-      const prevState = {
-        trackList,
-        lastBoneOfLayers,
-      };
-      const nextState = produce(prevState, (draft) => {
-        const filteredTrackList = draft.trackList.filter((track) => layerKey !== track.layerKey);
-        const filteredLastBoneOfLayers = draft.lastBoneOfLayers.filter(
-          (lastBone) => layerKey !== lastBone.layerKey,
-        );
-        draft.trackList = filteredTrackList;
-        draft.lastBoneOfLayers = filteredLastBoneOfLayers;
-      });
-      dispatch(timelineActions.deleteLayer(nextState));
+      const filteredTrackList = trackList.filter((track) => layerKey !== track.layerKey);
+      const filteredTrackIndices = prevSelectedIndices.filter(
+        (index) => _.floor(trackIndex / 10000) !== _.floor(index / 10000),
+      );
+      const filteredLastBoneOfLayers = lastBoneOfLayers.filter(
+        (lastBone) => layerKey !== lastBone.layerKey,
+      );
       dispatch(currentVisualizedDataActions.deleteLayer({ layerKey }));
+      dispatch(
+        timelineActions.deleteLayer({
+          lastBoneOfLayers: filteredLastBoneOfLayers,
+          trackList: filteredTrackList,
+          selectedTrackIndices: filteredTrackIndices,
+        }),
+      );
     }
-  }, [getConfirm, trackList, trackIndex, lastBoneOfLayers, dispatch]);
+  }, [getConfirm, trackIndex, trackList, lastBoneOfLayers, prevSelectedIndices, dispatch]);
 
   const [isShowedFormModal, setIsShowedFormModal] = useState(false);
   const [newLayerName, setNewLayerName] = useState('');
@@ -733,21 +725,18 @@ const TrackItem: FunctionComponent<Props> = (props) => {
   const classes = cx(
     'track-body',
     {
-      'layer-selected': isSelected && trackIndex % 10 === LAYER,
-      'bone-selected': isSelected && (trackIndex % 10 === BONE_A || trackIndex % 10 === BONE_B),
+      'layer-selected': isSelected && trackIndex % 10 === TP_TRACK_INDEX.LAYER,
+      'bone-selected': isSelected && trackIndex % 10 === TP_TRACK_INDEX.BONE,
       'transform-selected':
         isSelected &&
-        (trackIndex % 10 === POSITION_A ||
-          trackIndex % 10 === ROTATION_A ||
-          trackIndex % 10 === SCALE_A ||
-          trackIndex % 10 === POSITION_B ||
-          trackIndex % 10 === ROTATION_B ||
-          trackIndex % 10 === SCALE_B),
+        (trackIndex % 10 === TP_TRACK_INDEX.POSITION ||
+          trackIndex % 10 === TP_TRACK_INDEX.ROTATION ||
+          trackIndex % 10 === TP_TRACK_INDEX.SCALE),
     },
     {
-      'summary-track': trackIndex % 10 === SUMMARY,
-      'layer-track': trackIndex % 10 === LAYER,
-      'bone-track': trackIndex % 10 === BONE_A || trackIndex % 10 === BONE_B,
+      'summary-track': trackIndex % 10 === TP_TRACK_INDEX.SUMMARY,
+      'layer-track': trackIndex % 10 === TP_TRACK_INDEX.LAYER,
+      'bone-track': trackIndex % 10 === TP_TRACK_INDEX.BONE,
     },
   );
 
@@ -760,8 +749,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
       case TP_TRACK_INDEX.LAYER: {
         break;
       }
-      case TP_TRACK_INDEX.BONE_A:
-      case TP_TRACK_INDEX.BONE_B: {
+      case TP_TRACK_INDEX.BONE: {
         if (isClosedTrack && isSummaryTrack) return null;
         break;
       }
@@ -786,8 +774,8 @@ const TrackItem: FunctionComponent<Props> = (props) => {
       )}
       <p className={cx({ locked: isLocked })}>{trackName}</p>
       <div className={cx('right-icons', { locked: isLocked })}>
-        {trackIndex !== SUMMARY && (
-          <>
+        {trackIndex !== TP_TRACK_INDEX.SUMMARY && (
+          <Fragment>
             <IconWrapper
               className={cx('track-icon', 'lock')}
               icon={isLocked ? SvgPath.LockClose : SvgPath.LockOpen}
@@ -802,7 +790,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
                 onClick={handleClickRenderingButton}
               />
             </div>
-          </>
+          </Fragment>
         )}
       </div>
       {isShowedFormModal && (

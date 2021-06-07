@@ -24,11 +24,11 @@ interface FnSetTrackDataField {
  */
 const fnSetTrackDataField = (params: FnSetTrackDataField): TPTrackList => {
   const { isIncluded, layerKey, times, trackIndex, trackName, visualizedDataKey } = params;
-  const { SUMMARY, LAYER, BONE_A, BONE_B } = TP_TRACK_INDEX;
+  const { SUMMARY, LAYER, BONE } = TP_TRACK_INDEX;
   const remainder = trackIndex % 10;
   const isPointedDownArrow = trackIndex === SUMMARY ? true : false;
   const isShowed = _.some([SUMMARY, LAYER], (index) => index === remainder);
-  const isTransformTrack = _.every([SUMMARY, LAYER, BONE_A, BONE_B], (idx) => idx !== remainder);
+  const isTransformTrack = _.every([SUMMARY, LAYER, BONE], (idx) => idx !== remainder);
   const renderedTrackName = isTransformTrack ? _.split(trackName, '.')[1] : trackName;
 
   return {

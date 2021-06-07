@@ -81,8 +81,7 @@ const Keyframes: FunctionComponent<Props> = ({
                 dispatch(timelineActions.selectKeyframes({ selectedKeyframes: filteredKeyframes }));
                 break;
               }
-              case TP_TRACK_INDEX.BONE_A:
-              case TP_TRACK_INDEX.BONE_B: {
+              case TP_TRACK_INDEX.BONE: {
                 const layerIndex = fnGetLayerTrackIndex({ trackIndex });
                 const filteredKeyframes = _.filter(selectedKeyframes, (keyframe) => {
                   const isEqualTimeIndex = keyframe.time === time;
