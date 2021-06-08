@@ -9,7 +9,6 @@ import {
   useRef,
 } from 'react';
 import _ from 'lodash';
-import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
 // import LibraryPanel from 'containers/Panels/LibraryPanel_release';
@@ -17,7 +16,7 @@ import { storeLpData } from 'lib/store';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
-import TimelineContainer from 'containers/Panels/timeline';
+import TimelinePanel from 'containers/Panels/TimelinePanel';
 import ControlPanel from 'containers/Panels/ControlPanel';
 import { ConfirmModalProvider } from 'components/Modal/ConfirmModal';
 import useWindowSize from 'hooks/common/useWindowSize';
@@ -42,8 +41,8 @@ const Shoot: FunctionComponent = () => {
 
   const currentTimeRef = useRef<HTMLInputElement>(null);
   const currentTimeIndexRef = useRef<HTMLInputElement>(null);
-  const currentXAxisPosition = useRef(1);
-  const prevXScale = useRef<d3ScaleLinear | d3.ZoomScale | null>(null);
+  const currentPlayBarTime = useRef(1);
+  const dopeSheetScale = useRef<d3ScaleLinear | null>(null);
 
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
@@ -172,8 +171,8 @@ const Shoot: FunctionComponent = () => {
                 fileUrl={fileUrl}
                 currentTimeRef={currentTimeRef}
                 currentTimeIndexRef={currentTimeIndexRef}
-                currentXAxisPosition={currentXAxisPosition}
-                prevXScale={prevXScale}
+                currentPlayBarTime={currentPlayBarTime}
+                dopeSheetScale={dopeSheetScale}
               />
             </div>
           </ResizableBox>
@@ -202,14 +201,11 @@ const Shoot: FunctionComponent = () => {
         resizeHandles={['n']}
       >
         <ConfirmModalProvider>
-          <TimelineContainer
-            visualizedDataKey={currentVisualizedData?.key}
-            baseLayer={currentVisualizedData?.baseLayer}
-            layers={currentVisualizedData?.layers}
+          <TimelinePanel
             currentTimeRef={currentTimeRef}
             currentTimeIndexRef={currentTimeIndexRef}
-            currentXAxisPosition={currentXAxisPosition}
-            prevXScale={prevXScale}
+            currentPlayBarTime={currentPlayBarTime}
+            dopeSheetScale={dopeSheetScale}
           />
         </ConfirmModalProvider>
       </ResizableBox>
