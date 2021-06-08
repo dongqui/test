@@ -671,8 +671,22 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
     };
   }, [handleDopesheetKeyDown, handleDopesheetKeyUp]);
 
+  // 재생바 구간 범위 rect 크기 조정
   const startTimeIndexRef = useRef(0);
   const endTimeIndexRef = useRef(0);
+  useEffect(() => {
+    if (!dopeSheetScale.current) return;
+    const scaleXLinear = dopeSheetScale.current;
+    const rangeRectWidth = scaleXLinear(endTimeIndex) - scaleXLinear(startTimeIndex);
+    d3.select('.range-rect')
+      .attr('width', rangeRectWidth)
+      .attr(
+        'transform',
+        `translate(${scaleXLinear(startTimeIndex)}, -${TIME_FRAME_BAR_HEIGHT / 2})`,
+      );
+    startTimeIndexRef.current = startTimeIndex;
+    endTimeIndexRef.current = endTimeIndex;
+  }, [dopeSheetScale, endTimeIndex, startTimeIndex]);
 
   // dope sheet zoom 적용
   const prevDoepSheetWidth = useRef(0);
@@ -694,8 +708,9 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
       const arrangeTimeFrameBar = () => {
         if (!dopeSheetScale.current) return;
         const scaleXLinear = dopeSheetScale.current;
-        const rangeRectWidth =
-          scaleXLinear(endTimeIndexRef.current) - scaleXLinear(startTimeIndexRef.current);
+        const rectStart = startTimeIndexRef.current || startTimeIndex;
+        const rectEnd = endTimeIndexRef.current || endTimeIndex;
+        const rangeRectWidth = scaleXLinear(rectEnd) - scaleXLinear(rectStart);
 
         // 세로 선 생성
         d3.select('.vertical-line-wrapper').remove();
@@ -751,9 +766,7 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
               .attr('height', TIME_FRAME_BAR_HEIGHT / 2)
               .attr(
                 'transform',
-                `translate(${scaleXLinear(startTimeIndexRef.current)}, -${
-                  TIME_FRAME_BAR_HEIGHT / 2
-                })`,
+                `translate(${scaleXLinear(rectStart)}, -${TIME_FRAME_BAR_HEIGHT / 2})`,
               )
               .style('fill', '#3785F7'),
           )
@@ -890,21 +903,6 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
       d3.select('#timeline-wrapper').on('scroll', arrangeKeyframes);
     }
   }, [dopeSheetScale]);
-
-  // 재생바 구간 범위 rect 크기 조정
-  useEffect(() => {
-    if (!dopeSheetScale.current) return;
-    const scaleXLinear = dopeSheetScale.current;
-    const rangeRectWidth = scaleXLinear(endTimeIndex) - scaleXLinear(startTimeIndex);
-    d3.select('.range-rect')
-      .attr('width', rangeRectWidth)
-      .attr(
-        'transform',
-        `translate(${scaleXLinear(startTimeIndex)}, -${TIME_FRAME_BAR_HEIGHT / 2})`,
-      );
-    startTimeIndexRef.current = startTimeIndex;
-    endTimeIndexRef.current = endTimeIndex;
-  }, [dopeSheetScale, endTimeIndex, startTimeIndex]);
 
   // 재생바 출력 여부
   const [isShowedPlayBar, setIsShowedPlayBar] = useState(false);
