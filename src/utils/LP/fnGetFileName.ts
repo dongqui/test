@@ -1,10 +1,11 @@
 import _ from 'lodash';
-import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
+import { LPDATA_PROPERTY_TYPES } from 'types';
+import { LPItemListOldType } from 'types/LP';
 
 interface FnGetFileNameProps {
   key: string;
   name: string;
-  lpData: LPDataType[];
+  lpData: LPItemListOldType;
   parentKey?: string;
 }
 /**

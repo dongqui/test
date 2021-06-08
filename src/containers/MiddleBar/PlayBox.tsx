@@ -14,10 +14,8 @@ import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import * as api from 'utils/common/api';
-import { storeLpData } from 'lib/store';
-import { FILE_TYPES, LPDataType } from 'types';
 import { STANDARD_TIME_UNIT } from 'utils/const';
-import { ROOT_FOLDER_NAME } from 'types/LP';
+import { LPItemListOldType, ROOT_FOLDER_NAME } from 'types/LP';
 import { FormModal } from 'components/Modal';
 import { useAlertModal } from 'components/Modal/AlertModal';
 import { BaseInput } from 'components/Input';
@@ -33,6 +31,7 @@ import * as animatingDataActions from 'actions/animatingData';
 import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
+import * as lpDataActions from 'actions/lpData';
 
 const cx = classNames.bind(styles);
 
@@ -59,7 +58,7 @@ const PlayBox: FunctionComponent<Props> = ({
   const recordingData = useReactiveVar(storeRecordingData);
   const modalInfo = useReactiveVar(storeModalInfo);
   const pageInfo = useReactiveVar(storePageInfo);
-  const lpData = useReactiveVar(storeLpData);
+  const lpData = useSelector((state) => state.lpDataOld);
 
   const dispatch = useDispatch();
 
@@ -292,10 +291,10 @@ const PlayBox: FunctionComponent<Props> = ({
     const key = uuidv4();
     let name = _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName;
     name = fnGetFileName({ key: '', lpData, name });
-    const newData: LPDataType[] = [
+    const newData: LPItemListOldType = [
       {
         key,
-        type: FILE_TYPES.motion,
+        type: 'Motion',
         name,
         parentKey: ROOT_FOLDER_NAME,
         baseLayer: result?.data?.result
@@ -311,10 +310,11 @@ const PlayBox: FunctionComponent<Props> = ({
         isExportedMotion: true,
       },
     ];
-    storeLpData(_.concat(lpData, newData));
+    dispatch(lpDataActions.setItemListOld({ itemList: _.concat(lpData, newData) }));
     storePageInfo({ page: PAGE_NAMES.shoot });
     storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
   }, [
+    dispatch,
     getConfirm,
     lpData,
     modalInfo,

@@ -1,32 +1,31 @@
 import { FunctionComponent, memo, Fragment, useCallback } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { storeLpData, storeSearchWord } from 'lib/store';
-import { FILE_TYPES, LPDataType } from 'types';
-import { ROOT_FOLDER_NAME } from 'types/LP';
+import { LPItemOldType, ROOT_FOLDER_NAME } from 'types/LP';
 import { ListRow } from './ListRow';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
 interface Props {
-  item: LPDataType;
+  item: LPItemOldType;
   onDragStart: ({ key }: any) => void;
   onDragEnd: ({ key }: any) => void;
   onDrop: ({ key }: any) => void;
 }
 
 const ListNode: FunctionComponent<Props> = ({ item, onDragStart, onDragEnd, onDrop }) => {
-  const lpData = useReactiveVar(storeLpData);
-  const searchWord = useReactiveVar(storeSearchWord);
+  const lpData = useSelector((state) => state.lpDataOld);
+  const searchWord = useSelector((state) => state.lpSearchword.word);
 
   const handleDragStart = useCallback(() => {
     onDragStart(item.key);
   }, [item.key, onDragStart]);
 
   const handleDrop = useCallback(() => {
-    const key = _.isEqual(item.type, FILE_TYPES.motion) ? item.parentKey : item.key;
+    const key = _.isEqual(item.type, 'Motion') ? item.parentKey : item.key;
     onDrop(key);
   }, [item.key, item.parentKey, item.type, onDrop]);
 

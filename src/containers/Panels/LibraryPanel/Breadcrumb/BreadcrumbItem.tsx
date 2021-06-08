@@ -2,17 +2,17 @@ import { FunctionComponent, memo } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { Tooltip } from 'components/Tooltip';
 import { useHover } from 'hooks/common';
-import { FILE_TYPES } from 'types';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './BreadcrumbItem.module.scss';
+import { FileType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
 export interface Props {
   level: '0' | '1' | '2';
   isLast: boolean;
-  item: { key: string; name: string; type: FILE_TYPES };
+  item: { key: string; name: string; type: FileType };
 }
 
 const BreadcrumbItem: FunctionComponent<Props> = ({ item, level, isLast }) => {

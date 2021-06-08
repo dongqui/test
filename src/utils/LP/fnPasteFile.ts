@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
-import { ROOT_FOLDER_NAME } from 'types/LP';
+import { LPDATA_PROPERTY_TYPES } from 'types';
+import { LPItemListOldType, LPItemOldType, ROOT_FOLDER_NAME } from 'types/LP';
 import fnGetFileName from './fnGetFileName';
 
 interface FnDeleteFileProps {
-  lpData: LPDataType[];
+  lpData: LPItemListOldType;
 }
 /**
  * 선택영역 표시를 도와주는 함수
@@ -17,12 +17,15 @@ interface FnDeleteFileProps {
  */
 const fnPasteFile = ({ lpData }: FnDeleteFileProps) => {
   let result = _.clone(lpData);
-  let additionalData: LPDataType[] = [];
+  let additionalData: LPItemListOldType = [];
   let key = '';
   if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.isCopied, true])) {
     return result;
   }
-  const copiedRow: LPDataType | undefined = _.find(lpData, [LPDATA_PROPERTY_TYPES.isCopied, true]);
+  const copiedRow: LPItemOldType | undefined = _.find(lpData, [
+    LPDATA_PROPERTY_TYPES.isCopied,
+    true,
+  ]);
   const pasteRowsCnt = _.size(_.filter(lpData, (item) => _.includes(item?.key, copiedRow?.key)));
   let currentDepthRows = [];
   let childRows = [];

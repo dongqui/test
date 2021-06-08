@@ -6,18 +6,12 @@ import { v4 as uuidv4 } from 'uuid';
 import useContextMenu from 'hooks/common/useContextMenu';
 import { storeCutImages, storePageInfo, storeRecordingData } from 'lib/store';
 import { DEFAULT_MODELS, INITIAL_RECORDING_DATA } from 'utils/const';
-import { FILE_TYPES, LPModeType } from 'types';
+import { LPModeType } from 'types';
 import * as api from 'utils/common/api';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
-import {
-  storeLPMode,
-  storeLpData,
-  storePages,
-  storeSearchWord,
-  storeContextMenuInfo,
-} from 'lib/store';
-import { ROOT_FOLDER_NAME } from 'types/LP';
+import { storeContextMenuInfo } from 'lib/store';
+import { FileType, LPItemListOldType, LPItemOldType, ROOT_FOLDER_NAME } from 'types/LP';
 import _ from 'lodash';
 import { IconView } from './IconTree/IconView';
 import { ListView } from './ListTree/ListView';
@@ -26,48 +20,49 @@ import { Headline } from 'components/Typography';
 import { BaseModal, AlertModal } from 'components/Modal';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
-import {
-  LPDataType,
-  FORMAT_TYPES,
-  ENABLE_VIDEO_FORMATS,
-  PAGE_NAMES,
-  ENABLE_FILE_FORMATS,
-} from 'types';
+import { FORMAT_TYPES, ENABLE_VIDEO_FORMATS, PAGE_NAMES, ENABLE_FILE_FORMATS } from 'types';
 import Explorer from './Explorer/index';
 import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import * as lpDataActions from 'actions/lpData';
+import { useDispatch } from 'react-redux';
+import * as lpModeActions from 'actions/lpMode';
+import * as lpSearchwordActtions from 'actions/lpSearchword';
 
 const cx = classNames.bind(styles);
 
 export interface PagesType {
   key: string;
   name: string;
-  type: FILE_TYPES;
+  type: FileType;
 }
 
 const LibraryPanelComponent: FunctionComponent = () => {
-  const lpData = useReactiveVar(storeLpData);
-  const pages = useReactiveVar(storePages);
-  const lpmode = useReactiveVar(storeLPMode);
+  const lpData = useSelector((state) => state.lpDataOld);
+  const pages = useSelector((state) => state.lpPageOld);
+  const lpmode = useSelector((state) => state.lpMode.mode);
   const { retargetInfo } = useSelector((state) => state.retargetData);
+
+  const dispatch = useDispatch();
+
   const [originalLpmode, setOriginalLpmode] = useState<LPModeType | undefined>(undefined);
   const [isOutsideClose, setIsOutsideClose] = useState(false);
   const onChangeSearchText = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      storeSearchWord(e.target.value);
+      dispatch(lpSearchwordActtions.setSearchword({ word: e.target.value }));
       if (_.isEqual(lpmode, LPModeType.iconview)) {
-        storeLPMode(LPModeType.listview);
+        dispatch(lpModeActions.setLPMode({ mode: 'listView' }));
         setOriginalLpmode(LPModeType.iconview);
       }
       if (_.isEmpty(e.target.value) && _.isEqual(originalLpmode, LPModeType.iconview)) {
-        storeLPMode(LPModeType.iconview);
+        dispatch(lpModeActions.setLPMode({ mode: 'iconView' }));
         setOriginalLpmode(undefined);
       }
     },
-    [lpmode, originalLpmode],
+    [dispatch, lpmode, originalLpmode],
   );
-  const searchWord = useReactiveVar(storeSearchWord);
+  const searchWord = useSelector((state) => state.lpSearchword.word);
   const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
   const panelWrapperRef = useRef<HTMLDivElement>(null);
   const [showsModal, setShowsModal] = useState(false);
@@ -138,7 +133,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         setIsOutsideClose(true);
         return false;
       }
-      let overlappedFile: LPDataType | undefined;
+      let overlappedFile: LPItemOldType | undefined;
       if (_.isEqual(lpmode, LPModeType.iconview)) {
         overlappedFile = _.find(
           lpData,
@@ -162,6 +157,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
           newLpData = fnDeleteFileByKeys({
             lpData: newLpData,
             keys: [overlappedFile?.key ?? ''],
+            dispatch,
           });
         } else {
           continue;
@@ -190,7 +186,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         });
 
         if (confirmed) {
-          storeLpData(newLpData);
+          dispatch(lpDataActions.setItemListOld({ itemList: newLpData }));
           storeRecordingData(INITIAL_RECORDING_DATA);
           storeCutImages([]);
           storePageInfo({ page: PAGE_NAMES.extract, videoUrl: url, extension });
@@ -205,7 +201,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         setIsOutsideClose(true);
         return false;
       }
-      const motions: LPDataType[] = [];
+      const motions: LPItemListOldType = [];
       const key = uuidv4();
       _.forEach(animations, (clip, index) => {
         if (bones) {
@@ -214,16 +210,16 @@ const LibraryPanelComponent: FunctionComponent = () => {
             name: clip?.name,
             baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
             layers: [],
-            type: FILE_TYPES.motion,
+            type: 'Motion',
             parentKey: key,
             boneNames: _.map(bones, (bone) => bone.name),
           });
         }
       });
-      let newData: LPDataType[] = [
+      let newData: LPItemListOldType = [
         {
           key,
-          type: FILE_TYPES.file,
+          type: 'File',
           name: file.name,
           url,
           parentKey: _.isEqual(lpmode, LPModeType.iconview) ? _.last(pages)?.key : ROOT_FOLDER_NAME,
@@ -237,11 +233,11 @@ const LibraryPanelComponent: FunctionComponent = () => {
       newData = _.concat(newData, motions);
       newLpData = _.concat(newLpData, newData);
     }
-    storeLpData(newLpData);
+    dispatch(lpDataActions.setItemListOld({ itemList: newLpData }));
     setShowsModal(false);
   };
   const handleDefaultModel = useCallback(async () => {
-    let newLpData: LPDataType[] = [];
+    let newLpData: LPItemListOldType = [];
     if (!_.isEmpty(lpData)) {
       return;
     }
@@ -261,7 +257,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
           setShowsModal(false);
           return false;
         }
-        const motions: LPDataType[] = [];
+        const motions: LPItemListOldType = [];
         const key = uuidv4();
         _.forEach(animations, (clip, index) => {
           if (bones) {
@@ -270,16 +266,16 @@ const LibraryPanelComponent: FunctionComponent = () => {
               name: clip?.name,
               baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
               layers: [],
-              type: FILE_TYPES.motion,
+              type: 'Motion',
               parentKey: key,
               boneNames: _.map(bones, (bone) => bone.name),
             });
           }
         });
-        let newData: LPDataType[] = [
+        let newData: LPItemListOldType = [
           {
             key,
-            type: FILE_TYPES.file,
+            type: 'File',
             name: model?.name,
             url: model?.url,
             parentKey: _.isEqual(lpmode, LPModeType.iconview)
@@ -297,10 +293,10 @@ const LibraryPanelComponent: FunctionComponent = () => {
       } catch (error) {
         console.log('error', error);
       }
-      storeLpData(newLpData);
+      dispatch(lpDataActions.setItemListOld({ itemList: newLpData }));
     }
     setShowsModal(false);
-  }, [lpData, lpmode, pages]);
+  }, [dispatch, lpData, lpmode, pages]);
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 

@@ -1,10 +1,10 @@
 import { FunctionComponent, memo, useCallback } from 'react';
 import _ from 'lodash';
-import { LPDataType } from 'types';
 import { useShortcut } from 'hooks/common/useShortcut';
 import IconNode from './IconNode';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { LPItemListOldType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
@@ -19,7 +19,7 @@ export interface IconViewProps {
     ctrlKey?: boolean;
     event: () => void;
   }[];
-  filteredData: LPDataType[];
+  filteredData: LPItemListOldType;
 }
 
 const IconViewComponent: FunctionComponent<IconViewProps> = ({
