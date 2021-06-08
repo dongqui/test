@@ -1,0 +1,31 @@
+.dopesheet-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 248px);
+  user-select: none;
+
+  .keyframe-group-wrapper {
+    display: flex;
+    flex-direction: column;
+    transform: translate3d(0, 48px, 0);
+    z-index: 2;
+
+    svg {
+      border-bottom: 2px solid #303030;
+    }
+  }
+
+  text {
+    fill: #a7a7a7;
+  }
+
+  path {
+    stroke: none;
+  }
+
+  line {
+    stroke: #303030;
+    transform: translate3d(0, 24px, 0);
+  }
+}

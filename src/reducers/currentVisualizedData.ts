@@ -25,100 +25,57 @@ export const currentVisualizedData = (
       });
     }
     case 'currentVisualizedData/UPDATE_KEYFRAME_TO_BASE': {
-      const { resultTracks } = action.payload;
-      if (resultTracks.length === 0) {
-        return state;
-      }
-      const nextState = produce<CurrentVisualizedDataState>(state, (draft) => {
-        console.log('draft: ', draft);
-        if (draft) {
-          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-            draft.baseLayer[targetTrackIndex] = resultTrack;
-          });
-        }
-      });
-      return nextState;
+      return action.payload.data; // action을 보낼 때 data에 CurrentVisualizedData가 담긴 채로 전달
     }
     case 'currentVisualizedData/UPDATE_KEYFRAME_TO_LAYER': {
-      const { targetLayerIndex, resultTracks } = action.payload;
-      if (resultTracks.length === 0) {
-        return state;
-      }
-      const nextState = produce<CurrentVisualizedDataState>(state, (draft) => {
-        if (draft) {
-          resultTracks.forEach(([resultTrack, targetTrackIndex]) => {
-            draft.layers[targetLayerIndex].tracks[targetTrackIndex] = resultTrack;
-          });
-        }
-      });
-      return nextState;
+      return action.payload.data; // action을 보낼 때 data에 CurrentVisualizedData가 담긴 채로 전달
     }
     case 'currentVisualizedData/DELETE_KEYFRAME': {
-      const { resultBaseLayerTracks, resultLayersTracks } = action.payload;
-      if (resultBaseLayerTracks.length === 0 && resultLayersTracks.length === 0) {
-        return state;
-      }
-      const nextState = produce<CurrentVisualizedDataState>(state, (draft) => {
-        if (draft) {
-          resultBaseLayerTracks.forEach(([resultTrack, targetTrackIndex]) => {
-            draft.baseLayer[targetTrackIndex] = resultTrack;
-          });
-          resultLayersTracks.forEach(([resultTrack, targetLayerIndex, targetTrackIndex]) => {
-            draft.layers[targetLayerIndex].tracks[targetTrackIndex] = resultTrack;
-          });
-        }
-      });
-      return nextState;
+      return action.payload.data; // action을 보낼 때 data에 CurrentVisualizedData가 담긴 채로 전달
     }
     case 'currentVisualizedData/EXCLUDE_TRACK': {
-      const { targetTrack, updatedState } = action.payload;
-      if (targetTrack) {
-        if (targetTrack.layerKey === 'baseLayer') {
-          const nextState = produce<CurrentVisualizedDataState>(state, (draft) => {
-            if (draft) {
+      const { layerKey, updatedState } = action.payload;
+      if (layerKey === 'baseLayer') {
+        const nextState = produce<CurrentVisualizedDataState>(state, (draft) => {
+          if (draft) {
+            _.forEach(updatedState, (updated) => {
+              const transformIndex = _.findIndex(
+                draft.baseLayer,
+                (currentVisualizedData) => currentVisualizedData.name === updated.trackName,
+              );
+              if (transformIndex !== -1) {
+                draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
+              }
+            });
+          }
+        });
+        return nextState;
+      } else {
+        const nextState = produce<CurrentVisualizedDataState>(state, (draft) => {
+          if (draft) {
+            const targetLayer = _.find(draft.layers, (layer) => layer.key === layerKey);
+            if (targetLayer) {
               _.forEach(updatedState, (updated) => {
                 const transformIndex = _.findIndex(
-                  draft.baseLayer,
-                  (currentVisualizedData) => currentVisualizedData.name === updated.name,
+                  targetLayer.tracks,
+                  (currentVisualizedData) => currentVisualizedData.name === updated.trackName,
                 );
                 if (transformIndex !== -1) {
-                  draft.baseLayer[transformIndex].isIncluded = updated.isIncluded;
+                  targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
                 }
               });
             }
-          });
-          return nextState;
-        } else {
-          const nextState = produce<CurrentVisualizedDataState>(state, (draft) => {
-            if (draft) {
-              const targetLayer = _.find(
-                draft.layers,
-                (layer) => layer.key === targetTrack.layerKey,
-              );
-              if (targetLayer) {
-                _.forEach(updatedState, (updated) => {
-                  const transformIndex = _.findIndex(
-                    targetLayer.tracks,
-                    (currentVisualizedData) => currentVisualizedData.name === updated.name,
-                  );
-                  if (transformIndex !== -1) {
-                    targetLayer.tracks[transformIndex].isIncluded = updated.isIncluded;
-                  }
-                });
-              }
-            }
-          });
-          return nextState;
-        }
+          }
+        });
+        return nextState;
       }
-      return state;
     }
     case 'currentVisualizedData/SET_LAYER_NAME': {
-      const { targetTrack, newLayerName } = action.payload;
-      if (targetTrack) {
+      const { layerKey, newLayerName } = action.payload;
+      if (layerKey) {
         const nextState = produce<CurrentVisualizedDataState>(state, (draft) => {
           if (draft) {
-            const targetLayer = _.find(draft.layers, (layer) => layer.key === targetTrack.layerKey);
+            const targetLayer = _.find(draft.layers, (layer) => layer.key === layerKey);
             if (targetLayer) {
               targetLayer.name = newLayerName;
             }
@@ -138,11 +95,11 @@ export const currentVisualizedData = (
       return nextState;
     }
     case 'currentVisualizedData/DELETE_LAYER': {
-      const { targetTrack } = action.payload;
-      if (targetTrack) {
+      const { layerKey } = action.payload;
+      if (layerKey) {
         const nextState = produce<CurrentVisualizedDataState>(state, (draft) => {
           if (draft) {
-            draft.layers = _.filter(draft.layers, (layer) => layer.key !== targetTrack.layerKey);
+            draft.layers = _.filter(draft.layers, (layer) => layer.key !== layerKey);
           }
         });
         return nextState;

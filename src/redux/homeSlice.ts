@@ -7,7 +7,6 @@ const initialState = {
   // renderingData: INITIAL_RENDERING_DATA,
   recordingData: INITIAL_RECORDING_DATA,
   currentVisualizedData: undefined,
-  TPDopeSheetList: [],
 };
 const homeSlice = createSlice({
   name: 'homeReducer',
@@ -25,9 +24,6 @@ const homeSlice = createSlice({
     setCurrentVisualizedData(state, action) {
       state.currentVisualizedData = action.payload;
     },
-    setTPDopeSheetList(state, action) {
-      state.TPDopeSheetList = action.payload;
-    },
   },
   extraReducers: {},
 });
@@ -37,7 +33,6 @@ export const {
   setRecordingData,
   // setRenderingData,
   setCurrentVisualizedData,
-  setTPDopeSheetList,
 } = homeSlice.actions;
 
 export default homeSlice.reducer;

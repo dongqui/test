@@ -1,4 +1,4 @@
-import { ModeState, ModeAction } from 'actions/mode';
+import { ModeState, ModeAction } from 'actions/SAMPLE_mode';
 
 const defaultState: ModeState = {
   mode: 'shoot',

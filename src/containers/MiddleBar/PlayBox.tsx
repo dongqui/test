@@ -42,17 +42,17 @@ const DECIMAL_PLACES = 10000; // 반올림할 소수점 자리수
 export interface Props {
   currentTimeRef?: RefObject<HTMLInputElement>;
   currentTimeIndexRef?: RefObject<HTMLInputElement>;
-  currentXAxisPosition?: MutableRefObject<number>;
-  prevXScale?: MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  currentPlayBarTime?: MutableRefObject<number>;
+  dopeSheetScale?: MutableRefObject<d3ScaleLinear | null>;
   startTimeIndex: number;
   lastTime: number;
 }
 
 const PlayBox: FunctionComponent<Props> = ({
-  currentXAxisPosition,
+  currentPlayBarTime,
   currentTimeRef,
   currentTimeIndexRef,
-  prevXScale,
+  dopeSheetScale,
   startTimeIndex,
   lastTime,
 }) => {
@@ -102,13 +102,13 @@ const PlayBox: FunctionComponent<Props> = ({
         dispatch(animatingDataActions.setPlayState({ playState: 'stop' }));
       }
       if (
-        currentXAxisPosition &&
+        currentPlayBarTime &&
         currentTimeRef &&
         currentTimeRef.current &&
         currentTimeIndexRef &&
         currentTimeIndexRef.current &&
-        prevXScale &&
-        prevXScale.current
+        dopeSheetScale &&
+        dopeSheetScale.current
       ) {
         if (_.round(startTimeIndex / 30, 4) <= lastTime) {
           fnSetValue(currentTimeRef, fnGetMaskedValue(_.round(startTimeIndex / 30, 0)));
@@ -121,12 +121,12 @@ const PlayBox: FunctionComponent<Props> = ({
           currentAction.time = _.round(startTimeIndex / 30, 4);
         }
 
-        currentXAxisPosition.current = startTimeIndex;
+        currentPlayBarTime.current = startTimeIndex;
 
-        const xScaleLinear = prevXScale.current as d3ScaleLinear;
-        d3.select('#play-bar-wrapper').style(
+        const xScaleLinear = dopeSheetScale.current as d3ScaleLinear;
+        d3.select('#play-bar').style(
           'transform',
-          `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+          `translate3d(${xScaleLinear(currentPlayBarTime.current) - 10}px,
           ${X_AXIS_HEIGHT / 2}px, 0)`,
         );
       }
@@ -147,12 +147,12 @@ const PlayBox: FunctionComponent<Props> = ({
     currentTimeIndexRef,
     currentTimeRef,
     currentVisualizedData,
-    currentXAxisPosition,
+    currentPlayBarTime,
     dispatch,
     isShootPage,
     lastTime,
     playState,
-    prevXScale,
+    dopeSheetScale,
     recordingData,
     startTimeIndex,
   ]);
