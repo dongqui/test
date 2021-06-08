@@ -1,22 +1,23 @@
-import { FILE_TYPES, LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
+import { LPDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
+import { LPItemListOldType, LPItemOldType } from 'types/LP';
 
 interface FnFilterArrayByHierarchyProps {
-  data: LPDataType[];
+  data: LPItemListOldType;
   searchWord: string;
 }
 interface AddResultPrps {
-  prevData: LPDataType[];
-  newData: LPDataType[];
+  prevData: LPItemListOldType;
+  newData: LPItemListOldType;
 }
 interface FindAllChildsProps {
-  data: LPDataType[];
-  parentData: LPDataType;
+  data: LPItemListOldType;
+  parentData: LPItemOldType;
 }
 const findAllChilds = ({ data, parentData }: FindAllChildsProps) => {
-  let result: LPDataType[] = [];
-  let currentRows: LPDataType[] = [parentData];
-  let additionalRows: LPDataType[] = [];
+  let result: LPItemListOldType = [];
+  let currentRows: LPItemListOldType = [parentData];
+  let additionalRows: LPItemListOldType = [];
   do {
     additionalRows = [];
     _.forEach(currentRows, (item) => {
@@ -50,7 +51,7 @@ const addResult = ({ prevData, newData }: AddResultPrps) => {
  * @return filter 후 lpData
  */
 const fnFilterArrayByHierarchy = ({ data, searchWord }: FnFilterArrayByHierarchyProps) => {
-  let result: LPDataType[] = [];
+  let result: LPItemListOldType = [];
   const searchFiles = _.filter(data, (item) =>
     _.includes(item.name.toLowerCase(), searchWord.toLowerCase()),
   );
@@ -59,7 +60,7 @@ const fnFilterArrayByHierarchy = ({ data, searchWord }: FnFilterArrayByHierarchy
     if (childRows) {
       result = addResult({ prevData: result, newData: childRows });
     }
-    let currentRow: LPDataType | undefined = _.clone(file);
+    let currentRow: LPItemOldType | undefined = _.clone(file);
     if (currentRow) {
       result = addResult({ prevData: result, newData: [currentRow] });
     }

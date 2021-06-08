@@ -16,7 +16,7 @@ import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
 import Explorer from './Explorer';
-import { fnGetFileExtension, fnGetAnimationData } from '../../../utils/LP_release';
+import { fnGetFileExtension, fnGetAnimationData } from '../../../utils/LP_launching';
 import { fnSetConvertFbxToGlb } from '../../../utils/common/api/index';
 import { BaseModal } from 'components/Modal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';

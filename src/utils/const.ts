@@ -1,5 +1,5 @@
-import { FILE_TYPES, LPDataType } from 'types';
 import { CPItemType } from 'types/CP';
+import { LPItemListOldType } from 'types/LP';
 
 export const isClient = typeof window !== 'undefined';
 
@@ -7,12 +7,12 @@ export const CUT_IMAGES_CNT = 20;
 
 export const STANDARD_TIME_UNIT = 1 / 30;
 
-export const DEFAULT_MODELS: LPDataType[] = [
+export const DEFAULT_MODELS: LPItemListOldType = [
   {
     key: 'defaultmodel1',
     name: 'zombie.fbx',
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493576/zombie_bkqv8g.glb',
-    type: FILE_TYPES.file,
+    type: 'File',
     baseLayer: [],
     layers: [],
   },
@@ -20,7 +20,7 @@ export const DEFAULT_MODELS: LPDataType[] = [
     key: 'defaultmodel2',
     name: 'knight.fbx',
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493584/knight_zizg5n.glb',
-    type: FILE_TYPES.file,
+    type: 'File',
     baseLayer: [],
     layers: [],
   },
@@ -28,13 +28,13 @@ export const DEFAULT_MODELS: LPDataType[] = [
     key: 'defaultmodel3',
     name: 'vanguard.fbx',
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619494583/vanguard_t_cslcnl.glb',
-    type: FILE_TYPES.file,
+    type: 'File',
     baseLayer: [],
     layers: [],
   },
 ];
 
-export const INITIAL_LP_DATA: LPDataType[] = [];
+export const INITIAL_LP_DATA: LPItemListOldType = [];
 
 export const CP_ITEMS: CPItemType[] = [
   {

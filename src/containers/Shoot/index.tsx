@@ -9,13 +9,11 @@ import {
   useRef,
 } from 'react';
 import _ from 'lodash';
-import { useReactiveVar } from '@apollo/client';
 import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-// import LibraryPanel from 'containers/Panels/LibraryPanel_release';
-import { storeLpData } from 'lib/store';
+// import LibraryPanel from 'containers/Panels/LibraryPanel_launching';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
-import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
+import { LPDATA_PROPERTY_TYPES } from 'types';
 import TimelinePanel from 'containers/Panels/TimelinePanel';
 import ControlPanel from 'containers/Panels/ControlPanel';
 import { ConfirmModalProvider } from 'components/Modal/ConfirmModal';
@@ -27,11 +25,12 @@ import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import * as lpDataActions from 'actions/lpData';
 
 const cx = classNames.bind(styles);
 
 const Shoot: FunctionComponent = () => {
-  const lpData = useReactiveVar(storeLpData);
+  const lpData = useSelector((state) => state.lpDataOld);
 
   const dispatch = useDispatch();
 
@@ -47,7 +46,7 @@ const Shoot: FunctionComponent = () => {
   const fileUrl = useMemo(() => {
     const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
 
-    if (_.isEqual(visualizedRow?.type, FILE_TYPES.file)) {
+    if (_.isEqual(visualizedRow?.type, 'File')) {
       return visualizedRow?.url;
     }
 
@@ -63,16 +62,18 @@ const Shoot: FunctionComponent = () => {
 
   useEffect(() => {
     if (currentVisualizedData?.baseLayer) {
-      storeLpData(
-        _.map(lpData, (item) => ({
-          ...item,
-          baseLayer: _.isEqual(item?.key, currentVisualizedData?.key)
-            ? currentVisualizedData?.baseLayer
-            : item?.baseLayer,
-          layers: _.isEqual(item?.key, currentVisualizedData?.key)
-            ? currentVisualizedData?.layers
-            : item?.layers,
-        })),
+      dispatch(
+        lpDataActions.setItemListOld({
+          itemList: _.map(lpData, (item) => ({
+            ...item,
+            baseLayer: _.isEqual(item?.key, currentVisualizedData?.key)
+              ? currentVisualizedData?.baseLayer
+              : item?.baseLayer,
+            layers: _.isEqual(item?.key, currentVisualizedData?.key)
+              ? currentVisualizedData?.layers
+              : item?.layers,
+          })),
+        }),
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,9 +1,10 @@
-import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
+import { LPDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
+import { LPItemListOldType } from 'types/LP';
 
 interface FnMakeSelectionProps {
-  data: LPDataType[];
-  originalData: LPDataType[];
+  data: LPItemListOldType;
+  originalData: LPItemListOldType;
 }
 /**
  * 선택영역 표시를 도와주는 함수
@@ -14,7 +15,7 @@ interface FnMakeSelectionProps {
  * @return 선택영역 표시를 위한 flag 값이 들어간 후의 lpData
  */
 const fnMakeSelection = ({ data, originalData }: FnMakeSelectionProps) => {
-  const result: LPDataType[] = [];
+  const result: LPItemListOldType = [];
   let isFirst = false;
   let isLast = false;
   let isSelected = false;

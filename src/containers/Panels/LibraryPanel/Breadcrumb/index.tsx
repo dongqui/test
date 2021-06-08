@@ -1,34 +1,33 @@
 import { FunctionComponent, Fragment, memo, useEffect, useState, useCallback } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
-// import { Dropdown } from 'components/Dropdown';
-import { useReactiveVar } from '@apollo/client';
-import { storePages } from 'lib/store';
 import BreadcrumbItem from './BreadcrumbItem';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import * as lpPageActions from 'actions/lpPage';
+import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
 
 const cx = classNames.bind(styles);
 
 const Breadcrumb: FunctionComponent = () => {
-  const pages = useReactiveVar(storePages);
+  const pages = useSelector((state) => state.lpPageOld);
+
+  const dispatch = useDispatch();
+
   const [isOpen, setIsOpen] = useState(false);
 
   const handleBack = useCallback(() => {
     if (pages.length > 1) {
       const currentPath = _.last(pages);
       const removedCurrentPath = _.filter(pages, (page) => !_.isEqual(page.key, currentPath?.key));
-      storePages(removedCurrentPath);
+      dispatch(lpPageActions.setLPPageOld(removedCurrentPath));
     }
-  }, [pages]);
+  }, [dispatch, pages]);
 
   const handlePathOpen = useCallback(() => {
     setIsOpen(!isOpen);
   }, [isOpen]);
-
-  // const handleSelect = useCallback(() => {
-  //   console.log('handleSelect');
-  // }, []);
 
   useEffect(() => {
     // @TODO
