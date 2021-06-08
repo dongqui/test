@@ -10,7 +10,7 @@ import {
   useRef,
 } from 'react';
 import { useRouter } from 'next/router';
-import { storeContextMenuInfo, storeModalInfo, storePageInfo } from 'lib/store';
+import { storeContextMenuInfo, storeModalInfo } from 'lib/store';
 import { useReactiveVar } from '@apollo/client';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import { ContextMenu } from 'components/ContextMenu';
@@ -22,6 +22,7 @@ import Process from 'containers/Shoot/Process';
 import ShootContainer from 'containers/Shoot';
 import ExtractContainer from 'containers/Extract';
 import { FilledButton } from 'components/Button';
+import { useSelector } from 'reducers';
 
 export type Procedure = 'service' | 'token' | 'success' | 'denied';
 
@@ -85,7 +86,7 @@ const Index: FunctionComponent = () => {
 
   const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
   const modalInfo = useReactiveVar(storeModalInfo);
-  const pageInfo = useReactiveVar(storePageInfo);
+  const pageInfo = useSelector((state) => state.pageInfo);
   const contextMenuRef = useRef<HTMLDivElement>(null);
 
   const handleClose = useCallback(() => {

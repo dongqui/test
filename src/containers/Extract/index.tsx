@@ -1,7 +1,6 @@
 import { FunctionComponent, Fragment, memo, useEffect } from 'react';
 import { useReactiveVar } from '@apollo/client';
 import CutEdit from 'containers/Extract/CutEdit';
-import { storeCutImages, storePageInfo } from 'lib/store';
 import MiddleBar from 'containers/MiddleBar';
 import Webcam from 'containers/Extract/Webcam';
 import _ from 'lodash';
@@ -9,11 +8,12 @@ import { PAGE_NAMES } from 'types';
 import RecordWebcam from 'containers/Extract/RecordWebcam';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
 const Extract: FunctionComponent = () => {
-  const pageInfo = useReactiveVar(storePageInfo);
+  const pageInfo = useSelector((state) => state.pageInfo);
 
   const videoURL = pageInfo.videoUrl;
 

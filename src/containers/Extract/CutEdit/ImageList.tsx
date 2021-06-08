@@ -1,14 +1,14 @@
 import { FunctionComponent, memo } from 'react';
 import { useReactiveVar } from '@apollo/client';
-import { storeCutImages } from 'lib/store';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ImageList.module.scss';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
 const ImageList: FunctionComponent = () => {
-  const images = useReactiveVar(storeCutImages);
+  const images = useSelector((state) => state.cutImages.urls);
   const defaultList = Array.from(Array(20).keys());
 
   return (

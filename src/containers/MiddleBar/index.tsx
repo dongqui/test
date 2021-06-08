@@ -10,7 +10,6 @@ import {
 } from 'react';
 import * as d3 from 'd3';
 import { useReactiveVar } from '@apollo/client';
-import { storePageInfo, storeBarPositionX, storeRecordingData } from 'lib/store';
 import { SvgPath } from 'components/Icon';
 import { SegmentButton } from 'components/Button';
 import { PrefixInput, BaseInput } from 'components/Input';
@@ -28,6 +27,7 @@ import * as animatingDataActions from 'actions/animatingData';
 import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import * as pageInfoActions from 'actions/pageInfo';
 
 const cx = classNames.bind(styles);
 
@@ -43,8 +43,8 @@ export interface Props {
 const MiddleBar: FunctionComponent<Props> = (props) => {
   const { currentTimeRef, currentTimeIndexRef, currentPlayBarTime, dopeSheetScale } = props;
 
-  const recordingData = useReactiveVar(storeRecordingData);
-  const barPositionX = useReactiveVar(storeBarPositionX);
+  const recordingData = useSelector((state) => state.recordingData);
+  const barPositionX = useSelector((state) => state.barPositionX.x);
 
   const { currentAction } = useSelector((state) => state.animatingData);
   const currentVisualizedData = useSelector((state) => state.currentVisualizedData);
@@ -64,7 +64,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
     }
   }, [currentVisualizedData]);
 
-  const pageInfo = useReactiveVar(storePageInfo);
+  const pageInfo = useSelector((state) => state.pageInfo);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastTimeRef = useRef<HTMLInputElement>(null);
 
@@ -157,7 +157,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
       isSelected: pageInfo.page === PAGE_NAMES.shoot,
       onClick: () => {
         if (pageInfo.page !== PAGE_NAMES.shoot) {
-          storePageInfo({ page: PAGE_NAMES.shoot });
+          dispatch(pageInfoActions.setPageInfo({ page: 'shoot' }));
         }
       },
     },
@@ -170,7 +170,7 @@ const MiddleBar: FunctionComponent<Props> = (props) => {
           return;
         }
         if (pageInfo.page === PAGE_NAMES.shoot) {
-          storePageInfo({ page: PAGE_NAMES.record });
+          dispatch(pageInfoActions.setPageInfo({ page: 'record' }));
         }
       },
     },

@@ -53,21 +53,6 @@ export interface RenderingDataType {
   [RenderingDataPropertyName.isMeshOn]: boolean;
   [RenderingDataPropertyName.isShadowOn]: boolean;
 }
-interface RANGEBOX_INFO_TYPES {
-  width: number;
-  height: number;
-  x: number;
-  barX: number;
-  y: number;
-}
-export interface RecordingDataType {
-  duration: number;
-  rangeBoxInfo: RANGEBOX_INFO_TYPES;
-  isPlaying: boolean;
-  motionName: string;
-  isRecording?: boolean;
-  count?: number | undefined;
-}
 
 export type PlayState = 'play' | 'pause' | 'stop';
 export type PlayDirection = 1 | -1;

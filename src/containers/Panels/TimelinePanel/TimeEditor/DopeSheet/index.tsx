@@ -22,7 +22,7 @@ import {
   fnDeleteKeyframe,
 } from 'utils/TP/editingUtils';
 import { fnGetBinarySearch, fnGetBoneTrackIndex, fnGetLayerTrackIndex } from 'utils/TP/trackUtils';
-import { storeContextMenuInfo, storePageInfo } from 'lib/store';
+import { storeContextMenuInfo } from 'lib/store';
 import * as timelineActions from 'actions/timeline';
 import * as animatingDataActions from 'actions/animatingData';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
@@ -60,7 +60,8 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
   const { currentPlayBarTime, currentTimeIndexRef, currentTimeRef, dopeSheetScale } = props;
   const dispatch = useDispatch();
   const dopeSheetRef = useRef<HTMLDivElement>(null);
-  const pageInfo = useReactiveVar(storePageInfo);
+  // const pageInfo = useReactiveVar(storePageInfo);
+  const pageInfo = useSelector((state) => state.pageInfo);
   const trackList = useSelector((state) => state.timeline.trackList);
   const selectedKeyframes = useSelector((state) => state.timeline.selectedKeyframes);
   const lastBoneOfLayers = useSelector((state) => state.timeline.lastBoneOfLayers);

@@ -4,7 +4,6 @@ import { useDropzone } from 'react-dropzone';
 import useLPControl from 'hooks/LP/useLPControl';
 import { v4 as uuidv4 } from 'uuid';
 import useContextMenu from 'hooks/common/useContextMenu';
-import { storeCutImages, storePageInfo, storeRecordingData } from 'lib/store';
 import { DEFAULT_MODELS, INITIAL_RECORDING_DATA } from 'utils/const';
 import { LPModeType } from 'types';
 import * as api from 'utils/common/api';
@@ -29,6 +28,9 @@ import * as lpDataActions from 'actions/lpData';
 import { useDispatch } from 'react-redux';
 import * as lpModeActions from 'actions/lpMode';
 import * as lpSearchwordActtions from 'actions/lpSearchword';
+import * as pageInfoActions from 'actions/pageInfo';
+import * as recordingDataActions from 'actions/recordingData';
+import * as cutImagesActions from 'actions/cutImages';
 
 const cx = classNames.bind(styles);
 
@@ -187,9 +189,9 @@ const LibraryPanelComponent: FunctionComponent = () => {
 
         if (confirmed) {
           dispatch(lpDataActions.setItemListOld({ itemList: newLpData }));
-          storeRecordingData(INITIAL_RECORDING_DATA);
-          storeCutImages([]);
-          storePageInfo({ page: PAGE_NAMES.extract, videoUrl: url, extension });
+          dispatch(recordingDataActions.setRecordingData(INITIAL_RECORDING_DATA));
+          dispatch(cutImagesActions.setCutImages({ urls: [] }));
+          dispatch(pageInfoActions.setPageInfo({ page: 'extract', videoUrl: url, extension }));
         } else {
           continue;
         }
