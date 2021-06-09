@@ -20,7 +20,7 @@ const ListView: FunctionComponent<ListViewProps> = ({ data }) => {
    */
   const grouppedData = useMemo((): GrouppedData => {
     const groupKeys: string[] = Object.keys(_.groupBy(data, 'groupKey'));
-    const result: GrouppedData = _.map(groupKeys, (groupKey) =>
+    const result = _.map(groupKeys, (groupKey) =>
       data.filter((item) => item.groupKey === groupKey),
     );
     return result;

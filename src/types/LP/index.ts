@@ -11,6 +11,7 @@ export interface LPItemType {
   name: string;
   type: FileType;
   parentKey: string;
+  parentKeyList: string[];
   url: string;
   isSelected?: boolean;
   isVisualized?: boolean;

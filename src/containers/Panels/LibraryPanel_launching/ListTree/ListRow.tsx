@@ -1,56 +1,53 @@
-import { FunctionComponent, memo, Fragment, useCallback } from 'react';
+import { FunctionComponent, memo, Fragment, useCallback, useMemo } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
-import { LPItemType } from 'types/LP';
 import classNames from 'classnames/bind';
 import styles from './ListRow.module.scss';
+import { FilteredItem } from './ListGroup';
 
 const cx = classNames.bind(styles);
 
-export interface ListRowProps {
-  item: LPItemType;
-  depth: number;
+export interface Props {
+  item: FilteredItem;
+  onClickExpand: (key: string) => void;
 }
 
-const ListRow: FunctionComponent<ListRowProps> = ({ item, depth }) => {
-  const handleClickExpand = useCallback((e) => {}, []);
+const ListRow: FunctionComponent<Props> = ({ item, onClickExpand }) => {
+  const handleClickExpand = useCallback(() => {
+    onClickExpand(item.key);
+  }, [item.key, onClickExpand]);
   const handleClick = useCallback(() => {}, []);
 
-  const folderClasses = cx('list-row', `depth-${depth}`, {
+  const rowClasses = cx('list-row', `depth-${item.depth}`, {
     selected: false,
     clickSelected: false,
     visualized: false,
     visualizeSelected: false,
-    first: false,
-    last: false,
-  });
-
-  const fileClasses = cx('list-row', `depth-${depth}`, {
-    selected: false,
-    clickSelected: false,
-    visualized: false,
-    visualizeSelected: false,
-    first: false,
-    last: false,
-  });
-
-  const motionClasses = cx('list-row', `depth-${depth}`, {
-    selected: false,
-    clickSelected: false,
-    visualized: false,
-    visualizeSelected: false,
-    first: false,
-    last: false,
   });
 
   const folderArrowClasses = cx('icon-arrow', {
-    open: true,
+    open: item.isExpanded,
+    hide: item.type === 'Motion',
   });
+
+  const icon = useMemo(() => {
+    let result = SvgPath.Folder;
+    if (item.type === 'Folder') {
+      result = SvgPath.Folder;
+    }
+    if (item.type === 'File') {
+      result = SvgPath.Model;
+    }
+    if (item.type === 'Motion') {
+      result = SvgPath.Motion;
+    }
+    return result;
+  }, [item.type]);
 
   return (
     <Fragment>
       <div
-        className={folderClasses}
+        className={rowClasses}
         role="button"
         onKeyDown={() => {}}
         tabIndex={0}
@@ -63,8 +60,8 @@ const ListRow: FunctionComponent<ListRowProps> = ({ item, depth }) => {
           onClick={handleClickExpand}
         />
         <div className={cx('name-outer')}>
-          <IconWrapper className={cx('icon-item')} icon={SvgPath.Folder} hasFrame={false} />
-          <div className={cx('name')}>파일명</div>
+          <IconWrapper className={cx('icon-item')} icon={icon} hasFrame={false} />
+          <div className={cx('name')}>{item.name}</div>
         </div>
       </div>
     </Fragment>
