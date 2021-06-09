@@ -7,15 +7,17 @@ import {
   useRef,
   MutableRefObject,
 } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import useLPRowControl from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
-import { storeLpData, storePages } from 'lib/store';
+import { LPDATA_PROPERTY_TYPES } from 'types';
 import { BaseInput } from 'components/Input';
 import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import * as lpPageActions from 'actions/lpPage';
+import { useSelector } from 'reducers';
+import * as lpDataActions from 'actions/lpData';
+import { useDispatch } from 'react-redux';
 
 const cx = classNames.bind(styles);
 
@@ -24,11 +26,14 @@ export interface IconProps {
 }
 
 const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
-  const lpData = useReactiveVar(storeLpData);
-  const pages = useReactiveVar(storePages);
+  const lpData = useSelector((state) => state.lpDataOld);
+  const pages = useSelector((state) => state.lpPageOld);
+
+  const dispatch = useDispatch();
+
   const inputRef = useRef<HTMLInputElement>() as MutableRefObject<HTMLInputElement>;
   const fileType = useMemo(
-    () => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.file,
+    () => _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type ?? 'File',
     [rowKey, lpData],
   );
   const isDragging =
@@ -44,40 +49,51 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
   const iconRef: MutableRefObject<HTMLDivElement> | any = useRef(null);
   const onClick = useCallback(
     (e) => {
-      storeLpData(
-        _.map(lpData, (item) => ({
-          ...item,
-          isClicked: _.isEqual(item.key, rowKey) ? true : false,
-        })),
+      dispatch(
+        lpDataActions.setItemListOld({
+          itemList: _.map(lpData, (item) => ({
+            ...item,
+            isClicked: _.isEqual(item.key, rowKey) ? true : false,
+          })),
+        }),
       );
     },
-    [rowKey, lpData],
+    [dispatch, lpData, rowKey],
   );
   const handleBlur = useCallback(() => {
-    storeLpData(
-      _.map(lpData, (item) => ({
-        ...item,
-        isClicked: false,
-      })),
+    dispatch(
+      lpDataActions.setItemListOld({
+        itemList: _.map(lpData, (item) => ({
+          ...item,
+          isClicked: false,
+        })),
+      }),
     );
-  }, [lpData]);
+  }, [dispatch, lpData]);
   const { setCurrentData } = useLPRowControl({ lpData });
   const onDoubleClick = useCallback(() => {
-    if (_.isEqual(_.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type, FILE_TYPES.motion)) {
-      storeLpData(
-        _.map(lpData, (item) => ({ ...item, isVisualized: _.isEqual(item.key, rowKey) })),
+    if (_.isEqual(_.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type, 'Motion')) {
+      dispatch(
+        lpDataActions.setItemListOld({
+          itemList: _.map(lpData, (item) => ({
+            ...item,
+            isVisualized: _.isEqual(item.key, rowKey),
+          })),
+        }),
       );
       setCurrentData({ key: rowKey });
     } else {
-      storePages(
-        _.concat(pages, {
-          key: rowKey,
-          name: _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name ?? 'Folder',
-          type: _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type ?? FILE_TYPES.folder,
-        }),
+      dispatch(
+        lpPageActions.setLPPageOld(
+          _.concat(pages, {
+            key: rowKey,
+            name: _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.name ?? 'Folder',
+            type: _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.type ?? 'Folder',
+          }),
+        ),
       );
     }
-  }, [lpData, rowKey, setCurrentData, pages]);
+  }, [lpData, rowKey, dispatch, setCurrentData, pages]);
   const {
     filteredFileName,
     isModifying,
@@ -107,13 +123,13 @@ const IconComponent: FunctionComponent<IconProps> = ({ rowKey }) => {
         tabIndex={0}
         onBlur={handleBlur}
       >
-        {_.isEqual(fileType, FILE_TYPES.file) && (
+        {_.isEqual(fileType, 'File') && (
           <IconWrapper className={cx('icon-model')} icon={SvgPath.Model} hasFrame={false} />
         )}
-        {_.isEqual(fileType, FILE_TYPES.folder) && (
+        {_.isEqual(fileType, 'Folder') && (
           <IconWrapper className={cx('icon-model')} icon={SvgPath.Folder} hasFrame={false} />
         )}
-        {_.isEqual(fileType, FILE_TYPES.motion) && (
+        {_.isEqual(fileType, 'Motion') && (
           <IconWrapper className={cx('icon-model')} icon={SvgPath.Motion} hasFrame={false} />
         )}
       </div>

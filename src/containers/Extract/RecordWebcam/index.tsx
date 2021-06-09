@@ -1,6 +1,4 @@
-import { useReactiveVar } from '@apollo/client';
-import { PAGE_NAMES, VIDEO_FORMAT_TYPES } from 'types';
-import { storeCutImages, storePageInfo, storeRecordingData } from 'lib/store';
+import { VIDEO_FORMAT_TYPES } from 'types';
 import _ from 'lodash';
 import React, { FunctionComponent, memo, useEffect, useRef } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
@@ -8,11 +6,19 @@ import { useRecordWebcam } from '../../../hooks/RP/useRecordWebcam';
 import { INITIAL_RECORDING_DATA } from 'utils/const';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import * as pageInfoActions from 'actions/pageInfo';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
+import * as recordingDataActions from 'actions/recordingData';
+import * as cutImagesActions from 'actions/cutImages';
 
 const cx = classNames.bind(styles);
 
 const RecordWebcam: FunctionComponent = () => {
-  const recordingData = useReactiveVar(storeRecordingData);
+  const recordingData = useSelector((state) => state.recordingData);
+
+  const dispatch = useDispatch();
+
   const videoRef = useRef<HTMLVideoElement>(null);
   useRecordWebcam({ ref: videoRef });
   const { status, startRecording, stopRecording, mediaBlobUrl } = useReactMediaRecorder({
@@ -29,15 +35,17 @@ const RecordWebcam: FunctionComponent = () => {
   }, [mediaBlobUrl, recordingData.isRecording, startRecording, stopRecording]);
   useEffect(() => {
     if (_.isEqual(status, 'stopped') && mediaBlobUrl && !_.isEmpty(mediaBlobUrl)) {
-      storeRecordingData(INITIAL_RECORDING_DATA);
-      storeCutImages([]);
-      storePageInfo({
-        page: PAGE_NAMES.extract,
-        videoUrl: mediaBlobUrl,
-        extension: VIDEO_FORMAT_TYPES.mp4,
-      });
+      dispatch(recordingDataActions.setRecordingData(INITIAL_RECORDING_DATA));
+      dispatch(cutImagesActions.setCutImages({ urls: [] }));
+      dispatch(
+        pageInfoActions.setPageInfo({
+          page: 'extract',
+          videoUrl: mediaBlobUrl,
+          extension: VIDEO_FORMAT_TYPES.mp4,
+        }),
+      );
     }
-  }, [mediaBlobUrl, status]);
+  }, [dispatch, mediaBlobUrl, status]);
   return (
     <div className={cx('wrapper')}>
       {recordingData.count && <div className={cx('time')}>{recordingData.count}</div>}

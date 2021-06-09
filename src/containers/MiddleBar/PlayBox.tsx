@@ -7,17 +7,13 @@ import {
   RefObject,
   MutableRefObject,
 } from 'react';
-import { useReactiveVar } from '@apollo/client';
-import { storeModalInfo, storePageInfo, storeRecordingData, storeBarPositionX } from 'lib/store';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import * as api from 'utils/common/api';
-import { storeLpData } from 'lib/store';
-import { FILE_TYPES, LPDataType } from 'types';
 import { STANDARD_TIME_UNIT } from 'utils/const';
-import { ROOT_FOLDER_NAME } from 'types/LP';
+import { LPItemListOldType, ROOT_FOLDER_NAME } from 'types/LP';
 import { FormModal } from 'components/Modal';
 import { useAlertModal } from 'components/Modal/AlertModal';
 import { BaseInput } from 'components/Input';
@@ -33,6 +29,11 @@ import * as animatingDataActions from 'actions/animatingData';
 import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './PlayBox.module.scss';
+import * as lpDataActions from 'actions/lpData';
+import * as pageInfoActions from 'actions/pageInfo';
+import * as recordingDataActions from 'actions/recordingData';
+import * as barPositionXActions from 'actions/barPositionX';
+import * as modalInfoActions from 'actions/modalInfo';
 
 const cx = classNames.bind(styles);
 
@@ -56,10 +57,10 @@ const PlayBox: FunctionComponent<Props> = ({
   startTimeIndex,
   lastTime,
 }) => {
-  const recordingData = useReactiveVar(storeRecordingData);
-  const modalInfo = useReactiveVar(storeModalInfo);
-  const pageInfo = useReactiveVar(storePageInfo);
-  const lpData = useReactiveVar(storeLpData);
+  const recordingData = useSelector((state) => state.recordingData);
+  const modalInfo = useSelector((state) => state.modalInfo);
+  const pageInfo = useSelector((state) => state.pageInfo);
+  const lpData = useSelector((state) => state.lpDataOld);
 
   const dispatch = useDispatch();
 
@@ -77,23 +78,25 @@ const PlayBox: FunctionComponent<Props> = ({
       return;
     }
     if (!_.isEqual(pageInfo.page, PAGE_NAMES.record)) {
-      storePageInfo({ page: PAGE_NAMES.record });
+      dispatch(pageInfoActions.setPageInfo({ page: 'record' }));
       return;
     }
     if (_.isUndefined(recordingData.count)) {
       if (!recordingData.isRecording) {
         for (const count of [5, 4, 3, 2, 1]) {
-          storeRecordingData({ ...recordingData, count });
+          dispatch(recordingDataActions.setRecordingData({ ...recordingData, count }));
           await sleep(1000);
         }
       }
-      storeRecordingData({
-        ...recordingData,
-        isRecording: !recordingData.isRecording,
-        count: undefined,
-      });
+      dispatch(
+        recordingDataActions.setRecordingData({
+          ...recordingData,
+          isRecording: !recordingData.isRecording,
+          count: undefined,
+        }),
+      );
     }
-  }, [pageInfo.page, recordingData]);
+  }, [dispatch, pageInfo.page, recordingData]);
 
   // 정지 버튼 클릭 시 재생바 start 로 && current time 과 time index 시작점으로
   const handleStop = useCallback(() => {
@@ -132,15 +135,17 @@ const PlayBox: FunctionComponent<Props> = ({
       }
     }
     if (!isShootPage) {
-      storeRecordingData({
-        ...recordingData,
-        isPlaying: false,
-        rangeBoxInfo: {
-          ...recordingData.rangeBoxInfo,
-          barX: recordingData.rangeBoxInfo.x + Math.random(),
-        },
-      });
-      storeBarPositionX(recordingData.rangeBoxInfo.x);
+      dispatch(
+        recordingDataActions.setRecordingData({
+          ...recordingData,
+          isPlaying: false,
+          rangeBoxInfo: {
+            ...recordingData.rangeBoxInfo,
+            barX: recordingData.rangeBoxInfo.x + Math.random(),
+          },
+        }),
+      );
+      dispatch(barPositionXActions.setBarPositionX({ x: recordingData.rangeBoxInfo.x }));
     }
   }, [
     currentAction,
@@ -166,7 +171,7 @@ const PlayBox: FunctionComponent<Props> = ({
     }
 
     if (!isShootPage) {
-      storeRecordingData({ ...recordingData, isPlaying: true });
+      dispatch(recordingDataActions.setRecordingData({ ...recordingData, isPlaying: true }));
     }
   }, [currentVisualizedData, dispatch, isShootPage, playDirection, playState, recordingData]);
 
@@ -179,7 +184,7 @@ const PlayBox: FunctionComponent<Props> = ({
     }
 
     if (_.isEqual(pageInfo.page, PAGE_NAMES.extract)) {
-      storeRecordingData({ ...recordingData, isPlaying: true });
+      dispatch(recordingDataActions.setRecordingData({ ...recordingData, isPlaying: true }));
     }
   }, [
     currentVisualizedData,
@@ -199,10 +204,12 @@ const PlayBox: FunctionComponent<Props> = ({
     }
 
     if (!isShootPage) {
-      storeRecordingData({
-        ...recordingData,
-        isPlaying: false,
-      });
+      dispatch(
+        recordingDataActions.setRecordingData({
+          ...recordingData,
+          isPlaying: false,
+        }),
+      );
     }
   }, [currentVisualizedData, dispatch, isShootPage, playState, recordingData]);
 
@@ -214,9 +221,14 @@ const PlayBox: FunctionComponent<Props> = ({
 
   const handleBlur = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      storeRecordingData({ ...recordingData, motionName: e.target.value });
+      dispatch(
+        recordingDataActions.setRecordingData({
+          ...recordingData,
+          motionName: e.target.value,
+        }),
+      );
     },
-    [recordingData],
+    [dispatch, recordingData],
   );
 
   const handleExport = useCallback(() => {
@@ -246,20 +258,24 @@ const PlayBox: FunctionComponent<Props> = ({
             maxDurationSec,
           )} seconds`;
 
-    storeModalInfo({
-      ...modalInfo,
-      isShow: true,
-      type: MODAL_TYPES.loading,
-      msg: modalMsg,
-      cancel: true,
-      onClose: () => {
-        api.cancelTokenSource();
-        storeModalInfo({
-          ...modalInfo,
-          isShow: false,
-        });
-      },
-    });
+    dispatch(
+      modalInfoActions.setModalInfo({
+        ...modalInfo,
+        isShow: true,
+        type: MODAL_TYPES.loading,
+        msg: modalMsg,
+        cancel: true,
+        onClose: () => {
+          api.cancelTokenSource();
+          dispatch(
+            modalInfoActions.setModalInfo({
+              ...modalInfo,
+              isShow: false,
+            }),
+          );
+        },
+      }),
+    );
     const { error, msg, result } = await api.uploadFileToMotionData({
       url: `${pageInfo?.videoUrl}`,
       type: `${pageInfo.extension ?? 'mp4'}`,
@@ -279,7 +295,9 @@ const PlayBox: FunctionComponent<Props> = ({
       timeout: maxDurationSec * 1000 * 10,
     });
     if (error) {
-      storeModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert });
+      dispatch(
+        modalInfoActions.setModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert }),
+      );
 
       const confirmed = await getConfirm({
         title: msg,
@@ -292,10 +310,10 @@ const PlayBox: FunctionComponent<Props> = ({
     const key = uuidv4();
     let name = _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName;
     name = fnGetFileName({ key: '', lpData, name });
-    const newData: LPDataType[] = [
+    const newData: LPItemListOldType = [
       {
         key,
-        type: FILE_TYPES.motion,
+        type: 'Motion',
         name,
         parentKey: ROOT_FOLDER_NAME,
         baseLayer: result?.data?.result
@@ -311,10 +329,11 @@ const PlayBox: FunctionComponent<Props> = ({
         isExportedMotion: true,
       },
     ];
-    storeLpData(_.concat(lpData, newData));
-    storePageInfo({ page: PAGE_NAMES.shoot });
-    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
+    dispatch(lpDataActions.setItemListOld({ itemList: _.concat(lpData, newData) }));
+    dispatch(pageInfoActions.setPageInfo({ page: 'shoot' }));
+    dispatch(modalInfoActions.setModalInfo({ ...modalInfo, isShow: false, msg: '' }));
   }, [
+    dispatch,
     getConfirm,
     lpData,
     modalInfo,

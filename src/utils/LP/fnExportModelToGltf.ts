@@ -1,13 +1,13 @@
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { LPDataType } from 'types';
 import _ from 'lodash';
 import { fnGetAnimationClipForExport } from 'utils/TP/editingUtils';
+import { LPItemListOldType } from 'types/LP';
 
 interface FnExportModelToGltf {
   modelName: string;
   modelUrl: string;
-  motions: LPDataType[];
+  motions: LPItemListOldType;
 }
 
 /**

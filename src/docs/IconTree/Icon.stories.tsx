@@ -2,7 +2,6 @@ import React from 'react';
 import '../common.css';
 import { Story, Meta } from '@storybook/react/types-6-0';
 import { Icon as IconComponent, IconProps } from 'containers/Panels/LibraryPanel/IconTree/Icon';
-import { FILE_TYPES } from 'types';
 
 export default {
   title: 'Component API/Container/IconTree/Icon',

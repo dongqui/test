@@ -1,18 +1,20 @@
 import { FunctionComponent, memo, Fragment, useCallback } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import useLPRowControl from 'hooks/LP/useLPRowControl';
-import { FILE_TYPES, LPDATA_PROPERTY_TYPES } from 'types';
-import { storeLpData } from 'lib/store';
+import { LPDATA_PROPERTY_TYPES } from 'types';
 import { BaseInput } from 'components/Input';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListRow.module.scss';
+import { FileType } from 'types/LP';
+import { useSelector } from 'reducers';
+import * as lpDataActions from 'actions/lpData';
+import { useDispatch } from 'react-redux';
 
 const cx = classNames.bind(styles);
 
 export interface ListRowProps {
-  mode: FILE_TYPES;
+  mode: FileType;
   rowKey: string;
   depth?: number;
   [LPDATA_PROPERTY_TYPES.isClicked]?: boolean;
@@ -24,7 +26,7 @@ export interface ListRowProps {
 }
 
 const ListRowComponent: FunctionComponent<ListRowProps> = ({
-  mode = FILE_TYPES.folder,
+  mode = 'Folder',
   rowKey = '0',
   depth,
   isClicked,
@@ -34,38 +36,45 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
   isFirst,
   isLast,
 }) => {
-  const lpData = useReactiveVar(storeLpData);
+  const lpData = useSelector((state) => state.lpDataOld);
+
+  const dispatch = useDispatch();
+
   const { setCurrentData } = useLPRowControl({ lpData, rowKey });
   const handleClickExpand = useCallback(
     (e) => {
       e.stopPropagation();
-      storeLpData(
-        _.map(lpData, (item) => ({
-          ...item,
-          isExpanded: _.isEqual(item?.key, rowKey) ? !item.isExpanded : item.isExpanded,
-        })),
+      dispatch(
+        lpDataActions.setItemListOld({
+          itemList: _.map(lpData, (item) => ({
+            ...item,
+            isExpanded: _.isEqual(item?.key, rowKey) ? !item.isExpanded : item.isExpanded,
+          })),
+        }),
       );
     },
-    [lpData, rowKey],
+    [dispatch, lpData, rowKey],
   );
   const onClick = useCallback(() => {
     const isModifying = _.find(lpData, [LPDATA_PROPERTY_TYPES.key, rowKey])?.isModifying;
     if (!isModifying) {
-      storeLpData(
-        _.map(lpData, (item) => ({
-          ...item,
-          isClicked: _.isEqual(rowKey, item.key),
-          isVisualized:
-            isVisualizeSelected && _.isEqual(mode, FILE_TYPES.motion)
-              ? _.isEqual(item.key, rowKey)
-              : item.isVisualized,
-        })),
+      dispatch(
+        lpDataActions.setItemListOld({
+          itemList: _.map(lpData, (item) => ({
+            ...item,
+            isClicked: _.isEqual(rowKey, item.key),
+            isVisualized:
+              isVisualizeSelected && _.isEqual(mode, 'Motion')
+                ? _.isEqual(item.key, rowKey)
+                : item.isVisualized,
+          })),
+        }),
       );
-      if (isVisualizeSelected && _.isEqual(mode, FILE_TYPES.motion)) {
+      if (isVisualizeSelected && _.isEqual(mode, 'Motion')) {
         setCurrentData({ key: rowKey });
       }
     }
-  }, [isVisualizeSelected, lpData, mode, rowKey, setCurrentData]);
+  }, [dispatch, isVisualizeSelected, lpData, mode, rowKey, setCurrentData]);
 
   const {
     fileName,
@@ -119,7 +128,7 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
 
   return (
     <Fragment>
-      {_.isEqual(mode, FILE_TYPES.folder) && (
+      {_.isEqual(mode, 'Folder') && (
         <div
           className={folderClasses}
           role="button"
@@ -151,7 +160,7 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
           </div>
         </div>
       )}
-      {_.isEqual(mode, FILE_TYPES.file) && (
+      {_.isEqual(mode, 'File') && (
         <div
           className={fileClasses}
           role="button"
@@ -183,7 +192,7 @@ const ListRowComponent: FunctionComponent<ListRowProps> = ({
           </div>
         </div>
       )}
-      {_.isEqual(mode, FILE_TYPES.motion) && (
+      {_.isEqual(mode, 'Motion') && (
         <div
           className={motionClasses}
           role="button"

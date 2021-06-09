@@ -1,10 +1,14 @@
-import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
-import { storeLpData } from 'lib/store';
+import { LPDATA_PROPERTY_TYPES } from 'types';
 import _ from 'lodash';
+import * as lpDataActions from 'actions/lpData';
+import { LPItemListOldType } from 'types/LP';
+import { useDispatch } from 'react-redux';
+import { Dispatch } from 'react';
 
 interface FnDeleteFileProps {
-  lpData: LPDataType[];
+  lpData: LPItemListOldType;
   keys?: string[];
+  dispatch: Dispatch<any>;
 }
 /**
  * 파일삭제 (하위파일들도 모두 삭제)
@@ -12,7 +16,7 @@ interface FnDeleteFileProps {
  * @param lpData - lpData
  *
  */
-export const fnDeleteFile = ({ lpData }: FnDeleteFileProps) => {
+export const fnDeleteFile = ({ lpData, dispatch }: FnDeleteFileProps) => {
   let keys = [_.find(lpData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key];
   let tempData = _.clone(lpData);
   do {
@@ -24,7 +28,7 @@ export const fnDeleteFile = ({ lpData }: FnDeleteFileProps) => {
       tempData = _.filter(tempData, (item) => !_.includes(keys, item.key));
     });
   } while (_.some(tempData, (item) => _.includes(keys, item.parentKey)));
-  storeLpData(tempData);
+  dispatch(lpDataActions.setItemListOld({ itemList: tempData }));
 };
 /**
  * 파일삭제 (키 값들을 통해 삭제)

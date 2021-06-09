@@ -1,9 +1,9 @@
 import { FunctionComponent, memo } from 'react';
 import _ from 'lodash';
 import IconNode from './IconNode';
+import { LPItemListType } from 'types/LP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { LPItemListType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 

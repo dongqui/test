@@ -16,7 +16,7 @@ import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
 import Explorer from './Explorer';
-import { fnGetFileExtension, fnGetAnimationData } from '../../../utils/LP_release';
+import { fnGetFileExtension, fnGetAnimationData } from '../../../utils/LP_launching';
 import { fnSetConvertFbxToGlb } from '../../../utils/common/api/index';
 import { BaseModal } from 'components/Modal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
@@ -26,6 +26,7 @@ import { LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
 import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { ListView } from './ListTree';
 
 const cx = classNames.bind(styles);
 
@@ -39,9 +40,11 @@ export const DefaultModels: Required<LPItemListType> = [
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493576/zombie_bkqv8g.glb',
     type: 'File',
     parentKey: ROOT_KEY,
+    groupKey: 'defaultmodel1',
     baseLayer: [],
     layers: [],
     boneNames: [],
+    depth: 1,
   },
   {
     key: 'defaultmodel2',
@@ -49,9 +52,11 @@ export const DefaultModels: Required<LPItemListType> = [
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493584/knight_zizg5n.glb',
     type: 'File',
     parentKey: ROOT_KEY,
+    groupKey: 'defaultmodel2',
     baseLayer: [],
     layers: [],
     boneNames: [],
+    depth: 1,
   },
   {
     key: 'defaultmodel3',
@@ -59,9 +64,11 @@ export const DefaultModels: Required<LPItemListType> = [
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619494583/vanguard_t_cslcnl.glb',
     type: 'File',
     parentKey: ROOT_KEY,
+    groupKey: 'defaultmodel3',
     baseLayer: [],
     layers: [],
     boneNames: [],
+    depth: 1,
   },
 ];
 
@@ -175,19 +182,23 @@ const LibraryPanel: FunctionComponent = () => {
         name,
         url,
         parentKey: findParentKey(),
+        groupKey: key,
         baseLayer: fnGetBaseLayerWithBoneNames({ boneNames }),
         layers: [],
         boneNames,
+        depth: 1,
       };
       const motions: LPItemListType = animations.map((item) => ({
         key: item.uuid,
         name: item.name,
         type: 'Motion',
         parentKey: key,
+        groupKey: key,
         url,
         baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: item.tracks }),
         layers: [],
         boneNames,
+        depth: 2,
       }));
       return [file, ...motions];
     },
@@ -477,6 +488,7 @@ const LibraryPanel: FunctionComponent = () => {
   }, [changeFileToLpData, lpData]);
 
   const isIconView = lpMode === 'iconView';
+  const isListView = lpMode === 'listView';
 
   return (
     <div className={cx('hidden-wrapper')}>
@@ -499,6 +511,7 @@ const LibraryPanel: FunctionComponent = () => {
           )}
           <div className={cx('content')}>
             {isIconView && <IconView data={filteredIconviewData} />}
+            {isListView && <ListView data={lpData} />}
           </div>
         </div>
       </div>

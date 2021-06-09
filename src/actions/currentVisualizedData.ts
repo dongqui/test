@@ -1,4 +1,5 @@
 import { ShootLayerType, ShootTrackType } from 'types';
+import { FileType } from 'types/LP';
 import { UpdatedTrack } from 'types/TP';
 
 export type CurrentVisualizedDataAction =
@@ -12,12 +13,10 @@ export type CurrentVisualizedDataAction =
   | ReturnType<typeof addNewLayer>
   | ReturnType<typeof deleteLayer>;
 
-// 현재 애니메이션을 만들기 위한 RP 내 Visualize 된 데이터
-type FileTypes = 'folder' | 'file' | 'motion';
 export interface CurrentVisualizedData {
   key: string;
   name: string;
-  type: FileTypes;
+  type: FileType;
   boneNames: string[];
   baseLayer: ShootTrackType[];
   layers: ShootLayerType[];
