@@ -131,7 +131,7 @@ export interface ShootLayerType {
   tracks: ShootTrackType[];
 }
 export interface PageInfoType {
-  page: PAGE_NAMES;
+  page: 'shoot' | 'extract' | 'record';
   videoUrl?: string;
   extension?: string;
   duration?: number;

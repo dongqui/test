@@ -1,5 +1,4 @@
 import { FunctionComponent, memo, useMemo, useCallback } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { useShortcut } from 'hooks/common/useShortcut';
 import { LPDATA_PROPERTY_TYPES } from 'types';
 import { LPItemListOldType, ROOT_FOLDER_NAME } from 'types/LP';

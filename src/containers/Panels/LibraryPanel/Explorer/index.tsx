@@ -1,5 +1,4 @@
 import { FunctionComponent, memo, useCallback, ChangeEvent } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { SearchInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { LPModeType } from 'types';

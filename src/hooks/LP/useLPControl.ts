@@ -1,8 +1,7 @@
-import { useState, useCallback, useMemo, Dispatch, SetStateAction } from 'react';
+import { useCallback, useMemo, Dispatch, SetStateAction } from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { ContextmenuType, LPModeType, LPDATA_PROPERTY_TYPES, ShootTrackType } from 'types';
-import { storeContextMenuInfo } from 'lib/store';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import { defaultTargetboneValue } from 'containers/Panels/ControlPanel/RetargetTab';
 import * as api from 'utils/common/api';
@@ -28,6 +27,7 @@ import * as cpDataActions from 'actions/cpData';
 import * as retargetDataActions from 'actions/retargetData';
 import * as lpPageActions from 'actions/lpPage';
 import * as lpDataActions from 'actions/lpData';
+import * as contextmenuInfoActions from 'actions/contextmenuInfo';
 
 interface UseLPControlProps {
   mainData: LPItemListOldType;
@@ -482,136 +482,140 @@ const useLPControl = ({
           { key: '5', value: 'Edit name' },
         ];
       }
-      storeContextMenuInfo({
-        isShow: true,
-        top,
-        left,
-        data,
-        onClick: async (key, value) => {
-          storeContextMenuInfo({ ...contextmenuInfo, isShow: false });
-          let motion: LPItemOldType | undefined;
-          let motions: LPItemOldType | LPItemListOldType;
-          const parentKey = _.isEqual(lpmode, LPModeType.iconview)
-            ? _.last(pages)?.key
-            : ROOT_FOLDER_NAME;
-          switch (key) {
-            case '0':
-              dispatch(
-                lpDataActions.setItemListOld({
-                  itemList: _.concat(mainData, {
-                    key: uuidv4(),
-                    type: 'Folder',
-                    name: fnGetFileName({
-                      key: '',
-                      name: 'Folder',
-                      lpData: mainData,
-                      parentKey: targetRow?.key ?? parentKey,
-                    }),
-                    parentKey: targetRow?.key ?? parentKey,
-                    isModifying: true,
-                    baseLayer: [],
-                    layers: [],
-                  }),
-                }),
-              );
-              break;
-            case '1':
-              onCopy({ mainData: newMainData });
-              break;
-            case '2':
-              handleDelete({ data: newMainData });
-              break;
-            case '3':
-              onPaste();
-              break;
-            case '4':
-              fnVisualizeFile({
-                key: _.find(newMainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
-                lpData: mainData,
-                dispatch,
-              });
-              break;
-            case '5':
-              onEdit({ mainData: newMainData });
-              break;
-            case '6':
-              motion = {
-                key: uuidv4(),
-                name: fnGetFileName({
-                  key: '',
-                  name: 'empty motion',
-                  lpData: mainData,
-                  parentKey: targetIcon?.id || _.last(pages)?.key,
-                }),
-                isVisualized: false,
-                baseLayer: fnGetBaseLayerWithBoneNames({ boneNames: targetRow?.boneNames ?? [] }),
-                layers: [],
-                type: 'Motion',
-                parentKey: targetIcon?.id || _.last(pages)?.key,
-              };
-              dispatch(lpDataActions.setItemListOld({ itemList: _.concat(mainData, motion) }));
-              break;
-            case '7':
-              motion = _.find(mainData, [LPDATA_PROPERTY_TYPES.key, targetIcon?.id]);
-              if (motion) {
+      dispatch(
+        contextmenuInfoActions.setContextmenuInfo({
+          isShow: true,
+          top,
+          left,
+          data,
+          onClick: async (key, value) => {
+            dispatch(
+              contextmenuInfoActions.setContextmenuInfo({ ...contextmenuInfo, isShow: false }),
+            );
+            let motion: LPItemOldType | undefined;
+            let motions: LPItemOldType | LPItemListOldType;
+            const parentKey = _.isEqual(lpmode, LPModeType.iconview)
+              ? _.last(pages)?.key
+              : ROOT_FOLDER_NAME;
+            switch (key) {
+              case '0':
                 dispatch(
                   lpDataActions.setItemListOld({
                     itemList: _.concat(mainData, {
-                      ...motion,
                       key: uuidv4(),
+                      type: 'Folder',
                       name: fnGetFileName({
                         key: '',
-                        name: motion?.name,
+                        name: 'Folder',
                         lpData: mainData,
-                        parentKey: motion?.parentKey,
+                        parentKey: targetRow?.key ?? parentKey,
                       }),
-                      isVisualized: false,
+                      parentKey: targetRow?.key ?? parentKey,
+                      isModifying: true,
+                      baseLayer: [],
+                      layers: [],
                     }),
                   }),
                 );
-              }
-              break;
-            case '8':
-              setShowsModal(!showsModal);
-              setModalMessage(
-                'Please wait while exporting the file.<br />This can take up to 30 seconds',
-              );
-              motions = [_.last(_.filter(mainData, { parentKey: targetRow?.key })) as any];
-              await fnExportModelToFbx({
-                modelName: targetRow?.name ?? '',
-                modelUrl: targetRow?.url ?? '',
-                motions,
-              })
-                .then(() => {
-                  setShowsModal(false);
-                })
-                .catch(() => {
-                  setModalMessage('Cannot export file.');
+                break;
+              case '1':
+                onCopy({ mainData: newMainData });
+                break;
+              case '2':
+                handleDelete({ data: newMainData });
+                break;
+              case '3':
+                onPaste();
+                break;
+              case '4':
+                fnVisualizeFile({
+                  key: _.find(newMainData, [LPDATA_PROPERTY_TYPES.isClicked, true])?.key ?? '',
+                  lpData: mainData,
+                  dispatch,
                 });
-              break;
-            case '9':
-              setShowsModal(!showsModal);
-              setModalMessage(
-                'Please wait while exporting the file.<br />This can take up to 30 seconds',
-              );
+                break;
+              case '5':
+                onEdit({ mainData: newMainData });
+                break;
+              case '6':
+                motion = {
+                  key: uuidv4(),
+                  name: fnGetFileName({
+                    key: '',
+                    name: 'empty motion',
+                    lpData: mainData,
+                    parentKey: targetIcon?.id || _.last(pages)?.key,
+                  }),
+                  isVisualized: false,
+                  baseLayer: fnGetBaseLayerWithBoneNames({ boneNames: targetRow?.boneNames ?? [] }),
+                  layers: [],
+                  type: 'Motion',
+                  parentKey: targetIcon?.id || _.last(pages)?.key,
+                };
+                dispatch(lpDataActions.setItemListOld({ itemList: _.concat(mainData, motion) }));
+                break;
+              case '7':
+                motion = _.find(mainData, [LPDATA_PROPERTY_TYPES.key, targetIcon?.id]);
+                if (motion) {
+                  dispatch(
+                    lpDataActions.setItemListOld({
+                      itemList: _.concat(mainData, {
+                        ...motion,
+                        key: uuidv4(),
+                        name: fnGetFileName({
+                          key: '',
+                          name: motion?.name,
+                          lpData: mainData,
+                          parentKey: motion?.parentKey,
+                        }),
+                        isVisualized: false,
+                      }),
+                    }),
+                  );
+                }
+                break;
+              case '8':
+                setShowsModal(!showsModal);
+                setModalMessage(
+                  'Please wait while exporting the file.<br />This can take up to 30 seconds',
+                );
+                motions = [_.last(_.filter(mainData, { parentKey: targetRow?.key })) as any];
+                await fnExportModelToFbx({
+                  modelName: targetRow?.name ?? '',
+                  modelUrl: targetRow?.url ?? '',
+                  motions,
+                })
+                  .then(() => {
+                    setShowsModal(false);
+                  })
+                  .catch(() => {
+                    setModalMessage('Cannot export file.');
+                  });
+                break;
+              case '9':
+                setShowsModal(!showsModal);
+                setModalMessage(
+                  'Please wait while exporting the file.<br />This can take up to 30 seconds',
+                );
 
-              await fnExportModelToGlb({
-                modelName: targetRow?.name ?? '',
-                modelUrl: targetRow?.url ?? '',
-                motions: _.filter(mainData, [LPDATA_PROPERTY_TYPES.parentKey, targetRow?.key]),
-              })
-                .then(() => {
-                  setShowsModal(false);
+                await fnExportModelToGlb({
+                  modelName: targetRow?.name ?? '',
+                  modelUrl: targetRow?.url ?? '',
+                  motions: _.filter(mainData, [LPDATA_PROPERTY_TYPES.parentKey, targetRow?.key]),
                 })
-                .catch(() => {
-                  setModalMessage('Cannot export file.');
-                });
-              break;
-            default:
-              break;
-          }
-        },
-      });
+                  .then(() => {
+                    setShowsModal(false);
+                  })
+                  .catch(() => {
+                    setModalMessage('Cannot export file.');
+                  });
+                break;
+              default:
+                break;
+            }
+          },
+        }),
+      );
     },
     [
       contextmenuInfo,

@@ -1,5 +1,4 @@
 import { FunctionComponent, memo, Fragment, useCallback } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import useLPRowControl from 'hooks/LP/useLPRowControl';
 import { LPDATA_PROPERTY_TYPES } from 'types';

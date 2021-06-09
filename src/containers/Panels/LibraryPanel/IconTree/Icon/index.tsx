@@ -7,7 +7,6 @@ import {
   useRef,
   MutableRefObject,
 } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import useLPRowControl from 'hooks/LP/useLPRowControl';
 import { LPDATA_PROPERTY_TYPES } from 'types';
 import { BaseInput } from 'components/Input';
