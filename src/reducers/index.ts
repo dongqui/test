@@ -16,6 +16,8 @@ import { pageInfo } from './pageInfo';
 import { recordingData } from './recordingData';
 import { cutImages } from './cutImages';
 import { barPositionX } from './barPositionX';
+import { modalInfo } from './modalInfo';
+import { contextmenuInfo } from './contextmenuInfo';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -37,6 +39,8 @@ const rootReducer = combineReducers({
   recordingData,
   cutImages,
   barPositionX,
+  modalInfo,
+  contextmenuInfo,
 });
 
 // type 적용된 useSelector

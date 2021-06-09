@@ -5,7 +5,6 @@ import { Provider } from 'react-redux';
 import { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
 import { ApolloProvider } from '@apollo/client';
-import { cache, useApollo } from 'lib/apolloClient';
 import { wrapper } from 'store';
 import { hotjar } from 'analytics';
 import 'styles/core.scss';
@@ -16,18 +15,8 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   Component,
   pageProps,
 }) => {
-  const apolloClient = useApollo(pageProps);
-
-  const initialAction = async () => {
-    await persistCache({
-      cache,
-      storage: new LocalStorageWrapper(window.localStorage),
-    });
-  };
-
   useEffect(() => {
     hotjar.initialize();
-    initialAction();
   }, []);
 
   return (
@@ -39,9 +28,7 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
           content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
         />
       </Head>
-      <ApolloProvider client={apolloClient}>
-        <Component {...pageProps} />
-      </ApolloProvider>
+      <Component {...pageProps} />
     </Fragment>
   );
 };

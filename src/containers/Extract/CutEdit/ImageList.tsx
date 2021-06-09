@@ -1,5 +1,4 @@
 import { FunctionComponent, memo } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ImageList.module.scss';

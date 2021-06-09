@@ -1,5 +1,4 @@
 import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';

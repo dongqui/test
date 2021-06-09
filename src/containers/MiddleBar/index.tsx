@@ -9,7 +9,6 @@ import {
   useState,
 } from 'react';
 import * as d3 from 'd3';
-import { useReactiveVar } from '@apollo/client';
 import { SvgPath } from 'components/Icon';
 import { SegmentButton } from 'components/Button';
 import { PrefixInput, BaseInput } from 'components/Input';

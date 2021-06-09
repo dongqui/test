@@ -1,5 +1,4 @@
 import { FunctionComponent, Fragment, memo, useEffect } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import CutEdit from 'containers/Extract/CutEdit';
 import MiddleBar from 'containers/MiddleBar';
 import Webcam from 'containers/Extract/Webcam';

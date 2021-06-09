@@ -1,5 +1,4 @@
 import { FunctionComponent, memo, Fragment, useCallback } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { LPItemOldType, ROOT_FOLDER_NAME } from 'types/LP';
 import { ListRow } from './ListRow';
 import _ from 'lodash';

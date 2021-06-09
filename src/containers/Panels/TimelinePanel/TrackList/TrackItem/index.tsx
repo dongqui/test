@@ -23,13 +23,12 @@ import { TP_TRACK_INDEX } from 'utils/const';
 import { UpdatedTrack } from 'types/TP';
 import * as timelineActions from 'actions/timeline';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
-import { storeContextMenuInfo } from 'lib/store';
 import useContextMenu from 'hooks/common/useContextMenu';
-import { useReactiveVar } from '@apollo/client';
 import { FormModal } from 'components/Modal';
 import { BaseInput } from 'components/Input';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import * as contextmenuInfoActions from 'actions/contextmenuInfo';
 
 const cx = classNames.bind(styles);
 
@@ -518,90 +517,103 @@ const TrackItem: FunctionComponent<Props> = (props) => {
   }, []);
 
   // layer 트랙 컨텍스트 메뉴 출력
-  const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
+  const contextMenuInfo = useSelector((state) => state.contextmenuInfo);
   const handleLayerTrackContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
       e?.preventDefault();
-      storeContextMenuInfo({
-        isShow: true,
-        top,
-        left,
-        data: [
-          {
-            key: 'edit',
-            value: 'Edit Name',
-            isSelected: false,
-            isDisabled: trackIndex === 2,
-          },
-          {
-            key: 'delete',
-            value: 'Delete Layer',
-            isSelected: false,
-            isDisabled: trackIndex === 2,
-          },
-          {
-            key: 'select',
-            value: isSelected ? 'Unselect' : 'Select',
-            isSelected: false,
-          },
-          {
-            key: 'lock',
-            value: isLocked ? 'Unlock' : 'Lock',
-            isSelected: false,
-          },
-          {
-            key: 'include',
-            value: isIncluded ? 'Exclude' : 'Include',
-            isSelected: false,
-          },
-        ],
-        onClick: (key) => {
-          switch (key) {
-            case 'edit':
-              setIsShowedFormModal(true);
-              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-              break;
-            case 'delete':
-              handleDeleteLayer();
-              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-              break;
-            case 'select':
-              if (e) {
-                if (isSelected) {
-                  multiKeyController.ctrl.pressed = true;
-                  handleClickTrackBody(e as any);
-                  multiKeyController.ctrl.pressed = false;
-                } else {
-                  handleClickTrackBody(e as any);
+      dispatch(
+        contextmenuInfoActions.setContextmenuInfo({
+          isShow: true,
+          top,
+          left,
+          data: [
+            {
+              key: 'edit',
+              value: 'Edit Name',
+              isSelected: false,
+              isDisabled: trackIndex === 2,
+            },
+            {
+              key: 'delete',
+              value: 'Delete Layer',
+              isSelected: false,
+              isDisabled: trackIndex === 2,
+            },
+            {
+              key: 'select',
+              value: isSelected ? 'Unselect' : 'Select',
+              isSelected: false,
+            },
+            {
+              key: 'lock',
+              value: isLocked ? 'Unlock' : 'Lock',
+              isSelected: false,
+            },
+            {
+              key: 'include',
+              value: isIncluded ? 'Exclude' : 'Include',
+              isSelected: false,
+            },
+          ],
+          onClick: (key) => {
+            switch (key) {
+              case 'edit':
+                setIsShowedFormModal(true);
+                dispatch(
+                  contextmenuInfoActions.setContextmenuInfo({ ...contextMenuInfo, isShow: false }),
+                );
+                break;
+              case 'delete':
+                handleDeleteLayer();
+                dispatch(
+                  contextmenuInfoActions.setContextmenuInfo({ ...contextMenuInfo, isShow: false }),
+                );
+                break;
+              case 'select':
+                if (e) {
+                  if (isSelected) {
+                    multiKeyController.ctrl.pressed = true;
+                    handleClickTrackBody(e as any);
+                    multiKeyController.ctrl.pressed = false;
+                  } else {
+                    handleClickTrackBody(e as any);
+                  }
                 }
-              }
-              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-              break;
-            case 'lock':
-              handleclickLockButton();
-              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-              break;
-            case 'include':
-              handleClickRenderingButton();
-              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-              break;
-            default:
-              break;
-          }
-        },
-      });
+                dispatch(
+                  contextmenuInfoActions.setContextmenuInfo({ ...contextMenuInfo, isShow: false }),
+                );
+                break;
+              case 'lock':
+                handleclickLockButton();
+                dispatch(
+                  contextmenuInfoActions.setContextmenuInfo({ ...contextMenuInfo, isShow: false }),
+                );
+                break;
+              case 'include':
+                handleClickRenderingButton();
+                dispatch(
+                  contextmenuInfoActions.setContextmenuInfo({ ...contextMenuInfo, isShow: false }),
+                );
+                break;
+              default:
+                break;
+            }
+          },
+        }),
+      );
     },
     [
-      handleclickLockButton,
-      handleClickRenderingButton,
-      handleClickTrackBody,
+      dispatch,
+      trackIndex,
+      isSelected,
+      isLocked,
+      isIncluded,
       contextMenuInfo,
       handleDeleteLayer,
-      isIncluded,
-      isLocked,
-      isSelected,
+      handleclickLockButton,
+      handleClickRenderingButton,
       multiKeyController.ctrl,
-      trackIndex,
+      handleClickTrackBody,
     ],
   );
 
@@ -609,64 +621,73 @@ const TrackItem: FunctionComponent<Props> = (props) => {
   const handleBoneTransformTrackContextMenu = useCallback(
     ({ top, left, e }: { top: number; left: number; e?: MouseEvent }) => {
       e?.preventDefault();
-      storeContextMenuInfo({
-        isShow: true,
-        top,
-        left,
-        data: [
-          {
-            key: 'select',
-            value: isSelected ? 'Unselect' : 'Select',
-            isSelected: false,
-          },
-          {
-            key: 'lock',
-            value: isLocked ? 'Unlock' : 'Lock',
-            isSelected: false,
-          },
-          {
-            key: 'include',
-            value: isIncluded ? 'Exclude' : 'Include',
-            isSelected: false,
-          },
-        ],
-        onClick: (key) => {
-          switch (key) {
-            case 'select':
-              if (e) {
-                if (isSelected) {
-                  multiKeyController.ctrl.pressed = true;
-                  handleClickTrackBody(e as any);
-                  multiKeyController.ctrl.pressed = false;
-                } else {
-                  handleClickTrackBody(e as any);
+      dispatch(
+        contextmenuInfoActions.setContextmenuInfo({
+          isShow: true,
+          top,
+          left,
+          data: [
+            {
+              key: 'select',
+              value: isSelected ? 'Unselect' : 'Select',
+              isSelected: false,
+            },
+            {
+              key: 'lock',
+              value: isLocked ? 'Unlock' : 'Lock',
+              isSelected: false,
+            },
+            {
+              key: 'include',
+              value: isIncluded ? 'Exclude' : 'Include',
+              isSelected: false,
+            },
+          ],
+          onClick: (key) => {
+            switch (key) {
+              case 'select':
+                if (e) {
+                  if (isSelected) {
+                    multiKeyController.ctrl.pressed = true;
+                    handleClickTrackBody(e as any);
+                    multiKeyController.ctrl.pressed = false;
+                  } else {
+                    handleClickTrackBody(e as any);
+                  }
                 }
-              }
-              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-              break;
-            case 'lock':
-              handleclickLockButton();
-              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-              break;
-            case 'include':
-              handleClickRenderingButton();
-              storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-              break;
-            default:
-              break;
-          }
-        },
-      });
+                dispatch(
+                  contextmenuInfoActions.setContextmenuInfo({ ...contextMenuInfo, isShow: false }),
+                );
+                break;
+              case 'lock':
+                handleclickLockButton();
+                dispatch(
+                  contextmenuInfoActions.setContextmenuInfo({ ...contextMenuInfo, isShow: false }),
+                );
+                break;
+              case 'include':
+                handleClickRenderingButton();
+                dispatch(
+                  contextmenuInfoActions.setContextmenuInfo({ ...contextMenuInfo, isShow: false }),
+                );
+                break;
+              default:
+                break;
+            }
+          },
+        }),
+      );
     },
     [
+      dispatch,
+      isSelected,
+      isLocked,
+      isIncluded,
+      contextMenuInfo,
       handleclickLockButton,
       handleClickRenderingButton,
-      handleClickTrackBody,
-      contextMenuInfo,
-      isIncluded,
-      isLocked,
-      isSelected,
       multiKeyController.ctrl,
+      handleClickTrackBody,
     ],
   );
 

@@ -1,5 +1,4 @@
 import { FunctionComponent, memo, useCallback, useState, useRef, useEffect } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { useDropzone } from 'react-dropzone';
 import useLPControl from 'hooks/LP/useLPControl';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,7 +8,6 @@ import { LPModeType } from 'types';
 import * as api from 'utils/common/api';
 import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
 import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
-import { storeContextMenuInfo } from 'lib/store';
 import { FileType, LPItemListOldType, LPItemOldType, ROOT_FOLDER_NAME } from 'types/LP';
 import _ from 'lodash';
 import { IconView } from './IconTree/IconView';
@@ -65,7 +63,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
     [dispatch, lpmode, originalLpmode],
   );
   const searchWord = useSelector((state) => state.lpSearchword.word);
-  const contextmenuInfo = useReactiveVar(storeContextMenuInfo);
+  const contextmenuInfo = useSelector((state) => state.contextmenuInfo);
   const panelWrapperRef = useRef<HTMLDivElement>(null);
   const [showsModal, setShowsModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');

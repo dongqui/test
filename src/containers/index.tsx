@@ -10,8 +10,6 @@ import {
   useRef,
 } from 'react';
 import { useRouter } from 'next/router';
-import { storeContextMenuInfo, storeModalInfo } from 'lib/store';
-import { useReactiveVar } from '@apollo/client';
 import { useOutsideClick } from 'hooks/common/useOutsideClick';
 import { ContextMenu } from 'components/ContextMenu';
 import { MODAL_TYPES } from 'types';
@@ -23,12 +21,17 @@ import ShootContainer from 'containers/Shoot';
 import ExtractContainer from 'containers/Extract';
 import { FilledButton } from 'components/Button';
 import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import * as modalInfoActions from 'actions/modalInfo';
+import * as contextmenuInfoActions from 'actions/contextmenuInfo';
 
 export type Procedure = 'service' | 'token' | 'success' | 'denied';
 
 const Index: FunctionComponent = () => {
   const router = useRouter();
   const { token } = router.query;
+
+  const dispatch = useDispatch();
 
   const [procedure, setProcedure] = useState<Procedure>('service');
   const [_message, setMessage] = useState('');
@@ -84,20 +87,20 @@ const Index: FunctionComponent = () => {
     }
   }, [token]);
 
-  const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
-  const modalInfo = useReactiveVar(storeModalInfo);
+  const contextmenuInfo = useSelector((state) => state.contextmenuInfo);
+  const modalInfo = useSelector((state) => state.modalInfo);
   const pageInfo = useSelector((state) => state.pageInfo);
   const contextMenuRef = useRef<HTMLDivElement>(null);
 
   const handleClose = useCallback(() => {
-    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
-  }, [modalInfo]);
+    dispatch(modalInfoActions.setModalInfo({ ...modalInfo, isShow: false, msg: '' }));
+  }, [dispatch, modalInfo]);
 
   useOutsideClick({
     ref: contextMenuRef,
     event: () => {
-      if (contextMenuInfo.isShow) {
-        storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
+      if (contextmenuInfo.isShow) {
+        dispatch(contextmenuInfoActions.setContextmenuInfo({ ...contextmenuInfo, isShow: false }));
       }
     },
   });
@@ -114,7 +117,7 @@ const Index: FunctionComponent = () => {
         window.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [contextMenuInfo.isShow]);
+  }, []);
 
   const isShootMode = _.isEqual(pageInfo.page, 'shoot');
 
@@ -128,15 +131,15 @@ const Index: FunctionComponent = () => {
 
   return (
     <main>
-      {contextMenuInfo.isShow && (
+      {contextmenuInfo.isShow && (
         <ContextMenu
           innerRef={contextMenuRef}
           position={{
-            top: `${contextMenuInfo.top}px`,
-            left: `${contextMenuInfo.left}px`,
+            top: `${contextmenuInfo.top}px`,
+            left: `${contextmenuInfo.left}px`,
           }}
-          onSelect={contextMenuInfo.onClick}
-          list={contextMenuInfo.data}
+          onSelect={contextmenuInfo.onClick}
+          list={contextmenuInfo.data}
         />
       )}
       {modalInfo.isShow && (

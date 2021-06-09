@@ -12,7 +12,6 @@ import { useDispatch } from 'react-redux';
 import produce from 'immer';
 import _ from 'lodash';
 import * as d3 from 'd3';
-import { useReactiveVar } from '@apollo/client';
 import { useSelector } from 'reducers';
 import {
   fnUpdateKeyframeToBase,
@@ -22,7 +21,6 @@ import {
   fnDeleteKeyframe,
 } from 'utils/TP/editingUtils';
 import { fnGetBinarySearch, fnGetBoneTrackIndex, fnGetLayerTrackIndex } from 'utils/TP/trackUtils';
-import { storeContextMenuInfo } from 'lib/store';
 import * as timelineActions from 'actions/timeline';
 import * as animatingDataActions from 'actions/animatingData';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
@@ -34,6 +32,7 @@ import KeyframeGroup from './KeyframeGroup';
 import useContextMenu from 'hooks/common/useContextMenu';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import * as contextmenuInfoActions from 'actions/contextmenuInfo';
 
 const cx = classNames.bind(styles);
 
@@ -60,7 +59,6 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
   const { currentPlayBarTime, currentTimeIndexRef, currentTimeRef, dopeSheetScale } = props;
   const dispatch = useDispatch();
   const dopeSheetRef = useRef<HTMLDivElement>(null);
-  // const pageInfo = useReactiveVar(storePageInfo);
   const pageInfo = useSelector((state) => state.pageInfo);
   const trackList = useSelector((state) => state.timeline.trackList);
   const selectedKeyframes = useSelector((state) => state.timeline.selectedKeyframes);
@@ -497,7 +495,7 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
   }, [currentVisualizedData, dispatch, lastBoneOfLayers, playState, selectedKeyframes, trackList]);
 
   // dope sheet에 컨텍스트 메뉴 적용
-  const contextMenuInfo = useReactiveVar(storeContextMenuInfo);
+  const contextMenuInfo = useSelector((state) => state.contextmenuInfo);
   const handleDopsheetContextMenu = ({
     top,
     left,
@@ -508,44 +506,50 @@ const DopeSheet: FunctionComponent<Props> = (props) => {
     e?: MouseEvent;
   }) => {
     e?.preventDefault();
-    storeContextMenuInfo({
-      isShow: true,
-      top,
-      left,
-      data: [
-        {
-          key: 'edit',
-          value: 'Edit Keyframe',
-          isSelected: false,
-          isDisabled: _.isEmpty(selectedTransformInBase) && _.isEmpty(selectedTransformInLayer),
+    dispatch(
+      contextmenuInfoActions.setContextmenuInfo({
+        isShow: true,
+        top,
+        left,
+        data: [
+          {
+            key: 'edit',
+            value: 'Edit Keyframe',
+            isSelected: false,
+            isDisabled: _.isEmpty(selectedTransformInBase) && _.isEmpty(selectedTransformInLayer),
+          },
+          {
+            key: 'delete',
+            value: 'Delete Keyframe',
+            isSelected: false,
+            isDisabled: _.isEmpty(selectedKeyframes),
+          },
+        ],
+        onClick: (key) => {
+          switch (key) {
+            case 'edit':
+              if (selectedTransformInBase.length !== 0) {
+                handleUpdateKeyframeToBase();
+              }
+              if (selectedTransformInLayer.length !== 0) {
+                handleUpdateKeyframeToLayer();
+              }
+              dispatch(
+                contextmenuInfoActions.setContextmenuInfo({ ...contextMenuInfo, isShow: false }),
+              );
+              break;
+            case 'delete':
+              handleDeleteKeyframe();
+              dispatch(
+                contextmenuInfoActions.setContextmenuInfo({ ...contextMenuInfo, isShow: false }),
+              );
+              break;
+            default:
+              break;
+          }
         },
-        {
-          key: 'delete',
-          value: 'Delete Keyframe',
-          isSelected: false,
-          isDisabled: _.isEmpty(selectedKeyframes),
-        },
-      ],
-      onClick: (key) => {
-        switch (key) {
-          case 'edit':
-            if (selectedTransformInBase.length !== 0) {
-              handleUpdateKeyframeToBase();
-            }
-            if (selectedTransformInLayer.length !== 0) {
-              handleUpdateKeyframeToLayer();
-            }
-            storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-            break;
-          case 'delete':
-            handleDeleteKeyframe();
-            storeContextMenuInfo({ ...contextMenuInfo, isShow: false });
-            break;
-          default:
-            break;
-        }
-      },
-    });
+      }),
+    );
   };
   useContextMenu({ targetRef: dopeSheetRef, event: handleDopsheetContextMenu });
 

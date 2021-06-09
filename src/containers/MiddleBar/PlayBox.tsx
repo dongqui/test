@@ -7,8 +7,6 @@ import {
   RefObject,
   MutableRefObject,
 } from 'react';
-import { useReactiveVar } from '@apollo/client';
-import { storeModalInfo } from 'lib/store';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { MODAL_TYPES, PAGE_NAMES } from 'types';
 import _ from 'lodash';
@@ -35,6 +33,7 @@ import * as lpDataActions from 'actions/lpData';
 import * as pageInfoActions from 'actions/pageInfo';
 import * as recordingDataActions from 'actions/recordingData';
 import * as barPositionXActions from 'actions/barPositionX';
+import * as modalInfoActions from 'actions/modalInfo';
 
 const cx = classNames.bind(styles);
 
@@ -59,8 +58,7 @@ const PlayBox: FunctionComponent<Props> = ({
   lastTime,
 }) => {
   const recordingData = useSelector((state) => state.recordingData);
-  const modalInfo = useReactiveVar(storeModalInfo);
-  // const pageInfo = useReactiveVar(storePageInfo);
+  const modalInfo = useSelector((state) => state.modalInfo);
   const pageInfo = useSelector((state) => state.pageInfo);
   const lpData = useSelector((state) => state.lpDataOld);
 
@@ -260,20 +258,24 @@ const PlayBox: FunctionComponent<Props> = ({
             maxDurationSec,
           )} seconds`;
 
-    storeModalInfo({
-      ...modalInfo,
-      isShow: true,
-      type: MODAL_TYPES.loading,
-      msg: modalMsg,
-      cancel: true,
-      onClose: () => {
-        api.cancelTokenSource();
-        storeModalInfo({
-          ...modalInfo,
-          isShow: false,
-        });
-      },
-    });
+    dispatch(
+      modalInfoActions.setModalInfo({
+        ...modalInfo,
+        isShow: true,
+        type: MODAL_TYPES.loading,
+        msg: modalMsg,
+        cancel: true,
+        onClose: () => {
+          api.cancelTokenSource();
+          dispatch(
+            modalInfoActions.setModalInfo({
+              ...modalInfo,
+              isShow: false,
+            }),
+          );
+        },
+      }),
+    );
     const { error, msg, result } = await api.uploadFileToMotionData({
       url: `${pageInfo?.videoUrl}`,
       type: `${pageInfo.extension ?? 'mp4'}`,
@@ -293,7 +295,9 @@ const PlayBox: FunctionComponent<Props> = ({
       timeout: maxDurationSec * 1000 * 10,
     });
     if (error) {
-      storeModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert });
+      dispatch(
+        modalInfoActions.setModalInfo({ ...modalInfo, isShow: false, type: MODAL_TYPES.alert }),
+      );
 
       const confirmed = await getConfirm({
         title: msg,
@@ -327,7 +331,7 @@ const PlayBox: FunctionComponent<Props> = ({
     ];
     dispatch(lpDataActions.setItemListOld({ itemList: _.concat(lpData, newData) }));
     dispatch(pageInfoActions.setPageInfo({ page: 'shoot' }));
-    storeModalInfo({ ...modalInfo, isShow: false, msg: '' });
+    dispatch(modalInfoActions.setModalInfo({ ...modalInfo, isShow: false, msg: '' }));
   }, [
     dispatch,
     getConfirm,
