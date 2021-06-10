@@ -38,6 +38,19 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       const deleteKeys = findDeleteKeys({ data: state, keys: action.payload.keys });
       return state.filter((item) => !deleteKeys.includes(item.key));
     }
+    case 'lpdata/SET_ITEMLIST': {
+      return state.map((item) =>
+        item.key === action.payload.key ? Object.assign({}, item, action.payload) : item,
+      );
+    }
+    case 'lpdata/SELECT_ITEMLIST': {
+      const newItemList = state.map((item) =>
+        item.key === action.payload.key
+          ? Object.assign({}, item, action.payload)
+          : { ...item, isSelected: false },
+      );
+      return newItemList;
+    }
     default: {
       return state;
     }

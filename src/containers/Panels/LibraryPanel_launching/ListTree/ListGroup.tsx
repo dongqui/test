@@ -1,14 +1,17 @@
-import { FunctionComponent, memo, useCallback, useMemo, useState } from 'react';
+import { FunctionComponent, memo, useCallback, useMemo } from 'react';
 import _ from 'lodash';
 import { LPItemListType, LPItemType } from 'types/LP';
 import ListRow from './ListRow';
 import classNames from 'classnames/bind';
 import styles from './ListGroup.module.scss';
+import { useDispatch } from 'react-redux';
+import * as lpDataActions from 'actions/lpData';
 
 const cx = classNames.bind(styles);
 
 interface Props {
   items: LPItemListType;
+  expandedKeys: string[];
 }
 
 export interface FilteredItem extends LPItemType {
@@ -17,8 +20,8 @@ export interface FilteredItem extends LPItemType {
 
 type FilteredItems = Array<FilteredItem>;
 
-const ListGroup: FunctionComponent<Props> = ({ items }) => {
-  const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys }) => {
+  const dispatch = useDispatch();
 
   const filteredItems = useMemo((): FilteredItems => {
     let result = items.map(
@@ -35,19 +38,20 @@ const ListGroup: FunctionComponent<Props> = ({ items }) => {
 
   const handleClickExpand = useCallback(
     (key: string) => {
-      let newExpandedKeys = _.clone(expandedKeys);
-      if (expandedKeys.includes(key)) {
-        newExpandedKeys = _.remove(expandedKeys, key);
-      } else {
-        newExpandedKeys = [...expandedKeys, key];
-      }
-      setExpandedKeys(newExpandedKeys);
+      dispatch(lpDataActions.setItemList({ key, isExpanded: !expandedKeys.includes(key) }));
     },
-    [expandedKeys],
+    [dispatch, expandedKeys],
   );
 
+  const isGroupSelected = items.some((item) => item.isSelected);
+
+  const listGroupClasses = cx('group-wrapper', {
+    selected: isGroupSelected,
+    visualized: false,
+  });
+
   return (
-    <div className={cx('group-wrapper')}>
+    <div className={listGroupClasses}>
       {filteredItems.map((item, index) => {
         const key = `${item.key}_${index}`;
         return (

@@ -20,6 +20,7 @@ export interface LPItemType {
   boneNames: string[];
   groupKey: string;
   depth: number;
+  isExpanded?: boolean;
 }
 
 export interface LPItemOldType {

@@ -1,6 +1,10 @@
-import { LPItemListOldType, LPItemListType } from 'types/LP';
+import { LPItemListOldType, LPItemListType, LPItemType } from 'types/LP';
 
-export type LPItemListAction = ReturnType<typeof addItemList> | ReturnType<typeof deleteItemList>;
+export type LPItemListAction =
+  | ReturnType<typeof addItemList>
+  | ReturnType<typeof deleteItemList>
+  | ReturnType<typeof setItemList>
+  | ReturnType<typeof selectItemList>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -17,6 +21,25 @@ interface DeleteItemList {
 export const DELETE_ITEMLIST = 'lpdata/DELETE_ITEMLIST' as const;
 export const deleteItemList = (params: DeleteItemList) => ({
   type: DELETE_ITEMLIST,
+  payload: params,
+});
+
+interface SetItemList extends Partial<LPItemType> {
+  key: string;
+}
+export const SET_ITEMLIST = 'lpdata/SET_ITEMLIST' as const;
+export const setItemList = (params: SetItemList) => ({
+  type: SET_ITEMLIST,
+  payload: params,
+});
+
+interface SelectItemList {
+  key: string;
+  isSelected: boolean;
+}
+export const SELECT_ITEMLIST = 'lpdata/SELECT_ITEMLIST' as const;
+export const selectItemList = (params: SelectItemList) => ({
+  type: SELECT_ITEMLIST,
   payload: params,
 });
 

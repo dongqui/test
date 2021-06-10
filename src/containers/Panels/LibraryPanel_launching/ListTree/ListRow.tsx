@@ -4,6 +4,8 @@ import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListRow.module.scss';
 import { FilteredItem } from './ListGroup';
+import { useDispatch } from 'react-redux';
+import * as lpDataActions from 'actions/lpData';
 
 const cx = classNames.bind(styles);
 
@@ -13,16 +15,22 @@ export interface Props {
 }
 
 const ListRow: FunctionComponent<Props> = ({ item, onClickExpand }) => {
-  const handleClickExpand = useCallback(() => {
-    onClickExpand(item.key);
-  }, [item.key, onClickExpand]);
-  const handleClick = useCallback(() => {}, []);
+  const dispatch = useDispatch();
+
+  const handleClickExpand = useCallback(
+    (event) => {
+      event.stopPropagation();
+      onClickExpand(item.key);
+    },
+    [item.key, onClickExpand],
+  );
+  const handleClick = useCallback(() => {
+    dispatch(lpDataActions.selectItemList({ key: item.key, isSelected: true }));
+  }, [dispatch, item.key]);
 
   const rowClasses = cx('list-row', `depth-${item.depth}`, {
-    selected: false,
-    clickSelected: false,
+    selected: item.isSelected,
     visualized: false,
-    visualizeSelected: false,
   });
 
   const folderArrowClasses = cx('icon-arrow', {

@@ -40,25 +40,7 @@
   }
 
   &.selected {
-    background-color: $gray200;
-  }
-
-  &.clickSelected {
     background-color: $gray400;
-  }
-
-  &.clicked {
-    background-color: $gray400;
-
-    .icon-arrow,
-    .icon-item,
-    .name-outer {
-      color: #000;
-    }
-  }
-
-  &.visualizeSelected {
-    background-color: shade($primaryColor, 66%);
   }
 
   &.visualized {

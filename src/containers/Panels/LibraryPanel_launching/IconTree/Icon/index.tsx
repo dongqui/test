@@ -1,11 +1,12 @@
-import { FunctionComponent, Fragment, memo, useRef, useCallback } from 'react';
+import { FunctionComponent, Fragment, memo, useRef, useCallback, useMemo } from 'react';
 import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useDispatch } from 'react-redux';
-import { setLPPage } from 'actions/lpPage';
+import * as lpPageActions from 'actions/lpPage';
 import { FileType } from 'types/LP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import * as lpDataActions from 'actions/lpData';
 
 const cx = classNames.bind(styles);
 
@@ -13,44 +14,58 @@ export interface IconProps {
   rowKey: string;
   type: FileType;
   name: string;
+  isSelected?: boolean;
 }
 
-const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name }) => {
+const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) => {
   const dispatch = useDispatch();
+
   const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
 
   const classes = cx('wrapper', {
     visualized: false,
     editing: false,
     dragging: false,
+    selected: isSelected,
   });
+
+  const handleClick = useCallback(() => {
+    dispatch(lpDataActions.selectItemList({ key: rowKey, isSelected: true }));
+  }, [dispatch, rowKey]);
 
   const handleDoubleClick = useCallback(() => {
     // if (type === 'Motion') {}
     if (type === 'Folder' || type === 'File') {
-      dispatch(setLPPage({ key: rowKey }));
+      dispatch(lpPageActions.setLPPage({ key: rowKey }));
     }
   }, [dispatch, rowKey, type]);
+
+  const icon = useMemo(() => {
+    let result = SvgPath.Folder;
+    if (type === 'Folder') {
+      result = SvgPath.Folder;
+    }
+    if (type === 'File') {
+      result = SvgPath.Model;
+    }
+    if (type === 'Motion') {
+      result = SvgPath.Motion;
+    }
+    return result;
+  }, [type]);
 
   return (
     <Fragment>
       <div
         className={classes}
         ref={iconRef}
+        onClick={handleClick}
         onDoubleClick={handleDoubleClick}
         role="button"
         onKeyDown={() => {}}
         tabIndex={0}
       >
-        {type === 'Folder' && (
-          <IconWrapper className={cx('icon-model')} icon={SvgPath.Folder} hasFrame={false} />
-        )}
-        {type === 'File' && (
-          <IconWrapper className={cx('icon-model')} icon={SvgPath.Model} hasFrame={false} />
-        )}
-        {type === 'Motion' && (
-          <IconWrapper className={cx('icon-model')} icon={SvgPath.Motion} hasFrame={false} />
-        )}
+        <IconWrapper className={cx('icon-model')} icon={icon} hasFrame={false} />
       </div>
       <div className={cx('name')}>{name}</div>
     </Fragment>

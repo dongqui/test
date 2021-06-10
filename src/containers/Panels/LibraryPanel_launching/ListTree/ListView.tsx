@@ -1,9 +1,10 @@
-import { FunctionComponent, memo, useMemo } from 'react';
+import { FunctionComponent, memo, useCallback, useMemo, useState } from 'react';
 import ListGroup from './ListGroup';
 import { LPItemListType } from 'types/LP';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -26,11 +27,13 @@ const ListView: FunctionComponent<ListViewProps> = ({ data }) => {
     return result;
   }, [data]);
 
+  const expandedKeys = data.filter((item) => item.isExpanded).map((item) => item.key);
+
   return (
     <div className={cx('wrapper')}>
       {_.map(grouppedData, (items, index) => {
         const key = `${items.length}_${index}`;
-        return <ListGroup key={key} items={items} />;
+        return <ListGroup key={key} items={items} expandedKeys={expandedKeys} />;
       })}
     </div>
   );

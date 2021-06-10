@@ -110,7 +110,7 @@ const LibraryPanel: FunctionComponent = () => {
   const lpData = useSelector((state) => state.lpData);
   const lpMode = useSelector((state) => state.lpMode.mode);
   const lpPage = useSelector((state) => state.lpPage);
-  const lpSearchword = useSelector((state) => state.lpSearchword);
+  const lpSearchword = useSelector((state) => state.lpSearchword.word);
   const [modalInfo, setModalInfo] = useState<ModalInfo>({
     showModal: false,
     message: '',
@@ -426,14 +426,31 @@ const LibraryPanel: FunctionComponent = () => {
   const filteredIconviewData = useMemo((): LPItemListType => {
     let data = _.clone(lpData);
     if (!_.isEmpty(lpSearchword)) {
-      data = data.filter((item) =>
-        item.name.toLowerCase().includes(lpSearchword.word.toLowerCase()),
-      );
+      data = data.filter((item) => item.name.toLowerCase().includes(lpSearchword.toLowerCase()));
     }
     // 현재 페이지를 기준으로 필터링
     data = data.filter((item) => item.parentKey === lpPage.key);
     return data;
   }, [lpSearchword, lpData, lpPage.key]);
+
+  /**
+   * 리스트뷰로 전달할 가공데이터입니다.
+   * @return 검색어 필터링 후 lpItems
+   */
+  const filteredListviewData = useMemo((): LPItemListType => {
+    let data = _.clone(lpData);
+    if (!_.isEmpty(lpSearchword)) {
+      // 검색어에 해당하는 row의 group key들
+      const findGroupKeys = data
+        .filter((item) => item.name.toLowerCase().includes(lpSearchword.toLowerCase()))
+        .map((item) => item.groupKey);
+      // 해당 group key에 해당하는 row들만 필터링
+      data = data.filter((item) => findGroupKeys.includes(item.groupKey));
+      // 필터링된 row들은 모두 펼쳐준다
+      data = data.map((item) => ({ ...item, isExpanded: true }));
+    }
+    return data;
+  }, [lpData, lpSearchword]);
 
   /**
    * Breadcrumb 로 전달하기 위한 페이지 가공데이터
@@ -516,7 +533,7 @@ const LibraryPanel: FunctionComponent = () => {
           )}
           <div className={cx('content')}>
             {isIconView && <IconView data={filteredIconviewData} />}
-            {isListView && <ListView data={lpData} />}
+            {isListView && <ListView data={filteredListviewData} />}
           </div>
         </div>
       </div>

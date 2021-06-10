@@ -1,8 +1,18 @@
+@import 'styles/libraries/_colors';
+
 .group-wrapper {
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
+
+  &.selected {
+    background-color: $gray200;
+  }
+
+  &.visualized {
+    background-color: shade($primaryColor, 66%);
+  }
 }
 
 .list-wrapper {
