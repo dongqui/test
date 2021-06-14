@@ -57,7 +57,15 @@ const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys }) => {
         return (
           <div key={key} className={cx('list-wrapper')}>
             <div className="icon" draggable>
-              <ListRow item={item} onClickExpand={handleClickExpand} />
+              <ListRow
+                rowKey={item.key}
+                name={item.name}
+                isSelected={item.isSelected}
+                isExpanded={item.isExpanded}
+                depth={item.depth}
+                type={item.type}
+                onClickExpand={handleClickExpand}
+              />
             </div>
           </div>
         );

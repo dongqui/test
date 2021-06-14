@@ -6,51 +6,88 @@ import styles from './ListRow.module.scss';
 import { FilteredItem } from './ListGroup';
 import { useDispatch } from 'react-redux';
 import * as lpDataActions from 'actions/lpData';
+import { FileType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
 export interface Props {
-  item: FilteredItem;
+  rowKey: string;
+  type: FileType;
+  name: string;
+  isSelected?: boolean;
+  isExpanded: boolean;
+  depth: number;
   onClickExpand: (key: string) => void;
 }
 
-const ListRow: FunctionComponent<Props> = ({ item, onClickExpand }) => {
+const ListRow: FunctionComponent<Props> = ({
+  rowKey,
+  type,
+  name,
+  isSelected,
+  isExpanded,
+  depth,
+  onClickExpand,
+}) => {
   const dispatch = useDispatch();
 
   const handleClickExpand = useCallback(
     (event) => {
       event.stopPropagation();
-      onClickExpand(item.key);
+      onClickExpand(rowKey);
     },
-    [item.key, onClickExpand],
+    [rowKey, onClickExpand],
   );
-  const handleClick = useCallback(() => {
-    dispatch(lpDataActions.selectItemList({ key: item.key, isSelected: true }));
-  }, [dispatch, item.key]);
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (event.shiftKey) {
+        dispatch(
+          lpDataActions.selectItemList({
+            key: rowKey,
+            isSelected: true,
+            selectType: 'shift',
+          }),
+        );
+      } else if (event.ctrlKey || event.metaKey) {
+        dispatch(
+          lpDataActions.selectItemList({
+            key: rowKey,
+            isSelected: !isSelected,
+            selectType: 'ctrl',
+          }),
+        );
+      } else {
+        dispatch(
+          lpDataActions.selectItemList({ key: rowKey, isSelected: true, selectType: 'none' }),
+        );
+      }
+    },
+    [dispatch, isSelected, rowKey],
+  );
 
-  const rowClasses = cx('list-row', `depth-${item.depth}`, {
-    selected: item.isSelected,
+  const rowClasses = cx('list-row', `depth-${depth}`, {
+    selected: isSelected,
     visualized: false,
   });
 
   const folderArrowClasses = cx('icon-arrow', {
-    open: item.isExpanded,
-    hide: item.type === 'Motion',
+    open: isExpanded,
+    hide: type === 'Motion',
   });
 
   const icon = useMemo(() => {
     let result = SvgPath.Folder;
-    if (item.type === 'Folder') {
+    if (type === 'Folder') {
       result = SvgPath.Folder;
     }
-    if (item.type === 'File') {
+    if (type === 'File') {
       result = SvgPath.Model;
     }
-    if (item.type === 'Motion') {
+    if (type === 'Motion') {
       result = SvgPath.Motion;
     }
     return result;
-  }, [item.type]);
+  }, [type]);
 
   return (
     <Fragment>
@@ -69,7 +106,7 @@ const ListRow: FunctionComponent<Props> = ({ item, onClickExpand }) => {
         />
         <div className={cx('name-outer')}>
           <IconWrapper className={cx('icon-item')} icon={icon} hasFrame={false} />
-          <div className={cx('name')}>{item.name}</div>
+          <div className={cx('name')}>{name}</div>
         </div>
       </div>
     </Fragment>

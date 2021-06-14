@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { LPItemListAction, LPItemListOldAction } from 'actions/lpData';
-import { LPItemListOldType, LPItemListType } from 'types/LP';
+import { LPItemListOldType, LPItemListType, LPItemType } from 'types/LP';
 
 interface FindDeleteKeys {
   data: LPItemListType;
@@ -44,10 +44,49 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       );
     }
     case 'lpdata/SELECT_ITEMLIST': {
-      const newItemList = state.map((item) =>
-        item.key === action.payload.key
-          ? Object.assign({}, item, action.payload)
-          : { ...item, isSelected: false },
+      let newItemList = _.clone(state);
+      if (action.payload.selectType === 'shift') {
+        // 연속다중선택
+        const targetIndex = state.findIndex((item) => item.key === action.payload.key);
+        let alreadySelectedIndex = state.findIndex((item) => item?.isAlreadySelected); // 단일선택시 선택했던 row를 기준점으로 삼는다
+        alreadySelectedIndex = alreadySelectedIndex === -1 ? targetIndex : alreadySelectedIndex;
+        const startIndex = _.min([alreadySelectedIndex, targetIndex]) as number;
+        const endIndex = _.max([alreadySelectedIndex, targetIndex]) as number;
+        // startIndex, endIndex 사이에 있는 index들은 모두 선택해준다
+        newItemList = state.map((item, index) =>
+          startIndex <= index && index <= endIndex
+            ? ({ ...item, isSelected: action.payload.isSelected } as LPItemType)
+            : ({ ...item, isSelected: false } as LPItemType),
+        );
+      } else if (action.payload.selectType === 'ctrl') {
+        // 다중선택
+        newItemList = newItemList.map((item) =>
+          item.key === action.payload.key
+            ? ({ ...item, isSelected: action.payload.isSelected } as LPItemType)
+            : item,
+        );
+      } else if (action.payload.selectType === 'none') {
+        // 단일선택
+        newItemList = state.map((item) =>
+          item.key === action.payload.key
+            ? Object.assign({}, item, {
+                key: action.payload.key,
+                isSelected: action.payload.isSelected,
+                isAlreadySelected: action.payload.isSelected,
+              } as LPItemType)
+            : { ...item, isSelected: false, isAlreadySelected: false },
+        );
+      }
+      const selectKeys = newItemList.filter((item) => item?.isSelected).map((item) => item.key);
+      // 선택된 키들의 하위 키들
+      const childrenKeys = _.uniq(
+        newItemList
+          .filter((item) => !_.isEmpty(_.intersection(item.parentKeyList, selectKeys)))
+          .map((item) => item.key),
+      );
+      // 선택된 키들의 하위키들도 선택해준다
+      newItemList = newItemList.map((item) =>
+        childrenKeys.includes(item.key) ? ({ ...item, isSelected: true } as LPItemType) : item,
       );
       return newItemList;
     }

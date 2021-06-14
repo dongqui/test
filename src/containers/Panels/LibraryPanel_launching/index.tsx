@@ -146,20 +146,21 @@ const LibraryPanel: FunctionComponent = () => {
   }, [lpData, lpMode, lpPage.key]);
 
   /**
-   * 덮어쓰기할 파일(동일한 파일이름)을 찾아주는 함수입니다.
+   * 동일한 이름을 가진 파일의 개수를 찾아주는 함수입니다.
    *
-   * @return 덮어쓰기할 파일들의 키.
+   * @return 동일한 이름을 가진 파일의 개수
    */
-  const validateSameFileName = useCallback(
-    (name: string): string | undefined => {
-      let mustDeleteKey;
+  const findSameFileNameCount = useCallback(
+    (name: string): number => {
       const parentKey = findParentKey();
       const currentPageRows = lpData.filter((item) => item.parentKey === parentKey);
-      const sameFileNameRows = currentPageRows.find((item) => item.name === name);
-      if (sameFileNameRows) {
-        mustDeleteKey = sameFileNameRows.key;
+      const sameFileNameRow = currentPageRows.find((item) => item.name === name);
+      if (sameFileNameRow) {
+        const sameFileNameCount = lpData.filter((item) => item.name.includes(name)).length;
+        return sameFileNameCount;
+      } else {
+        return 0;
       }
-      return mustDeleteKey;
     },
     [findParentKey, lpData],
   );
@@ -298,7 +299,6 @@ const LibraryPanel: FunctionComponent = () => {
         message: 'Importing the file.',
         loading: true,
       }));
-      const mustDeleteKeys: string[] = [];
       let newLpData: LPItemListType = [];
       const isMultipleVideoFiles = validateMultipleVideoFiles(files);
       if (isMultipleVideoFiles) {
@@ -324,17 +324,6 @@ const LibraryPanel: FunctionComponent = () => {
             loading: false,
           }));
           return;
-        }
-        const sameFileNameKey = validateSameFileName(file.name);
-        if (sameFileNameKey) {
-          const confirmed = await getConfirm({
-            title: `You already have a file with ${file.name} in the same folder. Do you want to replace it?`,
-          });
-          if (confirmed) {
-            mustDeleteKeys.push(sameFileNameKey);
-          } else {
-            continue;
-          }
         }
         let fileUrl = URL.createObjectURL(file);
         // fbx 파일일 경우 glb로 먼저 변환한다
@@ -376,9 +365,12 @@ const LibraryPanel: FunctionComponent = () => {
           }
           return;
         }
+        const sameFileNameCount = findSameFileNameCount(file.name);
+        const newFileName =
+          sameFileNameCount > 0 ? `${file.name} (${sameFileNameCount + 1})` : file.name;
         const { result: newData, isError, errorMessage } = await changeFileToLpData({
           fileUrl,
-          name: file.name,
+          name: newFileName,
         });
         if (isError) {
           setModalInfo((state) => ({
@@ -389,9 +381,6 @@ const LibraryPanel: FunctionComponent = () => {
           }));
         }
         newLpData = _.concat(newLpData, newData);
-      }
-      if (!_.isEmpty(mustDeleteKeys)) {
-        dispatch(lpDataActions.deleteItemList({ keys: mustDeleteKeys }));
       }
       dispatch(lpDataActions.addItemList({ itemList: newLpData }));
       setModalInfo((state) => ({
@@ -404,10 +393,10 @@ const LibraryPanel: FunctionComponent = () => {
     [
       changeFileToLpData,
       dispatch,
+      findSameFileNameCount,
       getConfirm,
       sortVideoFileLast,
       validateMultipleVideoFiles,
-      validateSameFileName,
     ],
   );
 
@@ -488,6 +477,18 @@ const LibraryPanel: FunctionComponent = () => {
     return result;
   }, [lpData, lpPage.key]);
 
+  const handleClickEmptySpace = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      const icons = document.getElementsByClassName('icon');
+      const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
+      if (!targetIcon) {
+        // 모두 선택 해제
+        dispatch(lpDataActions.selectItemList({ key: '', isSelected: false, selectType: 'none' }));
+      }
+    },
+    [dispatch],
+  );
+
   useEffect(() => {
     const setDefaultModels = async () => {
       setModalInfo((state) => ({
@@ -531,7 +532,13 @@ const LibraryPanel: FunctionComponent = () => {
               />
             </div>
           )}
-          <div className={cx('content')}>
+          <div
+            className={cx('content')}
+            role="button"
+            onClick={handleClickEmptySpace}
+            onKeyDown={() => {}}
+            tabIndex={0}
+          >
             {isIconView && <IconView data={filteredIconviewData} />}
             {isListView && <ListView data={filteredListviewData} />}
           </div>

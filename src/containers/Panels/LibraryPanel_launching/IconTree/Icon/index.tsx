@@ -20,7 +20,7 @@ export interface IconProps {
 const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) => {
   const dispatch = useDispatch();
 
-  const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
+  const iconRef = useRef<HTMLDivElement>(null);
 
   const classes = cx('wrapper', {
     visualized: false,
@@ -29,9 +29,32 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) 
     selected: isSelected,
   });
 
-  const handleClick = useCallback(() => {
-    dispatch(lpDataActions.selectItemList({ key: rowKey, isSelected: true }));
-  }, [dispatch, rowKey]);
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (event.shiftKey) {
+        dispatch(
+          lpDataActions.selectItemList({
+            key: rowKey,
+            isSelected: true,
+            selectType: 'shift',
+          }),
+        );
+      } else if (event.ctrlKey || event.metaKey) {
+        dispatch(
+          lpDataActions.selectItemList({
+            key: rowKey,
+            isSelected: !isSelected,
+            selectType: 'ctrl',
+          }),
+        );
+      } else {
+        dispatch(
+          lpDataActions.selectItemList({ key: rowKey, isSelected: true, selectType: 'none' }),
+        );
+      }
+    },
+    [dispatch, isSelected, rowKey],
+  );
 
   const handleDoubleClick = useCallback(() => {
     // if (type === 'Motion') {}

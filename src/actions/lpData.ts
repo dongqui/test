@@ -33,9 +33,12 @@ export const setItemList = (params: SetItemList) => ({
   payload: params,
 });
 
+type SelectType = 'none' | 'shift' | 'ctrl';
+
 interface SelectItemList {
   key: string;
   isSelected: boolean;
+  selectType: SelectType;
 }
 export const SELECT_ITEMLIST = 'lpdata/SELECT_ITEMLIST' as const;
 export const selectItemList = (params: SelectItemList) => ({
