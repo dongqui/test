@@ -15,8 +15,12 @@ const cx = classNames.bind(styles);
 interface Props {
   isAllCovered: boolean;
   onChangeIsUpdated: () => void;
+  onDragEnd: () => void;
   parentRef: RefObject<HTMLElement>;
 }
+
+export const GRABBED = 'grabbed';
+export const GRABBABLE = 'grabbable';
 
 /**
  * - 드래그 박스 안에 포함 된 요소에다가 selected 효과를 적용시키는 컴포넌트 입니다.
@@ -42,7 +46,12 @@ interface Props {
       onChangeIsUpdated={handleChange} />
       parentRef={dopeSheetRef}
  */
-const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, parentRef }) => {
+const DragBox: FunctionComponent<Props> = ({
+  isAllCovered,
+  onChangeIsUpdated,
+  parentRef,
+  onDragEnd,
+}) => {
   const [isOpenedDragBox, setIsOpenedDragBox] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const rectRef = useRef<SVGRectElement>(null);
@@ -111,9 +120,6 @@ const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, pa
     if (isOpenedDragBox) {
       const handleMouseMove = (event: MouseEvent) => {
         updateTranslate(event.x, event.y);
-      };
-
-      const handleMouseUp = () => {
         if (parentRef.current) {
           const { minX, maxX, minY, maxY } = getMinMaxXY();
           const {
@@ -131,11 +137,11 @@ const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, pa
           const boxRight = calcBoxRightBottom(maxX, parentLeft, parentWidth);
           const boxBottom = calcBoxRightBottom(maxY, parentTop, parentHeight);
 
-          parentRef.current.querySelectorAll('#grabbed').forEach((element) => {
-            element.id = 'grabbable';
+          parentRef.current.querySelectorAll(`#${GRABBED}`).forEach((element) => {
+            element.id = GRABBABLE;
           });
 
-          parentRef.current.querySelectorAll('#grabbable').forEach((element) => {
+          parentRef.current.querySelectorAll(`#${GRABBABLE}`).forEach((element) => {
             const {
               x: elementLeft,
               y: elementTop,
@@ -160,18 +166,75 @@ const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, pa
               isBiggerThanBoxCoord(boxBottom, elementTop);
 
             if (isAllCovered && allContains) {
-              element.id = 'grabbed';
+              element.id = GRABBED;
             } else if (!isAllCovered && partialContains) {
-              element.id = 'grabbed';
+              element.id = GRABBED;
             }
           });
+          onChangeIsUpdated();
+        }
+      };
+
+      const handleMouseUp = () => {
+        if (parentRef.current) {
+          // const { minX, maxX, minY, maxY } = getMinMaxXY();
+          // const {
+          //   x: parentLeft,
+          //   y: parentTop,
+          //   width: parentWidth,
+          //   height: parentHeight,
+          // } = parentRef.current.getBoundingClientRect();
+          // const calcBoxLeftTop = (now: number, min: number) => (now < min ? min : now);
+          // const calcBoxRightBottom = (now: number, min: number, max: number) =>
+          //   min + max < now ? min + max : now;
+
+          // const boxLeft = calcBoxLeftTop(minX, parentLeft);
+          // const boxTop = calcBoxLeftTop(minY, parentTop);
+          // const boxRight = calcBoxRightBottom(maxX, parentLeft, parentWidth);
+          // const boxBottom = calcBoxRightBottom(maxY, parentTop, parentHeight);
+
+          // parentRef.current.querySelectorAll(`#${GRABBED}`).forEach((element) => {
+          //   element.id = GRABBABLE;
+          // });
+
+          // parentRef.current.querySelectorAll(`#${GRABBABLE}`).forEach((element) => {
+          //   const {
+          //     x: elementLeft,
+          //     y: elementTop,
+          //     width: elementWidth,
+          //     height: elementHeight,
+          //   } = element.getBoundingClientRect();
+          //   const elementRight = elementLeft + elementWidth;
+          //   const elementBottom = elementTop + elementHeight;
+          //   const isSmallerThanBoxCoord = (box: number, element: number) => box < element;
+          //   const isBiggerThanBoxCoord = (box: number, element: number) => element < box;
+
+          //   const allContains =
+          //     isSmallerThanBoxCoord(boxLeft, elementLeft) &&
+          //     isSmallerThanBoxCoord(boxTop, elementTop) &&
+          //     isBiggerThanBoxCoord(boxRight, elementRight) &&
+          //     isBiggerThanBoxCoord(boxBottom, elementBottom);
+
+          //   const partialContains =
+          //     isSmallerThanBoxCoord(boxLeft, elementRight) &&
+          //     isSmallerThanBoxCoord(boxTop, elementBottom) &&
+          //     isBiggerThanBoxCoord(boxRight, elementLeft) &&
+          //     isBiggerThanBoxCoord(boxBottom, elementTop);
+
+          //   if (isAllCovered && allContains) {
+          //     element.id = GRABBED;
+          //   } else if (!isAllCovered && partialContains) {
+          //     element.id = GRABBED;
+          //   }
+          // });
 
           originX.current = 0;
           originY.current = 0;
           currentX.current = 0;
           currentY.current = 0;
 
-          onChangeIsUpdated();
+          // onChangeIsUpdated();
+          onDragEnd();
           setIsOpenedDragBox(false);
           document.removeEventListener('mousemove', handleMouseMove);
           document.removeEventListener('mouseup', handleMouseUp);
@@ -181,7 +244,7 @@ const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, pa
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
-  }, [isAllCovered, isOpenedDragBox, onChangeIsUpdated, parentRef, updateTranslate]);
+  }, [isAllCovered, isOpenedDragBox, onChangeIsUpdated, onDragEnd, parentRef, updateTranslate]);
 
   return (
     <div className={cx('wrapper')}>

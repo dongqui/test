@@ -29,6 +29,7 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { ListView } from './ListTree';
 import { DragBox } from 'components/DragBox';
+import { GRABBABLE, GRABBED } from 'components/DragBox/DragBox';
 
 const cx = classNames.bind(styles);
 
@@ -138,14 +139,8 @@ const LibraryPanel: FunctionComponent = () => {
     if (lpMode === 'iconView') {
       parentKey = lpPage.key;
     }
-    if (lpMode === 'listView') {
-      const selectedRow = lpData.find((item) => item?.isSelected === true);
-      if (selectedRow) {
-        parentKey = selectedRow.key;
-      }
-    }
     return parentKey;
-  }, [lpData, lpMode, lpPage.key]);
+  }, [lpMode, lpPage.key]);
 
   /**
    * 동일한 이름을 가진 파일의 개수를 찾아주는 함수입니다.
@@ -479,22 +474,46 @@ const LibraryPanel: FunctionComponent = () => {
     return result;
   }, [lpData, lpPage.key]);
 
+  // 드래그박스를 호출할 부모 컴포넌트
+  const viewRef = useRef<HTMLDivElement>(null);
+
+  const handleDragboxChange = useCallback(() => {
+    const grabbedDoms = viewRef.current?.querySelectorAll(`#${GRABBED}`);
+    const ungrabbedDoms = viewRef.current?.querySelectorAll(`#${GRABBABLE}`);
+    // 드래그박스에 포함된 row들은 선택해준다.
+    grabbedDoms?.forEach((grabbedDom) => {
+      const itemId = grabbedDom.getAttribute('itemId');
+      const className = grabbedDom.className;
+      if (itemId && !className.includes('selected')) {
+        dispatch(
+          lpDataActions.selectItemList({ key: itemId, isSelected: true, selectType: 'ctrl' }),
+        );
+      }
+    });
+    // 드래그박스에 포함되지 않은 row들은 선택해제한다.
+    ungrabbedDoms?.forEach((grabbedDom) => {
+      const itemId = grabbedDom.getAttribute('itemId');
+      const className = grabbedDom.className;
+      if (itemId && className.includes('selected')) {
+        dispatch(
+          lpDataActions.selectItemList({ key: itemId, isSelected: false, selectType: 'ctrl' }),
+        );
+      }
+    });
+  }, [dispatch]);
+
   const handleClickEmptySpace = useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       const icons = document.getElementsByClassName('icon');
       const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
-      if (!targetIcon) {
+      const isExistSelectedRow = lpData.some((item) => item?.isSelected === true);
+      if (!targetIcon && isExistSelectedRow) {
         // 모두 선택 해제
         dispatch(lpDataActions.selectItemList({ key: '', isSelected: false, selectType: 'none' }));
       }
     },
-    [dispatch],
+    [dispatch, lpData],
   );
-
-  // 드래그박스를 호출할 부모 컴포넌트
-  const viewRef = useRef<HTMLDivElement>(null);
-
-  const handleChangeIsUpdated = useCallback(() => {}, []);
 
   useEffect(() => {
     const setDefaultModels = async () => {
@@ -515,7 +534,7 @@ const LibraryPanel: FunctionComponent = () => {
       // 기본모델 로드
       setDefaultModels();
     }
-  }, [changeFileToLpData, lpData]);
+  }, [changeFileToLpData, dispatch, lpData]);
 
   const isIconView = lpMode === 'iconView';
   const isListView = lpMode === 'listView';
@@ -551,8 +570,9 @@ const LibraryPanel: FunctionComponent = () => {
             {isListView && <ListView data={filteredListviewData} />}
             <DragBox
               isAllCovered={false}
-              onChangeIsUpdated={handleChangeIsUpdated}
+              onChangeIsUpdated={handleDragboxChange}
               parentRef={viewRef}
+              onDragEnd={() => {}}
             />
           </div>
         </div>

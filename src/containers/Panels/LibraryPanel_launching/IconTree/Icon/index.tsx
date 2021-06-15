@@ -7,6 +7,7 @@ import { FileType } from 'types/LP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import * as lpDataActions from 'actions/lpData';
+import { GRABBABLE } from 'components/DragBox/DragBox';
 
 const cx = classNames.bind(styles);
 
@@ -60,6 +61,7 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) 
     // if (type === 'Motion') {}
     if (type === 'Folder' || type === 'File') {
       dispatch(lpPageActions.setLPPage({ key: rowKey }));
+      dispatch(lpDataActions.selectItemList({ key: '', isSelected: false, selectType: 'none' }));
     }
   }, [dispatch, rowKey, type]);
 
@@ -80,6 +82,8 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) 
   return (
     <Fragment>
       <div
+        itemID={rowKey}
+        id={GRABBABLE}
         className={classes}
         ref={iconRef}
         onClick={handleClick}

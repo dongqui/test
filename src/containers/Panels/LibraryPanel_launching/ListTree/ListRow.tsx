@@ -7,6 +7,7 @@ import { FilteredItem } from './ListGroup';
 import { useDispatch } from 'react-redux';
 import * as lpDataActions from 'actions/lpData';
 import { FileType } from 'types/LP';
+import { GRABBABLE } from 'components/DragBox/DragBox';
 
 const cx = classNames.bind(styles);
 
@@ -92,6 +93,8 @@ const ListRow: FunctionComponent<Props> = ({
   return (
     <Fragment>
       <div
+        itemID={rowKey}
+        id={GRABBABLE}
         className={rowClasses}
         role="button"
         onKeyDown={() => {}}
