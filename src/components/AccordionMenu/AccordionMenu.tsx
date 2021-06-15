@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { FunctionComponent, ReactNode, useState } from 'react';
+import React, { Fragment, FunctionComponent, ReactNode, useState } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
 import styles from './AccordionMenu.module.scss';
@@ -27,7 +27,7 @@ const AccordionMenu: FunctionComponent<P> = ({ children, title }) => {
     rotate: clicked,
   });
   return (
-    <React.Fragment>
+    <Fragment>
       <div className={cx('accordion-wrap')}>
         <IconWrapper
           className={iconClasses}
@@ -38,7 +38,7 @@ const AccordionMenu: FunctionComponent<P> = ({ children, title }) => {
         <span>{title}</span>
       </div>
       <div className={cx(classes)}>{children}</div>
-    </React.Fragment>
+    </Fragment>
   );
 };
 

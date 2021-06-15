@@ -1,0 +1,119 @@
+import { FunctionComponent, Fragment, memo, useEffect, useState, useCallback } from 'react';
+import { IconWrapper, SvgPath } from 'components/Icon';
+import BreadcrumbItem from './BreadcrumbItem';
+import _ from 'lodash';
+import { useDispatch } from 'react-redux';
+import * as LPPageActions from 'actions/lpPage';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+import { FileType, ROOT_KEY } from 'types/LP';
+
+const cx = classNames.bind(styles);
+
+interface Path {
+  key: string;
+  name: string;
+  type: FileType;
+}
+
+export interface PathList extends Array<Path> {}
+
+interface BreadcrumbProps {
+  pathList: PathList;
+  prevPageKey: string;
+  currentPageKey: string;
+}
+
+const Breadcrumb: FunctionComponent<BreadcrumbProps> = ({
+  pathList,
+  prevPageKey,
+  currentPageKey,
+}) => {
+  const dispatch = useDispatch();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleBack = useCallback(() => {
+    if (currentPageKey !== ROOT_KEY) {
+      dispatch(LPPageActions.setLPPage({ key: prevPageKey }));
+    }
+  }, [currentPageKey, dispatch, prevPageKey]);
+
+  const handlePathOpen = useCallback(() => {
+    setIsOpen(!isOpen);
+  }, [isOpen]);
+
+  useEffect(() => {
+    // @TODO
+    // 더보기 버튼으로 인한 Dropdown이 open인 상태에서, depth가 5미만으로 변경되면 보이지 않게 처리
+  }, []);
+
+  // 현재 경로는 반드시 이름 표시
+  // 현재 경로 포함 depth가 3이상이면 아이콘으로만 처리 (Breadcrumb 축약 레벨 1)
+  const isAbbreviationLevel1 = pathList.length >= 3;
+
+  // 현재 경로 포함 depth가 5이상이면 더보기 아이콘 및 현재 경로 포함 3개 표시 (Breadcrumb 축약 레벨 2)
+  const isAbbreviationLevel2 = pathList.length >= 5;
+
+  // 마지막 3개를 제외한 경로에 대해서는 Dropdown 처리
+  const prevPathList = _.slice(pathList, 0, pathList.length - 3);
+
+  // 마지막 3개의 경로에 대해서는 별도의 처리 없음
+  const splitPathList = _.slice(pathList, pathList.length - 3);
+
+  // @TODO
+  // 현재는 path의 타입을 알수없어, 오직 폴더 아이콘으로만 보이게 처리함
+  // 경로 타입(폴더, 모델, 모션)에 따른 아이콘 변경 처리
+
+  return (
+    <div className={cx('wrapper')}>
+      <IconWrapper
+        className={cx('arrow-left')}
+        icon={SvgPath.ChevronLeft}
+        onClick={handleBack}
+        hasFrame={false}
+      />
+      <div className={cx('path')}>
+        {isAbbreviationLevel2 && (
+          // @TODO
+          // 더보기 버튼 클릭 시 Dropdown으로 모든 경로 표시
+          <Fragment>
+            <div className={cx('icon-more')}>
+              <IconWrapper
+                className={cx('icon-more')}
+                icon={SvgPath.BreadcrumbMore}
+                onClick={handlePathOpen}
+                hasFrame={false}
+              />
+              {/* <Fragment>
+                {isOpen && (
+                  <div className={cx('dropdown')}>
+                    <Dropdown list={dropdownItemList} onSelect={handleSelect} />
+                  </div>
+                )}
+              </Fragment> */}
+            </div>
+            <IconWrapper
+              className={cx('arrow-right')}
+              icon={SvgPath.ChevronLeft}
+              hasFrame={false}
+            />
+            {_.map(splitPathList, (item) => {
+              const isLast = _.isEqual(_.last(splitPathList)?.key, item.key);
+
+              return <BreadcrumbItem key={item.key} item={item} isLast={isLast} level="2" />;
+            })}
+          </Fragment>
+        )}
+        {!isAbbreviationLevel2 &&
+          _.map(pathList, (item) => {
+            const isLast = _.isEqual(_.last(pathList)?.key, item.key);
+            const level = isAbbreviationLevel1 ? '1' : '0';
+
+            return <BreadcrumbItem key={item.key} item={item} isLast={isLast} level={level} />;
+          })}
+      </div>
+    </div>
+  );
+};
+
+export default memo(Breadcrumb);

@@ -1,7 +1,7 @@
 import { Reducer } from 'redux';
 import _ from 'lodash';
-import { WithUndoableAction } from 'actions/withUndoable';
-import { BoneTransformAction } from 'actions/boneTransform';
+import * as withUndoableActions from 'actions/withUndoable';
+import * as boneTransformActions from 'actions/boneTransform';
 
 interface State {
   past: Reducer[];
@@ -14,7 +14,10 @@ interface InitialAction {
   payload: undefined;
 }
 
-type Action = InitialAction | WithUndoableAction | BoneTransformAction;
+type Action =
+  | InitialAction
+  | withUndoableActions.WithUndoableAction
+  | boneTransformActions.BoneTransformAction;
 
 /**
  * reducer를 감싸는 고차함수로, 대상 reducer의 history 관리가 가능하도록 만들어줍니다.
@@ -68,7 +71,7 @@ const withUndoable = (reducer: Reducer<any, any>) => {
         if (_.isEqual(present, newPresent)) {
           return state;
         }
-        if (Object.values(present).includes(undefined)) {
+        if (Object.values(present).includes(null)) {
           return {
             past: [...past],
             present: newPresent,

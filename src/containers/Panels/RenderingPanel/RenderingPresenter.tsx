@@ -1,6 +1,6 @@
 import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
-import React, { memo } from 'react';
+import React, { FunctionComponent, memo } from 'react';
 import classNames from 'classnames/bind';
 import styles from './RenderingPresenter.module.scss';
 
@@ -11,9 +11,7 @@ export interface RenderingPresenterProps {
   onCameraReset: () => void;
 }
 
-const RenderingPresenter: React.FC<RenderingPresenterProps> = (props: RenderingPresenterProps) => {
-  const { id, onCameraReset } = props;
-
+const RenderingPresenter: FunctionComponent<RenderingPresenterProps> = ({ id, onCameraReset }) => {
   return (
     <div className={cx('rendering-panel')}>
       <div className={cx('rendering-div')} id={id} />

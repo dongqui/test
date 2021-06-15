@@ -1,13 +1,15 @@
 import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { storeBarPositionX, storeRecordingData } from 'lib/store';
 import _ from 'lodash';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
 import { getNumberValue } from '../../../hooks/RP/useResizeRP';
 import ImageList from './ImageList';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import * as recordingDataActions from 'actions/recordingData';
+import * as barPositionXActions from 'actions/barPositionX';
 
 const cx = classNames.bind(styles);
 
@@ -30,33 +32,38 @@ const coordinateX = ({ x }: { x: number }) => {
 };
 
 const CutEditComponent: FunctionComponent = () => {
-  const recordingData = useReactiveVar(storeRecordingData);
+  const recordingData = useSelector((state) => state.recordingData);
+
+  const dispatch = useDispatch();
 
   const [rangeRate, setRangeRate] = useState(0);
 
   useEffect(() => {
     if (!recordingData.rangeBoxInfo.width) {
       setRangeRate(100);
-
-      storeRecordingData({
-        ...recordingData,
-        rangeBoxInfo: {
-          ...recordingData.rangeBoxInfo,
-          width: window.innerWidth,
-        },
-      });
+      dispatch(
+        recordingDataActions.setRecordingData({
+          ...recordingData,
+          rangeBoxInfo: {
+            ...recordingData.rangeBoxInfo,
+            width: window.innerWidth,
+          },
+        }),
+      );
     }
-  }, [recordingData, recordingData.rangeBoxInfo.width]);
+  }, [dispatch, recordingData, recordingData.rangeBoxInfo.width]);
 
   useEffect(() => {
     const handleResize = () => {
-      storeRecordingData({
-        ...recordingData,
-        rangeBoxInfo: {
-          ...recordingData.rangeBoxInfo,
-          width: (window.innerWidth * rangeRate) / 100,
-        },
-      });
+      dispatch(
+        recordingDataActions.setRecordingData({
+          ...recordingData,
+          rangeBoxInfo: {
+            ...recordingData.rangeBoxInfo,
+            width: (window.innerWidth * rangeRate) / 100,
+          },
+        }),
+      );
     };
 
     window.addEventListener('resize', handleResize);
@@ -64,54 +71,62 @@ const CutEditComponent: FunctionComponent = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [rangeRate, recordingData, recordingData.rangeBoxInfo.width]);
+  }, [dispatch, rangeRate, recordingData, recordingData.rangeBoxInfo.width]);
 
-  const barPositionX = useReactiveVar(storeBarPositionX);
+  const barPositionX = useSelector((state) => state.barPositionX.x);
   const handleDrag = useCallback(
     (e, data) => {
-      storeRecordingData({
-        ...recordingData,
-        rangeBoxInfo: {
-          ...recordingData.rangeBoxInfo,
-          x: coordinateX({ x: data.x }),
-          barX: coordinateBarX({
+      dispatch(
+        recordingDataActions.setRecordingData({
+          ...recordingData,
+          rangeBoxInfo: {
+            ...recordingData.rangeBoxInfo,
+            x: coordinateX({ x: data.x }),
+            barX: coordinateBarX({
+              barX: barPositionX,
+              x: recordingData.rangeBoxInfo.x,
+              width: recordingData.rangeBoxInfo.width,
+            }),
+          },
+        }),
+      );
+      dispatch(
+        barPositionXActions.setBarPositionX({
+          x: coordinateBarX({
             barX: barPositionX,
             x: recordingData.rangeBoxInfo.x,
             width: recordingData.rangeBoxInfo.width,
           }),
-        },
-      });
-      storeBarPositionX(
-        coordinateBarX({
-          barX: barPositionX,
-          x: recordingData.rangeBoxInfo.x,
-          width: recordingData.rangeBoxInfo.width,
         }),
       );
     },
-    [barPositionX, recordingData],
+    [barPositionX, dispatch, recordingData],
   );
   const handleResize: RndResizeCallback = useCallback(
     (_e, _dir, ref, _delta, position) => {
-      storeRecordingData({
-        ...recordingData,
-        rangeBoxInfo: {
-          ...recordingData.rangeBoxInfo,
-          width: getNumberValue(ref.style.width),
-          x: coordinateX({ x: position.x }),
-          y: position.y,
-          barX: coordinateBarX({
+      dispatch(
+        recordingDataActions.setRecordingData({
+          ...recordingData,
+          rangeBoxInfo: {
+            ...recordingData.rangeBoxInfo,
+            width: getNumberValue(ref.style.width),
+            x: coordinateX({ x: position.x }),
+            y: position.y,
+            barX: coordinateBarX({
+              barX: barPositionX,
+              x: recordingData.rangeBoxInfo.x,
+              width: recordingData.rangeBoxInfo.width,
+            }),
+          },
+        }),
+      );
+      dispatch(
+        barPositionXActions.setBarPositionX({
+          x: coordinateBarX({
             barX: barPositionX,
             x: recordingData.rangeBoxInfo.x,
             width: recordingData.rangeBoxInfo.width,
           }),
-        },
-      });
-      storeBarPositionX(
-        coordinateBarX({
-          barX: barPositionX,
-          x: recordingData.rangeBoxInfo.x,
-          width: recordingData.rangeBoxInfo.width,
         }),
       );
 
@@ -121,30 +136,34 @@ const CutEditComponent: FunctionComponent = () => {
 
       setRangeRate(currentRate);
     },
-    [barPositionX, recordingData],
+    [barPositionX, dispatch, recordingData],
   );
   const handleDragBar: RndDragCallback = useCallback(
     (e, data) => {
-      storeRecordingData({
-        ...recordingData,
-        rangeBoxInfo: {
-          ...recordingData.rangeBoxInfo,
-          barX: coordinateBarX({
+      dispatch(
+        recordingDataActions.setRecordingData({
+          ...recordingData,
+          rangeBoxInfo: {
+            ...recordingData.rangeBoxInfo,
+            barX: coordinateBarX({
+              barX: data.x,
+              x: recordingData.rangeBoxInfo.x,
+              width: recordingData.rangeBoxInfo.width,
+            }),
+          },
+        }),
+      );
+      dispatch(
+        barPositionXActions.setBarPositionX({
+          x: coordinateBarX({
             barX: data.x,
             x: recordingData.rangeBoxInfo.x,
             width: recordingData.rangeBoxInfo.width,
           }),
-        },
-      });
-      storeBarPositionX(
-        coordinateBarX({
-          barX: data.x,
-          x: recordingData.rangeBoxInfo.x,
-          width: recordingData.rangeBoxInfo.width,
         }),
       );
     },
-    [recordingData],
+    [dispatch, recordingData],
   );
 
   return (

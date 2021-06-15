@@ -1,9 +1,9 @@
-import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
-import { ROOT_FOLDER_NAME } from 'types/LP';
+import { LPDATA_PROPERTY_TYPES } from 'types';
+import { LPItemListOldType, ROOT_FOLDER_NAME } from 'types/LP';
 import _ from 'lodash';
 
 interface FnSortArrayByHierarchyProps {
-  data: LPDataType[];
+  data: LPItemListOldType;
 }
 /**
  * lpData 를 계층순으로 정렬해준다.
@@ -14,8 +14,8 @@ interface FnSortArrayByHierarchyProps {
  */
 const fnSortArrayByHierarchy = ({ data }: FnSortArrayByHierarchyProps) => {
   let tempData = _.clone(data);
-  let result: LPDataType[] = [];
-  let newData: LPDataType[];
+  let result: LPItemListOldType = [];
+  let newData: LPItemListOldType;
   let cnt = 0;
   do {
     cnt += 1;
@@ -25,7 +25,7 @@ const fnSortArrayByHierarchy = ({ data }: FnSortArrayByHierarchyProps) => {
       tempData = _.filter(tempData, (item) => !_.isEqual(item.parentKey, ROOT_FOLDER_NAME));
       continue;
     }
-    let tempResult: LPDataType[] = [];
+    let tempResult: LPItemListOldType = [];
     _.forEach(result, (item) => {
       tempResult = _.concat(tempResult, item);
       const mustInclude =

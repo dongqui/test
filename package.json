@@ -16,22 +16,15 @@
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
     "clean": "rimraf dist main src/out out src/_next _next storybook-static",
-    "type-check": "tsc",
-    "precodegen": "node ./src/scripts/precodegen.js",
-    "codegen": "graphql-codegen --config codegen.yml",
-    "postcodegen": "node ./src/scripts/postcodegen.js"
+    "type-check": "tsc"
   },
   "dependencies": {
-    "@apollo/client": "^3.3.6",
-    "@reduxjs/toolkit": "^1.5.0",
-    "apollo3-cache-persist": "^0.9.1",
     "axios": "^0.21.1",
     "classnames": "^2.2.6",
     "d3": "^6.5.0",
     "electron-is-dev": "^1.1.0",
     "electron-next": "^3.1.5",
     "get-blob-duration": "^1.2.0",
-    "graphql": "^15.4.0",
     "husky": "^4.3.8",
     "immer": "^9.0.1",
     "lodash": "^4.17.20",
@@ -60,11 +53,6 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "1.20.0",
-    "@graphql-codegen/introspection": "1.18.1",
-    "@graphql-codegen/typescript": "1.20.0",
-    "@graphql-codegen/typescript-operations": "1.17.13",
-    "@graphql-codegen/typescript-react-apollo": "2.2.1",
     "@next/bundle-analyzer": "^10.0.5",
     "@storybook/addon-actions": "^6.1.15",
     "@storybook/addon-essentials": "^6.1.15",
@@ -75,7 +63,6 @@
     "@types/classnames": "^2.2.11",
     "@types/d3": "^6.3.0",
     "@types/dom-mediacapture-record": "^1.0.7",
-    "@types/graphql": "^14.5.0",
     "@types/lodash": "^4.14.168",
     "@types/moment": "^2.13.0",
     "@types/node": "^14.14.6",

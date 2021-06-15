@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import React, {
+  FunctionComponent,
   memo,
   MutableRefObject,
   RefObject,
@@ -11,17 +12,8 @@ import React, {
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
 import { useRendering } from '../../../hooks/RP/useRendering';
-import {
-  storeAnimatingData,
-  storeCurrentAction,
-  storeCurrentVisualizedData,
-  storeRenderingData,
-  storeSkeletonHelper,
-} from 'lib/store';
-import { useReactiveVar } from '@apollo/client';
 import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetPlayState } from 'utils/RP/animatingUtils';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {
   fnAddShadow,
   fnMakeBoneAndJointInvisible,
@@ -32,6 +24,10 @@ import {
 } from 'utils/CP/visibilityUtils';
 import { d3ScaleLinear } from 'types/TP';
 import { fnSetValue } from 'utils/common';
+import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import * as currentVisualizedData from 'actions/currentVisualizedData';
+import * as animatingDataActions from 'actions/animatingData';
 
 const X_AXIS_HEIGHT = 48; // 트랙 높이
 
@@ -40,39 +36,42 @@ export interface RenderingControllerProps {
   fileUrl?: string;
   currentTimeRef: RefObject<HTMLInputElement>;
   currentTimeIndexRef: RefObject<HTMLInputElement>;
-  currentXAxisPosition: MutableRefObject<number>;
-  prevXScale: React.MutableRefObject<d3ScaleLinear | d3.ZoomScale | null>;
+  currentPlayBarTime: MutableRefObject<number>;
+  dopeSheetScale: React.MutableRefObject<d3ScaleLinear | null>;
 }
-const RenderingController: React.FC<RenderingControllerProps> = ({
+const RenderingController: FunctionComponent<RenderingControllerProps> = ({
   id,
   fileUrl,
   currentTimeRef,
   currentTimeIndexRef,
-  currentXAxisPosition,
-  prevXScale,
+  currentPlayBarTime,
+  dopeSheetScale,
 }) => {
   // store data
-  const renderingData = useReactiveVar(storeRenderingData);
-  const animatingData = useReactiveVar(storeAnimatingData);
-  const skeletonHelper = useReactiveVar(storeSkeletonHelper);
-  const currentVisualizedData = useReactiveVar(storeCurrentVisualizedData);
-  const currentAction = useReactiveVar(storeCurrentAction);
-  // component state
-  const [mixer, setMixer] = useState<THREE.AnimationMixer | undefined>(undefined);
-  const [cameraControls, setCameraControls] = useState<OrbitControls | undefined>(undefined);
-  const [scene, setScene] = useState<THREE.Scene | undefined>(undefined);
-  const [dirLight, setDirLight] = useState<THREE.DirectionalLight | undefined>(undefined);
 
-  useRendering({
-    id,
-    fileUrl,
-    setMixer,
-    setCameraControls,
-    setScene,
-    setDirLight,
-  });
+  const renderingData = useSelector((state) => state.renderingData);
 
-  const { startTimeIndex, endTimeIndex, playState, playDirection, playSpeed } = animatingData;
+  const {
+    startTimeIndex,
+    endTimeIndex,
+    playState,
+    playDirection,
+    playSpeed,
+    mixer,
+    currentAction,
+  } = useSelector((state) => state.animatingData);
+
+  const { skeletonHelper, scene, directionalLight, cameraControls } = useSelector(
+    (state) => state.renderingData,
+  );
+
+  const currentVisualizedData = useSelector<currentVisualizedData.CurrentVisualizedData>(
+    (state) => state.currentVisualizedData,
+  );
+
+  useRendering({ id, fileUrl });
+
+  const dispatch = useDispatch();
 
   // animation 생성 로직
   useEffect(() => {
@@ -89,13 +88,13 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
       action.play();
       mixer.timeScale = 0;
       if (
-        currentXAxisPosition &&
-        currentXAxisPosition.current &&
-        currentXAxisPosition.current > startTimeIndex
+        currentPlayBarTime &&
+        currentPlayBarTime.current &&
+        currentPlayBarTime.current > startTimeIndex
       ) {
-        action.time = _.round(currentXAxisPosition.current / 30, 4); // play bar 위치로 초기화
+        action.time = _.round(currentPlayBarTime.current / 30, 4); // play bar 위치로 초기화
         if (currentTimeIndexRef && currentTimeIndexRef.current) {
-          fnSetValue(currentTimeIndexRef, currentXAxisPosition.current); // play bar 위치로 초기화
+          fnSetValue(currentTimeIndexRef, currentPlayBarTime.current); // play bar 위치로 초기화
         }
       } else {
         action.time = _.round(startTimeIndex / 30, 4);
@@ -103,13 +102,13 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
           fnSetValue(currentTimeIndexRef, startTimeIndex); // startTime 으로 초기화
         }
       }
-      storeCurrentAction(action);
-      console.log('action: ', action);
+      dispatch(animatingDataActions.setCurrentAction({ action }));
     }
   }, [
     currentTimeIndexRef,
     currentVisualizedData,
-    currentXAxisPosition,
+    currentPlayBarTime,
+    dispatch,
     endTimeIndex,
     mixer,
     startTimeIndex,
@@ -180,21 +179,21 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   useEffect(() => {
     if (
       playState === 'pause' &&
-      currentXAxisPosition &&
-      currentXAxisPosition.current &&
-      prevXScale &&
-      prevXScale.current
+      currentPlayBarTime &&
+      currentPlayBarTime.current &&
+      dopeSheetScale &&
+      dopeSheetScale.current
     ) {
-      currentXAxisPosition.current = _.round(currentXAxisPosition.current, 0);
-      const xScaleLinear = prevXScale.current as d3ScaleLinear;
+      currentPlayBarTime.current = _.round(currentPlayBarTime.current, 0);
+      const xScaleLinear = dopeSheetScale.current as d3ScaleLinear;
       d3.select('#play-bar-wrapper').style(
         'transform',
-        `translate3d(${xScaleLinear(currentXAxisPosition.current) - 10}px,
+        `translate3d(${xScaleLinear(currentPlayBarTime.current) - 10}px,
         ${X_AXIS_HEIGHT / 2}px, 0)`,
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentXAxisPosition, currentXAxisPosition.current, playState, prevXScale]);
+  }, [currentPlayBarTime, currentPlayBarTime.current, playState, dopeSheetScale]);
 
   const { axis, isBoneOn, isMeshOn, isShadowOn } = renderingData;
 
@@ -221,14 +220,14 @@ const RenderingController: React.FC<RenderingControllerProps> = ({
   }, [isMeshOn, scene]);
 
   useEffect(() => {
-    if (dirLight) {
+    if (directionalLight) {
       if (isShadowOn) {
-        fnAddShadow({ dirLight });
+        fnAddShadow({ directionalLight });
       } else {
-        fnRemoveShadow({ dirLight });
+        fnRemoveShadow({ directionalLight });
       }
     }
-  }, [dirLight, isShadowOn]);
+  }, [directionalLight, isShadowOn]);
 
   const handleCameraReset = useCallback(() => {
     if (cameraControls) {

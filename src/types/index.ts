@@ -1,3 +1,5 @@
+import { FileType } from './LP';
+
 export interface ContextmenuDataTypes {
   key: string;
   value: string;
@@ -47,11 +49,6 @@ export enum PROPERTY_TYPES {
   scale = 'scale',
   scaleCnt = 3,
 }
-export enum FILE_TYPES {
-  folder = 'folder',
-  file = 'file',
-  motion = 'motion',
-}
 export enum LPDATA_PROPERTY_TYPES {
   key = 'key',
   name = 'name',
@@ -96,37 +93,6 @@ export interface ContextmenuType {
   onClick: (key: string, value: string) => void;
 }
 
-export interface LPDataType {
-  [LPDATA_PROPERTY_TYPES.key]: string;
-  [LPDATA_PROPERTY_TYPES.name]: string;
-  [LPDATA_PROPERTY_TYPES.type]: FILE_TYPES;
-  [LPDATA_PROPERTY_TYPES.parentKey]?: string;
-  [LPDATA_PROPERTY_TYPES.isExpanded]?: boolean;
-  [LPDATA_PROPERTY_TYPES.url]?: string;
-  [LPDATA_PROPERTY_TYPES.isClicked]?: boolean;
-  [LPDATA_PROPERTY_TYPES.isSelected]?: boolean;
-  [LPDATA_PROPERTY_TYPES.isVisualized]?: boolean;
-  [LPDATA_PROPERTY_TYPES.isVisualizeSelected]?: boolean;
-  [LPDATA_PROPERTY_TYPES.isFirst]?: boolean;
-  [LPDATA_PROPERTY_TYPES.isLast]?: boolean;
-  [LPDATA_PROPERTY_TYPES.isModifying]?: boolean;
-  [LPDATA_PROPERTY_TYPES.isCopied]?: boolean;
-  [LPDATA_PROPERTY_TYPES.isDragging]?: boolean;
-  [LPDATA_PROPERTY_TYPES.baseLayer]: ShootTrackType[];
-  [LPDATA_PROPERTY_TYPES.layers]: ShootLayerType[];
-  [LPDATA_PROPERTY_TYPES.boneNames]?: string[];
-  [LPDATA_PROPERTY_TYPES.depth]?: number;
-  [LPDATA_PROPERTY_TYPES.retargetMap]?: Array<any>;
-  [LPDATA_PROPERTY_TYPES.isExportedMotion]?: boolean;
-}
-export interface CurrentVisualizedDataType {
-  [LPDATA_PROPERTY_TYPES.key]: string;
-  [LPDATA_PROPERTY_TYPES.name]: string;
-  [LPDATA_PROPERTY_TYPES.type]: FILE_TYPES;
-  [LPDATA_PROPERTY_TYPES.boneNames]: string[];
-  [LPDATA_PROPERTY_TYPES.baseLayer]: ShootTrackType[];
-  [LPDATA_PROPERTY_TYPES.layers]: ShootLayerType[];
-}
 export interface BonesTypes {
   name: string;
   positionX: number;
@@ -165,8 +131,10 @@ export interface ShootLayerType {
   tracks: ShootTrackType[];
 }
 export interface PageInfoType {
-  page: PAGE_NAMES;
+  page: 'shoot' | 'extract' | 'record';
   videoUrl?: string;
   extension?: string;
   duration?: number;
 }
+
+export type PropertyType = 'Position' | 'Rotation' | 'Scale';

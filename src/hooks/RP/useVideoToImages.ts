@@ -1,11 +1,11 @@
 import _ from 'lodash';
-import { useCallback, useEffect } from 'react';
+import { RefObject, useCallback, useEffect } from 'react';
 import getBlobDuration from 'get-blob-duration';
 import sleep from 'utils/common/sleep';
 import fnKillThread from 'utils/common/fnKillSetInterval';
 
 interface UseVideoToImagesProps {
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: RefObject<HTMLVideoElement>;
   videoUrl: string;
   action: ({ images }: { images: string[] }) => void;
   active: boolean;

@@ -5,8 +5,6 @@ import {
   IconView as IconViewComponent,
   IconViewProps,
 } from 'containers/Panels/LibraryPanel/IconTree/IconView';
-import { useApollo } from 'lib/apolloClient';
-import { ApolloProvider } from '@apollo/client';
 
 export default {
   title: 'Component API/Container/IconTree/IconView',
@@ -15,12 +13,7 @@ export default {
 } as Meta;
 
 const Template: Story<IconViewProps> = (args) => {
-  const apolloClient = useApollo(args);
-  return (
-    <ApolloProvider client={apolloClient}>
-      <IconViewComponent {...args} />
-    </ApolloProvider>
-  );
+  return <IconViewComponent {...args} />;
 };
 
 export const Default = Template.bind({});

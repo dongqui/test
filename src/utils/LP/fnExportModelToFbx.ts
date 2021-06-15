@@ -1,14 +1,14 @@
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { LPDataType } from 'types';
 import { fnGetAnimationClipForExport } from 'utils/TP/editingUtils';
 import _ from 'lodash';
 import { setConvertGlbToFbx } from 'utils/common/api';
+import { LPItemListOldType } from 'types/LP';
 
 interface FnExportModelToFbx {
   modelName: string;
   modelUrl: string;
-  motions: LPDataType[];
+  motions: LPItemListOldType;
 }
 
 /**

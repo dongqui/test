@@ -1,9 +1,7 @@
 import { FunctionComponent, memo, useMemo, useCallback } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { useShortcut } from 'hooks/common/useShortcut';
-import { LPDataType, LPDATA_PROPERTY_TYPES } from 'types';
-import { ROOT_FOLDER_NAME } from 'types/LP';
-import { storeLpData, storeSearchWord } from 'lib/store';
+import { LPDATA_PROPERTY_TYPES } from 'types';
+import { LPItemListOldType, ROOT_FOLDER_NAME } from 'types/LP';
 import _ from 'lodash';
 import fnFilterArrayByHierarchy from 'utils/LP/fnFilterArrayByHierarchy';
 import fnMakeSelection from 'utils/LP/fnMakeSelection';
@@ -11,6 +9,7 @@ import fnSortArrayByHierarchy from 'utils/LP/fnSortArrayByHierarchy';
 import ListNode from './ListNode';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -35,13 +34,13 @@ const ListViewComponent: FunctionComponent<ListViewProps> = ({
   onDrop,
   shortcutData,
 }) => {
-  const lpData = useReactiveVar(storeLpData);
-  const searchWord = useReactiveVar(storeSearchWord);
+  const lpData = useSelector((state) => state.lpDataOld);
+  const searchWord = useSelector((state) => state.lpSearchword.word);
   useShortcut({
     data: shortcutData,
   });
   const processedData = useMemo(() => {
-    let result: LPDataType[] = [];
+    let result: LPItemListOldType = [];
     let data = _.clone(lpData);
     if (!_.isEmpty(searchWord)) {
       data = fnFilterArrayByHierarchy({ data, searchWord });

@@ -1,15 +1,17 @@
 import { FunctionComponent, memo, useCallback, ChangeEvent } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import { SearchInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { FILE_TYPES, LPModeType } from 'types';
-import { storeLPMode, storeLpData, storePages } from 'lib/store';
+import { LPModeType } from 'types';
 import { v4 as uuidv4 } from 'uuid';
 import fnGetFileName from 'utils/LP/fnGetFileName';
 import _ from 'lodash';
-import { ROOT_FOLDER_NAME } from 'types/LP';
+import { LPMode, ROOT_FOLDER_NAME } from 'types/LP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { useSelector } from 'reducers';
+import * as lpDataActions from 'actions/lpData';
+import { useDispatch } from 'react-redux';
+import * as lpModeActions from 'actions/lpMode';
 
 const cx = classNames.bind(styles);
 
@@ -18,34 +20,38 @@ export interface Props {
 }
 
 const Explorer: FunctionComponent<Props> = ({ onChange }) => {
-  const lpmode = useReactiveVar(storeLPMode);
-  const pages = useReactiveVar(storePages);
-  const lpData = useReactiveVar(storeLpData);
+  const lpmode = useSelector((state) => state.lpMode.mode);
+  const pages = useSelector((state) => state.lpPageOld);
+  const lpData = useSelector((state) => state.lpDataOld);
+
+  const dispatch = useDispatch();
 
   const handleChangeMode = useCallback(() => {
-    const changeTargetMode = _.isEqual(lpmode, LPModeType.iconview)
-      ? LPModeType.listview
-      : LPModeType.iconview;
+    const changeTargetMode: LPMode = _.isEqual(lpmode, LPModeType.iconview)
+      ? 'listView'
+      : 'iconView';
 
-    storeLPMode(changeTargetMode);
-  }, [lpmode]);
+    dispatch(lpModeActions.setLPMode({ mode: changeTargetMode }));
+  }, [dispatch, lpmode]);
 
   const handleAddGroup = useCallback(() => {
     const parentKey = _.isEqual(lpmode, LPModeType.iconview)
       ? _.last(pages)?.key
       : ROOT_FOLDER_NAME;
-    storeLpData(
-      _.concat(lpData, {
-        key: uuidv4(),
-        type: FILE_TYPES.folder,
-        name: fnGetFileName({ key: '', lpData, name: 'Folder', parentKey }),
-        parentKey,
-        isModifying: true,
-        baseLayer: [],
-        layers: [],
+    dispatch(
+      lpDataActions.setItemListOld({
+        itemList: _.concat(lpData, {
+          key: uuidv4(),
+          type: 'Folder',
+          name: fnGetFileName({ key: '', lpData, name: 'Folder', parentKey }),
+          parentKey,
+          isModifying: true,
+          baseLayer: [],
+          layers: [],
+        }),
       }),
     );
-  }, [lpmode, lpData, pages]);
+  }, [lpmode, pages, dispatch, lpData]);
 
   const icon = _.isEqual(lpmode, LPModeType.iconview) ? SvgPath.ListView : SvgPath.IconView;
 
