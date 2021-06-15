@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { useDispatch } from 'react-redux';
@@ -27,6 +28,7 @@ import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { ListView } from './ListTree';
+import { DragBox } from 'components/DragBox';
 
 const cx = classNames.bind(styles);
 
@@ -489,6 +491,11 @@ const LibraryPanel: FunctionComponent = () => {
     [dispatch],
   );
 
+  // 드래그박스를 호출할 부모 컴포넌트
+  const viewRef = useRef<HTMLDivElement>(null);
+
+  const handleChangeIsUpdated = useCallback(() => {}, []);
+
   useEffect(() => {
     const setDefaultModels = async () => {
       setModalInfo((state) => ({
@@ -533,6 +540,7 @@ const LibraryPanel: FunctionComponent = () => {
             </div>
           )}
           <div
+            ref={viewRef}
             className={cx('content')}
             role="button"
             onClick={handleClickEmptySpace}
@@ -541,6 +549,11 @@ const LibraryPanel: FunctionComponent = () => {
           >
             {isIconView && <IconView data={filteredIconviewData} />}
             {isListView && <ListView data={filteredListviewData} />}
+            <DragBox
+              isAllCovered={false}
+              onChangeIsUpdated={handleChangeIsUpdated}
+              parentRef={viewRef}
+            />
           </div>
         </div>
       </div>
