@@ -9,12 +9,14 @@ import React, {
 } from 'react';
 import classNames from 'classnames/bind';
 import styles from './DragBox.module.scss';
+import _ from 'lodash';
 
 const cx = classNames.bind(styles);
 
 interface Props {
   isAllCovered: boolean;
   onChangeIsUpdated: () => void;
+  onDragStart: (event: MouseEvent | React.MouseEvent<HTMLDivElement, MouseEvent>) => boolean | void;
   onDragEnd: () => void;
   parentRef: RefObject<HTMLElement>;
 }
@@ -50,6 +52,7 @@ const DragBox: FunctionComponent<Props> = ({
   isAllCovered,
   onChangeIsUpdated,
   parentRef,
+  onDragStart,
   onDragEnd,
 }) => {
   const [isOpenedDragBox, setIsOpenedDragBox] = useState(false);
@@ -100,6 +103,8 @@ const DragBox: FunctionComponent<Props> = ({
   // 부모 컴포넌트에 mousedown 이벤트 추가
   useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
+      const isMustStop = onDragStart(event);
+      if (isMustStop) return;
       if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
       originX.current = event.x;
       originY.current = event.y;
@@ -113,7 +118,7 @@ const DragBox: FunctionComponent<Props> = ({
 
     parentRef.current?.addEventListener('mousedown', handleMouseDown);
     parentRef.current?.addEventListener('dragstart', handleDragStart);
-  }, [parentRef, updateTranslate]);
+  }, [onDragStart, parentRef, updateTranslate]);
 
   // drag box에 mousemove, mouseup 이벤트 추가
   useEffect(() => {

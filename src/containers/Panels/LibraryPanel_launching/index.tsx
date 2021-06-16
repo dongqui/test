@@ -13,6 +13,7 @@ import { useDropzone } from 'react-dropzone';
 import { useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
@@ -502,8 +503,12 @@ const LibraryPanel: FunctionComponent = () => {
     });
   }, [dispatch]);
 
+  /**
+   * 빈공간을 선택하면 선택한 row들을 모두 선택해제 해주는 함수입니다.
+   * @return 드래그박스 동작여부. 빈공간이 아닌 아이콘에 클릭을 했을땐 드래그박스 동작을 하지 않게 하기 위함.
+   */
   const handleClickEmptySpace = useCallback(
-    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent> | MouseEvent): boolean => {
       const icons = document.getElementsByClassName('icon');
       const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
       const isExistSelectedRow = lpData.some((item) => item?.isSelected === true);
@@ -511,6 +516,8 @@ const LibraryPanel: FunctionComponent = () => {
         // 모두 선택 해제
         dispatch(lpDataActions.selectItemList({ key: '', isSelected: false, selectType: 'none' }));
       }
+      const isMustStop = !_.isEmpty(targetIcon);
+      return isMustStop;
     },
     [dispatch, lpData],
   );
@@ -558,23 +565,25 @@ const LibraryPanel: FunctionComponent = () => {
               />
             </div>
           )}
-          <div
-            ref={viewRef}
-            className={cx('content')}
-            role="button"
-            onClick={handleClickEmptySpace}
-            onKeyDown={() => {}}
-            tabIndex={0}
-          >
-            {isIconView && <IconView data={filteredIconviewData} />}
-            {isListView && <ListView data={filteredListviewData} />}
-            <DragBox
-              isAllCovered={false}
-              onChangeIsUpdated={handleDragboxChange}
-              parentRef={viewRef}
-              onDragEnd={() => {}}
-            />
-          </div>
+          <Scrollbars autoHide>
+            <div
+              ref={viewRef}
+              className={cx('content')}
+              role="button"
+              onKeyDown={() => {}}
+              tabIndex={0}
+            >
+              {isIconView && <IconView data={filteredIconviewData} />}
+              {isListView && <ListView data={filteredListviewData} />}
+              <DragBox
+                isAllCovered={false}
+                onChangeIsUpdated={handleDragboxChange}
+                parentRef={viewRef}
+                onDragStart={handleClickEmptySpace}
+                onDragEnd={() => {}}
+              />
+            </div>
+          </Scrollbars>
         </div>
       </div>
       {modalInfo.showModal && (

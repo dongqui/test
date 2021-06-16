@@ -6,6 +6,8 @@ import rootSaga from 'sagas';
 import rootReducer from 'reducers';
 import middleware from 'store/middleware';
 
+const isDebug = false;
+
 const bindMiddleware = (middleware: Middleware[]) => {
   // if (process.env.NODE_ENV !== 'production') {
   //   const { composeWithDevTools } = require('redux-devtools-extension');
@@ -18,7 +20,11 @@ const bindMiddleware = (middleware: Middleware[]) => {
 export const makeStore = () => {
   const loggerMiddleware = createLogger();
   const sagaMiddleware = createSagaMiddleware();
-  const middlewares = [middleware, sagaMiddleware, loggerMiddleware];
+  const middlewares = [middleware, sagaMiddleware];
+
+  if (isDebug && process.env.NODE_ENV !== 'production') {
+    middlewares.push(loggerMiddleware);
+  }
 
   const store = createStore(rootReducer, bindMiddleware(middlewares));
 
