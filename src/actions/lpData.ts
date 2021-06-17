@@ -35,8 +35,8 @@ export const setItemList = (params: SetItemList) => ({
 
 type SelectType = 'none' | 'shift' | 'ctrl';
 
-interface SelectItemList {
-  key: string;
+export interface SelectItemList {
+  keys: string[];
   isSelected: boolean;
   selectType: SelectType;
 }

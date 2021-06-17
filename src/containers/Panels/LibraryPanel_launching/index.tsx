@@ -487,7 +487,11 @@ const LibraryPanel: FunctionComponent = () => {
       const className = grabbedDom.className;
       if (itemId && !className.includes('selected')) {
         dispatch(
-          lpDataActions.selectItemList({ key: itemId, isSelected: true, selectType: 'ctrl' }),
+          lpDataActions.selectItemList({
+            keys: [itemId],
+            isSelected: true,
+            selectType: 'ctrl',
+          }),
         );
       }
     });
@@ -497,7 +501,11 @@ const LibraryPanel: FunctionComponent = () => {
       const className = grabbedDom.className;
       if (itemId && className.includes('selected')) {
         dispatch(
-          lpDataActions.selectItemList({ key: itemId, isSelected: false, selectType: 'ctrl' }),
+          lpDataActions.selectItemList({
+            keys: [itemId],
+            isSelected: false,
+            selectType: 'ctrl',
+          }),
         );
       }
     });
@@ -514,7 +522,7 @@ const LibraryPanel: FunctionComponent = () => {
       const isExistSelectedRow = lpData.some((item) => item?.isSelected === true);
       if (!targetIcon && isExistSelectedRow) {
         // 모두 선택 해제
-        dispatch(lpDataActions.selectItemList({ key: '', isSelected: false, selectType: 'none' }));
+        dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
       }
       const isMustStop = !_.isEmpty(targetIcon);
       return isMustStop;

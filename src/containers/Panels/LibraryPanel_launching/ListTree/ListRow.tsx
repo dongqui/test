@@ -44,7 +44,7 @@ const ListRow: FunctionComponent<Props> = ({
       if (event.shiftKey) {
         dispatch(
           lpDataActions.selectItemList({
-            key: rowKey,
+            keys: [rowKey],
             isSelected: true,
             selectType: 'shift',
           }),
@@ -52,14 +52,14 @@ const ListRow: FunctionComponent<Props> = ({
       } else if (event.ctrlKey || event.metaKey) {
         dispatch(
           lpDataActions.selectItemList({
-            key: rowKey,
+            keys: [rowKey],
             isSelected: !isSelected,
             selectType: 'ctrl',
           }),
         );
       } else {
         dispatch(
-          lpDataActions.selectItemList({ key: rowKey, isSelected: true, selectType: 'none' }),
+          lpDataActions.selectItemList({ keys: [rowKey], isSelected: true, selectType: 'none' }),
         );
       }
     },

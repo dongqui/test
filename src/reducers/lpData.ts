@@ -47,7 +47,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       let newItemList = _.clone(state);
       if (action.payload.selectType === 'shift') {
         // 연속다중선택
-        const targetIndex = state.findIndex((item) => item.key === action.payload.key);
+        const targetIndex = state.findIndex((item) => action.payload.keys.includes(item.key));
         let alreadySelectedIndex = state.findIndex((item) => item?.isAlreadySelected); // 단일선택시 선택했던 row를 기준점으로 삼는다
         alreadySelectedIndex = alreadySelectedIndex === -1 ? targetIndex : alreadySelectedIndex;
         const startIndex = _.min([alreadySelectedIndex, targetIndex]) as number;
@@ -61,16 +61,16 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       } else if (action.payload.selectType === 'ctrl') {
         // 다중선택
         newItemList = newItemList.map((item) =>
-          item.key === action.payload.key
+          action.payload.keys.includes(item.key)
             ? ({ ...item, isSelected: action.payload.isSelected } as LPItemType)
             : item,
         );
       } else if (action.payload.selectType === 'none') {
         // 단일선택
         newItemList = state.map((item) =>
-          item.key === action.payload.key
+          action.payload.keys.includes(item.key)
             ? Object.assign({}, item, {
-                key: action.payload.key,
+                key: action.payload.keys[0],
                 isSelected: action.payload.isSelected,
                 isAlreadySelected: action.payload.isSelected,
               } as LPItemType)

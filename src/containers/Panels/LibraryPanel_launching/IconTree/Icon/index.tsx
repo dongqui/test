@@ -35,7 +35,7 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) 
       if (event.shiftKey) {
         dispatch(
           lpDataActions.selectItemList({
-            key: rowKey,
+            keys: [rowKey],
             isSelected: true,
             selectType: 'shift',
           }),
@@ -43,14 +43,14 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) 
       } else if (event.ctrlKey || event.metaKey) {
         dispatch(
           lpDataActions.selectItemList({
-            key: rowKey,
+            keys: [rowKey],
             isSelected: !isSelected,
             selectType: 'ctrl',
           }),
         );
       } else {
         dispatch(
-          lpDataActions.selectItemList({ key: rowKey, isSelected: true, selectType: 'none' }),
+          lpDataActions.selectItemList({ keys: [rowKey], isSelected: true, selectType: 'none' }),
         );
       }
     },
@@ -61,7 +61,7 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) 
     // if (type === 'Motion') {}
     if (type === 'Folder' || type === 'File') {
       dispatch(lpPageActions.setLPPage({ key: rowKey }));
-      dispatch(lpDataActions.selectItemList({ key: '', isSelected: false, selectType: 'none' }));
+      dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
     }
   }, [dispatch, rowKey, type]);
 
