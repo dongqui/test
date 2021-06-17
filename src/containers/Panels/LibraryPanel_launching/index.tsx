@@ -31,6 +31,7 @@ import styles from './index.module.scss';
 import { ListView } from './ListTree';
 import { DragBox } from 'components/DragBox';
 import { GRABBABLE, GRABBED } from 'components/DragBox/DragBox';
+import * as selectedRowsActions from 'actions/selectedRows';
 
 const cx = classNames.bind(styles);
 
@@ -486,13 +487,7 @@ const LibraryPanel: FunctionComponent = () => {
       const itemId = grabbedDom.getAttribute('itemId');
       const className = grabbedDom.className;
       if (itemId && !className.includes('selected')) {
-        dispatch(
-          lpDataActions.selectItemList({
-            keys: [itemId],
-            isSelected: true,
-            selectType: 'ctrl',
-          }),
-        );
+        dispatch(selectedRowsActions.addSelectedRows({ keys: [itemId] }));
       }
     });
     // 드래그박스에 포함되지 않은 row들은 선택해제한다.
@@ -500,13 +495,7 @@ const LibraryPanel: FunctionComponent = () => {
       const itemId = grabbedDom.getAttribute('itemId');
       const className = grabbedDom.className;
       if (itemId && className.includes('selected')) {
-        dispatch(
-          lpDataActions.selectItemList({
-            keys: [itemId],
-            isSelected: false,
-            selectType: 'ctrl',
-          }),
-        );
+        dispatch(selectedRowsActions.deleteSelectedRows({ keys: [itemId] }));
       }
     });
   }, [dispatch]);
@@ -517,18 +506,37 @@ const LibraryPanel: FunctionComponent = () => {
    */
   const handleClickEmptySpace = useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent> | MouseEvent): boolean => {
-      const icons = document.getElementsByClassName('icon');
+      const icons = viewRef.current?.getElementsByClassName('icon');
       const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
       const isExistSelectedRow = lpData.some((item) => item?.isSelected === true);
       if (!targetIcon && isExistSelectedRow) {
         // 모두 선택 해제
         dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
       }
+      const grabbedIcon = viewRef.current?.querySelectorAll(`#${GRABBED}`);
+      if (!_.isEmpty(grabbedIcon)) {
+        dispatch(selectedRowsActions.setSelectedRows({ keys: [] }));
+        grabbedIcon?.forEach((element) => {
+          element.id = GRABBABLE;
+        });
+      }
       const isMustStop = !_.isEmpty(targetIcon);
       return isMustStop;
     },
     [dispatch, lpData],
   );
+
+  const handleDragEnd = useCallback(() => {
+    // const grabbedIcons = viewRef.current?.querySelectorAll(`#${GRABBED}`);
+    // const selectedKeys = _.map(
+    //   grabbedIcons,
+    //   (grabbedIcon) => grabbedIcon.getAttribute('itemId') || '',
+    // );
+    // dispatch(
+    //   lpDataActions.selectItemList({ keys: selectedKeys, isSelected: true, selectType: 'none' }),
+    // );
+    // dispatch(selectedRowsActions.requestSetSelectedRows({ keys: [] }));
+  }, []);
 
   useEffect(() => {
     const setDefaultModels = async () => {
@@ -588,7 +596,7 @@ const LibraryPanel: FunctionComponent = () => {
                 onChangeIsUpdated={handleDragboxChange}
                 parentRef={viewRef}
                 onDragStart={handleClickEmptySpace}
-                onDragEnd={() => {}}
+                onDragEnd={handleDragEnd}
               />
             </div>
           </Scrollbars>

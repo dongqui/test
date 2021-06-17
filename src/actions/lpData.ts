@@ -46,6 +46,17 @@ export const selectItemList = (params: SelectItemList) => ({
   payload: params,
 });
 
+export type SelectedRowsAction = ReturnType<typeof setSelectedRows>;
+
+export interface SetSelectedRows {
+  keys: string[];
+}
+export const SET_SELECTED_ROWS = 'selectedRows/SET_SELECTED_ROWS' as const;
+export const setSelectedRows = (params: SetSelectedRows) => ({
+  type: SET_SELECTED_ROWS,
+  payload: params,
+});
+
 export type LPItemListOldAction = ReturnType<typeof setItemListOld>;
 
 interface SetItemListOld {

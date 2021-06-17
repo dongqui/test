@@ -8,6 +8,7 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import * as lpDataActions from 'actions/lpData';
 import { GRABBABLE } from 'components/DragBox/DragBox';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -19,15 +20,19 @@ export interface IconProps {
 }
 
 const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) => {
+  const selectedRows = useSelector((state) => state.selectedRows.keys);
+
   const dispatch = useDispatch();
 
   const iconRef = useRef<HTMLDivElement>(null);
+
+  const selected = isSelected || selectedRows.includes(rowKey);
 
   const classes = cx('wrapper', {
     visualized: false,
     editing: false,
     dragging: false,
-    selected: isSelected,
+    selected,
   });
 
   const handleClick = useCallback(

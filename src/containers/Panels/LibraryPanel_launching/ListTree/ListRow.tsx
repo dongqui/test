@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import * as lpDataActions from 'actions/lpData';
 import { FileType } from 'types/LP';
 import { GRABBABLE } from 'components/DragBox/DragBox';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -30,6 +31,8 @@ const ListRow: FunctionComponent<Props> = ({
   depth,
   onClickExpand,
 }) => {
+  const selectedRows = useSelector((state) => state.selectedRows.keys);
+
   const dispatch = useDispatch();
 
   const handleClickExpand = useCallback(
@@ -66,8 +69,10 @@ const ListRow: FunctionComponent<Props> = ({
     [dispatch, isSelected, rowKey],
   );
 
+  const selected = isSelected || selectedRows.includes(rowKey);
+
   const rowClasses = cx('list-row', `depth-${depth}`, {
-    selected: isSelected,
+    selected,
     visualized: false,
   });
 
