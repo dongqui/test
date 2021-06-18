@@ -31,7 +31,6 @@ import styles from './index.module.scss';
 import { ListView } from './ListTree';
 import { DragBox } from 'components/DragBox';
 import { GRABBABLE, GRABBED } from 'components/DragBox/DragBox';
-import * as selectedRowsActions from 'actions/selectedRows';
 
 const cx = classNames.bind(styles);
 
@@ -112,9 +111,9 @@ interface ModalInfo {
 
 const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
-  const lpData = useSelector((state) => state.lpData);
+  const lpData = useSelector((state) => state.lpData.itemList);
   const lpMode = useSelector((state) => state.lpMode.mode);
-  const lpPage = useSelector((state) => state.lpPage);
+  const lpPageKey = useSelector((state) => state.lpPage.key);
   const lpSearchword = useSelector((state) => state.lpSearchword.word);
   const [modalInfo, setModalInfo] = useState<ModalInfo>({
     showModal: false,
@@ -139,10 +138,10 @@ const LibraryPanel: FunctionComponent = () => {
   const findParentKey = useCallback((): string => {
     let parentKey = ROOT_KEY;
     if (lpMode === 'iconView') {
-      parentKey = lpPage.key;
+      parentKey = lpPageKey;
     }
     return parentKey;
-  }, [lpMode, lpPage.key]);
+  }, [lpMode, lpPageKey]);
 
   /**
    * 동일한 이름을 가진 파일의 개수를 찾아주는 함수입니다.
@@ -417,9 +416,9 @@ const LibraryPanel: FunctionComponent = () => {
       data = data.filter((item) => item.name.toLowerCase().includes(lpSearchword.toLowerCase()));
     }
     // 현재 페이지를 기준으로 필터링
-    data = data.filter((item) => item.parentKey === lpPage.key);
+    data = data.filter((item) => item.parentKey === lpPageKey);
     return data;
-  }, [lpSearchword, lpData, lpPage.key]);
+  }, [lpData, lpSearchword, lpPageKey]);
 
   /**
    * 리스트뷰로 전달할 가공데이터입니다.
@@ -446,7 +445,7 @@ const LibraryPanel: FunctionComponent = () => {
    */
   const pathList = useMemo((): PathList => {
     const result: PathList = [];
-    const currentPageRow = lpData.find((item) => item.key === lpPage.key);
+    const currentPageRow = lpData.find((item) => item.key === lpPageKey);
     if (currentPageRow) {
       result.push({
         key: currentPageRow.key,
@@ -463,18 +462,18 @@ const LibraryPanel: FunctionComponent = () => {
       }
     }
     return result;
-  }, [lpData, lpPage.key]);
+  }, [lpData, lpPageKey]);
 
   // 이전페이지의 키값
   const prevPageKey = useMemo((): string => {
     let result = ROOT_KEY;
-    const currentPageRow = lpData.find((item) => item.key === lpPage.key);
+    const currentPageRow = lpData.find((item) => item.key === lpPageKey);
     const currentPageParentRow = lpData.find((item) => item.key === currentPageRow?.parentKey);
     if (currentPageParentRow) {
       result = currentPageParentRow.key;
     }
     return result;
-  }, [lpData, lpPage.key]);
+  }, [lpData, lpPageKey]);
 
   // 드래그박스를 호출할 부모 컴포넌트
   const viewRef = useRef<HTMLDivElement>(null);
@@ -487,7 +486,7 @@ const LibraryPanel: FunctionComponent = () => {
       const itemId = grabbedDom.getAttribute('itemId');
       const className = grabbedDom.className;
       if (itemId && !className.includes('selected')) {
-        dispatch(selectedRowsActions.addSelectedRows({ keys: [itemId] }));
+        dispatch(lpDataActions.addSelectedRows({ keys: [itemId] }));
       }
     });
     // 드래그박스에 포함되지 않은 row들은 선택해제한다.
@@ -495,7 +494,7 @@ const LibraryPanel: FunctionComponent = () => {
       const itemId = grabbedDom.getAttribute('itemId');
       const className = grabbedDom.className;
       if (itemId && className.includes('selected')) {
-        dispatch(selectedRowsActions.deleteSelectedRows({ keys: [itemId] }));
+        dispatch(lpDataActions.deleteSelectedRows({ keys: [itemId] }));
       }
     });
   }, [dispatch]);
@@ -508,23 +507,28 @@ const LibraryPanel: FunctionComponent = () => {
     (event: React.MouseEvent<HTMLDivElement, MouseEvent> | MouseEvent): boolean => {
       const icons = viewRef.current?.getElementsByClassName('icon');
       const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
-      const isExistSelectedRow = lpData.some((item) => item?.isSelected === true);
-      if (!targetIcon && isExistSelectedRow) {
+      const grabbedIcons = viewRef.current?.querySelectorAll(`#${GRABBED}`);
+      const grabbableIcons = viewRef.current?.querySelectorAll(`#${GRABBABLE}`);
+      const isSelectedInGrabbed = _.some(grabbedIcons, (element) =>
+        element.className.includes('selected'),
+      );
+      const isSelectedInGrabbable = _.some(grabbableIcons, (element) =>
+        element.className.includes('selected'),
+      );
+      const isSelected = isSelectedInGrabbed || isSelectedInGrabbable;
+      // 아이콘 위가 아니면서 선택된게 있을때만 동작
+      const isValidate = !targetIcon && isSelected;
+      if (isValidate) {
         // 모두 선택 해제
         dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
-      }
-      const grabbedIcons = viewRef.current?.querySelectorAll(`#${GRABBED}`);
-      if (!targetIcon && !_.isEmpty(grabbedIcons)) {
-        // 모두 선택 해제
-        dispatch(selectedRowsActions.setSelectedRows({ keys: [] }));
         grabbedIcons?.forEach((element) => {
           element.id = GRABBABLE;
         });
       }
-      const isMustStop = !_.isEmpty(targetIcon);
-      return isMustStop;
+      const isMustDragboxStop = !_.isEmpty(targetIcon);
+      return isMustDragboxStop;
     },
-    [dispatch, lpData],
+    [dispatch],
   );
 
   useEffect(() => {
@@ -566,7 +570,7 @@ const LibraryPanel: FunctionComponent = () => {
               <Breadcrumb
                 pathList={pathList}
                 prevPageKey={prevPageKey}
-                currentPageKey={lpPage.key}
+                currentPageKey={lpPageKey}
               />
             </div>
           )}

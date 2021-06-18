@@ -2,9 +2,11 @@ import { LPItemListOldType, LPItemListType, LPItemType } from 'types/LP';
 
 export type LPItemListAction =
   | ReturnType<typeof addItemList>
-  | ReturnType<typeof deleteItemList>
   | ReturnType<typeof setItemList>
-  | ReturnType<typeof selectItemList>;
+  | ReturnType<typeof selectItemList>
+  | ReturnType<typeof setSelectedRows>
+  | ReturnType<typeof addSelectedRows>
+  | ReturnType<typeof deleteSelectedRows>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -12,15 +14,6 @@ interface AddItemList {
 export const ADD_ITEMLIST = 'lpdata/ADD_ITEMLIST' as const;
 export const addItemList = (params: AddItemList) => ({
   type: ADD_ITEMLIST,
-  payload: params,
-});
-
-interface DeleteItemList {
-  keys: string[];
-}
-export const DELETE_ITEMLIST = 'lpdata/DELETE_ITEMLIST' as const;
-export const deleteItemList = (params: DeleteItemList) => ({
-  type: DELETE_ITEMLIST,
   payload: params,
 });
 
@@ -51,9 +44,27 @@ export type SelectedRowsAction = ReturnType<typeof setSelectedRows>;
 export interface SetSelectedRows {
   keys: string[];
 }
-export const SET_SELECTED_ROWS = 'selectedRows/SET_SELECTED_ROWS' as const;
+export const SET_SELECTED_ROWS = 'lpdata/SET_SELECTED_ROWS' as const;
 export const setSelectedRows = (params: SetSelectedRows) => ({
   type: SET_SELECTED_ROWS,
+  payload: params,
+});
+
+interface AddSelectedRows {
+  keys: string[];
+}
+export const ADD_SELECTED_ROWS = 'lpdata/ADD_SELECTED_ROWS' as const;
+export const addSelectedRows = (params: AddSelectedRows) => ({
+  type: ADD_SELECTED_ROWS,
+  payload: params,
+});
+
+interface DeleteSelectedRows {
+  keys: string[];
+}
+export const DELETE_SELECTED_ROWS = 'lpdata/DELETE_SELECTED_ROWS' as const;
+export const deleteSelectedRows = (params: DeleteSelectedRows) => ({
+  type: DELETE_SELECTED_ROWS,
   payload: params,
 });
 

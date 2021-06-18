@@ -31,7 +31,7 @@ const ListRow: FunctionComponent<Props> = ({
   depth,
   onClickExpand,
 }) => {
-  const selectedRows = useSelector((state) => state.selectedRows.keys);
+  const selectedRows = useSelector((state) => state.lpData.selectedKeys);
 
   const dispatch = useDispatch();
 
@@ -69,7 +69,7 @@ const ListRow: FunctionComponent<Props> = ({
     [dispatch, isSelected, rowKey],
   );
 
-  const selected = isSelected || selectedRows.includes(rowKey);
+  const selected = selectedRows.includes(rowKey);
 
   const rowClasses = cx('list-row', `depth-${depth}`, {
     selected,

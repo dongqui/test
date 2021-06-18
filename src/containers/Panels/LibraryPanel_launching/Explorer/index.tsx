@@ -18,7 +18,7 @@ export interface Props {
 }
 
 const Explorer: FunctionComponent<Props> = ({ onChange }) => {
-  const lpData = useSelector((state) => state.lpData);
+  const lpData = useSelector((state) => state.lpData.itemList);
   const lpMode = useSelector((state) => state.lpMode.mode);
   const dispatch = useDispatch();
 

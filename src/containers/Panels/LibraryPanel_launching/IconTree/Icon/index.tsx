@@ -20,13 +20,13 @@ export interface IconProps {
 }
 
 const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) => {
-  const selectedRows = useSelector((state) => state.selectedRows.keys);
+  const selectedRows = useSelector((state) => state.lpData.selectedKeys);
 
   const dispatch = useDispatch();
 
   const iconRef = useRef<HTMLDivElement>(null);
 
-  const selected = isSelected || selectedRows.includes(rowKey);
+  const selected = selectedRows.includes(rowKey);
 
   const classes = cx('wrapper', {
     visualized: false,
