@@ -513,10 +513,11 @@ const LibraryPanel: FunctionComponent = () => {
         // 모두 선택 해제
         dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
       }
-      const grabbedIcon = viewRef.current?.querySelectorAll(`#${GRABBED}`);
-      if (!_.isEmpty(grabbedIcon)) {
+      const grabbedIcons = viewRef.current?.querySelectorAll(`#${GRABBED}`);
+      if (!targetIcon && !_.isEmpty(grabbedIcons)) {
+        // 모두 선택 해제
         dispatch(selectedRowsActions.setSelectedRows({ keys: [] }));
-        grabbedIcon?.forEach((element) => {
+        grabbedIcons?.forEach((element) => {
           element.id = GRABBABLE;
         });
       }
@@ -525,18 +526,6 @@ const LibraryPanel: FunctionComponent = () => {
     },
     [dispatch, lpData],
   );
-
-  const handleDragEnd = useCallback(() => {
-    // const grabbedIcons = viewRef.current?.querySelectorAll(`#${GRABBED}`);
-    // const selectedKeys = _.map(
-    //   grabbedIcons,
-    //   (grabbedIcon) => grabbedIcon.getAttribute('itemId') || '',
-    // );
-    // dispatch(
-    //   lpDataActions.selectItemList({ keys: selectedKeys, isSelected: true, selectType: 'none' }),
-    // );
-    // dispatch(selectedRowsActions.requestSetSelectedRows({ keys: [] }));
-  }, []);
 
   useEffect(() => {
     const setDefaultModels = async () => {
@@ -596,7 +585,7 @@ const LibraryPanel: FunctionComponent = () => {
                 onChangeIsUpdated={handleDragboxChange}
                 parentRef={viewRef}
                 onDragStart={handleClickEmptySpace}
-                onDragEnd={handleDragEnd}
+                onDragEnd={() => {}}
               />
             </div>
           </Scrollbars>
