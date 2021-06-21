@@ -307,7 +307,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
 
   useContextMenu({ targetRef: panelWrapperRef, event: onContextMenu });
 
-  const isIconView = _.isEqual(lpmode, LPModeType.iconview);
+  const isIconView = lpmode === 'iconView';
 
   const iconViewProps = {
     onClick,
