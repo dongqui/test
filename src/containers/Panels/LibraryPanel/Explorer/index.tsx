@@ -27,9 +27,7 @@ const Explorer: FunctionComponent<Props> = ({ onChange }) => {
   const dispatch = useDispatch();
 
   const handleChangeMode = useCallback(() => {
-    const changeTargetMode: LPMode = _.isEqual(lpmode, LPModeType.iconview)
-      ? 'listView'
-      : 'iconView';
+    const changeTargetMode: LPMode = lpmode === 'iconView' ? 'listView' : 'iconView';
 
     dispatch(lpModeActions.setLPMode({ mode: changeTargetMode }));
   }, [dispatch, lpmode]);
