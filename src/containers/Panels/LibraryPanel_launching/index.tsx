@@ -475,29 +475,56 @@ const LibraryPanel: FunctionComponent = () => {
     return result;
   }, [lpData, lpPageKey]);
 
+  const scrollRef = useRef<Scrollbars>(null);
   // 드래그박스를 호출할 부모 컴포넌트
   const viewRef = useRef<HTMLDivElement>(null);
+  const isDragScrolling = useRef(false);
 
-  const handleDragboxChange = useCallback(() => {
-    const grabbedDoms = viewRef.current?.querySelectorAll(`#${GRABBED}`);
-    const ungrabbedDoms = viewRef.current?.querySelectorAll(`#${GRABBABLE}`);
-    // 드래그박스에 포함된 row들은 선택해준다.
-    grabbedDoms?.forEach((grabbedDom) => {
-      const itemId = grabbedDom.getAttribute('itemId');
-      const className = grabbedDom.className;
-      if (itemId && !className.includes('selected')) {
-        dispatch(lpDataActions.addSelectedRows({ keys: [itemId] }));
+  const handleDragboxChange = useCallback(
+    (event: MouseEvent) => {
+      const scrollElement = scrollRef.current;
+      const viewElement = viewRef.current;
+      if (scrollElement && viewElement) {
+        const { top } = viewElement.getBoundingClientRect();
+        const currentScrollTop = scrollElement.getScrollTop(); // 현재 스크롤을 내린 정도
+        const addScrollTop = top + currentScrollTop; // 스크롤 내린 정도를 반영한 top
+        const isMouseUpFromView = event.y < addScrollTop; // 마우스포인터가 target div 보다 위에 있는지 여부
+        const bottom = addScrollTop + scrollElement.getClientHeight();
+        const isMouseDownFromView = event.y > bottom; // 마우스포인터가 target div 보다 아래에 있는지 여부
+        if (isMouseUpFromView && currentScrollTop > 0) {
+          const newScrollTop = currentScrollTop - Math.abs(event.y) / 5;
+          scrollElement.scrollTop(newScrollTop);
+          isDragScrolling.current = true;
+        }
+        if (isMouseDownFromView) {
+          const newScrollTop = currentScrollTop + Math.abs(event.y - bottom) / 5;
+          scrollElement.scrollTop(newScrollTop);
+          isDragScrolling.current = true;
+        }
       }
-    });
-    // 드래그박스에 포함되지 않은 row들은 선택해제한다.
-    ungrabbedDoms?.forEach((grabbedDom) => {
-      const itemId = grabbedDom.getAttribute('itemId');
-      const className = grabbedDom.className;
-      if (itemId && className.includes('selected')) {
-        dispatch(lpDataActions.deleteSelectedRows({ keys: [itemId] }));
+      const grabbedDoms = viewRef.current?.querySelectorAll(`#${GRABBED}`);
+      const ungrabbedDoms = viewRef.current?.querySelectorAll(`#${GRABBABLE}`);
+      // 드래그박스에 포함된 row들은 선택해준다.
+      grabbedDoms?.forEach((grabbedDom) => {
+        const itemId = grabbedDom.getAttribute('itemId');
+        const className = grabbedDom.className;
+        if (itemId && !className.includes('selected')) {
+          dispatch(lpDataActions.addSelectedRows({ keys: [itemId] }));
+        }
+      });
+      // 드래그박스에 포함되지 않은 row들은 선택해제한다.
+      if (!isDragScrolling.current) {
+        ungrabbedDoms?.forEach((grabbedDom) => {
+          const itemId = grabbedDom.getAttribute('itemId');
+          const className = grabbedDom.className;
+          if (itemId && className.includes('selected')) {
+            dispatch(lpDataActions.deleteSelectedRows({ keys: [itemId] }));
+          }
+        });
       }
-    });
-  }, [dispatch]);
+    },
+    [dispatch],
+  );
 
   /**
    * 빈공간을 선택하면 선택한 row들을 모두 선택해제 해주는 함수입니다.
@@ -530,6 +557,10 @@ const LibraryPanel: FunctionComponent = () => {
     },
     [dispatch],
   );
+
+  const handleDragEnd = useCallback(() => {
+    isDragScrolling.current = false;
+  }, []);
 
   useEffect(() => {
     const setDefaultModels = async () => {
@@ -574,7 +605,7 @@ const LibraryPanel: FunctionComponent = () => {
               />
             </div>
           )}
-          <Scrollbars autoHide>
+          <Scrollbars ref={scrollRef} autoHide>
             <div
               ref={viewRef}
               className={cx('content')}
@@ -589,7 +620,7 @@ const LibraryPanel: FunctionComponent = () => {
                 onChangeIsUpdated={handleDragboxChange}
                 parentRef={viewRef}
                 onDragStart={handleClickEmptySpace}
-                onDragEnd={() => {}}
+                onDragEnd={handleDragEnd}
               />
             </div>
           </Scrollbars>

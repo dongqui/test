@@ -15,7 +15,7 @@ const cx = classNames.bind(styles);
 
 interface Props {
   isAllCovered: boolean;
-  onChangeIsUpdated: () => void;
+  onChangeIsUpdated: (event: MouseEvent) => void;
   onDragStart: (event: MouseEvent | React.MouseEvent<HTMLDivElement, MouseEvent>) => boolean | void;
   onDragEnd: () => void;
   parentRef: RefObject<HTMLElement>;
@@ -176,7 +176,7 @@ const DragBox: FunctionComponent<Props> = ({
               element.id = GRABBED;
             }
           });
-          onChangeIsUpdated();
+          onChangeIsUpdated(event);
         }
       };
 

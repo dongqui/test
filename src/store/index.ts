@@ -6,7 +6,7 @@ import rootSaga from 'sagas';
 import rootReducer from 'reducers';
 import middleware from 'store/middleware';
 
-const isDebug = true;
+const isDebug = false;
 
 const bindMiddleware = (middleware: Middleware[]) => {
   // if (process.env.NODE_ENV !== 'production') {
