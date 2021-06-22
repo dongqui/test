@@ -14,7 +14,7 @@ const IconNode: FunctionComponent<Props> = ({ item }) => {
   return (
     <div className={cx('icon-wrapper')}>
       <div className="icon" id={item.key} draggable>
-        <Icon rowKey={item.key} name={item.name} type={item.type} isSelected={item.isSelected} />
+        <Icon rowKey={item.key} name={item.name} type={item.type} />
       </div>
     </div>
   );

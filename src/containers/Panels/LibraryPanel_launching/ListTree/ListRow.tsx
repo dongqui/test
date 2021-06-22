@@ -3,7 +3,6 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListRow.module.scss';
-import { FilteredItem } from './ListGroup';
 import { useDispatch } from 'react-redux';
 import * as lpDataActions from 'actions/lpData';
 import { FileType } from 'types/LP';
@@ -16,7 +15,6 @@ export interface Props {
   rowKey: string;
   type: FileType;
   name: string;
-  isSelected?: boolean;
   isExpanded: boolean;
   depth: number;
   onClickExpand: (key: string) => void;
@@ -26,18 +24,19 @@ const ListRow: FunctionComponent<Props> = ({
   rowKey,
   type,
   name,
-  isSelected,
   isExpanded,
   depth,
   onClickExpand,
 }) => {
   const selectedRows = useSelector((state) => state.lpData.selectedKeys);
 
+  const isSelected = selectedRows.includes(rowKey);
+
   const dispatch = useDispatch();
 
   const handleClickExpand = useCallback(
     (event) => {
-      event.stopPropagation();
+      event.stopPropagation(); // row펼치기 -> row선택 이벤트버블링 방지
       onClickExpand(rowKey);
     },
     [rowKey, onClickExpand],
@@ -69,10 +68,8 @@ const ListRow: FunctionComponent<Props> = ({
     [dispatch, isSelected, rowKey],
   );
 
-  const selected = selectedRows.includes(rowKey);
-
   const rowClasses = cx('list-row', `depth-${depth}`, {
-    selected,
+    selected: isSelected,
     visualized: false,
   });
 
@@ -82,17 +79,16 @@ const ListRow: FunctionComponent<Props> = ({
   });
 
   const icon = useMemo(() => {
-    let result = SvgPath.Folder;
     if (type === 'Folder') {
-      result = SvgPath.Folder;
+      return SvgPath.Folder;
     }
     if (type === 'File') {
-      result = SvgPath.Model;
+      return SvgPath.Model;
     }
     if (type === 'Motion') {
-      result = SvgPath.Motion;
+      return SvgPath.Motion;
     }
-    return result;
+    return SvgPath.Folder;
   }, [type]);
 
   return (

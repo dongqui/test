@@ -16,23 +16,22 @@ export interface IconProps {
   rowKey: string;
   type: FileType;
   name: string;
-  isSelected?: boolean;
 }
 
-const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) => {
+const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name }) => {
   const selectedRows = useSelector((state) => state.lpData.selectedKeys);
+
+  const isSelected = selectedRows.includes(rowKey);
 
   const dispatch = useDispatch();
 
   const iconRef = useRef<HTMLDivElement>(null);
 
-  const selected = selectedRows.includes(rowKey);
-
   const classes = cx('wrapper', {
     visualized: false,
     editing: false,
     dragging: false,
-    selected,
+    selected: isSelected,
   });
 
   const handleClick = useCallback(
@@ -71,17 +70,16 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, isSelected }) 
   }, [dispatch, rowKey, type]);
 
   const icon = useMemo(() => {
-    let result = SvgPath.Folder;
     if (type === 'Folder') {
-      result = SvgPath.Folder;
+      return SvgPath.Folder;
     }
     if (type === 'File') {
-      result = SvgPath.Model;
+      return SvgPath.Model;
     }
     if (type === 'Motion') {
-      result = SvgPath.Motion;
+      return SvgPath.Motion;
     }
-    return result;
+    return SvgPath.Folder;
   }, [type]);
 
   return (

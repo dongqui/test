@@ -135,7 +135,7 @@ const LibraryPanel: FunctionComponent = () => {
    *
    * @return 현재 페이지를 나타내는 부모 키.
    */
-  const findParentKey = useCallback((): string => {
+  const findParentKey = useMemo((): string => {
     let parentKey = ROOT_KEY;
     if (lpMode === 'iconView') {
       parentKey = lpPageKey;
@@ -150,7 +150,7 @@ const LibraryPanel: FunctionComponent = () => {
    */
   const findSameFileNameCount = useCallback(
     (name: string): number => {
-      const parentKey = findParentKey();
+      const parentKey = findParentKey;
       const currentPageRows = lpData.filter((item) => item.parentKey === parentKey);
       const sameFileNameRow = currentPageRows.find((item) => item.name === name);
       if (sameFileNameRow) {
@@ -183,8 +183,8 @@ const LibraryPanel: FunctionComponent = () => {
         type: 'File',
         name,
         url,
-        parentKey: findParentKey(),
-        parentKeyList: [findParentKey()],
+        parentKey: findParentKey,
+        parentKeyList: [findParentKey],
         groupKey: key,
         baseLayer: fnGetBaseLayerWithBoneNames({ boneNames }),
         layers: [],
@@ -534,7 +534,7 @@ const LibraryPanel: FunctionComponent = () => {
    * @return 드래그박스 동작여부. 빈공간이 아닌 아이콘에 클릭을 했을땐 드래그박스 동작을 하지 않게 하기 위함.
    */
   const handleClickEmptySpace = useCallback(
-    (event: React.MouseEvent<HTMLDivElement, MouseEvent> | MouseEvent): boolean => {
+    (event: MouseEvent) => {
       const icons = viewRef.current?.getElementsByClassName('icon');
       const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
       const grabbedIcons = viewRef.current?.querySelectorAll(`#${GRABBED}`);
@@ -556,10 +556,17 @@ const LibraryPanel: FunctionComponent = () => {
         });
       }
       const isMustDragboxStop = !_.isEmpty(targetIcon);
-      return isMustDragboxStop;
+      return { isStop: isMustDragboxStop };
     },
     [dispatch],
   );
+
+  const handleDisableDragBox = useCallback((event: MouseEvent): boolean => {
+    const icons = viewRef.current?.getElementsByClassName('icon');
+    const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
+    const isMustDragboxStop = !_.isEmpty(targetIcon);
+    return isMustDragboxStop;
+  }, []);
 
   const handleDragEnd = useCallback(() => {
     isDragScrolling.current = false;
@@ -624,6 +631,7 @@ const LibraryPanel: FunctionComponent = () => {
                 parentRef={viewRef}
                 onDragStart={handleClickEmptySpace}
                 onDragEnd={handleDragEnd}
+                onDisableDragBox={handleDisableDragBox}
               />
             </div>
           </Scrollbars>

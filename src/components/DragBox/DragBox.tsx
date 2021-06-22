@@ -16,8 +16,9 @@ const cx = classNames.bind(styles);
 interface Props {
   isAllCovered: boolean;
   onChangeIsUpdated: (event: MouseEvent) => void;
-  onDragStart: (event: MouseEvent) => boolean | void;
+  onDragStart: (event: MouseEvent) => void;
   onDragEnd: () => void;
+  onDisableDragBox: (event: MouseEvent) => boolean; // 특정상황에 드래그박스를 동작시키지 않기 위한 함수
   parentRef: RefObject<HTMLElement>;
 }
 
@@ -54,6 +55,7 @@ const DragBox: FunctionComponent<Props> = ({
   parentRef,
   onDragStart,
   onDragEnd,
+  onDisableDragBox,
 }) => {
   const [isOpenedDragBox, setIsOpenedDragBox] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -103,8 +105,9 @@ const DragBox: FunctionComponent<Props> = ({
   // 부모 컴포넌트에 mousedown 이벤트 추가
   useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
-      const isMustStop = onDragStart(event);
-      if (isMustStop) return;
+      const isDisableDrabBox = onDisableDragBox(event);
+      if (isDisableDrabBox) return;
+      onDragStart(event);
       if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
       originX.current = event.x;
       originY.current = event.y;
@@ -118,7 +121,7 @@ const DragBox: FunctionComponent<Props> = ({
 
     parentRef.current?.addEventListener('mousedown', handleMouseDown);
     parentRef.current?.addEventListener('dragstart', handleDragStart);
-  }, [onDragStart, parentRef, updateTranslate]);
+  }, [onDisableDragBox, onDragStart, parentRef, updateTranslate]);
 
   // drag box에 mousemove, mouseup 이벤트 추가
   useEffect(() => {

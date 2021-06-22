@@ -60,7 +60,6 @@ const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys }) => {
               <ListRow
                 rowKey={item.key}
                 name={item.name}
-                isSelected={item.isSelected}
                 isExpanded={item.isExpanded}
                 depth={item.depth}
                 type={item.type}
