@@ -1,8 +1,8 @@
 # Shoot 💫
 
-plask homepage with nextjs, typescript, webgl, d3.js, apollo client
+plask shoot
 
-https://shoot-azure.vercel.app/
+https://shoot.plask.ai/
 
 ### Installation ⚙️
 
@@ -40,9 +40,4 @@ npx yarn dev
 "dist": "Next.js 정적 빌드 후 일렉트론 데스크탑 앱 생성",
 "clean": "필요없는 dist 파일 삭제",
 "type-check": "타입스크립트 타입 체크",
-
-// Gql
-"precodegen": "node ./scripts/precodegen.js",
-"codegen": "graphql-codegen --config codegen.yml",
-"postcodegen": "node ./scripts/postcodegen.js",
 ```
