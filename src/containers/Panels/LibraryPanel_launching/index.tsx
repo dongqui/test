@@ -480,6 +480,9 @@ const LibraryPanel: FunctionComponent = () => {
   const viewRef = useRef<HTMLDivElement>(null);
   const isDragScrolling = useRef(false);
 
+  /**
+   * 드래그박스 생성시 드래그박스 안에 포함된 아이콘들을 선택시켜주고 포함되지 않은 아이콘들은 해제시켜주는 함수입니다.
+   */
   const handleDragboxChange = useCallback(
     (event: MouseEvent) => {
       const scrollElement = scrollRef.current;

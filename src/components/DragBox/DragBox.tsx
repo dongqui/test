@@ -16,7 +16,7 @@ const cx = classNames.bind(styles);
 interface Props {
   isAllCovered: boolean;
   onChangeIsUpdated: (event: MouseEvent) => void;
-  onDragStart: (event: MouseEvent | React.MouseEvent<HTMLDivElement, MouseEvent>) => boolean | void;
+  onDragStart: (event: MouseEvent) => boolean | void;
   onDragEnd: () => void;
   parentRef: RefObject<HTMLElement>;
 }
