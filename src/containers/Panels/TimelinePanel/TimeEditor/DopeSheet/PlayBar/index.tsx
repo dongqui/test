@@ -131,7 +131,7 @@ const PlayBar: FunctionComponent<Props> = (props) => {
       dopeSheetScale.current
     ) {
       const currentValue = currentPlayBarTime.current;
-      const nextValue = currentValue === startTimeIndex ? endTimeIndex : currentValue - 1;
+      const nextValue = currentValue === endTimeIndex ? startTimeIndex : currentValue + 1;
       currentPlayBarTime.current = nextValue;
       const scaleXLineaer = dopeSheetScale.current;
       const translateX = scaleXLineaer(currentPlayBarTime.current) - 10;
