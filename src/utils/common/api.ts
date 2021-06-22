@@ -74,7 +74,7 @@ export const setConvertFbxToGlb = async ({ file, type }: { file: File; type: str
       url: `${BLENDER_BASE_URL}/fbx2glb-upload-api`,
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 30 * 1000,
+      timeout: 1000 * 60 * 3, // 3분
     });
     return {
       url: result?.data?.result,
@@ -113,7 +113,7 @@ export const setConvertGlbToFbx = async (props: SetConvertGlbToFbx) => {
     url: `${BLENDER_BASE_URL}/glb2fbx-upload-api`,
     data: formData,
     headers: { 'Content-Type': 'multipart/form-data' },
-    timeout: 30 * 1000,
+    timeout: 1000 * 60 * 3, // 3분
   })
     .then((res) => res.data.result)
     .catch((err) => err);

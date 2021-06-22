@@ -92,7 +92,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
 
   const handleDrop = async (acceptedFiles: File[]) => {
     setShowsModal(true);
-    setModalMessage('Importing the file.<br />This can take up to 30 seconds');
+    setModalMessage('Importing the file.<br />This can take up to 3 minutes');
     if (_.isEmpty(acceptedFiles)) {
       setModalMessage('File not found.');
       setIsOutsideClose(true);
@@ -242,7 +242,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
       return;
     }
     setShowsModal(true);
-    setModalMessage('Importing the file.<br />This can take up to 30 seconds');
+    setModalMessage('Importing the file.<br />This can take up to 3 minutes');
     for (const model of DEFAULT_MODELS) {
       const isExists = _.some(lpData, { key: model?.key });
       if (isExists) {
