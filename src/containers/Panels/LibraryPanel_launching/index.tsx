@@ -125,7 +125,7 @@ const LibraryPanel: FunctionComponent = () => {
 
   const handleChangeSearchword = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      dispatch(lpSearchwordActions.setSearchword({ word: e.target.value }));
+      dispatch(lpSearchwordActions.requestSetSearchword({ word: e.target.value }));
     },
     [dispatch],
   );
