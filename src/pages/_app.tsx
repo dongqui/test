@@ -3,8 +3,6 @@ import Head from 'next/head';
 import { NextComponentType } from 'next';
 import { Provider } from 'react-redux';
 import { AppContext, AppInitialProps, AppProps } from 'next/app';
-import { LocalStorageWrapper, persistCache } from 'apollo3-cache-persist';
-import { ApolloProvider } from '@apollo/client';
 import { wrapper } from 'store';
 import { hotjar } from 'analytics';
 import 'styles/core.scss';
