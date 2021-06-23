@@ -73,8 +73,8 @@ export enum LPDATA_PROPERTY_TYPES {
   isExportedMotion = 'isExportedMotion',
 }
 export enum LPModeType {
-  listview = 'listview',
-  iconview = 'iconview',
+  listview = 'listView',
+  iconview = 'iconView',
 }
 export interface ScreenSizeTypes {
   width: number;
