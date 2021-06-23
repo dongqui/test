@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { LPItemListAction, LPItemListOldAction } from 'actions/lpData';
-import { LPItemListOldType, LPItemListType, LPItemType } from 'types/LP';
+import { LPItemListOldType, LPItemListType, LPItemType, LPMode } from 'types/LP';
 
 interface FindDeleteKeys {
   data: LPItemListType;
@@ -29,11 +29,13 @@ const findChildrenKeys = (params: FindDeleteKeys): string[] => {
 interface LPDataState {
   itemList: LPItemListType;
   selectedKeys: string[];
+  mode: LPMode;
 }
 
 const defaultState: LPDataState = {
   itemList: [],
   selectedKeys: [],
+  mode: 'listView',
 };
 
 export const lpData = (state = defaultState, action: LPItemListAction): LPDataState => {
@@ -123,6 +125,11 @@ export const lpData = (state = defaultState, action: LPItemListAction): LPDataSt
       ];
       return Object.assign({}, state, {
         selectedKeys: state.selectedKeys.filter((key) => !deleteKeys.includes(key)),
+      });
+    }
+    case 'lpdata/SET_LPMODE': {
+      return Object.assign({}, state, {
+        mode: action.payload.mode,
       });
     }
     default: {

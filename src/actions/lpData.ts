@@ -1,4 +1,4 @@
-import { LPItemListOldType, LPItemListType, LPItemType } from 'types/LP';
+import { LPItemListOldType, LPItemListType, LPItemType, LPModeType } from 'types/LP';
 
 export type LPItemListAction =
   | ReturnType<typeof addItemList>
@@ -6,7 +6,8 @@ export type LPItemListAction =
   | ReturnType<typeof selectItemList>
   | ReturnType<typeof setSelectedRows>
   | ReturnType<typeof addSelectedRows>
-  | ReturnType<typeof deleteSelectedRows>;
+  | ReturnType<typeof deleteSelectedRows>
+  | ReturnType<typeof setLPMode>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -65,6 +66,13 @@ interface DeleteSelectedRows {
 export const DELETE_SELECTED_ROWS = 'lpdata/DELETE_SELECTED_ROWS' as const;
 export const deleteSelectedRows = (params: DeleteSelectedRows) => ({
   type: DELETE_SELECTED_ROWS,
+  payload: params,
+});
+
+type SetLPMode = LPModeType;
+export const SET_LPMODE = 'lpdata/SET_LPMODE' as const;
+export const setLPMode = (params: SetLPMode) => ({
+  type: SET_LPMODE,
   payload: params,
 });
 

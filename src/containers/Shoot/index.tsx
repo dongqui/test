@@ -9,8 +9,8 @@ import {
   useRef,
 } from 'react';
 import _ from 'lodash';
-import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-// import LibraryPanel from 'containers/Panels/LibraryPanel_launching';
+// import { LibraryPanel } from 'containers/Panels/LibraryPanel';
+import LibraryPanel from 'containers/Panels/LibraryPanel_launching';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import { LPDATA_PROPERTY_TYPES } from 'types';
