@@ -3,7 +3,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import BreadcrumbItem from './BreadcrumbItem';
 import _ from 'lodash';
 import { useDispatch } from 'react-redux';
-import * as LPPageActions from 'actions/lpPage';
+import * as LPDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { FileType, ROOT_KEY } from 'types/LP';
@@ -34,7 +34,7 @@ const Breadcrumb: FunctionComponent<BreadcrumbProps> = ({
 
   const handleBack = useCallback(() => {
     if (currentPageKey !== ROOT_KEY) {
-      dispatch(LPPageActions.setLPPage({ key: prevPageKey }));
+      dispatch(LPDataActions.setLPPage({ key: prevPageKey }));
     }
   }, [currentPageKey, dispatch, prevPageKey]);
 

@@ -111,8 +111,8 @@ interface ModalInfo {
 const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
   const lpData = useSelector((state) => state.lpData.itemList);
-  const lpMode = useSelector((state) => state.lpMode.mode);
-  const lpPageKey = useSelector((state) => state.lpPage.key);
+  const lpMode = useSelector((state) => state.lpData.mode);
+  const lpPageKey = useSelector((state) => state.lpData.pageKey);
   const lpSearchword = useSelector((state) => state.lpSearchword.word);
   const [modalInfo, setModalInfo] = useState<ModalInfo>({
     showModal: false,

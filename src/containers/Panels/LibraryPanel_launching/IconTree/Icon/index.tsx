@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import * as lpPageActions from 'actions/lpPage';
 import { FileType } from 'types/LP';
 import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
@@ -63,7 +62,7 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name }) => {
   const handleDoubleClick = useCallback(() => {
     // if (type === 'Motion') {}
     if (type === 'Folder' || type === 'File') {
-      dispatch(lpPageActions.setLPPage({ key: rowKey }));
+      dispatch(lpDataActions.setLPPage({ key: rowKey }));
       dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
     }
   }, [dispatch, rowKey, type]);

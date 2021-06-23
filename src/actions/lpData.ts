@@ -1,4 +1,4 @@
-import { LPItemListOldType, LPItemListType, LPItemType, LPModeType } from 'types/LP';
+import { LPItemListOldType, LPItemListType, LPItemType, LPModeType, LPPageType } from 'types/LP';
 
 export type LPItemListAction =
   | ReturnType<typeof addItemList>
@@ -7,7 +7,10 @@ export type LPItemListAction =
   | ReturnType<typeof setSelectedRows>
   | ReturnType<typeof addSelectedRows>
   | ReturnType<typeof deleteSelectedRows>
-  | ReturnType<typeof setLPMode>;
+  | ReturnType<typeof setLPMode>
+  | ReturnType<typeof setLPPage>
+  | ReturnType<typeof addDirectory>
+  | ReturnType<typeof setModifyingKey>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -74,6 +77,27 @@ export const SET_LPMODE = 'lpdata/SET_LPMODE' as const;
 export const setLPMode = (params: SetLPMode) => ({
   type: SET_LPMODE,
   payload: params,
+});
+
+type SetLPPage = Pick<LPPageType, 'key'>;
+export const SET_LPPAGE = 'lpdata/SET_LPPAGE' as const;
+export const setLPPage = (params: SetLPPage) => ({
+  type: SET_LPPAGE,
+  payload: params,
+});
+
+interface SetModifyingKey {
+  key: string;
+}
+export const SET_MODIFYING_KEY = 'lpdata/SET_MODIFYING_KEY' as const;
+export const setModifyingKey = (params: SetModifyingKey) => ({
+  type: SET_MODIFYING_KEY,
+  payload: params,
+});
+
+export const ADD_DIRECTORY = 'lpdata/ADD_DIRECTORY' as const;
+export const addDirectory = () => ({
+  type: ADD_DIRECTORY,
 });
 
 export type LPItemListOldAction = ReturnType<typeof setItemListOld>;
