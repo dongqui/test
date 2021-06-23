@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { FunctionComponent, memo, useCallback, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { SearchInput } from 'components/Input';
@@ -5,7 +6,6 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { useSelector } from 'reducers';
 import * as LPModeActions from 'actions/lpMode';
 import classNames from 'classnames/bind';
-import _ from 'lodash';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);

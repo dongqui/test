@@ -1,13 +1,12 @@
 import { FunctionComponent, memo, Fragment, useCallback, useMemo } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
-import classNames from 'classnames/bind';
-import styles from './ListRow.module.scss';
 import { useDispatch } from 'react-redux';
 import * as lpDataActions from 'actions/lpData';
 import { FileType } from 'types/LP';
-import { GRABBABLE } from 'components/DragBox/DragBox';
 import { useSelector } from 'reducers';
+import classNames from 'classnames/bind';
+import styles from './ListRow.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -95,7 +94,7 @@ const ListRow: FunctionComponent<Props> = ({
     <Fragment>
       <div
         itemID={rowKey}
-        id={GRABBABLE}
+        id="grabbable"
         className={rowClasses}
         role="button"
         onKeyDown={() => {}}

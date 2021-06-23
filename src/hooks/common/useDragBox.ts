@@ -1,4 +1,3 @@
-import { GRABBED } from 'components/DragBox/DragBox';
 import { useEffect, useState, RefObject } from 'react';
 
 interface Params {
@@ -21,7 +20,7 @@ const useDragBox = (params: Params) => {
   const [list, setList] = useState<NodeListOf<Element>>();
 
   useEffect(() => {
-    const selectedList = ref.current?.querySelectorAll(`#${GRABBED}`);
+    const selectedList = ref.current?.querySelectorAll('#grabbed');
 
     if (isUpdated && selectedList) {
       setList(selectedList);

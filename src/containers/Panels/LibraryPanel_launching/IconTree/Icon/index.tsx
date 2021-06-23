@@ -1,14 +1,13 @@
 import { FunctionComponent, Fragment, memo, useRef, useCallback, useMemo } from 'react';
 import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import * as lpPageActions from 'actions/lpPage';
 import { FileType } from 'types/LP';
+import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import * as lpDataActions from 'actions/lpData';
-import { GRABBABLE } from 'components/DragBox/DragBox';
-import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -86,7 +85,7 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name }) => {
     <Fragment>
       <div
         itemID={rowKey}
-        id={GRABBABLE}
+        id="grabbable"
         className={classes}
         ref={iconRef}
         onClick={handleClick}

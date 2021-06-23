@@ -1,11 +1,11 @@
 import { FunctionComponent, memo, useCallback, useMemo } from 'react';
 import _ from 'lodash';
+import { useDispatch } from 'react-redux';
 import { LPItemListType, LPItemType } from 'types/LP';
 import ListRow from './ListRow';
+import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './ListGroup.module.scss';
-import { useDispatch } from 'react-redux';
-import * as lpDataActions from 'actions/lpData';
 
 const cx = classNames.bind(styles);
 
@@ -24,9 +24,7 @@ const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys }) => {
   const dispatch = useDispatch();
 
   const filteredItems = useMemo((): FilteredItems => {
-    let result = items.map(
-      (item) => ({ ...item, isExpanded: expandedKeys.includes(item.key) } as FilteredItem),
-    );
+    let result = items.map((item) => ({ ...item, isExpanded: expandedKeys.includes(item.key) }));
     // 닫혀있는 row key들을 구한다
     const unExpandedKeys = result
       .filter((item) => item.isExpanded === false)

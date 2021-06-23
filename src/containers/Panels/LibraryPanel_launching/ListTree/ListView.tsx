@@ -4,7 +4,6 @@ import { LPItemListType, LPItemType } from 'types/LP';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
-import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -20,8 +19,7 @@ const ListView: FunctionComponent<ListViewProps> = ({ data }) => {
    * @return 그룹별 가공 후 데이터
    */
   const grouppedData = useMemo((): GrouppedData => {
-    const groupKey: keyof Pick<LPItemType, 'groupKey'> = 'groupKey';
-    const groupKeys: string[] = Object.keys(_.groupBy(data, groupKey));
+    const groupKeys: string[] = Object.keys(_.groupBy(data, 'groupKey'));
     const result = _.map(groupKeys, (groupKey) =>
       data.filter((item) => item.groupKey === groupKey),
     );

@@ -17,11 +17,12 @@ interface FindDeleteKeys {
  */
 const findChildrenKeys = (params: FindDeleteKeys): string[] => {
   const { data, keys } = params;
-  const childrenKeys = _.uniq(
-    data
-      .filter((item) => !_.isEmpty(_.intersection(item.parentKeyList, keys)))
-      .map((item) => item.key),
-  );
+  // 전달받은 키들을 부모로 가지고 있는 모든 하위 row들
+  const childrenRows = data.filter((item) => !_.isEmpty(_.intersection(item.parentKeyList, keys)));
+  // 해당 row들의 key들
+  let childrenKeys = childrenRows.map((item) => item.key);
+  // 중복 키 제거
+  childrenKeys = _.uniq(childrenKeys);
   return childrenKeys;
 };
 
@@ -35,22 +36,19 @@ const defaultState: LPDataState = {
   selectedKeys: [],
 };
 
-export const lpData = <T extends LPDataState>(
-  state = defaultState,
-  action: LPItemListAction,
-): LPDataState => {
+export const lpData = (state = defaultState, action: LPItemListAction): LPDataState => {
   switch (action.type) {
     case 'lpdata/ADD_ITEMLIST': {
       return Object.assign({}, state, {
         itemList: [...state.itemList, ...action.payload.itemList],
-      } as T);
+      });
     }
     case 'lpdata/SET_ITEMLIST': {
       return Object.assign({}, state, {
         itemList: state.itemList.map((item) =>
           item.key === action.payload.key ? Object.assign({}, item, action.payload) : item,
         ),
-      } as T);
+      });
     }
     case 'lpdata/SELECT_ITEMLIST': {
       let newItemList = _.clone(state.itemList);
@@ -102,12 +100,12 @@ export const lpData = <T extends LPDataState>(
       return Object.assign({}, state, {
         itemList: newItemList,
         selectedKeys: totalSelectedKeys,
-      } as T);
+      });
     }
     case 'lpdata/SET_SELECTED_ROWS': {
       return Object.assign({}, state, {
         selectedKeys: action.payload.keys,
-      } as T);
+      });
     }
     case 'lpdata/ADD_SELECTED_ROWS': {
       const addKeys = [
@@ -116,7 +114,7 @@ export const lpData = <T extends LPDataState>(
       ];
       return Object.assign({}, state, {
         selectedKeys: _.uniq(_.concat(state.selectedKeys, addKeys)),
-      } as T);
+      });
     }
     case 'lpdata/DELETE_SELECTED_ROWS': {
       const deleteKeys = [
@@ -125,7 +123,7 @@ export const lpData = <T extends LPDataState>(
       ];
       return Object.assign({}, state, {
         selectedKeys: state.selectedKeys.filter((key) => !deleteKeys.includes(key)),
-      } as T);
+      });
     }
     default: {
       return state;

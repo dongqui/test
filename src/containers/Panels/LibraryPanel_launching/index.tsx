@@ -30,7 +30,6 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { ListView } from './ListTree';
 import { DragBox } from 'components/DragBox';
-import { GRABBABLE, GRABBED } from 'components/DragBox/DragBox';
 
 const cx = classNames.bind(styles);
 
@@ -505,8 +504,8 @@ const LibraryPanel: FunctionComponent = () => {
           isDragScrolling.current = true;
         }
       }
-      const grabbedDoms = viewRef.current?.querySelectorAll(`#${GRABBED}`);
-      const ungrabbedDoms = viewRef.current?.querySelectorAll(`#${GRABBABLE}`);
+      const grabbedDoms = viewRef.current?.querySelectorAll('#grabbed');
+      const ungrabbedDoms = viewRef.current?.querySelectorAll('#grabbable');
       // 드래그박스에 포함된 row들은 선택해준다.
       grabbedDoms?.forEach((grabbedDom) => {
         const itemId = grabbedDom.getAttribute('itemId');
@@ -537,8 +536,8 @@ const LibraryPanel: FunctionComponent = () => {
     (event: MouseEvent) => {
       const icons = viewRef.current?.getElementsByClassName('icon');
       const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
-      const grabbedIcons = viewRef.current?.querySelectorAll(`#${GRABBED}`);
-      const grabbableIcons = viewRef.current?.querySelectorAll(`#${GRABBABLE}`);
+      const grabbedIcons = viewRef.current?.querySelectorAll(`#grabbed`);
+      const grabbableIcons = viewRef.current?.querySelectorAll(`#grabbable`);
       const isSelectedInGrabbed = _.some(grabbedIcons, (element) =>
         element.className.includes('selected'),
       );
@@ -552,7 +551,7 @@ const LibraryPanel: FunctionComponent = () => {
         // 모두 선택 해제
         dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
         grabbedIcons?.forEach((element) => {
-          element.id = GRABBABLE;
+          element.id = 'grabbable';
         });
       }
       const isMustDragboxStop = !_.isEmpty(targetIcon);
