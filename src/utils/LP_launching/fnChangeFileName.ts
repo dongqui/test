@@ -1,7 +1,7 @@
-import _ from 'lodash';
+import clone from 'lodash/clone';
 import { LPItemListType } from 'types/LP';
 
-interface FnChangeFileNameCheckingDuplicate {
+interface FnChangeFileName {
   data: LPItemListType;
   name: string;
 }
@@ -14,10 +14,10 @@ interface FnChangeFileNameCheckingDuplicate {
  *
  * @return 변경된 파일이름
  */
-const fnChangeFileNameCheckingDuplicate = (params: FnChangeFileNameCheckingDuplicate): string => {
+const fnChangeFileNameCheckingDuplicate = (params: FnChangeFileName): string => {
   const { data, name } = params;
   const sameNameCnt = data.filter((item) => item.name.includes(name)).length; // 동일한 파일이름의 개수
-  let newName = _.clone(name);
+  let newName = clone(name);
   if (sameNameCnt > 0) {
     newName += ` (${sameNameCnt + 1})`;
   }

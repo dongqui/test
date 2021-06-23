@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
 
-interface FnMakeNewData extends Pick<LPItemType, 'key' | 'name' | 'type' | 'parentKey'> {
+interface FnMakeNewData
+  extends Pick<LPItemType, 'key' | 'name' | 'type' | 'parentKey' | 'boneNames' | 'baseLayer'> {
   data: LPItemListType;
 }
 
@@ -17,7 +18,7 @@ interface FnMakeNewData extends Pick<LPItemType, 'key' | 'name' | 'type' | 'pare
  */
 
 const fnMakeNewData = (props: FnMakeNewData): LPItemType => {
-  const { key, name, type, data, parentKey } = props;
+  const { key, name, type, data, parentKey, boneNames, baseLayer } = props;
 
   const parentRow = data.find((item) => item.key === parentKey); // 부모 row
   const newParentKey = parentRow ? parentRow.key : ROOT_KEY;
@@ -28,8 +29,8 @@ const fnMakeNewData = (props: FnMakeNewData): LPItemType => {
     key,
     name,
     type,
-    baseLayer: [],
-    boneNames: [],
+    baseLayer,
+    boneNames,
     layers: [],
     url: '',
     parentKey: newParentKey,

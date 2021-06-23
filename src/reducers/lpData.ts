@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { LPItemListAction, LPItemListOldAction } from 'actions/lpData';
 import { LPItemListOldType, LPItemListType, LPItemType, LPMode, ROOT_KEY } from 'types/LP';
-import { fnChangeFileNameCheckingDuplicate, fnMakeNewData } from 'utils/LP_launching';
+import { fnChangeFileNameCheckingDuplicate, fnMakeNewData } from '../utils/LP_launching';
 
 interface FindDeleteKeys {
   data: LPItemListType;
@@ -168,6 +168,8 @@ export const lpData = (state = defaultState, action: LPItemListAction): LPDataSt
         data: state.itemList,
         parentKey,
         type: 'Folder',
+        baseLayer: [],
+        boneNames: [],
       });
       const newItemList = [...state.itemList, additionalLPItem];
       return Object.assign({}, state, {

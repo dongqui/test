@@ -8,6 +8,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { useDispatch } from 'react-redux';
 import { useDropzone } from 'react-dropzone';
 import { useSelector } from 'reducers';
@@ -18,7 +20,7 @@ import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
 import Explorer from './Explorer';
-import { fnGetFileExtension, fnGetAnimationData } from '../../../utils/LP_launching';
+import { fnGetFileExtension, fnMakeNewData } from '../../../utils/LP_launching';
 import { fnSetConvertFbxToGlb } from '../../../utils/common/api/index';
 import { BaseModal } from 'components/Modal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
@@ -77,6 +79,42 @@ export const DefaultModels: Required<LPItemListType> = [
     depth: 1,
   },
 ];
+
+interface FnGetAnimationData {
+  url: string;
+}
+interface ResultType {
+  animations: THREE.AnimationClip[];
+  bones: THREE.Bone[];
+  isError: boolean;
+  errorMessage: string;
+}
+/**
+ * 파일 url 을 통해서 애니메이션 데이터, bone 데이터를 받는다.
+ *
+ * @param url - 파일 url
+ *
+ * @return 애니메이션 데이터, bone 데이터
+ */
+const fnGetAnimationData = async (params: FnGetAnimationData): Promise<ResultType> => {
+  const { url } = params;
+  const loader = new GLTFLoader();
+
+  const { scene, animations } = await loader
+    .loadAsync(url)
+    .then((result) => result)
+    .catch((e) => {
+      throw Error(e);
+    });
+  const { bones } = new THREE.SkeletonHelper(scene);
+
+  return {
+    animations,
+    bones,
+    isError: false,
+    errorMessage: '',
+  };
+};
 
 export interface PagesType {
   key: string;
@@ -177,35 +215,33 @@ const LibraryPanel: FunctionComponent = () => {
       const { animations, bones, name, url } = params;
       const boneNames = bones.map((bone) => bone.name);
       const key = uuidv4();
-      const file: LPItemType = {
+      const parentRow = lpData.find((item) => item.key === lpPageKey);
+      const parentKey = parentRow?.key ?? ROOT_KEY;
+      const file: LPItemType = fnMakeNewData({
         key,
-        type: 'File',
         name,
-        url,
-        parentKey: findParentKey,
-        parentKeyList: [findParentKey],
-        groupKey: key,
+        data: lpData,
+        type: 'File',
+        parentKey,
         baseLayer: fnGetBaseLayerWithBoneNames({ boneNames }),
-        layers: [],
         boneNames,
-        depth: 1,
-      };
+      });
       const motions: LPItemListType = animations.map((item) => ({
         key: item.uuid,
         name: item.name,
         type: 'Motion',
-        parentKey: key,
-        parentKeyList: [key],
-        groupKey: key,
+        parentKey: file.key,
+        parentKeyList: file.parentKeyList,
+        groupKey: file.groupKey,
         url,
         baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: item.tracks }),
         layers: [],
         boneNames,
-        depth: 2,
+        depth: file.depth + 1,
       }));
       return [file, ...motions];
     },
-    [findParentKey],
+    [lpData, lpPageKey],
   );
 
   /**
