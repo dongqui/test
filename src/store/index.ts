@@ -6,8 +6,6 @@ import rootSaga from 'sagas';
 import rootReducer from 'reducers';
 import middleware from 'store/middleware';
 
-const isDebug = true;
-
 const bindMiddleware = (middleware: Middleware[]) => {
   // if (process.env.NODE_ENV !== 'production') {
   //   const { composeWithDevTools } = require('redux-devtools-extension');
@@ -22,8 +20,9 @@ export const makeStore = () => {
   const sagaMiddleware = createSagaMiddleware();
   const middlewares = [middleware, sagaMiddleware];
 
-  if (isDebug && process.env.NODE_ENV !== 'production') {
-    middlewares.push(loggerMiddleware);
+  if (process.env.NODE_ENV !== 'production') {
+    // redux-logger 사용하실분은 주석해제 후 사용하시면 됩니다.
+    // middlewares.push(loggerMiddleware);
   }
 
   const store = createStore(rootReducer, bindMiddleware(middlewares));
