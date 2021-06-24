@@ -58,7 +58,8 @@ export const lpData = (state = defaultState, action: LPItemListAction): LPDataSt
         itemList: state.itemList.map((item) =>
           item.key === action.payload.key ? Object.assign({}, item, action.payload) : item,
         ),
-      });
+        modifyingKey: '',
+      } as LPDataState);
     }
     case 'lpdata/SELECT_ITEMLIST': {
       const newItemList = _.clone(state.itemList);
@@ -137,11 +138,6 @@ export const lpData = (state = defaultState, action: LPItemListAction): LPDataSt
     case 'lpdata/SET_LPPAGE': {
       return Object.assign({}, state, {
         pageKey: action.payload.key,
-      } as LPDataState);
-    }
-    case 'lpdata/SET_MODIFYING_KEY': {
-      return Object.assign({}, state, {
-        modifyingKey: action.payload.key,
       } as LPDataState);
     }
     case 'lpdata/ADD_DIRECTORY': {

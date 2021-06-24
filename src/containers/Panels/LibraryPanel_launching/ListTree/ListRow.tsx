@@ -4,12 +4,11 @@ import _ from 'lodash';
 import { useDispatch } from 'react-redux';
 import * as lpDataActions from 'actions/lpData';
 import { BaseInput } from 'components/Input';
-import { FileType } from 'types/LP';
+import { FileType, LPItemType } from 'types/LP';
 import { useSelector } from 'reducers';
+import { fnGetFileExtension } from 'utils/LP_launching';
 import classNames from 'classnames/bind';
 import styles from './ListRow.module.scss';
-import { fnGetFileExtension } from 'utils/LP_launching';
-import { eventNames } from 'process';
 
 const cx = classNames.bind(styles);
 
@@ -19,7 +18,9 @@ export interface Props {
   name: string;
   isExpanded: boolean;
   depth: number;
+  parentKey: string;
   onClickExpand: (key: string) => void;
+  changeFileName: (params: Pick<LPItemType, 'key' | 'parentKey' | 'name'>) => void;
 }
 
 const ListRow: FunctionComponent<Props> = ({
@@ -28,7 +29,9 @@ const ListRow: FunctionComponent<Props> = ({
   name,
   isExpanded,
   depth,
+  parentKey,
   onClickExpand,
+  changeFileName,
 }) => {
   const selectedRows = useSelector((state) => state.lpData.selectedKeys);
   const modifyingRow = useSelector((state) => state.lpData.modifyingKey);
@@ -53,26 +56,18 @@ const ListRow: FunctionComponent<Props> = ({
     [name, type],
   );
 
-  const changeFileName = useCallback(() => {
-    dispatch(lpDataActions.setItemList({ key: rowKey, name: fileName }));
-    dispatch(lpDataActions.setModifyingKey({ key: '' }));
-  }, [dispatch, fileName, rowKey]);
-
-  const handleBlur = useCallback(
-    (event: React.FocusEvent<HTMLInputElement>) => {
-      changeFileName();
-    },
-    [changeFileName],
-  );
+  const handleBlur = useCallback(() => {
+    changeFileName({ key: rowKey, name: fileName, parentKey });
+  }, [changeFileName, fileName, parentKey, rowKey]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       setFileName(event.currentTarget.value);
       if (event.key === 'Enter') {
-        changeFileName();
+        changeFileName({ key: rowKey, name: fileName, parentKey });
       }
     },
-    [changeFileName],
+    [changeFileName, fileName, parentKey, rowKey],
   );
 
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {

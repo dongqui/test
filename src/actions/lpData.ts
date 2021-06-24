@@ -9,8 +9,7 @@ export type LPItemListAction =
   | ReturnType<typeof deleteSelectedRows>
   | ReturnType<typeof setLPMode>
   | ReturnType<typeof setLPPage>
-  | ReturnType<typeof addDirectory>
-  | ReturnType<typeof setModifyingKey>;
+  | ReturnType<typeof addDirectory>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -83,15 +82,6 @@ type SetLPPage = Pick<LPPageType, 'key'>;
 export const SET_LPPAGE = 'lpdata/SET_LPPAGE' as const;
 export const setLPPage = (params: SetLPPage) => ({
   type: SET_LPPAGE,
-  payload: params,
-});
-
-interface SetModifyingKey {
-  key: string;
-}
-export const SET_MODIFYING_KEY = 'lpdata/SET_MODIFYING_KEY' as const;
-export const setModifyingKey = (params: SetModifyingKey) => ({
-  type: SET_MODIFYING_KEY,
   payload: params,
 });
 

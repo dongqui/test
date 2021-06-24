@@ -7,6 +7,8 @@ import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './ListGroup.module.scss';
 import { useSelector } from 'reducers';
+import { fnFindSameNameFile } from 'utils/LP_launching';
+import { useConfirmModal } from 'components/Modal/ConfirmModal';
 
 const cx = classNames.bind(styles);
 
@@ -22,6 +24,8 @@ export interface FilteredItem extends LPItemType {
 type FilteredItems = Array<FilteredItem>;
 
 const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys }) => {
+  const { getConfirm } = useConfirmModal();
+
   const dispatch = useDispatch();
 
   const selectedKeys = useSelector((state) => state.lpData.selectedKeys);
@@ -44,6 +48,27 @@ const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys }) => {
     [dispatch, expandedKeys],
   );
 
+  const changeFileName = useCallback(
+    async (params: Pick<LPItemType, 'key' | 'parentKey' | 'name'>) => {
+      const { key, parentKey, name } = params;
+      const currentRows = items.filter((item) => item.parentKey === parentKey);
+      const sameFileNameRow = fnFindSameNameFile({
+        data: currentRows,
+        name,
+      });
+      if (sameFileNameRow) {
+        await getConfirm({
+          title:
+            'You already have a file with this name in the same directory. Do you want to replace it?',
+          text: { confirm: 'replace', cancel: 'ignore' },
+        });
+      } else {
+        dispatch(lpDataActions.setItemList({ key, name }));
+      }
+    },
+    [dispatch, getConfirm, items],
+  );
+
   const isGroupSelected = items.some((item) => selectedKeys.includes(item.key));
 
   const listGroupClasses = cx('group-wrapper', {
@@ -64,7 +89,9 @@ const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys }) => {
                 isExpanded={item.isExpanded}
                 depth={item.depth}
                 type={item.type}
+                parentKey={item.parentKey}
                 onClickExpand={handleClickExpand}
+                changeFileName={changeFileName}
               />
             </div>
           </div>

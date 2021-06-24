@@ -20,7 +20,11 @@ import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
 import Explorer from './Explorer';
-import { fnGetFileExtension, fnMakeNewData } from '../../../utils/LP_launching';
+import {
+  fnChangeFileNameCheckingDuplicate,
+  fnGetFileExtension,
+  fnMakeNewData,
+} from '../../../utils/LP_launching';
 import { fnSetConvertFbxToGlb } from '../../../utils/common/api/index';
 import { BaseModal } from 'components/Modal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
@@ -179,26 +183,6 @@ const LibraryPanel: FunctionComponent = () => {
     }
     return parentKey;
   }, [lpMode, lpPageKey]);
-
-  /**
-   * 동일한 이름을 가진 파일의 개수를 찾아주는 함수입니다.
-   *
-   * @return 동일한 이름을 가진 파일의 개수
-   */
-  const findSameFileNameCount = useCallback(
-    (name: string): number => {
-      const parentKey = findParentKey;
-      const currentPageRows = lpData.filter((item) => item.parentKey === parentKey);
-      const sameFileNameRow = currentPageRows.find((item) => item.name === name);
-      if (sameFileNameRow) {
-        const sameFileNameCount = lpData.filter((item) => item.name.includes(name)).length;
-        return sameFileNameCount;
-      } else {
-        return 0;
-      }
-    },
-    [findParentKey, lpData],
-  );
 
   /**
    * 모델파일로부터 추출한 애니메이션 데이터를 lpItems 로 바꿔주는 함수입니다.
@@ -398,9 +382,11 @@ const LibraryPanel: FunctionComponent = () => {
           }
           return;
         }
-        const sameFileNameCount = findSameFileNameCount(file.name);
-        const newFileName =
-          sameFileNameCount > 0 ? `${file.name} (${sameFileNameCount + 1})` : file.name;
+        const currentRows = lpData.filter((item) => item.parentKey === findParentKey);
+        const newFileName = fnChangeFileNameCheckingDuplicate({
+          data: currentRows,
+          name: file.name,
+        });
         const { result: newData, isError, errorMessage } = await changeFileToLpData({
           fileUrl,
           name: newFileName,
@@ -426,8 +412,9 @@ const LibraryPanel: FunctionComponent = () => {
     [
       changeFileToLpData,
       dispatch,
-      findSameFileNameCount,
+      findParentKey,
       getConfirm,
+      lpData,
       sortVideoFileLast,
       validateMultipleVideoFiles,
     ],
