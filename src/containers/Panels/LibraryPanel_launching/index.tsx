@@ -231,7 +231,7 @@ const LibraryPanel: FunctionComponent = () => {
         name: item.name,
         type: 'Motion',
         parentKey: file.key,
-        parentKeyList: file.parentKeyList,
+        parentKeyList: [...file.parentKeyList, file.key],
         groupKey: file.groupKey,
         url,
         baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: item.tracks }),

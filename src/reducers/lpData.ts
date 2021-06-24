@@ -31,6 +31,7 @@ const findChildrenKeys = (params: FindDeleteKeys): string[] => {
 interface LPDataState {
   itemList: LPItemListType;
   selectedKeys: string[]; // 선택된 row들의 key
+  alreadySelectedKey: string; // 다중선택하기 전 선택된 key
   mode: LPMode;
   pageKey: string; // 현재 페이지의 key
   modifyingKey: string; // 수정중인 row의 key
@@ -39,6 +40,7 @@ interface LPDataState {
 const defaultState: LPDataState = {
   itemList: [],
   selectedKeys: [],
+  alreadySelectedKey: '',
   mode: 'listView',
   pageKey: ROOT_KEY,
   modifyingKey: '',
@@ -59,55 +61,49 @@ export const lpData = (state = defaultState, action: LPItemListAction): LPDataSt
       });
     }
     case 'lpdata/SELECT_ITEMLIST': {
-      let newItemList = _.clone(state.itemList);
+      const newItemList = _.clone(state.itemList);
+      let newSelectedKeys = _.clone(state.selectedKeys);
+      let newAlreadySelectedKey = _.clone(state.alreadySelectedKey || action.payload.keys[0]);
       if (action.payload.selectType === 'shift') {
         // 연속다중선택
         const targetIndex = state.itemList.findIndex((item) =>
           action.payload.keys.includes(item.key),
         );
-        let alreadySelectedIndex = state.itemList.findIndex((item) => item?.isAlreadySelected); // 단일선택시 선택했던 row를 기준점으로 삼는다
-        alreadySelectedIndex = alreadySelectedIndex === -1 ? targetIndex : alreadySelectedIndex;
+        const alreadySelectedIndex = state.itemList.findIndex(
+          (item) => item.key === newAlreadySelectedKey,
+        ); // 단일선택시 선택했던 row를 기준점으로 삼는다
         const startIndex = _.min([alreadySelectedIndex, targetIndex]) as number;
         const endIndex = _.max([alreadySelectedIndex, targetIndex]) as number;
-        // startIndex, endIndex 사이에 있는 index들은 모두 선택해준다
-        newItemList = state.itemList.map((item, index) =>
-          startIndex <= index && index <= endIndex
-            ? ({ ...item, isSelected: action.payload.isSelected } as LPItemType)
-            : ({ ...item, isSelected: false } as LPItemType),
-        );
+        newSelectedKeys = state.itemList
+          .filter((item, index) => startIndex <= index && index <= endIndex)
+          .map((item) => item.key);
       } else if (action.payload.selectType === 'ctrl') {
         // 다중선택
-        newItemList = newItemList.map((item) =>
-          action.payload.keys.includes(item.key)
-            ? ({ ...item, isSelected: action.payload.isSelected } as LPItemType)
-            : item,
-        );
+        const isInclude = newSelectedKeys.includes(action.payload.keys[0]);
+        const targetKeys = [
+          action.payload.keys[0],
+          ...findChildrenKeys({ data: newItemList, keys: [action.payload.keys[0]] }),
+        ];
+        if (isInclude) {
+          // 이미 선택되어 있는 키라면 선택해제
+          newSelectedKeys = newSelectedKeys.filter((item) => !targetKeys.includes(item));
+        } else {
+          // 선택되지 않은 키라면 선택
+          newSelectedKeys.push(action.payload.keys[0]);
+        }
       } else if (action.payload.selectType === 'none') {
         // 단일선택
-        newItemList = state.itemList.map((item) =>
-          action.payload.keys.includes(item.key)
-            ? Object.assign({}, item, {
-                key: action.payload.keys[0],
-                isSelected: action.payload.isSelected,
-                isAlreadySelected: action.payload.isSelected,
-              } as LPItemType)
-            : { ...item, isSelected: false, isAlreadySelected: false },
-        );
+        newSelectedKeys = [action.payload.keys[0]];
+        newAlreadySelectedKey = action.payload.keys[0];
       }
-      const selectedKeys = newItemList.filter((item) => item?.isSelected).map((item) => item.key);
       // 선택된 키들의 하위 키들
-      const childrenKeys = findChildrenKeys({ data: newItemList, keys: selectedKeys });
+      const childrenKeys = findChildrenKeys({ data: newItemList, keys: newSelectedKeys });
       // 선택된 키들의 하위키들도 선택해준다
-      newItemList = newItemList.map((item) =>
-        childrenKeys.includes(item.key) ? ({ ...item, isSelected: true } as LPItemType) : item,
-      );
-      // 선택된 모든 키들
-      const totalSelectedKeys = newItemList
-        .filter((item) => item?.isSelected)
-        .map((item) => item.key);
+      newSelectedKeys = _.concat(newSelectedKeys, childrenKeys);
       return Object.assign({}, state, {
         itemList: newItemList,
-        selectedKeys: totalSelectedKeys,
+        selectedKeys: newSelectedKeys,
+        alreadySelectedKey: newAlreadySelectedKey,
       });
     }
     case 'lpdata/SET_SELECTED_ROWS': {

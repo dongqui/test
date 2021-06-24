@@ -6,6 +6,7 @@ import ListRow from './ListRow';
 import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './ListGroup.module.scss';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -22,6 +23,8 @@ type FilteredItems = Array<FilteredItem>;
 
 const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys }) => {
   const dispatch = useDispatch();
+
+  const selectedKeys = useSelector((state) => state.lpData.selectedKeys);
 
   const filteredItems = useMemo((): FilteredItems => {
     let result = items.map((item) => ({ ...item, isExpanded: expandedKeys.includes(item.key) }));
@@ -41,7 +44,7 @@ const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys }) => {
     [dispatch, expandedKeys],
   );
 
-  const isGroupSelected = items.some((item) => item.isSelected);
+  const isGroupSelected = items.some((item) => selectedKeys.includes(item.key));
 
   const listGroupClasses = cx('group-wrapper', {
     selected: isGroupSelected,
