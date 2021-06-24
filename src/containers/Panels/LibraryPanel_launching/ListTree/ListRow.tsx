@@ -1,56 +1,101 @@
-import { FunctionComponent, memo, Fragment, useCallback } from 'react';
+import { FunctionComponent, memo, Fragment, useCallback, useMemo } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
-import { LPItemType } from 'types/LP';
+import { useDispatch } from 'react-redux';
+import * as lpDataActions from 'actions/lpData';
+import { FileType } from 'types/LP';
+import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './ListRow.module.scss';
 
 const cx = classNames.bind(styles);
 
-export interface ListRowProps {
-  item: LPItemType;
+export interface Props {
+  rowKey: string;
+  type: FileType;
+  name: string;
+  isExpanded: boolean;
   depth: number;
+  onClickExpand: (key: string) => void;
 }
 
-const ListRow: FunctionComponent<ListRowProps> = ({ item, depth }) => {
-  const handleClickExpand = useCallback((e) => {}, []);
-  const handleClick = useCallback(() => {}, []);
+const ListRow: FunctionComponent<Props> = ({
+  rowKey,
+  type,
+  name,
+  isExpanded,
+  depth,
+  onClickExpand,
+}) => {
+  const selectedRows = useSelector((state) => state.lpData.selectedKeys);
 
-  const folderClasses = cx('list-row', `depth-${depth}`, {
-    selected: false,
-    clickSelected: false,
-    visualized: false,
-    visualizeSelected: false,
-    first: false,
-    last: false,
-  });
+  const isSelected = selectedRows.includes(rowKey);
 
-  const fileClasses = cx('list-row', `depth-${depth}`, {
-    selected: false,
-    clickSelected: false,
-    visualized: false,
-    visualizeSelected: false,
-    first: false,
-    last: false,
-  });
+  const dispatch = useDispatch();
 
-  const motionClasses = cx('list-row', `depth-${depth}`, {
-    selected: false,
-    clickSelected: false,
+  const handleClickExpand = useCallback(
+    (event) => {
+      event.stopPropagation(); // row펼치기 -> row선택 이벤트버블링 방지
+      onClickExpand(rowKey);
+    },
+    [rowKey, onClickExpand],
+  );
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (event.shiftKey) {
+        dispatch(
+          lpDataActions.selectItemList({
+            keys: [rowKey],
+            isSelected: true,
+            selectType: 'shift',
+          }),
+        );
+      } else if (event.ctrlKey || event.metaKey) {
+        dispatch(
+          lpDataActions.selectItemList({
+            keys: [rowKey],
+            isSelected: !isSelected,
+            selectType: 'ctrl',
+          }),
+        );
+      } else {
+        dispatch(
+          lpDataActions.selectItemList({ keys: [rowKey], isSelected: true, selectType: 'none' }),
+        );
+      }
+    },
+    [dispatch, isSelected, rowKey],
+  );
+
+  const rowClasses = cx('list-row', `depth-${depth}`, {
+    selected: isSelected,
     visualized: false,
-    visualizeSelected: false,
-    first: false,
-    last: false,
   });
 
   const folderArrowClasses = cx('icon-arrow', {
-    open: true,
+    open: isExpanded,
+    hide: type === 'Motion',
   });
+
+  const icon = useMemo(() => {
+    if (type === 'Folder') {
+      return SvgPath.Folder;
+    }
+    if (type === 'File') {
+      return SvgPath.Model;
+    }
+    if (type === 'Motion') {
+      return SvgPath.Motion;
+    }
+    return SvgPath.Folder;
+  }, [type]);
 
   return (
     <Fragment>
       <div
-        className={folderClasses}
+        itemID={rowKey}
+        id="grabbable"
+        className={rowClasses}
         role="button"
         onKeyDown={() => {}}
         tabIndex={0}
@@ -63,8 +108,8 @@ const ListRow: FunctionComponent<ListRowProps> = ({ item, depth }) => {
           onClick={handleClickExpand}
         />
         <div className={cx('name-outer')}>
-          <IconWrapper className={cx('icon-item')} icon={SvgPath.Folder} hasFrame={false} />
-          <div className={cx('name')}>파일명</div>
+          <IconWrapper className={cx('icon-item')} icon={icon} hasFrame={false} />
+          <div className={cx('name')}>{name}</div>
         </div>
       </div>
     </Fragment>

@@ -11,14 +11,17 @@ export interface LPItemType {
   name: string;
   type: FileType;
   parentKey: string;
+  parentKeyList: string[];
   url: string;
   isSelected?: boolean;
+  isAlreadySelected?: boolean; // 다중선택시 기준을 삼을 선택값 필요
   isVisualized?: boolean;
   baseLayer: ShootTrackType[];
   layers: ShootLayerType[];
   boneNames: string[];
   groupKey: string;
   depth: number;
+  isExpanded?: boolean;
 }
 
 export interface LPItemOldType {

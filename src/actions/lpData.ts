@@ -1,6 +1,12 @@
-import { LPItemListOldType, LPItemListType } from 'types/LP';
+import { LPItemListOldType, LPItemListType, LPItemType } from 'types/LP';
 
-export type LPItemListAction = ReturnType<typeof addItemList> | ReturnType<typeof deleteItemList>;
+export type LPItemListAction =
+  | ReturnType<typeof addItemList>
+  | ReturnType<typeof setItemList>
+  | ReturnType<typeof selectItemList>
+  | ReturnType<typeof setSelectedRows>
+  | ReturnType<typeof addSelectedRows>
+  | ReturnType<typeof deleteSelectedRows>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -11,12 +17,54 @@ export const addItemList = (params: AddItemList) => ({
   payload: params,
 });
 
-interface DeleteItemList {
+interface SetItemList extends Partial<LPItemType> {
+  key: string;
+}
+export const SET_ITEMLIST = 'lpdata/SET_ITEMLIST' as const;
+export const setItemList = (params: SetItemList) => ({
+  type: SET_ITEMLIST,
+  payload: params,
+});
+
+type SelectType = 'none' | 'shift' | 'ctrl';
+
+export interface SelectItemList {
+  keys: string[];
+  isSelected: boolean;
+  selectType: SelectType;
+}
+export const SELECT_ITEMLIST = 'lpdata/SELECT_ITEMLIST' as const;
+export const selectItemList = (params: SelectItemList) => ({
+  type: SELECT_ITEMLIST,
+  payload: params,
+});
+
+export type SelectedRowsAction = ReturnType<typeof setSelectedRows>;
+
+export interface SetSelectedRows {
   keys: string[];
 }
-export const DELETE_ITEMLIST = 'lpdata/DELETE_ITEMLIST' as const;
-export const deleteItemList = (params: DeleteItemList) => ({
-  type: DELETE_ITEMLIST,
+export const SET_SELECTED_ROWS = 'lpdata/SET_SELECTED_ROWS' as const;
+export const setSelectedRows = (params: SetSelectedRows) => ({
+  type: SET_SELECTED_ROWS,
+  payload: params,
+});
+
+interface AddSelectedRows {
+  keys: string[];
+}
+export const ADD_SELECTED_ROWS = 'lpdata/ADD_SELECTED_ROWS' as const;
+export const addSelectedRows = (params: AddSelectedRows) => ({
+  type: ADD_SELECTED_ROWS,
+  payload: params,
+});
+
+interface DeleteSelectedRows {
+  keys: string[];
+}
+export const DELETE_SELECTED_ROWS = 'lpdata/DELETE_SELECTED_ROWS' as const;
+export const deleteSelectedRows = (params: DeleteSelectedRows) => ({
+  type: DELETE_SELECTED_ROWS,
   payload: params,
 });
 

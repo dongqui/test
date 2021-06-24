@@ -21,7 +21,17 @@
     }
   }
 
-  &:focus {
+  // &:focus {
+  //   background-color: #d3d3d3;
+
+  //   .icon-model {
+  //     & > svg {
+  //       color: #000;
+  //     }
+  //   }
+  // }
+
+  &.selected {
     background-color: #d3d3d3;
 
     .icon-model {

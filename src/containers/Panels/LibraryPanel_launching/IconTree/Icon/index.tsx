@@ -1,9 +1,11 @@
-import { FunctionComponent, Fragment, memo, useRef, useCallback } from 'react';
+import { FunctionComponent, Fragment, memo, useRef, useCallback, useMemo } from 'react';
 import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import { setLPPage } from 'actions/lpPage';
+import * as lpPageActions from 'actions/lpPage';
 import { FileType } from 'types/LP';
+import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -16,41 +18,83 @@ export interface IconProps {
 }
 
 const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name }) => {
+  const selectedRows = useSelector((state) => state.lpData.selectedKeys);
+
+  const isSelected = selectedRows.includes(rowKey);
+
   const dispatch = useDispatch();
-  const iconRef: React.MutableRefObject<HTMLDivElement> | any = useRef(null);
+
+  const iconRef = useRef<HTMLDivElement>(null);
 
   const classes = cx('wrapper', {
     visualized: false,
     editing: false,
     dragging: false,
+    selected: isSelected,
   });
+
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (event.shiftKey) {
+        dispatch(
+          lpDataActions.selectItemList({
+            keys: [rowKey],
+            isSelected: true,
+            selectType: 'shift',
+          }),
+        );
+      } else if (event.ctrlKey || event.metaKey) {
+        dispatch(
+          lpDataActions.selectItemList({
+            keys: [rowKey],
+            isSelected: !isSelected,
+            selectType: 'ctrl',
+          }),
+        );
+      } else {
+        dispatch(
+          lpDataActions.selectItemList({ keys: [rowKey], isSelected: true, selectType: 'none' }),
+        );
+      }
+    },
+    [dispatch, isSelected, rowKey],
+  );
 
   const handleDoubleClick = useCallback(() => {
     // if (type === 'Motion') {}
     if (type === 'Folder' || type === 'File') {
-      dispatch(setLPPage({ key: rowKey }));
+      dispatch(lpPageActions.setLPPage({ key: rowKey }));
+      dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
     }
   }, [dispatch, rowKey, type]);
+
+  const icon = useMemo(() => {
+    if (type === 'Folder') {
+      return SvgPath.Folder;
+    }
+    if (type === 'File') {
+      return SvgPath.Model;
+    }
+    if (type === 'Motion') {
+      return SvgPath.Motion;
+    }
+    return SvgPath.Folder;
+  }, [type]);
 
   return (
     <Fragment>
       <div
+        itemID={rowKey}
+        id="grabbable"
         className={classes}
         ref={iconRef}
+        onClick={handleClick}
         onDoubleClick={handleDoubleClick}
         role="button"
         onKeyDown={() => {}}
         tabIndex={0}
       >
-        {type === 'Folder' && (
-          <IconWrapper className={cx('icon-model')} icon={SvgPath.Folder} hasFrame={false} />
-        )}
-        {type === 'File' && (
-          <IconWrapper className={cx('icon-model')} icon={SvgPath.Model} hasFrame={false} />
-        )}
-        {type === 'Motion' && (
-          <IconWrapper className={cx('icon-model')} icon={SvgPath.Motion} hasFrame={false} />
-        )}
+        <IconWrapper className={cx('icon-model')} icon={icon} hasFrame={false} />
       </div>
       <div className={cx('name')}>{name}</div>
     </Fragment>

@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { useDispatch } from 'react-redux';
@@ -12,6 +13,7 @@ import { useDropzone } from 'react-dropzone';
 import { useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 import { Headline } from 'components/Typography';
 import { useConfirmModal } from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
@@ -27,6 +29,7 @@ import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { ListView } from './ListTree';
+import { DragBox } from 'components/DragBox';
 
 const cx = classNames.bind(styles);
 
@@ -40,6 +43,7 @@ export const DefaultModels: Required<LPItemListType> = [
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493576/zombie_bkqv8g.glb',
     type: 'File',
     parentKey: ROOT_KEY,
+    parentKeyList: [ROOT_KEY],
     groupKey: 'defaultmodel1',
     baseLayer: [],
     layers: [],
@@ -52,6 +56,7 @@ export const DefaultModels: Required<LPItemListType> = [
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493584/knight_zizg5n.glb',
     type: 'File',
     parentKey: ROOT_KEY,
+    parentKeyList: [ROOT_KEY],
     groupKey: 'defaultmodel2',
     baseLayer: [],
     layers: [],
@@ -64,6 +69,7 @@ export const DefaultModels: Required<LPItemListType> = [
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619494583/vanguard_t_cslcnl.glb',
     type: 'File',
     parentKey: ROOT_KEY,
+    parentKeyList: [ROOT_KEY],
     groupKey: 'defaultmodel3',
     baseLayer: [],
     layers: [],
@@ -104,10 +110,10 @@ interface ModalInfo {
 
 const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
-  const lpData = useSelector((state) => state.lpData);
+  const lpData = useSelector((state) => state.lpData.itemList);
   const lpMode = useSelector((state) => state.lpMode.mode);
-  const lpPage = useSelector((state) => state.lpPage);
-  const lpSearchword = useSelector((state) => state.lpSearchword);
+  const lpPageKey = useSelector((state) => state.lpPage.key);
+  const lpSearchword = useSelector((state) => state.lpSearchword.word);
   const [modalInfo, setModalInfo] = useState<ModalInfo>({
     showModal: false,
     message: '',
@@ -118,7 +124,7 @@ const LibraryPanel: FunctionComponent = () => {
 
   const handleChangeSearchword = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      dispatch(lpSearchwordActions.setSearchword({ word: e.target.value }));
+      dispatch(lpSearchwordActions.requestSetSearchword({ word: e.target.value }));
     },
     [dispatch],
   );
@@ -128,35 +134,30 @@ const LibraryPanel: FunctionComponent = () => {
    *
    * @return 현재 페이지를 나타내는 부모 키.
    */
-  const findParentKey = useCallback((): string => {
+  const findParentKey = useMemo((): string => {
     let parentKey = ROOT_KEY;
     if (lpMode === 'iconView') {
-      parentKey = lpPage.key;
-    }
-    if (lpMode === 'listView') {
-      const selectedRow = lpData.find((item) => item?.isSelected === true);
-      if (selectedRow) {
-        parentKey = selectedRow.key;
-      }
+      parentKey = lpPageKey;
     }
     return parentKey;
-  }, [lpData, lpMode, lpPage.key]);
+  }, [lpMode, lpPageKey]);
 
   /**
-   * 덮어쓰기할 파일(동일한 파일이름)을 찾아주는 함수입니다.
+   * 동일한 이름을 가진 파일의 개수를 찾아주는 함수입니다.
    *
-   * @return 덮어쓰기할 파일들의 키.
+   * @return 동일한 이름을 가진 파일의 개수
    */
-  const validateSameFileName = useCallback(
-    (name: string): string | undefined => {
-      let mustDeleteKey;
-      const parentKey = findParentKey();
+  const findSameFileNameCount = useCallback(
+    (name: string): number => {
+      const parentKey = findParentKey;
       const currentPageRows = lpData.filter((item) => item.parentKey === parentKey);
-      const sameFileNameRows = currentPageRows.find((item) => item.name === name);
-      if (sameFileNameRows) {
-        mustDeleteKey = sameFileNameRows.key;
+      const sameFileNameRow = currentPageRows.find((item) => item.name === name);
+      if (sameFileNameRow) {
+        const sameFileNameCount = lpData.filter((item) => item.name.includes(name)).length;
+        return sameFileNameCount;
+      } else {
+        return 0;
       }
-      return mustDeleteKey;
     },
     [findParentKey, lpData],
   );
@@ -181,7 +182,8 @@ const LibraryPanel: FunctionComponent = () => {
         type: 'File',
         name,
         url,
-        parentKey: findParentKey(),
+        parentKey: findParentKey,
+        parentKeyList: [findParentKey],
         groupKey: key,
         baseLayer: fnGetBaseLayerWithBoneNames({ boneNames }),
         layers: [],
@@ -193,6 +195,7 @@ const LibraryPanel: FunctionComponent = () => {
         name: item.name,
         type: 'Motion',
         parentKey: key,
+        parentKeyList: [key],
         groupKey: key,
         url,
         baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: item.tracks }),
@@ -293,7 +296,6 @@ const LibraryPanel: FunctionComponent = () => {
         message: 'Importing the file.',
         loading: true,
       }));
-      const mustDeleteKeys: string[] = [];
       let newLpData: LPItemListType = [];
       const isMultipleVideoFiles = validateMultipleVideoFiles(files);
       if (isMultipleVideoFiles) {
@@ -319,17 +321,6 @@ const LibraryPanel: FunctionComponent = () => {
             loading: false,
           }));
           return;
-        }
-        const sameFileNameKey = validateSameFileName(file.name);
-        if (sameFileNameKey) {
-          const confirmed = await getConfirm({
-            title: `You already have a file with ${file.name} in the same folder. Do you want to replace it?`,
-          });
-          if (confirmed) {
-            mustDeleteKeys.push(sameFileNameKey);
-          } else {
-            continue;
-          }
         }
         let fileUrl = URL.createObjectURL(file);
         // fbx 파일일 경우 glb로 먼저 변환한다
@@ -371,9 +362,12 @@ const LibraryPanel: FunctionComponent = () => {
           }
           return;
         }
+        const sameFileNameCount = findSameFileNameCount(file.name);
+        const newFileName =
+          sameFileNameCount > 0 ? `${file.name} (${sameFileNameCount + 1})` : file.name;
         const { result: newData, isError, errorMessage } = await changeFileToLpData({
           fileUrl,
-          name: file.name,
+          name: newFileName,
         });
         if (isError) {
           setModalInfo((state) => ({
@@ -384,9 +378,6 @@ const LibraryPanel: FunctionComponent = () => {
           }));
         }
         newLpData = _.concat(newLpData, newData);
-      }
-      if (!_.isEmpty(mustDeleteKeys)) {
-        dispatch(lpDataActions.deleteItemList({ keys: mustDeleteKeys }));
       }
       dispatch(lpDataActions.addItemList({ itemList: newLpData }));
       setModalInfo((state) => ({
@@ -399,10 +390,10 @@ const LibraryPanel: FunctionComponent = () => {
     [
       changeFileToLpData,
       dispatch,
+      findSameFileNameCount,
       getConfirm,
       sortVideoFileLast,
       validateMultipleVideoFiles,
-      validateSameFileName,
     ],
   );
 
@@ -421,14 +412,31 @@ const LibraryPanel: FunctionComponent = () => {
   const filteredIconviewData = useMemo((): LPItemListType => {
     let data = _.clone(lpData);
     if (!_.isEmpty(lpSearchword)) {
-      data = data.filter((item) =>
-        item.name.toLowerCase().includes(lpSearchword.word.toLowerCase()),
-      );
+      data = data.filter((item) => item.name.toLowerCase().includes(lpSearchword.toLowerCase()));
     }
     // 현재 페이지를 기준으로 필터링
-    data = data.filter((item) => item.parentKey === lpPage.key);
+    data = data.filter((item) => item.parentKey === lpPageKey);
     return data;
-  }, [lpSearchword, lpData, lpPage.key]);
+  }, [lpData, lpSearchword, lpPageKey]);
+
+  /**
+   * 리스트뷰로 전달할 가공데이터입니다.
+   * @return 검색어 필터링 후 lpItems
+   */
+  const filteredListviewData = useMemo((): LPItemListType => {
+    let data = _.clone(lpData);
+    if (!_.isEmpty(lpSearchword)) {
+      // 검색어에 해당하는 row의 group key들
+      const findGroupKeys = data
+        .filter((item) => item.name.toLowerCase().includes(lpSearchword.toLowerCase()))
+        .map((item) => item.groupKey);
+      // 해당 group key에 해당하는 row들만 필터링
+      data = data.filter((item) => findGroupKeys.includes(item.groupKey));
+      // 필터링된 row들은 모두 펼쳐준다
+      data = data.map((item) => ({ ...item, isExpanded: true }));
+    }
+    return data;
+  }, [lpData, lpSearchword]);
 
   /**
    * Breadcrumb 로 전달하기 위한 페이지 가공데이터
@@ -436,7 +444,7 @@ const LibraryPanel: FunctionComponent = () => {
    */
   const pathList = useMemo((): PathList => {
     const result: PathList = [];
-    const currentPageRow = lpData.find((item) => item.key === lpPage.key);
+    const currentPageRow = lpData.find((item) => item.key === lpPageKey);
     if (currentPageRow) {
       result.push({
         key: currentPageRow.key,
@@ -453,18 +461,115 @@ const LibraryPanel: FunctionComponent = () => {
       }
     }
     return result;
-  }, [lpData, lpPage.key]);
+  }, [lpData, lpPageKey]);
 
   // 이전페이지의 키값
   const prevPageKey = useMemo((): string => {
     let result = ROOT_KEY;
-    const currentPageRow = lpData.find((item) => item.key === lpPage.key);
+    const currentPageRow = lpData.find((item) => item.key === lpPageKey);
     const currentPageParentRow = lpData.find((item) => item.key === currentPageRow?.parentKey);
     if (currentPageParentRow) {
       result = currentPageParentRow.key;
     }
     return result;
-  }, [lpData, lpPage.key]);
+  }, [lpData, lpPageKey]);
+
+  const scrollRef = useRef<Scrollbars>(null);
+  // 드래그박스를 호출할 부모 컴포넌트
+  const viewRef = useRef<HTMLDivElement>(null);
+  const isDragScrolling = useRef(false);
+
+  /**
+   * 드래그박스 생성시 드래그박스 안에 포함된 아이콘들을 선택시켜주고 포함되지 않은 아이콘들은 해제시켜주는 함수입니다.
+   */
+  const handleDragboxChange = useCallback(
+    (event: MouseEvent) => {
+      const scrollElement = scrollRef.current;
+      const viewElement = viewRef.current;
+      if (scrollElement && viewElement) {
+        const { top } = viewElement.getBoundingClientRect();
+        const currentScrollTop = scrollElement.getScrollTop(); // 현재 스크롤을 내린 정도
+        const addScrollTop = top + currentScrollTop; // 스크롤 내린 정도를 반영한 top
+        const isMouseUpFromView = event.y < addScrollTop; // 마우스포인터가 target div 보다 위에 있는지 여부
+        const bottom = addScrollTop + scrollElement.getClientHeight();
+        const isMouseDownFromView = event.y > bottom; // 마우스포인터가 target div 보다 아래에 있는지 여부
+        if (isMouseUpFromView && currentScrollTop > 0) {
+          const newScrollTop = currentScrollTop - Math.abs(event.y) / 5;
+          scrollElement.scrollTop(newScrollTop);
+          isDragScrolling.current = true;
+        }
+        if (isMouseDownFromView) {
+          const newScrollTop = currentScrollTop + Math.abs(event.y - bottom) / 5;
+          scrollElement.scrollTop(newScrollTop);
+          isDragScrolling.current = true;
+        }
+      }
+      const grabbedDoms = viewRef.current?.querySelectorAll('#grabbed');
+      const ungrabbedDoms = viewRef.current?.querySelectorAll('#grabbable');
+      // 드래그박스에 포함된 row들은 선택해준다.
+      grabbedDoms?.forEach((grabbedDom) => {
+        const itemId = grabbedDom.getAttribute('itemId');
+        const className = grabbedDom.className;
+        if (itemId && !className.includes('selected')) {
+          dispatch(lpDataActions.addSelectedRows({ keys: [itemId] }));
+        }
+      });
+      // 드래그박스에 포함되지 않은 row들은 선택해제한다.
+      if (!isDragScrolling.current) {
+        ungrabbedDoms?.forEach((grabbedDom) => {
+          const itemId = grabbedDom.getAttribute('itemId');
+          const className = grabbedDom.className;
+          if (itemId && className.includes('selected')) {
+            dispatch(lpDataActions.deleteSelectedRows({ keys: [itemId] }));
+          }
+        });
+      }
+    },
+    [dispatch],
+  );
+
+  /**
+   * 빈공간을 선택하면 선택한 row들을 모두 선택해제 해주는 함수입니다.
+   * @return 드래그박스 동작여부. 빈공간이 아닌 아이콘에 클릭을 했을땐 드래그박스 동작을 하지 않게 하기 위함.
+   */
+  const handleClickEmptySpace = useCallback(
+    (event: MouseEvent) => {
+      const icons = viewRef.current?.getElementsByClassName('icon');
+      const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
+      const grabbedIcons = viewRef.current?.querySelectorAll(`#grabbed`);
+      const grabbableIcons = viewRef.current?.querySelectorAll(`#grabbable`);
+      const isSelectedInGrabbed = _.some(grabbedIcons, (element) =>
+        element.className.includes('selected'),
+      );
+      const isSelectedInGrabbable = _.some(grabbableIcons, (element) =>
+        element.className.includes('selected'),
+      );
+      const isSelected = isSelectedInGrabbed || isSelectedInGrabbable;
+      // 아이콘 위가 아니면서 선택된게 있을때만 동작
+      const isValidate = !targetIcon && isSelected;
+      if (isValidate) {
+        // 모두 선택 해제
+        dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
+        grabbedIcons?.forEach((element) => {
+          element.id = 'grabbable';
+        });
+      }
+      const isMustDragboxStop = !_.isEmpty(targetIcon);
+      return { isStop: isMustDragboxStop };
+    },
+    [dispatch],
+  );
+
+  const handleDisableDragBox = useCallback((event: MouseEvent): boolean => {
+    const icons = viewRef.current?.getElementsByClassName('icon');
+    const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
+    const isMustDragboxStop = !_.isEmpty(targetIcon);
+    return isMustDragboxStop;
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    isDragScrolling.current = false;
+  }, []);
 
   useEffect(() => {
     const setDefaultModels = async () => {
@@ -485,7 +590,7 @@ const LibraryPanel: FunctionComponent = () => {
       // 기본모델 로드
       setDefaultModels();
     }
-  }, [changeFileToLpData, lpData]);
+  }, [changeFileToLpData, dispatch, lpData]);
 
   const isIconView = lpMode === 'iconView';
   const isListView = lpMode === 'listView';
@@ -505,14 +610,30 @@ const LibraryPanel: FunctionComponent = () => {
               <Breadcrumb
                 pathList={pathList}
                 prevPageKey={prevPageKey}
-                currentPageKey={lpPage.key}
+                currentPageKey={lpPageKey}
               />
             </div>
           )}
-          <div className={cx('content')}>
-            {isIconView && <IconView data={filteredIconviewData} />}
-            {isListView && <ListView data={lpData} />}
-          </div>
+          <Scrollbars ref={scrollRef} autoHide>
+            <div
+              ref={viewRef}
+              className={cx('content')}
+              role="button"
+              onKeyDown={() => {}}
+              tabIndex={0}
+            >
+              {isIconView && <IconView data={filteredIconviewData} />}
+              {isListView && <ListView data={filteredListviewData} />}
+              <DragBox
+                isAllCovered={false}
+                onChangeIsUpdated={handleDragboxChange}
+                parentRef={viewRef}
+                onDragStart={handleClickEmptySpace}
+                onDragEnd={handleDragEnd}
+                onDisableDragBox={handleDisableDragBox}
+              />
+            </div>
+          </Scrollbars>
         </div>
       </div>
       {modalInfo.showModal && (
