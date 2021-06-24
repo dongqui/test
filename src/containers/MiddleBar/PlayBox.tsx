@@ -233,9 +233,12 @@ const PlayBox: FunctionComponent<Props> = ({
 
   const handleExport = useCallback(() => {
     if (_.isEqual(pageInfo.page, PAGE_NAMES.extract)) {
+      if (recordingData.isPlaying) {
+        dispatch(recordingDataActions.setRecordingData({ ...recordingData, isPlaying: false }));
+      }
       setShowsModal(true);
     }
-  }, [pageInfo.page]);
+  }, [dispatch, pageInfo.page, recordingData]);
 
   const handleSubmit = useCallback(async () => {
     setShowsModal(false);
