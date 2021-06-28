@@ -17,11 +17,13 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { Headline } from 'components/Typography';
-import { useConfirmModal } from 'components/Modal/ConfirmModal';
+import ConfirmModal from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
+import * as contextMenuInfoActions from 'actions/contextmenuInfo';
 import Explorer from './Explorer';
 import {
   fnChangeFileNameCheckingDuplicate,
+  fnFindSameNameFile,
   fnGetFileExtension,
   fnMakeNewData,
 } from '../../../utils/LP_launching';
@@ -32,10 +34,12 @@ import Breadcrumb, { PathList } from './Breadcrumb';
 import IconView from './IconTree/IconView';
 import { LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
 import * as lpDataActions from 'actions/lpData';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { ListView } from './ListTree';
 import { DragBox } from 'components/DragBox';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+import { ContextmenuType } from 'types';
+import { ContextMenu } from 'components/ContextMenu';
 
 const cx = classNames.bind(styles);
 
@@ -144,25 +148,24 @@ interface ChangeFileToLpDataResponse {
   errorMessage: string;
 }
 
-interface ModalInfo {
-  showModal: boolean;
-  message: string;
-  loading: boolean;
-}
-
 const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
   const lpData = useSelector((state) => state.lpData.itemList);
   const lpMode = useSelector((state) => state.lpData.mode);
   const lpPageKey = useSelector((state) => state.lpData.pageKey);
   const lpSearchword = useSelector((state) => state.lpSearchword.word);
-  const [modalInfo, setModalInfo] = useState<ModalInfo>({
-    showModal: false,
-    message: '',
-    loading: false,
+  const modalInfo = useSelector((state) => state.lpData.modalInfo);
+  const modifyingRow = useSelector((state) => state.lpData.modifyingRow);
+
+  const [contextMenuInfo, setContextMenuInfo] = useState<ContextmenuType>({
+    isShow: false,
+    data: [{ key: '0', value: 'Edit name' }],
+    top: 0,
+    left: 0,
+    onClick: () => {},
   });
 
-  const { getConfirm } = useConfirmModal();
+  const contextMenuRef = useRef<HTMLDivElement>(null);
 
   const handleChangeSearchword = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -310,21 +313,25 @@ const LibraryPanel: FunctionComponent = () => {
 
   const handleDrop = useCallback(
     async (files: File[]) => {
-      setModalInfo((state) => ({
-        ...state,
-        showModal: true,
-        message: 'Importing the file.',
-        loading: true,
-      }));
+      dispatch(
+        lpDataActions.setModalInfo({
+          isShow: true,
+          message: 'Importing the file.',
+          loading: true,
+          modalType: 'alert',
+        }),
+      );
       let newLpData: LPItemListType = [];
       const isMultipleVideoFiles = validateMultipleVideoFiles(files);
       if (isMultipleVideoFiles) {
-        setModalInfo((state) => ({
-          ...state,
-          showModal: true,
-          message: 'NOT allowed to import multiple files at once.',
-          loading: false,
-        }));
+        dispatch(
+          lpDataActions.setModalInfo({
+            isShow: true,
+            message: 'NOT allowed to import multiple files at once.',
+            loading: false,
+            modalType: 'alert',
+          }),
+        );
         return;
       }
       // 비디오파일이 마지막으로 오도록 재정렬
@@ -334,12 +341,14 @@ const LibraryPanel: FunctionComponent = () => {
         const extension = fnGetFileExtension(file.name);
         const isValidFileFormat = _.includes(EnableFileFormats, extension);
         if (!isValidFileFormat) {
-          setModalInfo((state) => ({
-            ...state,
-            showModal: true,
-            message: 'Unsupported file format.',
-            loading: false,
-          }));
+          dispatch(
+            lpDataActions.setModalInfo({
+              isShow: true,
+              message: 'Unsupported file format.',
+              loading: false,
+              modalType: 'alert',
+            }),
+          );
           return;
         }
         let fileUrl = URL.createObjectURL(file);
@@ -348,38 +357,44 @@ const LibraryPanel: FunctionComponent = () => {
           try {
             const { result, isError, errorMessage } = await fnSetConvertFbxToGlb({ file });
             if (isError) {
-              setModalInfo((state) => ({
-                ...state,
-                showModal: true,
-                message: errorMessage,
-                loading: false,
-              }));
+              dispatch(
+                lpDataActions.setModalInfo({
+                  isShow: true,
+                  message: errorMessage,
+                  loading: false,
+                  modalType: 'alert',
+                }),
+              );
               return;
             }
             fileUrl = result;
           } catch (error) {
-            setModalInfo((state) => ({
-              ...state,
-              showModal: true,
-              message: error,
-              loading: false,
-            }));
+            dispatch(
+              lpDataActions.setModalInfo({
+                isShow: true,
+                message: error,
+                loading: false,
+                modalType: 'alert',
+              }),
+            );
             return;
           }
         }
         // 비디오파일은 추출화면으로 전환시킨다.
         if (EnableVideoFormats.includes(extension)) {
-          const confirmed = await getConfirm({
-            title: 'Export motion from the video?',
-          });
-          if (!confirmed) {
-            setModalInfo((state) => ({
-              ...state,
-              showModal: true,
-              message: '',
-              loading: false,
-            }));
-          }
+          // const confirmed = await getConfirm({
+          //   title: 'Export motion from the video?',
+          // });
+          // if (!confirmed) {
+          //   dispatch(
+          //     lpDataActions.setModalInfo({
+          //       isShow: true,
+          //       message: '',
+          //       loading: false,
+          //       modalType: 'alert',
+          //     }),
+          //   );
+          // }
           return;
         }
         const currentRows = lpData.filter((item) => item.parentKey === findParentKey);
@@ -392,28 +407,24 @@ const LibraryPanel: FunctionComponent = () => {
           name: newFileName,
         });
         if (isError) {
-          setModalInfo((state) => ({
-            ...state,
-            showModal: true,
-            message: errorMessage,
-            loading: false,
-          }));
+          dispatch(
+            lpDataActions.setModalInfo({
+              isShow: true,
+              message: errorMessage,
+              loading: false,
+              modalType: 'alert',
+            }),
+          );
         }
         newLpData = _.concat(newLpData, newData);
       }
       dispatch(lpDataActions.addItemList({ itemList: newLpData }));
-      setModalInfo((state) => ({
-        ...state,
-        showModal: false,
-        message: '',
-        loading: false,
-      }));
+      dispatch(lpDataActions.setModalInfo({ isShow: false, message: '', loading: false }));
     },
     [
       changeFileToLpData,
       dispatch,
       findParentKey,
-      getConfirm,
       lpData,
       sortVideoFileLast,
       validateMultipleVideoFiles,
@@ -424,9 +435,9 @@ const LibraryPanel: FunctionComponent = () => {
 
   const handleOutsideClose = useCallback(() => {
     if (!modalInfo.loading) {
-      setModalInfo((state) => ({ ...state, showModal: false, message: '' }));
+      dispatch(lpDataActions.setModalInfo({ isShow: false, message: '' }));
     }
-  }, [modalInfo.loading]);
+  }, [dispatch, modalInfo.loading]);
 
   /**
    * 아이콘뷰로 전달할 가공데이터입니다.
@@ -557,6 +568,9 @@ const LibraryPanel: FunctionComponent = () => {
    */
   const handleClickEmptySpace = useCallback(
     (event: MouseEvent) => {
+      if (contextMenuInfo.isShow) {
+        setContextMenuInfo((state) => ({ ...state, isShow: false }));
+      }
       const icons = viewRef.current?.getElementsByClassName('icon');
       const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
       const grabbedIcons = viewRef.current?.querySelectorAll(`#grabbed`);
@@ -580,7 +594,7 @@ const LibraryPanel: FunctionComponent = () => {
       const isMustDragboxStop = !_.isEmpty(targetIcon);
       return { isStop: isMustDragboxStop };
     },
-    [dispatch],
+    [contextMenuInfo.isShow, dispatch],
   );
 
   const handleDisableDragBox = useCallback((event: MouseEvent): boolean => {
@@ -594,26 +608,131 @@ const LibraryPanel: FunctionComponent = () => {
     isDragScrolling.current = false;
   }, []);
 
+  /**
+   * 컨펌모달에서 컨펌을 클릭했을때 발생시킬 이벤트가 있는 함수입니다.
+   * 컨펌모달의 detailType에 따라 다른 이벤트가 정의되어 있습니다.
+   */
+  const handleConfirm = useCallback(async () => {
+    let sameNameFile: LPItemType | undefined;
+    let currentRows: LPItemListType | undefined;
+    switch (modalInfo.detailType) {
+      case 'overwrite':
+        currentRows = lpData.filter(
+          (item) =>
+            item.key !== modifyingRow?.key &&
+            item.parentKey === modifyingRow?.parentKey &&
+            item.type === modifyingRow?.type,
+        );
+        sameNameFile = fnFindSameNameFile({ data: currentRows, name: modifyingRow?.name ?? '' });
+        if (sameNameFile) {
+          dispatch(lpDataActions.deleteItemList({ key: sameNameFile.key }));
+          dispatch(
+            lpDataActions.changeFileName({
+              key: modifyingRow?.key ?? '',
+              name: modifyingRow?.name ?? '',
+              parentKey: modifyingRow?.parentKey ?? '',
+              type: modifyingRow?.type ?? 'Folder',
+            }),
+          );
+        }
+        break;
+      default:
+        break;
+    }
+    dispatch(lpDataActions.setModalInfo({ isShow: false }));
+  }, [
+    dispatch,
+    lpData,
+    modalInfo.detailType,
+    modifyingRow?.key,
+    modifyingRow?.name,
+    modifyingRow?.parentKey,
+    modifyingRow?.type,
+  ]);
+
+  /**
+   * 컨펌모달에서 컨펌을 취소했을때 발생시킬 이벤트가 있는 함수입니다.
+   * 컨펌모달의 detailType에 따라 다른 이벤트가 정의되어 있습니다.
+   */
+  const handleDismiss = useCallback(async () => {
+    let currentRows: LPItemListType | undefined;
+    switch (modalInfo.detailType) {
+      case 'overwrite':
+        currentRows = lpData.filter(
+          (item) =>
+            item.key !== modifyingRow?.key &&
+            item.parentKey === modifyingRow?.parentKey &&
+            item.type === modifyingRow?.type,
+        );
+        dispatch(
+          lpDataActions.changeFileName({
+            key: modifyingRow?.key ?? '',
+            name: fnChangeFileNameCheckingDuplicate({
+              data: currentRows,
+              name: modifyingRow?.name ?? '',
+            }),
+            parentKey: modifyingRow?.parentKey ?? '',
+            type: modifyingRow?.type ?? 'Folder',
+          }),
+        );
+        break;
+      default:
+        break;
+    }
+    dispatch(lpDataActions.setModalInfo({ isShow: false }));
+  }, [
+    dispatch,
+    lpData,
+    modalInfo.detailType,
+    modifyingRow?.key,
+    modifyingRow?.name,
+    modifyingRow?.parentKey,
+    modifyingRow?.type,
+  ]);
+
+  const handleContextMenu = useCallback((event: MouseEvent) => {
+    setContextMenuInfo({
+      data: [{ key: '0', value: 'Edit name' }],
+      isShow: true,
+      left: event.pageX,
+      top: event.pageY,
+      onClick: () => {},
+    });
+  }, []);
+
   useEffect(() => {
     const setDefaultModels = async () => {
-      setModalInfo((state) => ({
-        ...state,
-        showModal: true,
-        message: 'Importing default files.',
-        loading: true,
-      }));
+      dispatch(
+        lpDataActions.setModalInfo({
+          isShow: true,
+          message: 'Importing default files.',
+          loading: true,
+          modalType: 'alert',
+        }),
+      );
       await Promise.all(
         DefaultModels.map((item) =>
           changeFileToLpData({ fileUrl: item.url, name: item.name, isDispatch: true }),
         ),
       );
-      setModalInfo((state) => ({ ...state, showModal: false, message: '', loading: false }));
+      dispatch(lpDataActions.setModalInfo({ isShow: false, message: '', loading: false }));
     };
     if (_.isEmpty(lpData)) {
       // 기본모델 로드
       setDefaultModels();
     }
   }, [changeFileToLpData, dispatch, lpData]);
+
+  useEffect(() => {
+    if (viewRef.current) {
+      const viewElement = viewRef.current;
+      viewElement.addEventListener('contextmenu', handleContextMenu);
+
+      return () => {
+        viewElement.removeEventListener('contextmenu', handleContextMenu);
+      };
+    }
+  }, [handleContextMenu]);
 
   const isIconView = lpMode === 'iconView';
   const isListView = lpMode === 'listView';
@@ -659,8 +778,28 @@ const LibraryPanel: FunctionComponent = () => {
           </Scrollbars>
         </div>
       </div>
-      {modalInfo.showModal && (
+      {modalInfo.isShow && modalInfo.modalType === 'alert' && (
         <BaseModal title={modalInfo.message} onOutsideClose={handleOutsideClose} />
+      )}
+      {modalInfo.isShow && modalInfo.modalType === 'confirm' && (
+        <ConfirmModal
+          isOpen={modalInfo.isShow}
+          title={modalInfo.message || ''}
+          onConfirm={handleConfirm}
+          onClose={handleDismiss}
+          text={{ confirm: modalInfo.text?.confirm ?? '', cancel: modalInfo.text?.cancel ?? '' }}
+        />
+      )}
+      {contextMenuInfo.isShow && (
+        <ContextMenu
+          innerRef={contextMenuRef}
+          position={{
+            top: `${contextMenuInfo.top}px`,
+            left: `${contextMenuInfo.left}px`,
+          }}
+          onSelect={contextMenuInfo.onClick}
+          list={contextMenuInfo.data}
+        />
       )}
     </div>
   );

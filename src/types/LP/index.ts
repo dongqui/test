@@ -71,3 +71,12 @@ export type LPPageListOldType = Array<LPPageOldType>;
 export interface LPSearchwordType {
   word: string;
 }
+
+export interface ModalInfoType {
+  modalType: 'none' | 'alert' | 'confirm';
+  detailType?: 'overwrite';
+  isShow: boolean;
+  message?: string;
+  loading?: boolean;
+  text?: { confirm: string; cancel: string };
+}

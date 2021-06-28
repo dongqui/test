@@ -1,8 +1,19 @@
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { LPItemListAction, LPItemListOldAction } from 'actions/lpData';
-import { LPItemListOldType, LPItemListType, LPItemType, LPMode, ROOT_KEY } from 'types/LP';
-import { fnChangeFileNameCheckingDuplicate, fnMakeNewData } from '../utils/LP_launching';
+import {
+  LPItemListOldType,
+  LPItemListType,
+  LPItemType,
+  LPMode,
+  ModalInfoType,
+  ROOT_KEY,
+} from 'types/LP';
+import {
+  fnChangeFileNameCheckingDuplicate,
+  fnFindSameNameFile,
+  fnMakeNewData,
+} from '../utils/LP_launching';
 
 interface FindDeleteKeys {
   data: LPItemListType;
@@ -34,7 +45,8 @@ interface LPDataState {
   alreadySelectedKey: string; // 다중선택하기 전 선택된 key
   mode: LPMode;
   pageKey: string; // 현재 페이지의 key
-  modifyingKey: string; // 수정중인 row의 key
+  modifyingRow?: Pick<LPItemType, 'key' | 'name' | 'parentKey' | 'type'>; // 수정중인 row의 정보
+  modalInfo: ModalInfoType; // 모달 정보
 }
 
 const defaultState: LPDataState = {
@@ -43,22 +55,28 @@ const defaultState: LPDataState = {
   alreadySelectedKey: '',
   mode: 'listView',
   pageKey: ROOT_KEY,
-  modifyingKey: '',
+  modifyingRow: undefined,
+  modalInfo: { isShow: false, modalType: 'none' },
 };
 
-export const lpData = (state = defaultState, action: LPItemListAction): LPDataState => {
+export const lpData = (state = defaultState, action: LPItemListAction) => {
   switch (action.type) {
     case 'lpdata/ADD_ITEMLIST': {
       return Object.assign({}, state, {
         itemList: [...state.itemList, ...action.payload.itemList],
-      });
+      } as LPDataState);
     }
     case 'lpdata/SET_ITEMLIST': {
       return Object.assign({}, state, {
         itemList: state.itemList.map((item) =>
           item.key === action.payload.key ? Object.assign({}, item, action.payload) : item,
         ),
-        modifyingKey: '',
+        modifyingRow: undefined,
+      } as LPDataState);
+    }
+    case 'lpdata/DELETE_ITEMLIST': {
+      return Object.assign({}, state, {
+        itemList: state.itemList.filter((item) => item.key !== action.payload.key),
       } as LPDataState);
     }
     case 'lpdata/SELECT_ITEMLIST': {
@@ -128,7 +146,8 @@ export const lpData = (state = defaultState, action: LPItemListAction): LPDataSt
       ];
       return Object.assign({}, state, {
         selectedKeys: state.selectedKeys.filter((key) => !deleteKeys.includes(key)),
-      });
+        modifyingRow: undefined,
+      } as LPDataState);
     }
     case 'lpdata/SET_LPMODE': {
       return Object.assign({}, state, {
@@ -138,6 +157,11 @@ export const lpData = (state = defaultState, action: LPItemListAction): LPDataSt
     case 'lpdata/SET_LPPAGE': {
       return Object.assign({}, state, {
         pageKey: action.payload.key,
+      } as LPDataState);
+    }
+    case 'lpdata/SET_MODAL_INFO': {
+      return Object.assign({}, state, {
+        modalInfo: action.payload,
       } as LPDataState);
     }
     case 'lpdata/ADD_DIRECTORY': {
@@ -166,8 +190,36 @@ export const lpData = (state = defaultState, action: LPItemListAction): LPDataSt
       const newItemList = [...state.itemList, additionalLPItem];
       return Object.assign({}, state, {
         itemList: newItemList,
-        modifyingKey: key,
+        modifyingRow: { key, name, parentKey, type: 'Folder' },
       } as LPDataState);
+    }
+    case 'lpdata/CHANGE_FILENAME': {
+      const { key, name, parentKey, type } = action.payload;
+      // 동일 depth의 row들 중 같은 이름의 파일이 있는지 체크한다. (자기자신이 아니면서 + 같은 부모를 가지고 있고 타입이 같은)
+      const currentRows = state.itemList.filter(
+        (item) => item.key !== key && item.parentKey === parentKey && item.type === type,
+      );
+      const sameNameFileRow = fnFindSameNameFile({ data: currentRows, name });
+      if (sameNameFileRow) {
+        // 동일한 이름의 파일이 있으면 모달을 띄워준다.
+        return Object.assign({}, state, {
+          modalInfo: {
+            isShow: true,
+            modalType: 'confirm',
+            detailType: 'overwrite',
+            text: { confirm: 'replace', cancel: 'ignore' },
+            message:
+              'You already have a file with this name in the same directory. Do you want to replace it?',
+          },
+          modifyingRow: { key, name, parentKey, type },
+        } as LPDataState);
+      } else {
+        // 동일한 이름의 파일이 없으면 파일이름을 변경한다.
+        return Object.assign({}, state, {
+          itemList: state.itemList.map((item) => (item.key === key ? { ...item, name } : item)),
+          modifyingRow: undefined,
+        } as LPDataState);
+      }
     }
     default: {
       return state;

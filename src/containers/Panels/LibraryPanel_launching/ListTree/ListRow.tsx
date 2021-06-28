@@ -1,4 +1,12 @@
-import { FunctionComponent, memo, Fragment, useCallback, useMemo, useState } from 'react';
+import {
+  FunctionComponent,
+  memo,
+  Fragment,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+} from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
 import { useDispatch } from 'react-redux';
@@ -20,7 +28,6 @@ export interface Props {
   depth: number;
   parentKey: string;
   onClickExpand: (key: string) => void;
-  changeFileName: (params: Pick<LPItemType, 'key' | 'parentKey' | 'name'>) => void;
 }
 
 const ListRow: FunctionComponent<Props> = ({
@@ -31,15 +38,14 @@ const ListRow: FunctionComponent<Props> = ({
   depth,
   parentKey,
   onClickExpand,
-  changeFileName,
 }) => {
   const selectedRows = useSelector((state) => state.lpData.selectedKeys);
-  const modifyingRow = useSelector((state) => state.lpData.modifyingKey);
+  const modifyingRow = useSelector((state) => state.lpData.modifyingRow);
 
   const [fileName, setFileName] = useState(name);
 
   const isSelected = selectedRows.includes(rowKey);
-  const isModifying = modifyingRow === rowKey;
+  const isModifying = modifyingRow?.key === rowKey;
 
   const dispatch = useDispatch();
 
@@ -57,17 +63,17 @@ const ListRow: FunctionComponent<Props> = ({
   );
 
   const handleBlur = useCallback(() => {
-    changeFileName({ key: rowKey, name: fileName, parentKey });
-  }, [changeFileName, fileName, parentKey, rowKey]);
+    dispatch(lpDataActions.changeFileName({ key: rowKey, name: fileName, parentKey, type }));
+  }, [dispatch, fileName, parentKey, rowKey, type]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       setFileName(event.currentTarget.value);
       if (event.key === 'Enter') {
-        changeFileName({ key: rowKey, name: fileName, parentKey });
+        dispatch(lpDataActions.changeFileName({ key: rowKey, name: fileName, parentKey, type }));
       }
     },
-    [changeFileName, fileName, parentKey, rowKey],
+    [dispatch, fileName, parentKey, rowKey, type],
   );
 
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,6 +140,13 @@ const ListRow: FunctionComponent<Props> = ({
     }
     return SvgPath.Folder;
   }, [type]);
+
+  useEffect(() => {
+    // 수정을 완료했는데 이름 씽크가 안맞다면 수정 후의 이름으로 업데이트 해준다.
+    if (!modifyingRow && name !== fileName) {
+      setFileName(name);
+    }
+  }, [fileName, modifyingRow, name]);
 
   return (
     <Fragment>

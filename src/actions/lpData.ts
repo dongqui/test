@@ -1,15 +1,25 @@
-import { LPItemListOldType, LPItemListType, LPItemType, LPModeType, LPPageType } from 'types/LP';
+import {
+  LPItemListOldType,
+  LPItemListType,
+  LPItemType,
+  LPModeType,
+  LPPageType,
+  ModalInfoType,
+} from 'types/LP';
 
 export type LPItemListAction =
   | ReturnType<typeof addItemList>
   | ReturnType<typeof setItemList>
+  | ReturnType<typeof deleteItemList>
   | ReturnType<typeof selectItemList>
   | ReturnType<typeof setSelectedRows>
   | ReturnType<typeof addSelectedRows>
   | ReturnType<typeof deleteSelectedRows>
   | ReturnType<typeof setLPMode>
   | ReturnType<typeof setLPPage>
-  | ReturnType<typeof addDirectory>;
+  | ReturnType<typeof addDirectory>
+  | ReturnType<typeof changeFileName>
+  | ReturnType<typeof setModalInfo>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -26,6 +36,13 @@ interface SetItemList extends Partial<LPItemType> {
 export const SET_ITEMLIST = 'lpdata/SET_ITEMLIST' as const;
 export const setItemList = (params: SetItemList) => ({
   type: SET_ITEMLIST,
+  payload: params,
+});
+
+type DeleteItemList = Pick<LPItemType, 'key'>;
+export const DELETE_ITEMLIST = 'lpdata/DELETE_ITEMLIST' as const;
+export const deleteItemList = (params: DeleteItemList) => ({
+  type: DELETE_ITEMLIST,
   payload: params,
 });
 
@@ -88,6 +105,20 @@ export const setLPPage = (params: SetLPPage) => ({
 export const ADD_DIRECTORY = 'lpdata/ADD_DIRECTORY' as const;
 export const addDirectory = () => ({
   type: ADD_DIRECTORY,
+});
+
+type ChangeFileName = Pick<LPItemType, 'key' | 'name' | 'parentKey' | 'type'>;
+export const CHANGE_FILENAME = 'lpdata/CHANGE_FILENAME' as const;
+export const changeFileName = (params: ChangeFileName) => ({
+  type: CHANGE_FILENAME,
+  payload: params,
+});
+
+type SetModalInfo = Partial<ModalInfoType>;
+export const SET_MODAL_INFO = 'lpdata/SET_MODAL_INFO' as const;
+export const setModalInfo = (params: SetModalInfo) => ({
+  type: SET_MODAL_INFO,
+  payload: params,
 });
 
 export type LPItemListOldAction = ReturnType<typeof setItemListOld>;
