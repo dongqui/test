@@ -164,6 +164,11 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         modalInfo: action.payload,
       } as LPDataState);
     }
+    case 'lpdata/SET_MODIFYING_ROW': {
+      return Object.assign({}, state, {
+        modifyingRow: action.payload,
+      } as LPDataState);
+    }
     case 'lpdata/ADD_DIRECTORY': {
       const currentPageKey = state.mode === 'listView' ? ROOT_KEY : state.pageKey; // 현재페이지 키
       const currentPageParentRow = state.itemList.find((item) => item.key === currentPageKey); // 현재페이지의 부모 row

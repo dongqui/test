@@ -19,7 +19,6 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 import { Headline } from 'components/Typography';
 import ConfirmModal from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
-import * as contextMenuInfoActions from 'actions/contextmenuInfo';
 import Explorer from './Explorer';
 import {
   fnChangeFileNameCheckingDuplicate,
@@ -32,13 +31,13 @@ import { BaseModal } from 'components/Modal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import Breadcrumb, { PathList } from './Breadcrumb';
 import IconView from './IconTree/IconView';
-import { LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
+import { ContextMenuEnum, LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
 import * as lpDataActions from 'actions/lpData';
 import { ListView } from './ListTree';
 import { DragBox } from 'components/DragBox';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { ContextmenuType } from 'types';
+import { ContextmenuDataTypes, ContextmenuType } from 'types';
 import { ContextMenu } from 'components/ContextMenu';
 
 const cx = classNames.bind(styles);
@@ -87,6 +86,10 @@ export const DefaultModels: Required<LPItemListType> = [
     depth: 1,
   },
 ];
+
+interface MakeContextMenuData {
+  isIcon: boolean;
+}
 
 interface FnGetAnimationData {
   url: string;
@@ -157,13 +160,84 @@ const LibraryPanel: FunctionComponent = () => {
   const modalInfo = useSelector((state) => state.lpData.modalInfo);
   const modifyingRow = useSelector((state) => state.lpData.modifyingRow);
 
+  const rightClickedKey = useRef<string>('');
+
+  /**
+   * 오른쪽 메뉴 데이터를 만들어주는 함수입니다.
+   * @param isIcon 아이콘 위인지 여부
+   *
+   * @return 오른쪽 메뉴 데이터
+   */
+  const makeContextMenuData = useCallback((params: MakeContextMenuData): ContextmenuDataTypes[] => {
+    const { isIcon } = params;
+    if (isIcon) {
+      return [{ key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME }];
+    } else {
+      return [
+        { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
+        { key: ContextMenuEnum.PASTE, value: ContextMenuEnum.PASTE },
+      ];
+    }
+  }, []);
+
+  // 오른쪽 메뉴 정보
   const [contextMenuInfo, setContextMenuInfo] = useState<ContextmenuType>({
     isShow: false,
-    data: [{ key: '0', value: 'Edit name' }],
+    data: makeContextMenuData({ isIcon: false }),
     top: 0,
     left: 0,
     onClick: () => {},
   });
+
+  /**
+   * 오른쪽 메뉴의 리스트를 클릭했을때 발생시킬 이벤트에 관한 함수입니다.
+   * @param key 오른쪽 메뉴리스트의 키
+   */
+  const handleClickContextMenu = useCallback(
+    (key) => {
+      let modifyingRow: LPItemType | undefined;
+      switch (key) {
+        case `${ContextMenuEnum.NEW_DIRECTORY}`:
+          break;
+        case `${ContextMenuEnum.EDIT_NAME}`:
+          modifyingRow = lpData.find((item) => item.key === rightClickedKey.current);
+          if (modifyingRow) {
+            dispatch(
+              lpDataActions.setModifyingRow({
+                key: modifyingRow.key,
+                name: modifyingRow.name,
+                parentKey: modifyingRow.parentKey,
+                type: modifyingRow.type,
+              }),
+            );
+          }
+          break;
+        default:
+          break;
+      }
+      setContextMenuInfo((state) => ({ ...state, isShow: false }));
+    },
+    [dispatch, lpData],
+  );
+
+  const handleContextMenu = useCallback(
+    (event: MouseEvent) => {
+      const icons = viewRef.current?.getElementsByClassName('icon');
+      const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node)); // 클릭한 아이콘 DOM
+      const itemId = targetIcon?.getAttribute('itemId') || ''; // 클릭한 아이콘의 key
+      rightClickedKey.current = itemId;
+      const isIcon = !_.isEmpty(targetIcon); // 아이콘을 클릭했는지 여부
+      const contextMenuData = makeContextMenuData({ isIcon });
+      setContextMenuInfo({
+        data: contextMenuData,
+        isShow: true,
+        left: event.pageX,
+        top: event.pageY,
+        onClick: handleClickContextMenu,
+      });
+    },
+    [handleClickContextMenu, makeContextMenuData],
+  );
 
   const contextMenuRef = useRef<HTMLDivElement>(null);
 
@@ -689,16 +763,6 @@ const LibraryPanel: FunctionComponent = () => {
     modifyingRow?.parentKey,
     modifyingRow?.type,
   ]);
-
-  const handleContextMenu = useCallback((event: MouseEvent) => {
-    setContextMenuInfo({
-      data: [{ key: '0', value: 'Edit name' }],
-      isShow: true,
-      left: event.pageX,
-      top: event.pageY,
-      onClick: () => {},
-    });
-  }, []);
 
   useEffect(() => {
     const setDefaultModels = async () => {

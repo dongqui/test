@@ -6,15 +6,15 @@ import styles from './IconNode.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {
-  item: LPItemType;
+interface Props extends Pick<LPItemType, 'name' | 'type' | 'parentKey'> {
+  rowKey: string;
 }
 
-const IconNode: FunctionComponent<Props> = ({ item }) => {
+const IconNode: FunctionComponent<Props> = ({ rowKey, name, type, parentKey }) => {
   return (
     <div className={cx('icon-wrapper')}>
-      <div className="icon" id={item.key} draggable>
-        <Icon rowKey={item.key} name={item.name} type={item.type} parentKey={item.parentKey} />
+      <div className="icon" itemID={rowKey} draggable>
+        <Icon rowKey={rowKey} name={name} type={type} parentKey={parentKey} />
       </div>
     </div>
   );

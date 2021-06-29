@@ -19,7 +19,8 @@ export type LPItemListAction =
   | ReturnType<typeof setLPPage>
   | ReturnType<typeof addDirectory>
   | ReturnType<typeof changeFileName>
-  | ReturnType<typeof setModalInfo>;
+  | ReturnType<typeof setModalInfo>
+  | ReturnType<typeof setModifyingRow>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -118,6 +119,13 @@ type SetModalInfo = Partial<ModalInfoType>;
 export const SET_MODAL_INFO = 'lpdata/SET_MODAL_INFO' as const;
 export const setModalInfo = (params: SetModalInfo) => ({
   type: SET_MODAL_INFO,
+  payload: params,
+});
+
+type SetModifyingRow = Pick<LPItemType, 'key' | 'name' | 'parentKey' | 'type'>;
+export const SET_MODIFYING_ROW = 'lpdata/SET_MODIFYING_ROW' as const;
+export const setModifyingRow = (params: SetModifyingRow) => ({
+  type: SET_MODIFYING_ROW,
   payload: params,
 });
 

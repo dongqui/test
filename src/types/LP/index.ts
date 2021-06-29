@@ -80,3 +80,9 @@ export interface ModalInfoType {
   loading?: boolean;
   text?: { confirm: string; cancel: string };
 }
+
+export enum ContextMenuEnum {
+  NEW_DIRECTORY = 'New Directory',
+  EDIT_NAME = 'Edit name',
+  PASTE = 'Paste',
+}
