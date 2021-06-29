@@ -89,6 +89,7 @@ export const DefaultModels: Required<LPItemListType> = [
 
 interface MakeContextMenuData {
   isIcon: boolean;
+  itemKey: string;
 }
 
 interface FnGetAnimationData {
@@ -165,28 +166,44 @@ const LibraryPanel: FunctionComponent = () => {
   /**
    * 오른쪽 메뉴 데이터를 만들어주는 함수입니다.
    * @param isIcon 아이콘 위인지 여부
+   * @param itemKey 아이콘에 해당하는 key
    *
    * @return 오른쪽 메뉴 데이터
    */
-  const makeContextMenuData = useCallback((params: MakeContextMenuData): ContextmenuDataTypes[] => {
-    const { isIcon } = params;
-    if (isIcon) {
-      return [
-        { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
-        { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
-      ];
-    } else {
-      return [
-        { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
-        { key: ContextMenuEnum.PASTE, value: ContextMenuEnum.PASTE },
-      ];
-    }
-  }, []);
+  const makeContextMenuData = useCallback(
+    (params: MakeContextMenuData): ContextmenuDataTypes[] => {
+      const { isIcon, itemKey } = params;
+      if (isIcon) {
+        // 아이콘위
+        const item = lpData.find((item) => item.key === itemKey);
+        if (item?.type === 'Folder') {
+          return [
+            { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
+            { key: ContextMenuEnum.PASTE, value: ContextMenuEnum.PASTE },
+            { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
+            { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
+          ];
+        } else {
+          return [
+            { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
+            { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
+          ];
+        }
+      } else {
+        // 빈공간
+        return [
+          { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
+          { key: ContextMenuEnum.PASTE, value: ContextMenuEnum.PASTE },
+        ];
+      }
+    },
+    [lpData],
+  );
 
   // 오른쪽 메뉴 정보
   const [contextMenuInfo, setContextMenuInfo] = useState<ContextmenuType>({
     isShow: false,
-    data: makeContextMenuData({ isIcon: false }),
+    data: makeContextMenuData({ isIcon: false, itemKey: '' }),
     top: 0,
     left: 0,
     onClick: () => {},
@@ -236,7 +253,7 @@ const LibraryPanel: FunctionComponent = () => {
       const itemId = targetIcon?.getAttribute('itemId') || ''; // 클릭한 아이콘의 key
       rightClickedKey.current = itemId;
       const isIcon = !_.isEmpty(targetIcon); // 아이콘을 클릭했는지 여부
-      const contextMenuData = makeContextMenuData({ isIcon });
+      const contextMenuData = makeContextMenuData({ isIcon, itemKey: itemId });
       setContextMenuInfo({
         data: contextMenuData,
         isShow: true,

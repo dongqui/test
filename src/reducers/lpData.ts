@@ -121,7 +121,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       // 선택된 키들의 하위 키들
       const childrenKeys = findChildrenKeys({ data: newItemList, keys: newSelectedKeys });
       // 선택된 키들의 하위키들도 선택해준다
-      newSelectedKeys = _.concat(newSelectedKeys, childrenKeys);
+      newSelectedKeys = _.uniq(_.concat(newSelectedKeys, childrenKeys));
       return Object.assign({}, state, {
         itemList: newItemList,
         selectedKeys: newSelectedKeys,
@@ -235,18 +235,35 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       } as LPDataState);
     }
     case 'lpdata/PASTE_ROWS': {
-      // 복사한 row들을 찾고 key만 바꿔준다.
+      const selectedRow = state.itemList.find(
+        (item) => item.key === state.selectedKeys[0] && item.type === 'Folder',
+      );
+      let depth = 1; // 기준이 되는 depth
+      // 선택한 폴더가 있으면 해당 폴더의 depth를 기준으로 삼는다.
+      if (selectedRow) {
+        depth = selectedRow.depth;
+      }
+      // 복사한 row들을 찾고 관련 key들만 바꿔준다.
       const copiedRows = state.itemList
         .filter((item) => state.copiedKeys.includes(item.key))
         .map((item) => ({
           ...item,
           key: `${item.key}a`,
-          name: fnChangeFileNameCheckingDuplicate({
-            data: state.itemList.filter((object) => object.parentKey === item.parentKey),
-            name: item.name,
-          }),
+          name:
+            item.depth === depth // 기준이 되는 depth 끼리만 중복이름 체크를 하면 된다.
+              ? fnChangeFileNameCheckingDuplicate({
+                  data: state.itemList.filter((object) => object.parentKey === item.parentKey),
+                  name: item.name,
+                })
+              : item.name,
+          parentKey: `${item.parentKey}a`,
+          groupKey: `${item.groupKey}a`,
+          parentKeyList: item.parentKeyList.map(
+            (item) => `${item === ROOT_KEY ? ROOT_KEY : `${item}a`}`, // ROOT key는 바꾸면 안됨
+          ),
+          depth: item.depth + (selectedRow ? depth : 0), // 선태한 폴더가 있으면 해당 depth 만큼 더해서 하위로 들어가게 해준다.
         }));
-      let newItemList = [...state.itemList];
+      let newItemList: LPItemListType = [...state.itemList];
       // 복사한 row들을 담아준다.
       if (copiedRows) {
         newItemList = _.concat(newItemList, copiedRows);
