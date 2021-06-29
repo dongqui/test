@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import { LPItemListAction, LPItemListOldAction } from 'actions/lpData';
+import { changeFileName, LPItemListAction, LPItemListOldAction } from 'actions/lpData';
 import {
   LPItemListOldType,
   LPItemListType,
@@ -14,6 +14,7 @@ import {
   fnFindSameNameFile,
   fnMakeNewData,
 } from '../utils/LP_launching';
+import { iteratorSymbol } from 'immer/dist/internal';
 
 interface FindDeleteKeys {
   data: LPItemListType;
@@ -47,6 +48,7 @@ interface LPDataState {
   pageKey: string; // 현재 페이지의 key
   modifyingRow?: Pick<LPItemType, 'key' | 'name' | 'parentKey' | 'type'>; // 수정중인 row의 정보
   modalInfo: ModalInfoType; // 모달 정보
+  copiedKeys: string[]; // 복사된 key들
 }
 
 const defaultState: LPDataState = {
@@ -57,6 +59,7 @@ const defaultState: LPDataState = {
   pageKey: ROOT_KEY,
   modifyingRow: undefined,
   modalInfo: { isShow: false, modalType: 'none' },
+  copiedKeys: [],
 };
 
 export const lpData = (state = defaultState, action: LPItemListAction) => {
@@ -225,6 +228,32 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
           modifyingRow: undefined,
         } as LPDataState);
       }
+    }
+    case 'lpdata/COPY_ROWS': {
+      return Object.assign({}, state, {
+        copiedKeys: [...state.selectedKeys],
+      } as LPDataState);
+    }
+    case 'lpdata/PASTE_ROWS': {
+      // 복사한 row들을 찾고 key만 바꿔준다.
+      const copiedRows = state.itemList
+        .filter((item) => state.copiedKeys.includes(item.key))
+        .map((item) => ({
+          ...item,
+          key: `${item.key}a`,
+          name: fnChangeFileNameCheckingDuplicate({
+            data: state.itemList.filter((object) => object.parentKey === item.parentKey),
+            name: item.name,
+          }),
+        }));
+      let newItemList = [...state.itemList];
+      // 복사한 row들을 담아준다.
+      if (copiedRows) {
+        newItemList = _.concat(newItemList, copiedRows);
+      }
+      return Object.assign({}, state, {
+        itemList: newItemList,
+      } as LPDataState);
     }
     default: {
       return state;

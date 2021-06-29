@@ -84,5 +84,6 @@ export interface ModalInfoType {
 export enum ContextMenuEnum {
   NEW_DIRECTORY = 'New Directory',
   EDIT_NAME = 'Edit name',
+  COPY = 'Copy',
   PASTE = 'Paste',
 }

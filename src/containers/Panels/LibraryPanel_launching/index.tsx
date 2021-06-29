@@ -171,7 +171,10 @@ const LibraryPanel: FunctionComponent = () => {
   const makeContextMenuData = useCallback((params: MakeContextMenuData): ContextmenuDataTypes[] => {
     const { isIcon } = params;
     if (isIcon) {
-      return [{ key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME }];
+      return [
+        { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
+        { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
+      ];
     } else {
       return [
         { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
@@ -211,6 +214,12 @@ const LibraryPanel: FunctionComponent = () => {
               }),
             );
           }
+          break;
+        case `${ContextMenuEnum.COPY}`:
+          dispatch(lpDataActions.copyRows());
+          break;
+        case `${ContextMenuEnum.PASTE}`:
+          dispatch(lpDataActions.pasteRows());
           break;
         default:
           break;

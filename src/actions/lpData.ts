@@ -20,7 +20,9 @@ export type LPItemListAction =
   | ReturnType<typeof addDirectory>
   | ReturnType<typeof changeFileName>
   | ReturnType<typeof setModalInfo>
-  | ReturnType<typeof setModifyingRow>;
+  | ReturnType<typeof setModifyingRow>
+  | ReturnType<typeof copyRows>
+  | ReturnType<typeof pasteRows>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -127,6 +129,16 @@ export const SET_MODIFYING_ROW = 'lpdata/SET_MODIFYING_ROW' as const;
 export const setModifyingRow = (params: SetModifyingRow) => ({
   type: SET_MODIFYING_ROW,
   payload: params,
+});
+
+export const COPY_ROWS = 'lpdata/COPY_ROWS' as const;
+export const copyRows = () => ({
+  type: COPY_ROWS,
+});
+
+export const PASTE_ROWS = 'lpdata/PASTE_ROWS' as const;
+export const pasteRows = () => ({
+  type: PASTE_ROWS,
 });
 
 export type LPItemListOldAction = ReturnType<typeof setItemListOld>;
