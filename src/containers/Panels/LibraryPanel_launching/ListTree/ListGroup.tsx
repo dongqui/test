@@ -4,17 +4,16 @@ import { useDispatch } from 'react-redux';
 import { LPItemListType, LPItemType } from 'types/LP';
 import ListRow from './ListRow';
 import * as lpDataActions from 'actions/lpData';
+import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './ListGroup.module.scss';
-import { useSelector } from 'reducers';
-import { fnFindSameNameFile } from 'utils/LP_launching';
-import { useConfirmModal } from 'components/Modal/ConfirmModal';
 
 const cx = classNames.bind(styles);
 
 interface Props {
   items: LPItemListType;
   expandedKeys: string[];
+  unExpandedKeys: string[];
 }
 
 export interface FilteredItem extends LPItemType {
@@ -23,25 +22,24 @@ export interface FilteredItem extends LPItemType {
 
 type FilteredItems = Array<FilteredItem>;
 
-const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys }) => {
+const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys, unExpandedKeys }) => {
   const dispatch = useDispatch();
 
   const selectedKeys = useSelector((state) => state.lpData.selectedKeys);
 
   const filteredItems = useMemo((): FilteredItems => {
-    let result = items.map((item) => ({ ...item, isExpanded: expandedKeys.includes(item.key) }));
-    // 닫혀있는 row key들을 구한다
-    const unExpandedKeys = result
-      .filter((item) => item.isExpanded === false)
-      .map((item) => item.key);
-    // 닫혀있는 row key들의 child 들은 모두 지워준다
-    result = result.filter((item) => !unExpandedKeys.includes(item.parentKey));
+    const expandedRows = items.filter((item) =>
+      _.isEmpty(_.intersection(item.parentKeyList, unExpandedKeys)),
+    ); // 부모 키들중 닫힌 키가 포함되어 있는 row들은 모두 지워준다
+    const result = expandedRows.map(
+      (item) => ({ ...item, isExpanded: expandedKeys.includes(item.key) } as FilteredItem),
+    );
     return result;
-  }, [expandedKeys, items]);
+  }, [expandedKeys, items, unExpandedKeys]);
 
   const handleClickExpand = useCallback(
     (key: string) => {
-      dispatch(lpDataActions.setItemList({ key, isExpanded: !expandedKeys.includes(key) }));
+      dispatch(lpDataActions.setExpandedKey({ key, isExpand: !expandedKeys.includes(key) }));
     },
     [dispatch, expandedKeys],
   );

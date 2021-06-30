@@ -183,11 +183,13 @@ const LibraryPanel: FunctionComponent = () => {
             { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
             { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
           ];
-        } else {
+        } else if (item?.type === 'File') {
           return [
             { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
             { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
           ];
+        } else {
+          return [{ key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME }];
         }
       } else {
         // 빈공간

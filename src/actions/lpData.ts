@@ -22,7 +22,8 @@ export type LPItemListAction =
   | ReturnType<typeof setModalInfo>
   | ReturnType<typeof setModifyingRow>
   | ReturnType<typeof copyRows>
-  | ReturnType<typeof pasteRows>;
+  | ReturnType<typeof pasteRows>
+  | ReturnType<typeof setExpandedKey>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -139,6 +140,16 @@ export const copyRows = () => ({
 export const PASTE_ROWS = 'lpdata/PASTE_ROWS' as const;
 export const pasteRows = () => ({
   type: PASTE_ROWS,
+});
+
+interface SetExpandedKey {
+  key: string;
+  isExpand: boolean;
+}
+export const SET_EXPANDED_KEY = 'lpdata/SET_EXPANDED_KEY' as const;
+export const setExpandedKey = (params: SetExpandedKey) => ({
+  type: SET_EXPANDED_KEY,
+  payload: params,
 });
 
 export type LPItemListOldAction = ReturnType<typeof setItemListOld>;
