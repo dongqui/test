@@ -263,9 +263,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       let newCopiedRows: LPItemListType = [];
       const uuid = uuidv4().slice(0, 4);
       _.forEach(copiedGroupKeys, (groupKey) => {
-        const groupRows = state.itemList.filter(
-          (item) => item.groupKey == groupKey && !selectedRow?.parentKeyList.includes(item.key),
-        ); // 해당 그룹들을 먼저 찾고 (같은 그룹이라도 selectedRow의 상위는 제외시켜야함)
+        const groupRows = copiedRows.filter((item) => item.groupKey == groupKey);
         const topDepth = _.min(groupRows.map((item) => item.depth)) || 1; // 현재 그룹중 최상위 depth
         const topDepthRow = groupRows.find((item) => item.depth === topDepth); // 해당 그룹중 최상위 depth를 찾아준다
         if (topDepthRow) {
@@ -313,9 +311,8 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       // 복사한 row들을 담아준다.
       if (newCopiedRows) {
         if (selectedRow) {
-          let startIndex = _.findLastIndex(
-            state.itemList,
-            (item) => item.parentKey === selectedRow?.key,
+          let startIndex = _.findLastIndex(state.itemList, (item) =>
+            item.parentKeyList.includes(selectedRow?.key ?? ''),
           ); // 선택한 row 하위의 맨 마지막 다음부터 끼워넣는다
           startIndex =
             startIndex === -1
