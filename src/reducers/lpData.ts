@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import { changeFileName, LPItemListAction, LPItemListOldAction } from 'actions/lpData';
+import { LPItemListAction, LPItemListOldAction } from 'actions/lpData';
 import {
   LPItemListOldType,
   LPItemListType,
@@ -12,9 +12,10 @@ import {
 import {
   fnChangeFileNameCheckingDuplicate,
   fnFindSameNameFile,
+  fnInsertDataAsChild,
   fnMakeNewData,
 } from '../utils/LP_launching';
-import { iteratorSymbol } from 'immer/dist/internal';
+import { stat } from 'fs';
 
 interface FindDeleteKeys {
   data: LPItemListType;
@@ -71,19 +72,6 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         itemList: [...state.itemList, ...action.payload.itemList],
       } as LPDataState);
     }
-    case 'lpdata/SET_ITEMLIST': {
-      return Object.assign({}, state, {
-        itemList: state.itemList.map((item) =>
-          item.key === action.payload.key ? Object.assign({}, item, action.payload) : item,
-        ),
-        modifyingRow: undefined,
-      } as LPDataState);
-    }
-    case 'lpdata/DELETE_ITEMLIST': {
-      return Object.assign({}, state, {
-        itemList: state.itemList.filter((item) => item.key !== action.payload.key),
-      } as LPDataState);
-    }
     case 'lpdata/SELECT_ITEMLIST': {
       const newItemList = _.clone(state.itemList);
       let newSelectedKeys = _.clone(state.selectedKeys);
@@ -117,8 +105,12 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         }
       } else if (action.payload.selectType === 'none') {
         // 단일선택
-        newSelectedKeys = [action.payload.keys[0]];
-        newAlreadySelectedKey = action.payload.keys[0];
+        const targetKey = action.payload.keys[0];
+        const isAlreadySelected = targetKey && state.selectedKeys.includes(targetKey); // 이미 선택되어 있는지 여부
+        if (!isAlreadySelected) {
+          newSelectedKeys = [action.payload.keys[0]];
+          newAlreadySelectedKey = action.payload.keys[0];
+        }
       }
       // 선택된 키들의 하위 키들
       const childrenKeys = findChildrenKeys({ data: newItemList, keys: newSelectedKeys });
@@ -165,8 +157,35 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       } as LPDataState);
     }
     case 'lpdata/SET_MODAL_INFO': {
+      let newModalMessage = action.payload.message;
+      // 메시지에 분기처리가 들어가는 부분은 여기서 처리해준다
+      if (action.payload.detailType === 'delete') {
+        // 선택한 row들중 최상위 하나씩만 뽑는다
+        const selectedRows = state.itemList.filter(
+          (item) =>
+            state.selectedKeys.includes(item.key) &&
+            _.isEmpty(_.intersection(item.parentKeyList, state.selectedKeys)),
+        );
+        if (_.isEmpty(selectedRows)) {
+          // 선택된 row가 없다면 삭제하지 않는다
+          return state;
+        }
+        if (selectedRows.length > 1) {
+          newModalMessage = 'Are you sure you want to delete the files?';
+        } else {
+          const selectedRow = selectedRows[0];
+          if (selectedRow.type === 'Folder') {
+            newModalMessage =
+              'Are you sure you want to delete this directory? <br /> This will delete all files in selected folder.';
+          } else if (selectedRow.type === 'File') {
+            newModalMessage = 'Are you sure you want to delete the file?';
+          } else if (selectedRow.type === 'Motion') {
+            newModalMessage = 'Are you sure you want to delete the motion?';
+          }
+        }
+      }
       return Object.assign({}, state, {
-        modalInfo: action.payload,
+        modalInfo: { ...action.payload, message: newModalMessage },
       } as LPDataState);
     }
     case 'lpdata/SET_MODIFYING_ROW': {
@@ -186,19 +205,21 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       } as LPDataState);
     }
     case 'lpdata/ADD_DIRECTORY': {
+      const targetKey = action.payload.key; // 타겟이 되는 키
       const currentPageKey = state.mode === 'listView' ? ROOT_KEY : state.pageKey; // 현재페이지 키
       const currentPageParentRow = state.itemList.find((item) => item.key === currentPageKey); // 현재페이지의 부모 row
-      // 파일 하위일 경우는 동작하지 않는다.
-      if (currentPageParentRow?.type === 'File') {
-        return state;
+      let currentPageRows = state.itemList.filter((item) => item.parentKey === currentPageKey); // 현재페이지에 있는 row들
+      let parentKey = currentPageParentRow ? currentPageParentRow.key : ROOT_KEY;
+      if (targetKey) {
+        // 타겟키가 있다면 타겟키가 우선한다
+        currentPageRows = state.itemList.filter((item) => item.parentKey === targetKey);
+        parentKey = targetKey;
       }
-      const currentPageRows = state.itemList.filter((item) => item.parentKey === currentPageKey); // 현재페이지에 있는 row들
       const name = fnChangeFileNameCheckingDuplicate({
         data: currentPageRows,
         name: 'Folder',
       });
       const key = uuidv4();
-      const parentKey = currentPageParentRow ? currentPageParentRow.key : ROOT_KEY;
       const additionalLPItem = fnMakeNewData({
         key,
         name,
@@ -208,7 +229,17 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         baseLayer: [],
         boneNames: [],
       });
-      const newItemList = [...state.itemList, additionalLPItem];
+      let newItemList = _.clone(state.itemList);
+      if (targetKey) {
+        // 타겟 키가 있으면 타겟 키의 하위로 넣어준다
+        newItemList = fnInsertDataAsChild({
+          data: newItemList,
+          targetData: [additionalLPItem],
+          targetKey,
+        });
+      } else {
+        newItemList = _.concat(newItemList, additionalLPItem);
+      }
       return Object.assign({}, state, {
         itemList: newItemList,
         modifyingRow: { key, name, parentKey, type: 'Folder' },
@@ -243,13 +274,15 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       }
     }
     case 'lpdata/COPY_ROWS': {
+      const newSelectedKeys = _.clone(state.selectedKeys);
       return Object.assign({}, state, {
-        copiedKeys: [...state.selectedKeys],
+        copiedKeys: newSelectedKeys,
       } as LPDataState);
     }
     case 'lpdata/PASTE_ROWS': {
+      const selectedKey = action.payload.key || state.selectedKeys[0]; // 타겟이 되는 key가 우선한다
       let selectedRow = state.itemList.find(
-        (item) => item.key === state.selectedKeys[0] && item.type === 'Folder',
+        (item) => item.key === selectedKey && item.type === 'Folder',
       );
       if (!selectedRow && state.mode === 'iconView') {
         // 선택된 폴더가 없고 아이콘뷰일 경우에는 현재 페이지의 상위row가 기준이 된다
@@ -259,13 +292,13 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         state.copiedKeys.includes(item.key),
       );
       const groupKey: keyof LPItemType = 'groupKey';
-      const copiedGroupKeys = Object.keys(_.groupBy(copiedRows, groupKey));
+      const copiedGroupKeys = Object.keys(_.groupBy(copiedRows, groupKey)); // 복사한 row들을 그룹별로 나눈다
       let newCopiedRows: LPItemListType = [];
       const uuid = uuidv4().slice(0, 4);
       _.forEach(copiedGroupKeys, (groupKey) => {
-        const groupRows = copiedRows.filter((item) => item.groupKey == groupKey);
+        const groupRows = copiedRows.filter((item) => item.groupKey == groupKey); // 현재 그룹의 row들
         const topDepth = _.min(groupRows.map((item) => item.depth)) || 1; // 현재 그룹중 최상위 depth
-        const topDepthRow = groupRows.find((item) => item.depth === topDepth); // 해당 그룹중 최상위 depth를 찾아준다
+        const topDepthRow = groupRows.find((item) => item.depth === topDepth);
         if (topDepthRow) {
           const newKey = `${topDepthRow.key}${uuid}`; // 새로운 키를 생성한다
           const newGroupKey = selectedRow ? selectedRow.groupKey : uuidv4(); // 선택폴더 하위로 들어갈땐 선택폴더의 groupKey를 따른다
@@ -281,7 +314,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
             name: fnChangeFileNameCheckingDuplicate({
               data: currentRows,
               name: topDepthRow?.name ?? '',
-            }), // 각 그룹의 최상위 depth는 이름중복체크를 해준다.
+            }), // 그룹의 최상위 depth는 이름중복체크를 해준다.
             depth: newDepth,
             groupKey: newGroupKey,
             parentKey: newParentKey,
@@ -302,7 +335,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
                 ...item.parentKeyList
                   .filter((item) => !topDepthRow.parentKeyList.includes(item))
                   .map((item) => `${item}${uuid}`),
-              ], // 최상위 depth row의 parentKeyList와 key값을 재조정한 그 하위의 parentKeyList를 합쳐준다
+              ], // 최상위 depth row의 하위부터 key를 변경해준다
             }));
           newCopiedRows = _.concat(newCopiedRows, childrenRows); // 재조정한 하위 row들도 모두 담아준다
         }
@@ -311,24 +344,30 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       // 복사한 row들을 담아준다.
       if (newCopiedRows) {
         if (selectedRow) {
-          let startIndex = _.findLastIndex(state.itemList, (item) =>
-            item.parentKeyList.includes(selectedRow?.key ?? ''),
-          ); // 선택한 row 하위의 맨 마지막 다음부터 끼워넣는다
-          startIndex =
-            startIndex === -1
-              ? _.findIndex(state.itemList, (item) => item.key === selectedRow?.key)
-              : startIndex; // 하위에 아무것도 없으면 선택한 row 바로 다음 index
-          newItemList = _.concat(
-            newItemList.slice(0, startIndex + 1),
-            newCopiedRows,
-            newItemList.slice(startIndex + 1),
-          );
+          newItemList = fnInsertDataAsChild({
+            data: newItemList,
+            targetData: newCopiedRows,
+            targetKey: selectedRow.key,
+          });
         } else {
           newItemList = _.concat(newItemList, newCopiedRows);
         }
       }
       return Object.assign({}, state, {
         itemList: newItemList,
+      } as LPDataState);
+    }
+    case 'lpdata/DELETE_ROWS': {
+      let newSelectedKeys = _.clone(state.selectedKeys || []);
+      if (_.isEmpty(newSelectedKeys) && action.payload.key) {
+        // 타겟이 되는 키가 있다면 타겟 키를 선택키로 담아준다
+        newSelectedKeys = [action.payload.key];
+      }
+      // 하위키들도 포함해준다
+      const childrenKeys = findChildrenKeys({ data: state.itemList, keys: newSelectedKeys });
+      newSelectedKeys = _.concat(newSelectedKeys, childrenKeys);
+      return Object.assign({}, state, {
+        itemList: state.itemList.filter((item) => !newSelectedKeys.includes(item.key)),
       } as LPDataState);
     }
     default: {

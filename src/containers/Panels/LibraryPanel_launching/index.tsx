@@ -160,6 +160,7 @@ const LibraryPanel: FunctionComponent = () => {
   const lpSearchword = useSelector((state) => state.lpSearchword.word);
   const modalInfo = useSelector((state) => state.lpData.modalInfo);
   const modifyingRow = useSelector((state) => state.lpData.modifyingRow);
+  const copiedKeys = useSelector((state) => state.lpData.copiedKeys);
 
   const rightClickedKey = useRef<string>('');
 
@@ -173,33 +174,63 @@ const LibraryPanel: FunctionComponent = () => {
   const makeContextMenuData = useCallback(
     (params: MakeContextMenuData): ContextmenuDataTypes[] => {
       const { isIcon, itemKey } = params;
+      const isDisablePaste = _.isEmpty(copiedKeys);
       if (isIcon) {
         // 아이콘위
         const item = lpData.find((item) => item.key === itemKey);
         if (item?.type === 'Folder') {
           return [
             { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
-            { key: ContextMenuEnum.PASTE, value: ContextMenuEnum.PASTE },
+            {
+              key: ContextMenuEnum.PASTE,
+              value: ContextMenuEnum.PASTE,
+              isDisabled: isDisablePaste,
+            },
             { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
             { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
+            { key: ContextMenuEnum.DELETE, value: ContextMenuEnum.DELETE },
           ];
         } else if (item?.type === 'File') {
           return [
             { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
             { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
+            { key: ContextMenuEnum.DELETE, value: ContextMenuEnum.DELETE },
           ];
         } else {
-          return [{ key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME }];
+          return [
+            { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
+            { key: ContextMenuEnum.DELETE, value: ContextMenuEnum.DELETE },
+          ];
         }
       } else {
         // 빈공간
-        return [
-          { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
-          { key: ContextMenuEnum.PASTE, value: ContextMenuEnum.PASTE },
-        ];
+        if (lpMode === 'listView') {
+          return [
+            { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
+            {
+              key: ContextMenuEnum.PASTE,
+              value: ContextMenuEnum.PASTE,
+              isDisabled: isDisablePaste,
+            },
+          ];
+        } else {
+          const isFilePage = lpData.find((item) => item.key === lpPageKey)?.type === 'File';
+          if (isFilePage) {
+            return [{ key: ContextMenuEnum.ADD_MOTION, value: ContextMenuEnum.ADD_MOTION }];
+          } else {
+            return [
+              { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
+              {
+                key: ContextMenuEnum.PASTE,
+                value: ContextMenuEnum.PASTE,
+                isDisabled: isDisablePaste,
+              },
+            ];
+          }
+        }
       }
     },
-    [lpData],
+    [copiedKeys, lpData, lpMode, lpPageKey],
   );
 
   // 오른쪽 메뉴 정보
@@ -218,10 +249,13 @@ const LibraryPanel: FunctionComponent = () => {
   const handleClickContextMenu = useCallback(
     (key) => {
       let modifyingRow: LPItemType | undefined;
+      const modalMessage = '';
       switch (key) {
-        case `${ContextMenuEnum.NEW_DIRECTORY}`:
+        case `${ContextMenuEnum.NEW_DIRECTORY}`: {
+          dispatch(lpDataActions.addDirectory({ key: rightClickedKey.current }));
           break;
-        case `${ContextMenuEnum.EDIT_NAME}`:
+        }
+        case `${ContextMenuEnum.EDIT_NAME}`: {
           modifyingRow = lpData.find((item) => item.key === rightClickedKey.current);
           if (modifyingRow) {
             dispatch(
@@ -234,14 +268,30 @@ const LibraryPanel: FunctionComponent = () => {
             );
           }
           break;
-        case `${ContextMenuEnum.COPY}`:
+        }
+        case `${ContextMenuEnum.COPY}`: {
           dispatch(lpDataActions.copyRows());
           break;
-        case `${ContextMenuEnum.PASTE}`:
-          dispatch(lpDataActions.pasteRows());
+        }
+        case `${ContextMenuEnum.PASTE}`: {
+          dispatch(lpDataActions.pasteRows({ key: rightClickedKey.current }));
           break;
-        default:
+        }
+        case `${ContextMenuEnum.DELETE}`: {
+          dispatch(
+            lpDataActions.setModalInfo({
+              isShow: true,
+              message: 'Are you sure you want to delete the file?',
+              modalType: 'confirm',
+              detailType: 'delete',
+              text: { confirm: 'OK', cancel: 'Cancel' },
+            }),
+          );
           break;
+        }
+        default: {
+          break;
+        }
       }
       setContextMenuInfo((state) => ({ ...state, isShow: false }));
     },
@@ -255,6 +305,9 @@ const LibraryPanel: FunctionComponent = () => {
       const itemId = targetIcon?.getAttribute('itemId') || ''; // 클릭한 아이콘의 key
       rightClickedKey.current = itemId;
       const isIcon = !_.isEmpty(targetIcon); // 아이콘을 클릭했는지 여부
+      if (isIcon) {
+        dispatch(lpDataActions.selectItemList({ keys: [itemId], selectType: 'none' }));
+      }
       const contextMenuData = makeContextMenuData({ isIcon, itemKey: itemId });
       setContextMenuInfo({
         data: contextMenuData,
@@ -264,7 +317,7 @@ const LibraryPanel: FunctionComponent = () => {
         onClick: handleClickContextMenu,
       });
     },
-    [handleClickContextMenu, makeContextMenuData],
+    [dispatch, handleClickContextMenu, makeContextMenuData],
   );
 
   const contextMenuRef = useRef<HTMLDivElement>(null);
@@ -688,7 +741,7 @@ const LibraryPanel: FunctionComponent = () => {
       const isValidate = !targetIcon && isSelected;
       if (isValidate) {
         // 모두 선택 해제
-        dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
+        dispatch(lpDataActions.selectItemList({ keys: [], selectType: 'none' }));
         grabbedIcons?.forEach((element) => {
           element.id = 'grabbable';
         });
@@ -718,7 +771,7 @@ const LibraryPanel: FunctionComponent = () => {
     let sameNameFile: LPItemType | undefined;
     let currentRows: LPItemListType | undefined;
     switch (modalInfo.detailType) {
-      case 'overwrite':
+      case 'overwrite': {
         currentRows = lpData.filter(
           (item) =>
             item.key !== modifyingRow?.key &&
@@ -727,7 +780,7 @@ const LibraryPanel: FunctionComponent = () => {
         );
         sameNameFile = fnFindSameNameFile({ data: currentRows, name: modifyingRow?.name ?? '' });
         if (sameNameFile) {
-          dispatch(lpDataActions.deleteItemList({ key: sameNameFile.key }));
+          dispatch(lpDataActions.deleteRows({ key: sameNameFile.key }));
           dispatch(
             lpDataActions.changeFileName({
               key: modifyingRow?.key ?? '',
@@ -738,6 +791,11 @@ const LibraryPanel: FunctionComponent = () => {
           );
         }
         break;
+      }
+      case 'delete': {
+        dispatch(lpDataActions.deleteRows({ key: rightClickedKey.current }));
+        break;
+      }
       default:
         break;
     }
@@ -759,7 +817,7 @@ const LibraryPanel: FunctionComponent = () => {
   const handleDismiss = useCallback(async () => {
     let currentRows: LPItemListType | undefined;
     switch (modalInfo.detailType) {
-      case 'overwrite':
+      case 'overwrite': {
         currentRows = lpData.filter(
           (item) =>
             item.key !== modifyingRow?.key &&
@@ -778,6 +836,10 @@ const LibraryPanel: FunctionComponent = () => {
           }),
         );
         break;
+      }
+      case 'delete': {
+        break;
+      }
       default:
         break;
     }
@@ -791,6 +853,29 @@ const LibraryPanel: FunctionComponent = () => {
     modifyingRow?.parentKey,
     modifyingRow?.type,
   ]);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+        dispatch(lpDataActions.copyRows());
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+        dispatch(lpDataActions.pasteRows({}));
+      }
+      if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace')) {
+        dispatch(
+          lpDataActions.setModalInfo({
+            isShow: true,
+            message: 'Are you sure you want to delete the file?',
+            modalType: 'confirm',
+            detailType: 'delete',
+            text: { confirm: 'OK', cancel: 'Cancel' },
+          }),
+        );
+      }
+    },
+    [dispatch],
+  );
 
   useEffect(() => {
     const setDefaultModels = async () => {
@@ -825,6 +910,13 @@ const LibraryPanel: FunctionComponent = () => {
       };
     }
   }, [handleContextMenu]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   const isIconView = lpMode === 'iconView';
   const isListView = lpMode === 'listView';

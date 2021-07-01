@@ -73,7 +73,7 @@ export interface LPSearchwordType {
 
 export interface ModalInfoType {
   modalType: 'none' | 'alert' | 'confirm';
-  detailType?: 'overwrite';
+  detailType?: 'overwrite' | 'delete';
   isShow: boolean;
   message?: string;
   loading?: boolean;
@@ -85,4 +85,6 @@ export enum ContextMenuEnum {
   EDIT_NAME = 'Edit name',
   COPY = 'Copy',
   PASTE = 'Paste',
+  ADD_MOTION = 'Add motion',
+  DELETE = 'Delete',
 }

@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { SearchInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useSelector } from 'reducers';
-import * as LPDataActions from 'actions/lpData';
+import * as lpDataActions from 'actions/lpData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -19,11 +19,11 @@ const Explorer: FunctionComponent<Props> = ({ onChange }) => {
   const dispatch = useDispatch();
 
   const handleChangeMode = useCallback(() => {
-    dispatch(LPDataActions.setLPMode({ mode: lpMode === 'listView' ? 'iconView' : 'listView' }));
+    dispatch(lpDataActions.setLPMode({ mode: lpMode === 'listView' ? 'iconView' : 'listView' }));
   }, [dispatch, lpMode]);
 
   const handleAddGroup = useCallback(() => {
-    dispatch(LPDataActions.addDirectory());
+    dispatch(lpDataActions.addDirectory({}));
   }, [dispatch]);
 
   const icon = lpMode === 'listView' ? SvgPath.ListView : SvgPath.IconView;

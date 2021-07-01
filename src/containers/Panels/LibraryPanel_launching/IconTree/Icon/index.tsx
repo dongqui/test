@@ -89,7 +89,6 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, parentKey }) =
         dispatch(
           lpDataActions.selectItemList({
             keys: [rowKey],
-            isSelected: true,
             selectType: 'shift',
           }),
         );
@@ -97,24 +96,21 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, parentKey }) =
         dispatch(
           lpDataActions.selectItemList({
             keys: [rowKey],
-            isSelected: !isSelected,
             selectType: 'ctrl',
           }),
         );
       } else {
-        dispatch(
-          lpDataActions.selectItemList({ keys: [rowKey], isSelected: true, selectType: 'none' }),
-        );
+        dispatch(lpDataActions.selectItemList({ keys: [rowKey], selectType: 'none' }));
       }
     },
-    [dispatch, isSelected, rowKey],
+    [dispatch, rowKey],
   );
 
   const handleDoubleClick = useCallback(() => {
     // if (type === 'Motion') {}
     if (type === 'Folder' || type === 'File') {
       dispatch(lpDataActions.setLPPage({ key: rowKey }));
-      dispatch(lpDataActions.selectItemList({ keys: [], isSelected: false, selectType: 'none' }));
+      dispatch(lpDataActions.selectItemList({ keys: [], selectType: 'none' }));
     }
   }, [dispatch, rowKey, type]);
 

@@ -9,8 +9,6 @@ import {
 
 export type LPItemListAction =
   | ReturnType<typeof addItemList>
-  | ReturnType<typeof setItemList>
-  | ReturnType<typeof deleteItemList>
   | ReturnType<typeof selectItemList>
   | ReturnType<typeof setSelectedRows>
   | ReturnType<typeof addSelectedRows>
@@ -23,6 +21,7 @@ export type LPItemListAction =
   | ReturnType<typeof setModifyingRow>
   | ReturnType<typeof copyRows>
   | ReturnType<typeof pasteRows>
+  | ReturnType<typeof deleteRows>
   | ReturnType<typeof setExpandedKey>;
 
 interface AddItemList {
@@ -34,27 +33,10 @@ export const addItemList = (params: AddItemList) => ({
   payload: params,
 });
 
-interface SetItemList extends Partial<LPItemType> {
-  key: string;
-}
-export const SET_ITEMLIST = 'lpdata/SET_ITEMLIST' as const;
-export const setItemList = (params: SetItemList) => ({
-  type: SET_ITEMLIST,
-  payload: params,
-});
-
-type DeleteItemList = Pick<LPItemType, 'key'>;
-export const DELETE_ITEMLIST = 'lpdata/DELETE_ITEMLIST' as const;
-export const deleteItemList = (params: DeleteItemList) => ({
-  type: DELETE_ITEMLIST,
-  payload: params,
-});
-
 type SelectType = 'none' | 'shift' | 'ctrl';
 
 export interface SelectItemList {
   keys: string[];
-  isSelected: boolean;
   selectType: SelectType;
 }
 export const SELECT_ITEMLIST = 'lpdata/SELECT_ITEMLIST' as const;
@@ -106,9 +88,13 @@ export const setLPPage = (params: SetLPPage) => ({
   payload: params,
 });
 
+interface AddDirectory {
+  key?: string;
+}
 export const ADD_DIRECTORY = 'lpdata/ADD_DIRECTORY' as const;
-export const addDirectory = () => ({
+export const addDirectory = (params: AddDirectory) => ({
   type: ADD_DIRECTORY,
+  payload: params,
 });
 
 type ChangeFileName = Pick<LPItemType, 'key' | 'name' | 'parentKey' | 'type'>;
@@ -137,9 +123,22 @@ export const copyRows = () => ({
   type: COPY_ROWS,
 });
 
+interface PasteRows {
+  key?: string;
+}
 export const PASTE_ROWS = 'lpdata/PASTE_ROWS' as const;
-export const pasteRows = () => ({
+export const pasteRows = (params: PasteRows) => ({
   type: PASTE_ROWS,
+  payload: params,
+});
+
+interface DeleteRows {
+  key?: string;
+}
+export const DELETE_ROWS = 'lpdata/DELETE_ROWS' as const;
+export const deleteRows = (params: DeleteRows) => ({
+  type: DELETE_ROWS,
+  payload: params,
 });
 
 interface SetExpandedKey {

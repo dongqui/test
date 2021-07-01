@@ -97,7 +97,6 @@ const ListRow: FunctionComponent<Props> = ({
         dispatch(
           lpDataActions.selectItemList({
             keys: [rowKey],
-            isSelected: true,
             selectType: 'shift',
           }),
         );
@@ -105,17 +104,14 @@ const ListRow: FunctionComponent<Props> = ({
         dispatch(
           lpDataActions.selectItemList({
             keys: [rowKey],
-            isSelected: !isSelected,
             selectType: 'ctrl',
           }),
         );
       } else {
-        dispatch(
-          lpDataActions.selectItemList({ keys: [rowKey], isSelected: true, selectType: 'none' }),
-        );
+        dispatch(lpDataActions.selectItemList({ keys: [rowKey], selectType: 'none' }));
       }
     },
-    [dispatch, isSelected, rowKey],
+    [dispatch, rowKey],
   );
 
   const rowClasses = cx('list-row', `depth-${depth}`, {
