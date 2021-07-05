@@ -73,7 +73,7 @@ export interface LPSearchwordType {
 
 export interface ModalInfoType {
   modalType: 'none' | 'alert' | 'confirm';
-  detailType?: 'overwrite' | 'delete';
+  detailType?: 'overwrite' | 'delete' | 'move';
   isShow: boolean;
   message?: string;
   loading?: boolean;
@@ -88,3 +88,6 @@ export enum ContextMenuEnum {
   ADD_MOTION = 'Add motion',
   DELETE = 'Delete',
 }
+
+export const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];
+export const EnableFileFormats = [...EnableVideoFormats, 'glb', 'fbx'];

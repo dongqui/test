@@ -114,6 +114,17 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, parentKey }) =
     }
   }, [dispatch, rowKey, type]);
 
+  const handleDragStart = useCallback(() => {
+    if (!isSelected) {
+      // 선택되지 않은걸 드래그했다면 먼저 선택처리 해준다
+      dispatch(lpDataActions.selectItemList({ keys: [rowKey], selectType: 'none' }));
+    }
+  }, [dispatch, isSelected, rowKey]);
+
+  const handleDrop = useCallback(() => {
+    dispatch(lpDataActions.moveRows({ destinationKey: rowKey }));
+  }, [dispatch, rowKey]);
+
   const icon = useMemo(() => {
     if (type === 'Folder') {
       return SvgPath.Folder;
@@ -146,6 +157,9 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, parentKey }) =
         role="button"
         onKeyDown={() => {}}
         tabIndex={0}
+        draggable
+        onDragStart={handleDragStart}
+        onDrop={handleDrop}
       >
         <IconWrapper className={cx('icon-model')} icon={icon} hasFrame={false} />
       </div>

@@ -10,12 +10,13 @@ const cx = classNames.bind(styles);
 
 export interface ListViewProps {
   data: LPItemListType;
+  expandedKeys: string[];
 }
 
 export type GrouppedData = Array<LPItemListType>;
 
-const ListView: FunctionComponent<ListViewProps> = ({ data }) => {
-  const expandedKeys = useSelector((state) => state.lpData.expandedKeys);
+const ListView: FunctionComponent<ListViewProps> = ({ data, expandedKeys }) => {
+  // const expandedKeys = useSelector((state) => state.lpData.expandedKeys);
   const unExpandedKeys = data
     .filter((item) => !expandedKeys.includes(item.key))
     .map((item) => item.key);

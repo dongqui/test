@@ -31,7 +31,14 @@ import { BaseModal } from 'components/Modal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import Breadcrumb, { PathList } from './Breadcrumb';
 import IconView from './IconTree/IconView';
-import { ContextMenuEnum, LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
+import {
+  ContextMenuEnum,
+  EnableFileFormats,
+  EnableVideoFormats,
+  LPItemListType,
+  LPItemType,
+  ROOT_KEY,
+} from 'types/LP';
 import * as lpDataActions from 'actions/lpData';
 import { ListView } from './ListTree';
 import { DragBox } from 'components/DragBox';
@@ -39,11 +46,9 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { ContextmenuDataTypes, ContextmenuType } from 'types';
 import { ContextMenu } from 'components/ContextMenu';
+import { useCheckIsServer } from 'hooks/common/useCheckIsServer';
 
 const cx = classNames.bind(styles);
-
-const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];
-const EnableFileFormats = [...EnableVideoFormats, 'glb', 'fbx'];
 
 export const DefaultModels: Required<LPItemListType> = [
   {
@@ -154,6 +159,7 @@ interface ChangeFileToLpDataResponse {
 
 const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
+
   const lpData = useSelector((state) => state.lpData.itemList);
   const lpMode = useSelector((state) => state.lpData.mode);
   const lpPageKey = useSelector((state) => state.lpData.pageKey);
@@ -161,6 +167,9 @@ const LibraryPanel: FunctionComponent = () => {
   const modalInfo = useSelector((state) => state.lpData.modalInfo);
   const modifyingRow = useSelector((state) => state.lpData.modifyingRow);
   const copiedKeys = useSelector((state) => state.lpData.copiedKeys);
+  const expandedKeys = useSelector((state) => state.lpData.expandedKeys);
+
+  const { isServer } = useCheckIsServer();
 
   const rightClickedKey = useRef<string>('');
 
@@ -249,7 +258,6 @@ const LibraryPanel: FunctionComponent = () => {
   const handleClickContextMenu = useCallback(
     (key) => {
       let modifyingRow: LPItemType | undefined;
-      const modalMessage = '';
       switch (key) {
         case `${ContextMenuEnum.NEW_DIRECTORY}`: {
           dispatch(lpDataActions.addDirectory({ key: rightClickedKey.current }));
@@ -537,19 +545,18 @@ const LibraryPanel: FunctionComponent = () => {
         }
         // 비디오파일은 추출화면으로 전환시킨다.
         if (EnableVideoFormats.includes(extension)) {
-          // const confirmed = await getConfirm({
-          //   title: 'Export motion from the video?',
-          // });
-          // if (!confirmed) {
-          //   dispatch(
-          //     lpDataActions.setModalInfo({
-          //       isShow: true,
-          //       message: '',
-          //       loading: false,
-          //       modalType: 'alert',
-          //     }),
-          //   );
-          // }
+          dispatch(
+            lpDataActions.setModalInfo({
+              isShow: true,
+              message: 'Export motion from the video?',
+              modalType: 'confirm',
+              detailType: 'move',
+              text: {
+                confirm: 'OK',
+                cancel: 'cancel',
+              },
+            }),
+          );
           return;
         }
         const currentRows = lpData.filter((item) => item.parentKey === findParentKey);
@@ -570,6 +577,7 @@ const LibraryPanel: FunctionComponent = () => {
               modalType: 'alert',
             }),
           );
+          return;
         }
         newLpData = _.concat(newLpData, newData);
       }
@@ -611,21 +619,34 @@ const LibraryPanel: FunctionComponent = () => {
   /**
    * 리스트뷰로 전달할 가공데이터입니다.
    * @return 검색어 필터링 후 lpItems
+   * @return 펼쳐야 할 row들의 키
    */
-  const filteredListviewData = useMemo((): LPItemListType => {
+  const filteredListviewData = useMemo((): {
+    data: LPItemListType;
+    expandedKeys: string[];
+  } => {
     let data = _.clone(lpData);
+    let newExpandedKeys = _.clone(expandedKeys);
     if (!_.isEmpty(lpSearchword)) {
+      const findRows = data.filter((item) =>
+        item.name.toLowerCase().includes(lpSearchword.toLowerCase()),
+      ); // 검색된 row들
+      const findRowKeys = findRows.map((item) => item.key);
+      const findChildRows = data.filter(
+        (item) => !_.isEmpty(_.intersection(item.parentKeyList, findRowKeys)),
+      ); // 검색된 row들의 자식들
+      const findChildRowKeys = findChildRows.map((item) => item.key);
       // 검색어에 해당하는 row의 group key들
-      const findGroupKeys = data
-        .filter((item) => item.name.toLowerCase().includes(lpSearchword.toLowerCase()))
-        .map((item) => item.groupKey);
+      const findGroupKeys = _.uniq(findRows.map((item) => item.groupKey));
       // 해당 group key에 해당하는 row들만 필터링
       data = data.filter((item) => findGroupKeys.includes(item.groupKey));
-      // 필터링된 row들은 모두 펼쳐준다
-      data = data.map((item) => ({ ...item, isExpanded: true }));
+      const additionalExpandedKeys = data
+        .filter((item) => !findRowKeys.includes(item.key) && !findChildRowKeys.includes(item.key))
+        .map((item) => item.key);
+      newExpandedKeys = _.uniq(_.concat(expandedKeys, additionalExpandedKeys)); // 검색된 그룹 중 검색파일 전까지는 모두 펼쳐준다
     }
-    return data;
-  }, [lpData, lpSearchword]);
+    return { data, expandedKeys: newExpandedKeys };
+  }, [expandedKeys, lpData, lpSearchword]);
 
   /**
    * Breadcrumb 로 전달하기 위한 페이지 가공데이터
@@ -894,11 +915,11 @@ const LibraryPanel: FunctionComponent = () => {
       );
       dispatch(lpDataActions.setModalInfo({ isShow: false, message: '', loading: false }));
     };
-    if (_.isEmpty(lpData)) {
+    if (isServer && _.isEmpty(lpData)) {
       // 기본모델 로드
       setDefaultModels();
     }
-  }, [changeFileToLpData, dispatch, lpData]);
+  }, [changeFileToLpData, dispatch, isServer, lpData]);
 
   useEffect(() => {
     if (viewRef.current) {
@@ -949,7 +970,12 @@ const LibraryPanel: FunctionComponent = () => {
               tabIndex={0}
             >
               {isIconView && <IconView data={filteredIconviewData} />}
-              {isListView && <ListView data={filteredListviewData} />}
+              {isListView && (
+                <ListView
+                  data={filteredListviewData.data}
+                  expandedKeys={filteredListviewData.expandedKeys}
+                />
+              )}
               <DragBox
                 isAllCovered={false}
                 onChangeIsUpdated={handleDragboxChange}

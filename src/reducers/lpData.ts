@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { LPItemListAction, LPItemListOldAction } from 'actions/lpData';
 import {
+  EnableFileFormats,
   LPItemListOldType,
   LPItemListType,
   LPItemType,
@@ -12,10 +13,10 @@ import {
 import {
   fnChangeFileNameCheckingDuplicate,
   fnFindSameNameFile,
+  fnGetFileExtension,
   fnInsertDataAsChild,
   fnMakeNewData,
 } from '../utils/LP_launching';
-import { stat } from 'fs';
 
 interface FindDeleteKeys {
   data: LPItemListType;
@@ -39,6 +40,102 @@ const findChildrenKeys = (params: FindDeleteKeys): string[] => {
   // 중복 키 제거
   childrenKeys = _.uniq(childrenKeys);
   return childrenKeys;
+};
+
+interface FindTopParentRows {
+  data: LPItemListType;
+}
+
+/**
+ * 가장 상위 depth의 row들만 추려주는 함수입니다.
+ *
+ * @param data lpdata
+ *
+ * @return 추린 후의 lpdata
+ */
+const findTopParentRows = (params: FindTopParentRows): LPItemListType => {
+  const { data } = params;
+
+  const keys = data.map((item) => item.key);
+  const topParentRows = data.filter((item) => !keys.includes(item.parentKey));
+  return topParentRows;
+};
+
+interface MakeNewRowsForPaste {
+  data: LPItemListType;
+  rows: LPItemListType;
+  targetRow?: LPItemType;
+}
+
+/**
+ * 붙여넣기 할 대상 하위에 넣어주기 위한 rows 를 만들어주는 함수
+ * 붙여넣기 뿐만 아니라 파일 이동시에도 재활용이 되서 함수로 분리
+ *
+ * @param data - lpdata
+ * @param rows - 복사할 rows
+ * @param targetRow - 붙여넣기 할 대상이 되는 row
+ *
+ * @return 새로 생성된 rows
+ */
+const makeNewRowsForPaste = (params: MakeNewRowsForPaste): LPItemListType => {
+  const { data, rows, targetRow } = params;
+
+  let copiedRows: LPItemListType = _.clone(rows);
+  const topParentKeys = findTopParentRows({ data: rows }).map((item) => item.key);
+  copiedRows = copiedRows.map((item) => {
+    const newGroupKey = topParentKeys.find(
+      (parentKey) => parentKey === item.key || item.parentKeyList.includes(parentKey),
+    );
+    return { ...item, groupKey: newGroupKey ? newGroupKey : item.groupKey };
+  }); // 그룹키를 다시 만들어준다.
+  const groupKey: keyof LPItemType = 'groupKey';
+  const copiedGroupKeys = Object.keys(_.groupBy(copiedRows, groupKey)); // 복사한 row들을 그룹별로 나눈다
+  let newCopiedRows: LPItemListType = [];
+  const uuid = uuidv4().slice(0, 4);
+  _.forEach(copiedGroupKeys, (groupKey) => {
+    const groupRows = copiedRows.filter((item) => item.groupKey == groupKey); // 현재 그룹의 row들
+    const topDepth = _.min(groupRows.map((item) => item.depth)) || 1; // 현재 그룹중 최상위 depth
+    const topDepthRow = groupRows.find((item) => item.depth === topDepth);
+    if (topDepthRow) {
+      const newKey = `${topDepthRow.key}${uuid}`; // 새로운 키를 생성한다
+      const newGroupKey = targetRow ? targetRow.groupKey : uuidv4(); // 선택폴더 하위로 들어갈땐 선택폴더의 groupKey를 따른다
+      const newDepth = targetRow ? targetRow.depth + 1 : 1; // 선택한 폴더가 있으면 해당 폴더의 하위로 들어가야 한다
+      const newParentKey = targetRow ? targetRow.key : ROOT_KEY;
+      const newParentKeyList = targetRow ? [...targetRow.parentKeyList, targetRow.key] : [ROOT_KEY];
+      const currentRows = data.filter((item) => item.parentKey === newParentKey); // 같은 depth에 있는 row들
+      const newTopDepthRow = {
+        ...topDepthRow,
+        key: newKey,
+        name: fnChangeFileNameCheckingDuplicate({
+          data: currentRows,
+          name: topDepthRow?.name ?? '',
+        }), // 그룹의 최상위 depth는 이름중복체크를 해준다.
+        depth: newDepth,
+        groupKey: newGroupKey,
+        parentKey: newParentKey,
+        parentKeyList: newParentKeyList,
+      };
+      newCopiedRows.push(newTopDepthRow);
+      const childrenKeys = findChildrenKeys({ data, keys: [topDepthRow.key] });
+      const childrenRows = data
+        .filter((item) => childrenKeys.includes(item.key))
+        .map((item) => ({
+          ...item,
+          key: `${item.key}${uuid}`,
+          depth: item.depth + (newDepth - topDepth), // 변경된 depth만큼 재조정해준다
+          groupKey: newGroupKey,
+          parentKey: `${item.parentKey}${uuid}`,
+          parentKeyList: [
+            ...newParentKeyList,
+            ...item.parentKeyList
+              .filter((item) => !topDepthRow.parentKeyList.includes(item))
+              .map((item) => `${item}${uuid}`),
+          ], // 최상위 depth row의 하위부터 key를 변경해준다
+        }));
+      newCopiedRows = _.concat(newCopiedRows, childrenRows); // 재조정한 하위 row들도 모두 담아준다
+    }
+  });
+  return newCopiedRows;
 };
 
 interface LPDataState {
@@ -230,6 +327,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         boneNames: [],
       });
       let newItemList = _.clone(state.itemList);
+      const newExpandedKeys = _.clone(state.expandedKeys);
       if (targetKey) {
         // 타겟 키가 있으면 타겟 키의 하위로 넣어준다
         newItemList = fnInsertDataAsChild({
@@ -237,17 +335,19 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
           targetData: [additionalLPItem],
           targetKey,
         });
+        newExpandedKeys.push(targetKey);
       } else {
         newItemList = _.concat(newItemList, additionalLPItem);
       }
       return Object.assign({}, state, {
         itemList: newItemList,
         modifyingRow: { key, name, parentKey, type: 'Folder' },
+        expandedKeys: newExpandedKeys,
       } as LPDataState);
     }
     case 'lpdata/CHANGE_FILENAME': {
       const { key, name, parentKey, type } = action.payload;
-      // 동일 depth의 row들 중 같은 이름의 파일이 있는지 체크한다. (자기자신이 아니면서 + 같은 부모를 가지고 있고 타입이 같은)
+      // 동일 depth의 row들 중 같은 이름의 파일이 있는지 체크한다. (자기자신이 아니면서 같은 부모를 가지고 있고 타입이 같은)
       const currentRows = state.itemList.filter(
         (item) => item.key !== key && item.parentKey === parentKey && item.type === type,
       );
@@ -291,54 +391,10 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       const copiedRows: LPItemListType = state.itemList.filter((item) =>
         state.copiedKeys.includes(item.key),
       );
-      const groupKey: keyof LPItemType = 'groupKey';
-      const copiedGroupKeys = Object.keys(_.groupBy(copiedRows, groupKey)); // 복사한 row들을 그룹별로 나눈다
-      let newCopiedRows: LPItemListType = [];
-      const uuid = uuidv4().slice(0, 4);
-      _.forEach(copiedGroupKeys, (groupKey) => {
-        const groupRows = copiedRows.filter((item) => item.groupKey == groupKey); // 현재 그룹의 row들
-        const topDepth = _.min(groupRows.map((item) => item.depth)) || 1; // 현재 그룹중 최상위 depth
-        const topDepthRow = groupRows.find((item) => item.depth === topDepth);
-        if (topDepthRow) {
-          const newKey = `${topDepthRow.key}${uuid}`; // 새로운 키를 생성한다
-          const newGroupKey = selectedRow ? selectedRow.groupKey : uuidv4(); // 선택폴더 하위로 들어갈땐 선택폴더의 groupKey를 따른다
-          const newDepth = selectedRow ? selectedRow.depth + 1 : 1; // 선택한 폴더가 있으면 해당 폴더의 하위로 들어가야 한다
-          const newParentKey = selectedRow ? selectedRow.key : ROOT_KEY;
-          const newParentKeyList = selectedRow
-            ? [...selectedRow.parentKeyList, selectedRow.key]
-            : [ROOT_KEY];
-          const currentRows = state.itemList.filter((item) => item.parentKey === newParentKey); // 같은 depth에 있는 row들
-          const newTopDepthRow = {
-            ...topDepthRow,
-            key: newKey,
-            name: fnChangeFileNameCheckingDuplicate({
-              data: currentRows,
-              name: topDepthRow?.name ?? '',
-            }), // 그룹의 최상위 depth는 이름중복체크를 해준다.
-            depth: newDepth,
-            groupKey: newGroupKey,
-            parentKey: newParentKey,
-            parentKeyList: newParentKeyList,
-          };
-          newCopiedRows.push(newTopDepthRow);
-          const childrenKeys = findChildrenKeys({ data: state.itemList, keys: [topDepthRow.key] });
-          const childrenRows = state.itemList
-            .filter((item) => childrenKeys.includes(item.key))
-            .map((item) => ({
-              ...item,
-              key: `${item.key}${uuid}`,
-              depth: item.depth + (newDepth - topDepth), // 변경된 depth만큼 재조정해준다
-              groupKey: newGroupKey,
-              parentKey: `${item.parentKey}${uuid}`,
-              parentKeyList: [
-                ...newParentKeyList,
-                ...item.parentKeyList
-                  .filter((item) => !topDepthRow.parentKeyList.includes(item))
-                  .map((item) => `${item}${uuid}`),
-              ], // 최상위 depth row의 하위부터 key를 변경해준다
-            }));
-          newCopiedRows = _.concat(newCopiedRows, childrenRows); // 재조정한 하위 row들도 모두 담아준다
-        }
+      const newCopiedRows = makeNewRowsForPaste({
+        data: state.itemList,
+        rows: copiedRows,
+        targetRow: selectedRow,
       });
       let newItemList: LPItemListType = _.clone(state.itemList);
       // 복사한 row들을 담아준다.
@@ -353,8 +409,14 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
           newItemList = _.concat(newItemList, newCopiedRows);
         }
       }
+      const newExpandedKeys = _.clone(state.expandedKeys);
+      if (selectedRow) {
+        // 선택한 폴더는 펼쳐준다
+        newExpandedKeys.push(selectedRow.key);
+      }
       return Object.assign({}, state, {
         itemList: newItemList,
+        expandedKeys: newExpandedKeys,
       } as LPDataState);
     }
     case 'lpdata/DELETE_ROWS': {
@@ -369,6 +431,49 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       return Object.assign({}, state, {
         itemList: state.itemList.filter((item) => !newSelectedKeys.includes(item.key)),
       } as LPDataState);
+    }
+    case 'lpdata/MOVE_ROWS': {
+      const selectedRows = state.itemList.filter((item) => state.selectedKeys.includes(item.key));
+      const selectedTopParentRows = findTopParentRows({ data: selectedRows }); // 선택한 row들중 가장 상위에 있는 row들만 추려낸다
+      const selectedRowsTypes = selectedTopParentRows.map((item) => item.type);
+      const destinationRow = state.itemList.find(
+        (item) => item.key === action.payload.destinationKey,
+      ); // 목적지에 해당하는 row
+      // 제약조건 적용
+      if (selectedRowsTypes.includes('Motion')) {
+        return state;
+      }
+      if (selectedRowsTypes.includes('File')) {
+        if (destinationRow?.type !== 'Folder') {
+          return state;
+        }
+      }
+      if (selectedRowsTypes.includes('Folder')) {
+        if (destinationRow?.type !== 'Folder') {
+          return state;
+        }
+      }
+      let newItemList = _.clone(state.itemList);
+      if (selectedRows && destinationRow) {
+        const newSelectedRows = makeNewRowsForPaste({
+          data: state.itemList,
+          rows: selectedRows,
+          targetRow: destinationRow,
+        });
+        // 선택된 rows를 목적지 row 하위에 추가해준다
+        newItemList = fnInsertDataAsChild({
+          data: newItemList,
+          targetData: newSelectedRows,
+          targetKey: destinationRow.key,
+        });
+        // 기존 선택된 rows 는 지워준다
+        newItemList = newItemList.filter((item) => !state.selectedKeys.includes(item.key));
+        return Object.assign({}, state, {
+          itemList: newItemList,
+          selectedKeys: [''],
+        } as LPDataState);
+      }
+      return state;
     }
     default: {
       return state;

@@ -57,7 +57,7 @@ const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys, unExpandedKe
         const key = `${item.key}_${index}`;
         return (
           <div key={key} className={cx('list-wrapper')}>
-            <div className="icon" draggable itemID={item.key}>
+            <div className="icon" itemID={item.key}>
               <ListRow
                 rowKey={item.key}
                 name={item.name}

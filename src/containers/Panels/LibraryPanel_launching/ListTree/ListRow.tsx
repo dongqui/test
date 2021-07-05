@@ -114,6 +114,17 @@ const ListRow: FunctionComponent<Props> = ({
     [dispatch, rowKey],
   );
 
+  const handleDragStart = useCallback(() => {
+    if (!isSelected) {
+      // 선택되지 않은걸 드래그했다면 먼저 선택처리 해준다
+      dispatch(lpDataActions.selectItemList({ keys: [rowKey], selectType: 'none' }));
+    }
+  }, [dispatch, isSelected, rowKey]);
+
+  const handleDrop = useCallback(() => {
+    dispatch(lpDataActions.moveRows({ destinationKey: rowKey }));
+  }, [dispatch, rowKey]);
+
   const rowClasses = cx('list-row', `depth-${depth}`, {
     selected: isSelected,
     visualized: false,
@@ -154,6 +165,9 @@ const ListRow: FunctionComponent<Props> = ({
         onKeyDown={() => {}}
         tabIndex={0}
         onClick={handleClick}
+        draggable
+        onDragStart={handleDragStart}
+        onDrop={handleDrop}
       >
         <IconWrapper
           className={folderArrowClasses}

@@ -22,6 +22,7 @@ export type LPItemListAction =
   | ReturnType<typeof copyRows>
   | ReturnType<typeof pasteRows>
   | ReturnType<typeof deleteRows>
+  | ReturnType<typeof moveRows>
   | ReturnType<typeof setExpandedKey>;
 
 interface AddItemList {
@@ -138,6 +139,15 @@ interface DeleteRows {
 export const DELETE_ROWS = 'lpdata/DELETE_ROWS' as const;
 export const deleteRows = (params: DeleteRows) => ({
   type: DELETE_ROWS,
+  payload: params,
+});
+
+interface MoveRows {
+  destinationKey: string;
+}
+export const MOVE_ROWS = 'lpdata/MOVE_ROWS' as const;
+export const moveRows = (params: MoveRows) => ({
+  type: MOVE_ROWS,
   payload: params,
 });
 

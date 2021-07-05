@@ -13,7 +13,7 @@ interface Props extends Pick<LPItemType, 'name' | 'type' | 'parentKey'> {
 const IconNode: FunctionComponent<Props> = ({ rowKey, name, type, parentKey }) => {
   return (
     <div className={cx('icon-wrapper')}>
-      <div className="icon" itemID={rowKey} draggable>
+      <div className="icon" itemID={rowKey}>
         <Icon rowKey={rowKey} name={name} type={type} parentKey={parentKey} />
       </div>
     </div>
