@@ -2,7 +2,6 @@ import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { LPItemListAction, LPItemListOldAction } from 'actions/lpData';
 import {
-  EnableFileFormats,
   LPItemListOldType,
   LPItemListType,
   LPItemType,
@@ -12,8 +11,9 @@ import {
 } from 'types/LP';
 import {
   fnChangeFileNameCheckingDuplicate,
+  fnCheckContraint,
   fnFindSameNameFile,
-  fnGetFileExtension,
+  fnFindTopParentRow,
   fnInsertDataAsChild,
   fnMakeNewData,
 } from '../utils/LP_launching';
@@ -42,25 +42,6 @@ const findChildrenKeys = (params: FindDeleteKeys): string[] => {
   return childrenKeys;
 };
 
-interface FindTopParentRows {
-  data: LPItemListType;
-}
-
-/**
- * 가장 상위 depth의 row들만 추려주는 함수입니다.
- *
- * @param data lpdata
- *
- * @return 추린 후의 lpdata
- */
-const findTopParentRows = (params: FindTopParentRows): LPItemListType => {
-  const { data } = params;
-
-  const keys = data.map((item) => item.key);
-  const topParentRows = data.filter((item) => !keys.includes(item.parentKey));
-  return topParentRows;
-};
-
 interface MakeNewRowsForPaste {
   data: LPItemListType;
   rows: LPItemListType;
@@ -81,7 +62,7 @@ const makeNewRowsForPaste = (params: MakeNewRowsForPaste): LPItemListType => {
   const { data, rows, targetRow } = params;
 
   let copiedRows: LPItemListType = _.clone(rows);
-  const topParentKeys = findTopParentRows({ data: rows }).map((item) => item.key);
+  const topParentKeys = fnFindTopParentRow({ data: rows }).map((item) => item.key);
   copiedRows = copiedRows.map((item) => {
     const newGroupKey = topParentKeys.find(
       (parentKey) => parentKey === item.key || item.parentKeyList.includes(parentKey),
@@ -148,6 +129,7 @@ interface LPDataState {
   modalInfo: ModalInfoType; // 모달 정보
   copiedKeys: string[]; // 복사된 key들
   expandedKeys: string[]; // 펼쳐진 key들
+  isIconDragging: boolean; // 아이콘을 드래그중인지 여부
 }
 
 const defaultState: LPDataState = {
@@ -160,6 +142,7 @@ const defaultState: LPDataState = {
   modalInfo: { isShow: false, modalType: 'none' },
   copiedKeys: [],
   expandedKeys: [],
+  isIconDragging: false,
 };
 
 export const lpData = (state = defaultState, action: LPItemListAction) => {
@@ -434,46 +417,42 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
     }
     case 'lpdata/MOVE_ROWS': {
       const selectedRows = state.itemList.filter((item) => state.selectedKeys.includes(item.key));
-      const selectedTopParentRows = findTopParentRows({ data: selectedRows }); // 선택한 row들중 가장 상위에 있는 row들만 추려낸다
-      const selectedRowsTypes = selectedTopParentRows.map((item) => item.type);
       const destinationRow = state.itemList.find(
         (item) => item.key === action.payload.destinationKey,
       ); // 목적지에 해당하는 row
       // 제약조건 적용
-      if (selectedRowsTypes.includes('Motion')) {
-        return state;
-      }
-      if (selectedRowsTypes.includes('File')) {
-        if (destinationRow?.type !== 'Folder') {
-          return state;
-        }
-      }
-      if (selectedRowsTypes.includes('Folder')) {
-        if (destinationRow?.type !== 'Folder') {
+      if (destinationRow) {
+        const isAbleToMove = fnCheckContraint({ startRows: selectedRows, destinationRow }); // 이동가능여부
+        if (!isAbleToMove) {
           return state;
         }
       }
       let newItemList = _.clone(state.itemList);
+      const newSelectedRows = makeNewRowsForPaste({
+        data: state.itemList,
+        rows: selectedRows,
+        targetRow: destinationRow,
+      });
+      // 기존 선택된 rows 는 지워준다
+      newItemList = newItemList.filter((item) => !state.selectedKeys.includes(item.key));
       if (selectedRows && destinationRow) {
-        const newSelectedRows = makeNewRowsForPaste({
-          data: state.itemList,
-          rows: selectedRows,
-          targetRow: destinationRow,
-        });
         // 선택된 rows를 목적지 row 하위에 추가해준다
         newItemList = fnInsertDataAsChild({
           data: newItemList,
           targetData: newSelectedRows,
           targetKey: destinationRow.key,
         });
-        // 기존 선택된 rows 는 지워준다
-        newItemList = newItemList.filter((item) => !state.selectedKeys.includes(item.key));
+        return Object.assign({}, state, {
+          itemList: newItemList,
+          selectedKeys: [''],
+        } as LPDataState);
+      } else {
+        newItemList = _.concat(newItemList, newSelectedRows);
         return Object.assign({}, state, {
           itemList: newItemList,
           selectedKeys: [''],
         } as LPDataState);
       }
-      return state;
     }
     default: {
       return state;

@@ -4,7 +4,6 @@ import { LPItemListType, LPItemType } from 'types/LP';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ListView.module.scss';
-import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -16,7 +15,6 @@ export interface ListViewProps {
 export type GrouppedData = Array<LPItemListType>;
 
 const ListView: FunctionComponent<ListViewProps> = ({ data, expandedKeys }) => {
-  // const expandedKeys = useSelector((state) => state.lpData.expandedKeys);
   const unExpandedKeys = data
     .filter((item) => !expandedKeys.includes(item.key))
     .map((item) => item.key);

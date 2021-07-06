@@ -20,8 +20,8 @@ export interface PathList extends Array<Path> {}
 
 interface BreadcrumbProps {
   pathList: PathList;
-  prevPageKey: string;
-  currentPageKey: string;
+  prevPageKey: string; // 이전 페이지 키
+  currentPageKey: string; // 현재 페이지 키
 }
 
 const Breadcrumb: FunctionComponent<BreadcrumbProps> = ({
@@ -41,6 +41,10 @@ const Breadcrumb: FunctionComponent<BreadcrumbProps> = ({
   const handlePathOpen = useCallback(() => {
     setIsOpen(!isOpen);
   }, [isOpen]);
+
+  const handleDrop = useCallback(() => {
+    dispatch(LPDataActions.moveRows({ destinationKey: prevPageKey }));
+  }, [dispatch, prevPageKey]);
 
   useEffect(() => {
     // @TODO
@@ -66,12 +70,14 @@ const Breadcrumb: FunctionComponent<BreadcrumbProps> = ({
 
   return (
     <div className={cx('wrapper')}>
-      <IconWrapper
-        className={cx('arrow-left')}
-        icon={SvgPath.ChevronLeft}
-        onClick={handleBack}
-        hasFrame={false}
-      />
+      <div onDrop={handleDrop}>
+        <IconWrapper
+          className={cx('arrow-left')}
+          icon={SvgPath.ChevronLeft}
+          onClick={handleBack}
+          hasFrame={false}
+        />
+      </div>
       <div className={cx('path')}>
         {isAbbreviationLevel2 && (
           // @TODO

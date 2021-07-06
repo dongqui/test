@@ -6,6 +6,7 @@ import {
   useMemo,
   useState,
   useEffect,
+  useRef,
 } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
@@ -121,6 +122,8 @@ const ListRow: FunctionComponent<Props> = ({
     }
   }, [dispatch, isSelected, rowKey]);
 
+  const handleDragEnd = useCallback((event: React.DragEvent<HTMLDivElement>) => {}, []);
+
   const handleDrop = useCallback(() => {
     dispatch(lpDataActions.moveRows({ destinationKey: rowKey }));
   }, [dispatch, rowKey]);
@@ -167,6 +170,7 @@ const ListRow: FunctionComponent<Props> = ({
         onClick={handleClick}
         draggable
         onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
         onDrop={handleDrop}
       >
         <IconWrapper
