@@ -22,6 +22,7 @@ import * as lpSearchwordActions from 'actions/lpSearchword';
 import Explorer from './Explorer';
 import {
   fnChangeFileNameCheckingDuplicate,
+  fnCheckContraintToMove,
   fnFindSameNameFile,
   fnGetFileExtension,
   fnMakeNewData,
@@ -171,7 +172,9 @@ const LibraryPanel: FunctionComponent = () => {
 
   const { isServer } = useCheckIsServer();
 
-  const rightClickedKey = useRef<string>('');
+  const rightClickedKey = useRef<string>(''); // 오른쪽 클릭한 대상 아이콘의 키값
+
+  const draggingIconInfo = useRef({ startItemId: '' });
 
   /**
    * 오른쪽 메뉴 데이터를 만들어주는 함수입니다.
@@ -740,7 +743,6 @@ const LibraryPanel: FunctionComponent = () => {
 
   /**
    * 빈공간을 선택하면 선택한 row들을 모두 선택해제 해주는 함수입니다.
-   * @return 드래그박스 동작여부. 빈공간이 아닌 아이콘에 클릭을 했을땐 드래그박스 동작을 하지 않게 하기 위함.
    */
   const handleClickEmptySpace = useCallback(
     (event: MouseEvent) => {
@@ -767,12 +769,16 @@ const LibraryPanel: FunctionComponent = () => {
           element.id = 'grabbable';
         });
       }
-      const isMustDragboxStop = !_.isEmpty(targetIcon);
-      return { isStop: isMustDragboxStop };
     },
     [contextMenuInfo.isShow, dispatch],
   );
 
+  /**
+   * 드래그박스를 동작시켜야할 조건을 확인해주는 함수입니다
+   * 아이콘 위부터 드래그를 하는 경우는 드래그박스가 동작하지 않습니다
+   *
+   * @returns 드래그박스를 멈춰야 하는지 여부
+   */
   const handleDisableDragBox = useCallback((event: MouseEvent): boolean => {
     const icons = viewRef.current?.getElementsByClassName('icon');
     const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
@@ -780,7 +786,7 @@ const LibraryPanel: FunctionComponent = () => {
     return isMustDragboxStop;
   }, []);
 
-  const handleDragEnd = useCallback(() => {
+  const handleDragBoxEnd = useCallback(() => {
     isDragScrolling.current = false;
   }, []);
 
@@ -898,6 +904,51 @@ const LibraryPanel: FunctionComponent = () => {
     [dispatch],
   );
 
+  const handleDragStart = useCallback((event: DragEvent) => {
+    const targetIcon = event.target as Element;
+    const itemId = targetIcon.getAttribute('itemId');
+    if (itemId) {
+      draggingIconInfo.current.startItemId = itemId;
+    }
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    draggingIconInfo.current.startItemId = '';
+  }, []);
+
+  /**
+   * 파일을 다른 파일로 이동시 목적지 파일을 펼쳐주는 함수입니다.
+   */
+  const handleDragEnter = useCallback(
+    (event: DragEvent) => {
+      const targetIcon = event.target as Element;
+      const startKey = draggingIconInfo.current.startItemId; // 출발지
+      const destinationKey = targetIcon.getAttribute('itemId') || ''; // 목적지
+      const startRows = lpData.filter((item) => item.key === startKey);
+      const destinationRow = lpData.find((item) => item.key === destinationKey);
+      if (startRows && destinationRow && startKey !== destinationKey) {
+        const isAbleToMove = fnCheckContraintToMove({ startRows, destinationRow }); // 이동가능한지 여부
+        if (isAbleToMove) {
+          dispatch(lpDataActions.requestExpandedKey({ key: destinationKey, isExpand: true }));
+        }
+      }
+    },
+    [dispatch, lpData],
+  );
+
+  useEffect(() => {
+    const viewElement = viewRef.current;
+    viewElement?.addEventListener('dragstart', handleDragStart);
+    viewElement?.addEventListener('dragend', handleDragEnd);
+    viewElement?.addEventListener('dragenter', handleDragEnter);
+
+    return () => {
+      viewElement?.removeEventListener('dragstart', handleDragStart);
+      viewElement?.removeEventListener('dragend', handleDragEnd);
+      viewElement?.removeEventListener('dragenter', handleDragEnter);
+    };
+  }, [handleDragEnd, handleDragEnter, handleDragStart]);
+
   useEffect(() => {
     const setDefaultModels = async () => {
       dispatch(
@@ -981,7 +1032,7 @@ const LibraryPanel: FunctionComponent = () => {
                 onChangeIsUpdated={handleDragboxChange}
                 parentRef={viewRef}
                 onDragStart={handleClickEmptySpace}
-                onDragEnd={handleDragEnd}
+                onDragEnd={handleDragBoxEnd}
                 onDisableDragBox={handleDisableDragBox}
               />
             </div>

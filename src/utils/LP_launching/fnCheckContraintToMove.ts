@@ -14,7 +14,7 @@ interface FnCheckContraint {
  *
  * @return 이동 가능 여부
  */
-const fnCheckContraint = (params: FnCheckContraint): boolean => {
+const fnCheckContraintToMove = (params: FnCheckContraint): boolean => {
   const { startRows, destinationRow } = params;
 
   const selectedTopParentRows = fnFindTopParentRow({ data: startRows }); // 선택한 row들중 가장 상위에 있는 row들만 추려낸다
@@ -36,4 +36,4 @@ const fnCheckContraint = (params: FnCheckContraint): boolean => {
   return true;
 };
 
-export default fnCheckContraint;
+export default fnCheckContraintToMove;

@@ -11,7 +11,7 @@ import {
 } from 'types/LP';
 import {
   fnChangeFileNameCheckingDuplicate,
-  fnCheckContraint,
+  fnCheckContraintToMove,
   fnFindSameNameFile,
   fnFindTopParentRow,
   fnInsertDataAsChild,
@@ -129,7 +129,6 @@ interface LPDataState {
   modalInfo: ModalInfoType; // 모달 정보
   copiedKeys: string[]; // 복사된 key들
   expandedKeys: string[]; // 펼쳐진 key들
-  isIconDragging: boolean; // 아이콘을 드래그중인지 여부
 }
 
 const defaultState: LPDataState = {
@@ -142,7 +141,6 @@ const defaultState: LPDataState = {
   modalInfo: { isShow: false, modalType: 'none' },
   copiedKeys: [],
   expandedKeys: [],
-  isIconDragging: false,
 };
 
 export const lpData = (state = defaultState, action: LPItemListAction) => {
@@ -422,7 +420,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       ); // 목적지에 해당하는 row
       // 제약조건 적용
       if (destinationRow) {
-        const isAbleToMove = fnCheckContraint({ startRows: selectedRows, destinationRow }); // 이동가능여부
+        const isAbleToMove = fnCheckContraintToMove({ startRows: selectedRows, destinationRow }); // 이동가능여부
         if (!isAbleToMove) {
           return state;
         }

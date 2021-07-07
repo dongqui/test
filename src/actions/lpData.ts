@@ -23,8 +23,7 @@ export type LPItemListAction =
   | ReturnType<typeof pasteRows>
   | ReturnType<typeof deleteRows>
   | ReturnType<typeof moveRows>
-  | ReturnType<typeof setExpandedKey>
-  | ReturnType<typeof setIsDragging>;
+  | ReturnType<typeof setExpandedKey>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -152,22 +151,20 @@ export const moveRows = (params: MoveRows) => ({
   payload: params,
 });
 
-interface SetExpandedKey {
+export interface RequestExpandedKey {
   key: string;
   isExpand: boolean;
 }
-export const SET_EXPANDED_KEY = 'lpdata/SET_EXPANDED_KEY' as const;
-export const setExpandedKey = (params: SetExpandedKey) => ({
-  type: SET_EXPANDED_KEY,
+export const REQUEST_EXPANDED_KEY = 'lpdata/REQUEST_EXPANDED_KEY' as const;
+export const requestExpandedKey = (params: RequestExpandedKey) => ({
+  type: REQUEST_EXPANDED_KEY,
   payload: params,
 });
 
-interface SetIsDragging {
-  isIconDragging: boolean;
-}
-export const SET_ISDRAGGING = 'lpdata/SET_ISDRAGGING' as const;
-export const setIsDragging = (params: SetIsDragging) => ({
-  type: SET_ISDRAGGING,
+type SetExpandedKey = RequestExpandedKey;
+export const SET_EXPANDED_KEY = 'lpdata/SET_EXPANDED_KEY' as const;
+export const setExpandedKey = (params: SetExpandedKey) => ({
+  type: SET_EXPANDED_KEY,
   payload: params,
 });
 
