@@ -26,11 +26,13 @@ import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import * as lpDataActions from 'actions/lpData';
+import { fnFindTopParentRows } from 'utils/LP_launching';
 
 const cx = classNames.bind(styles);
 
 const Shoot: FunctionComponent = () => {
-  const lpData = useSelector((state) => state.lpDataOld);
+  const lpData = useSelector((state) => state.lpData.itemList);
+  const selectedKeys = useSelector((state) => state.lpData.selectedKeys);
 
   const dispatch = useDispatch();
 
@@ -43,47 +45,44 @@ const Shoot: FunctionComponent = () => {
   const currentPlayBarTime = useRef(1);
   const dopeSheetScale = useRef<d3ScaleLinear | null>(null);
 
-  const fileUrl = useMemo(() => {
-    const visualizedRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isVisualized, true]);
-
-    if (_.isEqual(visualizedRow?.type, 'File')) {
-      return visualizedRow?.url;
-    }
-
-    return _.find(lpData, [LPDATA_PROPERTY_TYPES.key, visualizedRow?.parentKey])?.url;
-  }, [lpData]);
+  const fileUrl = currentVisualizedData ? currentVisualizedData.url : '';
 
   const handleDrop = useCallback(() => {
-    const draggingRow = _.find(lpData, [LPDATA_PROPERTY_TYPES.isDragging, true]);
-    fnVisualizeFile({ key: draggingRow?.key ?? '', lpData, dispatch });
-  }, [dispatch, lpData]);
+    const selectedRows = lpData.filter((item) => selectedKeys.includes(item.key));
+    const targetRows = fnFindTopParentRows({ data: selectedRows });
+    if (targetRows.length === 1) {
+      dispatch(
+        lpDataActions.requestVisualize({ key: targetRows[0].key, isVisualize: true, data: lpData }),
+      );
+    }
+  }, [dispatch, lpData, selectedKeys]);
 
   const [windowWidth, windowHeight] = useWindowSize();
 
-  useEffect(() => {
-    if (currentVisualizedData?.baseLayer) {
-      dispatch(
-        lpDataActions.setItemListOld({
-          itemList: _.map(lpData, (item) => ({
-            ...item,
-            baseLayer: _.isEqual(item?.key, currentVisualizedData?.key)
-              ? currentVisualizedData?.baseLayer
-              : item?.baseLayer,
-            layers: _.isEqual(item?.key, currentVisualizedData?.key)
-              ? currentVisualizedData?.layers
-              : item?.layers,
-          })),
-        }),
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentVisualizedData]);
+  // useEffect(() => {
+  //   if (currentVisualizedData?.baseLayer) {
+  //     dispatch(
+  //       lpDataActions.setItemListOld({
+  //         itemList: _.map(lpData, (item) => ({
+  //           ...item,
+  //           baseLayer: _.isEqual(item?.key, currentVisualizedData?.key)
+  //             ? currentVisualizedData?.baseLayer
+  //             : item?.baseLayer,
+  //           layers: _.isEqual(item?.key, currentVisualizedData?.key)
+  //             ? currentVisualizedData?.layers
+  //             : item?.layers,
+  //         })),
+  //       }),
+  //     );
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [currentVisualizedData]);
 
-  useEffect(() => {
-    if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.key, currentVisualizedData?.key])) {
-      dispatch(currentVisualizedDataActions.resetCurrentVisualizedData());
-    }
-  }, [currentVisualizedData?.key, dispatch, lpData]);
+  // useEffect(() => {
+  //   if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.key, currentVisualizedData?.key])) {
+  //     dispatch(currentVisualizedDataActions.resetCurrentVisualizedData());
+  //   }
+  // }, [currentVisualizedData?.key, dispatch, lpData]);
 
   const [sectionHeight, setSectionHeight] = useState({
     upperSection: windowHeight * 0.7,

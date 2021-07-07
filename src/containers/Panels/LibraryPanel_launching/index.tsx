@@ -48,6 +48,7 @@ import styles from './index.module.scss';
 import { ContextmenuDataTypes, ContextmenuType } from 'types';
 import { ContextMenu } from 'components/ContextMenu';
 import { useCheckIsServer } from 'hooks/common/useCheckIsServer';
+import { fnExportModelToFbx, fnExportModelToGlb } from 'utils/LP';
 
 const cx = classNames.bind(styles);
 
@@ -207,11 +208,17 @@ const LibraryPanel: FunctionComponent = () => {
             { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
             { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
             { key: ContextMenuEnum.DELETE, value: ContextMenuEnum.DELETE },
+            { key: ContextMenuEnum.ADD_MOTION, value: ContextMenuEnum.ADD_MOTION },
+            { key: ContextMenuEnum.FBX_EXPORT, value: ContextMenuEnum.FBX_EXPORT },
+            { key: ContextMenuEnum.GLB_EXPORT, value: ContextMenuEnum.GLB_EXPORT },
+            { key: ContextMenuEnum.VISUALIZATION, value: ContextMenuEnum.VISUALIZATION },
           ];
         } else {
           return [
             { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
             { key: ContextMenuEnum.DELETE, value: ContextMenuEnum.DELETE },
+            { key: ContextMenuEnum.DUPLICATE, value: ContextMenuEnum.DUPLICATE },
+            { key: ContextMenuEnum.VISUALIZATION, value: ContextMenuEnum.VISUALIZATION },
           ];
         }
       } else {
@@ -259,8 +266,10 @@ const LibraryPanel: FunctionComponent = () => {
    * @param key 오른쪽 메뉴리스트의 키
    */
   const handleClickContextMenu = useCallback(
-    (key) => {
+    async (key) => {
       let modifyingRow: LPItemType | undefined;
+      let motions: LPItemListType | undefined;
+      let parentRow: LPItemType | undefined;
       switch (key) {
         case `${ContextMenuEnum.NEW_DIRECTORY}`: {
           dispatch(lpDataActions.addDirectory({ key: rightClickedKey.current }));
@@ -300,13 +309,80 @@ const LibraryPanel: FunctionComponent = () => {
           );
           break;
         }
+        case `${ContextMenuEnum.ADD_MOTION}`: {
+          const key = lpMode === 'listView' ? rightClickedKey.current : lpPageKey;
+          dispatch(lpDataActions.addMotion({ key }));
+          break;
+        }
+        case `${ContextMenuEnum.DUPLICATE}`: {
+          dispatch(lpDataActions.copyRows());
+          dispatch(lpDataActions.pasteRows({ key: rightClickedKey.current }));
+          break;
+        }
+        case `${ContextMenuEnum.FBX_EXPORT}`:
+        case `${ContextMenuEnum.GLB_EXPORT}`: {
+          dispatch(
+            lpDataActions.setModalInfo({
+              isShow: true,
+              loading: true,
+              message: 'Please wait while exporting the file.<br />This can take up to 30 seconds',
+              modalType: 'alert',
+            }),
+          );
+          parentRow = lpData.find((item) => item.key === rightClickedKey.current);
+          motions = lpData.filter((item) => item.parentKey === rightClickedKey.current);
+          if (motions && parentRow) {
+            if (key === `${ContextMenuEnum.FBX_EXPORT}`) {
+              await fnExportModelToFbx({
+                modelName: parentRow.name,
+                modelUrl: parentRow?.url,
+                motions,
+                onExportEnd: () => {
+                  dispatch(
+                    lpDataActions.setModalInfo({
+                      isShow: false,
+                      loading: false,
+                      modalType: 'alert',
+                    }),
+                  );
+                },
+              });
+            } else if (key === `${ContextMenuEnum.GLB_EXPORT}`) {
+              await fnExportModelToGlb({
+                modelName: parentRow.name,
+                modelUrl: parentRow?.url,
+                motions,
+                onExportEnd: () => {
+                  dispatch(
+                    lpDataActions.setModalInfo({
+                      isShow: false,
+                      loading: false,
+                      modalType: 'alert',
+                    }),
+                  );
+                },
+              });
+            }
+          }
+          break;
+        }
+        case `${ContextMenuEnum.VISUALIZATION}`: {
+          dispatch(
+            lpDataActions.requestVisualize({
+              key: rightClickedKey.current,
+              isVisualize: true,
+              data: lpData,
+            }),
+          );
+          break;
+        }
         default: {
           break;
         }
       }
       setContextMenuInfo((state) => ({ ...state, isShow: false }));
     },
-    [dispatch, lpData],
+    [dispatch, lpData, lpMode, lpPageKey],
   );
 
   const handleContextMenu = useCallback(
@@ -378,6 +454,7 @@ const LibraryPanel: FunctionComponent = () => {
         parentKey,
         baseLayer: fnGetBaseLayerWithBoneNames({ boneNames }),
         boneNames,
+        url,
       });
       const motions: LPItemListType = animations.map((item) => ({
         key: item.uuid,

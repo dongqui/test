@@ -4,4 +4,6 @@ export { default as fnChangeFileNameCheckingDuplicate } from './fnChangeFileName
 export { default as fnFindSameNameFile } from './fnFindSameNameFile';
 export { default as fnInsertDataAsChild } from './fnInsertDataAsChild';
 export { default as fnCheckContraintToMove } from './fnCheckContraintToMove';
-export { default as fnFindTopParentRow } from './fnFindTopParentRow';
+export { default as fnFindTopParentRows } from './fnFindTopParentRows';
+export { default as fnMakeNewRowsForPaste } from './fnMakeNewRowsForPaste';
+export { default as fnFindChildrenKeys } from './fnFindChildrenKeys';

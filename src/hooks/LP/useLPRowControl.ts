@@ -117,12 +117,13 @@ const useLPRowControl = ({ lpData, rowKey }: UseLPControlProps) => {
         dispatch(
           currentVisualizedDataActions.setCurrentVisualizedData({
             data: {
-              key: targetRow.key ?? '',
-              name: targetRow.name ?? '',
-              type: targetRow.type ?? 'File',
-              boneNames: targetRow.boneNames ?? [],
-              baseLayer: targetRow.baseLayer ?? [],
-              layers: targetRow.layers ?? [],
+              key: targetRow.key,
+              name: targetRow.name,
+              type: targetRow.type,
+              boneNames: targetRow.boneNames || [],
+              baseLayer: targetRow.baseLayer,
+              layers: targetRow.layers,
+              url: targetRow.url || '',
             },
           }),
         );

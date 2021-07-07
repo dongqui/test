@@ -12,112 +12,13 @@ import {
 import {
   fnChangeFileNameCheckingDuplicate,
   fnCheckContraintToMove,
+  fnFindChildrenKeys,
   fnFindSameNameFile,
-  fnFindTopParentRow,
   fnInsertDataAsChild,
   fnMakeNewData,
+  fnMakeNewRowsForPaste,
 } from '../utils/LP_launching';
-
-interface FindDeleteKeys {
-  data: LPItemListType;
-  keys: string[];
-}
-
-/**
- * 전달받은 key들의 하위키들을 모두 찾아줍니다.
- *
- * @param data - lpdata
- * @param keys - 상위 키들
- *
- * @return 하위 키들의 배열
- */
-const findChildrenKeys = (params: FindDeleteKeys): string[] => {
-  const { data, keys } = params;
-  // 전달받은 키들을 부모로 가지고 있는 모든 하위 row들
-  const childrenRows = data.filter((item) => !_.isEmpty(_.intersection(item.parentKeyList, keys)));
-  // 해당 row들의 key들
-  let childrenKeys = childrenRows.map((item) => item.key);
-  // 중복 키 제거
-  childrenKeys = _.uniq(childrenKeys);
-  return childrenKeys;
-};
-
-interface MakeNewRowsForPaste {
-  data: LPItemListType;
-  rows: LPItemListType;
-  targetRow?: LPItemType;
-}
-
-/**
- * 붙여넣기 할 대상 하위에 넣어주기 위한 rows 를 만들어주는 함수
- * 붙여넣기 뿐만 아니라 파일 이동시에도 재활용이 되서 함수로 분리
- *
- * @param data - lpdata
- * @param rows - 복사할 rows
- * @param targetRow - 붙여넣기 할 대상이 되는 row
- *
- * @return 새로 생성된 rows
- */
-const makeNewRowsForPaste = (params: MakeNewRowsForPaste): LPItemListType => {
-  const { data, rows, targetRow } = params;
-
-  let copiedRows: LPItemListType = _.clone(rows);
-  const topParentKeys = fnFindTopParentRow({ data: rows }).map((item) => item.key);
-  copiedRows = copiedRows.map((item) => {
-    const newGroupKey = topParentKeys.find(
-      (parentKey) => parentKey === item.key || item.parentKeyList.includes(parentKey),
-    );
-    return { ...item, groupKey: newGroupKey ? newGroupKey : item.groupKey };
-  }); // 그룹키를 다시 만들어준다.
-  const groupKey: keyof LPItemType = 'groupKey';
-  const copiedGroupKeys = Object.keys(_.groupBy(copiedRows, groupKey)); // 복사한 row들을 그룹별로 나눈다
-  let newCopiedRows: LPItemListType = [];
-  const uuid = uuidv4().slice(0, 4);
-  _.forEach(copiedGroupKeys, (groupKey) => {
-    const groupRows = copiedRows.filter((item) => item.groupKey == groupKey); // 현재 그룹의 row들
-    const topDepth = _.min(groupRows.map((item) => item.depth)) || 1; // 현재 그룹중 최상위 depth
-    const topDepthRow = groupRows.find((item) => item.depth === topDepth);
-    if (topDepthRow) {
-      const newKey = `${topDepthRow.key}${uuid}`; // 새로운 키를 생성한다
-      const newGroupKey = targetRow ? targetRow.groupKey : uuidv4(); // 선택폴더 하위로 들어갈땐 선택폴더의 groupKey를 따른다
-      const newDepth = targetRow ? targetRow.depth + 1 : 1; // 선택한 폴더가 있으면 해당 폴더의 하위로 들어가야 한다
-      const newParentKey = targetRow ? targetRow.key : ROOT_KEY;
-      const newParentKeyList = targetRow ? [...targetRow.parentKeyList, targetRow.key] : [ROOT_KEY];
-      const currentRows = data.filter((item) => item.parentKey === newParentKey); // 같은 depth에 있는 row들
-      const newTopDepthRow = {
-        ...topDepthRow,
-        key: newKey,
-        name: fnChangeFileNameCheckingDuplicate({
-          data: currentRows,
-          name: topDepthRow?.name ?? '',
-        }), // 그룹의 최상위 depth는 이름중복체크를 해준다.
-        depth: newDepth,
-        groupKey: newGroupKey,
-        parentKey: newParentKey,
-        parentKeyList: newParentKeyList,
-      };
-      newCopiedRows.push(newTopDepthRow);
-      const childrenKeys = findChildrenKeys({ data, keys: [topDepthRow.key] });
-      const childrenRows = data
-        .filter((item) => childrenKeys.includes(item.key))
-        .map((item) => ({
-          ...item,
-          key: `${item.key}${uuid}`,
-          depth: item.depth + (newDepth - topDepth), // 변경된 depth만큼 재조정해준다
-          groupKey: newGroupKey,
-          parentKey: `${item.parentKey}${uuid}`,
-          parentKeyList: [
-            ...newParentKeyList,
-            ...item.parentKeyList
-              .filter((item) => !topDepthRow.parentKeyList.includes(item))
-              .map((item) => `${item}${uuid}`),
-          ], // 최상위 depth row의 하위부터 key를 변경해준다
-        }));
-      newCopiedRows = _.concat(newCopiedRows, childrenRows); // 재조정한 하위 row들도 모두 담아준다
-    }
-  });
-  return newCopiedRows;
-};
+import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
 
 interface LPDataState {
   itemList: LPItemListType;
@@ -129,6 +30,7 @@ interface LPDataState {
   modalInfo: ModalInfoType; // 모달 정보
   copiedKeys: string[]; // 복사된 key들
   expandedKeys: string[]; // 펼쳐진 key들
+  visualizedKeys: string[]; // visualize한 key들
 }
 
 const defaultState: LPDataState = {
@@ -141,6 +43,7 @@ const defaultState: LPDataState = {
   modalInfo: { isShow: false, modalType: 'none' },
   copiedKeys: [],
   expandedKeys: [],
+  visualizedKeys: [],
 };
 
 export const lpData = (state = defaultState, action: LPItemListAction) => {
@@ -172,7 +75,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         const isInclude = newSelectedKeys.includes(action.payload.keys[0]);
         const targetKeys = [
           action.payload.keys[0],
-          ...findChildrenKeys({ data: newItemList, keys: [action.payload.keys[0]] }),
+          ...fnFindChildrenKeys({ data: newItemList, keys: [action.payload.keys[0]] }),
         ];
         if (isInclude) {
           // 이미 선택되어 있는 키라면 선택해제
@@ -191,7 +94,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         }
       }
       // 선택된 키들의 하위 키들
-      const childrenKeys = findChildrenKeys({ data: newItemList, keys: newSelectedKeys });
+      const childrenKeys = fnFindChildrenKeys({ data: newItemList, keys: newSelectedKeys });
       // 선택된 키들의 하위키들도 선택해준다
       newSelectedKeys = _.uniq(_.concat(newSelectedKeys, childrenKeys));
       return Object.assign({}, state, {
@@ -208,7 +111,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
     case 'lpdata/ADD_SELECTED_ROWS': {
       const addKeys = [
         ...action.payload.keys,
-        ...findChildrenKeys({ data: state.itemList, keys: action.payload.keys }),
+        ...fnFindChildrenKeys({ data: state.itemList, keys: action.payload.keys }),
       ];
       return Object.assign({}, state, {
         selectedKeys: _.uniq(_.concat(state.selectedKeys, addKeys)),
@@ -217,7 +120,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
     case 'lpdata/DELETE_SELECTED_ROWS': {
       const deleteKeys = [
         ...action.payload.keys,
-        ...findChildrenKeys({ data: state.itemList, keys: action.payload.keys }),
+        ...fnFindChildrenKeys({ data: state.itemList, keys: action.payload.keys }),
       ];
       return Object.assign({}, state, {
         selectedKeys: state.selectedKeys.filter((key) => !deleteKeys.includes(key)),
@@ -306,6 +209,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         type: 'Folder',
         baseLayer: [],
         boneNames: [],
+        url: '',
       });
       let newItemList = _.clone(state.itemList);
       const newExpandedKeys = _.clone(state.expandedKeys);
@@ -372,7 +276,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       const copiedRows: LPItemListType = state.itemList.filter((item) =>
         state.copiedKeys.includes(item.key),
       );
-      const newCopiedRows = makeNewRowsForPaste({
+      const newCopiedRows = fnMakeNewRowsForPaste({
         data: state.itemList,
         rows: copiedRows,
         targetRow: selectedRow,
@@ -407,7 +311,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         newSelectedKeys = [action.payload.key];
       }
       // 하위키들도 포함해준다
-      const childrenKeys = findChildrenKeys({ data: state.itemList, keys: newSelectedKeys });
+      const childrenKeys = fnFindChildrenKeys({ data: state.itemList, keys: newSelectedKeys });
       newSelectedKeys = _.concat(newSelectedKeys, childrenKeys);
       return Object.assign({}, state, {
         itemList: state.itemList.filter((item) => !newSelectedKeys.includes(item.key)),
@@ -426,7 +330,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         }
       }
       let newItemList = _.clone(state.itemList);
-      const newSelectedRows = makeNewRowsForPaste({
+      const newSelectedRows = fnMakeNewRowsForPaste({
         data: state.itemList,
         rows: selectedRows,
         targetRow: destinationRow,
@@ -451,6 +355,45 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
           selectedKeys: [''],
         } as LPDataState);
       }
+    }
+    case 'lpdata/Add_MOTION': {
+      const parentRow = state.itemList.find((item) => item.key === action.payload.key);
+      const sameDepthOtherMotions = state.itemList.filter(
+        (item) => item.parentKey === action.payload.key,
+      ); // 동일 뎁스의 다른 모션을 찾는다
+      const newMotion = fnMakeNewData({
+        key: uuidv4(),
+        name: fnChangeFileNameCheckingDuplicate({
+          data: sameDepthOtherMotions,
+          name: 'empty motion',
+        }),
+        baseLayer: fnGetBaseLayerWithBoneNames({
+          boneNames: sameDepthOtherMotions?.[0].boneNames ?? [],
+        }),
+        boneNames: sameDepthOtherMotions?.[0].boneNames ?? [],
+        data: state.itemList,
+        parentKey: action.payload.key,
+        type: 'Motion',
+        url: parentRow?.url ?? '',
+      });
+      const newItemList = fnInsertDataAsChild({
+        data: state.itemList,
+        targetData: [newMotion],
+        targetKey: action.payload.key,
+      });
+      const newExpandedKeys = _.clone(state.expandedKeys);
+      if (!state.expandedKeys.includes(action.payload.key)) {
+        newExpandedKeys.push(action.payload.key);
+      }
+      return Object.assign({}, state, {
+        itemList: newItemList,
+        expandedKeys: newExpandedKeys,
+      } as LPDataState);
+    }
+    case 'lpdata/VISUALIZE': {
+      return Object.assign({}, state, {
+        visualizedKeys: action.payload.keys,
+      } as LPDataState);
     }
     default: {
       return state;

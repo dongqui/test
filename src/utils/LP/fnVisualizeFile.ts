@@ -54,12 +54,13 @@ const fnVisualizeFile = ({ key, lpData, dispatch }: FnVisualizeFileProps) => {
       dispatch(
         setCurrentVisualizedData({
           data: {
-            key: visualizedRow.key ?? '',
-            name: visualizedRow.name ?? '',
-            type: visualizedRow.type ?? 'File',
-            boneNames: visualizedRow.boneNames ?? [],
-            baseLayer: visualizedRow.baseLayer ?? [],
-            layers: visualizedRow.layers ?? [],
+            key: visualizedRow.key,
+            name: visualizedRow.name,
+            type: visualizedRow.type,
+            boneNames: visualizedRow.boneNames || [],
+            baseLayer: visualizedRow.baseLayer,
+            layers: visualizedRow.layers,
+            url: visualizedRow.url || '',
           },
         }),
       );

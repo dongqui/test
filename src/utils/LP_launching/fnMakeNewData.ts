@@ -2,7 +2,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
 
 interface FnMakeNewData
-  extends Pick<LPItemType, 'key' | 'name' | 'type' | 'parentKey' | 'boneNames' | 'baseLayer'> {
+  extends Pick<
+    LPItemType,
+    'key' | 'name' | 'type' | 'parentKey' | 'boneNames' | 'baseLayer' | 'url'
+  > {
   data: LPItemListType;
 }
 
@@ -12,13 +15,17 @@ interface FnMakeNewData
  * @param key - 새 데이터의 key
  * @param name - 새 데이터의 이름
  * @param type - 새 데이터의 타입
+ * @param parentKey - 부모키
+ * @param boneNames - boneNames
+ * @param baseLayer - baseLayer
+ * @param url - 파일 url
  * @param data - lpData
  *
  * @return 추가할 새로운 lpdata
  */
 
 const fnMakeNewData = (props: FnMakeNewData): LPItemType => {
-  const { key, name, type, data, parentKey, boneNames, baseLayer } = props;
+  const { key, name, type, data, parentKey, boneNames, baseLayer, url } = props;
 
   const parentRow = data.find((item) => item.key === parentKey); // 부모 row
   const newParentKey = parentRow ? parentRow.key : ROOT_KEY;
@@ -32,7 +39,7 @@ const fnMakeNewData = (props: FnMakeNewData): LPItemType => {
     baseLayer,
     boneNames,
     layers: [],
-    url: '',
+    url,
     parentKey: newParentKey,
     parentKeyList: newParentKeyList,
     depth: newDepth,

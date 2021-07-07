@@ -23,7 +23,9 @@ export type LPItemListAction =
   | ReturnType<typeof pasteRows>
   | ReturnType<typeof deleteRows>
   | ReturnType<typeof moveRows>
-  | ReturnType<typeof setExpandedKey>;
+  | ReturnType<typeof setExpandedKey>
+  | ReturnType<typeof addMotion>
+  | ReturnType<typeof visualize>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -165,6 +167,35 @@ type SetExpandedKey = RequestExpandedKey;
 export const SET_EXPANDED_KEY = 'lpdata/SET_EXPANDED_KEY' as const;
 export const setExpandedKey = (params: SetExpandedKey) => ({
   type: SET_EXPANDED_KEY,
+  payload: params,
+});
+
+interface AddMotion {
+  key: string;
+}
+export const Add_MOTION = 'lpdata/Add_MOTION' as const;
+export const addMotion = (params: AddMotion) => ({
+  type: Add_MOTION,
+  payload: params,
+});
+
+export interface RequestVisualize {
+  key: string;
+  isVisualize: boolean;
+  data: LPItemListType;
+}
+export const REQUEST_VISUALIZE = 'lpdata/REQUEST_VISUALIZE' as const;
+export const requestVisualize = (params: RequestVisualize) => ({
+  type: REQUEST_VISUALIZE,
+  payload: params,
+});
+
+interface Visualize {
+  keys: string[];
+}
+export const VISUALIZE = 'lpdata/VISUALIZE' as const;
+export const visualize = (params: Visualize) => ({
+  type: VISUALIZE,
   payload: params,
 });
 

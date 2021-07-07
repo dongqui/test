@@ -87,6 +87,10 @@ export enum ContextMenuEnum {
   PASTE = 'Paste',
   ADD_MOTION = 'Add motion',
   DELETE = 'Delete',
+  DUPLICATE = 'Duplicate',
+  FBX_EXPORT = 'FBX Export',
+  GLB_EXPORT = 'GLB Export',
+  VISUALIZATION = 'Visualization',
 }
 
 export const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];

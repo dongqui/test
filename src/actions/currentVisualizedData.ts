@@ -20,6 +20,7 @@ export interface CurrentVisualizedData {
   boneNames: string[];
   baseLayer: ShootTrackType[];
   layers: ShootLayerType[];
+  url: string;
 }
 
 export const RESET_CURRENT_VISUALIZED_DATA = 'currentVisualizedData/RESET_CURRENT_VISUALIZED_DATA' as const;
