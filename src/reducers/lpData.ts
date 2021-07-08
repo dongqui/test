@@ -53,6 +53,13 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         itemList: [...state.itemList, ...action.payload.itemList],
       } as LPDataState);
     }
+    case 'lpdata/UPDATE_ITEMLIST': {
+      return Object.assign({}, state, {
+        itemList: state.itemList.map((item) =>
+          item.key === action.payload.key ? Object.assign({}, item, action.payload) : item,
+        ),
+      } as LPDataState);
+    }
     case 'lpdata/SELECT_ITEMLIST': {
       const newItemList = _.clone(state.itemList);
       let newSelectedKeys = _.clone(state.selectedKeys);
@@ -280,6 +287,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         data: state.itemList,
         rows: copiedRows,
         targetRow: selectedRow,
+        type: 'paste',
       });
       let newItemList: LPItemListType = _.clone(state.itemList);
       // 복사한 row들을 담아준다.
@@ -313,8 +321,13 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
       // 하위키들도 포함해준다
       const childrenKeys = fnFindChildrenKeys({ data: state.itemList, keys: newSelectedKeys });
       newSelectedKeys = _.concat(newSelectedKeys, childrenKeys);
+      // visualize 된 key가 삭제된다면 visualize도 같이 해제해준다
+      const newVisualizedKeys = state.visualizedKeys.filter(
+        (item) => !newSelectedKeys.includes(item),
+      );
       return Object.assign({}, state, {
         itemList: state.itemList.filter((item) => !newSelectedKeys.includes(item.key)),
+        visualizedKeys: newVisualizedKeys,
       } as LPDataState);
     }
     case 'lpdata/MOVE_ROWS': {
@@ -334,6 +347,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         data: state.itemList,
         rows: selectedRows,
         targetRow: destinationRow,
+        type: 'move',
       });
       // 기존 선택된 rows 는 지워준다
       newItemList = newItemList.filter((item) => !state.selectedKeys.includes(item.key));

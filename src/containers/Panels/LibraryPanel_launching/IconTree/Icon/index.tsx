@@ -29,12 +29,14 @@ export interface IconProps {
 }
 
 const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, parentKey }) => {
-  const selectedRows = useSelector((state) => state.lpData.selectedKeys);
+  const selectedKeys = useSelector((state) => state.lpData.selectedKeys);
+  const visualizedKeys = useSelector((state) => state.lpData.visualizedKeys);
   const modifyingRow = useSelector((state) => state.lpData.modifyingRow);
 
   const [fileName, setFileName] = useState(name);
 
-  const isSelected = selectedRows.includes(rowKey);
+  const isSelected = selectedKeys.includes(rowKey);
+  const isVisualized = visualizedKeys.includes(rowKey);
   const isModifying = modifyingRow?.key === rowKey;
 
   const dispatch = useDispatch();
@@ -42,9 +44,7 @@ const Icon: FunctionComponent<IconProps> = ({ rowKey, type, name, parentKey }) =
   const iconRef = useRef<HTMLDivElement>(null);
 
   const classes = cx('wrapper', {
-    visualized: false,
-    editing: false,
-    dragging: false,
+    visualized: isVisualized,
     selected: isSelected,
   });
 

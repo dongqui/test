@@ -26,6 +26,7 @@ const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys, unExpandedKe
   const dispatch = useDispatch();
 
   const selectedKeys = useSelector((state) => state.lpData.selectedKeys);
+  const visualizedKeys = useSelector((state) => state.lpData.visualizedKeys);
 
   const filteredItems = useMemo((): FilteredItems => {
     const expandedRows = items.filter((item) =>
@@ -44,11 +45,13 @@ const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys, unExpandedKe
     [dispatch, expandedKeys],
   );
 
-  const isGroupSelected = items.some((item) => selectedKeys.includes(item.key));
+  const isGroupVisualized = items.some((item) => visualizedKeys.includes(item.key));
+  const isGroupSelected =
+    !isGroupVisualized && items.some((item) => selectedKeys.includes(item.key));
 
   const listGroupClasses = cx('group-wrapper', {
     selected: isGroupSelected,
-    visualized: false,
+    visualized: isGroupVisualized,
   });
 
   return (
@@ -66,6 +69,7 @@ const ListGroup: FunctionComponent<Props> = ({ items, expandedKeys, unExpandedKe
                 type={item.type}
                 parentKey={item.parentKey}
                 onClickExpand={handleClickExpand}
+                isGroupVisualized={isGroupVisualized}
               />
             </div>
           </div>

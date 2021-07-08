@@ -8,6 +8,12 @@ import {
   REQUEST_VISUALIZE,
 } from 'actions/lpData';
 import _ from 'lodash';
+import {
+  CurrentVisualizedData,
+  DELETE_KEYFRAME,
+  UPDATE_KEYFRAME_TO_BASE,
+  UPDATE_KEYFRAME_TO_LAYER,
+} from 'actions/currentVisualizedData';
 
 interface SetExpandedKeySaga {
   type: string;
@@ -64,7 +70,22 @@ function* visualizeSaga(params: VisualizeSaga) {
   }
 }
 
+interface UpdateVisualizedData {
+  type: string;
+  payload: CurrentVisualizedData;
+}
+
+export function* updateVisualizedData(params: UpdateVisualizedData) {
+  const { payload } = params;
+
+  yield put(lpDataActions.updateItemList(payload));
+}
+
 export function* watchLpData() {
   yield takeLatest(REQUEST_EXPANDED_KEY, setExpandedKeySaga);
   yield takeLatest(REQUEST_VISUALIZE, visualizeSaga);
+  yield takeLatest(
+    [UPDATE_KEYFRAME_TO_BASE, UPDATE_KEYFRAME_TO_LAYER, DELETE_KEYFRAME],
+    updateVisualizedData,
+  );
 }

@@ -9,6 +9,7 @@ import {
 
 export type LPItemListAction =
   | ReturnType<typeof addItemList>
+  | ReturnType<typeof updateItemList>
   | ReturnType<typeof selectItemList>
   | ReturnType<typeof setSelectedRows>
   | ReturnType<typeof addSelectedRows>
@@ -33,6 +34,15 @@ interface AddItemList {
 export const ADD_ITEMLIST = 'lpdata/ADD_ITEMLIST' as const;
 export const addItemList = (params: AddItemList) => ({
   type: ADD_ITEMLIST,
+  payload: params,
+});
+
+interface UpdateItemList extends Partial<LPItemType> {
+  key: string;
+}
+export const UPDATE_ITEMLIST = 'lpdata/UPDATE_ITEMLIST' as const;
+export const updateItemList = (params: UpdateItemList) => ({
+  type: UPDATE_ITEMLIST,
   payload: params,
 });
 

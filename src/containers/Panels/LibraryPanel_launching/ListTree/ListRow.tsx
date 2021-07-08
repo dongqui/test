@@ -13,7 +13,7 @@ import _ from 'lodash';
 import { useDispatch } from 'react-redux';
 import * as lpDataActions from 'actions/lpData';
 import { BaseInput } from 'components/Input';
-import { FileType, LPItemType } from 'types/LP';
+import { FileType } from 'types/LP';
 import { useSelector } from 'reducers';
 import { fnGetFileExtension } from 'utils/LP_launching';
 import classNames from 'classnames/bind';
@@ -29,6 +29,7 @@ export interface Props {
   depth: number;
   parentKey: string;
   onClickExpand: (key: string) => void;
+  isGroupVisualized: boolean;
 }
 
 const ListRow: FunctionComponent<Props> = ({
@@ -39,13 +40,16 @@ const ListRow: FunctionComponent<Props> = ({
   depth,
   parentKey,
   onClickExpand,
+  isGroupVisualized,
 }) => {
-  const selectedRows = useSelector((state) => state.lpData.selectedKeys);
+  const selectedKeys = useSelector((state) => state.lpData.selectedKeys);
+  const visualizedKeys = useSelector((state) => state.lpData.visualizedKeys);
   const modifyingRow = useSelector((state) => state.lpData.modifyingRow);
 
   const [fileName, setFileName] = useState(name);
 
-  const isSelected = selectedRows.includes(rowKey);
+  const isSelected = !isGroupVisualized && selectedKeys.includes(rowKey);
+  const isVisualized = visualizedKeys.includes(rowKey);
   const isModifying = modifyingRow?.key === rowKey;
 
   const dispatch = useDispatch();
@@ -128,7 +132,7 @@ const ListRow: FunctionComponent<Props> = ({
 
   const rowClasses = cx('list-row', `depth-${depth}`, {
     selected: isSelected,
-    visualized: false,
+    visualized: isVisualized,
   });
 
   const folderArrowClasses = cx('icon-arrow', {

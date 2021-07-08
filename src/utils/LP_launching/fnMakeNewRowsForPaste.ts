@@ -7,6 +7,7 @@ interface FnMakeNewRowsForPaste {
   data: LPItemListType;
   rows: LPItemListType;
   targetRow?: LPItemType;
+  type: 'paste' | 'move';
 }
 
 /**
@@ -16,11 +17,12 @@ interface FnMakeNewRowsForPaste {
  * @param data - lpdata
  * @param rows - 복사할 rows
  * @param targetRow - 붙여넣기 할 대상이 되는 row
+ * @param type - paste: 붙여넣기의 용도, move: 이동의 용도
  *
  * @return 새로 생성된 rows
  */
 const fnMakeNewRowsForPaste = (params: FnMakeNewRowsForPaste): LPItemListType => {
-  const { data, rows, targetRow } = params;
+  const { data, rows, targetRow, type } = params;
 
   let copiedRows: LPItemListType = _.clone(rows);
   const topParentKeys = fnFindTopParentRows({ data: rows }).map((item) => item.key);
@@ -33,7 +35,11 @@ const fnMakeNewRowsForPaste = (params: FnMakeNewRowsForPaste): LPItemListType =>
   const groupKey: keyof LPItemType = 'groupKey';
   const copiedGroupKeys = Object.keys(_.groupBy(copiedRows, groupKey)); // 복사한 row들을 그룹별로 나눈다
   let newCopiedRows: LPItemListType = [];
-  const uuid = uuidv4().slice(0, 4);
+  let uuid = uuidv4().slice(0, 4);
+  if (type === 'move') {
+    // 붙여넣기가 아닌 이동을 위한 목적라면 키를 변경하지 않는다
+    uuid = '';
+  }
   _.forEach(copiedGroupKeys, (groupKey) => {
     const groupRows = copiedRows.filter((item) => item.groupKey == groupKey); // 현재 그룹의 row들
     const topDepth = _.min(groupRows.map((item) => item.depth)) || 1; // 현재 그룹중 최상위 depth

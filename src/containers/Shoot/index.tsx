@@ -33,6 +33,7 @@ const cx = classNames.bind(styles);
 const Shoot: FunctionComponent = () => {
   const lpData = useSelector((state) => state.lpData.itemList);
   const selectedKeys = useSelector((state) => state.lpData.selectedKeys);
+  const visualizedKeys = useSelector((state) => state.lpData.visualizedKeys);
 
   const dispatch = useDispatch();
 
@@ -78,11 +79,11 @@ const Shoot: FunctionComponent = () => {
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
   // }, [currentVisualizedData]);
 
-  // useEffect(() => {
-  //   if (!_.some(lpData, [LPDATA_PROPERTY_TYPES.key, currentVisualizedData?.key])) {
-  //     dispatch(currentVisualizedDataActions.resetCurrentVisualizedData());
-  //   }
-  // }, [currentVisualizedData?.key, dispatch, lpData]);
+  useEffect(() => {
+    if (currentVisualizedData && !visualizedKeys.includes(currentVisualizedData.key)) {
+      dispatch(currentVisualizedDataActions.resetCurrentVisualizedData());
+    }
+  }, [currentVisualizedData, dispatch, lpData, visualizedKeys]);
 
   const [sectionHeight, setSectionHeight] = useState({
     upperSection: windowHeight * 0.7,
