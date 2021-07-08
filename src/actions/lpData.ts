@@ -26,7 +26,8 @@ export type LPItemListAction =
   | ReturnType<typeof moveRows>
   | ReturnType<typeof setExpandedKey>
   | ReturnType<typeof addMotion>
-  | ReturnType<typeof visualize>;
+  | ReturnType<typeof visualize>
+  | ReturnType<typeof addExportedMotion>;
 
 interface AddItemList {
   itemList: LPItemListType;
@@ -183,9 +184,16 @@ export const setExpandedKey = (params: SetExpandedKey) => ({
 interface AddMotion {
   key: string;
 }
-export const Add_MOTION = 'lpdata/Add_MOTION' as const;
+export const ADD_MOTION = 'lpdata/ADD_MOTION' as const;
 export const addMotion = (params: AddMotion) => ({
-  type: Add_MOTION,
+  type: ADD_MOTION,
+  payload: params,
+});
+
+type AddExportedMotion = Pick<LPItemType, 'baseLayer'>;
+export const ADD_EXPORTED_MOTION = 'lpdata/ADD_EXPORTED_MOTION' as const;
+export const addExportedMotion = (params: AddExportedMotion) => ({
+  type: ADD_EXPORTED_MOTION,
   payload: params,
 });
 

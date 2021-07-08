@@ -78,6 +78,7 @@ export interface ModalInfoType {
   message?: string;
   loading?: boolean;
   text?: { confirm: string; cancel: string };
+  paramters?: { [key: string]: string };
 }
 
 export enum ContextMenuEnum {

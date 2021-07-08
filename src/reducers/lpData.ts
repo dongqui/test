@@ -370,7 +370,7 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         } as LPDataState);
       }
     }
-    case 'lpdata/Add_MOTION': {
+    case 'lpdata/ADD_MOTION': {
       const parentRow = state.itemList.find((item) => item.key === action.payload.key);
       const sameDepthOtherMotions = state.itemList.filter(
         (item) => item.parentKey === action.payload.key,
@@ -407,6 +407,22 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
     case 'lpdata/VISUALIZE': {
       return Object.assign({}, state, {
         visualizedKeys: action.payload.keys,
+      } as LPDataState);
+    }
+    case 'lpdata/ADD_EXPORTED_MOTION': {
+      const exportedMotion = fnMakeNewData({
+        key: uuidv4(),
+        baseLayer: action.payload.baseLayer,
+        boneNames: [],
+        name: fnChangeFileNameCheckingDuplicate({ data: state.itemList, name: 'Exported motion' }),
+        parentKey: ROOT_KEY,
+        type: 'Motion',
+        url: '',
+        data: state.itemList,
+      });
+      const newItemList = [...state.itemList, exportedMotion];
+      return Object.assign({}, state, {
+        itemList: newItemList,
       } as LPDataState);
     }
     default: {

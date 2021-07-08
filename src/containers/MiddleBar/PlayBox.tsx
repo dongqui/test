@@ -13,7 +13,7 @@ import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import * as api from 'utils/common/api';
 import { STANDARD_TIME_UNIT } from 'utils/const';
-import { LPItemListOldType, ROOT_FOLDER_NAME } from 'types/LP';
+import { LPItemListOldType, ROOT_FOLDER_NAME, ROOT_KEY } from 'types/LP';
 import { FormModal } from 'components/Modal';
 import { useAlertModal } from 'components/Modal/AlertModal';
 import { BaseInput } from 'components/Input';
@@ -310,35 +310,21 @@ const PlayBox: FunctionComponent<Props> = ({
         return false;
       }
     }
-    const key = uuidv4();
-    let name = _.isEmpty(recordingData?.motionName) ? 'Exported motion' : recordingData?.motionName;
-    name = fnGetFileName({ key: '', lpData, name });
-    const newData: LPItemListOldType = [
-      {
-        key,
-        type: 'Motion',
-        name,
-        parentKey: ROOT_FOLDER_NAME,
-        baseLayer: result?.data?.result
-          ? _.map(result.data.result, (track) => {
-              if (track.name.includes('quaternion')) {
-                return fnQuaternionToEulerTrack({ quaternionTrack: track });
-              } else {
-                return track;
-              }
-            })
-          : [],
-        layers: [],
-        isExportedMotion: true,
-      },
-    ];
-    dispatch(lpDataActions.setItemListOld({ itemList: _.concat(lpData, newData) }));
+    const baseLayer = result?.data?.result
+      ? _.map(result.data.result, (track) => {
+          if (track.name.includes('quaternion')) {
+            return fnQuaternionToEulerTrack({ quaternionTrack: track });
+          } else {
+            return track;
+          }
+        })
+      : [];
+    dispatch(lpDataActions.addExportedMotion({ baseLayer }));
     dispatch(pageInfoActions.setPageInfo({ page: 'shoot' }));
     dispatch(modalInfoActions.setModalInfo({ ...modalInfo, isShow: false, msg: '' }));
   }, [
     dispatch,
     getConfirm,
-    lpData,
     modalInfo,
     pageInfo.extension,
     pageInfo?.videoUrl,

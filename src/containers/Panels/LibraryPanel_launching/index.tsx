@@ -19,6 +19,9 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 import { Headline } from 'components/Typography';
 import ConfirmModal from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
+import * as recordingDataActions from 'actions/recordingData';
+import * as cutImagesActions from 'actions/cutImages';
+import * as pageInfoActions from 'actions/pageInfo';
 import Explorer from './Explorer';
 import {
   fnChangeFileNameCheckingDuplicate,
@@ -49,6 +52,7 @@ import { ContextmenuDataTypes, ContextmenuType } from 'types';
 import { ContextMenu } from 'components/ContextMenu';
 import { useCheckIsServer } from 'hooks/common/useCheckIsServer';
 import { fnExportModelToFbx, fnExportModelToGlb } from 'utils/LP';
+import { INITIAL_RECORDING_DATA } from 'utils/const';
 
 const cx = classNames.bind(styles);
 
@@ -170,6 +174,7 @@ const LibraryPanel: FunctionComponent = () => {
   const modifyingRow = useSelector((state) => state.lpData.modifyingRow);
   const copiedKeys = useSelector((state) => state.lpData.copiedKeys);
   const expandedKeys = useSelector((state) => state.lpData.expandedKeys);
+  const visualizedKeys = useSelector((state) => state.lpData.visualizedKeys);
 
   const { isServer } = useCheckIsServer();
 
@@ -188,6 +193,7 @@ const LibraryPanel: FunctionComponent = () => {
     (params: MakeContextMenuData): ContextmenuDataTypes[] => {
       const { isIcon, itemKey } = params;
       const isDisablePaste = _.isEmpty(copiedKeys);
+      const isDisabledVisualization = visualizedKeys.includes(itemKey);
       if (isIcon) {
         // 아이콘위
         const item = lpData.find((item) => item.key === itemKey);
@@ -211,14 +217,22 @@ const LibraryPanel: FunctionComponent = () => {
             { key: ContextMenuEnum.ADD_MOTION, value: ContextMenuEnum.ADD_MOTION },
             { key: ContextMenuEnum.FBX_EXPORT, value: ContextMenuEnum.FBX_EXPORT },
             { key: ContextMenuEnum.GLB_EXPORT, value: ContextMenuEnum.GLB_EXPORT },
-            { key: ContextMenuEnum.VISUALIZATION, value: ContextMenuEnum.VISUALIZATION },
+            {
+              key: ContextMenuEnum.VISUALIZATION,
+              value: ContextMenuEnum.VISUALIZATION,
+              isDisabled: isDisabledVisualization,
+            },
           ];
         } else {
           return [
             { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
             { key: ContextMenuEnum.DELETE, value: ContextMenuEnum.DELETE },
             { key: ContextMenuEnum.DUPLICATE, value: ContextMenuEnum.DUPLICATE },
-            { key: ContextMenuEnum.VISUALIZATION, value: ContextMenuEnum.VISUALIZATION },
+            {
+              key: ContextMenuEnum.VISUALIZATION,
+              value: ContextMenuEnum.VISUALIZATION,
+              isDisabled: isDisabledVisualization,
+            },
           ];
         }
       } else {
@@ -249,7 +263,7 @@ const LibraryPanel: FunctionComponent = () => {
         }
       }
     },
-    [copiedKeys, lpData, lpMode, lpPageKey],
+    [copiedKeys, lpData, lpMode, lpPageKey, visualizedKeys],
   );
 
   // 오른쪽 메뉴 정보
@@ -396,15 +410,20 @@ const LibraryPanel: FunctionComponent = () => {
         dispatch(lpDataActions.selectItemList({ keys: [itemId], selectType: 'none' }));
       }
       const contextMenuData = makeContextMenuData({ isIcon, itemKey: itemId });
-      setContextMenuInfo({
-        data: contextMenuData,
-        isShow: true,
-        left: event.pageX,
-        top: event.pageY,
-        onClick: handleClickContextMenu,
-      });
+      const isExistsSearchword = !_.isEmpty(lpSearchword); // 검색어가 입력되었는지 여부
+      const isClickEmptySpace = !isIcon; // 빈공간을 클릭했는지 여부
+      if (!(isExistsSearchword && isClickEmptySpace)) {
+        // 검색어가 입력되어있는 상태에서 빈공간을 클릭시 동작하지 않는다
+        setContextMenuInfo({
+          data: contextMenuData,
+          isShow: true,
+          left: event.pageX,
+          top: event.pageY,
+          onClick: handleClickContextMenu,
+        });
+      }
     },
-    [dispatch, handleClickContextMenu, makeContextMenuData],
+    [dispatch, handleClickContextMenu, lpSearchword, makeContextMenuData],
   );
 
   const contextMenuRef = useRef<HTMLDivElement>(null);
@@ -564,7 +583,6 @@ const LibraryPanel: FunctionComponent = () => {
           modalType: 'alert',
         }),
       );
-      let newLpData: LPItemListType = [];
       const isMultipleVideoFiles = validateMultipleVideoFiles(files);
       if (isMultipleVideoFiles) {
         dispatch(
@@ -635,6 +653,7 @@ const LibraryPanel: FunctionComponent = () => {
                 confirm: 'OK',
                 cancel: 'cancel',
               },
+              paramters: { videoUrl: fileUrl, extension },
             }),
           );
           return;
@@ -659,9 +678,8 @@ const LibraryPanel: FunctionComponent = () => {
           );
           return;
         }
-        newLpData = _.concat(newLpData, newData);
+        dispatch(lpDataActions.addItemList({ itemList: newData }));
       }
-      dispatch(lpDataActions.addItemList({ itemList: newLpData }));
       dispatch(lpDataActions.setModalInfo({ isShow: false, message: '', loading: false }));
     },
     [
@@ -900,6 +918,18 @@ const LibraryPanel: FunctionComponent = () => {
         dispatch(lpDataActions.deleteRows({ key: rightClickedKey.current }));
         break;
       }
+      case 'move': {
+        dispatch(recordingDataActions.setRecordingData(INITIAL_RECORDING_DATA));
+        dispatch(cutImagesActions.setCutImages({ urls: [] }));
+        dispatch(
+          pageInfoActions.setPageInfo({
+            page: 'extract',
+            videoUrl: modalInfo.paramters?.videoUrl,
+            extension: modalInfo.paramters?.extension,
+          }),
+        );
+        break;
+      }
       default:
         break;
     }
@@ -908,6 +938,8 @@ const LibraryPanel: FunctionComponent = () => {
     dispatch,
     lpData,
     modalInfo.detailType,
+    modalInfo.paramters?.extension,
+    modalInfo.paramters?.videoUrl,
     modifyingRow?.key,
     modifyingRow?.name,
     modifyingRow?.parentKey,
