@@ -4,9 +4,9 @@ import BreadcrumbItem from './BreadcrumbItem';
 import _ from 'lodash';
 import { useDispatch } from 'react-redux';
 import * as LPDataActions from 'actions/lpData';
+import { FileType, ROOT_KEY } from 'types/LP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { FileType, ROOT_KEY } from 'types/LP';
 
 const cx = classNames.bind(styles);
 

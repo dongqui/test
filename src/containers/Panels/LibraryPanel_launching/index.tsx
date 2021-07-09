@@ -22,6 +22,7 @@ import * as lpSearchwordActions from 'actions/lpSearchword';
 import * as recordingDataActions from 'actions/recordingData';
 import * as cutImagesActions from 'actions/cutImages';
 import * as pageInfoActions from 'actions/pageInfo';
+import * as contextmenuInfoActions from 'actions/contextmenuInfo';
 import Explorer from './Explorer';
 import {
   fnChangeFileNameCheckingDuplicate,
@@ -46,13 +47,12 @@ import {
 import * as lpDataActions from 'actions/lpData';
 import { ListView } from './ListTree';
 import { DragBox } from 'components/DragBox';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
-import { ContextmenuDataTypes, ContextmenuType } from 'types';
-import { ContextMenu } from 'components/ContextMenu';
 import { useCheckIsServer } from 'hooks/common/useCheckIsServer';
 import { fnExportModelToFbx, fnExportModelToGlb } from 'utils/LP';
 import { INITIAL_RECORDING_DATA } from 'utils/const';
+import { ContextmenuDataTypes } from 'types';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -175,6 +175,7 @@ const LibraryPanel: FunctionComponent = () => {
   const copiedKeys = useSelector((state) => state.lpData.copiedKeys);
   const expandedKeys = useSelector((state) => state.lpData.expandedKeys);
   const visualizedKeys = useSelector((state) => state.lpData.visualizedKeys);
+  const contextmenuInfo = useSelector((state) => state.contextmenuInfo);
 
   const { isServer } = useCheckIsServer();
 
@@ -265,15 +266,6 @@ const LibraryPanel: FunctionComponent = () => {
     },
     [copiedKeys, lpData, lpMode, lpPageKey, visualizedKeys],
   );
-
-  // 오른쪽 메뉴 정보
-  const [contextMenuInfo, setContextMenuInfo] = useState<ContextmenuType>({
-    isShow: false,
-    data: makeContextMenuData({ isIcon: false, itemKey: '' }),
-    top: 0,
-    left: 0,
-    onClick: () => {},
-  });
 
   /**
    * 오른쪽 메뉴의 리스트를 클릭했을때 발생시킬 이벤트에 관한 함수입니다.
@@ -394,9 +386,9 @@ const LibraryPanel: FunctionComponent = () => {
           break;
         }
       }
-      setContextMenuInfo((state) => ({ ...state, isShow: false }));
+      dispatch(contextmenuInfoActions.setContextmenuInfo({ ...contextmenuInfo, isShow: false }));
     },
-    [dispatch, lpData, lpMode, lpPageKey],
+    [contextmenuInfo, dispatch, lpData, lpMode, lpPageKey],
   );
 
   const handleContextMenu = useCallback(
@@ -413,20 +405,19 @@ const LibraryPanel: FunctionComponent = () => {
       const isExistsSearchword = !_.isEmpty(lpSearchword); // 검색어가 입력되었는지 여부
       const isClickEmptySpace = !isIcon; // 빈공간을 클릭했는지 여부
       if (!(isExistsSearchword && isClickEmptySpace)) {
-        // 검색어가 입력되어있는 상태에서 빈공간을 클릭시 동작하지 않는다
-        setContextMenuInfo({
-          data: contextMenuData,
-          isShow: true,
-          left: event.pageX,
-          top: event.pageY,
-          onClick: handleClickContextMenu,
-        });
+        dispatch(
+          contextmenuInfoActions.setContextmenuInfo({
+            isShow: true,
+            left: event.pageX,
+            top: event.pageY,
+            data: contextMenuData,
+            onClick: handleClickContextMenu,
+          }),
+        );
       }
     },
     [dispatch, handleClickContextMenu, lpSearchword, makeContextMenuData],
   );
-
-  const contextMenuRef = useRef<HTMLDivElement>(null);
 
   const handleChangeSearchword = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -841,8 +832,8 @@ const LibraryPanel: FunctionComponent = () => {
    */
   const handleClickEmptySpace = useCallback(
     (event: MouseEvent) => {
-      if (contextMenuInfo.isShow) {
-        setContextMenuInfo((state) => ({ ...state, isShow: false }));
+      if (contextmenuInfo.isShow) {
+        dispatch(contextmenuInfoActions.setContextmenuInfo({ ...contextmenuInfo, isShow: false }));
       }
       const icons = viewRef.current?.getElementsByClassName('icon');
       const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
@@ -865,7 +856,7 @@ const LibraryPanel: FunctionComponent = () => {
         });
       }
     },
-    [contextMenuInfo.isShow, dispatch],
+    [contextmenuInfo, dispatch],
   );
 
   /**
@@ -1158,17 +1149,6 @@ const LibraryPanel: FunctionComponent = () => {
           onConfirm={handleConfirm}
           onClose={handleDismiss}
           text={{ confirm: modalInfo.text?.confirm ?? '', cancel: modalInfo.text?.cancel ?? '' }}
-        />
-      )}
-      {contextMenuInfo.isShow && (
-        <ContextMenu
-          innerRef={contextMenuRef}
-          position={{
-            top: `${contextMenuInfo.top}px`,
-            left: `${contextMenuInfo.left}px`,
-          }}
-          onSelect={contextMenuInfo.onClick}
-          list={contextMenuInfo.data}
         />
       )}
     </div>

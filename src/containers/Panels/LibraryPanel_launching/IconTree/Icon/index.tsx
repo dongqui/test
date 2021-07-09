@@ -12,7 +12,7 @@ import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import { FileType, LPItemType } from 'types/LP';
+import { FileType } from 'types/LP';
 import * as lpDataActions from 'actions/lpData';
 import { fnGetFileExtension } from 'utils/LP_launching';
 import { BaseInput } from 'components/Input';

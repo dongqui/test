@@ -3,9 +3,9 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { Tooltip } from 'components/Tooltip';
 import { useHover } from 'hooks/common';
 import _ from 'lodash';
+import { FileType } from 'types/LP';
 import classNames from 'classnames/bind';
 import styles from './BreadcrumbItem.module.scss';
-import { FileType } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
