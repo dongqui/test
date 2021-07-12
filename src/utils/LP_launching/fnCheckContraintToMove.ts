@@ -1,7 +1,7 @@
 import { LPItemListType, LPItemType } from 'types/LP';
 import { fnFindTopParentRows } from '.';
 
-interface FnCheckContraint {
+interface CheckContraint {
   startRows: LPItemListType;
   destinationRow: LPItemType;
 }
@@ -14,7 +14,7 @@ interface FnCheckContraint {
  *
  * @return 이동 가능 여부
  */
-const fnCheckContraintToMove = (params: FnCheckContraint): boolean => {
+const fnCheckContraintToMove = (params: CheckContraint): boolean => {
   const { startRows, destinationRow } = params;
 
   const selectedTopParentRows = fnFindTopParentRows({ data: startRows }); // 선택한 row들중 가장 상위에 있는 row들만 추려낸다
@@ -23,15 +23,11 @@ const fnCheckContraintToMove = (params: FnCheckContraint): boolean => {
   if (selectedRowsTypes.includes('Motion')) {
     return false;
   }
-  if (selectedRowsTypes.includes('File')) {
-    if (destinationRow?.type !== 'Folder') {
-      return false;
-    }
+  if (selectedRowsTypes.includes('File') && destinationRow?.type !== 'Folder') {
+    return false;
   }
-  if (selectedRowsTypes.includes('Folder')) {
-    if (destinationRow?.type !== 'Folder') {
-      return false;
-    }
+  if (selectedRowsTypes.includes('Folder') && destinationRow?.type !== 'Folder') {
+    return false;
   }
   return true;
 };

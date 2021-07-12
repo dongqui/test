@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
 
-interface FnMakeNewData
+interface MakeNewData
   extends Pick<
     LPItemType,
     'key' | 'name' | 'type' | 'parentKey' | 'boneNames' | 'baseLayer' | 'url'
@@ -24,7 +24,7 @@ interface FnMakeNewData
  * @return 추가할 새로운 lpdata
  */
 
-const fnMakeNewData = (props: FnMakeNewData): LPItemType => {
+const fnMakeNewData = (props: MakeNewData): LPItemType => {
   const { key, name, type, data, parentKey, boneNames, baseLayer, url } = props;
 
   const parentRow = data.find((item) => item.key === parentKey); // 부모 row

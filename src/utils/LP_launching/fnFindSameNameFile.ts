@@ -1,6 +1,6 @@
 import { LPItemListType, LPItemType } from 'types/LP';
 
-interface FnFindSameNameFile {
+interface FindSameNameFile {
   name: string;
   data: LPItemListType;
 }
@@ -13,7 +13,7 @@ interface FnFindSameNameFile {
  *
  * @return 동일한 이름을 가진 파일
  */
-const fnFindSameNameFile = (params: FnFindSameNameFile): LPItemType | undefined => {
+const fnFindSameNameFile = (params: FindSameNameFile): LPItemType | undefined => {
   const { name, data } = params;
   const sameFileNameRow = data.find((item) => item.name === name);
   return sameFileNameRow;

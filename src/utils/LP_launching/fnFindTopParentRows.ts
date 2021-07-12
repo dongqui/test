@@ -1,6 +1,6 @@
 import { LPItemListType } from 'types/LP';
 
-interface FnFindTopParentRows {
+interface FindTopParentRows {
   data: LPItemListType;
 }
 
@@ -11,7 +11,7 @@ interface FnFindTopParentRows {
  *
  * @return 추린 후의 lpdata
  */
-const fnFindTopParentRows = (params: FnFindTopParentRows): LPItemListType => {
+const fnFindTopParentRows = (params: FindTopParentRows): LPItemListType => {
   const { data } = params;
 
   const keys = data.map((item) => item.key);

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { LPItemListType } from 'types/LP';
 
-interface FnFindDeleteKeys {
+interface FindDeleteKeys {
   data: LPItemListType;
   keys: string[];
 }
@@ -14,7 +14,7 @@ interface FnFindDeleteKeys {
  *
  * @return 하위 키들의 배열
  */
-const fnFindChildrenKeys = (params: FnFindDeleteKeys): string[] => {
+const fnFindChildrenKeys = (params: FindDeleteKeys): string[] => {
   const { data, keys } = params;
   // 전달받은 키들을 부모로 가지고 있는 모든 하위 row들
   const childrenRows = data.filter((item) => !_.isEmpty(_.intersection(item.parentKeyList, keys)));

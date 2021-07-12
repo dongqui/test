@@ -310,18 +310,20 @@ const PlayBox: FunctionComponent<Props> = ({
         return false;
       }
     }
-    const baseLayer = result?.data?.result
-      ? _.map(result.data.result, (track) => {
-          if (track.name.includes('quaternion')) {
-            return fnQuaternionToEulerTrack({ quaternionTrack: track });
-          } else {
-            return track;
-          }
-        })
-      : [];
-    dispatch(lpDataActions.addExportedMotion({ baseLayer }));
-    dispatch(pageInfoActions.setPageInfo({ page: 'shoot' }));
-    dispatch(modalInfoActions.setModalInfo({ ...modalInfo, isShow: false, msg: '' }));
+    if (result && result.data) {
+      const baseLayer = result.data.result
+        ? _.map(result.data.result, (track) => {
+            if (track.name.includes('quaternion')) {
+              return fnQuaternionToEulerTrack({ quaternionTrack: track });
+            } else {
+              return track;
+            }
+          })
+        : [];
+      dispatch(lpDataActions.addExportedMotion({ baseLayer }));
+      dispatch(pageInfoActions.setPageInfo({ page: 'shoot' }));
+      dispatch(modalInfoActions.setModalInfo({ ...modalInfo, isShow: false, msg: '' }));
+    }
   }, [
     dispatch,
     getConfirm,

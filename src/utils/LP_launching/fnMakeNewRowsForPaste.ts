@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
 import { fnChangeFileNameCheckingDuplicate, fnFindChildrenKeys, fnFindTopParentRows } from '.';
 
-interface FnMakeNewRowsForPaste {
+interface MakeNewRowsForPaste {
   data: LPItemListType;
   rows: LPItemListType;
   targetRow?: LPItemType;
@@ -21,7 +21,7 @@ interface FnMakeNewRowsForPaste {
  *
  * @return 새로 생성된 rows
  */
-const fnMakeNewRowsForPaste = (params: FnMakeNewRowsForPaste): LPItemListType => {
+const fnMakeNewRowsForPaste = (params: MakeNewRowsForPaste): LPItemListType => {
   const { data, rows, targetRow, type } = params;
 
   let copiedRows: LPItemListType = _.clone(rows);
@@ -35,7 +35,7 @@ const fnMakeNewRowsForPaste = (params: FnMakeNewRowsForPaste): LPItemListType =>
   const groupKey: keyof LPItemType = 'groupKey';
   const copiedGroupKeys = Object.keys(_.groupBy(copiedRows, groupKey)); // 복사한 row들을 그룹별로 나눈다
   let newCopiedRows: LPItemListType = [];
-  let uuid = uuidv4().slice(0, 4);
+  let uuid = uuidv4();
   if (type === 'move') {
     // 붙여넣기가 아닌 이동을 위한 목적라면 키를 변경하지 않는다
     uuid = '';

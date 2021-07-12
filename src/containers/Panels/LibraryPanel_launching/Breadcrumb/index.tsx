@@ -20,8 +20,8 @@ export interface PathList extends Array<Path> {}
 
 interface BreadcrumbProps {
   pathList: PathList;
-  prevPageKey: string; // 이전 페이지 키
-  currentPageKey: string; // 현재 페이지 키
+  prevPageKey: string;
+  currentPageKey: string;
 }
 
 const Breadcrumb: FunctionComponent<BreadcrumbProps> = ({

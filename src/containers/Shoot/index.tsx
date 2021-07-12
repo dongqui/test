@@ -13,13 +13,11 @@ import _ from 'lodash';
 import LibraryPanel from 'containers/Panels/LibraryPanel_launching';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
-import { LPDATA_PROPERTY_TYPES } from 'types';
 import TimelinePanel from 'containers/Panels/TimelinePanel';
 import ControlPanel from 'containers/Panels/ControlPanel';
 import { ConfirmModalProvider } from 'components/Modal/ConfirmModal';
 import useWindowSize from 'hooks/common/useWindowSize';
 import { d3ScaleLinear } from 'types/TP';
-import fnVisualizeFile from 'utils/LP/fnVisualizeFile';
 import { useDispatch } from 'react-redux';
 import * as currentVisualizedDataActions from 'actions/currentVisualizedData';
 import { useSelector } from 'reducers';
@@ -60,27 +58,9 @@ const Shoot: FunctionComponent = () => {
 
   const [windowWidth, windowHeight] = useWindowSize();
 
-  // useEffect(() => {
-  //   if (currentVisualizedData?.baseLayer) {
-  //     dispatch(
-  //       lpDataActions.setItemListOld({
-  //         itemList: _.map(lpData, (item) => ({
-  //           ...item,
-  //           baseLayer: _.isEqual(item?.key, currentVisualizedData?.key)
-  //             ? currentVisualizedData?.baseLayer
-  //             : item?.baseLayer,
-  //           layers: _.isEqual(item?.key, currentVisualizedData?.key)
-  //             ? currentVisualizedData?.layers
-  //             : item?.layers,
-  //         })),
-  //       }),
-  //     );
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [currentVisualizedData]);
-
   useEffect(() => {
     if (currentVisualizedData && !visualizedKeys.includes(currentVisualizedData.key)) {
+      // visualize 된 파일이 삭제되면 reset 해준다
       dispatch(currentVisualizedDataActions.resetCurrentVisualizedData());
     }
   }, [currentVisualizedData, dispatch, lpData, visualizedKeys]);

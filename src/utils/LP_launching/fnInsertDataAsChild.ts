@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { LPItemListType } from 'types/LP';
 
-interface FnInsertDataAsChild {
+interface InsertDataAsChild {
   data: LPItemListType;
   targetData: LPItemListType;
   targetKey: string;
@@ -16,7 +16,7 @@ interface FnInsertDataAsChild {
  *
  * @return 추가된 후의 lpdata
  */
-const fnInsertDataAsChild = (params: FnInsertDataAsChild): LPItemListType => {
+const fnInsertDataAsChild = (params: InsertDataAsChild): LPItemListType => {
   const { data, targetData, targetKey } = params;
   let result = _.clone(data);
   let startIndex = _.findLastIndex(data, (item) => item.parentKeyList.includes(targetKey)); // 선택한 row 하위의 맨 마지막 다음부터 끼워넣는다
