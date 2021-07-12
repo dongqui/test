@@ -8,6 +8,7 @@ interface FnExportModelToGlb {
   modelName: string;
   modelUrl: string;
   motions: LPItemListOldType;
+  onExportEnd?: () => void;
 }
 
 /**
@@ -16,12 +17,13 @@ interface FnExportModelToGlb {
  * @param modelName - 추출 대상 모델의 이름
  * @param modelUrl - 추출 대상 모델의 url
  * @param motions - 추출 대상 모델이 포함하고 있는 모션들
+ * @param onExportEnd - 작업이 완료된 후의 이벤트
  *
  */
 const fnExportModelToGlb = async (props: FnExportModelToGlb) => {
   // scene 이랑 animations 가 필요
   // mainData 에서 model 의 name, url, motions 배열 받으면 될 듯
-  const { modelName, modelUrl, motions } = props;
+  const { modelName, modelUrl, motions, onExportEnd } = props;
   const loader = new GLTFLoader();
   const scene = await loader.loadAsync(modelUrl).then((object) => object.scene || object.scenes[0]);
   const animations =
@@ -51,6 +53,9 @@ const fnExportModelToGlb = async (props: FnExportModelToGlb) => {
       a.download = `${modelName.slice(0, -4)}.glb`;
       a.href = objURL;
       a.click();
+      if (onExportEnd) {
+        onExportEnd();
+      }
     },
     options,
   );

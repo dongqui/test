@@ -13,15 +13,12 @@ export interface LPItemType {
   parentKey: string;
   parentKeyList: string[];
   url: string;
-  isSelected?: boolean;
-  isAlreadySelected?: boolean; // 다중선택시 기준을 삼을 선택값 필요
   isVisualized?: boolean;
   baseLayer: ShootTrackType[];
   layers: ShootLayerType[];
   boneNames: string[];
   groupKey: string;
   depth: number;
-  isExpanded?: boolean;
 }
 
 export interface LPItemOldType {
@@ -73,3 +70,29 @@ export type LPPageListOldType = Array<LPPageOldType>;
 export interface LPSearchwordType {
   word: string;
 }
+
+export interface ModalInfoType {
+  modalType: 'none' | 'alert' | 'confirm';
+  detailType?: 'overwrite' | 'delete' | 'move';
+  isShow: boolean;
+  message?: string;
+  loading?: boolean;
+  text?: { confirm: string; cancel: string };
+  paramters?: { [key: string]: string };
+}
+
+export enum ContextMenuEnum {
+  NEW_DIRECTORY = 'New Directory',
+  EDIT_NAME = 'Edit name',
+  COPY = 'Copy',
+  PASTE = 'Paste',
+  ADD_MOTION = 'Add motion',
+  DELETE = 'Delete',
+  DUPLICATE = 'Duplicate',
+  FBX_EXPORT = 'FBX Export',
+  GLB_EXPORT = 'GLB Export',
+  VISUALIZATION = 'Visualization',
+}
+
+export const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];
+export const EnableFileFormats = [...EnableVideoFormats, 'glb', 'fbx'];

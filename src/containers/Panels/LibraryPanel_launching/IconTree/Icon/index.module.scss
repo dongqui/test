@@ -54,14 +54,6 @@
       }
     }
   }
-
-  &.editing {
-    border: 1px solid $primaryColor;
-  }
-
-  &.dragging {
-    opacity: 0.5;
-  }
 }
 
 .input-name {

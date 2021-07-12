@@ -3,10 +3,10 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import BreadcrumbItem from './BreadcrumbItem';
 import _ from 'lodash';
 import { useDispatch } from 'react-redux';
-import * as LPPageActions from 'actions/lpPage';
+import * as LPDataActions from 'actions/lpData';
+import { FileType, ROOT_KEY } from 'types/LP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { FileType, ROOT_KEY } from 'types/LP';
 
 const cx = classNames.bind(styles);
 
@@ -34,13 +34,17 @@ const Breadcrumb: FunctionComponent<BreadcrumbProps> = ({
 
   const handleBack = useCallback(() => {
     if (currentPageKey !== ROOT_KEY) {
-      dispatch(LPPageActions.setLPPage({ key: prevPageKey }));
+      dispatch(LPDataActions.setLPPage({ key: prevPageKey }));
     }
   }, [currentPageKey, dispatch, prevPageKey]);
 
   const handlePathOpen = useCallback(() => {
     setIsOpen(!isOpen);
   }, [isOpen]);
+
+  const handleDrop = useCallback(() => {
+    dispatch(LPDataActions.moveRows({ destinationKey: prevPageKey }));
+  }, [dispatch, prevPageKey]);
 
   useEffect(() => {
     // @TODO
@@ -66,12 +70,14 @@ const Breadcrumb: FunctionComponent<BreadcrumbProps> = ({
 
   return (
     <div className={cx('wrapper')}>
-      <IconWrapper
-        className={cx('arrow-left')}
-        icon={SvgPath.ChevronLeft}
-        onClick={handleBack}
-        hasFrame={false}
-      />
+      <div onDrop={handleDrop}>
+        <IconWrapper
+          className={cx('arrow-left')}
+          icon={SvgPath.ChevronLeft}
+          onClick={handleBack}
+          hasFrame={false}
+        />
+      </div>
       <div className={cx('path')}>
         {isAbbreviationLevel2 && (
           // @TODO

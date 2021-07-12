@@ -9,30 +9,41 @@ const cx = classNames.bind(styles);
 
 export interface ListViewProps {
   data: LPItemListType;
+  expandedKeys: string[];
 }
 
 export type GrouppedData = Array<LPItemListType>;
 
-const ListView: FunctionComponent<ListViewProps> = ({ data }) => {
+const ListView: FunctionComponent<ListViewProps> = ({ data, expandedKeys }) => {
+  const unExpandedKeys = data
+    .filter((item) => !expandedKeys.includes(item.key))
+    .map((item) => item.key);
+
   /**
    * 그룹별로 묶는 가공을 거친 데이터입니다.
    * @return 그룹별 가공 후 데이터
    */
   const grouppedData = useMemo((): GrouppedData => {
-    const groupKeys: string[] = Object.keys(_.groupBy(data, 'groupKey'));
+    const groupKey: keyof LPItemType = 'groupKey';
+    const groupKeys: string[] = Object.keys(_.groupBy(data, groupKey));
     const result = _.map(groupKeys, (groupKey) =>
       data.filter((item) => item.groupKey === groupKey),
     );
     return result;
   }, [data]);
 
-  const expandedKeys = data.filter((item) => item.isExpanded).map((item) => item.key);
-
   return (
     <div className={cx('wrapper')}>
       {_.map(grouppedData, (items, index) => {
         const key = `${items.length}_${index}`;
-        return <ListGroup key={key} items={items} expandedKeys={expandedKeys} />;
+        return (
+          <ListGroup
+            key={key}
+            items={items}
+            expandedKeys={expandedKeys}
+            unExpandedKeys={unExpandedKeys}
+          />
+        );
       })}
     </div>
   );

@@ -8,13 +8,14 @@ interface SagaParams {
   payload: Pick<LPSearchwordType, 'word'>;
 }
 
-function* setSearchword(params: SagaParams) {
-  const { payload } = params;
-  const { word } = payload;
+function* setSearchwordSaga(params: SagaParams) {
+  const {
+    payload: { word },
+  } = params;
 
   yield put(actions.setSearchword({ word }));
 }
 
 export function* watchLpSearchword() {
-  yield debounce(100, REQUEST_SET_SEARCHWORD, setSearchword);
+  yield debounce(100, REQUEST_SET_SEARCHWORD, setSearchwordSaga);
 }
