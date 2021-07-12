@@ -179,7 +179,7 @@ const LibraryPanel: FunctionComponent = () => {
 
   const { isServer } = useCheckIsServer();
 
-  const rightClickedKey = useRef<string>(''); // 오른쪽 클릭한 대상 아이콘의 키값
+  const rightClickedKey = useRef<string | undefined>(''); // 오른쪽 클릭한 대상 아이콘의 키값
 
   const draggingIconInfo = useRef({ startItemId: '' });
 
@@ -317,7 +317,9 @@ const LibraryPanel: FunctionComponent = () => {
         }
         case `${ContextMenuEnum.ADD_MOTION}`: {
           const key = lpMode === 'listView' ? rightClickedKey.current : lpPageKey;
-          dispatch(lpDataActions.addMotion({ key }));
+          if (key) {
+            dispatch(lpDataActions.addMotion({ key }));
+          }
           break;
         }
         case `${ContextMenuEnum.DUPLICATE}`: {
@@ -373,13 +375,15 @@ const LibraryPanel: FunctionComponent = () => {
           break;
         }
         case `${ContextMenuEnum.VISUALIZATION}`: {
-          dispatch(
-            lpDataActions.requestVisualize({
-              key: rightClickedKey.current,
-              isVisualize: true,
-              data: lpData,
-            }),
-          );
+          if (rightClickedKey.current) {
+            dispatch(
+              lpDataActions.requestVisualize({
+                key: rightClickedKey.current,
+                isVisualize: true,
+                data: lpData,
+              }),
+            );
+          }
           break;
         }
         default: {
@@ -832,8 +836,9 @@ const LibraryPanel: FunctionComponent = () => {
    */
   const handleClickEmptySpace = useCallback(
     (event: MouseEvent) => {
-      if (contextmenuInfo.isShow) {
+      if (!_.isUndefined(rightClickedKey.current)) {
         dispatch(contextmenuInfoActions.setContextmenuInfo({ ...contextmenuInfo, isShow: false }));
+        rightClickedKey.current = undefined;
       }
       const icons = viewRef.current?.getElementsByClassName('icon');
       const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
