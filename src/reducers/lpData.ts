@@ -53,6 +53,9 @@ export const lpDataOld = (state = defaultStateOld, action: LPItemListOldAction) 
     case 'lpdata/SET_ITEMLIST_OLD': {
       return [...action.payload.itemList];
     }
+    case 'lpdata/ADD_ITEMLIST_OLD': {
+      return [...state, ...action.payload.itemList];
+    }
     default: {
       return state;
     }

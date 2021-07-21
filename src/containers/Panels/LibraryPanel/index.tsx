@@ -29,6 +29,8 @@ import * as lpSearchwordActtions from 'actions/lpSearchword';
 import * as pageInfoActions from 'actions/pageInfo';
 import * as recordingDataActions from 'actions/recordingData';
 import * as cutImagesActions from 'actions/cutImages';
+import fnGetFileName from 'utils/LP/fnGetFileName';
+import { fnQuaternionToEulerTrack } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
@@ -133,6 +135,41 @@ const LibraryPanelComponent: FunctionComponent = () => {
         setIsOutsideClose(true);
         return false;
       }
+      if (extension === 'json' || extension === 'JSON') {
+        const fileReader = new FileReader();
+        fileReader.onload = (event) => {
+          try {
+            let data: any = event.target?.result;
+            data = JSON.parse(data);
+            const key = uuidv4();
+            const name = fnGetFileName({ key: '', lpData, name: file.name });
+            const newData: LPItemListOldType = [
+              {
+                key,
+                type: 'Motion',
+                name,
+                parentKey: ROOT_FOLDER_NAME,
+                baseLayer: _.map(data, (track) => {
+                  if (track.name.includes('quaternion')) {
+                    return fnQuaternionToEulerTrack({ quaternionTrack: track });
+                  } else {
+                    return track;
+                  }
+                }),
+                layers: [],
+                isExportedMotion: true,
+              },
+            ];
+            dispatch(lpDataActions.addItemListOld({ itemList: newData }));
+          } catch (error) {
+            setIsOutsideClose(true);
+            setShowsModal(true);
+            setModalMessage(error);
+          }
+        };
+        fileReader.readAsText(file);
+        continue;
+      }
       let overlappedFile: LPItemOldType | undefined;
       if (_.isEqual(lpmode, LPModeType.iconview)) {
         overlappedFile = _.find(
@@ -231,9 +268,8 @@ const LibraryPanelComponent: FunctionComponent = () => {
         },
       ];
       newData = _.concat(newData, motions);
-      newLpData = _.concat(newLpData, newData);
+      dispatch(lpDataActions.addItemListOld({ itemList: newData }));
     }
-    dispatch(lpDataActions.setItemListOld({ itemList: newLpData }));
     setShowsModal(false);
   };
   const handleDefaultModel = useCallback(async () => {
