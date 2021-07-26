@@ -139,8 +139,15 @@ const LibraryPanelComponent: FunctionComponent = () => {
         const fileReader = new FileReader();
         fileReader.onload = (event) => {
           try {
-            let data: any = event.target?.result;
-            data = JSON.parse(data);
+            let result: any = event.target?.result;
+            result = JSON.parse(result);
+            if (result.key !== 'plask') {
+              setIsOutsideClose(true);
+              setShowsModal(true);
+              setModalMessage('Unsupported data format.');
+              return;
+            }
+            const data = result.data;
             const key = uuidv4();
             const name = fnGetFileName({ key: '', lpData, name: file.name });
             const newData: LPItemListOldType = [
