@@ -135,7 +135,7 @@ const LibraryPanelComponent: FunctionComponent = () => {
         setIsOutsideClose(true);
         return false;
       }
-      if (extension === 'json' || extension === 'JSON') {
+      if (extension && extension.toLowerCase() === 'json') {
         const fileReader = new FileReader();
         fileReader.onload = (event) => {
           try {
