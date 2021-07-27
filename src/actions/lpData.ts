@@ -20,7 +20,9 @@ export const deleteItemList = (params: DeleteItemList) => ({
   payload: params,
 });
 
-export type LPItemListOldAction = ReturnType<typeof setItemListOld>;
+export type LPItemListOldAction =
+  | ReturnType<typeof setItemListOld>
+  | ReturnType<typeof addItemListOld>;
 
 interface SetItemListOld {
   itemList: LPItemListOldType;
@@ -28,5 +30,14 @@ interface SetItemListOld {
 export const SET_ITEMLIST_OLD = 'lpdata/SET_ITEMLIST_OLD' as const;
 export const setItemListOld = (params: SetItemListOld) => ({
   type: SET_ITEMLIST_OLD,
+  payload: params,
+});
+
+interface AddItemListOld {
+  itemList: LPItemListOldType;
+}
+export const ADD_ITEMLIST_OLD = 'lpdata/ADD_ITEMLIST_OLD' as const;
+export const addItemListOld = (params: AddItemListOld) => ({
+  type: ADD_ITEMLIST_OLD,
   payload: params,
 });
