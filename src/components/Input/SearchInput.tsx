@@ -40,6 +40,7 @@ const SearchInput = forwardRef<HTMLInputElement, Props>(
   },
 );
 
+SearchInput.displayName = 'SearchInput';
 SearchInput.defaultProps = defaultProps;
 
 export default memo(SearchInput);

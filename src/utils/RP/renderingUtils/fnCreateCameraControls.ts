@@ -20,11 +20,9 @@ const fnCreateCameraControls = (props: FnCreateCameraControls) => {
   const { camera, renderer } = props;
   const cameraControls = new OrbitControls(camera, renderer.domElement);
   cameraControls.mouseButtons = {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     LEFT: THREE.MOUSE.NONE,
     MIDDLE: THREE.MOUSE.PAN,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     RIGHT: THREE.MOUSE.NONE,
   };
