@@ -178,7 +178,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
 
   // 트랙 클릭
   const handleClickTrackBody = useCallback(
-    (event: React.MouseEvent<Element>) => {
+    async (event: React.MouseEvent<Element>) => {
       const { nodeName } = event.target as Element;
       const isNotClickableNode = nodeName !== 'LI' && nodeName !== 'P';
       const isMutipleSelected = event.ctrlKey || event.metaKey || multiKeyController.ctrl.pressed;
@@ -191,7 +191,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
           const isNotSameLayer = targetLayerIndex !== myLayerIndex;
           const isClickedMe = prevSelectedIndices[index] === trackIndex;
           if (isNotSameLayer) {
-            const confirmed = getConfirm({
+            const confirmed = await getConfirm({
               title: 'Cannot select or edit multiple layers at the same time.',
             });
             if (confirmed) return false;
@@ -708,10 +708,10 @@ const TrackItem: FunctionComponent<Props> = (props) => {
   useContextMenu({ targetRef: trackItemRef, event: handleTrackContextMenu });
 
   // 작성한 레이어 이름 전달
-  const handleSubmitLayerName = useCallback(() => {
+  const handleSubmitLayerName = useCallback(async () => {
     setIsShowedFormModal(false);
     if (newLayerName === '') {
-      const confirmed = getConfirm({
+      const confirmed = await getConfirm({
         title: 'You cannot use an empty string as a name.',
       });
       if (confirmed) {
@@ -721,7 +721,7 @@ const TrackItem: FunctionComponent<Props> = (props) => {
       newLayerName === 'Base' ||
       _.map(currentVisualizedData?.layers, (layer) => layer.name).includes(newLayerName)
     ) {
-      const confirmed = getConfirm({
+      const confirmed = await getConfirm({
         title: 'There is already a layer with the same name.',
       });
       if (confirmed) {
