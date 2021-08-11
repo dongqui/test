@@ -22,7 +22,7 @@ export const makeStore = () => {
 
   if (process.env.NODE_ENV !== 'production') {
     // redux-logger 사용하실분은 주석해제 후 사용하시면 됩니다.
-    middlewares.push(loggerMiddleware);
+    // middlewares.push(loggerMiddleware);
   }
 
   const store = createStore(rootReducer, bindMiddleware(middlewares));
