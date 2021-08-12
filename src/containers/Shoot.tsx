@@ -55,7 +55,17 @@ const Shoot: FunctionComponent = () => {
 
   return (
     <Fragment>
-      <div className={cx('upperbar')}>UpperBar</div>
+      <ResizableBox
+        width={windowWidth}
+        height={36}
+        className={cx('upperbar')}
+      >
+        <div className={cx('up-outer')}>
+          <div className={cx('upperbar-inner')}>
+            UpperBar
+          </div>
+        </div>
+      </ResizableBox>
       <ResizableBox
         width={windowWidth}
         height={sectionHeight.upperSection}
