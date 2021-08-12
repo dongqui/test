@@ -12,9 +12,14 @@
   background-color: cadetblue;
 }
 
+.lower-section {
+  background-color: chartreuse;
+}
+
 .library-panel {
   width: 240px;
-  height: 764px;
+  // height: 764px;
+  height: 100%;
 }
 
 .rendering-panel {
@@ -23,10 +28,12 @@
 
 .control-panel {
   width: 260px;
-  height: 764px;
+  // height: 764px;
+  height: 100%;
 }
 
 .timeline-panel {
   width: 100%;
-  height: 168px;
+  // height: 168px;
+  height: 100%;
 }
