@@ -8,6 +8,7 @@
 }
 
 .upper-section {
+  position: relative;
   display: flex;
   background-color: cadetblue;
 }
@@ -17,18 +18,73 @@
 }
 
 .library-panel {
-  width: 240px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  background-color: red;
+  // width: 240px;
   // height: 764px;
   height: 100%;
 }
 
+.lp-outer {
+  position: relative;
+  flex-grow: 1;
+}
+
+.cp-outer {
+  position: relative;
+  flex-grow: 1;
+}
+
+.library-panel-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .rendering-panel {
-  //
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: blue;
+}
+
+.rp-outer {
+  position: relative;
+  flex-grow: 1;
+}
+
+.rendering-panel-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .control-panel {
-  width: 260px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  background-color: chocolate;
+  // width: 260px;
   // height: 764px;
+  height: 100%;
+}
+
+.control-panel-inner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
   height: 100%;
 }
 

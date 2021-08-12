@@ -1,4 +1,4 @@
-import { FunctionComponent, Fragment, useState, useCallback } from 'react';
+import { FunctionComponent, Fragment, useEffect, useState, useCallback } from 'react';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import { useWindowSize } from 'hooks/common';
 import classNames from 'classnames/bind';
@@ -15,6 +15,11 @@ const Shoot: FunctionComponent = () => {
     lowerSection: 168,
   });
 
+  const [panelWidth, setPanelWidth] = useState({
+    library: 240,
+    control: 260,
+  });
+
   const handleResize = useCallback(
     (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
       setSectionHeight({
@@ -25,8 +30,27 @@ const Shoot: FunctionComponent = () => {
     [windowHeight],
   );
 
+  const handleLPResizeStop = useCallback(
+    (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
+      setPanelWidth({
+        library: data.size.width,
+        control: panelWidth.control,
+      });
+    },
+    [panelWidth.control],
+  );
+
+  useEffect(() => {
+    if (sectionHeight.upperSection + sectionHeight.lowerSection + 36 !== windowHeight) {
+      setSectionHeight({
+        upperSection: windowHeight - sectionHeight.lowerSection - 36,
+        lowerSection: sectionHeight.lowerSection,
+      });
+    }
+  }, [sectionHeight.lowerSection, sectionHeight.upperSection, windowHeight]);
+
   return (
-    <div className={cx('wrapper')}>
+    <Fragment>
       <div className={cx('upperbar')}>UpperBar</div>
       <ResizableBox
         width={windowWidth}
@@ -36,9 +60,50 @@ const Shoot: FunctionComponent = () => {
         className={cx('upper-section')}
       >
         <Fragment>
-          <div className={cx('library-panel')}>LP</div>
-          <div className={cx('rendering-panel')}>RP</div>
-          <div className={cx('control-panel')}>CP</div>
+          <ResizableBox
+            width={panelWidth.library}
+            height={sectionHeight.upperSection}
+            minConstraints={[240, (windowHeight - 36) * 0.5]}
+            maxConstraints={[450, windowHeight - 168 - 36]}
+            onResizeStop={handleLPResizeStop}
+            resizeHandles={['e']}
+            axis="x"
+            className={cx('library-panel')}
+          >
+            <div className={cx('lp-outer')}>
+              <div className={cx('library-panel-inner')}>
+                LP
+              </div>
+            </div>
+          </ResizableBox>
+          <ResizableBox
+            width={windowWidth}
+            height={sectionHeight.upperSection}
+            minConstraints={[150, (windowHeight - 36) * 0.5]}
+            maxConstraints={[windowWidth, windowHeight - 168 - 36]}
+            className={cx('rendering-panel')}
+          >
+            <div className={cx('rp-outer')}>
+              <div className={cx('rendering-panel-inner')}>
+                RP
+              </div>
+            </div>
+          </ResizableBox>
+          <ResizableBox
+            width={panelWidth.control}
+            height={sectionHeight.upperSection}
+            minConstraints={[260, (windowHeight - 36) * 0.5]}
+            maxConstraints={[450, windowHeight - 168 - 36]}
+            resizeHandles={['w']}
+            axis="x"
+            className={cx('control-panel')}
+          >
+            <div className={cx('cp-outer')}>
+              <div className={cx('control-panel-inner')}>
+                CP
+              </div>
+            </div>
+          </ResizableBox>
         </Fragment>
       </ResizableBox>
       <ResizableBox
@@ -54,7 +119,7 @@ const Shoot: FunctionComponent = () => {
       >
         <div className={cx('timeline-panel')}>TP</div>
       </ResizableBox>
-    </div>
+    </Fragment>
   );
 };
 
