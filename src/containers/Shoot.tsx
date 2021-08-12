@@ -15,6 +15,8 @@ const Shoot: FunctionComponent = () => {
     lowerSection: 168,
   });
 
+  const [rate, setRate] = useState(Number((sectionHeight.lowerSection / windowHeight).toFixed(2)))
+
   const [panelWidth, setPanelWidth] = useState({
     library: 240,
     control: 260,
@@ -26,6 +28,7 @@ const Shoot: FunctionComponent = () => {
         upperSection: windowHeight - data.size.height - 36,
         lowerSection: data.size.height,
       });
+      setRate(Number((data.size.height / windowHeight).toFixed(2)));
     },
     [windowHeight],
   );
@@ -41,13 +44,14 @@ const Shoot: FunctionComponent = () => {
   );
 
   useEffect(() => {
+    const r = windowHeight * rate;
     if (sectionHeight.upperSection + sectionHeight.lowerSection + 36 !== windowHeight) {
       setSectionHeight({
-        upperSection: windowHeight - sectionHeight.lowerSection - 36,
-        lowerSection: sectionHeight.lowerSection,
+        upperSection: windowHeight - r - 36,
+        lowerSection: windowHeight * rate,
       });
     }
-  }, [sectionHeight.lowerSection, sectionHeight.upperSection, windowHeight]);
+  }, [rate, sectionHeight.lowerSection, sectionHeight.upperSection, windowHeight]);
 
   return (
     <Fragment>
