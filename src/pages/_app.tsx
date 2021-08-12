@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Fragment, useEffect } from 'react';
-import { NextComponentType } from 'next';
 import { AppContext, AppInitialProps, AppProps } from 'next/app';
+import { NextComponentType } from 'next';
 import { wrapper } from 'store';
 import { hotjar } from 'analytics';
 import Head from 'next/head';
@@ -13,7 +13,9 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
 }) => {
 
   useEffect(() => {
-    hotjar.initialize();
+    if (process.env.NODE_ENV === 'production') {
+      hotjar.initialize();
+    }
   }, []);
 
   return (
