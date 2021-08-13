@@ -15,10 +15,14 @@ type Props = BaseProps & Omit<ResizableBoxProps, 'minConstraints' | 'maxConstrai
 const Box: FunctionComponent<Props> = ({
   min,
   max,
+  className,
   children,
   ...rest
 }) => {
+  const classes = cx('wrapper', className);
+
   const params = {
+    className: classes,
     minConstraints: min,
     maxConstraints: max,
     ...rest
