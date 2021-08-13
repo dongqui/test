@@ -2,17 +2,14 @@ import Cookie from 'react-cookies';
 import parseUrl from 'url-parse';
 import axios, { Method } from 'axios';
 
+// AxiosRequestConfig와 일부 타입 통일(headers, params, data)
 interface Payload {
   method: Method;
   base?: string;
   url: string;
   headers?: any;
-  params?: {
-    [key: string]: any;
-  };
-  data?: {
-    [key: string]: any;
-  };
+  params?: any;
+  data?: any;
   [key: string]: any;
 }
 
