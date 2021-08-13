@@ -57,7 +57,7 @@ const Shoot: FunctionComponent = () => {
   return (
     <Fragment>
       <Box width={windowWidth} height={36}>
-        UpperBar
+        {/* UP */}
       </Box>
       <Box
         width={windowWidth}
@@ -76,7 +76,7 @@ const Shoot: FunctionComponent = () => {
           axis="x"
           className={cx('library-panel')}
         >
-          LP
+          {/* LP */}
         </Box>
         <Box
           width={windowWidth}
@@ -85,7 +85,7 @@ const Shoot: FunctionComponent = () => {
           max={[windowWidth, windowHeight - 168 - 36]}
           className={cx('rendering-panel')}
         >
-          RP
+          {/* RP */}
         </Box>
         <Box
           width={panelWidth.control}
@@ -96,7 +96,7 @@ const Shoot: FunctionComponent = () => {
           axis="x"
           className={cx('control-panel')}
         >
-          CP
+          {/* CP */}
         </Box>
       </Box>
       <Box
@@ -108,7 +108,7 @@ const Shoot: FunctionComponent = () => {
         axis="y"
         resizeHandles={['n']}
       >
-        TP
+        {/* TP */}
       </Box>
     </Fragment>
   );
