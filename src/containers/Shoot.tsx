@@ -20,7 +20,7 @@ const Shoot: FunctionComponent = () => {
 
   const [panelWidth, setPanelWidth] = useState({
     library: 240,
-    control: 260,
+    control: 280,
   });
 
   const handleResize = useCallback(
@@ -90,7 +90,7 @@ const Shoot: FunctionComponent = () => {
         <Box
           width={panelWidth.control}
           height={sectionHeight.upperSection}
-          min={[260, (windowHeight - 36) * 0.5]}
+          min={[280, (windowHeight - 36) * 0.5]}
           max={[450, windowHeight - 168 - 36]}
           resizeHandles={['w']}
           axis="x"
@@ -108,7 +108,12 @@ const Shoot: FunctionComponent = () => {
         axis="y"
         resizeHandles={['n']}
       >
-        {/* TP */}
+        <Box width={windowWidth} height={32}>
+          {/* MB */}
+        </Box>
+        <Box width={windowWidth} height={sectionHeight.lowerSection - 32}>
+          {/* TP */}
+        </Box>
       </Box>
     </Fragment>
   );
