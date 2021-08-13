@@ -1,5 +1,6 @@
 import { FunctionComponent, Fragment, useEffect, useState, useCallback } from 'react';
-import { ResizableBox, ResizeCallbackData } from 'react-resizable';
+import { ResizeCallbackData } from 'react-resizable';
+import { Box } from 'components/Layout';
 import { useWindowSize } from 'hooks/common';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
@@ -55,84 +56,60 @@ const Shoot: FunctionComponent = () => {
 
   return (
     <Fragment>
-      <ResizableBox
-        width={windowWidth}
-        height={36}
-        className={cx('upperbar')}
-      >
-        <div className={cx('up-outer')}>
-          <div className={cx('upperbar-inner')}>
-            UpperBar
-          </div>
-        </div>
-      </ResizableBox>
-      <ResizableBox
+      <Box width={windowWidth} height={36}>
+        UpperBar
+      </Box>
+      <Box
         width={windowWidth}
         height={sectionHeight.upperSection}
-        minConstraints={[windowWidth, (windowHeight - 36) * 0.5]}
-        maxConstraints={[windowWidth, windowHeight - 168 - 36]}
+        min={[windowWidth, (windowHeight - 36) * 0.5]}
+        max={[windowWidth, windowHeight - 168 - 36]}
         className={cx('upper-section')}
       >
-        <Fragment>
-          <ResizableBox
-            width={panelWidth.library}
-            height={sectionHeight.upperSection}
-            minConstraints={[240, (windowHeight - 36) * 0.5]}
-            maxConstraints={[450, windowHeight - 168 - 36]}
-            onResizeStop={handleLPResizeStop}
-            resizeHandles={['e']}
-            axis="x"
-            className={cx('library-panel')}
-          >
-            <div className={cx('lp-outer')}>
-              <div className={cx('library-panel-inner')}>
-                LP
-              </div>
-            </div>
-          </ResizableBox>
-          <ResizableBox
-            width={windowWidth}
-            height={sectionHeight.upperSection}
-            minConstraints={[150, (windowHeight - 36) * 0.5]}
-            maxConstraints={[windowWidth, windowHeight - 168 - 36]}
-            className={cx('rendering-panel')}
-          >
-            <div className={cx('rp-outer')}>
-              <div className={cx('rendering-panel-inner')}>
-                RP
-              </div>
-            </div>
-          </ResizableBox>
-          <ResizableBox
-            width={panelWidth.control}
-            height={sectionHeight.upperSection}
-            minConstraints={[260, (windowHeight - 36) * 0.5]}
-            maxConstraints={[450, windowHeight - 168 - 36]}
-            resizeHandles={['w']}
-            axis="x"
-            className={cx('control-panel')}
-          >
-            <div className={cx('cp-outer')}>
-              <div className={cx('control-panel-inner')}>
-                CP
-              </div>
-            </div>
-          </ResizableBox>
-        </Fragment>
-      </ResizableBox>
-      <ResizableBox
+        <Box
+          width={panelWidth.library}
+          height={sectionHeight.upperSection}
+          min={[240, (windowHeight - 36) * 0.5]}
+          max={[450, windowHeight - 168 - 36]}
+          onResizeStop={handleLPResizeStop}
+          resizeHandles={['e']}
+          axis="x"
+          className={cx('library-panel')}
+        >
+          LP
+        </Box>
+        <Box
+          width={windowWidth}
+          height={sectionHeight.upperSection}
+          min={[150, (windowHeight - 36) * 0.5]}
+          max={[windowWidth, windowHeight - 168 - 36]}
+          className={cx('rendering-panel')}
+        >
+          RP
+        </Box>
+        <Box
+          width={panelWidth.control}
+          height={sectionHeight.upperSection}
+          min={[260, (windowHeight - 36) * 0.5]}
+          max={[450, windowHeight - 168 - 36]}
+          resizeHandles={['w']}
+          axis="x"
+          className={cx('control-panel')}
+        >
+          CP
+        </Box>
+      </Box>
+      <Box
         width={windowWidth}
         height={sectionHeight.lowerSection}
-        minConstraints={[windowWidth, 168]}
-        maxConstraints={[windowWidth, (windowHeight) * 0.5]}
-        className={cx('lower-section')}
+        min={[windowWidth, 168]}
+        max={[windowWidth, (windowHeight) * 0.5]}
         onResize={handleResize}
         axis="y"
         resizeHandles={['n']}
-
       >
-        <div className={cx('timeline-panel')}>TP</div>
-      </ResizableBox>
+        TP
+      </Box>
     </Fragment>
   );
 };

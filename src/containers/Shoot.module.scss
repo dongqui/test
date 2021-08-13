@@ -1,25 +1,7 @@
-.wrapper {
-  //
-}
-
-.upperbar {
-  // width: 100%;
-  // height: 36px;
-}
-
-.up-outer {
-  position: relative;
-  flex-grow: 1;
-}
 
 .upper-section {
   position: relative;
   display: flex;
-  // background-color: cadetblue;
-}
-
-.lower-section {
-  background-color: cornflowerblue;
 }
 
 .library-panel {
@@ -28,27 +10,6 @@
   left: 0;
   z-index: 1;
   display: flex;
-  background-color: bisque;
-  // width: 240px;
-  // height: 764px;
-  height: 100%;
-}
-
-.lp-outer {
-  position: relative;
-  flex-grow: 1;
-}
-
-.cp-outer {
-  position: relative;
-  flex-grow: 1;
-}
-
-.library-panel-inner {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
   height: 100%;
 }
 
@@ -57,20 +18,6 @@
   position: absolute;
   top: 0;
   left: 0;
-  background-color: cadetblue;
-}
-
-.rp-outer {
-  position: relative;
-  flex-grow: 1;
-}
-
-.rendering-panel-inner {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
 }
 
 .control-panel {
@@ -79,22 +26,10 @@
   right: 0;
   z-index: 1;
   display: flex;
-  background-color: chocolate;
-  // width: 260px;
-  // height: 764px;
-  height: 100%;
-}
-
-.control-panel-inner {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100%;
   height: 100%;
 }
 
 .timeline-panel {
   width: 100%;
-  // height: 168px;
   height: 100%;
 }
