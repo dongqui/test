@@ -1,41 +1,69 @@
-import { FunctionComponent, Fragment, useEffect, useState, useCallback } from 'react';
+import { FunctionComponent, Fragment, useEffect, useState, useCallback, useMemo, SyntheticEvent } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
-import { Box } from 'components/Layout';
 import { useWindowSize } from 'hooks/common';
+import Box, { BoxProps } from 'components/Layout/Box';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
 
 const cx = classNames.bind(styles);
 
 const Shoot: FunctionComponent = () => {
+  // Panel, Bar의 width, height 값. 없는 경우 100%
+  const constants = useMemo(() => ({
+    width: {
+      lp: 240,
+      cp: 280,
+    },
+    height: {
+      up: 36,
+      mb: 32,
+      ls: 168,
+    },
+  }), []);
+
+  /**
+   * toFixed()가 string을 이진 부동소수점 표기 문제로 인해 string을 반환하기 때문에
+   * number 타입을 반환하는 별도의 함수로 분리
+   * 
+   * @param {number} target - 반올림을 적용할 숫자
+   * @param {number} digits - 소수점 뒤 나타낼 자리 수
+   * 
+   * @returns 소수점 이하 반올림 후 number 타입으로 변환시킨 값
+   */
+  const getFixedNumber = useCallback((target: number, digits?: number) => {
+    return Number(target.toFixed(digits));
+  }, []);
 
   const [windowWidth, windowHeight] = useWindowSize();
 
   const [sectionHeight, setSectionHeight] = useState({
-    upperSection: windowHeight - 168 - 36,
-    lowerSection: 168,
+    upperSection: windowHeight - constants.height.ls - constants.height.up,
+    lowerSection: constants.height.ls,
   });
-
-  const [rate, setRate] = useState(Number((sectionHeight.lowerSection / windowHeight).toFixed(2)))
 
   const [panelWidth, setPanelWidth] = useState({
-    library: 240,
-    control: 280,
+    library: constants.width.lp,
+    control: constants.width.cp,
   });
 
-  const handleResize = useCallback(
-    (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
+  // LowerSection의 height 비율
+  const [rate, setRate] = useState(getFixedNumber(sectionHeight.lowerSection / windowHeight, 2));
+
+  const handleLSResize = useCallback(
+    (_e: SyntheticEvent, data: ResizeCallbackData) => {
       setSectionHeight({
-        upperSection: windowHeight - data.size.height - 36,
+        upperSection: windowHeight - data.size.height - constants.height.up,
         lowerSection: data.size.height,
       });
-      setRate(Number((data.size.height / windowHeight).toFixed(2)));
+
+      const nextRate = getFixedNumber(data.size.height / windowHeight, 2);
+      setRate(nextRate);
     },
-    [windowHeight],
+    [constants.height.up, windowHeight, getFixedNumber],
   );
 
   const handleLPResizeStop = useCallback(
-    (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
+    (_e: SyntheticEvent, data: ResizeCallbackData) => {
       setPanelWidth({
         library: data.size.width,
         control: panelWidth.control,
@@ -44,74 +72,104 @@ const Shoot: FunctionComponent = () => {
     [panelWidth.control],
   );
 
+  const handleCPResizeStop = useCallback(
+    (_e: SyntheticEvent, data: ResizeCallbackData) => {
+      setPanelWidth({
+        library: panelWidth.library,
+        control: data.size.width,
+      });
+    },
+    [panelWidth.library],
+  );
+
   useEffect(() => {
-    const r = windowHeight * rate;
-    if (sectionHeight.upperSection + sectionHeight.lowerSection + 36 !== windowHeight) {
+    const prevwindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
+
+    // 브라우저의 height를 리사이즈하는 경우 각 section을 비율에 맞춰 리사이즈
+    if (prevwindowHeight !== windowHeight) {
       setSectionHeight({
-        upperSection: windowHeight - r - 36,
+        upperSection: windowHeight - windowHeight * rate - constants.height.up,
         lowerSection: windowHeight * rate,
       });
     }
-  }, [rate, sectionHeight.lowerSection, sectionHeight.upperSection, windowHeight]);
+  }, [constants, rate, sectionHeight, windowHeight]);
+
+  const boxProps = {
+    up: {
+      height: constants.height.up
+    } as BoxProps,
+
+    us: {
+      height: sectionHeight.upperSection,
+      min: [windowWidth, (windowHeight - constants.height.up) / 2],
+      max: [windowWidth, windowHeight - constants.height.ls - constants.height.up],
+    } as BoxProps,
+
+    ls: {
+      height: sectionHeight.lowerSection,
+      min: [windowWidth, constants.height.ls],
+      max: [windowWidth, windowHeight / 2],
+      resizeHandles: ['n'],
+      axis: 'y',
+      onResize: handleLSResize,
+    } as BoxProps,
+
+    lp: {
+      width: panelWidth.library,
+      height: sectionHeight.upperSection,
+      min: [constants.width.lp, (windowHeight - constants.height.up) / 2],
+      max: [450, windowHeight - constants.height.ls - constants.height.up],
+      onResizeStop: handleLPResizeStop,
+      resizeHandles: ['e'],
+      axis: "x"
+    } as BoxProps,
+
+    rp: {
+      height: sectionHeight.upperSection,
+      min: [150, (windowHeight - constants.height.up) / 2],
+      max: [windowWidth, windowHeight - constants.height.ls - constants.height.up],
+    } as BoxProps,
+
+    cp: {
+      width: panelWidth.control,
+      height: sectionHeight.upperSection,
+      min: [constants.width.cp, (windowHeight - constants.height.up) / 2],
+      max: [450, windowHeight - constants.height.ls - constants.height.up],
+      resizeHandles: ['w'],
+      axis: "x",
+      onResizeStop: handleCPResizeStop,
+    } as BoxProps,
+
+    mb: {
+      height: constants.height.mb,
+    } as BoxProps,
+
+    tp: {
+      height: sectionHeight.lowerSection - constants.height.mb,
+    } as BoxProps,
+  };
 
   return (
     <Fragment>
-      <Box width={windowWidth} height={36}>
+      <Box id="UP" {...boxProps.up}>
         {/* UP */}
       </Box>
-      <Box
-        width={windowWidth}
-        height={sectionHeight.upperSection}
-        min={[windowWidth, (windowHeight - 36) * 0.5]}
-        max={[windowWidth, windowHeight - 168 - 36]}
-        className={cx('upper-section')}
-      >
-        <Box
-          width={panelWidth.library}
-          height={sectionHeight.upperSection}
-          min={[240, (windowHeight - 36) * 0.5]}
-          max={[450, windowHeight - 168 - 36]}
-          onResizeStop={handleLPResizeStop}
-          resizeHandles={['e']}
-          axis="x"
-          className={cx('library-panel')}
-        >
+      <Box id="US" className={cx('upper-section')} {...boxProps.us}>
+        <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
           {/* LP */}
         </Box>
-        <Box
-          width={windowWidth}
-          height={sectionHeight.upperSection}
-          min={[150, (windowHeight - 36) * 0.5]}
-          max={[windowWidth, windowHeight - 168 - 36]}
-          className={cx('rendering-panel')}
-        >
+        <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
           {/* RP */}
         </Box>
-        <Box
-          width={panelWidth.control}
-          height={sectionHeight.upperSection}
-          min={[280, (windowHeight - 36) * 0.5]}
-          max={[450, windowHeight - 168 - 36]}
-          resizeHandles={['w']}
-          axis="x"
-          className={cx('control-panel')}
-        >
+        <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
           {/* CP */}
         </Box>
       </Box>
-      <Box
-        width={windowWidth}
-        height={sectionHeight.lowerSection}
-        min={[windowWidth, 168]}
-        max={[windowWidth, (windowHeight) * 0.5]}
-        onResize={handleResize}
-        axis="y"
-        resizeHandles={['n']}
-      >
-        <Box width={windowWidth} height={32}>
+      <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
+        <Box id="MB" {...boxProps.mb}>
           {/* MB */}
         </Box>
-        <Box width={windowWidth} height={sectionHeight.lowerSection - 32}>
+        <Box id="TP" {...boxProps.tp}>
           {/* TP */}
         </Box>
       </Box>
