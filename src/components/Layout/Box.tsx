@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { ResizableBox, ResizableBoxProps } from 'react-resizable';
+import { ResizableBox, ResizableBoxProps, ResizeHandle } from 'react-resizable';
 import { useWindowSize } from 'hooks/common';
 import classNames from 'classnames/bind';
 import styles from './Box.module.scss';
@@ -11,9 +11,11 @@ interface BaseProps {
   height?: number;
   min?: [number, number];
   max?: [number, number];
+  handles?: ResizeHandle[];
 }
 
-type Exclusion = 'width' | 'height' | 'minConstraints' | 'maxConstraints';
+type Exclusion = 'width' | 'height' | 'minConstraints' | 'maxConstraints' | 'resizeHandles';
+type Params = ResizableBoxProps & { id: string; }
 export type BoxProps = BaseProps & Omit<ResizableBoxProps, Exclusion>
 
 type Props = BoxProps & { id: string; }
@@ -24,6 +26,7 @@ const Box: FunctionComponent<Props> = ({
   height,
   min,
   max,
+  handles,
   className,
   children,
   ...rest
@@ -32,13 +35,14 @@ const Box: FunctionComponent<Props> = ({
 
   const classes = cx('wrapper', className);
 
-  const params = {
+  const params: Params = {
     id: id,
     className: classes,
     width: width || innerWidth,
     height: height || innerHeight,
     minConstraints: min,
     maxConstraints: max,
+    resizeHandles: handles,
     ...rest
   };
 
