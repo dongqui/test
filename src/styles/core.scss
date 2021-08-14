@@ -50,8 +50,7 @@ body,
 #__next {
   width: 100%;
   height: 100%;
-  // 버그 해결을 위해 임시로 overflow: hiddne을 주석 처리함
-  // overflow: hidden;
+  overflow: hidden;
   padding: 0;
   margin: 0;
 }
