@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { FunctionComponent, Fragment, useEffect, useState, useCallback, useMemo, SyntheticEvent } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import { useWindowSize } from 'hooks/common';
@@ -46,6 +47,8 @@ const Shoot: FunctionComponent = () => {
     control: constants.width.cp,
   });
 
+  const [isCPResize, setIsCPResize] = useState(false);
+
   // LowerSection의 height 비율
   const [rate, setRate] = useState(getFixedNumber(sectionHeight.lowerSection / windowHeight, 2));
 
@@ -68,8 +71,17 @@ const Shoot: FunctionComponent = () => {
         library: data.size.width,
         control: panelWidth.control,
       });
+
+      setIsCPResize(false);
     },
     [panelWidth.control],
+  );
+
+  const handleCPResizeStart = useCallback(
+    (_e: SyntheticEvent, _data: ResizeCallbackData) => {
+      setIsCPResize(true);
+    },
+    [],
   );
 
   const handleCPResizeStop = useCallback(
@@ -83,6 +95,33 @@ const Shoot: FunctionComponent = () => {
   );
 
   useEffect(() => {
+    /**
+     * CP x축 리사이즈하는 경우 140px이상 drag하면 CP 숨김 처리
+     * 추가로 숨김 처리가 8px로 줄이는 것이기 때문에 CP 내부적으로 children에 대한 보이지 않게 처리가 필요
+     */
+    const handleMouseUp = _.debounce((e: MouseEvent) => {
+      if (isCPResize) {
+        const isHide = windowWidth - e.clientX <= 140;
+
+        if (isHide) {
+          setPanelWidth({
+            library: panelWidth.library,
+            control: 8,
+          });
+        }
+      }
+    }, 200);
+
+
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+  }, [windowWidth, isCPResize, panelWidth.library])
+
+  useEffect(() => {
     const prevwindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
 
     // 브라우저의 height를 리사이즈하는 경우 각 section을 비율에 맞춰 리사이즈
@@ -94,6 +133,9 @@ const Shoot: FunctionComponent = () => {
     }
   }, [constants, rate, sectionHeight, windowHeight]);
 
+  /**
+   * @todo 수식이 난잡하여 추후 수정예정
+   */
   const boxProps = {
     up: {
       height: constants.height.up
@@ -109,7 +151,7 @@ const Shoot: FunctionComponent = () => {
       height: sectionHeight.lowerSection,
       min: [windowWidth, constants.height.ls],
       max: [windowWidth, windowHeight / 2],
-      resizeHandles: ['n'],
+      handles: ['n'],
       axis: 'y',
       onResize: handleLSResize,
     } as BoxProps,
@@ -120,7 +162,7 @@ const Shoot: FunctionComponent = () => {
       min: [constants.width.lp, (windowHeight - constants.height.up) / 2],
       max: [450, windowHeight - constants.height.ls - constants.height.up],
       onResizeStop: handleLPResizeStop,
-      resizeHandles: ['e'],
+      handles: ['e'],
       axis: "x"
     } as BoxProps,
 
@@ -135,8 +177,9 @@ const Shoot: FunctionComponent = () => {
       height: sectionHeight.upperSection,
       min: [constants.width.cp, (windowHeight - constants.height.up) / 2],
       max: [450, windowHeight - constants.height.ls - constants.height.up],
-      resizeHandles: ['w'],
+      handles: ['w'],
       axis: "x",
+      onResizeStart: handleCPResizeStart,
       onResizeStop: handleCPResizeStop,
     } as BoxProps,
 
