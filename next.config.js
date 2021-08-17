@@ -30,17 +30,6 @@ module.exports = withBundleAnalyzer({
       );
     }
 
-    /**
-     * 번들사이즈를 줄이기 위해
-     * moment의 locales 중 필요한 언어만 가져오기 위한 설정
-     */
-    config.plugins.push(
-      new webpack.ContextReplacementPlugin(
-        /moment[/\\]locale$/,
-        /ko/,
-      ),
-    );
-
     // 증복된 라이브러리를 체크하기 위한 checker
     // config.plugins.push(new DuplicatePackageCheckerPlugin());
 
