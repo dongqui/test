@@ -26,8 +26,8 @@ const Shoot: FunctionComponent = () => {
    * toFixed()가 string을 이진 부동소수점 표기 문제로 인해 string을 반환하기 때문에
    * number 타입을 반환하는 별도의 함수로 분리
    * 
-   * @param {number} target - 반올림을 적용할 숫자
-   * @param {number} digits - 소수점 뒤 나타낼 자리 수
+   * @param target - 반올림을 적용할 숫자
+   * @param digits - 소수점 뒤 나타낼 자리 수
    * 
    * @returns 소수점 이하 반올림 후 number 타입으로 변환시킨 값
    */
