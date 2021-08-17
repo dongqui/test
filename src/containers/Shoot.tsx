@@ -32,7 +32,7 @@ const Shoot: FunctionComponent = () => {
    * @returns 소수점 이하 반올림 후 number 타입으로 변환시킨 값
    */
   const getFixedNumber = useCallback((target: number, digits?: number) => {
-    return Number(target.toFixed(digits));
+    return parseFloat(target.toFixed(digits));
   }, []);
 
   const [windowWidth, windowHeight] = useWindowSize();
