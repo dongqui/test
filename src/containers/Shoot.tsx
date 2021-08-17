@@ -122,10 +122,10 @@ const Shoot: FunctionComponent = () => {
   }, [windowWidth, isCPResize, panelWidth.library])
 
   useEffect(() => {
-    const prevwindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
+    const prevWindowWidth = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
 
     // 브라우저의 height를 리사이즈하는 경우 각 section을 비율에 맞춰 리사이즈
-    if (prevwindowHeight !== windowHeight) {
+    if (prevWindowWidth !== windowHeight) {
       setSectionHeight({
         upperSection: windowHeight - windowHeight * rate - constants.height.up,
         lowerSection: windowHeight * rate,
