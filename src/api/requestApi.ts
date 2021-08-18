@@ -39,7 +39,7 @@ const requestApi = async (payload: Payload) => {
   const needsProxy = !isServer && notEqualHost;
   const endpoint = url;
 
-  const baseURL = needsProxy ? '/api' : (base || process.env.API_URL);
+  const baseURL = needsProxy ? '/api' : base || process.env.API_URL;
 
   /**
    * @todo 현재 timeout 미지정. length * 7-8s 예상 중

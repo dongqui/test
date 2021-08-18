@@ -1,5 +1,13 @@
 import _ from 'lodash';
-import { FunctionComponent, Fragment, useEffect, useState, useCallback, useMemo, SyntheticEvent } from 'react';
+import {
+  FunctionComponent,
+  Fragment,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  SyntheticEvent,
+} from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import { useWindowSize } from 'hooks/common';
 import Box, { BoxProps } from 'components/Layout/Box';
@@ -10,25 +18,28 @@ const cx = classNames.bind(styles);
 
 const Shoot: FunctionComponent = () => {
   // Panel, Bar의 width, height 값. 없는 경우 100%
-  const constants = useMemo(() => ({
-    width: {
-      lp: 240,
-      cp: 280,
-    },
-    height: {
-      up: 36,
-      mb: 32,
-      ls: 168,
-    },
-  }), []);
+  const constants = useMemo(
+    () => ({
+      width: {
+        lp: 240,
+        cp: 280,
+      },
+      height: {
+        up: 36,
+        mb: 32,
+        ls: 168,
+      },
+    }),
+    [],
+  );
 
   /**
    * toFixed()가 string을 이진 부동소수점 표기 문제로 인해 string을 반환하기 때문에
    * number 타입을 반환하는 별도의 함수로 분리
-   * 
+   *
    * @param target - 반올림을 적용할 숫자
    * @param digits - 소수점 뒤 나타낼 자리 수
-   * 
+   *
    * @returns 소수점 이하 반올림 후 number 타입으로 변환시킨 값
    */
   const getFixedNumber = useCallback((target: number, digits?: number) => {
@@ -77,12 +88,9 @@ const Shoot: FunctionComponent = () => {
     [panelWidth.control],
   );
 
-  const handleCPResizeStart = useCallback(
-    (_e: SyntheticEvent, _data: ResizeCallbackData) => {
-      setIsCPResize(true);
-    },
-    [],
-  );
+  const handleCPResizeStart = useCallback((_e: SyntheticEvent, _data: ResizeCallbackData) => {
+    setIsCPResize(true);
+  }, []);
 
   const handleCPResizeStop = useCallback(
     (_e: SyntheticEvent, data: ResizeCallbackData) => {
@@ -112,17 +120,16 @@ const Shoot: FunctionComponent = () => {
       }
     }, 200);
 
-
     window.addEventListener('mouseup', handleMouseUp);
 
     return () => {
       window.removeEventListener('mouseup', handleMouseUp);
     };
-
-  }, [windowWidth, isCPResize, panelWidth.library])
+  }, [windowWidth, isCPResize, panelWidth.library]);
 
   useEffect(() => {
-    const prevWindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
+    const prevWindowHeight =
+      sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
 
     // 브라우저의 height를 리사이즈하는 경우 각 section을 비율에 맞춰 리사이즈
     if (prevWindowHeight !== windowHeight) {
@@ -138,7 +145,7 @@ const Shoot: FunctionComponent = () => {
    */
   const boxProps = {
     up: {
-      height: constants.height.up
+      height: constants.height.up,
     } as BoxProps,
 
     us: {
@@ -163,7 +170,7 @@ const Shoot: FunctionComponent = () => {
       max: [450, windowHeight - constants.height.ls - constants.height.up],
       onResizeStop: handleLPResizeStop,
       handles: ['e'],
-      axis: "x"
+      axis: 'x',
     } as BoxProps,
 
     rp: {
@@ -178,7 +185,7 @@ const Shoot: FunctionComponent = () => {
       min: [constants.width.cp, (windowHeight - constants.height.up) / 2],
       max: [450, windowHeight - constants.height.ls - constants.height.up],
       handles: ['w'],
-      axis: "x",
+      axis: 'x',
       onResizeStart: handleCPResizeStart,
       onResizeStop: handleCPResizeStop,
     } as BoxProps,

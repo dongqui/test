@@ -15,10 +15,10 @@ interface BaseProps {
 }
 
 type Exclusion = 'width' | 'height' | 'minConstraints' | 'maxConstraints' | 'resizeHandles';
-type Params = ResizableBoxProps & { id: string; }
-export type BoxProps = BaseProps & Omit<ResizableBoxProps, Exclusion>
+type Params = ResizableBoxProps & { id: string };
+export type BoxProps = BaseProps & Omit<ResizableBoxProps, Exclusion>;
 
-type Props = BoxProps & { id: string; }
+type Props = BoxProps & { id: string };
 
 const Box: FunctionComponent<Props> = ({
   id,
@@ -43,15 +43,13 @@ const Box: FunctionComponent<Props> = ({
     minConstraints: min,
     maxConstraints: max,
     resizeHandles: handles,
-    ...rest
+    ...rest,
   };
 
   return (
     <ResizableBox {...params}>
       <div className={cx('outer')}>
-        <div className={cx('inner')}>
-          {children}
-        </div>
+        <div className={cx('inner')}>{children}</div>
       </div>
     </ResizableBox>
   );
