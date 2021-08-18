@@ -7,6 +7,7 @@
     "dev": "next dev",
     "prod": "next build",
     "start": "next start",
+    "lint": "next lint",
     "storybook": "start-storybook",
     "build-storybook": "build-storybook",
     "build-src": "next build && next export",
