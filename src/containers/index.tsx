@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { authToken } from 'api';
 import Process from 'containers/Process';
 import Extract from 'containers/Extract';
-import Shoot  from 'containers/Shoot';
+import Shoot from 'containers/Shoot';
 import { useSelector } from 'reducers';
 
 export type Procedure = 'service' | 'token' | 'success' | 'denied';
@@ -45,13 +45,15 @@ const Index: FunctionComponent = () => {
         // 3. 강제로 4초 딜레이를 줘서 동일 흐름에서 token 프로세스를 먼저 밟고 이후 api 통신
         setTimeout(async () => {
           await authToken({
-            token
-          }).then(() => {
-            setProcedure('success');
-          }).catch((error) => {
-            setProcedure('denied');
-            setMessage(error.message);
+            token,
           })
+            .then(() => {
+              setProcedure('success');
+            })
+            .catch((error) => {
+              setProcedure('denied');
+              setMessage(error.message);
+            });
         }, 4000);
       }
     }
@@ -69,11 +71,7 @@ const Index: FunctionComponent = () => {
   //   );
   // }
 
-  return (
-    <main>
-      {isShootMode ? <Shoot /> : <Extract />}
-    </main>
-  );
+  return <main>{isShootMode ? <Shoot /> : <Extract />}</main>;
 };
 
 export default memo(Index);
