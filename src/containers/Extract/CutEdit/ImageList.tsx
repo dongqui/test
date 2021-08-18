@@ -17,7 +17,7 @@ const ImageList: FunctionComponent = () => {
         <div className={cx('image-wrapper')} key={i}>
           <div className={cx('image-inner')}>
             {images[i] && (
-              <Image 
+              <Image
                 // className={cx('image')}
                 draggable={false}
                 key={i}

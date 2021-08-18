@@ -11,7 +11,6 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
   Component,
   pageProps,
 }) => {
-
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') {
       hotjar.initialize();
@@ -22,7 +21,10 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({
     <Fragment>
       <Head>
         <title>shoot</title>
-        <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+        <meta
+          name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
+        />
       </Head>
       <Component {...pageProps} />
     </Fragment>
