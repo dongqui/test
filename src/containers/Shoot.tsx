@@ -9,6 +9,7 @@ import {
   SyntheticEvent,
 } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
+import { UpperBar } from 'containers/UpperBar';
 import { useWindowSize } from 'hooks/common';
 import Box, { BoxProps } from 'components/Layout/Box';
 import classNames from 'classnames/bind';
@@ -202,7 +203,7 @@ const Shoot: FunctionComponent = () => {
   return (
     <Fragment>
       <Box id="UP" {...boxProps.up}>
-        {/* UP */}
+        <UpperBar />
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.us}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
