@@ -1,21 +1,70 @@
 .wrap {
-  display: flex;
-  height: 100%;
+  display: grid;
+  grid-template-columns: 240px 1fr 280px;
 }
 
 .left-upper {
-  width: 100%;
-  max-width: 240px;
-  background-color: #9099;
+  display: flex;
+  align-items: center;
+  padding: 4px 16px;
+
+  .breadcrumb {
+    padding: 0 8px;
+
+    .breadcrumb-text {
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 24px;
+      color: #d3d3d3;
+
+      &:nth-child(1)::after {
+        content: '\276F';
+        padding: 0 4px;
+      }
+    }
+  }
 }
 
 .middle-upper {
-  width: 100%;
-  background-color: #234;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+
+  & > .reset-icon > svg {
+    width: 32px;
+    color: #d3d3d3;
+    cursor: pointer;
+  }
 }
 
 .right-upper {
-  width: 100%;
-  max-width: 280px;
-  background-color: #696;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 16px;
+
+  .right-upper-inner {
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 4px;
+  }
+
+  & > .share-button {
+    min-width: 0;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 8px;
+    user-select: none;
+  }
+}
+
+// 현재는 들어가지 않는 기능 채우는 스타일
+
+.void {
+  width: 36px;
+  height: 100%;
+  border-radius: 8px;
+  background-color: rgb(48, 48, 48);
 }
