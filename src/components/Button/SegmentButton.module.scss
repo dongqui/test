@@ -45,4 +45,8 @@
     background-color: $primaryColor;
     color: #fff;
   }
+
+  &:focus {
+    border: none;
+  }
 }
