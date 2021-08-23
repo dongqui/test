@@ -1,3 +1,4 @@
+import { FunctionComponent } from 'react';
 import { FilledButton, SegmentButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
@@ -5,23 +6,23 @@ import styles from './UpperBar.module.scss';
 
 const cx = classNames.bind(styles);
 
-const UpperBar: React.FC = () => {
+const UpperBar: FunctionComponent = () => {
   const modeList = [
     {
-      key: 'edit',
+      key: 'trackMode',
       value: SvgPath.TrackMode,
       isSelected: true,
       onClick: () => {},
     },
     {
-      key: 'camera',
+      key: 'videoMode',
       value: SvgPath.Camera,
       isSelected: false,
       onClick: () => {},
     },
   ];
   return (
-    <header className={cx('wrap')}>
+    <div className={cx('wrap')}>
       <div className={cx('left-upper')}>
         <div className={cx('void')} />
         <div className={cx('breadcrumb')}>
@@ -41,7 +42,7 @@ const UpperBar: React.FC = () => {
           ))}
         </div>
       </div>
-    </header>
+    </div>
   );
 };
 
