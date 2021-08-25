@@ -8,19 +8,14 @@
   align-items: center;
   padding: 4px 16px;
 
-  .breadcrumb {
+  .left-upper-inner {
     padding: 0 8px;
 
-    .breadcrumb-text {
+    .scene-name {
       font-size: 11px;
       font-weight: 400;
       line-height: 24px;
       color: #d3d3d3;
-
-      &:nth-child(1)::after {
-        content: '\276F';
-        padding: 0 4px;
-      }
     }
   }
 }
@@ -31,10 +26,21 @@
   justify-content: space-between;
   padding: 0 16px;
 
-  & > .reset-icon > svg {
-    width: 32px;
-    color: #d3d3d3;
-    cursor: pointer;
+  & > .reset-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background-color: #353739;
+
+    &:hover {
+      background-color: #484c4f;
+    }
+
+    & > svg {
+      width: 24px;
+      color: #d3d3d3;
+      cursor: pointer;
+    }
   }
 }
 

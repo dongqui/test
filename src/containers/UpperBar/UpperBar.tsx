@@ -6,7 +6,11 @@ import styles from './UpperBar.module.scss';
 
 const cx = classNames.bind(styles);
 
-const UpperBar: FunctionComponent = () => {
+interface Props {
+  sceneName: string;
+}
+
+const UpperBar: FunctionComponent<Props> = ({ sceneName }) => {
   const modeList = [
     {
       key: 'trackMode',
@@ -25,9 +29,8 @@ const UpperBar: FunctionComponent = () => {
     <div className={cx('wrap')}>
       <div className={cx('left-upper')}>
         <div className={cx('void')} />
-        <div className={cx('breadcrumb')}>
-          <span className={cx('breadcrumb-text')}>Project name</span>
-          <span className={cx('breadcrumb-text')}>Scene name</span>
+        <div className={cx('left-upper-inner')}>
+          <span className={cx('scene-name')}>{sceneName}</span>
         </div>
       </div>
       <div className={cx('middle-upper')}>
@@ -44,6 +47,10 @@ const UpperBar: FunctionComponent = () => {
       </div>
     </div>
   );
+};
+
+UpperBar.defaultProps = {
+  sceneName: 'Scene Name',
 };
 
 export default UpperBar;

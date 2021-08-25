@@ -203,7 +203,7 @@ const Shoot: FunctionComponent = () => {
   return (
     <Fragment>
       <Box id="UP" {...boxProps.up}>
-        <UpperBar />
+        <UpperBar sceneName="Please enter a scene name" />
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.us}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
