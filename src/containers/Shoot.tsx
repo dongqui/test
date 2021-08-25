@@ -9,6 +9,7 @@ import {
   SyntheticEvent,
 } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
+import MiddleBar from './MiddleBar_New';
 import { useWindowSize } from 'hooks/common';
 import Box, { BoxProps } from 'components/Layout/Box';
 import classNames from 'classnames/bind';
@@ -217,7 +218,7 @@ const Shoot: FunctionComponent = () => {
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
         <Box id="MB" {...boxProps.mb}>
-          {/* MB */}
+          <MiddleBar />
         </Box>
         <Box id="TP" {...boxProps.tp}>
           {/* TP */}

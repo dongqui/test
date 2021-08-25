@@ -30,6 +30,7 @@ import Error from './svg/Error.svg';
 import Refresh from './svg/Refresh.svg';
 import Alert from './svg/Alert.svg';
 import Reset from './svg/Reset.svg';
+import SimpleMode from './svg/SimpleMode.svg';
 
 type Icon =
   | 'Close'
@@ -62,7 +63,8 @@ type Icon =
   | 'Error'
   | 'Refresh'
   | 'Alert'
-  | 'Reset';
+  | 'Reset'
+  | 'SimpleMode';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -100,6 +102,7 @@ const images: Images = {
   Refresh,
   Alert,
   Reset,
+  SimpleMode,
 };
 
 export default images;
