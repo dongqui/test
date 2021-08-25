@@ -9,6 +9,7 @@ import {
   SyntheticEvent,
 } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
+import TimelinePanel from 'containers/Panels/TimelinePanel_New';
 import { useWindowSize } from 'hooks/common';
 import Box, { BoxProps } from 'components/Layout/Box';
 import classNames from 'classnames/bind';
@@ -220,7 +221,7 @@ const Shoot: FunctionComponent = () => {
           {/* MB */}
         </Box>
         <Box id="TP" {...boxProps.tp}>
-          {/* TP */}
+          <TimelinePanel />
         </Box>
       </Box>
     </Fragment>
