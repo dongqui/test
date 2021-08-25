@@ -14,7 +14,7 @@ const cx = classNames.bind(styles);
 const TimelineEditor = () => {
   const timelineEditorRef = useRef<SVGSVGElement>(null);
   const topRulerRef = useRef<SVGGElement>(null);
-  const currentScaleLevel = useRef(75);
+  const currentZoomLevel = useRef(75);
 
   // ruler elements 생성
   const createRulerElements = useCallback((scaleX: D3ScaleLinear) => {
@@ -44,7 +44,7 @@ const TimelineEditor = () => {
       const { transform } = event;
       const scaleX = ScaleLinear.getScaleX();
       const rescaleX = transform.rescaleX(scaleX); // 현재 transform과 scale level 기준으로 rescale
-      currentScaleLevel.current = transform.k;
+      currentZoomLevel.current = transform.k;
       createRulerElements(rescaleX);
     };
     const zoomBehavior = d3
@@ -62,7 +62,7 @@ const TimelineEditor = () => {
       ]); // scale 적용 범위 지정
     const svg = d3.select(timelineEditorRef.current);
     zoomBehavior.scaleTo(svg as any, 75); // 최초 scale level 적용
-    zoomBehavior.translateTo(svg as any, timelineEditorWidth / 85, 0); // 최초 기준점을 중앙에서 좌측으로 이동
+    zoomBehavior.translateTo(svg as any, timelineEditorWidth / 185, 0); // 최초 기준점을 중앙에서 좌측으로 이동
     svg.call(zoomBehavior as any);
   }, []);
 
