@@ -70,7 +70,7 @@ const Shoot: FunctionComponent = () => {
   const handleLSResize = useCallback(
     (_e: SyntheticEvent, data: ResizeCallbackData) => {
       // LS는 SimpleMode가 활성화되면 리사이즈가 불가능
-      if (!resizeState.disable) {
+      if (!resizeState.mode) {
         setSectionHeight({
           upperSection: windowHeight - data.size.height - constants.height.up,
           lowerSection: data.size.height,
@@ -80,7 +80,7 @@ const Shoot: FunctionComponent = () => {
         setRate(nextRate);
       }
     },
-    [resizeState.disable, windowHeight, constants.height.up, getFixedNumber],
+    [resizeState.mode, windowHeight, constants.height.up, getFixedNumber],
   );
 
   const handleLPResizeStop = useCallback(
@@ -110,13 +110,14 @@ const Shoot: FunctionComponent = () => {
   );
 
   useEffect(() => {
-    if (resizeState.disable) {
+    // LS Simple Mode인 경우 76px로 고정
+    if (resizeState.mode) {
       setSectionHeight({
         upperSection: windowHeight - constants.height.up - 76,
         lowerSection: 76,
       });
     }
-  }, [constants.height.up, resizeState.disable, windowHeight]);
+  }, [constants.height.up, resizeState.mode, windowHeight]);
 
   useEffect(() => {
     /**
@@ -147,7 +148,8 @@ const Shoot: FunctionComponent = () => {
     const prevWindowHeight =
       sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
 
-    if (resizeState.disable) {
+    // LS Simple Mode인 경우 76px로 고정
+    if (resizeState.mode) {
       return;
     }
 
@@ -158,7 +160,7 @@ const Shoot: FunctionComponent = () => {
         lowerSection: windowHeight * rate,
       });
     }
-  }, [constants, rate, resizeState.disable, sectionHeight, windowHeight]);
+  }, [constants, rate, resizeState.mode, sectionHeight, windowHeight]);
 
   /**
    * @todo 수식이 난잡하여 추후 수정예정
@@ -171,14 +173,14 @@ const Shoot: FunctionComponent = () => {
     us: {
       height: sectionHeight.upperSection,
       min: [windowWidth, (windowHeight - constants.height.up) / 2],
-      max: [windowWidth, windowHeight - constants.height.ls - constants.height.up],
+      max: [windowWidth, windowHeight - 76 - constants.height.up],
     } as BoxProps,
 
     ls: {
       height: sectionHeight.lowerSection,
       min: [windowWidth, 76],
       max: [windowWidth, windowHeight / 2],
-      handles: resizeState.disable ? [] : ['n'],
+      handles: resizeState.mode ? [] : ['n'],
       axis: 'y',
       onResize: handleLSResize,
     } as BoxProps,
@@ -187,7 +189,7 @@ const Shoot: FunctionComponent = () => {
       width: panelWidth.library,
       height: sectionHeight.upperSection,
       min: [constants.width.lp, (windowHeight - constants.height.up) / 2],
-      max: [450, windowHeight - constants.height.ls - constants.height.up],
+      max: [450, windowHeight - 76 - constants.height.up],
       onResizeStop: handleLPResizeStop,
       handles: ['e'],
       axis: 'x',
@@ -196,14 +198,14 @@ const Shoot: FunctionComponent = () => {
     rp: {
       height: sectionHeight.upperSection,
       min: [150, (windowHeight - constants.height.up) / 2],
-      max: [windowWidth, windowHeight - constants.height.ls - constants.height.up],
+      max: [windowWidth, windowHeight - 76 - constants.height.up],
     } as BoxProps,
 
     cp: {
       width: panelWidth.control,
       height: sectionHeight.upperSection,
       min: [constants.width.cp, (windowHeight - constants.height.up) / 2],
-      max: [450, windowHeight - constants.height.ls - constants.height.up],
+      max: [450, windowHeight - 76 - constants.height.up],
       handles: ['w'],
       axis: 'x',
       onResizeStart: handleCPResizeStart,

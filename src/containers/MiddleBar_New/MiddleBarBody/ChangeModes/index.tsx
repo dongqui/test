@@ -14,9 +14,9 @@ const ChangeModes = () => {
   const handleChange = useCallback(() => {
     dispatch({
       type: 'SIMPLE_MODE',
-      disable: !state.disable,
+      mode: !state.mode,
     });
-  }, [dispatch, state.disable]);
+  }, [dispatch, state.mode]);
 
   return (
     <div>

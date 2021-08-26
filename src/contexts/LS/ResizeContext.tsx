@@ -1,14 +1,14 @@
 import { createContext, useReducer, useContext, ReactNode, Dispatch } from 'react';
 
 interface State {
-  disable: boolean;
+  mode: boolean;
 }
 
-type Action = { type: 'SIMPLE_MODE'; disable: boolean };
+type Action = { type: 'SIMPLE_MODE'; mode: boolean };
 
 type ResizeDispatch = Dispatch<Action>;
 
-const ResizeStateContext = createContext<State>({ disable: false });
+const ResizeStateContext = createContext<State>({ mode: false });
 
 const ResizeDispatchContext = createContext<ResizeDispatch>(() => null);
 
@@ -17,7 +17,7 @@ const reducer = (state: State, action: Action): State => {
     case 'SIMPLE_MODE': {
       return {
         ...state,
-        disable: action.disable,
+        mode: action.mode,
       };
     }
     default:
@@ -27,7 +27,7 @@ const reducer = (state: State, action: Action): State => {
 
 export const ResizeProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, {
-    disable: false,
+    mode: false,
   });
 
   return (
