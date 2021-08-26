@@ -24,7 +24,7 @@ const Shoot: FunctionComponent = () => {
     () => ({
       width: {
         lp: 240,
-        cp: 280,
+        cp: 256,
       },
       height: {
         up: 36,
