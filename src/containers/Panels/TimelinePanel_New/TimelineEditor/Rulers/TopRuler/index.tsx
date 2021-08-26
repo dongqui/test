@@ -1,4 +1,4 @@
-import React, { RefObject } from 'react';
+import { FunctionComponent, RefObject } from 'react';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -8,9 +8,7 @@ interface Props {
   topRulerRef: RefObject<SVGGElement>;
 }
 
-const TopRuler = (props: Props) => {
-  const { topRulerRef } = props;
-
+const TopRuler: FunctionComponent<Props> = ({ topRulerRef }) => {
   return (
     <g>
       <rect className={cx('ruler-width')} />

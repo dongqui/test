@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import { D3ScaleLinear, D3ZoomDatum } from 'types/TP';
@@ -35,7 +35,7 @@ const TimelineEditor = () => {
   useEffect(() => {
     const scaleX = ScaleLinear.getScaleX();
     createRulerElements(scaleX);
-  }, []);
+  }, [createRulerElements]);
 
   // timeline editor zoom/pan 이벤트 적용
   useEffect(() => {
@@ -64,7 +64,7 @@ const TimelineEditor = () => {
     zoomBehavior.scaleTo(svg as any, 75); // 최초 scale level 적용
     zoomBehavior.translateTo(svg as any, timelineEditorWidth / 205, 0); // 최초 기준점을 중앙에서 좌측으로 이동
     svg.call(zoomBehavior as any);
-  }, []);
+  }, [createRulerElements]);
 
   return (
     <svg ref={timelineEditorRef} className={cx('timeline-editor')}>

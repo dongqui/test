@@ -1,4 +1,3 @@
-import React from 'react';
 import DopeSheet from './DopeSheet';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';

@@ -1,4 +1,3 @@
-import React from 'react';
 import TrackList from './TrackList';
 import TimelineEditor from './TimelineEditor';
 import classNames from 'classnames/bind';
