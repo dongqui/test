@@ -9,9 +9,10 @@ import {
   SyntheticEvent,
 } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
-import MiddleBar from './MiddleBar_New';
 import { useWindowSize } from 'hooks/common';
+import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
+import MiddleBar from './MiddleBar_New';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
 
@@ -64,17 +65,22 @@ const Shoot: FunctionComponent = () => {
   // LowerSection의 height 비율
   const [rate, setRate] = useState(getFixedNumber(sectionHeight.lowerSection / windowHeight, 2));
 
+  const resizeState = useLSResizeState();
+
   const handleLSResize = useCallback(
     (_e: SyntheticEvent, data: ResizeCallbackData) => {
-      setSectionHeight({
-        upperSection: windowHeight - data.size.height - constants.height.up,
-        lowerSection: data.size.height,
-      });
+      // LS는 SimpleMode가 활성화되면 리사이즈가 불가능
+      if (!resizeState.disable) {
+        setSectionHeight({
+          upperSection: windowHeight - data.size.height - constants.height.up,
+          lowerSection: data.size.height,
+        });
 
-      const nextRate = getFixedNumber(data.size.height / windowHeight, 2);
-      setRate(nextRate);
+        const nextRate = getFixedNumber(data.size.height / windowHeight, 2);
+        setRate(nextRate);
+      }
     },
-    [constants.height.up, windowHeight, getFixedNumber],
+    [resizeState.disable, windowHeight, constants.height.up, getFixedNumber],
   );
 
   const handleLPResizeStop = useCallback(
@@ -102,6 +108,15 @@ const Shoot: FunctionComponent = () => {
     },
     [panelWidth.library],
   );
+
+  useEffect(() => {
+    if (resizeState.disable) {
+      setSectionHeight({
+        upperSection: windowHeight - constants.height.up - 76,
+        lowerSection: 76,
+      });
+    }
+  }, [constants.height.up, resizeState.disable, windowHeight]);
 
   useEffect(() => {
     /**
@@ -132,6 +147,10 @@ const Shoot: FunctionComponent = () => {
     const prevWindowHeight =
       sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
 
+    if (resizeState.disable) {
+      return;
+    }
+
     // 브라우저의 height를 리사이즈하는 경우 각 section을 비율에 맞춰 리사이즈
     if (prevWindowHeight !== windowHeight) {
       setSectionHeight({
@@ -139,7 +158,7 @@ const Shoot: FunctionComponent = () => {
         lowerSection: windowHeight * rate,
       });
     }
-  }, [constants, rate, sectionHeight, windowHeight]);
+  }, [constants, rate, resizeState.disable, sectionHeight, windowHeight]);
 
   /**
    * @todo 수식이 난잡하여 추후 수정예정
@@ -157,9 +176,9 @@ const Shoot: FunctionComponent = () => {
 
     ls: {
       height: sectionHeight.lowerSection,
-      min: [windowWidth, constants.height.ls],
+      min: [windowWidth, 76],
       max: [windowWidth, windowHeight / 2],
-      handles: ['n'],
+      handles: resizeState.disable ? [] : ['n'],
       axis: 'y',
       onResize: handleLSResize,
     } as BoxProps,
