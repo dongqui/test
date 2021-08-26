@@ -69,8 +69,8 @@ const Shoot: FunctionComponent = () => {
 
   const handleLSResize = useCallback(
     (_e: SyntheticEvent, data: ResizeCallbackData) => {
-      // LS는 SimpleMode가 활성화되면 리사이즈가 불가능
-      if (!resizeState.mode) {
+      // LS는 SimplesimpleMode가 활성화되면 리사이즈가 불가능
+      if (!resizeState.simpleMode) {
         setSectionHeight({
           upperSection: windowHeight - data.size.height - constants.height.up,
           lowerSection: data.size.height,
@@ -80,7 +80,7 @@ const Shoot: FunctionComponent = () => {
         setRate(nextRate);
       }
     },
-    [resizeState.mode, windowHeight, constants.height.up, getFixedNumber],
+    [resizeState.simpleMode, windowHeight, constants.height.up, getFixedNumber],
   );
 
   const handleLPResizeStop = useCallback(
@@ -110,14 +110,14 @@ const Shoot: FunctionComponent = () => {
   );
 
   useEffect(() => {
-    // LS Simple Mode인 경우 76px로 고정
-    if (resizeState.mode) {
+    // LS Simple simpleMode인 경우 76px로 고정
+    if (resizeState.simpleMode) {
       setSectionHeight({
         upperSection: windowHeight - constants.height.up - 76,
         lowerSection: 76,
       });
     }
-  }, [constants.height.up, resizeState.mode, windowHeight]);
+  }, [constants.height.up, resizeState.simpleMode, windowHeight]);
 
   useEffect(() => {
     /**
@@ -148,8 +148,8 @@ const Shoot: FunctionComponent = () => {
     const prevWindowHeight =
       sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
 
-    // LS Simple Mode인 경우 76px로 고정
-    if (resizeState.mode) {
+    // LS Simple simpleMode인 경우 76px로 고정
+    if (resizeState.simpleMode) {
       return;
     }
 
@@ -160,7 +160,7 @@ const Shoot: FunctionComponent = () => {
         lowerSection: windowHeight * rate,
       });
     }
-  }, [constants, rate, resizeState.mode, sectionHeight, windowHeight]);
+  }, [constants, rate, resizeState.simpleMode, sectionHeight, windowHeight]);
 
   /**
    * @todo 수식이 난잡하여 추후 수정예정
@@ -180,7 +180,7 @@ const Shoot: FunctionComponent = () => {
       height: sectionHeight.lowerSection,
       min: [windowWidth, 76],
       max: [windowWidth, windowHeight / 2],
-      handles: resizeState.mode ? [] : ['n'],
+      handles: resizeState.simpleMode ? [] : ['n'],
       axis: 'y',
       onResize: handleLSResize,
     } as BoxProps,
