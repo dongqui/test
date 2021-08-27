@@ -49,6 +49,18 @@ const TimelineEditor = () => {
     };
     const zoomBehavior = d3
       .zoom()
+      .filter((event: WheelEvent) => {
+        const doubledClicked = _.isEqual(event.type, 'dblclick'); // 더블 클릭 시 이벤트 종료
+        const panned = // pan 동작 시 ctrl이나 meta를 누르지 않았다면 이벤트 종료
+          _.isEqual(event.type, 'mousedown') &&
+          _.isEqual(event.ctrlKey, false) &&
+          _.isEqual(event.metaKey, false);
+        const zoomedWithCtrl = // ctrl이나 meta를 누르고 wheel 동작 시 이벤트 종료
+          _.isEqual(event.type, 'wheel') &&
+          (_.isEqual(event.ctrlKey, true) || _.isEqual(event.metaKey, true));
+        if (doubledClicked || panned || zoomedWithCtrl) return false;
+        return true;
+      })
       .on(
         'zoom',
         _.throttle((event: d3.D3ZoomEvent<Element, D3ZoomDatum>) => {
