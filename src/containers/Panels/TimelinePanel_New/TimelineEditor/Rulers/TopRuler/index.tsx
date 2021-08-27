@@ -11,9 +11,9 @@ interface Props {
 
 const TopRuler: FunctionComponent<Props> = ({ topRulerRef }) => {
   const [startValue, setStartValue] = useState<number | string>(0); // 공백을 입력하면 ""이 되기 때문에 string type 필요
-  const [endValue, setEndValue] = useState<number | string>(500); // 공백을 입력하면 ""이 되기 때문에 string type 필요
+  const [endValue, setEndValue] = useState<number | string>(100); // 공백을 입력하면 ""이 되기 때문에 string type 필요
   const previousStartValue = useRef(0);
-  const previousEndValue = useRef(500);
+  const previousEndValue = useRef(100);
 
   // start input blur 이벤트 동작
   const handleStartInputBlur = useCallback(
