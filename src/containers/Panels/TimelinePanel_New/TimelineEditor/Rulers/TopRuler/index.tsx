@@ -40,7 +40,7 @@ const TopRuler: FunctionComponent<Props> = ({ topRulerRef }) => {
       if (isNaN(nextEndValue) || nextEndValue <= startValue) {
         return setEndValue(previousEndValue.current);
       }
-      setStartValue(nextEndValue);
+      setEndValue(nextEndValue);
       previousEndValue.current = nextEndValue;
     },
     [startValue],
