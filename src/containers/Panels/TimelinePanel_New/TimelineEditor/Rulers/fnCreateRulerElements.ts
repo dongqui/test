@@ -8,5 +8,5 @@ export const createTopGradation = (topRuler: D3SVGGElement, scaleX: D3ScaleLinea
 
 // top ruler의 grid line 생성
 export const createTopGridLine = (topRuler: D3SVGGElement) => {
-  topRuler.selectAll('line').attr('y1', 0).attr('y2', 2000);
+  topRuler.selectAll('line').attr('y1', -6).attr('y2', 2000);
 };

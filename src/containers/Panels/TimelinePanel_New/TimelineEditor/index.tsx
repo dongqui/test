@@ -61,8 +61,8 @@ const TimelineEditor = () => {
         [timelineEditorWidth, window.innerHeight],
       ]); // scale 적용 범위 지정
     const svg = d3.select(timelineEditorRef.current);
-    zoomBehavior.scaleTo(svg as any, 75); // 최초 scale level 적용
-    zoomBehavior.translateTo(svg as any, timelineEditorWidth / 205, 0); // 최초 기준점을 중앙에서 좌측으로 이동
+    zoomBehavior.scaleTo(svg as any, 19.5); // 최초 scale level 적용
+    zoomBehavior.translateTo(svg as any, timelineEditorWidth / 235, 0); // 최초 기준점을 중앙에서 좌측으로 이동
     svg.call(zoomBehavior as any);
   }, [createRulerElements]);
 
