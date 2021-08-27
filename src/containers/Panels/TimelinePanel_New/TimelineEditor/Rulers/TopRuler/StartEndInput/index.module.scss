@@ -1,0 +1,28 @@
+.input {
+  &.end-input {
+    transform: translateX(calc(100vw - 276px)); // track list(240) + input width(36)
+  }
+
+  rect {
+    width: 36px;
+    height: 12px;
+    fill: black;
+  }
+
+  text {
+    font-size: 8px;
+    fill: white;
+  }
+
+  input {
+    width: 36px;
+    height: 12px;
+    border: 0;
+    padding: 0;
+    transform: translateY(-5px);
+    font-size: 8px;
+    background: black;
+    color: white;
+    text-align: center;
+  }
+}
