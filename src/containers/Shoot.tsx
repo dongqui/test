@@ -29,7 +29,7 @@ const Shoot: FunctionComponent = () => {
       height: {
         up: 36,
         mb: 32,
-        ls: 168,
+        ls: 108,
       },
     }),
     [],
