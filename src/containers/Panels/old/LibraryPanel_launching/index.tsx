@@ -30,8 +30,8 @@ import {
   fnFindSameNameFile,
   fnGetFileExtension,
   fnMakeNewData,
-} from '../../../utils/LP_launching';
-import { fnSetConvertFbxToGlb } from '../../../utils/common/api/index';
+} from 'utils/LP_launching';
+import { fnSetConvertFbxToGlb } from 'utils/common/api/index';
 import { BaseModal } from 'components/Modal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import Breadcrumb, { PathList } from './Breadcrumb';

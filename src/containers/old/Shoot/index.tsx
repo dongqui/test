@@ -9,8 +9,6 @@ import {
   useRef,
 } from 'react';
 import _ from 'lodash';
-// import { LibraryPanel } from 'containers/Panels/LibraryPanel';
-import LibraryPanel from 'containers/Panels/LibraryPanel_launching';
 import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import TimelinePanel from 'containers/Panels/TimelinePanel';
@@ -134,9 +132,7 @@ const Shoot: FunctionComponent = () => {
             resizeHandles={['e']}
             axis="both"
           >
-            <ConfirmModalProvider>
-              <LibraryPanel />
-            </ConfirmModalProvider>
+            <ConfirmModalProvider>{/* <LibraryPanel /> */}</ConfirmModalProvider>
           </ResizableBox>
           <ResizableBox
             width={windowWidth}
