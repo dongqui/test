@@ -12,6 +12,7 @@ interface BaseProps {
   min?: [number, number];
   max?: [number, number];
   handles?: ResizeHandle[];
+  noResize?: boolean;
 }
 
 type Exclusion = 'width' | 'height' | 'minConstraints' | 'maxConstraints' | 'resizeHandles';
@@ -28,6 +29,7 @@ const Box: FunctionComponent<Props> = ({
   max,
   handles,
   className,
+  noResize,
   children,
   ...rest
 }) => {
@@ -45,6 +47,16 @@ const Box: FunctionComponent<Props> = ({
     resizeHandles: handles,
     ...rest,
   };
+
+  if (noResize) {
+    return (
+      <div id={id} className={classes}>
+        <div className={cx('outer')}>
+          <div className={cx('inner')}>{children}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ResizableBox {...params}>
