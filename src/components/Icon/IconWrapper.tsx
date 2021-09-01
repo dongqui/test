@@ -14,7 +14,7 @@ interface Props {
 }
 
 const defaultProps: Partial<Props> = {
-  hasFrame: true,
+  hasFrame: false,
 };
 
 const IconWrapper: FunctionComponent<Props> = ({
