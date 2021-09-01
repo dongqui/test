@@ -31,6 +31,9 @@ import Refresh from './svg/Refresh.svg';
 import Alert from './svg/Alert.svg';
 import Reset from './svg/Reset.svg';
 import SimpleMode from './svg/SimpleMode.svg';
+import Record from './svg/Record.svg';
+import Stop from './svg/Stop.svg';
+import InsertKeyframe from './svg/InsertKeyframe.svg';
 
 type Icon =
   | 'Close'
@@ -64,7 +67,10 @@ type Icon =
   | 'Refresh'
   | 'Alert'
   | 'Reset'
-  | 'SimpleMode';
+  | 'SimpleMode'
+  | 'Record'
+  | 'Stop'
+  | 'InsertKeyframe';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -103,6 +109,9 @@ const images: Images = {
   Alert,
   Reset,
   SimpleMode,
+  Record,
+  Stop,
+  InsertKeyframe,
 };
 
 export default images;
