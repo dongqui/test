@@ -1,7 +1,9 @@
 .wrapper {
   width: 100%;
-  height: 28px;
+  height: 32px;
   padding: 8.5px 12px;
+  display: flex;
+  align-items: center;
 }
 
 .title {
