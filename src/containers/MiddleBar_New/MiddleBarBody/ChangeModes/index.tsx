@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useLSResizeState, useLSResizeDispatch } from 'contexts/LS/ResizeContext';
+import { TextButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -19,8 +20,21 @@ const ChangeModes = () => {
   }, [dispatch, state.simpleMode]);
 
   return (
-    <div>
-      <IconWrapper className={cx('simple-mode')} icon={SvgPath.SimpleMode} onClick={handleChange} />
+    <div className={cx('change-modes')}>
+      <IconWrapper
+        className={cx('wrapper')}
+        icon={SvgPath.SimpleMode}
+        onClick={handleChange}
+        hasFrame={false}
+      />
+      <IconWrapper
+        className={cx('wrapper')}
+        icon={SvgPath.InsertKeyframe}
+        onClick={handleChange}
+        hasFrame={false}
+      />
+      <TextButton className={cx('wrapper')} text="Autokey" />
+      <TextButton className={cx('wrapper')} text="Curve Editor" />
     </div>
   );
 };

@@ -1,3 +1,19 @@
-.simple-mode {
+.change-modes {
+  display: flex;
+}
 
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 100%;
+  background: #353739;
+  color: #d3d3d3;
+  border-radius: 6px;
+  font-size: 13px;
+
+  &:not(:first-child) {
+    margin-left: 8px;
+  }
 }
