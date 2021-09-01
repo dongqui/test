@@ -11,6 +11,7 @@ import {
 import { ResizeCallbackData } from 'react-resizable';
 import { useWindowSize } from 'hooks/common';
 import Box, { BoxProps } from 'components/Layout/Box';
+import LibraryPanel from 'containers/Panels/LibraryPanel';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
 
@@ -206,7 +207,7 @@ const Shoot: FunctionComponent = () => {
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.us}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
-          {/* LP */}
+          <LibraryPanel />
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
           {/* RP */}
