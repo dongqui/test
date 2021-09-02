@@ -62,7 +62,7 @@ const TopRuler: FunctionComponent<Props> = ({ topRulerRef }) => {
       <g ref={topRulerRef} className={cx('top-ruler')}>
         {/* d3를 통해 눈금, grid line이 들어가는 영역 */}
       </g>
-      <StartEndInput
+      {/* <StartEndInput
         onBlur={handleStartInputBlur}
         onChange={handleStartInputChange}
         value={startValue}
@@ -72,7 +72,7 @@ const TopRuler: FunctionComponent<Props> = ({ topRulerRef }) => {
         onBlur={handleEndInputBlur}
         onChange={handleEndInputChange}
         value={endValue}
-      />
+      /> */}
     </g>
   );
 };
