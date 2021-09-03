@@ -12,7 +12,7 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const TimelineEditor = () => {
-  const timelineEditorRef = useRef<HTMLDivElement>(null);
+  const timelineEditorRef = useRef<SVGSVGElement>(null);
   const topRulerRef = useRef<SVGGElement>(null);
   const currentLeftTimeIndex = useRef(0);
   const currentZoomLevel = useRef(100);
@@ -26,13 +26,16 @@ const TimelineEditor = () => {
   // timeline editor zoom/pan 이벤트 적용
   useEffect(() => {
     if (timelineEditorRef.current) {
+      const timelineEditor = d3.select(timelineEditorRef.current);
+      const zoomWeight = 1.2311444133449163 / 2;
+
       const createRulerElements = (scaleX: D3ScaleLinear) => {
-        if (topRulerRef.current) {
-          const topRuler = d3.select(topRulerRef.current);
-          createTopGradation(topRuler, scaleX);
-          createTopGridLine(topRuler);
-        }
+        if (!topRulerRef.current) return;
+        const topRuler = d3.select(topRulerRef.current);
+        createTopGradation(topRuler, scaleX);
+        createTopGridLine(topRuler);
       };
+
       const updateEditorScreen = (event: d3.D3ZoomEvent<Element, D3ZoomDatum>, width: number) => {
         const { transform } = event;
         const scaleX = ScaleLinear.getScaleX();
@@ -41,8 +44,12 @@ const TimelineEditor = () => {
         currentLeftTimeIndex.current = -(transform.x + width) / (width * 0.01); // 현재 가장 왼쪽에 있는 time index를 구하는 공식
         createRulerElements(rescaleX);
       };
+
       const setZoomBehavior = (width: number) => {
-        const zoomBehavior = d3
+        const throttleedThing = _.throttle((event: d3.D3ZoomEvent<Element, D3ZoomDatum>) => {
+          updateEditorScreen(event, width);
+        }, 100);
+        const zoomed = d3
           .zoom()
           .scaleExtent([1, 1000]) // scale 레벨 지정
           .translateExtent([
@@ -61,40 +68,76 @@ const TimelineEditor = () => {
             if (doubleClicked || panned || zoomedWithCtrl) return false;
             return true;
           })
-          .on(
-            'zoom',
-            _.throttle((event: d3.D3ZoomEvent<Element, D3ZoomDatum>) => {
-              updateEditorScreen(event, width); // 이벤트 발생 시 화면에 있는 UI 업데이트
-            }, 100),
-          );
-        return zoomBehavior;
+          .on('zoom', throttleedThing)
+          .on('end', () => {
+            throttleedThing.cancel();
+          });
+        return zoomed;
       };
+
+      const setDragBehavior = (zoomBehavior: d3.ZoomBehavior<Element, unknown>) => {
+        let prevCursorX = -1;
+        const throttleedThing = _.throttle((event) => {
+          if (prevCursorX === -1) {
+            prevCursorX = event.x;
+            return;
+          }
+          if (prevCursorX < event.x) {
+            if (currentZoomLevel.current * zoomWeight < 1000) {
+              currentZoomLevel.current *= zoomWeight;
+            }
+          } else {
+            if (1 < currentZoomLevel.current / zoomWeight) {
+              currentZoomLevel.current /= zoomWeight;
+            }
+          }
+          zoomBehavior.scaleTo(timelineEditor as any, currentZoomLevel.current); // squash, stretch zoom 발생 시 zoom level 값 변경
+          prevCursorX = event.x;
+        }, 100);
+        const dragged = d3
+          .drag()
+          .filter((event) => {
+            if (event.shiftKey === false) return false; // 임시로 shift key로 적용
+            return true;
+          })
+          .on('drag', throttleedThing)
+          .on('end', () => {
+            throttleedThing.cancel();
+            prevCursorX = -1;
+          });
+        return dragged;
+      };
+
       const initialize = (width: number) => {
-        const svg = d3.select(timelineEditorRef.current);
         const translateX = -width + -(width * 0.01) * currentLeftTimeIndex.current; // resize가 발생해도 직전 translateX값을 기억하는 공식
         const zoomValues = d3.zoomIdentity
           .scale(1)
           .translate(translateX, 0)
           .scale(currentZoomLevel.current);
         const zoomBehavior = setZoomBehavior(width);
-        zoomBehavior.transform(svg as any, zoomValues);
-        svg.call(zoomBehavior as any);
+        const dragBehavior = setDragBehavior(zoomBehavior);
+        zoomBehavior.transform(timelineEditor as any, zoomValues);
+        timelineEditor.call(zoomBehavior as any);
+        timelineEditor.call(dragBehavior as any);
       };
-      const resizeObserver = new ResizeObserver(
-        _.throttle((entries: ResizeObserverEntry[]) => {
-          const [entry] = entries;
-          const { width } = entry.contentRect;
-          ScaleLinear.setScale(width);
-          initialize(width);
-        }, 500),
-      );
-      resizeObserver.observe(timelineEditorRef.current);
+
+      const resizeListener = () => {
+        const width = window.innerWidth - 240;
+        ScaleLinear.setScale(width);
+        initialize(width);
+      };
+
+      initialize(window.innerWidth - 240); // 최초 실행
+      window.addEventListener('resize', resizeListener);
+      return () => {
+        window.removeEventListener('resize', resizeListener);
+      };
     }
   }, []);
 
   return (
-    <div ref={timelineEditorRef} className={cx('timeline-editor')}>
-      <svg>
+    <div className={cx('timeline-editor')}>
+      <svg ref={timelineEditorRef}>
         <g className={cx('ruler-wrapper')}>
           <TopRuler topRulerRef={topRulerRef} />
           <LeftRuler />
