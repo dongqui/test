@@ -1,0 +1,51 @@
+.middle-bar {
+  display: flex;
+  width: 100%;
+  max-height: 32px;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.video-wrap {
+  display: flex;
+  height: calc(100% - 128px - 48px);
+  justify-content: center;
+}
+
+.webcam {
+  width: 100%;
+}
+
+.playbox {
+  width: 100%;
+  max-width: 114px;
+  background-color: #353739;
+  border-radius: 6px;
+  margin-right: 16px;
+
+  & > .icon {
+    & > svg {
+      width: 26px;
+      cursor: pointer;
+      fill: #fb8226;
+    }
+  }
+}
+
+.ruler {
+  width: 100%;
+  max-height: 12px;
+  background-color: #292a2b;
+}
+
+.thumbnail-wrap {
+  margin: 16px 0;
+  padding: 0 16px;
+}
+
+.thumbnail {
+  width: 100%;
+  max-height: 80px;
+  border-radius: 12px;
+  background-color: #000;
+}
