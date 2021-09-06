@@ -1,8 +1,10 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useRef, useEffect } from 'react';
 import { UpperBar } from 'containers/UpperBar';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { Dropdown } from 'components/Dropdown';
 import Box, { BoxProps } from 'components/Layout/Box';
+import { useMediaStream } from 'hooks/common';
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
 
@@ -11,6 +13,11 @@ const cx = classNames.bind(styles);
 export const Capture = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const frameRef = useRef<HTMLCanvasElement>(null);
+
+  const { mediaStreamInitialize } = useMediaStream({
+    ref: videoRef,
+  });
+
   const videoOptions = {
     autoPlay: true,
     playsInline: true,
@@ -44,9 +51,7 @@ export const Capture = () => {
     { icon: SvgPath.Stop },
   ];
   useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-      videoRef.current!.srcObject = stream;
-    });
+    mediaStreamInitialize();
   }, []);
   return (
     <Fragment>
