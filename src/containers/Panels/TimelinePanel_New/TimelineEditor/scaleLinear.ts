@@ -5,7 +5,11 @@ class Scale {
   private static scaleX: D3ScaleLinear;
 
   static setScale(width: number) {
-    const scaleX = d3.scaleLinear().domain([-100, 9999]).range([0, width]);
+    const scaleX = d3.scaleLinear().domain([-100, 10000]).range([0, width]);
+    this.scaleX = scaleX;
+  }
+
+  static rescaleXByZoom(scaleX: D3ScaleLinear) {
     this.scaleX = scaleX;
   }
 
