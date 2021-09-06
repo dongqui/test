@@ -31,6 +31,8 @@ import Refresh from './svg/Refresh.svg';
 import Alert from './svg/Alert.svg';
 import Reset from './svg/Reset.svg';
 import TrackMode from './svg/TrackMode.svg';
+import Stop from './svg/Stop.svg';
+import Record from './svg/Record.svg';
 
 type Icon =
   | 'Close'
@@ -64,7 +66,9 @@ type Icon =
   | 'Refresh'
   | 'Alert'
   | 'Reset'
-  | 'TrackMode';
+  | 'TrackMode'
+  | 'Stop'
+  | 'Record';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -103,6 +107,8 @@ const images: Images = {
   Alert,
   Reset,
   TrackMode,
+  Stop,
+  Record,
 };
 
 export default images;
