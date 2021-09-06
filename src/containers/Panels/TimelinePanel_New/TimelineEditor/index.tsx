@@ -27,7 +27,7 @@ const TimelineEditor = () => {
   useEffect(() => {
     if (timelineEditorRef.current) {
       const timelineEditor = d3.select(timelineEditorRef.current);
-      const zoomWeight = 1.2311444133449163 / 2;
+      const zoomWeight = 1.2311444133449163; // zoom 확대/축소를 적용하기 위한 가중치
 
       const createRulerElements = (scaleX: D3ScaleLinear) => {
         if (!topRulerRef.current) return;
@@ -65,6 +65,7 @@ const TimelineEditor = () => {
             const zoomedWithCtrl = // ctrl이나 meta를 누르고 wheel 동작 시 이벤트 종료
               _.isEqual(event.type, 'wheel') &&
               (_.isEqual(event.ctrlKey, true) || _.isEqual(event.metaKey, true));
+            if (event.altKey && event.ctrlKey) return false;
             if (doubleClicked || panned || zoomedWithCtrl) return false;
             return true;
           })
@@ -82,7 +83,7 @@ const TimelineEditor = () => {
             prevCursorX = event.x;
             return;
           }
-          if (prevCursorX < event.x) {
+          if (event.x < prevCursorX) {
             if (currentZoomLevel.current * zoomWeight < 1000) {
               currentZoomLevel.current *= zoomWeight;
             }
@@ -93,11 +94,11 @@ const TimelineEditor = () => {
           }
           zoomBehavior.scaleTo(timelineEditor as any, currentZoomLevel.current); // squash, stretch zoom 발생 시 zoom level 값 변경
           prevCursorX = event.x;
-        }, 100);
+        }, 115);
         const dragged = d3
           .drag()
           .filter((event) => {
-            if (event.shiftKey === false) return false; // 임시로 shift key로 적용
+            if (!event.altKey || !event.ctrlKey) return false;
             return true;
           })
           .on('drag', throttleedThing)
@@ -116,9 +117,9 @@ const TimelineEditor = () => {
           .scale(currentZoomLevel.current);
         const zoomBehavior = setZoomBehavior(width);
         const dragBehavior = setDragBehavior(zoomBehavior);
-        zoomBehavior.transform(timelineEditor as any, zoomValues);
-        timelineEditor.call(zoomBehavior as any);
-        timelineEditor.call(dragBehavior as any);
+        zoomBehavior.transform(timelineEditor as any, zoomValues); // 최초 scale level, start/end 적용
+        timelineEditor.call(zoomBehavior as any); // zoom 적용
+        timelineEditor.call(dragBehavior as any); // squash/stretch 적용
       };
 
       const resizeListener = () => {
