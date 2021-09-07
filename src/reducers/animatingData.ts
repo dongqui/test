@@ -6,6 +6,7 @@ interface AnimatingDataState {
   playState: PlayState;
   playDirection: PlayDirection;
   playSpeed: number;
+  currentTimeIndex: number; // 추가
   startTimeIndex: number;
   endTimeIndex: number;
   mixer: THREE.AnimationMixer | null;
@@ -16,6 +17,7 @@ const defaultState: AnimatingDataState = {
   playState: 'stop',
   playDirection: 1,
   playSpeed: 1,
+  currentTimeIndex: 1, // 추가
   startTimeIndex: 1,
   endTimeIndex: 300,
   mixer: null,
@@ -37,6 +39,11 @@ export const animatingData = (state = defaultState, action: AnimatingDataAction)
     case 'animatingData/SET_PLAY_SPEED': {
       return Object.assign({}, state, {
         playSpeed: action.payload.playSpeed,
+      });
+    }
+    case 'animatingData/SET_CURRENT_TIME_INDEX': {
+      return Object.assign({}, state, {
+        currentTimeIndex: action.payload.currentTimeIndex,
       });
     }
     case 'animatingData/SET_START_TIME_INDEX': {
