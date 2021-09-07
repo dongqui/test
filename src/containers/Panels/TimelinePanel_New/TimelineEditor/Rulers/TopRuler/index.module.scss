@@ -1,0 +1,22 @@
+.top-ruler {
+  transform: translate(20px, 17px);
+
+  path {
+    display: none;
+  }
+
+  line {
+    stroke: #292a2b;
+  }
+
+  text {
+    font-size: 8px;
+    fill: white;
+  }
+}
+
+.ruler-width {
+  width: 100vw;
+  height: 12px;
+  fill: #292a2b;
+}

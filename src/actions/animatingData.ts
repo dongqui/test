@@ -4,6 +4,7 @@ export type AnimatingDataAction =
   | ReturnType<typeof setPlayState>
   | ReturnType<typeof setPlayDirection>
   | ReturnType<typeof setPlaySpeed>
+  | ReturnType<typeof setCurrentTimeIndex>
   | ReturnType<typeof setStartTimeIndex>
   | ReturnType<typeof setEndTimeIndex>
   | ReturnType<typeof setMixer>
@@ -40,6 +41,17 @@ interface SetPlaySpeed {
 export const SET_PLAY_SPEED = 'animatingData/SET_PLAY_SPEED' as const;
 export const setPlaySpeed = (params: SetPlaySpeed) => ({
   type: SET_PLAY_SPEED,
+  payload: {
+    ...params,
+  },
+});
+
+interface SetCurrentTimeIndex {
+  currentTimeIndex: number;
+}
+export const SET_CURRENT_TIME_INDEX = 'animatingData/SET_CURRENT_TIME_INDEX' as const;
+export const setCurrentTimeIndex = (params: SetCurrentTimeIndex) => ({
+  type: SET_CURRENT_TIME_INDEX,
   payload: {
     ...params,
   },
