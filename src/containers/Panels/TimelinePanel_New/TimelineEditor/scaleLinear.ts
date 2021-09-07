@@ -9,8 +9,8 @@ class Scale {
     this.scaleX = scaleX;
   }
 
-  static rescaleXByZoom(scaleX: D3ScaleLinear) {
-    this.scaleX = scaleX;
+  static rescaleXByZoom(rescaleX: D3ScaleLinear) {
+    this.scaleX = rescaleX;
   }
 
   static getScaleX() {

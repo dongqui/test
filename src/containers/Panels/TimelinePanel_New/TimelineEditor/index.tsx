@@ -1,9 +1,11 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
+import { useSelector } from 'reducers';
 import { D3ScaleLinear, D3ZoomDatum } from 'types/TP';
 import { LeftRuler, TopRuler } from './Rulers';
-import { createTopGridLine, createTopGradation } from './Rulers/fnCreateRulerElements';
+import { createTopRulerGridLine, createTopRulerNumbers } from './Rulers/fnCreateRulerElements';
+import Scrubber from './Scrubber';
 import ScaleLinear from './scaleLinear';
 import TimelineEditorBody from './TimelineEditorBody';
 import classNames from 'classnames/bind';
@@ -12,16 +14,19 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const TimelineEditor = () => {
+  const currentTimeIndex = useSelector((state) => state.animatingData.currentTimeIndex);
   const timelineEditorRef = useRef<SVGSVGElement>(null);
   const topRulerRef = useRef<SVGGElement>(null);
-  const currentLeftTimeIndex = useRef(0);
-  const currentZoomLevel = useRef(100);
+  const scrubberRef = useRef<SVGGElement>(null);
+  const leftTimeIndex = useRef(0);
+  const zoomLevel = useRef(100);
+  const mutableCurrentTimeIndex = useRef(0);
 
-  // componentDidMount 이전에 scale level을 초기화하기 위해 useLayoutEffect 사용
-  useLayoutEffect(() => {
-    const width = window.innerWidth - 240; // trackList width = 240
-    ScaleLinear.setScale(width);
-  }, []);
+  // currentTimeIndex을 zoom/pan useEffect 의존성으로 추가하면, 비효율적인 함수 호출이 발생하게 됨(특히 애니메이션 실행 시)
+  // currentTimeIndex의 값은 필요하지만 리랜더링은 시키지 않기 위해, 차악으로 useRef에다가 재할당하는 방식으로 진행하였음
+  useEffect(() => {
+    mutableCurrentTimeIndex.current = currentTimeIndex;
+  }, [currentTimeIndex]);
 
   // timeline editor zoom/pan 이벤트 적용
   useEffect(() => {
@@ -32,24 +37,34 @@ const TimelineEditor = () => {
       const createRulerElements = (scaleX: D3ScaleLinear) => {
         if (!topRulerRef.current) return;
         const topRuler = d3.select(topRulerRef.current);
-        createTopGradation(topRuler, scaleX);
-        createTopGridLine(topRuler);
+        createTopRulerNumbers(topRuler, scaleX);
+        createTopRulerGridLine(topRuler);
       };
 
-      const updateEditorScreen = (event: d3.D3ZoomEvent<Element, D3ZoomDatum>, width: number) => {
-        const { transform } = event;
+      const translateScrubber = (scaleX: D3ScaleLinear) => {
+        if (!scrubberRef.current) return;
+        const scrubber = d3.select(scrubberRef.current);
+        const translateX = scaleX(mutableCurrentTimeIndex.current); // currentTimeIndex을 useRef에다가 재할당
+        scrubber.style('transform', `translate3d(${translateX + 5}px, 0, 0)`);
+      };
+
+      const updateEditorScreen = (transform: d3.ZoomTransform) => {
         const scaleX = ScaleLinear.getScaleX();
         const rescaleX = transform.rescaleX(scaleX); // 현재 transform과 scale level 기준으로 rescale
-        currentZoomLevel.current = transform.k;
-        currentLeftTimeIndex.current = -(transform.x + width) / (width * 0.01); // 현재 가장 왼쪽에 있는 time index를 구하는 공식
         createRulerElements(rescaleX);
+        translateScrubber(rescaleX);
+        ScaleLinear.rescaleXByZoom(rescaleX);
       };
 
       const setZoomBehavior = (width: number) => {
         const throttleedThing = _.throttle((event: d3.D3ZoomEvent<Element, D3ZoomDatum>) => {
-          updateEditorScreen(event, width);
+          const { transform } = event;
+          ScaleLinear.setScale(width);
+          updateEditorScreen(transform);
+          zoomLevel.current = transform.k;
+          leftTimeIndex.current = -(transform.x + width) / (width * 0.01); // 현재 가장 왼쪽에 있는 time index를 구하는 공식
         }, 100);
-        const zoomed = d3
+        const zoomBehavior = d3
           .zoom()
           .scaleExtent([1, 1000]) // scale 레벨 지정
           .translateExtent([
@@ -73,7 +88,7 @@ const TimelineEditor = () => {
           .on('end', () => {
             throttleedThing.cancel();
           });
-        return zoomed;
+        return zoomBehavior;
       };
 
       const setDragBehavior = (zoomBehavior: d3.ZoomBehavior<Element, unknown>) => {
@@ -84,18 +99,16 @@ const TimelineEditor = () => {
             return;
           }
           if (event.x < prevCursorX) {
-            if (currentZoomLevel.current * zoomWeight < 1000) {
-              currentZoomLevel.current *= zoomWeight;
-            }
+            const nextZoomLevel = zoomLevel.current * zoomWeight;
+            if (nextZoomLevel < 1000) zoomLevel.current = nextZoomLevel;
           } else {
-            if (1 < currentZoomLevel.current / zoomWeight) {
-              currentZoomLevel.current /= zoomWeight;
-            }
+            const nextZoomLevel = zoomLevel.current / zoomWeight;
+            if (1 < nextZoomLevel) zoomLevel.current = nextZoomLevel;
           }
-          zoomBehavior.scaleTo(timelineEditor as any, currentZoomLevel.current); // squash, stretch zoom 발생 시 zoom level 값 변경
+          zoomBehavior.scaleTo(timelineEditor as any, zoomLevel.current); // squash, stretch zoom 발생 시 zoom level 값 변경
           prevCursorX = event.x;
         }, 115);
-        const dragged = d3
+        const draggBehavior = d3
           .drag()
           .filter((event) => {
             if (!event.altKey || !event.ctrlKey) return false;
@@ -106,15 +119,15 @@ const TimelineEditor = () => {
             throttleedThing.cancel();
             prevCursorX = -1;
           });
-        return dragged;
+        return draggBehavior;
       };
 
       const initialize = (width: number) => {
-        const translateX = -width + -(width * 0.01) * currentLeftTimeIndex.current; // resize가 발생해도 직전 translateX값을 기억하는 공식
+        const translateX = -width + -(width * 0.01) * leftTimeIndex.current; // resize가 발생해도 직전 translateX값을 기억하는 공식
         const zoomValues = d3.zoomIdentity
           .scale(1)
           .translate(translateX, 0)
-          .scale(currentZoomLevel.current);
+          .scale(zoomLevel.current);
         const zoomBehavior = setZoomBehavior(width);
         const dragBehavior = setDragBehavior(zoomBehavior);
         zoomBehavior.transform(timelineEditor as any, zoomValues); // 최초 scale level, start/end 적용
@@ -143,6 +156,7 @@ const TimelineEditor = () => {
           <TopRuler topRulerRef={topRulerRef} />
           <LeftRuler />
         </g>
+        <Scrubber scrubberRef={scrubberRef} />
         <TimelineEditorBody />
       </svg>
     </div>
