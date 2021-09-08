@@ -1,15 +1,11 @@
-import { useCallback, useState, FunctionComponent, RefObject, useRef } from 'react';
-import StartEndInput from './StartEndInput';
+import { useCallback, useState, useRef } from 'react';
+import StartEndRange from './StartEndRange';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {
-  topRulerRef: RefObject<SVGGElement>;
-}
-
-const TopRuler: FunctionComponent<Props> = ({ topRulerRef }) => {
+const TopRuler = () => {
   const [startValue, setStartValue] = useState<number | string>(0); // 공백을 입력하면 ""이 되기 때문에 string type 필요
   const [endValue, setEndValue] = useState<number | string>(100); // 공백을 입력하면 ""이 되기 때문에 string type 필요
   const previousStartValue = useRef(0);
@@ -58,21 +54,11 @@ const TopRuler: FunctionComponent<Props> = ({ topRulerRef }) => {
 
   return (
     <g>
-      <rect className={cx('ruler-width')} />
-      <g ref={topRulerRef} className={cx('top-ruler')}>
+      <rect className={cx('background')} />
+      <StartEndRange />
+      <g id="top-ruler" className={cx('top-ruler')}>
         {/* d3를 통해 눈금, grid line이 들어가는 영역 */}
       </g>
-      {/* <StartEndInput
-        onBlur={handleStartInputBlur}
-        onChange={handleStartInputChange}
-        value={startValue}
-      />
-      <StartEndInput
-        endInput
-        onBlur={handleEndInputBlur}
-        onChange={handleEndInputChange}
-        value={endValue}
-      /> */}
     </g>
   );
 };

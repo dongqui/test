@@ -1,11 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  FunctionComponent,
-  RefObject,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -18,19 +11,14 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {
-  scrubberRef: RefObject<SVGGElement>;
-}
-
-const Scrubber: FunctionComponent<Props> = (props) => {
-  const { scrubberRef } = props;
+const Scrubber = () => {
   const dispatch = useDispatch();
-  const currentTimeIndex = useSelector((state) => state.animatingData.currentTimeIndex);
   const endTimeIndex = useSelector((state) => state.animatingData.endTimeIndex);
   const startTimeIndex = useSelector((state) => state.animatingData.startTimeIndex);
   const currentAction = useSelector((state) => state.animatingData.currentAction);
   const playState = useSelector((state) => state.animatingData.playState);
   const [inputValue, setInputValue] = useState<number | string>(0);
+  const scrubberRef = useRef<SVGGElement>(null);
   const previousValue = useRef(0);
   const scrubberRafId = useRef<number | undefined>();
 
@@ -61,21 +49,19 @@ const Scrubber: FunctionComponent<Props> = (props) => {
   );
 
   // scrubber의 위치 변경
-  const translateScrubber = useCallback(
-    (scrubberTimeIndex: number) => {
-      if (!scrubberRef.current) return;
-      const scrubber = d3.select(scrubberRef.current);
-      const scaleX = ScaleLinear.getScaleX();
-      scrubber.style('transform', `translate3d(${scaleX(scrubberTimeIndex) + 5}px, 0, 0)`);
-    },
-    [scrubberRef],
-  );
+  const translateScrubber = useCallback((scrubberTimeIndex: number) => {
+    if (!scrubberRef.current) return;
+    const scrubber = d3.select(scrubberRef.current);
+    const scaleX = ScaleLinear.getScaleX();
+    scrubber.style('transform', `translate3d(${scaleX(scrubberTimeIndex) + 5}px, 0, 0)`);
+  }, []);
 
   // drag, now input 변경 시 scrubber 업데이트
   const updateScrubberStatus = useCallback(
     (nextValue: number) => {
       const currentTimeIndex = clampTimeIndex(nextValue);
       translateScrubber(currentTimeIndex);
+      setInputValue(currentTimeIndex);
       dispatch(animatingDataActions.setCurrentTimeIndex({ currentTimeIndex }));
       previousValue.current = currentTimeIndex;
     },
@@ -99,13 +85,6 @@ const Scrubber: FunctionComponent<Props> = (props) => {
     [updateScrubberStatus],
   );
 
-  // scrubber를 드래그하거나 애니메이션 재생 시, translate와 value 업데이트
-  useEffect(() => {
-    if (!ScaleLinear.getScaleX()) return;
-    setInputValue(currentTimeIndex);
-    translateScrubber(currentTimeIndex);
-  }, [currentTimeIndex, translateScrubber]);
-
   // 애니메이션 싱크
   useEffect(() => {
     const loopScrubber = () => {
@@ -114,7 +93,6 @@ const Scrubber: FunctionComponent<Props> = (props) => {
       translateScrubber(timeIndex);
       scrubberRafId.current = window.requestAnimationFrame(loopScrubber);
     };
-
     if (playState === 'play') {
       scrubberRafId.current = window.requestAnimationFrame(loopScrubber);
     } else if (playState === 'pause' || playState === 'stop') {
@@ -130,19 +108,17 @@ const Scrubber: FunctionComponent<Props> = (props) => {
       const scaleX = ScaleLinear.getScaleX();
       const subValue = 15; // now input 가로 절반 길이
       const cursorTimeIndex = _.floor(scaleX.invert(event.x - subValue));
-      const currentTimeIndex = clampTimeIndex(cursorTimeIndex);
-      dispatch(animatingDataActions.setCurrentTimeIndex({ currentTimeIndex }));
-      previousValue.current = currentTimeIndex;
+      updateScrubberStatus(cursorTimeIndex);
     }, 50);
     const dragBehavior = d3
       .drag()
       .on('drag', throttledThing)
       .on('end', () => throttledThing.cancel());
     scrubber.call(dragBehavior as any);
-  }, [clampTimeIndex, dispatch, scrubberRef]);
+  }, [updateScrubberStatus]);
 
   return (
-    <g className={cx('scrubber')} ref={scrubberRef}>
+    <g id="scrubber" className={cx('scrubber')} ref={scrubberRef}>
       <line x1="15" y1="12" x2="15" y2="2000" />
       <foreignObject width="30" height="12">
         <BaseInput
