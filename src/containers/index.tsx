@@ -6,6 +6,7 @@ import Process from 'containers/Process';
 import Extract from 'containers/Extract';
 import Shoot from 'containers/Shoot';
 import { useSelector } from 'reducers';
+import { Capture } from './VideoMode';
 
 export type Procedure = 'service' | 'token' | 'success' | 'denied';
 
@@ -71,7 +72,7 @@ const Index: FunctionComponent = () => {
   //   );
   // }
 
-  return <main>{isShootMode ? <Shoot /> : <Extract />}</main>;
+  return <main>{isShootMode ? <Capture /> : <Capture />}</main>;
 };
 
 export default memo(Index);

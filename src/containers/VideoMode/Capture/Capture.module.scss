@@ -1,18 +1,22 @@
+.video-wrap {
+  display: flex;
+  height: calc(100% - 128px - 72px);
+  justify-content: center;
+}
+
 .middle-bar {
   display: flex;
   width: 100%;
   max-height: 32px;
   justify-content: center;
   padding: 4px 0;
+
+  .extract-button {
+    font-size: 11px;
+  }
 }
 
-.video-wrap {
-  display: flex;
-  height: calc(100% - 128px - 48px);
-  justify-content: center;
-}
-
-.webcam {
+.video {
   width: 100%;
 }
 
@@ -32,20 +36,14 @@
   }
 }
 
-.ruler {
-  width: 100%;
-  max-height: 12px;
-  background-color: #292a2b;
-}
-
 .thumbnail-wrap {
-  margin: 16px 0;
-  padding: 0 16px;
-}
+  background-color: #121313;
+  padding: 21px 16px;
 
-.thumbnail {
-  width: 100%;
-  max-height: 80px;
-  border-radius: 12px;
-  background-color: #000;
+  .thumbnail {
+    width: 100%;
+    max-height: 80px;
+    border-radius: 12px;
+    background-color: red;
+  }
 }
