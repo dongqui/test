@@ -1,7 +1,7 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import ChangeModes from './ChangeModes';
+import LoopRange from './LoopRange';
 import PlayAnimations from './PlayAnimations';
-import ToolBarButtons from './ToolbarButtons';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -12,7 +12,7 @@ interface Props {}
 const MiddleBarBody: FunctionComponent<Props> = () => {
   return (
     <div className={cx('body')}>
-      <ToolBarButtons />
+      <LoopRange />
       <PlayAnimations />
       <ChangeModes />
     </div>
