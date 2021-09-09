@@ -9,7 +9,7 @@ import {
   useRef,
 } from 'react';
 import _ from 'lodash';
-import RenderingController from 'containers/Panels/RenderingPanel/RenderingController';
+import RenderingController from 'containers/Panels/old/RenderingPanel/RenderingController';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import TimelinePanel from 'containers/Panels/TimelinePanel';
 import ControlPanel from 'containers/Panels/ControlPanel';

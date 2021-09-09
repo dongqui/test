@@ -11,7 +11,7 @@ import React, {
 } from 'react';
 import * as d3 from 'd3';
 import RenderingPresenter from './RenderingPresenter';
-import { useRendering } from '../../../hooks/RP/useRendering';
+import { useRendering } from '../../../../hooks/RP/useRendering';
 import { fnGetAnimationClipForPlay, fnGetSummaryTimes } from 'utils/TP/editingUtils';
 import { fnSetPlayState } from 'utils/RP/animatingUtils';
 import {
