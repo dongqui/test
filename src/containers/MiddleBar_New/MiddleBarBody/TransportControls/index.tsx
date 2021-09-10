@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import Buttons from './Buttons';
 import FasterDropdown from './FasterDropdown';
-import StartEndInput from './StartEndInput';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -9,14 +8,13 @@ const cx = classNames.bind(styles);
 
 interface Props {}
 
-const PlayAnimations: FunctionComponent<Props> = () => {
+const TransportControls: FunctionComponent<Props> = () => {
   return (
-    <div className={cx('play-animations')}>
+    <div className={cx('transport-controls')}>
       <Buttons />
       <FasterDropdown />
-      <StartEndInput />
     </div>
   );
 };
 
-export default PlayAnimations;
+export default TransportControls;
