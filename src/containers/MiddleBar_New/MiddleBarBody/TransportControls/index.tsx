@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import Buttons from './Buttons';
 import FasterDropdown from './FasterDropdown';
 import classNames from 'classnames/bind';

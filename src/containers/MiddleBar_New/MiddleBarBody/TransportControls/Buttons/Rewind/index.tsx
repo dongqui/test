@@ -1,4 +1,4 @@
-import React, { useCallback, FunctionComponent } from 'react';
+import { useCallback, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import _ from 'lodash';

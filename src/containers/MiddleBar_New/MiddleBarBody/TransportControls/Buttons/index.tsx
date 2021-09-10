@@ -1,4 +1,4 @@
-import React, { Fragment, FunctionComponent } from 'react';
+import { Fragment, FunctionComponent } from 'react';
 import { useSelector } from 'reducers';
 import _ from 'lodash';
 import Pause from './Pause';

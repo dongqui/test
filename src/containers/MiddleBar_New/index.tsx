@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import MiddleBarBody from './MiddleBarBody';
 import MiddleBarHeader from './MiddleBarHeader';
 import classNames from 'classnames/bind';
