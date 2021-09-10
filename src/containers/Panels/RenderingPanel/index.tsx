@@ -1,7 +1,7 @@
-import classNames from 'classnames/bind';
 import { FunctionComponent, useRef } from 'react';
-import styles from './index.module.scss';
 import useLoadAssets from './useLoadAssets';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -14,7 +14,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
   return (
     <div className={cx('wrapper')}>
-      <canvas className={cx('rendering-canvas')} ref={renderingCanvas}></canvas>
+      <canvas className={cx('rendering-canvas')} ref={renderingCanvas} />
     </div>
   );
 };

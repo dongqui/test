@@ -17,71 +17,51 @@ const cx = classNames.bind(styles);
 interface Props {}
 
 const LibraryPanel: FunctionComponent<Props> = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [engine, setEngine] = useState<BABYLON.Engine>();
-  const [scene, setScene] = useState<BABYLON.Scene>();
+  const getFileExtension = useCallback((file: string): string => {
+    const type = (/[^./\\]*$/.exec(file) || [''])[0];
 
-  const setCamera = useCallback((scene: BABYLON.Scene, name: string | number) => {
-    const camera = new BABYLON.ArcRotateCamera(
-      `camera_${name}`,
-      Math.PI / 3,
-      Math.PI / 3,
-      15,
-      BABYLON.Vector3.Zero(),
-      scene,
-    );
-
-    camera.attachControl(canvasRef, true);
-
-    // camera jitter 제거 (기본값 0.9)
-    camera.inertia = 0.5;
-    // zoom sensitivity
-    camera.wheelPrecision = 50;
-    // 최대 zoom
-    camera.lowerRadiusLimit = 2;
-    // 최소 zoom
-    camera.upperRadiusLimit = 20;
+    return type;
   }, []);
 
-  useEffect(() => {
-    if (canvasRef.current) {
-      const createdEngine = new BABYLON.Engine(canvasRef.current);
-      const createdScene = new BABYLON.Scene(createdEngine);
-
-      setCamera(createdScene, 1);
-
-      setEngine(createdEngine);
-      setScene(createdScene);
-    }
-  }, [setCamera]);
-
-  useEffect(() => {
-    if (engine) {
-      engine.stopRenderLoop();
-
-      engine.runRenderLoop(() => {
-        if (scene) {
-          scene.render();
-        }
-      });
-    }
-  }, [scene, engine]);
-
+  /**
+   * LP에 drop하는 파일에 대한 확장자에 의한 '1차' 처리
+   *
+   * @param {File[]} files - LP에 drop하는 파일 (다중 또는 단일)
+   */
   const handleDrop = useCallback(
     async (files: File[]) => {
-      files.map((file) => {
-        console.log(file);
-        // Babylon.js의 LoadAssetContainerAsync의 두 번째 파라미터 타입이 잘못되어 하기와 같이 타입을 단언
-        const targetFile = (file as unknown) as string;
+      /**
+       * 다중 파일 drop에 대한 처리 - 하나라도 실패 시 로직 실패, 순서 보장 x
+       *
+       * @todo 하나라도 실패한 것이 아닌, 성공한 파일들만 처리를 해야한다면 수정 필요
+       */
+      const list = await Promise.all(
+        files.map(async (file) => {
+          /**
+           * @todo 추후 이름변경을 위해 fileName에서 확장자를 제거하여 별도 보관이 필요
+           */
+          const fileName = file.name;
+          const extension = getFileExtension(file.name);
+          console.log(fileName, extension);
 
-        BABYLON.SceneLoader.LoadAssetContainerAsync('file:', targetFile, scene).then(
-          (container) => {
-            console.log(container);
-          },
-        );
-      });
+          // return { name: fileName, extension: extension };
+        }),
+      );
+
+      // files.map((file) => {
+      //   console.log(file);
+      //   // /**
+      //   //  * Babylon.js의 LoadAssetContainerAsync의 두 번째 파라미터 타입이 잘못되어
+      //   //  * 하기와 같이 타입을 단언
+      //   //  */
+      //   // BABYLON.SceneLoader.LoadAssetContainerAsync('file:', targetFile, scene).then(
+      //   //   (container) => {
+      //   //     console.log(container);
+      //   //   },
+      //   // );
+      // });
     },
-    [scene],
+    [getFileExtension],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
@@ -97,7 +77,6 @@ const LibraryPanel: FunctionComponent<Props> = () => {
       <Box id="LP-Body" className={cx('lp-body')} noResize>
         <LPBody />
       </Box>
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
     </div>
   );
 };
