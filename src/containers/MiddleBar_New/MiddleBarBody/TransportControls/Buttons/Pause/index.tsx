@@ -1,48 +1,23 @@
-import { useCallback, FunctionComponent } from 'react';
+import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { useSelector } from 'reducers';
-import _ from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import * as animatingDataActions from 'actions/animatingData';
-import * as recordingDataActions from 'actions/recordingData';
+import * as animatingControlsActions from 'actions/animatingControls';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {}
-
-const Buttons: FunctionComponent<Props> = () => {
+const Pause = () => {
   const dispatch = useDispatch();
-  const currentVisualizedData = useSelector((state) => state.currentVisualizedData);
-  const pageInfo = useSelector((state) => state.pageInfo);
-  const recordingData = useSelector((state) => state.recordingData);
-  const { playState } = useSelector((state) => state.animatingData);
-  const isShootPage = _.isEqual(pageInfo.page, 'shoot');
 
   const handlePause = useCallback(() => {
-    if (isShootPage && currentVisualizedData) {
-      if (playState !== 'pause') {
-        dispatch(animatingDataActions.setPlayState({ playState: 'pause' }));
-      }
-    }
-    if (!isShootPage) {
-      dispatch(
-        recordingDataActions.setRecordingData({
-          ...recordingData,
-          isPlaying: false,
-        }),
-      );
-    }
-  }, [currentVisualizedData, dispatch, isShootPage, playState, recordingData]);
-
-  const pauseButtonClasses = cx('pause', {
-    center: isShootPage,
-  });
+    // ToDo. visualized 된 데이터가 있는 경우에만 pause 버튼이 동작되도록 조건절을 추가해야 됨
+    dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'pause' }));
+  }, [dispatch]);
 
   return (
     <IconWrapper
-      className={pauseButtonClasses}
+      className={cx('pause')}
       onClick={handlePause}
       icon={SvgPath.Pause}
       hasFrame={false}
@@ -50,4 +25,4 @@ const Buttons: FunctionComponent<Props> = () => {
   );
 };
 
-export default Buttons;
+export default Pause;

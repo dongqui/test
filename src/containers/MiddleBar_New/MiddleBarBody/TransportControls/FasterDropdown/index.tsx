@@ -3,7 +3,7 @@ import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
 import { Dropdown } from 'components/Dropdown';
-import * as animatingDataActions from 'actions/animatingData';
+import * as animatingControlsActions from 'actions/animatingControls';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -13,11 +13,11 @@ interface Props {}
 
 const FasterDropdown: FunctionComponent<Props> = () => {
   const dispatch = useDispatch();
-  const { playSpeed } = useSelector((state) => state.animatingData);
+  const playSpeed = useSelector((state) => state.animatingControls.playSpeed);
 
   const handleFasterSelect = useCallback(
     (key: string, _value: string) => {
-      dispatch(animatingDataActions.setPlaySpeed({ playSpeed: Number(key) }));
+      dispatch(animatingControlsActions.selectFasterDropdown({ playSpeed: Number(key) }));
     },
     [dispatch],
   );
