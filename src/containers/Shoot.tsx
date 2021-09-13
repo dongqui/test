@@ -13,7 +13,7 @@ import TimelinePanel from 'containers/Panels/TimelinePanel_New';
 import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
-import MiddleBar from './MiddleBar_New';
+import MiddleBar from './MiddleBar/Shoot';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
 
