@@ -2,6 +2,7 @@ import 'babylonjs-loaders';
 import * as BABYLON from 'babylonjs';
 import { FunctionComponent, useEffect, useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { connect } from 'react-redux';
 import Box, { BoxProps } from 'components/Layout/Box';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
@@ -14,14 +15,21 @@ const cx = classNames.bind(styles);
 // url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493576/zombie_bkqv8g.glb',
 // url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493584/knight_zizg5n.glb',
 // url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619494583/vanguard_t_cslcnl.glb',
-interface Props {}
 
-const LibraryPanel: FunctionComponent<Props> = () => {
+type StateProps = ReturnType<typeof mapStateToProps>;
+
+interface BaseProps {}
+
+type Props = StateProps & BaseProps;
+
+const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
   const getFileExtension = useCallback((file: string): string => {
     const type = (/[^./\\]*$/.exec(file) || [''])[0];
 
     return type;
   }, []);
+
+  const handleCreateNode = useCallback(() => {}, []);
 
   /**
    * LP에 drop하는 파일에 대한 확장자에 의한 '1차' 처리
@@ -81,4 +89,10 @@ const LibraryPanel: FunctionComponent<Props> = () => {
   );
 };
 
-export default LibraryPanel;
+const mapStateToProps = (state: any) => {
+  return {
+    lpNode: state.lpNode.node,
+  };
+};
+
+export default connect(mapStateToProps)(LibraryPanel);
