@@ -3,8 +3,9 @@ import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
 import { useSelector } from 'reducers';
-import * as animatingDataActions from 'actions/animatingData';
+import * as animatingControlsActions from 'actions/animatingControls';
 import { BaseInput } from 'components/Input';
+import { PlayDirection_New } from 'types/RP';
 import ScaleLinear from '../scaleLinear';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -13,14 +14,18 @@ const cx = classNames.bind(styles);
 
 const Scrubber = () => {
   const dispatch = useDispatch();
-  const endTimeIndex = useSelector((state) => state.animatingData.endTimeIndex);
-  const startTimeIndex = useSelector((state) => state.animatingData.startTimeIndex);
-  const currentAction = useSelector((state) => state.animatingData.currentAction);
-  const playState = useSelector((state) => state.animatingData.playState);
+  const {
+    playState,
+    playDirection,
+    playSpeed,
+    currentTimeIndex,
+    startTimeIndex,
+    endTimeIndex,
+  } = useSelector((state) => state.animatingControls);
   const [inputValue, setInputValue] = useState<number | string>(0);
   const scrubberRef = useRef<SVGGElement>(null);
-  const previousValue = useRef(0);
-  const scrubberRafId = useRef<number | undefined>();
+  const scrubberLoopId = useRef(0);
+  const currentTimeIndexRef = useRef(0);
 
   // value값 변경
   const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,84 +43,80 @@ const Scrubber = () => {
     }
   }, []);
 
-  // 현재 time index가 start와 end 사이에 있는지 체크
-  const clampTimeIndex = useCallback(
-    (timeIndex: number) => {
-      if (timeIndex < startTimeIndex) return startTimeIndex;
-      if (endTimeIndex < timeIndex) return endTimeIndex;
-      return timeIndex;
-    },
-    [endTimeIndex, startTimeIndex],
-  );
-
-  // scrubber의 위치 변경
-  const translateScrubber = useCallback((scrubberTimeIndex: number) => {
-    if (!scrubberRef.current) return;
-    const scrubber = d3.select(scrubberRef.current);
-    const scaleX = ScaleLinear.getScaleX();
-    scrubber.style('transform', `translate3d(${scaleX(scrubberTimeIndex) + 5}px, 0, 0)`);
-  }, []);
-
-  // drag, now input 변경 시 scrubber 업데이트
-  const updateScrubberStatus = useCallback(
-    (nextValue: number) => {
-      const currentTimeIndex = clampTimeIndex(nextValue);
-      translateScrubber(currentTimeIndex);
-      setInputValue(currentTimeIndex);
-      dispatch(animatingDataActions.setCurrentTimeIndex({ currentTimeIndex }));
-      previousValue.current = currentTimeIndex;
-    },
-    [clampTimeIndex, dispatch, translateScrubber],
-  );
-
   // blur 이벤트 적용
   const handleInputBlur = useCallback(
     (event: React.FocusEvent<HTMLInputElement>) => {
       const nextValue = parseInt(event.target.value);
-      const isMinusZero = Object.is(-0, nextValue);
-      if (isNaN(nextValue)) {
-        setInputValue(previousValue.current);
-      } else if (isMinusZero) {
-        event.target.value = '0';
-        updateScrubberStatus(0);
+      if (isNaN(nextValue) || nextValue < startTimeIndex || endTimeIndex < nextValue) {
+        setInputValue(currentTimeIndex);
       } else {
-        updateScrubberStatus(nextValue);
+        dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: nextValue }));
       }
     },
-    [updateScrubberStatus],
+    [currentTimeIndex, dispatch, endTimeIndex, startTimeIndex],
   );
+
+  // currentTimeIndex 변경 시, now value와 scrubber 위치 변경
+  useEffect(() => {
+    const scaleX = ScaleLinear.getScaleX();
+    const scrubber = scrubberRef.current;
+    if (scrubber && scaleX) {
+      const decimalToDigit = playDirection ? _.floor(currentTimeIndex) : _.ceil(currentTimeIndex);
+      scrubber.style.transform = `translate3d(${scaleX(decimalToDigit) + 5}px, 0, 0)`;
+      setInputValue(decimalToDigit || '0');
+      currentTimeIndexRef.current = currentTimeIndex;
+    }
+  }, [currentTimeIndex, playDirection]);
 
   // 애니메이션 싱크
   useEffect(() => {
     const loopScrubber = () => {
-      if (!currentAction) return;
-      const timeIndex = currentAction.time ? currentAction.time * 30 : 1; // ?
-      translateScrubber(timeIndex);
-      scrubberRafId.current = window.requestAnimationFrame(loopScrubber);
+      let payload: { currentTimeIndex: number } | undefined;
+      const nextValue = currentTimeIndexRef.current + playDirection * playSpeed;
+      if (playDirection === PlayDirection_New.forward) {
+        payload = { currentTimeIndex: endTimeIndex < nextValue ? startTimeIndex : nextValue };
+      } else if (playDirection === PlayDirection_New.backward) {
+        payload = { currentTimeIndex: nextValue < startTimeIndex ? endTimeIndex : nextValue };
+      }
+      scrubberLoopId.current = window.requestAnimationFrame(loopScrubber);
+      if (payload) dispatch(animatingControlsActions.moveScrubber(payload));
     };
     if (playState === 'play') {
-      scrubberRafId.current = window.requestAnimationFrame(loopScrubber);
+      window.cancelAnimationFrame(scrubberLoopId.current); // 애니메이션 재생 도중 playDirection, startTimeIndex, endTimeIndex이 변경 될 경우 기존 애니메이션 종료
+      scrubberLoopId.current = window.requestAnimationFrame(loopScrubber);
     } else if (playState === 'pause' || playState === 'stop') {
-      if (scrubberRafId.current) window.cancelAnimationFrame(scrubberRafId.current);
+      window.cancelAnimationFrame(scrubberLoopId.current);
     }
-  }, [currentAction, playState, translateScrubber]);
+  }, [playState, playDirection, dispatch, startTimeIndex, endTimeIndex, playSpeed]);
 
   // 드래그 이벤트 적용
   useEffect(() => {
     if (!scrubberRef.current) return;
+    const clampTimeIndex = (timeIndex: number) => {
+      if (timeIndex < startTimeIndex) return startTimeIndex;
+      if (endTimeIndex < timeIndex) return endTimeIndex;
+      return timeIndex;
+    };
+    const setDragBehavior = () => {
+      const throttledThing = _.throttle((event) => {
+        const scaleX = ScaleLinear.getScaleX();
+        const subValue = 15; // now input 가로 절반 길이
+        const cursorTimeIndex = _.floor(scaleX.invert(event.x - subValue));
+        const currentTimeIndex = clampTimeIndex(cursorTimeIndex);
+        dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex }));
+      }, 50);
+      const dragBehavior = d3
+        .drag()
+        .on('drag', throttledThing)
+        .on('end', () => {
+          throttledThing.cancel();
+        });
+      return dragBehavior;
+    };
     const scrubber = d3.select(scrubberRef.current);
-    const throttledThing = _.throttle((event: MouseEvent) => {
-      const scaleX = ScaleLinear.getScaleX();
-      const subValue = 15; // now input 가로 절반 길이
-      const cursorTimeIndex = _.floor(scaleX.invert(event.x - subValue));
-      updateScrubberStatus(cursorTimeIndex);
-    }, 50);
-    const dragBehavior = d3
-      .drag()
-      .on('drag', throttledThing)
-      .on('end', () => throttledThing.cancel());
+    const dragBehavior = setDragBehavior();
     scrubber.call(dragBehavior as any);
-  }, [updateScrubberStatus]);
+  }, [dispatch, endTimeIndex, startTimeIndex]);
 
   return (
     <g id="scrubber" className={cx('scrubber')} ref={scrubberRef}>
