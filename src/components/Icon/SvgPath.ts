@@ -6,9 +6,9 @@ import LockClose from './svg/LockClose.svg';
 import LockOpen from './svg/LockOpen.svg';
 import Plus from './svg/Plus.svg';
 import CameraReset from './svg/CameraReset.svg';
-import Model from './svg/Model.svg';
-import Folder from './svg/Folder.svg';
-import Motion from './svg/Motion.svg';
+// import Model from './svg/Model.svg';
+// import Folder from './svg/Folder.svg';
+// import Motion from './svg/Motion.svg';
 import FilledArrow from './svg/FilledArrow.svg';
 import ChevronLeft from './svg/ChevronLeft.svg';
 import BreadcrumbMore from './svg/BreadcrumbMore.svg';
@@ -30,6 +30,9 @@ import Reset from './svg/Reset.svg';
 import Search from './New_svg/Search.svg';
 import ListView from './New_svg/ListView.svg';
 import IconView from './New_svg/IconView.svg';
+import Folder from './New_svg/Folder.svg';
+import Model from './New_svg/Model.svg';
+import Motion from './New_svg/Motion.svg';
 
 type Icon =
   | 'Close'
@@ -42,9 +45,6 @@ type Icon =
   | 'IconView'
   | 'Plus'
   | 'CameraReset'
-  | 'Model'
-  | 'Folder'
-  | 'Motion'
   | 'FilledArrow'
   | 'ChevronLeft'
   | 'BreadcrumbMore'
@@ -62,7 +62,10 @@ type Icon =
   | 'Error'
   | 'Refresh'
   | 'Alert'
-  | 'Reset';
+  | 'Reset'
+  | 'Folder'
+  | 'Model'
+  | 'Motion';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -79,9 +82,6 @@ const images: Images = {
   IconView,
   Plus,
   CameraReset,
-  Model,
-  Folder,
-  Motion,
   FilledArrow,
   ChevronLeft,
   BreadcrumbMore,
@@ -100,6 +100,9 @@ const images: Images = {
   Refresh,
   Alert,
   Reset,
+  Folder,
+  Model,
+  Motion,
 };
 
 export default images;
