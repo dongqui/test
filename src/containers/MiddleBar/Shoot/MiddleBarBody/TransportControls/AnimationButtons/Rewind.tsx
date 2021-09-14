@@ -3,10 +3,6 @@ import { useDispatch } from 'react-redux';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import * as animatingControlsActions from 'actions/animatingControls';
 import { PlayDirection_New } from 'types/RP';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
-
-const cx = classNames.bind(styles);
 
 const Rewind = () => {
   const dispatch = useDispatch();
@@ -21,14 +17,7 @@ const Rewind = () => {
     );
   }, [dispatch]);
 
-  return (
-    <IconWrapper
-      className={cx('rewind')}
-      onClick={handleRewind}
-      icon={SvgPath.RewindArrow}
-      hasFrame={false}
-    />
-  );
+  return <IconWrapper onClick={handleRewind} icon={SvgPath.RewindArrow} hasFrame={false} />;
 };
 
 export default Rewind;

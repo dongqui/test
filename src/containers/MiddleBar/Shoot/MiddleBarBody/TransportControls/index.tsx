@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import Buttons from './Buttons';
+import AnimationButtons from './AnimationButtons';
 import FasterDropdown from './FasterDropdown';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -11,7 +11,7 @@ interface Props {}
 const TransportControls: FunctionComponent<Props> = () => {
   return (
     <div className={cx('transport-controls')}>
-      <Buttons />
+      <AnimationButtons />
       <FasterDropdown />
     </div>
   );

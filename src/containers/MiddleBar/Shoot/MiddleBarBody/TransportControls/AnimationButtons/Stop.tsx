@@ -3,10 +3,6 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import * as animatingControlsActions from 'actions/animatingControls';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
-
-const cx = classNames.bind(styles);
 
 const Stop = () => {
   const dispatch = useDispatch();
@@ -25,9 +21,7 @@ const Stop = () => {
     }
   }, [dispatch, playState, startTimeIndex]);
 
-  return (
-    <IconWrapper className={cx('stop')} onClick={handleStop} icon={SvgPath.Stop} hasFrame={false} />
-  );
+  return <IconWrapper onClick={handleStop} icon={SvgPath.Stop} hasFrame={false} />;
 };
 
 export default Stop;

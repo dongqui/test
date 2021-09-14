@@ -3,10 +3,6 @@ import { useDispatch } from 'react-redux';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import * as animatingControlsActions from 'actions/animatingControls';
 import { PlayDirection_New } from 'types/RP';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
-
-const cx = classNames.bind(styles);
 
 const Play = () => {
   const dispatch = useDispatch();
@@ -21,14 +17,7 @@ const Play = () => {
     );
   }, [dispatch]);
 
-  return (
-    <IconWrapper
-      className={cx('play')}
-      onClick={handlePlay}
-      icon={SvgPath.PlayArrow}
-      hasFrame={false}
-    />
-  );
+  return <IconWrapper onClick={handlePlay} icon={SvgPath.PlayArrow} hasFrame={false} />;
 };
 
 export default Play;

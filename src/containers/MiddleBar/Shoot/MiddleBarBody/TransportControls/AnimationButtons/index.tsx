@@ -46,7 +46,7 @@ const Buttons = () => {
   };
 
   return (
-    <div className={cx('buttons')}>
+    <div className={cx('animation-buttons')}>
       <Record />
       <ButtonState />
       <Stop />
