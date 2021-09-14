@@ -1,0 +1,45 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  padding: 7px 14px;
+}
+
+.icon-arrow {
+  position: relative;
+  display: flex;
+  width: 16px;
+  height: 24px;
+
+  & > svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 11px;
+    margin: auto;
+    color: #fff;
+  }
+}
+
+.icon-type {
+  position: relative;
+  display: flex;
+  width: 16px;
+  height: 24px;
+
+  & > svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 14px;
+    margin: auto;
+    color: #fff;
+  }
+}
+
+.name {
+  font-size: 11px;
+  color: #fff;
+  padding-left: 8px;
+}
