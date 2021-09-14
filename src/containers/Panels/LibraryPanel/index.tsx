@@ -74,6 +74,9 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
+  // ListView or GalleryView
+  const [view, setView] = useState<LP.View>('List');
+
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
       <Box id="LP-Header" noResize>
@@ -83,7 +86,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
         <LPControlbar />
       </Box>
       <Box id="LP-Body" className={cx('lp-body')} noResize>
-        <LPBody />
+        <LPBody view={view} />
       </Box>
     </div>
   );
