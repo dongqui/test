@@ -34,6 +34,9 @@ import SimpleMode from './svg/SimpleMode.svg';
 import Record from './svg/Record.svg';
 import Stop from './svg/Stop.svg';
 import InsertKeyframe from './svg/InsertKeyframe.svg';
+import Bezier from './svg/Bezier.svg';
+import Linear from './svg/Linear.svg';
+import Constant from './svg/Constant.svg';
 
 type Icon =
   | 'Close'
@@ -70,7 +73,10 @@ type Icon =
   | 'SimpleMode'
   | 'Record'
   | 'Stop'
-  | 'InsertKeyframe';
+  | 'InsertKeyframe'
+  | 'Bezier'
+  | 'Linear'
+  | 'Constant';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -112,6 +118,9 @@ const images: Images = {
   Record,
   Stop,
   InsertKeyframe,
+  Bezier,
+  Linear,
+  Constant,
 };
 
 export default images;
