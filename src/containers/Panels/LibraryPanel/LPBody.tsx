@@ -7,12 +7,15 @@ const cx = classNames.bind(styles);
 
 interface Props {
   view: LP.View;
+  nodes: LP.Node[];
 }
 
-const LPBody: FunctionComponent<Props> = () => {
+const LPBody: FunctionComponent<Props> = ({ view, nodes }) => {
   return (
     <div className={cx('wrapper')}>
-      <ListNode type="Folder" />
+      {nodes.map((node) => (
+        <ListNode key={node.id} type={node.type} name={node.name} fileURL={node.fileURL} />
+      ))}
     </div>
   );
 };
