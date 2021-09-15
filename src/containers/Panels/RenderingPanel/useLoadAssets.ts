@@ -1,5 +1,7 @@
+import 'babylonjs-loaders';
 import { RefObject, useEffect, useState } from 'react';
 import * as BABYLON from '@babylonjs/core';
+import { useSelector } from 'reducers';
 import '@babylonjs/loaders/glTF';
 
 const SAMPLE_FILE_URL =
@@ -10,10 +12,12 @@ interface Params {
 }
 
 const useLoadAssets = (params: Params) => {
+  const visualizedFileURL = useSelector((state) => state.lpNode.visualizedFileURL);
+
   const { renderingCanvas } = params;
 
   const [scene, setScene] = useState<BABYLON.Scene | null>(null);
-  const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
+  // const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const handleSceneReady = (scene: BABYLON.Scene) => {
@@ -87,31 +91,51 @@ const useLoadAssets = (params: Params) => {
 
   useEffect(() => {
     if (renderingCanvas.current) {
-      const loadGlbFile = async (fileUrl: string, scene: BABYLON.Scene) => {
-        const loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(
-          fileUrl,
-          '',
-          scene,
-        );
+      const loadGlbFile = async (fileUrl: string | File, scene: BABYLON.Scene) => {
+        let loadedAssetContainer;
+
+        if (typeof fileUrl === 'string') {
+          loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(
+            fileUrl,
+            '',
+            scene,
+          );
+        } else {
+          loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(
+            'file:',
+            (fileUrl as unknown) as string,
+            scene,
+          );
+        }
 
         console.log('loadedAssetContainer: ', loadedAssetContainer);
+
+        const { meshes } = loadedAssetContainer;
+        meshes.forEach((mesh) => {
+          scene.addMesh(mesh);
+        });
       };
 
-      if (scene && currentFileUrl) {
+      // if (scene && currentFileUrl) {
+      //   console.log('in');
+      //   loadGlbFile(currentFileUrl, scene);
+      //   console.log('out');
+      // }
+      if (scene && visualizedFileURL) {
         console.log('in');
-        loadGlbFile(currentFileUrl, scene);
+        loadGlbFile(visualizedFileURL, scene);
         console.log('out');
       }
     }
-  }, [currentFileUrl, renderingCanvas, scene]);
+  }, [visualizedFileURL, renderingCanvas, scene]);
 
   useEffect(() => {
-    console.log(currentFileUrl);
-  }, [currentFileUrl]);
+    console.log(visualizedFileURL);
+  }, [visualizedFileURL]);
 
-  setTimeout(() => {
-    setCurrentFileUrl(SAMPLE_FILE_URL);
-  }, 3000);
+  // setTimeout(() => {
+  //   setCurrentFileUrl(SAMPLE_FILE_URL);
+  // }, 3000);
 };
 
 export default useLoadAssets;
