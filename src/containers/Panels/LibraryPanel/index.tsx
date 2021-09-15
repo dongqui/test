@@ -2,8 +2,13 @@ import 'babylonjs-loaders';
 import * as BABYLON from 'babylonjs';
 import { FunctionComponent, useEffect, useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { connect } from 'react-redux';
-import Box, { BoxProps } from 'components/Layout/Box';
+import { connect, useDispatch } from 'react-redux';
+import { RootState } from 'reducers';
+import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+import produce from 'immer';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -29,7 +34,29 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
     return type;
   }, []);
 
+  const dispatch = useDispatch();
+
   const handleCreateNode = useCallback(() => {}, []);
+
+  const onConvertFBXtoGLB = useCallback(async (file: File) => {
+    const formData = new FormData();
+
+    formData.append('file', file);
+    formData.append('type', 'fbx');
+    formData.append('id', String(Date.now() / 1000));
+
+    const result = await axios({
+      method: 'POST',
+      baseURL: 'https://blenderapi.myplask.com:5000',
+      url: '/fbx2glb-upload-api',
+      data: formData,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((response) => {
+      return response;
+    });
+
+    return result;
+  }, []);
 
   /**
    * LP에 drop하는 파일에 대한 확장자에 의한 '1차' 처리
@@ -49,27 +76,61 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
            * @todo 추후 이름변경을 위해 fileName에서 확장자를 제거하여 별도 보관이 필요
            */
           const fileName = file.name;
-          const extension = getFileExtension(file.name);
-          console.log(fileName, extension);
+          const extension = getFileExtension(file.name).toLowerCase();
 
-          // return { name: fileName, extension: extension };
+          switch (extension) {
+            case 'glb': {
+              const nextNodes = produce(lpNode, (draft) => {
+                const newNode = {
+                  id: uuidv4(),
+                  fileURL: file,
+                  name: fileName,
+                  type: 'Model',
+                } as LP.Node;
+
+                draft.push(newNode);
+              });
+
+              dispatch(
+                lpNodeActions.changeNode({
+                  nodes: nextNodes,
+                }),
+              );
+
+              break;
+            }
+            case 'fbx': {
+              const fileURL = await onConvertFBXtoGLB(file).then((response: any) => {
+                return response.data.result;
+              });
+
+              const nextNodes = produce(lpNode, (draft) => {
+                const newNode = {
+                  id: uuidv4(),
+                  fileURL: fileURL,
+                  name: fileName,
+                  type: 'Model',
+                } as LP.Node;
+
+                draft.push(newNode);
+              });
+
+              dispatch(
+                lpNodeActions.changeNode({
+                  nodes: nextNodes,
+                }),
+              );
+
+              break;
+            }
+            default: {
+              break;
+            }
+          }
         }),
       );
-
-      // files.map((file) => {
-      //   console.log(file);
-      //   // /**
-      //   //  * Babylon.js의 LoadAssetContainerAsync의 두 번째 파라미터 타입이 잘못되어
-      //   //  * 하기와 같이 타입을 단언
-      //   //  */
-      //   // BABYLON.SceneLoader.LoadAssetContainerAsync('file:', targetFile, scene).then(
-      //   //   (container) => {
-      //   //     console.log(container);
-      //   //   },
-      //   // );
-      // });
     },
-    [getFileExtension],
+    [dispatch, getFileExtension, lpNode, onConvertFBXtoGLB],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
@@ -86,13 +147,13 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
         <LPControlbar />
       </Box>
       <Box id="LP-Body" className={cx('lp-body')} noResize>
-        <LPBody view={view} />
+        <LPBody view={view} nodes={lpNode} />
       </Box>
     </div>
   );
 };
 
-const mapStateToProps = (state: any) => {
+const mapStateToProps = (state: RootState) => {
   return {
     lpNode: state.lpNode.node,
   };
