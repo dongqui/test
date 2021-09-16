@@ -100,7 +100,8 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
             }
             case 'fbx': {
               onModalOpen({
-                title: 'test!!',
+                title: 'Importing the file',
+                message: 'This can take up to 3 minutes',
               });
 
               const { fileURL, isSuccess } = await onConvertFBXtoGLB(file).then((response: any) => {
