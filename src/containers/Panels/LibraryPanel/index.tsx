@@ -11,7 +11,8 @@ import axios from 'axios';
 import produce from 'immer';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import Box from 'components/Layout/Box';
-import BaseModal, { useBaseModal } from 'new_components/Modal/BaseModal';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -35,7 +36,9 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
   const dispatch = useDispatch();
 
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const { onModalOpen, onModalClose } = useBaseModal();
+  const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   const handleCreateNode = useCallback(() => {}, []);
 
@@ -61,6 +64,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
         const fileName = file.name;
 
         switch (extension) {
+          // 1) glb(GLB) 로드
           case 'glb': {
             const nextNodes = produce(nextLPNodes, (draft) => {
               const newNode = {
@@ -83,6 +87,8 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
             break;
           }
+
+          // 2) fbx(FBX) 로드
           case 'fbx': {
             onModalOpen({
               title: 'Importing the file',
@@ -126,6 +132,8 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
             break;
           }
+
+          // 3) glb(GLB) or fbx(FBX) 외 로드
           default: {
             onModalOpen({
               title: 'Warning',
@@ -151,8 +159,27 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
   const [view, setView] = useState<LP.View>('List');
 
+  // LP에서 기본 ContextMenu(우클릭) event disable
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      onContextMenuOpen({
+        menu: [],
+      });
+    };
+
+    /**
+     * @todo 임시로 window 지정. 수정 필요
+     */
+    window.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [onContextMenuOpen]);
+
   return (
-    <div className={cx('wrapper')} {...getRootProps()}>
+    <div className={cx('wrapper')} ref={wrapperRef} {...getRootProps()}>
       <Box id="LP-Header" noResize>
         <LPHeader />
       </Box>
