@@ -48,7 +48,9 @@ const BaseModal: FunctionComponent<Props> = ({
   confirmText,
   onConfirm,
 }) => {
-  const portalRef = useRef(document.getElementById('portal')) as MutableRefObject<HTMLElement>;
+  const portalRef = useRef(
+    document.getElementById('portal_modal'),
+  ) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
   const handleOutsideClose = () => {};
