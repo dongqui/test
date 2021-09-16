@@ -67,9 +67,9 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
     async (files: File[]) => {
       let nextLPNodes = _.clone(lpNode);
 
-      files.map(async (file) => {
+      const onLoad = async (file: File) => {
         /**
-         * @todo 추후 이름변경을 위해 fileName에서 확장자를 제거하여 별도 보관이 필요
+         * @todo 추후 이름 변경을 위해 이름과 확장자를 별도 보관 필요
          */
         const extension = getFileExtension(file.name).toLowerCase();
 
@@ -147,7 +147,12 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
             break;
           }
         }
-      });
+      };
+
+      // 순차적으로 파일 로드
+      for (let i = 0; i < files.length; i++) {
+        await onLoad(files[i]);
+      }
     },
     [dispatch, getFileExtension, lpNode, onConvertFBXtoGLB, onModalClose, onModalOpen],
   );
