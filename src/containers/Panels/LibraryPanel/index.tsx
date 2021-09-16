@@ -40,24 +40,28 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
   const handleCreateNode = useCallback(() => {}, []);
 
   /**
-   * LP에 drop하는 파일에 대한 확장자에 의한 '1차' 처리
+   * LP에 drop하는 파일에 대한 확장자에 의한 1차 처리
    *
    * @param {File[]} files - LP에 drop하는 파일 (다중 또는 단일)
    */
   const handleDrop = useCallback(
     async (files: File[]) => {
+      // 다중 or 단일 drop한 파일에 대해서 최종적으로 dispatch하기 위한 clone 처리
       let nextLPNodes = _.clone(lpNode);
 
-      const onLoad = async (file: File) => {
-        /**
-         * @todo 추후 이름 변경을 위해 이름과 확장자를 별도 보관 필요
-         */
+      /**
+       * .glb or .fbx는 LPNode에 연결 그 외 AlertModal을 통한 예외 처리
+       *
+       * @param file - LP에 drop한 파일
+       * @todo 각 Folder, Model, Motion 등 이름수정을 위한 파일명과 파일확장자의 분리가 필요
+       */
+      const onFileLoad = async (file: File) => {
+        // 대소문자 관련없이 처리하기 위한 확장자의 소문자 치환
         const extension = getFileExtension(file.name).toLowerCase();
+        const fileName = file.name;
 
         switch (extension) {
           case 'glb': {
-            const fileName = file.name;
-
             const nextNodes = produce(nextLPNodes, (draft) => {
               const newNode = {
                 id: uuidv4(),
@@ -85,37 +89,40 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
               message: 'This can take up to 3 minutes',
             });
 
-            const { fileURL, isSuccess } = await convertFBXtoGLB(file).then((response) => {
-              onModalClose();
+            await convertFBXtoGLB(file)
+              .then((response) => {
+                onModalClose();
 
-              return {
-                fileURL: response,
-                isSuccess: true,
-              };
-            });
+                const nextNodes = produce(nextLPNodes, (draft) => {
+                  const newNode = {
+                    id: uuidv4(),
+                    fileURL: response,
+                    name: fileName,
+                    type: 'Model',
+                  } as LP.Node;
 
-            if (isSuccess) {
-              const fileName = file.name;
+                  draft.push(newNode);
+                });
 
-              const nextNodes = produce(nextLPNodes, (draft) => {
-                const newNode = {
-                  id: uuidv4(),
-                  fileURL: fileURL,
-                  name: fileName,
-                  type: 'Model',
-                } as LP.Node;
+                nextLPNodes = nextNodes;
 
-                draft.push(newNode);
+                dispatch(
+                  lpNodeActions.changeNode({
+                    nodes: nextNodes,
+                  }),
+                );
+              })
+              .catch(() => {
+                onModalOpen({
+                  title: 'Warning',
+                  message:
+                    '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
+                  confirmText: 'Contact',
+                  onConfirm: () => {
+                    location.href = 'mailto:contact@plask.ai';
+                  },
+                });
               });
-
-              nextLPNodes = nextNodes;
-
-              dispatch(
-                lpNodeActions.changeNode({
-                  nodes: nextNodes,
-                }),
-              );
-            }
 
             break;
           }
@@ -132,8 +139,10 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
       // 순차적으로 파일 로드
       for (let i = 0; i < files.length; i++) {
-        await onLoad(files[i]);
+        await onFileLoad(files[i]);
       }
+
+      // handleDrop END
     },
     [dispatch, getFileExtension, lpNode, onModalClose, onModalOpen],
   );
