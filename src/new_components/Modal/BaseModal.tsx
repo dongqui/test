@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { BasePortal } from 'components/Modal';
 import { Overlay } from 'components/Overlay';
+import { Html } from 'components/Typography';
 import classnames from 'classnames/bind';
 import styles from './BaseModal.module.scss';
 
@@ -36,9 +37,17 @@ interface Props {
   title: string;
   message: string;
   confirmText?: string;
+  onConfirm?: () => void;
 }
 
-const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message, confirmText }) => {
+const BaseModal: FunctionComponent<Props> = ({
+  children,
+  isOpen,
+  title,
+  message,
+  confirmText,
+  onConfirm,
+}) => {
   const portalRef = useRef(document.getElementById('portal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -51,8 +60,12 @@ const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message,
   const { onModalClose } = useBaseModal();
 
   const handleClose = useCallback(() => {
+    if (onConfirm) {
+      onConfirm();
+    }
+
     onModalClose();
-  }, [onModalClose]);
+  }, [onConfirm, onModalClose]);
 
   return (
     <BasePortal container={portalRef}>
@@ -61,7 +74,9 @@ const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message,
           <div className={cx('wrapper')} ref={modalRef}>
             <div className={cx('inner')} tabIndex={0}>
               <div className={cx('title')}>{title}</div>
-              <div className={contentClasses}>{message}</div>
+              <div className={contentClasses}>
+                <Html content={message} />
+              </div>
               {confirmText && (
                 <button className={cx('button-confirm')} onClick={handleClose}>
                   {confirmText}
@@ -82,9 +97,9 @@ const BaseModalProvider = ({ children }: any) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<any>({});
 
-  const handleOpen = ({ title, message, confirmText, actionCallback, ...rest }: any) => {
+  const handleOpen = ({ title, message, confirmText, onConfirm, actionCallback }: any) => {
     setDialogOpen(true);
-    setDialogConfig({ title, message, confirmText, actionCallback });
+    setDialogConfig({ title, message, confirmText, onConfirm, actionCallback });
   };
 
   const handleClose = () => {
