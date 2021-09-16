@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import 'babylonjs-loaders';
 import * as BABYLON from 'babylonjs';
 import { FunctionComponent, useEffect, useState, useCallback, useRef } from 'react';
@@ -64,25 +65,61 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
    */
   const handleDrop = useCallback(
     async (files: File[]) => {
-      /**
-       * 다중 파일 drop에 대한 처리 - 하나라도 실패 시 로직 실패, 순서 보장 x
-       *
-       * @todo 하나라도 실패한 것이 아닌, 성공한 파일들만 처리를 해야한다면 수정 필요
-       */
-      const list = await Promise.all(
-        files.map(async (file) => {
-          /**
-           * @todo 추후 이름변경을 위해 fileName에서 확장자를 제거하여 별도 보관이 필요
-           */
-          const fileName = file.name;
-          const extension = getFileExtension(file.name).toLowerCase();
+      let nextLPNodes = _.clone(lpNode);
 
-          switch (extension) {
-            case 'glb': {
-              const nextNodes = produce(lpNode, (draft) => {
+      files.map(async (file) => {
+        /**
+         * @todo 추후 이름변경을 위해 fileName에서 확장자를 제거하여 별도 보관이 필요
+         */
+        const extension = getFileExtension(file.name).toLowerCase();
+
+        switch (extension) {
+          case 'glb': {
+            const fileName = file.name;
+
+            const nextNodes = produce(nextLPNodes, (draft) => {
+              const newNode = {
+                id: uuidv4(),
+                fileURL: file,
+                name: fileName,
+                type: 'Model',
+              } as LP.Node;
+
+              draft.push(newNode);
+            });
+
+            nextLPNodes = nextNodes;
+
+            dispatch(
+              lpNodeActions.changeNode({
+                nodes: nextNodes,
+              }),
+            );
+
+            break;
+          }
+          case 'fbx': {
+            onModalOpen({
+              title: 'Importing the file',
+              message: 'This can take up to 3 minutes',
+            });
+
+            const { fileURL, isSuccess } = await onConvertFBXtoGLB(file).then((response: any) => {
+              onModalClose();
+
+              return {
+                fileURL: response.data.result,
+                isSuccess: true,
+              };
+            });
+
+            if (isSuccess) {
+              const fileName = file.name;
+
+              const nextNodes = produce(nextLPNodes, (draft) => {
                 const newNode = {
                   id: uuidv4(),
-                  fileURL: file,
+                  fileURL: fileURL,
                   name: fileName,
                   type: 'Model',
                 } as LP.Node;
@@ -90,56 +127,27 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
                 draft.push(newNode);
               });
 
+              nextLPNodes = nextNodes;
+
               dispatch(
                 lpNodeActions.changeNode({
                   nodes: nextNodes,
                 }),
               );
-
-              break;
             }
-            case 'fbx': {
-              onModalOpen({
-                title: 'Importing the file',
-                message: 'This can take up to 3 minutes',
-              });
 
-              const { fileURL, isSuccess } = await onConvertFBXtoGLB(file).then((response: any) => {
-                onModalClose();
-
-                return {
-                  fileURL: response.data.result,
-                  isSuccess: true,
-                };
-              });
-
-              if (isSuccess) {
-                const nextNodes = produce(lpNode, (draft) => {
-                  const newNode = {
-                    id: uuidv4(),
-                    fileURL: fileURL,
-                    name: fileName,
-                    type: 'Model',
-                  } as LP.Node;
-
-                  draft.push(newNode);
-                });
-
-                dispatch(
-                  lpNodeActions.changeNode({
-                    nodes: nextNodes,
-                  }),
-                );
-              }
-
-              break;
-            }
-            default: {
-              break;
-            }
+            break;
           }
-        }),
-      );
+          default: {
+            onModalOpen({
+              title: 'Warning',
+              message: 'Unsupported file format',
+              confirmText: 'Close',
+            });
+            break;
+          }
+        }
+      });
     },
     [dispatch, getFileExtension, lpNode, onConvertFBXtoGLB, onModalClose, onModalOpen],
   );
