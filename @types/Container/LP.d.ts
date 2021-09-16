@@ -11,7 +11,7 @@ declare namespace LP {
     id: string;
     fileURL: string | File;
     name: string;
-    type: LP.NodeType;
+    type: NodeType;
   }
 }
 
