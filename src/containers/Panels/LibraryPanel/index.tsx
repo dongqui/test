@@ -9,6 +9,7 @@ import axios from 'axios';
 import produce from 'immer';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import Box from 'components/Layout/Box';
+import BaseModal, { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -16,10 +17,6 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
-
-// url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493576/zombie_bkqv8g.glb',
-// url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493584/knight_zizg5n.glb',
-// url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619494583/vanguard_t_cslcnl.glb',
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 
@@ -35,6 +32,8 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
   }, []);
 
   const dispatch = useDispatch();
+
+  const { onModalOpen, onModalClose } = useBaseModal();
 
   const handleCreateNode = useCallback(() => {}, []);
 
@@ -100,26 +99,37 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
               break;
             }
             case 'fbx': {
-              const fileURL = await onConvertFBXtoGLB(file).then((response: any) => {
-                return response.data.result;
+              onModalOpen({
+                title: 'test!!',
               });
 
-              const nextNodes = produce(lpNode, (draft) => {
-                const newNode = {
-                  id: uuidv4(),
-                  fileURL: fileURL,
-                  name: fileName,
-                  type: 'Model',
-                } as LP.Node;
+              const { fileURL, isSuccess } = await onConvertFBXtoGLB(file).then((response: any) => {
+                onModalClose();
 
-                draft.push(newNode);
+                return {
+                  fileURL: response.data.result,
+                  isSuccess: true,
+                };
               });
 
-              dispatch(
-                lpNodeActions.changeNode({
-                  nodes: nextNodes,
-                }),
-              );
+              if (isSuccess) {
+                const nextNodes = produce(lpNode, (draft) => {
+                  const newNode = {
+                    id: uuidv4(),
+                    fileURL: fileURL,
+                    name: fileName,
+                    type: 'Model',
+                  } as LP.Node;
+
+                  draft.push(newNode);
+                });
+
+                dispatch(
+                  lpNodeActions.changeNode({
+                    nodes: nextNodes,
+                  }),
+                );
+              }
 
               break;
             }
@@ -130,7 +140,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
         }),
       );
     },
-    [dispatch, getFileExtension, lpNode, onConvertFBXtoGLB],
+    [dispatch, getFileExtension, lpNode, onConvertFBXtoGLB, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });

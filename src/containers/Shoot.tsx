@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import { useWindowSize } from 'hooks/common';
+import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import Box, { BoxProps } from 'components/Layout/Box';
 import LibraryPanel from 'containers/Panels/LibraryPanel';
 import classNames from 'classnames/bind';
@@ -208,7 +209,9 @@ const Shoot: FunctionComponent = () => {
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.us}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
-          <LibraryPanel />
+          <BaseModalProvider>
+            <LibraryPanel />
+          </BaseModalProvider>
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
           <RenderingPanel />
