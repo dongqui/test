@@ -39,6 +39,8 @@ class MyDocument extends Document {
           <Main />
           <NextScript />
           <div id="portal" />
+          <div id="portal_modal" />
+          <div id="portal_contextmenu" />
         </body>
       </Html>
     );
