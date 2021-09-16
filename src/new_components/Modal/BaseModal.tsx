@@ -3,8 +3,10 @@ import {
   Fragment,
   MutableRefObject,
   createContext,
+  useEffect,
   useState,
   useContext,
+  useCallback,
   useRef,
 } from 'react';
 import { BasePortal } from 'components/Modal';
@@ -30,16 +32,27 @@ const focusableList = [
 
 interface Props {
   onOutsideClose?: () => void;
-  isOpen?: boolean;
+  isOpen: boolean;
   title: string;
   message: string;
+  confirmText?: string;
 }
 
-const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message }) => {
+const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message, confirmText }) => {
   const portalRef = useRef(document.getElementById('portal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
   const handleOutsideClose = () => {};
+
+  const contentClasses = cx('content', {
+    margin: !!confirmText,
+  });
+
+  const { onModalClose } = useBaseModal();
+
+  const handleClose = useCallback(() => {
+    onModalClose();
+  }, [onModalClose]);
 
   return (
     <BasePortal container={portalRef}>
@@ -48,8 +61,12 @@ const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message 
           <div className={cx('wrapper')} ref={modalRef}>
             <div className={cx('inner')} tabIndex={0}>
               <div className={cx('title')}>{title}</div>
-              <div className={cx('content')}>{message}</div>
-              {children}
+              <div className={contentClasses}>{message}</div>
+              {confirmText && (
+                <button className={cx('button-confirm')} onClick={handleClose}>
+                  {confirmText}
+                </button>
+              )}
             </div>
             <Overlay onClose={handleOutsideClose} />
           </div>
@@ -65,9 +82,9 @@ const BaseModalProvider = ({ children }: any) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<any>({});
 
-  const handleOpen = ({ title, message, actionCallback, ...rest }: any) => {
+  const handleOpen = ({ title, message, confirmText, actionCallback, ...rest }: any) => {
     setDialogOpen(true);
-    setDialogConfig({ title, message, actionCallback });
+    setDialogConfig({ title, message, confirmText, actionCallback });
   };
 
   const handleClose = () => {
@@ -91,7 +108,7 @@ const BaseModalProvider = ({ children }: any) => {
 
   return (
     <BaseModalContext.Provider value={{ handleOpen, handleClose }}>
-      <BaseModal isOpen={dialogOpen} title={dialogConfig.title} message={dialogConfig.message} />
+      <BaseModal isOpen={dialogOpen} {...dialogConfig} />
       {children}
     </BaseModalContext.Provider>
   );
@@ -114,10 +131,11 @@ const useBaseModal = () => {
     });
   };
 
-  const getConfirm = ({ ...options }) =>
+  const getConfirm = ({ ...options }) => {
     new Promise((res) => {
       handleOpen({ actionCallback: res, ...options });
     });
+  };
 
   return { getConfirm, onModalOpen, onModalClose };
 };
