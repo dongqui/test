@@ -6,6 +6,7 @@ import { useDropzone } from 'react-dropzone';
 import { connect, useDispatch } from 'react-redux';
 import { RootState } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
+import { convertFBXtoGLB } from 'api';
 import axios from 'axios';
 import produce from 'immer';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -37,26 +38,6 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
   const { onModalOpen, onModalClose } = useBaseModal();
 
   const handleCreateNode = useCallback(() => {}, []);
-
-  const onConvertFBXtoGLB = useCallback(async (file: File) => {
-    const formData = new FormData();
-
-    formData.append('file', file);
-    formData.append('type', 'fbx');
-    formData.append('id', String(Date.now() / 1000));
-
-    const result = await axios({
-      method: 'POST',
-      baseURL: 'https://blenderapi.myplask.com:5000',
-      url: '/fbx2glb-upload-api',
-      data: formData,
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }).then((response) => {
-      return response;
-    });
-
-    return result;
-  }, []);
 
   /**
    * LP에 drop하는 파일에 대한 확장자에 의한 '1차' 처리
@@ -104,11 +85,11 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
               message: 'This can take up to 3 minutes',
             });
 
-            const { fileURL, isSuccess } = await onConvertFBXtoGLB(file).then((response: any) => {
+            const { fileURL, isSuccess } = await convertFBXtoGLB(file).then((response) => {
               onModalClose();
 
               return {
-                fileURL: response.data.result,
+                fileURL: response,
                 isSuccess: true,
               };
             });
@@ -154,12 +135,11 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
         await onLoad(files[i]);
       }
     },
-    [dispatch, getFileExtension, lpNode, onConvertFBXtoGLB, onModalClose, onModalOpen],
+    [dispatch, getFileExtension, lpNode, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
-  // ListView or GalleryView
   const [view, setView] = useState<LP.View>('List');
 
   return (
