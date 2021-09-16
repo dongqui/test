@@ -32,9 +32,10 @@ interface Props {
   onOutsideClose?: () => void;
   isOpen?: boolean;
   title: string;
+  message: string;
 }
 
-const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title }) => {
+const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message }) => {
   const portalRef = useRef(document.getElementById('portal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -46,11 +47,12 @@ const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title }) => {
         <Fragment>
           <div className={cx('wrapper')} ref={modalRef}>
             <div className={cx('inner')} tabIndex={0}>
-              <div>{title}</div>
+              <div className={cx('title')}>{title}</div>
+              <div className={cx('content')}>{message}</div>
               {children}
             </div>
+            <Overlay onClose={handleOutsideClose} />
           </div>
-          <Overlay onClose={handleOutsideClose} />
         </Fragment>
       )}
     </BasePortal>
@@ -89,7 +91,7 @@ const BaseModalProvider = ({ children }: any) => {
 
   return (
     <BaseModalContext.Provider value={{ handleOpen, handleClose }}>
-      <BaseModal isOpen={dialogOpen} title={dialogConfig?.title} />
+      <BaseModal isOpen={dialogOpen} title={dialogConfig.title} message={dialogConfig.message} />
       {children}
     </BaseModalContext.Provider>
   );
