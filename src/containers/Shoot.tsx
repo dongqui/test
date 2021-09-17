@@ -144,9 +144,18 @@ const Shoot: FunctionComponent = () => {
     }
   }, [constants, rate, sectionHeight, windowHeight]);
 
-  /**
-   * @todo 수식이 난잡하여 추후 수정예정
-   */
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, []);
+
   const boxProps = {
     up: {
       height: constants.height.up,
