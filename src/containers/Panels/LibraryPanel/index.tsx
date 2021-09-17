@@ -161,34 +161,70 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
   // LP에서 기본 ContextMenu(우클릭) event disable
   useEffect(() => {
+    const handleContextMenu = (e: any) => {
+      e.preventDefault();
+
+      const isContains = wrapperRef.current?.contains(e.target as Node);
+      if (!isContains) {
+        onContextMenuOpen({
+          innerRef: wrapperRef,
+          menu: [],
+          message: 'Wrapper 컨텍스트',
+        });
+      }
+    };
+
+    const currentRef = wrapperRef.current;
+
+    if (currentRef) {
+      currentRef.addEventListener('contextmenu', handleContextMenu);
+
+      return () => {
+        currentRef.removeEventListener('contextmenu', handleContextMenu);
+      };
+    }
+  }, [onContextMenuOpen]);
+
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
-      onContextMenuOpen({
-        menu: [],
-      });
+
+      const isContains = headerRef.current?.contains(e.target as Node);
+      if (isContains) {
+        onContextMenuOpen({
+          innerRef: headerRef,
+          menu: [],
+          message: 'Header 컨텍스트',
+        });
+      }
     };
 
-    /**
-     * @todo 임시로 window 지정. 수정 필요
-     */
-    window.addEventListener('contextmenu', handleContextMenu);
+    const currentRef = headerRef.current;
 
-    return () => {
-      window.removeEventListener('contextmenu', handleContextMenu);
-    };
+    if (currentRef) {
+      currentRef.addEventListener('contextmenu', handleContextMenu);
+
+      return () => {
+        currentRef.removeEventListener('contextmenu', handleContextMenu);
+      };
+    }
   }, [onContextMenuOpen]);
 
   return (
-    <div className={cx('wrapper')} ref={wrapperRef} {...getRootProps()}>
-      <Box id="LP-Header" noResize>
-        <LPHeader />
-      </Box>
-      <Box id="LP-Controlbar" noResize>
-        <LPControlbar />
-      </Box>
-      <Box id="LP-Body" className={cx('lp-body')} noResize>
-        <LPBody view={view} nodes={lpNode} />
-      </Box>
+    <div className={cx('wrapper')} {...getRootProps()}>
+      <div className={cx('inner')} ref={wrapperRef}>
+        <Box id="LP-Header" innerRef={headerRef} noResize>
+          <LPHeader />
+        </Box>
+        <Box id="LP-Controlbar" noResize>
+          <LPControlbar />
+        </Box>
+        <Box id="LP-Body" className={cx('lp-body')} noResize>
+          <LPBody view={view} nodes={lpNode} />
+        </Box>
+      </div>
     </div>
   );
 };
