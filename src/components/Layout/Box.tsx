@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, RefObject } from 'react';
 import { ResizableBox, ResizableBoxProps, ResizeHandle } from 'react-resizable';
 import { useWindowSize } from 'hooks/common';
 import classNames from 'classnames/bind';
@@ -13,10 +13,13 @@ interface BaseProps {
   max?: [number, number];
   handles?: ResizeHandle[];
   noResize?: boolean;
+  innerRef?: RefObject<HTMLDivElement>;
 }
 
 type Exclusion = 'width' | 'height' | 'minConstraints' | 'maxConstraints' | 'resizeHandles';
-type Params = ResizableBoxProps & { id: string };
+type Params = ResizableBoxProps & {
+  id: string;
+};
 export type BoxProps = BaseProps & Omit<ResizableBoxProps, Exclusion>;
 
 type Props = BoxProps & { id: string };
@@ -30,6 +33,7 @@ const Box: FunctionComponent<Props> = ({
   handles,
   className,
   noResize,
+  innerRef,
   children,
   ...rest
 }) => {
@@ -50,7 +54,7 @@ const Box: FunctionComponent<Props> = ({
 
   if (noResize) {
     return (
-      <div id={id} className={classes}>
+      <div id={id} className={classes} ref={innerRef}>
         <div className={cx('outer')}>
           <div className={cx('inner')}>{children}</div>
         </div>
