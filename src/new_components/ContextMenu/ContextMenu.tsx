@@ -6,6 +6,7 @@ import {
   useContext,
   createContext,
   MutableRefObject,
+  RefObject,
 } from 'react';
 import { BasePortal } from 'components/Modal';
 import classnames from 'classnames/bind';
@@ -14,10 +15,12 @@ import styles from './ContextMenu.module.scss';
 const cx = classnames.bind(styles);
 
 interface Props {
+  innerRef: RefObject<HTMLElement>;
   isOpen?: boolean;
+  message?: string;
 }
 
-const ContextMenu: FunctionComponent<Props> = ({ isOpen }) => {
+const ContextMenu: FunctionComponent<Props> = ({ innerRef, isOpen, message }) => {
   const portalRef = useRef(
     document.getElementById('portal_contextmenu'),
   ) as MutableRefObject<HTMLElement>;
@@ -51,7 +54,7 @@ const ContextMenu: FunctionComponent<Props> = ({ isOpen }) => {
     <BasePortal container={portalRef}>
       {isOpen && (
         <div className={cx('wrapper')} ref={wrapperRef}>
-          컨텍스트 메뉴
+          {message}
         </div>
       )}
     </BasePortal>
