@@ -1,5 +1,6 @@
 import {
   FunctionComponent,
+  Fragment,
   useEffect,
   useState,
   useRef,
@@ -18,9 +19,17 @@ interface Props {
   innerRef: RefObject<HTMLElement>;
   isOpen?: boolean;
   message?: string;
+  menu: {
+    label: string;
+    children: {
+      label: string;
+      onClick: () => void;
+    }[];
+    onClick: () => void;
+  }[];
 }
 
-const ContextMenu: FunctionComponent<Props> = ({ innerRef, isOpen, message }) => {
+const ContextMenu: FunctionComponent<Props> = ({ innerRef, isOpen, menu }) => {
   const portalRef = useRef(
     document.getElementById('portal_contextmenu'),
   ) as MutableRefObject<HTMLElement>;
@@ -50,11 +59,37 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, isOpen, message }) =>
     };
   }, [onContextMenuClose]);
 
+  console.log(menu);
+
+  const [showsCasecading, setShowsCascading] = useState(false);
+
+  const handleMouseEnter = () => {
+    console.log('???');
+    const hoverEvent = setTimeout(() => {
+      setShowsCascading(true);
+      clearTimeout(hoverEvent);
+    }, 1000);
+  };
+
   return (
     <BasePortal container={portalRef}>
       {isOpen && (
         <div className={cx('wrapper')} ref={wrapperRef}>
-          {message}
+          {menu &&
+            menu.map((item, i) => (
+              <div className={cx('inner')} key={i}>
+                <div className={cx('item')} onMouseEnter={handleMouseEnter}>
+                  {item.label}
+                </div>
+                {showsCasecading && (
+                  <div>
+                    {item.children.map((sub, j) => (
+                      <div key={j}>{sub.label}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
         </div>
       )}
     </BasePortal>
@@ -67,9 +102,9 @@ const ContextMenuProvider = ({ children }: any) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<any>({});
 
-  const handleOpen = ({ title, message, confirmText, onConfirm, actionCallback }: any) => {
+  const handleOpen = ({ title, confirmText, onConfirm, menu, actionCallback }: any) => {
     setDialogOpen(true);
-    setDialogConfig({ title, message, confirmText, onConfirm, actionCallback });
+    setDialogConfig({ title, confirmText, onConfirm, menu, actionCallback });
   };
 
   const handleClose = () => {
