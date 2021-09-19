@@ -169,7 +169,6 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
         onContextMenuOpen({
           innerRef: wrapperRef,
           menu: [],
-          message: 'Wrapper 컨텍스트',
         });
       }
     };
@@ -195,8 +194,36 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
       if (isContains) {
         onContextMenuOpen({
           innerRef: headerRef,
-          menu: [],
-          message: 'Header 컨텍스트',
+          menu: [
+            {
+              label: '텍스트1',
+              onClick: () => {},
+              children: [
+                {
+                  label: '하위1',
+                  onClick: () => {},
+                },
+                {
+                  label: '하위2',
+                  onClick: () => {},
+                },
+                {
+                  label: '하위3',
+                  onClick: () => {},
+                },
+              ],
+            },
+            {
+              label: '텍스트2',
+              onClick: () => {},
+              children: [],
+            },
+            {
+              label: '텍스트2',
+              onClick: () => {},
+              children: [],
+            },
+          ],
         });
       }
     };
