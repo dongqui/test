@@ -2,7 +2,7 @@ import * as barPositionXActions from 'actions/barPositionX';
 import * as cutImagesActions from 'actions/cutImages';
 import * as recordingDataActions from 'actions/recordingData';
 import getBlobDuration from 'get-blob-duration';
-import useVideoToImages from 'hooks/RP/useVideoToImages';
+import { useVideoToImages } from 'hooks/VM';
 import _ from 'lodash';
 import React, { FunctionComponent, memo, useCallback, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
