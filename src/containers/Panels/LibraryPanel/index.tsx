@@ -201,7 +201,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
           <LPControlbar />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody view={view} nodes={lpNode} />
+          <LPBody view={view} lpNode={lpNode} />
         </Box>
       </div>
     </div>

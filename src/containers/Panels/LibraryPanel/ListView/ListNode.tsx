@@ -21,8 +21,8 @@ const ListNode = forwardRef<HTMLDivElement, Props>(({ type, name, fileURL }, ref
   });
 
   const handleArrowClick = useCallback(() => {
-    dispatch(lpNodeActions.visualize(fileURL));
-  }, [dispatch, fileURL]);
+    // dispatch(lpNodeActions.visualize(fileURL));
+  }, []);
 
   return (
     <div className={cx('wrapper')} ref={ref}>
