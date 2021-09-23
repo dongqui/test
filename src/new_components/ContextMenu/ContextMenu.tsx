@@ -1,10 +1,14 @@
+import _ from 'lodash';
 import {
   FunctionComponent,
   Fragment,
+  memo,
   useEffect,
   useState,
   useRef,
   useContext,
+  useMemo,
+  useLayoutEffect,
   createContext,
   MutableRefObject,
   RefObject,
@@ -15,8 +19,16 @@ import styles from './ContextMenu.module.scss';
 
 const cx = classnames.bind(styles);
 
+const getNumberValue = (targetValue: string): number => {
+  const startUnitIndex = targetValue.indexOf('px');
+  const resultValue = Number(targetValue.substr(0, startUnitIndex));
+
+  return resultValue;
+};
+
 interface Props {
-  innerRef: RefObject<HTMLElement>;
+  top: number;
+  left: number;
   isOpen?: boolean;
   message?: string;
   menu: {
@@ -29,7 +41,7 @@ interface Props {
   }[];
 }
 
-const ContextMenu: FunctionComponent<Props> = ({ innerRef, isOpen, menu }) => {
+const ContextMenu: FunctionComponent<Props> = ({ isOpen, menu, top, left }) => {
   const portalRef = useRef(
     document.getElementById('portal_contextmenu'),
   ) as MutableRefObject<HTMLElement>;
@@ -37,6 +49,79 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, isOpen, menu }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const { onContextMenuClose } = useContextMenu();
+
+  const [injectedPosition, setInjectedPosition] = useState({
+    top: top,
+    left: left,
+  });
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useLayoutEffect(() => {
+    const currentRef = wrapperRef?.current;
+
+    if (currentRef) {
+      const { width, height } = currentRef.getBoundingClientRect();
+
+      const numberValue = {
+        nextPropsTop: top,
+        nextPropsLeft: left,
+        beforeStateTop: injectedPosition.top,
+        beforeStateLeft: injectedPosition.left,
+      };
+
+      const topDiff = Math.abs(numberValue.nextPropsTop - numberValue.beforeStateTop);
+      const leftDiff = Math.abs(numberValue.nextPropsLeft - numberValue.beforeStateLeft);
+
+      let resultPositionTop = top;
+      let resultPositionLeft = left;
+
+      if (!isMounted) {
+        if (_.isEqual(topDiff, 0)) {
+          if (numberValue.beforeStateTop + height >= window.innerHeight) {
+            resultPositionTop = injectedPosition.top - height;
+          }
+
+          setIsMounted(true);
+        } else {
+          if (numberValue.beforeStateTop + height >= window.innerHeight) {
+            resultPositionTop = injectedPosition.top - height;
+          }
+        }
+
+        if (_.isEqual(leftDiff, 0)) {
+          if (numberValue.beforeStateLeft + width >= window.innerWidth) {
+            resultPositionLeft = injectedPosition.left - width;
+          }
+
+          setIsMounted(true);
+        } else {
+          if (numberValue.beforeStateLeft + width >= window.innerWidth) {
+            resultPositionLeft = injectedPosition.left - width;
+          }
+        }
+      }
+
+      if (isMounted) {
+        if (numberValue.nextPropsTop !== numberValue.beforeStateTop) {
+          if (numberValue.nextPropsTop + height >= window.innerHeight) {
+            resultPositionTop = numberValue.nextPropsTop - height;
+          }
+        }
+
+        if (numberValue.nextPropsLeft !== numberValue.beforeStateLeft) {
+          if (numberValue.nextPropsLeft + width >= window.innerWidth) {
+            resultPositionLeft = numberValue.nextPropsLeft - width;
+          }
+        }
+      }
+
+      setInjectedPosition({
+        top: resultPositionTop,
+        left: resultPositionLeft,
+      });
+    }
+  }, [injectedPosition.left, injectedPosition.top, , isMounted, left, top]);
 
   useEffect(() => {
     const handleOutSideClick = (e: MouseEvent) => {
@@ -59,12 +144,9 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, isOpen, menu }) => {
     };
   }, [onContextMenuClose]);
 
-  console.log(menu);
-
   const [showsCasecading, setShowsCascading] = useState(false);
 
   const handleMouseEnter = () => {
-    console.log('???');
     const hoverEvent = setTimeout(() => {
       setShowsCascading(true);
       clearTimeout(hoverEvent);
@@ -74,7 +156,11 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, isOpen, menu }) => {
   return (
     <BasePortal container={portalRef}>
       {isOpen && (
-        <div className={cx('wrapper')} ref={wrapperRef}>
+        <div
+          className={cx('wrapper')}
+          ref={wrapperRef}
+          style={{ top: injectedPosition.top, left: injectedPosition.left }}
+        >
           {menu &&
             menu.map((item, i) => (
               <div className={cx('inner')} key={i}>
@@ -98,13 +184,13 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, isOpen, menu }) => {
 
 const ContextMenuContext = createContext<any>({});
 
-const ContextMenuProvider = ({ children }: any) => {
+const ContextMenuProvider = memo(({ children }: any) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<any>({});
 
-  const handleOpen = ({ title, confirmText, onConfirm, menu, actionCallback }: any) => {
+  const handleOpen = ({ title, confirmText, onConfirm, menu, actionCallback, top, left }: any) => {
     setDialogOpen(true);
-    setDialogConfig({ title, confirmText, onConfirm, menu, actionCallback });
+    setDialogConfig({ title, confirmText, onConfirm, menu, actionCallback, top, left });
   };
 
   const handleClose = () => {
@@ -128,11 +214,11 @@ const ContextMenuProvider = ({ children }: any) => {
 
   return (
     <ContextMenuContext.Provider value={{ handleOpen, handleClose }}>
-      <ContextMenu isOpen={dialogOpen} {...dialogConfig} />
+      {dialogOpen && <ContextMenu isOpen={dialogOpen} {...dialogConfig} />}
       {children}
     </ContextMenuContext.Provider>
   );
-};
+});
 
 const useContextMenu = () => {
   const { handleOpen, handleClose } = useContext(ContextMenuContext);
