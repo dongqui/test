@@ -5,6 +5,7 @@ import {
   memo,
   useEffect,
   useState,
+  useCallback,
   useRef,
   useContext,
   useMemo,
@@ -153,6 +154,14 @@ const ContextMenu: FunctionComponent<Props> = ({ isOpen, menu, top, left }) => {
     }, 1000);
   };
 
+  const handleClick = useCallback(
+    (onClick: () => void) => {
+      onClick();
+      onContextMenuClose();
+    },
+    [onContextMenuClose],
+  );
+
   return (
     <BasePortal container={portalRef}>
       {isOpen && (
@@ -164,7 +173,11 @@ const ContextMenu: FunctionComponent<Props> = ({ isOpen, menu, top, left }) => {
           {menu &&
             menu.map((item, i) => (
               <div className={cx('inner')} key={i}>
-                <div className={cx('item')} onMouseEnter={handleMouseEnter}>
+                <div
+                  className={cx('item')}
+                  onMouseEnter={handleMouseEnter}
+                  onClick={() => handleClick(item.onClick)}
+                >
                   {item.label}
                 </div>
                 {showsCasecading && (
