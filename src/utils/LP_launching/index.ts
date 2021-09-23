@@ -1,2 +1,9 @@
-export { default as fnGetAnimationData } from './fnGetAnimationData';
 export { default as fnGetFileExtension } from './fnGetFileExtension';
+export { default as fnMakeNewData } from './fnMakeNewData';
+export { default as fnChangeFileNameCheckingDuplicate } from './fnChangeFileName';
+export { default as fnFindSameNameFile } from './fnFindSameNameFile';
+export { default as fnInsertDataAsChild } from './fnInsertDataAsChild';
+export { default as fnCheckContraintToMove } from './fnCheckContraintToMove';
+export { default as fnFindTopParentRows } from './fnFindTopParentRows';
+export { default as fnMakeNewRowsForPaste } from './fnMakeNewRowsForPaste';
+export { default as fnFindChildrenKeys } from './fnFindChildrenKeys';

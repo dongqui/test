@@ -42,7 +42,6 @@ const fnExportModelToGltf = async (props: FnExportModelToGltf) => {
     scene,
     (res) => {
       // ts-ignore 없애면 blob 생성 시 타입 에러
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const blob = new Blob([res], { type: 'octet/stream' });
       const objURL = window.URL.createObjectURL(blob);

@@ -2,16 +2,19 @@ import Cookie from 'react-cookies';
 import parseUrl from 'url-parse';
 import axios, { Method } from 'axios';
 
+// AxiosRequestConfig와 일부 타입 통일(headers, params, data)
 interface Payload {
-  version: string;
+  method: Method;
+  base?: string;
   url: string;
   headers?: any;
-  method: Method;
+  params?: any;
+  data?: any;
   [key: string]: any;
 }
 
 const requestApi = async (payload: Payload) => {
-  const { version, url, headers = {}, ...rest } = payload;
+  const { base, url, headers = {}, ...rest } = payload;
 
   const isServer = typeof window === 'undefined';
 
@@ -34,9 +37,9 @@ const requestApi = async (payload: Payload) => {
 
   const notEqualHost = appHostname !== apiHostname;
   const needsProxy = !isServer && notEqualHost;
-  const endpoint = `/${version}${url}`;
+  const endpoint = url;
 
-  const baseURL = needsProxy ? '/api' : process.env.API_URL;
+  const baseURL = needsProxy ? '/api' : base || process.env.API_URL;
 
   /**
    * @todo 현재 timeout 미지정. length * 7-8s 예상 중
@@ -49,7 +52,7 @@ const requestApi = async (payload: Payload) => {
     // timeout: 15000,
   };
 
-  axios.defaults.withCredentials = true;
+  // axios.defaults.withCredentials = true;
   options.headers['Accept'] = 'application/json';
   options.headers['Content-Type'] = 'application/json; charset=utf-8';
 

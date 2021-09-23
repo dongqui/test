@@ -54,6 +54,7 @@ const ConfirmModalContext = createContext<any>({});
 const ConfirmModalProvider = ({ children }: any) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<any>({});
+  const [text, setText] = useState({ confirm: 'OK', cancel: 'Cancel' });
 
   const handleOpen = ({ title, message, actionCallback }: any) => {
     setDialogOpen(true);
@@ -75,14 +76,18 @@ const ConfirmModalProvider = ({ children }: any) => {
     dialogConfig.actionCallback(false);
   };
 
+  const handleText = ({ text: { confirm, cancel } }: any) => {
+    setText({ confirm, cancel });
+  };
+
   return (
-    <ConfirmModalContext.Provider value={{ handleOpen }}>
+    <ConfirmModalContext.Provider value={{ handleOpen, handleText }}>
       <ConfirmModal
         isOpen={dialogOpen}
         title={dialogConfig?.title}
         onConfirm={handleConfirm}
         onClose={handleDismiss}
-        text={{ confirm: 'OK', cancel: 'Cancel' }}
+        text={{ confirm: text.confirm, cancel: text.cancel }}
       />
       {children}
     </ConfirmModalContext.Provider>
@@ -90,11 +95,14 @@ const ConfirmModalProvider = ({ children }: any) => {
 };
 
 const useConfirmModal = () => {
-  const { handleOpen } = useContext(ConfirmModalContext);
+  const { handleOpen, handleText } = useContext(ConfirmModalContext);
 
   const getConfirm = ({ ...options }) =>
     new Promise((res) => {
       handleOpen({ actionCallback: res, ...options });
+      if (options?.text) {
+        handleText({ ...options });
+      }
     });
 
   return { getConfirm };

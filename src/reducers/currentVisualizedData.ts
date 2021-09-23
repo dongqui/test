@@ -22,6 +22,7 @@ export const currentVisualizedData = (
         boneNames: action.payload.data.boneNames,
         baseLayer: action.payload.data.baseLayer,
         layers: action.payload.data.layers,
+        url: action.payload.data.url,
       });
     }
     case 'currentVisualizedData/UPDATE_KEYFRAME_TO_BASE': {

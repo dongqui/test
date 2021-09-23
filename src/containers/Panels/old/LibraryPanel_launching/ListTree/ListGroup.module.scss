@@ -1,0 +1,22 @@
+@import 'styles/libraries/_functions';
+@import 'styles/libraries/_colors';
+
+.group-wrapper {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+
+  &.visualized {
+    background-color: shade($primaryColor, 66%);
+  }
+
+  &.selected {
+    background-color: $gray200;
+  }
+
+}
+
+.list-wrapper {
+  position: relative;
+}

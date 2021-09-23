@@ -1,7 +1,6 @@
-/* eslint-disable react/no-danger */
-import Document, { Html, Head, Main, NextScript, DocumentContext } from 'next/document';
+import Document, { Html, Head, Main, NextScript } from 'next/document';
 
-export default class MyDocument extends Document {
+class MyDocument extends Document {
   render() {
     return (
       <Html>
@@ -32,11 +31,6 @@ export default class MyDocument extends Document {
           <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
           <link rel="manifest" href="/manifest.json" />
           <link rel="preconnect" href="https://fonts.gstatic.com" />
-          {/* <link
-            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap"
-            rel="stylesheet"
-          /> */}
-          <link href="https://fonts.googleapis.com/earlyaccess/notosanskr.css" rel="stylesheet" />
           <script src="https://apis.google.com/js/platform.js" async defer />
           <meta name="theme-color" content="#6963f7" />
           <meta name="facebook-domain-verification" content="ek6odzyq50wlz0fwjwxxfgre47tjvh" />
@@ -45,8 +39,12 @@ export default class MyDocument extends Document {
           <Main />
           <NextScript />
           <div id="portal" />
+          <div id="portal_modal" />
+          <div id="portal_contextmenu" />
         </body>
       </Html>
     );
   }
 }
+
+export default MyDocument;

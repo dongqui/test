@@ -1,4 +1,4 @@
-export default {
+const breakpoints = {
   xs: 300,
   sm: 500,
   md: 700,
@@ -6,3 +6,5 @@ export default {
   // lg: 1280,
   // xl: 1920,
 };
+
+export default breakpoints;
