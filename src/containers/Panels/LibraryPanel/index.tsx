@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import 'babylonjs-loaders';
 import * as BABYLON from 'babylonjs';
-import { FunctionComponent, useEffect, useState, useCallback, useRef } from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { connect, useDispatch } from 'react-redux';
 import { RootState } from 'reducers';
@@ -12,7 +12,6 @@ import produce from 'immer';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import Box from 'components/Layout/Box';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -38,7 +37,6 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { onModalOpen, onModalClose } = useBaseModal();
-  const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   const handleCreateNode = useCallback(() => {}, []);
 
@@ -133,7 +131,16 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
             break;
           }
 
-          // 3) glb(GLB) or fbx(FBX) 외 로드
+          // 3) mp4(MP4), mov(MOV), avi(AVI) 로드
+          case 'mp4':
+          case 'mov':
+          case 'avi': {
+            console.log('동영상');
+            // VM으로 전환
+            break;
+          }
+
+          // 4) glb(GLB) or fbx(FBX) 외 로드
           default: {
             onModalOpen({
               title: 'Warning',
@@ -166,10 +173,10 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
       if (!isContains) {
-        onContextMenuOpen({
-          innerRef: wrapperRef,
-          menu: [],
-        });
+        // onContextMenuOpen({
+        //   innerRef: wrapperRef,
+        //   menu: [],
+        // });
       }
     };
 
@@ -182,67 +189,12 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [onContextMenuOpen]);
-
-  const headerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-
-      const isContains = headerRef.current?.contains(e.target as Node);
-      if (isContains) {
-        onContextMenuOpen({
-          innerRef: headerRef,
-          menu: [
-            {
-              label: '텍스트1',
-              onClick: () => {},
-              children: [
-                {
-                  label: '하위1',
-                  onClick: () => {},
-                },
-                {
-                  label: '하위2',
-                  onClick: () => {},
-                },
-                {
-                  label: '하위3',
-                  onClick: () => {},
-                },
-              ],
-            },
-            {
-              label: '텍스트2',
-              onClick: () => {},
-              children: [],
-            },
-            {
-              label: '텍스트2',
-              onClick: () => {},
-              children: [],
-            },
-          ],
-        });
-      }
-    };
-
-    const currentRef = headerRef.current;
-
-    if (currentRef) {
-      currentRef.addEventListener('contextmenu', handleContextMenu);
-
-      return () => {
-        currentRef.removeEventListener('contextmenu', handleContextMenu);
-      };
-    }
-  }, [onContextMenuOpen]);
+  }, []);
 
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
       <div className={cx('inner')} ref={wrapperRef}>
-        <Box id="LP-Header" innerRef={headerRef} noResize>
+        <Box id="LP-Header" noResize>
           <LPHeader />
         </Box>
         <Box id="LP-Controlbar" noResize>
@@ -262,4 +214,4 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-export default connect(mapStateToProps)(LibraryPanel);
+export default connect(mapStateToProps)(memo(LibraryPanel));
