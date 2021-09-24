@@ -1,8 +1,8 @@
 import * as BABYLON from '@babylonjs/core';
 
-const defaultWidth = 30;
-const defaultHeight = 30;
-const defaultSubdivision = 30;
+const defaultWidth = 100;
+const defaultHeight = 100;
+const defaultSubdivision = 100;
 
 /**
  * ground를 생성합니다.
@@ -34,8 +34,8 @@ const createGround = (
     // texture 반복과 관련한 설정입니다.
     diffuseTexture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
     diffuseTexture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-    diffuseTexture.uScale = 5;
-    diffuseTexture.vScale = 5;
+    diffuseTexture.uScale = 50;
+    diffuseTexture.vScale = 50;
     groundMaterial.diffuseTexture = diffuseTexture;
   }
 
