@@ -137,13 +137,14 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
         ref={wrapperRef}
         style={{ top: position.top, left: position.left }}
       >
-        {menu.map((item, i) => (
-          <div className={cx('inner')} key={i}>
-            <div className={cx('item')} onClick={() => handleClick(item.onClick)}>
-              {item.label}
+        {menu &&
+          menu.map((item, i) => (
+            <div className={cx('inner')} key={i}>
+              <div className={cx('item')} onClick={() => handleClick(item.onClick)}>
+                {item.label}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </BasePortal>
   );
