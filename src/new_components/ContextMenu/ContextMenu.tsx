@@ -2,6 +2,7 @@ import _ from 'lodash';
 import {
   FunctionComponent,
   memo,
+  ReactNode,
   useEffect,
   useState,
   useCallback,
@@ -9,7 +10,6 @@ import {
   useContext,
   useLayoutEffect,
   createContext,
-  MutableRefObject,
 } from 'react';
 import { BasePortal } from 'components/Modal';
 import classnames from 'classnames/bind';
@@ -17,26 +17,17 @@ import styles from './ContextMenu.module.scss';
 
 const cx = classnames.bind(styles);
 
-interface Props {
-  top: number;
-  left: number;
-  menu: {
-    label: string;
-    children: any[];
-    onClick: () => void;
-  }[];
-}
+type Props = ContextMenu.BaseProps;
 
 const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
-  const portal = document.getElementById('portal_contextmenu');
-  const portalRef = useRef(portal);
+  const portalElement = document.getElementById('__portal-contextmenu');
+  const portalRef = useRef(portalElement);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const { onContextMenuClose } = useContextMenu();
 
   const [position, setPosition] = useState({ top, left });
-
   const [isMounted, setIsMounted] = useState(false);
 
   useLayoutEffect(() => {
@@ -51,31 +42,30 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
       const topDiff = Math.abs(nextProps.top - beforeProps.top);
       const leftDiff = Math.abs(nextProps.left - beforeProps.left);
 
-      let resultPositionTop = top;
-      let resultPositionLeft = left;
+      let result = { top, left };
 
       if (!isMounted) {
         if (_.isEqual(topDiff, 0)) {
           if (beforeProps.top + height >= window.innerHeight) {
-            resultPositionTop = position.top - height;
+            result.top = position.top - height;
           }
 
           setIsMounted(true);
         } else {
           if (beforeProps.top + height >= window.innerHeight) {
-            resultPositionTop = position.top - height;
+            result.top = position.top - height;
           }
         }
 
         if (_.isEqual(leftDiff, 0)) {
           if (beforeProps.left + width >= window.innerWidth) {
-            resultPositionLeft = position.left - width;
+            result.left = position.left - width;
           }
 
           setIsMounted(true);
         } else {
           if (beforeProps.left + width >= window.innerWidth) {
-            resultPositionLeft = position.left - width;
+            result.left = position.left - width;
           }
         }
       }
@@ -83,20 +73,20 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
       if (isMounted) {
         if (nextProps.top !== beforeProps.top) {
           if (nextProps.top + height >= window.innerHeight) {
-            resultPositionTop = nextProps.top - height;
+            result.top = nextProps.top - height;
           }
         }
 
         if (nextProps.left !== beforeProps.left) {
           if (nextProps.left + width >= window.innerWidth) {
-            resultPositionLeft = nextProps.left - width;
+            result.left = nextProps.left - width;
           }
         }
       }
 
       setPosition({
-        top: resultPositionTop,
-        left: resultPositionLeft,
+        top: result.top,
+        left: result.left,
       });
     }
   }, [position.left, position.top, , isMounted, left, top]);
@@ -150,48 +140,59 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
   );
 };
 
-const ContextMenuContext = createContext<any>({});
+const ContextMenuContext = createContext<ContextMenu.Handler>({
+  handleOpen: () => {},
+  handleClose: () => {},
+});
 
-const ContextMenuProvider = memo(({ children }: any) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogConfig, setDialogConfig] = useState<any>({});
+// const ContextMenuContext = createContext<any>({});
 
-  const handleOpen = ({ title, confirmText, onConfirm, menu, actionCallback, top, left }: any) => {
-    setDialogOpen(true);
-    setDialogConfig({ title, confirmText, onConfirm, menu, actionCallback, top, left });
+/**
+ * Provider of 'ContextMenu'
+ *
+ * ```ts
+ * <ContextMenuProvider>
+ *   <Example />
+ * </ContextMenuProvider>
+ * ```
+ *
+ * @param {ReactNode} children
+ */
+const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [props, setProps] = useState<Props>({ top: 0, left: 0, menu: [] });
+
+  const handleOpen = ({ top, left, menu }: Props) => {
+    setProps({ top, left, menu });
+    setIsOpen(true);
   };
 
   const handleClose = () => {
-    setDialogOpen(false);
+    setIsOpen(false);
   };
 
   return (
     <ContextMenuContext.Provider value={{ handleOpen, handleClose }}>
-      {dialogOpen && <ContextMenu {...dialogConfig} />}
       {children}
+      {isOpen && <ContextMenu {...props} />}
     </ContextMenuContext.Provider>
   );
-});
+};
 
+// Custom Hooks
 const useContextMenu = () => {
   const { handleOpen, handleClose } = useContext(ContextMenuContext);
 
-  // 특정 작업 전 ContextMenu을 Open하여 완료하기 까지 대기
-  const onContextMenuOpen = ({ ...options }) => {
-    new Promise((res) => {
-      handleOpen({ actionCallback: res, ...options });
-    });
+  const onContextMenuOpen = ({ ...props }: Props) => {
+    handleOpen({ ...props });
   };
 
-  // 특정 작업 후 ContextMenu을 Close하여 마무리
   const onContextMenuClose = () => {
-    new Promise(() => {
-      handleClose();
-    });
+    handleClose();
   };
 
   return { onContextMenuOpen, onContextMenuClose };
 };
 
 export { ContextMenuProvider, useContextMenu };
-export default ContextMenu;
+export default memo(ContextMenu);

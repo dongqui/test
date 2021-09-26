@@ -34,18 +34,13 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode }) => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
 
-      console.log(nodeRefs);
-
       const isContains = wrapperRef.current?.contains(e.target as Node);
       const isOutsideNode = !nodeRefs
         .map((nodeRef, i) => nodeRef.current?.contains(e.target as Node))
         .some((isNodeContains) => isNodeContains);
 
-      console.log(isOutsideNode);
-
       if (isContains && isOutsideNode) {
         onContextMenuOpen({
-          innerRef: wrapperRef,
           top: e.clientY,
           left: e.clientX,
           menu: [
