@@ -26,6 +26,7 @@ const useInitializeScene = (params: Params) => {
   useEffect(() => {
     // scene이 준비됐을 때 호출할 콜백
     const handleSceneReady = (scene: BABYLON.Scene) => {
+      scene.useRightHandedSystem = true;
       scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.FromHexString('#202020'));
 
       // scene에 기본요소를 생성합니다.
