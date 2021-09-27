@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import * as shootProjectActions from 'actions/shootProjectAction';
-import { ShootAsset } from 'types/common';
+import { AnimationIngredient, ShootAsset } from 'types/common';
 import { createEmptyRetargetMap } from 'utils/RP';
 
 const SAMPLE_NEW_FILE_URL =
@@ -50,9 +50,17 @@ const useLoadAssets = () => {
 
           const assetId = uuidv4();
 
-          // id 교체 작업 (assetId + bone 이름/Id + 요소 종류)
-          // joint 부착 작업
-          // animationIngredient 전처리 작업
+          meshes.forEach((mesh) => {
+            // joint 클릭을 위해 mesh의 클릭을 막습니다.
+            mesh.isPickable = false;
+          });
+
+          skeletons[0].bones.forEach((bone) => {
+            // bone id를 자체적인 규칙에 따라 유일한 식별자로 만듭니다.
+            bone.id = `${assetId}/${bone.name}/bone`;
+          });
+
+          // animationIngredient 전처리 작업 필요
           // animationGroup 없는 경우에 대한 처리도 논의 필요
 
           const newAsset: ShootAsset = {
@@ -62,15 +70,18 @@ const useLoadAssets = () => {
             skeleton: skeletons[0],
             bones: skeletons[0].bones,
             transformNodes,
+            // joint와 controller들은 생성 시 scene에 render되기 때문에, visualize 시에 생성합니다.
             joints: [],
             controllers: [],
-            animationIngredients: [],
+            animationIngredients: (animationGroups as unknown) as AnimationIngredient[], // 변경 예정
             currentAnimationIngredientId: '',
             retargetMap: createEmptyRetargetMap(),
             boneVisibleSceneIds: sceneList.map((scene) => scene.id),
             meshVisibleSceneIds: sceneList.map((scene) => scene.id),
             hasControllersSceneIds: sceneList.map((scene) => scene.id),
           };
+
+          console.log('newAsset: ', newAsset);
         };
 
         if (fileToLoad) {
