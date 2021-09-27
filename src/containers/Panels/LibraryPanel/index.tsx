@@ -1,6 +1,4 @@
 import _ from 'lodash';
-import 'babylonjs-loaders';
-import * as BABYLON from 'babylonjs';
 import { FunctionComponent, useEffect, useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { connect, useDispatch } from 'react-redux';
@@ -10,6 +8,7 @@ import { convertFBXtoGLB } from 'api';
 import axios from 'axios';
 import produce from 'immer';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as shootProjectActions from 'actions/shootProjectAction';
 import Box from 'components/Layout/Box';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
@@ -84,6 +83,9 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
                 nodes: nextNodes,
               }),
             );
+
+            // LP drop 시에 파일 로드하기 위해 아래의 코드를 추가했습니다(차)
+            dispatch(shootProjectActions.changeFileToLoad({ file }));
 
             break;
           }

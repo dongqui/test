@@ -1,21 +1,22 @@
 import { FunctionComponent, useRef } from 'react';
-import useLoadAssets from './useLoadAssets';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { useInitializeScene } from 'hooks/RP';
+import { useInitializeScene, useLoadAssets, useVisualizeModel } from 'hooks/RP';
 
 const cx = classNames.bind(styles);
 
 interface Props {}
 
 const RenderingPanel: FunctionComponent<Props> = () => {
-  const renderingCanvas = useRef<HTMLCanvasElement>(null);
+  const renderingCanvas1 = useRef<HTMLCanvasElement>(null);
 
-  useInitializeScene({ renderingCanvas });
+  useInitializeScene({ renderingCanvas: renderingCanvas1 });
+  useLoadAssets();
+  // useVisualizeModel();
 
   return (
     <div className={cx('wrapper')}>
-      <canvas className={cx('rendering-canvas')} ref={renderingCanvas} />
+      <canvas className={cx('rendering-canvas')} ref={renderingCanvas1} id="renderingCanvas1" />
     </div>
   );
 };

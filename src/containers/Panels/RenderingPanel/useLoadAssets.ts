@@ -1,4 +1,3 @@
-import 'babylonjs-loaders';
 import { RefObject, useEffect, useState } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';

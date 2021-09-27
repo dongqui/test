@@ -5,9 +5,9 @@ export interface ShootProject {
   sceneList: ShootScene[];
   assetList: ShootAsset[];
   visualizedAssetIds: string[];
-  newFileUrl: string;
-  targetToAddAssetId: string;
-  targetToRemoveAssetId: string;
+  fileToLoad: string | File | null;
+  assetIdToAdd: string | null;
+  assetIdToRemove: string | null;
   fps: number;
 }
 
@@ -22,11 +22,11 @@ export interface ShootScene {
 
 export interface ShootAsset {
   id: string;
-  meshes: BABYLON.Mesh[];
+  meshes: BABYLON.AbstractMesh[];
   geometries: BABYLON.Geometry[];
   skeleton: BABYLON.Skeleton;
   bones: BABYLON.Bone[];
-  transformNode: BABYLON.TransformNode[];
+  transformNodes: BABYLON.TransformNode[];
   joints: BABYLON.Mesh[];
   controllers: BABYLON.Mesh[];
   animationIngredients: AnimationIngredient[];

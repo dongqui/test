@@ -1,5 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 import { RefObject, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import * as shootProjectActions from 'actions/shootProjectAction';
 import {
   createCamera,
   createDirectionalLight,
@@ -18,6 +20,8 @@ interface Params {
  */
 const useInitializeScene = (params: Params) => {
   const { renderingCanvas } = params;
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     // scene이 준비됐을 때 호출할 콜백
@@ -41,7 +45,16 @@ const useInitializeScene = (params: Params) => {
       // scene의 생성과 소멸에 대한 observable을 생성하고 콜백을 추가합니다.
       innerScene.onReadyObservable.addOnce((scene) => {
         handleSceneReady(scene);
-        // global scene을 set합니다
+        // scene을 project reducer에 등록합니다.
+        const newScene = {
+          id: innerScene.uid,
+          name: renderingCanvas.current!.id.replace('renderingCanvas', 'scene'),
+          scene: innerScene,
+          canvasId: renderingCanvas.current!.id,
+          hasShadow: true,
+          hasGroundTexture: true,
+        };
+        dispatch(shootProjectActions.addScene({ scene: newScene }));
       });
       innerScene.onDisposeObservable.addOnce((scene) => {
         // scene이 사라지면 창을 새로고침합니다.
@@ -58,7 +71,7 @@ const useInitializeScene = (params: Params) => {
         engine.dispose();
       };
     }
-  }, [renderingCanvas]);
+  }, [dispatch, renderingCanvas]);
 };
 
 export default useInitializeScene;
