@@ -27,7 +27,10 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
 
   const { onContextMenuClose } = useContextMenu();
 
+  // Mounted Position(Saved before position)
   const [position, setPosition] = useState({ top, left });
+
+  // Handling of already open state
   const [isMounted, setIsMounted] = useState(false);
 
   useLayoutEffect(() => {
@@ -36,48 +39,48 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
     if (currentRef) {
       const { width, height } = currentRef.getBoundingClientRect();
 
+      const beforeState = { top: position.top, left: position.left };
       const nextProps = { top, left };
-      const beforeProps = { top: position.top, left: position.left };
 
-      const topDiff = Math.abs(nextProps.top - beforeProps.top);
-      const leftDiff = Math.abs(nextProps.left - beforeProps.left);
+      const topDiff = Math.abs(nextProps.top - beforeState.top);
+      const leftDiff = Math.abs(nextProps.left - beforeState.left);
 
       let result = { top, left };
 
       if (!isMounted) {
         if (_.isEqual(topDiff, 0)) {
-          if (beforeProps.top + height >= window.innerHeight) {
+          if (beforeState.top + height >= window.innerHeight) {
             result.top = position.top - height;
           }
 
           setIsMounted(true);
         } else {
-          if (beforeProps.top + height >= window.innerHeight) {
+          if (beforeState.top + height >= window.innerHeight) {
             result.top = position.top - height;
           }
         }
 
         if (_.isEqual(leftDiff, 0)) {
-          if (beforeProps.left + width >= window.innerWidth) {
+          if (beforeState.left + width >= window.innerWidth) {
             result.left = position.left - width;
           }
 
           setIsMounted(true);
         } else {
-          if (beforeProps.left + width >= window.innerWidth) {
+          if (beforeState.left + width >= window.innerWidth) {
             result.left = position.left - width;
           }
         }
       }
 
       if (isMounted) {
-        if (nextProps.top !== beforeProps.top) {
+        if (nextProps.top !== beforeState.top) {
           if (nextProps.top + height >= window.innerHeight) {
             result.top = nextProps.top - height;
           }
         }
 
-        if (nextProps.left !== beforeProps.left) {
+        if (nextProps.left !== beforeState.left) {
           if (nextProps.left + width >= window.innerWidth) {
             result.left = nextProps.left - width;
           }
@@ -112,6 +115,9 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
     };
   }, [onContextMenuClose]);
 
+  /**
+   * Close contextmenu after menu click
+   */
   const handleClick = useCallback(
     (onClick: () => void) => {
       onClick();
