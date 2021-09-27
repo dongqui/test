@@ -9,7 +9,7 @@ declare namespace LP {
 
   interface Node {
     id: string;
-    fileURL: string | File;
+    fileURL?: string | File;
     name: string;
     type: NodeType;
   }

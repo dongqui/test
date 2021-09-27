@@ -10,7 +10,7 @@ const cx = classNames.bind(styles);
 interface Props {
   type: 'Folder' | 'Model' | 'Motion';
   name: ReactNode;
-  fileURL: string | File;
+  fileURL?: string | File;
 }
 
 const ListNode = forwardRef<HTMLDivElement, Props>(({ type, name, fileURL }, ref) => {

@@ -167,33 +167,33 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
   const [view, setView] = useState<LP.View>('List');
 
   // LP에서 기본 ContextMenu(우클릭) event disable
-  useEffect(() => {
-    const handleContextMenu = (e: any) => {
-      e.preventDefault();
+  // useEffect(() => {
+  //   const handleContextMenu = (e: any) => {
+  //     e.preventDefault();
 
-      const isContains = wrapperRef.current?.contains(e.target as Node);
-      if (!isContains) {
-        // onContextMenuOpen({
-        //   innerRef: wrapperRef,
-        //   menu: [],
-        // });
-      }
-    };
+  //     const isContains = wrapperRef.current?.contains(e.target as Node);
+  //     if (!isContains) {
+  //       // onContextMenuOpen({
+  //       //   innerRef: wrapperRef,
+  //       //   menu: [],
+  //       // });
+  //     }
+  //   };
 
-    const currentRef = wrapperRef.current;
+  //   const currentRef = wrapperRef.current;
 
-    if (currentRef) {
-      currentRef.addEventListener('contextmenu', handleContextMenu);
+  //   if (currentRef) {
+  //     currentRef.addEventListener('contextmenu', handleContextMenu);
 
-      return () => {
-        currentRef.removeEventListener('contextmenu', handleContextMenu);
-      };
-    }
-  }, []);
+  //     return () => {
+  //       currentRef.removeEventListener('contextmenu', handleContextMenu);
+  //     };
+  //   }
+  // }, []);
 
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
-      <div className={cx('inner')} ref={wrapperRef}>
+      <div className={cx('inner')}>
         <Box id="LP-Header" noResize>
           <LPHeader />
         </Box>
