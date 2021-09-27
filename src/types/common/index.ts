@@ -44,9 +44,14 @@ export interface AnimationIngredient {
   layers: ShootLayer[];
 }
 
+type Property = 'position' | 'rotationQuaternion' | 'scaling';
+type Axis = 'x' | 'y' | 'z' | 'w';
+
 export interface ShootTrack {
   targetId: string;
   layerId: string;
+  property: Property;
+  axis: Axis;
   transformKeys: BABYLON.IAnimationKey[];
   interpolationType: 'bezier' | 'linear' | 'constant';
   bezierParams?: BezierParams;
