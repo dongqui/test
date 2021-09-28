@@ -26,7 +26,7 @@ interface BaseProps {}
 
 type Props = StateProps & BaseProps;
 
-const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
+const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath }) => {
   const getFileExtension = useCallback((file: string): string => {
     const type = (/[^./\\]*$/.exec(file) || [''])[0];
 
@@ -34,6 +34,9 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
   }, []);
 
   const dispatch = useDispatch();
+
+  console.log('lpNode');
+  console.log(lpNode);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { onModalOpen, onModalClose } = useBaseModal();
@@ -68,6 +71,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
               const newNode = {
                 id: uuidv4(),
                 fileURL: file,
+                filePath: lpCurrentPath,
                 name: fileName,
                 type: 'Model',
               } as LP.Node;
@@ -101,6 +105,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
                   const newNode = {
                     id: uuidv4(),
                     fileURL: response,
+                    filePath: lpCurrentPath,
                     name: fileName,
                     type: 'Model',
                   } as LP.Node;
@@ -159,7 +164,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
       // handleDrop END
     },
-    [dispatch, getFileExtension, lpNode, onModalClose, onModalOpen],
+    [dispatch, getFileExtension, lpCurrentPath, lpNode, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
@@ -201,7 +206,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
           <LPControlbar />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody view={view} lpNode={lpNode} />
+          <LPBody view={view} lpNode={lpNode} lpCurrentPath={lpCurrentPath} />
         </Box>
       </div>
     </div>
@@ -211,6 +216,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 const mapStateToProps = (state: RootState) => {
   return {
     lpNode: state.lpNode.node,
+    lpCurrentPath: state.lpNode.currentPath,
   };
 };
 

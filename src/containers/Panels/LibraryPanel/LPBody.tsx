@@ -14,9 +14,10 @@ const cx = classNames.bind(styles);
 interface Props {
   view: LP.View;
   lpNode: LP.Node[];
+  lpCurrentPath: string;
 }
 
-const LPBody: FunctionComponent<Props> = ({ view, lpNode }) => {
+const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
   const dispatch = useDispatch();
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
@@ -57,6 +58,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode }) => {
                 const nextNodes = produce(nextLPNodes, (draft) => {
                   const newNode = {
                     id: uuidv4(),
+                    filePath: lpCurrentPath,
                     fileURL: '....',
                     name: 'Folder',
                     type: 'Folder',
@@ -99,7 +101,9 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode }) => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [dispatch, lpNode, nodeRefs, onContextMenuOpen]);
+  }, [dispatch, lpCurrentPath, lpNode, nodeRefs, onContextMenuOpen]);
+
+  console.log(lpNode);
 
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>
