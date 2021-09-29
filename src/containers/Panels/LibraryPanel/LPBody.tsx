@@ -1,5 +1,14 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, useEffect, useState, useRef, createRef, RefObject } from 'react';
+import {
+  FunctionComponent,
+  Fragment,
+  memo,
+  useEffect,
+  useState,
+  useRef,
+  createRef,
+  RefObject,
+} from 'react';
 import { connect, useDispatch } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
@@ -108,13 +117,14 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>
       {lpNode.map((node, i) => (
-        <ListNode
-          ref={nodeRefs[i]}
-          key={node.id}
-          type={node.type}
-          name={node.name}
-          fileURL={node.fileURL}
-        />
+        <div className={cx('node-row')} ref={nodeRefs[i]} key={node.id}>
+          <ListNode
+            type={node.type}
+            name={node.name}
+            fileURL={node.fileURL}
+            filePath={node.filePath}
+          />
+        </div>
       ))}
     </div>
   );
