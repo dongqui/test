@@ -35,9 +35,6 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath }) => {
 
   const dispatch = useDispatch();
 
-  console.log('lpNode');
-  console.log(lpNode);
-
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { onModalOpen, onModalClose } = useBaseModal();
 
@@ -140,7 +137,6 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath }) => {
           case 'mp4':
           case 'mov':
           case 'avi': {
-            console.log('동영상');
             // VM으로 전환
             break;
           }

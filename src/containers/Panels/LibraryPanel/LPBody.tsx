@@ -68,7 +68,6 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
                   const newNode = {
                     id: uuidv4(),
                     filePath: lpCurrentPath,
-                    fileURL: '....',
                     name: 'Folder',
                     type: 'Folder',
                   } as LP.Node;
@@ -112,13 +111,12 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
     }
   }, [dispatch, lpCurrentPath, lpNode, nodeRefs, onContextMenuOpen]);
 
-  console.log(lpNode);
-
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>
       {lpNode.map((node, i) => (
         <div className={cx('node-row')} ref={nodeRefs[i]} key={node.id}>
           <ListNode
+            id={node.id}
             type={node.type}
             name={node.name}
             fileURL={node.fileURL}

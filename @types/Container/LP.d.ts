@@ -13,6 +13,7 @@ declare namespace LP {
     filePath: string;
     name: string;
     type: NodeType;
+    hideNode?: boolean;
   }
 }
 
