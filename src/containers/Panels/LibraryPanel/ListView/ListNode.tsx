@@ -56,10 +56,8 @@ const ListNode: FunctionComponent<Props> = ({
   }, []);
 
   const handleSelect = useCallback(() => {
-    dispatch(lpNodeActions.changeCurrentPath(filePath + `/${name}`));
+    dispatch(lpNodeActions.changeCurrentPath(filePath + `\\${name}`));
   }, [dispatch, filePath, name]);
-
-  console.log(lpNode);
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -95,14 +93,14 @@ const ListNode: FunctionComponent<Props> = ({
             {
               label: 'New directory',
               onClick: () => {
-                console.log('New Directory > ' + lpCurrentPath + `/${name}`);
+                console.log('New Directory > ' + lpCurrentPath + `\\${name}`);
 
                 let nextLPNodes = _.clone(lpNode);
 
                 const nextNodes = produce(nextLPNodes, (draft) => {
                   const newNode = {
                     id: uuidv4(),
-                    filePath: lpCurrentPath + `/${name}`,
+                    filePath: lpCurrentPath + `\\${name}`,
                     name: 'Folder /',
                     type: 'Folder',
                     hideNode: true,
@@ -137,8 +135,16 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, [dispatch, lpCurrentPath, lpNode, name, onContextMenuOpen]);
 
+  console.log('filePath >> ' + filePath);
+
+  const depth = (filePath.match(/\\/g) || []).length;
+  const column = Array.from({ length: depth - 1 }).map((x, i) => i);
+
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>
+      {column.map((_col, i) => (
+        <div className={cx('column')} key={i} />
+      ))}
       <IconWrapper icon={SvgPath.FilledArrow} className={arrowClasses} onClick={handleArrowClick} />
       <div className={cx('info')} onClick={handleSelect} onContextMenu={handleSelect}>
         <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />

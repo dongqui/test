@@ -11,28 +11,28 @@ const defaultState: State = {
   node: [
     {
       id: uuidv4(),
-      filePath: '/root',
+      filePath: '\\root',
       fileURL: '/models/Zombie.glb',
       name: 'Zombie.glb',
       type: 'Model',
     },
     {
       id: uuidv4(),
-      filePath: '/root',
+      filePath: '\\root',
       fileURL: '/models/Knight.glb',
       name: 'Knight.glb',
       type: 'Model',
     },
     {
       id: uuidv4(),
-      filePath: '/root',
+      filePath: '\\root',
       fileURL: '/models/Vanguard.glb',
       name: 'Vanguard.glb',
       type: 'Model',
     },
   ],
   visualizedFileURL: '',
-  currentPath: '/root',
+  currentPath: '\\root',
 };
 
 export const lpNode = (state = defaultState, action: LPNodeAction) => {

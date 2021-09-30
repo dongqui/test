@@ -67,7 +67,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
                 const nextNodes = produce(nextLPNodes, (draft) => {
                   const newNode = {
                     id: uuidv4(),
-                    filePath: lpCurrentPath,
+                    filePath: '\\root',
                     name: 'Folder',
                     type: 'Folder',
                   } as LP.Node;
