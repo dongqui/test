@@ -35,6 +35,15 @@ export const shootProject = (state = defaultState, action: ShootProjectAction) =
         return state;
       }
     }
+    case 'shootProject/ADD_ASSET': {
+      if (!state.assetList.find((asset) => asset.id === action.payload.asset.id)) {
+        return Object.assign({}, state, {
+          assetList: [...state.assetList, action.payload.asset],
+        });
+      } else {
+        return state;
+      }
+    }
     default: {
       return state;
     }

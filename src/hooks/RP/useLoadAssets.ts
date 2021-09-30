@@ -8,11 +8,12 @@ import * as shootProjectActions from 'actions/shootProjectAction';
 import { AnimationIngredient, ShootAsset } from 'types/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 
-const SAMPLE_NEW_FILE_URL =
-  'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1612095825/DyingToGlb_fqke1a.glb';
-
 const useLoadAssets = () => {
-  const { sceneList, fileToLoad } = useSelector((state) => state.shootProject);
+  const { sceneList, fileToLoad, assetList } = useSelector((state) => state.shootProject);
+
+  useEffect(() => {
+    console.log('assetList: ', assetList);
+  }, [assetList]);
 
   const dispatch = useDispatch();
 
@@ -89,7 +90,7 @@ const useLoadAssets = () => {
             hasControllersSceneIds: sceneList.map((scene) => scene.id),
           };
 
-          console.log('newAsset: ', newAsset);
+          dispatch(shootProjectActions.addAsset({ asset: newAsset }));
         };
 
         if (fileToLoad) {
@@ -97,7 +98,7 @@ const useLoadAssets = () => {
         }
       }
     }
-  }, [fileToLoad, sceneList]);
+  }, [dispatch, fileToLoad, sceneList]);
 };
 
 export default useLoadAssets;
