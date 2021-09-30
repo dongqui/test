@@ -30,7 +30,7 @@ export interface ShootAsset {
   joints: BABYLON.Mesh[];
   controllers: BABYLON.Mesh[];
   animationIngredients: AnimationIngredient[];
-  currentAnimationIngredientId: string;
+  currentAnimationIngredientId: string | null;
   retargetMap: ShootRetargetMap;
   boneVisibleSceneIds: string[];
   meshVisibleSceneIds: string[];
@@ -44,17 +44,20 @@ export interface AnimationIngredient {
   layers: ShootLayer[];
 }
 
-type Property = 'position' | 'rotationQuaternion' | 'scaling';
-type Axis = 'x' | 'y' | 'z' | 'w';
+export type ShootProperty = 'position' | 'rotationQuaternion' | 'scaling';
+export type ShootAxis = 'x' | 'y' | 'z' | 'w';
 
 export interface ShootTrack {
   targetId: string;
   layerId: string;
-  property: Property;
-  axis: Axis;
+  name: string;
+  property: ShootProperty;
+  axis: ShootAxis;
+  target: BABYLON.TransformNode | BABYLON.Mesh;
   transformKeys: BABYLON.IAnimationKey[];
-  interpolationType: 'bezier' | 'linear' | 'constant';
+  interpolationType: 'linear' | 'bezier' | 'constant';
   bezierParams?: BezierParams;
+  useFilter: boolean;
   filterBeta: number;
   filterMinCutoff: number;
   isIncluded: boolean;
