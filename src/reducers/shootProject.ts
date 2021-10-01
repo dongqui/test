@@ -19,31 +19,19 @@ const defaultState: State = {
 export const shootProject = (state = defaultState, action: ShootProjectAction) => {
   switch (action.type) {
     case 'shootProject/ADD_SCENE': {
-      if (!state.sceneList.find((scene) => scene.id === action.payload.scene.id)) {
-        return Object.assign({}, state, {
-          sceneList: [...state.sceneList, action.payload.scene],
-        });
-      } else {
-        return state;
-      }
+      return Object.assign({}, state, {
+        sceneList: [...state.sceneList, action.payload.scene],
+      });
     }
     case 'shootProject/CHANGE_FILE_TO_LOAD': {
-      if (state.fileToLoad !== action.payload.file) {
-        return Object.assign({}, state, {
-          fileToLoad: action.payload.file,
-        });
-      } else {
-        return state;
-      }
+      return Object.assign({}, state, {
+        fileToLoad: action.payload.file,
+      });
     }
     case 'shootProject/ADD_ASSET': {
-      if (!state.assetList.find((asset) => asset.id === action.payload.asset.id)) {
-        return Object.assign({}, state, {
-          assetList: [...state.assetList, action.payload.asset],
-        });
-      } else {
-        return state;
-      }
+      return Object.assign({}, state, {
+        assetList: [...state.assetList, action.payload.asset],
+      });
     }
     case 'shootProject/RENDER_ASSET': {
       return Object.assign({}, state, {
