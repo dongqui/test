@@ -10,7 +10,8 @@ const defaultState: State = {
   assetList: [],
   visualizedAssetIds: [],
   fileToLoad: null,
-  assetIdToAdd: null,
+  assetIdToRender: null,
+  assetIdToUnrender: null,
   assetIdToRemove: null,
   fps: 30,
 };
@@ -43,6 +44,21 @@ export const shootProject = (state = defaultState, action: ShootProjectAction) =
       } else {
         return state;
       }
+    }
+    case 'shootProject/RENDER_ASSET': {
+      return Object.assign({}, state, {
+        assetIdToRender: action.payload.assetId,
+      });
+    }
+    case 'shootProject/UNRENDER_ASSET': {
+      return Object.assign({}, state, {
+        assetIdToUnrender: action.payload.assetId,
+      });
+    }
+    case 'shootProject/REMOVE_ASSET': {
+      return Object.assign({}, state, {
+        assetIdToRemove: action.payload.assetId,
+      });
     }
     default: {
       return state;

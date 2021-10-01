@@ -6,7 +6,8 @@ export interface ShootProject {
   assetList: ShootAsset[];
   visualizedAssetIds: string[];
   fileToLoad: string | File | null;
-  assetIdToAdd: string | null;
+  assetIdToRender: string | null;
+  assetIdToUnrender: string | null;
   assetIdToRemove: string | null;
   fps: number;
 }
