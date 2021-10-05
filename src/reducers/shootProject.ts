@@ -36,16 +36,24 @@ export const shootProject = (state = defaultState, action: ShootProjectAction) =
     case 'shootProject/RENDER_ASSET': {
       return Object.assign({}, state, {
         assetIdToRender: action.payload.assetId,
+        assetIdToUnrender:
+          state.assetIdToUnrender === action.payload.assetId ? null : state.assetIdToUnrender,
+        visualizedAssetIds: [action.payload.assetId], // 다중모델 로드 가능한 버전에서는 push로 변경 필요
       });
     }
     case 'shootProject/UNRENDER_ASSET': {
       return Object.assign({}, state, {
+        assetIdToRender:
+          state.assetIdToRender === action.payload.assetId ? null : state.assetIdToRender,
         assetIdToUnrender: action.payload.assetId,
+        visualizedAssetIds: [], // 다중모델 로드 가능한 버전에서는 filter로 변경 필요
       });
     }
     case 'shootProject/REMOVE_ASSET': {
       return Object.assign({}, state, {
         assetIdToRemove: action.payload.assetId,
+        assetList: state.assetList.filter((asset) => asset.id !== action.payload.assetId),
+        visualizedAssetIds: state.visualizedAssetIds.filter((id) => id !== action.payload.assetId),
       });
     }
     default: {

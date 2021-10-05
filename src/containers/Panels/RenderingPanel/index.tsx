@@ -12,7 +12,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
   useInitializeScene({ renderingCanvas: renderingCanvas1 });
   useLoadAssets();
-  // useVisualizeModel();
+  useVisualizeModel();
 
   return (
     <div className={cx('wrapper')}>
