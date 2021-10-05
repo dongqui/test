@@ -18,6 +18,11 @@ interface VisualizeParams {
   fileURL: string;
 }
 
+interface ChangeCurrentPathParams {
+  currentPath: string;
+  id: string;
+}
+
 export const changeNode = (params: ChangeNodeParams) => ({
   type: CHANGE_NODE,
   payload: {
@@ -30,7 +35,9 @@ export const visualize = (params: string | File) => ({
   payload: params,
 });
 
-export const changeCurrentPath = (params: string) => ({
+export const changeCurrentPath = (params: ChangeCurrentPathParams) => ({
   type: CHANGE_CURRENT_PATH,
-  payload: params,
+  payload: {
+    ...params,
+  },
 });
