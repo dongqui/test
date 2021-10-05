@@ -5,6 +5,7 @@ import {
   memo,
   useEffect,
   useState,
+  useCallback,
   useRef,
   createRef,
   RefObject,
@@ -68,8 +69,10 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
                   const newNode = {
                     id: uuidv4(),
                     filePath: '\\root',
+                    parentId: '__root__',
                     name: 'Folder',
                     type: 'Folder',
+                    children: [],
                   } as LP.Node;
 
                   draft.push(newNode);
@@ -109,18 +112,34 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [dispatch, lpCurrentPath, lpNode, nodeRefs, onContextMenuOpen]);
+  }, [dispatch, lpNode, nodeRefs, onContextMenuOpen]);
+
+  const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
+
+  // console.log(rootPathNode);
+  console.log(lpNode);
+
+  const [selectedId, setSelectedId] = useState<string>();
+
+  const handleSelect = useCallback((id: string) => {
+    setSelectedId(id);
+  }, []);
 
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>
-      {lpNode.map((node, i) => (
+      {rootPathNode.map((node, i) => (
         <div className={cx('node-row')} ref={nodeRefs[i]} key={node.id}>
           <ListNode
             id={node.id}
+            parentId={node.parentId}
             type={node.type}
             name={node.name}
             fileURL={node.fileURL}
             filePath={node.filePath}
+            onSelect={handleSelect}
+            selectedId={selectedId}
+            isSelected={node.id === selectedId}
+            childrens={node.children}
           />
         </div>
       ))}

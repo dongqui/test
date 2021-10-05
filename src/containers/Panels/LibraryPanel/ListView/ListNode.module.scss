@@ -1,7 +1,19 @@
 .wrapper {
   display: flex;
   align-items: center;
-  padding: 7px 14px;
+  // padding: 7px 14px;
+  padding-left: 7px;
+  border-radius: 6px;
+
+  &.selected {
+    background-color: #5c6065;
+  }
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .icon-arrow {
@@ -54,8 +66,4 @@
   font-size: 11px;
   color: #fff;
   padding-left: 8px;
-}
-
-.column {
-  width: 16px;
 }
