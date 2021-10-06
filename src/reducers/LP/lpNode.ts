@@ -6,6 +6,7 @@ interface State {
   visualizedFileURL: string | File;
   currentPath: string;
   currentPathId: string;
+  clipboard: unknown;
 }
 
 const defaultState: State = {
@@ -41,6 +42,7 @@ const defaultState: State = {
   visualizedFileURL: '',
   currentPath: '\\root',
   currentPathId: '\\root',
+  clipboard: undefined,
 };
 
 export const lpNode = (state = defaultState, action: LPNodeAction) => {
@@ -59,6 +61,11 @@ export const lpNode = (state = defaultState, action: LPNodeAction) => {
       return Object.assign({}, state, {
         currentPath: action.payload.currentPath,
         currentPathId: action.payload.id,
+      });
+    }
+    case 'mode/CHANGE_CLIPBOARD': {
+      return Object.assign({}, state, {
+        clipboard: action.payload.data,
       });
     }
     default: {

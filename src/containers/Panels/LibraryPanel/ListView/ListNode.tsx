@@ -56,6 +56,7 @@ const ListNode: FunctionComponent<Props> = ({
   const dispatch = useDispatch();
 
   const lpNode = useSelector((state) => state.lpNode.node);
+  const lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -81,6 +82,8 @@ const ListNode: FunctionComponent<Props> = ({
     );
   }, [dispatch, filePath, id, name, onSelect]);
 
+  console.log(lpClipboard);
+
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -104,7 +107,13 @@ const ListNode: FunctionComponent<Props> = ({
             },
             {
               label: 'Copy',
-              onClick: () => {},
+              onClick: () => {
+                dispatch(
+                  lpNodeActions.changeClipboard({
+                    data: [id],
+                  }),
+                );
+              },
               children: [],
             },
             {
