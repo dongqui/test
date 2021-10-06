@@ -186,6 +186,8 @@ const useVisualizeModel = () => {
             // scene들에 애니메이션 적용을 위한 transformNode 추가
             transformNodes.forEach((transformNode) => {
               scene.addTransformNode(transformNode);
+              // quaternionRotation 애니메이션을 적용하기 위한 코드
+              transformNode.rotate(BABYLON.Axis.X, 0);
             });
           }
         });
