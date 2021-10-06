@@ -1,7 +1,7 @@
 import { FunctionComponent, useRef } from 'react';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { useInitializeScene, useLoadAssets, useVisualizeModel } from 'hooks/RP';
+import { useGizmoControl, useInitializeScene, useLoadAssets, useVisualizeModel } from 'hooks/RP';
 
 const cx = classNames.bind(styles);
 
@@ -13,6 +13,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   useInitializeScene({ renderingCanvas: renderingCanvas1 });
   useLoadAssets();
   useVisualizeModel();
+  useGizmoControl();
 
   return (
     <div className={cx('wrapper')}>

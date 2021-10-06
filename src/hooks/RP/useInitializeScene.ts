@@ -40,6 +40,8 @@ const useInitializeScene = (params: Params) => {
     };
 
     if (renderingCanvas.current) {
+      // matrix를 사용한 애니메이션 보간을 허용합니다.
+      BABYLON.Animation.AllowMatricesInterpolation = true;
       const engine = new BABYLON.Engine(renderingCanvas.current, true);
       const innerScene = new BABYLON.Scene(engine);
 
@@ -57,6 +59,7 @@ const useInitializeScene = (params: Params) => {
         };
         dispatch(shootProjectActions.addScene({ scene: newScene }));
       });
+
       innerScene.onDisposeObservable.addOnce((scene) => {
         // scene이 사라지면 창을 새로고침합니다.
         window.location.reload();

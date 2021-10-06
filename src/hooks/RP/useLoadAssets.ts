@@ -9,11 +9,7 @@ import { AnimationIngredient, ShootAsset } from 'types/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 
 const useLoadAssets = () => {
-  const { sceneList, fileToLoad, assetList } = useSelector((state) => state.shootProject);
-
-  useEffect(() => {
-    console.log('assetList: ', assetList);
-  }, [assetList]);
+  const { sceneList, fileToLoad } = useSelector((state) => state.shootProject);
 
   const dispatch = useDispatch();
 
