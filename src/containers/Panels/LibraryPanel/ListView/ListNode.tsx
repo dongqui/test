@@ -175,17 +175,17 @@ const ListNode: FunctionComponent<Props> = ({
     (id: string) => {
       const node = _.find(lpNode, { id });
 
-      const handleChildrenSelect = () => {
-        console.log('id ! > ' + id);
-        onSelect && onSelect(id);
+      // const handleChildrenSelect = () => {
+      //   console.log('id ! > ' + id);
+      //   onSelect && onSelect(id);
 
-        dispatch(
-          lpNodeActions.changeCurrentPath({
-            currentPath: filePath + `\\${name}`,
-            id: id,
-          }),
-        );
-      };
+      //   dispatch(
+      //     lpNodeActions.changeCurrentPath({
+      //       currentPath: filePath + `\\${name}`,
+      //       id: id,
+      //     }),
+      //   );
+      // };
 
       if (node) {
         return (
@@ -196,29 +196,29 @@ const ListNode: FunctionComponent<Props> = ({
             name={node.name}
             fileURL={node.fileURL}
             filePath={node.filePath}
-            onSelect={handleChildrenSelect}
+            onSelect={handleSelect}
             isSelected={node.id === selectedId}
             childrens={node.children}
           />
         );
       }
     },
-    [dispatch, filePath, lpNode, name, onSelect, selectedId],
+    [handleSelect, lpNode, selectedId],
   );
 
-  const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
+  // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
 
-  useEffect(() => {
-    setNodeRefs(Array.from({ length: childrens.length }).map(() => createRef()));
-  }, [childrens.length]);
+  // useEffect(() => {
+  //   setNodeRefs(Array.from({ length: childrens.length }).map(() => createRef()));
+  // }, [childrens.length]);
 
   return (
-    <div className={classes} ref={wrapperRef} onClick={handleSelect}>
+    <div className={classes}>
       <div className={cx('inner')}>
-        <div style={{ display: 'flex' }}>
-          {column.map((_col, i) => (
-            <div key={i} style={{ width: `${16 * (i - 1)}px` }} />
-          ))}
+        <div style={{ display: 'flex' }} ref={wrapperRef} onClick={handleSelect}>
+          {/* {column.map((col, i) => (
+            <div key={i} style={{ width: `${12 * col}px` }} />
+          ))} */}
           <IconWrapper
             icon={SvgPath.FilledArrow}
             className={arrowClasses}
