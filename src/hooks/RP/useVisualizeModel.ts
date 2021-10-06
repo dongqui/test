@@ -1,7 +1,9 @@
 import * as BABYLON from '@babylonjs/core';
 import { SkeletonViewer } from '@babylonjs/core';
 import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import * as selectedTargetsActions from 'actions/selectedTargetsAction';
 
 const DEFAULT_SKELETON_VIEWER_OPTION = {
   pauseAnimations: false,
@@ -28,21 +30,23 @@ const useVisualizeModel = () => {
     visualizedAssetIds,
   } = useSelector((state) => state.shootProject);
 
-  useEffect(() => {
-    console.log('sceneList: ', sceneList);
-    console.log('assetList: ', assetList);
-    console.log('assetIdToRender: ', assetIdToRender);
-    console.log('assetIdToUnrender: ', assetIdToUnrender);
-    console.log('assetIdToRemove: ', assetIdToRemove);
-    console.log('visualizedAssetIds: ', visualizedAssetIds);
-  }, [
-    assetIdToRemove,
-    assetIdToRender,
-    assetIdToUnrender,
-    assetList,
-    sceneList,
-    visualizedAssetIds,
-  ]);
+  const dispatch = useDispatch();
+
+  // useEffect(() => {
+  //   console.log('sceneList: ', sceneList);
+  //   console.log('assetList: ', assetList);
+  //   console.log('assetIdToRender: ', assetIdToRender);
+  //   console.log('assetIdToUnrender: ', assetIdToUnrender);
+  //   console.log('assetIdToRemove: ', assetIdToRemove);
+  //   console.log('visualizedAssetIds: ', visualizedAssetIds);
+  // }, [
+  //   assetIdToRemove,
+  //   assetIdToRender,
+  //   assetIdToUnrender,
+  //   assetList,
+  //   sceneList,
+  //   visualizedAssetIds,
+  // ]);
 
   // render 작업
   useEffect(() => {
@@ -97,7 +101,7 @@ const useVisualizeModel = () => {
                       scene,
                     );
                     joint.id = `${assetId}/${bone.name}/joint`;
-                    joints.push(joint);
+                    joints.push(joint); // [debug]state 내부 property를 직접 변경하는 코드
                     joint.renderingGroupId = 3;
                     joint.attachToBone(bone, meshes[0]);
 
@@ -105,10 +109,28 @@ const useVisualizeModel = () => {
                     joint.actionManager = new BABYLON.ActionManager(scene);
                     joint.actionManager.registerAction(
                       // joint 클릭으로 bone 선택하기 위한 액션
-                      new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
-                        // seletedTarget에 추가하는 코드
-                        console.log(`bone clicked: ${bone.name}`);
-                      }),
+                      new BABYLON.ExecuteCodeAction(
+                        BABYLON.ActionManager.OnPickDownTrigger,
+                        (event: BABYLON.ActionEvent) => {
+                          const targetTransformNode = bone.getTransformNode();
+                          if (targetTransformNode) {
+                            const sourceEvent: PointerEvent = event.sourceEvent;
+                            if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+                              dispatch(
+                                selectedTargetsActions.ctrlKeySingleSelect({
+                                  target: targetTransformNode,
+                                }),
+                              );
+                            } else {
+                              dispatch(
+                                selectedTargetsActions.defaultSingleSelect({
+                                  target: targetTransformNode,
+                                }),
+                              );
+                            }
+                          }
+                        },
+                      ),
                     );
                     // joint hover 시 커서 모양 변경
                     joint.actionManager.registerAction(
@@ -131,6 +153,7 @@ const useVisualizeModel = () => {
                 });
               } else {
                 // 이미 존재하는 joints scene들에 추가
+                // state에 push 해도 되는 걸까.. 불변성이 필요 없는 값이기는 한데..
                 joints.forEach((joint) => {
                   scene.addMesh(joint);
                 });
@@ -141,7 +164,7 @@ const useVisualizeModel = () => {
                 meshes[0],
                 scene,
                 true,
-                meshes[0].renderingGroupId + 1,
+                meshes[0].renderingGroupId,
                 DEFAULT_SKELETON_VIEWER_OPTION,
               );
               skeletonViewer.mesh.id = `${assetId}/skeletonViewer`;
@@ -168,7 +191,7 @@ const useVisualizeModel = () => {
         });
       }
     }
-  }, [assetIdToRender, assetList, sceneList]);
+  }, [assetIdToRender, assetList, dispatch, sceneList]);
 
   // unrender 작업
   useEffect(() => {
