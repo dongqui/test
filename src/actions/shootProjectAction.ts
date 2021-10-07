@@ -8,12 +8,12 @@ export type ShootProjectAction =
   | ReturnType<typeof unrenderAsset>
   | ReturnType<typeof removeAsset>;
 
-export const ADD_SCENE = 'shootProject/ADD_SCENE' as const;
-export const CHANGE_FILE_TO_LOAD = 'shootProject/CHANGE_FILE_TO_LOAD' as const;
-export const ADD_ASSET = 'shootProject/ADD_ASSET' as const;
-export const RENDER_ASSET = 'shootProject/RENDER_ASSET' as const;
-export const UNRENDER_ASSET = 'shootProject/UNRENDER_ASSET' as const;
-export const REMOVE_ASSET = 'shootProject/REMOVE_ASSET' as const;
+const ADD_SCENE = 'shootProject/ADD_SCENE' as const;
+const CHANGE_FILE_TO_LOAD = 'shootProject/CHANGE_FILE_TO_LOAD' as const;
+const ADD_ASSET = 'shootProject/ADD_ASSET' as const;
+const RENDER_ASSET = 'shootProject/RENDER_ASSET' as const;
+const UNRENDER_ASSET = 'shootProject/UNRENDER_ASSET' as const;
+const REMOVE_ASSET = 'shootProject/REMOVE_ASSET' as const;
 
 interface AddScene {
   scene: ShootScene;

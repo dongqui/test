@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import * as selectedTargetsActions from 'actions/selectedTargetsAction';
+import * as selectingDataActions from 'actions/selectingDataAction';
 
 type GizmoMode = 'position' | 'rotation' | 'scale';
 
 const useGizmoControl = () => {
-  const [gizmoManager, setGizmoManager] = useState<BABYLON.GizmoManager>();
-  const [currentGizmoMode, setCurrentGizmoMode] = useState<GizmoMode>('position');
-
-  const { sceneList, assetList } = useSelector((state) => state.shootProject);
-  const selectedTargets = useSelector((state) => state.selectedTargets);
+  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
 
   const dispatch = useDispatch();
+
+  const [gizmoManager, setGizmoManager] = useState<BABYLON.GizmoManager>();
+  const [currentGizmoMode, setCurrentGizmoMode] = useState<GizmoMode>('position');
 
   // gizmoManager 생성
   useEffect(() => {
@@ -107,7 +107,7 @@ const useGizmoControl = () => {
           }
           case 'Escape': {
             gizmoManager.attachToNode(null);
-            dispatch(selectedTargetsActions.resetSelectedTargets());
+            dispatch(selectingDataActions.resetSelectedTargets());
             break;
           }
           default: {

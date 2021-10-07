@@ -3,7 +3,7 @@ import { SkeletonViewer } from '@babylonjs/core';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import * as selectedTargetsActions from 'actions/selectedTargetsAction';
+import * as selectingDataActions from 'actions/selectingDataAction';
 
 const DEFAULT_SKELETON_VIEWER_OPTION = {
   pauseAnimations: false,
@@ -21,32 +21,14 @@ const DEFAULT_SKELETON_VIEWER_OPTION = {
 };
 
 const useVisualizeModel = () => {
-  const {
-    sceneList,
-    assetList,
-    assetIdToRender,
-    assetIdToUnrender,
-    assetIdToRemove,
-    visualizedAssetIds,
-  } = useSelector((state) => state.shootProject);
+  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const assetList = useSelector((state) => state.shootProject.assetList);
+  const assetIdToRender = useSelector((state) => state.shootProject.assetIdToRender);
+  const assetIdToUnrender = useSelector((state) => state.shootProject.assetIdToUnrender);
+
+  const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const dispatch = useDispatch();
-
-  // useEffect(() => {
-  //   console.log('sceneList: ', sceneList);
-  //   console.log('assetList: ', assetList);
-  //   console.log('assetIdToRender: ', assetIdToRender);
-  //   console.log('assetIdToUnrender: ', assetIdToUnrender);
-  //   console.log('assetIdToRemove: ', assetIdToRemove);
-  //   console.log('visualizedAssetIds: ', visualizedAssetIds);
-  // }, [
-  //   assetIdToRemove,
-  //   assetIdToRender,
-  //   assetIdToUnrender,
-  //   assetList,
-  //   sceneList,
-  //   visualizedAssetIds,
-  // ]);
 
   // render 작업
   useEffect(() => {
@@ -62,10 +44,6 @@ const useVisualizeModel = () => {
           skeleton,
           bones,
           transformNodes,
-          joints,
-          controllers,
-          animationIngredients,
-          currentAnimationIngredientId,
           retargetMap,
           boneVisibleSceneIds,
           meshVisibleSceneIds,
@@ -91,73 +69,72 @@ const useVisualizeModel = () => {
             scene.addSkeleton(skeleton);
 
             if (boneVisibleSceneIds.includes(sceneId)) {
-              if (joints.length === 0) {
-                // joints 생성 및 scene들에 추가
-                bones.forEach((bone) => {
-                  if (!bone.name.toLowerCase().includes('scene')) {
-                    const joint = BABYLON.MeshBuilder.CreateSphere(
-                      `${bone.name}_joint`,
-                      { diameter: 3 },
-                      scene,
-                    );
-                    joint.id = `${assetId}/${bone.name}/joint`;
-                    joints.push(joint); // [debug]state 내부 property를 직접 변경하는 코드
-                    joint.renderingGroupId = 3;
-                    joint.attachToBone(bone, meshes[0]);
+              const jointTransformNodes: BABYLON.TransformNode[] = [];
 
-                    // joint마다 actionManager 설정
-                    joint.actionManager = new BABYLON.ActionManager(scene);
-                    joint.actionManager.registerAction(
-                      // joint 클릭으로 bone 선택하기 위한 액션
-                      new BABYLON.ExecuteCodeAction(
-                        BABYLON.ActionManager.OnPickDownTrigger,
-                        (event: BABYLON.ActionEvent) => {
-                          const targetTransformNode = bone.getTransformNode();
-                          if (targetTransformNode) {
-                            const sourceEvent: PointerEvent = event.sourceEvent;
-                            if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                              dispatch(
-                                selectedTargetsActions.ctrlKeySingleSelect({
-                                  target: targetTransformNode,
-                                }),
-                              );
-                            } else {
-                              dispatch(
-                                selectedTargetsActions.defaultSingleSelect({
-                                  target: targetTransformNode,
-                                }),
-                              );
-                            }
-                          }
-                        },
-                      ),
-                    );
-                    // joint hover 시 커서 모양 변경
-                    joint.actionManager.registerAction(
-                      new BABYLON.ExecuteCodeAction(
-                        BABYLON.ActionManager.OnPointerOverTrigger,
-                        () => {
-                          scene.hoverCursor = 'pointer';
-                        },
-                      ),
-                    );
-                    joint.actionManager.registerAction(
-                      new BABYLON.ExecuteCodeAction(
-                        BABYLON.ActionManager.OnPointerOutTrigger,
-                        () => {
-                          scene.hoverCursor = 'default';
-                        },
-                      ),
-                    );
+              // joints 생성 및 scene들에 추가
+              bones.forEach((bone) => {
+                if (!bone.name.toLowerCase().includes('scene')) {
+                  const joint = BABYLON.MeshBuilder.CreateSphere(
+                    `${bone.name}_joint`,
+                    { diameter: 3 },
+                    scene,
+                  );
+                  joint.id = `${assetId}/${bone.name}/joint`;
+                  joint.renderingGroupId = 3;
+                  joint.attachToBone(bone, meshes[0]);
+
+                  const targetTransformNode = bone.getTransformNode();
+                  if (targetTransformNode) {
+                    jointTransformNodes.push(targetTransformNode);
                   }
-                });
-              } else {
-                // 이미 존재하는 joints scene들에 추가
-                // state에 push 해도 되는 걸까.. 불변성이 필요 없는 값이기는 한데..
-                joints.forEach((joint) => {
-                  scene.addMesh(joint);
-                });
-              }
+
+                  // joint마다 actionManager 설정
+                  joint.actionManager = new BABYLON.ActionManager(scene);
+                  joint.actionManager.registerAction(
+                    // joint 클릭으로 bone 선택하기 위한 액션
+                    new BABYLON.ExecuteCodeAction(
+                      BABYLON.ActionManager.OnPickDownTrigger,
+                      (event: BABYLON.ActionEvent) => {
+                        const targetTransformNode = bone.getTransformNode();
+                        if (targetTransformNode) {
+                          const sourceEvent: PointerEvent = event.sourceEvent;
+                          if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+                            dispatch(
+                              selectingDataActions.ctrlKeySingleSelect({
+                                target: targetTransformNode,
+                              }),
+                            );
+                          } else {
+                            dispatch(
+                              selectingDataActions.defaultSingleSelect({
+                                target: targetTransformNode,
+                              }),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                  );
+                  // joint hover 시 커서 모양 변경
+                  joint.actionManager.registerAction(
+                    new BABYLON.ExecuteCodeAction(
+                      BABYLON.ActionManager.OnPointerOverTrigger,
+                      () => {
+                        scene.hoverCursor = 'pointer';
+                      },
+                    ),
+                  );
+                  joint.actionManager.registerAction(
+                    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
+                      scene.hoverCursor = 'default';
+                    }),
+                  );
+                }
+              });
+
+              // dragBox 선택 대상에 추가
+              dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
+
               // scene들에 skeletonViewer 추가
               const skeletonViewer = new SkeletonViewer(
                 skeleton,
@@ -172,15 +149,7 @@ const useVisualizeModel = () => {
             }
 
             if (hasControllersSceneIds.includes(sceneId)) {
-              if (controllers.length === 0) {
-                //  controllers 생성 및 scene들에 추가
-              } else {
-                // 이미 존재하는 controllers scene들에 추가
-                // animationIngredients에 controller들애니메이션 포함시키는 로직 어디서 넣을지 고민..
-                controllers.forEach((controller) => {
-                  scene.addMesh(controller);
-                });
-              }
+              //  controllers 생성 및 scene들에 추가
             }
 
             // scene들에 애니메이션 적용을 위한 transformNode 추가
@@ -195,7 +164,7 @@ const useVisualizeModel = () => {
     }
   }, [assetIdToRender, assetList, dispatch, sceneList]);
 
-  // unrender 작업
+  // unrender 시 scene에서 지우는 작업
   useEffect(() => {
     if (assetIdToUnrender && sceneList.length > 0 && assetList.length > 0) {
       const targetAsset = assetList.find((asset) => asset.id === assetIdToUnrender);
@@ -206,13 +175,7 @@ const useVisualizeModel = () => {
           meshes,
           geometries,
           skeleton,
-          bones,
           transformNodes,
-          joints,
-          controllers,
-          animationIngredients,
-          currentAnimationIngredientId,
-          retargetMap,
           boneVisibleSceneIds,
           meshVisibleSceneIds,
           hasControllersSceneIds,
@@ -249,18 +212,28 @@ const useVisualizeModel = () => {
 
             // scene들에서 joints 삭제
             if (boneVisibleSceneIds.includes(sceneId)) {
-              if (joints.length > 0) {
-                joints.forEach((joint) => {
+              const jointTransformNodes = selectableObjects.filter(
+                (object) =>
+                  object.getClassName() === 'TransformNode' && object.id.includes(assetId),
+              );
+              jointTransformNodes.forEach((jointTransformNode) => {
+                const joint = scene.getMeshByID(
+                  jointTransformNode.id.replace('transformNode', 'joint'),
+                );
+                if (joint) {
                   scene.removeMesh(joint);
-                });
-              }
+                }
+              });
             }
 
             // scene들에서 controllers 삭제
             if (hasControllersSceneIds.includes(sceneId)) {
+              const controllers = selectableObjects.filter(
+                (object) => object.getClassName() === 'Mesh' && object.id.includes(assetId),
+              );
               if (controllers.length > 0) {
                 controllers.forEach((controller) => {
-                  scene.removeMesh(controller);
+                  scene.removeMesh(controller as BABYLON.Mesh);
                 });
               }
             }
@@ -273,7 +246,17 @@ const useVisualizeModel = () => {
         });
       }
     }
-  }, [assetIdToUnrender, assetList, sceneList]);
+  }, [assetIdToUnrender, assetList, dispatch, sceneList, selectableObjects]);
+
+  // unrender시 데이터 선택 대상에서 제외하는 작업
+  useEffect(() => {
+    if (assetIdToUnrender && assetList.length > 0) {
+      // joint와 연결된 transformNode들을 dragBox 선택 대상에서 제외
+      dispatch(selectingDataActions.removeSelectableControllers({ assetId: assetIdToUnrender }));
+      // controller들을 dragBox 선택 대상에서 제외
+      dispatch(selectingDataActions.removeSelectableJoints({ assetId: assetIdToUnrender }));
+    }
+  }, [assetIdToUnrender, assetList.length, dispatch]);
 };
 
 export default useVisualizeModel;

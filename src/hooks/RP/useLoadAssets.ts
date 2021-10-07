@@ -5,11 +5,13 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import * as shootProjectActions from 'actions/shootProjectAction';
+import * as animationIngredientsActions from 'actions/animationIngredientsAction';
 import { AnimationIngredient, ShootAsset } from 'types/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 
 const useLoadAssets = () => {
-  const { sceneList, fileToLoad } = useSelector((state) => state.shootProject);
+  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const fileToLoad = useSelector((state) => state.shootProject.fileToLoad);
 
   const dispatch = useDispatch();
 
@@ -61,11 +63,17 @@ const useLoadAssets = () => {
           });
 
           // animationGroup 없는 경우에 대한 처리도 논의 필요
+          const animationIngredientIds: string[] = [];
           const animationIngredients: AnimationIngredient[] = [];
           animationGroups.forEach((animationGroup) => {
             animationGroup.pause();
-            animationIngredients.push(createAnimationIngredient(animationGroup, false));
+            const animationIngredient = createAnimationIngredient(assetId, animationGroup, false);
+            animationIngredientIds.push(animationIngredient.id);
+            animationIngredients.push(animationIngredient);
           });
+
+          // animationIngredients reducer에 등록
+          dispatch(animationIngredientsActions.addAnimationIngredients({ animationIngredients }));
 
           const newAsset: ShootAsset = {
             id: assetId,
@@ -74,12 +82,9 @@ const useLoadAssets = () => {
             skeleton: skeletons[0] ?? null,
             bones: skeletons[0] ? skeletons[0].bones : [],
             transformNodes,
-            // joint와 controller들은 생성 시 scene에 render되기 때문에, visualize 시에 생성합니다.
-            joints: [],
-            controllers: [],
-            animationIngredients,
+            animationIngredientIds,
             currentAnimationIngredientId:
-              animationIngredients.length !== 0 ? animationIngredients[0].id : null,
+              animationIngredientIds.length !== 0 ? animationIngredientIds[0] : null,
             retargetMap: createEmptyRetargetMap(),
             boneVisibleSceneIds: sceneList.map((scene) => scene.id),
             meshVisibleSceneIds: sceneList.map((scene) => scene.id),
