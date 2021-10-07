@@ -28,9 +28,7 @@ export interface ShootAsset {
   skeleton: BABYLON.Skeleton;
   bones: BABYLON.Bone[];
   transformNodes: BABYLON.TransformNode[];
-  joints: BABYLON.Mesh[];
-  controllers: BABYLON.Mesh[];
-  animationIngredients: AnimationIngredient[];
+  animationIngredientIds: string[];
   currentAnimationIngredientId: string | null;
   retargetMap: ShootRetargetMap;
   boneVisibleSceneIds: string[];
@@ -41,6 +39,7 @@ export interface ShootAsset {
 export interface AnimationIngredient {
   id: string;
   name: string;
+  assetId: string;
   tracks: ShootTrack[];
   layers: ShootLayer[];
 }

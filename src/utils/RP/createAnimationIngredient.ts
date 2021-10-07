@@ -19,6 +19,7 @@ const MOCAP_QUATERNION_MIN_CUTOFF = 1.4;
  * @param isMocapAnimation - filter parameter 적용을 위한 mocap 결과물인지 여부
  */
 const createAnimationIngredient = (
+  assetId: string,
   animationGroup: BABYLON.AnimationGroup,
   isMocapAnimation: boolean,
 ): AnimationIngredient => {
@@ -244,6 +245,7 @@ const createAnimationIngredient = (
   const animationIngredient = {
     id: uuidv4(),
     name: animationGroup.name,
+    assetId,
     tracks,
     layers: [{ id: baseLayerId, name: 'layer1' }],
   };

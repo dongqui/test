@@ -22,7 +22,8 @@ import { contextmenuInfo } from './contextmenuInfo';
 // New
 import { lpNode } from './LP/lpNode';
 import { shootProject } from './shootProject';
-import { selectedTargets } from './selectedTargets';
+import { selectingData } from './selectingData';
+import { animationIngredients } from './animationIngredients';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -49,7 +50,8 @@ const rootReducer = combineReducers({
   // New
   lpNode,
   shootProject,
-  selectedTargets,
+  selectingData,
+  animationIngredients,
 });
 
 // type 적용된 useSelector
