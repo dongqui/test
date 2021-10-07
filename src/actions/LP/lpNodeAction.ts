@@ -26,7 +26,7 @@ interface ChangeCurrentPathParams {
 }
 
 interface ChangeClipboardParams {
-  data: unknown;
+  data: string[];
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({

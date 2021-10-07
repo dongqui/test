@@ -82,7 +82,30 @@ const ListNode: FunctionComponent<Props> = ({
     );
   }, [dispatch, filePath, id, name, onSelect]);
 
-  console.log(lpClipboard);
+  const depthCheck = useCallback(
+    (arr: string[], max: number, original: number[]) => {
+      arr.map((el) => {
+        const find = _.find(lpNode, { id: el });
+        if (find) {
+          const maxValue = max + 1;
+          console.log('==max== > ' + maxValue);
+
+          if (!_.isEmpty(find.children)) {
+            depthCheck(find.children, maxValue, original);
+          }
+
+          // @TODO 6depth일때 무조건 return시켜서 빠르게 종료시켜야함
+          if (_.isEmpty(find.children)) {
+            console.log('==');
+            original.push(maxValue);
+          }
+        }
+      });
+
+      return _.max(original);
+    },
+    [lpNode],
+  );
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -118,15 +141,58 @@ const ListNode: FunctionComponent<Props> = ({
             },
             {
               label: 'Paste',
-              onClick: () => {},
+              onClick: () => {
+                const copyNode = _.find(lpNode, { id: lpClipboard[0] });
+
+                console.log('copyNode');
+                console.log(copyNode);
+
+                const cloneCopyNode = _.cloneDeep(copyNode);
+
+                if (cloneCopyNode) {
+                  const max = depthCheck(cloneCopyNode.children, 0, []);
+                  console.log('max >> ' + max);
+
+                  if (max === 6) {
+                    alert('으악?');
+                  }
+                }
+
+                // @TODO 없으면 비활성 처리 필요
+
+                // let nextLPNodes = _.clone(lpNode);
+
+                if (cloneCopyNode) {
+                  const nextNodes = produce(lpNode, (draft) => {
+                    const targetNode = _.find(draft, { id });
+
+                    if (targetNode) {
+                      console.log('?A?S?DAS?');
+                      cloneCopyNode.id = uuidv4();
+                      cloneCopyNode.parentId = id;
+                      console.log(cloneCopyNode.id, copyNode?.id);
+
+                      targetNode.children.push(cloneCopyNode.id);
+
+                      draft.push(cloneCopyNode);
+                    }
+                  });
+
+                  // nextLPNodes = nextNodes;
+
+                  dispatch(
+                    lpNodeActions.changeNode({
+                      nodes: nextNodes,
+                    }),
+                  );
+                }
+              },
               children: [],
             },
             {
               label: 'New directory',
               onClick: () => {
-                let nextLPNodes = _.clone(lpNode);
-
-                const nextNodes = produce(nextLPNodes, (draft) => {
+                const nextNodes = produce(lpNode, (draft) => {
                   const parent = _.find(draft, { id });
 
                   if (parent) {
@@ -146,8 +212,6 @@ const ListNode: FunctionComponent<Props> = ({
                     draft.push(newNode);
                   }
                 });
-
-                nextLPNodes = nextNodes;
 
                 dispatch(
                   lpNodeActions.changeNode({
@@ -171,7 +235,7 @@ const ListNode: FunctionComponent<Props> = ({
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [dispatch, filePath, id, lpNode, name, onContextMenuOpen]);
+  }, [depthCheck, dispatch, filePath, id, lpClipboard, lpNode, name, onContextMenuOpen]);
 
   const depth = (filePath.match(/\\/g) || []).length;
   const column = Array.from({ length: depth - 1 }).map((x, i) => i);

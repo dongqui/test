@@ -6,7 +6,7 @@ interface State {
   visualizedFileURL: string | File;
   currentPath: string;
   currentPathId: string;
-  clipboard: unknown;
+  clipboard: string[];
 }
 
 const defaultState: State = {
@@ -42,7 +42,7 @@ const defaultState: State = {
   visualizedFileURL: '',
   currentPath: '\\root',
   currentPathId: '\\root',
-  clipboard: undefined,
+  clipboard: [],
 };
 
 export const lpNode = (state = defaultState, action: LPNodeAction) => {
