@@ -117,7 +117,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
   const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
 
   // console.log(rootPathNode);
-  console.log(lpNode);
+  // console.log(lpNode);
 
   const [selectedId, setSelectedId] = useState<string>();
 

@@ -18,6 +18,7 @@ import { connect, useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
@@ -60,6 +61,8 @@ const ListNode: FunctionComponent<Props> = ({
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  const { onModalOpen, onModalClose } = useBaseModal();
+
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   const arrowClasses = cx('icon-arrow', {
@@ -89,6 +92,7 @@ const ListNode: FunctionComponent<Props> = ({
         if (find) {
           const maxValue = max + 1;
           console.log('==max== > ' + maxValue);
+          console.log(find.children);
 
           if (!_.isEmpty(find.children)) {
             depthCheck(find.children, maxValue, original);
@@ -106,6 +110,8 @@ const ListNode: FunctionComponent<Props> = ({
     },
     [lpNode],
   );
+
+  const depth = (filePath.match(/\\/g) || []).length;
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -150,11 +156,20 @@ const ListNode: FunctionComponent<Props> = ({
                 const cloneCopyNode = _.cloneDeep(copyNode);
 
                 if (cloneCopyNode) {
-                  const max = depthCheck(cloneCopyNode.children, 0, []);
+                  const max = depthCheck(cloneCopyNode.children, 0, []) || 0;
                   console.log('max >> ' + max);
 
-                  if (max === 6) {
-                    alert('으악?');
+                  const currentPathDepth = (filePath.match(/\\/g) || []).length;
+                  console.log(currentPathDepth);
+
+                  if (currentPathDepth + max >= 6) {
+                    // alert('으악?');
+                    onModalOpen({
+                      title: 'Warning',
+                      message: '디렉토리를 복사할 수 없습니다. 계층 초과',
+                      confirmText: '확인',
+                    });
+                    return;
                   }
                 }
 
@@ -170,10 +185,12 @@ const ListNode: FunctionComponent<Props> = ({
                       console.log('?A?S?DAS?');
                       cloneCopyNode.id = uuidv4();
                       cloneCopyNode.parentId = id;
+                      cloneCopyNode.filePath = filePath + `\\${cloneCopyNode.name}`;
                       console.log(cloneCopyNode.id, copyNode?.id);
 
                       targetNode.children.push(cloneCopyNode.id);
 
+                      // @TODO 하위 노드도 추가
                       draft.push(cloneCopyNode);
                     }
                   });
@@ -191,6 +208,7 @@ const ListNode: FunctionComponent<Props> = ({
             },
             {
               label: 'New directory',
+              visibility: depth === 6 ? 'invisible' : 'visible',
               onClick: () => {
                 const nextNodes = produce(lpNode, (draft) => {
                   const parent = _.find(draft, { id });
@@ -235,9 +253,19 @@ const ListNode: FunctionComponent<Props> = ({
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [depthCheck, dispatch, filePath, id, lpClipboard, lpNode, name, onContextMenuOpen]);
+  }, [
+    depth,
+    depthCheck,
+    dispatch,
+    filePath,
+    id,
+    lpClipboard,
+    lpNode,
+    name,
+    onContextMenuOpen,
+    onModalOpen,
+  ]);
 
-  const depth = (filePath.match(/\\/g) || []).length;
   const column = Array.from({ length: depth - 1 }).map((x, i) => i);
 
   const classes = cx('wrapper', { selected: isSelected });
