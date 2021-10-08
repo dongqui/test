@@ -27,6 +27,7 @@ const createGround = (
     (subdivision = defaultSubdivision),
     scene,
   );
+  ground.isPickable = false;
   const groundMaterial = new BABYLON.StandardMaterial('groundMaterial', scene);
 
   if (useTexture) {

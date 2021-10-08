@@ -1,5 +1,8 @@
 import * as BABYLON from '@babylonjs/core';
 
+export type Nullable<T> = T | null;
+export type ScreenXY = { x: number; y: number };
+
 export interface ShootProject {
   id: string;
   sceneList: ShootScene[];

@@ -1,6 +1,4 @@
 import { FunctionComponent, useRef } from 'react';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import {
   useAnimation,
   useGizmoControl,
@@ -8,6 +6,8 @@ import {
   useLoadAssets,
   useVisualizeModel,
 } from 'hooks/RP';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -24,6 +24,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
   return (
     <div className={cx('wrapper')}>
+      <div id="_dragBox"></div>
       <canvas className={cx('rendering-canvas')} ref={renderingCanvas1} id="renderingCanvas1" />
     </div>
   );

@@ -2,12 +2,16 @@ import * as BABYLON from '@babylonjs/core';
 import { RefObject, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import * as shootProjectActions from 'actions/shootProjectAction';
+import * as selectingDataActions from 'actions/selectingDataAction';
 import {
+  checkIsObjectIn,
   createCamera,
   createDirectionalLight,
   createGround,
   createHemisphericLight,
 } from 'utils/RP';
+import { useSelector } from 'reducers';
+import { Nullable, ScreenXY } from 'types/common';
 
 interface Params {
   renderingCanvas: RefObject<HTMLCanvasElement>;
@@ -21,8 +25,12 @@ interface Params {
 const useInitializeScene = (params: Params) => {
   const { renderingCanvas } = params;
 
+  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
+
   const dispatch = useDispatch();
 
+  // scene 생성 및 기본 설정
   useEffect(() => {
     // scene이 준비됐을 때 호출할 콜백
     const handleSceneReady = (scene: BABYLON.Scene) => {
@@ -76,6 +84,97 @@ const useInitializeScene = (params: Params) => {
       };
     }
   }, [dispatch, renderingCanvas]);
+
+  // dragBox 사용
+  useEffect(() => {
+    const targetScene = sceneList.find((scene) => scene.canvasId === renderingCanvas.current?.id);
+
+    if (targetScene) {
+      const { scene } = targetScene;
+      let startPointerPosition: Nullable<ScreenXY> = null;
+
+      const dragBox = document.querySelector('#_dragBox') as HTMLDivElement;
+      const dragBoxDefaultStyle =
+        'background-color: gray; position: absolute; opacity: 0.3; pointer-events: none;';
+      dragBox.setAttribute('style', dragBoxDefaultStyle);
+
+      const dragBoxObserver = scene.onPointerObservable.add((pointerInfo, eventState) => {
+        // pointer down event catched
+        switch (pointerInfo.type) {
+          case BABYLON.PointerEventTypes.POINTERDOWN: {
+            if (
+              pointerInfo?.event.button === 0 && // check if it it left click
+              !pointerInfo.pickInfo!.hit // pickInfo always exist with pointer event
+            ) {
+              // set start point of the dragBox
+              startPointerPosition = {
+                x: scene.pointerX,
+                y: scene.pointerY,
+              };
+            }
+            break;
+          }
+          case BABYLON.PointerEventTypes.POINTERMOVE: {
+            if (startPointerPosition) {
+              const currentPointerPosition: Nullable<ScreenXY> = {
+                x: scene.pointerX,
+                y: scene.pointerY,
+              };
+
+              const minX = Math.min(startPointerPosition.x, currentPointerPosition.x);
+              const minY = Math.min(startPointerPosition.y, currentPointerPosition.y);
+              const maxX = Math.max(startPointerPosition.x, currentPointerPosition.x);
+              const maxY = Math.max(startPointerPosition.y, currentPointerPosition.y);
+
+              dragBox.setAttribute(
+                'style',
+                `${dragBoxDefaultStyle} left: ${minX}px; top: ${minY}px; width: ${
+                  maxX - minX
+                }px; height: ${maxY - minY}px;`,
+              );
+            }
+            break;
+          }
+          case BABYLON.PointerEventTypes.POINTERUP: {
+            if (startPointerPosition) {
+              const endPointerPosition: Nullable<ScreenXY> = {
+                x: scene.pointerX,
+                y: scene.pointerY,
+              };
+
+              const newSelectedTargets = selectableObjects.filter((object) =>
+                checkIsObjectIn(
+                  startPointerPosition as ScreenXY,
+                  endPointerPosition,
+                  object,
+                  scene,
+                ),
+              );
+
+              if (pointerInfo.event.ctrlKey || pointerInfo.event.metaKey) {
+                // ctrl 혹은 meta 키를 누른 채
+                dispatch(selectingDataActions.ctrlKeyMultiSelect({ targets: newSelectedTargets }));
+              } else {
+                // 키 누르지 않고
+                dispatch(selectingDataActions.defaultMultiSelect({ targets: newSelectedTargets }));
+              }
+
+              // initialize style and start point
+              startPointerPosition = null;
+              dragBox.setAttribute('style', dragBoxDefaultStyle);
+            }
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+      });
+      return () => {
+        scene.onPointerObservable.remove(dragBoxObserver);
+      };
+    }
+  }, [dispatch, renderingCanvas, sceneList, selectableObjects]);
 };
 
 export default useInitializeScene;
