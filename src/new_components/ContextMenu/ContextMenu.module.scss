@@ -11,7 +11,14 @@
 }
 
 .inner {
-  //
+  &.disabled {
+    // 임시 배경 레드 지정
+    background-color: red;
+  }
+
+  &.invisible {
+    display: none;
+  }
 }
 
 .item {
