@@ -23,6 +23,11 @@ export const shootProject = (state = defaultState, action: ShootProjectAction) =
         sceneList: [...state.sceneList, action.payload.scene],
       });
     }
+    case 'shootProject/REMOVE_SCENE': {
+      return Object.assign({}, state, {
+        sceneList: state.sceneList.filter((scene) => scene.id !== action.payload.sceneId),
+      });
+    }
     case 'shootProject/CHANGE_FILE_TO_LOAD': {
       return Object.assign({}, state, {
         fileToLoad: action.payload.file,

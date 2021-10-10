@@ -2,6 +2,7 @@ import { ShootAsset, ShootScene } from 'types/common';
 
 export type ShootProjectAction =
   | ReturnType<typeof addScene>
+  | ReturnType<typeof removeScene>
   | ReturnType<typeof changeFileToLoad>
   | ReturnType<typeof addAsset>
   | ReturnType<typeof renderAsset>
@@ -9,6 +10,7 @@ export type ShootProjectAction =
   | ReturnType<typeof removeAsset>;
 
 const ADD_SCENE = 'shootProject/ADD_SCENE' as const;
+const REMOVE_SCENE = 'shootProject/REMOVE_SCENE' as const;
 const CHANGE_FILE_TO_LOAD = 'shootProject/CHANGE_FILE_TO_LOAD' as const;
 const ADD_ASSET = 'shootProject/ADD_ASSET' as const;
 const RENDER_ASSET = 'shootProject/RENDER_ASSET' as const;
@@ -17,6 +19,10 @@ const REMOVE_ASSET = 'shootProject/REMOVE_ASSET' as const;
 
 interface AddScene {
   scene: ShootScene;
+}
+
+interface RemoveScene {
+  sceneId: string;
 }
 
 interface ChangeFileToLoad {
@@ -46,6 +52,18 @@ interface RemoveAsset {
  */
 export const addScene = (params: AddScene) => ({
   type: ADD_SCENE,
+  payload: {
+    ...params,
+  },
+});
+
+/**
+ * scene을 list에서 제거합니다.
+ *
+ * @param sceneId - 제거할 scene의 id
+ */
+export const removeScene = (params: RemoveScene) => ({
+  type: REMOVE_SCENE,
   payload: {
     ...params,
   },

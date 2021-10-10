@@ -81,6 +81,7 @@ const useInitializeScene = (params: Params) => {
       return () => {
         // engine을 없앱니다.
         engine.dispose();
+        dispatch(shootProjectActions.removeScene({ sceneId: innerScene.uid }));
       };
     }
   }, [dispatch, renderingCanvas]);
