@@ -32,7 +32,7 @@ export interface ShootAsset {
   bones: BABYLON.Bone[];
   transformNodes: BABYLON.TransformNode[];
   animationIngredientIds: string[];
-  retargetMap: ShootRetargetMap;
+  retargetMapId: string;
 }
 
 export interface AnimationIngredient {
@@ -102,7 +102,7 @@ export type RetargetSourceBoneType =
   | 'leftHandIndex1'
   | 'rightHandIndex1';
 
-export type ShootRetargetMap = {
+export type ShootRetargetMap = { id: string; assetId: string } & {
   [sourceBone in RetargetSourceBoneType]: {
     targetBoneId?: string;
     hipSpace: number;

@@ -6,6 +6,7 @@ import { useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as animationIngredientsActions from 'actions/animationIngredientsAction';
+import * as retargetMapsActions from 'actions/retargetMapsAction';
 import { AnimationIngredient, ShootAsset } from 'types/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 
@@ -14,10 +15,6 @@ const useLoadAssets = () => {
   const fileToLoad = useSelector((state) => state.shootProject.fileToLoad);
 
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    console.log('sceneList: ', sceneList);
-  }, [sceneList]);
 
   useEffect(() => {
     if (sceneList[0]) {
@@ -84,6 +81,8 @@ const useLoadAssets = () => {
           // animationIngredients reducer에 등록
           dispatch(animationIngredientsActions.addAnimationIngredients({ animationIngredients }));
 
+          const retargetMap = createEmptyRetargetMap(assetId);
+
           const newAsset: ShootAsset = {
             id: assetId,
             meshes,
@@ -92,10 +91,12 @@ const useLoadAssets = () => {
             bones: skeletons[0] ? skeletons[0].bones : [],
             transformNodes,
             animationIngredientIds,
-            retargetMap: createEmptyRetargetMap(),
+            retargetMapId: retargetMap.id,
           };
 
+          // dispatch 3번을 saga에 넣어서 관리하는 게 나을 듯(리팩토링)
           dispatch(shootProjectActions.addAsset({ asset: newAsset }));
+          dispatch(retargetMapsActions.addRetargetMap({ retargetMap }));
         };
 
         if (fileToLoad) {

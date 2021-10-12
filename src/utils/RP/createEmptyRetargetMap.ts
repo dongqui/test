@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { ShootRetargetMap } from 'types/common';
 
 const DEFAULT_HIP_SPACE = 100;
@@ -5,9 +6,13 @@ const DEFAULT_HIP_SPACE = 100;
 /**
  * targetBone을 포함하지 않는 기본 리타겟맵을 생성합니다.
  * 각 sourceBone은 기본 hipSpace 값으로 100(%)를 가집니다.
+ *
+ * @param assetId - 대상 asset의 id
  */
-const createEmptyRetargetMap = (): ShootRetargetMap => {
+const createEmptyRetargetMap = (assetId: string): ShootRetargetMap => {
   return {
+    id: uuidv4(),
+    assetId,
     hips: { hipSpace: DEFAULT_HIP_SPACE },
     leftUpLeg: { hipSpace: DEFAULT_HIP_SPACE },
     rightUpLeg: { hipSpace: DEFAULT_HIP_SPACE },

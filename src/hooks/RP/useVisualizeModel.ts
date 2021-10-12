@@ -36,15 +36,7 @@ const useVisualizeModel = () => {
       const targetAsset = assetList.find((asset) => asset.id === assetIdToRender);
 
       if (targetAsset) {
-        const {
-          id: assetId,
-          meshes,
-          geometries,
-          skeleton,
-          bones,
-          transformNodes,
-          retargetMap,
-        } = targetAsset;
+        const { id: assetId, meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
 
         sceneList.forEach((shootScene) => {
           const { id: sceneId, name: sceneName, scene } = shootScene;
