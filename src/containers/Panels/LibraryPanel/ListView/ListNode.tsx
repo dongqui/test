@@ -74,7 +74,6 @@ const ListNode: FunctionComponent<Props> = ({
   }, []);
 
   const handleSelect = useCallback(() => {
-    console.log('id > ' + id);
     onSelect && onSelect(id);
 
     dispatch(
@@ -91,8 +90,6 @@ const ListNode: FunctionComponent<Props> = ({
         const find = _.find(lpNode, { id: el });
         if (find) {
           const maxValue = max + 1;
-          console.log('==max== > ' + maxValue);
-          console.log(find.children);
 
           if (!_.isEmpty(find.children)) {
             depthCheck(find.children, maxValue, original);
@@ -100,7 +97,6 @@ const ListNode: FunctionComponent<Props> = ({
 
           // @TODO 6depth일때 무조건 return시켜서 빠르게 종료시켜야함
           if (_.isEmpty(find.children)) {
-            console.log('==');
             original.push(maxValue);
           }
         }
@@ -110,6 +106,27 @@ const ListNode: FunctionComponent<Props> = ({
     },
     [lpNode],
   );
+
+  const depthChnageKey = useCallback((node: LP.Node[], childID: string, parentNode: LP.Node) => {
+    const changeNode = _.find(node, { id: childID });
+
+    if (changeNode) {
+      const cloneChangeNode = _.cloneDeep(changeNode);
+
+      cloneChangeNode.id = uuidv4();
+      cloneChangeNode.parentId = parentNode.id;
+      cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
+
+      _.remove(parentNode.children, (child) => child === childID);
+      parentNode.children.push(cloneChangeNode.id);
+
+      node.push(cloneChangeNode);
+
+      if (!_.isEmpty(cloneChangeNode.children)) {
+        cloneChangeNode.children.map((child) => depthChnageKey(node, child, cloneChangeNode));
+      }
+    }
+  }, []);
 
   const depth = (filePath.match(/\\/g) || []).length;
 
@@ -126,7 +143,16 @@ const ListNode: FunctionComponent<Props> = ({
           menu: [
             {
               label: 'Delete',
-              onClick: () => {},
+              onClick: () => {
+                const cloneLPNode = _.clone(lpNode);
+                const afterNodes = _.remove(cloneLPNode, (node) => node.id !== id);
+
+                dispatch(
+                  lpNodeActions.changeNode({
+                    nodes: afterNodes,
+                  }),
+                );
+              },
               children: [],
             },
             {
@@ -150,17 +176,12 @@ const ListNode: FunctionComponent<Props> = ({
               onClick: () => {
                 const copyNode = _.find(lpNode, { id: lpClipboard[0] });
 
-                console.log('copyNode');
-                console.log(copyNode);
-
                 const cloneCopyNode = _.cloneDeep(copyNode);
 
                 if (cloneCopyNode) {
                   const max = depthCheck(cloneCopyNode.children, 0, []) || 0;
-                  console.log('max >> ' + max);
 
                   const currentPathDepth = (filePath.match(/\\/g) || []).length;
-                  console.log(currentPathDepth);
 
                   if (currentPathDepth + max >= 6) {
                     // alert('으악?');
@@ -182,16 +203,20 @@ const ListNode: FunctionComponent<Props> = ({
                     const targetNode = _.find(draft, { id });
 
                     if (targetNode) {
-                      console.log('?A?S?DAS?');
                       cloneCopyNode.id = uuidv4();
                       cloneCopyNode.parentId = id;
                       cloneCopyNode.filePath = filePath + `\\${cloneCopyNode.name}`;
-                      console.log(cloneCopyNode.id, copyNode?.id);
 
                       targetNode.children.push(cloneCopyNode.id);
 
                       // @TODO 하위 노드도 추가
                       draft.push(cloneCopyNode);
+
+                      if (!_.isEmpty(cloneCopyNode.children)) {
+                        cloneCopyNode.children.map((child) =>
+                          depthChnageKey(draft, child, cloneCopyNode),
+                        );
+                      }
                     }
                   });
 
@@ -256,6 +281,7 @@ const ListNode: FunctionComponent<Props> = ({
   }, [
     depth,
     depthCheck,
+    depthChnageKey,
     dispatch,
     filePath,
     id,
@@ -277,7 +303,6 @@ const ListNode: FunctionComponent<Props> = ({
       const node = _.find(lpNode, { id });
 
       // const handleChildrenSelect = () => {
-      //   console.log('id ! > ' + id);
       //   onSelect && onSelect(id);
 
       //   dispatch(
