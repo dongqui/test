@@ -17,6 +17,9 @@ const checkIsControllerIn = (
   mesh: BABYLON.Mesh,
   scene: BABYLON.Scene,
 ) => {
+  if (!mesh.isVisible) {
+    return false;
+  }
   mesh.computeWorldMatrix(true);
   const { centerWorld, vectorsWorld: worldVectors } = mesh.getBoundingInfo().boundingBox;
   const checkVectors = [centerWorld];

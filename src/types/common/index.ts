@@ -32,17 +32,14 @@ export interface ShootAsset {
   bones: BABYLON.Bone[];
   transformNodes: BABYLON.TransformNode[];
   animationIngredientIds: string[];
-  currentAnimationIngredientId: string | null;
   retargetMap: ShootRetargetMap;
-  boneVisibleSceneIds: string[];
-  meshVisibleSceneIds: string[];
-  hasControllersSceneIds: string[];
 }
 
 export interface AnimationIngredient {
   id: string;
   name: string;
   assetId: string;
+  current: boolean;
   tracks: ShootTrack[];
   layers: ShootLayer[];
 }
