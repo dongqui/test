@@ -8,9 +8,15 @@ interface AddAnimationIngredients {
   animationIngredients: AnimationIngredient[];
 }
 
+interface EditAnimationIngredient {
+  id: string;
+}
+
 export const addAnimationIngredients = (params: AddAnimationIngredients) => ({
   type: ADD_ANIMATION_INGREDIENTS,
   payload: {
     ...params,
   },
 });
+
+export const editAnimationIngredients = (params: EditAnimationIngredient) => ({});

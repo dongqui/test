@@ -14,14 +14,16 @@ const MOCAP_QUATERNION_MIN_CUTOFF = 1.4;
 
 /**
  * 파일의 animationGroup을 사용해 Shoot 자체적으로 사용하는 구조의 데이터(AnimationIngredient)를 생성합니다.
- *
+ * @param assetId - 본 애니메이션의 대상 asset
  * @param animationGroup - source로 사용할 파일의 animationGroup
  * @param isMocapAnimation - filter parameter 적용을 위한 mocap 결과물인지 여부
+ * @param current - 현재 scene에서 사용 중인지 여부
  */
 const createAnimationIngredient = (
   assetId: string,
   animationGroup: BABYLON.AnimationGroup,
   isMocapAnimation: boolean,
+  current: boolean,
 ): AnimationIngredient => {
   const baseLayerId = uuidv4();
 
@@ -246,6 +248,7 @@ const createAnimationIngredient = (
     id: uuidv4(),
     name: animationGroup.name,
     assetId,
+    current,
     tracks,
     layers: [{ id: baseLayerId, name: 'layer1' }],
   };

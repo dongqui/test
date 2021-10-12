@@ -15,11 +15,9 @@ const useAnimation = () => {
 
   // 애니메이션 생성
   useEffect(() => {
-    const visualizedAssets = assetList.filter((asset) => visualizedAssetIds.includes(asset.id));
-    const visualizedAnimationIngredients = animationIngredients.filter((animationIngredient) =>
-      visualizedAssets
-        .map((asset) => asset.currentAnimationIngredientId)
-        .includes(animationIngredient.id),
+    const visualizedAnimationIngredients = animationIngredients.filter(
+      (animationIngredient) =>
+        visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
 
     const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
@@ -44,8 +42,6 @@ const useAnimation = () => {
         }
       });
     });
-
-    console.log('newAnimationGroup: ', newAnimationGroup);
 
     setCurrentAnimationGroup(newAnimationGroup);
   }, [animationIngredients, assetList, fps, visualizedAssetIds]);

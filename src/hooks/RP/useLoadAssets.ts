@@ -16,6 +16,10 @@ const useLoadAssets = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    console.log('sceneList: ', sceneList);
+  }, [sceneList]);
+
+  useEffect(() => {
     if (sceneList[0]) {
       const scene = sceneList[0].scene;
 
@@ -54,20 +58,25 @@ const useLoadAssets = () => {
 
           skeletons[0].bones.forEach((bone) => {
             // bone id를 자체적인 규칙에 따라 유일한 식별자로 만듭니다.
-            bone.id = `${assetId}/${bone.name}/bone`;
+            bone.id = `${assetId}//${bone.name}//bone`;
           });
 
           transformNodes.forEach((transformNode) => {
             // transformNode id를 자체적인 규칙에 따라 유일한 식별자로 만듭니다.
-            transformNode.id = `${assetId}/${transformNode.name}/transformNode`;
+            transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
           });
 
           // animationGroup 없는 경우에 대한 처리도 논의 필요
           const animationIngredientIds: string[] = [];
           const animationIngredients: AnimationIngredient[] = [];
-          animationGroups.forEach((animationGroup) => {
+          animationGroups.forEach((animationGroup, idx) => {
             animationGroup.pause();
-            const animationIngredient = createAnimationIngredient(assetId, animationGroup, false);
+            const animationIngredient = createAnimationIngredient(
+              assetId,
+              animationGroup,
+              false,
+              idx === 0, // load 시에는 첫번째 animationGroup을 current로 사용
+            );
             animationIngredientIds.push(animationIngredient.id);
             animationIngredients.push(animationIngredient);
           });
@@ -83,12 +92,7 @@ const useLoadAssets = () => {
             bones: skeletons[0] ? skeletons[0].bones : [],
             transformNodes,
             animationIngredientIds,
-            currentAnimationIngredientId:
-              animationIngredientIds.length !== 0 ? animationIngredientIds[0] : null,
             retargetMap: createEmptyRetargetMap(),
-            boneVisibleSceneIds: sceneList.map((scene) => scene.id),
-            meshVisibleSceneIds: sceneList.map((scene) => scene.id),
-            hasControllersSceneIds: sceneList.map((scene) => scene.id),
           };
 
           dispatch(shootProjectActions.addAsset({ asset: newAsset }));
