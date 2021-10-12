@@ -19,6 +19,7 @@ import { barPositionX } from './barPositionX';
 import { modalInfo } from './modalInfo';
 import { contextmenuInfo } from './contextmenuInfo';
 import { animatingControls } from './animatingControls';
+import trackList from './trackList';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -43,6 +44,7 @@ const rootReducer = combineReducers({
   modalInfo,
   contextmenuInfo,
   animatingControls,
+  trackList,
 });
 
 // type 적용된 useSelector
