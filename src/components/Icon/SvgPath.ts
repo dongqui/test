@@ -23,8 +23,8 @@ import RewindArrow from './svg/RewindArrow.svg';
 import Pause from './svg/Pause.svg';
 import Export from './svg/Export.svg';
 import PlayBar from './svg/PlayBar.svg';
+import CaretRight from './svg/CaretRight.svg';
 import LineLeftTriangle from './svg/LineLeftTriangle.svg';
-import CaretDown from './svg/CaretDown.svg';
 import Check from './svg/Check.svg';
 import Error from './svg/Error.svg';
 import Refresh from './svg/Refresh.svg';
@@ -64,7 +64,7 @@ type Icon =
   | 'Export'
   | 'PlayBar'
   | 'LineLeftTriangle'
-  | 'CaretDown'
+  | 'CaretRight'
   | 'Check'
   | 'Error'
   | 'Refresh'
@@ -108,7 +108,7 @@ const images: Images = {
   Export,
   PlayBar,
   LineLeftTriangle,
-  CaretDown,
+  CaretRight,
   Check,
   Error,
   Refresh,
