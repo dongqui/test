@@ -14,7 +14,6 @@ const ChangeModes = () => {
       <SimpleMode />
       <IconWrapper icon={SvgPath.InsertKeyframe} hasFrame={false} />
       <TextButton text="Autokey" />
-      <TextButton text="Curve Editor" />
     </div>
   );
 };
