@@ -128,6 +128,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
         <div className={cx('node-row')} ref={nodeRefs[i]} key={node.id}>
           <ListNode
             id={node.id}
+            assetId={node.assetId}
             parentId={node.parentId}
             type={node.type}
             name={node.name}

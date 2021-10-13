@@ -20,6 +20,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as shootProjectActions from 'actions/shootProjectAction';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
@@ -33,6 +34,7 @@ interface BaseProps {
   fileURL?: string | File;
   filePath: string;
   id: string;
+  assetId?: string;
   parentId: string;
   onSelect?: (id: string) => void;
   isSelected?: boolean;
@@ -48,6 +50,7 @@ const ListNode: FunctionComponent<Props> = ({
   fileURL,
   filePath,
   id,
+  assetId,
   parentId,
   onSelect,
   isSelected,
@@ -310,6 +313,24 @@ const ListNode: FunctionComponent<Props> = ({
                 children: [],
               },
               {
+                label: 'Visualization',
+                onClick: () => {
+                  if (assetId) {
+                    dispatch(shootProjectActions.renderAsset({ assetId: assetId }));
+                  }
+                },
+                children: [],
+              },
+              {
+                label: 'Visualization cancel',
+                onClick: () => {
+                  if (assetId) {
+                    dispatch(shootProjectActions.unrenderAsset({ assetId: assetId }));
+                  }
+                },
+                children: [],
+              },
+              {
                 label: 'Add empty motion',
                 onClick: () => {},
                 children: [],
@@ -340,6 +361,7 @@ const ListNode: FunctionComponent<Props> = ({
       };
     }
   }, [
+    assetId,
     depth,
     depthCheck,
     depthChnageKey,
