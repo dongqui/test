@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import TrackList from './TrackList';
 import TimelineEditor from './TimelineEditor';
 import classNames from 'classnames/bind';
@@ -14,4 +15,4 @@ const TimelinePanel = () => {
   );
 };
 
-export default TimelinePanel;
+export default memo(TimelinePanel);

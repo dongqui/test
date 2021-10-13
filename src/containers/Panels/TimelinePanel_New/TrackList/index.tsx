@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
+import _ from 'lodash';
 
-import { createTrackList } from 'actions/trackList';
+import { createTrackList, changeTrackScrollTop } from 'actions/trackList';
 import { useSelector } from 'reducers';
 import { LayerTrackItem } from './TrackItem';
 
@@ -12,8 +13,20 @@ const cx = classNames.bind(styles);
 
 const TrackList = () => {
   const dispatch = useDispatch();
+  const trackListRef = useRef<HTMLUListElement>(null);
   const layerTrackList = useSelector((state) => state.trackList.layerTrackList);
 
+  const throttledThing = _.throttle(() => {
+    const trackListDOM = trackListRef.current;
+    const params = { scrollTop: trackListDOM!.scrollTop };
+    dispatch(changeTrackScrollTop(params));
+  }, 10);
+
+  const scrollTrackList = useCallback(() => {
+    throttledThing();
+  }, [throttledThing]);
+
+  // 테스트 용도
   useEffect(() => {
     dispatch(
       createTrackList({
@@ -32,7 +45,7 @@ const TrackList = () => {
   }, [dispatch]);
 
   return (
-    <ul className={cx('track-list')}>
+    <ul className={cx('track-list')} ref={trackListRef} onScroll={scrollTrackList}>
       {layerTrackList.map((props) => (
         <LayerTrackItem key={props.layerId} {...props} />
       ))}
