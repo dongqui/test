@@ -36,7 +36,7 @@ interface BaseProps {
   parentId: string;
   onSelect?: (id: string) => void;
   isSelected?: boolean;
-  childrens: string[];
+  childrens: any[];
   selectedId?: string;
 }
 
@@ -299,9 +299,7 @@ const ListNode: FunctionComponent<Props> = ({
   // const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
 
   const renderChildren = useCallback(
-    (id: string) => {
-      const node = _.find(lpNode, { id });
-
+    (paramId: any) => {
       // const handleChildrenSelect = () => {
       //   onSelect && onSelect(id);
 
@@ -313,23 +311,42 @@ const ListNode: FunctionComponent<Props> = ({
       //   );
       // };
 
-      if (node) {
+      if (typeof paramId === 'string') {
+        const node = _.find(lpNode, { id: paramId });
+
+        if (node) {
+          return (
+            <ListNode
+              id={node.id}
+              parentId={node.parentId}
+              type={node.type}
+              name={node.name}
+              fileURL={node.fileURL}
+              filePath={node.filePath}
+              onSelect={handleSelect}
+              isSelected={node.id === selectedId}
+              childrens={node.children}
+            />
+          );
+        }
+      }
+
+      if (typeof paramId === 'object') {
         return (
           <ListNode
-            id={node.id}
-            parentId={node.parentId}
-            type={node.type}
-            name={node.name}
-            fileURL={node.fileURL}
-            filePath={node.filePath}
+            id={paramId}
+            parentId={parentId}
+            type="Motion"
+            name={paramId.name}
+            filePath={filePath + `\\${name}`}
             onSelect={handleSelect}
-            isSelected={node.id === selectedId}
-            childrens={node.children}
+            isSelected={id === selectedId && paramId.current}
+            childrens={[]}
           />
         );
       }
     },
-    [handleSelect, lpNode, selectedId],
+    [filePath, handleSelect, id, lpNode, name, parentId, selectedId],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -357,9 +374,13 @@ const ListNode: FunctionComponent<Props> = ({
         </div>
         {/* children area */}
         <div>
-          {childrens.map((children) => (
-            <div key={children}>{renderChildren(children)}</div>
-          ))}
+          {childrens.map((children) => {
+            if (typeof children === 'string') {
+              return <div key={children}>{renderChildren(children)}</div>;
+            }
+
+            return <div key={children.id}>{renderChildren(children)}</div>;
+          })}
         </div>
       </div>
     </div>
