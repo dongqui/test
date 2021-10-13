@@ -2,6 +2,8 @@ import { FunctionComponent, memo, useCallback } from 'react';
 import _ from 'lodash';
 import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import * as selectingDataActions from 'actions/selectingDataAction';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -22,11 +24,16 @@ const DEFAULT_SKELETON_VIEWER_OPTION = {
   },
 };
 
+const DEFAULT_CONTROLLER_COLOR = BABYLON.Color3.FromHexString('#FFE480');
+
 const ControlPanel: FunctionComponent = () => {
   const sceneList = useSelector((state) => state.shootProject.sceneList);
   const assetList = useSelector((state) => state.shootProject.assetList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
+  const retargetMaps = useSelector((state) => state.retargetMaps);
+
+  const dispatch = useDispatch();
 
   const makeMeshesVisible = useCallback(() => {
     const targetScene = sceneList[0];
@@ -147,7 +154,7 @@ const ControlPanel: FunctionComponent = () => {
 
     if (targetScene && targetAssets) {
       targetAssets.forEach((asset) => {
-        const { id: assetId, meshes } = asset;
+        const { id: assetId, bones } = asset;
 
         if (
           // 이미 해당 asset에 대한 controller가 존재한다면 생성하지 않음
@@ -158,12 +165,84 @@ const ControlPanel: FunctionComponent = () => {
           return;
         }
 
-        // 컨트롤러 생성
+        const targetRetargetMap = retargetMaps.find(
+          (retargetMap) => retargetMap.assetId === assetId,
+        );
 
-        // 컨트롤러 애니메이션 추가
+        if (targetRetargetMap) {
+          // if (
+          //   // retargetMap이 완성되지 않은 경우에는 생성하지 않음
+          //   // retargetMap 생성 로직 완료 후에는 주석 해제해야 함
+          //   Object.keys(targetRetargetMap.value).length !==
+          //   Object.values(targetRetargetMap.value).filter((v) => v.targetBoneId).length
+          // ) {
+          //   return;
+          // }
+
+          // 컨트롤러 생성
+          const controllers: BABYLON.Mesh[] = [];
+          // prettier-ignore
+          const targetBoneIndices = [1, 56, 61, 2, 57, 62, 3, 58, 63, 4, 59, 64, 5, 8, 32, 6, 9, 33, 10, 34, 11, 35, 16, 40];
+          const controllerMaterial = new BABYLON.StandardMaterial(
+            'controllerMaterial',
+            targetScene.scene,
+          );
+          controllerMaterial.emissiveColor = DEFAULT_CONTROLLER_COLOR;
+          controllerMaterial.disableLighting = true;
+
+          bones.forEach((bone, idx) => {
+            if (targetBoneIndices.includes(idx)) {
+              const controller = BABYLON.MeshBuilder.CreateTorus(
+                `${bone.name}_controller`,
+                {
+                  diameter: 30,
+                  thickness: 0.2,
+                  tessellation: 64,
+                },
+                targetScene.scene,
+              );
+              controller.renderingGroupId = 3;
+              controller.id = `${assetId}//${bone.name}//controller`;
+              controller.material = controllerMaterial;
+
+              if (controllers.length === 0) {
+                // controller들의 scale을 모델에 맞추기 위해, Armature bone을 hips controller의 parent로 설정
+                controller.setParent(bone.getParent());
+              }
+              controllers.push(controller);
+            }
+          });
+
+          // 컨트롤러 간 계층구조 생성
+          controllers.forEach((controller, idx) => {
+            const targetBone = bones.find(
+              (bone) => bone.id === controller.id.replace('controller', 'bone'),
+            );
+
+            if (targetBone && targetBone.children.length > 0) {
+              targetBone.children.forEach((childBone) => {
+                const childController = controllers.find(
+                  (ctrl) => ctrl.id === childBone.id.replace('bone', 'controller'),
+                );
+                if (childController) {
+                  childController.setParent(controller);
+                }
+              });
+            }
+            if (targetBone) {
+              controller.scaling = new BABYLON.Vector3(1, 1, 1);
+              controller.position = targetBone.position;
+            }
+          });
+
+          // dragBox selectable 대상으로 추가
+          dispatch(selectingDataActions.addSelectableObjects({ objects: controllers }));
+
+          // 컨트롤러 애니메이션 추가
+        }
       });
     }
-  }, [assetList, sceneList, selectableObjects, selectedTargets]);
+  }, [assetList, dispatch, retargetMaps, sceneList, selectableObjects, selectedTargets]);
 
   const deleteControllers = useCallback(() => {}, []);
 

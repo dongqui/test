@@ -88,7 +88,9 @@ const useLoadAssets = () => {
             meshes,
             geometries,
             skeleton: skeletons[0] ?? null,
-            bones: skeletons[0] ? skeletons[0].bones : [],
+            bones: skeletons[0]
+              ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene'))
+              : [],
             transformNodes,
             animationIngredientIds,
             retargetMapId: retargetMap.id,
