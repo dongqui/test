@@ -9,9 +9,13 @@ declare namespace LP {
 
   interface Node {
     id: string;
-    fileURL: string | File;
+    parentId: string;
+    fileURL?: string | File;
+    filePath: string;
     name: string;
     type: NodeType;
+    hideNode?: boolean;
+    children: string[];
   }
 }
 

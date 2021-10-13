@@ -1,4 +1,4 @@
-import { FunctionComponent, RefObject } from 'react';
+import { FunctionComponent, memo, RefObject, ReactNode } from 'react';
 import { ResizableBox, ResizableBoxProps, ResizeHandle } from 'react-resizable';
 import { useWindowSize } from 'hooks/common';
 import classNames from 'classnames/bind';
@@ -14,6 +14,7 @@ interface BaseProps {
   handles?: ResizeHandle[];
   noResize?: boolean;
   innerRef?: RefObject<HTMLDivElement>;
+  children: ReactNode;
 }
 
 type Exclusion = 'width' | 'height' | 'minConstraints' | 'maxConstraints' | 'resizeHandles';
@@ -71,4 +72,4 @@ const Box: FunctionComponent<Props> = ({
   );
 };
 
-export default Box;
+export default memo(Box);

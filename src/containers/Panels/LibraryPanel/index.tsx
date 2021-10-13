@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FunctionComponent, useEffect, useState, useCallback, useRef } from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { connect, useDispatch } from 'react-redux';
 import { RootState } from 'reducers';
@@ -11,7 +11,6 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import Box from 'components/Layout/Box';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -26,7 +25,7 @@ interface BaseProps {}
 
 type Props = StateProps & BaseProps;
 
-const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
+const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath }) => {
   const getFileExtension = useCallback((file: string): string => {
     const type = (/[^./\\]*$/.exec(file) || [''])[0];
 
@@ -37,7 +36,6 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { onModalOpen, onModalClose } = useBaseModal();
-  const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   const handleCreateNode = useCallback(() => {}, []);
 
@@ -69,6 +67,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
               const newNode = {
                 id: uuidv4(),
                 fileURL: file,
+                filePath: lpCurrentPath,
                 name: fileName,
                 type: 'Model',
               } as LP.Node;
@@ -105,6 +104,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
                   const newNode = {
                     id: uuidv4(),
                     fileURL: response,
+                    filePath: lpCurrentPath,
                     name: fileName,
                     type: 'Model',
                   } as LP.Node;
@@ -135,7 +135,15 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
             break;
           }
 
-          // 3) glb(GLB) or fbx(FBX) 외 로드
+          // 3) mp4(MP4), mov(MOV), avi(AVI) 로드
+          case 'mp4':
+          case 'mov':
+          case 'avi': {
+            // VM으로 전환
+            break;
+          }
+
+          // 4) glb(GLB) or fbx(FBX) 외 로드
           default: {
             onModalOpen({
               title: 'Warning',
@@ -154,7 +162,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 
       // handleDrop END
     },
-    [dispatch, getFileExtension, lpNode, onModalClose, onModalOpen],
+    [dispatch, getFileExtension, lpCurrentPath, lpNode, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
@@ -162,96 +170,41 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
   const [view, setView] = useState<LP.View>('List');
 
   // LP에서 기본 ContextMenu(우클릭) event disable
-  useEffect(() => {
-    const handleContextMenu = (e: any) => {
-      e.preventDefault();
+  // useEffect(() => {
+  //   const handleContextMenu = (e: any) => {
+  //     e.preventDefault();
 
-      const isContains = wrapperRef.current?.contains(e.target as Node);
-      if (!isContains) {
-        onContextMenuOpen({
-          innerRef: wrapperRef,
-          menu: [],
-        });
-      }
-    };
+  //     const isContains = wrapperRef.current?.contains(e.target as Node);
+  //     if (!isContains) {
+  //       // onContextMenuOpen({
+  //       //   innerRef: wrapperRef,
+  //       //   menu: [],
+  //       // });
+  //     }
+  //   };
 
-    const currentRef = wrapperRef.current;
+  //   const currentRef = wrapperRef.current;
 
-    if (currentRef) {
-      currentRef.addEventListener('contextmenu', handleContextMenu);
+  //   if (currentRef) {
+  //     currentRef.addEventListener('contextmenu', handleContextMenu);
 
-      return () => {
-        currentRef.removeEventListener('contextmenu', handleContextMenu);
-      };
-    }
-  }, [onContextMenuOpen]);
-
-  const headerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-
-      const isContains = headerRef.current?.contains(e.target as Node);
-      if (isContains) {
-        onContextMenuOpen({
-          innerRef: headerRef,
-          menu: [
-            {
-              label: '텍스트1',
-              onClick: () => {},
-              children: [
-                {
-                  label: '하위1',
-                  onClick: () => {},
-                },
-                {
-                  label: '하위2',
-                  onClick: () => {},
-                },
-                {
-                  label: '하위3',
-                  onClick: () => {},
-                },
-              ],
-            },
-            {
-              label: '텍스트2',
-              onClick: () => {},
-              children: [],
-            },
-            {
-              label: '텍스트2',
-              onClick: () => {},
-              children: [],
-            },
-          ],
-        });
-      }
-    };
-
-    const currentRef = headerRef.current;
-
-    if (currentRef) {
-      currentRef.addEventListener('contextmenu', handleContextMenu);
-
-      return () => {
-        currentRef.removeEventListener('contextmenu', handleContextMenu);
-      };
-    }
-  }, [onContextMenuOpen]);
+  //     return () => {
+  //       currentRef.removeEventListener('contextmenu', handleContextMenu);
+  //     };
+  //   }
+  // }, []);
 
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
-      <div className={cx('inner')} ref={wrapperRef}>
-        <Box id="LP-Header" innerRef={headerRef} noResize>
+      <div className={cx('inner')}>
+        <Box id="LP-Header" noResize>
           <LPHeader />
         </Box>
         <Box id="LP-Controlbar" noResize>
           <LPControlbar />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody view={view} nodes={lpNode} />
+          <LPBody view={view} lpNode={lpNode} lpCurrentPath={lpCurrentPath} />
         </Box>
       </div>
     </div>
@@ -261,7 +214,8 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode }) => {
 const mapStateToProps = (state: RootState) => {
   return {
     lpNode: state.lpNode.node,
+    lpCurrentPath: state.lpNode.currentPath,
   };
 };
 
-export default connect(mapStateToProps)(LibraryPanel);
+export default connect(mapStateToProps)(memo(LibraryPanel));
