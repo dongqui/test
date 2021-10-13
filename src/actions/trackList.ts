@@ -7,7 +7,8 @@ export type TrackListAction =
   | ReturnType<typeof addLayerTrack>
   | ReturnType<typeof deleteLayerTrack>
   | ReturnType<typeof muteLayerTrack>
-  | ReturnType<typeof createTrackList>;
+  | ReturnType<typeof createTrackList>
+  | ReturnType<typeof changeTrackScrollTop>;
 
 // 트랙 리스트 생성
 export const createTrackList = (params: any) => ({
@@ -84,6 +85,17 @@ export type MuteLayerTrack = Pick<LayerTrack, 'isMuted' | 'trackName'>;
 export const muteLayerTrack = (params: MuteLayerTrack) => ({
   type: 'trackList/MUTE_LAYER_TRACK' as const,
   payload: {
+    ...params,
+  },
+});
+
+// 트랙 스크롤 높이 전달
+interface ChangeTrackScrollTop {
+  scrollTop: number;
+}
+export const changeTrackScrollTop = (params: ChangeTrackScrollTop) => ({
+  type: 'trackList/CHANGE_TRACK_SCROLL_TOP' as const,
+  payalod: {
     ...params,
   },
 });

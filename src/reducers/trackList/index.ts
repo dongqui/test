@@ -52,6 +52,8 @@ export interface TrackListState {
   selectedTransforms: number[];
 
   interpolationType: InterpolationType;
+
+  trackScrollTop: number; // editor mode에서도 scroll height를 알기 위해 추가
 }
 
 const initialState: TrackListState = {
@@ -64,6 +66,8 @@ const initialState: TrackListState = {
   selectedTransforms: [],
 
   interpolationType: 'none',
+
+  trackScrollTop: 0,
 };
 
 export const trackList = (state = initialState, action: TrackListAction) => {
@@ -88,6 +92,11 @@ export const trackList = (state = initialState, action: TrackListAction) => {
     }
     case 'trackList/MUTE_LAYER_TRACK': {
       return muteLayerTrack(state, action.payload);
+    }
+    case 'trackList/CHANGE_TRACK_SCROLL_TOP': {
+      return Object.assign<{}, TrackListState, Partial<TrackListState>>({}, state, {
+        trackScrollTop: action.payalod.scrollTop,
+      });
     }
     default: {
       return state;
