@@ -136,136 +136,198 @@ const ListNode: FunctionComponent<Props> = ({
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
 
+      console.log('type > ' + type);
       if (isContains) {
-        onContextMenuOpen({
-          top: e.clientY,
-          left: e.clientX,
-          menu: [
-            {
-              label: 'Delete',
-              onClick: () => {
-                const cloneLPNode = _.clone(lpNode);
-                const afterNodes = _.remove(cloneLPNode, (node) => node.id !== id);
+        if (type === 'Folder') {
+          onContextMenuOpen({
+            top: e.clientY,
+            left: e.clientX,
+            menu: [
+              {
+                label: 'Delete',
+                onClick: () => {
+                  const cloneLPNode = _.clone(lpNode);
+                  const afterNodes = _.remove(cloneLPNode, (node) => node.id !== id);
 
-                dispatch(
-                  lpNodeActions.changeNode({
-                    nodes: afterNodes,
-                  }),
-                );
+                  dispatch(
+                    lpNodeActions.changeNode({
+                      nodes: afterNodes,
+                    }),
+                  );
+                },
+                children: [],
               },
-              children: [],
-            },
-            {
-              label: 'Edit name',
-              onClick: () => {},
-              children: [],
-            },
-            {
-              label: 'Copy',
-              onClick: () => {
-                dispatch(
-                  lpNodeActions.changeClipboard({
-                    data: [id],
-                  }),
-                );
+              {
+                label: 'Edit name',
+                onClick: () => {},
+                children: [],
               },
-              children: [],
-            },
-            {
-              label: 'Paste',
-              onClick: () => {
-                const copyNode = _.find(lpNode, { id: lpClipboard[0] });
+              {
+                label: 'Copy',
+                onClick: () => {
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: [id],
+                    }),
+                  );
+                },
+                children: [],
+              },
+              {
+                label: 'Paste',
+                onClick: () => {
+                  const copyNode = _.find(lpNode, { id: lpClipboard[0] });
 
-                const cloneCopyNode = _.cloneDeep(copyNode);
+                  const cloneCopyNode = _.cloneDeep(copyNode);
 
-                if (cloneCopyNode) {
-                  const max = depthCheck(cloneCopyNode.children, 0, []) || 0;
+                  if (cloneCopyNode) {
+                    const max = depthCheck(cloneCopyNode.children, 0, []) || 0;
 
-                  const currentPathDepth = (filePath.match(/\\/g) || []).length;
+                    const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
-                  if (currentPathDepth + max >= 6) {
-                    // alert('으악?');
-                    onModalOpen({
-                      title: 'Warning',
-                      message: '디렉토리를 복사할 수 없습니다. 계층 초과',
-                      confirmText: '확인',
-                    });
-                    return;
+                    if (currentPathDepth + max >= 6) {
+                      // alert('으악?');
+                      onModalOpen({
+                        title: 'Warning',
+                        message: '디렉토리를 복사할 수 없습니다. 계층 초과',
+                        confirmText: '확인',
+                      });
+                      return;
+                    }
                   }
-                }
 
-                // @TODO 없으면 비활성 처리 필요
+                  // @TODO 없으면 비활성 처리 필요
 
-                // let nextLPNodes = _.clone(lpNode);
+                  // let nextLPNodes = _.clone(lpNode);
 
-                if (cloneCopyNode) {
-                  const nextNodes = produce(lpNode, (draft) => {
-                    const targetNode = _.find(draft, { id });
+                  if (cloneCopyNode) {
+                    const nextNodes = produce(lpNode, (draft) => {
+                      const targetNode = _.find(draft, { id });
 
-                    if (targetNode) {
-                      cloneCopyNode.id = uuidv4();
-                      cloneCopyNode.parentId = id;
-                      cloneCopyNode.filePath = filePath + `\\${cloneCopyNode.name}`;
+                      if (targetNode) {
+                        cloneCopyNode.id = uuidv4();
+                        cloneCopyNode.parentId = id;
+                        cloneCopyNode.filePath = filePath + `\\${cloneCopyNode.name}`;
 
-                      targetNode.children.push(cloneCopyNode.id);
+                        targetNode.children.push(cloneCopyNode.id);
 
-                      // @TODO 하위 노드도 추가
-                      draft.push(cloneCopyNode);
+                        // @TODO 하위 노드도 추가
+                        draft.push(cloneCopyNode);
 
-                      if (!_.isEmpty(cloneCopyNode.children)) {
-                        cloneCopyNode.children.map((child) =>
-                          depthChnageKey(draft, child, cloneCopyNode),
-                        );
+                        if (!_.isEmpty(cloneCopyNode.children)) {
+                          cloneCopyNode.children.map((child) =>
+                            depthChnageKey(draft, child, cloneCopyNode),
+                          );
+                        }
                       }
+                    });
+
+                    // nextLPNodes = nextNodes;
+
+                    dispatch(
+                      lpNodeActions.changeNode({
+                        nodes: nextNodes,
+                      }),
+                    );
+                  }
+                },
+                children: [],
+              },
+              {
+                label: 'New directory',
+                visibility: depth === 6 ? 'invisible' : 'visible',
+                onClick: () => {
+                  const nextNodes = produce(lpNode, (draft) => {
+                    const parent = _.find(draft, { id });
+
+                    if (parent) {
+                      const newNode = {
+                        id: uuidv4(),
+                        // filePath: lpCurrentPath + `\\${name}`,
+                        filePath: filePath + `\\${name}`,
+                        parentId: parent.id,
+                        name: 'Folder /',
+                        type: 'Folder',
+                        hideNode: true,
+                        children: [],
+                      } as LP.Node;
+
+                      parent.children.push(newNode.id);
+
+                      draft.push(newNode);
                     }
                   });
-
-                  // nextLPNodes = nextNodes;
 
                   dispatch(
                     lpNodeActions.changeNode({
                       nodes: nextNodes,
                     }),
                   );
-                }
+                },
+                children: [],
               },
-              children: [],
-            },
-            {
-              label: 'New directory',
-              visibility: depth === 6 ? 'invisible' : 'visible',
-              onClick: () => {
-                const nextNodes = produce(lpNode, (draft) => {
-                  const parent = _.find(draft, { id });
+            ],
+          });
+        }
 
-                  if (parent) {
-                    const newNode = {
-                      id: uuidv4(),
-                      // filePath: lpCurrentPath + `\\${name}`,
-                      filePath: filePath + `\\${name}`,
-                      parentId: parent.id,
-                      name: 'Folder /',
-                      type: 'Folder',
-                      hideNode: true,
-                      children: [],
-                    } as LP.Node;
+        if (type === 'Model') {
+          onContextMenuOpen({
+            top: e.clientY,
+            left: e.clientX,
+            menu: [
+              {
+                label: 'Delete',
+                onClick: () => {
+                  const cloneLPNode = _.clone(lpNode);
+                  const afterNodes = _.remove(cloneLPNode, (node) => node.id !== id);
 
-                    parent.children.push(newNode.id);
-
-                    draft.push(newNode);
-                  }
-                });
-
-                dispatch(
-                  lpNodeActions.changeNode({
-                    nodes: nextNodes,
-                  }),
-                );
+                  dispatch(
+                    lpNodeActions.changeNode({
+                      nodes: afterNodes,
+                    }),
+                  );
+                },
+                children: [],
               },
-              children: [],
-            },
-          ],
-        });
+              {
+                label: 'Edit name',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Copy',
+                onClick: () => {
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: [id],
+                    }),
+                  );
+                },
+                children: [],
+              },
+              {
+                label: 'Paste',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Add empty motion',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Export > glb',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Export > fbx',
+                onClick: () => {},
+                children: [],
+              },
+            ],
+          });
+        }
       }
     };
 
@@ -290,6 +352,7 @@ const ListNode: FunctionComponent<Props> = ({
     name,
     onContextMenuOpen,
     onModalOpen,
+    type,
   ]);
 
   const column = Array.from({ length: depth - 1 }).map((x, i) => i);
