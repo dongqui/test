@@ -5,7 +5,6 @@ import { connect, useDispatch } from 'react-redux';
 import { RootState } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import { convertFBXtoGLB } from 'api';
-import axios from 'axios';
 import produce from 'immer';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
@@ -110,29 +109,6 @@ const LibraryPanel: FunctionComponent<Props> = ({
       switch (extension) {
         // 1) glb(GLB) 로드
         case 'glb': {
-          // const nextNodes = produce(nextLPNodes, (draft) => {
-          //   const newNode: LP.Node = {
-          //     id: uuidv4(),
-          //     fileURL: file,
-          //     filePath: lpCurrentPath,
-          //     parentId: '__root__',
-          //     name: fileName,
-          //     type: 'Model',
-          //     assetId: !_.isEmpty(assetList) ? assetList[0].id : '',
-          //     children: anmiationIngredients,
-          //   };
-
-          //   draft.push(newNode);
-          // });
-
-          // nextLPNodes = nextNodes;
-
-          // dispatch(
-          //   lpNodeActions.changeNode({
-          //     nodes: nextNodes,
-          //   }),
-          // );
-
           setFileName(fileName);
           setIsModelLoading(true);
 
@@ -155,28 +131,6 @@ const LibraryPanel: FunctionComponent<Props> = ({
 
               setFileName(fileName);
               setIsModelLoading(true);
-
-              // const nextNodes = produce(nextLPNodes, (draft) => {
-              //   const newNode: LP.Node = {
-              //     id: uuidv4(),
-              //     fileURL: response,
-              //     filePath: lpCurrentPath,
-              //     parentId: '__root__',
-              //     name: fileName,
-              //     type: 'Model',
-              //     children: [],
-              //   };
-
-              //   draft.push(newNode);
-              // });
-
-              // nextLPNodes = nextNodes;
-
-              // dispatch(
-              //   lpNodeActions.changeNode({
-              //     nodes: nextNodes,
-              //   }),
-              // );
 
               // LP drop 시에 파일 로드하기 위해 아래의 코드를 추가했습니다(차)
               dispatch(shootProjectActions.changeFileToLoad({ file: response }));
@@ -230,31 +184,6 @@ const LibraryPanel: FunctionComponent<Props> = ({
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
   const [view, setView] = useState<LP.View>('List');
-
-  // LP에서 기본 ContextMenu(우클릭) event disable
-  // useEffect(() => {
-  //   const handleContextMenu = (e: any) => {
-  //     e.preventDefault();
-
-  //     const isContains = wrapperRef.current?.contains(e.target as Node);
-  //     if (!isContains) {
-  //       // onContextMenuOpen({
-  //       //   innerRef: wrapperRef,
-  //       //   menu: [],
-  //       // });
-  //     }
-  //   };
-
-  //   const currentRef = wrapperRef.current;
-
-  //   if (currentRef) {
-  //     currentRef.addEventListener('contextmenu', handleContextMenu);
-
-  //     return () => {
-  //       currentRef.removeEventListener('contextmenu', handleContextMenu);
-  //     };
-  //   }
-  // }, []);
 
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
