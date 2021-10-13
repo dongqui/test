@@ -136,7 +136,6 @@ const ListNode: FunctionComponent<Props> = ({
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
 
-      console.log('type > ' + type);
       if (isContains) {
         if (type === 'Folder') {
           onContextMenuOpen({
@@ -363,17 +362,6 @@ const ListNode: FunctionComponent<Props> = ({
 
   const renderChildren = useCallback(
     (paramId: any) => {
-      // const handleChildrenSelect = () => {
-      //   onSelect && onSelect(id);
-
-      //   dispatch(
-      //     lpNodeActions.changeCurrentPath({
-      //       currentPath: filePath + `\\${name}`,
-      //       id: id,
-      //     }),
-      //   );
-      // };
-
       if (typeof paramId === 'string') {
         const node = _.find(lpNode, { id: paramId });
 
