@@ -102,7 +102,9 @@ export type RetargetSourceBoneType =
   | 'leftHandIndex1'
   | 'rightHandIndex1';
 
-export type ShootRetargetMap = { id: string; assetId: string } & {
+export type ShootRetargetMap = { id: string; assetId: string; value: RetargetMapValue };
+
+type RetargetMapValue = {
   [sourceBone in RetargetSourceBoneType]: {
     targetBoneId?: string;
     hipSpace: number;
