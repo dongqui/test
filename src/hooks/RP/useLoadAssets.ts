@@ -1,0 +1,110 @@
+import * as BABYLON from '@babylonjs/core';
+import '@babylonjs/loaders/glTF';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
+import { v4 as uuidv4 } from 'uuid';
+import * as shootProjectActions from 'actions/shootProjectAction';
+import * as animationIngredientsActions from 'actions/animationIngredientsAction';
+import * as retargetMapsActions from 'actions/retargetMapsAction';
+import { AnimationIngredient, ShootAsset } from 'types/common';
+import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
+
+const useLoadAssets = () => {
+  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const fileToLoad = useSelector((state) => state.shootProject.fileToLoad);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (sceneList[0]) {
+      const scene = sceneList[0].scene;
+
+      if (scene && scene.isReady()) {
+        const loadGlbFileAsync = async (fileUrl: string | File, scene: BABYLON.Scene) => {
+          let loadedAssetContainer: BABYLON.AssetContainer;
+
+          if (typeof fileUrl === 'string') {
+            loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(
+              fileUrl,
+              '',
+              scene,
+            );
+          } else {
+            loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(
+              'file:',
+              (fileUrl as unknown) as string,
+              scene,
+            );
+          }
+
+          const {
+            meshes,
+            geometries,
+            skeletons,
+            transformNodes,
+            animationGroups,
+          } = loadedAssetContainer;
+
+          const assetId = uuidv4();
+
+          meshes.forEach((mesh) => {
+            // joint 클릭을 위해 mesh의 클릭을 막습니다.
+            mesh.isPickable = false;
+          });
+
+          skeletons[0].bones.forEach((bone) => {
+            // bone id를 자체적인 규칙에 따라 유일한 식별자로 만듭니다.
+            bone.id = `${assetId}//${bone.name}//bone`;
+          });
+
+          transformNodes.forEach((transformNode) => {
+            // transformNode id를 자체적인 규칙에 따라 유일한 식별자로 만듭니다.
+            transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
+          });
+
+          // animationGroup 없는 경우에 대한 처리도 논의 필요
+          const animationIngredientIds: string[] = [];
+          const animationIngredients: AnimationIngredient[] = [];
+          animationGroups.forEach((animationGroup, idx) => {
+            animationGroup.pause();
+            const animationIngredient = createAnimationIngredient(
+              assetId,
+              animationGroup,
+              false,
+              idx === 0, // load 시에는 첫번째 animationGroup을 current로 사용
+            );
+            animationIngredientIds.push(animationIngredient.id);
+            animationIngredients.push(animationIngredient);
+          });
+
+          // animationIngredients reducer에 등록
+          dispatch(animationIngredientsActions.addAnimationIngredients({ animationIngredients }));
+
+          const retargetMap = createEmptyRetargetMap(assetId);
+
+          const newAsset: ShootAsset = {
+            id: assetId,
+            meshes,
+            geometries,
+            skeleton: skeletons[0] ?? null,
+            bones: skeletons[0] ? skeletons[0].bones : [],
+            transformNodes,
+            animationIngredientIds,
+            retargetMapId: retargetMap.id,
+          };
+
+          // dispatch 3번을 saga에 넣어서 관리하는 게 나을 듯(리팩토링)
+          dispatch(shootProjectActions.addAsset({ asset: newAsset }));
+          dispatch(retargetMapsActions.addRetargetMap({ retargetMap }));
+        };
+
+        if (fileToLoad) {
+          loadGlbFileAsync(fileToLoad, scene);
+        }
+      }
+    }
+  }, [dispatch, fileToLoad, sceneList]);
+};
+
+export default useLoadAssets;

@@ -17,6 +17,7 @@ import LibraryPanel from 'containers/Panels/LibraryPanel';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
 import RenderingPanel from './Panels/RenderingPanel';
+import DummyControlPanel from './Panels/DummyControlPanel';
 
 const cx = classNames.bind(styles);
 
@@ -229,7 +230,7 @@ const Shoot: FunctionComponent = () => {
           <RenderingPanel />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-          {/* CP */}
+          <DummyControlPanel />
         </Box>
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>

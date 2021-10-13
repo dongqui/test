@@ -2,7 +2,7 @@ import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react
 import { IconWrapper, SvgPath } from 'components/Icon';
 import _ from 'lodash';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
-import { getNumberValue } from '../../../hooks/RP/useResizeRP';
+import { getNumberFromPx } from '../../../utils/common';
 import ImageList from './ImageList';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -109,7 +109,7 @@ const CutEditComponent: FunctionComponent = () => {
           ...recordingData,
           rangeBoxInfo: {
             ...recordingData.rangeBoxInfo,
-            width: getNumberValue(ref.style.width),
+            width: getNumberFromPx(ref.style.width),
             x: coordinateX({ x: position.x }),
             y: position.y,
             barX: coordinateBarX({
@@ -131,7 +131,7 @@ const CutEditComponent: FunctionComponent = () => {
       );
 
       const currentRate = Number(
-        Math.round((getNumberValue(ref.style.width) / window.innerWidth) * 100),
+        Math.round((getNumberFromPx(ref.style.width) / window.innerWidth) * 100),
       );
 
       setRangeRate(currentRate);

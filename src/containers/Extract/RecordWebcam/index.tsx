@@ -2,7 +2,7 @@ import { VIDEO_FORMAT_TYPES } from 'types';
 import _ from 'lodash';
 import React, { FunctionComponent, memo, useEffect, useRef } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
-import { useRecordWebcam } from '../../../hooks/RP/useRecordWebcam';
+import { useRecordWebcam } from '../../../hooks/VM';
 import { INITIAL_RECORDING_DATA } from 'utils/const';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';

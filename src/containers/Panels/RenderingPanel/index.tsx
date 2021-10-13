@@ -1,5 +1,11 @@
 import { FunctionComponent, useRef } from 'react';
-import useLoadAssets from './useLoadAssets';
+import {
+  useAnimation,
+  useGizmoControl,
+  useInitializeScene,
+  useLoadAssets,
+  useVisualizeModel,
+} from 'hooks/RP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -8,13 +14,22 @@ const cx = classNames.bind(styles);
 interface Props {}
 
 const RenderingPanel: FunctionComponent<Props> = () => {
-  const renderingCanvas = useRef<HTMLCanvasElement>(null);
+  const renderingCanvas1 = useRef<HTMLCanvasElement>(null);
+  // const renderingCanvas2 = useRef<HTMLCanvasElement>(null);
 
-  useLoadAssets({ renderingCanvas });
+  useInitializeScene({ renderingCanvas: renderingCanvas1 });
+  // useInitializeScene({ renderingCanvas: renderingCanvas2 });
+
+  useLoadAssets();
+  useVisualizeModel();
+  useGizmoControl();
+  useAnimation();
 
   return (
     <div className={cx('wrapper')}>
-      <canvas className={cx('rendering-canvas')} ref={renderingCanvas} />
+      <div id="_dragBox"></div>
+      <canvas className={cx('rendering-canvas')} ref={renderingCanvas1} id="renderingCanvas1" />
+      {/* <canvas className={cx('rendering-canvas')} ref={renderingCanvas2} id="renderingCanvas2" /> */}
     </div>
   );
 };

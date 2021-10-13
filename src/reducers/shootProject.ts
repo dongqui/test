@@ -1,0 +1,68 @@
+import { ShootProjectAction } from 'actions/shootProjectAction';
+import { ShootProject } from 'types/common';
+import { v4 as uuidv4 } from 'uuid';
+
+type State = ShootProject;
+
+const defaultState: State = {
+  id: uuidv4(),
+  sceneList: [],
+  assetList: [],
+  visualizedAssetIds: [],
+  fileToLoad: null,
+  assetIdToRender: null,
+  assetIdToUnrender: null,
+  assetIdToRemove: null,
+  fps: 30,
+};
+
+export const shootProject = (state = defaultState, action: ShootProjectAction) => {
+  switch (action.type) {
+    case 'shootProject/ADD_SCENE': {
+      return Object.assign({}, state, {
+        sceneList: [...state.sceneList, action.payload.scene],
+      });
+    }
+    case 'shootProject/REMOVE_SCENE': {
+      return Object.assign({}, state, {
+        sceneList: state.sceneList.filter((scene) => scene.id !== action.payload.sceneId),
+      });
+    }
+    case 'shootProject/CHANGE_FILE_TO_LOAD': {
+      return Object.assign({}, state, {
+        fileToLoad: action.payload.file,
+      });
+    }
+    case 'shootProject/ADD_ASSET': {
+      return Object.assign({}, state, {
+        assetList: [...state.assetList, action.payload.asset],
+      });
+    }
+    case 'shootProject/RENDER_ASSET': {
+      return Object.assign({}, state, {
+        assetIdToRender: action.payload.assetId,
+        assetIdToUnrender:
+          state.assetIdToUnrender === action.payload.assetId ? null : state.assetIdToUnrender,
+        visualizedAssetIds: [action.payload.assetId], // 다중모델 로드 가능한 버전에서는 push로 변경 필요
+      });
+    }
+    case 'shootProject/UNRENDER_ASSET': {
+      return Object.assign({}, state, {
+        assetIdToRender:
+          state.assetIdToRender === action.payload.assetId ? null : state.assetIdToRender,
+        assetIdToUnrender: action.payload.assetId,
+        visualizedAssetIds: [], // 다중모델 로드 가능한 버전에서는 filter로 변경 필요
+      });
+    }
+    case 'shootProject/REMOVE_ASSET': {
+      return Object.assign({}, state, {
+        assetIdToRemove: action.payload.assetId,
+        assetList: state.assetList.filter((asset) => asset.id !== action.payload.assetId),
+        visualizedAssetIds: state.visualizedAssetIds.filter((id) => id !== action.payload.assetId),
+      });
+    }
+    default: {
+      return state;
+    }
+  }
+};

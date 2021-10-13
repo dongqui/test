@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux';
 import { TypedUseSelectorHook, useSelector as useReduxSelector } from 'react-redux';
+// Old
 import { lpMode } from './lpMode';
 import { lpPage } from './lpPage';
 import { lpSearchword } from './lpSearchword';
@@ -20,6 +21,10 @@ import { modalInfo } from './modalInfo';
 import { contextmenuInfo } from './contextmenuInfo';
 // New
 import { lpNode } from './LP/lpNode';
+import { shootProject } from './shootProject';
+import { selectingData } from './selectingData';
+import { animationIngredients } from './animationIngredients';
+import { retargetMaps } from './retargetMaps';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -43,7 +48,12 @@ const rootReducer = combineReducers({
   barPositionX,
   modalInfo,
   contextmenuInfo,
+  // New
   lpNode,
+  shootProject,
+  selectingData,
+  animationIngredients,
+  retargetMaps,
 });
 
 // type 적용된 useSelector
