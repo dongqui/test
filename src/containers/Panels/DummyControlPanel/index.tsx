@@ -47,7 +47,9 @@ const ControlPanel: FunctionComponent = () => {
 
         // mesh visible
         meshes.forEach((mesh) => {
-          mesh.isVisible = true;
+          if (mesh.getScene().uid === targetScene.id) {
+            mesh.isVisible = true;
+          }
         });
       });
     }
@@ -60,15 +62,31 @@ const ControlPanel: FunctionComponent = () => {
 
     if (targetScene && targetAssets) {
       targetAssets.forEach((asset) => {
-        const { id: assetId, meshes } = asset;
+        const { id: assetId, meshes, bones } = asset;
+
+        // bone이 invisible 하다면 joint는 visible
+        const jointTransformNodes = selectableObjects.filter(
+          (object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId),
+        );
+        const jointTransformNode = jointTransformNodes[1];
+        if (jointTransformNode) {
+          const joint = targetScene.scene.getMeshByID(
+            jointTransformNode.id.replace('transformNode', 'joint'),
+          );
+          if (joint && !joint.isVisible) {
+            return;
+          }
+        }
 
         // mesh visible
         meshes.forEach((mesh) => {
-          mesh.isVisible = false;
+          if (mesh.getScene().uid === targetScene.id) {
+            mesh.isVisible = false;
+          }
         });
       });
     }
-  }, [assetList, sceneList, selectedTargets]);
+  }, [assetList, sceneList, selectableObjects, selectedTargets]);
 
   const makeBonesVisible = useCallback(() => {
     const targetScene = sceneList[0];
@@ -114,7 +132,12 @@ const ControlPanel: FunctionComponent = () => {
 
     if (targetScene && targetAssets) {
       targetAssets.forEach((asset) => {
-        const { id: assetId } = asset;
+        const { id: assetId, meshes } = asset;
+
+        // mesh가 invisible 하다면 bone은 visible
+        if (!meshes[0].isVisible) {
+          return;
+        }
 
         // joint invisible
         const jointTransformNodes = selectableObjects.filter(
@@ -160,7 +183,7 @@ const ControlPanel: FunctionComponent = () => {
         );
         controllers.forEach((controller) => {
           // type guard
-          if (checkIsTargetMesh(controller)) {
+          if (checkIsTargetMesh(controller) && controller.getScene().uid === targetScene.id) {
             controller.isVisible = true;
           }
         });
@@ -183,7 +206,7 @@ const ControlPanel: FunctionComponent = () => {
         );
         controllers.forEach((controller) => {
           // type guard
-          if (checkIsTargetMesh(controller)) {
+          if (checkIsTargetMesh(controller) && controller.getScene().uid === targetScene.id) {
             controller.isVisible = false;
           }
         });
