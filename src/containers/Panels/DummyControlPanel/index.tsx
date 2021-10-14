@@ -4,6 +4,7 @@ import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import { checkIsTargetMesh } from 'utils/RP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -123,7 +124,8 @@ const ControlPanel: FunctionComponent = () => {
           const joint = targetScene.scene.getMeshByID(
             jointTransformNode.id.replace('transformNode', 'joint'),
           );
-          if (joint) {
+          // Object자체 선택이 가능하도록 Armature transformNode에 대해서는 visible off를 허용하지 않음
+          if (joint && !joint.id.toLowerCase().includes('armature')) {
             joint.isVisible = false;
           }
         });
@@ -143,9 +145,51 @@ const ControlPanel: FunctionComponent = () => {
     }
   }, [assetList, sceneList, selectableObjects, selectedTargets]);
 
-  const makeControllersVisible = useCallback(() => {}, []);
+  const makeControllersVisible = useCallback(() => {
+    const targetScene = sceneList[0];
+    const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
+    const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
-  const makeControllersInvisible = useCallback(() => {}, []);
+    if (targetScene && targetAssets) {
+      targetAssets.forEach((asset) => {
+        const { id: assetId } = asset;
+
+        // controller visible
+        const controllers = selectableObjects.filter(
+          (object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh',
+        );
+        controllers.forEach((controller) => {
+          // type guard
+          if (checkIsTargetMesh(controller)) {
+            controller.isVisible = true;
+          }
+        });
+      });
+    }
+  }, [assetList, sceneList, selectableObjects, selectedTargets]);
+
+  const makeControllersInvisible = useCallback(() => {
+    const targetScene = sceneList[0];
+    const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
+    const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
+
+    if (targetScene && targetAssets) {
+      targetAssets.forEach((asset) => {
+        const { id: assetId } = asset;
+
+        // controller invisible
+        const controllers = selectableObjects.filter(
+          (object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh',
+        );
+        controllers.forEach((controller) => {
+          // type guard
+          if (checkIsTargetMesh(controller)) {
+            controller.isVisible = false;
+          }
+        });
+      });
+    }
+  }, [assetList, sceneList, selectableObjects, selectedTargets]);
 
   const addControllers = useCallback(() => {
     const targetScene = sceneList[0];
@@ -195,7 +239,7 @@ const ControlPanel: FunctionComponent = () => {
               const controller = BABYLON.MeshBuilder.CreateTorus(
                 `${bone.name}_controller`,
                 {
-                  diameter: 30,
+                  diameter: 40,
                   thickness: 0.2,
                   tessellation: 64,
                 },
@@ -244,7 +288,30 @@ const ControlPanel: FunctionComponent = () => {
     }
   }, [assetList, dispatch, retargetMaps, sceneList, selectableObjects, selectedTargets]);
 
-  const deleteControllers = useCallback(() => {}, []);
+  const deleteControllers = useCallback(() => {
+    const targetScene = sceneList[0];
+    const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
+    const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
+
+    if (targetScene && targetAssets) {
+      targetAssets.forEach((asset) => {
+        const { id: assetId, bones } = asset;
+
+        // controller 제거
+        const controllers = selectableObjects.filter(
+          (object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh',
+        );
+        controllers.forEach((controller) => {
+          controller.dispose();
+        });
+
+        // dragBox selectable 대상에서 제거
+        dispatch(selectingDataActions.removeSelectableControllers({ assetId }));
+
+        // 컨트롤러 애니메이션 제거
+      });
+    }
+  }, [assetList, dispatch, sceneList, selectableObjects, selectedTargets]);
 
   return (
     <div className={cx('wrapper')}>
