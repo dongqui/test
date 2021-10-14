@@ -4,9 +4,11 @@ import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import * as animationIngredientsActions from 'actions/animationIngredientsAction';
 import { checkIsTargetMesh } from 'utils/RP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { AnimationIngredient, ShootTrack } from 'types/common';
 
 const cx = classNames.bind(styles);
 
@@ -32,6 +34,7 @@ const ControlPanel: FunctionComponent = () => {
   const assetList = useSelector((state) => state.shootProject.assetList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
+  const animationIngredients = useSelector((state) => state.animationIngredients);
   const retargetMaps = useSelector((state) => state.retargetMaps);
 
   const dispatch = useDispatch();
@@ -249,7 +252,7 @@ const ControlPanel: FunctionComponent = () => {
           // 컨트롤러 생성
           const controllers: BABYLON.Mesh[] = [];
           // prettier-ignore
-          const targetBoneIndices = [1, 56, 61, 2, 57, 62, 3, 58, 63, 4, 59, 64, 5, 8, 32, 6, 9, 33, 10, 34, 11, 35, 16, 40];
+          const targetBoneIndices = [1, 56, 61, 2, 57, 62, 3, 58, 63, 4, 59, 64, 5, 8, 32, 6, 9, 33, 10, 34, 11, 35, 16, 40]; // retargetMap의 values 대신 사용
           const controllerMaterial = new BABYLON.StandardMaterial(
             'controllerMaterial',
             targetScene.scene,
@@ -306,10 +309,70 @@ const ControlPanel: FunctionComponent = () => {
           dispatch(selectingDataActions.addSelectableObjects({ objects: controllers }));
 
           // 컨트롤러 애니메이션 추가
+          const currentAnimationIngredient = animationIngredients.find(
+            (anim) => anim.assetId === assetId && anim.current,
+          );
+          if (currentAnimationIngredient) {
+            const { id, name, tracks, layers } = currentAnimationIngredient;
+
+            const newTracks: ShootTrack[] = [];
+
+            controllers.forEach((controller) => {
+              // rotationQuaternion으로 회전법 바꾸는 처리
+              controller.rotate(BABYLON.Axis.X, 0);
+
+              // 대응하는 transformNode의 애니메이션을 사용해 controller의 애니메이션 생성 및 animationIngredient에 추가
+              const transformNodeTracks = tracks.filter(
+                (t) => t.targetId === controller.id.replace('controller', 'transformNode'),
+              );
+              transformNodeTracks.forEach((transformNodeTrack) => {
+                const newTrack: ShootTrack = {
+                  targetId: controller.id,
+                  layerId: layers[0].id,
+                  name: transformNodeTrack.name,
+                  property: transformNodeTrack.property,
+                  axis: transformNodeTrack.axis,
+                  target: controller,
+                  transformKeys: [...transformNodeTrack.transformKeys],
+                  interpolationType: transformNodeTrack.interpolationType,
+                  bezierParams: transformNodeTrack.bezierParams,
+                  useFilter: transformNodeTrack.useFilter,
+                  filterBeta: transformNodeTrack.filterBeta,
+                  filterMinCutoff: transformNodeTrack.filterMinCutoff,
+                  isIncluded: transformNodeTrack.isIncluded,
+                  isLocked: transformNodeTrack.isLocked,
+                };
+                newTracks.push(newTrack);
+              });
+            });
+
+            const newAnimationIngredient: AnimationIngredient = {
+              id,
+              name,
+              assetId,
+              current: true,
+              tracks: [...tracks, ...newTracks],
+              layers,
+            };
+
+            dispatch(
+              animationIngredientsActions.editAnimationIngredient({
+                animationIngredient: newAnimationIngredient,
+              }),
+            );
+          }
         }
       });
     }
-  }, [assetList, dispatch, retargetMaps, sceneList, selectableObjects, selectedTargets]);
+  }, [
+    animationIngredients,
+    assetList,
+    dispatch,
+    retargetMaps,
+    sceneList,
+    selectableObjects,
+    selectedTargets,
+  ]);
 
   const deleteControllers = useCallback(() => {
     const targetScene = sceneList[0];
@@ -332,9 +395,30 @@ const ControlPanel: FunctionComponent = () => {
         dispatch(selectingDataActions.removeSelectableControllers({ assetId }));
 
         // 컨트롤러 애니메이션 제거
+        const currentAnimationIngredient = animationIngredients.find(
+          (anim) => anim.assetId === assetId && anim.current,
+        );
+        if (currentAnimationIngredient) {
+          const { id, name, tracks, layers } = currentAnimationIngredient;
+
+          const newAnimationIngredient: AnimationIngredient = {
+            id,
+            name,
+            assetId,
+            current: true,
+            tracks: tracks.filter((track) => track.target.getClassName() !== 'Mesh'),
+            layers,
+          };
+
+          dispatch(
+            animationIngredientsActions.editAnimationIngredient({
+              animationIngredient: newAnimationIngredient,
+            }),
+          );
+        }
       });
     }
-  }, [assetList, dispatch, sceneList, selectableObjects, selectedTargets]);
+  }, [animationIngredients, assetList, dispatch, sceneList, selectableObjects, selectedTargets]);
 
   return (
     <div className={cx('wrapper')}>
