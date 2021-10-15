@@ -23,14 +23,17 @@ const useAnimation = () => {
     const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
 
     visualizedAnimationIngredients.forEach((animationIngredient) => {
-      animationIngredient.tracks.forEach((track) => {
+      // layer 고려가 들어가야 함
+      // 각 layer의 transformNodes 합해주는 연산 필요
+      const { id, name, assetId, tracks, layers } = animationIngredient;
+      tracks.forEach((track) => {
         if (track.isIncluded) {
           const newAnimation = new BABYLON.Animation(
             track.name,
             `${track.property}.${track.axis}`,
             fps / 30,
             BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
           );
           if (track.useFilter) {
             // filter function 적용
@@ -57,7 +60,12 @@ const useAnimation = () => {
         scene.addAnimationGroup(currentAnimationGroup);
 
         if (isPlaying) {
-          currentAnimationGroup.play();
+          if (currentAnimationGroup.loopAnimation) {
+            currentAnimationGroup.play();
+          } else {
+            currentAnimationGroup.start(true);
+          }
+        } else {
         }
       }
     });
