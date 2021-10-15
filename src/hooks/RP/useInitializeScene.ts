@@ -78,10 +78,24 @@ const useInitializeScene = (params: Params) => {
         innerScene.render();
       });
 
+      // RP DOM은 반드시 존재하여 TS DAA 적용
+      const targetNode = document.getElementById('RP')!;
+      const config = { attributes: true };
+
+      const handleEngineResize = () => {
+        engine.resize();
+      };
+
+      const resizeMutationObserver = new MutationObserver(handleEngineResize);
+
+      resizeMutationObserver.observe(targetNode, config);
+
       return () => {
         // engine을 없앱니다.
         engine.dispose();
         dispatch(shootProjectActions.removeScene({ sceneId: innerScene.uid }));
+
+        resizeMutationObserver.disconnect();
       };
     }
   }, [dispatch, renderingCanvas]);
