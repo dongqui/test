@@ -308,7 +308,7 @@ const ControlPanel: FunctionComponent = () => {
           // dragBox selectable 대상으로 추가
           dispatch(selectingDataActions.addSelectableObjects({ objects: controllers }));
 
-          // 컨트롤러 애니메이션 추가
+          // 컨트롤러 애니메이션 추가 - 모든 layer에서 transformNode가 가진 트랙을 그대로 복사
           const currentAnimationIngredient = animationIngredients.find(
             (anim) => anim.assetId === assetId && anim.current,
           );
@@ -322,27 +322,31 @@ const ControlPanel: FunctionComponent = () => {
               controller.rotate(BABYLON.Axis.X, 0);
 
               // 대응하는 transformNode의 애니메이션을 사용해 controller의 애니메이션 생성 및 animationIngredient에 추가
-              const transformNodeTracks = tracks.filter(
-                (t) => t.targetId === controller.id.replace('controller', 'transformNode'),
-              );
-              transformNodeTracks.forEach((transformNodeTrack) => {
-                const newTrack: ShootTrack = {
-                  targetId: controller.id,
-                  layerId: layers[0].id,
-                  name: transformNodeTrack.name,
-                  property: transformNodeTrack.property,
-                  axis: transformNodeTrack.axis,
-                  target: controller,
-                  transformKeys: [...transformNodeTrack.transformKeys],
-                  interpolationType: transformNodeTrack.interpolationType,
-                  bezierParams: transformNodeTrack.bezierParams,
-                  useFilter: transformNodeTrack.useFilter,
-                  filterBeta: transformNodeTrack.filterBeta,
-                  filterMinCutoff: transformNodeTrack.filterMinCutoff,
-                  isIncluded: transformNodeTrack.isIncluded,
-                  isLocked: transformNodeTrack.isLocked,
-                };
-                newTracks.push(newTrack);
+              layers.forEach((layer) => {
+                const transformNodeTracks = tracks.filter(
+                  (t) =>
+                    t.targetId === controller.id.replace('controller', 'transformNode') &&
+                    t.layerId === layer.id,
+                );
+                transformNodeTracks.forEach((transformNodeTrack) => {
+                  const newTrack: ShootTrack = {
+                    targetId: controller.id,
+                    layerId: layer.id,
+                    name: transformNodeTrack.name,
+                    property: transformNodeTrack.property,
+                    axis: transformNodeTrack.axis,
+                    target: controller,
+                    transformKeys: [...transformNodeTrack.transformKeys],
+                    interpolationType: transformNodeTrack.interpolationType,
+                    bezierParams: transformNodeTrack.bezierParams,
+                    useFilter: transformNodeTrack.useFilter,
+                    filterBeta: transformNodeTrack.filterBeta,
+                    filterMinCutoff: transformNodeTrack.filterMinCutoff,
+                    isIncluded: transformNodeTrack.isIncluded,
+                    isLocked: transformNodeTrack.isLocked,
+                  };
+                  newTracks.push(newTrack);
+                });
               });
             });
 
