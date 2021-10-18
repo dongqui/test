@@ -60,12 +60,11 @@ const useAnimation = () => {
         scene.addAnimationGroup(currentAnimationGroup);
 
         if (isPlaying) {
-          if (currentAnimationGroup.loopAnimation) {
-            currentAnimationGroup.play();
-          } else {
-            currentAnimationGroup.start(true);
-          }
+          currentAnimationGroup.start(true);
         } else {
+          currentAnimationGroup.start(true);
+          currentAnimationGroup.pause();
+          currentAnimationGroup.goToFrame(0);
         }
       }
     });

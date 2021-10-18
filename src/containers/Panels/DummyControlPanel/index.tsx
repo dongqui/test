@@ -327,8 +327,9 @@ const ControlPanel: FunctionComponent = () => {
               });
             }
             if (targetBone) {
+              targetBone.computeWorldMatrix(true);
               controller.scaling = new BABYLON.Vector3(1, 1, 1);
-              controller.position = targetBone.getTransformNode()!.position;
+              controller.position = targetBone.position;
             }
           });
 
