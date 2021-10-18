@@ -66,9 +66,11 @@ const useGizmoControl = () => {
           }
           case 'rotation': {
             gizmoManager.rotationGizmoEnabled = true;
+            break;
           }
           case 'scale': {
             gizmoManager.scaleGizmoEnabled = true;
+            break;
           }
           default: {
             break;
