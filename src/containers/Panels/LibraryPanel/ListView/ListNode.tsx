@@ -339,10 +339,6 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Add empty motion',
                 onClick: () => {
-                  ////
-                  console.log('assetId');
-                  console.log(assetId);
-
                   if (assetId) {
                     const cloneLPNode = _.clone(lpNode);
 
@@ -354,6 +350,20 @@ const ListNode: FunctionComponent<Props> = ({
                       layers: [{ id: uuidv4(), name: 'layer1' }],
                       tracks: [] as ShootTrack[],
                     };
+
+                    const afterNodes = produce(cloneLPNode, (draft) => {
+                      const target = _.find(draft, { assetId: assetId });
+
+                      if (target) {
+                        target.children.push(nextIngredient);
+                      }
+                    });
+
+                    dispatch(
+                      lpNodeActions.changeNode({
+                        nodes: afterNodes,
+                      }),
+                    );
 
                     // @todo 불필요한 파라미터 제거
                     dispatch(
