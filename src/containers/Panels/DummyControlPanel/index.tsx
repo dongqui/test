@@ -279,6 +279,33 @@ const ControlPanel: FunctionComponent = () => {
                 // controller들의 scale을 모델에 맞추기 위해, Armature bone을 hips controller의 parent로 설정
                 controller.setParent(bone.getParent());
               }
+
+              // controller actionManager 생성 및 pick, hover action 등록
+              controller.actionManager = new BABYLON.ActionManager(targetScene.scene);
+              controller.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event) => {
+                  dispatch(selectingDataActions.defaultSingleSelect({ target: controller }));
+                }),
+              );
+
+              controller.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(
+                  BABYLON.ActionManager.OnPointerOverTrigger,
+                  (event) => {
+                    targetScene.scene.hoverCursor = 'pointer';
+                  },
+                ),
+              );
+
+              controller.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(
+                  BABYLON.ActionManager.OnPointerOverTrigger,
+                  (event) => {
+                    targetScene.scene.hoverCursor = 'default';
+                  },
+                ),
+              );
+
               controllers.push(controller);
             }
           });
@@ -301,7 +328,7 @@ const ControlPanel: FunctionComponent = () => {
             }
             if (targetBone) {
               controller.scaling = new BABYLON.Vector3(1, 1, 1);
-              controller.position = targetBone.position;
+              controller.position = targetBone.getTransformNode()!.position;
             }
           });
 

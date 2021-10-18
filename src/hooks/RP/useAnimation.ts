@@ -11,7 +11,7 @@ const useAnimation = () => {
   const animationIngredients = useSelector((state) => state.animationIngredients);
 
   const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // 애니메이션 생성
   useEffect(() => {
