@@ -10,6 +10,9 @@ export const animationIngredients = (state = defaultState, action: AnimationIngr
     case 'animationIngredientsAction/ADD_ANIMATION_INGREDIENTS': {
       return [...state, ...action.payload.animationIngredients];
     }
+    case 'animationIngredientsAction/ADD_MOTION': {
+      return [...state, action.payload.animationIngredient];
+    }
     default: {
       return state;
     }

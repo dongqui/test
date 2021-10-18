@@ -7,7 +7,8 @@ export type ShootProjectAction =
   | ReturnType<typeof addAsset>
   | ReturnType<typeof renderAsset>
   | ReturnType<typeof unrenderAsset>
-  | ReturnType<typeof removeAsset>;
+  | ReturnType<typeof removeAsset>
+  | ReturnType<typeof addMotion>;
 
 const ADD_SCENE = 'shootProject/ADD_SCENE' as const;
 const REMOVE_SCENE = 'shootProject/REMOVE_SCENE' as const;
@@ -16,6 +17,7 @@ const ADD_ASSET = 'shootProject/ADD_ASSET' as const;
 const RENDER_ASSET = 'shootProject/RENDER_ASSET' as const;
 const UNRENDER_ASSET = 'shootProject/UNRENDER_ASSET' as const;
 const REMOVE_ASSET = 'shootProject/REMOVE_ASSET' as const;
+const ADD_MOTION = 'shootProject/ADD_MOTION' as const;
 
 interface AddScene {
   scene: ShootScene;
@@ -43,6 +45,11 @@ interface UnrenderAsset {
 
 interface RemoveAsset {
   assetId: string;
+}
+
+interface AddMotion {
+  assetId: string;
+  motionId: string;
 }
 
 /**
@@ -124,6 +131,19 @@ export const unrenderAsset = (params: UnrenderAsset) => ({
  */
 export const removeAsset = (params: RemoveAsset) => ({
   type: REMOVE_ASSET,
+  payload: {
+    ...params,
+  },
+});
+
+/**
+ * 전달받은 id에 해당하는 asset에 추가한 빈 모션의 id를 하위로 할당한다.
+ *
+ * @param assetId - 추가한 모션의 id를 할당할 asset의 id
+ * @param motionId - 새로 생성한 빈 모션의 id
+ */
+export const addMotion = (params: AddMotion) => ({
+  type: ADD_MOTION,
   payload: {
     ...params,
   },

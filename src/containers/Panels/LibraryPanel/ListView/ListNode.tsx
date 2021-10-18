@@ -16,11 +16,13 @@ import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
+import { AnimationIngredient, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
+import * as animationIngredientsAction from 'actions/animationIngredientsAction';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
@@ -42,7 +44,9 @@ interface BaseProps {
   selectedId?: string;
 }
 
-type Props = BaseProps;
+type StateProps = ReturnType<typeof mapStateToProps>;
+
+type Props = StateProps & BaseProps;
 
 const ListNode: FunctionComponent<Props> = ({
   type,
@@ -56,6 +60,8 @@ const ListNode: FunctionComponent<Props> = ({
   isSelected,
   childrens,
   selectedId,
+  assetList,
+  anmiationIngredients,
 }) => {
   const dispatch = useDispatch();
 
@@ -332,7 +338,39 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Add empty motion',
-                onClick: () => {},
+                onClick: () => {
+                  ////
+                  console.log('assetId');
+                  console.log(assetId);
+
+                  if (assetId) {
+                    const cloneLPNode = _.clone(lpNode);
+
+                    const nextIngredient: AnimationIngredient = {
+                      id: uuidv4(),
+                      name: 'empty motion',
+                      assetId: assetId,
+                      current: false,
+                      layers: [{ id: uuidv4(), name: 'layer1' }],
+                      tracks: [] as ShootTrack[],
+                    };
+
+                    // @todo 불필요한 파라미터 제거
+                    dispatch(
+                      animationIngredientsAction.addMotion({
+                        assetId: assetId,
+                        animationIngredient: nextIngredient,
+                      }),
+                    );
+
+                    dispatch(
+                      shootProjectActions.addMotion({
+                        assetId: assetId,
+                        motionId: nextIngredient.id,
+                      }),
+                    );
+                  }
+                },
                 children: [],
               },
               {
@@ -439,6 +477,8 @@ const ListNode: FunctionComponent<Props> = ({
               onSelect={handleSelect}
               isSelected={node.id === selectedId}
               childrens={node.children}
+              assetList={assetList}
+              anmiationIngredients={anmiationIngredients}
             />
           );
         }
@@ -455,11 +495,23 @@ const ListNode: FunctionComponent<Props> = ({
             onSelect={handleSelect}
             isSelected={id === selectedId && paramId.current}
             childrens={[]}
+            assetList={assetList}
+            anmiationIngredients={anmiationIngredients}
           />
         );
       }
     },
-    [filePath, handleSelect, id, lpNode, name, parentId, selectedId],
+    [
+      anmiationIngredients,
+      assetList,
+      filePath,
+      handleSelect,
+      id,
+      lpNode,
+      name,
+      parentId,
+      selectedId,
+    ],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -500,11 +552,11 @@ const ListNode: FunctionComponent<Props> = ({
   );
 };
 
-// const mapStateToProps = (state: RootState) => {
-//   return {
-//     lpNode: state.lpNode.node,
-//   };
-// };
+const mapStateToProps = (state: RootState) => {
+  return {
+    assetList: state.shootProject.assetList,
+    anmiationIngredients: state.animationIngredients,
+  };
+};
 
-// export default connect(mapStateToProps)(memo(ListNode));
-export default memo(ListNode);
+export default connect(mapStateToProps)(memo(ListNode));
