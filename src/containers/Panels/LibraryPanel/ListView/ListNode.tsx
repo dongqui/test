@@ -348,6 +348,46 @@ const ListNode: FunctionComponent<Props> = ({
             ],
           });
         }
+
+        if (type === 'Motion') {
+          // @TODO 추출된 모션의 경우에는 다른 컨텍스트메뉴가 필요 (parentId가 root인 경우)
+          onContextMenuOpen({
+            top: e.clientY,
+            left: e.clientX,
+            menu: [
+              {
+                label: 'Delete',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Edit name',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Copy',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Visualization',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Visualization cancel',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Export',
+                onClick: () => {},
+                children: [],
+              },
+            ],
+          });
+        }
       }
     };
 
