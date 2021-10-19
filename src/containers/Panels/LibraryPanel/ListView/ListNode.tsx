@@ -533,7 +533,12 @@ const ListNode: FunctionComponent<Props> = ({
   return (
     <div className={classes}>
       <div className={cx('inner')}>
-        <div style={{ display: 'flex' }} ref={wrapperRef} onClick={handleSelect}>
+        <div
+          style={{ display: 'flex' }}
+          ref={wrapperRef}
+          onClick={handleSelect}
+          onContextMenu={handleSelect}
+        >
           {/* {column.map((col, i) => (
             <div key={i} style={{ width: `${12 * col}px` }} />
           ))} */}

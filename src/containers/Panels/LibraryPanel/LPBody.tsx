@@ -51,6 +51,13 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
         .some((isNodeContains) => isNodeContains);
 
       if (isContains && isOutsideNode) {
+        dispatch(
+          lpNodeActions.changeCurrentPath({
+            currentPath: '\\root',
+            id: '__root__',
+          }),
+        );
+
         onContextMenuOpen({
           top: e.clientY,
           left: e.clientX,
