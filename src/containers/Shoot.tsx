@@ -18,6 +18,7 @@ import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
 import RenderingPanel from './Panels/RenderingPanel';
 import DummyControlPanel from './Panels/DummyControlPanel';
+import DummyTimelinePanel from './Panels/DummyTimelinePanel';
 
 const cx = classNames.bind(styles);
 
@@ -238,7 +239,7 @@ const Shoot: FunctionComponent = () => {
           {/* MB */}
         </Box>
         <Box id="TP" {...boxProps.tp}>
-          {/* TP */}
+          <DummyTimelinePanel />
         </Box>
       </Box>
     </Fragment>

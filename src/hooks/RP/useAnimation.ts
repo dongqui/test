@@ -13,6 +13,10 @@ const useAnimation = () => {
   const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
   const [isPlaying, setIsPlaying] = useState(false);
 
+  useEffect(() => {
+    console.log('animationIngredients: ', animationIngredients);
+  }, [animationIngredients]);
+
   // 애니메이션 생성
   useEffect(() => {
     const visualizedAnimationIngredients = animationIngredients.filter(
