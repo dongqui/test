@@ -219,7 +219,8 @@ const ControlPanel: FunctionComponent = () => {
 
   const addControllers = useCallback(() => {
     const targetScene = sceneList[0];
-    const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
+    const selectedAssetIds = _.uniq(selectedTargets.map((target) => target.id.split('//')[0]));
+
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
     if (targetScene && targetAssets) {
