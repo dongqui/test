@@ -41,6 +41,137 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
     setNodeRefs(Array.from({ length: lpNode.length }).map(() => createRef()));
   }, [lpNode.length]);
 
+  const getSmallestNumber = useCallback((array: number[]) => {
+    let targetValue = 0;
+
+    const nextArray = array.sort((a, b) => a - b);
+
+    if (nextArray.indexOf(0) === -1) {
+      return 0;
+    }
+
+    ///////////
+    for (let i = 0; i < nextArray.length; i++) {
+      const currentValue = nextArray[i];
+
+      const isLast = nextArray.length - 1 === i;
+
+      if (isLast) {
+      }
+
+      if (!isLast) {
+        if (nextArray[i + 1] - currentValue > 1) {
+        }
+      }
+    }
+
+    ////////////
+    // _.map(nextArray, (current, i) => {
+    //   if (nextArray.length - 1 !== i) {
+    //     if (nextArray[i + 1] - current > 1) {
+    //       const minValue = _.min([nextArray[i + 1], current]);
+
+    //       if (minValue === 0) {
+    //         if (nextArray[i + 1] - current > 2) {
+    //           targetValue = 2;
+    //         }
+    //       }
+
+    //       if (minValue) {
+    //         const min = minValue + 1;
+    //         targetValue = min;
+    //       }
+    //     } else {
+    //       const minValue = _.min([nextArray[i + 1], current]);
+
+    //       if (minValue) {
+    //         const min = minValue + 1;
+    //         targetValue = min;
+    //       }
+    //     }
+    //   } else {
+    //     if (current - nextArray[i - 1] > 1) {
+    //       const minValue = _.min([nextArray[i - 1], current]);
+
+    //       if (minValue) {
+    //         const min = minValue + 1;
+    //         targetValue = min;
+    //       }
+
+    //       if (minValue === 0) {
+    //         if (nextArray[i + 1] - current > 2) {
+    //           targetValue = 2;
+    //         }
+    //       }
+    //     } else {
+    //       targetValue = current + 1;
+    //     }
+    //   }
+    // });
+
+    // const result = targetValue || (_.max(array) || 0) + 1;
+    // return result;
+
+    // return 'result'
+  }, []);
+
+  const onDuplicateCheck = useCallback(
+    (name: string) => {
+      const currentPathNodeName = lpNode
+        .filter((node) => {
+          if (node.parentId === '__root__') {
+            if (node.name.includes(name)) {
+              return true;
+            }
+
+            return false;
+            // if (node.name.replaceAll(/\s/g,'')) {
+            //   return node.name;
+            // }
+          }
+        })
+        .map((filteredNode) => filteredNode.name);
+
+      if (currentPathNodeName.length === 0) {
+        return '0';
+      }
+
+      // @todo 생성시 이름에 특수문자 불가 처리 필요
+      if (currentPathNodeName.length === 1) {
+        if (currentPathNodeName[0].includes('(')) {
+          const index = currentPathNodeName[0].indexOf('(') + 1;
+          const getNumber = currentPathNodeName[0].charAt(index);
+
+          if (typeof getNumber === 'number') {
+            return '0';
+          } else {
+            // @todo 예외처리 필요(이름에 특수문자 불가), 임시 else
+            return '0';
+          }
+        } else {
+          // 없는 경우 2
+          return '2';
+        }
+      } else {
+        const filter = currentPathNodeName.map((currentNode) => {
+          if (currentNode.includes('(')) {
+            const index = currentNode.indexOf('(') + 1;
+            const getNumber = currentNode.charAt(index);
+
+            // @todo 예외처리 예정. 현재는 반드시 number라고 가정
+            return Number(getNumber);
+          } else {
+            return 0;
+          }
+        });
+
+        const target = getSmallestNumber(filter);
+        return String(target);
+      }
+    },
+    [getSmallestNumber, lpNode],
+  );
+
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -72,12 +203,16 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
               onClick: () => {
                 let nextLPNodes = _.clone(lpNode);
 
+                const duplicateCheck = onDuplicateCheck('Folder');
+
+                const nodeName = duplicateCheck === '0' ? 'Folder' : `Folder (${duplicateCheck})`;
+
                 const nextNodes = produce(nextLPNodes, (draft) => {
                   const newNode = {
                     id: uuidv4(),
                     filePath: '\\root',
                     parentId: '__root__',
-                    name: 'Folder',
+                    name: nodeName,
                     type: 'Folder',
                     children: [],
                   } as LP.Node;
@@ -119,7 +254,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [dispatch, lpNode, nodeRefs, onContextMenuOpen]);
+  }, [dispatch, lpNode, nodeRefs, onContextMenuOpen, onDuplicateCheck]);
 
   const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
 
