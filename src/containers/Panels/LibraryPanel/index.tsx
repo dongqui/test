@@ -30,12 +30,6 @@ const LibraryPanel: FunctionComponent<Props> = ({
   assetList,
   anmiationIngredients,
 }) => {
-  console.log('assetList');
-  console.log(assetList);
-
-  console.log('anmiationIngredients');
-  console.log(anmiationIngredients);
-
   const getFileExtension = useCallback((file: string): string => {
     const type = (/[^./\\]*$/.exec(file) || [''])[0];
 
