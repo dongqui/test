@@ -1,7 +1,10 @@
-import { FunctionComponent, memo, useEffect, useState } from 'react';
+import { ChangeEvent, FunctionComponent, memo, useCallback, useEffect, useState } from 'react';
 import _ from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
+import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import { ShootLayer, ShootTrack } from 'types/common';
+import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
+import * as animationIngredientsActions from 'actions/animationIngredientsAction';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -14,6 +17,13 @@ const TimelinePanel: FunctionComponent = () => {
 
   const [layers, setLayers] = useState<ShootLayer[]>([]);
   const [tracks, setTracks] = useState<ShootTrack[]>([]);
+
+  const [targetLayerId, setTargetLayerId] = useState<string>();
+  const [targetFrame, setTargetFrame] = useState();
+
+  const [newLayerName, setNewLayerName] = useState('');
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const selectedTargetIds = selectedTargets.map((target) => target.id);
@@ -47,12 +57,93 @@ const TimelinePanel: FunctionComponent = () => {
     setTracks(totalTracks);
   }, [animationIngredients, assetList, selectedTargets]);
 
-  const editKeyframe = () => {};
+  useEffect(() => {
+    console.log('tracks: ', tracks);
+    console.log('layers: ', layers);
+  }, [layers, tracks]);
+
+  const editKeyframe = useCallback(() => {
+    if (targetLayerId) {
+      const targetTracks = tracks.filter((track) => track.layerId === targetLayerId);
+    }
+  }, [targetLayerId, tracks]);
+
   const deleteKeyframe = () => {};
+
   const copyKeyframe = () => {};
+
   const pasteKeyframe = () => {};
-  const addLayer = () => {};
-  const deleteLayer = () => {};
+
+  const addLayer = useCallback(() => {
+    const selectedAssetIds = _.uniq(selectedTargets.map((target) => target.id.split('//')[0]));
+    const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
+
+    targetAssets.forEach((asset) => {
+      const { id: assetId } = asset;
+
+      const currentAnimationIngredient = animationIngredients.find(
+        (anim) => anim.assetId === assetId && anim.current,
+      );
+
+      if (currentAnimationIngredient) {
+        const { id, name, assetId, current, layers, tracks } = currentAnimationIngredient;
+        const newLayer = {
+          id: uuidv4(),
+          name: newLayerName,
+        };
+        const newAnimationIngredient: AnimationIngredient = {
+          id,
+          name,
+          assetId,
+          current,
+          layers: [...layers, newLayer],
+          tracks,
+        };
+        setNewLayerName('');
+        dispatch(
+          animationIngredientsActions.editAnimationIngredient({
+            animationIngredient: newAnimationIngredient,
+          }),
+        );
+      }
+    });
+  }, [animationIngredients, assetList, dispatch, newLayerName, selectedTargets]);
+
+  const deleteLayer = useCallback(() => {
+    const selectedAssetIds = _.uniq(selectedTargets.map((target) => target.id.split('//')[0]));
+    const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
+
+    targetAssets.forEach((asset) => {
+      const { id: assetId } = asset;
+
+      const currentAnimationIngredient = animationIngredients.find(
+        (anim) => anim.assetId === assetId && anim.current,
+      );
+
+      if (currentAnimationIngredient) {
+        const { id, name, assetId, current, layers, tracks } = currentAnimationIngredient;
+        if (targetLayerId && layers.length > 1) {
+          const newAnimationIngredient: AnimationIngredient = {
+            id,
+            name,
+            assetId,
+            current,
+            layers: layers.filter((layer) => layer.id !== targetLayerId),
+            tracks,
+          };
+          dispatch(
+            animationIngredientsActions.editAnimationIngredient({
+              animationIngredient: newAnimationIngredient,
+            }),
+          );
+        }
+      }
+    });
+  }, [animationIngredients, assetList, dispatch, selectedTargets, targetLayerId]);
+
+  const handleChangeLayerName = (event: ChangeEvent<HTMLInputElement>) => {
+    setNewLayerName(event.target.value);
+  };
 
   return (
     <div className={cx('wrapper')}>
@@ -61,7 +152,11 @@ const TimelinePanel: FunctionComponent = () => {
         <div className={cx('title')}>{`Layers (${layers.length})`}</div>
         {layers.map((layer) => {
           return (
-            <button className={cx('button')} key={layer.id}>
+            <button
+              className={cx('button')}
+              key={layer.id}
+              onClick={() => setTargetLayerId(layer.id)}
+            >
               {layer.name}
             </button>
           );
@@ -101,6 +196,11 @@ const TimelinePanel: FunctionComponent = () => {
         <button className={cx('button')} onClick={pasteKeyframe}>
           Paste Keyframe
         </button>
+        <input
+          className={cx('input')}
+          placeholder="type layer name"
+          onChange={handleChangeLayerName}
+        />
         <button className={cx('button')} onClick={addLayer}>
           Add Layer
         </button>
