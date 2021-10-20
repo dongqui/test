@@ -361,7 +361,7 @@ const ControlPanel: FunctionComponent = () => {
                   const newTrack: ShootTrack = {
                     targetId: controller.id,
                     layerId: layer.id,
-                    name: transformNodeTrack.name,
+                    name: `${transformNodeTrack.name}|controller`,
                     property: transformNodeTrack.property,
                     axis: transformNodeTrack.axis,
                     target: controller,

@@ -76,7 +76,7 @@ const TimelinePanel: FunctionComponent = () => {
               className={cx('track')}
               key={`${track.layerId}&${track.targetId}&${track.property}&${track.axis}`}
             >
-              {track.name}
+              {`${track.target.name}//${track.property}//${track.axis}`}
             </div>
           );
         })}
