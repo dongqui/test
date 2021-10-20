@@ -44,7 +44,7 @@ export interface AnimationIngredient {
   layers: ShootLayer[];
 }
 
-export type ShootProperty = 'position' | 'rotationQuaternion' | 'scaling';
+export type ShootProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling';
 export type ShootAxis = 'x' | 'y' | 'z' | 'w';
 
 export interface ShootTrack {

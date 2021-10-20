@@ -25,7 +25,7 @@ const createAnimationIngredient = (
   isMocapAnimation: boolean,
   current: boolean,
 ): AnimationIngredient => {
-  const baseLayerId = uuidv4();
+  const layerId = uuidv4();
 
   const tracks: ShootTrack[] = [];
   // animationGroup을 생성하기 위해 사용한 targetAnimations를 순회하며 Axis-depth의 트랙들을 구성합니다.
@@ -45,7 +45,7 @@ const createAnimationIngredient = (
 
       const xTrack: ShootTrack = {
         targetId: target.id,
-        layerId: baseLayerId,
+        layerId,
         name: `${animation.name}|x`,
         property: 'position',
         axis: 'x',
@@ -61,7 +61,7 @@ const createAnimationIngredient = (
 
       const yTrack: ShootTrack = {
         targetId: target.id,
-        layerId: baseLayerId,
+        layerId,
         name: `${animation.name}|y`,
         property: 'position',
         axis: 'y',
@@ -77,7 +77,7 @@ const createAnimationIngredient = (
 
       const zTrack: ShootTrack = {
         targetId: target.id,
-        layerId: baseLayerId,
+        layerId,
         name: `${animation.name}|z`,
         property: 'position',
         axis: 'z',
@@ -95,26 +95,36 @@ const createAnimationIngredient = (
       tracks.push(yTrack);
       tracks.push(zTrack);
     } else if (animation.targetProperty === 'rotationQuaternion') {
-      const xTransformKeys: BABYLON.IAnimationKey[] = [];
-      const yTransformKeys: BABYLON.IAnimationKey[] = [];
-      const zTransformKeys: BABYLON.IAnimationKey[] = [];
-      const wTransformKeys: BABYLON.IAnimationKey[] = [];
+      const xQuaternionTransformKeys: BABYLON.IAnimationKey[] = [];
+      const yQuaternionTransformKeys: BABYLON.IAnimationKey[] = [];
+      const zQuaternionTransformKeys: BABYLON.IAnimationKey[] = [];
+      const wQuaternionTransformKeys: BABYLON.IAnimationKey[] = [];
+
+      const xEulerTransformKeys: BABYLON.IAnimationKey[] = [];
+      const yEulerTransformKeys: BABYLON.IAnimationKey[] = [];
+      const zEulerTransformKeys: BABYLON.IAnimationKey[] = [];
 
       animation.getKeys().forEach((key) => {
-        xTransformKeys.push({ frame: key.frame, value: key.value.x });
-        yTransformKeys.push({ frame: key.frame, value: key.value.y });
-        zTransformKeys.push({ frame: key.frame, value: key.value.z });
-        wTransformKeys.push({ frame: key.frame, value: key.value.w });
+        xQuaternionTransformKeys.push({ frame: key.frame, value: key.value.x });
+        yQuaternionTransformKeys.push({ frame: key.frame, value: key.value.y });
+        zQuaternionTransformKeys.push({ frame: key.frame, value: key.value.z });
+        wQuaternionTransformKeys.push({ frame: key.frame, value: key.value.w });
+
+        const q: BABYLON.Quaternion = key.value;
+        const e = q.normalize().toEulerAngles();
+        xEulerTransformKeys.push({ frame: key.frame, value: e.x });
+        yEulerTransformKeys.push({ frame: key.frame, value: e.y });
+        zEulerTransformKeys.push({ frame: key.frame, value: e.z });
       });
 
-      const xTrack: ShootTrack = {
+      const xQuaternionTrack: ShootTrack = {
         targetId: target.id,
-        layerId: baseLayerId,
+        layerId,
         name: `${animation.name}|x`,
         property: 'rotationQuaternion',
         axis: 'x',
         target,
-        transformKeys: xTransformKeys,
+        transformKeys: xQuaternionTransformKeys,
         interpolationType: 'linear',
         useFilter: isMocapAnimation ? true : false,
         filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
@@ -123,14 +133,14 @@ const createAnimationIngredient = (
         isLocked: false,
       };
 
-      const yTrack: ShootTrack = {
+      const yQuaternionTrack: ShootTrack = {
         targetId: target.id,
-        layerId: baseLayerId,
+        layerId,
         name: `${animation.name}|y`,
         property: 'rotationQuaternion',
         axis: 'y',
         target,
-        transformKeys: yTransformKeys,
+        transformKeys: yQuaternionTransformKeys,
         interpolationType: 'linear',
         useFilter: isMocapAnimation ? true : false,
         filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
@@ -139,14 +149,14 @@ const createAnimationIngredient = (
         isLocked: false,
       };
 
-      const zTrack: ShootTrack = {
+      const zQuaternionTrack: ShootTrack = {
         targetId: target.id,
-        layerId: baseLayerId,
+        layerId,
         name: `${animation.name}|z`,
         property: 'rotationQuaternion',
         axis: 'z',
         target,
-        transformKeys: zTransformKeys,
+        transformKeys: zQuaternionTransformKeys,
         interpolationType: 'linear',
         useFilter: isMocapAnimation ? true : false,
         filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
@@ -155,14 +165,14 @@ const createAnimationIngredient = (
         isLocked: false,
       };
 
-      const wTrack: ShootTrack = {
+      const wQuaternionTrack: ShootTrack = {
         targetId: target.id,
-        layerId: baseLayerId,
+        layerId,
         name: `${animation.name}|w`,
         property: 'rotationQuaternion',
         axis: 'w',
         target,
-        transformKeys: wTransformKeys,
+        transformKeys: wQuaternionTransformKeys,
         interpolationType: 'linear',
         useFilter: isMocapAnimation ? true : false,
         filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
@@ -171,10 +181,62 @@ const createAnimationIngredient = (
         isLocked: false,
       };
 
-      tracks.push(xTrack);
-      tracks.push(yTrack);
-      tracks.push(zTrack);
-      tracks.push(wTrack);
+      tracks.push(xQuaternionTrack);
+      tracks.push(yQuaternionTrack);
+      tracks.push(zQuaternionTrack);
+      tracks.push(wQuaternionTrack);
+
+      const xEulerTrack: ShootTrack = {
+        targetId: target.id,
+        layerId,
+        name: `${animation.name}|x`,
+        property: 'rotation',
+        axis: 'x',
+        target,
+        transformKeys: xEulerTransformKeys,
+        interpolationType: 'linear',
+        useFilter: isMocapAnimation ? true : false,
+        filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
+        filterMinCutoff: isMocapAnimation ? MOCAP_QUATERNION_MIN_CUTOFF : DEFAULT_MIN_CUTOFF,
+        isIncluded: true,
+        isLocked: false,
+      };
+
+      const yEulerTrack: ShootTrack = {
+        targetId: target.id,
+        layerId,
+        name: `${animation.name}|y`,
+        property: 'rotation',
+        axis: 'y',
+        target,
+        transformKeys: yEulerTransformKeys,
+        interpolationType: 'linear',
+        useFilter: isMocapAnimation ? true : false,
+        filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
+        filterMinCutoff: isMocapAnimation ? MOCAP_QUATERNION_MIN_CUTOFF : DEFAULT_MIN_CUTOFF,
+        isIncluded: true,
+        isLocked: false,
+      };
+
+      const zEulerTrack: ShootTrack = {
+        targetId: target.id,
+        layerId,
+        name: `${animation.name}|z`,
+        property: 'rotation',
+        axis: 'z',
+        target,
+        transformKeys: zEulerTransformKeys,
+        interpolationType: 'linear',
+        useFilter: isMocapAnimation ? true : false,
+        filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
+        filterMinCutoff: isMocapAnimation ? MOCAP_QUATERNION_MIN_CUTOFF : DEFAULT_MIN_CUTOFF,
+        isIncluded: true,
+        isLocked: false,
+      };
+
+      tracks.push(xEulerTrack);
+      tracks.push(yEulerTrack);
+      tracks.push(zEulerTrack);
     } else if (animation.targetProperty === 'scaling') {
       const xTransformKeys: BABYLON.IAnimationKey[] = [];
       const yTransformKeys: BABYLON.IAnimationKey[] = [];
@@ -188,7 +250,7 @@ const createAnimationIngredient = (
 
       const xTrack: ShootTrack = {
         targetId: target.id,
-        layerId: baseLayerId,
+        layerId,
         name: `${animation.name}|x`,
         property: 'scaling',
         axis: 'x',
@@ -204,7 +266,7 @@ const createAnimationIngredient = (
 
       const yTrack: ShootTrack = {
         targetId: target.id,
-        layerId: baseLayerId,
+        layerId,
         name: `${animation.name}|y`,
         property: 'scaling',
         axis: 'y',
@@ -220,7 +282,7 @@ const createAnimationIngredient = (
 
       const zTrack: ShootTrack = {
         targetId: target.id,
-        layerId: baseLayerId,
+        layerId,
         name: `${animation.name}|z`,
         property: 'scaling',
         axis: 'z',
@@ -250,7 +312,7 @@ const createAnimationIngredient = (
     assetId,
     current,
     tracks,
-    layers: [{ id: baseLayerId, name: 'layer1' }],
+    layers: [{ id: layerId, name: 'layer1' }],
   };
 
   return animationIngredient;
