@@ -67,6 +67,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
       if (!isLast) {
         if (nextValue - currentValue > 1) {
           targetValue = currentValue + 1;
+          return targetValue;
         }
 
         if (nextValue - currentValue === 1) {
