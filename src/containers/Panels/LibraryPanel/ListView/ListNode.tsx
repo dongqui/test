@@ -194,7 +194,6 @@ const ListNode: FunctionComponent<Props> = ({
                     const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
                     if (currentPathDepth + max >= 6) {
-                      // alert('으악?');
                       onModalOpen({
                         title: 'Warning',
                         message: '디렉토리를 복사할 수 없습니다. 계층 초과',
@@ -205,9 +204,6 @@ const ListNode: FunctionComponent<Props> = ({
                   }
 
                   // @TODO 없으면 비활성 처리 필요
-
-                  // let nextLPNodes = _.clone(lpNode);
-
                   if (cloneCopyNode) {
                     const nextNodes = produce(lpNode, (draft) => {
                       const targetNode = _.find(draft, { id });
@@ -229,8 +225,6 @@ const ListNode: FunctionComponent<Props> = ({
                         }
                       }
                     });
-
-                    // nextLPNodes = nextNodes;
 
                     dispatch(
                       lpNodeActions.changeNode({
