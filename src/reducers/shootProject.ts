@@ -40,12 +40,20 @@ export const shootProject = (state = defaultState, action: ShootProjectAction) =
       });
     }
     case 'shootProject/RENDER_ASSET': {
-      return Object.assign({}, state, {
-        assetIdToRender: action.payload.assetId,
-        assetIdToUnrender:
-          state.assetIdToUnrender === action.payload.assetId ? null : state.assetIdToUnrender,
-        visualizedAssetIds: [action.payload.assetId], // 다중모델 로드 가능한 버전에서는 push로 변경 필요
-      });
+      if (state.visualizedAssetIds.length === 1) {
+        return Object.assign({}, state, {
+          assetIdToRender: action.payload.assetId,
+          assetIdToUnrender: state.visualizedAssetIds[0],
+          visualizedAssetIds: [action.payload.assetId], // 다중모델 로드 가능한 버전에서는 push로 변경 필요
+        });
+      } else {
+        return Object.assign({}, state, {
+          assetIdToRender: action.payload.assetId,
+          assetIdToUnrender:
+            state.assetIdToUnrender === action.payload.assetId ? null : state.assetIdToUnrender,
+          visualizedAssetIds: [action.payload.assetId], // 다중모델 로드 가능한 버전에서는 push로 변경 필요
+        });
+      }
     }
     case 'shootProject/UNRENDER_ASSET': {
       return Object.assign({}, state, {
