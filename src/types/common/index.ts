@@ -11,7 +11,7 @@ export interface ShootProject {
   fileToLoad: string | File | null;
   assetIdToRender: string | null;
   assetIdToUnrender: string | null;
-  assetIdToRemove: string | null;
+  assetToRemove: ShootAsset | null;
   fps: number;
 }
 

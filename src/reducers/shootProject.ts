@@ -13,7 +13,7 @@ const defaultState: State = {
   fileToLoad: null,
   assetIdToRender: null,
   assetIdToUnrender: null,
-  assetIdToRemove: null,
+  assetToRemove: null,
   fps: 30,
 };
 
@@ -49,23 +49,23 @@ export const shootProject = (state = defaultState, action: ShootProjectAction) =
       } else {
         return Object.assign({}, state, {
           assetIdToRender: action.payload.assetId,
-          assetIdToUnrender:
-            state.assetIdToUnrender === action.payload.assetId ? null : state.assetIdToUnrender,
+          assetIdToUnrender: null,
           visualizedAssetIds: [action.payload.assetId], // 다중모델 로드 가능한 버전에서는 push로 변경 필요
         });
       }
     }
     case 'shootProject/UNRENDER_ASSET': {
       return Object.assign({}, state, {
-        assetIdToRender:
-          state.assetIdToRender === action.payload.assetId ? null : state.assetIdToRender,
+        assetIdToRender: null,
         assetIdToUnrender: action.payload.assetId,
         visualizedAssetIds: [], // 다중모델 로드 가능한 버전에서는 filter로 변경 필요
       });
     }
     case 'shootProject/REMOVE_ASSET': {
       return Object.assign({}, state, {
-        assetIdToRemove: action.payload.assetId,
+        assetIdToRender: null,
+        assetIdToUnrender: action.payload.assetId,
+        assetToRemove: state.assetList.find((asset) => asset.id === action.payload.assetId),
         assetList: state.assetList.filter((asset) => asset.id !== action.payload.assetId),
         visualizedAssetIds: state.visualizedAssetIds.filter((id) => id !== action.payload.assetId),
       });
