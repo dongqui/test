@@ -1,3 +1,4 @@
+import produce from 'immer';
 import { ShootProjectAction } from 'actions/shootProjectAction';
 import { ShootProject } from 'types/common';
 import { v4 as uuidv4 } from 'uuid';
@@ -59,6 +60,16 @@ export const shootProject = (state = defaultState, action: ShootProjectAction) =
         assetIdToRemove: action.payload.assetId,
         assetList: state.assetList.filter((asset) => asset.id !== action.payload.assetId),
         visualizedAssetIds: state.visualizedAssetIds.filter((id) => id !== action.payload.assetId),
+      });
+    }
+    case 'shootProject/ADD_MOTION': {
+      const nextAssetList = produce(state.assetList, (draft) => {
+        const target = draft.filter((asset) => asset.id === action.payload.assetId)[0];
+        target.animationIngredientIds.push(action.payload.motionId);
+      });
+
+      return Object.assign({}, state, {
+        assetList: nextAssetList,
       });
     }
     default: {

@@ -1,47 +1,40 @@
 import _ from 'lodash';
-import {
-  FunctionComponent,
-  Fragment,
-  memo,
-  ReactNode,
-  RefObject,
-  useEffect,
-  useState,
-  useRef,
-  useCallback,
-  createRef,
-  forwardRef,
-} from 'react';
+import { FunctionComponent, memo, ReactNode, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
+import { AnimationIngredient, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as shootProjectActions from 'actions/shootProjectAction';
+import * as animationIngredientsAction from 'actions/animationIngredientsAction';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
-
-// 임시 추가
-import * as shootProjectActions from 'actions/shootProjectAction';
 
 const cx = classNames.bind(styles);
 
 // type StateProps = ReturnType<typeof mapStateToProps>;
 
-interface Props {
+interface BaseProps {
   type: 'Folder' | 'Model' | 'Motion';
   name: ReactNode;
   fileURL?: string | File;
   filePath: string;
   id: string;
+  assetId?: string;
   parentId: string;
   onSelect?: (id: string) => void;
   isSelected?: boolean;
-  childrens: string[];
+  childrens: any[];
   selectedId?: string;
 }
+
+type StateProps = ReturnType<typeof mapStateToProps>;
+
+type Props = StateProps & BaseProps;
 
 const ListNode: FunctionComponent<Props> = ({
   type,
@@ -49,15 +42,18 @@ const ListNode: FunctionComponent<Props> = ({
   fileURL,
   filePath,
   id,
+  assetId,
   parentId,
   onSelect,
   isSelected,
   childrens,
   selectedId,
+  assetList,
+  visualizedAssetIds,
+  anmiationIngredients,
 }) => {
   const dispatch = useDispatch();
 
-  const { assetList, visualizedAssetIds } = useSelector((state) => state.shootProject);
   const lpNode = useSelector((state) => state.lpNode.node);
   const lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
@@ -139,135 +135,296 @@ const ListNode: FunctionComponent<Props> = ({
       const isContains = wrapperRef.current?.contains(e.target as Node);
 
       if (isContains) {
-        onContextMenuOpen({
-          top: e.clientY,
-          left: e.clientX,
-          menu: [
-            {
-              label: 'Delete',
-              onClick: () => {
-                const cloneLPNode = _.clone(lpNode);
-                const afterNodes = _.remove(cloneLPNode, (node) => node.id !== id);
+        if (type === 'Folder') {
+          onContextMenuOpen({
+            top: e.clientY,
+            left: e.clientX,
+            menu: [
+              {
+                label: 'Delete',
+                onClick: () => {
+                  const cloneLPNode = _.clone(lpNode);
+                  const afterNodes = _.remove(cloneLPNode, (node) => node.id !== id);
 
-                dispatch(
-                  lpNodeActions.changeNode({
-                    nodes: afterNodes,
-                  }),
-                );
+                  dispatch(
+                    lpNodeActions.changeNode({
+                      nodes: afterNodes,
+                    }),
+                  );
+                },
+                children: [],
               },
-              children: [],
-            },
-            {
-              label: 'Edit name',
-              onClick: () => {},
-              children: [],
-            },
-            {
-              label: 'Copy',
-              onClick: () => {
-                dispatch(
-                  lpNodeActions.changeClipboard({
-                    data: [id],
-                  }),
-                );
+              {
+                label: 'Edit name',
+                onClick: () => {},
+                children: [],
               },
-              children: [],
-            },
-            {
-              label: 'Paste',
-              onClick: () => {
-                const copyNode = _.find(lpNode, { id: lpClipboard[0] });
+              {
+                label: 'Copy',
+                onClick: () => {
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: [id],
+                    }),
+                  );
+                },
+                children: [],
+              },
+              {
+                label: 'Paste',
+                onClick: () => {
+                  const copyNode = _.find(lpNode, { id: lpClipboard[0] });
 
-                const cloneCopyNode = _.cloneDeep(copyNode);
+                  const cloneCopyNode = _.cloneDeep(copyNode);
 
-                if (cloneCopyNode) {
-                  const max = depthCheck(cloneCopyNode.children, 0, []) || 0;
+                  if (cloneCopyNode) {
+                    const max = depthCheck(cloneCopyNode.children, 0, []) || 0;
 
-                  const currentPathDepth = (filePath.match(/\\/g) || []).length;
+                    const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
-                  if (currentPathDepth + max >= 6) {
-                    // alert('으악?');
-                    onModalOpen({
-                      title: 'Warning',
-                      message: '디렉토리를 복사할 수 없습니다. 계층 초과',
-                      confirmText: '확인',
-                    });
-                    return;
+                    if (currentPathDepth + max >= 6) {
+                      // alert('으악?');
+                      onModalOpen({
+                        title: 'Warning',
+                        message: '디렉토리를 복사할 수 없습니다. 계층 초과',
+                        confirmText: '확인',
+                      });
+                      return;
+                    }
                   }
-                }
 
-                // @TODO 없으면 비활성 처리 필요
+                  // @TODO 없으면 비활성 처리 필요
 
-                // let nextLPNodes = _.clone(lpNode);
+                  // let nextLPNodes = _.clone(lpNode);
 
-                if (cloneCopyNode) {
-                  const nextNodes = produce(lpNode, (draft) => {
-                    const targetNode = _.find(draft, { id });
+                  if (cloneCopyNode) {
+                    const nextNodes = produce(lpNode, (draft) => {
+                      const targetNode = _.find(draft, { id });
 
-                    if (targetNode) {
-                      cloneCopyNode.id = uuidv4();
-                      cloneCopyNode.parentId = id;
-                      cloneCopyNode.filePath = filePath + `\\${cloneCopyNode.name}`;
+                      if (targetNode) {
+                        cloneCopyNode.id = uuidv4();
+                        cloneCopyNode.parentId = id;
+                        cloneCopyNode.filePath = filePath + `\\${cloneCopyNode.name}`;
 
-                      targetNode.children.push(cloneCopyNode.id);
+                        targetNode.children.push(cloneCopyNode.id);
 
-                      // @TODO 하위 노드도 추가
-                      draft.push(cloneCopyNode);
+                        // @TODO 하위 노드도 추가
+                        draft.push(cloneCopyNode);
 
-                      if (!_.isEmpty(cloneCopyNode.children)) {
-                        cloneCopyNode.children.map((child) =>
-                          depthChnageKey(draft, child, cloneCopyNode),
-                        );
+                        if (!_.isEmpty(cloneCopyNode.children)) {
+                          cloneCopyNode.children.map((child) =>
+                            depthChnageKey(draft, child, cloneCopyNode),
+                          );
+                        }
                       }
+                    });
+
+                    // nextLPNodes = nextNodes;
+
+                    dispatch(
+                      lpNodeActions.changeNode({
+                        nodes: nextNodes,
+                      }),
+                    );
+                  }
+                },
+                children: [],
+              },
+              {
+                label: 'New directory',
+                visibility: depth === 6 ? 'invisible' : 'visible',
+                onClick: () => {
+                  const nextNodes = produce(lpNode, (draft) => {
+                    const parent = _.find(draft, { id });
+
+                    if (parent) {
+                      const newNode = {
+                        id: uuidv4(),
+                        // filePath: lpCurrentPath + `\\${name}`,
+                        filePath: filePath + `\\${name}`,
+                        parentId: parent.id,
+                        name: 'Folder /',
+                        type: 'Folder',
+                        hideNode: true,
+                        children: [],
+                      } as LP.Node;
+
+                      parent.children.push(newNode.id);
+
+                      draft.push(newNode);
                     }
                   });
-
-                  // nextLPNodes = nextNodes;
 
                   dispatch(
                     lpNodeActions.changeNode({
                       nodes: nextNodes,
                     }),
                   );
-                }
+                },
+                children: [],
               },
-              children: [],
-            },
-            {
-              label: 'New directory',
-              visibility: depth === 6 ? 'invisible' : 'visible',
-              onClick: () => {
-                const nextNodes = produce(lpNode, (draft) => {
-                  const parent = _.find(draft, { id });
+            ],
+          });
+        }
 
-                  if (parent) {
-                    const newNode = {
-                      id: uuidv4(),
-                      // filePath: lpCurrentPath + `\\${name}`,
-                      filePath: filePath + `\\${name}`,
-                      parentId: parent.id,
-                      name: 'Folder /',
-                      type: 'Folder',
-                      hideNode: true,
-                      children: [],
-                    } as LP.Node;
+        if (type === 'Model') {
+          onContextMenuOpen({
+            top: e.clientY,
+            left: e.clientX,
+            menu: [
+              {
+                label: 'Delete',
+                onClick: () => {
+                  const cloneLPNode = _.clone(lpNode);
+                  const afterNodes = _.remove(cloneLPNode, (node) => node.id !== id);
 
-                    parent.children.push(newNode.id);
-
-                    draft.push(newNode);
+                  dispatch(
+                    lpNodeActions.changeNode({
+                      nodes: afterNodes,
+                    }),
+                  );
+                },
+                children: [],
+              },
+              {
+                label: 'Edit name',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Copy',
+                onClick: () => {
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: [id],
+                    }),
+                  );
+                },
+                children: [],
+              },
+              {
+                label: 'Paste',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Visualization',
+                onClick: () => {
+                  if (assetId) {
+                    dispatch(shootProjectActions.renderAsset({ assetId: assetId }));
                   }
-                });
-
-                dispatch(
-                  lpNodeActions.changeNode({
-                    nodes: nextNodes,
-                  }),
-                );
+                },
+                children: [],
               },
-              children: [],
-            },
-          ],
-        });
+              {
+                label: 'Visualization cancel',
+                onClick: () => {
+                  if (assetId) {
+                    dispatch(shootProjectActions.unrenderAsset({ assetId: assetId }));
+                  }
+                },
+                children: [],
+              },
+              {
+                label: 'Add empty motion',
+                onClick: () => {
+                  if (assetId) {
+                    const cloneLPNode = _.clone(lpNode);
+
+                    const nextIngredient: AnimationIngredient = {
+                      id: uuidv4(),
+                      name: 'empty motion',
+                      assetId: assetId,
+                      current: false,
+                      layers: [{ id: uuidv4(), name: 'layer1' }],
+                      tracks: [] as ShootTrack[],
+                    };
+
+                    const afterNodes = produce(cloneLPNode, (draft) => {
+                      const target = _.find(draft, { assetId: assetId });
+
+                      if (target) {
+                        target.children.push(nextIngredient);
+                      }
+                    });
+
+                    dispatch(
+                      lpNodeActions.changeNode({
+                        nodes: afterNodes,
+                      }),
+                    );
+
+                    // @todo 불필요한 파라미터 제거
+                    dispatch(
+                      animationIngredientsAction.addMotion({
+                        assetId: assetId,
+                        animationIngredient: nextIngredient,
+                      }),
+                    );
+
+                    dispatch(
+                      shootProjectActions.addMotion({
+                        assetId: assetId,
+                        motionId: nextIngredient.id,
+                      }),
+                    );
+                  }
+                },
+                children: [],
+              },
+              {
+                label: 'Export > glb',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Export > fbx',
+                onClick: () => {},
+                children: [],
+              },
+            ],
+          });
+        }
+
+        if (type === 'Motion') {
+          // @TODO 추출된 모션의 경우에는 다른 컨텍스트메뉴가 필요 (parentId가 root인 경우)
+          onContextMenuOpen({
+            top: e.clientY,
+            left: e.clientX,
+            menu: [
+              {
+                label: 'Delete',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Edit name',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Copy',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Visualization',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Visualization cancel',
+                onClick: () => {},
+                children: [],
+              },
+              {
+                label: 'Export',
+                onClick: () => {},
+                children: [],
+              },
+            ],
+          });
+        }
       }
     };
 
@@ -281,6 +438,7 @@ const ListNode: FunctionComponent<Props> = ({
       };
     }
   }, [
+    assetId,
     depth,
     depthCheck,
     depthChnageKey,
@@ -292,6 +450,7 @@ const ListNode: FunctionComponent<Props> = ({
     name,
     onContextMenuOpen,
     onModalOpen,
+    type,
   ]);
 
   const column = Array.from({ length: depth - 1 }).map((x, i) => i);
@@ -301,37 +460,60 @@ const ListNode: FunctionComponent<Props> = ({
   // const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
 
   const renderChildren = useCallback(
-    (id: string) => {
-      const node = _.find(lpNode, { id });
+    (paramId: any) => {
+      if (typeof paramId === 'string') {
+        const node = _.find(lpNode, { id: paramId });
 
-      // const handleChildrenSelect = () => {
-      //   onSelect && onSelect(id);
+        if (node) {
+          return (
+            <ListNode
+              id={node.id}
+              parentId={node.parentId}
+              type={node.type}
+              name={node.name}
+              fileURL={node.fileURL}
+              filePath={node.filePath}
+              onSelect={handleSelect}
+              isSelected={node.id === selectedId}
+              childrens={node.children}
+              assetList={assetList}
+              visualizedAssetIds={visualizedAssetIds}
+              anmiationIngredients={anmiationIngredients}
+            />
+          );
+        }
+      }
 
-      //   dispatch(
-      //     lpNodeActions.changeCurrentPath({
-      //       currentPath: filePath + `\\${name}`,
-      //       id: id,
-      //     }),
-      //   );
-      // };
-
-      if (node) {
+      if (typeof paramId === 'object') {
         return (
           <ListNode
-            id={node.id}
-            parentId={node.parentId}
-            type={node.type}
-            name={node.name}
-            fileURL={node.fileURL}
-            filePath={node.filePath}
+            id={paramId}
+            parentId={parentId}
+            type="Motion"
+            name={paramId.name}
+            filePath={filePath + `\\${name}`}
             onSelect={handleSelect}
-            isSelected={node.id === selectedId}
-            childrens={node.children}
+            isSelected={id === selectedId && paramId.current}
+            childrens={[]}
+            assetList={assetList}
+            visualizedAssetIds={visualizedAssetIds}
+            anmiationIngredients={anmiationIngredients}
           />
         );
       }
     },
-    [handleSelect, lpNode, selectedId],
+    [
+      anmiationIngredients,
+      assetList,
+      filePath,
+      handleSelect,
+      id,
+      lpNode,
+      name,
+      parentId,
+      selectedId,
+      visualizedAssetIds,
+    ],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -364,7 +546,12 @@ const ListNode: FunctionComponent<Props> = ({
   return (
     <div className={classes}>
       <div className={cx('inner')}>
-        <div style={{ display: 'flex' }} ref={wrapperRef} onClick={handleSelect}>
+        <div
+          style={{ display: 'flex' }}
+          ref={wrapperRef}
+          onClick={handleSelect}
+          onContextMenu={handleSelect}
+        >
           {/* {column.map((col, i) => (
             <div key={i} style={{ width: `${12 * col}px` }} />
           ))} */}
@@ -380,20 +567,25 @@ const ListNode: FunctionComponent<Props> = ({
         </div>
         {/* children area */}
         <div>
-          {childrens.map((children) => (
-            <div key={children}>{renderChildren(children)}</div>
-          ))}
+          {childrens.map((children) => {
+            if (typeof children === 'string') {
+              return <div key={children}>{renderChildren(children)}</div>;
+            }
+
+            return <div key={children.id}>{renderChildren(children)}</div>;
+          })}
         </div>
       </div>
     </div>
   );
 };
 
-// const mapStateToProps = (state: RootState) => {
-//   return {
-//     lpNode: state.lpNode.node,
-//   };
-// };
+const mapStateToProps = (state: RootState) => {
+  return {
+    assetList: state.shootProject.assetList,
+    visualizedAssetIds: state.shootProject.visualizedAssetIds,
+    anmiationIngredients: state.animationIngredients,
+  };
+};
 
-// export default connect(mapStateToProps)(memo(ListNode));
-export default memo(ListNode);
+export default connect(mapStateToProps)(memo(ListNode));
