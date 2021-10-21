@@ -28,7 +28,8 @@ const LibraryPanel: FunctionComponent<Props> = ({
   lpNode,
   lpCurrentPath,
   assetList,
-  anmiationIngredients,
+  animationTransformNodes,
+  animationIngredients,
 }) => {
   const getFileExtension = useCallback((file: string): string => {
     const type = (/[^./\\]*$/.exec(file) || [''])[0];
@@ -60,7 +61,7 @@ const LibraryPanel: FunctionComponent<Props> = ({
           name: fileName,
           type: 'Model',
           assetId: !_.isEmpty(assetList) ? assetList[assetList.length - 1].id : '',
-          children: anmiationIngredients.filter(
+          children: animationIngredients.filter(
             (ingredient) => ingredient.assetId === assetList[assetList.length - 1].id,
           ),
         };
@@ -81,7 +82,7 @@ const LibraryPanel: FunctionComponent<Props> = ({
       setAssetListLength(assetList.length);
     }
   }, [
-    anmiationIngredients,
+    animationIngredients,
     assetList,
     assetListLength,
     dispatch,
@@ -207,7 +208,8 @@ const mapStateToProps = (state: RootState) => {
     lpNode: state.lpNode.node,
     lpCurrentPath: state.lpNode.currentPath,
     assetList: state.shootProject.assetList,
-    anmiationIngredients: state.animationIngredients,
+    animationTransformNodes: state.animationData.animationTransformNodes,
+    animationIngredients: state.animationData.animationIngredients,
   };
 };
 

@@ -1,8 +1,9 @@
 import * as BABYLON from '@babylonjs/core';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import { ShootAsset } from 'types/common';
 
 const DEFAULT_SKELETON_VIEWER_OPTION = {
   pauseAnimations: false,
@@ -22,21 +23,98 @@ const DEFAULT_SKELETON_VIEWER_OPTION = {
 const useVisualizeModel = () => {
   const sceneList = useSelector((state) => state.shootProject.sceneList);
   const assetList = useSelector((state) => state.shootProject.assetList);
+  const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
   const assetIdToRender = useSelector((state) => state.shootProject.assetIdToRender);
   const assetIdToUnrender = useSelector((state) => state.shootProject.assetIdToUnrender);
+  const assetIdToRemove = useSelector((state) => state.shootProject.assetIdToRemove);
 
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const dispatch = useDispatch();
 
+  // unrender 로직 재사용을 위해 분리
+  const unrenderAsset = useCallback(
+    (
+      scenes: BABYLON.Scene[],
+      asset: ShootAsset,
+      objects: (BABYLON.Mesh | BABYLON.TransformNode)[],
+    ) => {
+      const { id: assetId, meshes, geometries, skeleton, transformNodes } = asset;
+
+      scenes.forEach((scene) => {
+        if (scene.isReady()) {
+          // scene들에서 mesh 삭제
+          meshes.forEach((mesh) => {
+            scene.removeMesh(mesh);
+          });
+
+          // scene들에서 geometry 삭제
+          geometries.forEach((geometry) => {
+            scene.removeGeometry(geometry);
+          });
+
+          // scene들에서 skeleton 삭제
+          scene.removeSkeleton(skeleton);
+          // scene들에서 skeletonViewer 삭제(remove로는 삭제가 되지 않아 dispose 처리했습니다.)
+          const skeletonViewerMesh = scene.getMeshByID(`${assetId}//skeletonViewer`);
+          if (skeletonViewerMesh) {
+            scene.removeMesh(skeletonViewerMesh);
+            const skeletonViewerChildMesh = skeletonViewerMesh
+              .getChildMeshes()
+              .find((m) => m.id === 'skeletonViewer_merged');
+            if (skeletonViewerChildMesh) {
+              skeletonViewerChildMesh.dispose();
+            }
+          }
+
+          // scene들에서 joints 삭제
+          const jointTransformNodes = objects.filter(
+            (object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId),
+          );
+          jointTransformNodes.forEach((jointTransformNode) => {
+            const joint = scene.getMeshByID(
+              jointTransformNode.id.replace('transformNode', 'joint'),
+            );
+            if (joint) {
+              scene.removeMesh(joint);
+            }
+          });
+
+          // scene들에서 controllers 삭제
+          const controllers = objects.filter(
+            (object) => object.getClassName() === 'Mesh' && object.id.includes(assetId),
+          );
+          if (controllers.length > 0) {
+            controllers.forEach((controller) => {
+              scene.removeMesh(controller as BABYLON.Mesh);
+            });
+          }
+
+          // scene들에서 transformNode 삭제
+          transformNodes.forEach((transformNode) => {
+            scene.removeTransformNode(transformNode);
+          });
+        }
+      });
+    },
+    [],
+  );
+
   // render 작업
   useEffect(() => {
     // scene과 render할 대상이 존재하고, 현재 render된 목록에 target asset이 없을 때
     if (assetIdToRender && sceneList.length > 0 && assetList.length > 0) {
-      const targetAsset = assetList.find((asset) => asset.id === assetIdToRender);
+      const renderTargetAsset = assetList.find((asset) => asset.id === assetIdToRender);
 
-      if (targetAsset) {
-        const { id: assetId, meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
+      if (renderTargetAsset) {
+        const {
+          id: assetId,
+          meshes,
+          geometries,
+          skeleton,
+          bones,
+          transformNodes,
+        } = renderTargetAsset;
 
         sceneList.forEach((shootScene) => {
           const { id: sceneId, name: sceneName, scene } = shootScene;
@@ -139,85 +217,51 @@ const useVisualizeModel = () => {
         });
       }
     }
-  }, [assetIdToRender, assetList, dispatch, sceneList]);
+  }, [assetIdToRender, assetList, dispatch, sceneList, visualizedAssetIds]);
 
   // unrender 시 scene에서 지우는 작업
   useEffect(() => {
     if (assetIdToUnrender && sceneList.length > 0 && assetList.length > 0) {
-      const targetAsset = assetList.find((asset) => asset.id === assetIdToUnrender);
+      const unrenderTargetAsset = assetList.find((asset) => asset.id === assetIdToUnrender);
 
-      if (targetAsset) {
-        const { id: assetId, meshes, geometries, skeleton, transformNodes } = targetAsset;
-
-        sceneList.forEach((shootScene) => {
-          const { id: sceneId, name: sceneName, scene } = shootScene;
-          if (scene.isReady()) {
-            // scene들에서 mesh 삭제
-            meshes.forEach((mesh) => {
-              scene.removeMesh(mesh);
-            });
-
-            // scene들에서 geometry 삭제
-            geometries.forEach((geometry) => {
-              scene.removeGeometry(geometry);
-            });
-
-            // scene들에서 skeleton 삭제
-            scene.removeSkeleton(skeleton);
-            // scene들에서 skeletonViewer 삭제(remove로는 삭제가 되지 않아 dispose 처리했습니다.)
-            const skeletonViewerMesh = scene.getMeshByID(`${assetId}//skeletonViewer`);
-            if (skeletonViewerMesh) {
-              scene.removeMesh(skeletonViewerMesh);
-              const skeletonViewerChildMesh = skeletonViewerMesh
-                .getChildMeshes()
-                .find((m) => m.id === 'skeletonViewer_merged');
-              if (skeletonViewerChildMesh) {
-                skeletonViewerChildMesh.dispose();
-              }
-            }
-
-            // scene들에서 joints 삭제
-            const jointTransformNodes = selectableObjects.filter(
-              (object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId),
-            );
-            jointTransformNodes.forEach((jointTransformNode) => {
-              const joint = scene.getMeshByID(
-                jointTransformNode.id.replace('transformNode', 'joint'),
-              );
-              if (joint) {
-                scene.removeMesh(joint);
-              }
-            });
-
-            // scene들에서 controllers 삭제
-            const controllers = selectableObjects.filter(
-              (object) => object.getClassName() === 'Mesh' && object.id.includes(assetId),
-            );
-            if (controllers.length > 0) {
-              controllers.forEach((controller) => {
-                scene.removeMesh(controller as BABYLON.Mesh);
-              });
-            }
-
-            // scene들에서 transformNode 삭제
-            transformNodes.forEach((transformNode) => {
-              scene.removeTransformNode(transformNode);
-            });
-          }
-        });
+      if (unrenderTargetAsset) {
+        unrenderAsset(
+          sceneList.map((s) => s.scene),
+          unrenderTargetAsset,
+          selectableObjects,
+        );
       }
     }
-  }, [assetIdToUnrender, assetList, dispatch, sceneList, selectableObjects]);
+  }, [assetIdToUnrender, assetList, dispatch, sceneList, selectableObjects, unrenderAsset]);
 
-  // unrender시 데이터 선택 대상에서 제외하는 작업
+  // unrender시 선택대상 제외
   useEffect(() => {
-    if (assetIdToUnrender && assetList.length > 0) {
-      // joint와 연결된 transformNode들을 dragBox 선택 대상에서 제외
-      dispatch(selectingDataActions.removeSelectableControllers({ assetId: assetIdToUnrender }));
-      // controller들을 dragBox 선택 대상에서 제외
-      dispatch(selectingDataActions.removeSelectableJoints({ assetId: assetIdToUnrender }));
+    if (assetIdToUnrender) {
+      dispatch(selectingDataActions.unrenderAsset({ assetId: assetIdToUnrender }));
     }
-  }, [assetIdToUnrender, assetList.length, dispatch]);
+  }, [assetIdToUnrender, dispatch]);
+
+  // remove 시 scene에서 지우는 작업
+  useEffect(() => {
+    if (assetIdToRemove && sceneList.length > 0 && assetList.length > 0) {
+      const removeTargetAsset = assetList.find((asset) => asset.id === assetIdToRemove);
+
+      if (removeTargetAsset) {
+        unrenderAsset(
+          sceneList.map((s) => s.scene),
+          removeTargetAsset,
+          selectableObjects,
+        );
+      }
+    }
+  }, [assetIdToRemove, assetList, dispatch, sceneList, selectableObjects, unrenderAsset]);
+
+  // remove시 선택대상 제외
+  useEffect(() => {
+    if (assetIdToRemove) {
+      dispatch(selectingDataActions.unrenderAsset({ assetId: assetIdToRemove }));
+    }
+  }, [assetIdToRemove, dispatch]);
 };
 
 export default useVisualizeModel;

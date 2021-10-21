@@ -4,7 +4,7 @@ import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import * as animationIngredientsActions from 'actions/animationIngredientsAction';
+import * as animationDataActions from 'actions/animationDataAction';
 import { checkIsTargetMesh } from 'utils/RP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -34,8 +34,8 @@ const ControlPanel: FunctionComponent = () => {
   const assetList = useSelector((state) => state.shootProject.assetList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
-  const animationIngredients = useSelector((state) => state.animationIngredients);
-  const retargetMaps = useSelector((state) => state.retargetMaps);
+  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+  const retargetMaps = useSelector((state) => state.animationData.retargetMaps);
 
   const dispatch = useDispatch();
 
@@ -389,7 +389,7 @@ const ControlPanel: FunctionComponent = () => {
             };
 
             dispatch(
-              animationIngredientsActions.editAnimationIngredient({
+              animationDataActions.editAnimationIngredient({
                 animationIngredient: newAnimationIngredient,
               }),
             );
@@ -444,7 +444,7 @@ const ControlPanel: FunctionComponent = () => {
           };
 
           dispatch(
-            animationIngredientsActions.editAnimationIngredient({
+            animationDataActions.editAnimationIngredient({
               animationIngredient: newAnimationIngredient,
             }),
           );

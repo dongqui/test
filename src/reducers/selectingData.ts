@@ -50,6 +50,16 @@ export const selectingData = (state = defaultState, action: SelectingDataAction)
         ),
       });
     }
+    case 'selectingDataAction/UNRENDER_ASSET': {
+      return Object.assign({}, state, {
+        selectableObjects: state.selectableObjects.filter(
+          (object) => !object.id.includes(action.payload.assetId),
+        ),
+        selectedTargets: state.selectedTargets.filter(
+          (target) => !target.id.includes(action.payload.assetId),
+        ),
+      });
+    }
     case 'selectingDataAction/DEFAULT_SINGLE_SELECT': {
       if (
         state.selectedTargets.length === 1 &&

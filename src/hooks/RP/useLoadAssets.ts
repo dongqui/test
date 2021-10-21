@@ -5,8 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import * as shootProjectActions from 'actions/shootProjectAction';
-import * as animationIngredientsActions from 'actions/animationIngredientsAction';
-import * as retargetMapsActions from 'actions/retargetMapsAction';
+import * as animationDataActions from 'actions/animationDataAction';
 import { AnimationIngredient, ShootAsset } from 'types/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 
@@ -78,9 +77,6 @@ const useLoadAssets = () => {
             animationIngredients.push(animationIngredient);
           });
 
-          // animationIngredients reducer에 등록
-          dispatch(animationIngredientsActions.addAnimationIngredients({ animationIngredients }));
-
           const retargetMap = createEmptyRetargetMap(assetId);
 
           const newAsset: ShootAsset = {
@@ -96,9 +92,14 @@ const useLoadAssets = () => {
             retargetMapId: retargetMap.id,
           };
 
-          // dispatch 3번을 saga에 넣어서 관리하는 게 나을 듯(리팩토링)
           dispatch(shootProjectActions.addAsset({ asset: newAsset }));
-          dispatch(retargetMapsActions.addRetargetMap({ retargetMap }));
+          dispatch(
+            animationDataActions.addAsset({
+              transformNodes,
+              animationIngredients,
+              retargetMap,
+            }),
+          );
         };
 
         if (fileToLoad) {

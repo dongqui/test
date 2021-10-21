@@ -8,7 +8,7 @@ const useAnimation = () => {
   const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
   const fps = useSelector((state) => state.shootProject.fps);
 
-  const animationIngredients = useSelector((state) => state.animationIngredients);
+  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
   const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
   const [isPlaying, setIsPlaying] = useState(false);

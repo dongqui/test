@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
-import * as animationIngredientsActions from 'actions/animationIngredientsAction';
+import * as animationDataActions from 'actions/animationDataAction';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -13,7 +13,7 @@ const cx = classNames.bind(styles);
 const TimelinePanel: FunctionComponent = () => {
   const assetList = useSelector((state) => state.shootProject.assetList);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
-  const animationIngredients = useSelector((state) => state.animationIngredients);
+  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
   const [layers, setLayers] = useState<ShootLayer[]>([]);
   const [tracks, setTracks] = useState<ShootTrack[]>([]);
@@ -57,10 +57,10 @@ const TimelinePanel: FunctionComponent = () => {
     setTracks(totalTracks);
   }, [animationIngredients, assetList, selectedTargets]);
 
-  useEffect(() => {
-    console.log('tracks: ', tracks);
-    console.log('layers: ', layers);
-  }, [layers, tracks]);
+  // useEffect(() => {
+  //   console.log('tracks: ', tracks);
+  //   console.log('layers: ', layers);
+  // }, [layers, tracks]);
 
   const editKeyframe = useCallback(() => {
     if (targetLayerId) {
@@ -101,7 +101,7 @@ const TimelinePanel: FunctionComponent = () => {
         };
         setNewLayerName('');
         dispatch(
-          animationIngredientsActions.editAnimationIngredient({
+          animationDataActions.editAnimationIngredient({
             animationIngredient: newAnimationIngredient,
           }),
         );
@@ -132,7 +132,7 @@ const TimelinePanel: FunctionComponent = () => {
             tracks,
           };
           dispatch(
-            animationIngredientsActions.editAnimationIngredient({
+            animationDataActions.editAnimationIngredient({
               animationIngredient: newAnimationIngredient,
             }),
           );
