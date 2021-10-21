@@ -41,78 +41,41 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
     setNodeRefs(Array.from({ length: lpNode.length }).map(() => createRef()));
   }, [lpNode.length]);
 
-  const getSmallestNumber = useCallback((array: number[]) => {
+  const getNodeNumber = useCallback((array: number[]) => {
     let targetValue = 0;
 
     const nextArray = array.sort((a, b) => a - b);
 
     if (nextArray.indexOf(0) === -1) {
-      return 0;
+      return targetValue;
     }
 
-    ///////////
-    for (let i = 0; i < nextArray.length; i++) {
+    for (let i = 1; i < nextArray.length; i++) {
       const currentValue = nextArray[i];
-
       const isLast = nextArray.length - 1 === i;
 
       if (isLast) {
+        targetValue = currentValue + 1;
       }
 
+      if (nextArray[1] !== 2) {
+        targetValue = 2;
+      }
+
+      const nextValue = nextArray[i + 1];
+
       if (!isLast) {
-        if (nextArray[i + 1] - currentValue > 1) {
+        if (nextValue - currentValue > 1) {
+          targetValue = currentValue + 1;
+        }
+
+        if (nextValue - currentValue === 1) {
+          targetValue = nextValue + 1;
         }
       }
     }
 
-    ////////////
-    // _.map(nextArray, (current, i) => {
-    //   if (nextArray.length - 1 !== i) {
-    //     if (nextArray[i + 1] - current > 1) {
-    //       const minValue = _.min([nextArray[i + 1], current]);
-
-    //       if (minValue === 0) {
-    //         if (nextArray[i + 1] - current > 2) {
-    //           targetValue = 2;
-    //         }
-    //       }
-
-    //       if (minValue) {
-    //         const min = minValue + 1;
-    //         targetValue = min;
-    //       }
-    //     } else {
-    //       const minValue = _.min([nextArray[i + 1], current]);
-
-    //       if (minValue) {
-    //         const min = minValue + 1;
-    //         targetValue = min;
-    //       }
-    //     }
-    //   } else {
-    //     if (current - nextArray[i - 1] > 1) {
-    //       const minValue = _.min([nextArray[i - 1], current]);
-
-    //       if (minValue) {
-    //         const min = minValue + 1;
-    //         targetValue = min;
-    //       }
-
-    //       if (minValue === 0) {
-    //         if (nextArray[i + 1] - current > 2) {
-    //           targetValue = 2;
-    //         }
-    //       }
-    //     } else {
-    //       targetValue = current + 1;
-    //     }
-    //   }
-    // });
-
-    // const result = targetValue || (_.max(array) || 0) + 1;
-    // return result;
-
-    // return 'result'
+    return targetValue;
   }, []);
 
   const onDuplicateCheck = useCallback(
@@ -155,8 +118,10 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
       } else {
         const filter = currentPathNodeName.map((currentNode) => {
           if (currentNode.includes('(')) {
-            const index = currentNode.indexOf('(') + 1;
-            const getNumber = currentNode.charAt(index);
+            const startIndex = currentNode.indexOf('(') + 1;
+            const endIndex = currentNode.indexOf(')');
+            // const getNumber = currentNode.charAt(index);
+            const getNumber = currentNode.substring(startIndex, endIndex);
 
             // @todo 예외처리 예정. 현재는 반드시 number라고 가정
             return Number(getNumber);
@@ -165,11 +130,12 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
           }
         });
 
-        const target = getSmallestNumber(filter);
+        const target = getNodeNumber(filter);
+
         return String(target);
       }
     },
-    [getSmallestNumber, lpNode],
+    [getNodeNumber, lpNode],
   );
 
   useEffect(() => {
