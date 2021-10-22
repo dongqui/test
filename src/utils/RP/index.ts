@@ -9,3 +9,6 @@ export { default as checkIsObjectIn } from './checkIsObjectIn';
 export { default as checkIsControllerIn } from './checkIsControllerIn';
 export { default as checkIsVectorIn } from './checkIsVectorIn';
 export { default as checkIsTargetMesh } from './checkIsTargetMesh';
+
+export { default as filterVector } from './filterVector';
+export { default as filterQuaternion } from './filterQuaternion';
