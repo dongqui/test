@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import {
   FunctionComponent,
-  Fragment,
   memo,
   useEffect,
   useState,
@@ -10,8 +9,8 @@ import {
   createRef,
   RefObject,
 } from 'react';
-import { connect, useDispatch } from 'react-redux';
-import { RootState, useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -32,10 +31,9 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
   const dispatch = useDispatch();
   const lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
-  const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
+  const { onContextMenuOpen } = useContextMenu();
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  // const nodeRef = useRef<HTMLDivElement>(null);
 
   const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
 
@@ -228,111 +226,12 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
           });
 
         if (copiedFilter.length > 0) {
-          // if (copiedFilter[0] !== 0) {
-          //   return '0';
-          // }
-
           const target = getNodeNumber(copiedFilter);
           return String(target);
         }
       }
 
       return '0';
-
-      // // @todo 생성시 이름에 특수문자 불가 처리 필요
-      // if (currentPathNodeName.length === 1) {
-      //
-
-      //   const matches = currentPathNodeName[0].match(/\(/g);
-
-      //   if (matches !== null) {
-      //     if (matches.length === 1) {
-      //       const isCopied = currentPathNodeName[0].match(/copy/g);
-      //       if (isCopied !== null) {
-      //         return '2';
-      //       }
-
-      //       const index = currentPathNodeName[0].indexOf('(') + 1;
-      //       const getNumber = Number(currentPathNodeName[0].charAt(index));
-      //
-
-      //       if (typeof getNumber === 'number') {
-      //
-      //         return '0';
-      //       } else {
-      //
-      //         // @todo 예외처리 필요(이름에 특수문자 불가), 임시 else
-      //         return '0';
-      //       }
-      //     } else {
-      //
-      //       const startIndex = currentPathNodeName[0].lastIndexOf('(') + 1;
-      //       const endIndex = currentPathNodeName[0].lastIndexOf(')');
-      //       // const getNumber = currentPathNodeName[0].charAt(index);
-      //       const getNumber = currentPathNodeName[0].substring(startIndex, endIndex);
-      //       return getNumber;
-      //     }
-      //   } else {
-      //
-      //     // 없는 경우 2
-      //     return '2';
-      //   }
-      // } else {
-      //   const filter = currentPathNodeName.map((currentNode) => {
-      //     const matches = currentNode.match(/\(/g);
-
-      //     if (matches !== null) {
-      //       if (matches.length === 1) {
-      //         const isCopied = currentNode.match(/copy/g);
-
-      //         if (isCopied !== null) {
-      //           return 0;
-      //         }
-
-      //         const startIndex = currentNode.lastIndexOf('(') + 1;
-      //         const endIndex = currentNode.lastIndexOf(')');
-      //         // const getNumber = currentNode.charAt(index);
-      //         const getNumber = currentNode.substring(startIndex, endIndex);
-      //
-      //
-
-      //         // @todo 예외처리 예정. 현재는 반드시 number라고 가정
-      //         return Number(getNumber);
-      //       } else {
-      //         /////
-
-      //         const isCopied = currentNode.match(/copy/g);
-
-      //         if (isCopied !== null) {
-      //           // return 0;
-      //         }
-      //       }
-      //     } else {
-      //       return 0;
-      //     }
-
-      //     /////////////////////
-      //     // if (currentNode.includes('(')) {
-      //     //   const startIndex = currentNode.lastIndexOf('(') + 1;
-      //     //   const endIndex = currentNode.lastIndexOf(')');
-      //     //   // const getNumber = currentNode.charAt(index);
-      //     //   const getNumber = currentNode.substring(startIndex, endIndex);
-      //     //
-      //     //
-
-      //     //   // @todo 예외처리 예정. 현재는 반드시 number라고 가정
-      //     //   return Number(getNumber);
-      //     // } else {
-      //     //   return 0;
-      //     // }
-      //   });
-
-      //
-      //
-      //   const target = getNodeNumber(filter);
-
-      //   return String(target);
-      // }
     },
     [getNodeNumber, lpNode],
   );
@@ -394,12 +293,6 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
                   let nodeName = '';
 
                   if (isIncludes !== null) {
-                    // if (isIncludes.length > 1) {
-                    //   duplicateCheck = onDuplicateCheck(cloneCopyNode.name);
-                    // }
-
-                    // duplicateCheck = onDuplicateCheck(cloneCopyNode.name);
-
                     const hasNumber = cloneCopyNode.name.match(/\(/g);
 
                     if (hasNumber !== null) {
@@ -423,30 +316,6 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
                             : `${cloneCopyNode.name} (${duplicateCheck})`;
                       }
                     }
-
-                    // const hasNumber =
-                    //   cloneCopyNode.name.length === cloneCopyNode.name.lastIndexOf(')') + 1;
-
-                    // if (hasNumber) {
-                    //   const tempName = cloneCopyNode.name.substr(
-                    //     0,
-                    //     cloneCopyNode.name.lastIndexOf('('),
-                    //   );
-
-                    //
-                    //
-
-                    //   nodeName = `${tempName} (${Number(duplicateCheck) + 1})`;
-                    // }
-
-                    // nodeName =
-                    //   duplicateCheck === '0'
-                    //     ? `${cloneCopyNode.name}`
-                    //     : `${cloneCopyNode.name} (${duplicateCheck})`;
-
-                    // if (isIncludes.length <= 1) {
-                    //   duplicateCheck = onDuplicateCheck(`${cloneCopyNode.name}`);
-                    // }
                   }
 
                   if (isIncludes === null) {
@@ -457,11 +326,6 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
                         ? `${cloneCopyNode.name} copy`
                         : `${cloneCopyNode.name} copy (${duplicateCheck})`;
                   }
-
-                  // nodeName =
-                  //   duplicateCheck === '0'
-                  //     ? `${cloneCopyNode.name} copy`
-                  //     : `${cloneCopyNode.name} copy (${duplicateCheck})`;
 
                   const nextNodes = produce(lpNode, (draft) => {
                     cloneCopyNode.id = uuidv4();
@@ -485,8 +349,6 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
                     }),
                   );
                 }
-
-                // end
               },
               children: [],
             },

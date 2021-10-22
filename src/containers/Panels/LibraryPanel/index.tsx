@@ -39,14 +39,11 @@ const LibraryPanel: FunctionComponent<Props> = ({
 
   const dispatch = useDispatch();
 
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const { onModalOpen, onModalClose } = useBaseModal();
 
   const [isModelLoading, setIsModelLoading] = useState(false);
   const [fileName, setFileName] = useState('');
   const [assetListLength, setAssetListLength] = useState(0);
-
-  const handleCreateNode = useCallback(() => {}, []);
 
   useEffect(() => {
     if (isModelLoading && !_.isEmpty(assetList) && assetListLength !== assetList.length) {
