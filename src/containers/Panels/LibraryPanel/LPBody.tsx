@@ -411,9 +411,16 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
                         duplicateCheck = onDuplicateCheck(tempName);
 
                         nodeName =
+                          duplicateCheck === '0' ? tempName : `${tempName} (${duplicateCheck})`;
+                      }
+
+                      if (hasNumber.length === 1) {
+                        duplicateCheck = onDuplicateCheck(cloneCopyNode.name);
+
+                        nodeName =
                           duplicateCheck === '0'
-                            ? tempName
-                            : `${tempName} (${Number(duplicateCheck)})`;
+                            ? `${cloneCopyNode.name} (2)`
+                            : `${cloneCopyNode.name} (${duplicateCheck})`;
                       }
                     }
 
