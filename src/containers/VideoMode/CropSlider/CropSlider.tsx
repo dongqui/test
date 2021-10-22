@@ -17,11 +17,22 @@ const cx = classNames.bind(styles);
 interface Props {
   start: number;
   end: number;
+  duration: number;
+  currentVideoTime: number;
+  handleTimeline: (e: any) => void;
   onChange: Function;
   children: ReactNode;
 }
 
-export const CropSlider: FunctionComponent<Props> = ({ start, end, onChange, children }) => {
+export const CropSlider: FunctionComponent<Props> = ({
+  start,
+  end,
+  duration,
+  currentVideoTime,
+  handleTimeline,
+  onChange,
+  children,
+}) => {
   const [startValue, setStartValue] = useState(start);
   const [endValue, setEndValue] = useState(end);
 
@@ -65,6 +76,7 @@ export const CropSlider: FunctionComponent<Props> = ({ start, end, onChange, chi
   useEffect(() => {
     onChange({ start: startValue, end: endValue });
   }, [startValue, endValue, onChange]);
+
   return (
     <Fragment>
       <input
@@ -90,6 +102,15 @@ export const CropSlider: FunctionComponent<Props> = ({ start, end, onChange, chi
       <div className={cx('slider')}>
         <div className={cx('slider-track')}></div>
         <div ref={cropRef} className={cx('slider-range')}></div>
+        <input
+          className={cx('slider-time')}
+          type="range"
+          min="0"
+          max={duration}
+          step="0.01"
+          value={currentVideoTime}
+          onChange={handleTimeline}
+        />
         {children}
       </div>
     </Fragment>
