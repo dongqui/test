@@ -4,13 +4,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 // filterFunction params(beta, minCutoff)의 기본값
 // mocap 결과물이 아닌 경우, 항등원 성격의 0, 0을 사용합니다.
-const DEFAULT_BETA = 0;
-const DEFAULT_MIN_CUTOFF = 0;
+const DEFAULT_BETA = 0.0;
+const DEFAULT_MIN_CUTOFF = 1.0;
 // mocap 결과물인 경우, 다시 position / rotationQuaternion으로 구분한 기본값을 사용합니다.
-const MOCAP_POSITION_BETA = 0.12;
-const MOCAP_POSITION_MIN_CUTOFF = 0.7;
-const MOCAP_QUATERNION_BETA = 0.24;
-const MOCAP_QUATERNION_MIN_CUTOFF = 1.4;
+const MOCAP_POSITION_BETA = 0.002;
+const MOCAP_POSITION_MIN_CUTOFF = 0.05;
+const MOCAP_QUATERNION_BETA = 0.3;
+const MOCAP_QUATERNION_MIN_CUTOFF = 3.0;
 
 type Axis = 'x' | 'y' | 'z';
 type QuaternionAxis = Axis | 'w';
