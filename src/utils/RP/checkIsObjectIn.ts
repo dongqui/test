@@ -1,6 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 import { ScreenXY } from 'types/common';
 import { checkIsControllerIn, checkIsVectorIn } from '.';
+import checkIsTargetMesh from './checkIsTargetMesh';
 
 /**
  * 대상 object가 드래그 박스 범위 내에 속하는 지 판단합니다.
@@ -20,6 +21,12 @@ const checkIsObjectIn = (
   scene: BABYLON.Scene,
 ) => {
   if (object.getClassName() === 'TransformNode') {
+    // 해당 transformNode에 연결된 joint가 invisible할 경우 선택하지 않음
+    const joint = scene.getMeshByID(object.id.replace('transformNode', 'joint'));
+    if (joint && !joint.isVisible) {
+      return false;
+    }
+
     // joint(transformNode)일 때는 position을 바탕으로 판단
     return checkIsVectorIn(
       startPointerPosition,
@@ -28,6 +35,10 @@ const checkIsObjectIn = (
       scene,
     );
   } else {
+    // 해당 controller가 invisible할 경우 선택하지 않음
+    if (checkIsTargetMesh(object) && !object.isVisible) {
+      return false;
+    }
     // controller일 때는 총 9개 점을 판단
     return checkIsControllerIn(
       startPointerPosition,

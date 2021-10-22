@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { AnimationIngredient, ShootTrack } from 'types/common';
+import { AnimationIngredient, ShootProperty, ShootTrack } from 'types/common';
 import { v4 as uuidv4 } from 'uuid';
 
 // filterFunction params(beta, minCutoff)의 기본값
@@ -11,6 +11,55 @@ const MOCAP_POSITION_BETA = 0.12;
 const MOCAP_POSITION_MIN_CUTOFF = 0.7;
 const MOCAP_QUATERNION_BETA = 0.24;
 const MOCAP_QUATERNION_MIN_CUTOFF = 1.4;
+
+type Axis = 'x' | 'y' | 'z';
+type QuaternionAxis = Axis | 'w';
+
+type TransformKeys = {
+  [axis in Axis]: BABYLON.IAnimationKey[];
+};
+type QuaterionTransformKeys = {
+  [axis in QuaternionAxis]: BABYLON.IAnimationKey[];
+};
+
+const createTrack = (
+  name: string,
+  layerId: string,
+  target: any,
+  property: ShootProperty,
+  axis: QuaternionAxis,
+  transformKeys: BABYLON.IAnimationKey[],
+  isMocapAnimation: boolean,
+): ShootTrack => {
+  let filterBeta = DEFAULT_BETA;
+  let filterMinCutoff = DEFAULT_MIN_CUTOFF;
+
+  if (isMocapAnimation) {
+    if (property === 'rotationQuaternion') {
+      filterBeta = MOCAP_QUATERNION_BETA;
+      filterMinCutoff = MOCAP_QUATERNION_MIN_CUTOFF;
+    } else if (property === 'position') {
+      filterBeta = MOCAP_POSITION_BETA;
+      filterMinCutoff = MOCAP_POSITION_MIN_CUTOFF;
+    }
+  }
+
+  return {
+    targetId: target.id,
+    layerId,
+    name,
+    property,
+    axis,
+    target, // 이후 targetAnimation을 생성을 위해 참조를 유지합니다.
+    transformKeys,
+    interpolationType: 'linear',
+    useFilter: isMocapAnimation ? true : false, // mocap 결과물의 경우에만 기본으로 filter를 적용합니다.
+    filterBeta,
+    filterMinCutoff,
+    isIncluded: true,
+    isLocked: false,
+  };
+};
 
 /**
  * 파일의 animationGroup을 사용해 Shoot 자체적으로 사용하는 구조의 데이터(AnimationIngredient)를 생성합니다.
@@ -25,218 +74,122 @@ const createAnimationIngredient = (
   isMocapAnimation: boolean,
   current: boolean,
 ): AnimationIngredient => {
-  const baseLayerId = uuidv4();
+  const layerId = uuidv4();
 
   const tracks: ShootTrack[] = [];
   // animationGroup을 생성하기 위해 사용한 targetAnimations를 순회하며 Axis-depth의 트랙들을 구성합니다.
   animationGroup.targetedAnimations.forEach((targetAnimation) => {
     const { target, animation } = targetAnimation;
     if (animation.targetProperty === 'position') {
-      const xTransformKeys: BABYLON.IAnimationKey[] = [];
-      const yTransformKeys: BABYLON.IAnimationKey[] = [];
-      const zTransformKeys: BABYLON.IAnimationKey[] = [];
+      const positionTransformKeys: TransformKeys = {
+        x: [],
+        y: [],
+        z: [],
+      };
 
       // Property-depth의 트랙들의 value들을 axis별로 분리합니다.
       animation.getKeys().forEach((key) => {
-        xTransformKeys.push({ frame: key.frame, value: key.value.x });
-        yTransformKeys.push({ frame: key.frame, value: key.value.y });
-        zTransformKeys.push({ frame: key.frame, value: key.value.z });
+        positionTransformKeys.x.push({ frame: key.frame, value: key.value.x });
+        positionTransformKeys.y.push({ frame: key.frame, value: key.value.y });
+        positionTransformKeys.z.push({ frame: key.frame, value: key.value.z });
       });
 
-      const xTrack: ShootTrack = {
-        targetId: target.id,
-        layerId: baseLayerId,
-        name: `${animation.name}|x`,
-        property: 'position',
-        axis: 'x',
-        target, // 이후 targetAnimation을 생성을 위해 참조를 유지합니다.
-        transformKeys: xTransformKeys,
-        interpolationType: 'linear',
-        useFilter: isMocapAnimation ? true : false, // mocap 결과물의 경우에만 기본으로 filter를 적용합니다.
-        filterBeta: isMocapAnimation ? MOCAP_POSITION_BETA : DEFAULT_BETA,
-        filterMinCutoff: isMocapAnimation ? MOCAP_POSITION_MIN_CUTOFF : DEFAULT_MIN_CUTOFF,
-        isIncluded: true,
-        isLocked: false,
-      };
-
-      const yTrack: ShootTrack = {
-        targetId: target.id,
-        layerId: baseLayerId,
-        name: `${animation.name}|y`,
-        property: 'position',
-        axis: 'y',
-        target,
-        transformKeys: yTransformKeys,
-        interpolationType: 'linear',
-        useFilter: isMocapAnimation ? true : false,
-        filterBeta: isMocapAnimation ? MOCAP_POSITION_BETA : DEFAULT_BETA,
-        filterMinCutoff: isMocapAnimation ? MOCAP_POSITION_MIN_CUTOFF : DEFAULT_MIN_CUTOFF,
-        isIncluded: true,
-        isLocked: false,
-      };
-
-      const zTrack: ShootTrack = {
-        targetId: target.id,
-        layerId: baseLayerId,
-        name: `${animation.name}|z`,
-        property: 'position',
-        axis: 'z',
-        target,
-        transformKeys: zTransformKeys,
-        interpolationType: 'linear',
-        useFilter: isMocapAnimation ? true : false,
-        filterBeta: isMocapAnimation ? MOCAP_POSITION_BETA : DEFAULT_BETA,
-        filterMinCutoff: isMocapAnimation ? MOCAP_POSITION_MIN_CUTOFF : DEFAULT_MIN_CUTOFF,
-        isIncluded: true,
-        isLocked: false,
-      };
-
-      tracks.push(xTrack);
-      tracks.push(yTrack);
-      tracks.push(zTrack);
+      // position 트랙들 전처리
+      Object.keys(positionTransformKeys).forEach((axis) => {
+        tracks.push(
+          createTrack(
+            `${animation.name}|${axis}`,
+            layerId,
+            target,
+            'position',
+            axis as Axis,
+            positionTransformKeys[axis as Axis],
+            isMocapAnimation,
+          ),
+        );
+      });
     } else if (animation.targetProperty === 'rotationQuaternion') {
-      const xTransformKeys: BABYLON.IAnimationKey[] = [];
-      const yTransformKeys: BABYLON.IAnimationKey[] = [];
-      const zTransformKeys: BABYLON.IAnimationKey[] = [];
-      const wTransformKeys: BABYLON.IAnimationKey[] = [];
+      const quaternionTransformKeys: QuaterionTransformKeys = {
+        x: [],
+        y: [],
+        z: [],
+        w: [],
+      };
+
+      const eulerTransformKeys: TransformKeys = {
+        x: [],
+        y: [],
+        z: [],
+      };
 
       animation.getKeys().forEach((key) => {
-        xTransformKeys.push({ frame: key.frame, value: key.value.x });
-        yTransformKeys.push({ frame: key.frame, value: key.value.y });
-        zTransformKeys.push({ frame: key.frame, value: key.value.z });
-        wTransformKeys.push({ frame: key.frame, value: key.value.w });
+        quaternionTransformKeys.x.push({ frame: key.frame, value: key.value.x });
+        quaternionTransformKeys.y.push({ frame: key.frame, value: key.value.y });
+        quaternionTransformKeys.z.push({ frame: key.frame, value: key.value.z });
+        quaternionTransformKeys.w.push({ frame: key.frame, value: key.value.w });
+
+        const q: BABYLON.Quaternion = key.value;
+        const e = q.normalize().toEulerAngles();
+        eulerTransformKeys.x.push({ frame: key.frame, value: e.x });
+        eulerTransformKeys.y.push({ frame: key.frame, value: e.y });
+        eulerTransformKeys.z.push({ frame: key.frame, value: e.z });
       });
 
-      const xTrack: ShootTrack = {
-        targetId: target.id,
-        layerId: baseLayerId,
-        name: `${animation.name}|x`,
-        property: 'rotationQuaternion',
-        axis: 'x',
-        target,
-        transformKeys: xTransformKeys,
-        interpolationType: 'linear',
-        useFilter: isMocapAnimation ? true : false,
-        filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
-        filterMinCutoff: isMocapAnimation ? MOCAP_QUATERNION_MIN_CUTOFF : DEFAULT_MIN_CUTOFF,
-        isIncluded: true,
-        isLocked: false,
-      };
+      // rotationQuaternion 트랙들 전처리
+      Object.keys(quaternionTransformKeys).forEach((axis) => {
+        tracks.push(
+          createTrack(
+            `${animation.name}|${axis}`,
+            layerId,
+            target,
+            'rotationQuaternion',
+            axis as QuaternionAxis,
+            quaternionTransformKeys[axis as QuaternionAxis],
+            isMocapAnimation,
+          ),
+        );
+      });
 
-      const yTrack: ShootTrack = {
-        targetId: target.id,
-        layerId: baseLayerId,
-        name: `${animation.name}|y`,
-        property: 'rotationQuaternion',
-        axis: 'y',
-        target,
-        transformKeys: yTransformKeys,
-        interpolationType: 'linear',
-        useFilter: isMocapAnimation ? true : false,
-        filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
-        filterMinCutoff: isMocapAnimation ? MOCAP_QUATERNION_MIN_CUTOFF : DEFAULT_MIN_CUTOFF,
-        isIncluded: true,
-        isLocked: false,
-      };
-
-      const zTrack: ShootTrack = {
-        targetId: target.id,
-        layerId: baseLayerId,
-        name: `${animation.name}|z`,
-        property: 'rotationQuaternion',
-        axis: 'z',
-        target,
-        transformKeys: zTransformKeys,
-        interpolationType: 'linear',
-        useFilter: isMocapAnimation ? true : false,
-        filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
-        filterMinCutoff: isMocapAnimation ? MOCAP_QUATERNION_MIN_CUTOFF : DEFAULT_MIN_CUTOFF,
-        isIncluded: true,
-        isLocked: false,
-      };
-
-      const wTrack: ShootTrack = {
-        targetId: target.id,
-        layerId: baseLayerId,
-        name: `${animation.name}|w`,
-        property: 'rotationQuaternion',
-        axis: 'w',
-        target,
-        transformKeys: wTransformKeys,
-        interpolationType: 'linear',
-        useFilter: isMocapAnimation ? true : false,
-        filterBeta: isMocapAnimation ? MOCAP_QUATERNION_BETA : DEFAULT_BETA,
-        filterMinCutoff: isMocapAnimation ? MOCAP_QUATERNION_MIN_CUTOFF : DEFAULT_MIN_CUTOFF,
-        isIncluded: true,
-        isLocked: false,
-      };
-
-      tracks.push(xTrack);
-      tracks.push(yTrack);
-      tracks.push(zTrack);
-      tracks.push(wTrack);
+      // rotation 트랙들 전처리
+      Object.keys(eulerTransformKeys).forEach((axis) => {
+        tracks.push(
+          createTrack(
+            `${animation.name}|${axis}`,
+            layerId,
+            target,
+            'rotation',
+            axis as Axis,
+            eulerTransformKeys[axis as Axis],
+            isMocapAnimation,
+          ),
+        );
+      });
     } else if (animation.targetProperty === 'scaling') {
-      const xTransformKeys: BABYLON.IAnimationKey[] = [];
-      const yTransformKeys: BABYLON.IAnimationKey[] = [];
-      const zTransformKeys: BABYLON.IAnimationKey[] = [];
+      const scalingTransformKeys: TransformKeys = {
+        x: [],
+        y: [],
+        z: [],
+      };
 
       animation.getKeys().forEach((key) => {
-        xTransformKeys.push({ frame: key.frame, value: key.value.x });
-        yTransformKeys.push({ frame: key.frame, value: key.value.y });
-        zTransformKeys.push({ frame: key.frame, value: key.value.z });
+        scalingTransformKeys.x.push({ frame: key.frame, value: key.value.x });
+        scalingTransformKeys.y.push({ frame: key.frame, value: key.value.y });
+        scalingTransformKeys.z.push({ frame: key.frame, value: key.value.z });
       });
 
-      const xTrack: ShootTrack = {
-        targetId: target.id,
-        layerId: baseLayerId,
-        name: `${animation.name}|x`,
-        property: 'scaling',
-        axis: 'x',
-        target,
-        transformKeys: xTransformKeys,
-        interpolationType: 'linear',
-        useFilter: false,
-        filterBeta: DEFAULT_BETA,
-        filterMinCutoff: DEFAULT_MIN_CUTOFF,
-        isIncluded: true,
-        isLocked: false,
-      };
-
-      const yTrack: ShootTrack = {
-        targetId: target.id,
-        layerId: baseLayerId,
-        name: `${animation.name}|y`,
-        property: 'scaling',
-        axis: 'y',
-        target,
-        transformKeys: yTransformKeys,
-        interpolationType: 'linear',
-        useFilter: false,
-        filterBeta: DEFAULT_BETA,
-        filterMinCutoff: DEFAULT_MIN_CUTOFF,
-        isIncluded: true,
-        isLocked: false,
-      };
-
-      const zTrack: ShootTrack = {
-        targetId: target.id,
-        layerId: baseLayerId,
-        name: `${animation.name}|z`,
-        property: 'scaling',
-        axis: 'z',
-        target,
-        transformKeys: zTransformKeys,
-        interpolationType: 'linear',
-        useFilter: false,
-        filterBeta: DEFAULT_BETA,
-        filterMinCutoff: DEFAULT_MIN_CUTOFF,
-        isIncluded: true,
-        isLocked: false,
-      };
-
-      tracks.push(xTrack);
-      tracks.push(yTrack);
-      tracks.push(zTrack);
+      Object.keys(scalingTransformKeys).forEach((axis) => {
+        tracks.push(
+          createTrack(
+            `${animation.name}|${axis}`,
+            layerId,
+            target,
+            'scaling',
+            axis as Axis,
+            scalingTransformKeys[axis as Axis],
+            isMocapAnimation,
+          ),
+        );
+      });
     }
     // 전처리를 끝낸 source animation은 타겟의 애니메이션 목록에서 지워줍니다.
     target.animations = target.animations.filter(
@@ -250,7 +203,7 @@ const createAnimationIngredient = (
     assetId,
     current,
     tracks,
-    layers: [{ id: baseLayerId, name: 'layer1' }],
+    layers: [{ id: layerId, name: 'layer1' }],
   };
 
   return animationIngredient;

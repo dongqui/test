@@ -1,28 +1,17 @@
 import _ from 'lodash';
-import {
-  FunctionComponent,
-  Fragment,
-  memo,
-  ReactNode,
-  RefObject,
-  useEffect,
-  useState,
-  useRef,
-  useCallback,
-  createRef,
-  forwardRef,
-} from 'react';
+import { FunctionComponent, memo, ReactNode, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
-import { AnimationIngredient, ShootTrack } from 'types/common';
+import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
-import * as animationIngredientsAction from 'actions/animationIngredientsAction';
+import * as animationDataActions from 'actions/animationDataAction';
+import * as selectingDataActions from 'actions/selectingDataAction';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
@@ -60,8 +49,10 @@ const ListNode: FunctionComponent<Props> = ({
   isSelected,
   childrens,
   selectedId,
-  assetList,
-  anmiationIngredients,
+  visualizedAssetIds,
+  animationTransformNodes,
+  animationIngredients,
+  selectableObjects,
 }) => {
   const dispatch = useDispatch();
 
@@ -288,6 +279,13 @@ const ListNode: FunctionComponent<Props> = ({
                       nodes: afterNodes,
                     }),
                   );
+
+                  if (assetId) {
+                    // assetList에서 제외
+                    dispatch(shootProjectActions.removeAsset({ assetId }));
+                    // animationData 삭제
+                    dispatch(animationDataActions.removeAsset({ assetId }));
+                  }
                 },
                 children: [],
               },
@@ -315,8 +313,8 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Visualization',
                 onClick: () => {
-                  if (assetId) {
-                    dispatch(shootProjectActions.renderAsset({ assetId: assetId }));
+                  if (assetId && !visualizedAssetIds.includes(assetId)) {
+                    dispatch(shootProjectActions.renderAsset({ assetId }));
                   }
                 },
                 children: [],
@@ -324,8 +322,8 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Visualization cancel',
                 onClick: () => {
-                  if (assetId) {
-                    dispatch(shootProjectActions.unrenderAsset({ assetId: assetId }));
+                  if (assetId && visualizedAssetIds.includes(assetId)) {
+                    dispatch(shootProjectActions.unrenderAsset({ assetId }));
                   }
                 },
                 children: [],
@@ -336,13 +334,27 @@ const ListNode: FunctionComponent<Props> = ({
                   if (assetId) {
                     const cloneLPNode = _.clone(lpNode);
 
+                    const layerName = 'layer1';
+                    const layers: ShootLayer[] = [{ id: uuidv4(), name: layerName }];
+
+                    const tracks: ShootTrack[] = [];
+                    if (visualizedAssetIds.includes(assetId)) {
+                      // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서
+                      const targets = selectableObjects.filter(
+                        (object) => object.id.split('//')[0] === assetId,
+                      );
+                      console.log('targets: ', targets);
+                    } else {
+                      // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
+                    }
+
                     const nextIngredient: AnimationIngredient = {
                       id: uuidv4(),
                       name: 'empty motion',
                       assetId: assetId,
                       current: false,
-                      layers: [{ id: uuidv4(), name: 'layer1' }],
-                      tracks: [] as ShootTrack[],
+                      layers,
+                      tracks,
                     };
 
                     const afterNodes = produce(cloneLPNode, (draft) => {
@@ -359,10 +371,8 @@ const ListNode: FunctionComponent<Props> = ({
                       }),
                     );
 
-                    // @todo 불필요한 파라미터 제거
                     dispatch(
-                      animationIngredientsAction.addMotion({
-                        assetId: assetId,
+                      animationDataActions.addAnimationIngredient({
                         animationIngredient: nextIngredient,
                       }),
                     );
@@ -455,7 +465,9 @@ const ListNode: FunctionComponent<Props> = ({
     name,
     onContextMenuOpen,
     onModalOpen,
+    selectableObjects,
     type,
+    visualizedAssetIds,
   ]);
 
   const column = Array.from({ length: depth - 1 }).map((x, i) => i);
@@ -481,8 +493,10 @@ const ListNode: FunctionComponent<Props> = ({
               onSelect={handleSelect}
               isSelected={node.id === selectedId}
               childrens={node.children}
-              assetList={assetList}
-              anmiationIngredients={anmiationIngredients}
+              visualizedAssetIds={visualizedAssetIds}
+              animationTransformNodes={animationTransformNodes}
+              animationIngredients={animationIngredients}
+              selectableObjects={selectableObjects}
             />
           );
         }
@@ -499,22 +513,26 @@ const ListNode: FunctionComponent<Props> = ({
             onSelect={handleSelect}
             isSelected={id === selectedId && paramId.current}
             childrens={[]}
-            assetList={assetList}
-            anmiationIngredients={anmiationIngredients}
+            visualizedAssetIds={visualizedAssetIds}
+            animationTransformNodes={animationTransformNodes}
+            animationIngredients={animationIngredients}
+            selectableObjects={selectableObjects}
           />
         );
       }
     },
     [
-      anmiationIngredients,
-      assetList,
+      animationIngredients,
+      animationTransformNodes,
       filePath,
       handleSelect,
       id,
       lpNode,
       name,
       parentId,
+      selectableObjects,
       selectedId,
+      visualizedAssetIds,
     ],
   );
 
@@ -523,6 +541,28 @@ const ListNode: FunctionComponent<Props> = ({
   // useEffect(() => {
   //   setNodeRefs(Array.from({ length: childrens.length }).map(() => createRef()));
   // }, [childrens.length]);
+
+  //  redner 용 임시 함수
+  // const dummyArrowClick = useCallback(
+  //   (event: MouseEvent) => {
+  //     const targetAsset = assetList[0];
+  //     // assetId를 사용해서 node를 생성하신 후, 위의 코드를 아래의 코드로 변경하면 됩니다.
+  //     // const targetAsset = assetList.find((asset) => asset.id === assetId)
+
+  //     // render/unrender 기능 구현을 임의로 click/altClick으로 구분해두었습니다.
+  //     if (event.altKey) {
+  //       if (targetAsset && visualizedAssetIds.includes(targetAsset.id)) {
+  //         dispatch(shootProjectActions.unrenderAsset({ assetId: targetAsset.id }));
+  //       }
+  //     } else {
+  //       // 이미 render된 asset이 아닌 경우에만
+  //       if (targetAsset && !visualizedAssetIds.includes(targetAsset.id)) {
+  //         dispatch(shootProjectActions.renderAsset({ assetId: targetAsset.id }));
+  //       }
+  //     }
+  //   },
+  //   [assetList, dispatch, visualizedAssetIds],
+  // );
 
   return (
     <div className={classes}>
@@ -563,8 +603,10 @@ const ListNode: FunctionComponent<Props> = ({
 
 const mapStateToProps = (state: RootState) => {
   return {
-    assetList: state.shootProject.assetList,
-    anmiationIngredients: state.animationIngredients,
+    visualizedAssetIds: state.shootProject.visualizedAssetIds,
+    animationTransformNodes: state.animationData.animationTransformNodes,
+    animationIngredients: state.animationData.animationIngredients,
+    selectableObjects: state.selectingData.selectableObjects,
   };
 };
 

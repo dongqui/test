@@ -8,3 +8,4 @@ export { default as createAnimationIngredient } from './createAnimationIngredien
 export { default as checkIsObjectIn } from './checkIsObjectIn';
 export { default as checkIsControllerIn } from './checkIsControllerIn';
 export { default as checkIsVectorIn } from './checkIsVectorIn';
+export { default as checkIsTargetMesh } from './checkIsTargetMesh';

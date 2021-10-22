@@ -11,7 +11,7 @@ export interface ShootProject {
   fileToLoad: string | File | null;
   assetIdToRender: string | null;
   assetIdToUnrender: string | null;
-  assetIdToRemove: string | null;
+  assetToRemove: ShootAsset | null;
   fps: number;
 }
 
@@ -44,7 +44,7 @@ export interface AnimationIngredient {
   layers: ShootLayer[];
 }
 
-export type ShootProperty = 'position' | 'rotationQuaternion' | 'scaling';
+export type ShootProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling';
 export type ShootAxis = 'x' | 'y' | 'z' | 'w';
 
 export interface ShootTrack {

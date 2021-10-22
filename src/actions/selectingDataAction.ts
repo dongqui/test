@@ -4,6 +4,7 @@ export type SelectingDataAction =
   | ReturnType<typeof addSelectableObjects>
   | ReturnType<typeof removeSelectableControllers>
   | ReturnType<typeof removeSelectableJoints>
+  | ReturnType<typeof unrenderAsset>
   | ReturnType<typeof defaultSingleSelect>
   | ReturnType<typeof defaultMultiSelect>
   | ReturnType<typeof ctrlKeySingleSelect>
@@ -13,6 +14,7 @@ export type SelectingDataAction =
 const ADD_SELECTABLE_OBJECTS = 'selectingDataAction/ADD_SELECTABLE_OBJECTS' as const;
 const REMOVE_SELECTABLE_CONTROLLERS = 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS' as const;
 const REMOVE_SELECTABLE_JOINTS = 'selectingDataAction/REMOVE_SELECTABLE_JOINTS' as const;
+const UNRENDER_ASSET = 'selectingDataAction/UNRENDER_ASSET' as const;
 
 const DEFAULT_SINGLE_SELECT = 'selectingDataAction/DEFAULT_SINGLE_SELECT' as const;
 const DEFAULT_MULTI_SELECT = 'selectingDataAction/DEFAULT_MULTI_SELECT' as const;
@@ -31,6 +33,10 @@ interface RemoveSelectableControllers {
 }
 
 interface RemoveSelectableJoints {
+  assetId: string;
+}
+
+interface UnrenderAsset {
   assetId: string;
 }
 
@@ -86,6 +92,18 @@ export const removeSelectableControllers = (params: RemoveSelectableControllers)
  */
 export const removeSelectableJoints = (params: RemoveSelectableJoints) => ({
   type: REMOVE_SELECTABLE_JOINTS,
+  payload: {
+    ...params,
+  },
+});
+
+/**
+ * 특정 asset을 unrender시에 호출하며, 해당 asset의 controller와 transformNode를 모두 선택 대상에서 제외합니다.
+ *
+ * @param assetId - unrender 대상 asset
+ */
+export const unrenderAsset = (params: UnrenderAsset) => ({
+  type: UNRENDER_ASSET,
   payload: {
     ...params,
   },
