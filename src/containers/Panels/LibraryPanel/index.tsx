@@ -172,9 +172,7 @@ const LibraryPanel: FunctionComponent<Props> = ({
 
   const handleDrop = useCallback(
     async (files: File[]) => {
-      for (let i = 0; i < files.length; i++) {
-        await onFileLoad(files[i]);
-      }
+      await Promise.all(files.map((file) => onFileLoad(file)));
     },
     [onFileLoad],
   );

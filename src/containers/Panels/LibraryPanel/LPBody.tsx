@@ -236,7 +236,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
     [getNodeNumber, lpNode],
   );
 
-  const depthChnageKey = useCallback((node: LP.Node[], childID: string, parentNode: LP.Node) => {
+  const depthChangeKey = useCallback((node: LP.Node[], childID: string, parentNode: LP.Node) => {
     const changeNode = _.find(node, { id: childID });
 
     if (changeNode) {
@@ -252,7 +252,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
       node.push(cloneChangeNode);
 
       if (!_.isEmpty(cloneChangeNode.children)) {
-        cloneChangeNode.children.map((child) => depthChnageKey(node, child, cloneChangeNode));
+        cloneChangeNode.children.map((child) => depthChangeKey(node, child, cloneChangeNode));
       }
     }
   }, []);
@@ -338,7 +338,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
 
                     if (!_.isEmpty(cloneCopyNode.children)) {
                       cloneCopyNode.children.map((child) =>
-                        depthChnageKey(draft, child, cloneCopyNode),
+                        depthChangeKey(draft, child, cloneCopyNode),
                       );
                     }
                   });
@@ -409,7 +409,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
       };
     }
   }, [
-    depthChnageKey,
+    depthChangeKey,
     dispatch,
     lpClipboard,
     lpNode,
