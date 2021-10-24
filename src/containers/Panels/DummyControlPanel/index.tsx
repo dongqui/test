@@ -363,7 +363,6 @@ const ControlPanel: FunctionComponent = () => {
                     layerId: layer.id,
                     name: `${transformNodeTrack.name}|controller`,
                     property: transformNodeTrack.property,
-                    axis: transformNodeTrack.axis,
                     target: controller,
                     transformKeys: [...transformNodeTrack.transformKeys],
                     interpolationType: transformNodeTrack.interpolationType,

@@ -34,20 +34,37 @@ const useAnimation = () => {
         if (track.property !== 'rotation') {
           // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
           if (track.isIncluded) {
-            const newAnimation = new BABYLON.Animation(
-              track.name,
-              `${track.property}.${track.axis}`,
-              fps / 30,
-              BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-              BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-            );
-            if (track.useFilter) {
-              // filter function 적용
-            } else {
-              newAnimation.setKeys(track.transformKeys);
+            if (track.property === 'position' || track.property === 'scaling') {
+              const newAnimation = new BABYLON.Animation(
+                track.name,
+                `${track.property}`,
+                fps / 30,
+                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+              );
+              if (track.useFilter) {
+                // filter function 적용
+              } else {
+                newAnimation.setKeys(track.transformKeys);
+              }
+              track.target.animations.push(newAnimation);
+              newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
+            } else if (track.property === 'rotationQuaternion') {
+              const newAnimation = new BABYLON.Animation(
+                track.name,
+                `${track.property}`,
+                fps / 30,
+                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+              );
+              if (track.useFilter) {
+                // filter function 적용
+              } else {
+                newAnimation.setKeys(track.transformKeys);
+              }
+              track.target.animations.push(newAnimation);
+              newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
             }
-            track.target.animations.push(newAnimation);
-            newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
           }
         }
       });

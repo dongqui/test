@@ -52,7 +52,6 @@ export interface ShootTrack {
   layerId: string;
   name: string;
   property: ShootProperty;
-  axis: ShootAxis;
   target: BABYLON.TransformNode | BABYLON.Mesh;
   transformKeys: BABYLON.IAnimationKey[];
   interpolationType: 'linear' | 'bezier' | 'constant';
