@@ -1,8 +1,8 @@
 import { CPItemType } from 'types/CP';
 import { LPItemListOldType } from 'types/LP';
 
+//////////////////// old ////////////////////
 export const isClient = typeof window !== 'undefined';
-
 export const CUT_IMAGES_CNT = 20;
 
 export const STANDARD_TIME_UNIT = 1 / 30;
@@ -131,3 +131,14 @@ export const TP_TRACK_INDEX = {
   ROTATION: 5, // Rotation 트랙 index는 끝자리를 5로 지정
   SCALE: 6, // Scale 트랙 index는 끝자리를 6으로 지정
 };
+
+//////////////////// new ////////////////////
+// filterFunction params(beta, minCutoff)의 기본값
+// mocap 결과물이 아닌 경우, 항등원 성격의 0, 0을 사용합니다.
+export const DEFAULT_BETA = 0.0;
+export const DEFAULT_MIN_CUTOFF = 1.0;
+// mocap 결과물인 경우, 다시 position / rotationQuaternion으로 구분한 기본값을 사용합니다.
+export const MOCAP_POSITION_BETA = 0.002;
+export const MOCAP_POSITION_MIN_CUTOFF = 0.05;
+export const MOCAP_QUATERNION_BETA = 0.3;
+export const MOCAP_QUATERNION_MIN_CUTOFF = 3.0;

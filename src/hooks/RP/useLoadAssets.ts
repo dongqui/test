@@ -95,7 +95,12 @@ const useLoadAssets = () => {
           dispatch(shootProjectActions.addAsset({ asset: newAsset }));
           dispatch(
             animationDataActions.addAsset({
-              transformNodes,
+              transformNodes: transformNodes.filter(
+                (t) =>
+                  !t.name.toLowerCase().includes('camera') &&
+                  !t.name.toLowerCase().includes('scene') &&
+                  !t.name.toLowerCase().includes('armature'),
+              ),
               animationIngredients,
               retargetMap,
             }),

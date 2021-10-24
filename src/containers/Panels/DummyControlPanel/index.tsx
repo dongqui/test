@@ -3,12 +3,13 @@ import _ from 'lodash';
 import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
+import { v4 as uuidv4 } from 'uuid';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import { checkIsTargetMesh } from 'utils/RP';
+import { AnimationIngredient, ShootTrack } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { AnimationIngredient, ShootTrack } from 'types/common';
 
 const cx = classNames.bind(styles);
 
@@ -359,6 +360,7 @@ const ControlPanel: FunctionComponent = () => {
                 );
                 transformNodeTracks.forEach((transformNodeTrack) => {
                   const newTrack: ShootTrack = {
+                    id: uuidv4(),
                     targetId: controller.id,
                     layerId: layer.id,
                     name: `${transformNodeTrack.name}|controller`,

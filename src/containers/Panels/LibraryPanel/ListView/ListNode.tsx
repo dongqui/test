@@ -1,13 +1,15 @@
 import _ from 'lodash';
+import * as BABYLON from '@babylonjs/core';
 import { FunctionComponent, memo, ReactNode, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
-import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
+import { AnimationIngredient, ShootLayer, ShootProperty, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { createShootTrack } from 'utils/RP';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -344,15 +346,35 @@ const ListNode: FunctionComponent<Props> = ({
                     const layers: ShootLayer[] = [{ id: uuidv4(), name: layerName }];
 
                     const tracks: ShootTrack[] = [];
+                    let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
                     if (visualizedAssetIds.includes(assetId)) {
                       // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서
-                      const targets = selectableObjects.filter(
+                      targets = selectableObjects.filter(
                         (object) => object.id.split('//')[0] === assetId,
                       );
-                      console.log('targets: ', targets);
                     } else {
                       // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
+                      targets = animationTransformNodes.filter(
+                        (transformNode) => transformNode.id.split('//')[0] === assetId,
+                      );
                     }
+
+                    targets.forEach((target) => {
+                      ['position', 'rotation', 'rotationQuaternion', 'scaling'].forEach(
+                        (property) => {
+                          tracks.push(
+                            createShootTrack(
+                              `emptyMotion|${target.name}|${property}`,
+                              layers[0].id,
+                              target,
+                              property as ShootProperty,
+                              [],
+                              false,
+                            ),
+                          );
+                        },
+                      );
+                    });
 
                     const nextIngredient: AnimationIngredient = {
                       id: uuidv4(),
@@ -459,6 +481,7 @@ const ListNode: FunctionComponent<Props> = ({
       };
     }
   }, [
+    animationTransformNodes,
     assetId,
     depth,
     depthCheck,

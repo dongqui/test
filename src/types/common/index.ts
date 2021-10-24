@@ -48,6 +48,7 @@ export type ShootProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'sc
 export type ShootAxis = 'x' | 'y' | 'z' | 'w';
 
 export interface ShootTrack {
+  id: string;
   targetId: string;
   layerId: string;
   name: string;

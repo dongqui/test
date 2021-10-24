@@ -1,56 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
-import { AnimationIngredient, ShootProperty, ShootTrack } from 'types/common';
+import { AnimationIngredient, ShootTrack } from 'types/common';
 import { v4 as uuidv4 } from 'uuid';
-
-// filterFunction params(beta, minCutoff)의 기본값
-// mocap 결과물이 아닌 경우, 항등원 성격의 0, 0을 사용합니다.
-const DEFAULT_BETA = 0.0;
-const DEFAULT_MIN_CUTOFF = 1.0;
-// mocap 결과물인 경우, 다시 position / rotationQuaternion으로 구분한 기본값을 사용합니다.
-const MOCAP_POSITION_BETA = 0.002;
-const MOCAP_POSITION_MIN_CUTOFF = 0.05;
-const MOCAP_QUATERNION_BETA = 0.3;
-const MOCAP_QUATERNION_MIN_CUTOFF = 3.0;
-
-type Axis = 'x' | 'y' | 'z';
-type QuaternionAxis = Axis | 'w';
-
-const createTrack = (
-  name: string,
-  layerId: string,
-  target: any,
-  property: ShootProperty,
-  transformKeys: BABYLON.IAnimationKey[],
-  isMocapAnimation: boolean,
-): ShootTrack => {
-  let filterBeta = DEFAULT_BETA;
-  let filterMinCutoff = DEFAULT_MIN_CUTOFF;
-
-  if (isMocapAnimation) {
-    if (property === 'rotationQuaternion') {
-      filterBeta = MOCAP_QUATERNION_BETA;
-      filterMinCutoff = MOCAP_QUATERNION_MIN_CUTOFF;
-    } else if (property === 'position') {
-      filterBeta = MOCAP_POSITION_BETA;
-      filterMinCutoff = MOCAP_POSITION_MIN_CUTOFF;
-    }
-  }
-
-  return {
-    targetId: target.id,
-    layerId,
-    name,
-    property,
-    target, // 이후 targetAnimation을 생성을 위해 참조를 유지합니다.
-    transformKeys,
-    interpolationType: 'linear',
-    useFilter: isMocapAnimation ? true : false, // mocap 결과물의 경우에만 기본으로 filter를 적용합니다.
-    filterBeta,
-    filterMinCutoff,
-    isIncluded: true,
-    isLocked: false,
-  };
-};
+import createShootTrack from './createShootTrack';
 
 /**
  * 파일의 animationGroup을 사용해 Shoot 자체적으로 사용하는 구조의 데이터(AnimationIngredient)를 생성합니다.
@@ -74,7 +25,7 @@ const createAnimationIngredient = (
     if (animation.targetProperty === 'position') {
       // position 트랙들 전처리
       tracks.push(
-        createTrack(
+        createShootTrack(
           `${animation.name}`,
           layerId,
           target,
@@ -96,7 +47,7 @@ const createAnimationIngredient = (
 
       // rotationQuaternion 트랙들 전처리
       tracks.push(
-        createTrack(
+        createShootTrack(
           `${animation.name}`,
           layerId,
           target,
@@ -108,7 +59,7 @@ const createAnimationIngredient = (
 
       // rotation 트랙들 전처리
       tracks.push(
-        createTrack(
+        createShootTrack(
           `${animation.name}`,
           layerId,
           target,
@@ -119,7 +70,7 @@ const createAnimationIngredient = (
       );
     } else if (animation.targetProperty === 'scaling') {
       tracks.push(
-        createTrack(
+        createShootTrack(
           `${animation.name}`,
           layerId,
           target,
