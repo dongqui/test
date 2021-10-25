@@ -23,7 +23,7 @@ export interface TrackKeyframes {
    * @description layer track은 string id
    * @description bone, transform track은 number형 index
    */
-  trackId: number | string;
+  trackIndex: number | string;
 
   keyframes: Keyframe[];
 }
@@ -34,54 +34,22 @@ export interface SelectedKeyframe {
    * @description layer track은 string id
    * @description bone, transform track은 number형 index
    */
-  trackId: number | string;
+  trackIndex: number | string;
 
   timeIndex: number;
 }
 
 // 선택 된 키프레임들을 cluster
 export interface ClusteredTimes {
-  trackId: number | string;
+  /**
+   * @description TP쪽에서 키프레임을 탐색하기 위한 인덱스
+   */
+  trackIndex: number | string;
+
+  /**
+   * @description RP쪽에서 키프레임을 탐색하기 위한 ID
+   */
+  trackId: string;
+
   times: number[];
 }
-
-/*
-[
-  {
-    isSelected: false,
-    isDeleted:false,
-    timeIndex: 2,
-    value: 0.3434,
-  },
-  {
-    isSelected: false,
-    isDeleted:false,
-    timeIndex: 6,
-    value: 0.3434,
-  },
-  {
-    isSelected: false,
-    isDeleted:false,
-    timeIndex: 10,
-    value: 0.3434,
-  },
-  {
-    isSelected: false,
-    isDeleted:false,
-    timeIndex: 15,
-    value: 0.3434,
-  },
-  {
-    isSelected: false,
-    isDeleted:true,
-    timeIndex: 19,
-    value: 0.3434,
-  },
-  {
-    isSelected: false,
-    isDeleted:false,
-    timeIndex: 23,
-    value: 0.3434,
-  }
-]
-*/
