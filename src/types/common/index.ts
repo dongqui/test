@@ -57,6 +57,7 @@ export interface ShootTrack {
   transformKeys: BABYLON.IAnimationKey[];
   interpolationType: 'linear' | 'bezier' | 'constant';
   bezierParams?: BezierParams;
+  isMocapAnimation: boolean;
   useFilter: boolean;
   filterBeta: number;
   filterMinCutoff: number;

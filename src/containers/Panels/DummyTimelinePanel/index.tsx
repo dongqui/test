@@ -4,26 +4,38 @@ import { v4 as uuidv4 } from 'uuid';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
+import { createShootTrack } from 'utils/RP';
 import * as animationDataActions from 'actions/animationDataAction';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
+const DUMMY_DELETE_FRAME = _.round(3 / 30, 4);
+const DUMMY_DELETE_FRAMES = _.range(1, 100).map((num) => _.round(num / 30, 4));
+
 const TimelinePanel: FunctionComponent = () => {
   const assetList = useSelector((state) => state.shootProject.assetList);
+  const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
+  // 선택된 target들이 가진 layers, tracks만 남긴 배열들
   const [layers, setLayers] = useState<ShootLayer[]>([]);
   const [tracks, setTracks] = useState<ShootTrack[]>([]);
 
   const [targetLayerId, setTargetLayerId] = useState<string>();
-  const [targetFrame, setTargetFrame] = useState();
+  const [targetFrame, setTargetFrame] = useState<number>();
+  const [deleteTargetTrackIds, setDeleteTargetTrackIds] = useState<string[]>([]);
 
   const [newLayerName, setNewLayerName] = useState('');
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    console.log('layers: ', layers);
+    console.log('tracks: ', tracks);
+  }, [layers, tracks]);
 
   useEffect(() => {
     const selectedTargetIds = selectedTargets.map((target) => target.id);
@@ -57,22 +69,213 @@ const TimelinePanel: FunctionComponent = () => {
     setTracks(totalTracks);
   }, [animationIngredients, assetList, selectedTargets]);
 
-  // useEffect(() => {
-  //   console.log('tracks: ', tracks);
-  //   console.log('layers: ', layers);
-  // }, [layers, tracks]);
-
-  const editKeyframe = useCallback(() => {
+  const editKeyframes = useCallback(() => {
     if (targetLayerId) {
-      const targetTracks = tracks.filter((track) => track.layerId === targetLayerId);
+      // 선택된 targets의 tracks 중 layer 또한 선택된 layer와 일치하는 track들
+      const targetLayerTracks = tracks.filter((track) => track.layerId === targetLayerId);
+
+      console.log('targetLayerTracks: ', targetLayerTracks);
+      console.log('targetFrame: ', targetFrame);
+
+      // track들 돌면서 다른 layer에 같은 track있는지 확인
+      targetLayerTracks.forEach((track) => {
+        const { position, rotationQuaternion, scaling } = track.target;
+        const rotation = rotationQuaternion!.normalize().toEulerAngles(); // quaternion 회전 사용하기 때문에 직접 구해줘야 함
+
+        // 같은 대상에 대한 다른 layer의 트랙들
+        const otherLayerTracks = tracks.filter(
+          (t) => t.targetId === track.targetId && t.layerId !== targetLayerId,
+        );
+      });
     }
-  }, [targetLayerId, tracks]);
+  }, [targetFrame, targetLayerId, tracks]);
 
-  const deleteKeyframe = () => {};
+  const deleteKeyframe = useCallback(() => {
+    const currentAnimationIngredient = animationIngredients.find(
+      (anim) => visualizedAssetIds.includes(anim.assetId) && anim.current,
+    );
 
-  const copyKeyframe = () => {};
+    if (currentAnimationIngredient) {
+      const { tracks: currentTracks } = currentAnimationIngredient;
 
-  const pasteKeyframe = () => {};
+      if (targetLayerId) {
+        const newTracks: ShootTrack[] = [];
+
+        currentTracks.forEach((track) => {
+          // rotationQuaternion과 rotation의 경우 동시에 편집되도록
+          if (track.property === 'rotationQuaternion') {
+            if (deleteTargetTrackIds.includes(track.id)) {
+              newTracks.push(
+                createShootTrack(
+                  track.name,
+                  track.layerId,
+                  track.target,
+                  track.property,
+                  track.transformKeys.filter((key) => DUMMY_DELETE_FRAME !== _.round(key.frame, 4)),
+                  track.isMocapAnimation,
+                ),
+              );
+              const rotationTrack = currentTracks.find(
+                (t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'),
+              );
+              if (rotationTrack) {
+                newTracks.push(
+                  createShootTrack(
+                    rotationTrack.name,
+                    rotationTrack.layerId,
+                    rotationTrack.target,
+                    rotationTrack.property,
+                    track.transformKeys.filter(
+                      (key) => DUMMY_DELETE_FRAME !== _.round(key.frame, 4),
+                    ),
+                    rotationTrack.isMocapAnimation,
+                  ),
+                );
+              }
+            } else {
+              newTracks.push(track);
+              const rotationTrack = currentTracks.find(
+                (t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'),
+              );
+              if (rotationTrack) {
+                newTracks.push(rotationTrack);
+              }
+            }
+          } else if (track.property === 'position' || track.property === 'scaling') {
+            if (deleteTargetTrackIds.includes(track.id)) {
+              newTracks.push(
+                createShootTrack(
+                  track.name,
+                  track.layerId,
+                  track.target,
+                  track.property,
+                  track.transformKeys.filter((key) => DUMMY_DELETE_FRAME !== _.round(key.frame, 4)),
+                  track.isMocapAnimation,
+                ),
+              );
+            } else {
+              newTracks.push(track);
+            }
+          }
+        });
+
+        const newAnimationIngredient = {
+          id: currentAnimationIngredient.id,
+          name: currentAnimationIngredient.name,
+          assetId: currentAnimationIngredient.assetId,
+          current: currentAnimationIngredient.current,
+          tracks: newTracks,
+          layers: currentAnimationIngredient.layers,
+        };
+
+        dispatch(
+          animationDataActions.editAnimationIngredient({
+            animationIngredient: newAnimationIngredient,
+          }),
+        );
+      }
+    }
+  }, [animationIngredients, deleteTargetTrackIds, dispatch, targetLayerId, visualizedAssetIds]);
+
+  const deleteKeyframes = useCallback(() => {
+    // edit와는 다르게 TP에서 직접 트랙 내 키프레임 선택해서 삭제
+    // 키프레임 선택 시 1) layer 2) track 3) frame이 선택된 상태 (그 이전에 asset 과 currentAnimationIngredient도 결정)
+    // track과 frame은 다수일 수 있음
+    // single model visualze 상태에서는 visualizedAssetIds를 통해서 currentAnimationIngredient를 선택
+    // multi model visualize 상태에서는 selectedAssetIds를 통해서 currentAnimationIngredient를 선택하도록 수정해야 함
+    const currentAnimationIngredient = animationIngredients.find(
+      (anim) => visualizedAssetIds.includes(anim.assetId) && anim.current,
+    );
+
+    if (currentAnimationIngredient) {
+      const { tracks: currentTracks } = currentAnimationIngredient;
+
+      if (targetLayerId) {
+        const newTracks: ShootTrack[] = [];
+
+        currentTracks.forEach((track) => {
+          // rotationQuaternion과 rotation의 경우 동시에 편집되도록
+          if (track.property === 'rotationQuaternion') {
+            if (deleteTargetTrackIds.includes(track.id)) {
+              newTracks.push(
+                createShootTrack(
+                  track.name,
+                  track.layerId,
+                  track.target,
+                  track.property,
+                  track.transformKeys.filter(
+                    (key) => !DUMMY_DELETE_FRAMES.includes(_.round(key.frame, 4)),
+                  ),
+                  track.isMocapAnimation,
+                ),
+              );
+              const rotationTrack = currentTracks.find(
+                (t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'),
+              );
+              if (rotationTrack) {
+                newTracks.push(
+                  createShootTrack(
+                    rotationTrack.name,
+                    rotationTrack.layerId,
+                    rotationTrack.target,
+                    rotationTrack.property,
+                    rotationTrack.transformKeys.filter(
+                      (key) => !DUMMY_DELETE_FRAMES.includes(_.round(key.frame, 4)),
+                    ),
+                    rotationTrack.isMocapAnimation,
+                  ),
+                );
+              }
+            } else {
+              newTracks.push(track);
+              const rotationTrack = currentTracks.find(
+                (t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'),
+              );
+              if (rotationTrack) {
+                newTracks.push(rotationTrack);
+              }
+            }
+          } else if (track.property === 'position' || track.property === 'scaling') {
+            if (deleteTargetTrackIds.includes(track.id)) {
+              newTracks.push(
+                createShootTrack(
+                  track.name,
+                  track.layerId,
+                  track.target,
+                  track.property,
+                  track.transformKeys.filter(
+                    (key) => !DUMMY_DELETE_FRAMES.includes(_.round(key.frame, 4)),
+                  ),
+                  track.isMocapAnimation,
+                ),
+              );
+            } else {
+              newTracks.push(track);
+            }
+          }
+        });
+
+        const newAnimationIngredient = {
+          id: currentAnimationIngredient.id,
+          name: currentAnimationIngredient.name,
+          assetId: currentAnimationIngredient.assetId,
+          current: currentAnimationIngredient.current,
+          tracks: newTracks,
+          layers: currentAnimationIngredient.layers,
+        };
+
+        dispatch(
+          animationDataActions.editAnimationIngredient({
+            animationIngredient: newAnimationIngredient,
+          }),
+        );
+      }
+    }
+  }, [animationIngredients, deleteTargetTrackIds, dispatch, targetLayerId, visualizedAssetIds]);
+
+  const copyKeyframes = () => {};
+
+  const pasteKeyframes = () => {};
 
   const addLayer = useCallback(() => {
     const selectedAssetIds = _.uniq(selectedTargets.map((target) => target.id.split('//')[0]));
@@ -141,6 +344,10 @@ const TimelinePanel: FunctionComponent = () => {
     });
   }, [animationIngredients, assetList, dispatch, selectedTargets, targetLayerId]);
 
+  const handleChangeKeyframe = (event: ChangeEvent<HTMLInputElement>) => {
+    setTargetFrame(parseInt(event.target.value));
+  };
+
   const handleChangeLayerName = (event: ChangeEvent<HTMLInputElement>) => {
     setNewLayerName(event.target.value);
   };
@@ -153,7 +360,9 @@ const TimelinePanel: FunctionComponent = () => {
         {layers.map((layer) => {
           return (
             <button
-              className={cx('button')}
+              className={cx('button', {
+                selected: layer.id === targetLayerId,
+              })}
               key={layer.id}
               onClick={() => setTargetLayerId(layer.id)}
             >
@@ -167,34 +376,49 @@ const TimelinePanel: FunctionComponent = () => {
         <div className={cx('title')}>{`Tracks (${tracks.length})`}</div>
         {tracks.map((track) => {
           return (
-            <div
-              className={cx('track')}
-              key={`${track.layerId}&${track.targetId}&${track.property}&${track.axis}`}
+            <button
+              className={cx('track', { selected: deleteTargetTrackIds.includes(track.id) })}
+              key={`${track.layerId}&${track.targetId}&${track.property}`}
+              onClick={() =>
+                setDeleteTargetTrackIds((prev) =>
+                  prev.includes(track.id)
+                    ? prev.filter((str) => str !== track.id)
+                    : [...prev, track.id],
+                )
+              }
             >
-              {`${track.target.name}//${track.property}//${track.axis}`}
-            </div>
+              {`${track.target.name}//${track.property}`}
+            </button>
           );
         })}
       </div>
       {/* 키프레임 편집 혹은 삭제 시 대상이 되는 frame */}
       <div className={cx('third')}>
         <div className={cx('title')}>Frame</div>
-        <input className={cx('input')} type="number" placeholder="type target frame" />
+        <input
+          className={cx('input')}
+          type="number"
+          placeholder="type target frame"
+          onChange={handleChangeKeyframe}
+        />
       </div>
       {/* 키프레임 관련 조작 버튼 */}
       <div className={cx('fourth')}>
         <div className={cx('title')}>Control</div>
-        <button className={cx('button')} onClick={editKeyframe}>
-          Edit Keyframe
+        <button className={cx('button')} onClick={editKeyframes}>
+          Edit Keyframes
         </button>
         <button className={cx('button')} onClick={deleteKeyframe}>
           Delete Keyframe
         </button>
-        <button className={cx('button')} onClick={copyKeyframe}>
-          Copy Keyframe
+        <button className={cx('button')} onClick={deleteKeyframes}>
+          Delete Keyframes
         </button>
-        <button className={cx('button')} onClick={pasteKeyframe}>
-          Paste Keyframe
+        <button className={cx('button')} onClick={copyKeyframes}>
+          Copy Keyframes
+        </button>
+        <button className={cx('button')} onClick={pasteKeyframes}>
+          Paste Keyframes
         </button>
         <input
           className={cx('input')}

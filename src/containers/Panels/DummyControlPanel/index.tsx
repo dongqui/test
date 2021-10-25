@@ -369,6 +369,7 @@ const ControlPanel: FunctionComponent = () => {
                     transformKeys: [...transformNodeTrack.transformKeys],
                     interpolationType: transformNodeTrack.interpolationType,
                     bezierParams: transformNodeTrack.bezierParams,
+                    isMocapAnimation: transformNodeTrack.isMocapAnimation,
                     useFilter: transformNodeTrack.useFilter,
                     filterBeta: transformNodeTrack.filterBeta,
                     filterMinCutoff: transformNodeTrack.filterMinCutoff,

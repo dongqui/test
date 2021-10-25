@@ -8,7 +8,6 @@ import {
   MOCAP_POSITION_BETA,
   MOCAP_POSITION_MIN_CUTOFF,
 } from 'utils/const';
-import { v4 as uuidv4 } from 'uuid';
 
 /**
  * AnimationIngredient를 구성하는 자체 데이터인 ShootTrack을 생성합니다.
@@ -42,7 +41,7 @@ const createShootTrack = (
   }
 
   return {
-    id: uuidv4(),
+    id: `${target.id}//${property}`,
     targetId: target.id,
     layerId,
     name,
@@ -50,6 +49,7 @@ const createShootTrack = (
     target, // 이후 targetAnimation을 생성을 위해 참조를 유지합니다.
     transformKeys,
     interpolationType: 'linear',
+    isMocapAnimation,
     useFilter: isMocapAnimation ? true : false, // mocap 결과물의 경우에만 기본으로 filter를 적용합니다.
     filterBeta,
     filterMinCutoff,
