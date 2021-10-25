@@ -1,5 +1,15 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, ReactNode, useEffect, useRef, useCallback } from 'react';
+import {
+  FunctionComponent,
+  memo,
+  ReactNode,
+  FocusEvent,
+  useEffect,
+  useCallback,
+  useState,
+  useRef,
+  KeyboardEvent,
+} from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
@@ -22,7 +32,7 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   type: 'Folder' | 'Model' | 'Motion';
-  name: ReactNode;
+  name: string;
   fileURL?: string | File;
   filePath: string;
   id: string;
@@ -131,6 +141,8 @@ const ListNode: FunctionComponent<Props> = ({
 
   const depth = (filePath.match(/\\/g) || []).length;
 
+  const [isEditing, setIsEditing] = useState(false);
+
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -159,7 +171,9 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Edit name',
-                onClick: () => {},
+                onClick: () => {
+                  setIsEditing(true);
+                },
                 children: [],
               },
               {
@@ -200,8 +214,6 @@ const ListNode: FunctionComponent<Props> = ({
                     const currentPathNodeName = lpNode
                       .filter((node) => {
                         if (node.parentId === id) {
-                          console.log('id');
-                          console.log(id);
                           if (node.name.includes(cloneCopyNode.name)) {
                             return true;
                           }
@@ -378,7 +390,6 @@ const ListNode: FunctionComponent<Props> = ({
                       const targets = selectableObjects.filter(
                         (object) => object.id.split('//')[0] === assetId,
                       );
-                      console.log('targets: ', targets);
                     } else {
                       // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
                     }
@@ -572,6 +583,108 @@ const ListNode: FunctionComponent<Props> = ({
     ],
   );
 
+  const handleBlur = useCallback(
+    (event: FocusEvent<HTMLInputElement>) => {
+      const currentPathNodeName = lpNode
+        .filter((node) => {
+          if (node.parentId === id) {
+            if (node.name.includes(event.currentTarget.value)) {
+              return true;
+            }
+            return false;
+          }
+        })
+        .map((filteredNode) => filteredNode.name);
+
+      const nodeName = beforePaste({
+        name: event.currentTarget.value,
+        nameArray: currentPathNodeName,
+      });
+
+      const nextNodes = produce(lpNode, (draft) => {
+        const parent = _.find(draft, { id: parentId });
+        // @todo 생성하지않고 교체하기
+        const targetIndex = draft.findIndex((element) => element.id === id);
+
+        const newNode: LP.Node = {
+          id: uuidv4(),
+          // filePath: lpCurrentPath + `\\${name}`,
+          filePath: filePath + `\\${nodeName}`, //@todo
+          parentId: parentId,
+          name: nodeName,
+          type: type,
+          hideNode: true,
+          children: [],
+        };
+
+        if (parent) {
+          parent.children.push(newNode.id);
+        }
+
+        draft[targetIndex] = newNode;
+      });
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: nextNodes,
+        }),
+      );
+    },
+    [dispatch, filePath, id, lpNode, parentId, type],
+  );
+
+  const handleKeydown = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.code === 'Enter') {
+        const currentPathNodeName = lpNode
+          .filter((node) => {
+            if (node.parentId === id) {
+              if (node.name.includes(event.currentTarget.value)) {
+                return true;
+              }
+              return false;
+            }
+          })
+          .map((filteredNode) => filteredNode.name);
+
+        const nodeName = beforePaste({
+          name: event.currentTarget.value,
+          nameArray: currentPathNodeName,
+        });
+
+        const nextNodes = produce(lpNode, (draft) => {
+          const parent = _.find(draft, { id: parentId });
+          // @todo 생성하지않고 교체하기
+          const targetIndex = draft.findIndex((element) => element.id === id);
+
+          const newNode: LP.Node = {
+            id: uuidv4(),
+            // filePath: lpCurrentPath + `\\${name}`,
+            filePath: filePath + `\\${nodeName}`, //@todo
+            parentId: parentId,
+            name: nodeName,
+            type: type,
+            hideNode: true,
+            children: [],
+          };
+
+          if (parent) {
+            parent.children.push(newNode.id);
+          }
+
+          draft[targetIndex] = newNode;
+        });
+
+        dispatch(
+          lpNodeActions.changeNode({
+            nodes: nextNodes,
+          }),
+        );
+      }
+    },
+    [dispatch, filePath, id, lpNode, parentId, type],
+  );
+
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
 
   // useEffect(() => {
@@ -619,7 +732,17 @@ const ListNode: FunctionComponent<Props> = ({
           />
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
-            <div className={cx('name')}>{name}</div>
+            {isEditing ? (
+              <input
+                placeholder={name}
+                type="text"
+                // onBlur={handleBlur}
+                onKeyDown={handleKeydown}
+                autoFocus
+              />
+            ) : (
+              <div className={cx('name')}>{name}</div>
+            )}
           </div>
         </div>
         {/* children area */}

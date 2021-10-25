@@ -93,46 +93,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
 
                 // @TODO 없으면 비활성 처리 필요
                 if (cloneCopyNode) {
-                  // const isIncludes = cloneCopyNode.name.match(/copy/g);
-
-                  // let duplicateCheck = '0';
-                  // let nodeName = '';
-
-                  // if (isIncludes !== null) {
-                  //   const hasNumber = cloneCopyNode.name.match(/\(/g);
-
-                  //   if (hasNumber !== null) {
-                  //     if (hasNumber.length > 1) {
-                  //       const tempName = cloneCopyNode.name
-                  //         .substr(0, cloneCopyNode.name.lastIndexOf('('))
-                  //         .trim();
-
-                  //       duplicateCheck = onDuplicateCheck(tempName);
-
-                  //       nodeName =
-                  //         duplicateCheck === '0' ? tempName : `${tempName} (${duplicateCheck})`;
-                  //     }
-
-                  //     if (hasNumber.length === 1) {
-                  //       duplicateCheck = onDuplicateCheck(cloneCopyNode.name);
-
-                  //       nodeName =
-                  //         duplicateCheck === '0'
-                  //           ? `${cloneCopyNode.name} (2)`
-                  //           : `${cloneCopyNode.name} (${duplicateCheck})`;
-                  //     }
-                  //   }
-                  // }
-
-                  // if (isIncludes === null) {
-                  //   duplicateCheck = onDuplicateCheck(`${cloneCopyNode.name} copy`);
-
-                  //   nodeName =
-                  //     duplicateCheck === '0'
-                  //       ? `${cloneCopyNode.name} copy`
-                  //       : `${cloneCopyNode.name} copy (${duplicateCheck})`;
-                  // }
-
                   const currentPathNodeName = lpNode
                     .filter((node) => {
                       if (node.parentId === '__root__') {
