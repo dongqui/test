@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { BoneTrack } from 'types/TP_New/track';
 import { clickTrackBody, ClickBoneTrackBody } from 'actions/trackList';
 import { useSelector } from 'reducers';
-import { fnGetBoneTrackIndex } from 'utils/TP/trackUtils';
+import { getBoneTrackIndex } from 'utils/TP';
 
 import CaretButton from './CaretButton';
 import { TransformTrackItem } from '../index';
@@ -23,8 +23,8 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
   const childrenTrackList = useMemo(() => {
     let index = 0;
     while (index < transformTrackList.length) {
-      const ddd = fnGetBoneTrackIndex(transformTrackList[index].transformIndex);
-      if (ddd === boneIndex) {
+      const parentIndex = getBoneTrackIndex(transformTrackList[index].transformIndex);
+      if (parentIndex === boneIndex) {
         const start = index - 1 === -1 ? 0 : index;
         return transformTrackList.slice(start, index + 9);
       }

@@ -3,7 +3,7 @@ import { useMemo, Fragment, FunctionComponent } from 'react';
 import { TrackKeyframes } from 'types/TP_New/keyframe';
 import { BoneTrack } from 'types/TP_New/track';
 import { useSelector } from 'reducers';
-import { fnGetBoneTrackIndex } from 'utils/TP/trackUtils';
+import { getBoneTrackIndex } from 'utils/TP';
 
 import { TransformTrack } from './index';
 import Keyframe from './Keyframe';
@@ -13,7 +13,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props extends TrackKeyframes<number>, BoneTrack {
+interface Props extends TrackKeyframes, BoneTrack {
   translateY: number;
 }
 
@@ -22,11 +22,11 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
   const transformKeyframes = useSelector((state) => state.keyframes.transformKeyframes);
   const transformTrackList = useSelector((state) => state.trackList.transformTrackList);
 
-  // 자식이 될 키프레임 필터링
+  // 자식이 될 transform 키프레임 필터링
   const childrenKeyframes = useMemo(() => {
     let index = 0;
     while (index < transformKeyframes.length) {
-      const boneIndex = fnGetBoneTrackIndex(transformKeyframes[index].trackId);
+      const boneIndex = getBoneTrackIndex(transformKeyframes[index].trackId as number);
       if (boneIndex === trackId) {
         const start = index - 1 === -1 ? 0 : index;
         return transformKeyframes.slice(start, index + 9);
@@ -36,11 +36,11 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
     return [];
   }, [trackId, transformKeyframes]);
 
-  // 자식이 될 트랙 리스트 필터링
+  // 자식이 될 transform 트랙 리스트 필터링
   const childrenTrackList = useMemo(() => {
     let index = 0;
     while (index < transformTrackList.length) {
-      const boneIndex = fnGetBoneTrackIndex(transformTrackList[index].transformIndex);
+      const boneIndex = getBoneTrackIndex(transformTrackList[index].transformIndex);
       if (boneIndex === trackId) {
         const start = index - 1 === -1 ? 0 : index;
         return transformTrackList.slice(start, index + 9);
@@ -59,9 +59,12 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
           width="150000"
           transform="translate(-5000 0)"
         />
-        {keyframes.map((keyframe) => (
-          <Keyframe key={keyframe.timeIndex} {...keyframe} />
-        ))}
+        {keyframes.map(
+          (keyframe) =>
+            !keyframe.isDeleted && (
+              <Keyframe key={keyframe.timeIndex} trackType="bone" trackId={trackId} {...keyframe} />
+            ),
+        )}
       </g>
       {isPointedDownCaret &&
         childrenTrackList.map((transformTrack, index) => (
