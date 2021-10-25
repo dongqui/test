@@ -20,6 +20,7 @@ import { modalInfo } from './modalInfo';
 import { contextmenuInfo } from './contextmenuInfo';
 import { animatingControls } from './animatingControls';
 import trackList from './trackList';
+import keyframes from './keyframes';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -45,6 +46,7 @@ const rootReducer = combineReducers({
   contextmenuInfo,
   animatingControls,
   trackList,
+  keyframes,
 });
 
 // type 적용된 useSelector

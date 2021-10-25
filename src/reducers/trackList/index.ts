@@ -27,6 +27,15 @@ const transformTrackList2: TransformTrack[] = Array(9)
     transformIndex: index + 1 + 10,
   }));
 
+const transformTrackList3: TransformTrack[] = Array(9)
+  .fill(0)
+  .map((_, index) => ({
+    isSelected: false,
+    trackName: 'PositionX' + index,
+    interpolationType: 'linear',
+    transformIndex: index + 1 + 20,
+  }));
+
 const boneTrackList: BoneTrack[] = [
   {
     isSelected: false,
@@ -39,6 +48,12 @@ const boneTrackList: BoneTrack[] = [
     trackName: 'Left Arm',
     isPointedDownCaret: false,
     boneIndex: 10,
+  },
+  {
+    isSelected: false,
+    trackName: 'Left Hand',
+    isPointedDownCaret: false,
+    boneIndex: 20,
   },
 ];
 
@@ -59,7 +74,7 @@ export interface TrackListState {
 const initialState: TrackListState = {
   layerTrackList: [],
   boneTrackList: boneTrackList,
-  transformTrackList: [...transformTrackList1, ...transformTrackList2],
+  transformTrackList: [...transformTrackList1, ...transformTrackList2, ...transformTrackList3],
 
   selectedLayer: 'Layer1',
   selectedBones: [],
