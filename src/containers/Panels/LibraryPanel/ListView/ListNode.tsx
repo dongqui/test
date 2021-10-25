@@ -8,6 +8,7 @@ import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { beforePaste, duplicateCheck, getNodeNumber } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -130,203 +131,6 @@ const ListNode: FunctionComponent<Props> = ({
 
   const depth = (filePath.match(/\\/g) || []).length;
 
-  const getNodeNumber = useCallback((array: number[]) => {
-    let targetValue = 0;
-
-    const nextArray = array.sort((a, b) => a - b);
-
-    if (nextArray.indexOf(0) === -1) {
-      return targetValue;
-    }
-
-    for (let i = 1; i < nextArray.length; i++) {
-      const currentValue = nextArray[i];
-      const isLast = nextArray.length - 1 === i;
-
-      if (isLast) {
-        targetValue = currentValue + 1;
-      }
-
-      if (nextArray[1] !== 2) {
-        targetValue = 2;
-      }
-
-      const nextValue = nextArray[i + 1];
-
-      if (!isLast) {
-        if (nextValue - currentValue > 1) {
-          targetValue = currentValue + 1;
-          return targetValue;
-        }
-
-        if (nextValue - currentValue === 1) {
-          targetValue = nextValue + 1;
-        }
-      }
-    }
-
-    return targetValue;
-  }, []);
-
-  const onDuplicateCheck = useCallback(
-    (name: string) => {
-      console.log(lpNode);
-      const currentPathNodeName = lpNode
-        .filter((node) => {
-          if (node.parentId === id) {
-            console.log(parentId);
-            if (node.name.includes(name)) {
-              return true;
-            }
-            return false;
-          }
-        })
-        .map((filteredNode) => filteredNode.name);
-
-      if (currentPathNodeName.length === 0) {
-        return '0';
-      }
-
-      if (currentPathNodeName.length === 1) {
-        const currentNode = currentPathNodeName[0];
-
-        const isCopied = currentNode.match(/copy/g);
-
-        // 이름에 'copy'가 있는 경우
-        if (isCopied !== null) {
-          if (isCopied.length === 1) {
-            const matches = currentNode.match(/\(/g);
-
-            // 번호가 없는 경우 또는 번호가 1개인 경우 - 복사한 경우 중복체크의 번호는 상시 마지막에 붙기 때문
-            if (matches === null || matches.length === 1) {
-              return '2';
-            }
-
-            // 번호가 있는 경우 - 반드시 번호가 2개 이상이어야한다. (복사한 경우 중복체크의 번호는 상시 마지막에 붙기 때문)
-            if (matches !== null && matches.length > 1) {
-              const startIndex = currentNode.lastIndexOf('(') + 1;
-              const endIndex = currentNode.lastIndexOf(')');
-
-              const number = currentNode.substring(startIndex, endIndex);
-
-              return number;
-            }
-          }
-        }
-
-        // 이름에 'copy'가 없는 경우
-        if (isCopied === null) {
-          const matches = currentNode.match(/\(/g);
-
-          // 번호가 없는 경우
-          if (matches === null) {
-            return '2';
-          }
-
-          // 번호가 있는 경우
-          if (matches !== null) {
-            const startIndex = currentNode.lastIndexOf('(') + 1;
-            const endIndex = currentNode.lastIndexOf(')');
-
-            const number = currentNode.substring(startIndex, endIndex);
-
-            return number;
-          }
-        }
-      }
-
-      if (currentPathNodeName.length > 1) {
-        const isCreate = !name.includes('copy');
-
-        if (isCreate) {
-          const filter = currentPathNodeName
-            .filter((currentNode) => {
-              const isCopied = currentNode.match(/copy/g);
-
-              if (isCopied !== null) {
-                return false;
-              }
-
-              return true;
-            })
-            .map((node) => {
-              const matches = node.match(/\(/g);
-
-              let value = 0;
-
-              // 번호가 없는 경우
-              if (matches === null) {
-                value = 0;
-              }
-
-              if (matches !== null) {
-                const startIndex = node.lastIndexOf('(') + 1;
-                const endIndex = node.lastIndexOf(')');
-
-                value = Number(node.substring(startIndex, endIndex));
-              }
-
-              return value;
-            });
-
-          if (filter.length > 0) {
-            const target = getNodeNumber(filter);
-            return String(target);
-          }
-        }
-
-        const copiedFilter = currentPathNodeName
-          .filter((currentNode) => {
-            const isCopied = currentNode.match(/copy/g);
-
-            if (isCopied !== null) {
-              return true;
-            }
-
-            return false;
-          })
-          .map((node) => {
-            const matches = node.match(/\(/g);
-
-            let value = 0;
-
-            // 번호가 없는 경우
-            if (matches === null) {
-              value = 0;
-            }
-
-            if (matches !== null && matches.length > 1) {
-              const startIndex = node.lastIndexOf('(') + 1;
-              const endIndex = node.lastIndexOf(')');
-
-              value = Number(node.substring(startIndex, endIndex));
-            }
-
-            if (matches !== null && matches.length === 1) {
-              const isLastIndex = node.lastIndexOf(')') + 1 === node.length;
-
-              if (isLastIndex) {
-                const startIndex = node.lastIndexOf('(') + 1;
-                const endIndex = node.lastIndexOf(')');
-
-                value = Number(node.substring(startIndex, endIndex));
-              }
-            }
-
-            return value;
-          });
-
-        if (copiedFilter.length > 0) {
-          const target = getNodeNumber(copiedFilter);
-          return String(target);
-        }
-      }
-
-      return '0';
-    },
-    [getNodeNumber, id, lpNode, parentId],
-  );
-
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -393,13 +197,32 @@ const ListNode: FunctionComponent<Props> = ({
 
                   // @TODO 없으면 비활성 처리 필요
                   if (cloneCopyNode) {
+                    const currentPathNodeName = lpNode
+                      .filter((node) => {
+                        if (node.parentId === id) {
+                          console.log('id');
+                          console.log(id);
+                          if (node.name.includes(cloneCopyNode.name)) {
+                            return true;
+                          }
+                          return false;
+                        }
+                      })
+                      .map((filteredNode) => filteredNode.name);
+
+                    const nodeName = beforePaste({
+                      name: cloneCopyNode.name,
+                      nameArray: currentPathNodeName,
+                    });
+
                     const nextNodes = produce(lpNode, (draft) => {
                       const targetNode = _.find(draft, { id });
 
                       if (targetNode) {
                         cloneCopyNode.id = uuidv4();
                         cloneCopyNode.parentId = id;
-                        cloneCopyNode.filePath = filePath + `\\${cloneCopyNode.name}`;
+                        cloneCopyNode.filePath = filePath + `\\${nodeName}`;
+                        cloneCopyNode.name = nodeName;
 
                         targetNode.children.push(cloneCopyNode.id);
 
@@ -427,9 +250,20 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'New directory',
                 visibility: depth === 6 ? 'invisible' : 'visible',
                 onClick: () => {
-                  const duplicateCheck = onDuplicateCheck('Folder');
+                  const currentPathNodeName = lpNode
+                    .filter((node) => {
+                      if (node.parentId === id) {
+                        if (node.name.includes('Folder')) {
+                          return true;
+                        }
+                        return false;
+                      }
+                    })
+                    .map((filteredNode) => filteredNode.name);
 
-                  const nodeName = duplicateCheck === '0' ? 'Folder' : `Folder (${duplicateCheck})`;
+                  const check = duplicateCheck('Folder', currentPathNodeName);
+
+                  const nodeName = check === '0' ? 'Folder' : `Folder (${check})`;
 
                   const nextNodes = produce(lpNode, (draft) => {
                     const parent = _.find(draft, { id });
@@ -665,8 +499,8 @@ const ListNode: FunctionComponent<Props> = ({
     lpNode,
     name,
     onContextMenuOpen,
-    onDuplicateCheck,
     onModalOpen,
+    parentId,
     selectableObjects,
     type,
     visualizedAssetIds,
