@@ -18,7 +18,7 @@ import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { beforePaste, duplicateCheck, getNodeNumber } from 'utils/LP/FileSystem';
+import { beforePaste, duplicateCheck, beforeRename } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -585,10 +585,13 @@ const ListNode: FunctionComponent<Props> = ({
 
   const handleBlur = useCallback(
     (event: FocusEvent<HTMLInputElement>) => {
+      const text = event.currentTarget.value || name;
+
       const currentPathNodeName = lpNode
         .filter((node) => {
-          if (node.parentId === id) {
-            if (node.name.includes(event.currentTarget.value)) {
+          if (node.parentId === parentId) {
+            // 수정하는 자신은 제외
+            if (node.name.includes(text) && node.name !== name) {
               return true;
             }
             return false;
@@ -596,8 +599,8 @@ const ListNode: FunctionComponent<Props> = ({
         })
         .map((filteredNode) => filteredNode.name);
 
-      const nodeName = beforePaste({
-        name: event.currentTarget.value,
+      const nodeName = beforeRename({
+        name: text,
         nameArray: currentPathNodeName,
       });
 
@@ -630,16 +633,19 @@ const ListNode: FunctionComponent<Props> = ({
         }),
       );
     },
-    [dispatch, filePath, id, lpNode, parentId, type],
+    [dispatch, filePath, id, lpNode, name, parentId, type],
   );
 
   const handleKeydown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
       if (event.code === 'Enter') {
+        const text = event.currentTarget.value || name;
+
         const currentPathNodeName = lpNode
           .filter((node) => {
-            if (node.parentId === id) {
-              if (node.name.includes(event.currentTarget.value)) {
+            if (node.parentId === parentId) {
+              // 수정하는 자신은 제외
+              if (node.name.includes(text) && node.name !== name) {
                 return true;
               }
               return false;
@@ -647,8 +653,8 @@ const ListNode: FunctionComponent<Props> = ({
           })
           .map((filteredNode) => filteredNode.name);
 
-        const nodeName = beforePaste({
-          name: event.currentTarget.value,
+        const nodeName = beforeRename({
+          name: text,
           nameArray: currentPathNodeName,
         });
 
@@ -682,7 +688,7 @@ const ListNode: FunctionComponent<Props> = ({
         );
       }
     },
-    [dispatch, filePath, id, lpNode, parentId, type],
+    [dispatch, filePath, id, lpNode, name, parentId, type],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -736,7 +742,7 @@ const ListNode: FunctionComponent<Props> = ({
               <input
                 placeholder={name}
                 type="text"
-                // onBlur={handleBlur}
+                onBlur={handleBlur}
                 onKeyDown={handleKeydown}
                 autoFocus
               />
