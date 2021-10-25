@@ -16,20 +16,20 @@ interface Props extends LayerTrack {
 }
 
 const LayerTrackComponent: FunctionComponent<Props> = (props) => {
-  const { isPointedDownCaret, isSelected, translateY } = props;
+  const { layerId, isPointedDownCaret, isSelected, translateY } = props;
   const layerKeyframes = useSelector((state) => state.keyframes.layerKeyframes);
   const boneKeyframes = useSelector((state) => state.keyframes.boneKeyframes);
   const boneTrackList = useSelector((state) => state.trackList.boneTrackList);
 
-  // bone 트랙들의 y값 계산
+  // bone 트랙 translateY 계산
   const boneTranslateY = useMemo(() => {
     const result = Array(boneTrackList.length)
       .fill(1)
       .map((_, index) => index * 24 + 32 + translateY);
-    let caretDownCount = 0;
+    let boneCaretDownCount = 0;
     for (let index = 1; index < boneTrackList.length; index++) {
-      if (boneTrackList[index - 1].isPointedDownCaret) caretDownCount += 24 * 9;
-      result[index] += caretDownCount;
+      if (boneTrackList[index - 1].isPointedDownCaret) boneCaretDownCount += 24 * 9;
+      result[index] += boneCaretDownCount;
     }
     return result;
   }, [boneTrackList, translateY]);
@@ -44,9 +44,17 @@ const LayerTrackComponent: FunctionComponent<Props> = (props) => {
           transform="translate(-5000 0)"
         />
         {isSelected &&
-          layerKeyframes.keyframes.map((keyframe) => (
-            <Keyframe key={keyframe.timeIndex} isLayerKeyframe {...keyframe} />
-          ))}
+          layerKeyframes.keyframes.map(
+            (keyframe) =>
+              !keyframe.isDeleted && (
+                <Keyframe
+                  key={keyframe.timeIndex}
+                  trackType="layer"
+                  trackIndex={layerId}
+                  {...keyframe}
+                />
+              ),
+          )}
       </g>
       {isPointedDownCaret &&
         isSelected &&

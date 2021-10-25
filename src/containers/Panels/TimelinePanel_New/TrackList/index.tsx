@@ -39,6 +39,10 @@ const TrackList = () => {
             layerId: 'Layer2',
             trackName: 'Layer2',
           },
+          {
+            layerId: 'Layer3',
+            trackName: 'Layer3',
+          },
         ],
       }),
     );

@@ -1,16 +1,20 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
 
+import { deleteKeyframes } from 'actions/keyframes';
 import { useSelector } from 'reducers';
 
 import { LayerTrack } from './TrackList';
 
 const DopeSheet = () => {
+  const dispatch = useDispatch();
+
   const trackScrollTop = useSelector((state) => state.trackList.trackScrollTop);
   const selectedLayer = useSelector((state) => state.trackList.selectedLayer);
   const layerTrackList = useSelector((state) => state.trackList.layerTrackList);
   const boneTrackList = useSelector((state) => state.trackList.boneTrackList);
 
-  // layer 트랙들의 y값 계산
+  // layer 트랙 translateY 계산
   const layerTranslateY = useMemo(() => {
     const selectedLayerIndex = layerTrackList.findIndex(({ layerId }) => layerId === selectedLayer);
     const layerCaretDown = layerTrackList[selectedLayerIndex].isPointedDownCaret;
@@ -20,8 +24,8 @@ const DopeSheet = () => {
     if (layerCaretDown) {
       let boneCaretDownCount = 0;
       for (let index = 0; index < boneTrackList.length; index++) {
-        const boneCareDown = boneTrackList[index].isPointedDownCaret;
-        if (boneCareDown) boneCaretDownCount += 1;
+        const boneCaretDown = boneTrackList[index].isPointedDownCaret;
+        if (boneCaretDown) boneCaretDownCount += 1;
       }
       for (let index = selectedLayerIndex + 1; index < layerTrackList.length; index++) {
         const totalBoneHeight = boneTrackList.length * 24;
@@ -31,6 +35,16 @@ const DopeSheet = () => {
     }
     return result;
   }, [boneTrackList, layerTrackList, selectedLayer]);
+
+  useEffect(() => {
+    const listener = (event: KeyboardEvent) => {
+      if (event.key === 'Delete') dispatch(deleteKeyframes());
+    };
+    document.addEventListener('keydown', listener);
+    return () => {
+      document.removeEventListener('keydown', listener);
+    };
+  }, [dispatch]);
 
   return (
     <g transform={`translate(0 -${trackScrollTop})`}>

@@ -18,7 +18,7 @@ interface Props extends TrackKeyframes, BoneTrack {
 }
 
 const BoneTrackComponent: FunctionComponent<Props> = (props) => {
-  const { trackId, keyframes, isPointedDownCaret, isSelected, translateY } = props;
+  const { trackIndex, keyframes, isPointedDownCaret, isSelected, translateY } = props;
   const transformKeyframes = useSelector((state) => state.keyframes.transformKeyframes);
   const transformTrackList = useSelector((state) => state.trackList.transformTrackList);
 
@@ -26,29 +26,29 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
   const childrenKeyframes = useMemo(() => {
     let index = 0;
     while (index < transformKeyframes.length) {
-      const boneIndex = getBoneTrackIndex(transformKeyframes[index].trackId as number);
-      if (boneIndex === trackId) {
+      const boneIndex = getBoneTrackIndex(transformKeyframes[index].trackIndex as number);
+      if (boneIndex === trackIndex) {
         const start = index - 1 === -1 ? 0 : index;
         return transformKeyframes.slice(start, index + 9);
       }
       index += 9;
     }
     return [];
-  }, [trackId, transformKeyframes]);
+  }, [trackIndex, transformKeyframes]);
 
   // 자식이 될 transform 트랙 리스트 필터링
   const childrenTrackList = useMemo(() => {
     let index = 0;
     while (index < transformTrackList.length) {
       const boneIndex = getBoneTrackIndex(transformTrackList[index].transformIndex);
-      if (boneIndex === trackId) {
+      if (boneIndex === trackIndex) {
         const start = index - 1 === -1 ? 0 : index;
         return transformTrackList.slice(start, index + 9);
       }
       index += 9;
     }
     return [];
-  }, [trackId, transformTrackList]);
+  }, [trackIndex, transformTrackList]);
 
   return (
     <Fragment>
@@ -62,7 +62,12 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
         {keyframes.map(
           (keyframe) =>
             !keyframe.isDeleted && (
-              <Keyframe key={keyframe.timeIndex} trackType="bone" trackId={trackId} {...keyframe} />
+              <Keyframe
+                key={keyframe.timeIndex}
+                trackType="bone"
+                trackIndex={trackIndex}
+                {...keyframe}
+              />
             ),
         )}
       </g>

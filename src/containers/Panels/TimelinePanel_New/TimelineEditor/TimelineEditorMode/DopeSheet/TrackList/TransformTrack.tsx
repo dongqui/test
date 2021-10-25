@@ -10,12 +10,12 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props extends TrackKeyframes<number>, TransformTrack {
+interface Props extends TrackKeyframes, TransformTrack {
   translateY: number;
 }
 
 const TransformTrackComponent: FunctionComponent<Props> = (props) => {
-  const { keyframes, isSelected, translateY } = props;
+  const { keyframes, isSelected, translateY, trackIndex } = props;
 
   return (
     <g className={cx('track')} transform={`translate(0, ${translateY})`}>
@@ -25,9 +25,17 @@ const TransformTrackComponent: FunctionComponent<Props> = (props) => {
         width="150000"
         transform="translate(-5000 0)"
       />
-      {keyframes.map((keyframe) => (
-        <Keyframe key={keyframe.timeIndex} {...keyframe} />
-      ))}
+      {keyframes.map(
+        (keyframe) =>
+          !keyframe.isDeleted && (
+            <Keyframe
+              key={keyframe.timeIndex}
+              trackType="transform"
+              trackIndex={trackIndex}
+              {...keyframe}
+            />
+          ),
+      )}
     </g>
   );
 };
