@@ -25,10 +25,10 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
     while (index < transformTrackList.length) {
       const ddd = fnGetBoneTrackIndex(transformTrackList[index].transformIndex);
       if (ddd === boneIndex) {
-        const start = index - 1 === -1 ? 0 : index - 1;
+        const start = index - 1 === -1 ? 0 : index;
         return transformTrackList.slice(start, index + 9);
       }
-      index += 10;
+      index += 9;
     }
     return [];
   }, [boneIndex, transformTrackList]);

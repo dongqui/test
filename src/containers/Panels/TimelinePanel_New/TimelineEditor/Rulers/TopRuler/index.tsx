@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSelector } from 'reducers';
-import ScaleLinear from '../../scaleLinear';
+import { ScaleLinear } from 'utils/TP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -18,9 +18,8 @@ const TopRuler = () => {
     if (loopRange && scaleX) {
       const startTranslateX = scaleX(startTimeIndex);
       const endTranslateX = scaleX(endTimeIndex);
-      const width = `width:${endTranslateX - startTranslateX}px`;
-      const translate3d = `transform:translate3d(${startTranslateX + 20}px, 0, 0)`;
-      loopRange.style.cssText = `${width}; ${translate3d};`;
+      loopRange.setAttribute('width', `${endTranslateX - startTranslateX}`);
+      loopRange.setAttribute('transform', `translate(${startTranslateX + 20}, 0)`);
     }
   }, [endTimeIndex, startTimeIndex]);
 
