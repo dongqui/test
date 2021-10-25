@@ -17,7 +17,6 @@ import { LPItemListOldType, ROOT_FOLDER_NAME, ROOT_KEY } from 'types/LP';
 import { FormModal } from 'components/Modal';
 import { useAlertModal } from 'components/Modal/AlertModal';
 import { BaseInput } from 'components/Input';
-import fnGetFileName from 'utils/LP/fnGetFileName';
 import sleep from 'utils/common/sleep';
 import { d3ScaleLinear } from 'types/TP';
 import * as d3 from 'd3';
