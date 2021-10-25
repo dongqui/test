@@ -29,9 +29,9 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
       const boneIndex = getBoneTrackIndex(transformKeyframes[index].trackIndex as number);
       if (boneIndex === trackIndex) {
         const start = index - 1 === -1 ? 0 : index;
-        return transformKeyframes.slice(start, index + 9);
+        return transformKeyframes.slice(start, index + 3);
       }
-      index += 9;
+      index += 3;
     }
     return [];
   }, [trackIndex, transformKeyframes]);
@@ -43,9 +43,9 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
       const boneIndex = getBoneTrackIndex(transformTrackList[index].transformIndex);
       if (boneIndex === trackIndex) {
         const start = index - 1 === -1 ? 0 : index;
-        return transformTrackList.slice(start, index + 9);
+        return transformTrackList.slice(start, index + 3);
       }
-      index += 9;
+      index += 3;
     }
     return [];
   }, [trackIndex, transformTrackList]);

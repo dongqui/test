@@ -28,7 +28,7 @@ const LayerTrackComponent: FunctionComponent<Props> = (props) => {
       .map((_, index) => index * 24 + 32 + translateY);
     let boneCaretDownCount = 0;
     for (let index = 1; index < boneTrackList.length; index++) {
-      if (boneTrackList[index - 1].isPointedDownCaret) boneCaretDownCount += 24 * 9;
+      if (boneTrackList[index - 1].isPointedDownCaret) boneCaretDownCount += 24 * 3;
       result[index] += boneCaretDownCount;
     }
     return result;

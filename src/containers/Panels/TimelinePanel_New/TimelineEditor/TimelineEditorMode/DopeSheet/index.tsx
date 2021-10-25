@@ -29,7 +29,7 @@ const DopeSheet = () => {
       }
       for (let index = selectedLayerIndex + 1; index < layerTrackList.length; index++) {
         const totalBoneHeight = boneTrackList.length * 24;
-        const totalTransformHeight = boneCaretDownCount * 9 * 24;
+        const totalTransformHeight = boneCaretDownCount * 3 * 24;
         result[index] += totalBoneHeight + totalTransformHeight;
       }
     }
