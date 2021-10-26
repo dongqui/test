@@ -33,7 +33,7 @@ class BoneTrackMultipleClick implements MultipleClick {
   private selectBoneTransforms = (payload: ClickBoneTrackBody) => {
     const selectedTransforms: number[] = [];
     const boneIndex = payload.boneIndex;
-    for (let index = boneIndex + 1; index <= boneIndex + 9; index++) {
+    for (let index = boneIndex + 1; index <= boneIndex + 3; index++) {
       selectedTransforms.push(index);
     }
     return this.setSelectedTracks([boneIndex], selectedTransforms);

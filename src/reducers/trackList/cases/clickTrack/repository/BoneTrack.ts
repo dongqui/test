@@ -3,7 +3,7 @@ import produce from 'immer';
 import { BoneTrack, InterpolationType, TransformTrack } from 'types/TP_New/track';
 import { TrackListState } from 'reducers/trackList';
 import { SelectedBones, SelectedTransforms } from 'reducers/trackList/types';
-import { fnGetBinarySearch } from 'utils/TP/trackUtils';
+import { getBinarySearch } from 'utils/TP';
 
 import { Repository } from './index';
 
@@ -19,7 +19,7 @@ class BoneTrackRepository implements Repository {
     const { boneTrackList, selectedBones } = this.state;
     return produce(boneTrackList, (draft) => {
       selectedBones.forEach((index) => {
-        const trackIndex = fnGetBinarySearch<BoneTrack>({
+        const trackIndex = getBinarySearch<BoneTrack>({
           collection: boneTrackList,
           index,
           key: 'boneIndex',
@@ -27,7 +27,7 @@ class BoneTrackRepository implements Repository {
         draft[trackIndex].isSelected = false;
       });
       next.selectedBones.forEach((index) => {
-        const trackIndex = fnGetBinarySearch<BoneTrack>({
+        const trackIndex = getBinarySearch<BoneTrack>({
           collection: boneTrackList,
           index,
           key: 'boneIndex',
@@ -42,7 +42,7 @@ class BoneTrackRepository implements Repository {
     const { transformTrackList, selectedTransforms } = this.state;
     return produce(transformTrackList, (draft) => {
       selectedTransforms.forEach((index) => {
-        const trackIndex = fnGetBinarySearch<TransformTrack>({
+        const trackIndex = getBinarySearch<TransformTrack>({
           collection: transformTrackList,
           index,
           key: 'transformIndex',
@@ -50,7 +50,7 @@ class BoneTrackRepository implements Repository {
         draft[trackIndex].isSelected = false;
       });
       next.selectedTransforms.forEach((index) => {
-        const trackIndex = fnGetBinarySearch<TransformTrack>({
+        const trackIndex = getBinarySearch<TransformTrack>({
           collection: transformTrackList,
           index,
           key: 'transformIndex',
@@ -73,7 +73,7 @@ class BoneTrackRepository implements Repository {
     const set = new Set<InterpolationType>();
     const { transformTrackList } = this.state;
     selectedTransforms.forEach((index) => {
-      const trackIndex = fnGetBinarySearch<TransformTrack>({
+      const trackIndex = getBinarySearch<TransformTrack>({
         collection: transformTrackList,
         index,
         key: 'transformIndex',

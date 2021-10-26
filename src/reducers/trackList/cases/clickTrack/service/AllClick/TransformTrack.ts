@@ -1,6 +1,6 @@
 import { ClickTransformTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
-import { fnGetBinarySearch, fnGetBoneTrackIndex } from 'utils/TP/trackUtils';
+import { getBinarySearch, getBoneTrackIndex } from 'utils/TP';
 import { AllClick } from './index';
 
 interface Params {
@@ -21,10 +21,7 @@ class AllClickTransformTrack implements AllClick {
   private filterIncludedIndex = (iter: number[], filterTarget: number[]) => {
     const nextSelectedTracks: number[] = [];
     iter.forEach((index) => {
-      const trackIndex = fnGetBinarySearch({
-        collection: filterTarget,
-        index,
-      });
+      const trackIndex = getBinarySearch({ collection: filterTarget, index });
       if (trackIndex === -1) nextSelectedTracks.push(index);
     });
     return nextSelectedTracks;
@@ -32,7 +29,7 @@ class AllClickTransformTrack implements AllClick {
 
   public clickSelectAll = ({ state, payload }: Params) => {
     const { selectedBones, selectedTransforms } = state;
-    const boneIndex = fnGetBoneTrackIndex(payload.transformIndex);
+    const boneIndex = getBoneTrackIndex(payload.transformIndex);
     const selectedTracks = this.selectBoneTransforms(boneIndex);
     const nextSelectedBones = [...selectedBones, ...selectedTracks.selectedBones];
     const nextSelectedTransforms = [...selectedTransforms, ...selectedTracks.selectedTransforms];
@@ -41,7 +38,7 @@ class AllClickTransformTrack implements AllClick {
 
   public clickUnselectAll = ({ state, payload }: Params) => {
     const { selectedBones, selectedTransforms } = state;
-    const boneIndex = fnGetBoneTrackIndex(payload.transformIndex);
+    const boneIndex = getBoneTrackIndex(payload.transformIndex);
     const selectedTracks = this.selectBoneTransforms(boneIndex);
     const nextSelectedBones = this.filterIncludedIndex(selectedBones, selectedTracks.selectedBones);
     const nextSelectedTransforms = this.filterIncludedIndex(

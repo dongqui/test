@@ -9,29 +9,29 @@ import clickTrack from './cases/clickTrack';
 import deleteLayerTrack from './cases/deleteLayerTrack';
 import muteLayerTrack from './cases/muteLayerTrack';
 
-const transformTrackList1: TransformTrack[] = Array(9)
+const transformTrackList1: TransformTrack[] = Array(3)
   .fill(0)
   .map((_, index) => ({
     isSelected: false,
-    trackName: 'PositionX' + index,
-    interpolationType: index % 2 === 0 ? 'linear' : 'bezier',
+    trackName: index === 0 ? 'Position' : index === 1 ? 'Rotation' : 'Scale',
+    interpolationType: 'linear',
     transformIndex: index + 1,
   }));
 
-const transformTrackList2: TransformTrack[] = Array(9)
+const transformTrackList2: TransformTrack[] = Array(3)
   .fill(0)
   .map((_, index) => ({
     isSelected: false,
-    trackName: 'PositionX' + index,
+    trackName: index === 0 ? 'Position' : index === 1 ? 'Rotation' : 'Scale',
     interpolationType: 'linear',
     transformIndex: index + 1 + 10,
   }));
 
-const transformTrackList3: TransformTrack[] = Array(9)
+const transformTrackList3: TransformTrack[] = Array(3)
   .fill(0)
   .map((_, index) => ({
     isSelected: false,
-    trackName: 'PositionX' + index,
+    trackName: index === 0 ? 'Position' : index === 1 ? 'Rotation' : 'Scale',
     interpolationType: 'linear',
     transformIndex: index + 1 + 20,
   }));

@@ -1,6 +1,6 @@
 import { ClickTransformTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
-import { fnGetBinarySearch, fnGetBoneTrackIndex } from 'utils/TP/trackUtils';
+import { getBinarySearch, getBoneTrackIndex } from 'utils/TP';
 import { MultipleClick } from './index';
 
 export interface Parmas {
@@ -16,7 +16,7 @@ class MultipleClickTransformTrack implements MultipleClick {
   private filterIncludedIndex = (iter: number[], filterTarget: number[]) => {
     const nextSelectedTracks: number[] = [];
     iter.forEach((index) => {
-      const trackIndex = fnGetBinarySearch({
+      const trackIndex = getBinarySearch({
         collection: filterTarget,
         index,
       });
@@ -33,7 +33,7 @@ class MultipleClickTransformTrack implements MultipleClick {
   public clickMultipleSelectedTrack = ({ state, payload }: Parmas) => {
     const { selectedBones, selectedTransforms } = state;
     const { transformIndex } = payload;
-    const boneIndex = fnGetBoneTrackIndex(transformIndex);
+    const boneIndex = getBoneTrackIndex(transformIndex);
     const nextSelectedBones = this.filterIncludedIndex(selectedBones, [boneIndex]);
     const nextSelectedTransforms = this.filterIncludedIndex(selectedTransforms, [transformIndex]);
     return this.setSelectedTracks(nextSelectedBones, nextSelectedTransforms);

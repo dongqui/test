@@ -8,7 +8,7 @@ class BoneTrackAllClick implements AllClick {
 
   private selectBoneTransforms = (boneIndex: number) => {
     const selectedTransforms: number[] = [];
-    for (let index = boneIndex + 1; index <= boneIndex + 9; index++) {
+    for (let index = boneIndex + 1; index <= boneIndex + 3; index++) {
       selectedTransforms.push(index);
     }
     return this.setSelectedTracks([boneIndex], selectedTransforms);

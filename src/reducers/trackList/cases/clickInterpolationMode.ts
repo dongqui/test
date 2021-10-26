@@ -1,12 +1,12 @@
 import produce from 'immer';
 
-import { fnGetBinarySearch } from 'utils/TP/trackUtils';
+import { getBinarySearch } from 'utils/TP';
 import { ClickInterpolationMode } from 'actions/trackList';
 import { TransformTrack } from 'types/TP_New/track';
 import { TrackListState } from '../index';
 
 function findTransformIndex(trackList: TransformTrack[], index: number) {
-  const trackIndex = fnGetBinarySearch<TransformTrack>({
+  const trackIndex = getBinarySearch<TransformTrack>({
     collection: trackList,
     index,
     key: 'transformIndex',

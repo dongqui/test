@@ -9,39 +9,25 @@ import {
 import { LayerTrackService, BoneTrackService, TransformTrackService } from './service';
 import { LayerTrackRepository, BoneTrackRepository, TransformTrackRepository } from './repository';
 
-export class TrackChecker {
-  public isLayerTrack(payload: ClickTrackBody): payload is ClickLayerTrackBody {
-    return (payload as ClickLayerTrackBody).layerId !== undefined;
-  }
-
-  public isBoneTrack(payload: ClickTrackBody): payload is ClickBoneTrackBody {
-    return (payload as ClickBoneTrackBody).boneIndex !== undefined;
-  }
-
-  public isTransformTrack(payload: ClickTrackBody): payload is ClickTransformTrackBody {
-    return (payload as ClickTransformTrackBody).transformIndex !== undefined;
-  }
-}
-
-export const layerTrackConfig = (state: TrackListState, payload: ClickLayerTrackBody) => {
+export const layerTrackConfig = (state: TrackListState, payload: ClickTrackBody) => {
   const repository = new LayerTrackRepository(state);
-  const service = new LayerTrackService(state, payload, repository);
+  const service = new LayerTrackService(state, payload as ClickLayerTrackBody, repository);
   const selectedLayer = service.selectClickType();
   const nextState = service.updateState(selectedLayer);
   return nextState;
 };
 
-export const boneTrackConfig = (state: TrackListState, payload: ClickBoneTrackBody) => {
+export const boneTrackConfig = (state: TrackListState, payload: ClickTrackBody) => {
   const repository = new BoneTrackRepository(state);
-  const service = new BoneTrackService(state, payload, repository);
+  const service = new BoneTrackService(state, payload as ClickBoneTrackBody, repository);
   const selectedTracks = service.selectClickType();
   const nextState = service.updateState(selectedTracks);
   return nextState;
 };
 
-export const transformTrackConfig = (state: TrackListState, payload: ClickTransformTrackBody) => {
+export const transformTrackConfig = (state: TrackListState, payload: ClickTrackBody) => {
   const repository = new TransformTrackRepository(state);
-  const service = new TransformTrackService(state, payload, repository);
+  const service = new TransformTrackService(state, payload as ClickTransformTrackBody, repository);
   const selectedTracks = service.selectClickType();
   const nextState = service.updateState(selectedTracks);
   return nextState;

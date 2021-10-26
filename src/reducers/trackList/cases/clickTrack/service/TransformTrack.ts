@@ -22,9 +22,8 @@ class TransformTrackService implements Service {
 
   private selectAllClick = () => {
     const { state, payload } = this;
-    const { isSelectedAll } = payload;
     const { clickSelectAll, clickUnselectAll } = new TransformTrackAllClick();
-    return isSelectedAll
+    return payload.eventType === 'selectAll'
       ? clickSelectAll({ state, payload })
       : clickUnselectAll({ state, payload });
   };
@@ -54,14 +53,14 @@ class TransformTrackService implements Service {
   };
 
   public selectClickType = () => {
-    const { isRightClicked, isShowedContextMenu, isMultipleClicked } = this.payload;
-    if (isRightClicked && isShowedContextMenu) {
+    const { eventType } = this.payload;
+    if (eventType === 'selectAll' || eventType === 'unselectAll') {
       return this.selectAllClick();
     }
-    if (isRightClicked && !isShowedContextMenu) {
+    if (eventType === 'rightClick') {
       return this.selectRightClick();
     }
-    if (!isRightClicked && isMultipleClicked) {
+    if (eventType === 'multipleClick') {
       return this.selectMultipleClick();
     }
     return this.selectLeftClick();

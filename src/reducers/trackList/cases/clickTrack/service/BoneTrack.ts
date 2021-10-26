@@ -22,9 +22,9 @@ class BoneTrackService implements Service {
 
   private selectAllClick = () => {
     const { state } = this;
-    const { isSelectedAll } = this.payload;
+    const { eventType } = this.payload;
     const { clickSelectAll, clickUnselectAll } = new BoneTrackAllClick();
-    return isSelectedAll ? clickSelectAll({ state }) : clickUnselectAll();
+    return eventType === 'selectAll' ? clickSelectAll({ state }) : clickUnselectAll();
   };
 
   private selectRightClick = () => {
@@ -52,14 +52,14 @@ class BoneTrackService implements Service {
   };
 
   public selectClickType = () => {
-    const { isRightClicked, isShowedContextMenu, isMultipleClicked } = this.payload;
-    if (isRightClicked && isShowedContextMenu) {
+    const { eventType } = this.payload;
+    if (eventType === 'selectAll' || eventType === 'unselectAll') {
       return this.selectAllClick();
     }
-    if (isRightClicked && !isShowedContextMenu) {
+    if (eventType === 'rightClick') {
       return this.selectRightClick();
     }
-    if (!isRightClicked && isMultipleClicked) {
+    if (eventType === 'multipleClick') {
       return this.selectMultipleClick();
     }
     return this.selectLeftClick();

@@ -1,19 +1,18 @@
 import { ClickTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
-import { TrackChecker, layerTrackConfig, boneTrackConfig, transformTrackConfig } from './config';
+import { layerTrackConfig, boneTrackConfig, transformTrackConfig } from './config';
 
-function clickTrackBody(state: TrackListState, payload: ClickTrackBody) {
-  const trackChecker = new TrackChecker();
-  if (trackChecker.isLayerTrack(payload)) {
+const clickTrackBody = (state: TrackListState, payload: ClickTrackBody) => {
+  if (payload.trackType === 'layer') {
     return layerTrackConfig(state, payload);
   }
-  if (trackChecker.isBoneTrack(payload)) {
+  if (payload.trackType === 'bone') {
     return boneTrackConfig(state, payload);
   }
-  if (trackChecker.isTransformTrack(payload)) {
+  if (payload.trackType === 'transform') {
     return transformTrackConfig(state, payload);
   }
   return state;
-}
+};
 
 export default clickTrackBody;
