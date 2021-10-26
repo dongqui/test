@@ -17,15 +17,16 @@ const TransformTrackItem: FunctionComponent<TransformTrack> = (props) => {
   const handleTrackBodyClick = useCallback(
     (event: React.MouseEvent<Element>) => {
       event.stopPropagation(); // bone, layer 트랙에 클릭 효과 전파를 방지
-      if ((event.target as Element).nodeName !== 'DIV') return;
-      const payload: ClickTransformTrackBody = {
-        transformIndex,
-        isMultipleClicked: event.ctrlKey,
-        isRightClicked: false,
-        isSelectedAll: false,
-        isShowedContextMenu: false,
-      };
-      dispatch(clickTrackBody(payload));
+      const { nodeName } = event.target as Element;
+      if (nodeName === 'DIV') {
+        const eventType = event.ctrlKey ? 'multipleClick' : 'leftClick';
+        const payload: ClickTransformTrackBody = {
+          transformIndex,
+          eventType,
+          trackType: 'transform',
+        };
+        dispatch(clickTrackBody(payload));
+      }
     },
     [dispatch, transformIndex],
   );

@@ -2,7 +2,7 @@ import { useCallback, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 
-import { clickTrackBody } from 'actions/trackList';
+import { clickTrackBody, ClickLayerTrackBody } from 'actions/trackList';
 import { LayerTrack } from 'types/TP_New/track';
 import { IconWrapper, SvgPath } from 'components/Icon';
 
@@ -25,9 +25,14 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
   const handleTrackBodyClick = useCallback(
     (event: React.MouseEvent<Element>) => {
       const { nodeName } = event.target as Element;
-      if (nodeName !== 'DIV') return;
-      const payload = { layerId: layerId };
-      dispatch(clickTrackBody(payload));
+      if (nodeName === 'DIV') {
+        const payload: ClickLayerTrackBody = {
+          layerId: layerId,
+          eventType: 'leftClick',
+          trackType: 'layer',
+        };
+        dispatch(clickTrackBody(payload));
+      }
     },
     [dispatch, layerId],
   );

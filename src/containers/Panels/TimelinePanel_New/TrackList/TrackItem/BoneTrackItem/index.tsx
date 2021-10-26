@@ -26,9 +26,9 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
       const parentIndex = getBoneTrackIndex(transformTrackList[index].transformIndex);
       if (parentIndex === boneIndex) {
         const start = index - 1 === -1 ? 0 : index;
-        return transformTrackList.slice(start, index + 9);
+        return transformTrackList.slice(start, index + 3);
       }
-      index += 9;
+      index += 3;
     }
     return [];
   }, [boneIndex, transformTrackList]);
@@ -37,15 +37,12 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
   const handleTrackBodyClick = useCallback(
     (event: React.MouseEvent<Element>) => {
       event.stopPropagation(); // layer 트랙에 클릭 효과 전파를 방지
-      if ((event.target as Element).nodeName !== 'DIV') return;
-      const payload: ClickBoneTrackBody = {
-        boneIndex,
-        isMultipleClicked: event.ctrlKey,
-        isRightClicked: false,
-        isSelectedAll: false,
-        isShowedContextMenu: false,
-      };
-      dispatch(clickTrackBody(payload));
+      const { nodeName } = event.target as Element;
+      if (nodeName === 'DIV') {
+        const eventType = event.ctrlKey ? 'multipleClick' : 'leftClick';
+        const payload: ClickBoneTrackBody = { boneIndex, eventType, trackType: 'bone' };
+        dispatch(clickTrackBody(payload));
+      }
     },
     [boneIndex, dispatch],
   );
