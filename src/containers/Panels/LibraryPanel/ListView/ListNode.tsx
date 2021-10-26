@@ -339,7 +339,9 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Edit name',
-                onClick: () => {},
+                onClick: () => {
+                  setIsEditing(true);
+                },
                 children: [],
               },
               {
