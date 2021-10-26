@@ -30,7 +30,7 @@ class BoneKeyframeHorizontal extends ClusterKeyframes implements HorizontalSelec
   private getSelectedTransforms = ({ state, payload }: Params) => {
     const boneIndex = (payload.selectedKeyframes as SelectedKeyframe).trackIndex as number;
     const selectedTransforms: SelectedKeyframe[] = [];
-    for (let index = boneIndex + 1; index <= boneIndex + 9; index++) {
+    for (let index = boneIndex + 1; index <= boneIndex + 3; index++) {
       const { keyframes } = this.getKeyframeTrack(state.transformKeyframes, index);
       keyframes.forEach((keyframe) => {
         selectedTransforms.push({ trackIndex: index, timeIndex: keyframe.timeIndex });

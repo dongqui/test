@@ -9,7 +9,7 @@ class BoneKeyframeLeftClick extends ClusterKeyframes implements LeftClick {
   private getTransformKeyframes = (boneKeyframe: SelectedKeyframe) => {
     const boneIndex = boneKeyframe.trackIndex as number;
     const transformKeyframes: SelectedKeyframe[] = [];
-    for (let index = boneIndex + 1; index <= boneIndex + 9; index++) {
+    for (let index = boneIndex + 1; index <= boneIndex + 3; index++) {
       transformKeyframes.push({
         timeIndex: boneKeyframe.timeIndex,
         trackIndex: index,

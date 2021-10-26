@@ -15,7 +15,7 @@ class BoneKeyframeMultipleClick extends ClusterKeyframes implements MultipleClic
   private getSelectedTransforms = (selected: SelectedKeyframe) => {
     const transformKeyframes: SelectedKeyframe[] = [];
     const boneIndex = selected.trackIndex as number;
-    for (let index = boneIndex + 1; index <= boneIndex + 9; index++) {
+    for (let index = boneIndex + 1; index <= boneIndex + 3; index++) {
       transformKeyframes.push({
         trackIndex: index,
         timeIndex: selected.timeIndex,

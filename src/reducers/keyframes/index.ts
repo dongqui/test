@@ -41,7 +41,7 @@ const boneKeyframes: TrackKeyframes[] = Array(3)
   }));
 
 const transformKeyframes: TrackKeyframes[] = [
-  ...Array(9)
+  ...Array(3)
     .fill(1)
     .map((_, index) => ({
       trackIndex: index + 1,
@@ -54,7 +54,7 @@ const transformKeyframes: TrackKeyframes[] = [
           value: 1,
         })),
     })),
-  ...Array(9)
+  ...Array(3)
     .fill(1)
     .map((_, index) => ({
       trackIndex: index + 11,
@@ -67,7 +67,7 @@ const transformKeyframes: TrackKeyframes[] = [
           value: 1,
         })),
     })),
-  ...Array(9)
+  ...Array(3)
     .fill(1)
     .map((_, index) => ({
       trackIndex: index + 21,
