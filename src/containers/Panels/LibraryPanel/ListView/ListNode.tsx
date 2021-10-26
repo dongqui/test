@@ -613,14 +613,14 @@ const ListNode: FunctionComponent<Props> = ({
             const targetIndex = draft.findIndex((element) => element.id === id);
 
             const newNode: LP.Node = {
-              id: uuidv4(),
+              id: id,
               // filePath: lpCurrentPath + `\\${name}`,
-              filePath: filePath + `\\${nodeName}`, //@todo
+              filePath: filePath + `\\${name}`, //@todo
               parentId: parentId,
               name: name,
               type: type,
               hideNode: true,
-              children: [],
+              children: childrens,
             };
 
             if (parent) {
@@ -628,6 +628,8 @@ const ListNode: FunctionComponent<Props> = ({
             }
 
             draft[targetIndex] = newNode;
+
+            setIsEditing(false);
           });
 
           dispatch(
@@ -648,7 +650,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
         });
     },
-    [dispatch, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [childrens, dispatch, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   const handleKeydown = useCallback(
@@ -679,14 +681,14 @@ const ListNode: FunctionComponent<Props> = ({
               const targetIndex = draft.findIndex((element) => element.id === id);
 
               const newNode: LP.Node = {
-                id: uuidv4(),
+                id: id,
                 // filePath: lpCurrentPath + `\\${name}`,
-                filePath: filePath + `\\${nodeName}`, //@todo
+                filePath: filePath + `\\${name}`, //@todo
                 parentId: parentId,
                 name: name,
                 type: type,
                 hideNode: true,
-                children: [],
+                children: childrens,
               };
 
               if (parent) {
@@ -694,6 +696,8 @@ const ListNode: FunctionComponent<Props> = ({
               }
 
               draft[targetIndex] = newNode;
+
+              setIsEditing(false);
             });
 
             dispatch(
@@ -715,7 +719,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
       }
     },
-    [dispatch, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [childrens, dispatch, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
