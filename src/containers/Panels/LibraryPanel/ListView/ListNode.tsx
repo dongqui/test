@@ -752,7 +752,7 @@ const ListNode: FunctionComponent<Props> = ({
   // );
 
   return (
-    <div className={classes}>
+    <div className={classes} draggable>
       <div className={cx('inner')}>
         <div
           style={{ display: 'flex' }}
