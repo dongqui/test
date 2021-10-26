@@ -71,6 +71,7 @@ const ListNode: FunctionComponent<Props> = ({
   const lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const renameRef = useRef<HTMLInputElement>(null);
 
   const { onModalOpen, onModalClose } = useBaseModal();
 
@@ -584,7 +585,7 @@ const ListNode: FunctionComponent<Props> = ({
   );
 
   const handleBlur = useCallback(
-    (event: FocusEvent<HTMLInputElement>) => {
+    async (event: FocusEvent<HTMLInputElement>) => {
       const text = event.currentTarget.value || name;
 
       const currentPathNodeName = lpNode
@@ -599,45 +600,57 @@ const ListNode: FunctionComponent<Props> = ({
         })
         .map((filteredNode) => filteredNode.name);
 
-      const nodeName = beforeRename({
+      const nodeName = await beforeRename({
         name: text,
-        nameArray: currentPathNodeName,
-      });
+        comparison: currentPathNodeName,
+      })
+        .then((name) => {
+          const nextNodes = produce(lpNode, (draft) => {
+            const parent = _.find(draft, { id: parentId });
+            // @todo 생성하지않고 교체하기
+            const targetIndex = draft.findIndex((element) => element.id === id);
 
-      const nextNodes = produce(lpNode, (draft) => {
-        const parent = _.find(draft, { id: parentId });
-        // @todo 생성하지않고 교체하기
-        const targetIndex = draft.findIndex((element) => element.id === id);
+            const newNode: LP.Node = {
+              id: uuidv4(),
+              // filePath: lpCurrentPath + `\\${name}`,
+              filePath: filePath + `\\${nodeName}`, //@todo
+              parentId: parentId,
+              name: name,
+              type: type,
+              hideNode: true,
+              children: [],
+            };
 
-        const newNode: LP.Node = {
-          id: uuidv4(),
-          // filePath: lpCurrentPath + `\\${name}`,
-          filePath: filePath + `\\${nodeName}`, //@todo
-          parentId: parentId,
-          name: nodeName,
-          type: type,
-          hideNode: true,
-          children: [],
-        };
+            if (parent) {
+              parent.children.push(newNode.id);
+            }
 
-        if (parent) {
-          parent.children.push(newNode.id);
-        }
+            draft[targetIndex] = newNode;
+          });
 
-        draft[targetIndex] = newNode;
-      });
-
-      dispatch(
-        lpNodeActions.changeNode({
-          nodes: nextNodes,
-        }),
-      );
+          dispatch(
+            lpNodeActions.changeNode({
+              nodes: nextNodes,
+            }),
+          );
+        })
+        .catch(() => {
+          onModalOpen({
+            title: 'Warning',
+            message: `${text.trim()} 이름이 이미 사용 중입니다. <br />다른 이름을 선택하십시오.`,
+            confirmText: 'Close',
+            onConfirm: () => {
+              onModalClose();
+              renameRef.current?.focus();
+            },
+          });
+        });
     },
-    [dispatch, filePath, id, lpNode, name, parentId, type],
+    [dispatch, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   const handleKeydown = useCallback(
-    (event: KeyboardEvent<HTMLInputElement>) => {
+    async (event: KeyboardEvent<HTMLInputElement>) => {
       if (event.code === 'Enter') {
         const text = event.currentTarget.value || name;
 
@@ -653,42 +666,54 @@ const ListNode: FunctionComponent<Props> = ({
           })
           .map((filteredNode) => filteredNode.name);
 
-        const nodeName = beforeRename({
+        const nodeName = await beforeRename({
           name: text,
-          nameArray: currentPathNodeName,
-        });
+          comparison: currentPathNodeName,
+        })
+          .then((name) => {
+            const nextNodes = produce(lpNode, (draft) => {
+              const parent = _.find(draft, { id: parentId });
+              // @todo 생성하지않고 교체하기
+              const targetIndex = draft.findIndex((element) => element.id === id);
 
-        const nextNodes = produce(lpNode, (draft) => {
-          const parent = _.find(draft, { id: parentId });
-          // @todo 생성하지않고 교체하기
-          const targetIndex = draft.findIndex((element) => element.id === id);
+              const newNode: LP.Node = {
+                id: uuidv4(),
+                // filePath: lpCurrentPath + `\\${name}`,
+                filePath: filePath + `\\${nodeName}`, //@todo
+                parentId: parentId,
+                name: name,
+                type: type,
+                hideNode: true,
+                children: [],
+              };
 
-          const newNode: LP.Node = {
-            id: uuidv4(),
-            // filePath: lpCurrentPath + `\\${name}`,
-            filePath: filePath + `\\${nodeName}`, //@todo
-            parentId: parentId,
-            name: nodeName,
-            type: type,
-            hideNode: true,
-            children: [],
-          };
+              if (parent) {
+                parent.children.push(newNode.id);
+              }
 
-          if (parent) {
-            parent.children.push(newNode.id);
-          }
+              draft[targetIndex] = newNode;
+            });
 
-          draft[targetIndex] = newNode;
-        });
-
-        dispatch(
-          lpNodeActions.changeNode({
-            nodes: nextNodes,
-          }),
-        );
+            dispatch(
+              lpNodeActions.changeNode({
+                nodes: nextNodes,
+              }),
+            );
+          })
+          .catch(() => {
+            onModalOpen({
+              title: 'Warning',
+              message: `${text.trim()} 이름이 이미 사용 중입니다. <br />다른 이름을 선택하십시오.`,
+              confirmText: 'Close',
+              onConfirm: () => {
+                onModalClose();
+                renameRef.current?.focus();
+              },
+            });
+          });
       }
     },
-    [dispatch, filePath, id, lpNode, name, parentId, type],
+    [dispatch, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -702,8 +727,7 @@ const ListNode: FunctionComponent<Props> = ({
   //   (event: MouseEvent) => {
   //     const targetAsset = assetList[0];
   //     // assetId를 사용해서 node를 생성하신 후, 위의 코드를 아래의 코드로 변경하면 됩니다.
-  //     // const targetAsset = assetList.find((asset) => asset.id === assetId)
-
+  //     // const targetAsset = assetList.find((asset) => asset.id === assetId;
   //     // render/unrender 기능 구현을 임의로 click/altClick으로 구분해두었습니다.
   //     if (event.altKey) {
   //       if (targetAsset && visualizedAssetIds.includes(targetAsset.id)) {
@@ -743,6 +767,7 @@ const ListNode: FunctionComponent<Props> = ({
                 placeholder={name}
                 type="text"
                 onBlur={handleBlur}
+                ref={renameRef}
                 onKeyDown={handleKeydown}
                 autoFocus
               />
