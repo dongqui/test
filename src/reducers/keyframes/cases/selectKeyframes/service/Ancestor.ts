@@ -4,21 +4,16 @@ import { ClusteredTimes, SelectedKeyframe, TrackKeyframes } from 'types/TP_New/k
 import { getBinarySearch } from 'utils/TP';
 
 export class ClusterKeyframes {
-  protected findTrackIndex = (
-    clusteredTimes: ClusteredTimes[] | TrackKeyframes[],
-    trackIndex: number | string,
-  ) => {
-    if (typeof trackIndex === 'number') {
-      const index = getBinarySearch<ClusteredTimes | TrackKeyframes>({
-        collection: clusteredTimes,
-        index: trackIndex,
-        key: 'trackIndex',
-      });
-      return index;
-    } else {
-      const index = clusteredTimes.findIndex((value) => value.trackIndex === trackIndex);
-      return index;
-    }
+  private findNumberTrackIndex = (target: ClusteredTimes[] | TrackKeyframes[], index: number) => {
+    return getBinarySearch<ClusteredTimes | TrackKeyframes>({
+      collection: target,
+      index: index,
+      key: 'trackIndex',
+    });
+  };
+
+  private findStringTrackIndex = (target: ClusteredTimes[] | TrackKeyframes[], index: string) => {
+    return target.findIndex((value) => value.trackIndex === index);
   };
 
   private checkIncludedTime = (collection: number[], index: number) => {
@@ -26,16 +21,23 @@ export class ClusterKeyframes {
     return included === -1;
   };
 
+  protected findTrackIndex = (
+    clusteredTimes: ClusteredTimes[] | TrackKeyframes[],
+    trackIndex: number | string,
+  ) => {
+    if (typeof trackIndex === 'number') {
+      return this.findNumberTrackIndex(clusteredTimes, trackIndex);
+    }
+    return this.findStringTrackIndex(clusteredTimes, trackIndex);
+  };
+
   protected initializeClusteredTimes = (selectedKeyframes: SelectedKeyframe[]) => {
     const clusteredTimes: ClusteredTimes[] = [];
-    selectedKeyframes.forEach((keyframe) => {
-      const { timeIndex, trackIndex } = keyframe;
+    selectedKeyframes.forEach((selectedKeyframe) => {
+      const { timeIndex, trackIndex, trackId } = selectedKeyframe;
       const index = this.findTrackIndex(clusteredTimes, trackIndex);
       if (index === -1) {
-        clusteredTimes.push({
-          trackIndex: trackIndex,
-          times: [timeIndex],
-        });
+        clusteredTimes.push({ trackIndex: trackIndex, times: [timeIndex], trackId });
       } else {
         clusteredTimes[index].times.push(timeIndex);
       }

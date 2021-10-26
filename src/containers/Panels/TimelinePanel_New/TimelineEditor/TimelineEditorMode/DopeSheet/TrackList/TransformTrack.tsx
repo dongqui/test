@@ -15,7 +15,7 @@ interface Props extends TrackKeyframes, TransformTrack {
 }
 
 const TransformTrackComponent: FunctionComponent<Props> = (props) => {
-  const { keyframes, isSelected, translateY, trackIndex } = props;
+  const { keyframes, isSelected, translateY, trackIndex, trackId } = props;
 
   return (
     <g className={cx('track')} transform={`translate(0, ${translateY})`}>
@@ -32,6 +32,7 @@ const TransformTrackComponent: FunctionComponent<Props> = (props) => {
               key={keyframe.timeIndex}
               trackType="transform"
               trackIndex={trackIndex}
+              trackId={trackId}
               {...keyframe}
             />
           ),

@@ -2,7 +2,7 @@ import { SelectedKeyframe } from 'types/TP_New/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
-import { getBoneTrackIndex, getTransformXIndex } from 'utils/TP';
+import { getBoneTrackIndex } from 'utils/TP';
 
 import { MultipleClick } from './index';
 import { ClusterKeyframes } from '../Ancestor';
@@ -13,16 +13,6 @@ interface Params {
 }
 
 class TransformKeyframeMultipleClick extends ClusterKeyframes implements MultipleClick {
-  private getSelectedTransforms = (payload: SelectKeyframes) => {
-    const selectedTransforms: SelectedKeyframe[] = [];
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    const transformXIndex = getTransformXIndex(selectedKeyframe.trackIndex as number);
-    for (let index = transformXIndex; index < transformXIndex + 3; index++) {
-      selectedTransforms.push({ timeIndex: selectedKeyframe.timeIndex, trackIndex: index });
-    }
-    return selectedTransforms;
-  };
-
   private filterSelectedLayer = ({ state, payload }: Params) => {
     const { selectedLayerKeyframes, layerKeyframes } = state;
     const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
@@ -47,14 +37,14 @@ class TransformKeyframeMultipleClick extends ClusterKeyframes implements Multipl
 
   private filterSelectedTransform = ({ state, payload }: Params) => {
     const { selectedTransformKeyframes } = state;
-    const selectedKeyframe = this.getSelectedTransforms(payload);
-    return this.filterTimes(selectedTransformKeyframes, selectedKeyframe);
+    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
+    return this.filterTimes(selectedTransformKeyframes, [selectedKeyframe]);
   };
 
   private addTransformTimes = ({ state, payload }: Params) => {
     const { selectedTransformKeyframes } = state;
-    const selectedKeyframe = this.getSelectedTransforms(payload);
-    return this.addTimes(selectedTransformKeyframes, selectedKeyframe);
+    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
+    return this.addTimes(selectedTransformKeyframes, [selectedKeyframe]);
   };
 
   public selectExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {

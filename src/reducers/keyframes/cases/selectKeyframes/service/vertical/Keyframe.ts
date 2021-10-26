@@ -44,17 +44,17 @@ class KeyframeVerticalSelection extends ClusterKeyframes implements VerticalSele
       selectedTransforms.push({
         trackIndex: keyframe.trackIndex,
         timeIndex: selectedKeyframe.timeIndex,
+        trackId: selectedKeyframe.trackId,
       });
     });
     return this.initializeClusteredTimes(selectedTransforms);
   };
 
   public selectByVertical = (payload: Params): AllSelectedKeyframes => {
-    const { getLayerKeyframes, getBoneKeyframes, getTransformKeyframes } = this;
     return {
-      selectedLayerKeyframes: getLayerKeyframes(payload),
-      selectedBoneKeyframes: getBoneKeyframes(payload),
-      selectedTransformKeyframes: getTransformKeyframes(payload),
+      selectedLayerKeyframes: this.getLayerKeyframes(payload),
+      selectedBoneKeyframes: this.getBoneKeyframes(payload),
+      selectedTransformKeyframes: this.getTransformKeyframes(payload),
     };
   };
 }

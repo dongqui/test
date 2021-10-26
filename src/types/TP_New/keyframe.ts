@@ -25,6 +25,12 @@ export interface TrackKeyframes {
    */
   trackIndex: number | string;
 
+  /**
+   * @description RP쪽에서 키프레임을 탐색하기 위한 ID
+   * @requires uuid transform keyframe은 반드시 입력. layer, bone keyframe은 optional
+   */
+  trackId?: string;
+
   keyframes: Keyframe[];
 }
 
@@ -35,6 +41,12 @@ export interface SelectedKeyframe {
    * @description bone, transform track은 number형 index
    */
   trackIndex: number | string;
+
+  /**
+   * @description RP쪽에서 키프레임을 탐색하기 위한 ID
+   * @requires uuid transform keyframe은 반드시 입력. layer, bone keyframe은 optional
+   */
+  trackId?: string;
 
   timeIndex: number;
 }
@@ -48,8 +60,9 @@ export interface ClusteredTimes {
 
   /**
    * @description RP쪽에서 키프레임을 탐색하기 위한 ID
+   * @requires uuid transform keyframe은 반드시 입력. layer, bone keyframe은 optional
    */
-  trackId: string;
+  trackId?: string;
 
   times: number[];
 }
