@@ -6,8 +6,9 @@ import { getBinarySearch } from 'utils/TP';
 
 import HorizontalSelection from './horizontal/TrasnformKeyframe';
 import VerticalSelection from './vertical/Keyframe';
-import LeftClick from './leftClick/TransformKeyframe';
+import UnselectAll from './unselectAll/Keyframe';
 import MultipleClick from './multipleClick/TransformKeyframe';
+import LeftClick from './leftClick/TransformKeyframe';
 import { Service } from './index';
 import { Repository } from '../repository';
 
@@ -65,6 +66,12 @@ class TransformKeyframeService implements Service {
     return verticalSelection.selectByVertical({ state, payload });
   };
 
+  // 전체 선택 해제
+  private runUnselectAll = () => {
+    const { unselectAll } = new UnselectAll();
+    return unselectAll();
+  };
+
   // 다중 선택
   private selectMultipleClick = () => {
     const { state, payload } = this;
@@ -87,6 +94,9 @@ class TransformKeyframeService implements Service {
     }
     if (this.payload.selectType === 'vertical') {
       return this.excuteVerticalSelection();
+    }
+    if (this.payload.selectType === 'unselectAll') {
+      return this.runUnselectAll();
     }
     if (this.payload.selectType === 'multiple') {
       return this.selectMultipleClick();

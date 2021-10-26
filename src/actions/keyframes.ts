@@ -12,7 +12,7 @@ export type KeyframesAction =
 // 키프레임 선택
 export interface SelectKeyframes {
   trackType: 'layer' | 'bone' | 'transform';
-  selectType: 'left' | 'multiple' | 'vertical' | 'horizontal' | 'dragBox';
+  selectType: 'left' | 'multiple' | 'vertical' | 'horizontal' | 'dragBox' | 'unselectAll';
   selectedKeyframes: SelectedKeyframe[] | SelectedKeyframe;
 }
 export const selectKeyframes = (params: SelectKeyframes) => ({
