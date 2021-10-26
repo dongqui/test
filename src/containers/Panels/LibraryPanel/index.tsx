@@ -46,7 +46,12 @@ const LibraryPanel: FunctionComponent<Props> = ({
   const [assetListLength, setAssetListLength] = useState(0);
 
   useEffect(() => {
-    if (isModelLoading && !_.isEmpty(assetList) && assetListLength !== assetList.length) {
+    if (
+      isModelLoading &&
+      !_.isEmpty(assetList) &&
+      assetListLength !== assetList.length &&
+      !_.isEmpty(animationIngredients)
+    ) {
       let nextLPNodes = _.clone(lpNode);
 
       const nextNodes = produce(nextLPNodes, (draft) => {
