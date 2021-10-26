@@ -463,7 +463,9 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Edit name',
-                onClick: () => {},
+                onClick: () => {
+                  setIsEditing(true);
+                },
                 children: [],
               },
               {
@@ -555,7 +557,7 @@ const ListNode: FunctionComponent<Props> = ({
       if (typeof paramId === 'object') {
         return (
           <ListNode
-            id={paramId}
+            id={paramId.id}
             parentId={parentId}
             type="Motion"
             name={paramId.name}
@@ -623,9 +625,9 @@ const ListNode: FunctionComponent<Props> = ({
               children: childrens,
             };
 
-            if (parent) {
-              parent.children.push(newNode.id);
-            }
+            // if (parent) {
+            //   parent.children.push(newNode.id);
+            // }
 
             draft[targetIndex] = newNode;
 
@@ -691,9 +693,9 @@ const ListNode: FunctionComponent<Props> = ({
                 children: childrens,
               };
 
-              if (parent) {
-                parent.children.push(newNode.id);
-              }
+              // if (parent) {
+              //   parent.children.push(newNode.id);
+              // }
 
               draft[targetIndex] = newNode;
 
