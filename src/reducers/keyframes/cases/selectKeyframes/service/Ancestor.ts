@@ -54,7 +54,7 @@ export class ClusterKeyframes {
           const times = draft[trackIndex].times;
           draft[trackIndex].times = [...times, ...track.times].sort((a, b) => a - b);
         } else {
-          draft.push({ times: track.times, trackIndex: track.trackIndex });
+          draft.push({ times: track.times, trackIndex: track.trackIndex, trackId: track.trackId });
           draft.sort((a, b) => (a.trackIndex as number) - (b.trackIndex as number));
         }
       });

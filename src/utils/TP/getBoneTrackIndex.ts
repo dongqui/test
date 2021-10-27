@@ -9,32 +9,14 @@ import { TrackIndex } from 'types/TP_New/track';
 
 const fnGetBoneTrackIndex = (trackIndex: number) => {
   switch (trackIndex % 10) {
-    case TrackIndex.POSITION_X: {
-      return trackIndex - TrackIndex.POSITION_X;
+    case TrackIndex.POSITION: {
+      return trackIndex - TrackIndex.POSITION;
     }
-    case TrackIndex.POSITION_Y: {
-      return trackIndex - TrackIndex.POSITION_Y;
+    case TrackIndex.ROTATION: {
+      return trackIndex - TrackIndex.ROTATION;
     }
-    case TrackIndex.POSITION_Z: {
-      return trackIndex - TrackIndex.POSITION_Z;
-    }
-    case TrackIndex.ROTATION_X: {
-      return trackIndex - TrackIndex.ROTATION_X;
-    }
-    case TrackIndex.ROTATION_Y: {
-      return trackIndex - TrackIndex.ROTATION_Y;
-    }
-    case TrackIndex.ROTATION_Z: {
-      return trackIndex - TrackIndex.ROTATION_Z;
-    }
-    case TrackIndex.SCALE_X: {
-      return trackIndex - TrackIndex.SCALE_X;
-    }
-    case TrackIndex.SCALE_Y: {
-      return trackIndex - TrackIndex.SCALE_Y;
-    }
-    case TrackIndex.SCALE_Z: {
-      return trackIndex - TrackIndex.SCALE_Z;
+    case TrackIndex.SCALE: {
+      return trackIndex - TrackIndex.SCALE;
     }
     default: {
       return -1;

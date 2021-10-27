@@ -3,7 +3,7 @@ import { TrackIndex, TransformTrack } from 'types/TP_New/track';
 import { Repository } from './index';
 
 class TransformTrackRepository implements Repository {
-  private transformIndex = TrackIndex.POSITION_X;
+  private transformIndex = TrackIndex.POSITION;
   private readonly state: TrackListState;
 
   constructor(state: TrackListState) {

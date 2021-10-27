@@ -1,17 +1,11 @@
+export type InterpolationType = 'bezier' | 'constant' | 'linear' | 'none';
+
 export enum TrackIndex {
   BONE = 0,
-  POSITION_X = 1,
-  POSITION_Y = 2,
-  POSITION_Z = 3,
-  ROTATION_X = 4,
-  ROTATION_Y = 5,
-  ROTATION_Z = 6,
-  SCALE_X = 7,
-  SCALE_Y = 8,
-  SCALE_Z = 9,
+  POSITION = 1,
+  ROTATION = 2,
+  SCALE = 3,
 }
-
-export type InterpolationType = 'bezier' | 'constant' | 'linear' | 'none';
 
 export interface TimelinePanelTrack {
   /**

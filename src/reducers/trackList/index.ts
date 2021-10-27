@@ -24,7 +24,7 @@ const transformTrackList2: TransformTrack[] = Array(3)
     isSelected: false,
     trackName: index === 0 ? 'Position' : index === 1 ? 'Rotation' : 'Scale',
     interpolationType: 'linear',
-    transformIndex: index + 1 + 10,
+    transformIndex: index + 11,
   }));
 
 const transformTrackList3: TransformTrack[] = Array(3)
@@ -33,7 +33,7 @@ const transformTrackList3: TransformTrack[] = Array(3)
     isSelected: false,
     trackName: index === 0 ? 'Position' : index === 1 ? 'Rotation' : 'Scale',
     interpolationType: 'linear',
-    transformIndex: index + 1 + 20,
+    transformIndex: index + 21,
   }));
 
 const boneTrackList: BoneTrack[] = [
