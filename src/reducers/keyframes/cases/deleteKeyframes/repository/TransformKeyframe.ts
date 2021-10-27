@@ -1,14 +1,10 @@
 import produce from 'immer';
 
-import { Keyframe } from 'types/TP_New/keyframe';
+import { ClusteredTimes, Keyframe, TrackKeyframes } from 'types/TP_New/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
-import { AllKeyframes, AllSelectedKeyframes } from 'reducers/keyframes/types';
 import { getBinarySearch } from 'utils/TP';
 
 import { Repository } from './index';
-
-type TransformKeyframes = Pick<AllKeyframes, 'transformKeyframes'>;
-type SelectedTransformKeyframes = Pick<AllSelectedKeyframes, 'selectedTransformKeyframes'>;
 
 class TransformKeyframeRepository implements Repository {
   private readonly state: KeyframesState;
@@ -17,11 +13,13 @@ class TransformKeyframeRepository implements Repository {
     this.state = state;
   }
 
+  // 트랙 index 찾기
   private findTrackIndex = (trackIndex: number) => {
     const { transformKeyframes } = this.state;
     return transformKeyframes.findIndex((keyframe) => keyframe.trackIndex === trackIndex);
   };
 
+  // 키프레임 index 찾기
   private findKeyframeIndex = (tarckIndex: number, time: number) => {
     const { transformKeyframes } = this.state;
     const transformTrack = transformKeyframes[tarckIndex];
@@ -48,17 +46,13 @@ class TransformKeyframeRepository implements Repository {
   };
 
   // 선택 된 transform keyframes 리스트 초기화
-  public clearSeletedKeyframes = (): SelectedTransformKeyframes => {
-    return {
-      selectedTransformKeyframes: [],
-    };
+  public clearSeletedKeyframes = (): ClusteredTimes[] => {
+    return [];
   };
 
   // 선택 된 keyframes 삭제
-  public deleteSeletedKeyframes = (): TransformKeyframes => {
-    return {
-      transformKeyframes: this.deleteTransformKeyframes(),
-    };
+  public deleteSeletedKeyframes = (): TrackKeyframes[] => {
+    return this.deleteTransformKeyframes();
   };
 
   public updateStateObject = (newValues: Partial<KeyframesState>): KeyframesState => {

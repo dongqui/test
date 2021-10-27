@@ -1,8 +1,10 @@
 import { KeyframesState } from 'reducers/keyframes';
-import { KeyframesUnion, SelectedKeyframesUnion } from 'reducers/keyframes/types';
+import { AllKeyframes, AllSelectedKeyframes } from 'reducers/keyframes/types';
+
+type NewValues = AllKeyframes & AllSelectedKeyframes;
 
 export interface Service {
-  deleteKeyframes(): KeyframesUnion & SelectedKeyframesUnion;
+  deleteKeyframes(): NewValues;
 
-  updateKeyframesState(newValues: KeyframesUnion & SelectedKeyframesUnion): KeyframesState;
+  updateKeyframesState(newValues: NewValues): KeyframesState;
 }

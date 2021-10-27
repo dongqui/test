@@ -1,14 +1,10 @@
 import produce from 'immer';
 
-import { Keyframe } from 'types/TP_New/keyframe';
+import { ClusteredTimes, Keyframe, TrackKeyframes } from 'types/TP_New/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
-import { AllKeyframes, AllSelectedKeyframes } from 'reducers/keyframes/types';
-import { getBinarySearch } from 'utils/TP';
+import { getBinarySearch, getBoneTrackIndex } from 'utils/TP';
 
 import { Repository } from './index';
-
-type BoneKeyframes = Pick<AllKeyframes, 'boneKeyframes'>;
-type SelectedBoneKeyframes = Pick<AllSelectedKeyframes, 'selectedBoneKeyframes'>;
 
 class BoneKeyframeRepository implements Repository {
   private readonly state: KeyframesState;
@@ -17,14 +13,20 @@ class BoneKeyframeRepository implements Repository {
     this.state = state;
   }
 
-  private findTrackIndex = (trackIndex: number) => {
-    const { boneKeyframes } = this.state;
-    return boneKeyframes.findIndex((keyframe) => keyframe.trackIndex === trackIndex);
+  private findTrackIndex = (target: ClusteredTimes[] | TrackKeyframes[], trackIndex: number) => {
+    return getBinarySearch<ClusteredTimes | TrackKeyframes>({
+      collection: target,
+      index: trackIndex,
+      key: 'trackIndex',
+    });
   };
 
-  private findKeyframeIndex = (tarckIndex: number, time: number) => {
-    const { boneKeyframes } = this.state;
-    const boneTrack = boneKeyframes[tarckIndex];
+  private findKeyframeIndex = (
+    trackKeyframes: TrackKeyframes[],
+    tarckIndex: number,
+    time: number,
+  ) => {
+    const boneTrack = trackKeyframes[tarckIndex];
     const keyframeIndex = getBinarySearch<Keyframe>({
       collection: boneTrack.keyframes,
       index: time,
@@ -33,14 +35,61 @@ class BoneKeyframeRepository implements Repository {
     return keyframeIndex;
   };
 
+  // 선택 된 transform keyframes의 times 계산
+  private findSelectedTransformTimes = () => {
+    const { selectedTransformKeyframes } = this.state;
+    const selectedTimes = new Map<number, Set<number>>();
+    selectedTransformKeyframes.forEach(({ times, trackIndex }) => {
+      const boneIndex = getBoneTrackIndex(trackIndex as number);
+      const prev = selectedTimes.get(boneIndex);
+      selectedTimes.set(boneIndex, prev ? new Set([...prev, ...times]) : new Set([...times]));
+    });
+    return selectedTimes;
+  };
+
+  private findDeletedBoneTimes = (transformKeyframes: TrackKeyframes[]) => {
+    const deletedBoneTimes: ClusteredTimes[] = [];
+    const selectedTransformTimes = this.findSelectedTransformTimes();
+    for (const [trackIndex, times] of selectedTransformTimes.entries()) {
+      times.forEach((time) => {
+        let deletedCount = 0;
+        for (let index = trackIndex + 1; index <= trackIndex + 3; index++) {
+          const trackIndex = this.findTrackIndex(transformKeyframes, index);
+          const timeIndex = this.findKeyframeIndex(transformKeyframes, trackIndex, time);
+          const isDeleted = transformKeyframes[trackIndex].keyframes[timeIndex].isDeleted;
+          if (isDeleted) deletedCount += 1;
+        }
+        if (deletedCount === 3) {
+          const index = this.findTrackIndex(deletedBoneTimes, trackIndex);
+          if (index === -1) {
+            deletedBoneTimes.push({ trackIndex: trackIndex, times: [time] });
+          } else {
+            deletedBoneTimes[index].times.push(time);
+          }
+        }
+      });
+    }
+    return deletedBoneTimes;
+  };
+
   // 선택 된 keyframes에 isDeleted 상태값 변경
-  private deleteBoneKeyframes = () => {
+  private deleteBoneKeyframes = (transformKeyframes: TrackKeyframes[]) => {
     const { boneKeyframes, selectedBoneKeyframes } = this.state;
+    const deletedBoneTimes = this.findDeletedBoneTimes(transformKeyframes);
     return produce(boneKeyframes, (draft) => {
       selectedBoneKeyframes.forEach((selectedKeyframe) => {
-        const trackIndex = this.findTrackIndex(selectedKeyframe.trackIndex as number);
+        const selectedIndex = selectedKeyframe.trackIndex as number;
+        const trackIndex = this.findTrackIndex(boneKeyframes, selectedIndex);
         selectedKeyframe.times.forEach((time) => {
-          const timeIndex = this.findKeyframeIndex(trackIndex, time);
+          const timeIndex = this.findKeyframeIndex(boneKeyframes, trackIndex, time);
+          draft[trackIndex].keyframes[timeIndex].isDeleted = true;
+        });
+      });
+      deletedBoneTimes.forEach((selectedKeyframe) => {
+        const selectedIndex = selectedKeyframe.trackIndex as number;
+        const trackIndex = this.findTrackIndex(boneKeyframes, selectedIndex);
+        selectedKeyframe.times.forEach((time) => {
+          const timeIndex = this.findKeyframeIndex(boneKeyframes, trackIndex, time);
           draft[trackIndex].keyframes[timeIndex].isDeleted = true;
         });
       });
@@ -48,17 +97,13 @@ class BoneKeyframeRepository implements Repository {
   };
 
   // 선택 된 bone keyframes 리스트 초기화
-  public clearSeletedKeyframes = (): SelectedBoneKeyframes => {
-    return {
-      selectedBoneKeyframes: [],
-    };
+  public clearSeletedKeyframes = (): ClusteredTimes[] => {
+    return [];
   };
 
   // 선택 된 keyframes 삭제
-  public deleteSeletedKeyframes = (): BoneKeyframes => {
-    return {
-      boneKeyframes: this.deleteBoneKeyframes(),
-    };
+  public deleteSeletedKeyframes = (transformKeyframes: TrackKeyframes[]): TrackKeyframes[] => {
+    return this.deleteBoneKeyframes(transformKeyframes);
   };
 
   public updateStateObject = (newValues: Partial<KeyframesState>): KeyframesState => {
