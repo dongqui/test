@@ -1,15 +1,5 @@
 import _ from 'lodash';
-import {
-  FunctionComponent,
-  memo,
-  ReactNode,
-  FocusEvent,
-  useEffect,
-  useCallback,
-  useState,
-  useRef,
-  KeyboardEvent,
-} from 'react';
+import { FunctionComponent, memo, ReactNode, FocusEvent, useEffect, useCallback, useState, useRef, KeyboardEvent } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
@@ -225,7 +215,7 @@ const ListNode: FunctionComponent<Props> = ({
 
                     const nodeName = beforePaste({
                       name: cloneCopyNode.name,
-                      nameArray: currentPathNodeName,
+                      comparisonNames: currentPathNodeName,
                     });
 
                     const nextNodes = produce(lpNode, (draft) => {
@@ -243,9 +233,7 @@ const ListNode: FunctionComponent<Props> = ({
                         draft.push(cloneCopyNode);
 
                         if (!_.isEmpty(cloneCopyNode.children)) {
-                          cloneCopyNode.children.map((child) =>
-                            depthChnageKey(draft, child, cloneCopyNode),
-                          );
+                          cloneCopyNode.children.map((child) => depthChnageKey(draft, child, cloneCopyNode));
                         }
                       }
                     });
@@ -390,9 +378,7 @@ const ListNode: FunctionComponent<Props> = ({
                     const tracks: ShootTrack[] = [];
                     if (visualizedAssetIds.includes(assetId)) {
                       // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서
-                      const targets = selectableObjects.filter(
-                        (object) => object.id.split('//')[0] === assetId,
-                      );
+                      const targets = selectableObjects.filter((object) => object.id.split('//')[0] === assetId);
                     } else {
                       // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
                     }
@@ -573,19 +559,7 @@ const ListNode: FunctionComponent<Props> = ({
         );
       }
     },
-    [
-      animationIngredients,
-      animationTransformNodes,
-      filePath,
-      handleSelect,
-      id,
-      lpNode,
-      name,
-      parentId,
-      selectableObjects,
-      selectedId,
-      visualizedAssetIds,
-    ],
+    [animationIngredients, animationTransformNodes, filePath, handleSelect, id, lpNode, name, parentId, selectableObjects, selectedId, visualizedAssetIds],
   );
 
   const handleBlur = useCallback(
@@ -754,31 +728,15 @@ const ListNode: FunctionComponent<Props> = ({
   return (
     <div className={classes} draggable>
       <div className={cx('inner')}>
-        <div
-          style={{ display: 'flex' }}
-          ref={wrapperRef}
-          onClick={handleSelect}
-          onContextMenu={handleSelect}
-        >
+        <div style={{ display: 'flex' }} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect}>
           {/* {column.map((col, i) => (
             <div key={i} style={{ width: `${12 * col}px` }} />
           ))} */}
-          <IconWrapper
-            icon={SvgPath.FilledArrow}
-            className={arrowClasses}
-            onClick={handleArrowClick}
-          />
+          <IconWrapper icon={SvgPath.FilledArrow} className={arrowClasses} onClick={handleArrowClick} />
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
             {isEditing ? (
-              <input
-                placeholder={name}
-                type="text"
-                onBlur={handleBlur}
-                ref={renameRef}
-                onKeyDown={handleKeydown}
-                autoFocus
-              />
+              <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} autoFocus />
             ) : (
               <div className={cx('name')}>{name}</div>
             )}

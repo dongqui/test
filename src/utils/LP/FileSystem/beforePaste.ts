@@ -1,47 +1,42 @@
 import _ from 'lodash';
-import duplicateCheck from './duplicateCheck';
+import checkPasteDuplicates from './checkPasteDuplicates';
 
 interface Params {
   name: string;
-  nameArray: string[];
+  comparisonNames: string[];
 }
 
-const beforePaste = (params: Params) => {
-  const { name, nameArray } = params;
+const beforePaste = (params: Params): string => {
+  const { name, comparisonNames } = params;
+  const isNameHasCopy = !_.isNull(name.match(/copy/g));
 
-  const isAlreadyCopy = !_.isNull(name.match(/copy/g));
+  let duplicatesNumber = '0';
 
-  let check = '0';
-  let result = '';
+  // if (isNameHasCopy) {
+  //   const matchingNumber = name.match(/\(/g);
 
-  if (isAlreadyCopy) {
-    const matchNumber = name.match(/\(/g);
-    const hasNumber = !_.isNull(matchNumber);
+  //   if (matchingNumber === null || matchingNumber.length === 1) {
+  //     duplicatesNumber = checkPasteDuplicates(`${name} copy`, comparisonNames);
 
-    if (matchNumber !== null) {
-      if (matchNumber.length === 1) {
-        check = duplicateCheck(name, nameArray);
+  //     const resultName = duplicatesNumber === '0' ? `${name} (2)` : `${name} copy (${duplicatesNumber})`;
 
-        result = check === '0' ? `${name} (2)` : `${name} (${check})`;
-      }
+  //     return resultName;
+  //   } else {
+  //     const tempResult = name.substr(0, name.lastIndexOf('(')).trim();
 
-      if (matchNumber.length > 1) {
-        const tempResult = name.substr(0, name.lastIndexOf('(')).trim();
+  //     duplicatesNumber = checkPasteDuplicates(tempResult, comparisonNames);
 
-        check = duplicateCheck(tempResult, nameArray);
+  //     const resultName = duplicatesNumber === '0' ? tempResult : `${tempResult} (${duplicatesNumber})`;
 
-        result = check === '0' ? tempResult : `${tempResult} (${check})`;
-      }
-    }
-  }
+  //     return resultName;
+  //   }
+  // } else {
+  //   duplicatesNumber = checkPasteDuplicates(`${name} copy`, comparisonNames);
 
-  if (!isAlreadyCopy) {
-    check = duplicateCheck(`${name} copy`, nameArray);
+  //   const resultName = duplicatesNumber === '0' ? `${name} copy` : `${name} copy (${duplicatesNumber})`;
 
-    result = check === '0' ? `${name} copy` : `${name} copy (${check})`;
-  }
-
-  return result;
+  //   return resultName;
+  // }
 };
 
 export default beforePaste;

@@ -1,14 +1,5 @@
 import _ from 'lodash';
-import {
-  FunctionComponent,
-  memo,
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-  createRef,
-  RefObject,
-} from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback, useRef, createRef, RefObject } from 'react';
 import produce from 'immer';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
@@ -68,9 +59,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
       e.preventDefault();
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
-      const isOutsideNode = !nodeRefs
-        .map((nodeRef, i) => nodeRef.current?.contains(e.target as Node))
-        .some((isNodeContains) => isNodeContains);
+      const isOutsideNode = !nodeRefs.map((nodeRef, i) => nodeRef.current?.contains(e.target as Node)).some((isNodeContains) => isNodeContains);
 
       if (isContains && isOutsideNode) {
         dispatch(
@@ -106,7 +95,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
 
                   const nodeName = beforePaste({
                     name: cloneCopyNode.name,
-                    nameArray: currentPathNodeName,
+                    comparisonNames: currentPathNodeName,
                   });
 
                   const nextNodes = produce(lpNode, (draft) => {
@@ -119,9 +108,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
                     draft.push(cloneCopyNode);
 
                     if (!_.isEmpty(cloneCopyNode.children)) {
-                      cloneCopyNode.children.map((child) =>
-                        depthChangeKey(draft, child, cloneCopyNode),
-                      );
+                      cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
                     }
                   });
 
@@ -177,16 +164,16 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
               },
               children: [],
             },
-            {
-              label: 'Select all',
-              onClick: () => {},
-              children: [],
-            },
-            {
-              label: 'Unselect all',
-              onClick: () => {},
-              children: [],
-            },
+            // {
+            //   label: 'Select all',
+            //   onClick: () => {},
+            //   children: [],
+            // },
+            // {
+            //   label: 'Unselect all',
+            //   onClick: () => {},
+            //   children: [],
+            // },
           ],
         });
       }
