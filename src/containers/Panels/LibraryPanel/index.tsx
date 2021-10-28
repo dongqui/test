@@ -24,13 +24,7 @@ interface BaseProps {}
 
 type Props = StateProps & BaseProps;
 
-const LibraryPanel: FunctionComponent<Props> = ({
-  lpNode,
-  lpCurrentPath,
-  assetList,
-  animationTransformNodes,
-  animationIngredients,
-}) => {
+const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetList, animationTransformNodes, animationIngredients }) => {
   const getFileExtension = useCallback((file: string): string => {
     const type = (/[^./\\]*$/.exec(file) || [''])[0];
 
@@ -44,14 +38,10 @@ const LibraryPanel: FunctionComponent<Props> = ({
   const [isModelLoading, setIsModelLoading] = useState(false);
   const [fileName, setFileName] = useState('');
   const [assetListLength, setAssetListLength] = useState(0);
+  const [animationIngredientsLength, setAnimationIngredientsLength] = useState(0);
 
   useEffect(() => {
-    if (
-      isModelLoading &&
-      !_.isEmpty(assetList) &&
-      assetListLength !== assetList.length &&
-      !_.isEmpty(animationIngredients)
-    ) {
+    if (assetListLength !== assetList.length && animationIngredientsLength !== animationIngredients.length) {
       let nextLPNodes = _.clone(lpNode);
 
       const nextNodes = produce(nextLPNodes, (draft) => {
@@ -62,10 +52,8 @@ const LibraryPanel: FunctionComponent<Props> = ({
           parentId: '__root__',
           name: fileName,
           type: 'Model',
-          assetId: !_.isEmpty(assetList) ? assetList[assetList.length - 1].id : '',
-          children: animationIngredients.filter(
-            (ingredient) => ingredient.assetId === assetList[assetList.length - 1].id,
-          ),
+          assetId: assetList[assetList.length - 1].id,
+          children: animationIngredients.filter((ingredient) => ingredient.assetId === assetList[assetList.length - 1].id),
         };
 
         draft.push(newNode);
@@ -82,17 +70,9 @@ const LibraryPanel: FunctionComponent<Props> = ({
       setIsModelLoading(false);
       setFileName('');
       setAssetListLength(assetList.length);
+      setAnimationIngredientsLength(animationIngredients.length);
     }
-  }, [
-    animationIngredients,
-    assetList,
-    assetListLength,
-    dispatch,
-    fileName,
-    isModelLoading,
-    lpCurrentPath,
-    lpNode,
-  ]);
+  }, [animationIngredients, animationIngredientsLength, assetList, assetListLength, dispatch, fileName, isModelLoading, lpCurrentPath, lpNode]);
 
   /**
    * .glb or .fbx는 LPNode에 연결 그 외 AlertModal을 통한 예외 처리
@@ -141,11 +121,11 @@ const LibraryPanel: FunctionComponent<Props> = ({
             .catch(() => {
               onModalOpen({
                 title: 'Warning',
-                message:
-                  '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
+                message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
                 confirmText: 'Contact',
                 onConfirm: () => {
-                  location.href = 'mailto:contact@plask.ai';
+                  // location.href = 'mailto:contact@plask.ai';
+                  onModalClose();
                 },
               });
             });
