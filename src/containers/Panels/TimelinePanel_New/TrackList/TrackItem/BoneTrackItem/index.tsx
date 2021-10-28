@@ -15,23 +15,23 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
-  const { isSelected, isPointedDownCaret, trackName, boneIndex } = props;
+  const { isSelected, isPointedDownCaret, trackName, trackNumber, trackType } = props;
   const dispatch = useDispatch();
   const transformTrackList = useSelector((state) => state.trackList.transformTrackList);
 
   // 자식이 될 transform track list 필터링
-  const childrenTrackList = useMemo(() => {
+  const childrenTransforms = useMemo(() => {
     let index = 0;
     while (index < transformTrackList.length) {
-      const parentIndex = getBoneTrackIndex(transformTrackList[index].transformIndex);
-      if (parentIndex === boneIndex) {
-        const start = index - 1 === -1 ? 0 : index;
-        return transformTrackList.slice(start, index + 3);
+      const boneIndex = getBoneTrackIndex(transformTrackList[index].trackNumber);
+      if (boneIndex === trackNumber) {
+        const startIndex = index - 1 === -1 ? 0 : index;
+        return transformTrackList.slice(startIndex, index + 3);
       }
       index += 3;
     }
     return [];
-  }, [boneIndex, transformTrackList]);
+  }, [trackNumber, transformTrackList]);
 
   // 트랙 클릭
   const handleTrackBodyClick = useCallback(
@@ -40,22 +40,26 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
       const { nodeName } = event.target as Element;
       if (nodeName === 'DIV') {
         const eventType = event.ctrlKey ? 'multipleClick' : 'leftClick';
-        const payload: ClickBoneTrackBody = { boneIndex, eventType, trackType: 'bone' };
+        const payload: ClickBoneTrackBody = { trackNumber, eventType, trackType: 'bone' };
         dispatch(clickTrackBody(payload));
       }
     },
-    [boneIndex, dispatch],
+    [trackNumber, dispatch],
   );
 
   return (
     <li className={cx('bone-track')} onClick={handleTrackBodyClick}>
       <div className={cx('track-body', { selected: isSelected })}>
-        <CaretButton isPointedDownCaret={isPointedDownCaret} boneIndex={boneIndex} />
+        <CaretButton
+          isPointedDownCaret={isPointedDownCaret}
+          trackNumber={trackNumber}
+          trackType={trackType}
+        />
         <span className={cx('track-name')}>{trackName}</span>
       </div>
       <ul>
         {isPointedDownCaret &&
-          childrenTrackList.map((transformTrack) => (
+          childrenTransforms.map((transformTrack) => (
             <TransformTrackItem key={transformTrack.trackName} {...transformTrack} />
           ))}
       </ul>

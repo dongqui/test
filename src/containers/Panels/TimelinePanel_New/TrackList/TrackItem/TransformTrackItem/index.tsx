@@ -10,7 +10,7 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const TransformTrackItem: FunctionComponent<TransformTrack> = (props) => {
-  const { isSelected, trackName, transformIndex } = props;
+  const { isSelected, trackName, trackNumber } = props;
   const dispatch = useDispatch();
 
   // 트랙 클릭
@@ -20,15 +20,11 @@ const TransformTrackItem: FunctionComponent<TransformTrack> = (props) => {
       const { nodeName } = event.target as Element;
       if (nodeName === 'DIV') {
         const eventType = event.ctrlKey ? 'multipleClick' : 'leftClick';
-        const payload: ClickTransformTrackBody = {
-          transformIndex,
-          eventType,
-          trackType: 'transform',
-        };
+        const payload: ClickTransformTrackBody = { trackNumber, eventType, trackType: 'transform' };
         dispatch(clickTrackBody(payload));
       }
     },
-    [dispatch, transformIndex],
+    [dispatch, trackNumber],
   );
 
   return (

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
 
-import { createTrackList, changeTrackScrollTop } from 'actions/trackList';
+import { changeTrackScrollTop } from 'actions/trackList';
 import { useSelector } from 'reducers';
 import { LayerTrackItem } from './TrackItem';
 
@@ -26,32 +26,10 @@ const TrackList = () => {
     throttledThing();
   }, [throttledThing]);
 
-  // 테스트 용도
-  useEffect(() => {
-    dispatch(
-      createTrackList({
-        trackList: [
-          {
-            layerId: 'Base',
-            trackName: 'Base',
-          },
-          {
-            layerId: 'Layer2',
-            trackName: 'Layer2',
-          },
-          {
-            layerId: 'Layer3',
-            trackName: 'Layer3',
-          },
-        ],
-      }),
-    );
-  }, [dispatch]);
-
   return (
     <ul className={cx('track-list')} ref={trackListRef} onScroll={scrollTrackList}>
-      {layerTrackList.map((props) => (
-        <LayerTrackItem key={props.layerId} {...props} />
+      {layerTrackList.map((layerTrack) => (
+        <LayerTrackItem key={layerTrack.trackId} {...layerTrack} />
       ))}
     </ul>
   );
