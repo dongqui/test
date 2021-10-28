@@ -13,3 +13,6 @@ export { default as checkIsTargetMesh } from './checkIsTargetMesh';
 
 export { default as filterVector } from './filterVector';
 export { default as filterQuaternion } from './filterQuaternion';
+
+export { default as getInterpolatedQuaternion } from './getInterpolatedQuaternion';
+export { default as getInterpolatedVector } from './getInterpolatedVector';
