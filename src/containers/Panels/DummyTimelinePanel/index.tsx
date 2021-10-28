@@ -1,18 +1,20 @@
 import { ChangeEvent, FunctionComponent, memo, useCallback, useEffect, useState } from 'react';
+import * as BABYLON from '@babylonjs/core';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
-import { createShootTrack } from 'utils/RP';
+import { createShootTrack, getInterpolatedQuaternion, getInterpolatedVector } from 'utils/RP';
 import * as animationDataActions from 'actions/animationDataAction';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { roundToFourth } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
-const DUMMY_DELETE_FRAME = _.round(3 / 30, 4);
-const DUMMY_DELETE_FRAMES = _.range(1, 100).map((num) => _.round(num / 30, 4));
+const DUMMY_DELETE_FRAME = roundToFourth(3 / 30);
+const DUMMY_DELETE_FRAMES = _.range(1, 100).map((num) => roundToFourth(num / 30));
 
 const TimelinePanel: FunctionComponent = () => {
   const assetList = useSelector((state) => state.shootProject.assetList);
@@ -31,6 +33,24 @@ const TimelinePanel: FunctionComponent = () => {
   const [newLayerName, setNewLayerName] = useState('');
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const targetFrame = 1.3333;
+    const f1 = 0;
+    const f2 = 3.3333;
+    const df = targetFrame / (f2 - f1);
+
+    const v1 = BABYLON.Vector3.Zero();
+    const v2 = new BABYLON.Vector3(10, -10, 0);
+    const resV = BABYLON.Vector3.Lerp(v1, v2, df);
+
+    const q1 = BABYLON.Quaternion.Identity();
+    const q2 = BABYLON.Quaternion.FromArray([0, 0.7, 0, 0.7]);
+    const resQ = BABYLON.Quaternion.Slerp(q1, q2, df);
+
+    console.log('resV: ', resV);
+    console.log('resQ: ', resQ);
+  }, []);
 
   useEffect(() => {
     console.log('layers: ', layers);
@@ -70,7 +90,7 @@ const TimelinePanel: FunctionComponent = () => {
   }, [animationIngredients, assetList, selectedTargets]);
 
   const editKeyframes = useCallback(() => {
-    if (targetLayerId) {
+    if (targetLayerId && !_.isUndefined(targetFrame)) {
       // 선택된 targets의 tracks 중 layer 또한 선택된 layer와 일치하는 track들
       const targetLayerTracks = tracks.filter((track) => track.layerId === targetLayerId);
 
@@ -82,10 +102,58 @@ const TimelinePanel: FunctionComponent = () => {
         const { position, rotationQuaternion, scaling } = track.target;
         const rotation = rotationQuaternion!.normalize().toEulerAngles(); // quaternion 회전 사용하기 때문에 직접 구해줘야 함
 
+        const newPosition = position.clone();
+        const newRotationQuaternion = rotationQuaternion!.clone();
+        const newRotation = rotation.clone();
+        const newScaling = scaling.clone();
+
         // 같은 대상에 대한 다른 layer의 트랙들
         const otherLayerTracks = tracks.filter(
           (t) => t.targetId === track.targetId && t.layerId !== targetLayerId,
         );
+
+        otherLayerTracks.forEach((otherTrack) => {
+          let transformKey = otherTrack.transformKeys.find(
+            (key) => roundToFourth(key.frame) === roundToFourth(targetFrame / 30),
+          );
+          switch (otherTrack.property) {
+            case 'position': {
+              newPosition.subtract(
+                transformKey
+                  ? transformKey.value
+                  : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
+              );
+              break;
+            }
+            case 'rotationQuaternion': {
+              newRotationQuaternion.subtract(
+                transformKey
+                  ? transformKey.value
+                  : getInterpolatedQuaternion(otherTrack.transformKeys, targetFrame),
+              );
+              break;
+            }
+            case 'rotation': {
+              newRotation.subtract(
+                transformKey
+                  ? transformKey.value
+                  : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
+              );
+              break;
+            }
+            case 'scaling': {
+              newScaling.subtract(
+                transformKey
+                  ? transformKey.value
+                  : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
+              );
+              break;
+            }
+            default: {
+              break;
+            }
+          }
+        });
       });
     }
   }, [targetFrame, targetLayerId, tracks]);
@@ -111,7 +179,9 @@ const TimelinePanel: FunctionComponent = () => {
                   track.layerId,
                   track.target,
                   track.property,
-                  track.transformKeys.filter((key) => DUMMY_DELETE_FRAME !== _.round(key.frame, 4)),
+                  track.transformKeys.filter(
+                    (key) => DUMMY_DELETE_FRAME !== roundToFourth(key.frame),
+                  ),
                   track.isMocapAnimation,
                 ),
               );
@@ -126,7 +196,7 @@ const TimelinePanel: FunctionComponent = () => {
                     rotationTrack.target,
                     rotationTrack.property,
                     track.transformKeys.filter(
-                      (key) => DUMMY_DELETE_FRAME !== _.round(key.frame, 4),
+                      (key) => DUMMY_DELETE_FRAME !== roundToFourth(key.frame),
                     ),
                     rotationTrack.isMocapAnimation,
                   ),
@@ -149,7 +219,9 @@ const TimelinePanel: FunctionComponent = () => {
                   track.layerId,
                   track.target,
                   track.property,
-                  track.transformKeys.filter((key) => DUMMY_DELETE_FRAME !== _.round(key.frame, 4)),
+                  track.transformKeys.filter(
+                    (key) => DUMMY_DELETE_FRAME !== roundToFourth(key.frame),
+                  ),
                   track.isMocapAnimation,
                 ),
               );
@@ -204,7 +276,7 @@ const TimelinePanel: FunctionComponent = () => {
                   track.target,
                   track.property,
                   track.transformKeys.filter(
-                    (key) => !DUMMY_DELETE_FRAMES.includes(_.round(key.frame, 4)),
+                    (key) => !DUMMY_DELETE_FRAMES.includes(roundToFourth(key.frame)),
                   ),
                   track.isMocapAnimation,
                 ),
@@ -220,7 +292,7 @@ const TimelinePanel: FunctionComponent = () => {
                     rotationTrack.target,
                     rotationTrack.property,
                     rotationTrack.transformKeys.filter(
-                      (key) => !DUMMY_DELETE_FRAMES.includes(_.round(key.frame, 4)),
+                      (key) => !DUMMY_DELETE_FRAMES.includes(roundToFourth(key.frame)),
                     ),
                     rotationTrack.isMocapAnimation,
                   ),
@@ -244,7 +316,7 @@ const TimelinePanel: FunctionComponent = () => {
                   track.target,
                   track.property,
                   track.transformKeys.filter(
-                    (key) => !DUMMY_DELETE_FRAMES.includes(_.round(key.frame, 4)),
+                    (key) => !DUMMY_DELETE_FRAMES.includes(roundToFourth(key.frame)),
                   ),
                   track.isMocapAnimation,
                 ),
@@ -273,9 +345,9 @@ const TimelinePanel: FunctionComponent = () => {
     }
   }, [animationIngredients, deleteTargetTrackIds, dispatch, targetLayerId, visualizedAssetIds]);
 
-  const copyKeyframes = () => {};
+  const copyKeyframes = useCallback(() => {}, []);
 
-  const pasteKeyframes = () => {};
+  const pasteKeyframes = useCallback(() => {}, []);
 
   const addLayer = useCallback(() => {
     const selectedAssetIds = _.uniq(selectedTargets.map((target) => target.id.split('//')[0]));
