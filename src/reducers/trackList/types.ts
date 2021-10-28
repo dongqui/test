@@ -1,6 +1,6 @@
 import { TrackListState } from './index';
 
-export type InterpolationTypeState = Pick<TrackListState, 'interpolationType'>;
+// export type InterpolationTypeState = Pick<TrackListState, 'interpolationType'>;
 
 export type SelectedLayer = Pick<TrackListState, 'selectedLayer'>;
 export type SelectedBones = Pick<TrackListState, 'selectedBones'>;
