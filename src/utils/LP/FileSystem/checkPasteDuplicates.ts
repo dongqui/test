@@ -12,23 +12,31 @@ const duplicateCheck = (name: string, nameArray: string[]) => {
 
     // 이름에 'copy'가 있는 경우
     if (isCopied !== null) {
-      if (isCopied.length === 1) {
-        const matches = currentNode.match(/\(/g);
+      const matches = currentNode.match(/\)/g);
 
-        // 번호가 없는 경우 또는 번호가 1개인 경우 - 복사한 경우 중복체크의 번호는 상시 마지막에 붙기 때문
-        if (matches === null || matches.length === 1) {
+      // 번호가 없는 경우 또는 번호가 1개인 경우 - 복사한 경우 중복체크의 번호는 상시 마지막에 붙기 때문
+      // if (matches === null || matches.length === 1) {
+      //   return '2';
+      // }
+      if (matches === null) {
+        return '2';
+      }
+
+      if (matches.length === 1) {
+        if (currentNode.lastIndexOf(')') !== currentNode.length - 1) {
           return '2';
         }
+        return '0';
+      }
 
-        // 번호가 있는 경우 - 반드시 번호가 2개 이상이어야한다. (복사한 경우 중복체크의 번호는 상시 마지막에 붙기 때문)
-        if (matches !== null && matches.length > 1) {
-          const startIndex = currentNode.lastIndexOf('(') + 1;
-          const endIndex = currentNode.lastIndexOf(')');
+      // 번호가 있는 경우 - 반드시 번호가 2개 이상이어야한다. (복사한 경우 중복체크의 번호는 상시 마지막에 붙기 때문)
+      if (matches !== null && matches.length > 1) {
+        const startIndex = currentNode.lastIndexOf('(') + 1;
+        const endIndex = currentNode.lastIndexOf(')');
 
-          const number = currentNode.substring(startIndex, endIndex);
+        const number = Number(currentNode.substring(startIndex, endIndex));
 
-          return number;
-        }
+        return number === 2 ? '0' : String(number + 1);
       }
     }
 

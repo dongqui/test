@@ -85,8 +85,24 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
                   const currentPathNodeName = lpNode
                     .filter((node) => {
                       if (node.parentId === '__root__') {
+                        const copyMatch = cloneCopyNode.name.match(/copy/g);
                         if (node.name.includes(cloneCopyNode.name)) {
-                          return true;
+                          if (copyMatch !== null) {
+                            const nodeMatch = node.name.match(/copy/g);
+                            if (nodeMatch !== null && nodeMatch.length === copyMatch.length + 1) {
+                              return true;
+                            }
+                          } else {
+                            // const cloneCopyMatch = node.name.match(/`${cloneCopyNode.name} copy`/g);
+                            const firstReplacedName = cloneCopyNode.name.replaceAll('(', '\\(');
+                            const secondReplacedName = firstReplacedName.replaceAll(')', '\\)');
+                            const regex = new RegExp(`${secondReplacedName} copy`, 'g');
+                            const cloneCopyMatch = node.name.match(regex);
+                            const nodeMatch = node.name.match(/copy/g);
+                            if (cloneCopyMatch !== null && cloneCopyMatch.length === 1 && nodeMatch !== null && nodeMatch.length === 1) {
+                              return true;
+                            }
+                          }
                         }
                         return false;
                       }
