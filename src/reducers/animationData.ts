@@ -43,9 +43,25 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
       });
     }
     case 'animationDataAction/ADD_ANIMATION_INGREDIENT': {
-      return Object.assign({}, state, {
-        animationIngredients: [...state.animationIngredients, action.payload.animationIngredient],
-      });
+      if (action.payload.animationIngredient.current) {
+        return Object.assign({}, state, {
+          animationIngredients: [
+            ...state.animationIngredients.map((anim) => ({
+              id: anim.id,
+              name: anim.name,
+              assetId: anim.assetId,
+              current: false,
+              tracks: anim.tracks,
+              layer: anim.layers,
+            })),
+            action.payload.animationIngredient,
+          ],
+        });
+      } else {
+        return Object.assign({}, state, {
+          animationIngredients: [...state.animationIngredients, action.payload.animationIngredient],
+        });
+      }
     }
     case 'animationDataAction/EDIT_ANIMATION_INGREDIENT': {
       return Object.assign({}, state, {
