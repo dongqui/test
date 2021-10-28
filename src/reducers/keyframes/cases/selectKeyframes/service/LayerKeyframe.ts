@@ -1,8 +1,9 @@
-import { SelectedKeyframe } from 'types/TP_New/keyframe';
+import { EditorTrack, SelectedKeyframe } from 'types/TP_New/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
-import { AllSelectedKeyframes } from 'reducers/keyframes/types';
-import { getBinarySearch } from 'utils/TP';
+import { AllKeyframes, AllSelectedKeyframes } from 'reducers/keyframes/types';
+import { StateUpdate } from 'reducers/keyframes/classes';
+import { findElementIndex } from 'utils/TP';
 
 import HorizontalSelection from './horizontal/LayerKeyframe';
 import VerticalSelection from './vertical/Keyframe';
@@ -12,8 +13,7 @@ import LeftClick from './leftClick/LayerKeyframe';
 import { Service } from './index';
 import { Repository } from '../repository';
 
-class LayerKeyframeService implements Service {
-  private readonly state: KeyframesState;
+class LayerKeyframeService extends StateUpdate implements Service {
   private readonly payload: SelectKeyframes;
   private readonly layerRepository: Repository;
   private readonly boneRepository: Repository;
@@ -26,7 +26,7 @@ class LayerKeyframeService implements Service {
     boneRepository: Repository,
     transformRepository: Repository,
   ) {
-    this.state = state;
+    super(state);
     this.payload = payload;
     this.layerRepository = layerRepository;
     this.boneRepository = boneRepository;
@@ -35,15 +35,12 @@ class LayerKeyframeService implements Service {
 
   // 선택 효과가 적용 된 키프레임을 클릭했는지 확인
   private checkExistedTime = () => {
-    const { state, payload } = this;
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    if (state.selectedLayerKeyframes.length) {
-      const times = state.selectedLayerKeyframes[0].times;
-      const timeIndex = getBinarySearch({
-        collection: times,
-        index: selectedKeyframe.timeIndex,
-      });
-      return timeIndex !== -1;
+    const { selectedLayerKeyframes } = this.state;
+    const { trackNumber, time } = this.payload.selectedKeyframes as SelectedKeyframe;
+    const trackIndex = findElementIndex(selectedLayerKeyframes, trackNumber, 'trackNumber');
+    if (trackIndex !== -1) {
+      const times = selectedLayerKeyframes[trackIndex].times;
+      return findElementIndex(times, time) !== -1;
     }
     return false;
   };
@@ -85,7 +82,7 @@ class LayerKeyframeService implements Service {
   };
 
   // 이벤트 타입 선택
-  public selectEventType = () => {
+  selectEventType = () => {
     if (this.payload.selectType === 'horizontal') {
       return this.excuteHorizontalSelection();
     }
@@ -101,17 +98,26 @@ class LayerKeyframeService implements Service {
     return this.selectLeftClick();
   };
 
-  // state 업데이트
-  public updateKeyframesState = (selectedKeyframes: AllSelectedKeyframes) => {
-    const layerKeyframes = this.layerRepository.updateKeyframes(selectedKeyframes);
-    const boneKeyframes = this.boneRepository.updateKeyframes(selectedKeyframes);
-    const transformKeyframes = this.transformRepository.updateKeyframes(selectedKeyframes);
-    return this.layerRepository.updateState({
-      ...layerKeyframes,
-      ...boneKeyframes,
-      ...transformKeyframes,
-      ...selectedKeyframes,
-    });
+  updateKeyframes = (selectedKeyframes: AllSelectedKeyframes): AllKeyframes => {
+    const {
+      selectedLayerKeyframes,
+      selectedBoneKeyframes,
+      selectedTransformKeyframes,
+    } = selectedKeyframes;
+    const layerKeyframes = this.layerRepository.updateIsSelected(selectedLayerKeyframes);
+    const boneKeyframes = this.boneRepository.updateIsSelected(selectedBoneKeyframes);
+    const transformKeyframes = this.transformRepository.updateIsSelected(
+      selectedTransformKeyframes,
+    );
+    return {
+      layerKeyframes: layerKeyframes as EditorTrack,
+      boneKeyframes: boneKeyframes as EditorTrack[],
+      transformKeyframes: transformKeyframes as EditorTrack[],
+    };
+  };
+
+  updateReducerState = (newValues: Partial<KeyframesState>): KeyframesState => {
+    return this.updateState(newValues);
   };
 }
 

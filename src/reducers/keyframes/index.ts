@@ -1,82 +1,87 @@
-import { TrackKeyframes, ClusteredTimes } from 'types/TP_New/keyframe';
+import { EditorTrack, ClusteredKeyframe } from 'types/TP_New/keyframe';
 import { KeyframesAction } from 'actions/keyframes';
 
 import deleteKeyframes from './cases/deleteKeyframes';
 import selectKeyframes from './cases/selectKeyframes';
 
 export interface KeyframesState {
-  layerKeyframes: TrackKeyframes;
-  boneKeyframes: TrackKeyframes[];
-  transformKeyframes: TrackKeyframes[];
+  layerKeyframes: EditorTrack;
+  boneKeyframes: EditorTrack[];
+  transformKeyframes: EditorTrack[];
 
-  selectedLayerKeyframes: ClusteredTimes[];
-  selectedBoneKeyframes: ClusteredTimes[];
-  selectedTransformKeyframes: ClusteredTimes[];
+  selectedLayerKeyframes: ClusteredKeyframe[];
+  selectedBoneKeyframes: ClusteredKeyframe[];
+  selectedTransformKeyframes: ClusteredKeyframe[];
 }
 
-const layerKeyframes: TrackKeyframes = {
-  trackIndex: 'Base',
+const layerKeyframes: EditorTrack = {
+  trackId: 'Base',
+  trackNumber: -1,
   keyframes: Array(50)
     .fill(1)
     .map((_, index) => ({
       isSelected: false,
       isDeleted: false,
-      timeIndex: index,
+      time: index,
       value: 1,
     })),
 };
 
-const boneKeyframes: TrackKeyframes[] = Array(3)
+const boneKeyframes: EditorTrack[] = Array(3)
   .fill(1)
   .map((_, index) => ({
-    trackIndex: index * 10,
+    trackNumber: index * 10,
+    trackId: '',
     keyframes: Array(50)
       .fill(1)
       .map((_, index) => ({
         isSelected: false,
         isDeleted: false,
-        timeIndex: index,
+        time: index,
         value: 1,
       })),
   }));
 
-const transformKeyframes: TrackKeyframes[] = [
+const transformKeyframes: EditorTrack[] = [
   ...Array(3)
     .fill(1)
     .map((_, index) => ({
-      trackIndex: index + 1,
+      trackNumber: index + 1,
+      trackId: '',
       keyframes: Array(50)
         .fill(1)
         .map((_, index) => ({
           isSelected: false,
           isDeleted: false,
-          timeIndex: index,
+          time: index,
           value: 1,
         })),
     })),
   ...Array(3)
     .fill(1)
     .map((_, index) => ({
-      trackIndex: index + 11,
+      trackNumber: index + 11,
+      trackId: '',
       keyframes: Array(50)
         .fill(1)
         .map((_, index) => ({
           isSelected: false,
           isDeleted: false,
-          timeIndex: index,
+          time: index,
           value: 1,
         })),
     })),
   ...Array(3)
     .fill(1)
     .map((_, index) => ({
-      trackIndex: index + 21,
+      trackNumber: index + 21,
+      trackId: '',
       keyframes: Array(50)
         .fill(1)
         .map((_, index) => ({
           isSelected: false,
           isDeleted: false,
-          timeIndex: index,
+          time: index,
           value: 1,
         })),
     })),

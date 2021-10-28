@@ -1,52 +1,41 @@
 import produce from 'immer';
 
+import { EditorTrack, ClusteredKeyframe } from 'types/TP_New/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
-import { AllKeyframes, AllSelectedKeyframes } from 'reducers/keyframes/types';
+import { findElementIndex } from 'utils/TP';
 
-import { Repository, Common } from './index';
-
-type BoneKeyframes = Pick<AllKeyframes, 'boneKeyframes'>;
-type SelectedBoneKeyframes = Pick<AllSelectedKeyframes, 'selectedBoneKeyframes'>;
-
-class BoneKeyframesRepository extends Common implements Repository {
+import { Repository } from './index';
+class BoneKeyframesRepository implements Repository {
   private readonly state: KeyframesState;
 
   constructor(state: KeyframesState) {
-    super();
     this.state = state;
   }
 
-  private updateBoneKeyframes = (next: SelectedBoneKeyframes) => {
+  updateIsSelected = (nextSelectedKeyframes: ClusteredKeyframe[]): EditorTrack[] => {
     const { boneKeyframes, selectedBoneKeyframes } = this.state;
     return produce(boneKeyframes, (draft) => {
       selectedBoneKeyframes.forEach((selectedKeyframe) => {
-        const trackIndex = this.findTrackIndex(boneKeyframes, selectedKeyframe);
+        const { trackNumber, times } = selectedKeyframe;
+        const trackIndex = findElementIndex(boneKeyframes, trackNumber, 'trackNumber');
         const keyframes = boneKeyframes[trackIndex].keyframes;
-        selectedKeyframe.times.forEach((time) => {
-          const timeIndex = this.findTimeIndex(keyframes, time);
-          const transformKeyframe = draft[trackIndex].keyframes[timeIndex];
-          transformKeyframe.isSelected = false;
+        times.forEach((time) => {
+          const keyframeIndex = findElementIndex(keyframes, time, 'time');
+          const keyframe = draft[trackIndex].keyframes[keyframeIndex];
+          keyframe.isSelected = false;
         });
       });
-      next.selectedBoneKeyframes.forEach((selectedKeyframe) => {
-        const trackIndex = this.findTrackIndex(boneKeyframes, selectedKeyframe);
+      nextSelectedKeyframes.forEach((selectedKeyframe) => {
+        const { trackNumber, times } = selectedKeyframe;
+        const trackIndex = findElementIndex(boneKeyframes, trackNumber, 'trackNumber');
         const keyframes = boneKeyframes[trackIndex].keyframes;
-        selectedKeyframe.times.forEach((time) => {
-          const timeIndex = this.findTimeIndex(keyframes, time);
-          const transformKeyframe = draft[trackIndex].keyframes[timeIndex];
-          transformKeyframe.isSelected = true;
+        times.forEach((time) => {
+          const keyframeIndex = findElementIndex(keyframes, time, 'time');
+          const keyframe = draft[trackIndex].keyframes[keyframeIndex];
+          keyframe.isSelected = true;
         });
       });
     });
-  };
-
-  public updateKeyframes = (next: SelectedBoneKeyframes): BoneKeyframes => {
-    const boneKeyframes = this.updateBoneKeyframes(next);
-    return { boneKeyframes };
-  };
-
-  public updateState = (newValues: Partial<KeyframesState>) => {
-    return this.updateStateObject(this.state, newValues);
   };
 }
 

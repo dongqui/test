@@ -2,8 +2,8 @@ import { SelectedKeyframe } from 'types/TP_New/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
+import { ClusterKeyframes } from 'reducers/keyframes/classes';
 
-import { ClusterKeyframes } from '../Ancestor';
 import { VerticalSelection } from './index';
 
 interface Params {
@@ -11,50 +11,44 @@ interface Params {
   payload: SelectKeyframes;
 }
 
-class KeyframeVerticalSelection extends ClusterKeyframes implements VerticalSelection {
-  private getLayerKeyframes = ({ state, payload }: Params) => {
+class KeyframeVerticalSelection implements VerticalSelection {
+  private readonly clusterKeyframes = new ClusterKeyframes();
+
+  private getSelectedLayers = ({ state, payload }: Params) => {
     const { layerKeyframes } = state;
+    const { time } = payload.selectedKeyframes as SelectedKeyframe;
     const selectedLayer: SelectedKeyframe[] = [];
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    selectedLayer.push({
-      trackIndex: layerKeyframes.trackIndex,
-      timeIndex: selectedKeyframe.timeIndex,
-    });
-    return this.initializeClusteredTimes(selectedLayer);
+    selectedLayer.push({ trackId: layerKeyframes.trackId, trackNumber: -1, time });
+    return this.clusterKeyframes.initializeClusterKeyframes(selectedLayer);
   };
 
-  private getBoneKeyframes = ({ state, payload }: Params) => {
+  private getSelectedBones = ({ state, payload }: Params) => {
     const { boneKeyframes } = state;
+    const { time } = payload.selectedKeyframes as SelectedKeyframe;
     const selectedBones: SelectedKeyframe[] = [];
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    boneKeyframes.forEach((keyframe) => {
-      selectedBones.push({
-        trackIndex: keyframe.trackIndex,
-        timeIndex: selectedKeyframe.timeIndex,
-      });
+    boneKeyframes.forEach((boneKeyframe) => {
+      const { trackNumber, trackId } = boneKeyframe;
+      selectedBones.push({ trackNumber, trackId, time });
     });
-    return this.initializeClusteredTimes(selectedBones);
+    return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
   };
 
-  private getTransformKeyframes = ({ state, payload }: Params) => {
+  private getSelectedTransforms = ({ state, payload }: Params) => {
     const { transformKeyframes } = state;
+    const { time } = payload.selectedKeyframes as SelectedKeyframe;
     const selectedTransforms: SelectedKeyframe[] = [];
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    transformKeyframes.forEach((keyframe) => {
-      selectedTransforms.push({
-        trackIndex: keyframe.trackIndex,
-        timeIndex: selectedKeyframe.timeIndex,
-        trackId: selectedKeyframe.trackId,
-      });
+    transformKeyframes.forEach((transformKeyframe) => {
+      const { trackNumber, trackId } = transformKeyframe;
+      selectedTransforms.push({ trackNumber, trackId, time });
     });
-    return this.initializeClusteredTimes(selectedTransforms);
+    return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);
   };
 
   public selectByVertical = (payload: Params): AllSelectedKeyframes => {
     return {
-      selectedLayerKeyframes: this.getLayerKeyframes(payload),
-      selectedBoneKeyframes: this.getBoneKeyframes(payload),
-      selectedTransformKeyframes: this.getTransformKeyframes(payload),
+      selectedLayerKeyframes: this.getSelectedLayers(payload),
+      selectedBoneKeyframes: this.getSelectedBones(payload),
+      selectedTransformKeyframes: this.getSelectedTransforms(payload),
     };
   };
 }

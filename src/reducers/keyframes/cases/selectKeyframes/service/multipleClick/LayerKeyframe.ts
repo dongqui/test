@@ -1,35 +1,33 @@
-import { ClusteredTimes, SelectedKeyframe, TrackKeyframes } from 'types/TP_New/keyframe';
+import { SelectedKeyframe, EditorTrack } from 'types/TP_New/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
+import { ClusterKeyframes } from 'reducers/keyframes/classes';
 
 import { MultipleClick } from './index';
-import { ClusterKeyframes } from '../Ancestor';
 
 interface Params {
   state: KeyframesState;
   payload: SelectKeyframes;
 }
 
-class LayerKeyframeMultipleClick extends ClusterKeyframes implements MultipleClick {
-  private getSelectedBones = (keyframes: TrackKeyframes[], selected: SelectedKeyframe) => {
+class LayerKeyframeMultipleClick implements MultipleClick {
+  private readonly clusterKeyframes = new ClusterKeyframes();
+
+  private getSelectedBones = (boneTrackList: EditorTrack[], time: number) => {
     const selectedBones: SelectedKeyframe[] = [];
-    keyframes.forEach((keyframe) => {
-      selectedBones.push({
-        trackIndex: keyframe.trackIndex,
-        timeIndex: selected.timeIndex,
-      });
+    boneTrackList.forEach((boneTrack) => {
+      const { trackId, trackNumber } = boneTrack;
+      selectedBones.push({ trackId, trackNumber, time });
     });
     return selectedBones;
   };
 
-  private getSelectedTransforms = (keyframes: TrackKeyframes[], selected: SelectedKeyframe) => {
+  private getSelectedTransforms = (transformTrackList: EditorTrack[], time: number) => {
     const selectedTransforms: SelectedKeyframe[] = [];
-    keyframes.forEach((keyframe) => {
-      selectedTransforms.push({
-        trackIndex: keyframe.trackIndex,
-        timeIndex: selected.timeIndex,
-      });
+    transformTrackList.forEach((transformTrack) => {
+      const { trackId, trackNumber } = transformTrack;
+      selectedTransforms.push({ trackId, trackNumber, time });
     });
     return selectedTransforms;
   };
@@ -37,44 +35,44 @@ class LayerKeyframeMultipleClick extends ClusterKeyframes implements MultipleCli
   private filterSelectedLayer = ({ state, payload }: Params) => {
     const { selectedLayerKeyframes } = state;
     const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    return this.filterTimes(selectedLayerKeyframes, [selectedKeyframe]);
+    return this.clusterKeyframes.filterKeyframeTimes(selectedLayerKeyframes, [selectedKeyframe]);
   };
 
   private filterSelectedBone = ({ state, payload }: Params) => {
     const { boneKeyframes, selectedBoneKeyframes } = state;
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    const selectedBones = this.getSelectedBones(boneKeyframes, selectedKeyframe);
-    return this.filterTimes(selectedBoneKeyframes, selectedBones);
+    const { time } = payload.selectedKeyframes as SelectedKeyframe;
+    const selectedBones = this.getSelectedBones(boneKeyframes, time);
+    return this.clusterKeyframes.filterKeyframeTimes(selectedBoneKeyframes, selectedBones);
   };
 
   private filterSelectedTransform = ({ state, payload }: Params) => {
     const { transformKeyframes, selectedTransformKeyframes } = state;
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    const selectedTransform = this.getSelectedTransforms(transformKeyframes, selectedKeyframe);
-    return this.filterTimes(selectedTransformKeyframes, selectedTransform);
+    const { time } = payload.selectedKeyframes as SelectedKeyframe;
+    const selectedTransform = this.getSelectedTransforms(transformKeyframes, time);
+    return this.clusterKeyframes.filterKeyframeTimes(selectedTransformKeyframes, selectedTransform);
   };
 
   private addLayerTimes = ({ state, payload }: Params) => {
     const { selectedLayerKeyframes } = state;
     const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    return this.addTimes(selectedLayerKeyframes, [selectedKeyframe]);
+    return this.clusterKeyframes.addKeyframeTimes(selectedLayerKeyframes, [selectedKeyframe]);
   };
 
   private addBoneTimes = ({ state, payload }: Params) => {
     const { boneKeyframes, selectedBoneKeyframes } = state;
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    const selectedBones = this.getSelectedBones(boneKeyframes, selectedKeyframe);
-    return this.addTimes(selectedBoneKeyframes, selectedBones);
+    const { time } = payload.selectedKeyframes as SelectedKeyframe;
+    const selectedBones = this.getSelectedBones(boneKeyframes, time);
+    return this.clusterKeyframes.addKeyframeTimes(selectedBoneKeyframes, selectedBones);
   };
 
   private addTransformTimes = ({ state, payload }: Params) => {
     const { transformKeyframes, selectedTransformKeyframes } = state;
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
-    const selectedTransform = this.getSelectedTransforms(transformKeyframes, selectedKeyframe);
-    return this.addTimes(selectedTransformKeyframes, selectedTransform);
+    const { time } = payload.selectedKeyframes as SelectedKeyframe;
+    const selectedTransform = this.getSelectedTransforms(transformKeyframes, time);
+    return this.clusterKeyframes.addKeyframeTimes(selectedTransformKeyframes, selectedTransform);
   };
 
-  public selectExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
+  selectExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
     const { filterSelectedLayer, filterSelectedBone, filterSelectedTransform } = this;
     return {
       selectedLayerKeyframes: filterSelectedLayer({ state, payload }),
@@ -83,7 +81,7 @@ class LayerKeyframeMultipleClick extends ClusterKeyframes implements MultipleCli
     };
   };
 
-  public selectNotExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
+  selectNotExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
     const { addLayerTimes, addBoneTimes, addTransformTimes } = this;
     return {
       selectedLayerKeyframes: addLayerTimes({ state, payload }),

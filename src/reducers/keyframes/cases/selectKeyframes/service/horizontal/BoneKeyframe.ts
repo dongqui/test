@@ -1,42 +1,47 @@
-import { SelectedKeyframe, TrackKeyframes } from 'types/TP_New/keyframe';
-import { AllSelectedKeyframes } from 'reducers/keyframes/types';
+import { SelectedKeyframe, EditorTrack } from 'types/TP_New/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
+import { AllSelectedKeyframes } from 'reducers/keyframes/types';
+import { ClusterKeyframes } from 'reducers/keyframes/classes';
 import { SelectKeyframes } from 'actions/keyframes';
+import { findElementIndex } from 'utils/TP';
 
 import { HorizontalSelection } from './index';
-import { ClusterKeyframes } from '../Ancestor';
 
 interface Params {
   state: KeyframesState;
   payload: SelectKeyframes;
 }
 
-class BoneKeyframeHorizontal extends ClusterKeyframes implements HorizontalSelection {
-  private getKeyframeTrack = (keyframes: TrackKeyframes[], trackIdnex: number) => {
-    const trackIndex = this.findTrackIndex(keyframes, trackIdnex);
-    return keyframes[trackIndex];
+class BoneKeyframeHorizontal implements HorizontalSelection {
+  private readonly clusterKeyframes = new ClusterKeyframes();
+
+  private findEditorTrack = (editorTrackList: EditorTrack[], trackNumber: number) => {
+    const trackIndex = findElementIndex(editorTrackList, trackNumber, 'trackNumber');
+    return editorTrackList[trackIndex];
   };
 
   private getSelectedBones = ({ state, payload }: Params) => {
     const selectedBones: SelectedKeyframe[] = [];
-    const boneIndex = (payload.selectedKeyframes as SelectedKeyframe).trackIndex as number;
-    const { keyframes } = this.getKeyframeTrack(state.boneKeyframes, boneIndex);
+    const { trackId, trackNumber } = payload.selectedKeyframes as SelectedKeyframe;
+    const { keyframes } = this.findEditorTrack(state.boneKeyframes, trackNumber);
     keyframes.forEach((keyframe) => {
-      selectedBones.push({ trackIndex: boneIndex, timeIndex: keyframe.timeIndex });
+      const { time } = keyframe;
+      selectedBones.push({ trackNumber, time, trackId });
     });
-    return this.initializeClusteredTimes(selectedBones);
+    return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
   };
 
   private getSelectedTransforms = ({ state, payload }: Params) => {
-    const boneIndex = (payload.selectedKeyframes as SelectedKeyframe).trackIndex as number;
+    const { trackNumber } = payload.selectedKeyframes as SelectedKeyframe;
     const selectedTransforms: SelectedKeyframe[] = [];
-    for (let index = boneIndex + 1; index <= boneIndex + 3; index++) {
-      const { keyframes } = this.getKeyframeTrack(state.transformKeyframes, index);
+    for (let transform = trackNumber + 1; transform <= trackNumber + 3; transform++) {
+      const { keyframes, trackId } = this.findEditorTrack(state.transformKeyframes, transform);
       keyframes.forEach((keyframe) => {
-        selectedTransforms.push({ trackIndex: index, timeIndex: keyframe.timeIndex });
+        const { time } = keyframe;
+        selectedTransforms.push({ trackNumber: transform, time, trackId });
       });
     }
-    return this.initializeClusteredTimes(selectedTransforms);
+    return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);
   };
 
   selectByHorizontal = (params: Params): AllSelectedKeyframes => {

@@ -1,7 +1,7 @@
 import { KeyframesState } from 'reducers/keyframes';
 import { SelectKeyframes } from 'actions/keyframes';
 
-import { ServiceConstructor } from './service';
+import { Service, ServiceConstructor } from './service';
 
 import LayerKeyframeService from './service/LayerKeyframe';
 import BoneKeyframeService from './service/BoneKeyframe';
@@ -22,23 +22,24 @@ const createService = (
   return new Constructor(state, payload, layerRepo, boneRepo, transformRepo);
 };
 
+const run = (service: Service) => {
+  const selectedKeyframes = service.selectEventType();
+  const keyframes = service.updateKeyframes(selectedKeyframes);
+  const nextState = service.updateReducerState({ ...selectedKeyframes, ...keyframes });
+  return nextState;
+};
+
 export const layerKeyframeConfig = (state: KeyframesState, payload: SelectKeyframes) => {
   const service = createService(LayerKeyframeService, state, payload);
-  const selectedKeyframes = service.selectEventType();
-  const nextState = service.updateKeyframesState(selectedKeyframes);
-  return nextState;
+  return run(service);
 };
 
 export const boneKeyframeConfig = (state: KeyframesState, payload: SelectKeyframes) => {
   const service = createService(BoneKeyframeService, state, payload);
-  const selectedKeyframes = service.selectEventType();
-  const nextState = service.updateKeyframesState(selectedKeyframes);
-  return nextState;
+  return run(service);
 };
 
 export const transformKeyframeConfig = (state: KeyframesState, payload: SelectKeyframes) => {
   const service = createService(TransformKeyframeService, state, payload);
-  const selectedKeyframes = service.selectEventType();
-  const nextState = service.updateKeyframesState(selectedKeyframes);
-  return nextState;
+  return run(service);
 };
