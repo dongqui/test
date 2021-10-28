@@ -15,29 +15,29 @@ interface Props extends SelectedKeyframe, Keyframe {
 }
 
 const KeyframeComponent: FunctionComponent<Props> = (props) => {
-  const { trackIndex, timeIndex, isSelected, trackType, trackId } = props;
+  const { trackNumber, time, isSelected, trackType, trackId } = props;
   const dispatch = useDispatch();
 
   // 키프레임 속성 값 관리
   const keyframeAttr = useMemo(() => {
     const scaleX = ScaleLinear.getKeyframeX();
-    const x = scaleX(timeIndex);
+    const x = scaleX(time);
     const height = trackType === 'layer' ? 32 : 24;
     return { d: `M${x},0 V${height}` };
-  }, [timeIndex, trackType]);
+  }, [time, trackType]);
 
   // 키프레임 클릭
   const clickKeyframe = useCallback(
     (event: React.MouseEvent<Element>) => {
       dispatch(
         selectKeyframes({
-          selectedKeyframes: { timeIndex, trackIndex, trackId },
+          selectedKeyframes: { time, trackNumber, trackId },
           selectType: event.ctrlKey ? 'multiple' : 'left',
           trackType,
         }),
       );
     },
-    [dispatch, timeIndex, trackId, trackIndex, trackType],
+    [dispatch, time, trackId, trackNumber, trackType],
   );
 
   return (

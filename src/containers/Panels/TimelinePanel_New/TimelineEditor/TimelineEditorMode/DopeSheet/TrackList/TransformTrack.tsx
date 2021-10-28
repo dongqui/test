@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
 
-import { TrackKeyframes } from 'types/TP_New/keyframe';
+import { EditorTrack } from 'types/TP_New/keyframe';
 import { TransformTrack } from 'types/TP_New/track';
 
 import Keyframe from './Keyframe';
@@ -10,12 +10,12 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props extends TrackKeyframes, TransformTrack {
+interface Props extends EditorTrack, TransformTrack {
   translateY: number;
 }
 
 const TransformTrackComponent: FunctionComponent<Props> = (props) => {
-  const { keyframes, isSelected, translateY, trackIndex, trackId } = props;
+  const { keyframes, isSelected, translateY, trackNumber, trackId } = props;
 
   return (
     <g className={cx('track')} transform={`translate(0, ${translateY})`}>
@@ -29,9 +29,9 @@ const TransformTrackComponent: FunctionComponent<Props> = (props) => {
         (keyframe) =>
           !keyframe.isDeleted && (
             <Keyframe
-              key={keyframe.timeIndex}
+              key={keyframe.time}
               trackType="transform"
-              trackIndex={trackIndex}
+              trackNumber={trackNumber}
               trackId={trackId}
               {...keyframe}
             />

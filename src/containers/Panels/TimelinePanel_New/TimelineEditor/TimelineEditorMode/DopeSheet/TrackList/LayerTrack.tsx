@@ -16,7 +16,7 @@ interface Props extends LayerTrack {
 }
 
 const LayerTrackComponent: FunctionComponent<Props> = (props) => {
-  const { layerId, isPointedDownCaret, isSelected, translateY } = props;
+  const { trackId, trackNumber, isPointedDownCaret, isSelected, translateY } = props;
   const layerKeyframes = useSelector((state) => state.keyframes.layerKeyframes);
   const boneKeyframes = useSelector((state) => state.keyframes.boneKeyframes);
   const boneTrackList = useSelector((state) => state.trackList.boneTrackList);
@@ -48,9 +48,10 @@ const LayerTrackComponent: FunctionComponent<Props> = (props) => {
             (keyframe) =>
               !keyframe.isDeleted && (
                 <Keyframe
-                  key={keyframe.timeIndex}
+                  key={keyframe.time}
                   trackType="layer"
-                  trackIndex={layerId}
+                  trackNumber={trackNumber}
+                  trackId={trackId}
                   {...keyframe}
                 />
               ),
@@ -60,7 +61,7 @@ const LayerTrackComponent: FunctionComponent<Props> = (props) => {
         isSelected &&
         boneTrackList.map((boneTrack, index) => (
           <BoneTrack
-            key={boneTrack.boneIndex}
+            key={boneTrack.trackNumber}
             translateY={boneTranslateY[index]}
             {...boneTrack}
             {...boneKeyframes[index]}
