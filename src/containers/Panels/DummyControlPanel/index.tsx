@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
-import { checkIsTargetMesh } from 'utils/RP';
+import { checkIsTargetMesh, createDummyAnimation } from 'utils/RP';
 import { AnimationIngredient, ShootTrack } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -455,6 +455,16 @@ const ControlPanel: FunctionComponent = () => {
     }
   }, [animationIngredients, assetList, dispatch, sceneList, selectableObjects, selectedTargets]);
 
+  const addJsonAnimation = useCallback(async () => {
+    const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
+    const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
+
+    if (targetAssets[0]) {
+      const newAnim = await createDummyAnimation(targetAssets[0]);
+      dispatch(animationDataActions.addAnimationIngredient({ animationIngredient: newAnim }));
+    }
+  }, [assetList, dispatch, selectedTargets]);
+
   return (
     <div className={cx('wrapper')}>
       <button className={cx('button')} onClick={makeMeshesVisible}>
@@ -480,6 +490,9 @@ const ControlPanel: FunctionComponent = () => {
       </button>
       <button className={cx('button')} onClick={deleteControllers}>
         Delete Controllers
+      </button>
+      <button className={cx('button')} onClick={addJsonAnimation}>
+        Add Json Animation
       </button>
     </div>
   );
