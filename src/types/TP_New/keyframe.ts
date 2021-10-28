@@ -1,3 +1,5 @@
+import { TrackIdentifier } from './index';
+
 // 키프레임 데이터 타입
 export interface Keyframe {
   /**
@@ -12,57 +14,25 @@ export interface Keyframe {
    */
   isSelected: boolean;
 
-  timeIndex: number;
+  time: number;
+}
 
+// transform 키프레임 데이터 타입
+export interface TransformKeyframe extends Keyframe {
   value: number;
 }
 
 // 트랙 별 데이터 타입
-export interface TrackKeyframes {
-  /**
-   * @description layer track은 string id
-   * @description bone, transform track은 number형 index
-   */
-  trackIndex: number | string;
-
-  /**
-   * @description RP쪽에서 키프레임을 탐색하기 위한 ID
-   * @requires uuid transform keyframe은 반드시 입력. layer, bone keyframe은 optional
-   */
-  trackId?: string;
-
-  keyframes: Keyframe[];
+export interface TrackKeyframes extends TrackIdentifier {
+  keyframes: Keyframe[] | TransformKeyframe[];
 }
 
 // 선택 된 키프레임 데이터 타입
-export interface SelectedKeyframe {
-  /**
-   * @description layer track은 string id
-   * @description bone, transform track은 number형 index
-   */
-  trackIndex: number | string;
-
-  /**
-   * @description RP쪽에서 키프레임을 탐색하기 위한 ID
-   * @requires uuid transform keyframe은 반드시 입력. layer, bone keyframe은 optional
-   */
-  trackId?: string;
-
-  timeIndex: number;
+export interface SelectedKeyframeTime extends TrackIdentifier {
+  time: number;
 }
 
 // 선택 된 키프레임들을 cluster
-export interface ClusteredTimes {
-  /**
-   * @description TP쪽에서 키프레임을 탐색하기 위한 인덱스
-   */
-  trackIndex: number | string;
-
-  /**
-   * @description RP쪽에서 키프레임을 탐색하기 위한 ID
-   * @requires uuid transform keyframe은 반드시 입력. layer, bone keyframe은 optional
-   */
-  trackId?: string;
-
+export interface ClusteredKeyframeTimes extends TrackIdentifier {
   times: number[];
 }

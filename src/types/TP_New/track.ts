@@ -1,13 +1,9 @@
-export type InterpolationType = 'bezier' | 'constant' | 'linear' | 'none';
+import { TrackIdentifier } from './index';
 
-export enum TrackIndex {
-  BONE = 0,
-  POSITION = 1,
-  ROTATION = 2,
-  SCALE = 3,
-}
+// export type InterpolationType = 'bezier' | 'constant' | 'linear' | 'none';
+export type TrackType = 'layer' | 'bone' | 'transform';
 
-export interface TimelinePanelTrack {
+export interface Track extends TrackIdentifier {
   /**
    * @description 트랙을 클릭하여 선택 효과가 적용 되었는지 체크
    * @default false false인 경우 선택 효과 미적용
@@ -15,9 +11,11 @@ export interface TimelinePanelTrack {
   isSelected: boolean;
 
   trackName: string;
+
+  trackType: TrackType;
 }
 
-export interface LayerTrack extends TimelinePanelTrack {
+export interface LayerTrack extends Track {
   /**
    * @description 화살표 버튼 방향이 아래를 향하는지 체크
    * @default false false인 경우 우측을 가리킴(닫힘). true인 경우 아래를 가리킴(열림)
@@ -29,22 +27,16 @@ export interface LayerTrack extends TimelinePanelTrack {
    * @default false false인 경우 애니메이션 재생에 포함. true인 경우 애니메이션 재생에 제외
    */
   isMuted: boolean;
-
-  layerId: string;
 }
 
-export interface BoneTrack extends TimelinePanelTrack {
+export interface BoneTrack extends Track {
   /**
    * @description 화살표 버튼 방향이 아래를 향하는지 체크
    * @default false false인 경우 우측을 가리킴(닫힘). true인 경우 아래를 가리킴(열림)
    */
   isPointedDownCaret: boolean;
-
-  boneIndex: number;
 }
 
-export interface TransformTrack extends TimelinePanelTrack {
-  interpolationType: InterpolationType;
-
-  transformIndex: number;
+export interface TransformTrack extends Track {
+  interpolationType: 'linear';
 }
