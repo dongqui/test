@@ -638,6 +638,11 @@ const ListNode: FunctionComponent<Props> = ({
 
   const handleKeydown = useCallback(
     async (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.code === 'Escape') {
+        setIsEditing(false);
+        return;
+      }
+
       if (event.code === 'Enter') {
         const text = event.currentTarget.value || name;
 
@@ -743,7 +748,7 @@ const ListNode: FunctionComponent<Props> = ({
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
             {isEditing ? (
-              <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} autoFocus />
+              <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} defaultValue={name} autoFocus />
             ) : (
               <div className={cx('name')}>{name}</div>
             )}
