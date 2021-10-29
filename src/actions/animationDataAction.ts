@@ -6,6 +6,7 @@ export type AnimationDataAction =
   | ReturnType<typeof removeAsset>
   | ReturnType<typeof addAnimationIngredient>
   | ReturnType<typeof editAnimationIngredient>
+  | ReturnType<typeof editAnimationIngredients>
   | ReturnType<typeof removeAnimationIngredient>
   | ReturnType<typeof editRetargetMap>;
 
@@ -15,6 +16,7 @@ const REMOVE_ASSET = 'animationDataAction/REMOVE_ASSET' as const;
 // animationIngredient 관련
 const ADD_ANIMATION_INGREDIENT = 'animationDataAction/ADD_ANIMATION_INGREDIENT' as const;
 const EDIT_ANIMATION_INGREDIENT = 'animationDataAction/EDIT_ANIMATION_INGREDIENT' as const;
+const EDIT_ANIMATION_INGREDIENTS = 'animationDataAction/EDIT_ANIMATION_INGREDIENTS' as const;
 const REMOVE_ANIMATION_INGREDIENT = 'animationDataAction/REMOVE_ANIMATION_INGREDIENT' as const;
 // retargetMap 관련
 const EDIT_RETARGET_MAP = 'animationDataAction/EDIT_RETARGET_MAP' as const;
@@ -35,6 +37,10 @@ interface AddAnimationIngredient {
 
 interface EditAnimationIngredient {
   animationIngredient: AnimationIngredient;
+}
+
+interface EditAnimationIngredients {
+  animationIngredients: AnimationIngredient[];
 }
 
 interface RemoveAnimationIngredient {
@@ -90,6 +96,18 @@ export const addAnimationIngredient = (params: AddAnimationIngredient) => ({
  */
 export const editAnimationIngredient = (params: EditAnimationIngredient) => ({
   type: EDIT_ANIMATION_INGREDIENT,
+  payload: {
+    ...params,
+  },
+});
+
+/**
+ * 전체 animationIngredients 데이터를 수정합니다.
+ *
+ * @param animationIngredients - animationIngredients
+ */
+export const editAnimationIngredients = (params: EditAnimationIngredients) => ({
+  type: EDIT_ANIMATION_INGREDIENTS,
   payload: {
     ...params,
   },

@@ -99,6 +99,18 @@ const useAnimation = () => {
         }
       }
     });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (currentAnimationGroup && event.key === 'p') {
+        currentAnimationGroup.play();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [currentAnimationGroup, isPlaying, sceneList]);
 };
 

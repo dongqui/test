@@ -16,6 +16,7 @@ export { default as filterQuaternion } from './filterQuaternion';
 
 export { default as getInterpolatedQuaternion } from './getInterpolatedQuaternion';
 export { default as getInterpolatedVector } from './getInterpolatedVector';
+export { default as getValueInsertedTransformKeys } from './getValueInsertedTransformKeys';
 
 // 일회성
 export { default as createDummyAnimation } from './createDummyAnimation';

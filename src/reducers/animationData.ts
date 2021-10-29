@@ -72,6 +72,11 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
         ),
       });
     }
+    case 'animationDataAction/EDIT_ANIMATION_INGREDIENTS': {
+      return Object.assign({}, state, {
+        animationIngredients: action.payload.animationIngredients,
+      });
+    }
     case 'animationDataAction/REMOVE_ANIMATION_INGREDIENT': {
       return Object.assign({}, state, {
         animationIngredients: state.animationIngredients.filter(

@@ -5,11 +5,17 @@ import { v4 as uuidv4 } from 'uuid';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
-import { createShootTrack, getInterpolatedQuaternion, getInterpolatedVector } from 'utils/RP';
+import {
+  createShootTrack,
+  getInterpolatedQuaternion,
+  getInterpolatedVector,
+  getValueInsertedTransformKeys,
+} from 'utils/RP';
 import * as animationDataActions from 'actions/animationDataAction';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { roundToFourth } from 'utils/common';
+import produce from 'immer';
 
 const cx = classNames.bind(styles);
 
@@ -34,23 +40,23 @@ const TimelinePanel: FunctionComponent = () => {
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const targetFrame = 1.3333;
-    const f1 = 0;
-    const f2 = 3.3333;
-    const df = targetFrame / (f2 - f1);
+  // useEffect(() => {
+  //   const targetFrame = 1.3333;
+  //   const f1 = 0;
+  //   const f2 = 3.3333;
+  //   const df = targetFrame / (f2 - f1);
 
-    const v1 = BABYLON.Vector3.Zero();
-    const v2 = new BABYLON.Vector3(10, -10, 0);
-    const resV = BABYLON.Vector3.Lerp(v1, v2, df);
+  //   const v1 = BABYLON.Vector3.Zero();
+  //   const v2 = new BABYLON.Vector3(10, -10, 0);
+  //   const resV = BABYLON.Vector3.Lerp(v1, v2, df);
 
-    const q1 = BABYLON.Quaternion.Identity();
-    const q2 = BABYLON.Quaternion.FromArray([0, 0.7, 0, 0.7]);
-    const resQ = BABYLON.Quaternion.Slerp(q1, q2, df);
+  //   const q1 = BABYLON.Quaternion.Identity();
+  //   const q2 = BABYLON.Quaternion.FromArray([0, 0.7, 0, 0.7]);
+  //   const resQ = BABYLON.Quaternion.Slerp(q1, q2, df);
 
-    console.log('resV: ', resV);
-    console.log('resQ: ', resQ);
-  }, []);
+  //   console.log('resV: ', resV);
+  //   console.log('resQ: ', resQ);
+  // }, []);
 
   useEffect(() => {
     console.log('layers: ', layers);
@@ -97,66 +103,123 @@ const TimelinePanel: FunctionComponent = () => {
       console.log('targetLayerTracks: ', targetLayerTracks);
       console.log('targetFrame: ', targetFrame);
 
-      // track들 돌면서 다른 layer에 같은 track있는지 확인
-      targetLayerTracks.forEach((track) => {
-        const { position, rotationQuaternion, scaling } = track.target;
-        const rotation = rotationQuaternion!.normalize().toEulerAngles(); // quaternion 회전 사용하기 때문에 직접 구해줘야 함
+      // new 값들 insert
+      const newAnimationIngredients = produce(animationIngredients, (draft) => {
+        // track들 돌면서 다른 layer에 같은 track있는지 확인
+        targetLayerTracks.forEach((track) => {
+          const { position, rotationQuaternion, scaling } = track.target;
+          const rotation = rotationQuaternion!.normalize().toEulerAngles(); // quaternion 회전 사용하기 때문에 직접 구해줘야 함
 
-        const newPosition = position.clone();
-        const newRotationQuaternion = rotationQuaternion!.clone();
-        const newRotation = rotation.clone();
-        const newScaling = scaling.clone();
+          const newPosition = position.clone();
+          const newRotationQuaternion = rotationQuaternion!.clone();
+          const newRotation = rotation.clone();
+          const newScaling = scaling.clone();
 
-        // 같은 대상에 대한 다른 layer의 트랙들
-        const otherLayerTracks = tracks.filter(
-          (t) => t.targetId === track.targetId && t.layerId !== targetLayerId,
-        );
-
-        otherLayerTracks.forEach((otherTrack) => {
-          let transformKey = otherTrack.transformKeys.find(
-            (key) => roundToFourth(key.frame) === roundToFourth(targetFrame / 30),
+          // 같은 대상에 대한 다른 layer의 트랙들
+          const otherLayerTracks = tracks.filter(
+            (t) => t.targetId === track.targetId && t.layerId !== targetLayerId,
           );
-          switch (otherTrack.property) {
-            case 'position': {
-              newPosition.subtract(
-                transformKey
-                  ? transformKey.value
-                  : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
-              );
-              break;
+
+          otherLayerTracks.forEach((otherTrack) => {
+            let transformKey = otherTrack.transformKeys.find(
+              (key) => roundToFourth(key.frame) === roundToFourth(targetFrame / 30),
+            );
+            switch (otherTrack.property) {
+              case 'position': {
+                newPosition.subtract(
+                  transformKey
+                    ? transformKey.value
+                    : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
+                );
+                break;
+              }
+              case 'rotationQuaternion': {
+                newRotationQuaternion.subtract(
+                  transformKey
+                    ? transformKey.value
+                    : getInterpolatedQuaternion(otherTrack.transformKeys, targetFrame),
+                );
+                break;
+              }
+              case 'rotation': {
+                newRotation.subtract(
+                  transformKey
+                    ? transformKey.value
+                    : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
+                );
+                break;
+              }
+              case 'scaling': {
+                newScaling.subtract(
+                  transformKey
+                    ? transformKey.value
+                    : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
+                );
+                break;
+              }
+              default: {
+                break;
+              }
             }
-            case 'rotationQuaternion': {
-              newRotationQuaternion.subtract(
-                transformKey
-                  ? transformKey.value
-                  : getInterpolatedQuaternion(otherTrack.transformKeys, targetFrame),
-              );
-              break;
-            }
-            case 'rotation': {
-              newRotation.subtract(
-                transformKey
-                  ? transformKey.value
-                  : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
-              );
-              break;
-            }
-            case 'scaling': {
-              newScaling.subtract(
-                transformKey
-                  ? transformKey.value
-                  : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
-              );
-              break;
-            }
-            default: {
-              break;
-            }
+          });
+
+          const targetAnim = draft.find(
+            (anim) => anim.current && track.targetId.includes(anim.assetId),
+          );
+
+          if (targetAnim) {
+            const targetTracks = targetAnim.tracks.filter(
+              (t) => t.layerId === targetLayerId && t.targetId === track.targetId,
+            );
+            targetTracks.forEach((t) => {
+              switch (t.property) {
+                case 'position': {
+                  t.transformKeys = getValueInsertedTransformKeys(
+                    t.transformKeys,
+                    targetFrame,
+                    newPosition,
+                  );
+                  break;
+                }
+                case 'rotationQuaternion': {
+                  t.transformKeys = getValueInsertedTransformKeys(
+                    t.transformKeys,
+                    targetFrame,
+                    newRotationQuaternion,
+                  );
+                  break;
+                }
+                case 'rotation': {
+                  t.transformKeys = getValueInsertedTransformKeys(
+                    t.transformKeys,
+                    targetFrame,
+                    newRotation,
+                  );
+                  break;
+                }
+                case 'scaling': {
+                  t.transformKeys = getValueInsertedTransformKeys(
+                    t.transformKeys,
+                    targetFrame,
+                    newScaling,
+                  );
+                }
+                default: {
+                  break;
+                }
+              }
+            });
           }
         });
       });
+
+      dispatch(
+        animationDataActions.editAnimationIngredients({
+          animationIngredients: newAnimationIngredients,
+        }),
+      );
     }
-  }, [targetFrame, targetLayerId, tracks]);
+  }, [animationIngredients, dispatch, targetFrame, targetLayerId, tracks]);
 
   const deleteKeyframe = useCallback(() => {
     const currentAnimationIngredient = animationIngredients.find(
