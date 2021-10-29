@@ -737,8 +737,20 @@ const ListNode: FunctionComponent<Props> = ({
   //   [assetList, dispatch, visualizedAssetIds],
   // );
 
+  const handleDragStart = useCallback(() => {
+    // 드래그 시작시 선택 및 스타일 적용
+    console.log('handleDragStart');
+    console.log(name, id);
+    handleSelect();
+  }, [handleSelect, id, name]);
+
+  const handleDrop = useCallback(() => {
+    console.log('handleDrop');
+    console.log(name, id);
+  }, [id, name]);
+
   return (
-    <div className={classes} draggable>
+    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
       <div className={cx('inner')}>
         <div style={{ display: 'flex' }} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect}>
           {/* {column.map((col, i) => (
