@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import { beforePaste, duplicateCheck, getNodeNumber } from 'utils/LP/FileSystem';
+import { beforePaste, checkCreateDuplicates, getNodeNumber } from 'utils/LP/FileSystem';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { ListNode } from './ListView';
 import classNames from 'classnames/bind';
@@ -154,7 +154,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
                   })
                   .map((filteredNode) => filteredNode.name);
 
-                const check = duplicateCheck('Folder', currentPathNodeName);
+                const check = checkCreateDuplicates('Folder', currentPathNodeName);
 
                 const nodeName = check === '0' ? 'Folder' : `Folder (${check})`;
 

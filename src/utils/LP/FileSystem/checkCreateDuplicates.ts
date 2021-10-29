@@ -1,17 +1,6 @@
 import getNodeNumber from './getNodeNumber';
 
-const duplicateCheck = (name: string, nameArray: string[]) => {
-  // const nameArray = lpNode
-  //   .filter((node) => {
-  //     if (node.parentId === '__root__') {
-  //       if (node.name.includes(name)) {
-  //         return true;
-  //       }
-  //       return false;
-  //     }
-  //   })
-  //   .map((filteredNode) => filteredNode.name);
-
+const checkCreateDuplicates = (name: string, nameArray: string[]) => {
   if (nameArray.length === 0) {
     return '0';
   }
@@ -57,9 +46,10 @@ const duplicateCheck = (name: string, nameArray: string[]) => {
         const startIndex = currentNode.lastIndexOf('(') + 1;
         const endIndex = currentNode.lastIndexOf(')');
 
-        const number = currentNode.substring(startIndex, endIndex);
+        const number = Number(currentNode.substring(startIndex, endIndex));
 
-        return number;
+        // return number;
+        return number === 2 ? '0' : String(number + 1);
       }
     }
   }
@@ -154,4 +144,4 @@ const duplicateCheck = (name: string, nameArray: string[]) => {
   return '0';
 };
 
-export default duplicateCheck;
+export default checkCreateDuplicates;

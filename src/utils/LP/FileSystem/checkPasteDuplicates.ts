@@ -1,6 +1,6 @@
 import getNodeNumber from './getNodeNumber';
 
-const duplicateCheck = (name: string, nameArray: string[]) => {
+const checkPasteDuplicates = (name: string, nameArray: string[]) => {
   if (nameArray.length === 0) {
     return '0';
   }
@@ -151,4 +151,4 @@ const duplicateCheck = (name: string, nameArray: string[]) => {
   return '0';
 };
 
-export default duplicateCheck;
+export default checkPasteDuplicates;

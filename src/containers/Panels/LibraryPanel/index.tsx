@@ -26,6 +26,8 @@ interface BaseProps {}
 type Props = StateProps & BaseProps;
 
 const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetList, animationTransformNodes, animationIngredients }) => {
+  // console.log(assetList);
+  // console.log(animationIngredients);
   const dispatch = useDispatch();
 
   const { onModalOpen, onModalClose } = useBaseModal();

@@ -8,7 +8,7 @@ import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { beforePaste, duplicateCheck, beforeRename } from 'utils/LP/FileSystem';
+import { beforePaste, checkCreateDuplicates, beforeRename } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -266,7 +266,7 @@ const ListNode: FunctionComponent<Props> = ({
                     })
                     .map((filteredNode) => filteredNode.name);
 
-                  const check = duplicateCheck('Folder', currentPathNodeName);
+                  const check = checkCreateDuplicates('Folder', currentPathNodeName);
 
                   const nodeName = check === '0' ? 'Folder' : `Folder (${check})`;
 
