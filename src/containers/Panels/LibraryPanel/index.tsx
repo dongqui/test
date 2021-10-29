@@ -45,7 +45,9 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetLi
       let nextLPNodes = _.clone(lpNode);
 
       const nextNodes = produce(nextLPNodes, (draft) => {
-        const newNode: LP.Node = {
+        const ingredients = animationIngredients.filter((ingredient) => ingredient.assetId === assetList[assetList.length - 1].id);
+
+        const newModelNode: LP.Node = {
           id: uuidv4(),
           // fileURL: file,
           filePath: lpCurrentPath,
@@ -53,10 +55,25 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetLi
           name: fileName,
           type: 'Model',
           assetId: assetList[assetList.length - 1].id,
-          children: animationIngredients.filter((ingredient) => ingredient.assetId === assetList[assetList.length - 1].id),
+          children: ingredients.map((ingredient) => ingredient.id),
         };
 
-        draft.push(newNode);
+        draft.push(newModelNode);
+
+        const newMotionNodes = animationIngredients.map((ingredient) => {
+          const motion: LP.Node = {
+            id: ingredient.id,
+            parentId: ingredient.assetId,
+            name: ingredient.name,
+            filePath: lpCurrentPath + `\\${ingredient.name}`,
+            children: [],
+            type: 'Motion',
+          };
+
+          return motion;
+        });
+
+        draft.push(...newMotionNodes);
       });
 
       nextLPNodes = nextNodes;
