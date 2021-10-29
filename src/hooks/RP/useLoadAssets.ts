@@ -12,6 +12,7 @@ import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 const useLoadAssets = () => {
   const sceneList = useSelector((state) => state.shootProject.sceneList);
   const fileToLoad = useSelector((state) => state.shootProject.fileToLoad);
+  const fileNameToLoad = useSelector((state) => state.shootProject.fileNameToLoad);
 
   const dispatch = useDispatch();
 
@@ -20,7 +21,11 @@ const useLoadAssets = () => {
       const scene = sceneList[0].scene;
 
       if (scene && scene.isReady()) {
-        const loadGlbFileAsync = async (fileUrl: string | File, scene: BABYLON.Scene) => {
+        const loadGlbFileAsync = async (
+          fileUrl: string | File,
+          fileName: string,
+          scene: BABYLON.Scene,
+        ) => {
           let loadedAssetContainer: BABYLON.AssetContainer;
 
           if (typeof fileUrl === 'string') {
@@ -81,6 +86,7 @@ const useLoadAssets = () => {
 
           const newAsset: ShootAsset = {
             id: assetId,
+            name: fileName,
             meshes,
             geometries,
             skeleton: skeletons[0] ?? null,
@@ -107,12 +113,12 @@ const useLoadAssets = () => {
           );
         };
 
-        if (fileToLoad) {
-          loadGlbFileAsync(fileToLoad, scene);
+        if (fileToLoad && fileNameToLoad) {
+          loadGlbFileAsync(fileToLoad, fileNameToLoad, scene);
         }
       }
     }
-  }, [dispatch, fileToLoad, sceneList]);
+  }, [dispatch, fileNameToLoad, fileToLoad, sceneList]);
 };
 
 export default useLoadAssets;

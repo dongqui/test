@@ -114,7 +114,7 @@ const LibraryPanel: FunctionComponent<Props> = ({
           setIsModelLoading(true);
 
           // LP drop 시에 파일 로드하기 위해 아래의 코드를 추가했습니다(차)
-          dispatch(shootProjectActions.changeFileToLoad({ file }));
+          dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
 
           break;
         }
@@ -134,7 +134,7 @@ const LibraryPanel: FunctionComponent<Props> = ({
               setIsModelLoading(true);
 
               // LP drop 시에 파일 로드하기 위해 아래의 코드를 추가했습니다(차)
-              dispatch(shootProjectActions.changeFileToLoad({ file: response }));
+              dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
             })
             .catch(() => {
               onModalOpen({
