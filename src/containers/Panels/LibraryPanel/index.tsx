@@ -1,13 +1,14 @@
 import _ from 'lodash';
 import { FunctionComponent, memo, useEffect, useState, useCallback, useRef } from 'react';
-import { useDropzone } from 'react-dropzone';
 import { connect, useDispatch } from 'react-redux';
 import { RootState } from 'reducers';
-import { v4 as uuidv4 } from 'uuid';
+import { useDropzone } from 'react-dropzone';
+import { v4 as uuid } from 'uuid';
 import { convertFBXtoGLB } from 'api';
 import produce from 'immer';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
+import { getFileExtension } from 'utils/common';
 import Box from 'components/Layout/Box';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
@@ -25,12 +26,6 @@ interface BaseProps {}
 type Props = StateProps & BaseProps;
 
 const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetList, animationTransformNodes, animationIngredients }) => {
-  const getFileExtension = useCallback((file: string): string => {
-    const type = (/[^./\\]*$/.exec(file) || [''])[0];
-
-    return type;
-  }, []);
-
   const dispatch = useDispatch();
 
   const { onModalOpen, onModalClose } = useBaseModal();
@@ -48,7 +43,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetLi
         const ingredients = animationIngredients.filter((ingredient) => ingredient.assetId === assetList[assetList.length - 1].id);
 
         const newModelNode: LP.Node = {
-          id: uuidv4(),
+          id: uuid(),
           // fileURL: file,
           filePath: lpCurrentPath,
           parentId: '__root__',
@@ -169,7 +164,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetLi
         }
       }
     },
-    [dispatch, getFileExtension, lpNode, onModalClose, onModalOpen],
+    [dispatch, lpNode, onModalClose, onModalOpen],
   );
 
   const handleDrop = useCallback(

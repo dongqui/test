@@ -76,7 +76,8 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
             {
               label: 'Paste',
               onClick: () => {
-                const copyNode = _.find(lpNode, { id: lpClipboard[0] });
+                // const copyNode = _.find(lpNode, { id: lpClipboard[0].id });
+                const copyNode = lpClipboard[0];
 
                 const cloneCopyNode = _.cloneDeep(copyNode);
 

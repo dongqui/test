@@ -170,18 +170,22 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Copy',
                 onClick: () => {
-                  dispatch(
-                    lpNodeActions.changeClipboard({
-                      data: [id],
-                    }),
-                  );
+                  const find = _.find(lpNode, { id });
+                  if (find) {
+                    dispatch(
+                      lpNodeActions.changeClipboard({
+                        data: [find],
+                      }),
+                    );
+                  }
                 },
                 children: [],
               },
               {
                 label: 'Paste',
                 onClick: () => {
-                  const copyNode = _.find(lpNode, { id: lpClipboard[0] });
+                  // const copyNode = _.find(lpNode, { id: lpClipboard[0].id });
+                  const copyNode = lpClipboard[0];
 
                   const cloneCopyNode = _.cloneDeep(copyNode);
 
@@ -335,11 +339,14 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Copy',
                 onClick: () => {
-                  dispatch(
-                    lpNodeActions.changeClipboard({
-                      data: [id],
-                    }),
-                  );
+                  const find = _.find(lpNode, { id });
+                  if (find) {
+                    dispatch(
+                      lpNodeActions.changeClipboard({
+                        data: [find],
+                      }),
+                    );
+                  }
                 },
                 children: [],
               },

@@ -6,7 +6,7 @@ interface State {
   visualizedFileURL: string | File;
   currentPath: string;
   currentPathId: string;
-  clipboard: string[];
+  clipboard: LP.Node[];
 }
 
 const defaultState: State = {
