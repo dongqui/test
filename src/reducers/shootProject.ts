@@ -11,6 +11,7 @@ const defaultState: State = {
   assetList: [],
   visualizedAssetIds: [],
   fileToLoad: null,
+  fileNameToLoad: null,
   assetIdToRender: null,
   assetIdToUnrender: null,
   assetToRemove: null,
@@ -32,6 +33,7 @@ export const shootProject = (state = defaultState, action: ShootProjectAction) =
     case 'shootProject/CHANGE_FILE_TO_LOAD': {
       return Object.assign({}, state, {
         fileToLoad: action.payload.file,
+        fileNameToLoad: action.payload.fileName,
       });
     }
     case 'shootProject/ADD_ASSET': {

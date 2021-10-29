@@ -29,6 +29,7 @@ interface RemoveScene {
 
 interface ChangeFileToLoad {
   file: string | File;
+  fileName: string;
 }
 
 interface AddAsset {
@@ -80,6 +81,7 @@ export const removeScene = (params: RemoveScene) => ({
  * 읽어들일 파일을 변경합니다.
  *
  * @param file - 읽어들일 파일의 주소 혹은 파일 그 자체
+ * @param fileName - LP에서 사용할 파일의 이름
  */
 export const changeFileToLoad = (params: ChangeFileToLoad) => ({
   type: CHANGE_FILE_TO_LOAD,

@@ -9,6 +9,7 @@ export interface ShootProject {
   assetList: ShootAsset[];
   visualizedAssetIds: string[];
   fileToLoad: string | File | null;
+  fileNameToLoad: string | null;
   assetIdToRender: string | null;
   assetIdToUnrender: string | null;
   assetToRemove: ShootAsset | null;
@@ -26,6 +27,7 @@ export interface ShootScene {
 
 export interface ShootAsset {
   id: string;
+  name: string;
   meshes: BABYLON.AbstractMesh[];
   geometries: BABYLON.Geometry[];
   skeleton: BABYLON.Skeleton;
