@@ -1,15 +1,15 @@
 import { useCallback, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { TransformTrack } from 'types/TP_New/track';
-import { clickTrackBody, ClickTransformTrackBody } from 'actions/trackList';
+import { PropertyTrack } from 'types/TP_New/track';
+import { clickTrackBody, ClickPropertyTrackBody } from 'actions/trackList';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const TransformTrackItem: FunctionComponent<TransformTrack> = (props) => {
+const PropertyTrackItem: FunctionComponent<PropertyTrack> = (props) => {
   const { isSelected, trackName, trackNumber } = props;
   const dispatch = useDispatch();
 
@@ -20,7 +20,7 @@ const TransformTrackItem: FunctionComponent<TransformTrack> = (props) => {
       const { nodeName } = event.target as Element;
       if (nodeName === 'DIV') {
         const eventType = event.ctrlKey ? 'multipleClick' : 'leftClick';
-        const payload: ClickTransformTrackBody = { trackNumber, eventType, trackType: 'transform' };
+        const payload: ClickPropertyTrackBody = { trackNumber, eventType, trackType: 'property' };
         dispatch(clickTrackBody(payload));
       }
     },
@@ -28,7 +28,7 @@ const TransformTrackItem: FunctionComponent<TransformTrack> = (props) => {
   );
 
   return (
-    <li className={cx('transform-track')} onClick={handleTrackBodyClick}>
+    <li className={cx('property-track')} onClick={handleTrackBodyClick}>
       <div className={cx('track-body', { selected: isSelected })}>
         <span className={cx('track-name')}>{trackName}</span>
       </div>
@@ -36,4 +36,4 @@ const TransformTrackItem: FunctionComponent<TransformTrack> = (props) => {
   );
 };
 
-export default TransformTrackItem;
+export default PropertyTrackItem;

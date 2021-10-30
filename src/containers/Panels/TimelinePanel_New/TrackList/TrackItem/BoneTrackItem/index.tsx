@@ -7,7 +7,7 @@ import { useSelector } from 'reducers';
 import { getBoneTrackIndex } from 'utils/TP';
 
 import CaretButton from './CaretButton';
-import { TransformTrackItem } from '../index';
+import { PropertyTrackItem } from '../index';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -17,21 +17,21 @@ const cx = classNames.bind(styles);
 const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
   const { isSelected, isPointedDownCaret, trackName, trackNumber, trackType } = props;
   const dispatch = useDispatch();
-  const transformTrackList = useSelector((state) => state.trackList.transformTrackList);
+  const propertyTrackList = useSelector((state) => state.trackList.propertyTrackList);
 
   // 자식이 될 transform track list 필터링
-  const childrenTransforms = useMemo(() => {
+  const childrenProperty = useMemo(() => {
     let index = 0;
-    while (index < transformTrackList.length) {
-      const boneIndex = getBoneTrackIndex(transformTrackList[index].trackNumber);
+    while (index < propertyTrackList.length) {
+      const boneIndex = getBoneTrackIndex(propertyTrackList[index].trackNumber);
       if (boneIndex === trackNumber) {
         const startIndex = index - 1 === -1 ? 0 : index;
-        return transformTrackList.slice(startIndex, index + 3);
+        return propertyTrackList.slice(startIndex, index + 3);
       }
       index += 3;
     }
     return [];
-  }, [trackNumber, transformTrackList]);
+  }, [trackNumber, propertyTrackList]);
 
   // 트랙 클릭
   const handleTrackBodyClick = useCallback(
@@ -59,8 +59,8 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
       </div>
       <ul>
         {isPointedDownCaret &&
-          childrenTransforms.map((transformTrack) => (
-            <TransformTrackItem key={transformTrack.trackName} {...transformTrack} />
+          childrenProperty.map((transformTrack) => (
+            <PropertyTrackItem key={transformTrack.trackName} {...transformTrack} />
           ))}
       </ul>
     </li>

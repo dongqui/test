@@ -16,7 +16,7 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
-  const { isMuted, isSelected, isPointedDownCaret, trackName, trackId, trackType } = props;
+  const { isMuted, isSelected, isPointedDownCaret, trackName, layerId, trackType } = props;
   const dispatch = useDispatch();
 
   const boneTrackList = useSelector((state) => state.trackList.boneTrackList);
@@ -27,14 +27,14 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
       const { nodeName } = event.target as Element;
       if (nodeName === 'DIV') {
         const payload: ClickLayerTrackBody = {
-          trackId,
+          layerId,
           eventType: 'leftClick',
           trackType: 'layer',
         };
         dispatch(clickTrackBody(payload));
       }
     },
-    [dispatch, trackId],
+    [dispatch, layerId],
   );
 
   return (
@@ -42,7 +42,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
       <div className={cx('track-body', { selected: isSelected, muted: isMuted })}>
         <CaretButton
           isPointedDownCaret={isPointedDownCaret}
-          trackId={trackId}
+          layerId={layerId}
           trackType={trackType}
         />
         <IconWrapper className={cx('layer-icon')} icon={SvgPath.Layer} />
