@@ -2,10 +2,10 @@ import {
   ClickTrackBody,
   ClickLayerTrackBody,
   ClickBoneTrackBody,
-  ClickTransformTrackBody,
+  ClickPropertyTrackBody,
 } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
-import { layerTrackConfig, boneTrackConfig, transformTrackConfig } from './config';
+import { layerTrackConfig, boneTrackConfig, propertyTrackConfig } from './config';
 
 const clickTrackBody = (state: TrackListState, payload: ClickTrackBody) => {
   if (payload.trackType === 'layer') {
@@ -14,8 +14,8 @@ const clickTrackBody = (state: TrackListState, payload: ClickTrackBody) => {
   if (payload.trackType === 'bone') {
     return boneTrackConfig(state, payload as ClickBoneTrackBody);
   }
-  if (payload.trackType === 'transform') {
-    return transformTrackConfig(state, payload as ClickTransformTrackBody);
+  if (payload.trackType === 'property') {
+    return propertyTrackConfig(state, payload as ClickPropertyTrackBody);
   }
   return state;
 };

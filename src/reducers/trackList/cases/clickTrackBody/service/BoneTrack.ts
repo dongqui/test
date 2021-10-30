@@ -1,11 +1,11 @@
-import { BoneTrack, TransformTrack } from 'types/TP_New/track';
+import { BoneTrack, PropertyTrack } from 'types/TP_New/track';
 import { ClickBoneTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
 import {
   BoneTrackList,
-  TrnasformTrackList,
+  PropertyTrackList,
   SelectedBones,
-  SelectedTransforms,
+  SelectedProperties,
 } from 'reducers/trackList/types';
 import { StateUpdate } from 'reducers/trackList/classes';
 
@@ -16,23 +16,23 @@ import RightClick from './RightClick/BoneTrack';
 import AllClick from './AllClick/BoneTrack';
 import { Repository } from '../repository';
 
-type TrackList = BoneTrackList & TrnasformTrackList;
+type TrackList = BoneTrackList & PropertyTrackList;
 
 class BoneTrackService extends StateUpdate implements Service {
   private readonly payload: ClickBoneTrackBody;
   private readonly boneRepository: Repository;
-  private readonly transformRepository: Repository;
+  private readonly propertyRepository: Repository;
 
   constructor(
     state: TrackListState,
     payload: ClickBoneTrackBody,
     boneRepository: Repository,
-    transformRepository: Repository,
+    propertyRepository: Repository,
   ) {
     super(state);
     this.payload = payload;
     this.boneRepository = boneRepository;
-    this.transformRepository = transformRepository;
+    this.propertyRepository = propertyRepository;
   }
 
   private selectAllClick = () => {
@@ -80,13 +80,13 @@ class BoneTrackService extends StateUpdate implements Service {
     return this.selectLeftClick();
   };
 
-  updateTrackList = (selectedTrackList: SelectedBones & SelectedTransforms): TrackList => {
-    const { selectedBones, selectedTransforms } = selectedTrackList;
+  updateTrackList = (selectedTrackList: SelectedBones & SelectedProperties): TrackList => {
+    const { selectedBones, selectedProperties } = selectedTrackList;
     const boneTrackList = this.boneRepository.updateIsSelected(selectedBones);
-    const transformTrackList = this.transformRepository.updateIsSelected(selectedTransforms);
+    const propertyTrackList = this.propertyRepository.updateIsSelected(selectedProperties);
     return {
       boneTrackList: boneTrackList as BoneTrack[],
-      transformTrackList: transformTrackList as TransformTrack[],
+      propertyTrackList: propertyTrackList as PropertyTrack[],
     };
   };
 

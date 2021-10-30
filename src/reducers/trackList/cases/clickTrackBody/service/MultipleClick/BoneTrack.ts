@@ -25,32 +25,38 @@ class BoneTrackMultipleClick implements MultipleClick {
   };
 
   private setSelectedTracks = (payload: ClickBoneTrackBody): SelectedTracks => {
-    const selectedTransforms: number[] = [];
+    const selectedProperties: number[] = [];
     const boneNumber = payload.trackNumber;
     for (let transform = boneNumber + 1; transform <= boneNumber + 3; transform++) {
-      selectedTransforms.push(transform);
+      selectedProperties.push(transform);
     }
-    return { selectedBones: [boneNumber], selectedTransforms };
+    return { selectedBones: [boneNumber], selectedProperties };
   };
 
   public clickMultipleSelectedTrack = ({ state, payload }: Parmas): SelectedTracks => {
-    const { selectedBones, selectedTransforms } = this.setSelectedTracks(payload);
+    const { selectedBones, selectedProperties } = this.setSelectedTracks(payload);
     const nextSelectedBones = this.filterSelectedTracks(state.selectedBones, selectedBones);
-    const nextSelectedTransforms = this.filterSelectedTracks(
-      state.selectedTransforms,
-      selectedTransforms,
+    const nextSelectedProselectedProperties = this.filterSelectedTracks(
+      state.selectedProperties,
+      selectedProperties,
     );
-    return { selectedBones: nextSelectedBones, selectedTransforms: nextSelectedTransforms };
+    return {
+      selectedBones: nextSelectedBones,
+      selectedProperties: nextSelectedProselectedProperties,
+    };
   };
 
   public clickMultipleNotSelectedTrack = ({ state, payload }: Parmas): SelectedTracks => {
-    const { selectedBones, selectedTransforms } = this.setSelectedTracks(payload);
+    const { selectedBones, selectedProperties } = this.setSelectedTracks(payload);
     const nextSelectedBones = this.sortAscendingNumbers(state.selectedBones, selectedBones);
-    const nextSelectedTransforms = this.sortAscendingNumbers(
-      state.selectedTransforms,
-      selectedTransforms,
+    const nextSelectedProselectedProperties = this.sortAscendingNumbers(
+      state.selectedProperties,
+      selectedProperties,
     );
-    return { selectedBones: nextSelectedBones, selectedTransforms: nextSelectedTransforms };
+    return {
+      selectedBones: nextSelectedBones,
+      selectedProperties: nextSelectedProselectedProperties,
+    };
   };
 }
 

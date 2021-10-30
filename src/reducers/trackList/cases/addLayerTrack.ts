@@ -15,11 +15,14 @@ function updateLayerTrackList(state: TrackListState, layerTrack: LayerTrack): La
 }
 
 function setNewLayerTrack(trackName: string): LayerTrack {
+  const uuid = '';
   return {
     isMuted: false,
     isPointedDownCaret: false,
     isSelected: false,
     trackName,
+    trackType: 'layer',
+    trackNumber: -1,
     layerId: trackName,
   };
 }

@@ -4,7 +4,7 @@ import { SelectedLayer } from 'reducers/trackList/types';
 
 class LayerTrackClick implements LeftClick {
   public clickLeft = ({ payload }: { payload: ClickLayerTrackBody }): SelectedLayer => {
-    return { selectedLayer: payload.trackId };
+    return { selectedLayer: payload.layerId };
   };
 }
 

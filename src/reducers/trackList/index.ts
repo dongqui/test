@@ -1,46 +1,55 @@
 import { TrackListAction } from 'actions/trackList';
-import { LayerTrack, BoneTrack, TransformTrack } from 'types/TP_New/track';
+import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP_New/track';
 
 import addLayerTrack from './cases/addLayerTrack';
-import initializeTrackList from './cases/createTrackList';
+// import initializeTrackList from './cases/createTrackList';
 import clickCaretButton from './cases/clickCaretButton';
 import clickInterpolationMode from './cases/clickInterpolationMode';
 import clickTrackBody from './cases/clickTrackBody';
 import deleteLayerTrack from './cases/deleteLayerTrack';
 import muteLayerTrack from './cases/muteLayerTrack';
 
-const transformTrackList1: TransformTrack[] = Array(3)
+const propertyTrackList1: PropertyTrack[] = Array(3)
   .fill(0)
-  .map((_, index) => ({
-    isSelected: false,
-    trackName: index === 0 ? 'Position' : index === 1 ? 'Rotation' : 'Scale',
-    interpolationType: 'linear',
-    trackNumber: index + 1,
-    trackId: 'alwkejr-zxchzxklc-13hkjsa',
-    trackType: 'transform',
-  }));
+  .map(
+    (_, index) =>
+      ({
+        isSelected: false,
+        trackName: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
+        property: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
+        interpolationType: 'linear',
+        trackNumber: index + 1,
+        trackType: 'property',
+      } as PropertyTrack),
+  );
 
-const transformTrackList2: TransformTrack[] = Array(3)
+const propertyTrackList2: PropertyTrack[] = Array(3)
   .fill(0)
-  .map((_, index) => ({
-    isSelected: false,
-    trackName: index === 0 ? 'Position' : index === 1 ? 'Rotation' : 'Scale',
-    interpolationType: 'linear',
-    trackNumber: index + 11,
-    trackId: 'opsdfoi-sdlflkd-zxchoisda',
-    trackType: 'transform',
-  }));
+  .map(
+    (_, index) =>
+      ({
+        isSelected: false,
+        trackName: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
+        property: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
+        interpolationType: 'linear',
+        trackNumber: index + 11,
+        trackType: 'property',
+      } as PropertyTrack),
+  );
 
-const transformTrackList3: TransformTrack[] = Array(3)
+const propertyTrackList3: PropertyTrack[] = Array(3)
   .fill(0)
-  .map((_, index) => ({
-    isSelected: false,
-    trackName: index === 0 ? 'Position' : index === 1 ? 'Rotation' : 'Scale',
-    interpolationType: 'linear',
-    trackNumber: index + 21,
-    trackId: 'lskdfjhlks-ewjkhsdklf-asdasd',
-    trackType: 'transform',
-  }));
+  .map(
+    (_, index) =>
+      ({
+        isSelected: false,
+        trackName: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
+        property: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
+        interpolationType: 'linear',
+        trackNumber: index + 21,
+        trackType: 'property',
+      } as PropertyTrack),
+  );
 
 const boneTrackList: BoneTrack[] = [
   {
@@ -48,7 +57,7 @@ const boneTrackList: BoneTrack[] = [
     trackName: 'Left Shoulder',
     isPointedDownCaret: false,
     trackNumber: 0,
-    trackId: '',
+    targetId: '11111-11111-11111',
     trackType: 'bone',
   },
   {
@@ -56,7 +65,7 @@ const boneTrackList: BoneTrack[] = [
     trackName: 'Left Arm',
     isPointedDownCaret: false,
     trackNumber: 10,
-    trackId: '',
+    targetId: '22222-22222-22222',
     trackType: 'bone',
   },
   {
@@ -64,7 +73,7 @@ const boneTrackList: BoneTrack[] = [
     trackName: 'Left Hand',
     isPointedDownCaret: false,
     trackNumber: 20,
-    trackId: '',
+    targetId: '33333-33333-33333',
     trackType: 'bone',
   },
 ];
@@ -72,7 +81,7 @@ const boneTrackList: BoneTrack[] = [
 const layerTrackList: LayerTrack[] = [
   {
     trackNumber: -1,
-    trackId: 'sdjfhsdkjfdsfj-q1234b2jkwqebjk-sdfjksdfkj',
+    layerId: 'aaaaa-aaaaa-aaaaa',
     trackName: 'Layer1',
     isMuted: false,
     isPointedDownCaret: false,
@@ -81,7 +90,7 @@ const layerTrackList: LayerTrack[] = [
   },
   {
     trackNumber: -1,
-    trackId: 'sqweasdklasd-xcvcxcasd-eqwdsasd',
+    layerId: 'bbbbb-bbbbb-bbbbb',
     trackName: 'Layer2',
     isMuted: false,
     isPointedDownCaret: false,
@@ -90,7 +99,7 @@ const layerTrackList: LayerTrack[] = [
   },
   {
     trackNumber: -1,
-    trackId: 'hguidfhjsao-12easdsa-sdgsdgf',
+    layerId: 'ccccc-ccccc-ccccc',
     trackName: 'Layer3',
     isMuted: false,
     isPointedDownCaret: false,
@@ -102,11 +111,11 @@ const layerTrackList: LayerTrack[] = [
 export interface TrackListState {
   layerTrackList: LayerTrack[];
   boneTrackList: BoneTrack[];
-  transformTrackList: TransformTrack[];
+  propertyTrackList: PropertyTrack[];
 
   selectedLayer: string;
   selectedBones: number[];
-  selectedTransforms: number[];
+  selectedProperties: number[];
 
   // interpolationType: InterpolationType;
 
@@ -116,11 +125,11 @@ export interface TrackListState {
 const initialState: TrackListState = {
   layerTrackList: layerTrackList,
   boneTrackList: boneTrackList,
-  transformTrackList: [...transformTrackList1, ...transformTrackList2, ...transformTrackList3],
+  propertyTrackList: [...propertyTrackList1, ...propertyTrackList2, ...propertyTrackList3],
 
-  selectedLayer: 'sdjfhsdkjfdsfj-q1234b2jkwqebjk-sdfjksdfkj',
+  selectedLayer: 'aaaaa-aaaaa-aaaaa',
   selectedBones: [],
-  selectedTransforms: [],
+  selectedProperties: [],
 
   // interpolationType: 'none',
 
@@ -129,9 +138,9 @@ const initialState: TrackListState = {
 
 export const trackList = (state = initialState, action: TrackListAction) => {
   switch (action.type) {
-    case 'trackList/INITIALIZE_TRACK_LIST': {
-      return initializeTrackList(state, action.payload);
-    }
+    // case 'trackList/INITIALIZE_TRACK_LIST': {
+    //   return initializeTrackList(state, action.payload);
+    // }
     case 'trackList/ADD_LAYER_TRACK': {
       return addLayerTrack(state, action.payload);
     }

@@ -1,38 +1,38 @@
-import { BoneTrack, TransformTrack } from 'types/TP_New/track';
-import { ClickTransformTrackBody } from 'actions/trackList';
+import { BoneTrack, PropertyTrack } from 'types/TP_New/track';
+import { ClickPropertyTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
 import { StateUpdate } from 'reducers/trackList/classes';
 import {
   BoneTrackList,
-  TrnasformTrackList,
+  PropertyTrackList,
   SelectedBones,
-  SelectedTransforms,
+  SelectedProperties,
 } from 'reducers/trackList/types';
 
 import { Service } from './index';
-import LeftClick from './LeftClick/TransformTrack';
-import MultipleClick from './MultipleClick/TransformTrack';
-import RightClick from './RightClick/TransformTrack';
-import AllClick from './AllClick/TransformTrack';
+import LeftClick from './LeftClick/PropertyTrack';
+import MultipleClick from './MultipleClick/PropertyTrack';
+import RightClick from './RightClick/PropertyTrack';
+import AllClick from './AllClick/PropertyTrack';
 import { Repository } from '../repository';
 
-type TrackList = BoneTrackList & TrnasformTrackList;
+type TrackList = BoneTrackList & PropertyTrackList;
 
-class TransformTrackService extends StateUpdate implements Service {
-  private readonly payload: ClickTransformTrackBody;
+class PropertyTrackService extends StateUpdate implements Service {
+  private readonly payload: ClickPropertyTrackBody;
   private readonly boneRepository: Repository;
-  private readonly transformRepository: Repository;
+  private readonly propertyRepository: Repository;
 
   constructor(
     state: TrackListState,
-    payload: ClickTransformTrackBody,
+    payload: ClickPropertyTrackBody,
     boneRepository: Repository,
-    transformRepository: Repository,
+    propertyRepository: Repository,
   ) {
     super(state);
     this.payload = payload;
     this.boneRepository = boneRepository;
-    this.transformRepository = transformRepository;
+    this.propertyRepository = propertyRepository;
   }
 
   private selectAllClick = () => {
@@ -46,7 +46,7 @@ class TransformTrackService extends StateUpdate implements Service {
   private selectRightClick = () => {
     const { state, payload } = this;
     const { clickRightNotSelectedTrack, clickRightSelectedTrack } = new RightClick();
-    const isSelectedTrack = state.selectedTransforms.includes(payload.trackNumber);
+    const isSelectedTrack = state.selectedProperties.includes(payload.trackNumber);
     return isSelectedTrack
       ? clickRightSelectedTrack({ state })
       : clickRightNotSelectedTrack({ payload });
@@ -55,7 +55,7 @@ class TransformTrackService extends StateUpdate implements Service {
   private selectMultipleClick = () => {
     const { state, payload } = this;
     const multipleClick = new MultipleClick();
-    const isSelectedTrack = this.state.selectedTransforms.includes(this.payload.trackNumber);
+    const isSelectedTrack = this.state.selectedProperties.includes(this.payload.trackNumber);
     return isSelectedTrack
       ? multipleClick.clickMultipleSelectedTrack({ state, payload })
       : multipleClick.clickMultipleNotSelectedTrack({ state, payload });
@@ -81,13 +81,13 @@ class TransformTrackService extends StateUpdate implements Service {
     return this.selectLeftClick();
   };
 
-  updateTrackList = (selectedTrackList: SelectedBones & SelectedTransforms): TrackList => {
-    const { selectedBones, selectedTransforms } = selectedTrackList;
+  updateTrackList = (selectedTrackList: SelectedBones & SelectedProperties): TrackList => {
+    const { selectedBones, selectedProperties } = selectedTrackList;
     const boneTrackList = this.boneRepository.updateIsSelected(selectedBones);
-    const transformTrackList = this.transformRepository.updateIsSelected(selectedTransforms);
+    const propertyTrackList = this.propertyRepository.updateIsSelected(selectedProperties);
     return {
       boneTrackList: boneTrackList as BoneTrack[],
-      transformTrackList: transformTrackList as TransformTrack[],
+      propertyTrackList: propertyTrackList as PropertyTrack[],
     };
   };
 
@@ -96,4 +96,4 @@ class TransformTrackService extends StateUpdate implements Service {
   };
 }
 
-export default TransformTrackService;
+export default PropertyTrackService;

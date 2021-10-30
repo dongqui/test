@@ -1,6 +1,6 @@
 import produce from 'immer';
 
-import { BoneTrack, TransformTrack } from 'types/TP_New/track';
+import { BoneTrack, PropertyTrack } from 'types/TP_New/track';
 import { TrackListState } from 'reducers/trackList';
 import { getBinarySearch } from 'utils/TP';
 
@@ -14,19 +14,19 @@ class TransformTrackRepository implements Repository {
   }
 
   private findTrackIndex = (trackNumber: number) => {
-    const { transformTrackList } = this.state;
+    const { propertyTrackList } = this.state;
     const trackIndex = getBinarySearch<BoneTrack>({
-      collection: transformTrackList,
+      collection: propertyTrackList,
       index: trackNumber,
       key: 'trackNumber',
     });
     return trackIndex;
   };
 
-  public updateIsSelected = (selectedTrackList: number[]): TransformTrack[] => {
-    const { transformTrackList, selectedTransforms } = this.state;
-    return produce(transformTrackList, (draft) => {
-      selectedTransforms.forEach((trackNumber) => {
+  public updateIsSelected = (selectedTrackList: number[]): PropertyTrack[] => {
+    const { propertyTrackList, selectedProperties } = this.state;
+    return produce(propertyTrackList, (draft) => {
+      selectedProperties.forEach((trackNumber) => {
         const trackIndex = this.findTrackIndex(trackNumber);
         draft[trackIndex].isSelected = false;
       });

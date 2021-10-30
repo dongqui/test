@@ -1,9 +1,5 @@
 import { TrackListState } from 'reducers/trackList';
-import {
-  ClickLayerTrackBody,
-  ClickBoneTrackBody,
-  ClickTransformTrackBody,
-} from 'actions/trackList';
+import { ClickLayerTrackBody, ClickBoneTrackBody, ClickPropertyTrackBody } from 'actions/trackList';
 
 import { Service } from './service';
 
@@ -13,8 +9,8 @@ import LayerTrackRepository from './repository/LayerTrack';
 import BoneTrackService from './service/BoneTrack';
 import BoneTrackRepository from './repository/BoneTrack';
 
-import TransformTrackService from './service/TransformTrack';
-import TransformTrackRepository from './repository/TransformTrack';
+import PropertyTrackService from './service/PropertyTrack';
+import PropertyTrackRepository from './repository/PropertyTrack';
 
 const updateLogic = (service: Service) => {
   const selectedTrackList = service.selectClickType();
@@ -31,14 +27,14 @@ export const layerTrackConfig = (state: TrackListState, payload: ClickLayerTrack
 
 export const boneTrackConfig = (state: TrackListState, payload: ClickBoneTrackBody) => {
   const boneRepository = new BoneTrackRepository(state);
-  const transformRepository = new TransformTrackRepository(state);
+  const transformRepository = new PropertyTrackRepository(state);
   const service = new BoneTrackService(state, payload, boneRepository, transformRepository);
   return updateLogic(service);
 };
 
-export const transformTrackConfig = (state: TrackListState, payload: ClickTransformTrackBody) => {
+export const propertyTrackConfig = (state: TrackListState, payload: ClickPropertyTrackBody) => {
   const boneRepository = new BoneTrackRepository(state);
-  const transformRepository = new TransformTrackRepository(state);
-  const service = new TransformTrackService(state, payload, boneRepository, transformRepository);
+  const transformRepository = new PropertyTrackRepository(state);
+  const service = new PropertyTrackService(state, payload, boneRepository, transformRepository);
   return updateLogic(service);
 };

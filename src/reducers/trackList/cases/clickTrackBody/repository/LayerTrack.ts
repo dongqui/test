@@ -9,14 +9,14 @@ class LayerTrackRepository implements Repository {
     this.state = state;
   }
 
-  private findLayerIndex = (trackId: string) => {
-    return this.state.layerTrackList.findIndex((layer) => layer.trackId === trackId);
+  private findLayerIndex = (layerId: string) => {
+    return this.state.layerTrackList.findIndex((layer) => layer.layerId === layerId);
   };
 
-  public updateIsSelected = (trackId: string) => {
+  public updateIsSelected = (layerId: string) => {
     const { selectedLayer, layerTrackList } = this.state;
     const currentLayerIndex = this.findLayerIndex(selectedLayer);
-    const nextLayerIndex = this.findLayerIndex(trackId);
+    const nextLayerIndex = this.findLayerIndex(layerId);
     return produce(layerTrackList, (draft) => {
       draft[currentLayerIndex].isSelected = false;
       draft[nextLayerIndex].isSelected = true;

@@ -3,28 +3,28 @@ import { AllClick, SelectedTracks } from './index';
 
 class BoneTrackAllClick implements AllClick {
   private setSelectedTracks = (boneNumber: number): SelectedTracks => {
-    const selectedTransforms: number[] = [];
+    const selectedProperties: number[] = [];
     for (let transform = boneNumber + 1; transform <= boneNumber + 3; transform++) {
-      selectedTransforms.push(transform);
+      selectedProperties.push(transform);
     }
-    return { selectedBones: [boneNumber], selectedTransforms };
+    return { selectedBones: [boneNumber], selectedProperties };
   };
 
   // context menu에서 select all 클릭
   public clickSelectAll = ({ state }: { state: TrackListState }): SelectedTracks => {
     const nextSelectedBones: number[] = [];
-    const nextSelectedTransforms: number[] = [];
+    const nextSelectedProperties: number[] = [];
     state.boneTrackList.forEach(({ trackNumber }) => {
-      const { selectedBones, selectedTransforms } = this.setSelectedTracks(trackNumber);
+      const { selectedBones, selectedProperties } = this.setSelectedTracks(trackNumber);
       nextSelectedBones.push(...selectedBones);
-      nextSelectedTransforms.push(...selectedTransforms);
+      nextSelectedProperties.push(...selectedProperties);
     });
-    return { selectedBones: nextSelectedBones, selectedTransforms: nextSelectedTransforms };
+    return { selectedBones: nextSelectedBones, selectedProperties: nextSelectedProperties };
   };
 
   // context menu에서 unselect all 클릭
   public clickUnselectAll = (): SelectedTracks => {
-    return { selectedBones: [], selectedTransforms: [] };
+    return { selectedBones: [], selectedProperties: [] };
   };
 }
 

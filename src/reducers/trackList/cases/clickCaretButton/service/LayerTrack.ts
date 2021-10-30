@@ -19,8 +19,8 @@ class BoneTrackService extends StateUpdate implements Service {
 
   public findTrackIndex = (): number => {
     const { layerTrackList } = this.state;
-    const { trackId } = this.payload;
-    const trackIndex = layerTrackList.findIndex((layerTrack) => layerTrack.trackId === trackId);
+    const { layerId } = this.payload;
+    const trackIndex = layerTrackList.findIndex((layerTrack) => layerTrack.layerId === layerId);
     return trackIndex;
   };
 

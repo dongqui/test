@@ -1,17 +1,17 @@
 import { ClickBoneTrackBody } from 'actions/trackList';
-import { SelectedBones, SelectedTransforms } from 'reducers/trackList/types';
+import { SelectedBones, SelectedProperties } from 'reducers/trackList/types';
 import { LeftClick } from './index';
 
-type SelectedTracks = SelectedBones & SelectedTransforms;
+type SelectedTracks = SelectedBones & SelectedProperties;
 
 class BoneTrackLeftClick implements LeftClick {
   public clickLeft = ({ payload }: { payload: ClickBoneTrackBody }): SelectedTracks => {
-    const selectedTransforms: number[] = [];
+    const selectedProperties: number[] = [];
     const boneNumber = payload.trackNumber;
     for (let transform = boneNumber + 1; transform <= boneNumber + 3; transform++) {
-      selectedTransforms.push(transform);
+      selectedProperties.push(transform);
     }
-    return { selectedBones: [boneNumber], selectedTransforms };
+    return { selectedBones: [boneNumber], selectedProperties };
   };
 }
 

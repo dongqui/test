@@ -1,14 +1,14 @@
-import { ClickTransformTrackBody } from 'actions/trackList';
+import { ClickPropertyTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
 import { getBinarySearch, getBoneTrackIndex } from 'utils/TP';
 import { MultipleClick, SelectedTracks } from './index';
 
 interface Parmas {
   state: TrackListState;
-  payload: ClickTransformTrackBody;
+  payload: ClickPropertyTrackBody;
 }
 
-class MultipleClickTransformTrack implements MultipleClick {
+class MultipleClickPropertyTrack implements MultipleClick {
   private filterSelectedTracks = (selectedTracks: number[], filterTarget: number[]) => {
     const nextSelectedTracks: number[] = [];
     selectedTracks.forEach((trackNumber) => {
@@ -24,20 +24,20 @@ class MultipleClickTransformTrack implements MultipleClick {
   };
 
   public clickMultipleSelectedTrack = ({ state, payload }: Parmas): SelectedTracks => {
-    const { selectedBones, selectedTransforms } = state;
+    const { selectedBones, selectedProperties } = state;
     const { trackNumber } = payload;
     const boneNumber = getBoneTrackIndex(trackNumber);
     const nextSelectedBones = this.filterSelectedTracks(selectedBones, [boneNumber]);
-    const nextSelectedTransforms = this.filterSelectedTracks(selectedTransforms, [trackNumber]);
-    return { selectedBones: nextSelectedBones, selectedTransforms: nextSelectedTransforms };
+    const nextselectedProperties = this.filterSelectedTracks(selectedProperties, [trackNumber]);
+    return { selectedBones: nextSelectedBones, selectedProperties: nextselectedProperties };
   };
 
   public clickMultipleNotSelectedTrack = ({ state, payload }: Parmas): SelectedTracks => {
-    const { selectedBones, selectedTransforms } = state;
-    const nextSelectedTransforms = [...selectedTransforms, payload.trackNumber];
-    const sortdTransforms = this.sortAscendingNumbers(nextSelectedTransforms);
-    return { selectedBones, selectedTransforms: sortdTransforms };
+    const { selectedBones, selectedProperties } = state;
+    const nextselectedProperties = [...selectedProperties, payload.trackNumber];
+    const sortdTransforms = this.sortAscendingNumbers(nextselectedProperties);
+    return { selectedBones, selectedProperties: sortdTransforms };
   };
 }
 
-export default MultipleClickTransformTrack;
+export default MultipleClickPropertyTrack;
