@@ -23,16 +23,16 @@ export interface TransformKeyframe extends Keyframe {
 }
 
 // 트랙 별 데이터 타입
-export interface TrackKeyframes extends TrackIdentifier {
+export interface EditorTrack extends TrackIdentifier {
   keyframes: Keyframe[] | TransformKeyframe[];
 }
 
 // 선택 된 키프레임 데이터 타입
-export interface SelectedKeyframeTime extends TrackIdentifier {
+export interface SelectedKeyframe extends TrackIdentifier {
   time: number;
 }
 
 // 선택 된 키프레임들을 cluster
-export interface ClusteredKeyframeTimes extends TrackIdentifier {
+export interface ClusteredKeyframe extends TrackIdentifier {
   times: number[];
 }

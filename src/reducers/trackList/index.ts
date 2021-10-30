@@ -1,13 +1,13 @@
 import { TrackListAction } from 'actions/trackList';
 import { LayerTrack, BoneTrack, TransformTrack } from 'types/TP_New/track';
 
-// import addLayerTrack from './cases/addLayerTrack';
+import addLayerTrack from './cases/addLayerTrack';
 import initializeTrackList from './cases/createTrackList';
 import clickCaretButton from './cases/clickCaretButton';
-// import clickInterpolationMode from './cases/clickInterpolationMode';
+import clickInterpolationMode from './cases/clickInterpolationMode';
 import clickTrackBody from './cases/clickTrackBody';
-// import deleteLayerTrack from './cases/deleteLayerTrack';
-// import muteLayerTrack from './cases/muteLayerTrack';
+import deleteLayerTrack from './cases/deleteLayerTrack';
+import muteLayerTrack from './cases/muteLayerTrack';
 
 const transformTrackList1: TransformTrack[] = Array(3)
   .fill(0)
@@ -132,29 +132,29 @@ export const trackList = (state = initialState, action: TrackListAction) => {
     case 'trackList/INITIALIZE_TRACK_LIST': {
       return initializeTrackList(state, action.payload);
     }
-    // case 'trackList/ADD_LAYER_TRACK': {
-    //   return addLayerTrack(state, action.payload);
-    // }
+    case 'trackList/ADD_LAYER_TRACK': {
+      return addLayerTrack(state, action.payload);
+    }
     case 'trackList/CLICK_CARET_BUTTON': {
       return clickCaretButton(state, action.payload);
     }
     case 'trackList/CLICK_TRACK_BODY': {
       return clickTrackBody(state, action.payload);
     }
-    // case 'trackList/CLICK_INTERPOLATION_MODE': {
-    //   return clickInterpolationMode(state, action.payload);
-    // }
-    // case 'trackList/DELETE_LAYER_TRACK': {
-    //   return deleteLayerTrack(state, action.payload);
-    // }
-    // case 'trackList/MUTE_LAYER_TRACK': {
-    //   return muteLayerTrack(state, action.payload);
-    // }
-    // case 'trackList/CHANGE_TRACK_SCROLL_TOP': {
-    //   return Object.assign<{}, TrackListState, Partial<TrackListState>>({}, state, {
-    //     trackScrollTop: action.payalod.scrollTop,
-    //   });
-    // }
+    case 'trackList/CLICK_INTERPOLATION_MODE': {
+      return clickInterpolationMode(state, action.payload);
+    }
+    case 'trackList/DELETE_LAYER_TRACK': {
+      return deleteLayerTrack(state, action.payload);
+    }
+    case 'trackList/MUTE_LAYER_TRACK': {
+      return muteLayerTrack(state, action.payload);
+    }
+    case 'trackList/CHANGE_TRACK_SCROLL_TOP': {
+      return Object.assign<{}, TrackListState, Partial<TrackListState>>({}, state, {
+        trackScrollTop: action.payalod.scrollTop,
+      });
+    }
     default: {
       return state;
     }

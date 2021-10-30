@@ -22,8 +22,8 @@ export interface TrackIdentifier {
   /**
    * @description RP쪽에서 트랙을 탐색하기 위한 ID
    * @default uuid layer 트랙의 id는 RP의 layerId로 세팅
-   * @default "" bone 트랙의 id는 빈 문자로 세팅
-   * @default uuid transform 트랙의 id는 RP의 id로 세팅
+   * @default uuid bone 트랙의 id는 빈 문자로 세팅
+   * @default property transform 트랙의 id는 RP의 id로 세팅
    */
   trackId: string;
 }

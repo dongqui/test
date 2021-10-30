@@ -1,24 +1,30 @@
-import { LayerTrack, BoneTrack, TransformTrack } from 'types/TP_New/track';
+import { TrackType, LayerTrack, BoneTrack, TransformTrack } from 'types/TP_New/track';
 
 export type TrackListAction =
+  | ReturnType<typeof initializeTrackList>
   | ReturnType<typeof clickCaretButton>
   | ReturnType<typeof clickTrackBody>
   | ReturnType<typeof clickInterpolationMode>
   | ReturnType<typeof addLayerTrack>
   | ReturnType<typeof deleteLayerTrack>
   | ReturnType<typeof muteLayerTrack>
-  | ReturnType<typeof createTrackList>
   | ReturnType<typeof changeTrackScrollTop>;
 
 // 트랙 리스트 생성
-export const createTrackList = (params: any) => ({
-  type: 'trackList/CREATE_TRACK_LIST' as const,
+export const initializeTrackList = (params: any) => ({
+  type: 'trackList/INITIALIZE_TRACK_LIST' as const,
   payload: { ...params },
 });
 
 // 트랙 내부 펴닫기 버튼 클릭
-export type ClickLayerCaretButton = Pick<LayerTrack, 'isPointedDownCaret' | 'layerId'>;
-export type ClickBoneCaretButton = Pick<BoneTrack, 'isPointedDownCaret' | 'boneIndex'>;
+export type ClickLayerCaretButton = Pick<
+  LayerTrack,
+  'isPointedDownCaret' | 'trackId' | 'trackType'
+>;
+export type ClickBoneCaretButton = Pick<
+  BoneTrack,
+  'isPointedDownCaret' | 'trackNumber' | 'trackType'
+>;
 export type ClickCaretButton = ClickLayerCaretButton | ClickBoneCaretButton;
 export const clickCaretButton = (params: ClickCaretButton) => ({
   type: 'trackList/CLICK_CARET_BUTTON' as const,
@@ -27,12 +33,12 @@ export const clickCaretButton = (params: ClickCaretButton) => ({
 
 // 트랙 몸통 클릭
 export interface ClickTrackBody {
-  trackType: 'layer' | 'bone' | 'transform';
+  trackType: TrackType;
   eventType: 'leftClick' | 'multipleClick' | 'rightClick' | 'selectAll' | 'unselectAll';
 }
-export type ClickLayerTrackBody = Pick<LayerTrack, 'layerId'> & ClickTrackBody;
-export type ClickBoneTrackBody = Pick<BoneTrack, 'boneIndex'> & ClickTrackBody;
-export type ClickTransformTrackBody = Pick<TransformTrack, 'transformIndex'> & ClickTrackBody;
+export type ClickLayerTrackBody = Pick<LayerTrack, 'trackId'> & ClickTrackBody;
+export type ClickBoneTrackBody = Pick<BoneTrack, 'trackNumber'> & ClickTrackBody;
+export type ClickTransformTrackBody = Pick<TransformTrack, 'trackNumber'> & ClickTrackBody;
 export const clickTrackBody = (params: ClickTrackBody) => ({
   type: 'trackList/CLICK_TRACK_BODY' as const,
   payload: { ...params },
