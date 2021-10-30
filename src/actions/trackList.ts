@@ -1,4 +1,4 @@
-import { TrackType, LayerTrack, BoneTrack, TransformTrack } from 'types/TP_New/track';
+import { TrackType, LayerTrack, BoneTrack, PropertyTrack } from 'types/TP_New/track';
 
 export type TrackListAction =
   | ReturnType<typeof initializeTrackList>
@@ -19,7 +19,7 @@ export const initializeTrackList = (params: any) => ({
 // 트랙 내부 펴닫기 버튼 클릭
 export type ClickLayerCaretButton = Pick<
   LayerTrack,
-  'isPointedDownCaret' | 'trackId' | 'trackType'
+  'isPointedDownCaret' | 'layerId' | 'trackType'
 >;
 export type ClickBoneCaretButton = Pick<
   BoneTrack,
@@ -36,16 +36,16 @@ export interface ClickTrackBody {
   trackType: TrackType;
   eventType: 'leftClick' | 'multipleClick' | 'rightClick' | 'selectAll' | 'unselectAll';
 }
-export type ClickLayerTrackBody = Pick<LayerTrack, 'trackId'> & ClickTrackBody;
+export type ClickLayerTrackBody = Pick<LayerTrack, 'layerId'> & ClickTrackBody;
 export type ClickBoneTrackBody = Pick<BoneTrack, 'trackNumber'> & ClickTrackBody;
-export type ClickTransformTrackBody = Pick<TransformTrack, 'trackNumber'> & ClickTrackBody;
+export type ClickPropertyTrackBody = Pick<PropertyTrack, 'trackNumber'> & ClickTrackBody;
 export const clickTrackBody = (params: ClickTrackBody) => ({
   type: 'trackList/CLICK_TRACK_BODY' as const,
   payload: { ...params },
 });
 
 // interpolation mode 버튼 클릭
-export type ClickInterpolationMode = Pick<TransformTrack, 'interpolationType'>;
+export type ClickInterpolationMode = Pick<PropertyTrack, 'interpolationType'>;
 export const clickInterpolationMode = (params: ClickInterpolationMode) => ({
   type: 'trackList/CLICK_INTERPOLATION_MODE' as const,
   payload: { ...params },
