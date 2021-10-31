@@ -25,6 +25,7 @@ const DUMMY_DELETE_FRAMES = _.range(1, 100).map((num) => roundToFourth(num / 30)
 const TimelinePanel: FunctionComponent = () => {
   const assetList = useSelector((state) => state.shootProject.assetList);
   const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
+  const fps = useSelector((state) => state.shootProject.fps);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
@@ -121,9 +122,7 @@ const TimelinePanel: FunctionComponent = () => {
           );
 
           otherLayerTracks.forEach((otherTrack) => {
-            let transformKey = otherTrack.transformKeys.find(
-              (key) => roundToFourth(key.frame) === roundToFourth(targetFrame / 30),
-            );
+            let transformKey = otherTrack.transformKeys.find((key) => key.frame === targetFrame);
             switch (otherTrack.property) {
               case 'position': {
                 newPosition.subtract(
@@ -242,9 +241,7 @@ const TimelinePanel: FunctionComponent = () => {
                   track.layerId,
                   track.target,
                   track.property,
-                  track.transformKeys.filter(
-                    (key) => DUMMY_DELETE_FRAME !== roundToFourth(key.frame),
-                  ),
+                  track.transformKeys.filter((key) => DUMMY_DELETE_FRAME !== key.frame),
                   track.isMocapAnimation,
                 ),
               );
@@ -258,9 +255,7 @@ const TimelinePanel: FunctionComponent = () => {
                     rotationTrack.layerId,
                     rotationTrack.target,
                     rotationTrack.property,
-                    track.transformKeys.filter(
-                      (key) => DUMMY_DELETE_FRAME !== roundToFourth(key.frame),
-                    ),
+                    track.transformKeys.filter((key) => DUMMY_DELETE_FRAME !== key.frame),
                     rotationTrack.isMocapAnimation,
                   ),
                 );
@@ -282,9 +277,7 @@ const TimelinePanel: FunctionComponent = () => {
                   track.layerId,
                   track.target,
                   track.property,
-                  track.transformKeys.filter(
-                    (key) => DUMMY_DELETE_FRAME !== roundToFourth(key.frame),
-                  ),
+                  track.transformKeys.filter((key) => DUMMY_DELETE_FRAME !== key.frame),
                   track.isMocapAnimation,
                 ),
               );
@@ -338,9 +331,7 @@ const TimelinePanel: FunctionComponent = () => {
                   track.layerId,
                   track.target,
                   track.property,
-                  track.transformKeys.filter(
-                    (key) => !DUMMY_DELETE_FRAMES.includes(roundToFourth(key.frame)),
-                  ),
+                  track.transformKeys.filter((key) => !DUMMY_DELETE_FRAMES.includes(key.frame)),
                   track.isMocapAnimation,
                 ),
               );
@@ -355,7 +346,7 @@ const TimelinePanel: FunctionComponent = () => {
                     rotationTrack.target,
                     rotationTrack.property,
                     rotationTrack.transformKeys.filter(
-                      (key) => !DUMMY_DELETE_FRAMES.includes(roundToFourth(key.frame)),
+                      (key) => !DUMMY_DELETE_FRAMES.includes(key.frame),
                     ),
                     rotationTrack.isMocapAnimation,
                   ),
@@ -378,9 +369,7 @@ const TimelinePanel: FunctionComponent = () => {
                   track.layerId,
                   track.target,
                   track.property,
-                  track.transformKeys.filter(
-                    (key) => !DUMMY_DELETE_FRAMES.includes(roundToFourth(key.frame)),
-                  ),
+                  track.transformKeys.filter((key) => !DUMMY_DELETE_FRAMES.includes(key.frame)),
                   track.isMocapAnimation,
                 ),
               );
@@ -480,7 +469,7 @@ const TimelinePanel: FunctionComponent = () => {
   }, [animationIngredients, assetList, dispatch, selectedTargets, targetLayerId]);
 
   const handleChangeKeyframe = (event: ChangeEvent<HTMLInputElement>) => {
-    setTargetFrame(parseInt(event.target.value));
+    setTargetFrame(roundToFourth(parseInt(event.target.value) / fps));
   };
 
   const handleChangeLayerName = (event: ChangeEvent<HTMLInputElement>) => {
