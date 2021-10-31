@@ -62,6 +62,7 @@ const ListNode: FunctionComponent<Props> = ({
 
   const lpNode = useSelector((state) => state.lpNode.node);
   const lpClipboard = useSelector((state) => state.lpNode.clipboard);
+  const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
@@ -407,8 +408,20 @@ const ListNode: FunctionComponent<Props> = ({
                       const target = _.find(draft, { assetId: assetId });
 
                       if (target) {
-                        target.children.push(nextIngredient);
+                        target.children.push(nextIngredient.id);
                       }
+
+                      const motion: LP.Node = {
+                        id: nextIngredient.id,
+                        parentId: nextIngredient.assetId,
+                        name: nextIngredient.name,
+                        filePath: lpCurrentPath + `\\${nextIngredient.name}`,
+                        children: [],
+                        extension: '',
+                        type: 'Motion',
+                      };
+
+                      draft.push(motion);
                     });
 
                     dispatch(
@@ -510,6 +523,7 @@ const ListNode: FunctionComponent<Props> = ({
     filePath,
     id,
     lpClipboard,
+    lpCurrentPath,
     lpNode,
     name,
     onContextMenuOpen,
@@ -761,7 +775,7 @@ const ListNode: FunctionComponent<Props> = ({
    * @TODO 파일명에 .(dot)이 여럿인 경우를 위해 다른 방법으로 파일명을 가져오는 방법이 필요하여 임시 대응
    */
   const splitName = name.split('.');
-  const fileName = splitName.slice(0, splitName.length - 1).join('.');
+  const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
   return (
     <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
