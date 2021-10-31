@@ -13,6 +13,7 @@ declare namespace LP {
     fileURL?: string | File;
     filePath: string;
     name: string;
+    extension: string;
     type: NodeType;
     hideNode?: boolean;
     children: any[];
