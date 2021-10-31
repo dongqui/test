@@ -21,6 +21,7 @@ import Pause from './svg/Pause.svg';
 import Export from './svg/Export.svg';
 import PlayBar from './svg/PlayBar.svg';
 import CaretRight from './svg/CaretRight.svg';
+import CaretDown from './svg/CaretDown.svg';
 import LineLeftTriangle from './svg/LineLeftTriangle.svg';
 import Check from './svg/Check.svg';
 import Error from './svg/Error.svg';
@@ -65,6 +66,7 @@ type Icon =
   | 'PlayBar'
   | 'LineLeftTriangle'
   | 'CaretRight'
+  | 'CaretDown'
   | 'Check'
   | 'Error'
   | 'Refresh'
@@ -109,6 +111,7 @@ const images: Images = {
   PlayBar,
   LineLeftTriangle,
   CaretRight,
+  CaretDown,
   Check,
   Error,
   Refresh,
