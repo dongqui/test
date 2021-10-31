@@ -133,6 +133,7 @@ export const TP_TRACK_INDEX = {
 };
 
 //////////////////// new ////////////////////
+
 // filterFunction params(beta, minCutoff)의 기본값
 // mocap 결과물이 아닌 경우, 항등원 성격의 0, 0을 사용합니다.
 export const DEFAULT_BETA = 0.0;

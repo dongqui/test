@@ -1,6 +1,9 @@
 import * as BABYLON from '@babylonjs/core';
 import _ from 'lodash';
 
+/**
+ * vector transformKeys를 보정하기 위한 OneEuro 필터 클래스
+ */
 export default class OneEuroFilterForVector {
   private minCutoff: number = 1.0;
   private beta: number = 0.0;

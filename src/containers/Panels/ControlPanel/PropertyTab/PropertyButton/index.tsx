@@ -3,7 +3,6 @@ import { Segment } from 'components/Segment';
 import { AxisName } from 'types/RP';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import * as renderingDataActions from 'actions/renderingData';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -44,24 +43,20 @@ const PropertyButton: FunctionComponent<PropertyButtonProps> = ({
       let result: boolean | 'y' | 'z' = payload;
       if (button === 'axis') {
         result = payload ? 'y' : 'z';
-        dispatch(renderingDataActions.setAxis({ axis: result }));
       } else if (button === 'isBoneOn') {
         if (!renderingData.isMeshOn && !payload) {
           // mesh 꺼져있고 bone 도 끄려고 할 때
           return;
         }
-        dispatch(renderingDataActions.setIsBoneOn({ isBoneOn: payload }));
       } else if (button === 'isMeshOn') {
         if (!renderingData.isBoneOn && !payload) {
           // bone 꺼져있고 mesh 도 끄려고 할 때
           return;
         }
-        dispatch(renderingDataActions.setIsMeshOn({ isMeshOn: payload }));
       } else if (button === 'isShadowOn') {
-        dispatch(renderingDataActions.setIsShadowOn({ isShadowOn: payload }));
       }
     },
-    [button, dispatch, renderingData.isBoneOn, renderingData.isMeshOn],
+    [button, renderingData.isBoneOn, renderingData.isMeshOn],
   );
 
   const modeList = [

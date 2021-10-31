@@ -5,6 +5,7 @@ import createShootTrack from './createShootTrack';
 
 /**
  * 파일의 animationGroup을 사용해 Shoot 자체적으로 사용하는 구조의 데이터(AnimationIngredient)를 생성합니다.
+ *
  * @param assetId - 본 애니메이션의 대상 asset
  * @param animationGroup - source로 사용할 파일의 animationGroup
  * @param isMocapAnimation - filter parameter 적용을 위한 mocap 결과물인지 여부

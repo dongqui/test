@@ -8,7 +8,6 @@ import { lpData, lpDataOld } from './lpData';
 import { undoableBoneTransform } from './boneTransform';
 import { animatingData } from './animatingData';
 import { renderingData } from './renderingData';
-import { retargetData } from './retargetData';
 import { currentVisualizedData } from './currentVisualizedData';
 import { timeline } from './timeline';
 import { cpData } from './cpData';
@@ -39,7 +38,6 @@ const rootReducer = combineReducers({
   lpData,
   animatingData,
   renderingData,
-  retargetData,
   currentVisualizedData,
   cpData,
   lpDataOld,

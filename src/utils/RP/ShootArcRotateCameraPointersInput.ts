@@ -9,6 +9,8 @@ import ShootBaseCameraPointersInput from './ShootBaseCameraPointersInput';
 import { IPointerEvent } from './types';
 
 /**
+ * Babylonjs의 arcRotate 카메라 포인터 인풋을 커스터마이즈한 클래스
+ *
  * Manage the pointers inputs to control an arc rotate camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */

@@ -1,6 +1,9 @@
 import * as BABYLON from '@babylonjs/core';
 import _ from 'lodash';
 
+/**
+ * quaternion transformKeys를 보정하기 위한 OneEuro 필터 클래스
+ */
 export default class OneEuroFilterForQuaternion {
   private minCutoff: number = 1.0;
   private beta: number = 0.0;
@@ -36,7 +39,6 @@ export default class OneEuroFilterForQuaternion {
       this.prevDxTe = BABYLON.Quaternion.Identity();
       this.prevT = t;
       this.prevTe = t;
-      console.log('q false');
       return x;
     }
 
