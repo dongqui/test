@@ -6,6 +6,7 @@ import { connect, useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { getFileExtension } from 'utils/common';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { beforePaste, checkCreateDuplicates, beforeRename } from 'utils/LP/FileSystem';
@@ -31,6 +32,7 @@ interface BaseProps {
   onSelect?: (id: string) => void;
   isSelected?: boolean;
   childrens: any[];
+  extension: string;
   selectedId?: string;
 }
 
@@ -49,6 +51,7 @@ const ListNode: FunctionComponent<Props> = ({
   onSelect,
   isSelected,
   childrens,
+  extension,
   selectedId,
   visualizedAssetIds,
   animationTransformNodes,
@@ -280,6 +283,7 @@ const ListNode: FunctionComponent<Props> = ({
                         filePath: filePath + `\\${name}`,
                         parentId: parent.id,
                         name: nodeName,
+                        extension: extension,
                         type: 'Folder',
                         hideNode: true,
                         children: [],
@@ -502,6 +506,7 @@ const ListNode: FunctionComponent<Props> = ({
     depthCheck,
     depthChnageKey,
     dispatch,
+    extension,
     filePath,
     id,
     lpClipboard,
@@ -509,7 +514,6 @@ const ListNode: FunctionComponent<Props> = ({
     name,
     onContextMenuOpen,
     onModalOpen,
-    parentId,
     selectableObjects,
     type,
     visualizedAssetIds,
@@ -535,6 +539,7 @@ const ListNode: FunctionComponent<Props> = ({
               name={node.name}
               fileURL={node.fileURL}
               filePath={node.filePath}
+              extension={node.extension}
               onSelect={handleSelect}
               isSelected={node.id === selectedId}
               childrens={node.children}
@@ -555,6 +560,7 @@ const ListNode: FunctionComponent<Props> = ({
             type="Motion"
             name={paramId.name}
             filePath={filePath + `\\${name}`}
+            extension={paramId.extension}
             onSelect={handleSelect}
             isSelected={id === selectedId && paramId.current}
             childrens={[]}
@@ -600,8 +606,9 @@ const ListNode: FunctionComponent<Props> = ({
               // filePath: lpCurrentPath + `\\${name}`,
               filePath: filePath + `\\${name}`, //@todo
               parentId: parentId,
-              name: name,
+              name: type === 'Model' ? `${name}.${extension}` : name,
               type: type,
+              extension: extension,
               hideNode: true,
               children: childrens,
             };
@@ -633,7 +640,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
         });
     },
-    [childrens, dispatch, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   const handleKeydown = useCallback(
@@ -673,8 +680,9 @@ const ListNode: FunctionComponent<Props> = ({
                 // filePath: lpCurrentPath + `\\${name}`,
                 filePath: filePath + `\\${name}`, //@todo
                 parentId: parentId,
-                name: name,
+                name: type === 'Model' ? `${name}.${extension}` : name,
                 type: type,
+                extension: extension,
                 hideNode: true,
                 children: childrens,
               };
@@ -707,7 +715,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
       }
     },
-    [childrens, dispatch, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -749,6 +757,12 @@ const ListNode: FunctionComponent<Props> = ({
     console.log(name, id);
   }, [id, name]);
 
+  /**
+   * @TODO 파일명에 .(dot)이 여럿인 경우를 위해 다른 방법으로 파일명을 가져오는 방법이 필요하여 임시 대응
+   */
+  const splitName = name.split('.');
+  const fileName = splitName.slice(0, splitName.length - 1).join('.');
+
   return (
     <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
       <div className={cx('inner')}>
@@ -760,7 +774,7 @@ const ListNode: FunctionComponent<Props> = ({
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
             {isEditing ? (
-              <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} defaultValue={name} autoFocus />
+              <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} defaultValue={fileName} autoFocus />
             ) : (
               <div className={cx('name')}>{name}</div>
             )}

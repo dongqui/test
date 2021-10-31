@@ -1,29 +1,29 @@
 import _ from 'lodash';
 import { FunctionComponent, memo, useEffect, useState, useCallback, useRef, createRef, RefObject } from 'react';
-import produce from 'immer';
-import { Dispatch } from 'redux';
-import { connect } from 'react-redux';
-import { RootState, useSelector } from 'reducers';
-import { v4 as uuidv4 } from 'uuid';
-import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import { beforePaste, checkCreateDuplicates, getNodeNumber } from 'utils/LP/FileSystem';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
+import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import { v4 as uuidv4 } from 'uuid';
+import produce from 'immer';
 import { ListNode } from './ListView';
 import classNames from 'classnames/bind';
 import styles from './LPBody.module.scss';
 
 const cx = classNames.bind(styles);
 
-type StateProps = ReturnType<typeof mapStateToProps>;
-
-interface BaseProps {
-  dispatch: Dispatch;
+interface Props {
   view: LP.View;
 }
 
-type Props = StateProps & BaseProps;
+const LPBody: FunctionComponent<Props> = () => {
+  const dispatch = useDispatch();
 
-const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => {
+  const lpNode = useSelector((state) => state.lpNode.node);
+  const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
+  const lpClipboard = useSelector((state) => state.lpNode.clipboard);
+
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
 
@@ -164,6 +164,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
                     filePath: '\\root',
                     parentId: '__root__',
                     name: nodeName,
+                    extension: '',
                     type: 'Folder',
                     children: [],
                   } as LP.Node;
@@ -231,6 +232,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
             selectedId={selectedId}
             isSelected={node.id === selectedId}
             childrens={node.children}
+            extension={node.extension}
           />
         </div>
       ))}
@@ -238,12 +240,4 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, lpClipboard, dispatch }) => 
   );
 };
 
-const mapStateToProps = (state: RootState) => {
-  return {
-    lpNode: state.lpNode.node,
-    lpClipboard: state.lpNode.clipboard,
-    lpCurrentPath: state.lpNode.currentPath,
-  };
-};
-
-export default connect(mapStateToProps)(memo(LPBody));
+export default memo(LPBody);

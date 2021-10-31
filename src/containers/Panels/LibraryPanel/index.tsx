@@ -1,16 +1,16 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, useEffect, useState, useCallback, useRef } from 'react';
-import { connect, useDispatch } from 'react-redux';
-import { RootState } from 'reducers';
+import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
-import { v4 as uuid } from 'uuid';
 import { convertFBXtoGLB } from 'api';
-import produce from 'immer';
+import { getFileExtension } from 'utils/common';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { v4 as uuid } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
-import { getFileExtension } from 'utils/common';
 import Box from 'components/Layout/Box';
-import { useBaseModal } from 'new_components/Modal/BaseModal';
+import produce from 'immer';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -19,20 +19,19 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-type StateProps = ReturnType<typeof mapStateToProps>;
-
-interface BaseProps {}
-
-type Props = StateProps & BaseProps;
-
-const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetList, animationTransformNodes, animationIngredients }) => {
-  // console.log(assetList);
-  // console.log(animationIngredients);
+const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
+
+  const lpNode = useSelector((state) => state.lpNode.node);
+  const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
+  const assetList = useSelector((state) => state.shootProject.assetList);
+  const animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
+  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
   const { onModalOpen, onModalClose } = useBaseModal();
 
   const [isModelLoading, setIsModelLoading] = useState(false);
+  const [fileExtension, setFileExtension] = useState('');
   const [fileName, setFileName] = useState('');
   const [assetListLength, setAssetListLength] = useState(0);
   const [animationIngredientsLength, setAnimationIngredientsLength] = useState(0);
@@ -50,6 +49,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetLi
           filePath: lpCurrentPath,
           parentId: '__root__',
           name: fileName,
+          extension: fileExtension,
           type: 'Model',
           assetId: assetList[assetList.length - 1].id,
           children: ingredients.map((ingredient) => ingredient.id),
@@ -64,6 +64,7 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetLi
             name: ingredient.name,
             filePath: lpCurrentPath + `\\${ingredient.name}`,
             children: [],
+            extension: '',
             type: 'Motion',
           };
 
@@ -86,41 +87,28 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetLi
       setAssetListLength(assetList.length);
       setAnimationIngredientsLength(animationIngredients.length);
     }
-  }, [animationIngredients, animationIngredientsLength, assetList, assetListLength, dispatch, fileName, isModelLoading, lpCurrentPath, lpNode]);
+  }, [animationIngredients, animationIngredientsLength, assetList, assetListLength, dispatch, fileExtension, fileName, lpCurrentPath, lpNode]);
 
-  /**
-   * .glb or .fbx는 LPNode에 연결 그 외 AlertModal을 통한 예외 처리
-   *
-   * @param file - LP에 drop한 파일
-   * @todo 각 Folder, Model, Motion 등 이름수정을 위한 파일명과 파일확장자의 분리가 필요
-   */
   const onFileLoad = useCallback(
     async (file: File) => {
-      // 다중 or 단일 drop한 파일에 대해서 최종적으로 dispatch하기 위한 clone 처리
-      let nextLPNodes = _.clone(lpNode);
-
-      // 대소문자 관련없이 처리하기 위한 확장자의 소문자 치환
       const extension = getFileExtension(file.name).toLowerCase();
       const fileName = file.name;
 
       switch (extension) {
-        // 1) glb(GLB) 로드
         case 'glb': {
           setFileName(fileName);
+          setFileExtension(extension);
           setIsModelLoading(true);
 
-          // LP drop 시에 파일 로드하기 위해 아래의 코드를 추가했습니다(차)
+          /**
+           * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
+           */
           dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
-
           break;
         }
 
-        // 2) fbx(FBX) 로드
         case 'fbx': {
-          onModalOpen({
-            title: 'Importing the file',
-            message: 'This can take up to 3 minutes',
-          });
+          onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
           await convertFBXtoGLB(file)
             .then((response) => {
@@ -129,7 +117,9 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetLi
               setFileName(fileName);
               setIsModelLoading(true);
 
-              // LP drop 시에 파일 로드하기 위해 아래의 코드를 추가했습니다(차)
+              /**
+               * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
+               */
               dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
             })
             .catch(() => {
@@ -147,26 +137,19 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetLi
           break;
         }
 
-        // 3) mp4(MP4), mov(MOV), avi(AVI) 로드
         case 'mp4':
         case 'mov':
         case 'avi': {
-          // VM으로 전환
           break;
         }
 
-        // 4) glb(GLB) or fbx(FBX) 외 로드
         default: {
-          onModalOpen({
-            title: 'Warning',
-            message: 'Unsupported file format',
-            confirmText: 'Close',
-          });
+          onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
           break;
         }
       }
     },
-    [dispatch, lpNode, onModalClose, onModalOpen],
+    [dispatch, onModalClose, onModalOpen],
   );
 
   const handleDrop = useCallback(
@@ -197,14 +180,4 @@ const LibraryPanel: FunctionComponent<Props> = ({ lpNode, lpCurrentPath, assetLi
   );
 };
 
-const mapStateToProps = (state: RootState) => {
-  return {
-    lpNode: state.lpNode.node,
-    lpCurrentPath: state.lpNode.currentPath,
-    assetList: state.shootProject.assetList,
-    animationTransformNodes: state.animationData.animationTransformNodes,
-    animationIngredients: state.animationData.animationIngredients,
-  };
-};
-
-export default connect(mapStateToProps)(memo(LibraryPanel));
+export default memo(LibraryPanel);
