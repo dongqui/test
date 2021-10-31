@@ -24,6 +24,9 @@ import { lpNode } from './LP/lpNode';
 import { shootProject } from './shootProject';
 import { selectingData } from './selectingData';
 import { animationData } from './animationData';
+import { animatingControls } from './animatingControls';
+import trackList from './trackList';
+import keyframes from './keyframes';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -52,6 +55,9 @@ const rootReducer = combineReducers({
   shootProject,
   selectingData,
   animationData,
+  animatingControls,
+  trackList,
+  keyframes,
 });
 
 // type 적용된 useSelector

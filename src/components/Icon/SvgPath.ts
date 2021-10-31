@@ -20,8 +20,8 @@ import RewindArrow from './svg/RewindArrow.svg';
 import Pause from './svg/Pause.svg';
 import Export from './svg/Export.svg';
 import PlayBar from './svg/PlayBar.svg';
+import CaretRight from './svg/CaretRight.svg';
 import LineLeftTriangle from './svg/LineLeftTriangle.svg';
-import CaretDown from './svg/CaretDown.svg';
 import Check from './svg/Check.svg';
 import Error from './svg/Error.svg';
 import Refresh from './svg/Refresh.svg';
@@ -33,6 +33,13 @@ import IconView from './New_svg/IconView.svg';
 import Folder from './New_svg/Folder.svg';
 import Model from './New_svg/Model.svg';
 import Motion from './New_svg/Motion.svg';
+import SimpleMode from './svg/SimpleMode.svg';
+import Record from './svg/Record.svg';
+import Stop from './svg/Stop.svg';
+import InsertKeyframe from './svg/InsertKeyframe.svg';
+import Bezier from './svg/Bezier.svg';
+import Linear from './svg/Linear.svg';
+import Constant from './svg/Constant.svg';
 
 type Icon =
   | 'Close'
@@ -57,7 +64,7 @@ type Icon =
   | 'Export'
   | 'PlayBar'
   | 'LineLeftTriangle'
-  | 'CaretDown'
+  | 'CaretRight'
   | 'Check'
   | 'Error'
   | 'Refresh'
@@ -65,7 +72,14 @@ type Icon =
   | 'Reset'
   | 'Folder'
   | 'Model'
-  | 'Motion';
+  | 'Motion'
+  | 'SimpleMode'
+  | 'Record'
+  | 'Stop'
+  | 'InsertKeyframe'
+  | 'Bezier'
+  | 'Linear'
+  | 'Constant';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -94,7 +108,7 @@ const images: Images = {
   Export,
   PlayBar,
   LineLeftTriangle,
-  CaretDown,
+  CaretRight,
   Check,
   Error,
   Refresh,
@@ -103,6 +117,13 @@ const images: Images = {
   Folder,
   Model,
   Motion,
+  SimpleMode,
+  Record,
+  Stop,
+  InsertKeyframe,
+  Bezier,
+  Linear,
+  Constant,
 };
 
 export default images;
