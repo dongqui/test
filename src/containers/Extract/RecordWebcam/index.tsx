@@ -4,13 +4,13 @@ import React, { FunctionComponent, memo, useEffect, useRef } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { useRecordWebcam } from '../../../hooks/VM';
 import { INITIAL_RECORDING_DATA } from 'utils/const';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import * as pageInfoActions from 'actions/pageInfo';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import * as recordingDataActions from 'actions/recordingData';
 import * as cutImagesActions from 'actions/cutImages';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 

@@ -12,10 +12,10 @@ import {
   getValueInsertedTransformKeys,
 } from 'utils/RP';
 import * as animationDataActions from 'actions/animationDataAction';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { roundToFourth } from 'utils/common';
 import produce from 'immer';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 

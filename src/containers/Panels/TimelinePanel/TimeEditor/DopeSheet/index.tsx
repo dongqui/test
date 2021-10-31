@@ -30,9 +30,9 @@ import { d3ScaleLinear } from 'types/TP';
 import PlayBar from './PlayBar';
 import KeyframeGroup from './KeyframeGroup';
 import useContextMenu from 'hooks/common/useContextMenu';
+import * as contextmenuInfoActions from 'actions/contextmenuInfo';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import * as contextmenuInfoActions from 'actions/contextmenuInfo';
 
 const cx = classNames.bind(styles);
 

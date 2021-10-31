@@ -4,12 +4,12 @@ import _ from 'lodash';
 import { Rnd, RndDragCallback, RndResizeCallback } from 'react-rnd';
 import { getNumberFromPx } from '../../../utils/common';
 import ImageList from './ImageList';
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import * as recordingDataActions from 'actions/recordingData';
 import * as barPositionXActions from 'actions/barPositionX';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 

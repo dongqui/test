@@ -24,9 +24,9 @@ import { fnGetMaskedValue, fnSetValue } from 'utils/common';
 import { useDispatch } from 'react-redux';
 import * as animatingDataActions from 'actions/animatingData';
 import { useSelector } from 'reducers';
+import * as pageInfoActions from 'actions/pageInfo';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import * as pageInfoActions from 'actions/pageInfo';
 
 const cx = classNames.bind(styles);
 

@@ -5,9 +5,9 @@ import Webcam from 'containers/Extract/Webcam';
 import _ from 'lodash';
 import { PAGE_NAMES } from 'types';
 import RecordWebcam from 'containers/Extract/RecordWebcam';
+import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
