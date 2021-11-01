@@ -20,27 +20,47 @@ interface Props {
 }
 
 export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
+  const cameraListRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef<HTMLCanvasElement>(null);
+
+  const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
+  const [currentDevice, setCurrentDevice] = useState<string>('');
   const [thumbnailList, setThumbnailList] = useState([]);
   const [duration, setDuration] = useState<number>(0);
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
+  const [indicatorPosition, setIndicatorPosition] = useState<number>(0);
   const [playState, setPlayState] = useState<boolean>(false);
+  const [recordState, setRecordState] = useState<boolean>(false);
+  const [recording, setRecording] = useState<boolean>(false);
+  const [standbyState, setStandbyState] = useState<boolean>(false);
+  const [timer, setTimer] = useState<number>(0);
 
   const {
     mediaStreamInitialize,
-    availableDevices,
     startRecording,
     stopRecording,
     playRecording,
     pauseRecording,
+    backToStandby,
+    stopVideo,
+    startRecordingDelay,
+    handleCameraList,
+    handleChangeCamera,
   } = useMediaStream({
     ref: videoRef,
     canvasRef: canvasRef,
+    recording: recording,
     setThumbnailList: setThumbnailList,
     setDuration: setDuration,
     setPlayState: setPlayState,
+    setRecordState: setRecordState,
+    setRecording: setRecording,
+    setStandbyState: setStandbyState,
+    setTimer: setTimer,
+    setDeviceList: setDeviceList,
+    setCurrentDevice: setCurrentDevice,
     browserType: browserType,
   });
 
@@ -63,19 +83,22 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   };
 
   const playBox = [
-    { id: 'startRecording', icon: SvgPath.Record, fn: startRecording },
-    { id: 'rewindRecording', icon: SvgPath.RewindArrow, fn: availableDevices },
+    { id: 'startRecording', icon: SvgPath.Record, fn: stopRecording },
+    { id: 'standbyRecording', icon: SvgPath.Record, fn: backToStandby },
+    { id: 'completeRecording', icon: SvgPath.Record, fn: startRecordingDelay },
     { id: 'playRecording', icon: SvgPath.PlayArrow, fn: playRecording },
     { id: 'pauseRecording', icon: SvgPath.PauseVideo, fn: pauseRecording },
-    { id: 'stopRecording', icon: SvgPath.Stop, fn: stopRecording },
+    { id: 'stopRecording', icon: SvgPath.Stop, fn: stopVideo },
   ];
+
+  // const handleChangeCamera = useCallback(() => {}, []);
 
   const handleVideoEnd = useCallback(() => {
     setPlayState(false);
   }, []);
 
-  const handleSlider = (start: number, end: number) => {
-    console.log(start, end);
+  const handleSlider = (endpoint: { start: number; end: number }) => {
+    const { start, end } = endpoint;
   };
 
   const handleTimeline = useCallback((e) => {
@@ -84,6 +107,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
 
   const handleCurrentTime = useCallback(() => {
     setCurrentVideoTime(videoRef.current!.currentTime);
+    setIndicatorPosition((videoRef.current!.currentTime / videoRef.current!.duration) * 100);
   }, []);
 
   useEffect(() => {
@@ -93,7 +117,12 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   return (
     <Fragment>
       <Box id="UP" {...boxProps.up}>
-        <UpperBar sceneName="Please enter a scene name" />
+        <UpperBar
+          sceneName="Please enter a scene name"
+          cameraListRef={cameraListRef}
+          deviceList={deviceList}
+          handleChangeCamera={handleChangeCamera}
+        />
       </Box>
       <div className={cx('video-wrap')}>
         <canvas className={cx('thumbnail-canvas')} ref={canvasRef}></canvas>
@@ -111,6 +140,18 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         <div className={cx('middle-bar')}>
           <div className={cx('playbox')}>
             {playBox.map((item, index) => {
+              if ((!recording || standbyState) && item.id === 'startRecording') {
+                return;
+              }
+
+              if (!standbyState && item.id === 'standbyRecording') {
+                return;
+              }
+
+              if (recording && item.id === 'completeRecording') {
+                return;
+              }
+
               if (!playState && item.id === 'pauseRecording') {
                 return;
               }
@@ -128,36 +169,42 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
                 />
               );
             })}
+            {!recordState && <div className={cx('disable-control')}></div>}
           </div>
           <FilledButton className={cx('extract-button')} text="Extract Motion" />
         </div>
       </Box>
-      <VMRuler start={0} end={100} />
-      <div className={cx('thumbnail-wrap')}>
-        <CropSlider
-          start={0}
-          end={100}
-          duration={duration}
-          currentVideoTime={currentVideoTime}
-          handleTimeline={handleTimeline}
-          onChange={handleSlider}
-        >
-          <div className={cx('thumbnail')}>
-            {thumbnailList &&
-              thumbnailList.map((image, idx) => (
-                <Image
-                  key={idx}
-                  src={image}
-                  alt="timeline thumbanil"
-                  className={cx('thumbnail-image')}
-                  width={100}
-                  height={80}
-                />
-              ))}
-            {/* <canvas ref={frameRef} /> */}
+      {recordState && (
+        <Fragment>
+          <VMRuler start={0} end={duration} />
+          <div className={cx('thumbnail-wrap')}>
+            <CropSlider
+              start={0}
+              end={100}
+              duration={duration}
+              currentVideoTime={currentVideoTime}
+              handleTimeline={handleTimeline}
+              indicatorPosition={indicatorPosition}
+              onChange={handleSlider}
+            >
+              <div className={cx('thumbnail')}>
+                {thumbnailList &&
+                  thumbnailList.map((image, idx) => (
+                    <Image
+                      key={idx}
+                      src={image}
+                      alt="timeline thumbanil"
+                      className={cx('thumbnail-image')}
+                      width={100}
+                      height={80}
+                    />
+                  ))}
+                {/* <canvas ref={frameRef} /> */}
+              </div>
+            </CropSlider>
           </div>
-        </CropSlider>
-      </div>
+        </Fragment>
+      )}
     </Fragment>
   );
 };
