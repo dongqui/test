@@ -30,7 +30,6 @@ const LibraryPanel: FunctionComponent = () => {
 
   const { onModalOpen, onModalClose } = useBaseModal();
 
-  const [isModelLoading, setIsModelLoading] = useState(false);
   const [fileExtension, setFileExtension] = useState('');
   const [fileName, setFileName] = useState('');
   const [assetListLength, setAssetListLength] = useState(0);
@@ -82,7 +81,6 @@ const LibraryPanel: FunctionComponent = () => {
         }),
       );
 
-      setIsModelLoading(false);
       setFileName('');
       setAssetListLength(assetList.length);
       setAnimationIngredientsLength(animationIngredients.length);
@@ -98,7 +96,6 @@ const LibraryPanel: FunctionComponent = () => {
         case 'glb': {
           setFileName(fileName);
           setFileExtension(extension);
-          setIsModelLoading(true);
 
           /**
            * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
@@ -115,7 +112,6 @@ const LibraryPanel: FunctionComponent = () => {
               onModalClose();
 
               setFileName(fileName);
-              setIsModelLoading(true);
 
               /**
                * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.

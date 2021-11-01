@@ -9,28 +9,20 @@ interface Params {
 const beforePaste = (params: Params): string => {
   const { name, comparisonNames } = params;
 
-  console.log('beforePaste');
-  console.log(name, comparisonNames);
-
   let duplicatesNumber = '0';
 
   const tempName = `${name} copy`;
 
   // ex) ' (2)'
   const matchingNumber = tempName.trim().match(/ \([0-9]\)/g);
-  console.log('matchingNumber > ' + matchingNumber);
 
   duplicatesNumber = checkPasteDuplicates(tempName, comparisonNames);
 
-  console.log('duplicatesNumber > ' + duplicatesNumber);
-
   // const tempResult = tempName.substr(0, tempName.lastIndexOf('(')).trim();
 
-  // console.log('tempResult > ' + tempResult);
+  //
 
   const resultName = duplicatesNumber === '0' ? tempName : `${tempName} (${duplicatesNumber})`;
-
-  console.log('resultName > ' + resultName);
 
   // lastIndexOf tempName.lastIndexOf(' (')); -> Folder (2) -> 6 // ('(') -> 7
   // if (isNameHasCopy) {
