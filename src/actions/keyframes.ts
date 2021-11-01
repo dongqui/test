@@ -1,4 +1,4 @@
-import { TrackIdentifier } from 'types/TP_New';
+import { TrackIdentifier } from 'types/TP';
 
 export type KeyframesAction =
   | ReturnType<typeof selectKeyframes>

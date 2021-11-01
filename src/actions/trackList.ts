@@ -1,4 +1,4 @@
-import { TrackType, LayerTrack, BoneTrack, PropertyTrack } from 'types/TP_New/track';
+import { TrackType, LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
 
 export type TrackListAction =
   | ReturnType<typeof initializeTrackList>
