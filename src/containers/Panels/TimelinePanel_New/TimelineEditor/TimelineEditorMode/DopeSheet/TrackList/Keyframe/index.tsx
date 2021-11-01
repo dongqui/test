@@ -1,7 +1,8 @@
 import { memo, useCallback, useMemo, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { SelectedKeyframe, Keyframe } from 'types/TP_New/keyframe';
+import { TrackIdentifier } from 'types/TP_New';
+import { Keyframe } from 'types/TP_New/keyframe';
 import { selectKeyframes } from 'actions/keyframes';
 import { ScaleLinear } from 'utils/TP';
 
@@ -10,12 +11,10 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props extends SelectedKeyframe, Keyframe {
-  trackType: 'layer' | 'bone' | 'transform';
-}
+type Props = TrackIdentifier & Keyframe;
 
 const KeyframeComponent: FunctionComponent<Props> = (props) => {
-  const { trackNumber, time, isSelected, trackType, trackId } = props;
+  const { trackNumber, time, isSelected, trackType } = props;
   const dispatch = useDispatch();
 
   // 키프레임 속성 값 관리
@@ -31,13 +30,14 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
     (event: React.MouseEvent<Element>) => {
       dispatch(
         selectKeyframes({
-          selectedKeyframes: { time, trackNumber, trackId },
           selectType: event.ctrlKey ? 'multiple' : 'left',
           trackType,
+          trackNumber,
+          time,
         }),
       );
     },
-    [dispatch, time, trackId, trackNumber, trackType],
+    [dispatch, time, trackNumber, trackType],
   );
 
   return (

@@ -1,7 +1,8 @@
 import { FunctionComponent } from 'react';
 
-import { EditorTrack } from 'types/TP_New/keyframe';
-import { TransformTrack } from 'types/TP_New/track';
+import { PropertyIdentifier } from 'types/TP_New';
+import { TimeEditorTrack } from 'types/TP_New/keyframe';
+import { PropertyTrack } from 'types/TP_New/track';
 
 import Keyframe from './Keyframe';
 
@@ -10,12 +11,12 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props extends EditorTrack, TransformTrack {
+interface Props extends TimeEditorTrack<PropertyIdentifier>, PropertyTrack {
   translateY: number;
 }
 
 const TransformTrackComponent: FunctionComponent<Props> = (props) => {
-  const { keyframes, isSelected, translateY, trackNumber, trackId } = props;
+  const { keyframes, isSelected, translateY, trackNumber } = props;
 
   return (
     <g className={cx('track')} transform={`translate(0, ${translateY})`}>
@@ -30,9 +31,8 @@ const TransformTrackComponent: FunctionComponent<Props> = (props) => {
           !keyframe.isDeleted && (
             <Keyframe
               key={keyframe.time}
-              trackType="transform"
+              trackType="property"
               trackNumber={trackNumber}
-              trackId={trackId}
               {...keyframe}
             />
           ),

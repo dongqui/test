@@ -16,9 +16,9 @@ interface Props extends LayerTrack {
 }
 
 const LayerTrackComponent: FunctionComponent<Props> = (props) => {
-  const { trackId, trackNumber, isPointedDownCaret, isSelected, translateY } = props;
-  const layerKeyframes = useSelector((state) => state.keyframes.layerKeyframes);
-  const boneKeyframes = useSelector((state) => state.keyframes.boneKeyframes);
+  const { trackNumber, isPointedDownCaret, isSelected, translateY } = props;
+  const layerKeyframes = useSelector((state) => state.keyframes.layerTrack);
+  const boneKeyframes = useSelector((state) => state.keyframes.boneTrackList);
   const boneTrackList = useSelector((state) => state.trackList.boneTrackList);
 
   // bone 트랙 translateY 계산
@@ -51,7 +51,6 @@ const LayerTrackComponent: FunctionComponent<Props> = (props) => {
                   key={keyframe.time}
                   trackType="layer"
                   trackNumber={trackNumber}
-                  trackId={trackId}
                   {...keyframe}
                 />
               ),

@@ -1,3 +1,3 @@
 export { default as LayerTrack } from './LayerTrack';
 export { default as BoneTrack } from './BoneTrack';
-export { default as TransformTrack } from './TransformTrack';
+export { default as PropertyTrack } from './PropertyTrack';

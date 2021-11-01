@@ -1,11 +1,12 @@
 import { useMemo, Fragment, FunctionComponent } from 'react';
 
-import { EditorTrack } from 'types/TP_New/keyframe';
+import { BoneIdentifier } from 'types/TP_New';
+import { TimeEditorTrack } from 'types/TP_New/keyframe';
 import { BoneTrack } from 'types/TP_New/track';
 import { useSelector } from 'reducers';
 import { getBoneTrackIndex } from 'utils/TP';
 
-import { TransformTrack } from './index';
+import { PropertyTrack } from './index';
 import Keyframe from './Keyframe';
 
 import classNames from 'classnames/bind';
@@ -13,42 +14,42 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props extends EditorTrack, BoneTrack {
+interface Props extends TimeEditorTrack<BoneIdentifier>, BoneTrack {
   translateY: number;
 }
 
 const BoneTrackComponent: FunctionComponent<Props> = (props) => {
-  const { trackId, trackNumber, keyframes, isPointedDownCaret, isSelected, translateY } = props;
-  const transformKeyframes = useSelector((state) => state.keyframes.transformKeyframes);
-  const transformTrackList = useSelector((state) => state.trackList.transformTrackList);
+  const { trackNumber, keyframes, isPointedDownCaret, isSelected, translateY } = props;
+  const propertyKeyframes = useSelector((state) => state.keyframes.propertyTrackList);
+  const propertyTrackList = useSelector((state) => state.trackList.propertyTrackList);
 
-  // 자식이 될 transform 키프레임 필터링
+  // 자식이 될 property 키프레임 필터링
   const childrenKeyframes = useMemo(() => {
     let index = 0;
-    while (index < transformKeyframes.length) {
-      const boneIndex = getBoneTrackIndex(transformKeyframes[index].trackNumber as number);
+    while (index < propertyKeyframes.length) {
+      const boneIndex = getBoneTrackIndex(propertyKeyframes[index].trackNumber as number);
       if (boneIndex === trackNumber) {
         const start = index - 1 === -1 ? 0 : index;
-        return transformKeyframes.slice(start, index + 3);
+        return propertyKeyframes.slice(start, index + 3);
       }
       index += 3;
     }
     return [];
-  }, [trackNumber, transformKeyframes]);
+  }, [trackNumber, propertyKeyframes]);
 
-  // 자식이 될 transform 트랙 리스트 필터링
+  // 자식이 될 property 트랙 리스트 필터링
   const childrenTrackList = useMemo(() => {
     let index = 0;
-    while (index < transformTrackList.length) {
-      const boneIndex = getBoneTrackIndex(transformTrackList[index].trackNumber);
+    while (index < propertyTrackList.length) {
+      const boneIndex = getBoneTrackIndex(propertyTrackList[index].trackNumber);
       if (boneIndex === trackNumber) {
         const start = index - 1 === -1 ? 0 : index;
-        return transformTrackList.slice(start, index + 3);
+        return propertyTrackList.slice(start, index + 3);
       }
       index += 3;
     }
     return [];
-  }, [trackNumber, transformTrackList]);
+  }, [trackNumber, propertyTrackList]);
 
   return (
     <Fragment>
@@ -64,7 +65,6 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
             !keyframe.isDeleted && (
               <Keyframe
                 key={keyframe.time}
-                trackId={trackId}
                 trackType="bone"
                 trackNumber={trackNumber}
                 {...keyframe}
@@ -73,11 +73,11 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
         )}
       </g>
       {isPointedDownCaret &&
-        childrenTrackList.map((transformTrack, index) => (
-          <TransformTrack
-            key={transformTrack.trackNumber}
+        childrenTrackList.map((propertyTrack, index) => (
+          <PropertyTrack
+            key={propertyTrack.trackNumber}
             translateY={translateY + (index + 1) * 24}
-            {...transformTrack}
+            {...propertyTrack}
             {...childrenKeyframes[index]}
           />
         ))}
