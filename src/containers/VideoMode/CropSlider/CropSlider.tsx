@@ -19,6 +19,7 @@ interface Props {
   end: number;
   duration: number;
   currentVideoTime: number;
+  indicatorPosition: number;
   handleTimeline: (e: any) => void;
   onChange: Function;
   children: ReactNode;
@@ -29,6 +30,7 @@ export const CropSlider: FunctionComponent<Props> = ({
   end,
   duration,
   currentVideoTime,
+  indicatorPosition,
   handleTimeline,
   onChange,
   children,
@@ -102,8 +104,17 @@ export const CropSlider: FunctionComponent<Props> = ({
       <div className={cx('slider')}>
         <div className={cx('slider-track')}></div>
         <div ref={cropRef} className={cx('slider-range')}></div>
+        <span
+          className={cx('slider-time-indicator')}
+          style={{ marginLeft: indicatorPosition + '%' }}
+        >
+          {duration < 100
+            ? Math.round(currentVideoTime * 100) / 100
+            : Math.round(currentVideoTime * 10) / 10}
+        </span>
         <input
           className={cx('slider-time')}
+          id="scrubber"
           type="range"
           min="0"
           max={duration}

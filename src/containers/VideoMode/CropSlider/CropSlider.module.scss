@@ -39,6 +39,21 @@
   }
 }
 
+.slider-time-indicator {
+  position: absolute;
+  top: -14px;
+  width: 32px;
+  height: 14px;
+  font-size: 9px;
+  line-height: 12px;
+  font-weight: 500;
+  border-radius: 2px;
+  text-align: center;
+  z-index: 2;
+  transform: translate(-50%);
+  background-color: #fff;
+}
+
 .thumb,
 .thumb::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -95,6 +110,8 @@
   &::-webkit-slider-runnable-track {
     width: 100%;
     height: 100%;
+    margin-left: -10px;
+    margin-right: -10px;
     cursor: pointer;
     background-color: transparent;
   }
@@ -102,9 +119,9 @@
   &::-webkit-slider-thumb {
     appearance: none;
     margin: 0;
-    width: 2px;
+    width: 1px;
     height: 100%;
     cursor: col-resize;
-    background-color: orangered;
+    background-color: #fff;
   }
 }
