@@ -1,4 +1,5 @@
-import { SelectedKeyframe, EditorTrack } from 'types/TP_New/keyframe';
+import { BoneIdentifier, PropertyIdentifier } from 'types/TP_New';
+import { SelectedKeyframe } from 'types/TP_New/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
@@ -14,79 +15,77 @@ interface Params {
 class LayerKeyframeMultipleClick implements MultipleClick {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
-  private getSelectedBones = (boneTrackList: EditorTrack[], time: number) => {
-    const selectedBones: SelectedKeyframe[] = [];
-    boneTrackList.forEach((boneTrack) => {
-      const { trackId, trackNumber } = boneTrack;
-      selectedBones.push({ trackId, trackNumber, time });
+  private getSelectedBones = ({ state, payload }: Params) => {
+    const selectedBones: SelectedKeyframe<BoneIdentifier>[] = [];
+    state.boneTrackList.forEach((boneTrack) => {
+      const { targetId, trackNumber, trackType } = boneTrack;
+      selectedBones.push({ targetId, trackNumber, trackType, time: payload.time });
     });
     return selectedBones;
   };
 
-  private getSelectedTransforms = (transformTrackList: EditorTrack[], time: number) => {
-    const selectedTransforms: SelectedKeyframe[] = [];
-    transformTrackList.forEach((transformTrack) => {
-      const { trackId, trackNumber } = transformTrack;
-      selectedTransforms.push({ trackId, trackNumber, time });
+  private getSelectedProperties = ({ state, payload }: Params) => {
+    const selectedPropertiess: SelectedKeyframe<PropertyIdentifier>[] = [];
+    state.propertyTrackList.forEach((propertyTrack) => {
+      const { trackType, property, trackNumber } = propertyTrack;
+      selectedPropertiess.push({ trackNumber, trackType, property, time: payload.time });
     });
-    return selectedTransforms;
+    return selectedPropertiess;
   };
 
   private filterSelectedLayer = ({ state, payload }: Params) => {
-    const { selectedLayerKeyframes } = state;
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
+    const { selectedLayerKeyframes, layerTrack } = state;
+    const layerId = layerTrack.layerId;
+    const selectedKeyframe = { ...payload, layerId };
     return this.clusterKeyframes.filterKeyframeTimes(selectedLayerKeyframes, [selectedKeyframe]);
   };
 
   private filterSelectedBone = ({ state, payload }: Params) => {
-    const { boneKeyframes, selectedBoneKeyframes } = state;
-    const { time } = payload.selectedKeyframes as SelectedKeyframe;
-    const selectedBones = this.getSelectedBones(boneKeyframes, time);
+    const { selectedBoneKeyframes } = state;
+    const selectedBones = this.getSelectedBones({ state, payload });
     return this.clusterKeyframes.filterKeyframeTimes(selectedBoneKeyframes, selectedBones);
   };
 
-  private filterSelectedTransform = ({ state, payload }: Params) => {
-    const { transformKeyframes, selectedTransformKeyframes } = state;
-    const { time } = payload.selectedKeyframes as SelectedKeyframe;
-    const selectedTransform = this.getSelectedTransforms(transformKeyframes, time);
-    return this.clusterKeyframes.filterKeyframeTimes(selectedTransformKeyframes, selectedTransform);
+  private filterSelectedProperty = ({ state, payload }: Params) => {
+    const { selectedPropertyKeyframes } = state;
+    const selectedProperty = this.getSelectedProperties({ state, payload });
+    return this.clusterKeyframes.filterKeyframeTimes(selectedPropertyKeyframes, selectedProperty);
   };
 
   private addLayerTimes = ({ state, payload }: Params) => {
-    const { selectedLayerKeyframes } = state;
-    const selectedKeyframe = payload.selectedKeyframes as SelectedKeyframe;
+    const { selectedLayerKeyframes, layerTrack } = state;
+    const layerId = layerTrack.layerId;
+    const selectedKeyframe = { ...payload, layerId };
     return this.clusterKeyframes.addKeyframeTimes(selectedLayerKeyframes, [selectedKeyframe]);
   };
 
   private addBoneTimes = ({ state, payload }: Params) => {
-    const { boneKeyframes, selectedBoneKeyframes } = state;
-    const { time } = payload.selectedKeyframes as SelectedKeyframe;
-    const selectedBones = this.getSelectedBones(boneKeyframes, time);
+    const { selectedBoneKeyframes } = state;
+    const selectedBones = this.getSelectedBones({ state, payload });
     return this.clusterKeyframes.addKeyframeTimes(selectedBoneKeyframes, selectedBones);
   };
 
-  private addTransformTimes = ({ state, payload }: Params) => {
-    const { transformKeyframes, selectedTransformKeyframes } = state;
-    const { time } = payload.selectedKeyframes as SelectedKeyframe;
-    const selectedTransform = this.getSelectedTransforms(transformKeyframes, time);
-    return this.clusterKeyframes.addKeyframeTimes(selectedTransformKeyframes, selectedTransform);
+  private addPropertyTimes = ({ state, payload }: Params) => {
+    const { selectedPropertyKeyframes } = state;
+    const selectedProperty = this.getSelectedProperties({ state, payload });
+    return this.clusterKeyframes.addKeyframeTimes(selectedPropertyKeyframes, selectedProperty);
   };
 
   selectExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
-    const { filterSelectedLayer, filterSelectedBone, filterSelectedTransform } = this;
+    const { filterSelectedLayer, filterSelectedBone, filterSelectedProperty } = this;
     return {
       selectedLayerKeyframes: filterSelectedLayer({ state, payload }),
       selectedBoneKeyframes: filterSelectedBone({ state, payload }),
-      selectedTransformKeyframes: filterSelectedTransform({ state, payload }),
+      selectedPropertyKeyframes: filterSelectedProperty({ state, payload }),
     };
   };
 
   selectNotExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
-    const { addLayerTimes, addBoneTimes, addTransformTimes } = this;
+    const { addLayerTimes, addBoneTimes, addPropertyTimes } = this;
     return {
       selectedLayerKeyframes: addLayerTimes({ state, payload }),
       selectedBoneKeyframes: addBoneTimes({ state, payload }),
-      selectedTransformKeyframes: addTransformTimes({ state, payload }),
+      selectedPropertyKeyframes: addPropertyTimes({ state, payload }),
     };
   };
 }

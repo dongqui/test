@@ -5,11 +5,11 @@ import { Service, ServiceConstructor } from './service';
 
 import LayerKeyframeService from './service/LayerKeyframe';
 import BoneKeyframeService from './service/BoneKeyframe';
-import TransformKeyframeService from './service/TransformKeyframe';
+import PropertyKeyframeService from './service/PropertyKeyframe';
 
 import LayerKeyframesRepository from './repository/LayerKeyframes';
 import BoneKeyframesRepository from './repository/BoneKeyframes';
-import TransformKeyframesRepository from './repository/TransformKeyframes';
+import PropertyKeyframesRepository from './repository/PropertyKeyframe';
 
 const createService = (
   Constructor: ServiceConstructor,
@@ -18,8 +18,8 @@ const createService = (
 ) => {
   const layerRepo = new LayerKeyframesRepository(state);
   const boneRepo = new BoneKeyframesRepository(state);
-  const transformRepo = new TransformKeyframesRepository(state);
-  return new Constructor(state, payload, layerRepo, boneRepo, transformRepo);
+  const propertyRepo = new PropertyKeyframesRepository(state);
+  return new Constructor(state, payload, layerRepo, boneRepo, propertyRepo);
 };
 
 const run = (service: Service) => {
@@ -39,7 +39,7 @@ export const boneKeyframeConfig = (state: KeyframesState, payload: SelectKeyfram
   return run(service);
 };
 
-export const transformKeyframeConfig = (state: KeyframesState, payload: SelectKeyframes) => {
-  const service = createService(TransformKeyframeService, state, payload);
+export const propertyKeyframeConfig = (state: KeyframesState, payload: SelectKeyframes) => {
+  const service = createService(PropertyKeyframeService, state, payload);
   return run(service);
 };

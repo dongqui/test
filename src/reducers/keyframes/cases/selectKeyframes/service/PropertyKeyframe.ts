@@ -1,15 +1,16 @@
-import { EditorTrack, SelectedKeyframe } from 'types/TP_New/keyframe';
+import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP_New';
+import { TimeEditorTrack } from 'types/TP_New/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllKeyframes, AllSelectedKeyframes } from 'reducers/keyframes/types';
 import { StateUpdate } from 'reducers/keyframes/classes';
 import { findElementIndex } from 'utils/TP';
 
-import HorizontalSelection from './horizontal/TrasnformKeyframe';
+import HorizontalSelection from './horizontal/PropertyKeyframe';
 import VerticalSelection from './vertical/Keyframe';
 import UnselectAll from './unselectAll/Keyframe';
-import MultipleClick from './multipleClick/TransformKeyframe';
-import LeftClick from './leftClick/TransformKeyframe';
+import MultipleClick from './multipleClick/PropertyKeyframe';
+import LeftClick from './leftClick/PropertyKeyframe';
 import { Service } from './index';
 import { Repository } from '../repository';
 
@@ -35,11 +36,11 @@ class TransformKeyframeService extends StateUpdate implements Service {
 
   // 선택 효과가 적용 된 키프레임을 클릭했는지 확인
   private checkIncludedTime = () => {
-    const { selectedTransformKeyframes } = this.state;
-    const { trackNumber, time } = this.payload.selectedKeyframes as SelectedKeyframe;
-    const trackIndex = findElementIndex(selectedTransformKeyframes, trackNumber, 'trackNumber');
+    const { selectedPropertyKeyframes } = this.state;
+    const { trackNumber, time } = this.payload;
+    const trackIndex = findElementIndex(selectedPropertyKeyframes, trackNumber, 'trackNumber');
     if (trackIndex !== -1) {
-      const times = selectedTransformKeyframes[trackIndex].times;
+      const times = selectedPropertyKeyframes[trackIndex].times;
       return findElementIndex(times, time) !== -1;
     }
     return false;
@@ -76,8 +77,9 @@ class TransformKeyframeService extends StateUpdate implements Service {
 
   // 좌클릭
   private selectLeftClick = () => {
+    const { state, payload } = this;
     const leftClick = new LeftClick();
-    return leftClick.selectByLeftClick({ payload: this.payload });
+    return leftClick.selectByLeftClick({ state, payload });
   };
 
   // 이벤트 타입 선택
@@ -101,17 +103,15 @@ class TransformKeyframeService extends StateUpdate implements Service {
     const {
       selectedLayerKeyframes,
       selectedBoneKeyframes,
-      selectedTransformKeyframes,
+      selectedPropertyKeyframes,
     } = selectedKeyframes;
-    const layerKeyframes = this.layerRepository.updateIsSelected(selectedLayerKeyframes);
-    const boneKeyframes = this.boneRepository.updateIsSelected(selectedBoneKeyframes);
-    const transformKeyframes = this.transformRepository.updateIsSelected(
-      selectedTransformKeyframes,
-    );
+    const layerTrack = this.layerRepository.updateIsSelected(selectedLayerKeyframes);
+    const boneTrackList = this.boneRepository.updateIsSelected(selectedBoneKeyframes);
+    const propertyTrackList = this.transformRepository.updateIsSelected(selectedPropertyKeyframes);
     return {
-      layerKeyframes: layerKeyframes as EditorTrack,
-      boneKeyframes: boneKeyframes as EditorTrack[],
-      transformKeyframes: transformKeyframes as EditorTrack[],
+      layerTrack: layerTrack as TimeEditorTrack<LayerIdentifier>,
+      boneTrackList: boneTrackList as TimeEditorTrack<BoneIdentifier>[],
+      propertyTrackList: propertyTrackList as TimeEditorTrack<PropertyIdentifier>[],
     };
   };
 

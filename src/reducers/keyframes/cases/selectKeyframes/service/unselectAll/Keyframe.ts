@@ -6,7 +6,7 @@ class KeyframesUnselectAll implements UnselectAll {
     return {
       selectedLayerKeyframes: [],
       selectedBoneKeyframes: [],
-      selectedTransformKeyframes: [],
+      selectedPropertyKeyframes: [],
     };
   };
 }

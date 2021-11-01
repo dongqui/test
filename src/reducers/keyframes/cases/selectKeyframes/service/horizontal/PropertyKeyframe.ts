@@ -1,3 +1,4 @@
+import { PropertyIdentifier } from 'types/TP_New';
 import { SelectedKeyframe } from 'types/TP_New/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -15,18 +16,18 @@ interface Params {
 class TransformKeyframeHorizontal implements HorizontalSelection {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
-  private findTransformTrack = ({ state, payload }: Params) => {
-    const { transformKeyframes } = state;
-    const { trackNumber } = payload.selectedKeyframes as SelectedKeyframe;
-    const trackIndex = findElementIndex(transformKeyframes, trackNumber, 'trackNumber');
-    return transformKeyframes[trackIndex];
+  private findPropertyTrack = ({ state, payload }: Params) => {
+    const { propertyTrackList } = state;
+    const { trackNumber } = payload;
+    const trackIndex = findElementIndex(propertyTrackList, trackNumber, 'trackNumber');
+    return propertyTrackList[trackIndex];
   };
 
-  private getSelectedTransforms = ({ state, payload }: Params) => {
-    const selectedTransforms: SelectedKeyframe[] = [];
-    const { trackNumber, keyframes, trackId } = this.findTransformTrack({ state, payload });
-    keyframes.forEach((keyframe) => {
-      selectedTransforms.push({ trackNumber, time: keyframe.time, trackId });
+  private getSelectedProperties = ({ state, payload }: Params) => {
+    const selectedTransforms: SelectedKeyframe<PropertyIdentifier>[] = [];
+    const { trackNumber, keyframes, property } = this.findPropertyTrack({ state, payload });
+    keyframes.forEach(({ time }) => {
+      selectedTransforms.push({ trackNumber, time: time, property, trackType: 'property' });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);
   };
@@ -35,7 +36,7 @@ class TransformKeyframeHorizontal implements HorizontalSelection {
     return {
       selectedLayerKeyframes: [],
       selectedBoneKeyframes: [],
-      selectedTransformKeyframes: this.getSelectedTransforms(params),
+      selectedPropertyKeyframes: this.getSelectedProperties(params),
     };
   };
 }

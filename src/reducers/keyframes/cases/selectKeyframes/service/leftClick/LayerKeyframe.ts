@@ -1,3 +1,4 @@
+import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP_New';
 import { SelectedKeyframe } from 'types/TP_New/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -14,36 +15,43 @@ interface Parmas {
 class LayerKeyframeLeftClick implements LeftClick {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
-  private getSelectedLayers = (payload: SelectKeyframes) => {
-    const selectedLayer = payload.selectedKeyframes as SelectedKeyframe;
-    return this.clusterKeyframes.initializeClusterKeyframes([selectedLayer]);
+  private getSelectedLayers = ({ state, payload }: Parmas) => {
+    const { time, trackType, trackNumber } = payload;
+    const { layerId } = state.layerTrack;
+    const selectedLayers: SelectedKeyframe<LayerIdentifier> = {
+      time,
+      trackType,
+      trackNumber,
+      layerId,
+    };
+    return this.clusterKeyframes.initializeClusterKeyframes([selectedLayers]);
   };
 
   private getSelectedBones = ({ state, payload }: Parmas) => {
-    const { time } = payload.selectedKeyframes as SelectedKeyframe;
-    const selectedBones: SelectedKeyframe[] = [];
-    state.boneKeyframes.forEach((boneKeyframe) => {
-      const { trackId, trackNumber } = boneKeyframe;
-      selectedBones.push({ trackId, trackNumber, time });
+    const { time } = payload;
+    const selectedBones: SelectedKeyframe<BoneIdentifier>[] = [];
+    state.boneTrackList.forEach((boneTrack) => {
+      const { targetId, trackNumber, trackType } = boneTrack;
+      selectedBones.push({ targetId, trackNumber, time, trackType });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
   };
 
-  private getSelectedTransforms = ({ state, payload }: Parmas) => {
-    const { time } = payload.selectedKeyframes as SelectedKeyframe;
-    const selectedTransforms: SelectedKeyframe[] = [];
-    state.transformKeyframes.forEach((transformKeyframe) => {
-      const { trackId, trackNumber } = transformKeyframe;
-      selectedTransforms.push({ trackId, trackNumber, time });
+  private getSelectedProperties = ({ state, payload }: Parmas) => {
+    const { time } = payload;
+    const selectedProperties: SelectedKeyframe<PropertyIdentifier>[] = [];
+    state.propertyTrackList.forEach((propertyTrack) => {
+      const { property, trackNumber, trackType } = propertyTrack;
+      selectedProperties.push({ property, trackNumber, time, trackType });
     });
-    return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);
+    return this.clusterKeyframes.initializeClusterKeyframes(selectedProperties);
   };
 
-  public selectByLeftClick = ({ state, payload }: Parmas): AllSelectedKeyframes => {
+  public selectByLeftClick = (payload: Parmas): AllSelectedKeyframes => {
     return {
       selectedLayerKeyframes: this.getSelectedLayers(payload),
-      selectedBoneKeyframes: this.getSelectedBones({ state, payload }),
-      selectedTransformKeyframes: this.getSelectedTransforms({ state, payload }),
+      selectedBoneKeyframes: this.getSelectedBones(payload),
+      selectedPropertyKeyframes: this.getSelectedProperties(payload),
     };
   };
 }

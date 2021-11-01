@@ -1,6 +1,6 @@
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
-import { layerKeyframeConfig, boneKeyframeConfig, transformKeyframeConfig } from './config';
+import { layerKeyframeConfig, boneKeyframeConfig, propertyKeyframeConfig } from './config';
 
 const selectKeyframes = (state: KeyframesState, payload: SelectKeyframes) => {
   if (payload.trackType === 'layer') {
@@ -9,8 +9,8 @@ const selectKeyframes = (state: KeyframesState, payload: SelectKeyframes) => {
   if (payload.trackType === 'bone') {
     return boneKeyframeConfig(state, payload);
   }
-  if (payload.trackType === 'transform') {
-    return transformKeyframeConfig(state, payload);
+  if (payload.trackType === 'property') {
+    return propertyKeyframeConfig(state, payload);
   }
   return state;
 };

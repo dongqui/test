@@ -1,3 +1,4 @@
+import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP_New';
 import { SelectedKeyframe } from 'types/TP_New/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -15,31 +16,32 @@ class LayerKeyframeHorizontal implements HorizontalSelection {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
   private getSelectedLayers = ({ state }: Params) => {
-    const { trackId, trackNumber, keyframes } = state.layerKeyframes;
-    const selectedLayers: SelectedKeyframe[] = [];
+    const { layerId, trackNumber, keyframes } = state.layerTrack;
+    const selectedLayers: SelectedKeyframe<LayerIdentifier>[] = [];
     keyframes.forEach((keyframe) => {
-      selectedLayers.push({ trackId, trackNumber, time: keyframe.time });
+      selectedLayers.push({ layerId, trackNumber, time: keyframe.time, trackType: 'layer' });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedLayers);
   };
 
   private getSelectedBones = ({ state }: Params) => {
-    const selectedBones: SelectedKeyframe[] = [];
-    state.boneKeyframes.forEach((boneKeyframe) => {
-      const { keyframes, trackId, trackNumber } = boneKeyframe;
+    const selectedBones: SelectedKeyframe<BoneIdentifier>[] = [];
+    state.boneTrackList.forEach((boneTrack) => {
+      const { keyframes, targetId, trackNumber } = boneTrack;
       keyframes.forEach((keyframe) => {
-        selectedBones.push({ trackNumber, trackId, time: keyframe.time });
+        selectedBones.push({ trackNumber, targetId, time: keyframe.time, trackType: 'bone' });
       });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
   };
 
-  private getSelectedTransforms = ({ state }: Params) => {
-    const selectedTransforms: SelectedKeyframe[] = [];
-    state.transformKeyframes.forEach((transformKeyframe) => {
-      const { keyframes, trackId, trackNumber } = transformKeyframe;
+  private getSelectedProperties = ({ state }: Params) => {
+    const selectedTransforms: SelectedKeyframe<PropertyIdentifier>[] = [];
+    state.propertyTrackList.forEach((propertyTrack) => {
+      const { keyframes, property, trackNumber } = propertyTrack;
       keyframes.forEach((keyframe) => {
-        selectedTransforms.push({ trackNumber, trackId, time: keyframe.time });
+        const { time } = keyframe;
+        selectedTransforms.push({ trackNumber, property, time, trackType: 'property' });
       });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);
@@ -49,7 +51,7 @@ class LayerKeyframeHorizontal implements HorizontalSelection {
     return {
       selectedLayerKeyframes: this.getSelectedLayers(params),
       selectedBoneKeyframes: this.getSelectedBones(params),
-      selectedTransformKeyframes: this.getSelectedTransforms(params),
+      selectedPropertyKeyframes: this.getSelectedProperties(params),
     };
   };
 }

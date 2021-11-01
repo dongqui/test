@@ -1,100 +1,104 @@
-import { EditorTrack, ClusteredKeyframe } from 'types/TP_New/keyframe';
+import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP_New';
+import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP_New/keyframe';
 import { KeyframesAction } from 'actions/keyframes';
 
 import deleteKeyframes from './cases/deleteKeyframes';
 import selectKeyframes from './cases/selectKeyframes';
 
 export interface KeyframesState {
-  layerKeyframes: EditorTrack;
-  boneKeyframes: EditorTrack[];
-  transformKeyframes: EditorTrack[];
+  layerTrack: TimeEditorTrack<LayerIdentifier>;
+  boneTrackList: TimeEditorTrack<BoneIdentifier>[];
+  propertyTrackList: TimeEditorTrack<PropertyIdentifier>[];
 
-  selectedLayerKeyframes: ClusteredKeyframe[];
-  selectedBoneKeyframes: ClusteredKeyframe[];
-  selectedTransformKeyframes: ClusteredKeyframe[];
+  selectedLayerKeyframes: ClusteredKeyframe<LayerIdentifier>[];
+  selectedBoneKeyframes: ClusteredKeyframe<BoneIdentifier>[];
+  selectedPropertyKeyframes: ClusteredKeyframe<PropertyIdentifier>[];
 }
 
-const layerKeyframes: EditorTrack = {
-  trackId: 'Base',
+const layerKeyframes: TimeEditorTrack<LayerIdentifier> = {
+  layerId: 'aaaaa-aaaaa-aaaaa',
   trackNumber: -1,
+  trackType: 'layer',
   keyframes: Array(50)
     .fill(1)
     .map((_, index) => ({
       isSelected: false,
       isDeleted: false,
       time: index,
-      value: 1,
     })),
 };
 
-const boneKeyframes: EditorTrack[] = Array(3)
+const boneKeyframes: TimeEditorTrack<BoneIdentifier>[] = Array(3)
   .fill(1)
   .map((_, index) => ({
     trackNumber: index * 10,
-    trackId: '',
+    targetId: '',
+    trackType: 'bone',
     keyframes: Array(50)
       .fill(1)
       .map((_, index) => ({
         isSelected: false,
         isDeleted: false,
         time: index,
-        value: 1,
       })),
   }));
 
-const transformKeyframes: EditorTrack[] = [
+const propertyKeyframes: TimeEditorTrack<PropertyIdentifier>[] = [
   ...Array(3)
     .fill(1)
     .map((_, index) => ({
       trackNumber: index + 1,
-      trackId: '',
+      trackType: 'property',
+      property: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
       keyframes: Array(50)
         .fill(1)
         .map((_, index) => ({
           isSelected: false,
           isDeleted: false,
           time: index,
-          value: 1,
+          value: { _isdirty: true, _x: 1, _y: 1, _z: 1 },
         })),
     })),
   ...Array(3)
     .fill(1)
     .map((_, index) => ({
       trackNumber: index + 11,
-      trackId: '',
+      trackType: 'property',
+      property: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
       keyframes: Array(50)
         .fill(1)
         .map((_, index) => ({
           isSelected: false,
           isDeleted: false,
           time: index,
-          value: 1,
+          value: { _isdirty: true, _x: 1, _y: 1, _z: 1 },
         })),
     })),
   ...Array(3)
     .fill(1)
     .map((_, index) => ({
       trackNumber: index + 21,
-      trackId: '',
+      trackType: 'property',
+      property: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
       keyframes: Array(50)
         .fill(1)
         .map((_, index) => ({
           isSelected: false,
           isDeleted: false,
           time: index,
-          value: 1,
+          value: { _isdirty: true, _x: 1, _y: 1, _z: 1 },
         })),
     })),
 ];
 
 const initialState: KeyframesState = {
-  layerKeyframes: layerKeyframes,
-  boneKeyframes: boneKeyframes,
-  transformKeyframes: transformKeyframes,
+  layerTrack: layerKeyframes,
+  boneTrackList: boneKeyframes,
+  propertyTrackList: propertyKeyframes,
 
   selectedLayerKeyframes: [],
   selectedBoneKeyframes: [],
-  selectedTransformKeyframes: [],
+  selectedPropertyKeyframes: [],
 };
 
 export const keyframes = (state = initialState, action: KeyframesAction) => {

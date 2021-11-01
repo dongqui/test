@@ -1,4 +1,5 @@
-import { EditorTrack, SelectedKeyframe } from 'types/TP_New/keyframe';
+import { BoneIdentifier, LayerIdentifier, PropertyIdentifier } from 'types/TP_New';
+import { TimeEditorTrack } from 'types/TP_New/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllKeyframes, AllSelectedKeyframes } from 'reducers/keyframes/types';
@@ -36,7 +37,7 @@ class LayerKeyframeService extends StateUpdate implements Service {
   // 선택 효과가 적용 된 키프레임을 클릭했는지 확인
   private checkExistedTime = () => {
     const { selectedLayerKeyframes } = this.state;
-    const { trackNumber, time } = this.payload.selectedKeyframes as SelectedKeyframe;
+    const { trackNumber, time } = this.payload;
     const trackIndex = findElementIndex(selectedLayerKeyframes, trackNumber, 'trackNumber');
     if (trackIndex !== -1) {
       const times = selectedLayerKeyframes[trackIndex].times;
@@ -102,17 +103,15 @@ class LayerKeyframeService extends StateUpdate implements Service {
     const {
       selectedLayerKeyframes,
       selectedBoneKeyframes,
-      selectedTransformKeyframes,
+      selectedPropertyKeyframes,
     } = selectedKeyframes;
-    const layerKeyframes = this.layerRepository.updateIsSelected(selectedLayerKeyframes);
-    const boneKeyframes = this.boneRepository.updateIsSelected(selectedBoneKeyframes);
-    const transformKeyframes = this.transformRepository.updateIsSelected(
-      selectedTransformKeyframes,
-    );
+    const layerTrack = this.layerRepository.updateIsSelected(selectedLayerKeyframes);
+    const boneTrackList = this.boneRepository.updateIsSelected(selectedBoneKeyframes);
+    const propertyTrackList = this.transformRepository.updateIsSelected(selectedPropertyKeyframes);
     return {
-      layerKeyframes: layerKeyframes as EditorTrack,
-      boneKeyframes: boneKeyframes as EditorTrack[],
-      transformKeyframes: transformKeyframes as EditorTrack[],
+      layerTrack: layerTrack as TimeEditorTrack<LayerIdentifier>,
+      boneTrackList: boneTrackList as TimeEditorTrack<BoneIdentifier>[],
+      propertyTrackList: propertyTrackList as TimeEditorTrack<PropertyIdentifier>[],
     };
   };
 
