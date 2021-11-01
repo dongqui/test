@@ -1,9 +1,9 @@
-import { TrackIdentifier } from './index';
+import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from './index';
 
-// export type InterpolationType = 'bezier' | 'constant' | 'linear' | 'none';
-export type TrackType = 'layer' | 'bone' | 'transform';
+export type InterpolationType = 'bezier' | 'constant' | 'linear' | 'none';
+export type TrackType = 'layer' | 'bone' | 'property';
 
-export interface Track extends TrackIdentifier {
+export interface Track {
   /**
    * @description 트랙을 클릭하여 선택 효과가 적용 되었는지 체크
    * @default false false인 경우 선택 효과 미적용
@@ -11,11 +11,9 @@ export interface Track extends TrackIdentifier {
   isSelected: boolean;
 
   trackName: string;
-
-  trackType: TrackType;
 }
 
-export interface LayerTrack extends Track {
+export interface LayerTrack extends Track, LayerIdentifier {
   /**
    * @description 화살표 버튼 방향이 아래를 향하는지 체크
    * @default false false인 경우 우측을 가리킴(닫힘). true인 경우 아래를 가리킴(열림)
@@ -29,7 +27,7 @@ export interface LayerTrack extends Track {
   isMuted: boolean;
 }
 
-export interface BoneTrack extends Track {
+export interface BoneTrack extends Track, BoneIdentifier {
   /**
    * @description 화살표 버튼 방향이 아래를 향하는지 체크
    * @default false false인 경우 우측을 가리킴(닫힘). true인 경우 아래를 가리킴(열림)
@@ -37,6 +35,6 @@ export interface BoneTrack extends Track {
   isPointedDownCaret: boolean;
 }
 
-export interface TransformTrack extends Track {
-  interpolationType: 'linear';
+export interface PropertyTrack extends Track, PropertyIdentifier {
+  interpolationType: InterpolationType;
 }

@@ -1,4 +1,4 @@
-import { SelectedKeyframe } from 'types/TP_New/keyframe';
+import { TrackIdentifier } from 'types/TP_New';
 
 export type KeyframesAction =
   | ReturnType<typeof selectKeyframes>
@@ -10,10 +10,9 @@ export type KeyframesAction =
   | ReturnType<typeof pasteKeyframes>;
 
 // 키프레임 선택
-export interface SelectKeyframes {
-  trackType: 'layer' | 'bone' | 'transform';
+export interface SelectKeyframes extends TrackIdentifier {
+  time: number;
   selectType: 'left' | 'multiple' | 'vertical' | 'horizontal' | 'dragBox' | 'unselectAll';
-  selectedKeyframes: SelectedKeyframe[] | SelectedKeyframe;
 }
 export const selectKeyframes = (params: SelectKeyframes) => ({
   type: 'keyframes/SELECT_KEYFRAMES' as const,
