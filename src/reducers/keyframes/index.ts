@@ -1,5 +1,5 @@
-import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP_New';
-import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP_New/keyframe';
+import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP';
+import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP/keyframe';
 import { KeyframesAction } from 'actions/keyframes';
 
 import deleteKeyframes from './cases/deleteKeyframes';

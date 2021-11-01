@@ -1,4 +1,4 @@
-import { LayerTrack } from 'types/TP_New/track';
+import { LayerTrack } from 'types/TP/track';
 import { ClickLayerCaretButton } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
 import { StateUpdate } from 'reducers/trackList/classes';

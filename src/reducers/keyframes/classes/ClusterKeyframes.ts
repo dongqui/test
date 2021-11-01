@@ -1,7 +1,7 @@
 import produce from 'immer';
 
-import { TrackIdentifier } from 'types/TP_New';
-import { ClusteredKeyframe, SelectedKeyframe } from 'types/TP_New/keyframe';
+import { TrackIdentifier } from 'types/TP';
+import { ClusteredKeyframe, SelectedKeyframe } from 'types/TP/keyframe';
 import { getBinarySearch, findElementIndex } from 'utils/TP';
 
 class ClusterKeyframes {

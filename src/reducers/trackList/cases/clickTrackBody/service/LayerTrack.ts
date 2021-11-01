@@ -1,4 +1,4 @@
-import { LayerTrack } from 'types/TP_New/track';
+import { LayerTrack } from 'types/TP/track';
 import { ClickLayerTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
 import { StateUpdate } from 'reducers/trackList/classes';

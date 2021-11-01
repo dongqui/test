@@ -1,6 +1,6 @@
 import produce from 'immer';
 
-import { BoneTrack } from 'types/TP_New/track';
+import { BoneTrack } from 'types/TP/track';
 import { TrackListState } from 'reducers/trackList';
 import { getBinarySearch } from 'utils/TP';
 

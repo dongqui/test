@@ -1,7 +1,7 @@
 import produce from 'immer';
 
-import { LayerIdentifier } from 'types/TP_New';
-import { ClusteredKeyframe, TimeEditorTrack } from 'types/TP_New/keyframe';
+import { LayerIdentifier } from 'types/TP';
+import { ClusteredKeyframe, TimeEditorTrack } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
 import { findElementIndex } from 'utils/TP';
 

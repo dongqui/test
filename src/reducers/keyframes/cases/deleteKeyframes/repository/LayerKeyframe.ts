@@ -1,10 +1,13 @@
 import produce from 'immer';
 
-import { Keyframe, TrackKeyframes, ClusteredTimes } from 'types/TP_New/keyframe';
+import { PropertyIdentifier } from 'types/TP';
+import { TimeEditorTrack } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
-import { getBinarySearch } from 'utils/TP';
+import { findElementIndex } from 'utils/TP';
 
 import { Repository } from './index';
+
+type PropertyTrackList = TimeEditorTrack<PropertyIdentifier>[];
 
 class LayerKeyframeRepository implements Repository {
   private readonly state: KeyframesState;
@@ -13,68 +16,58 @@ class LayerKeyframeRepository implements Repository {
     this.state = state;
   }
 
-  // 키프레임 idnex 계산
-  private findTimeIndex = (keyframes: Keyframe[], time: number) => {
-    const keyframeIndex = getBinarySearch<Keyframe>({
-      collection: keyframes,
-      index: time,
-      key: 'timeIndex',
-    });
-    return keyframeIndex;
-  };
-
-  // 선택 된 transform keyframes의 times 계산
-  private findSelectedTransformTimes = () => {
-    const { selectedTransformKeyframes } = this.state;
+  // 선택 된 property keyframes의 times 계산
+  private findSelectedPropertyTimes = () => {
+    const { selectedPropertyKeyframes } = this.state;
     const selectedTimes = new Set<number>();
-    selectedTransformKeyframes.forEach(({ times }) => {
+    selectedPropertyKeyframes.forEach(({ times }) => {
       times.forEach((time) => selectedTimes.add(time));
     });
     return [...selectedTimes];
   };
 
   // 삭제시킬 layer keyframes의 times 계산
-  private findDeletedLayerTimes = (transformKeyframes: TrackKeyframes[]) => {
+  private findDeletedLayerTimes = (propertyKeyframes: PropertyTrackList) => {
     const times: number[] = [];
-    const selectedTransformTimes = this.findSelectedTransformTimes();
-    selectedTransformTimes.forEach((time) => {
+    const selectedPropertyTimes = this.findSelectedPropertyTimes();
+    selectedPropertyTimes.forEach((time) => {
       let deletedCount = 0;
-      transformKeyframes.forEach(({ keyframes }) => {
-        const timeIndex = this.findTimeIndex(keyframes, time);
+      propertyKeyframes.forEach(({ keyframes }) => {
+        const timeIndex = findElementIndex(keyframes, time, 'time');
         const isDeleted = keyframes[timeIndex].isDeleted;
         if (isDeleted) deletedCount += 1;
       });
-      if (deletedCount === transformKeyframes.length) times.push(time);
+      if (deletedCount === propertyKeyframes.length) times.push(time);
     });
     return times;
   };
 
   // 선택 된 keyframes에 isDeleted 상태값 변경
-  private deleteLayerKeyframes = (transformKeyframes: TrackKeyframes[]) => {
-    const { layerKeyframes, selectedLayerKeyframes } = this.state;
-    const deletedLayerTimes = this.findDeletedLayerTimes(transformKeyframes);
-    return produce(layerKeyframes, (draft) => {
-      selectedLayerKeyframes.forEach((selectedKeyframe) => {
-        selectedKeyframe.times.forEach((time) => {
-          const timeIndex = this.findTimeIndex(layerKeyframes.keyframes, time);
+  private deleteLayerKeyframes = (propertyKeyframes: PropertyTrackList) => {
+    const { layerTrack, selectedLayerKeyframes } = this.state;
+    const deletedLayerTimes = this.findDeletedLayerTimes(propertyKeyframes);
+    return produce(layerTrack, (draft) => {
+      selectedLayerKeyframes.forEach(({ times }) => {
+        times.forEach((time) => {
+          const timeIndex = findElementIndex(layerTrack.keyframes, time, 'time');
           draft.keyframes[timeIndex].isDeleted = true;
         });
       });
       deletedLayerTimes.forEach((time) => {
-        const timeIndex = this.findTimeIndex(layerKeyframes.keyframes, time);
+        const timeIndex = findElementIndex(layerTrack.keyframes, time, 'time');
         draft.keyframes[timeIndex].isDeleted = true;
       });
     });
   };
 
   // 선택 된 layer keyframes 리스트 초기화
-  public clearSeletedKeyframes = (): ClusteredTimes[] => {
+  public clearSeletedKeyframes = () => {
     return [];
   };
 
   // 선택 된 keyframes 삭제
-  public deleteSeletedKeyframes = (transformKeyframes: TrackKeyframes[]): TrackKeyframes => {
-    return this.deleteLayerKeyframes(transformKeyframes);
+  public deleteSeletedKeyframes = (propertyKeyframes: PropertyTrackList) => {
+    return this.deleteLayerKeyframes(propertyKeyframes);
   };
 
   public updateStateObject = (newValues: Partial<KeyframesState>): KeyframesState => {

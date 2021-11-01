@@ -18,7 +18,7 @@ import {
   fnMakeNewData,
   fnMakeNewRowsForPaste,
 } from '../utils/LP_launching';
-import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
+// import { fnGetBaseLayerWithBoneNames } from 'utils/TP/editingUtils';
 
 interface LPDataState {
   itemList: LPItemListType;
@@ -370,40 +370,40 @@ export const lpData = (state = defaultState, action: LPItemListAction) => {
         } as LPDataState);
       }
     }
-    case 'lpdata/ADD_MOTION': {
-      const parentRow = state.itemList.find((item) => item.key === action.payload.key);
-      const sameDepthOtherMotions = state.itemList.filter(
-        (item) => item.parentKey === action.payload.key,
-      ); // 동일 뎁스의 다른 모션을 찾는다
-      const newMotion = fnMakeNewData({
-        key: uuidv4(),
-        name: fnChangeFileNameCheckingDuplicate({
-          data: sameDepthOtherMotions,
-          name: 'empty motion',
-        }),
-        baseLayer: fnGetBaseLayerWithBoneNames({
-          boneNames: sameDepthOtherMotions?.[0].boneNames ?? [],
-        }),
-        boneNames: sameDepthOtherMotions?.[0].boneNames ?? [],
-        data: state.itemList,
-        parentKey: action.payload.key,
-        type: 'Motion',
-        url: parentRow?.url ?? '',
-      });
-      const newItemList = fnInsertDataAsChild({
-        data: state.itemList,
-        targetData: [newMotion],
-        targetKey: action.payload.key,
-      });
-      const newExpandedKeys = _.clone(state.expandedKeys);
-      if (!state.expandedKeys.includes(action.payload.key)) {
-        newExpandedKeys.push(action.payload.key);
-      }
-      return Object.assign({}, state, {
-        itemList: newItemList,
-        expandedKeys: newExpandedKeys,
-      } as LPDataState);
-    }
+    // case 'lpdata/ADD_MOTION': {
+    //   const parentRow = state.itemList.find((item) => item.key === action.payload.key);
+    //   const sameDepthOtherMotions = state.itemList.filter(
+    //     (item) => item.parentKey === action.payload.key,
+    //   ); // 동일 뎁스의 다른 모션을 찾는다
+    //   const newMotion = fnMakeNewData({
+    //     key: uuidv4(),
+    //     name: fnChangeFileNameCheckingDuplicate({
+    //       data: sameDepthOtherMotions,
+    //       name: 'empty motion',
+    //     }),
+    //     baseLayer: fnGetBaseLayerWithBoneNames({
+    //       boneNames: sameDepthOtherMotions?.[0].boneNames ?? [],
+    //     }),
+    //     boneNames: sameDepthOtherMotions?.[0].boneNames ?? [],
+    //     data: state.itemList,
+    //     parentKey: action.payload.key,
+    //     type: 'Motion',
+    //     url: parentRow?.url ?? '',
+    //   });
+    //   const newItemList = fnInsertDataAsChild({
+    //     data: state.itemList,
+    //     targetData: [newMotion],
+    //     targetKey: action.payload.key,
+    //   });
+    //   const newExpandedKeys = _.clone(state.expandedKeys);
+    //   if (!state.expandedKeys.includes(action.payload.key)) {
+    //     newExpandedKeys.push(action.payload.key);
+    //   }
+    //   return Object.assign({}, state, {
+    //     itemList: newItemList,
+    //     expandedKeys: newExpandedKeys,
+    //   } as LPDataState);
+    // }
     case 'lpdata/VISUALIZE': {
       return Object.assign({}, state, {
         visualizedKeys: action.payload.keys,

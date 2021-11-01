@@ -1,4 +1,4 @@
-import { BoneTrack } from 'types/TP_New/track';
+import { BoneTrack } from 'types/TP/track';
 import { ClickBoneCaretButton } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
 import { StateUpdate } from 'reducers/trackList/classes';

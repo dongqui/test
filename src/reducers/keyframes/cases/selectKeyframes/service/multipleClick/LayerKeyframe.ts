@@ -1,5 +1,5 @@
-import { BoneIdentifier, PropertyIdentifier } from 'types/TP_New';
-import { SelectedKeyframe } from 'types/TP_New/keyframe';
+import { BoneIdentifier, PropertyIdentifier } from 'types/TP';
+import { SelectedKeyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';

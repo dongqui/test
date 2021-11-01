@@ -1,5 +1,5 @@
-import { TrackIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP_New';
-import { TimeEditorTrack, SelectedKeyframe } from 'types/TP_New/keyframe';
+import { TrackIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP';
+import { TimeEditorTrack, SelectedKeyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';

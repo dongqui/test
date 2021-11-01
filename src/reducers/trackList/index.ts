@@ -1,5 +1,5 @@
 import { TrackListAction } from 'actions/trackList';
-import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP_New/track';
+import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
 
 import addLayerTrack from './cases/addLayerTrack';
 // import initializeTrackList from './cases/createTrackList';

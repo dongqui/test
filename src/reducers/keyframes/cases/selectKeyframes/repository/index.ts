@@ -1,5 +1,5 @@
-import { TrackIdentifier } from 'types/TP_New';
-import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP_New/keyframe';
+import { TrackIdentifier } from 'types/TP';
+import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP/keyframe';
 
 type ClusteredKeyframes = ClusteredKeyframe<TrackIdentifier>[];
 type ReturnValues = TimeEditorTrack<TrackIdentifier> | TimeEditorTrack<TrackIdentifier>[];

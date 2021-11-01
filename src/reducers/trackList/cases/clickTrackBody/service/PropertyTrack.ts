@@ -1,4 +1,4 @@
-import { BoneTrack, PropertyTrack } from 'types/TP_New/track';
+import { BoneTrack, PropertyTrack } from 'types/TP/track';
 import { ClickPropertyTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
 import { StateUpdate } from 'reducers/trackList/classes';

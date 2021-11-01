@@ -1,6 +1,6 @@
 import produce from 'immer';
 
-import { LayerTrack } from 'types/TP_New/track';
+import { LayerTrack } from 'types/TP/track';
 import { AddLayerTrack } from 'actions/trackList';
 import { TrackListState } from '../index';
 
