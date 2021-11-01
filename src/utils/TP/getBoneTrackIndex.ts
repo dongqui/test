@@ -1,4 +1,4 @@
-import { TrackNumber } from 'types/TP_New';
+import { TrackNumber } from 'types/TP';
 
 /**
  * transform track의 bone track index을 찾는 함수입니다.
