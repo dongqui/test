@@ -1,8 +1,8 @@
 import { FunctionComponent } from 'react';
 
-import { PropertyIdentifier } from 'types/TP_New';
-import { TimeEditorTrack } from 'types/TP_New/keyframe';
-import { PropertyTrack } from 'types/TP_New/track';
+import { PropertyIdentifier } from 'types/TP';
+import { TimeEditorTrack } from 'types/TP/keyframe';
+import { PropertyTrack } from 'types/TP/track';
 
 import Keyframe from './Keyframe';
 

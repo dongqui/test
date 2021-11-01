@@ -1,8 +1,8 @@
 import { useMemo, Fragment, FunctionComponent } from 'react';
 
-import { BoneIdentifier } from 'types/TP_New';
-import { TimeEditorTrack } from 'types/TP_New/keyframe';
-import { BoneTrack } from 'types/TP_New/track';
+import { BoneIdentifier } from 'types/TP';
+import { TimeEditorTrack } from 'types/TP/keyframe';
+import { BoneTrack } from 'types/TP/track';
 import { useSelector } from 'reducers';
 import { getBoneTrackIndex } from 'utils/TP';
 

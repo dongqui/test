@@ -1,7 +1,7 @@
 import { useCallback, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { LayerTrack } from 'types/TP_New/track';
+import { LayerTrack } from 'types/TP/track';
 import { muteLayerTrack } from 'actions/trackList';
 import { IconWrapper, SvgPath } from 'components/Icon';
 

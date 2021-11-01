@@ -9,7 +9,7 @@ import {
   SyntheticEvent,
 } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
-import TimelinePanel from 'containers/Panels/TimelinePanel_New';
+import TimelinePanel from 'containers/Panels/TimelinePanel';
 import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';

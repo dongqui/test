@@ -1,7 +1,7 @@
 import { useCallback, useMemo, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { BoneTrack } from 'types/TP_New/track';
+import { BoneTrack } from 'types/TP/track';
 import { clickTrackBody, ClickBoneTrackBody } from 'actions/trackList';
 import { useSelector } from 'reducers';
 import { getBoneTrackIndex } from 'utils/TP';

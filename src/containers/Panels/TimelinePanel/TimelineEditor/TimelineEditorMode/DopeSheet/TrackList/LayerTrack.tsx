@@ -1,6 +1,6 @@
 import { useMemo, Fragment, FunctionComponent } from 'react';
 
-import { LayerTrack } from 'types/TP_New/track';
+import { LayerTrack } from 'types/TP/track';
 import { useSelector } from 'reducers';
 
 import { BoneTrack } from './index';

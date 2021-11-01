@@ -1,8 +1,8 @@
 import { memo, useCallback, useMemo, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { TrackIdentifier } from 'types/TP_New';
-import { Keyframe } from 'types/TP_New/keyframe';
+import { TrackIdentifier } from 'types/TP';
+import { Keyframe } from 'types/TP/keyframe';
 import { selectKeyframes } from 'actions/keyframes';
 import { ScaleLinear } from 'utils/TP';
 

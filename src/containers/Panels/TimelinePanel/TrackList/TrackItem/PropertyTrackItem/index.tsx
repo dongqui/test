@@ -1,7 +1,7 @@
 import { useCallback, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { PropertyTrack } from 'types/TP_New/track';
+import { PropertyTrack } from 'types/TP/track';
 import { clickTrackBody, ClickPropertyTrackBody } from 'actions/trackList';
 
 import classNames from 'classnames/bind';

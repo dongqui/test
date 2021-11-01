@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 
 import { clickTrackBody, ClickLayerTrackBody } from 'actions/trackList';
-import { LayerTrack } from 'types/TP_New/track';
+import { LayerTrack } from 'types/TP/track';
 import { IconWrapper, SvgPath } from 'components/Icon';
 
 import CaretButton from './CaretButton';
