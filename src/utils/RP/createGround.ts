@@ -31,7 +31,7 @@ const createGround = (
   const groundMaterial = new BABYLON.StandardMaterial('groundMaterial', scene);
 
   if (useTexture) {
-    const diffuseTexture = new BABYLON.Texture('texture/texture_01.png', scene);
+    const diffuseTexture = new BABYLON.Texture('texture/texture_02.png', scene);
     // texture 반복과 관련한 설정입니다.
     diffuseTexture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
     diffuseTexture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
