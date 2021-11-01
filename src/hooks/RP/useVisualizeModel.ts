@@ -180,11 +180,6 @@ const useVisualizeModel = () => {
                     scene.hoverCursor = 'pointer';
                   }),
                 );
-                joint.actionManager.registerAction(
-                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
-                    scene.hoverCursor = 'default';
-                  }),
-                );
               }
             });
 

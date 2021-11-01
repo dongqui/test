@@ -299,15 +299,6 @@ const ControlPanel: FunctionComponent = () => {
                 ),
               );
 
-              controller.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(
-                  BABYLON.ActionManager.OnPointerOverTrigger,
-                  (event) => {
-                    targetScene.scene.hoverCursor = 'default';
-                  },
-                ),
-              );
-
               controllers.push(controller);
             }
           });
