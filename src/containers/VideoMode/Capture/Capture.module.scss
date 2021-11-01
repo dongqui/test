@@ -25,12 +25,20 @@
 }
 
 .playbox {
-  // width: 100%;
+  display: flex;
   position: relative;
   max-width: 114px;
   background-color: #353739;
   border-radius: 6px;
   margin-right: 16px;
+
+  & > span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    border-radius: 6px;
+  }
 
   & > .active {
     background-color: #484c4f;
@@ -39,7 +47,7 @@
   & > .icon {
     & > svg {
       width: 26px;
-      height: 26px;
+      height: 100%;
       cursor: pointer;
       fill: #e9e9e9;
     }
@@ -84,7 +92,7 @@
 
 .disable-control {
   position: absolute;
-  width: 66%;
+  width: 67%;
   height: 100%;
   top: 0;
   right: 0;
