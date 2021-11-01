@@ -216,6 +216,12 @@ const LPBody: FunctionComponent<Props> = () => {
     setSelectedId(id);
   }, []);
 
+  const [dragTarget, setDragTarget] = useState<{ id: string; type: LP.Node['type']; parentId: string } | undefined>();
+
+  const handleSetDragTarget = useCallback((id: string, type: LP.Node['type'], parentId: string) => {
+    setDragTarget({ id: id, type: type, parentId: parentId });
+  }, []);
+
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>
       {rootPathNode.map((node, i) => (
@@ -233,6 +239,8 @@ const LPBody: FunctionComponent<Props> = () => {
             isSelected={node.id === selectedId}
             childrens={node.children}
             extension={node.extension}
+            onSetDragTarget={handleSetDragTarget}
+            dragTarget={dragTarget}
           />
         </div>
       ))}

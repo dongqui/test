@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, ReactNode, FocusEvent, useEffect, useCallback, useState, useRef, KeyboardEvent } from 'react';
+import { FunctionComponent, memo, ReactNode, FocusEvent, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
@@ -34,6 +34,8 @@ interface BaseProps {
   childrens: any[];
   extension: string;
   selectedId?: string;
+  onSetDragTarget: (id: string, type: LP.Node['type'], parentId: string) => void;
+  dragTarget?: { id: string; type: LP.Node['type']; parentId: string };
 }
 
 type StateProps = ReturnType<typeof mapStateToProps>;
@@ -57,6 +59,8 @@ const ListNode: FunctionComponent<Props> = ({
   animationTransformNodes,
   animationIngredients,
   selectableObjects,
+  onSetDragTarget,
+  dragTarget,
 }) => {
   const dispatch = useDispatch();
 
@@ -113,7 +117,7 @@ const ListNode: FunctionComponent<Props> = ({
     [lpNode],
   );
 
-  const depthChnageKey = useCallback((node: LP.Node[], childID: string, parentNode: LP.Node) => {
+  const depthChangeKey = useCallback((node: LP.Node[], childID: string, parentNode: LP.Node) => {
     const changeNode = _.find(node, { id: childID });
 
     if (changeNode) {
@@ -129,7 +133,7 @@ const ListNode: FunctionComponent<Props> = ({
       node.push(cloneChangeNode);
 
       if (!_.isEmpty(cloneChangeNode.children)) {
-        cloneChangeNode.children.map((child) => depthChnageKey(node, child, cloneChangeNode));
+        cloneChangeNode.children.map((child) => depthChangeKey(node, child, cloneChangeNode));
       }
     }
   }, []);
@@ -241,7 +245,7 @@ const ListNode: FunctionComponent<Props> = ({
                         draft.push(cloneCopyNode);
 
                         if (!_.isEmpty(cloneCopyNode.children)) {
-                          cloneCopyNode.children.map((child) => depthChnageKey(draft, child, cloneCopyNode));
+                          cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
                         }
                       }
                     });
@@ -532,7 +536,7 @@ const ListNode: FunctionComponent<Props> = ({
     assetId,
     depth,
     depthCheck,
-    depthChnageKey,
+    depthChangeKey,
     dispatch,
     extension,
     filePath,
@@ -572,10 +576,13 @@ const ListNode: FunctionComponent<Props> = ({
               onSelect={handleSelect}
               isSelected={node.id === selectedId}
               childrens={node.children}
+              assetId={node.assetId}
               visualizedAssetIds={visualizedAssetIds}
               animationTransformNodes={animationTransformNodes}
               animationIngredients={animationIngredients}
               selectableObjects={selectableObjects}
+              onSetDragTarget={onSetDragTarget}
+              dragTarget={dragTarget}
             />
           );
         }
@@ -593,15 +600,32 @@ const ListNode: FunctionComponent<Props> = ({
             onSelect={handleSelect}
             isSelected={id === selectedId && paramId.current}
             childrens={[]}
+            assetId={paramId.assetId}
             visualizedAssetIds={visualizedAssetIds}
             animationTransformNodes={animationTransformNodes}
             animationIngredients={animationIngredients}
             selectableObjects={selectableObjects}
+            onSetDragTarget={onSetDragTarget}
+            dragTarget={dragTarget}
           />
         );
       }
     },
-    [animationIngredients, animationTransformNodes, filePath, handleSelect, id, lpNode, name, parentId, selectableObjects, selectedId, visualizedAssetIds],
+    [
+      animationIngredients,
+      animationTransformNodes,
+      dragTarget,
+      filePath,
+      handleSelect,
+      id,
+      lpNode,
+      name,
+      onSetDragTarget,
+      parentId,
+      selectableObjects,
+      selectedId,
+      visualizedAssetIds,
+    ],
   );
 
   const handleBlur = useCallback(
@@ -774,17 +798,102 @@ const ListNode: FunctionComponent<Props> = ({
   //   [assetList, dispatch, visualizedAssetIds],
   // );
 
-  const handleDragStart = useCallback(() => {
-    // 드래그 시작시 선택 및 스타일 적용
-    console.log('handleDragStart');
-    console.log(name, id);
-    handleSelect();
-  }, [handleSelect, id, name]);
+  const handleDragStart = useCallback(
+    (e: DragEvent) => {
+      // e.preventDefault();
+      e.stopPropagation();
 
-  const handleDrop = useCallback(() => {
-    console.log('handleDrop');
-    console.log(name, id);
-  }, [id, name]);
+      // 드래그 시작시 선택 및 스타일 적용
+      onSetDragTarget(id, type, parentId);
+
+      handleSelect();
+    },
+    [handleSelect, id, onSetDragTarget, parentId, type],
+  );
+
+  const handleDrop = useCallback(
+    (e: DragEvent) => {
+      e.stopPropagation();
+
+      if (id === dragTarget?.id || (parentId === '__root__' && id === dragTarget?.parentId)) {
+        return;
+      }
+
+      if (type === 'Folder') {
+        if (dragTarget?.type === 'Motion') {
+          return;
+        }
+
+        const cloneLPNode = _.cloneDeep(lpNode);
+
+        _.remove(cloneLPNode, (node) => node.id === dragTarget?.id);
+
+        const dragNode = _.find(lpNode, { id: dragTarget?.id });
+        const cloneDragNode = _.cloneDeep(dragNode);
+
+        if (cloneDragNode) {
+          const max = depthCheck(cloneDragNode.children, 0, []) || 0;
+
+          const currentPathDepth = (filePath.match(/\\/g) || []).length;
+
+          if (currentPathDepth + max >= 6) {
+            onModalOpen({
+              title: 'Warning',
+              message: '해당 디렉토리에 이동할 수 없습니다. 계층 초과',
+              confirmText: '확인',
+            });
+            return;
+          }
+        }
+
+        // @TODO 없으면 비활성 처리 필요
+        if (cloneDragNode) {
+          const currentPathNodeName = lpNode
+            .filter((node) => {
+              if (node.parentId === id) {
+                if (node.name.includes(cloneDragNode.name)) {
+                  return true;
+                }
+                return false;
+              }
+            })
+            .map((filteredNode) => filteredNode.name);
+
+          const nodeName = beforePaste({
+            name: cloneDragNode.name,
+            comparisonNames: currentPathNodeName,
+          });
+
+          const nextNodes = produce(cloneLPNode, (draft) => {
+            const targetNode = _.find(draft, { id });
+
+            if (targetNode) {
+              cloneDragNode.id = uuidv4();
+              cloneDragNode.parentId = id;
+              cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
+              cloneDragNode.name = nodeName;
+
+              targetNode.children.push(cloneDragNode.id);
+
+              // @TODO 하위 노드도 추가
+              draft.push(cloneDragNode);
+
+              if (!_.isEmpty(cloneDragNode.children)) {
+                cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+              }
+            }
+          });
+
+          dispatch(
+            lpNodeActions.changeNode({
+              nodes: nextNodes,
+            }),
+          );
+        }
+      }
+    },
+    [depthChangeKey, depthCheck, dispatch, dragTarget, filePath, id, lpNode, name, onModalOpen, parentId, type],
+  );
 
   /**
    * @TODO 파일명에 .(dot)이 여럿인 경우를 위해 다른 방법으로 파일명을 가져오는 방법이 필요하여 임시 대응
