@@ -395,9 +395,24 @@ const ListNode: FunctionComponent<Props> = ({
                       // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
                     }
 
+                    const currentPathNodeName = lpNode
+                      .filter((node) => {
+                        if (node.parentId === assetId) {
+                          if (node.name.includes('empty motion')) {
+                            return true;
+                          }
+                          return false;
+                        }
+                      })
+                      .map((filteredNode) => filteredNode.name);
+
+                    const check = checkCreateDuplicates('empty motion', currentPathNodeName);
+
+                    const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
+
                     const nextIngredient: AnimationIngredient = {
                       id: uuidv4(),
-                      name: 'empty motion',
+                      name: nodeName,
                       assetId: assetId,
                       current: false,
                       layers,
