@@ -9,7 +9,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { getFileExtension } from 'utils/common';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { beforePaste, checkCreateDuplicates, beforeRename } from 'utils/LP/FileSystem';
+import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -851,7 +851,9 @@ const ListNode: FunctionComponent<Props> = ({
           const currentPathNodeName = lpNode
             .filter((node) => {
               if (node.parentId === id) {
-                if (node.name.includes(cloneDragNode.name)) {
+                const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
+                const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
+                if ((isMatch !== null && node.name.includes(tempName)) || (!isMatch && tempName.length === node.name.length)) {
                   return true;
                 }
                 return false;
@@ -859,7 +861,7 @@ const ListNode: FunctionComponent<Props> = ({
             })
             .map((filteredNode) => filteredNode.name);
 
-          const nodeName = beforePaste({
+          const nodeName = beforeMove({
             name: cloneDragNode.name,
             comparisonNames: currentPathNodeName,
           });
