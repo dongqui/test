@@ -471,11 +471,47 @@ const useGizmoControl = () => {
 
       document.addEventListener('keydown', handleKeyDown);
 
+      const pointerObservable = gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.add(
+        (event) => {
+          if (event.pickInfo?.hit && event.pickInfo.pickedMesh) {
+            if (currentGizmoMode === 'position') {
+              if (
+                gizmoManager.utilityLayer.originalScene.defaultCursor !==
+                'url("images/cursorPosition.png") 12 12, auto'
+              ) {
+                gizmoManager.utilityLayer.originalScene.defaultCursor =
+                  'url("images/cursorPosition.png") 12 12, auto';
+              }
+            } else if (currentGizmoMode === 'rotation') {
+              if (
+                gizmoManager.utilityLayer.originalScene.defaultCursor !==
+                'url("images/cursorRotation.png") 12 12, auto'
+              ) {
+                gizmoManager.utilityLayer.originalScene.defaultCursor =
+                  'url("images/cursorRotation.png") 12 12, auto';
+              }
+            } else if (currentGizmoMode === 'scale') {
+              if (
+                gizmoManager.utilityLayer.originalScene.defaultCursor !==
+                'url("images/cursorScale.png") 12 12, auto'
+              ) {
+                gizmoManager.utilityLayer.originalScene.defaultCursor =
+                  'url("images/cursorScale.png") 12 12, auto';
+              }
+            }
+          } else {
+            gizmoManager.utilityLayer.originalScene.defaultCursor = 'default';
+          }
+        },
+      );
+
       return () => {
         document.removeEventListener('keydown', handleKeyDown);
+
+        gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.remove(pointerObservable);
       };
     }
-  }, [dispatch, gizmoManager]);
+  }, [currentGizmoMode, dispatch, gizmoManager]);
 };
 
 export default useGizmoControl;
