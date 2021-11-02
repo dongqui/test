@@ -41,6 +41,8 @@ import InsertKeyframe from './svg/InsertKeyframe.svg';
 import Bezier from './svg/Bezier.svg';
 import Linear from './svg/Linear.svg';
 import Constant from './svg/Constant.svg';
+import TrackMode from './svg/TrackMode.svg';
+import PauseVideo from './svg/PauseVideo.svg';
 
 type Icon =
   | 'Close'
@@ -81,7 +83,9 @@ type Icon =
   | 'InsertKeyframe'
   | 'Bezier'
   | 'Linear'
-  | 'Constant';
+  | 'Constant'
+  | 'TrackMode'
+  | 'PauseVideo';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -127,6 +131,8 @@ const images: Images = {
   Bezier,
   Linear,
   Constant,
+  TrackMode,
+  PauseVideo,
 };
 
 export default images;

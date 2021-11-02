@@ -18,8 +18,8 @@
 
 .icon {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   color: #7a7a7a;
 
@@ -44,5 +44,9 @@
   &.selected {
     background-color: $primaryColor;
     color: #fff;
+  }
+
+  &:focus {
+    border: none;
   }
 }

@@ -1,0 +1,109 @@
+.wrap {
+  display: grid;
+  grid-template-columns: 240px 1fr 280px;
+}
+
+.left-upper {
+  display: flex;
+  align-items: center;
+  padding: 4px 16px;
+
+  .left-upper-inner {
+    max-width: 166px;
+    padding: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #d3d3d3;
+
+    .scene-name {
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 24px;
+    }
+  }
+}
+
+.middle-upper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+
+  & > .reset-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background-color: #353739;
+
+    &:hover {
+      background-color: #484c4f;
+    }
+
+    & > svg {
+      width: 24px;
+      color: #d3d3d3;
+      cursor: pointer;
+    }
+  }
+}
+
+.right-upper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 16px;
+
+  .device-select {
+    color: #fff;
+  }
+
+  .right-upper-inner {
+    // height: 100%;
+    // display: grid;
+    // grid-template-columns: repeat(2, 1fr);
+    // column-gap: 4px;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    top: 40px;
+    right: 0;
+    border: 1px solid #fff;
+    border-radius: 8px;
+
+    & > .device-select-dropdown {
+      width: 200px;
+      color: #fff;
+      list-style: none;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      padding: 8px 4px;
+      border: 1px solid #fff;
+      border-radius: 4px;
+      z-index: 2;
+
+      &.active {
+
+      }
+    }
+  }
+
+  & > .share-button {
+    min-width: 0;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 8px;
+    user-select: none;
+  }
+}
+
+// 현재는 들어가지 않는 기능 채우는 스타일
+
+.void {
+  width: 36px;
+  height: 100%;
+  border-radius: 8px;
+  background-color: rgb(48, 48, 48);
+}

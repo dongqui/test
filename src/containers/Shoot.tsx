@@ -9,19 +9,20 @@ import {
   SyntheticEvent,
 } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
+import { UpperBar } from 'containers/UpperBar';
+import LibraryPanel from 'containers/Panels/LibraryPanel';
+import RenderingPanel from './Panels/RenderingPanel';
 import TimelinePanel from 'containers/Panels/TimelinePanel_New';
-import { useWindowSize } from 'hooks/common';
 import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
 import Box, { BoxProps } from 'components/Layout/Box';
-import LibraryPanel from 'containers/Panels/LibraryPanel';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
+import { useWindowSize } from 'hooks/common';
 import MiddleBar from './MiddleBar/Shoot';
-import classNames from 'classnames/bind';
-import styles from './Shoot.module.scss';
-import RenderingPanel from './Panels/RenderingPanel';
 import DummyControlPanel from './Panels/DummyControlPanel';
 import DummyTimelinePanel from './Panels/DummyTimelinePanel';
+import classNames from 'classnames/bind';
+import styles from './Shoot.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -240,7 +241,7 @@ const Shoot: FunctionComponent = () => {
   return (
     <Fragment>
       <Box id="UP" {...boxProps.up}>
-        {/* UP */}
+        <UpperBar sceneName="Please enter a scene name" />
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.us}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>

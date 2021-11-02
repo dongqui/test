@@ -1,22 +1,26 @@
-import { FunctionComponent, memo, useLayoutEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { FunctionComponent, memo, useEffect, useLayoutEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { authToken } from 'api';
 import Process from 'containers/Process';
-import Extract from 'containers/Extract';
 import Shoot from 'containers/Shoot';
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
 import { useSelector } from 'reducers';
+import { VideoMode } from 'containers/VideoMode';
+// import Process from 'containers/Process';
 
 export type Procedure = 'service' | 'token' | 'success' | 'denied';
 
-const Index: FunctionComponent = () => {
-  // const dispatch = useDispatch();
-  // const router = useRouter();
+interface Props {
+  browserType: string;
+}
 
-  // const { token } = router.query;
+const Index: FunctionComponent<Props> = ({ browserType }) => {
+  const router = useRouter();
+  const { token } = router.query;
 
+  const [currentMode, setCurrentMode] = useState<string | null>('trackMode');
   // const [procedure, setProcedure] = useState<Procedure>('service');
+
   // const [_message, setMessage] = useState('');
 
   // useLayoutEffect(() => {
@@ -34,7 +38,6 @@ const Index: FunctionComponent = () => {
   //     setTimeout(() => {
   //       setProcedure('token');
   //     }, 2000);
-
   //     // 2. 쿼리스트링 토큰 자체가 없는 경우 token 프로세스를 먼저 밟고 denied 처리
   //     if (!token) {
   //       setTimeout(() => {
@@ -60,10 +63,6 @@ const Index: FunctionComponent = () => {
   //   }
   // }, [token]);
 
-  const pageInfo = useSelector((state) => state.pageInfo);
-
-  const isShootMode = pageInfo.page === 'shoot';
-
   // if (procedure !== 'success') {
   //   return (
   //     <main>
@@ -72,14 +71,24 @@ const Index: FunctionComponent = () => {
   //   );
   // }
 
+  useEffect(() => {
+    const getShootMode = () => {
+      window.addEventListener('storage', () => {
+        const hasMode = window.localStorage.getItem('shootMode');
+        setCurrentMode(hasMode);
+      });
+    };
+    getShootMode();
+  }, []);
+
   return (
     <main>
-      {isShootMode ? (
+      {currentMode === 'trackMode' ? (
         <ResizeProvider>
           <Shoot />
         </ResizeProvider>
       ) : (
-        <Extract />
+        <VideoMode browserType={browserType} />
       )}
     </main>
   );
