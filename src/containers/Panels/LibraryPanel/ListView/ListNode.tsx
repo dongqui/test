@@ -853,7 +853,7 @@ const ListNode: FunctionComponent<Props> = ({
               if (node.parentId === id) {
                 const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
                 const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
-                if ((isMatch !== null && node.name.includes(tempName)) || (!isMatch && tempName.length === node.name.length)) {
+                if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
                   return true;
                 }
                 return false;
