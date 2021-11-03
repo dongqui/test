@@ -67,7 +67,6 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     setTimer: setTimer,
     setDeviceList: setDeviceList,
     setCurrentDevice: setCurrentDevice,
-    testRef: testRef,
     browserType: browserType,
   });
 
