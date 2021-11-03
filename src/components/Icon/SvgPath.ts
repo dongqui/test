@@ -34,6 +34,7 @@ import TrackMode from './svg/TrackMode.svg';
 import Stop from './svg/Stop.svg';
 import Record from './svg/Record.svg';
 import PauseVideo from './svg/PauseVideo.svg';
+import EmptyDownArrow from './svg/EmptyDownArrow.svg';
 
 type Icon =
   | 'Close'
@@ -70,7 +71,8 @@ type Icon =
   | 'TrackMode'
   | 'Stop'
   | 'Record'
-  | 'PauseVideo';
+  | 'PauseVideo'
+  | 'EmptyDownArrow';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -112,6 +114,7 @@ const images: Images = {
   Stop,
   Record,
   PauseVideo,
+  EmptyDownArrow,
 };
 
 export default images;
