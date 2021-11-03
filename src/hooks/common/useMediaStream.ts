@@ -75,7 +75,6 @@ const useMediaStream = (props: Props) => {
 
       tracks.forEach((track) => track.stop());
       // tracks2.forEach((track: any) => {
-      //   console.log('track: ', track);
       //   track.stop();
       // });
       ref.current!.srcObject = null;
@@ -101,7 +100,6 @@ const useMediaStream = (props: Props) => {
 
     const checkDuration = setInterval(() => {
       if (ref.current!.duration !== Infinity) {
-        console.log('here to check if this setInterval is activated more than once');
         ref.current!.pause();
         ref.current!.currentTime = 0;
         clearInterval(checkDuration);
@@ -110,7 +108,6 @@ const useMediaStream = (props: Props) => {
 
         const setScreenshot = setInterval(() => {
           if (count < 20) {
-            console.log('duration: ', dividedDuration);
             count++;
             thumbnailList = [...thumbnailList, handleScreenshot()];
             ref.current!.currentTime += dividedDuration;
@@ -129,7 +126,6 @@ const useMediaStream = (props: Props) => {
 
   const startRecording = useCallback(() => {
     if (recorderData && recorderData.state === 'recording') {
-      console.log('already recording');
       return;
     }
 
@@ -142,13 +138,10 @@ const useMediaStream = (props: Props) => {
       let blobs: Blob[] = [];
 
       if (recorder.state === 'inactive') {
-        console.log('check if it is inactive');
-        console.log('currentStream', currentStream);
         mediaStreamInitialize(constraintList);
       }
 
       recorder.ondataavailable = (e) => {
-        console.log('data pushed', e);
         blobs.push(e.data);
       };
 
@@ -241,7 +234,6 @@ const useMediaStream = (props: Props) => {
             setTimer(sec++);
           } else {
             clearInterval(timerRef.current);
-            console.log('5 seconds');
             startRecording();
             // setRecording(false);
             setRecordOverTwice(true);
@@ -266,7 +258,6 @@ const useMediaStream = (props: Props) => {
   ]);
 
   const backToStandby = useCallback(() => {
-    console.log('취소');
     clearInterval(timerRef.current);
     setRecording(false);
     setStandbyState(false);
