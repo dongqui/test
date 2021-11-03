@@ -51,7 +51,9 @@ const UpperBar: FunctionComponent<Props> = ({
       </div>
       <div className={cx('right-upper')}>
         <FilledButton className={cx('share-button')} text="Share" />
-        <div className={cx('device-select')}>{deviceList && deviceList[0]?.label}</div>
+        <div className={cx('device-select')}>
+          Camera<IconWrapper icon={SvgPath.EmptyDownArrow}></IconWrapper>
+        </div>
         <ul className={cx('right-upper-inner')}>
           {/* {Array.from(Array(2), (_, i) => (
             <div key={i} className={cx('void')} />

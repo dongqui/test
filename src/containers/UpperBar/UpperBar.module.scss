@@ -56,24 +56,37 @@
   padding: 4px 16px;
 
   .device-select {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 69px;
+    height: 24px;
+    font-size: 11px;
+    line-height: 13px;
+    border-radius: 6px;
+    padding: 0 8px;
+    background-color: #4f4f4f;
     color: #fff;
+    cursor: pointer;
+
+    & > span {
+      margin-left: 4px;
+    }
   }
 
   .right-upper-inner {
-    // height: 100%;
-    // display: grid;
-    // grid-template-columns: repeat(2, 1fr);
-    // column-gap: 4px;
     position: absolute;
+    min-width: 180px;
+    height: 500px;
     display: flex;
     flex-direction: column;
     top: 40px;
     right: 0;
     border: 1px solid #fff;
     border-radius: 8px;
-
+    
     & > .device-select-dropdown {
-      width: 200px;
+      // width: 200px;
       color: #fff;
       list-style: none;
       overflow: hidden;
