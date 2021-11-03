@@ -39,7 +39,6 @@ const createGround = (
     diffuseTexture.vScale = 50;
     groundMaterial.diffuseTexture = diffuseTexture;
   }
-
   ground.material = groundMaterial;
 
   return ground;

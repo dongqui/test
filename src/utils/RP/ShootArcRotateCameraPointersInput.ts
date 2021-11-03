@@ -1,5 +1,6 @@
 import {
   ArcRotateCamera,
+  Camera,
   CameraInputTypes,
   Nullable,
   PointerTouch,
@@ -234,6 +235,9 @@ export default class ShootArcRotateCameraPointersInput extends ShootBaseCameraPo
   protected onButtonDown(evt: IPointerEvent): void {
     // pan only without altKey
     this._isPanClick = evt.button === this.camera._panningMouseButton && this._altKey;
+    if (!this._altKey && this.camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+      this.camera.mode = Camera.PERSPECTIVE_CAMERA;
+    }
   }
 
   /**

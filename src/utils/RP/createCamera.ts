@@ -37,6 +37,8 @@ const createCamera = (scene: BABYLON.Scene, initialPosition?: BABYLON.Vector3) =
   // 커스텀한 카메라 컨트롤을 적용
   arcRotateCamera.inputs.add(new ShootArcRotateCameraPointersInput());
   arcRotateCamera._panningMouseButton = 1;
+
+  return arcRotateCamera;
 };
 
 export default createCamera;

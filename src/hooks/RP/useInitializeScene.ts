@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { RefObject, useEffect } from 'react';
+import { RefObject, useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
@@ -29,6 +29,21 @@ const useInitializeScene = (params: Params) => {
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const dispatch = useDispatch();
+
+  const multiKeyController = useMemo(
+    () => ({
+      v: { pressed: false },
+      r: { pressed: false },
+      k: { pressed: false },
+      V: { pressed: false },
+      R: { pressed: false },
+      K: { pressed: false },
+      ㅍ: { pressed: false },
+      ㄱ: { pressed: false },
+      ㅏ: { pressed: false },
+    }),
+    [],
+  );
 
   // scene 생성 및 기본 설정
   useEffect(() => {
@@ -190,6 +205,160 @@ const useInitializeScene = (params: Params) => {
       };
     }
   }, [dispatch, renderingCanvas, sceneList, selectableObjects]);
+
+  useEffect(() => {
+    const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera) => {
+      camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+      camera.orthoTop = 2;
+      camera.orthoBottom = -2;
+      camera.orthoLeft = -2 * (canvas.width / canvas.height);
+      camera.orthoRight = 2 * (canvas.width / canvas.height);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+      if (focusedCanvas) {
+        const focusedShootScene = sceneList.find((s) => s.canvasId === focusedCanvas.id);
+        const focusedScene = focusedShootScene?.scene;
+
+        if (focusedScene && focusedScene.activeCamera) {
+          const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
+          const { position, target } = activeCamera;
+          let distance: number;
+
+          switch (event.key) {
+            case 'v': // v (viewport)
+            case 'V':
+            case 'ㅍ':
+              if (multiKeyController[event.key]) {
+                multiKeyController[event.key].pressed = true;
+              }
+              break;
+            case 't': // t (top)
+            case 'T':
+            case 'ㅅ':
+              switchToOrthoGraphic(focusedCanvas, activeCamera);
+              distance = BABYLON.Vector3.Distance(
+                new BABYLON.Vector3(0, position.y, 0),
+                new BABYLON.Vector3(0, target.y, 0),
+              );
+              activeCamera.setPosition(new BABYLON.Vector3(target.x, distance + 10, target.z));
+              break;
+            case 'b': // b (bottom)
+            case 'B':
+            case 'ㅠ':
+              switchToOrthoGraphic(focusedCanvas, activeCamera);
+              distance = BABYLON.Vector3.Distance(
+                new BABYLON.Vector3(0, position.y, 0),
+                new BABYLON.Vector3(0, target.y, 0),
+              );
+              activeCamera.setPosition(new BABYLON.Vector3(target.x, -(distance + 10), target.z));
+              break;
+            case 'l': // l (left)
+            case 'L':
+            case 'ㅣ':
+              switchToOrthoGraphic(focusedCanvas, activeCamera);
+              distance = BABYLON.Vector3.Distance(
+                new BABYLON.Vector3(position.x, 0, 0),
+                new BABYLON.Vector3(target.x, 0, 0),
+              );
+              activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), target.y, target.z));
+              break;
+            case 'r': // r (right)
+            case 'R':
+            case 'ㄱ':
+              if (multiKeyController[event.key]) {
+                multiKeyController[event.key].pressed = true;
+              }
+              if (
+                (multiKeyController.v.pressed ||
+                  multiKeyController.V.pressed ||
+                  multiKeyController.ㅍ.pressed) &&
+                multiKeyController[event.key].pressed
+              ) {
+                switchToOrthoGraphic(focusedCanvas, activeCamera);
+                distance = BABYLON.Vector3.Distance(
+                  new BABYLON.Vector3(position.x, 0, 0),
+                  new BABYLON.Vector3(target.x, 0, 0),
+                );
+                activeCamera.setPosition(new BABYLON.Vector3(distance + 10, target.y, target.z));
+              }
+              break;
+            case 'f': // f (front)
+            case 'F':
+            case 'ㄹ':
+              switchToOrthoGraphic(focusedCanvas, activeCamera);
+              distance = BABYLON.Vector3.Distance(
+                new BABYLON.Vector3(0, 0, position.z),
+                new BABYLON.Vector3(0, 0, target.z),
+              );
+              activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, distance + 10));
+              break;
+            case 'k': // k (back)
+            case 'K':
+            case 'ㅏ':
+              if (multiKeyController[event.key]) {
+                multiKeyController[event.key].pressed = true;
+              }
+              if (
+                (multiKeyController.v.pressed ||
+                  multiKeyController.V.pressed ||
+                  multiKeyController.ㅍ.pressed) &&
+                multiKeyController[event.key].pressed
+              ) {
+                switchToOrthoGraphic(focusedCanvas, activeCamera);
+                distance = BABYLON.Vector3.Distance(
+                  new BABYLON.Vector3(0, 0, position.z),
+                  new BABYLON.Vector3(0, 0, target.z),
+                );
+                activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
+              }
+              break;
+            default: {
+              break;
+            }
+          }
+        }
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case 'v':
+        case 'V':
+        case 'ㅍ':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = false;
+          }
+          break;
+        case 'r':
+        case 'R':
+        case 'ㄱ':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = false;
+          }
+          break;
+        case 'k':
+        case 'K':
+        case 'ㅏ':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = false;
+          }
+          break;
+        default: {
+          break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [multiKeyController, sceneList]);
 };
 
 export default useInitializeScene;
