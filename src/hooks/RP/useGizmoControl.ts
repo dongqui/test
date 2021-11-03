@@ -683,7 +683,7 @@ const useGizmoControl = () => {
         }
 
         // rotation gizmo mesh
-        if (target.id.toLowerCase() === 'rotationcircle') {
+        if (target.id.toLowerCase() === 'ignore') {
           return true;
         }
 
