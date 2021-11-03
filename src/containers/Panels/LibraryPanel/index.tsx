@@ -92,67 +92,98 @@ const LibraryPanel: FunctionComponent = () => {
       const extension = getFileExtension(file.name).toLowerCase();
       const fileName = file.name;
 
-      switch (extension) {
-        case 'glb': {
-          setFileName(fileName);
-          setFileExtension(extension);
+      if (extension === 'glb') {
+        setFileName(fileName);
+        setFileExtension(extension);
 
-          /**
-           * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
-           */
-          dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
-          break;
-        }
+        /**
+         * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
+         */
 
-        case 'fbx': {
-          onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
+        dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
+        return;
+      }
 
-          await convertFBXtoGLB(file)
-            .then((response) => {
-              onModalClose();
+      if (extension === 'fbx') {
+        onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
-              setFileName(fileName);
+        await convertFBXtoGLB(file)
+          .then((response) => {
+            onModalClose();
 
-              /**
-               * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
-               */
-              dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
-            })
-            .catch(() => {
-              onModalOpen({
-                title: 'Warning',
-                message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
-                confirmText: 'Contact',
-                onConfirm: () => {
-                  // location.href = 'mailto:contact@plask.ai';
-                  onModalClose();
-                },
-              });
+            setFileName(fileName);
+
+            /**
+             * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
+             */
+            dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
+          })
+          .catch(() => {
+            onModalOpen({
+              title: 'Warning',
+              message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
+              confirmText: 'Contact',
+              onConfirm: () => {
+                // location.href = 'mailto:contact@plask.ai';
+                onModalClose();
+              },
             });
+          });
 
-          break;
-        }
-
-        case 'mp4':
-        case 'mov':
-        case 'avi': {
-          break;
-        }
-
-        default: {
-          onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
-          break;
-        }
+        return;
       }
     },
     [dispatch, onModalClose, onModalOpen],
   );
 
+  const handleModelLoad = useCallback(
+    async (file: File) => {
+      const extension = getFileExtension(file.name).toLowerCase();
+      const isAllowedModelFormat = extension === 'glb' || extension === 'fbx';
+
+      if (!isAllowedModelFormat) {
+        onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
+        // throw new Error('Unsupported file format');
+      }
+
+      onFileLoad(file);
+    },
+    [onFileLoad, onModalOpen],
+  );
+
   const handleDrop = useCallback(
     async (files: File[]) => {
-      await Promise.all(files.map((file) => onFileLoad(file)));
+      const videoFiles = files.filter((file) => file.type.includes('video'));
+      const removedVideoFiles = files.filter((file) => !file.type.includes('video'));
+
+      const isError = videoFiles.length > 1;
+
+      if (isError) {
+        onModalOpen({
+          title: 'Warning',
+          message: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
+          confirmText: 'Close',
+          onConfirm: () => {
+            onModalClose();
+          },
+        });
+
+        return;
+      }
+
+      /**
+       * @TODO 하나라도 실패 시 전부 취소하거나 성공하는 포맷들만 로드하거나 필요
+       */
+      removedVideoFiles.map((file) => handleModelLoad(file));
+
+      // await Promise.all(removedVideoFiles.map((file) => handleModelLoad(file)))
+      //   .then()
+      //   .catch((error) => {
+      //
+      //     // 지원하지않는 포맷으로 인한 강제 throw error로, Modal을 통한 예외처리에서 이미 처리됨 - 모든 작업을 무시하기 위함
+      //   });
     },
-    [onFileLoad],
+    [handleModelLoad, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
