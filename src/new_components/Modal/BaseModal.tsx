@@ -1,14 +1,4 @@
-import {
-  FunctionComponent,
-  Fragment,
-  MutableRefObject,
-  createContext,
-  useEffect,
-  useState,
-  useContext,
-  useCallback,
-  useRef,
-} from 'react';
+import { FunctionComponent, Fragment, MutableRefObject, createContext, useEffect, useState, useContext, useCallback, useRef } from 'react';
 import { BasePortal } from 'components/Modal';
 import { Overlay } from 'components/Overlay';
 import { Html } from 'components/Typography';
@@ -37,20 +27,13 @@ interface Props {
   title: string;
   message: string;
   confirmText?: string;
+  cancelText?: string;
   onConfirm?: () => void;
+  onCancel?: () => void;
 }
 
-const BaseModal: FunctionComponent<Props> = ({
-  children,
-  isOpen,
-  title,
-  message,
-  confirmText,
-  onConfirm,
-}) => {
-  const portalRef = useRef(
-    document.getElementById('portal_modal'),
-  ) as MutableRefObject<HTMLElement>;
+const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message, confirmText, onConfirm, cancelText, onCancel }) => {
+  const portalRef = useRef(document.getElementById('portal_modal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
   const handleOutsideClose = () => {};
@@ -61,13 +44,21 @@ const BaseModal: FunctionComponent<Props> = ({
 
   const { onModalClose } = useBaseModal();
 
-  const handleClose = useCallback(() => {
+  const handleConfirm = useCallback(() => {
     if (onConfirm) {
       onConfirm();
     }
 
     onModalClose();
   }, [onConfirm, onModalClose]);
+
+  const handleCancel = useCallback(() => {
+    if (onCancel) {
+      onCancel();
+    }
+
+    onModalClose();
+  }, [onCancel, onModalClose]);
 
   return (
     <BasePortal container={portalRef}>
@@ -79,11 +70,18 @@ const BaseModal: FunctionComponent<Props> = ({
               <div className={contentClasses}>
                 <Html content={message} />
               </div>
-              {confirmText && (
-                <button className={cx('button-confirm')} onClick={handleClose}>
-                  {confirmText}
-                </button>
-              )}
+              <div className={cx('buttons')}>
+                {confirmText && (
+                  <button className={cx('button')} onClick={handleConfirm}>
+                    {confirmText}
+                  </button>
+                )}
+                {cancelText && (
+                  <button className={cx('button')} onClick={handleCancel}>
+                    {cancelText}
+                  </button>
+                )}
+              </div>
             </div>
             <Overlay onClose={handleOutsideClose} />
           </div>
@@ -99,9 +97,9 @@ const BaseModalProvider = ({ children }: any) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<any>({});
 
-  const handleOpen = ({ title, message, confirmText, onConfirm, actionCallback }: any) => {
+  const handleOpen = ({ title, message, confirmText, onConfirm, actionCallback, cancelText, onCancel }: any) => {
     setDialogOpen(true);
-    setDialogConfig({ title, message, confirmText, onConfirm, actionCallback });
+    setDialogConfig({ title, message, confirmText, onConfirm, actionCallback, cancelText, onCancel });
   };
 
   const handleClose = () => {

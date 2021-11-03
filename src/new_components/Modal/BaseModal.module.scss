@@ -50,12 +50,21 @@
   }
 }
 
-.button-confirm {
+.buttons {
+  display: flex;
+}
+
+.button {
   @include reset-button-style();
+  display: flex;
   background-color: #fd6756;
   color: #fff;
   width: 100%;
   height: 24px;
   padding: 4px 8px;
   border-radius: 6px;
+
+  &:first-child {
+    margin-right: 20px;
+  }
 }
