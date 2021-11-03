@@ -136,37 +136,33 @@ const LibraryPanel: FunctionComponent = () => {
     [dispatch, onModalClose, onModalOpen],
   );
 
-  const handleModelLoad = useCallback(
-    async (file: File) => {
-      const extension = getFileExtension(file.name).toLowerCase();
-      const isAllowedModelFormat = extension === 'glb' || extension === 'fbx';
-
-      if (!isAllowedModelFormat) {
-        onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
-        // throw new Error('Unsupported file format');
-      }
-
-      onFileLoad(file);
-    },
-    [onFileLoad, onModalOpen],
-  );
-
   const handleDrop = useCallback(
     async (files: File[]) => {
-      const videoFiles = files.filter((file) => file.type.includes('video'));
+      const videos = files.filter((file) => file.type.includes('video'));
       const removedVideoFiles = files.filter((file) => !file.type.includes('video'));
 
-      const isError = videoFiles.length > 1;
+      const isInvalidFormat = removedVideoFiles.some((file) => {
+        const extension = getFileExtension(file.name).toLowerCase();
+        const isModelFormat = extension === 'glb' || extension === 'fbx';
+
+        return !isModelFormat;
+      });
+
+      const isError = videos.length > 1;
 
       if (isError) {
         onModalOpen({
           title: 'Warning',
           message: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
           confirmText: 'Close',
-          onConfirm: () => {
-            onModalClose();
-          },
+          onConfirm: () => onModalClose(),
         });
+
+        return;
+      }
+
+      if (isInvalidFormat) {
+        onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
 
         return;
       }
@@ -174,16 +170,22 @@ const LibraryPanel: FunctionComponent = () => {
       /**
        * @TODO 하나라도 실패 시 전부 취소하거나 성공하는 포맷들만 로드하거나 필요
        */
-      removedVideoFiles.map((file) => handleModelLoad(file));
+      removedVideoFiles.map(async (file) => await onFileLoad(file));
 
-      // await Promise.all(removedVideoFiles.map((file) => handleModelLoad(file)))
-      //   .then()
-      //   .catch((error) => {
-      //
-      //     // 지원하지않는 포맷으로 인한 강제 throw error로, Modal을 통한 예외처리에서 이미 처리됨 - 모든 작업을 무시하기 위함
-      //   });
+      // Video 파일은 반드시 1개만 로드가 가능하기 때문에 첫 요소만 처리
+      onModalOpen({
+        title: 'Extract',
+        message: '모션을 추출하시겠습니까?',
+        confirmText: '확인',
+        cancelText: '취소',
+        onConfirm: () => {
+          alert('Video !');
+          // 비디오 모드 전환
+        },
+        onCancel: () => onModalClose(),
+      });
     },
-    [handleModelLoad, onModalClose, onModalOpen],
+    [onFileLoad, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
