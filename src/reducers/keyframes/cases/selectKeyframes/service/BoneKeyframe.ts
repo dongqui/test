@@ -39,8 +39,8 @@ class BoneKeyframeService extends StateUpdate implements Service {
     const { trackNumber, time } = this.payload;
     const trackIndex = findElementIndex(selectedBoneKeyframes, trackNumber, 'trackNumber');
     if (trackIndex !== -1) {
-      const times = selectedBoneKeyframes[trackIndex].times;
-      return findElementIndex(times, time) !== -1;
+      const boneKeyframes = selectedBoneKeyframes[trackIndex].keyframes;
+      return findElementIndex(boneKeyframes, time, 'time') !== -1;
     }
     return false;
   };

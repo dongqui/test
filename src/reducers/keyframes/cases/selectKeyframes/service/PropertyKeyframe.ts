@@ -39,8 +39,8 @@ class TransformKeyframeService extends StateUpdate implements Service {
     const { trackNumber, time } = this.payload;
     const trackIndex = findElementIndex(selectedPropertyKeyframes, trackNumber, 'trackNumber');
     if (trackIndex !== -1) {
-      const times = selectedPropertyKeyframes[trackIndex].times;
-      return findElementIndex(times, time) !== -1;
+      const propertyKeyframes = selectedPropertyKeyframes[trackIndex].keyframes;
+      return findElementIndex(propertyKeyframes, time, 'time') !== -1;
     }
     return false;
   };

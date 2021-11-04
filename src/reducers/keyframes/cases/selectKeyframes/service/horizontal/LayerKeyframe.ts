@@ -37,10 +37,10 @@ class LayerKeyframeHorizontal implements HorizontalSelection {
   private getSelectedProperties = ({ state }: Params) => {
     const selectedTransforms: SelectedKeyframe[] = [];
     state.propertyTrackList.forEach((propertyTrack) => {
-      const { keyframes, trackId, trackNumber } = propertyTrack;
+      const { keyframes, trackId, trackNumber, trackType } = propertyTrack;
       keyframes.forEach((keyframe) => {
-        const { time } = keyframe;
-        selectedTransforms.push({ trackNumber, trackId, time, trackType: 'property' });
+        const { time, value } = keyframe;
+        selectedTransforms.push({ trackNumber, trackId, time, value, trackType });
       });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);

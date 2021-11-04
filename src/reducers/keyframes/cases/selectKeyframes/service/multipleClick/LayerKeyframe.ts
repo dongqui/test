@@ -1,8 +1,9 @@
-import { SelectedKeyframe } from 'types/TP/keyframe';
+import { SelectedKeyframe, Keyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
 import { ClusterKeyframes } from 'reducers/keyframes/classes';
+import { findElementIndex } from 'utils/TP';
 
 import { MultipleClick } from './index';
 
@@ -14,11 +15,17 @@ interface Params {
 class LayerKeyframeMultipleClick implements MultipleClick {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
+  private findKeyframeValue = (keyframes: Keyframe[], time: number) => {
+    const keyframeIndex = findElementIndex(keyframes, time, 'time');
+    return keyframes[keyframeIndex].value;
+  };
+
   private getSelectedBones = ({ state, payload }: Params) => {
     const selectedBones: SelectedKeyframe[] = [];
     state.boneTrackList.forEach((boneTrack) => {
-      const { trackId, trackNumber, trackType } = boneTrack;
-      selectedBones.push({ trackId, trackNumber, trackType, time: payload.time });
+      const { trackId, trackNumber, trackType, keyframes } = boneTrack;
+      const value = this.findKeyframeValue(keyframes, payload.time);
+      selectedBones.push({ trackId, trackNumber, trackType, time: payload.time, value });
     });
     return selectedBones;
   };

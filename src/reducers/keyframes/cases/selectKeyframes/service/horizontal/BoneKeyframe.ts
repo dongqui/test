@@ -35,10 +35,10 @@ class BoneKeyframeHorizontal implements HorizontalSelection {
     const { trackNumber } = payload;
     const selectedProperties: SelectedKeyframe[] = [];
     for (let transform = trackNumber + 1; transform <= trackNumber + 3; transform++) {
-      const { keyframes, trackId } = this.findTrack(state.propertyTrackList, transform);
+      const { keyframes, trackId, trackType } = this.findTrack(state.propertyTrackList, transform);
       keyframes.forEach((keyframe) => {
-        const { time } = keyframe;
-        selectedProperties.push({ trackNumber: transform, trackId, time, trackType: 'property' });
+        const { time, value } = keyframe;
+        selectedProperties.push({ trackNumber: transform, trackId, time, value, trackType });
       });
     }
     return this.clusterKeyframes.initializeClusterKeyframes(selectedProperties);

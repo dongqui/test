@@ -56,7 +56,7 @@ const propertyKeyframes: TimeEditorTrack[] = [
           isSelected: false,
           isDeleted: false,
           time: index,
-          value: { _isdirty: true, _x: 1, _y: 1, _z: 1 },
+          value: { x: 1, y: 1, z: 1 },
         })),
     })),
   ...Array(3)
@@ -71,7 +71,7 @@ const propertyKeyframes: TimeEditorTrack[] = [
           isSelected: false,
           isDeleted: false,
           time: index,
-          value: { _isdirty: true, _x: 1, _y: 1, _z: 1 },
+          value: { x: 1, y: 1, z: 1 },
         })),
     })),
   ...Array(3)
@@ -86,7 +86,7 @@ const propertyKeyframes: TimeEditorTrack[] = [
           isSelected: false,
           isDeleted: false,
           time: index,
-          value: { _isdirty: true, _x: 1, _y: 1, _z: 1 },
+          value: { x: 1, y: 1, z: 1 },
         })),
     })),
 ];

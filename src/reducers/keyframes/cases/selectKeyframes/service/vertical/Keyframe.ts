@@ -1,8 +1,9 @@
-import { SelectedKeyframe } from 'types/TP/keyframe';
+import { SelectedKeyframe, Keyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
 import { ClusterKeyframes } from 'reducers/keyframes/classes';
+import { findElementIndex } from 'utils/TP';
 
 import { VerticalSelection } from './index';
 
@@ -13,6 +14,11 @@ interface Params {
 
 class KeyframeVerticalSelection implements VerticalSelection {
   private readonly clusterKeyframes = new ClusterKeyframes();
+
+  private findKeyframeValue = (keyframes: Keyframe[], time: number) => {
+    const keyframeIndex = findElementIndex(keyframes, time, 'time');
+    return keyframes[keyframeIndex].value;
+  };
 
   private getSelectedLayers = ({ state, payload }: Params) => {
     const { layerTrack } = state;
@@ -36,13 +42,14 @@ class KeyframeVerticalSelection implements VerticalSelection {
     const { propertyTrackList } = state;
     const selectedTransforms: SelectedKeyframe[] = [];
     propertyTrackList.forEach((transformKeyframe) => {
-      const { trackNumber, trackType, trackId } = transformKeyframe;
-      selectedTransforms.push({ trackNumber, trackType, trackId, time: payload.time });
+      const { trackNumber, trackType, trackId, keyframes } = transformKeyframe;
+      const value = this.findKeyframeValue(keyframes, payload.time);
+      selectedTransforms.push({ trackNumber, trackType, trackId, time: payload.time, value });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);
   };
 
-  public selectByVertical = (payload: Params): AllSelectedKeyframes => {
+  selectByVertical = (payload: Params): AllSelectedKeyframes => {
     return {
       selectedLayerKeyframes: this.getSelectedLayers(payload),
       selectedBoneKeyframes: this.getSelectedBones(payload),

@@ -1,4 +1,4 @@
-import { TimeEditorTrack, SelectedKeyframe } from 'types/TP/keyframe';
+import { TimeEditorTrack, SelectedKeyframe, Keyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
@@ -20,13 +20,19 @@ class BoneKeyframeMultipleClick implements MultipleClick {
     return editorTrackList[trackIndex];
   };
 
+  private findKeyframeValue = (keyframes: Keyframe[], time: number) => {
+    const keyframeIndex = findElementIndex(keyframes, time, 'time');
+    return keyframes[keyframeIndex].value;
+  };
+
   private getSelectedProperties = ({ state, payload }: Params) => {
     const { propertyTrackList } = state;
     const { trackNumber, time } = payload;
     const selectedProperties: SelectedKeyframe[] = [];
-    for (let propertyNum = trackNumber + 1; propertyNum <= trackNumber + 3; propertyNum++) {
-      const { trackId, trackType } = this.findEditorTrack(propertyTrackList, propertyNum);
-      selectedProperties.push({ trackNumber: propertyNum, time, trackId, trackType });
+    for (let property = trackNumber + 1; property <= trackNumber + 3; property++) {
+      const { trackId, trackType, keyframes } = this.findEditorTrack(propertyTrackList, property);
+      const value = this.findKeyframeValue(keyframes, time);
+      selectedProperties.push({ trackNumber: property, time, value, trackId, trackType });
     }
     return selectedProperties;
   };

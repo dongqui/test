@@ -17,21 +17,21 @@ class BoneKeyframesRepository implements Repository {
     const { boneTrackList, selectedBoneKeyframes } = this.state;
     return produce(boneTrackList, (draft) => {
       selectedBoneKeyframes.forEach((selectedKeyframe) => {
-        const { trackNumber, times } = selectedKeyframe;
+        const { trackNumber, keyframes } = selectedKeyframe;
         const trackIndex = findElementIndex(boneTrackList, trackNumber, 'trackNumber');
-        const keyframes = boneTrackList[trackIndex].keyframes;
-        times.forEach((time) => {
-          const keyframeIndex = findElementIndex(keyframes, time, 'time');
+        const boneKeyframes = boneTrackList[trackIndex].keyframes;
+        keyframes.forEach(({ time }) => {
+          const keyframeIndex = findElementIndex(boneKeyframes, time, 'time');
           const keyframe = draft[trackIndex].keyframes[keyframeIndex];
           keyframe.isSelected = false;
         });
       });
       nextSelectedKeyframes.forEach((selectedKeyframe) => {
-        const { trackNumber, times } = selectedKeyframe;
+        const { trackNumber, keyframes } = selectedKeyframe;
         const trackIndex = findElementIndex(boneTrackList, trackNumber, 'trackNumber');
-        const keyframes = boneTrackList[trackIndex].keyframes;
-        times.forEach((time) => {
-          const keyframeIndex = findElementIndex(keyframes, time, 'time');
+        const boneKeyframes = boneTrackList[trackIndex].keyframes;
+        keyframes.forEach(({ time }) => {
+          const keyframeIndex = findElementIndex(boneKeyframes, time, 'time');
           const keyframe = draft[trackIndex].keyframes[keyframeIndex];
           keyframe.isSelected = true;
         });

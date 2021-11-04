@@ -15,20 +15,20 @@ class LayerKeyframesRepository implements Repository {
 
   updateIsSelected = (nextSelectedKeyframes: ClusteredKeyframe[]): TimeEditorTrack => {
     const { layerTrack, selectedLayerKeyframes } = this.state;
-    const { keyframes } = layerTrack;
+    const layerKeyframes = layerTrack.keyframes;
     return produce(layerTrack, (draft) => {
       selectedLayerKeyframes.forEach((selectedKeyframe) => {
-        const { times } = selectedKeyframe;
-        times.forEach((time) => {
-          const keyframeIndex = findElementIndex(keyframes, time, 'time');
+        const { keyframes } = selectedKeyframe;
+        keyframes.forEach(({ time }) => {
+          const keyframeIndex = findElementIndex(layerKeyframes, time, 'time');
           const keyframe = draft.keyframes[keyframeIndex];
           keyframe.isSelected = false;
         });
       });
       nextSelectedKeyframes.forEach((selectedKeyframe) => {
-        const { times } = selectedKeyframe;
-        times.forEach((time) => {
-          const keyframeIndex = findElementIndex(keyframes, time, 'time');
+        const { keyframes } = selectedKeyframe;
+        keyframes.forEach(({ time }) => {
+          const keyframeIndex = findElementIndex(layerKeyframes, time, 'time');
           const keyframe = draft.keyframes[keyframeIndex];
           keyframe.isSelected = true;
         });

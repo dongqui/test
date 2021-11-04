@@ -4,20 +4,20 @@ import { ClusteredKeyframe, SelectedKeyframe } from 'types/TP/keyframe';
 import { getBinarySearch, findElementIndex } from 'utils/TP';
 
 class ClusterKeyframes {
-  private checkIncludedTime = (times: number[], time: number) => {
-    const included = getBinarySearch({ collection: times, index: time });
+  private checkIncludedTime = <K>(keyframes: K[], time: number, key: keyof K) => {
+    const included = getBinarySearch({ collection: keyframes, index: time, key });
     return included === -1;
   };
 
   initializeClusterKeyframes = (selectedKeyframes: SelectedKeyframe[]) => {
     const clusteredKeyframes: ClusteredKeyframe[] = [];
     selectedKeyframes.forEach((selectedKeyframe) => {
-      const { time, trackNumber, ...rest } = selectedKeyframe;
+      const { time, value, trackNumber, ...rest } = selectedKeyframe;
       const trackIndex = findElementIndex(clusteredKeyframes, trackNumber, 'trackNumber');
       if (trackIndex === -1) {
-        clusteredKeyframes.push({ trackNumber, times: [time], ...(rest as any) });
+        clusteredKeyframes.push({ trackNumber, keyframes: [{ time, value }], ...(rest as any) });
       } else {
-        clusteredKeyframes[trackIndex].times.push(time);
+        clusteredKeyframes[trackIndex].keyframes.push({ time, value });
       }
     });
     return clusteredKeyframes;
@@ -27,13 +27,13 @@ class ClusterKeyframes {
     const clusteredKeyframes = this.initializeClusterKeyframes(selectedKeyframes);
     return produce(oldValues, (draft) => {
       clusteredKeyframes.forEach((track) => {
-        const { times, trackNumber, ...rest } = track;
+        const { keyframes, trackNumber, ...rest } = track;
         const trackIndex = findElementIndex(oldValues, track.trackNumber, 'trackNumber');
         if (trackIndex !== -1) {
-          draft[trackIndex].times = [...draft[trackIndex].times, ...track.times];
-          draft[trackIndex].times.sort((a, b) => a - b);
+          draft[trackIndex].keyframes = [...draft[trackIndex].keyframes, ...track.keyframes];
+          draft[trackIndex].keyframes.sort((a, b) => a.time - b.time);
         } else {
-          draft.push({ times, trackNumber, ...(rest as any) });
+          draft.push({ keyframes, trackNumber, ...(rest as any) });
           draft.sort((a, b) => a.trackNumber - b.trackNumber);
         }
       });
@@ -44,13 +44,13 @@ class ClusterKeyframes {
     const clusteredKeyframes = this.initializeClusterKeyframes(selectedKeyframes);
     return produce(oldValues, (draft) => {
       clusteredKeyframes.forEach((track) => {
-        const { times, trackNumber } = track;
+        const { keyframes, trackNumber } = track;
         const trackIndex = findElementIndex(oldValues, trackNumber, 'trackNumber');
         if (trackIndex !== -1) {
-          const filteredTimes = draft[trackIndex].times.filter((time) => {
-            return this.checkIncludedTime(times, time);
+          const filteredTimes = draft[trackIndex].keyframes.filter((keyframe) => {
+            return this.checkIncludedTime(keyframes, keyframe.time, 'time');
           });
-          draft[trackIndex].times = filteredTimes;
+          draft[trackIndex].keyframes = filteredTimes;
         }
       });
     });
