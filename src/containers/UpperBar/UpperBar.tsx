@@ -1,9 +1,15 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useCallback } from 'react';
+import {
+  Dispatch,
+  RefObject,
+  SetStateAction,
+} from 'hoist-non-react-statics/node_modules/@types/react';
 import { FilledButton, SegmentButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { useDispatch } from 'react-redux';
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
-import { RefObject } from 'hoist-non-react-statics/node_modules/@types/react';
+import { setMode } from 'actions/modeSelection';
 
 const cx = classNames.bind(styles);
 
@@ -13,29 +19,45 @@ interface Props {
   deviceList?: MediaDeviceInfo[];
   currentDevice?: string;
   handleChangeCamera?: (e: any) => void;
+  cameraDropdownState?: boolean;
+  setCameraDropdownState?: Dispatch<SetStateAction<boolean>>;
+  stopStream?: () => void;
 }
 
 const UpperBar: FunctionComponent<Props> = ({
   sceneName,
-  cameraListRef,
   currentDevice,
   handleChangeCamera,
+  cameraDropdownState,
+  setCameraDropdownState,
+  stopStream,
   deviceList,
 }) => {
+  const dispatch = useDispatch();
+
   const modeList = [
     {
       key: 'trackMode',
       value: SvgPath.TrackMode,
       isSelected: true,
-      onClick: () => {},
+      onClick: () => {
+        dispatch(setMode({ mode: 'trackMode' }));
+        stopStream && stopStream();
+      },
     },
     {
       key: 'videoMode',
       value: SvgPath.Camera,
       isSelected: false,
-      onClick: () => {},
+      onClick: () => {
+        dispatch(setMode({ mode: 'videoMode' }));
+      },
     },
   ];
+
+  const handleCameraDropdown = useCallback(() => {
+    setCameraDropdownState && setCameraDropdownState(!cameraDropdownState);
+  }, [cameraDropdownState, setCameraDropdownState]);
 
   return (
     <div className={cx('wrap')}>
@@ -51,26 +73,34 @@ const UpperBar: FunctionComponent<Props> = ({
       </div>
       <div className={cx('right-upper')}>
         <FilledButton className={cx('share-button')} text="Share" />
-        <div className={cx('device-select')}>
+        <div className={cx('device-select')} onClick={handleCameraDropdown}>
           Camera<IconWrapper icon={SvgPath.EmptyDownArrow}></IconWrapper>
         </div>
-        <ul className={cx('right-upper-inner')}>
-          {/* {Array.from(Array(2), (_, i) => (
+        {cameraDropdownState && (
+          <ul className={cx('right-upper-inner')}>
+            {/* {Array.from(Array(2), (_, i) => (
             <div key={i} className={cx('void')} />
           ))} */}
-          {deviceList &&
-            deviceList.map((device, idx) => (
-              <li
-                key={idx}
-                id={device.deviceId}
-                className={cx('device-select-dropdown')}
-                onClick={handleChangeCamera}
-                data-value
-              >
-                {device.label}
-              </li>
-            ))}
-        </ul>
+            <div>Select a Camera</div>
+            {deviceList &&
+              deviceList.map((device, idx) => (
+                <li key={idx} className={cx('device-select-dropdown')} data-value>
+                  {currentDevice === device.label && (
+                    <IconWrapper
+                      className={cx('device-select-check')}
+                      icon={SvgPath.Check}
+                    ></IconWrapper>
+                  )}
+                  <div className={cx('device-label')}>{device.label}</div>
+                  <div
+                    className={cx('button-overlay')}
+                    id={device.deviceId}
+                    onClick={handleChangeCamera}
+                  ></div>
+                </li>
+              ))}
+          </ul>
+        )}
       </div>
     </div>
   );
