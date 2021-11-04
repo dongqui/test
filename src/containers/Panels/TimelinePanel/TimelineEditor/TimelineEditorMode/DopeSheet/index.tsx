@@ -16,7 +16,7 @@ const DopeSheet = () => {
 
   // layer 트랙 translateY 계산
   const layerTranslateY = useMemo(() => {
-    const selectedLayerIndex = layerTrackList.findIndex(({ layerId }) => layerId === selectedLayer);
+    const selectedLayerIndex = layerTrackList.findIndex(({ trackId }) => trackId === selectedLayer);
     const layerCaretDown = layerTrackList[selectedLayerIndex].isPointedDownCaret;
     const result = Array(layerTrackList.length)
       .fill(1)
@@ -49,7 +49,7 @@ const DopeSheet = () => {
   return (
     <g transform={`translate(0 -${trackScrollTop})`}>
       {layerTrackList.map((layerTrack, index) => (
-        <LayerTrack key={layerTrack.layerId} translateY={layerTranslateY[index]} {...layerTrack} />
+        <LayerTrack key={layerTrack.trackId} translateY={layerTranslateY[index]} {...layerTrack} />
       ))}
     </g>
   );

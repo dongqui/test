@@ -10,7 +10,7 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const CaretButton: FunctionComponent<ClickLayerCaretButton> = (props) => {
-  const { isPointedDownCaret, layerId, trackType } = props;
+  const { isPointedDownCaret, trackId, trackType } = props;
   const dispatch = useDispatch();
 
   // caret 버튼 클릭
@@ -18,11 +18,11 @@ const CaretButton: FunctionComponent<ClickLayerCaretButton> = (props) => {
     dispatch(
       clickCaretButton({
         isPointedDownCaret: !isPointedDownCaret,
-        layerId,
+        trackId,
         trackType,
       }),
     );
-  }, [dispatch, isPointedDownCaret, layerId, trackType]);
+  }, [dispatch, isPointedDownCaret, trackId, trackType]);
 
   return (
     <IconWrapper

@@ -23,7 +23,7 @@ function setNewLayerTrack(trackName: string): LayerTrack {
     trackName,
     trackType: 'layer',
     trackNumber: -1,
-    layerId: trackName,
+    trackId: trackName,
   };
 }
 

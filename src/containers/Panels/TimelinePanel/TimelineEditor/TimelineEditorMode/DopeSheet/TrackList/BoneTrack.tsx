@@ -1,25 +1,24 @@
 import { useMemo, Fragment, FunctionComponent } from 'react';
 
-import { BoneIdentifier } from 'types/TP';
-import { TimeEditorTrack } from 'types/TP/keyframe';
+import { TimeEditorTrack, Keyframe } from 'types/TP/keyframe';
 import { BoneTrack } from 'types/TP/track';
 import { useSelector } from 'reducers';
 import { getBoneTrackIndex } from 'utils/TP';
 
 import { PropertyTrack } from './index';
-import Keyframe from './Keyframe';
+import KeyframeComponent from './Keyframe';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props extends TimeEditorTrack<BoneIdentifier>, BoneTrack {
+interface Props extends TimeEditorTrack, BoneTrack {
   translateY: number;
 }
 
 const BoneTrackComponent: FunctionComponent<Props> = (props) => {
-  const { trackNumber, keyframes, isPointedDownCaret, isSelected, translateY } = props;
+  const { trackNumber, trackId, keyframes, isPointedDownCaret, isSelected, translateY } = props;
   const propertyKeyframes = useSelector((state) => state.keyframes.propertyTrackList);
   const propertyTrackList = useSelector((state) => state.trackList.propertyTrackList);
 
@@ -63,8 +62,9 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
         {keyframes.map(
           (keyframe) =>
             !keyframe.isDeleted && (
-              <Keyframe
-                key={keyframe.time}
+              <KeyframeComponent
+                key={`${keyframe.time}_${keyframe.isSelected}`}
+                trackId={trackId}
                 trackType="bone"
                 trackNumber={trackNumber}
                 {...keyframe}

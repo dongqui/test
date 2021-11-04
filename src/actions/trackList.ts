@@ -1,4 +1,5 @@
-import { TrackType, LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
+import { TrackType } from 'types/TP';
+import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
 
 export type TrackListAction =
   | ReturnType<typeof initializeTrackList>
@@ -19,7 +20,7 @@ export const initializeTrackList = (params: any) => ({
 // 트랙 내부 펴닫기 버튼 클릭
 export type ClickLayerCaretButton = Pick<
   LayerTrack,
-  'isPointedDownCaret' | 'layerId' | 'trackType'
+  'isPointedDownCaret' | 'trackId' | 'trackType'
 >;
 export type ClickBoneCaretButton = Pick<
   BoneTrack,
@@ -36,7 +37,7 @@ export interface ClickTrackBody {
   trackType: TrackType;
   eventType: 'leftClick' | 'multipleClick' | 'rightClick' | 'selectAll' | 'unselectAll';
 }
-export type ClickLayerTrackBody = Pick<LayerTrack, 'layerId'> & ClickTrackBody;
+export type ClickLayerTrackBody = Pick<LayerTrack, 'trackId'> & ClickTrackBody;
 export type ClickBoneTrackBody = Pick<BoneTrack, 'trackNumber'> & ClickTrackBody;
 export type ClickPropertyTrackBody = Pick<PropertyTrack, 'trackNumber'> & ClickTrackBody;
 export const clickTrackBody = (params: ClickTrackBody) => ({

@@ -1,13 +1,10 @@
 import produce from 'immer';
 
-import { TrackIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP';
 import { ClusteredKeyframe, TimeEditorTrack } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
 import { getBoneTrackIndex, findElementIndex } from 'utils/TP';
 
 import { Repository } from './index';
-
-type PropertyTrackList = TimeEditorTrack<PropertyIdentifier>[];
 
 class BoneKeyframeRepository implements Repository {
   private readonly state: KeyframesState;
@@ -16,10 +13,7 @@ class BoneKeyframeRepository implements Repository {
     this.state = state;
   }
 
-  private findTrack = <TI extends TrackIdentifier>(
-    editorTrackList: TimeEditorTrack<TI>[],
-    trackNumber: number,
-  ) => {
+  private findTrack = (editorTrackList: TimeEditorTrack[], trackNumber: number) => {
     const trackIndex = findElementIndex(editorTrackList, trackNumber, 'trackNumber');
     return editorTrackList[trackIndex];
   };
@@ -41,7 +35,7 @@ class BoneKeyframeRepository implements Repository {
   };
 
   // 하위 property keyframe들이 모두 삭제되었는지 확인
-  private isAllDeleted = (trackList: PropertyTrackList, trackNumber: number, time: number) => {
+  private isAllDeleted = (trackList: TimeEditorTrack[], trackNumber: number, time: number) => {
     let deletedCount = 0;
     for (let property = trackNumber + 1; property <= trackNumber + 3; property++) {
       const trackIndex = findElementIndex(trackList, property, 'trackNumber');
@@ -54,19 +48,18 @@ class BoneKeyframeRepository implements Repository {
   };
 
   // 하위 property keyframes들이 모두 삭제 된 경우 탐색
-  private getDeletedBoneTimes = (propertyTrackList: PropertyTrackList) => {
+  private getDeletedBoneTimes = (propertyTrackList: TimeEditorTrack[]) => {
     const { boneTrackList } = this.state;
-    const deletedBoneTimes: ClusteredKeyframe<BoneIdentifier>[] = [];
+    const deletedBoneTimes: ClusteredKeyframe[] = [];
     const selectedPropertyTimes = this.getSelectedPropertyTimes();
     for (const [boneNumber, propertyTimes] of selectedPropertyTimes.entries()) {
       propertyTimes.forEach((time) => {
         const isAllDeleted = this.isAllDeleted(propertyTrackList, boneNumber, time);
-        console.log(isAllDeleted);
         if (isAllDeleted) {
           const index = findElementIndex(deletedBoneTimes, boneNumber);
           if (index === -1) {
-            const { targetId, trackType } = this.findTrack(boneTrackList, boneNumber);
-            deletedBoneTimes.push({ targetId, trackType, trackNumber: boneNumber, times: [time] });
+            const { trackId, trackType } = this.findTrack(boneTrackList, boneNumber);
+            deletedBoneTimes.push({ trackId, trackType, trackNumber: boneNumber, times: [time] });
           } else {
             deletedBoneTimes[index].times.push(time);
           }
@@ -77,7 +70,7 @@ class BoneKeyframeRepository implements Repository {
   };
 
   // 선택 된 keyframes에 isDeleted 상태값 변경
-  private deleteBoneKeyframes = (propertyTrackList: PropertyTrackList) => {
+  private deleteBoneKeyframes = (propertyTrackList: TimeEditorTrack[]) => {
     const { boneTrackList, selectedBoneKeyframes } = this.state;
     const deletedBoneTimes = this.getDeletedBoneTimes(propertyTrackList);
     return produce(boneTrackList, (draft) => {
@@ -85,7 +78,7 @@ class BoneKeyframeRepository implements Repository {
         const { trackNumber, times } = selectedKeyframe;
         const trackIndex = findElementIndex(boneTrackList, trackNumber, 'trackNumber');
         times.forEach((time) => {
-          const timeIndex = findElementIndex(times, time);
+          const timeIndex = findElementIndex(boneTrackList[trackIndex].keyframes, time, 'time');
           draft[trackIndex].keyframes[timeIndex].isDeleted = true;
         });
       });
@@ -106,7 +99,7 @@ class BoneKeyframeRepository implements Repository {
   };
 
   // 선택 된 keyframes 삭제
-  deleteSeletedKeyframes = (propertyTrackList: PropertyTrackList) => {
+  deleteSeletedKeyframes = (propertyTrackList: TimeEditorTrack[]) => {
     return this.deleteBoneKeyframes(propertyTrackList);
   };
 

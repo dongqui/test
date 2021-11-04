@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import _ from 'lodash';
 
 import { ScaleLinear, TimeIndex } from 'utils/TP';
-import { D3ScaleLinear, D3ZoomDatum } from 'types/TP';
+import { D3ScaleLinear, D3ZoomDatum } from 'types/TP/d3';
 
 import { LeftRuler, TopRuler } from './Rulers';
 import { createTopRulerGridLine, createTopRulerNumbers } from './Rulers/createRulerElements';

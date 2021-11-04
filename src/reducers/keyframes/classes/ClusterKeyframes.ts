@@ -1,6 +1,5 @@
 import produce from 'immer';
 
-import { TrackIdentifier } from 'types/TP';
 import { ClusteredKeyframe, SelectedKeyframe } from 'types/TP/keyframe';
 import { getBinarySearch, findElementIndex } from 'utils/TP';
 
@@ -10,10 +9,8 @@ class ClusterKeyframes {
     return included === -1;
   };
 
-  initializeClusterKeyframes = <T extends TrackIdentifier>(
-    selectedKeyframes: SelectedKeyframe<T>[],
-  ) => {
-    const clusteredKeyframes: ClusteredKeyframe<T>[] = [];
+  initializeClusterKeyframes = (selectedKeyframes: SelectedKeyframe[]) => {
+    const clusteredKeyframes: ClusteredKeyframe[] = [];
     selectedKeyframes.forEach((selectedKeyframe) => {
       const { time, trackNumber, ...rest } = selectedKeyframe;
       const trackIndex = findElementIndex(clusteredKeyframes, trackNumber, 'trackNumber');
@@ -26,10 +23,7 @@ class ClusterKeyframes {
     return clusteredKeyframes;
   };
 
-  addKeyframeTimes = <T extends TrackIdentifier>(
-    oldValues: ClusteredKeyframe<T>[],
-    selectedKeyframes: SelectedKeyframe<T>[],
-  ) => {
+  addKeyframeTimes = (oldValues: ClusteredKeyframe[], selectedKeyframes: SelectedKeyframe[]) => {
     const clusteredKeyframes = this.initializeClusterKeyframes(selectedKeyframes);
     return produce(oldValues, (draft) => {
       clusteredKeyframes.forEach((track) => {
@@ -46,10 +40,7 @@ class ClusterKeyframes {
     });
   };
 
-  filterKeyframeTimes = <T extends TrackIdentifier>(
-    oldValues: ClusteredKeyframe<T>[],
-    selectedKeyframes: SelectedKeyframe<T>[],
-  ) => {
+  filterKeyframeTimes = (oldValues: ClusteredKeyframe[], selectedKeyframes: SelectedKeyframe[]) => {
     const clusteredKeyframes = this.initializeClusterKeyframes(selectedKeyframes);
     return produce(oldValues, (draft) => {
       clusteredKeyframes.forEach((track) => {

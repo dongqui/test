@@ -1,4 +1,3 @@
-import { TrackIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP';
 import { TimeEditorTrack, SelectedKeyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -16,26 +15,23 @@ interface Params {
 class BoneKeyframeLeftClick extends ClusterKeyframes implements LeftClick {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
-  private findEditorTrack = <T extends TrackIdentifier>(
-    editorTrackList: TimeEditorTrack<T>[],
-    trackNumber: number,
-  ) => {
+  private findEditorTrack = (editorTrackList: TimeEditorTrack[], trackNumber: number) => {
     const trackIndex = findElementIndex(editorTrackList, trackNumber, 'trackNumber');
     return editorTrackList[trackIndex];
   };
 
   private getSelectedBones = ({ state, payload }: Params) => {
-    const { targetId } = this.findEditorTrack(state.boneTrackList, payload.trackNumber);
-    const selectedBones: SelectedKeyframe<BoneIdentifier>[] = [{ ...payload, targetId }];
+    const { trackId } = this.findEditorTrack(state.boneTrackList, payload.trackNumber);
+    const selectedBones: SelectedKeyframe[] = [{ ...payload, trackId }];
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
   };
 
   private getSelectedProperties = ({ state, payload }: Params) => {
     const { trackNumber, time } = payload;
-    const selectedProperties: SelectedKeyframe<PropertyIdentifier>[] = [];
+    const selectedProperties: SelectedKeyframe[] = [];
     for (let transform = trackNumber + 1; transform <= trackNumber + 3; transform++) {
-      const { property } = this.findEditorTrack(state.propertyTrackList, transform);
-      selectedProperties.push({ trackNumber: transform, property, time, trackType: 'property' });
+      const { trackId } = this.findEditorTrack(state.propertyTrackList, transform);
+      selectedProperties.push({ trackNumber: transform, trackId, time, trackType: 'property' });
     }
     return this.clusterKeyframes.initializeClusterKeyframes(selectedProperties);
   };

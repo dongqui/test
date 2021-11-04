@@ -10,7 +10,7 @@ class LayerTrackRepository implements Repository {
   }
 
   private findLayerIndex = (layerId: string) => {
-    return this.state.layerTrackList.findIndex((layer) => layer.layerId === layerId);
+    return this.state.layerTrackList.findIndex((layer) => layer.trackId === layerId);
   };
 
   public updateIsSelected = (layerId: string) => {

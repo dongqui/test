@@ -4,7 +4,6 @@ import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
 import addLayerTrack from './cases/addLayerTrack';
 // import initializeTrackList from './cases/createTrackList';
 import clickCaretButton from './cases/clickCaretButton';
-import clickInterpolationMode from './cases/clickInterpolationMode';
 import clickTrackBody from './cases/clickTrackBody';
 import deleteLayerTrack from './cases/deleteLayerTrack';
 import muteLayerTrack from './cases/muteLayerTrack';
@@ -16,7 +15,7 @@ const propertyTrackList1: PropertyTrack[] = Array(3)
       ({
         isSelected: false,
         trackName: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
-        property: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
+        trackId: 'property-aaaaa' + index,
         interpolationType: 'linear',
         trackNumber: index + 1,
         trackType: 'property',
@@ -30,7 +29,7 @@ const propertyTrackList2: PropertyTrack[] = Array(3)
       ({
         isSelected: false,
         trackName: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
-        property: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
+        trackId: 'property-bbbbb' + index,
         interpolationType: 'linear',
         trackNumber: index + 11,
         trackType: 'property',
@@ -44,7 +43,7 @@ const propertyTrackList3: PropertyTrack[] = Array(3)
       ({
         isSelected: false,
         trackName: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
-        property: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
+        trackId: 'property-ccccc' + index,
         interpolationType: 'linear',
         trackNumber: index + 21,
         trackType: 'property',
@@ -57,7 +56,7 @@ const boneTrackList: BoneTrack[] = [
     trackName: 'Left Shoulder',
     isPointedDownCaret: false,
     trackNumber: 0,
-    targetId: '11111-11111-11111',
+    trackId: 'bone-0',
     trackType: 'bone',
   },
   {
@@ -65,7 +64,7 @@ const boneTrackList: BoneTrack[] = [
     trackName: 'Left Arm',
     isPointedDownCaret: false,
     trackNumber: 10,
-    targetId: '22222-22222-22222',
+    trackId: 'bone-1',
     trackType: 'bone',
   },
   {
@@ -73,7 +72,7 @@ const boneTrackList: BoneTrack[] = [
     trackName: 'Left Hand',
     isPointedDownCaret: false,
     trackNumber: 20,
-    targetId: '33333-33333-33333',
+    trackId: 'bone-2',
     trackType: 'bone',
   },
 ];
@@ -81,7 +80,7 @@ const boneTrackList: BoneTrack[] = [
 const layerTrackList: LayerTrack[] = [
   {
     trackNumber: -1,
-    layerId: 'aaaaa-aaaaa-aaaaa',
+    trackId: 'layer-0',
     trackName: 'Layer1',
     isMuted: false,
     isPointedDownCaret: false,
@@ -90,7 +89,7 @@ const layerTrackList: LayerTrack[] = [
   },
   {
     trackNumber: -1,
-    layerId: 'bbbbb-bbbbb-bbbbb',
+    trackId: 'layer-1',
     trackName: 'Layer2',
     isMuted: false,
     isPointedDownCaret: false,
@@ -99,7 +98,7 @@ const layerTrackList: LayerTrack[] = [
   },
   {
     trackNumber: -1,
-    layerId: 'ccccc-ccccc-ccccc',
+    trackId: 'layer-2',
     trackName: 'Layer3',
     isMuted: false,
     isPointedDownCaret: false,
@@ -127,7 +126,7 @@ const initialState: TrackListState = {
   boneTrackList: boneTrackList,
   propertyTrackList: [...propertyTrackList1, ...propertyTrackList2, ...propertyTrackList3],
 
-  selectedLayer: 'aaaaa-aaaaa-aaaaa',
+  selectedLayer: 'layer-0',
   selectedBones: [],
   selectedProperties: [],
 
@@ -149,9 +148,6 @@ export const trackList = (state = initialState, action: TrackListAction) => {
     }
     case 'trackList/CLICK_TRACK_BODY': {
       return clickTrackBody(state, action.payload);
-    }
-    case 'trackList/CLICK_INTERPOLATION_MODE': {
-      return clickInterpolationMode(state, action.payload);
     }
     case 'trackList/DELETE_LAYER_TRACK': {
       return deleteLayerTrack(state, action.payload);

@@ -1,4 +1,3 @@
-import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP';
 import { TimeEditorTrack } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -109,9 +108,9 @@ class TransformKeyframeService extends StateUpdate implements Service {
     const boneTrackList = this.boneRepository.updateIsSelected(selectedBoneKeyframes);
     const propertyTrackList = this.transformRepository.updateIsSelected(selectedPropertyKeyframes);
     return {
-      layerTrack: layerTrack as TimeEditorTrack<LayerIdentifier>,
-      boneTrackList: boneTrackList as TimeEditorTrack<BoneIdentifier>[],
-      propertyTrackList: propertyTrackList as TimeEditorTrack<PropertyIdentifier>[],
+      layerTrack: layerTrack as TimeEditorTrack,
+      boneTrackList: boneTrackList as TimeEditorTrack[],
+      propertyTrackList: propertyTrackList as TimeEditorTrack[],
     };
   };
 

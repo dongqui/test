@@ -1,4 +1,4 @@
-import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from './index';
+import { TrackIdentifier } from './index';
 
 export type InterpolationType = 'bezier' | 'constant' | 'linear' | 'none';
 export type TrackType = 'layer' | 'bone' | 'property';
@@ -13,7 +13,7 @@ export interface Track {
   trackName: string;
 }
 
-export interface LayerTrack extends Track, LayerIdentifier {
+export interface LayerTrack extends Track, TrackIdentifier {
   /**
    * @description 화살표 버튼 방향이 아래를 향하는지 체크
    * @default false false인 경우 우측을 가리킴(닫힘). true인 경우 아래를 가리킴(열림)
@@ -27,7 +27,7 @@ export interface LayerTrack extends Track, LayerIdentifier {
   isMuted: boolean;
 }
 
-export interface BoneTrack extends Track, BoneIdentifier {
+export interface BoneTrack extends Track, TrackIdentifier {
   /**
    * @description 화살표 버튼 방향이 아래를 향하는지 체크
    * @default false false인 경우 우측을 가리킴(닫힘). true인 경우 아래를 가리킴(열림)
@@ -35,6 +35,6 @@ export interface BoneTrack extends Track, BoneIdentifier {
   isPointedDownCaret: boolean;
 }
 
-export interface PropertyTrack extends Track, PropertyIdentifier {
+export interface PropertyTrack extends Track, TrackIdentifier {
   interpolationType: InterpolationType;
 }

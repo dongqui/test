@@ -29,7 +29,7 @@ const TrackList = () => {
   return (
     <ul className={cx('track-list')} ref={trackListRef} onScroll={scrollTrackList}>
       {layerTrackList.map((layerTrack) => (
-        <LayerTrackItem key={layerTrack.layerId} {...layerTrack} />
+        <LayerTrackItem key={layerTrack.trackId} {...layerTrack} />
       ))}
     </ul>
   );

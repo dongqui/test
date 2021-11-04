@@ -1,14 +1,10 @@
 import produce from 'immer';
 
-import { PropertyIdentifier } from 'types/TP';
 import { ClusteredKeyframe, TimeEditorTrack } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
 import { findElementIndex } from 'utils/TP';
 
 import { Repository } from './index';
-
-type ClusteredKeyframes = ClusteredKeyframe<PropertyIdentifier>[];
-type TimeEditorTrackList = TimeEditorTrack<PropertyIdentifier>[];
 
 class PropertyKeyframesRepository implements Repository {
   private readonly state: KeyframesState;
@@ -17,7 +13,7 @@ class PropertyKeyframesRepository implements Repository {
     this.state = state;
   }
 
-  updateIsSelected = (nextSelectedKeyframes: ClusteredKeyframes): TimeEditorTrackList => {
+  updateIsSelected = (nextSelectedKeyframes: ClusteredKeyframe[]): TimeEditorTrack[] => {
     const { propertyTrackList, selectedPropertyKeyframes } = this.state;
     return produce(propertyTrackList, (draft) => {
       selectedPropertyKeyframes.forEach((selectedKeyframe) => {

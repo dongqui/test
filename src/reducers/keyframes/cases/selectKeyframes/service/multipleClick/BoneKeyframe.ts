@@ -1,4 +1,3 @@
-import { TrackIdentifier, PropertyIdentifier } from 'types/TP';
 import { TimeEditorTrack, SelectedKeyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -16,10 +15,7 @@ interface Params {
 class BoneKeyframeMultipleClick implements MultipleClick {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
-  private findEditorTrack = <T extends TrackIdentifier>(
-    editorTrackList: TimeEditorTrack<T>[],
-    trackNumber: number,
-  ) => {
+  private findEditorTrack = (editorTrackList: TimeEditorTrack[], trackNumber: number) => {
     const trackIndex = findElementIndex(editorTrackList, trackNumber, 'trackNumber');
     return editorTrackList[trackIndex];
   };
@@ -27,10 +23,10 @@ class BoneKeyframeMultipleClick implements MultipleClick {
   private getSelectedProperties = ({ state, payload }: Params) => {
     const { propertyTrackList } = state;
     const { trackNumber, time } = payload;
-    const selectedProperties: SelectedKeyframe<PropertyIdentifier>[] = [];
+    const selectedProperties: SelectedKeyframe[] = [];
     for (let propertyNum = trackNumber + 1; propertyNum <= trackNumber + 3; propertyNum++) {
-      const { property, trackType } = this.findEditorTrack(propertyTrackList, propertyNum);
-      selectedProperties.push({ trackNumber: propertyNum, time, property, trackType });
+      const { trackId, trackType } = this.findEditorTrack(propertyTrackList, propertyNum);
+      selectedProperties.push({ trackNumber: propertyNum, time, trackId, trackType });
     }
     return selectedProperties;
   };
@@ -38,15 +34,15 @@ class BoneKeyframeMultipleClick implements MultipleClick {
   private filterSelectedLayer = ({ state, payload }: Params) => {
     const { selectedLayerKeyframes, layerTrack } = state;
     const { time } = payload;
-    const { layerId, trackType } = layerTrack;
-    const selectedLayer = { trackNumber: -1, layerId, time, trackType };
+    const { trackId, trackType } = layerTrack;
+    const selectedLayer = { trackNumber: -1, trackId, time, trackType };
     return this.clusterKeyframes.filterKeyframeTimes(selectedLayerKeyframes, [selectedLayer]);
   };
 
   private filterSelectedBone = ({ state, payload }: Params) => {
     const { boneTrackList, selectedBoneKeyframes } = state;
-    const { targetId } = this.findEditorTrack(boneTrackList, payload.trackNumber);
-    const selectedKeyframe = { ...payload, targetId };
+    const { trackId } = this.findEditorTrack(boneTrackList, payload.trackNumber);
+    const selectedKeyframe = { ...payload, trackId };
     return this.clusterKeyframes.filterKeyframeTimes(selectedBoneKeyframes, [selectedKeyframe]);
   };
 
@@ -58,8 +54,8 @@ class BoneKeyframeMultipleClick implements MultipleClick {
 
   private addBoneTimes = ({ state, payload }: Params) => {
     const { boneTrackList, selectedBoneKeyframes } = state;
-    const { targetId } = this.findEditorTrack(boneTrackList, payload.trackNumber);
-    const selectedKeyframe = { ...payload, targetId };
+    const { trackId } = this.findEditorTrack(boneTrackList, payload.trackNumber);
+    const selectedKeyframe = { ...payload, trackId };
     return this.clusterKeyframes.addKeyframeTimes(selectedBoneKeyframes, [selectedKeyframe]);
   };
 

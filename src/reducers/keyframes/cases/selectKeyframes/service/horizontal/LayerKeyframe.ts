@@ -1,4 +1,3 @@
-import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP';
 import { SelectedKeyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -16,32 +15,32 @@ class LayerKeyframeHorizontal implements HorizontalSelection {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
   private getSelectedLayers = ({ state }: Params) => {
-    const { layerId, trackNumber, keyframes } = state.layerTrack;
-    const selectedLayers: SelectedKeyframe<LayerIdentifier>[] = [];
+    const { trackId, trackNumber, keyframes } = state.layerTrack;
+    const selectedLayers: SelectedKeyframe[] = [];
     keyframes.forEach((keyframe) => {
-      selectedLayers.push({ layerId, trackNumber, time: keyframe.time, trackType: 'layer' });
+      selectedLayers.push({ trackId, trackNumber, time: keyframe.time, trackType: 'layer' });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedLayers);
   };
 
   private getSelectedBones = ({ state }: Params) => {
-    const selectedBones: SelectedKeyframe<BoneIdentifier>[] = [];
+    const selectedBones: SelectedKeyframe[] = [];
     state.boneTrackList.forEach((boneTrack) => {
-      const { keyframes, targetId, trackNumber } = boneTrack;
+      const { keyframes, trackId, trackNumber } = boneTrack;
       keyframes.forEach((keyframe) => {
-        selectedBones.push({ trackNumber, targetId, time: keyframe.time, trackType: 'bone' });
+        selectedBones.push({ trackNumber, trackId, time: keyframe.time, trackType: 'bone' });
       });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
   };
 
   private getSelectedProperties = ({ state }: Params) => {
-    const selectedTransforms: SelectedKeyframe<PropertyIdentifier>[] = [];
+    const selectedTransforms: SelectedKeyframe[] = [];
     state.propertyTrackList.forEach((propertyTrack) => {
-      const { keyframes, property, trackNumber } = propertyTrack;
+      const { keyframes, trackId, trackNumber } = propertyTrack;
       keyframes.forEach((keyframe) => {
         const { time } = keyframe;
-        selectedTransforms.push({ trackNumber, property, time, trackType: 'property' });
+        selectedTransforms.push({ trackNumber, trackId, time, trackType: 'property' });
       });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);

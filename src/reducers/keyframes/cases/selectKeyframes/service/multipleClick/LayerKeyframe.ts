@@ -1,4 +1,3 @@
-import { BoneIdentifier, PropertyIdentifier } from 'types/TP';
 import { SelectedKeyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -16,27 +15,26 @@ class LayerKeyframeMultipleClick implements MultipleClick {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
   private getSelectedBones = ({ state, payload }: Params) => {
-    const selectedBones: SelectedKeyframe<BoneIdentifier>[] = [];
+    const selectedBones: SelectedKeyframe[] = [];
     state.boneTrackList.forEach((boneTrack) => {
-      const { targetId, trackNumber, trackType } = boneTrack;
-      selectedBones.push({ targetId, trackNumber, trackType, time: payload.time });
+      const { trackId, trackNumber, trackType } = boneTrack;
+      selectedBones.push({ trackId, trackNumber, trackType, time: payload.time });
     });
     return selectedBones;
   };
 
   private getSelectedProperties = ({ state, payload }: Params) => {
-    const selectedPropertiess: SelectedKeyframe<PropertyIdentifier>[] = [];
+    const selectedPropertiess: SelectedKeyframe[] = [];
     state.propertyTrackList.forEach((propertyTrack) => {
-      const { trackType, property, trackNumber } = propertyTrack;
-      selectedPropertiess.push({ trackNumber, trackType, property, time: payload.time });
+      const { trackType, trackId, trackNumber } = propertyTrack;
+      selectedPropertiess.push({ trackNumber, trackType, trackId, time: payload.time });
     });
     return selectedPropertiess;
   };
 
   private filterSelectedLayer = ({ state, payload }: Params) => {
     const { selectedLayerKeyframes, layerTrack } = state;
-    const layerId = layerTrack.layerId;
-    const selectedKeyframe = { ...payload, layerId };
+    const selectedKeyframe = { ...payload, trackId: layerTrack.trackId };
     return this.clusterKeyframes.filterKeyframeTimes(selectedLayerKeyframes, [selectedKeyframe]);
   };
 
@@ -54,8 +52,7 @@ class LayerKeyframeMultipleClick implements MultipleClick {
 
   private addLayerTimes = ({ state, payload }: Params) => {
     const { selectedLayerKeyframes, layerTrack } = state;
-    const layerId = layerTrack.layerId;
-    const selectedKeyframe = { ...payload, layerId };
+    const selectedKeyframe = { ...payload, trackId: layerTrack.trackId };
     return this.clusterKeyframes.addKeyframeTimes(selectedLayerKeyframes, [selectedKeyframe]);
   };
 

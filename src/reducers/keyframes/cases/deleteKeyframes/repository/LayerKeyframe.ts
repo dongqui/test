@@ -1,13 +1,10 @@
 import produce from 'immer';
 
-import { PropertyIdentifier } from 'types/TP';
 import { TimeEditorTrack } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
 import { findElementIndex } from 'utils/TP';
 
 import { Repository } from './index';
-
-type PropertyTrackList = TimeEditorTrack<PropertyIdentifier>[];
 
 class LayerKeyframeRepository implements Repository {
   private readonly state: KeyframesState;
@@ -27,7 +24,7 @@ class LayerKeyframeRepository implements Repository {
   };
 
   // 삭제시킬 layer keyframes의 times 계산
-  private findDeletedLayerTimes = (propertyKeyframes: PropertyTrackList) => {
+  private findDeletedLayerTimes = (propertyKeyframes: TimeEditorTrack[]) => {
     const times: number[] = [];
     const selectedPropertyTimes = this.findSelectedPropertyTimes();
     selectedPropertyTimes.forEach((time) => {
@@ -43,7 +40,7 @@ class LayerKeyframeRepository implements Repository {
   };
 
   // 선택 된 keyframes에 isDeleted 상태값 변경
-  private deleteLayerKeyframes = (propertyKeyframes: PropertyTrackList) => {
+  private deleteLayerKeyframes = (propertyKeyframes: TimeEditorTrack[]) => {
     const { layerTrack, selectedLayerKeyframes } = this.state;
     const deletedLayerTimes = this.findDeletedLayerTimes(propertyKeyframes);
     return produce(layerTrack, (draft) => {
@@ -66,7 +63,7 @@ class LayerKeyframeRepository implements Repository {
   };
 
   // 선택 된 keyframes 삭제
-  public deleteSeletedKeyframes = (propertyKeyframes: PropertyTrackList) => {
+  public deleteSeletedKeyframes = (propertyKeyframes: TimeEditorTrack[]) => {
     return this.deleteLayerKeyframes(propertyKeyframes);
   };
 

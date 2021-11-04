@@ -1,4 +1,3 @@
-import { PropertyIdentifier, TrackIdentifier } from 'types/TP';
 import { SelectedKeyframe, TimeEditorTrack } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -16,23 +15,15 @@ interface Parmas {
 class PropertyKeyframeLeftClick implements LeftClick {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
-  private findEditorTrack = <T extends TrackIdentifier>(
-    editorTrackList: TimeEditorTrack<T>[],
-    trackNumber: number,
-  ) => {
+  private findEditorTrack = (editorTrackList: TimeEditorTrack[], trackNumber: number) => {
     const trackIndex = findElementIndex(editorTrackList, trackNumber, 'trackNumber');
     return editorTrackList[trackIndex];
   };
 
   private getSelectedTransforms = ({ state, payload }: Parmas) => {
     const { time, trackNumber, trackType } = payload;
-    const { property } = this.findEditorTrack(state.propertyTrackList, trackNumber);
-    const selectedKeyframes: SelectedKeyframe<PropertyIdentifier> = {
-      time,
-      trackNumber,
-      trackType,
-      property,
-    };
+    const { trackId } = this.findEditorTrack(state.propertyTrackList, trackNumber);
+    const selectedKeyframes: SelectedKeyframe = { time, trackNumber, trackType, trackId };
     return this.clusterKeyframes.initializeClusterKeyframes([selectedKeyframes]);
   };
 

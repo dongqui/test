@@ -1,4 +1,3 @@
-import { LayerIdentifier, BoneIdentifier, PropertyIdentifier } from 'types/TP';
 import { SelectedKeyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -17,32 +16,32 @@ class LayerKeyframeLeftClick implements LeftClick {
 
   private getSelectedLayers = ({ state, payload }: Parmas) => {
     const { time, trackType, trackNumber } = payload;
-    const { layerId } = state.layerTrack;
-    const selectedLayers: SelectedKeyframe<LayerIdentifier> = {
+    const { trackId } = state.layerTrack;
+    const selectedLayers: SelectedKeyframe = {
       time,
       trackType,
       trackNumber,
-      layerId,
+      trackId,
     };
     return this.clusterKeyframes.initializeClusterKeyframes([selectedLayers]);
   };
 
   private getSelectedBones = ({ state, payload }: Parmas) => {
     const { time } = payload;
-    const selectedBones: SelectedKeyframe<BoneIdentifier>[] = [];
+    const selectedBones: SelectedKeyframe[] = [];
     state.boneTrackList.forEach((boneTrack) => {
-      const { targetId, trackNumber, trackType } = boneTrack;
-      selectedBones.push({ targetId, trackNumber, time, trackType });
+      const { trackId, trackNumber, trackType } = boneTrack;
+      selectedBones.push({ trackId, trackNumber, time, trackType });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
   };
 
   private getSelectedProperties = ({ state, payload }: Parmas) => {
     const { time } = payload;
-    const selectedProperties: SelectedKeyframe<PropertyIdentifier>[] = [];
+    const selectedProperties: SelectedKeyframe[] = [];
     state.propertyTrackList.forEach((propertyTrack) => {
-      const { property, trackNumber, trackType } = propertyTrack;
-      selectedProperties.push({ property, trackNumber, time, trackType });
+      const { trackId, trackNumber, trackType } = propertyTrack;
+      selectedProperties.push({ trackId, trackNumber, time, trackType });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedProperties);
   };

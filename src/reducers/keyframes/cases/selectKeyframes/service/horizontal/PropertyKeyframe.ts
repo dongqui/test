@@ -1,4 +1,3 @@
-import { PropertyIdentifier } from 'types/TP';
 import { SelectedKeyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
@@ -24,10 +23,10 @@ class TransformKeyframeHorizontal implements HorizontalSelection {
   };
 
   private getSelectedProperties = ({ state, payload }: Params) => {
-    const selectedTransforms: SelectedKeyframe<PropertyIdentifier>[] = [];
-    const { trackNumber, keyframes, property } = this.findPropertyTrack({ state, payload });
+    const selectedTransforms: SelectedKeyframe[] = [];
+    const { trackNumber, keyframes, trackId } = this.findPropertyTrack({ state, payload });
     keyframes.forEach(({ time }) => {
-      selectedTransforms.push({ trackNumber, time: time, property, trackType: 'property' });
+      selectedTransforms.push({ trackNumber, time: time, trackId, trackType: 'property' });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);
   };
