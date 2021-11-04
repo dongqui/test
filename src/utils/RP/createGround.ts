@@ -2,7 +2,6 @@ import * as BABYLON from '@babylonjs/core';
 
 const defaultWidth = 100;
 const defaultHeight = 100;
-const defaultSubdivision = 100;
 
 /**
  * ground를 생성합니다.
@@ -18,15 +17,19 @@ const createGround = (
   useTexture: boolean,
   width?: number,
   height?: number,
-  subdivision?: number,
 ) => {
-  const ground = BABYLON.Mesh.CreateGround(
+  const ground = BABYLON.MeshBuilder.CreatePlane(
     'ground',
-    (width = defaultWidth),
-    (height = defaultHeight),
-    (subdivision = defaultSubdivision),
+
+    {
+      width: width ?? defaultWidth,
+      height: height ?? defaultHeight,
+      sideOrientation: BABYLON.Mesh.DOUBLESIDE,
+    },
     scene,
   );
+  ground.rotate(BABYLON.Axis.X, Math.PI / 2);
+  ground.renderingGroupId = 0;
   ground.isPickable = false;
   const groundMaterial = new BABYLON.StandardMaterial('groundMaterial', scene);
 

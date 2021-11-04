@@ -117,6 +117,7 @@ const useVisualizeModel = () => {
           if (scene.isReady()) {
             // scene들에 mesh 추가
             meshes.forEach((mesh) => {
+              mesh.renderingGroupId = 1;
               scene.addMesh(mesh);
             });
 
@@ -139,7 +140,7 @@ const useVisualizeModel = () => {
                   scene,
                 );
                 joint.id = `${assetId}//${bone.name}//joint`;
-                joint.renderingGroupId = 3;
+                joint.renderingGroupId = 2;
                 joint.attachToBone(bone, meshes[0]);
 
                 const targetTransformNode = bone.getTransformNode();
