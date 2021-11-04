@@ -143,4 +143,8 @@ export interface PageInfoType {
   duration?: number;
 }
 
+export interface ModeSelectionType {
+  mode: 'trackMode' | 'videoMode' | 'recordMode';
+}
+
 export type PropertyType = 'Position' | 'Rotation' | 'Scale';
