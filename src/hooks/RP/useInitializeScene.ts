@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { RefObject, useEffect, useMemo } from 'react';
+import { RefObject, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
@@ -7,15 +7,19 @@ import {
   checkIsObjectIn,
   createCamera,
   createDirectionalLight,
-  createGround,
+  createGrounds,
   createHemisphericLight,
 } from 'utils/RP';
 import { useSelector } from 'reducers';
-import { Nullable, ScreenXY } from 'types/common';
+import { Nullable, ScreenXY, ShootView } from 'types/common';
 
 interface Params {
   renderingCanvas: RefObject<HTMLCanvasElement>;
 }
+
+type PrevCameraPositions = {
+  [key: string]: BABYLON.Vector3 | null;
+};
 
 /**
  * Babylon Engine과 Scene을 생성하고 Camera, Ground 등 기본요소를 설정합니다.
@@ -45,6 +49,8 @@ const useInitializeScene = (params: Params) => {
     [],
   );
 
+  const prevCameraPositions: PrevCameraPositions = useMemo(() => ({}), []);
+
   // scene 생성 및 기본 설정
   useEffect(() => {
     // scene이 준비됐을 때 호출할 콜백
@@ -53,7 +59,7 @@ const useInitializeScene = (params: Params) => {
       scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.FromHexString('#202020'));
 
       // scene에 기본요소를 생성합니다.
-      const ground = createGround(scene, true);
+      const grounds = createGrounds(scene, true);
 
       const arcRotateCamera = createCamera(scene);
 
@@ -67,6 +73,8 @@ const useInitializeScene = (params: Params) => {
       BABYLON.Animation.AllowMatricesInterpolation = true;
       const engine = new BABYLON.Engine(renderingCanvas.current, true);
       const innerScene = new BABYLON.Scene(engine);
+
+      prevCameraPositions[renderingCanvas.current.id] = null;
 
       // scene의 생성과 소멸에 대한 observable을 생성하고 콜백을 추가합니다.
       innerScene.onReadyObservable.addOnce((scene) => {
@@ -86,6 +94,54 @@ const useInitializeScene = (params: Params) => {
       innerScene.onDisposeObservable.addOnce((scene) => {
         // scene이 사라지면 창을 새로고침합니다.
         window.location.reload();
+      });
+
+      innerScene.onPointerObservable.add((pointerInfo) => {
+        const { pickInfo, type } = pointerInfo;
+        if (type === BABYLON.PointerEventTypes.POINTERWHEEL) {
+          const event = pointerInfo.event as WheelEvent & { wheelDelta: number };
+          // orthographic 모드에서의 카메라 줌
+          if (
+            innerScene.activeCamera &&
+            innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA
+          ) {
+            const activeCamera = innerScene.activeCamera as BABYLON.ArcRotateCamera;
+            const canvas = innerScene.getEngine().getRenderingCanvas();
+
+            activeCamera.orthoTop! -= event.wheelDelta / 5000;
+            activeCamera.orthoBottom! += event.wheelDelta / 5000;
+            activeCamera.orthoLeft! += (event.wheelDelta / 5000) * (canvas!.width / canvas!.height);
+            activeCamera.orthoRight! -=
+              (event.wheelDelta / 5000) * (canvas!.width / canvas!.height);
+          }
+        } else if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
+          const event = pointerInfo.event as PointerEvent;
+          // camera rotate 시 perspective 모드로 전환
+          if (
+            event.button === 1 &&
+            !event.altKey &&
+            innerScene.activeCamera &&
+            innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA
+          ) {
+            innerScene.activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
+
+            if (prevCameraPositions[renderingCanvas.current!.id]) {
+              innerScene.activeCamera.position = prevCameraPositions[
+                renderingCanvas.current!.id
+              ] as BABYLON.Vector3;
+              prevCameraPositions[renderingCanvas.current!.id] = null;
+            }
+
+            const grounds = innerScene.getMeshesByTags('ground');
+            grounds.forEach((ground) => {
+              if (ground.id === 'top') {
+                ground.isVisible = true;
+              } else {
+                ground.isVisible = false;
+              }
+            });
+          }
+        }
       });
 
       // render loop
@@ -113,7 +169,7 @@ const useInitializeScene = (params: Params) => {
         resizeMutationObserver.disconnect();
       };
     }
-  }, [dispatch, renderingCanvas]);
+  }, [dispatch, prevCameraPositions, renderingCanvas]);
 
   // dragBox 사용
   useEffect(() => {
@@ -207,12 +263,26 @@ const useInitializeScene = (params: Params) => {
   }, [dispatch, renderingCanvas, sceneList, selectableObjects]);
 
   useEffect(() => {
-    const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera) => {
+    const switchToOrthoGraphic = (
+      canvas: HTMLCanvasElement,
+      camera: BABYLON.ArcRotateCamera,
+      scene: BABYLON.Scene,
+      view: ShootView,
+    ) => {
       camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
       camera.orthoTop = 2;
       camera.orthoBottom = -2;
       camera.orthoLeft = -2 * (canvas.width / canvas.height);
       camera.orthoRight = 2 * (canvas.width / canvas.height);
+
+      const grounds = scene.getMeshesByTags('ground');
+      grounds.forEach((ground) => {
+        if (ground.id === view) {
+          ground.isVisible = true;
+        } else {
+          ground.isVisible = false;
+        }
+      });
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -237,7 +307,12 @@ const useInitializeScene = (params: Params) => {
             case 't': // t (top)
             case 'T':
             case 'ㅅ':
-              switchToOrthoGraphic(focusedCanvas, activeCamera);
+              switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'top');
+
+              if (!prevCameraPositions[focusedCanvas.id]) {
+                prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+              }
+
               distance = BABYLON.Vector3.Distance(
                 new BABYLON.Vector3(0, position.y, 0),
                 new BABYLON.Vector3(0, target.y, 0),
@@ -247,7 +322,12 @@ const useInitializeScene = (params: Params) => {
             case 'b': // b (bottom)
             case 'B':
             case 'ㅠ':
-              switchToOrthoGraphic(focusedCanvas, activeCamera);
+              switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'bottom');
+
+              if (!prevCameraPositions[focusedCanvas.id]) {
+                prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+              }
+
               distance = BABYLON.Vector3.Distance(
                 new BABYLON.Vector3(0, position.y, 0),
                 new BABYLON.Vector3(0, target.y, 0),
@@ -257,7 +337,12 @@ const useInitializeScene = (params: Params) => {
             case 'l': // l (left)
             case 'L':
             case 'ㅣ':
-              switchToOrthoGraphic(focusedCanvas, activeCamera);
+              switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'left');
+
+              if (!prevCameraPositions[focusedCanvas.id]) {
+                prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+              }
+
               distance = BABYLON.Vector3.Distance(
                 new BABYLON.Vector3(position.x, 0, 0),
                 new BABYLON.Vector3(target.x, 0, 0),
@@ -276,7 +361,12 @@ const useInitializeScene = (params: Params) => {
                   multiKeyController.ㅍ.pressed) &&
                 multiKeyController[event.key].pressed
               ) {
-                switchToOrthoGraphic(focusedCanvas, activeCamera);
+                switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'right');
+
+                if (!prevCameraPositions[focusedCanvas.id]) {
+                  prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                }
+
                 distance = BABYLON.Vector3.Distance(
                   new BABYLON.Vector3(position.x, 0, 0),
                   new BABYLON.Vector3(target.x, 0, 0),
@@ -287,7 +377,12 @@ const useInitializeScene = (params: Params) => {
             case 'f': // f (front)
             case 'F':
             case 'ㄹ':
-              switchToOrthoGraphic(focusedCanvas, activeCamera);
+              switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'front');
+
+              if (!prevCameraPositions[focusedCanvas.id]) {
+                prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+              }
+
               distance = BABYLON.Vector3.Distance(
                 new BABYLON.Vector3(0, 0, position.z),
                 new BABYLON.Vector3(0, 0, target.z),
@@ -306,7 +401,12 @@ const useInitializeScene = (params: Params) => {
                   multiKeyController.ㅍ.pressed) &&
                 multiKeyController[event.key].pressed
               ) {
-                switchToOrthoGraphic(focusedCanvas, activeCamera);
+                switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
+
+                if (!prevCameraPositions[focusedCanvas.id]) {
+                  prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                }
+
                 distance = BABYLON.Vector3.Distance(
                   new BABYLON.Vector3(0, 0, position.z),
                   new BABYLON.Vector3(0, 0, target.z),
@@ -358,7 +458,7 @@ const useInitializeScene = (params: Params) => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [multiKeyController, sceneList]);
+  }, [multiKeyController, prevCameraPositions, sceneList]);
 };
 
 export default useInitializeScene;
