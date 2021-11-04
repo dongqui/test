@@ -1,7 +1,6 @@
 import { TrackIdentifier } from './index';
 
 export type InterpolationType = 'bezier' | 'constant' | 'linear' | 'none';
-export type TrackType = 'layer' | 'bone' | 'property';
 
 export interface Track {
   /**
