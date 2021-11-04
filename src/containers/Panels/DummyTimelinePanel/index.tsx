@@ -1,26 +1,25 @@
 import { ChangeEvent, FunctionComponent, memo, useCallback, useEffect, useState } from 'react';
-import * as BABYLON from '@babylonjs/core';
-import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import { isUndefined, range, uniq } from 'lodash';
+import produce from 'immer';
 import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
+import * as animationDataActions from 'actions/animationDataAction';
 import {
   createShootTrack,
   getInterpolatedQuaternion,
   getInterpolatedVector,
   getValueInsertedTransformKeys,
 } from 'utils/RP';
-import * as animationDataActions from 'actions/animationDataAction';
 import { roundToFourth } from 'utils/common';
-import produce from 'immer';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
 const DUMMY_DELETE_FRAME = roundToFourth(3 / 30);
-const DUMMY_DELETE_FRAMES = _.range(1, 100).map((num) => roundToFourth(num / 30));
+const DUMMY_DELETE_FRAMES = range(1, 100).map((num) => roundToFourth(num / 30));
 
 const TimelinePanel: FunctionComponent = () => {
   const assetList = useSelector((state) => state.shootProject.assetList);
@@ -41,24 +40,6 @@ const TimelinePanel: FunctionComponent = () => {
 
   const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   const targetFrame = 1.3333;
-  //   const f1 = 0;
-  //   const f2 = 3.3333;
-  //   const df = targetFrame / (f2 - f1);
-
-  //   const v1 = BABYLON.Vector3.Zero();
-  //   const v2 = new BABYLON.Vector3(10, -10, 0);
-  //   const resV = BABYLON.Vector3.Lerp(v1, v2, df);
-
-  //   const q1 = BABYLON.Quaternion.Identity();
-  //   const q2 = BABYLON.Quaternion.FromArray([0, 0.7, 0, 0.7]);
-  //   const resQ = BABYLON.Quaternion.Slerp(q1, q2, df);
-
-  //   console.log('resV: ', resV);
-  //   console.log('resQ: ', resQ);
-  // }, []);
-
   useEffect(() => {
     console.log('layers: ', layers);
     console.log('tracks: ', tracks);
@@ -66,7 +47,7 @@ const TimelinePanel: FunctionComponent = () => {
 
   useEffect(() => {
     const selectedTargetIds = selectedTargets.map((target) => target.id);
-    const selectedAssetIds = _.uniq(selectedTargets.map((target) => target.id.split('//')[0]));
+    const selectedAssetIds = uniq(selectedTargets.map((target) => target.id.split('//')[0]));
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
     const totalLayers: ShootLayer[] = [];
@@ -97,7 +78,7 @@ const TimelinePanel: FunctionComponent = () => {
   }, [animationIngredients, assetList, selectedTargets]);
 
   const editKeyframes = useCallback(() => {
-    if (targetLayerId && !_.isUndefined(targetFrame)) {
+    if (targetLayerId && !isUndefined(targetFrame)) {
       // 선택된 targets의 tracks 중 layer 또한 선택된 layer와 일치하는 track들
       const targetLayerTracks = tracks.filter((track) => track.layerId === targetLayerId);
 
@@ -402,7 +383,7 @@ const TimelinePanel: FunctionComponent = () => {
   const pasteKeyframes = useCallback(() => {}, []);
 
   const addLayer = useCallback(() => {
-    const selectedAssetIds = _.uniq(selectedTargets.map((target) => target.id.split('//')[0]));
+    const selectedAssetIds = uniq(selectedTargets.map((target) => target.id.split('//')[0]));
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
     targetAssets.forEach((asset) => {
@@ -437,7 +418,7 @@ const TimelinePanel: FunctionComponent = () => {
   }, [animationIngredients, assetList, dispatch, newLayerName, selectedTargets]);
 
   const deleteLayer = useCallback(() => {
-    const selectedAssetIds = _.uniq(selectedTargets.map((target) => target.id.split('//')[0]));
+    const selectedAssetIds = uniq(selectedTargets.map((target) => target.id.split('//')[0]));
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
     targetAssets.forEach((asset) => {

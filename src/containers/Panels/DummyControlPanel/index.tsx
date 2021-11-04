@@ -1,9 +1,9 @@
 import { FunctionComponent, memo, useCallback } from 'react';
-import _ from 'lodash';
 import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
+import { uniq } from 'lodash';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import { checkIsTargetMesh, createDummyAnimation } from 'utils/RP';
@@ -220,7 +220,7 @@ const ControlPanel: FunctionComponent = () => {
 
   const addControllers = useCallback(() => {
     const targetScene = sceneList[0];
-    const selectedAssetIds = _.uniq(selectedTargets.map((target) => target.id.split('//')[0]));
+    const selectedAssetIds = uniq(selectedTargets.map((target) => target.id.split('//')[0]));
 
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 

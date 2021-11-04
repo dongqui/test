@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import _ from 'lodash';
+import { isNull } from 'lodash';
 
 /**
  * vector transformKeys를 보정하기 위한 OneEuro 필터 클래스
@@ -27,12 +27,10 @@ export default class OneEuroFilterForVector {
   }
 
   public calculate(t: number, x: BABYLON.Vector3) {
-    if (_.isNull(this.prevX) || _.isNull(this.prevDx) || _.isNull(this.prevT)) {
+    if (isNull(this.prevX) || isNull(this.prevDx) || isNull(this.prevT)) {
       this.prevX = x;
       this.prevDx = BABYLON.Vector3.Zero();
       this.prevT = t;
-
-      console.log('v false');
       return x;
     }
 

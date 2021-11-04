@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import _ from 'lodash';
+import { isNull } from 'lodash';
 
 /**
  * quaternion transformKeys를 보정하기 위한 OneEuro 필터 클래스
@@ -29,12 +29,7 @@ export default class OneEuroFilterForQuaternion {
   }
 
   public calculate(t: number, x: BABYLON.Quaternion) {
-    if (
-      _.isNull(this.prevX) ||
-      _.isNull(this.prevDxTe) ||
-      _.isNull(this.prevT) ||
-      _.isNull(this.prevTe)
-    ) {
+    if (isNull(this.prevX) || isNull(this.prevDxTe) || isNull(this.prevT) || isNull(this.prevTe)) {
       this.prevX = x;
       this.prevDxTe = BABYLON.Quaternion.Identity();
       this.prevT = t;
