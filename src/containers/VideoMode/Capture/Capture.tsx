@@ -25,12 +25,12 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const cameraListRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const frameRef = useRef<HTMLCanvasElement>(null);
-  const testRef = useRef<HTMLAnchorElement>(null);
+  const testRef = useRef<HTMLDivElement>(null);
   let cancelTokenSource: Canceler;
 
   const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [currentDevice, setCurrentDevice] = useState<string>('');
+  const [currnetDeviceId, setCurrentDeviceId] = useState<string>('');
   const [thumbnailList, setThumbnailList] = useState([]);
   const [duration, setDuration] = useState<number>(0);
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
@@ -39,6 +39,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const [recordState, setRecordState] = useState<boolean>(false);
   const [recording, setRecording] = useState<boolean>(false);
   const [standbyState, setStandbyState] = useState<boolean>(false);
+  const [cameraDropdownState, setCameraDropdownState] = useState<boolean>(false);
   const [start, setStart] = useState<number>(0);
   const [end, setEnd] = useState<number>(0);
   const [timer, setTimer] = useState<number>(0);
@@ -54,10 +55,12 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     startRecordingDelay,
     handleCameraList,
     handleChangeCamera,
+    stopStream,
   } = useMediaStream({
     ref: videoRef,
     canvasRef: canvasRef,
     recording: recording,
+    currentDeviceId: currnetDeviceId,
     setThumbnailList: setThumbnailList,
     setDuration: setDuration,
     setPlayState: setPlayState,
@@ -67,6 +70,8 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     setTimer: setTimer,
     setDeviceList: setDeviceList,
     setCurrentDevice: setCurrentDevice,
+    setCurrentDeviceId: setCurrentDeviceId,
+    setCameraDropdownState: setCameraDropdownState,
     browserType: browserType,
   });
 
@@ -173,6 +178,14 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     mediaStreamInitialize();
   }, []);
 
+  // 앱 실행시 최초의 실행중인 카메라의 기종을 감지하기 위함
+  useEffect(() => {
+    if (deviceList.length && !currentDevice) {
+      setCurrentDevice(deviceList[0].label);
+      setCurrentDeviceId(deviceList[0].deviceId);
+    }
+  }, [deviceList]);
+
   return (
     <Fragment>
       <Box id="UP" {...boxProps.up}>
@@ -180,7 +193,11 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           sceneName="Please enter a scene name"
           cameraListRef={cameraListRef}
           deviceList={deviceList}
+          currentDevice={currentDevice}
           handleChangeCamera={handleChangeCamera}
+          cameraDropdownState={cameraDropdownState}
+          setCameraDropdownState={setCameraDropdownState}
+          stopStream={stopStream}
         />
       </Box>
       <div className={cx('video-wrap')}>
