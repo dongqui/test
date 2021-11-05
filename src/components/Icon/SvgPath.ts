@@ -33,6 +33,11 @@ import IconView from './New_svg/IconView.svg';
 import Folder from './New_svg/Folder.svg';
 import Model from './New_svg/Model.svg';
 import Motion from './New_svg/Motion.svg';
+import TrackMode from './svg/TrackMode.svg';
+import Stop from './svg/Stop.svg';
+import Record from './svg/Record.svg';
+import PauseVideo from './svg/PauseVideo.svg';
+import EmptyDownArrow from './svg/EmptyDownArrow.svg';
 
 type Icon =
   | 'Close'
@@ -65,7 +70,12 @@ type Icon =
   | 'Reset'
   | 'Folder'
   | 'Model'
-  | 'Motion';
+  | 'Motion'
+  | 'TrackMode'
+  | 'Stop'
+  | 'Record'
+  | 'PauseVideo'
+  | 'EmptyDownArrow';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -103,6 +113,11 @@ const images: Images = {
   Folder,
   Model,
   Motion,
+  TrackMode,
+  Stop,
+  Record,
+  PauseVideo,
+  EmptyDownArrow,
 };
 
 export default images;

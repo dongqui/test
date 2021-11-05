@@ -9,6 +9,7 @@ import {
   SyntheticEvent,
 } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
+import { UpperBar } from 'containers/UpperBar';
 import { useWindowSize } from 'hooks/common';
 import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
@@ -217,7 +218,7 @@ const Shoot: FunctionComponent = () => {
   return (
     <Fragment>
       <Box id="UP" {...boxProps.up}>
-        {/* UP */}
+        <UpperBar sceneName="Please enter a scene name" />
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.us}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
