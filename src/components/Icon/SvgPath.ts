@@ -43,6 +43,7 @@ import Linear from './svg/Linear.svg';
 import Constant from './svg/Constant.svg';
 import TrackMode from './svg/TrackMode.svg';
 import PauseVideo from './svg/PauseVideo.svg';
+import EmptyDownArrow from './svg/EmptyDownArrow.svg';
 
 type Icon =
   | 'Close'
@@ -85,7 +86,8 @@ type Icon =
   | 'Linear'
   | 'Constant'
   | 'TrackMode'
-  | 'PauseVideo';
+  | 'PauseVideo'
+  | 'EmptyDownArrow';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -133,6 +135,7 @@ const images: Images = {
   Constant,
   TrackMode,
   PauseVideo,
+  EmptyDownArrow,
 };
 
 export default images;

@@ -8,10 +8,12 @@ import { VMRuler } from '../VMRuler';
 import Box, { BoxProps } from 'components/Layout/Box';
 import { useMediaStream } from 'hooks/common';
 import Image from 'next/image';
-import classNames from 'classnames/bind';
-import styles from './Capture.module.scss';
 import { FunctionComponent } from 'hoist-non-react-statics/node_modules/@types/react';
 import { is } from 'immer/dist/internal';
+import axios, { Canceler } from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import classNames from 'classnames/bind';
+import styles from './Capture.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -23,10 +25,12 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const cameraListRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const frameRef = useRef<HTMLCanvasElement>(null);
+  const testRef = useRef<HTMLDivElement>(null);
+  let cancelTokenSource: Canceler;
 
   const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [currentDevice, setCurrentDevice] = useState<string>('');
+  const [currnetDeviceId, setCurrentDeviceId] = useState<string>('');
   const [thumbnailList, setThumbnailList] = useState([]);
   const [duration, setDuration] = useState<number>(0);
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
@@ -35,7 +39,10 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const [recordState, setRecordState] = useState<boolean>(false);
   const [recording, setRecording] = useState<boolean>(false);
   const [standbyState, setStandbyState] = useState<boolean>(false);
-  const [timer, setTimer] = useState<number>(0);
+  const [cameraDropdownState, setCameraDropdownState] = useState<boolean>(false);
+  const [start, setStart] = useState<number>(0);
+  const [end, setEnd] = useState<number>(0);
+  const [timer, setTimer] = useState<number>(5);
 
   const {
     mediaStreamInitialize,
@@ -48,10 +55,12 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     startRecordingDelay,
     handleCameraList,
     handleChangeCamera,
+    stopStream,
   } = useMediaStream({
     ref: videoRef,
     canvasRef: canvasRef,
     recording: recording,
+    currentDeviceId: currnetDeviceId,
     setThumbnailList: setThumbnailList,
     setDuration: setDuration,
     setPlayState: setPlayState,
@@ -61,6 +70,8 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     setTimer: setTimer,
     setDeviceList: setDeviceList,
     setCurrentDevice: setCurrentDevice,
+    setCurrentDeviceId: setCurrentDeviceId,
+    setCameraDropdownState: setCameraDropdownState,
     browserType: browserType,
   });
 
@@ -99,6 +110,10 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
 
   const handleSlider = (endpoint: { start: number; end: number }) => {
     const { start, end } = endpoint;
+    const cutStartTime = start ? ((Math.round(duration * 100) / 100) * start) / 100 : 0;
+    const cutEndTime = ((Math.round(duration * 100) / 100) * end) / 100;
+    setStart(cutStartTime);
+    setEnd(cutEndTime);
   };
 
   const handleTimeline = useCallback((e) => {
@@ -110,9 +125,86 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     setIndicatorPosition((videoRef.current!.currentTime / videoRef.current!.duration) * 100);
   }, []);
 
+  const convertBlobToFile = useCallback(async ({ url, type, fileName }) => {
+    const response = await fetch(url);
+    const data = await response
+      .blob()
+      .then((response) => {
+        const metaData = {
+          type: type === 'webm' ? `video/webm` : type,
+        };
+        return new File([response], `${fileName}.${type}`, metaData);
+      })
+      .catch((err) => {
+        throw err;
+      });
+
+    return data;
+  }, []);
+
+  const handleExtractMotion = useCallback(
+    async ({ id, start, end, startTime, endTime, url, type, fileName, timeout }) => {
+      const formData = new FormData();
+      const file = await convertBlobToFile({ url, type, fileName }).then((response) => {
+        formData.append('file', response);
+        formData.append('type', type);
+        formData.append('id', id);
+        formData.append('start', start.toString());
+        formData.append('end', end.toString());
+        formData.append('startTime', startTime.toString());
+        formData.append('endTime', endTime.toString());
+      });
+
+      const result = await axios({
+        method: 'POST',
+        url: 'https://shootapi.myplask.com:6500/mocap-upload-api',
+        data: formData,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        cancelToken: new axios.CancelToken((cancel) => {
+          cancelTokenSource = cancel;
+        }),
+        timeout,
+      })
+        .then((response) => console.log(response))
+        .catch((err) => console.log(err));
+      // return {
+      //   result,
+      // };
+    },
+    [],
+  );
+
+  window.onkeydown = (e) => {
+    if (!videoRef.current!.src) {
+      return;
+    }
+    if (e.key === 'ArrowRight' || e.key === '.') {
+      console.log('arrowright');
+      videoRef.current!.currentTime += 0.01;
+    } else if (e.key === 'ArrowLeft' || e.key === ',') {
+      videoRef.current!.currentTime -= 0.01;
+      console.log('arrowleft');
+    } else if (e.key === ' ') {
+      console.log('space');
+      if (videoRef.current!.paused) {
+        videoRef.current!.play();
+      } else {
+        videoRef.current!.pause();
+      }
+    }
+  };
+
   useEffect(() => {
     mediaStreamInitialize();
   }, []);
+
+  // 앱 실행시 최초의 실행중인 카메라의 기종을 감지하기 위함
+  useEffect(() => {
+    if (deviceList.length && !currentDevice) {
+      setCurrentDevice(deviceList[0].label);
+      setCurrentDeviceId(deviceList[0].deviceId);
+    }
+  }, [deviceList]);
 
   return (
     <Fragment>
@@ -121,7 +213,11 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           sceneName="Please enter a scene name"
           cameraListRef={cameraListRef}
           deviceList={deviceList}
+          currentDevice={currentDevice}
           handleChangeCamera={handleChangeCamera}
+          cameraDropdownState={cameraDropdownState}
+          setCameraDropdownState={setCameraDropdownState}
+          stopStream={stopStream}
         />
       </Box>
       <div className={cx('video-wrap')}>
@@ -135,6 +231,9 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         >
           <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4" />
         </video>
+        <div className={cx('countdown-overlay')}>
+          {standbyState && <div className={cx('countdown')}>{timer}</div>}
+        </div>
       </div>
       <Box id="MP" {...boxProps.mb}>
         <div className={cx('middle-bar')}>
@@ -165,13 +264,39 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
                   key={index}
                   className={cx('icon', item.id)}
                   icon={item.icon}
+                  tabState={
+                    (!recordState && item.id === 'playRecording') ||
+                    item.id === 'pauseRecording' ||
+                    item.id === 'stopRecording'
+                  }
                   onClick={item.fn}
                 />
               );
             })}
             {!recordState && <div className={cx('disable-control')}></div>}
           </div>
-          <FilledButton className={cx('extract-button')} text="Extract Motion" />
+          {recordState && (
+            <FilledButton
+              className={cx('extract-button')}
+              text="Extract Motion"
+              onClick={() =>
+                handleExtractMotion({
+                  id: uuidv4(),
+                  fileName: 'untitled',
+                  type: browserType === 'safari' ? 'mp4' : 'webm',
+                  start: 0,
+                  end: end,
+                  startTime: 0,
+                  endTime: duration,
+                  url: videoRef.current!.src,
+                  timeout: 30 * 1000,
+                })
+              }
+            />
+          )}
+          {!recordState && (
+            <FilledButton className={cx('extract-button', 'disabled')} text="Extract Motion" />
+          )}
         </div>
       </Box>
       {recordState && (

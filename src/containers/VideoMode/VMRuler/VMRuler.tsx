@@ -12,11 +12,11 @@ interface Props {
 
 export const VMRuler: FunctionComponent<Props> = ({ start, end }) => {
   let rulerTime: number[] = [];
-  let roundEnd = Math.round((end + Number.EPSILON) * 10) / 10;
+  let roundEnd = Math.floor((end + Number.EPSILON) * 10) / 10;
 
   const loopFrame = (lastTime: number) => {
     for (let index = 1; index <= 9; index++) {
-      const rulerNum = Math.round(lastTime * index) / 10;
+      const rulerNum = Math.floor(lastTime * index) / 10;
       rulerTime.push(rulerNum);
     }
   };

@@ -26,6 +26,7 @@ import { animationData } from './animationData';
 import { animatingControls } from './animatingControls';
 import trackList from './trackList';
 import keyframes from './keyframes';
+import { modeSelection } from './modeSelection';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -56,6 +57,7 @@ const rootReducer = combineReducers({
   animatingControls,
   trackList,
   keyframes,
+  modeSelection,
 });
 
 // type 적용된 useSelector

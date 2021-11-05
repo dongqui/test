@@ -12,6 +12,7 @@ interface Props {
   ref: RefObject<HTMLVideoElement>;
   canvasRef: RefObject<HTMLCanvasElement>;
   recording: boolean;
+  currentDeviceId: string;
   setThumbnailList: Dispatch<SetStateAction<never[]>>;
   setDuration: Dispatch<SetStateAction<number>>;
   setPlayState: Dispatch<SetStateAction<boolean>>;
@@ -21,6 +22,8 @@ interface Props {
   setTimer: Dispatch<SetStateAction<number>>;
   setDeviceList: Dispatch<SetStateAction<MediaDeviceInfo[]>>;
   setCurrentDevice: Dispatch<SetStateAction<string>>;
+  setCurrentDeviceId: Dispatch<SetStateAction<string>>;
+  setCameraDropdownState: Dispatch<SetStateAction<boolean>>;
   browserType: string;
 }
 
@@ -29,6 +32,7 @@ const useMediaStream = (props: Props) => {
     ref,
     canvasRef,
     recording,
+    currentDeviceId,
     setThumbnailList,
     setPlayState,
     setDuration,
@@ -38,6 +42,8 @@ const useMediaStream = (props: Props) => {
     setTimer,
     setDeviceList,
     setCurrentDevice,
+    setCurrentDeviceId,
+    setCameraDropdownState,
     browserType,
   } = props;
   const timerRef = useRef<any>(null);
@@ -70,14 +76,13 @@ const useMediaStream = (props: Props) => {
   const stopStream = useCallback(() => {
     if (currentStream && ref.current!.srcObject) {
       const tracks = currentStream.getTracks();
-      // const stream = ref.current!.srcObject as MediaStream;
-      // const tracks2 = stream.getTracks();
+      const stream = ref.current!.srcObject as MediaStream;
+      const tracks2 = stream.getTracks();
 
       tracks.forEach((track) => track.stop());
-      // tracks2.forEach((track: any) => {
-      //   console.log('track: ', track);
-      //   track.stop();
-      // });
+      tracks2.forEach((track: any) => {
+        track.stop();
+      });
       ref.current!.srcObject = null;
     }
   }, [currentStream, ref]);
@@ -101,7 +106,6 @@ const useMediaStream = (props: Props) => {
 
     const checkDuration = setInterval(() => {
       if (ref.current!.duration !== Infinity) {
-        console.log('here to check if this setInterval is activated more than once');
         ref.current!.pause();
         ref.current!.currentTime = 0;
         clearInterval(checkDuration);
@@ -110,7 +114,6 @@ const useMediaStream = (props: Props) => {
 
         const setScreenshot = setInterval(() => {
           if (count < 20) {
-            console.log('duration: ', dividedDuration);
             count++;
             thumbnailList = [...thumbnailList, handleScreenshot()];
             ref.current!.currentTime += dividedDuration;
@@ -122,14 +125,13 @@ const useMediaStream = (props: Props) => {
           }
         }, 150);
       } else {
-        ref.current!.currentTime += 1000;
+        ref.current!.currentTime += 1e101;
       }
     }, 500);
   }, [ref, handleScreenshot, setThumbnailList, setDuration, setRecordState]);
 
   const startRecording = useCallback(() => {
     if (recorderData && recorderData.state === 'recording') {
-      console.log('already recording');
       return;
     }
 
@@ -142,13 +144,10 @@ const useMediaStream = (props: Props) => {
       let blobs: Blob[] = [];
 
       if (recorder.state === 'inactive') {
-        console.log('check if it is inactive');
-        console.log('currentStream', currentStream);
         mediaStreamInitialize(constraintList);
       }
 
       recorder.ondataavailable = (e) => {
-        console.log('data pushed', e);
         blobs.push(e.data);
       };
 
@@ -181,8 +180,18 @@ const useMediaStream = (props: Props) => {
       stopStream();
       mediaStreamInitialize({ video: { deviceId: { exact: e.target.id } } });
       setConstraint({ video: { deviceId: { exact: e.target.id } } });
+      setCurrentDevice(e.target.previousSibling.textContent);
+      setCurrentDeviceId(e.target.id);
+      setCameraDropdownState(false);
     },
-    [mediaStreamInitialize, stopStream, setConstraint],
+    [
+      mediaStreamInitialize,
+      stopStream,
+      setConstraint,
+      setCurrentDevice,
+      setCurrentDeviceId,
+      setCameraDropdownState,
+    ],
   );
 
   const stopRecording = useCallback(
@@ -213,6 +222,9 @@ const useMediaStream = (props: Props) => {
     }
   }, [ref, setPlayState]);
 
+  /**
+   * 녹화 영상 및 import 한 영상을 정지(재생을 멈추고 currentTime을 0으로 변경)
+   */
   const stopVideo = useCallback(() => {
     if (ref) {
       setPlayState(false);
@@ -222,11 +234,13 @@ const useMediaStream = (props: Props) => {
   }, [setPlayState, ref]);
 
   const startRecordingDelay = useCallback(() => {
-    let sec = 0;
+    let sec = 4;
 
     // 한 번 녹화 이후 두번째 녹화부터 다시 stream을 화면에 표시하기 위함
     if (recordOverTwice) {
       setThumbnailList([]);
+      mediaStreamInitialize({ video: { deviceId: { exact: currentDeviceId } } });
+      setConstraint({ video: { deviceId: { exact: currentDeviceId } } });
       ref.current!.srcObject = currentStream as MediaStream;
       ref.current!.src = '';
       setRecordState(false);
@@ -237,11 +251,10 @@ const useMediaStream = (props: Props) => {
 
       const timerTest = () => {
         timerRef.current = setInterval(() => {
-          if (sec < 5) {
-            setTimer(sec++);
+          if (sec > 0) {
+            setTimer(sec--);
           } else {
             clearInterval(timerRef.current);
-            console.log('5 seconds');
             startRecording();
             // setRecording(false);
             setRecordOverTwice(true);
@@ -251,6 +264,7 @@ const useMediaStream = (props: Props) => {
       };
 
       timerTest();
+      setTimer(5);
     }
   }, [
     ref,
@@ -263,10 +277,11 @@ const useMediaStream = (props: Props) => {
     recordOverTwice,
     setRecordOverTwice,
     setRecordState,
+    currentDeviceId,
+    mediaStreamInitialize,
   ]);
 
   const backToStandby = useCallback(() => {
-    console.log('취소');
     clearInterval(timerRef.current);
     setRecording(false);
     setStandbyState(false);
@@ -283,6 +298,7 @@ const useMediaStream = (props: Props) => {
     startRecordingDelay,
     handleCameraList,
     handleChangeCamera,
+    stopStream,
     // mediaBlobUrl,
   };
 };
