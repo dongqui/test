@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
 import { setMode } from 'actions/modeSelection';
+import { RootState, useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -34,21 +35,22 @@ const UpperBar: FunctionComponent<Props> = ({
   deviceList,
 }) => {
   const dispatch = useDispatch();
+  const { mode } = useSelector((state: RootState) => state.modeSelection);
 
   const modeList = [
     {
-      key: 'trackMode',
+      key: 'animationMode',
       value: SvgPath.TrackMode,
-      isSelected: true,
+      isSelected: mode === 'animationMode',
       onClick: () => {
-        dispatch(setMode({ mode: 'trackMode' }));
+        dispatch(setMode({ mode: 'animationMode' }));
         stopStream && stopStream();
       },
     },
     {
       key: 'videoMode',
       value: SvgPath.Camera,
-      isSelected: false,
+      isSelected: mode === 'videoMode',
       onClick: () => {
         dispatch(setMode({ mode: 'videoMode' }));
       },
