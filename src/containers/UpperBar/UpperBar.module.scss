@@ -52,13 +52,14 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 4px 16px;
 
   .device-select {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-left: 8px;
     width: 69px;
     height: 24px;
     font-size: 11px;

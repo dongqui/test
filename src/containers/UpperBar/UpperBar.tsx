@@ -9,7 +9,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { useDispatch } from 'react-redux';
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
-import { setMode } from 'actions/modeSelection';
+import { changeMode } from 'actions/modeSelection';
 import { RootState, useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
@@ -43,7 +43,7 @@ const UpperBar: FunctionComponent<Props> = ({
       value: SvgPath.TrackMode,
       isSelected: mode === 'animationMode',
       onClick: () => {
-        dispatch(setMode({ mode: 'animationMode' }));
+        dispatch(changeMode({ mode: 'animationMode' }));
         stopStream && stopStream();
       },
     },
@@ -52,7 +52,7 @@ const UpperBar: FunctionComponent<Props> = ({
       value: SvgPath.Camera,
       isSelected: mode === 'videoMode',
       onClick: () => {
-        dispatch(setMode({ mode: 'videoMode' }));
+        dispatch(changeMode({ mode: 'videoMode' }));
       },
     },
   ];
@@ -69,12 +69,11 @@ const UpperBar: FunctionComponent<Props> = ({
           <span className={cx('scene-name')}>{sceneName}</span>
         </div>
       </div>
-      <div className={cx('middle-upper')}>
+      <div className={cx('middle-upper')}></div>
+      <div className={cx('right-upper')}>
         <IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />
         <SegmentButton list={modeList} />
-      </div>
-      <div className={cx('right-upper')}>
-        <FilledButton className={cx('share-button')} text="Share" />
+        {/* <FilledButton className={cx('share-button')} text="Share" /> */}
         <div className={cx('device-select')} onClick={handleCameraDropdown}>
           Camera<IconWrapper icon={SvgPath.EmptyDownArrow}></IconWrapper>
         </div>
