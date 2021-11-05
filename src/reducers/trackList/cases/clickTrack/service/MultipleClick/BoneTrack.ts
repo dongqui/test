@@ -1,6 +1,7 @@
 import { ClickBoneTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
-import { fnGetBinarySearch } from 'utils/TP/trackUtils';
+import { getBinarySearch } from 'utils/TP';
+
 import { MultipleClick } from './index';
 
 export interface Parmas {
@@ -16,7 +17,7 @@ class BoneTrackMultipleClick implements MultipleClick {
   private filterIncludedIndex = (iter: number[], removeTarget: number[]) => {
     const nextSelectedTracks: number[] = [];
     iter.forEach((index) => {
-      const trackIndex = fnGetBinarySearch({
+      const trackIndex = getBinarySearch({
         collection: removeTarget,
         index,
       });

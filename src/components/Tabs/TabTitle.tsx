@@ -1,7 +1,4 @@
 import { FunctionComponent, useCallback } from 'react';
-import { useSelector } from 'reducers';
-import { useDispatch } from 'react-redux';
-import * as cpDataActions from 'actions/cpData';
 import classNames from 'classnames/bind';
 import styles from './TabTitle.module.scss';
 
@@ -14,16 +11,9 @@ interface Props {
 }
 
 const TabTitle: FunctionComponent<Props> = ({ tabID, title, disabled }) => {
-  const dispatch = useDispatch();
-  const { tabIndex } = useSelector((state) => state.cpData);
+  const classes = cx('tab-header');
 
-  const handleClick = useCallback(() => {
-    dispatch(cpDataActions.setCPTab({ tabIndex: tabID }));
-  }, [dispatch, tabID]);
-
-  const classes = cx('tab-header', tabIndex === tabID ? cx('active') : undefined, {
-    disabled,
-  });
+  const handleClick = useCallback(() => {}, []);
 
   return (
     <div className={classes}>

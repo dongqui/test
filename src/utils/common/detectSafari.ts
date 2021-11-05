@@ -2,7 +2,7 @@
  * 사파리 감지
  *
  */
-const fnDetectSafari = () => {
+const detectSafari = () => {
   return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 };
-export default fnDetectSafari;
+export default detectSafari;

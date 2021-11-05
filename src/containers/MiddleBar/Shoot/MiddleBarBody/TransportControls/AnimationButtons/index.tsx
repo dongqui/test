@@ -13,12 +13,11 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const Buttons = () => {
-  const recordingData = useSelector((state) => state.recordingData);
   const playState = useSelector((state) => state.animatingControls.playState);
   const playDirection = useSelector((state) => state.animatingControls.playDirection);
 
   const ButtonState = () => {
-    const isPlaying = _.isEqual(playState, 'play') || recordingData.isPlaying;
+    const isPlaying = _.isEqual(playState, 'play');
     if (isPlaying) {
       if (playDirection === PlayDirection_New.forward) {
         return (

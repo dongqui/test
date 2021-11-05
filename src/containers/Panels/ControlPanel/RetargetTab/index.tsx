@@ -1,5 +1,4 @@
 import { FunctionComponent, memo } from 'react';
-import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
