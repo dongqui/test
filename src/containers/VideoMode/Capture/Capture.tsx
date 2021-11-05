@@ -42,7 +42,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const [cameraDropdownState, setCameraDropdownState] = useState<boolean>(false);
   const [start, setStart] = useState<number>(0);
   const [end, setEnd] = useState<number>(0);
-  const [timer, setTimer] = useState<number>(0);
+  const [timer, setTimer] = useState<number>(5);
 
   const {
     mediaStreamInitialize,
@@ -131,7 +131,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       .blob()
       .then((response) => {
         const metaData = {
-          type: type === 'webm' ? `video/webm;codecs=vp8` : type,
+          type: type === 'webm' ? `video/webm` : type,
         };
         return new File([response], `${fileName}.${type}`, metaData);
       })
@@ -174,6 +174,26 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     [],
   );
 
+  window.onkeydown = (e) => {
+    if (!videoRef.current!.src) {
+      return;
+    }
+    if (e.key === 'ArrowRight' || e.key === '.') {
+      console.log('arrowright');
+      videoRef.current!.currentTime += 0.01;
+    } else if (e.key === 'ArrowLeft' || e.key === ',') {
+      videoRef.current!.currentTime -= 0.01;
+      console.log('arrowleft');
+    } else if (e.key === ' ') {
+      console.log('space');
+      if (videoRef.current!.paused) {
+        videoRef.current!.play();
+      } else {
+        videoRef.current!.pause();
+      }
+    }
+  };
+
   useEffect(() => {
     mediaStreamInitialize();
   }, []);
@@ -211,6 +231,9 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         >
           <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4" />
         </video>
+        <div className={cx('countdown-overlay')}>
+          {standbyState && <div className={cx('countdown')}>{timer}</div>}
+        </div>
       </div>
       <Box id="MP" {...boxProps.mb}>
         <div className={cx('middle-bar')}>
@@ -252,23 +275,28 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
             })}
             {!recordState && <div className={cx('disable-control')}></div>}
           </div>
-          <FilledButton
-            className={cx('extract-button')}
-            text="Extract Motion"
-            onClick={() =>
-              handleExtractMotion({
-                id: uuidv4(),
-                fileName: 'untitled',
-                type: browserType === 'safari' ? 'mp4' : 'webm',
-                start: 0,
-                end: end,
-                startTime: 0,
-                endTime: duration,
-                url: videoRef.current!.src,
-                timeout: 30 * 1000,
-              })
-            }
-          />
+          {recordState && (
+            <FilledButton
+              className={cx('extract-button')}
+              text="Extract Motion"
+              onClick={() =>
+                handleExtractMotion({
+                  id: uuidv4(),
+                  fileName: 'untitled',
+                  type: browserType === 'safari' ? 'mp4' : 'webm',
+                  start: 0,
+                  end: end,
+                  startTime: 0,
+                  endTime: duration,
+                  url: videoRef.current!.src,
+                  timeout: 30 * 1000,
+                })
+              }
+            />
+          )}
+          {!recordState && (
+            <FilledButton className={cx('extract-button', 'disabled')} text="Extract Motion" />
+          )}
         </div>
       </Box>
       {recordState && (
