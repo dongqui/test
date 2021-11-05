@@ -1,14 +1,13 @@
-import { ModeSelectionType } from 'types';
-import { ModeSelectionAction } from 'actions/modeSelection';
+import { ChangeMode, ModeSelectionAction } from 'actions/modeSelection';
 
-const defaultState: ModeSelectionType = {
-  mode: 'trackMode',
+const defaultState: ChangeMode = {
+  mode: 'animationMode',
 };
 
 export const modeSelection = (state = defaultState, action: ModeSelectionAction) => {
   switch (action.type) {
-    case 'modeSelection/SET_MODE': {
-      return { ...state, mode: action.payload };
+    case 'modeSelection/CHANGE_MODE': {
+      return Object.assign({}, state, action.payload);
     }
     default: {
       return state;
