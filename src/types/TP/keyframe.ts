@@ -3,17 +3,27 @@ import { TrackIdentifier } from './index';
 /**
  * @description postion, rotation, scale 키프레임이 가지고 있는 value
  */
-interface Vector3 {
+export interface Vector3 {
   x: number;
   y: number;
   z: number;
 }
 
+export interface TrasnformKey {
+  time: number;
+
+  /**
+   * @description property keyframe이 가지고 있는 value 데이터
+   * @optional property keyframe인 경우 value에다가 Vector3값을 할당
+   */
+  value?: Vector3;
+}
+
 // 키프레임 데이터 타입
-export interface Keyframe {
+export interface Keyframe extends TrasnformKey {
   /**
    * @description 삭제 된 키프레임인지 체크
-   * @default false false인 경우 화면이 키프레임이 보임. true인 경우 화면에 키프레임이 보이지 않음
+   * @default false false인 경우 화면에 키프레임이 보임. true인 경우 화면에 키프레임이 보이지 않음
    */
   isDeleted: boolean;
 
@@ -22,10 +32,6 @@ export interface Keyframe {
    * @default false false인 경우 선택 효과 미적용
    */
   isSelected: boolean;
-
-  time: number;
-
-  value?: Vector3;
 }
 
 // 트랙 별 데이터 타입
@@ -34,11 +40,21 @@ export type TimeEditorTrack = TrackIdentifier & {
 };
 
 // 선택 된 키프레임 데이터 타입
-export type SelectedKeyframe = TrackIdentifier & {
-  time: number;
-};
+export type SelectedKeyframe = TrackIdentifier & TrasnformKey;
 
 // 선택 된 키프레임들을 cluster
 export type ClusteredKeyframe = TrackIdentifier & {
-  times: number[];
+  keyframes: TrasnformKey[];
 };
+
+export interface ModifiedPropertyKeyframe {
+  /**
+   * @description
+   */
+  targetFrame: number;
+
+  /**
+   * @description
+   */
+  propertyTracks: { trackId: string; trackNumber: number; transformKey: TrasnformKey }[];
+}

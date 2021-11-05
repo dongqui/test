@@ -1,4 +1,5 @@
 import { TrackIdentifier } from 'types/TP';
+import { ModifiedPropertyKeyframe } from 'types/TP/keyframe';
 
 export type KeyframesAction =
   | ReturnType<typeof selectKeyframes>
@@ -66,6 +67,7 @@ export const deleteKeyframes = () => ({
 
 // 키프레임 드래드 드랍
 export interface DragDropKeyframes {
+  // modifiedPropertyKeyframes: ModifiedPropertyKeyframe[];
   timeDiff: number;
 }
 export const dragDropKeyframes = (params: DragDropKeyframes) => ({

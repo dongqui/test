@@ -2,7 +2,7 @@ import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP/keyframe';
 import { KeyframesAction } from 'actions/keyframes';
 
 import deleteKeyframes from './cases/deleteKeyframes';
-// import dropKeyframes from './cases/dropKeyframes';
+import dragdropKeyframes from './cases/dragdropKeyframes';
 import selectKeyframes from './cases/selectKeyframes';
 
 export interface KeyframesState {
@@ -19,7 +19,7 @@ const layerKeyframes: TimeEditorTrack = {
   trackId: 'layer-1',
   trackNumber: -1,
   trackType: 'layer',
-  keyframes: Array(5)
+  keyframes: Array(50)
     .fill(1)
     .map((_, index) => ({
       isSelected: false,
@@ -34,7 +34,7 @@ const boneKeyframes: TimeEditorTrack[] = Array(3)
     trackNumber: index * 10,
     trackId: 'bone' + index,
     trackType: 'bone',
-    keyframes: Array(5)
+    keyframes: Array(50)
       .fill(1)
       .map((_, index) => ({
         isSelected: false,
@@ -50,7 +50,7 @@ const propertyKeyframes: TimeEditorTrack[] = [
       trackId: 'property-aaaaa' + index,
       trackNumber: index + 1,
       trackType: 'property',
-      keyframes: Array(5)
+      keyframes: Array(50)
         .fill(1)
         .map((_, index) => ({
           isSelected: false,
@@ -65,7 +65,7 @@ const propertyKeyframes: TimeEditorTrack[] = [
       trackId: 'property-bbbbb' + index,
       trackNumber: index + 11,
       trackType: 'property',
-      keyframes: Array(5)
+      keyframes: Array(50)
         .fill(1)
         .map((_, index) => ({
           isSelected: false,
@@ -80,7 +80,7 @@ const propertyKeyframes: TimeEditorTrack[] = [
       trackId: 'property-ccccc' + index,
       trackNumber: index + 21,
       trackType: 'property',
-      keyframes: Array(5)
+      keyframes: Array(50)
         .fill(1)
         .map((_, index) => ({
           isSelected: false,
@@ -108,6 +108,9 @@ export const keyframes = (state = initialState, action: KeyframesAction) => {
     }
     case 'keyframes/DELETE_KEYFRAMES': {
       return deleteKeyframes(state);
+    }
+    case 'keyframes/DRAG_DROP_KEYFRAMES': {
+      return dragdropKeyframes(state, action.payload);
     }
     default: {
       return state;

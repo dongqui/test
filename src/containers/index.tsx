@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
 import { authToken } from 'api';
 import Process from 'containers/Process';
-import Extract from 'containers/Extract';
+// import Extract from 'containers/Extract';
 import Shoot from 'containers/Shoot';
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
 import { useSelector } from 'reducers';
@@ -79,7 +79,8 @@ const Index: FunctionComponent = () => {
           <Shoot />
         </ResizeProvider>
       ) : (
-        <Extract />
+        // <Extract />
+        <></>
       )}
     </main>
   );
