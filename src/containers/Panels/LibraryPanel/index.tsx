@@ -172,18 +172,20 @@ const LibraryPanel: FunctionComponent = () => {
        */
       removedVideoFiles.map(async (file) => await onFileLoad(file));
 
-      // Video 파일은 반드시 1개만 로드가 가능하기 때문에 첫 요소만 처리
-      onModalOpen({
-        title: 'Extract',
-        message: '모션을 추출하시겠습니까?',
-        confirmText: '확인',
-        cancelText: '취소',
-        onConfirm: () => {
-          alert('Video !');
-          // 비디오 모드 전환
-        },
-        onCancel: () => onModalClose(),
-      });
+      if (videos.length > 0) {
+        // Video 파일은 반드시 1개만 로드가 가능하기 때문에 첫 요소만 처리
+        onModalOpen({
+          title: 'Extract',
+          message: '모션을 추출하시겠습니까?',
+          confirmText: '확인',
+          cancelText: '취소',
+          onConfirm: () => {
+            alert('Video !');
+            // 비디오 모드 전환
+          },
+          onCancel: () => onModalClose(),
+        });
+      }
     },
     [onFileLoad, onModalClose, onModalOpen],
   );
@@ -196,7 +198,7 @@ const LibraryPanel: FunctionComponent = () => {
     <div className={cx('wrapper')} {...getRootProps()}>
       <div className={cx('inner')}>
         <Box id="LP-Header" noResize>
-          <LPHeader />
+          <LPHeader onLoad={handleDrop} />
         </Box>
         <Box id="LP-Controlbar" noResize>
           <LPControlbar />
