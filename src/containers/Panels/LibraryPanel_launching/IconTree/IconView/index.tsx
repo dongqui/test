@@ -16,7 +16,15 @@ const IconView: FunctionComponent<IconViewProps> = ({ data }) => {
     <div className={cx('wrapper')}>
       {_.map(data, (item, index) => {
         const key = `${item.parentKey}_${item.name}_${index}`;
-        return <IconNode key={key} item={item} />;
+        return (
+          <IconNode
+            key={key}
+            rowKey={item.key}
+            name={item.name}
+            parentKey={item.parentKey}
+            type={item.type}
+          />
+        );
       })}
     </div>
   );

@@ -11,8 +11,8 @@ export interface LPItemType {
   name: string;
   type: FileType;
   parentKey: string;
+  parentKeyList: string[];
   url: string;
-  isSelected?: boolean;
   isVisualized?: boolean;
   baseLayer: ShootTrackType[];
   layers: ShootLayerType[];
@@ -70,3 +70,29 @@ export type LPPageListOldType = Array<LPPageOldType>;
 export interface LPSearchwordType {
   word: string;
 }
+
+export interface ModalInfoType {
+  modalType: 'none' | 'alert' | 'confirm';
+  detailType?: 'overwrite' | 'delete' | 'move';
+  isShow: boolean;
+  message?: string;
+  loading?: boolean;
+  text?: { confirm: string; cancel: string };
+  paramters?: { [key: string]: string };
+}
+
+export enum ContextMenuEnum {
+  NEW_DIRECTORY = 'New Directory',
+  EDIT_NAME = 'Edit name',
+  COPY = 'Copy',
+  PASTE = 'Paste',
+  ADD_MOTION = 'Add motion',
+  DELETE = 'Delete',
+  DUPLICATE = 'Duplicate',
+  FBX_EXPORT = 'FBX Export',
+  GLB_EXPORT = 'GLB Export',
+  VISUALIZATION = 'Visualization',
+}
+
+export const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];
+export const EnableFileFormats = [...EnableVideoFormats, 'glb', 'fbx'];

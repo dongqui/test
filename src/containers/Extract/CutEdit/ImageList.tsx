@@ -1,8 +1,9 @@
-import { FunctionComponent, memo } from 'react';
 import _ from 'lodash';
+import { FunctionComponent, memo } from 'react';
+import Image from 'next/image';
+import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './ImageList.module.scss';
-import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
@@ -16,12 +17,14 @@ const ImageList: FunctionComponent = () => {
         <div className={cx('image-wrapper')} key={i}>
           <div className={cx('image-inner')}>
             {images[i] && (
-              <img
-                className={cx('image')}
+              <Image
+                // className={cx('image')}
                 draggable={false}
                 key={i}
                 src={images[i]}
                 alt="cut_image"
+                width={200}
+                height={200}
               />
             )}
           </div>

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
-interface FnGetAnimationData {
+interface GetAnimationData {
   url: string;
 }
 interface ResultType {
@@ -17,7 +17,7 @@ interface ResultType {
  *
  * @return 애니메이션 데이터, bone 데이터
  */
-const fnGetAnimationData = async (params: FnGetAnimationData): Promise<ResultType> => {
+const fnGetAnimationData = async (params: GetAnimationData): Promise<ResultType> => {
   const { url } = params;
   const loader = new GLTFLoader();
 

@@ -1,11 +1,11 @@
-import { FunctionComponent, Fragment, memo, useCallback } from 'react';
+import _ from 'lodash';
+import { FunctionComponent, memo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { Video } from 'components/Video';
 import { Overlay } from 'components/Overlay';
 import { Headline } from 'components/Typography';
 import { TextButton } from 'components/Button';
 import { Procedure } from 'containers/index';
-import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './Process.module.scss';
 
@@ -15,11 +15,6 @@ interface Props {
   procedure: Procedure;
 }
 
-/**
- *
- * 애니메이션 참고 자료
- * @see https://codepen.io/yemon/pen/pWoROm
- */
 const Process: FunctionComponent<Props> = ({ procedure }) => {
   const router = useRouter();
 

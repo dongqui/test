@@ -5,33 +5,56 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { useDispatch } from 'react-redux';
 import { useDropzone } from 'react-dropzone';
 import { useSelector } from 'reducers';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 import { Headline } from 'components/Typography';
-import { useConfirmModal } from 'components/Modal/ConfirmModal';
+import ConfirmModal from 'components/Modal/ConfirmModal';
 import * as lpSearchwordActions from 'actions/lpSearchword';
+import * as recordingDataActions from 'actions/recordingData';
+import * as cutImagesActions from 'actions/cutImages';
+import * as pageInfoActions from 'actions/pageInfo';
+import * as contextmenuInfoActions from 'actions/contextmenuInfo';
 import Explorer from './Explorer';
-import { fnGetFileExtension, fnGetAnimationData } from '../../../utils/LP_launching';
+import {
+  fnChangeFileNameCheckingDuplicate,
+  fnCheckContraintToMove,
+  fnFindSameNameFile,
+  fnGetFileExtension,
+  fnMakeNewData,
+} from '../../../utils/LP_launching';
 import { fnSetConvertFbxToGlb } from '../../../utils/common/api/index';
 import { BaseModal } from 'components/Modal';
 import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
 import Breadcrumb, { PathList } from './Breadcrumb';
 import IconView from './IconTree/IconView';
-import { LPItemListType, LPItemType, ROOT_KEY } from 'types/LP';
+import {
+  ContextMenuEnum,
+  EnableFileFormats,
+  EnableVideoFormats,
+  LPItemListType,
+  LPItemType,
+  ROOT_KEY,
+} from 'types/LP';
 import * as lpDataActions from 'actions/lpData';
+import { ListView } from './ListTree';
+import { DragBox } from 'components/DragBox';
+import { useCheckIsServer } from 'hooks/common/useCheckIsServer';
+import { fnExportModelToFbx, fnExportModelToGlb } from 'utils/LP';
+import { INITIAL_RECORDING_DATA } from 'utils/const';
+import { ContextmenuDataTypes } from 'types';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { ListView } from './ListTree';
 
 const cx = classNames.bind(styles);
-
-const EnableVideoFormats = ['mp4', 'avi', 'mkv', 'wmv', 'webm', 'mov'];
-const EnableFileFormats = [...EnableVideoFormats, 'glb', 'fbx'];
 
 export const DefaultModels: Required<LPItemListType> = [
   {
@@ -40,6 +63,7 @@ export const DefaultModels: Required<LPItemListType> = [
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493576/zombie_bkqv8g.glb',
     type: 'File',
     parentKey: ROOT_KEY,
+    parentKeyList: [ROOT_KEY],
     groupKey: 'defaultmodel1',
     baseLayer: [],
     layers: [],
@@ -52,6 +76,7 @@ export const DefaultModels: Required<LPItemListType> = [
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493584/knight_zizg5n.glb',
     type: 'File',
     parentKey: ROOT_KEY,
+    parentKeyList: [ROOT_KEY],
     groupKey: 'defaultmodel2',
     baseLayer: [],
     layers: [],
@@ -64,6 +89,7 @@ export const DefaultModels: Required<LPItemListType> = [
     url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619494583/vanguard_t_cslcnl.glb',
     type: 'File',
     parentKey: ROOT_KEY,
+    parentKeyList: [ROOT_KEY],
     groupKey: 'defaultmodel3',
     baseLayer: [],
     layers: [],
@@ -71,6 +97,47 @@ export const DefaultModels: Required<LPItemListType> = [
     depth: 1,
   },
 ];
+
+interface MakeContextMenuData {
+  isIcon: boolean;
+  itemKey: string;
+}
+
+interface FnGetAnimationData {
+  url: string;
+}
+interface ResultType {
+  animations: THREE.AnimationClip[];
+  bones: THREE.Bone[];
+  isError: boolean;
+  errorMessage: string;
+}
+/**
+ * 파일 url 을 통해서 애니메이션 데이터, bone 데이터를 받는다.
+ *
+ * @param url - 파일 url
+ *
+ * @return 애니메이션 데이터, bone 데이터
+ */
+const fnGetAnimationData = async (params: FnGetAnimationData): Promise<ResultType> => {
+  const { url } = params;
+  const loader = new GLTFLoader();
+
+  const { scene, animations } = await loader
+    .loadAsync(url)
+    .then((result) => result)
+    .catch((e) => {
+      throw Error(e);
+    });
+  const { bones } = new THREE.SkeletonHelper(scene);
+
+  return {
+    animations,
+    bones,
+    isError: false,
+    errorMessage: '',
+  };
+};
 
 export interface PagesType {
   key: string;
@@ -96,29 +163,269 @@ interface ChangeFileToLpDataResponse {
   errorMessage: string;
 }
 
-interface ModalInfo {
-  showModal: boolean;
-  message: string;
-  loading: boolean;
-}
-
 const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
-  const lpData = useSelector((state) => state.lpData);
-  const lpMode = useSelector((state) => state.lpMode.mode);
-  const lpPage = useSelector((state) => state.lpPage);
-  const lpSearchword = useSelector((state) => state.lpSearchword);
-  const [modalInfo, setModalInfo] = useState<ModalInfo>({
-    showModal: false,
-    message: '',
-    loading: false,
-  });
 
-  const { getConfirm } = useConfirmModal();
+  const lpData = useSelector((state) => state.lpData.itemList);
+  const lpMode = useSelector((state) => state.lpData.mode);
+  const lpPageKey = useSelector((state) => state.lpData.pageKey);
+  const lpSearchword = useSelector((state) => state.lpSearchword.word);
+  const modalInfo = useSelector((state) => state.lpData.modalInfo);
+  const modifyingRow = useSelector((state) => state.lpData.modifyingRow);
+  const copiedKeys = useSelector((state) => state.lpData.copiedKeys);
+  const expandedKeys = useSelector((state) => state.lpData.expandedKeys);
+  const visualizedKeys = useSelector((state) => state.lpData.visualizedKeys);
+  const contextmenuInfo = useSelector((state) => state.contextmenuInfo);
+
+  const { isServer } = useCheckIsServer();
+
+  const rightClickedKey = useRef<string | undefined>(''); // 오른쪽 클릭한 대상 아이콘의 키값
+
+  const draggingIconInfo = useRef({ startItemId: '' });
+
+  /**
+   * 오른쪽 메뉴 데이터를 만들어주는 함수입니다.
+   * @param isIcon 아이콘 위인지 여부
+   * @param itemKey 아이콘에 해당하는 key
+   *
+   * @return 오른쪽 메뉴 데이터
+   */
+  const makeContextMenuData = useCallback(
+    (params: MakeContextMenuData): ContextmenuDataTypes[] => {
+      const { isIcon, itemKey } = params;
+      const isDisablePaste = _.isEmpty(copiedKeys);
+      const isDisabledVisualization = visualizedKeys.includes(itemKey);
+      if (isIcon) {
+        // 아이콘위
+        const item = lpData.find((item) => item.key === itemKey);
+        if (item?.type === 'Folder') {
+          return [
+            { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
+            {
+              key: ContextMenuEnum.PASTE,
+              value: ContextMenuEnum.PASTE,
+              isDisabled: isDisablePaste,
+            },
+            { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
+            { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
+            { key: ContextMenuEnum.DELETE, value: ContextMenuEnum.DELETE },
+          ];
+        } else if (item?.type === 'File') {
+          return [
+            { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
+            { key: ContextMenuEnum.COPY, value: ContextMenuEnum.COPY },
+            { key: ContextMenuEnum.DELETE, value: ContextMenuEnum.DELETE },
+            { key: ContextMenuEnum.ADD_MOTION, value: ContextMenuEnum.ADD_MOTION },
+            { key: ContextMenuEnum.FBX_EXPORT, value: ContextMenuEnum.FBX_EXPORT },
+            { key: ContextMenuEnum.GLB_EXPORT, value: ContextMenuEnum.GLB_EXPORT },
+            {
+              key: ContextMenuEnum.VISUALIZATION,
+              value: ContextMenuEnum.VISUALIZATION,
+              isDisabled: isDisabledVisualization,
+            },
+          ];
+        } else {
+          return [
+            { key: ContextMenuEnum.EDIT_NAME, value: ContextMenuEnum.EDIT_NAME },
+            { key: ContextMenuEnum.DELETE, value: ContextMenuEnum.DELETE },
+            { key: ContextMenuEnum.DUPLICATE, value: ContextMenuEnum.DUPLICATE },
+            {
+              key: ContextMenuEnum.VISUALIZATION,
+              value: ContextMenuEnum.VISUALIZATION,
+              isDisabled: isDisabledVisualization,
+            },
+          ];
+        }
+      } else {
+        // 빈공간
+        if (lpMode === 'listView') {
+          return [
+            { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
+            {
+              key: ContextMenuEnum.PASTE,
+              value: ContextMenuEnum.PASTE,
+              isDisabled: isDisablePaste,
+            },
+          ];
+        } else {
+          const isFilePage = lpData.find((item) => item.key === lpPageKey)?.type === 'File';
+          if (isFilePage) {
+            return [{ key: ContextMenuEnum.ADD_MOTION, value: ContextMenuEnum.ADD_MOTION }];
+          } else {
+            return [
+              { key: ContextMenuEnum.NEW_DIRECTORY, value: ContextMenuEnum.NEW_DIRECTORY },
+              {
+                key: ContextMenuEnum.PASTE,
+                value: ContextMenuEnum.PASTE,
+                isDisabled: isDisablePaste,
+              },
+            ];
+          }
+        }
+      }
+    },
+    [copiedKeys, lpData, lpMode, lpPageKey, visualizedKeys],
+  );
+
+  /**
+   * 오른쪽 메뉴의 리스트를 클릭했을때 발생시킬 이벤트에 관한 함수입니다.
+   * @param key 오른쪽 메뉴리스트의 키
+   */
+  const handleClickContextMenu = useCallback(
+    async (key) => {
+      let modifyingRow: LPItemType | undefined;
+      let motions: LPItemListType | undefined;
+      let parentRow: LPItemType | undefined;
+      switch (key) {
+        case `${ContextMenuEnum.NEW_DIRECTORY}`: {
+          dispatch(lpDataActions.addDirectory({ key: rightClickedKey.current }));
+          break;
+        }
+        case `${ContextMenuEnum.EDIT_NAME}`: {
+          modifyingRow = lpData.find((item) => item.key === rightClickedKey.current);
+          if (modifyingRow) {
+            dispatch(
+              lpDataActions.setModifyingRow({
+                key: modifyingRow.key,
+                name: modifyingRow.name,
+                parentKey: modifyingRow.parentKey,
+                type: modifyingRow.type,
+              }),
+            );
+          }
+          break;
+        }
+        case `${ContextMenuEnum.COPY}`: {
+          dispatch(lpDataActions.copyRows());
+          break;
+        }
+        case `${ContextMenuEnum.PASTE}`: {
+          dispatch(lpDataActions.pasteRows({ key: rightClickedKey.current }));
+          break;
+        }
+        case `${ContextMenuEnum.DELETE}`: {
+          dispatch(
+            lpDataActions.setModalInfo({
+              isShow: true,
+              message: 'Are you sure you want to delete the file?',
+              modalType: 'confirm',
+              detailType: 'delete',
+              text: { confirm: 'OK', cancel: 'Cancel' },
+            }),
+          );
+          break;
+        }
+        case `${ContextMenuEnum.ADD_MOTION}`: {
+          const key = lpMode === 'listView' ? rightClickedKey.current : lpPageKey;
+          if (key) {
+            dispatch(lpDataActions.addMotion({ key }));
+          }
+          break;
+        }
+        case `${ContextMenuEnum.DUPLICATE}`: {
+          dispatch(lpDataActions.copyRows());
+          dispatch(lpDataActions.pasteRows({ key: rightClickedKey.current }));
+          break;
+        }
+        case `${ContextMenuEnum.FBX_EXPORT}`:
+        case `${ContextMenuEnum.GLB_EXPORT}`: {
+          dispatch(
+            lpDataActions.setModalInfo({
+              isShow: true,
+              loading: true,
+              message: 'Please wait while exporting the file.<br />This can take up to 30 seconds',
+              modalType: 'alert',
+            }),
+          );
+          parentRow = lpData.find((item) => item.key === rightClickedKey.current);
+          motions = lpData.filter((item) => item.parentKey === rightClickedKey.current);
+          if (motions && parentRow) {
+            if (key === `${ContextMenuEnum.FBX_EXPORT}`) {
+              await fnExportModelToFbx({
+                modelName: parentRow.name,
+                modelUrl: parentRow?.url,
+                motions,
+                onExportEnd: () => {
+                  dispatch(
+                    lpDataActions.setModalInfo({
+                      isShow: false,
+                      loading: false,
+                      modalType: 'alert',
+                    }),
+                  );
+                },
+              });
+            } else if (key === `${ContextMenuEnum.GLB_EXPORT}`) {
+              await fnExportModelToGlb({
+                modelName: parentRow.name,
+                modelUrl: parentRow?.url,
+                motions,
+                onExportEnd: () => {
+                  dispatch(
+                    lpDataActions.setModalInfo({
+                      isShow: false,
+                      loading: false,
+                      modalType: 'alert',
+                    }),
+                  );
+                },
+              });
+            }
+          }
+          break;
+        }
+        case `${ContextMenuEnum.VISUALIZATION}`: {
+          if (rightClickedKey.current) {
+            dispatch(
+              lpDataActions.requestVisualize({
+                key: rightClickedKey.current,
+                isVisualize: true,
+                data: lpData,
+              }),
+            );
+          }
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+      dispatch(contextmenuInfoActions.setContextmenuInfo({ ...contextmenuInfo, isShow: false }));
+    },
+    [contextmenuInfo, dispatch, lpData, lpMode, lpPageKey],
+  );
+
+  const handleContextMenu = useCallback(
+    (event: MouseEvent) => {
+      const icons = viewRef.current?.getElementsByClassName('icon');
+      const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node)); // 클릭한 아이콘 DOM
+      const itemId = targetIcon?.getAttribute('itemId') || ''; // 클릭한 아이콘의 key
+      rightClickedKey.current = itemId;
+      const isIcon = !_.isEmpty(targetIcon); // 아이콘을 클릭했는지 여부
+      if (isIcon) {
+        dispatch(lpDataActions.selectItemList({ keys: [itemId], selectType: 'none' }));
+      }
+      const contextMenuData = makeContextMenuData({ isIcon, itemKey: itemId });
+      const isExistsSearchword = !_.isEmpty(lpSearchword); // 검색어가 입력되었는지 여부
+      const isClickEmptySpace = !isIcon; // 빈공간을 클릭했는지 여부
+      if (!(isExistsSearchword && isClickEmptySpace)) {
+        dispatch(
+          contextmenuInfoActions.setContextmenuInfo({
+            isShow: true,
+            left: event.pageX,
+            top: event.pageY,
+            data: contextMenuData,
+            onClick: handleClickContextMenu,
+          }),
+        );
+      }
+    },
+    [dispatch, handleClickContextMenu, lpSearchword, makeContextMenuData],
+  );
 
   const handleChangeSearchword = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      dispatch(lpSearchwordActions.setSearchword({ word: e.target.value }));
+      dispatch(lpSearchwordActions.requestSetSearchword({ word: e.target.value }));
     },
     [dispatch],
   );
@@ -128,38 +435,13 @@ const LibraryPanel: FunctionComponent = () => {
    *
    * @return 현재 페이지를 나타내는 부모 키.
    */
-  const findParentKey = useCallback((): string => {
+  const findParentKey = useMemo((): string => {
     let parentKey = ROOT_KEY;
     if (lpMode === 'iconView') {
-      parentKey = lpPage.key;
-    }
-    if (lpMode === 'listView') {
-      const selectedRow = lpData.find((item) => item?.isSelected === true);
-      if (selectedRow) {
-        parentKey = selectedRow.key;
-      }
+      parentKey = lpPageKey;
     }
     return parentKey;
-  }, [lpData, lpMode, lpPage.key]);
-
-  /**
-   * 덮어쓰기할 파일(동일한 파일이름)을 찾아주는 함수입니다.
-   *
-   * @return 덮어쓰기할 파일들의 키.
-   */
-  const validateSameFileName = useCallback(
-    (name: string): string | undefined => {
-      let mustDeleteKey;
-      const parentKey = findParentKey();
-      const currentPageRows = lpData.filter((item) => item.parentKey === parentKey);
-      const sameFileNameRows = currentPageRows.find((item) => item.name === name);
-      if (sameFileNameRows) {
-        mustDeleteKey = sameFileNameRows.key;
-      }
-      return mustDeleteKey;
-    },
-    [findParentKey, lpData],
-  );
+  }, [lpMode, lpPageKey]);
 
   /**
    * 모델파일로부터 추출한 애니메이션 데이터를 lpItems 로 바꿔주는 함수입니다.
@@ -176,33 +458,34 @@ const LibraryPanel: FunctionComponent = () => {
       const { animations, bones, name, url } = params;
       const boneNames = bones.map((bone) => bone.name);
       const key = uuidv4();
-      const file: LPItemType = {
+      const parentRow = lpData.find((item) => item.key === lpPageKey);
+      const parentKey = parentRow?.key ?? ROOT_KEY;
+      const file: LPItemType = fnMakeNewData({
         key,
-        type: 'File',
         name,
-        url,
-        parentKey: findParentKey(),
-        groupKey: key,
+        data: lpData,
+        type: 'File',
+        parentKey,
         baseLayer: fnGetBaseLayerWithBoneNames({ boneNames }),
-        layers: [],
         boneNames,
-        depth: 1,
-      };
+        url,
+      });
       const motions: LPItemListType = animations.map((item) => ({
         key: item.uuid,
         name: item.name,
         type: 'Motion',
-        parentKey: key,
-        groupKey: key,
+        parentKey: file.key,
+        parentKeyList: [...file.parentKeyList, file.key],
+        groupKey: file.groupKey,
         url,
         baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: item.tracks }),
         layers: [],
         boneNames,
-        depth: 2,
+        depth: file.depth + 1,
       }));
       return [file, ...motions];
     },
-    [findParentKey],
+    [lpData, lpPageKey],
   );
 
   /**
@@ -287,22 +570,24 @@ const LibraryPanel: FunctionComponent = () => {
 
   const handleDrop = useCallback(
     async (files: File[]) => {
-      setModalInfo((state) => ({
-        ...state,
-        showModal: true,
-        message: 'Importing the file.',
-        loading: true,
-      }));
-      const mustDeleteKeys: string[] = [];
-      let newLpData: LPItemListType = [];
+      dispatch(
+        lpDataActions.setModalInfo({
+          isShow: true,
+          message: 'Importing the file.',
+          loading: true,
+          modalType: 'alert',
+        }),
+      );
       const isMultipleVideoFiles = validateMultipleVideoFiles(files);
       if (isMultipleVideoFiles) {
-        setModalInfo((state) => ({
-          ...state,
-          showModal: true,
-          message: 'NOT allowed to import multiple files at once.',
-          loading: false,
-        }));
+        dispatch(
+          lpDataActions.setModalInfo({
+            isShow: true,
+            message: 'NOT allowed to import multiple files at once.',
+            loading: false,
+            modalType: 'alert',
+          }),
+        );
         return;
       }
       // 비디오파일이 마지막으로 오도록 재정렬
@@ -312,24 +597,15 @@ const LibraryPanel: FunctionComponent = () => {
         const extension = fnGetFileExtension(file.name);
         const isValidFileFormat = _.includes(EnableFileFormats, extension);
         if (!isValidFileFormat) {
-          setModalInfo((state) => ({
-            ...state,
-            showModal: true,
-            message: 'Unsupported file format.',
-            loading: false,
-          }));
+          dispatch(
+            lpDataActions.setModalInfo({
+              isShow: true,
+              message: 'Unsupported file format.',
+              loading: false,
+              modalType: 'alert',
+            }),
+          );
           return;
-        }
-        const sameFileNameKey = validateSameFileName(file.name);
-        if (sameFileNameKey) {
-          const confirmed = await getConfirm({
-            title: `You already have a file with ${file.name} in the same folder. Do you want to replace it?`,
-          });
-          if (confirmed) {
-            mustDeleteKeys.push(sameFileNameKey);
-          } else {
-            continue;
-          }
         }
         let fileUrl = URL.createObjectURL(file);
         // fbx 파일일 경우 glb로 먼저 변환한다
@@ -337,72 +613,77 @@ const LibraryPanel: FunctionComponent = () => {
           try {
             const { result, isError, errorMessage } = await fnSetConvertFbxToGlb({ file });
             if (isError) {
-              setModalInfo((state) => ({
-                ...state,
-                showModal: true,
-                message: errorMessage,
-                loading: false,
-              }));
+              dispatch(
+                lpDataActions.setModalInfo({
+                  isShow: true,
+                  message: errorMessage,
+                  loading: false,
+                  modalType: 'alert',
+                }),
+              );
               return;
             }
             fileUrl = result;
           } catch (error) {
-            setModalInfo((state) => ({
-              ...state,
-              showModal: true,
-              message: error,
-              loading: false,
-            }));
+            dispatch(
+              lpDataActions.setModalInfo({
+                isShow: true,
+                message: error,
+                loading: false,
+                modalType: 'alert',
+              }),
+            );
             return;
           }
         }
         // 비디오파일은 추출화면으로 전환시킨다.
         if (EnableVideoFormats.includes(extension)) {
-          const confirmed = await getConfirm({
-            title: 'Export motion from the video?',
-          });
-          if (!confirmed) {
-            setModalInfo((state) => ({
-              ...state,
-              showModal: true,
-              message: '',
-              loading: false,
-            }));
-          }
+          dispatch(
+            lpDataActions.setModalInfo({
+              isShow: true,
+              message: 'Export motion from the video?',
+              modalType: 'confirm',
+              detailType: 'move',
+              text: {
+                confirm: 'OK',
+                cancel: 'cancel',
+              },
+              paramters: { videoUrl: fileUrl, extension },
+            }),
+          );
           return;
         }
-        const { result: newData, isError, errorMessage } = await changeFileToLpData({
-          fileUrl,
+        const currentRows = lpData.filter((item) => item.parentKey === findParentKey);
+        const newFileName = fnChangeFileNameCheckingDuplicate({
+          data: currentRows,
           name: file.name,
         });
+        const { result: newData, isError, errorMessage } = await changeFileToLpData({
+          fileUrl,
+          name: newFileName,
+        });
         if (isError) {
-          setModalInfo((state) => ({
-            ...state,
-            showModal: true,
-            message: errorMessage,
-            loading: false,
-          }));
+          dispatch(
+            lpDataActions.setModalInfo({
+              isShow: true,
+              message: errorMessage,
+              loading: false,
+              modalType: 'alert',
+            }),
+          );
+          return;
         }
-        newLpData = _.concat(newLpData, newData);
+        dispatch(lpDataActions.addItemList({ itemList: newData }));
       }
-      if (!_.isEmpty(mustDeleteKeys)) {
-        dispatch(lpDataActions.deleteItemList({ keys: mustDeleteKeys }));
-      }
-      dispatch(lpDataActions.addItemList({ itemList: newLpData }));
-      setModalInfo((state) => ({
-        ...state,
-        showModal: false,
-        message: '',
-        loading: false,
-      }));
+      dispatch(lpDataActions.setModalInfo({ isShow: false, message: '', loading: false }));
     },
     [
       changeFileToLpData,
       dispatch,
-      getConfirm,
+      findParentKey,
+      lpData,
       sortVideoFileLast,
       validateMultipleVideoFiles,
-      validateSameFileName,
     ],
   );
 
@@ -410,9 +691,9 @@ const LibraryPanel: FunctionComponent = () => {
 
   const handleOutsideClose = useCallback(() => {
     if (!modalInfo.loading) {
-      setModalInfo((state) => ({ ...state, showModal: false, message: '' }));
+      dispatch(lpDataActions.setModalInfo({ isShow: false, message: '' }));
     }
-  }, [modalInfo.loading]);
+  }, [dispatch, modalInfo.loading]);
 
   /**
    * 아이콘뷰로 전달할 가공데이터입니다.
@@ -421,14 +702,44 @@ const LibraryPanel: FunctionComponent = () => {
   const filteredIconviewData = useMemo((): LPItemListType => {
     let data = _.clone(lpData);
     if (!_.isEmpty(lpSearchword)) {
-      data = data.filter((item) =>
-        item.name.toLowerCase().includes(lpSearchword.word.toLowerCase()),
-      );
+      data = data.filter((item) => item.name.toLowerCase().includes(lpSearchword.toLowerCase()));
     }
     // 현재 페이지를 기준으로 필터링
-    data = data.filter((item) => item.parentKey === lpPage.key);
+    data = data.filter((item) => item.parentKey === lpPageKey);
     return data;
-  }, [lpSearchword, lpData, lpPage.key]);
+  }, [lpData, lpSearchword, lpPageKey]);
+
+  /**
+   * 리스트뷰로 전달할 가공데이터입니다.
+   * @return 검색어 필터링 후 lpItems
+   * @return 펼쳐야 할 row들의 키
+   */
+  const filteredListviewData = useMemo((): {
+    data: LPItemListType;
+    expandedKeys: string[];
+  } => {
+    let data = _.clone(lpData);
+    let newExpandedKeys = _.clone(expandedKeys);
+    if (!_.isEmpty(lpSearchword)) {
+      const findRows = data.filter((item) =>
+        item.name.toLowerCase().includes(lpSearchword.toLowerCase()),
+      ); // 검색된 row들
+      const findRowKeys = findRows.map((item) => item.key);
+      const findChildRows = data.filter(
+        (item) => !_.isEmpty(_.intersection(item.parentKeyList, findRowKeys)),
+      ); // 검색된 row들의 자식들
+      const findChildRowKeys = findChildRows.map((item) => item.key);
+      // 검색어에 해당하는 row의 group key들
+      const findGroupKeys = _.uniq(findRows.map((item) => item.groupKey));
+      // 해당 group key에 해당하는 row들만 필터링
+      data = data.filter((item) => findGroupKeys.includes(item.groupKey));
+      const additionalExpandedKeys = data
+        .filter((item) => !findRowKeys.includes(item.key) && !findChildRowKeys.includes(item.key))
+        .map((item) => item.key);
+      newExpandedKeys = _.uniq(_.concat(expandedKeys, additionalExpandedKeys)); // 검색된 그룹 중 검색파일 전까지는 모두 펼쳐준다
+    }
+    return { data, expandedKeys: newExpandedKeys };
+  }, [expandedKeys, lpData, lpSearchword]);
 
   /**
    * Breadcrumb 로 전달하기 위한 페이지 가공데이터
@@ -436,7 +747,7 @@ const LibraryPanel: FunctionComponent = () => {
    */
   const pathList = useMemo((): PathList => {
     const result: PathList = [];
-    const currentPageRow = lpData.find((item) => item.key === lpPage.key);
+    const currentPageRow = lpData.find((item) => item.key === lpPageKey);
     if (currentPageRow) {
       result.push({
         key: currentPageRow.key,
@@ -453,39 +764,336 @@ const LibraryPanel: FunctionComponent = () => {
       }
     }
     return result;
-  }, [lpData, lpPage.key]);
+  }, [lpData, lpPageKey]);
 
   // 이전페이지의 키값
   const prevPageKey = useMemo((): string => {
     let result = ROOT_KEY;
-    const currentPageRow = lpData.find((item) => item.key === lpPage.key);
+    const currentPageRow = lpData.find((item) => item.key === lpPageKey);
     const currentPageParentRow = lpData.find((item) => item.key === currentPageRow?.parentKey);
     if (currentPageParentRow) {
       result = currentPageParentRow.key;
     }
     return result;
-  }, [lpData, lpPage.key]);
+  }, [lpData, lpPageKey]);
+
+  const scrollRef = useRef<Scrollbars>(null);
+  // 드래그박스를 호출할 부모 컴포넌트
+  const viewRef = useRef<HTMLDivElement>(null);
+  const isDragScrolling = useRef(false);
+
+  /**
+   * 드래그박스 생성시 드래그박스 안에 포함된 아이콘들을 선택시켜주고 포함되지 않은 아이콘들은 해제시켜주는 함수입니다.
+   */
+  const handleDragboxChange = useCallback(
+    (event: MouseEvent) => {
+      const scrollElement = scrollRef.current;
+      const viewElement = viewRef.current;
+      if (scrollElement && viewElement) {
+        const { top } = viewElement.getBoundingClientRect();
+        const currentScrollTop = scrollElement.getScrollTop(); // 현재 스크롤을 내린 정도
+        const addScrollTop = top + currentScrollTop; // 스크롤 내린 정도를 반영한 top
+        const isMouseUpFromView = event.y < addScrollTop; // 마우스포인터가 target div 보다 위에 있는지 여부
+        const bottom = addScrollTop + scrollElement.getClientHeight();
+        const isMouseDownFromView = event.y > bottom; // 마우스포인터가 target div 보다 아래에 있는지 여부
+        if (isMouseUpFromView && currentScrollTop > 0) {
+          const newScrollTop = currentScrollTop - Math.abs(event.y) / 5;
+          scrollElement.scrollTop(newScrollTop);
+          isDragScrolling.current = true;
+        }
+        if (isMouseDownFromView) {
+          const newScrollTop = currentScrollTop + Math.abs(event.y - bottom) / 5;
+          scrollElement.scrollTop(newScrollTop);
+          isDragScrolling.current = true;
+        }
+      }
+      const grabbedDoms = viewRef.current?.querySelectorAll('#grabbed');
+      const ungrabbedDoms = viewRef.current?.querySelectorAll('#grabbable');
+      // 드래그박스에 포함된 row들은 선택해준다.
+      grabbedDoms?.forEach((grabbedDom) => {
+        const itemId = grabbedDom.getAttribute('itemId');
+        const className = grabbedDom.className;
+        if (itemId && !className.includes('selected')) {
+          dispatch(lpDataActions.addSelectedRows({ keys: [itemId] }));
+        }
+      });
+      // 드래그박스에 포함되지 않은 row들은 선택해제한다.
+      if (!isDragScrolling.current) {
+        ungrabbedDoms?.forEach((grabbedDom) => {
+          const itemId = grabbedDom.getAttribute('itemId');
+          const className = grabbedDom.className;
+          if (itemId && className.includes('selected')) {
+            dispatch(lpDataActions.deleteSelectedRows({ keys: [itemId] }));
+          }
+        });
+      }
+    },
+    [dispatch],
+  );
+
+  /**
+   * 빈공간을 선택하면 선택한 row들을 모두 선택해제 해주는 함수입니다.
+   */
+  const handleClickEmptySpace = useCallback(
+    (event: MouseEvent) => {
+      if (!_.isUndefined(rightClickedKey.current)) {
+        dispatch(contextmenuInfoActions.setContextmenuInfo({ ...contextmenuInfo, isShow: false }));
+        rightClickedKey.current = undefined;
+      }
+      const icons = viewRef.current?.getElementsByClassName('icon');
+      const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
+      const grabbedIcons = viewRef.current?.querySelectorAll(`#grabbed`);
+      const grabbableIcons = viewRef.current?.querySelectorAll(`#grabbable`);
+      const isSelectedInGrabbed = _.some(grabbedIcons, (element) =>
+        element.className.includes('selected'),
+      );
+      const isSelectedInGrabbable = _.some(grabbableIcons, (element) =>
+        element.className.includes('selected'),
+      );
+      const isSelected = isSelectedInGrabbed || isSelectedInGrabbable;
+      // 아이콘 위가 아니면서 선택된게 있을때만 동작
+      const isValidate = !targetIcon && isSelected;
+      if (isValidate) {
+        // 모두 선택 해제
+        dispatch(lpDataActions.selectItemList({ keys: [], selectType: 'none' }));
+        grabbedIcons?.forEach((element) => {
+          element.id = 'grabbable';
+        });
+      }
+    },
+    [contextmenuInfo, dispatch],
+  );
+
+  /**
+   * 드래그박스를 동작시켜야할 조건을 확인해주는 함수입니다
+   * 아이콘 위부터 드래그를 하는 경우는 드래그박스가 동작하지 않습니다
+   *
+   * @returns 드래그박스를 멈춰야 하는지 여부
+   */
+  const handleDisableDragBox = useCallback((event: MouseEvent): boolean => {
+    const icons = viewRef.current?.getElementsByClassName('icon');
+    const targetIcon = _.find(icons, (icon) => icon.contains(event.target as Node));
+    const isMustDragboxStop = !_.isEmpty(targetIcon);
+    return isMustDragboxStop;
+  }, []);
+
+  const handleDragBoxEnd = useCallback(() => {
+    isDragScrolling.current = false;
+  }, []);
+
+  /**
+   * 컨펌모달에서 컨펌을 클릭했을때 발생시킬 이벤트가 있는 함수입니다.
+   * 컨펌모달의 detailType에 따라 다른 이벤트가 정의되어 있습니다.
+   */
+  const handleConfirm = useCallback(async () => {
+    let sameNameFile: LPItemType | undefined;
+    let currentRows: LPItemListType | undefined;
+    switch (modalInfo.detailType) {
+      case 'overwrite': {
+        currentRows = lpData.filter(
+          (item) =>
+            item.key !== modifyingRow?.key &&
+            item.parentKey === modifyingRow?.parentKey &&
+            item.type === modifyingRow?.type,
+        );
+        sameNameFile = fnFindSameNameFile({ data: currentRows, name: modifyingRow?.name ?? '' });
+        if (sameNameFile) {
+          dispatch(lpDataActions.deleteRows({ key: sameNameFile.key }));
+          dispatch(
+            lpDataActions.changeFileName({
+              key: modifyingRow?.key ?? '',
+              name: modifyingRow?.name ?? '',
+              parentKey: modifyingRow?.parentKey ?? '',
+              type: modifyingRow?.type ?? 'Folder',
+            }),
+          );
+        }
+        break;
+      }
+      case 'delete': {
+        dispatch(lpDataActions.deleteRows({ key: rightClickedKey.current }));
+        break;
+      }
+      case 'move': {
+        dispatch(recordingDataActions.setRecordingData(INITIAL_RECORDING_DATA));
+        dispatch(cutImagesActions.setCutImages({ urls: [] }));
+        dispatch(
+          pageInfoActions.setPageInfo({
+            page: 'extract',
+            videoUrl: modalInfo.paramters?.videoUrl,
+            extension: modalInfo.paramters?.extension,
+          }),
+        );
+        break;
+      }
+      default:
+        break;
+    }
+    dispatch(lpDataActions.setModalInfo({ isShow: false }));
+  }, [
+    dispatch,
+    lpData,
+    modalInfo.detailType,
+    modalInfo.paramters?.extension,
+    modalInfo.paramters?.videoUrl,
+    modifyingRow?.key,
+    modifyingRow?.name,
+    modifyingRow?.parentKey,
+    modifyingRow?.type,
+  ]);
+
+  /**
+   * 컨펌모달에서 컨펌을 취소했을때 발생시킬 이벤트가 있는 함수입니다.
+   * 컨펌모달의 detailType에 따라 다른 이벤트가 정의되어 있습니다.
+   */
+  const handleDismiss = useCallback(async () => {
+    let currentRows: LPItemListType | undefined;
+    switch (modalInfo.detailType) {
+      case 'overwrite': {
+        currentRows = lpData.filter(
+          (item) =>
+            item.key !== modifyingRow?.key &&
+            item.parentKey === modifyingRow?.parentKey &&
+            item.type === modifyingRow?.type,
+        );
+        dispatch(
+          lpDataActions.changeFileName({
+            key: modifyingRow?.key ?? '',
+            name: fnChangeFileNameCheckingDuplicate({
+              data: currentRows,
+              name: modifyingRow?.name ?? '',
+            }),
+            parentKey: modifyingRow?.parentKey ?? '',
+            type: modifyingRow?.type ?? 'Folder',
+          }),
+        );
+        break;
+      }
+      case 'delete': {
+        break;
+      }
+      default:
+        break;
+    }
+    dispatch(lpDataActions.setModalInfo({ isShow: false }));
+  }, [
+    dispatch,
+    lpData,
+    modalInfo.detailType,
+    modifyingRow?.key,
+    modifyingRow?.name,
+    modifyingRow?.parentKey,
+    modifyingRow?.type,
+  ]);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+        dispatch(lpDataActions.copyRows());
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+        dispatch(lpDataActions.pasteRows({}));
+      }
+      if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace')) {
+        dispatch(
+          lpDataActions.setModalInfo({
+            isShow: true,
+            message: 'Are you sure you want to delete the file?',
+            modalType: 'confirm',
+            detailType: 'delete',
+            text: { confirm: 'OK', cancel: 'Cancel' },
+          }),
+        );
+      }
+    },
+    [dispatch],
+  );
+
+  const handleDragStart = useCallback((event: DragEvent) => {
+    const targetIcon = event.target as Element;
+    const itemId = targetIcon.getAttribute('itemId');
+    if (itemId) {
+      draggingIconInfo.current.startItemId = itemId;
+    }
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    draggingIconInfo.current.startItemId = '';
+  }, []);
+
+  /**
+   * 파일을 다른 파일로 이동시 목적지 파일을 펼쳐주는 함수입니다.
+   */
+  const handleDragEnter = useCallback(
+    (event: DragEvent) => {
+      const targetIcon = event.target as Element;
+      const startKey = draggingIconInfo.current.startItemId; // 출발지
+      const destinationKey = targetIcon.getAttribute('itemId') || ''; // 목적지
+      const startRows = lpData.filter((item) => item.key === startKey);
+      const destinationRow = lpData.find((item) => item.key === destinationKey);
+      if (startRows && destinationRow && startKey !== destinationKey) {
+        const isAbleToMove = fnCheckContraintToMove({ startRows, destinationRow }); // 이동가능한지 여부
+        if (isAbleToMove) {
+          dispatch(lpDataActions.requestExpandedKey({ key: destinationKey, isExpand: true }));
+        }
+      }
+    },
+    [dispatch, lpData],
+  );
+
+  useEffect(() => {
+    const viewElement = viewRef.current;
+    viewElement?.addEventListener('dragstart', handleDragStart);
+    viewElement?.addEventListener('dragend', handleDragEnd);
+    viewElement?.addEventListener('dragenter', handleDragEnter);
+
+    return () => {
+      viewElement?.removeEventListener('dragstart', handleDragStart);
+      viewElement?.removeEventListener('dragend', handleDragEnd);
+      viewElement?.removeEventListener('dragenter', handleDragEnter);
+    };
+  }, [handleDragEnd, handleDragEnter, handleDragStart]);
 
   useEffect(() => {
     const setDefaultModels = async () => {
-      setModalInfo((state) => ({
-        ...state,
-        showModal: true,
-        message: 'Importing default files.',
-        loading: true,
-      }));
+      dispatch(
+        lpDataActions.setModalInfo({
+          isShow: true,
+          message: 'Importing default files.',
+          loading: true,
+          modalType: 'alert',
+        }),
+      );
       await Promise.all(
         DefaultModels.map((item) =>
           changeFileToLpData({ fileUrl: item.url, name: item.name, isDispatch: true }),
         ),
       );
-      setModalInfo((state) => ({ ...state, showModal: false, message: '', loading: false }));
+      dispatch(lpDataActions.setModalInfo({ isShow: false, message: '', loading: false }));
     };
-    if (_.isEmpty(lpData)) {
+    if (isServer && _.isEmpty(lpData)) {
       // 기본모델 로드
       setDefaultModels();
     }
-  }, [changeFileToLpData, lpData]);
+  }, [changeFileToLpData, dispatch, isServer, lpData]);
+
+  useEffect(() => {
+    if (viewRef.current) {
+      const viewElement = viewRef.current;
+      viewElement.addEventListener('contextmenu', handleContextMenu);
+
+      return () => {
+        viewElement.removeEventListener('contextmenu', handleContextMenu);
+      };
+    }
+  }, [handleContextMenu]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   const isIconView = lpMode === 'iconView';
   const isListView = lpMode === 'listView';
@@ -505,18 +1113,48 @@ const LibraryPanel: FunctionComponent = () => {
               <Breadcrumb
                 pathList={pathList}
                 prevPageKey={prevPageKey}
-                currentPageKey={lpPage.key}
+                currentPageKey={lpPageKey}
               />
             </div>
           )}
-          <div className={cx('content')}>
-            {isIconView && <IconView data={filteredIconviewData} />}
-            {isListView && <ListView data={lpData} />}
-          </div>
+          <Scrollbars ref={scrollRef} autoHide>
+            <div
+              ref={viewRef}
+              className={cx('content')}
+              role="button"
+              onKeyDown={() => {}}
+              tabIndex={0}
+            >
+              {isIconView && <IconView data={filteredIconviewData} />}
+              {isListView && (
+                <ListView
+                  data={filteredListviewData.data}
+                  expandedKeys={filteredListviewData.expandedKeys}
+                />
+              )}
+              <DragBox
+                isAllCovered={false}
+                onChangeIsUpdated={handleDragboxChange}
+                parentRef={viewRef}
+                onDragStart={handleClickEmptySpace}
+                onDragEnd={handleDragBoxEnd}
+                onDisableDragBox={handleDisableDragBox}
+              />
+            </div>
+          </Scrollbars>
         </div>
       </div>
-      {modalInfo.showModal && (
+      {modalInfo.isShow && modalInfo.modalType === 'alert' && (
         <BaseModal title={modalInfo.message} onOutsideClose={handleOutsideClose} />
+      )}
+      {modalInfo.isShow && modalInfo.modalType === 'confirm' && (
+        <ConfirmModal
+          isOpen={modalInfo.isShow}
+          title={modalInfo.message || ''}
+          onConfirm={handleConfirm}
+          onClose={handleDismiss}
+          text={{ confirm: modalInfo.text?.confirm ?? '', cancel: modalInfo.text?.cancel ?? '' }}
+        />
       )}
     </div>
   );

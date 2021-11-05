@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, {
   memo,
   useEffect,
@@ -14,7 +15,10 @@ const cx = classNames.bind(styles);
 
 interface Props {
   isAllCovered: boolean;
-  onChangeIsUpdated: () => void;
+  onChangeIsUpdated: (event: MouseEvent) => void;
+  onDragStart: (event: MouseEvent) => void;
+  onDragEnd: () => void;
+  onDisableDragBox: (event: MouseEvent) => boolean; // 특정상황에 드래그박스를 동작시키지 않기 위한 함수
   parentRef: RefObject<HTMLElement>;
 }
 
@@ -42,7 +46,14 @@ interface Props {
       onChangeIsUpdated={handleChange} />
       parentRef={dopeSheetRef}
  */
-const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, parentRef }) => {
+const DragBox: FunctionComponent<Props> = ({
+  isAllCovered,
+  onChangeIsUpdated,
+  parentRef,
+  onDragStart,
+  onDragEnd,
+  onDisableDragBox,
+}) => {
   const [isOpenedDragBox, setIsOpenedDragBox] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const rectRef = useRef<SVGRectElement>(null);
@@ -91,6 +102,9 @@ const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, pa
   // 부모 컴포넌트에 mousedown 이벤트 추가
   useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
+      const isDisableDrabBox = onDisableDragBox(event);
+      if (isDisableDrabBox) return;
+      onDragStart(event);
       if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
       originX.current = event.x;
       originY.current = event.y;
@@ -104,16 +118,13 @@ const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, pa
 
     parentRef.current?.addEventListener('mousedown', handleMouseDown);
     parentRef.current?.addEventListener('dragstart', handleDragStart);
-  }, [parentRef, updateTranslate]);
+  }, [onDisableDragBox, onDragStart, parentRef, updateTranslate]);
 
   // drag box에 mousemove, mouseup 이벤트 추가
   useEffect(() => {
     if (isOpenedDragBox) {
       const handleMouseMove = (event: MouseEvent) => {
         updateTranslate(event.x, event.y);
-      };
-
-      const handleMouseUp = () => {
         if (parentRef.current) {
           const { minX, maxX, minY, maxY } = getMinMaxXY();
           const {
@@ -165,13 +176,18 @@ const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, pa
               element.id = 'grabbed';
             }
           });
+          onChangeIsUpdated(event);
+        }
+      };
 
+      const handleMouseUp = () => {
+        if (parentRef.current) {
           originX.current = 0;
           originY.current = 0;
           currentX.current = 0;
           currentY.current = 0;
 
-          onChangeIsUpdated();
+          onDragEnd();
           setIsOpenedDragBox(false);
           document.removeEventListener('mousemove', handleMouseMove);
           document.removeEventListener('mouseup', handleMouseUp);
@@ -181,7 +197,7 @@ const DragBox: FunctionComponent<Props> = ({ isAllCovered, onChangeIsUpdated, pa
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
-  }, [isAllCovered, isOpenedDragBox, onChangeIsUpdated, parentRef, updateTranslate]);
+  }, [isAllCovered, isOpenedDragBox, onChangeIsUpdated, onDragEnd, parentRef, updateTranslate]);
 
   return (
     <div className={cx('wrapper')}>

@@ -18,6 +18,7 @@
   border-top-right-radius: 6px;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
+  margin-bottom: 2px;
 
   @for $i from 6 through length(1) {
     &.depth-#{$i} {
@@ -40,25 +41,7 @@
   }
 
   &.selected {
-    background-color: $gray200;
-  }
-
-  &.clickSelected {
     background-color: $gray400;
-  }
-
-  &.clicked {
-    background-color: $gray400;
-
-    .icon-arrow,
-    .icon-item,
-    .name-outer {
-      color: #000;
-    }
-  }
-
-  &.visualizeSelected {
-    background-color: shade($primaryColor, 66%);
   }
 
   &.visualized {
@@ -91,6 +74,10 @@
     & > svg {
       transform: translate(-50%, -50%)rotate(90deg);
     }
+  }
+
+  &.hide {
+    display: none;
   }
 }
 

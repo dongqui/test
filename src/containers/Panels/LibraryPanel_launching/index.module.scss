@@ -24,6 +24,7 @@
 
 .header {
   margin-bottom: 8px;
+  user-select: none;
 }
 
 .content {
@@ -31,6 +32,9 @@
   overflow-y: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
+  position: relative;
+  user-select: none;
+  min-height: 100%;
 
   &::-webkit-scrollbar {
     display: none;
