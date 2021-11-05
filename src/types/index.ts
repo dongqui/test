@@ -137,8 +137,4 @@ export interface PageInfoType {
   duration?: number;
 }
 
-export interface ModeSelectionType {
-  mode: 'animationMode' | 'videoMode';
-}
-
 export type PropertyType = 'Position' | 'Rotation' | 'Scale';
