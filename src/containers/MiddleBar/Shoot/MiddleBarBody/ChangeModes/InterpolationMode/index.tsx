@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { clickInterpolationMode } from 'actions/trackList';
+// import { clickInterpolationMode } from 'actions/trackList';
 import { InterpolationType } from 'types/TP/track';
 import { useSelector } from 'reducers';
 import { IconWrapper, SvgPath } from 'components/Icon';

@@ -5,8 +5,6 @@ import { shootProject } from './shootProject';
 import { selectingData } from './selectingData';
 import { animationData } from './animationData';
 import { animatingControls } from './animatingControls';
-import trackList from './trackList';
-import keyframes from './keyframes';
 import { modeSelection } from './modeSelection';
 
 export type RootState = ReturnType<typeof rootReducer>;
@@ -17,8 +15,6 @@ const rootReducer = combineReducers({
   selectingData,
   animationData,
   animatingControls,
-  trackList,
-  keyframes,
   modeSelection,
 });
 

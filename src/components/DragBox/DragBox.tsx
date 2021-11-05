@@ -84,6 +84,7 @@ const DragBox: FunctionComponent<Props> = (props) => {
 
     return () => {
       parentRef.current?.removeEventListener('mousedown', handleMouseDown);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       parentRef.current?.removeEventListener('dragstart', handleDragStart);
     };
   }, [parentRef, updateTranslate]);

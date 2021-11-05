@@ -14,7 +14,6 @@ import LibraryPanel from 'containers/Panels/LibraryPanel';
 import RenderingPanel from './Panels/RenderingPanel';
 import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
-import TimelinePanel from 'containers/Panels/TimelinePanel';
 import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';

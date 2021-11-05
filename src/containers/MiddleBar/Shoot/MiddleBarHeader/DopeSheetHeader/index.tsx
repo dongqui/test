@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { addLayerTrack } from 'actions/trackList';
+// import { addLayerTrack } from 'actions/trackList';
 import { IconWrapper, SvgPath } from 'components/Icon';
 
 import classNames from 'classnames/bind';
@@ -13,8 +13,8 @@ const DopeSheetHeader = () => {
   const dispatch = useDispatch();
 
   const handlePlusButtonClick = useCallback(() => {
-    dispatch(addLayerTrack({ trackName: 'ddd' }));
-  }, [dispatch]);
+    // dispatch(addLayerTrack({ trackName: 'ddd' }));
+  }, []);
 
   return (
     <div className={cx('dope-sheet-header')}>
