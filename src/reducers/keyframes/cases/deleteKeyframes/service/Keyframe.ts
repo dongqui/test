@@ -1,22 +1,22 @@
+import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
 import {
   AllKeyframes,
   AllSelectedKeyframes,
   LayerKeyframes,
   BoneKeyframes,
-  TransformKeyframes,
+  PropertyKeyframes,
   SelectedLayerKeyframes,
   SelectedBoneKeyframes,
-  SelectedTransformKeyframes,
+  SelectedPropertyKeyframes,
 } from 'reducers/keyframes/types';
-import { TrackKeyframes } from 'types/TP_New/keyframe';
 
 import { Service } from './index';
 import { Repository } from '../repository';
 
 type DeleteLayerKeyframes = LayerKeyframes & SelectedLayerKeyframes;
 type DeleteBoneKeyframes = BoneKeyframes & SelectedBoneKeyframes;
-type DeleteTransformKeyframes = TransformKeyframes & SelectedTransformKeyframes;
+type DeletePropertyKeyframes = PropertyKeyframes & SelectedPropertyKeyframes;
 type NewValues = AllKeyframes & AllSelectedKeyframes;
 
 class DeleteKeyframesService implements Service {
@@ -35,40 +35,40 @@ class DeleteKeyframesService implements Service {
   }
 
   // layer 키프레임 삭제
-  private deleteLayerKeyframes = (transformKeyframes: TrackKeyframes[]): DeleteLayerKeyframes => {
+  private deleteLayerKeyframes = (propertyKeyframes: TimeEditorTrack[]): DeleteLayerKeyframes => {
     const { deleteSeletedKeyframes, clearSeletedKeyframes } = this.layerRepository;
     return {
-      layerKeyframes: deleteSeletedKeyframes(transformKeyframes) as TrackKeyframes,
-      selectedLayerKeyframes: clearSeletedKeyframes(),
+      layerTrack: deleteSeletedKeyframes(propertyKeyframes) as TimeEditorTrack,
+      selectedLayerKeyframes: clearSeletedKeyframes() as ClusteredKeyframe[],
     };
   };
 
   // bone 키프레임 삭제
-  private deleteBoneKeyframes = (transformKeyframes: TrackKeyframes[]): DeleteBoneKeyframes => {
+  private deleteBoneKeyframes = (propertyKeyframes: TimeEditorTrack[]): DeleteBoneKeyframes => {
     const { deleteSeletedKeyframes, clearSeletedKeyframes } = this.boneRepository;
     return {
-      boneKeyframes: deleteSeletedKeyframes(transformKeyframes) as TrackKeyframes[],
-      selectedBoneKeyframes: clearSeletedKeyframes(),
+      boneTrackList: deleteSeletedKeyframes(propertyKeyframes) as TimeEditorTrack[],
+      selectedBoneKeyframes: clearSeletedKeyframes() as ClusteredKeyframe[],
     };
   };
 
   // transform 키프레임 삭제
-  private deleteTransformKeyframes = (): DeleteTransformKeyframes => {
+  private deleteTransformKeyframes = (): DeletePropertyKeyframes => {
     const { deleteSeletedKeyframes, clearSeletedKeyframes } = this.transformRepository;
     return {
-      transformKeyframes: deleteSeletedKeyframes() as TrackKeyframes[],
-      selectedTransformKeyframes: clearSeletedKeyframes(),
+      propertyTrackList: deleteSeletedKeyframes() as TimeEditorTrack[],
+      selectedPropertyKeyframes: clearSeletedKeyframes() as ClusteredKeyframe[],
     };
   };
 
-  public deleteKeyframes = () => {
-    const transformTrack = this.deleteTransformKeyframes();
-    const layerTrack = this.deleteLayerKeyframes(transformTrack.transformKeyframes);
-    const boneTrack = this.deleteBoneKeyframes(transformTrack.transformKeyframes);
-    return { ...layerTrack, ...boneTrack, ...transformTrack };
+  deleteKeyframes = () => {
+    const { propertyTrackList, selectedPropertyKeyframes } = this.deleteTransformKeyframes();
+    const layerTrack = this.deleteLayerKeyframes(propertyTrackList);
+    const boneTrack = this.deleteBoneKeyframes(propertyTrackList);
+    return { ...layerTrack, ...boneTrack, propertyTrackList, selectedPropertyKeyframes };
   };
 
-  public updateKeyframesState = (newValues: NewValues): KeyframesState => {
+  updateKeyframesState = (newValues: NewValues): KeyframesState => {
     return this.layerRepository.updateStateObject(newValues);
   };
 }

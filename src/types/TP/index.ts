@@ -1,56 +1,33 @@
-export interface TPTrackList {
-  isFiltered: boolean; // sheet 필터링 체크
-  isIncluded: boolean; // sheet 랜더링 제외 체크
-  isLocked: boolean; // sheet 잠금 체크
-  isPointedDownArrow: boolean; // 화살표 방향이 아래를 가리키고 있는지 체크(true면 아래를 가리킴)
-  isSelected: boolean; // dope sheet 선택 체크
-  isShowed: boolean; // 트랙이 화면에 보이는지 체크
-  isTransformTrack: boolean; // 현재 트랙이 transform 트랙인지 아닌지 체크
-  layerKey: 'baseLayer' | string; // 어떤 layer에 속했는지 key로 표현. base layer일 경우, key는 'baseLayer'가 됨
-  renderedTrackName: string; // 화면 상에서 보여질 name
-  trackIndex: number; // 트랙 index
-  trackName: string;
-  times: number[];
-  visualizedDataKey: string;
-  x?: number[];
-  y?: number[];
-  z?: number[];
+// layer, bone, property 트랙 별 number
+export enum TrackNumber {
+  LAYER = -1,
+  BONE = 0,
+  POSITION = 1,
+  ROTATION = 2,
+  SCALE = 3,
 }
 
-export type UpdatedTrack<Key extends keyof TPTrackList> = Required<Pick<TPTrackList, Key>> & {
-  trackIndex: number;
-};
+export type TrackType = 'layer' | 'bone' | 'property';
 
-export interface TPLastBone {
-  layerIndex: number;
-  layerKey: string;
-  trackName: string;
-  lastBoneIndex: number;
-}
+// 트랙 식별자 타입
+export interface TrackIdentifier {
+  /**
+   * @description TP쪽에서 트랙을 탐색하기 위한 트랙별 번호 규칙
+   * @default -1 layer 트랙의 number는 -1로 세팅
+   * @default 0 bone 트랙의 number는 끝자리를 0으로 세팅(0, 10, 20...)
+   * @default 1 position 트랙의 number는 끝자리를 1으로 세팅(1, 11, 21...)
+   * @default 2 rotation 트랙의 number는 끝자리를 2으로 세팅(2, 12, 22...)
+   * @default 3 scale 트랙의 number는 끝자리를 3으로 세팅(3, 13, 23...)
+   */
+  trackNumber: number;
 
-export interface TPcurrentClickedTrack {
-  trackIndex: number;
-  isPointedDownArrow: boolean;
-}
+  /**
+   * @description RP쪽에서 트랙을 탐색하기 위한 ID
+   * @default uuid layer 트랙의 layerId를 값으로 사용
+   * @default uuid bone 트랙의 targetId를 값으로 사용
+   * @default uuid property 트랙의 id를 값으로 사용
+   */
+  trackId: string;
 
-export interface KeyframeData {
-  key: string;
-  trackName: string;
-  layerKey: string;
-  time: number;
-  isTransformTrack: boolean;
-  isLocked: boolean;
-  trackIndex: number;
-}
-
-export type d3ScaleLinear = d3.ScaleLinear<number, number, never>;
-
-export type D3ScaleLinear = d3.ScaleLinear<number, number, never>;
-
-export type D3SVGGElement = d3.Selection<SVGGElement, unknown, null, undefined>;
-
-export interface D3ZoomDatum {
-  name: string;
-  times: number[];
-  values: number[];
+  trackType: TrackType;
 }

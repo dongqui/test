@@ -1,13 +1,15 @@
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
-import { SelectedKeyframesUnion } from 'reducers/keyframes/types';
+import { SelectedKeyframesUnion, AllKeyframes } from 'reducers/keyframes/types';
 
 import { Repository } from '../repository';
 
 export interface Service {
   selectEventType(): SelectedKeyframesUnion;
 
-  updateKeyframesState(selectedKeyframes: SelectedKeyframesUnion): KeyframesState;
+  updateKeyframes(selectedKeyframes: SelectedKeyframesUnion): AllKeyframes;
+
+  updateReducerState(newValues: Partial<KeyframesState>): KeyframesState;
 }
 
 export interface ServiceConstructor {

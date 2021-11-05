@@ -1,4 +1,4 @@
-import { SelectedKeyframe } from 'types/TP_New/keyframe';
+import { TrackIdentifier } from 'types/TP';
 
 export type KeyframesAction =
   | ReturnType<typeof selectKeyframes>
@@ -9,17 +9,30 @@ export type KeyframesAction =
   | ReturnType<typeof dragDropKeyframes>
   | ReturnType<typeof pasteKeyframes>;
 
+// 키프레임 삭제 단축키 입력
+export const ENTER_KEYFRAME_DELETE_KEY = 'keyframes/ENTER_KEYFRAME_DELETE_KEY' as const;
+export const enterKeyframeDeleteKey = () => ({
+  type: ENTER_KEYFRAME_DELETE_KEY,
+});
+
+// 키프레임 드래그 드랍 키 입력
+export interface EnterKeyframeDragDropKey {
+  timeDiff: number;
+}
+export const ENTER_KEYFRAME_DRAG_DROP_KEY = 'keyframes/ENTER_KEYFRAME_DRAG_DROP_KEY' as const;
+export const enterKeyframeDragDropKey = (params: EnterKeyframeDragDropKey) => ({
+  type: ENTER_KEYFRAME_DRAG_DROP_KEY,
+  payload: { ...params },
+});
+
 // 키프레임 선택
-export interface SelectKeyframes {
-  trackType: 'layer' | 'bone' | 'transform';
+export interface SelectKeyframes extends TrackIdentifier {
+  time: number;
   selectType: 'left' | 'multiple' | 'vertical' | 'horizontal' | 'dragBox' | 'unselectAll';
-  selectedKeyframes: SelectedKeyframe[] | SelectedKeyframe;
 }
 export const selectKeyframes = (params: SelectKeyframes) => ({
   type: 'keyframes/SELECT_KEYFRAMES' as const,
-  payload: {
-    ...params,
-  },
+  payload: { ...params },
 });
 
 // 키프레임 추가
@@ -52,11 +65,12 @@ export const deleteKeyframes = () => ({
 });
 
 // 키프레임 드래드 드랍
-export const dragDropKeyframes = (params: any) => ({
+export interface DragDropKeyframes {
+  timeDiff: number;
+}
+export const dragDropKeyframes = (params: DragDropKeyframes) => ({
   type: 'keyframes/DRAG_DROP_KEYFRAMES' as const,
-  payload: {
-    ...params,
-  },
+  payload: { ...params },
 });
 
 // 키프레임 붙이기

@@ -2,7 +2,7 @@ import produce from 'immer';
 
 import { getBinarySearch } from 'utils/TP';
 import { ClickInterpolationMode } from 'actions/trackList';
-import { TransformTrack } from 'types/TP_New/track';
+import { TransformTrack } from 'types/TP/track';
 import { TrackListState } from '../index';
 
 function findTransformIndex(trackList: TransformTrack[], index: number) {

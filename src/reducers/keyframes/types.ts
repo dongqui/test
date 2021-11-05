@@ -1,25 +1,25 @@
 import { KeyframesState } from './index';
 
-export type LayerKeyframes = Pick<KeyframesState, 'layerKeyframes'>;
-export type BoneKeyframes = Pick<KeyframesState, 'boneKeyframes'>;
-export type TransformKeyframes = Pick<KeyframesState, 'transformKeyframes'>;
+export type LayerKeyframes = Pick<KeyframesState, 'layerTrack'>;
+export type BoneKeyframes = Pick<KeyframesState, 'boneTrackList'>;
+export type PropertyKeyframes = Pick<KeyframesState, 'propertyTrackList'>;
 export type KeyframesUnion =
-  | Pick<KeyframesState, 'layerKeyframes'>
-  | Pick<KeyframesState, 'boneKeyframes'>
-  | Pick<KeyframesState, 'transformKeyframes'>;
+  | Pick<KeyframesState, 'layerTrack'>
+  | Pick<KeyframesState, 'boneTrackList'>
+  | Pick<KeyframesState, 'propertyTrackList'>;
 export type AllKeyframes = Pick<
   KeyframesState,
-  'layerKeyframes' | 'boneKeyframes' | 'transformKeyframes'
+  'layerTrack' | 'boneTrackList' | 'propertyTrackList'
 >;
 
 export type SelectedLayerKeyframes = Pick<KeyframesState, 'selectedLayerKeyframes'>;
 export type SelectedBoneKeyframes = Pick<KeyframesState, 'selectedBoneKeyframes'>;
-export type SelectedTransformKeyframes = Pick<KeyframesState, 'selectedTransformKeyframes'>;
+export type SelectedPropertyKeyframes = Pick<KeyframesState, 'selectedPropertyKeyframes'>;
 export type SelectedKeyframesUnion =
   | Pick<KeyframesState, 'selectedLayerKeyframes'>
   | Pick<KeyframesState, 'selectedBoneKeyframes'>
-  | Pick<KeyframesState, 'selectedTransformKeyframes'>;
+  | Pick<KeyframesState, 'selectedPropertyKeyframes'>;
 export type AllSelectedKeyframes = Pick<
   KeyframesState,
-  'selectedLayerKeyframes' | 'selectedBoneKeyframes' | 'selectedTransformKeyframes'
+  'selectedLayerKeyframes' | 'selectedBoneKeyframes' | 'selectedPropertyKeyframes'
 >;

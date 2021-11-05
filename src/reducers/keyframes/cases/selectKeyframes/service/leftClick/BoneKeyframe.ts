@@ -1,39 +1,46 @@
-import { SelectedKeyframe } from 'types/TP_New/keyframe';
+import { TimeEditorTrack, SelectedKeyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
+import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
+import { ClusterKeyframes } from 'reducers/keyframes/classes';
+import { findElementIndex } from 'utils/TP';
 
 import { LeftClick } from './index';
-import { ClusterKeyframes } from '../Ancestor';
+
+interface Params {
+  state: KeyframesState;
+  payload: SelectKeyframes;
+}
 
 class BoneKeyframeLeftClick extends ClusterKeyframes implements LeftClick {
-  private getTransformKeyframes = (boneKeyframe: SelectedKeyframe) => {
-    const boneIndex = boneKeyframe.trackIndex as number;
-    const transformKeyframes: SelectedKeyframe[] = [];
-    for (let index = boneIndex + 1; index <= boneIndex + 3; index++) {
-      transformKeyframes.push({
-        timeIndex: boneKeyframe.timeIndex,
-        trackIndex: index,
-      });
+  private readonly clusterKeyframes = new ClusterKeyframes();
+
+  private findEditorTrack = (editorTrackList: TimeEditorTrack[], trackNumber: number) => {
+    const trackIndex = findElementIndex(editorTrackList, trackNumber, 'trackNumber');
+    return editorTrackList[trackIndex];
+  };
+
+  private getSelectedBones = ({ state, payload }: Params) => {
+    const { trackId } = this.findEditorTrack(state.boneTrackList, payload.trackNumber);
+    const selectedBones: SelectedKeyframe[] = [{ ...payload, trackId }];
+    return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
+  };
+
+  private getSelectedProperties = ({ state, payload }: Params) => {
+    const { trackNumber, time } = payload;
+    const selectedProperties: SelectedKeyframe[] = [];
+    for (let transform = trackNumber + 1; transform <= trackNumber + 3; transform++) {
+      const { trackId } = this.findEditorTrack(state.propertyTrackList, transform);
+      selectedProperties.push({ trackNumber: transform, trackId, time, trackType: 'property' });
     }
-    return transformKeyframes;
+    return this.clusterKeyframes.initializeClusterKeyframes(selectedProperties);
   };
 
-  private clusterBoneKeyframes = (payload: SelectKeyframes) => {
-    const selectedKeyframes = payload.selectedKeyframes as SelectedKeyframe;
-    return this.initializeClusteredTimes([selectedKeyframes]);
-  };
-
-  private clusterTransformKeyframes = (payload: SelectKeyframes) => {
-    const { initializeClusteredTimes, getTransformKeyframes } = this;
-    const selectedKeyframes = payload.selectedKeyframes as SelectedKeyframe;
-    return initializeClusteredTimes(getTransformKeyframes(selectedKeyframes));
-  };
-
-  public selectByLeftClick = ({ payload }: { payload: SelectKeyframes }): AllSelectedKeyframes => {
+  selectByLeftClick = (params: Params): AllSelectedKeyframes => {
     return {
       selectedLayerKeyframes: [],
-      selectedBoneKeyframes: this.clusterBoneKeyframes(payload),
-      selectedTransformKeyframes: this.clusterTransformKeyframes(payload),
+      selectedBoneKeyframes: this.getSelectedBones(params),
+      selectedPropertyKeyframes: this.getSelectedProperties(params),
     };
   };
 }

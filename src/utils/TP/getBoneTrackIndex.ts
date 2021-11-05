@@ -1,4 +1,4 @@
-import { TrackIndex } from 'types/TP_New/track';
+import { TrackNumber } from 'types/TP';
 
 /**
  * transform track의 bone track index을 찾는 함수입니다.
@@ -9,14 +9,14 @@ import { TrackIndex } from 'types/TP_New/track';
 
 const fnGetBoneTrackIndex = (trackIndex: number) => {
   switch (trackIndex % 10) {
-    case TrackIndex.POSITION: {
-      return trackIndex - TrackIndex.POSITION;
+    case TrackNumber.POSITION: {
+      return trackIndex - TrackNumber.POSITION;
     }
-    case TrackIndex.ROTATION: {
-      return trackIndex - TrackIndex.ROTATION;
+    case TrackNumber.ROTATION: {
+      return trackIndex - TrackNumber.ROTATION;
     }
-    case TrackIndex.SCALE: {
-      return trackIndex - TrackIndex.SCALE;
+    case TrackNumber.SCALE: {
+      return trackIndex - TrackNumber.SCALE;
     }
     default: {
       return -1;
