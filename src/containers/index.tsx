@@ -1,27 +1,23 @@
 import { FunctionComponent, memo, useEffect, useLayoutEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { authToken } from 'api';
-import { Capture } from './VideoMode';
+import { useSelector } from 'react-redux';
+import { VideoMode } from './VideoMode';
 import Shoot from './Shoot';
+import { RootState } from 'reducers';
 // import Process from 'containers/Process';
 
 export type Procedure = 'service' | 'token' | 'success' | 'denied';
 
-const Index: FunctionComponent = () => {
-  useEffect(() => {
-    const getShootMode = () => {
-      window.addEventListener('storage', () => {
-        const hasMode = window.localStorage.getItem('shootMode');
-        setCurrentMode(hasMode);
-      });
-    };
-    getShootMode();
-  }, []);
+interface Props {
+  browserType: string;
+}
 
+const Index: FunctionComponent<Props> = ({ browserType }) => {
   const router = useRouter();
   const { token } = router.query;
 
-  const [currentMode, setCurrentMode] = useState<string | null>('trackMode');
+  const { mode } = useSelector((state: RootState) => state.modeSelection);
   // const [procedure, setProcedure] = useState<Procedure>('service');
 
   // const [_message, setMessage] = useState('');
@@ -75,7 +71,9 @@ const Index: FunctionComponent = () => {
   //   );
   // }
 
-  return <main>{currentMode === 'trackMode' ? <Shoot /> : <Capture />}</main>;
+  return (
+    <main>{mode === 'animationMode' ? <Shoot /> : <VideoMode browserType={browserType} />}</main>
+  );
 };
 
 export default memo(Index);
