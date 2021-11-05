@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useState, useCallback, useRef, useEffect } from 'react';
+import { useSelector } from 'reducers';
 import { UpperBar } from 'containers/UpperBar';
 import { FilledButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
+  const { videoURL } = useSelector((state) => state.modeSelection);
   const cameraListRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -174,6 +176,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     [],
   );
 
+  // 단축키 이벤트의 연속발생을 위한 keydown 이벤트(버튼을 누르고 있다면 연속으로 프레임이 넘어가야함)
   window.onkeydown = (e) => {
     if (!videoRef.current!.src) {
       return;
@@ -195,7 +198,10 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   };
 
   useEffect(() => {
-    mediaStreamInitialize();
+    console.log('videoURL: ', videoURL);
+    if (!videoURL) {
+      mediaStreamInitialize();
+    }
   }, []);
 
   // 앱 실행시 최초의 실행중인 카메라의 기종을 감지하기 위함
@@ -205,6 +211,12 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       setCurrentDeviceId(deviceList[0].deviceId);
     }
   }, [deviceList]);
+
+  useEffect(() => {
+    if (videoURL) {
+      videoRef.current!.src = videoURL;
+    }
+  }, []);
 
   return (
     <Fragment>
@@ -229,7 +241,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           onTimeUpdate={handleCurrentTime}
           onEnded={handleVideoEnd}
         >
-          <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4" />
+          {/* <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4" /> */}
         </video>
         <div className={cx('countdown-overlay')}>
           {standbyState && <div className={cx('countdown')}>{timer}</div>}
