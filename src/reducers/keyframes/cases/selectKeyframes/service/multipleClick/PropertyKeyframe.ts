@@ -1,4 +1,4 @@
-import { TimeEditorTrack } from 'types/TP/keyframe';
+import { TimeEditorTrack, Keyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
@@ -18,6 +18,11 @@ class TransformKeyframeMultipleClick implements MultipleClick {
   private findEditorTrack = (editorTrackList: TimeEditorTrack[], trackNumber: number) => {
     const trackIndex = findElementIndex(editorTrackList, trackNumber, 'trackNumber');
     return editorTrackList[trackIndex];
+  };
+
+  private findKeyframeValue = (keyframes: Keyframe[], time: number) => {
+    const keyframeIndex = findElementIndex(keyframes, time, 'time');
+    return keyframes[keyframeIndex].value;
   };
 
   private filterSelectedLayer = ({ state, payload }: Params) => {
@@ -40,7 +45,8 @@ class TransformKeyframeMultipleClick implements MultipleClick {
     const { propertyTrackList, selectedPropertyKeyframes } = state;
     const { trackNumber, trackType, time } = payload;
     const { trackId } = this.findEditorTrack(propertyTrackList, payload.trackNumber);
-    const selectedKeyframe = { time, trackNumber, trackType, trackId };
+    const value = this.findKeyframeValue(propertyTrackList[trackNumber].keyframes, time);
+    const selectedKeyframe = { time, trackNumber, trackType, trackId, value };
     return this.clusterKeyframes.filterKeyframeTimes(selectedPropertyKeyframes, [selectedKeyframe]);
   };
 
@@ -52,7 +58,7 @@ class TransformKeyframeMultipleClick implements MultipleClick {
     return this.clusterKeyframes.addKeyframeTimes(selectedPropertyKeyframes, [selectedKeyframe]);
   };
 
-  public selectExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
+  selectExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
     return {
       selectedLayerKeyframes: this.filterSelectedLayer({ state, payload }),
       selectedBoneKeyframes: this.filterSelectedBone({ state, payload }),
@@ -60,7 +66,7 @@ class TransformKeyframeMultipleClick implements MultipleClick {
     };
   };
 
-  public selectNotExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
+  selectNotExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
     const { selectedLayerKeyframes, selectedBoneKeyframes } = state;
     return {
       selectedLayerKeyframes,

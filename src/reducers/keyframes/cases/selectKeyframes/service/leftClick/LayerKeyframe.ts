@@ -1,8 +1,9 @@
-import { SelectedKeyframe } from 'types/TP/keyframe';
+import { SelectedKeyframe, Keyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
 import { ClusterKeyframes } from 'reducers/keyframes/classes';
+import { findElementIndex } from 'utils/TP';
 
 import { LeftClick } from './index';
 
@@ -13,6 +14,11 @@ interface Parmas {
 
 class LayerKeyframeLeftClick implements LeftClick {
   private readonly clusterKeyframes = new ClusterKeyframes();
+
+  private findKeyframeValue = (keyframes: Keyframe[], time: number) => {
+    const keyframeIndex = findElementIndex(keyframes, time, 'time');
+    return keyframes[keyframeIndex].value;
+  };
 
   private getSelectedLayers = ({ state, payload }: Parmas) => {
     const { time, trackType, trackNumber } = payload;
@@ -40,8 +46,9 @@ class LayerKeyframeLeftClick implements LeftClick {
     const { time } = payload;
     const selectedProperties: SelectedKeyframe[] = [];
     state.propertyTrackList.forEach((propertyTrack) => {
-      const { trackId, trackNumber, trackType } = propertyTrack;
-      selectedProperties.push({ trackId, trackNumber, time, trackType });
+      const { trackId, trackNumber, trackType, keyframes } = propertyTrack;
+      const value = this.findKeyframeValue(keyframes, payload.time);
+      selectedProperties.push({ trackId, trackNumber, time, value, trackType });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedProperties);
   };

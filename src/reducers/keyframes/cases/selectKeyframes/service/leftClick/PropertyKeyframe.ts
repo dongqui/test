@@ -1,4 +1,4 @@
-import { SelectedKeyframe, TimeEditorTrack } from 'types/TP/keyframe';
+import { SelectedKeyframe, TimeEditorTrack, Keyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
@@ -20,14 +20,21 @@ class PropertyKeyframeLeftClick implements LeftClick {
     return editorTrackList[trackIndex];
   };
 
+  private findKeyframeValue = (keyframes: Keyframe[], time: number) => {
+    const keyframeIndex = findElementIndex(keyframes, time, 'time');
+    return keyframes[keyframeIndex].value;
+  };
+
   private getSelectedTransforms = ({ state, payload }: Parmas) => {
     const { time, trackNumber, trackType } = payload;
-    const { trackId } = this.findEditorTrack(state.propertyTrackList, trackNumber);
-    const selectedKeyframes: SelectedKeyframe = { time, trackNumber, trackType, trackId };
+    const { trackId, keyframes } = this.findEditorTrack(state.propertyTrackList, trackNumber);
+    console.log('keyframes', keyframes);
+    const value = this.findKeyframeValue(keyframes, time);
+    const selectedKeyframes: SelectedKeyframe = { time, trackNumber, trackType, trackId, value };
     return this.clusterKeyframes.initializeClusterKeyframes([selectedKeyframes]);
   };
 
-  public selectByLeftClick = (params: Parmas): AllSelectedKeyframes => {
+  selectByLeftClick = (params: Parmas): AllSelectedKeyframes => {
     return {
       selectedLayerKeyframes: [],
       selectedBoneKeyframes: [],

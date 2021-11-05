@@ -1,4 +1,4 @@
-import { TimeEditorTrack, SelectedKeyframe } from 'types/TP/keyframe';
+import { TimeEditorTrack, SelectedKeyframe, Keyframe } from 'types/TP/keyframe';
 import { SelectKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { AllSelectedKeyframes } from 'reducers/keyframes/types';
@@ -20,6 +20,11 @@ class BoneKeyframeLeftClick extends ClusterKeyframes implements LeftClick {
     return editorTrackList[trackIndex];
   };
 
+  private findKeyframeValue = (keyframes: Keyframe[], time: number) => {
+    const keyframeIndex = findElementIndex(keyframes, time, 'time');
+    return keyframes[keyframeIndex].value;
+  };
+
   private getSelectedBones = ({ state, payload }: Params) => {
     const { trackId } = this.findEditorTrack(state.boneTrackList, payload.trackNumber);
     const selectedBones: SelectedKeyframe[] = [{ ...payload, trackId }];
@@ -27,11 +32,13 @@ class BoneKeyframeLeftClick extends ClusterKeyframes implements LeftClick {
   };
 
   private getSelectedProperties = ({ state, payload }: Params) => {
+    const { propertyTrackList } = state;
     const { trackNumber, time } = payload;
     const selectedProperties: SelectedKeyframe[] = [];
     for (let transform = trackNumber + 1; transform <= trackNumber + 3; transform++) {
-      const { trackId } = this.findEditorTrack(state.propertyTrackList, transform);
-      selectedProperties.push({ trackNumber: transform, trackId, time, trackType: 'property' });
+      const { trackId, keyframes, trackType } = this.findEditorTrack(propertyTrackList, transform);
+      const value = this.findKeyframeValue(keyframes, payload.time);
+      selectedProperties.push({ trackNumber: transform, trackId, time, value, trackType });
     }
     return this.clusterKeyframes.initializeClusterKeyframes(selectedProperties);
   };

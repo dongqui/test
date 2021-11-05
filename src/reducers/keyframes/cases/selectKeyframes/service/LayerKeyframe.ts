@@ -39,8 +39,8 @@ class LayerKeyframeService extends StateUpdate implements Service {
     const { trackNumber, time } = this.payload;
     const trackIndex = findElementIndex(selectedLayerKeyframes, trackNumber, 'trackNumber');
     if (trackIndex !== -1) {
-      const times = selectedLayerKeyframes[trackIndex].times;
-      return findElementIndex(times, time) !== -1;
+      const layerKeyframes = selectedLayerKeyframes[trackIndex].keyframes;
+      return findElementIndex(layerKeyframes, time, 'time') !== -1;
     }
     return false;
   };

@@ -17,21 +17,21 @@ class PropertyKeyframesRepository implements Repository {
     const { propertyTrackList, selectedPropertyKeyframes } = this.state;
     return produce(propertyTrackList, (draft) => {
       selectedPropertyKeyframes.forEach((selectedKeyframe) => {
-        const { trackNumber, times } = selectedKeyframe;
+        const { trackNumber, keyframes } = selectedKeyframe;
         const trackIndex = findElementIndex(propertyTrackList, trackNumber, 'trackNumber');
-        const keyframes = propertyTrackList[trackIndex].keyframes;
-        times.forEach((time) => {
-          const keyframeIndex = findElementIndex(keyframes, time, 'time');
+        const propertyKeyframes = propertyTrackList[trackIndex].keyframes;
+        keyframes.forEach(({ time }) => {
+          const keyframeIndex = findElementIndex(propertyKeyframes, time, 'time');
           const keyframe = draft[trackIndex].keyframes[keyframeIndex];
           keyframe.isSelected = false;
         });
       });
       nextSelectedKeyframes.forEach((selectedKeyframe) => {
-        const { trackNumber, times } = selectedKeyframe;
+        const { trackNumber, keyframes } = selectedKeyframe;
         const trackIndex = findElementIndex(propertyTrackList, trackNumber, 'trackNumber');
-        const keyframes = propertyTrackList[trackIndex].keyframes;
-        times.forEach((time) => {
-          const keyframeIndex = findElementIndex(keyframes, time, 'time');
+        const propertyKeyframes = propertyTrackList[trackIndex].keyframes;
+        keyframes.forEach(({ time }) => {
+          const keyframeIndex = findElementIndex(propertyKeyframes, time, 'time');
           const keyframe = draft[trackIndex].keyframes[keyframeIndex];
           keyframe.isSelected = true;
         });

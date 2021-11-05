@@ -2,6 +2,7 @@ import { FunctionComponent, memo, useEffect, useLayoutEffect, useState } from 'r
 import { useRouter } from 'next/router';
 import { authToken } from 'api';
 import Process from 'containers/Process';
+// import Extract from 'containers/Extract';
 import Shoot from 'containers/Shoot';
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
 import { useSelector } from 'reducers';

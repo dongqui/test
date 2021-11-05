@@ -14,6 +14,13 @@ const DopeSheet = () => {
   const layerTrackList = useSelector((state) => state.trackList.layerTrackList);
   const boneTrackList = useSelector((state) => state.trackList.boneTrackList);
 
+  // const propertyTrackList = useSelector((state) => state.keyframes.propertyTrackList);
+  // const selectedPropertyKeyframes = useSelector(
+  //   (state) => state.keyframes.selectedPropertyKeyframes,
+  // );
+  // console.log(propertyTrackList);
+  // console.log(selectedPropertyKeyframes);
+
   // layer 트랙 translateY 계산
   const layerTranslateY = useMemo(() => {
     const selectedLayerIndex = layerTrackList.findIndex(({ trackId }) => trackId === selectedLayer);
