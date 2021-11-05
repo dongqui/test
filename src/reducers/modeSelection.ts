@@ -2,7 +2,7 @@ import { ModeSelectionType } from 'types';
 import { ModeSelectionAction } from 'actions/modeSelection';
 
 const defaultState: ModeSelectionType = {
-  mode: 'trackMode',
+  mode: 'animationMode',
 };
 
 export const modeSelection = (state = defaultState, action: ModeSelectionAction) => {

@@ -138,7 +138,7 @@ export interface PageInfoType {
 }
 
 export interface ModeSelectionType {
-  mode: 'trackMode' | 'videoMode' | 'recordMode';
+  mode: 'animationMode' | 'videoMode';
 }
 
 export type PropertyType = 'Position' | 'Rotation' | 'Scale';
