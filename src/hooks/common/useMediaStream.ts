@@ -75,7 +75,6 @@ const useMediaStream = (props: Props) => {
 
   const stopStream = useCallback(() => {
     if (currentStream && ref.current!.srcObject) {
-      console.log('stream stopped');
       const tracks = currentStream.getTracks();
       const stream = ref.current!.srcObject as MediaStream;
       const tracks2 = stream.getTracks();
@@ -126,7 +125,7 @@ const useMediaStream = (props: Props) => {
           }
         }, 150);
       } else {
-        ref.current!.currentTime += 1000;
+        ref.current!.currentTime += 1e101;
       }
     }, 500);
   }, [ref, handleScreenshot, setThumbnailList, setDuration, setRecordState]);
@@ -223,6 +222,9 @@ const useMediaStream = (props: Props) => {
     }
   }, [ref, setPlayState]);
 
+  /**
+   * 녹화 영상 및 import 한 영상을 정지(재생을 멈추고 currentTime을 0으로 변경)
+   */
   const stopVideo = useCallback(() => {
     if (ref) {
       setPlayState(false);
@@ -232,7 +234,7 @@ const useMediaStream = (props: Props) => {
   }, [setPlayState, ref]);
 
   const startRecordingDelay = useCallback(() => {
-    let sec = 0;
+    let sec = 4;
 
     // 한 번 녹화 이후 두번째 녹화부터 다시 stream을 화면에 표시하기 위함
     if (recordOverTwice) {
@@ -249,8 +251,8 @@ const useMediaStream = (props: Props) => {
 
       const timerTest = () => {
         timerRef.current = setInterval(() => {
-          if (sec < 5) {
-            setTimer(sec++);
+          if (sec > 0) {
+            setTimer(sec--);
           } else {
             clearInterval(timerRef.current);
             startRecording();
@@ -262,6 +264,7 @@ const useMediaStream = (props: Props) => {
       };
 
       timerTest();
+      setTimer(5);
     }
   }, [
     ref,
