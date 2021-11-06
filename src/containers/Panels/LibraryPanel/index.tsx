@@ -196,7 +196,7 @@ const LibraryPanel: FunctionComponent = () => {
         });
       }
     },
-    [onFileLoad, onModalClose, onModalOpen],
+    [dispatch, onFileLoad, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
