@@ -9,6 +9,7 @@ import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { v4 as uuid } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
+import * as modeSelectActions from 'actions/modeSelection';
 import Box from 'components/Layout/Box';
 import produce from 'immer';
 import LPHeader from './LPHeader';
@@ -173,15 +174,23 @@ const LibraryPanel: FunctionComponent = () => {
       removedVideoFiles.map(async (file) => await onFileLoad(file));
 
       if (videos.length > 0) {
-        // Video 파일은 반드시 1개만 로드가 가능하기 때문에 첫 요소만 처리
+        /**
+         * @TODO 이후 사용하지 않는 경우 remove url 필요
+         */
+        const videoBlobURL = URL.createObjectURL(videos[0]);
+
         onModalOpen({
           title: 'Extract',
           message: '모션을 추출하시겠습니까?',
           confirmText: '확인',
           cancelText: '취소',
           onConfirm: () => {
-            alert('Video !');
-            // 비디오 모드 전환
+            dispatch(
+              modeSelectActions.changeMode({
+                mode: 'videoMode',
+                videoURL: videoBlobURL,
+              }),
+            );
           },
           onCancel: () => onModalClose(),
         });
