@@ -15,6 +15,7 @@ import axios, { Canceler } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
+import { BaseModal } from 'components/Modal';
 
 const cx = classNames.bind(styles);
 
@@ -41,6 +42,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const [recordState, setRecordState] = useState<boolean>(false);
   const [recording, setRecording] = useState<boolean>(false);
   const [standbyState, setStandbyState] = useState<boolean>(false);
+  const [recordOverTwice, setRecordOverTwice] = useState<boolean>(false);
   const [cameraDropdownState, setCameraDropdownState] = useState<boolean>(false);
   const [start, setStart] = useState<number>(0);
   const [end, setEnd] = useState<number>(0);
@@ -52,6 +54,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     stopRecording,
     playRecording,
     pauseRecording,
+    handleMetaData,
     backToStandby,
     stopVideo,
     startRecordingDelay,
@@ -68,6 +71,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     setPlayState: setPlayState,
     setRecordState: setRecordState,
     setRecording: setRecording,
+    setRecordOverTwice: setRecordOverTwice,
     setStandbyState: setStandbyState,
     setTimer: setTimer,
     setDeviceList: setDeviceList,
@@ -215,6 +219,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   useEffect(() => {
     if (videoURL) {
       videoRef.current!.src = videoURL;
+      handleMetaData();
     }
   }, []);
 

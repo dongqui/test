@@ -7,6 +7,8 @@ import {
   Dispatch,
   SetStateAction,
 } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from 'reducers';
 
 interface Props {
   ref: RefObject<HTMLVideoElement>;
@@ -19,6 +21,7 @@ interface Props {
   setRecordState: Dispatch<SetStateAction<boolean>>;
   setRecording: Dispatch<SetStateAction<boolean>>;
   setStandbyState: Dispatch<SetStateAction<boolean>>;
+  setRecordOverTwice: Dispatch<SetStateAction<boolean>>;
   setTimer: Dispatch<SetStateAction<number>>;
   setDeviceList: Dispatch<SetStateAction<MediaDeviceInfo[]>>;
   setCurrentDevice: Dispatch<SetStateAction<string>>;
@@ -51,6 +54,7 @@ const useMediaStream = (props: Props) => {
   const [recorderData, setRecorderData] = useState<MediaRecorder>();
   const [recordOverTwice, setRecordOverTwice] = useState<boolean>(false);
   const [constraintList, setConstraint] = useState<Object>();
+  const { videoURL } = useSelector((state: RootState) => state.modeSelection);
 
   const handleCameraList = useCallback(async () => {
     const devices = await navigator.mediaDevices
@@ -293,6 +297,7 @@ const useMediaStream = (props: Props) => {
     stopRecording,
     playRecording,
     pauseRecording,
+    handleMetaData,
     backToStandby,
     stopVideo,
     startRecordingDelay,
