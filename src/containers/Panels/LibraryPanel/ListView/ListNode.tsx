@@ -71,7 +71,7 @@ const ListNode: FunctionComponent<Props> = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
 
-  const { onModalOpen, onModalClose } = useBaseModal();
+  const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
@@ -812,7 +812,7 @@ const ListNode: FunctionComponent<Props> = ({
   );
 
   const handleDrop = useCallback(
-    (e: DragEvent) => {
+    async (e: DragEvent) => {
       e.stopPropagation();
 
       if (id === dragTarget?.id || (parentId === '__root__' && id === dragTarget?.parentId)) {
@@ -842,6 +842,54 @@ const ListNode: FunctionComponent<Props> = ({
               message: '해당 디렉토리에 이동할 수 없습니다. 계층 초과',
               confirmText: '확인',
             });
+            return;
+          }
+        }
+
+        // 동일한 이름이 있는지 확인
+
+        const dropNode = _.find(lpNode, { parentId: id });
+        const childrenList = lpNode.filter((node) => node.parentId === id);
+        const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
+        const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
+
+        if (dropNode && isAlreadyExist && cloneDragNode) {
+          const confirmed = await getConfirm({
+            title: 'Warning',
+            message: '해당 디렉토리에 동일한 이름의 파일이 있습니다. 덮어쓰시겠습니까?',
+            confirmText: '확인',
+            cancelText: '취소',
+          });
+
+          if (confirmed) {
+            // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
+            const filterNodes = cloneLPNode.filter((node) => node.id !== duplicatedTarget[0].id);
+
+            const nextNodes = produce(filterNodes, (draft) => {
+              const targetNode = _.find(draft, { id });
+
+              if (targetNode) {
+                cloneDragNode.id = uuidv4();
+                cloneDragNode.parentId = id;
+                cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
+
+                targetNode.children.push(cloneDragNode.id);
+
+                // @TODO 하위 노드도 추가
+                draft.push(cloneDragNode);
+
+                if (!_.isEmpty(cloneDragNode.children)) {
+                  cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                }
+              }
+            });
+
+            dispatch(
+              lpNodeActions.changeNode({
+                nodes: nextNodes,
+              }),
+            );
+
             return;
           }
         }
@@ -894,7 +942,7 @@ const ListNode: FunctionComponent<Props> = ({
         }
       }
     },
-    [depthChangeKey, depthCheck, dispatch, dragTarget, filePath, id, lpNode, name, onModalOpen, parentId, type],
+    [depthChangeKey, depthCheck, dispatch, dragTarget, filePath, getConfirm, id, lpNode, name, onModalOpen, parentId, type],
   );
 
   /**
