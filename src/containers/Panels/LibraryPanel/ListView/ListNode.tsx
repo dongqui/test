@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, ReactNode, FocusEvent, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent } from 'react';
+import { FunctionComponent, memo, Fragment, ReactNode, FocusEvent, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
@@ -66,6 +66,9 @@ const ListNode: FunctionComponent<Props> = ({
 
   const lpNode = useSelector((state) => state.lpNode.node);
   const lpClipboard = useSelector((state) => state.lpNode.clipboard);
+
+  const [showsChildren, setShowsChildren] = useState(false);
+
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -75,13 +78,10 @@ const ListNode: FunctionComponent<Props> = ({
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
-  const arrowClasses = cx('icon-arrow', {
-    invisible: type === 'Motion',
-  });
-
   const handleArrowClick = useCallback(() => {
     // dispatch(lpNodeActions.visualize(fileURL));
-  }, []);
+    setShowsChildren(!showsChildren);
+  }, [showsChildren]);
 
   const handleSelect = useCallback(() => {
     onSelect && onSelect(id);
@@ -662,7 +662,6 @@ const ListNode: FunctionComponent<Props> = ({
               name: type === 'Model' ? `${name}.${extension}` : name,
               type: type,
               extension: extension,
-              hideNode: true,
               children: childrens,
             };
 
@@ -736,7 +735,6 @@ const ListNode: FunctionComponent<Props> = ({
                 name: type === 'Model' ? `${name}.${extension}` : name,
                 type: type,
                 extension: extension,
-                hideNode: true,
                 children: childrens,
               };
 
@@ -951,6 +949,11 @@ const ListNode: FunctionComponent<Props> = ({
   const splitName = name.split('.');
   const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
+  const arrowClasses = cx('icon-arrow', {
+    invisible: type === 'Motion',
+    open: showsChildren,
+  });
+
   return (
     <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
       <div className={cx('inner')}>
@@ -969,15 +972,19 @@ const ListNode: FunctionComponent<Props> = ({
           </div>
         </div>
         {/* children area */}
-        <div>
-          {childrens.map((children) => {
-            if (typeof children === 'string') {
-              return <div key={children}>{renderChildren(children)}</div>;
-            }
+        {showsChildren && (
+          <Fragment>
+            <div>
+              {childrens.map((children) => {
+                if (typeof children === 'string') {
+                  return <div key={children}>{renderChildren(children)}</div>;
+                }
 
-            return <div key={children.id}>{renderChildren(children)}</div>;
-          })}
-        </div>
+                return <div key={children.id}>{renderChildren(children)}</div>;
+              })}
+            </div>
+          </Fragment>
+        )}
       </div>
     </div>
   );

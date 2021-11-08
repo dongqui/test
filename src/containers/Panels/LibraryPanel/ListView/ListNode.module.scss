@@ -30,6 +30,10 @@
     }
   }
 
+  &.open {
+    transform: rotate(90deg);
+  }
+
   & > svg {
     position: absolute;
     top: 50%;

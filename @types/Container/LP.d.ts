@@ -15,7 +15,6 @@ declare namespace LP {
     name: string;
     extension: string;
     type: NodeType;
-    hideNode?: boolean;
     children: any[];
     assetId?: string;
   }
