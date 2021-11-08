@@ -100,7 +100,7 @@ const BaseModalProvider = ({ children }: any) => {
   const handleOpen = ({ title, message, confirmText, onConfirm, actionCallback, cancelText, onCancel }: any) => {
     setDialogOpen(true);
 
-    setDialogConfig({ title, message, confirmText, actionCallback, cancelText });
+    setDialogConfig({ title, message, confirmText, actionCallback, cancelText, onConfirm, onCancel });
   };
 
   const handleClose = () => {
@@ -114,11 +114,13 @@ const BaseModalProvider = ({ children }: any) => {
 
   const handleConfirm = () => {
     handleReset();
+    dialogConfig.onConfirm && dialogConfig.onConfirm();
     dialogConfig.actionCallback(true);
   };
 
   const handleCancel = () => {
     handleReset();
+    dialogConfig.onCancel && dialogConfig.onCancel();
     dialogConfig.actionCallback(false);
   };
 
@@ -134,18 +136,16 @@ const useBaseModal = () => {
   const { handleOpen, handleClose } = useContext(BaseModalContext);
 
   // 특정 작업 전 Modal을 Open하여 완료하기 까지 대기
-  const onModalOpen = ({ ...options }) => {
-    return new Promise((res) => {
+  const onModalOpen = ({ ...options }) =>
+    new Promise((res) => {
       handleOpen({ actionCallback: res, ...options });
     });
-  };
 
   // 특정 작업 후 Modal을 Close하여 마무리
-  const onModalClose = () => {
-    return new Promise(() => {
+  const onModalClose = () =>
+    new Promise(() => {
       handleClose();
     });
-  };
 
   const getConfirm = ({ ...options }) =>
     new Promise((res) => {
