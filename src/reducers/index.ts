@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux';
 import { TypedUseSelectorHook, useSelector as useReduxSelector } from 'react-redux';
+// Old
 import { lpMode } from './lpMode';
 import { lpPage } from './lpPage';
 import { lpSearchword } from './lpSearchword';
@@ -18,6 +19,11 @@ import { cutImages } from './cutImages';
 import { barPositionX } from './barPositionX';
 import { modalInfo } from './modalInfo';
 import { contextmenuInfo } from './contextmenuInfo';
+// New
+import { lpNode } from './LP/lpNode';
+import { shootProject } from './shootProject';
+import { selectingData } from './selectingData';
+import { animationData } from './animationData';
 import { modeSelection } from './modeSelection';
 
 export type RootState = ReturnType<typeof rootReducer>;
@@ -42,6 +48,11 @@ const rootReducer = combineReducers({
   barPositionX,
   modalInfo,
   contextmenuInfo,
+  // New
+  lpNode,
+  shootProject,
+  selectingData,
+  animationData,
   modeSelection,
 });
 

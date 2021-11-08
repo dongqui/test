@@ -11,9 +11,15 @@ import {
 import { ResizeCallbackData } from 'react-resizable';
 import { UpperBar } from 'containers/UpperBar';
 import { useWindowSize } from 'hooks/common';
+import { BaseModalProvider } from 'new_components/Modal/BaseModal';
+import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
 import Box, { BoxProps } from 'components/Layout/Box';
+import LibraryPanel from 'containers/Panels/LibraryPanel';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
+import RenderingPanel from './Panels/RenderingPanel';
+import DummyControlPanel from './Panels/DummyControlPanel';
+import DummyTimelinePanel from './Panels/DummyTimelinePanel';
 
 const cx = classNames.bind(styles);
 
@@ -28,7 +34,7 @@ const Shoot: FunctionComponent = () => {
       height: {
         up: 36,
         mb: 32,
-        ls: 168,
+        ls: 108,
       },
     }),
     [],
@@ -141,9 +147,18 @@ const Shoot: FunctionComponent = () => {
     }
   }, [constants, rate, sectionHeight, windowHeight]);
 
-  /**
-   * @todo 수식이 난잡하여 추후 수정예정
-   */
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, []);
+
   const boxProps = {
     up: {
       height: constants.height.up,
@@ -207,13 +222,17 @@ const Shoot: FunctionComponent = () => {
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.us}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
-          {/* LP */}
+          <BaseModalProvider>
+            <ContextMenuProvider>
+              <LibraryPanel />
+            </ContextMenuProvider>
+          </BaseModalProvider>
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
-          {/* RP */}
+          <RenderingPanel />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-          {/* CP */}
+          <DummyControlPanel />
         </Box>
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
@@ -221,7 +240,7 @@ const Shoot: FunctionComponent = () => {
           {/* MB */}
         </Box>
         <Box id="TP" {...boxProps.tp}>
-          {/* TP */}
+          <DummyTimelinePanel />
         </Box>
       </Box>
     </Fragment>

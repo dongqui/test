@@ -18,6 +18,9 @@
     "clean": "rimraf dist main src/out out src/_next _next storybook-static"
   },
   "dependencies": {
+    "@babylonjs/core": "^4.2.0",
+    "@babylonjs/loaders": "^4.2.0",
+    "@babylonjs/serializers": "^4.2.0",
     "axios": "^0.21.1",
     "classnames": "^2.2.6",
     "d3": "^6.5.0",
@@ -26,7 +29,7 @@
     "get-blob-duration": "^1.2.0",
     "immer": "^9.0.1",
     "lodash": "^4.17.20",
-    "next": "^11.0.1",
+    "next": "^12.0.1",
     "next-redux-wrapper": "^6.0.2",
     "react": "^17.0.2",
     "react-cookies": "^0.1.1",
@@ -81,8 +84,9 @@
     "eslint": "^7.31.0",
     "eslint-config-next": "^11.0.1",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "fork-ts-checker-webpack-plugin": "^6.1.0",
+    "image-minimizer-webpack-plugin": "^2.2.0",
     "prettier": "^2.2.1",
     "redux-devtools-extension": "^2.13.9",
     "redux-logger": "^3.0.6",
@@ -92,6 +96,7 @@
     "stylelint-config-standard": "^20.0.0",
     "stylelint-order": "^4.1.0",
     "stylelint-scss": "^3.18.0",
+    "svgo": "^2.6.0",
     "ts-loader": "^8.0.14",
     "typescript": "^4.3.5"
   },

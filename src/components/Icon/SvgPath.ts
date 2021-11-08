@@ -1,17 +1,14 @@
 import { FunctionComponent } from 'react';
 import Close from './svg/Close.svg';
-import Search from './svg/Search.svg';
 import EyeClose from './svg/EyeClose.svg';
 import EyeOpen from './svg/EyeOpen.svg';
 import LockClose from './svg/LockClose.svg';
 import LockOpen from './svg/LockOpen.svg';
-import ListView from './svg/ListView.svg';
-import IconView from './svg/IconView.svg';
 import Plus from './svg/Plus.svg';
 import CameraReset from './svg/CameraReset.svg';
-import Model from './svg/Model.svg';
-import Folder from './svg/Folder.svg';
-import Motion from './svg/Motion.svg';
+// import Model from './svg/Model.svg';
+// import Folder from './svg/Folder.svg';
+// import Motion from './svg/Motion.svg';
 import FilledArrow from './svg/FilledArrow.svg';
 import ChevronLeft from './svg/ChevronLeft.svg';
 import BreadcrumbMore from './svg/BreadcrumbMore.svg';
@@ -30,6 +27,12 @@ import Error from './svg/Error.svg';
 import Refresh from './svg/Refresh.svg';
 import Alert from './svg/Alert.svg';
 import Reset from './svg/Reset.svg';
+import Search from './New_svg/Search.svg';
+import ListView from './New_svg/ListView.svg';
+import IconView from './New_svg/IconView.svg';
+import Folder from './New_svg/Folder.svg';
+import Model from './New_svg/Model.svg';
+import Motion from './New_svg/Motion.svg';
 import TrackMode from './svg/TrackMode.svg';
 import Stop from './svg/Stop.svg';
 import Record from './svg/Record.svg';
@@ -47,9 +50,6 @@ type Icon =
   | 'IconView'
   | 'Plus'
   | 'CameraReset'
-  | 'Model'
-  | 'Folder'
-  | 'Motion'
   | 'FilledArrow'
   | 'ChevronLeft'
   | 'BreadcrumbMore'
@@ -68,6 +68,9 @@ type Icon =
   | 'Refresh'
   | 'Alert'
   | 'Reset'
+  | 'Folder'
+  | 'Model'
+  | 'Motion'
   | 'TrackMode'
   | 'Stop'
   | 'Record'
@@ -89,9 +92,6 @@ const images: Images = {
   IconView,
   Plus,
   CameraReset,
-  Model,
-  Folder,
-  Motion,
   FilledArrow,
   ChevronLeft,
   BreadcrumbMore,
@@ -110,6 +110,9 @@ const images: Images = {
   Refresh,
   Alert,
   Reset,
+  Folder,
+  Model,
+  Motion,
   TrackMode,
   Stop,
   Record,

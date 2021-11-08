@@ -13,3 +13,8 @@ export { default as fnQuaternionToEulerTracks } from './fnQuaternionToEulerTrack
 export { default as fnGetSmallestNewNumber } from './fnGetSmallestNewNumber';
 export { default as fnGetMaskedValue } from './fnGetMaskedValue';
 export { default as fnSetValue } from './fnSetValue';
+
+// --------------- new -----------------
+
+export { default as getNumberFromPx } from './getNumberFromPx';
+export { default as getFileExtension } from './getFileExtension';
