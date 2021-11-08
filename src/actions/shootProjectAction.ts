@@ -10,45 +10,45 @@ export type ShootProjectAction =
   | ReturnType<typeof removeAsset>
   | ReturnType<typeof addMotion>;
 
-const ADD_SCENE = 'shootProject/ADD_SCENE' as const;
-const REMOVE_SCENE = 'shootProject/REMOVE_SCENE' as const;
-const CHANGE_FILE_TO_LOAD = 'shootProject/CHANGE_FILE_TO_LOAD' as const;
-const ADD_ASSET = 'shootProject/ADD_ASSET' as const;
-const RENDER_ASSET = 'shootProject/RENDER_ASSET' as const;
-const UNRENDER_ASSET = 'shootProject/UNRENDER_ASSET' as const;
-const REMOVE_ASSET = 'shootProject/REMOVE_ASSET' as const;
-const ADD_MOTION = 'shootProject/ADD_MOTION' as const;
+export const ADD_SCENE = 'shootProject/ADD_SCENE' as const;
+export const REMOVE_SCENE = 'shootProject/REMOVE_SCENE' as const;
+export const CHANGE_FILE_TO_LOAD = 'shootProject/CHANGE_FILE_TO_LOAD' as const;
+export const ADD_ASSET = 'shootProject/ADD_ASSET' as const;
+export const RENDER_ASSET = 'shootProject/RENDER_ASSET' as const;
+export const UNRENDER_ASSET = 'shootProject/UNRENDER_ASSET' as const;
+export const REMOVE_ASSET = 'shootProject/REMOVE_ASSET' as const;
+export const ADD_MOTION = 'shootProject/ADD_MOTION' as const;
 
-interface AddScene {
+export interface AddScene {
   scene: ShootScene;
 }
 
-interface RemoveScene {
+export interface RemoveScene {
   sceneId: string;
 }
 
-interface ChangeFileToLoad {
+export interface ChangeFileToLoad {
   file: string | File;
   fileName: string;
 }
 
-interface AddAsset {
+export interface AddAsset {
   asset: ShootAsset;
 }
 
-interface RenderAsset {
+export interface RenderAsset {
   assetId: string;
 }
 
-interface UnrenderAsset {
+export interface UnrenderAsset {
   assetId: string;
 }
 
-interface RemoveAsset {
+export interface RemoveAsset {
   assetId: string;
 }
 
-interface AddMotion {
+export interface AddMotion {
   assetId: string;
   motionId: string;
 }
