@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
@@ -203,6 +203,11 @@ const LibraryPanel: FunctionComponent = () => {
 
   const [view, setView] = useState<LP.View>('List');
 
+  const handleSearch = useCallback((text: string) => {
+    console.log('handleSearch');
+    console.log(text);
+  }, []);
+
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
       <div className={cx('inner')}>
@@ -210,7 +215,7 @@ const LibraryPanel: FunctionComponent = () => {
           <LPHeader onLoad={handleDrop} />
         </Box>
         <Box id="LP-Controlbar" noResize>
-          <LPControlbar />
+          <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
           <LPBody view={view} />
