@@ -1,0 +1,15 @@
+.interpolation-mode {
+  display: flex;
+  border-radius: 6px;
+  background-color: #353739;
+
+  .bezier,
+  .linear,
+  .constant {
+    background-color: #0f88ff;
+  }
+
+  span {
+    margin-left: 0 !important;
+  }
+}

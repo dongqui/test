@@ -1,0 +1,30 @@
+.loop-range {
+  display: flex;
+  align-items: center;
+  height: 100%;
+
+  p {
+    font-size: 11px;
+    color: white;
+  }
+
+  div {
+    width: 70px;
+    height: 100%;
+    padding: 0 6px;
+    margin-left: 8px;
+
+    span,
+    input {
+      font-size: 11px;
+    }
+
+    span {
+      color: #919191;
+    }
+
+    input {
+      color: #f4f4f4;
+    }
+  }
+}

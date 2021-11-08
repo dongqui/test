@@ -36,13 +36,25 @@ App.getInitialProps = async (context: AppContext) => {
   const appProps = await NextApp.getInitialProps(context);
 
   let userAgent;
+  let browserType;
+  const UA = ctx.req?.headers['user-agent'] || navigator.userAgent;
 
   if (ctx.req) {
     userAgent = ctx.req.headers['user-agent'];
   }
 
+  if (UA) {
+    const lowerCase = UA.toLowerCase();
+    const bothChromeSafari = lowerCase.includes('safari');
+    const ifIncludeSafari = !lowerCase.includes('chrome');
+    const safariIncludesVersion = lowerCase.indexOf('version/') !== 1;
+
+    browserType = bothChromeSafari && ifIncludeSafari && safariIncludesVersion ? 'safari' : 'else';
+  }
+
   const props = {
     userAgent,
+    browserType,
     ...appProps,
   };
 

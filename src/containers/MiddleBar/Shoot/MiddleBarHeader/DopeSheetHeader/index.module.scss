@@ -1,0 +1,17 @@
+.dope-sheet-header {
+  display: flex;
+  padding: 0 8px;
+  justify-content: space-between;
+  color: white;
+  align-items: center;
+
+  span {
+    font-size: 12px;
+  }
+
+  .plus {
+    width: 16px;
+    padding: 0;
+    cursor: pointer;
+  }
+}

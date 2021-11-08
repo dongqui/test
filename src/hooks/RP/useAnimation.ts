@@ -1,0 +1,117 @@
+import { useEffect, useState } from 'react';
+import * as BABYLON from '@babylonjs/core';
+import { useSelector } from 'reducers';
+import { filterQuaternion, filterVector } from 'utils/RP';
+
+const useAnimation = () => {
+  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const assetList = useSelector((state) => state.shootProject.assetList);
+  const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
+  const fps = useSelector((state) => state.shootProject.fps);
+
+  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+
+  const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    console.log('animationIngredients: ', animationIngredients);
+  }, [animationIngredients]);
+
+  // 애니메이션 생성
+  useEffect(() => {
+    const visualizedAnimationIngredients = animationIngredients.filter(
+      (animationIngredient) =>
+        visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
+    );
+
+    const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
+
+    visualizedAnimationIngredients.forEach((animationIngredient) => {
+      // layer 고려가 들어가야 함
+      // 각 layer의 transformNodes 합해주는 연산 필요
+      const { id, name, assetId, tracks, layers } = animationIngredient;
+      tracks.forEach((track) => {
+        if (track.property !== 'rotation') {
+          // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
+          if (track.isIncluded) {
+            if (track.property === 'position' || track.property === 'scaling') {
+              const newAnimation = new BABYLON.Animation(
+                track.name,
+                `${track.property}`,
+                fps / 30,
+                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+              );
+              if (track.useFilter) {
+                // filter function 적용
+                newAnimation.setKeys(
+                  filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta),
+                );
+              } else {
+                newAnimation.setKeys(track.transformKeys);
+              }
+              track.target.animations.push(newAnimation);
+              newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
+            } else if (track.property === 'rotationQuaternion') {
+              const newAnimation = new BABYLON.Animation(
+                track.name,
+                `${track.property}`,
+                fps / 30,
+                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+              );
+              if (track.useFilter) {
+                // filter function 적용
+                newAnimation.setKeys(
+                  filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta),
+                );
+              } else {
+                newAnimation.setKeys(track.transformKeys);
+              }
+              track.target.animations.push(newAnimation);
+              newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
+            }
+          }
+        }
+      });
+    });
+
+    setCurrentAnimationGroup(newAnimationGroup);
+  }, [animationIngredients, assetList, fps, visualizedAssetIds]);
+
+  // 애니메이션 재생 조작
+  useEffect(() => {
+    sceneList.forEach((shootScene) => {
+      const { id: sceneId, name, scene, canvasId } = shootScene;
+
+      if (currentAnimationGroup) {
+        currentAnimationGroup.onAnimationEndObservable.addOnce((...params) => {});
+
+        scene.addAnimationGroup(currentAnimationGroup);
+
+        if (isPlaying) {
+          currentAnimationGroup.start(true);
+        } else {
+          currentAnimationGroup.start(true);
+          currentAnimationGroup.pause();
+          currentAnimationGroup.goToFrame(0);
+        }
+      }
+    });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (currentAnimationGroup && event.key === 'p') {
+        currentAnimationGroup.play();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentAnimationGroup, isPlaying, sceneList]);
+};
+
+export default useAnimation;

@@ -15,6 +15,7 @@ export enum PAGE_NAMES {
 export enum FORMAT_TYPES {
   glb = 'glb',
   fbx = 'fbx',
+  json = 'json',
 }
 export enum VIDEO_FORMAT_TYPES {
   mp4 = 'mp4',
@@ -38,7 +39,12 @@ export const ENABLE_VIDEO_FORMATS = [
   VIDEO_FORMAT_TYPES.webm,
   VIDEO_FORMAT_TYPES.mov,
 ];
-export const ENABLE_FILE_FORMATS = [FORMAT_TYPES.glb, FORMAT_TYPES.fbx, ...ENABLE_VIDEO_FORMATS];
+export const ENABLE_FILE_FORMATS = [
+  FORMAT_TYPES.glb,
+  FORMAT_TYPES.fbx,
+  FORMAT_TYPES.json,
+  ...ENABLE_VIDEO_FORMATS,
+];
 export enum PROPERTY_TYPES {
   position = 'position',
   positionCnt = 3,
@@ -135,6 +141,10 @@ export interface PageInfoType {
   videoUrl?: string;
   extension?: string;
   duration?: number;
+}
+
+export interface ModeSelectionType {
+  mode: 'animationMode' | 'videoMode';
 }
 
 export type PropertyType = 'Position' | 'Rotation' | 'Scale';

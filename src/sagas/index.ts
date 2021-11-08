@@ -1,7 +1,7 @@
 import { all } from 'redux-saga/effects';
-import { watchLpSearchword } from './lpSearchword';
-import { watchLpData } from './lpData';
+// import TP from './TP';
 
 export default function* rootSaga() {
-  yield all([watchLpSearchword(), watchLpData()]);
+  // yield all([TP()]);
+  yield all([]);
 }
