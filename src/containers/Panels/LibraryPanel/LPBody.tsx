@@ -15,12 +15,12 @@ const cx = classNames.bind(styles);
 
 interface Props {
   view: LP.View;
+  lpNode: LP.Node[];
 }
 
-const LPBody: FunctionComponent<Props> = () => {
+const LPBody: FunctionComponent<Props> = ({ lpNode }) => {
   const dispatch = useDispatch();
 
-  const lpNode = useSelector((state) => state.lpNode.node);
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
   const lpClipboard = useSelector((state) => state.lpNode.clipboard);
 

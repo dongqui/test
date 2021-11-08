@@ -203,10 +203,21 @@ const LibraryPanel: FunctionComponent = () => {
 
   const [view, setView] = useState<LP.View>('List');
 
-  const handleSearch = useCallback((text: string) => {
-    console.log('handleSearch');
-    console.log(text);
-  }, []);
+  const [searchText, setSearchText] = useState('');
+  const [searchResultNode, setSearchResultNode] = useState<LP.Node[]>(lpNode);
+
+  const handleSearch = useCallback(
+    (text: string) => {
+      setSearchText(text);
+
+      if (text.length > 0) {
+        const searchResult = lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
+
+        setSearchResultNode(searchResult);
+      }
+    },
+    [lpNode],
+  );
 
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
@@ -218,7 +229,7 @@ const LibraryPanel: FunctionComponent = () => {
           <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody view={view} />
+          <LPBody view={view} lpNode={searchText.length > 0 ? searchResultNode : lpNode} />
         </Box>
       </div>
     </div>

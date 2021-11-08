@@ -21,7 +21,7 @@ const LPControlbar: FunctionComponent<Props> = ({ onSearch }) => {
 
   const handleSearch = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      search(e.currentTarget.value);
+      search(e.currentTarget.value.toLowerCase());
     },
     [search],
   );
