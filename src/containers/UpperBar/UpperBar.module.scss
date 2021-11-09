@@ -77,7 +77,13 @@
       margin-left: 4px;
     }
 
-    
+    &.disable {
+      cursor: not-allowed;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
   }
 
   .right-upper-inner {
@@ -86,10 +92,11 @@
     min-width: 180px;
     background-color: #202122;
     flex-direction: column;
-    top: 40px;
+    top: 30px;
     right: 14px;
     border: 1px solid #4F4F4F;
     border-radius: 8px;
+    padding: 0;
     z-index: 1;
 
     & > div {
@@ -140,8 +147,9 @@
       } 
     }
 
+    
   }
-
+  
   & > .share-button {
     min-width: 0;
     font-size: 11px;
@@ -149,6 +157,17 @@
     padding: 6px 8px;
     user-select: none;
   }
+}
+
+.segment-disable {
+  position: absolute;
+  right: 93px;
+  background-color: rgba(255, 255, 255, 0.2);
+  // border: 1px solid #fff;
+  width: 48px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: not-allowed;
 }
 
 .button-overlay {
