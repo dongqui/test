@@ -3,13 +3,7 @@ import { RefObject, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import {
-  checkIsObjectIn,
-  createCamera,
-  createDirectionalLight,
-  createGrounds,
-  createHemisphericLight,
-} from 'utils/RP';
+import { checkIsObjectIn, createCamera, createDirectionalLight, createGrounds, createHemisphericLight } from 'utils/RP';
 import { useSelector } from 'reducers';
 import { Nullable, ScreenXY, ShootView } from 'types/common';
 
@@ -93,7 +87,7 @@ const useInitializeScene = (params: Params) => {
 
       innerScene.onDisposeObservable.addOnce((scene) => {
         // scene이 사라지면 창을 새로고침합니다.
-        window.location.reload();
+        // window.location.reload();
       });
 
       innerScene.onPointerObservable.add((pointerInfo) => {
@@ -101,34 +95,23 @@ const useInitializeScene = (params: Params) => {
         if (type === BABYLON.PointerEventTypes.POINTERWHEEL) {
           const event = pointerInfo.event as WheelEvent & { wheelDelta: number };
           // orthographic 모드에서의 카메라 줌
-          if (
-            innerScene.activeCamera &&
-            innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA
-          ) {
+          if (innerScene.activeCamera && innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
             const activeCamera = innerScene.activeCamera as BABYLON.ArcRotateCamera;
             const canvas = innerScene.getEngine().getRenderingCanvas();
 
             activeCamera.orthoTop! -= event.wheelDelta / 5000;
             activeCamera.orthoBottom! += event.wheelDelta / 5000;
             activeCamera.orthoLeft! += (event.wheelDelta / 5000) * (canvas!.width / canvas!.height);
-            activeCamera.orthoRight! -=
-              (event.wheelDelta / 5000) * (canvas!.width / canvas!.height);
+            activeCamera.orthoRight! -= (event.wheelDelta / 5000) * (canvas!.width / canvas!.height);
           }
         } else if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
           const event = pointerInfo.event as PointerEvent;
           // camera rotate 시 perspective 모드로 전환
-          if (
-            event.button === 1 &&
-            !event.altKey &&
-            innerScene.activeCamera &&
-            innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA
-          ) {
+          if (event.button === 1 && !event.altKey && innerScene.activeCamera && innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
             innerScene.activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
 
             if (prevCameraPositions[renderingCanvas.current!.id]) {
-              innerScene.activeCamera.position = prevCameraPositions[
-                renderingCanvas.current!.id
-              ] as BABYLON.Vector3;
+              innerScene.activeCamera.position = prevCameraPositions[renderingCanvas.current!.id] as BABYLON.Vector3;
               prevCameraPositions[renderingCanvas.current!.id] = null;
             }
 
@@ -180,8 +163,7 @@ const useInitializeScene = (params: Params) => {
       let startPointerPosition: Nullable<ScreenXY> = null;
 
       const dragBox = document.querySelector('#_dragBox') as HTMLDivElement;
-      const dragBoxDefaultStyle =
-        'background-color: gray; position: absolute; opacity: 0.3; pointer-events: none;';
+      const dragBoxDefaultStyle = 'background-color: gray; position: absolute; opacity: 0.3; pointer-events: none;';
       dragBox.setAttribute('style', dragBoxDefaultStyle);
 
       const dragBoxObserver = scene.onPointerObservable.add((pointerInfo, eventState) => {
@@ -212,12 +194,7 @@ const useInitializeScene = (params: Params) => {
               const maxX = Math.max(startPointerPosition.x, currentPointerPosition.x);
               const maxY = Math.max(startPointerPosition.y, currentPointerPosition.y);
 
-              dragBox.setAttribute(
-                'style',
-                `${dragBoxDefaultStyle} left: ${minX}px; top: ${minY}px; width: ${
-                  maxX - minX
-                }px; height: ${maxY - minY}px;`,
-              );
+              dragBox.setAttribute('style', `${dragBoxDefaultStyle} left: ${minX}px; top: ${minY}px; width: ${maxX - minX}px; height: ${maxY - minY}px;`);
             }
             break;
           }
@@ -228,14 +205,7 @@ const useInitializeScene = (params: Params) => {
                 y: scene.pointerY,
               };
 
-              const newSelectedTargets = selectableObjects.filter((object) =>
-                checkIsObjectIn(
-                  startPointerPosition as ScreenXY,
-                  endPointerPosition,
-                  object,
-                  scene,
-                ),
-              );
+              const newSelectedTargets = selectableObjects.filter((object) => checkIsObjectIn(startPointerPosition as ScreenXY, endPointerPosition, object, scene));
 
               if (pointerInfo.event.ctrlKey || pointerInfo.event.metaKey) {
                 // ctrl 혹은 meta 키를 누른 채
@@ -263,12 +233,7 @@ const useInitializeScene = (params: Params) => {
   }, [dispatch, renderingCanvas, sceneList, selectableObjects]);
 
   useEffect(() => {
-    const switchToOrthoGraphic = (
-      canvas: HTMLCanvasElement,
-      camera: BABYLON.ArcRotateCamera,
-      scene: BABYLON.Scene,
-      view: ShootView,
-    ) => {
+    const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: ShootView) => {
       camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
       camera.orthoTop = 2;
       camera.orthoBottom = -2;
@@ -313,10 +278,7 @@ const useInitializeScene = (params: Params) => {
                 prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
               }
 
-              distance = BABYLON.Vector3.Distance(
-                new BABYLON.Vector3(0, position.y, 0),
-                new BABYLON.Vector3(0, target.y, 0),
-              );
+              distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
               activeCamera.setPosition(new BABYLON.Vector3(target.x, distance + 10, target.z));
               break;
             case 'b': // b (bottom)
@@ -328,10 +290,7 @@ const useInitializeScene = (params: Params) => {
                 prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
               }
 
-              distance = BABYLON.Vector3.Distance(
-                new BABYLON.Vector3(0, position.y, 0),
-                new BABYLON.Vector3(0, target.y, 0),
-              );
+              distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
               activeCamera.setPosition(new BABYLON.Vector3(target.x, -(distance + 10), target.z));
               break;
             case 'l': // l (left)
@@ -343,10 +302,7 @@ const useInitializeScene = (params: Params) => {
                 prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
               }
 
-              distance = BABYLON.Vector3.Distance(
-                new BABYLON.Vector3(position.x, 0, 0),
-                new BABYLON.Vector3(target.x, 0, 0),
-              );
+              distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
               activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), target.y, target.z));
               break;
             case 'r': // r (right)
@@ -355,22 +311,14 @@ const useInitializeScene = (params: Params) => {
               if (multiKeyController[event.key]) {
                 multiKeyController[event.key].pressed = true;
               }
-              if (
-                (multiKeyController.v.pressed ||
-                  multiKeyController.V.pressed ||
-                  multiKeyController.ㅍ.pressed) &&
-                multiKeyController[event.key].pressed
-              ) {
+              if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
                 switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'right');
 
                 if (!prevCameraPositions[focusedCanvas.id]) {
                   prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
                 }
 
-                distance = BABYLON.Vector3.Distance(
-                  new BABYLON.Vector3(position.x, 0, 0),
-                  new BABYLON.Vector3(target.x, 0, 0),
-                );
+                distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
                 activeCamera.setPosition(new BABYLON.Vector3(distance + 10, target.y, target.z));
               }
               break;
@@ -383,10 +331,7 @@ const useInitializeScene = (params: Params) => {
                 prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
               }
 
-              distance = BABYLON.Vector3.Distance(
-                new BABYLON.Vector3(0, 0, position.z),
-                new BABYLON.Vector3(0, 0, target.z),
-              );
+              distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
               activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, distance + 10));
               break;
             case 'k': // k (back)
@@ -395,22 +340,14 @@ const useInitializeScene = (params: Params) => {
               if (multiKeyController[event.key]) {
                 multiKeyController[event.key].pressed = true;
               }
-              if (
-                (multiKeyController.v.pressed ||
-                  multiKeyController.V.pressed ||
-                  multiKeyController.ㅍ.pressed) &&
-                multiKeyController[event.key].pressed
-              ) {
+              if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
                 switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
 
                 if (!prevCameraPositions[focusedCanvas.id]) {
                   prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
                 }
 
-                distance = BABYLON.Vector3.Distance(
-                  new BABYLON.Vector3(0, 0, position.z),
-                  new BABYLON.Vector3(0, 0, target.z),
-                );
+                distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
                 activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
               }
               break;
