@@ -1,0 +1,23 @@
+.animation-buttons {
+  height: 100%;
+  border-radius: 6px;
+  background: #353739;
+
+  span {
+    height: 100%;
+    width: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &.pause {
+      border-radius: 6px;
+      background-color: #0f88ff;
+    }
+
+    svg {
+      height: 14px;
+      color: white;
+    }
+  }
+}

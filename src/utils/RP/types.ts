@@ -1,4 +1,6 @@
 /**
+ * camera 커스텀을 위한 타입 정의
+ *
  * Event Types
  */
 export enum DeviceInputEventType {

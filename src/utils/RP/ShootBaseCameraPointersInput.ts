@@ -13,6 +13,8 @@ import {
 import { IPointerEvent } from './types';
 
 /**
+ * Babylonjs의 base 카메라 포인터 인풋을 커스터마이즈한 클래스
+ *
  * Base class for Camera Pointer Inputs.
  * See FollowCameraPointersInput in src/Cameras/Inputs/followCameraPointersInput.ts
  * for example usage.

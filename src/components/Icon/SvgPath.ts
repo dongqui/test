@@ -20,8 +20,9 @@ import RewindArrow from './svg/RewindArrow.svg';
 import Pause from './svg/Pause.svg';
 import Export from './svg/Export.svg';
 import PlayBar from './svg/PlayBar.svg';
-import LineLeftTriangle from './svg/LineLeftTriangle.svg';
+import CaretRight from './svg/CaretRight.svg';
 import CaretDown from './svg/CaretDown.svg';
+import LineLeftTriangle from './svg/LineLeftTriangle.svg';
 import Check from './svg/Check.svg';
 import Error from './svg/Error.svg';
 import Refresh from './svg/Refresh.svg';
@@ -33,9 +34,14 @@ import IconView from './New_svg/IconView.svg';
 import Folder from './New_svg/Folder.svg';
 import Model from './New_svg/Model.svg';
 import Motion from './New_svg/Motion.svg';
+import SimpleMode from './svg/SimpleMode.svg';
 import TrackMode from './svg/TrackMode.svg';
-import Stop from './svg/Stop.svg';
 import Record from './svg/Record.svg';
+import Stop from './svg/Stop.svg';
+import InsertKeyframe from './svg/InsertKeyframe.svg';
+import Bezier from './svg/Bezier.svg';
+import Linear from './svg/Linear.svg';
+import Constant from './svg/Constant.svg';
 import PauseVideo from './svg/PauseVideo.svg';
 import EmptyDownArrow from './svg/EmptyDownArrow.svg';
 import VideoRecord from './svg/VideoRecord.svg';
@@ -64,6 +70,7 @@ type Icon =
   | 'Export'
   | 'PlayBar'
   | 'LineLeftTriangle'
+  | 'CaretRight'
   | 'CaretDown'
   | 'Check'
   | 'Error'
@@ -73,9 +80,14 @@ type Icon =
   | 'Folder'
   | 'Model'
   | 'Motion'
-  | 'TrackMode'
+  | 'SimpleMode'
   | 'Stop'
   | 'Record'
+  | 'InsertKeyframe'
+  | 'Bezier'
+  | 'Linear'
+  | 'Constant'
+  | 'TrackMode'
   | 'PauseVideo'
   | 'EmptyDownArrow'
   | 'VideoRecord'
@@ -108,6 +120,7 @@ const images: Images = {
   Export,
   PlayBar,
   LineLeftTriangle,
+  CaretRight,
   CaretDown,
   Check,
   Error,
@@ -117,9 +130,14 @@ const images: Images = {
   Folder,
   Model,
   Motion,
-  TrackMode,
-  Stop,
+  SimpleMode,
   Record,
+  Stop,
+  InsertKeyframe,
+  Bezier,
+  Linear,
+  Constant,
+  TrackMode,
   PauseVideo,
   EmptyDownArrow,
   VideoRecord,

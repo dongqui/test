@@ -22,16 +22,34 @@ const useLoadAssets = () => {
       const scene = sceneList[0].scene;
 
       if (scene && scene.isReady()) {
-        const loadGlbFileAsync = async (fileUrl: string | File, fileName: string, scene: BABYLON.Scene) => {
+        const loadGlbFileAsync = async (
+          fileUrl: string | File,
+          fileName: string,
+          scene: BABYLON.Scene,
+        ) => {
           let loadedAssetContainer: BABYLON.AssetContainer;
 
           if (typeof fileUrl === 'string') {
-            loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', scene);
+            loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(
+              fileUrl,
+              '',
+              scene,
+            );
           } else {
-            loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', (fileUrl as unknown) as string, scene);
+            loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(
+              'file:',
+              (fileUrl as unknown) as string,
+              scene,
+            );
           }
 
-          const { meshes, geometries, skeletons, transformNodes, animationGroups } = loadedAssetContainer;
+          const {
+            meshes,
+            geometries,
+            skeletons,
+            transformNodes,
+            animationGroups,
+          } = loadedAssetContainer;
 
           const assetId = uuidv4();
 
@@ -74,7 +92,9 @@ const useLoadAssets = () => {
             meshes,
             geometries,
             skeleton: skeletons[0] ?? null,
-            bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
+            bones: skeletons[0]
+              ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene'))
+              : [],
             transformNodes,
             animationIngredientIds,
             retargetMapId: retargetMap.id,
@@ -83,7 +103,12 @@ const useLoadAssets = () => {
           dispatch(shootProjectActions.addAsset({ asset: newAsset }));
           dispatch(
             animationDataActions.addAsset({
-              transformNodes,
+              transformNodes: transformNodes.filter(
+                (t) =>
+                  !t.name.toLowerCase().includes('camera') &&
+                  !t.name.toLowerCase().includes('scene') &&
+                  !t.name.toLowerCase().includes('armature'),
+              ),
               animationIngredients,
               retargetMap,
             }),

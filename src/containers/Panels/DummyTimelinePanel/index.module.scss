@@ -39,6 +39,10 @@
       border-width: 2px;
       border-style: outset;
       border-color: -internal-light-dark(rgb(118, 118, 118), rgb(133, 133, 133));
+
+      &.selected {
+        background-color: cornflowerblue;
+      }
     }
   }
 
@@ -63,6 +67,10 @@
   .button {
     width: 100%;
     margin: 0 5px;
+
+    &.selected {
+      background-color: cornflowerblue;
+    }
   }
 
   &::-webkit-scrollbar {

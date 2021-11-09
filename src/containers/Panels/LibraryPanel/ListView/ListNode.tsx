@@ -1,10 +1,23 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, Fragment, ReactNode, FocusEvent, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent } from 'react';
+import {
+  FunctionComponent,
+  memo,
+  Fragment,
+  ReactNode,
+  FocusEvent,
+  useEffect,
+  useCallback,
+  useState,
+  useRef,
+  KeyboardEvent,
+  DragEvent,
+} from 'react';
+import * as BABYLON from '@babylonjs/core';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
-import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
+import { AnimationIngredient, ShootLayer, ShootProperty, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { getFileExtension } from 'utils/common';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
@@ -245,7 +258,9 @@ const ListNode: FunctionComponent<Props> = ({
                         draft.push(cloneCopyNode);
 
                         if (!_.isEmpty(cloneCopyNode.children)) {
-                          cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
+                          cloneCopyNode.children.map((child) =>
+                            depthChangeKey(draft, child, cloneCopyNode),
+                          );
                         }
                       }
                     });
@@ -392,11 +407,17 @@ const ListNode: FunctionComponent<Props> = ({
                     const layers: ShootLayer[] = [{ id: uuidv4(), name: layerName }];
 
                     const tracks: ShootTrack[] = [];
+                    let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
                     if (visualizedAssetIds.includes(assetId)) {
                       // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서
-                      const targets = selectableObjects.filter((object) => object.id.split('//')[0] === assetId);
+                      const targets = selectableObjects.filter(
+                        (object) => object.id.split('//')[0] === assetId,
+                      );
                     } else {
                       // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
+                      targets = animationTransformNodes.filter(
+                        (transformNode) => transformNode.id.split('//')[0] === assetId,
+                      );
                     }
 
                     const currentPathNodeName = lpNode
@@ -533,6 +554,7 @@ const ListNode: FunctionComponent<Props> = ({
       };
     }
   }, [
+    animationTransformNodes,
     assetId,
     depth,
     depthCheck,
@@ -692,7 +714,19 @@ const ListNode: FunctionComponent<Props> = ({
           });
         });
     },
-    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [
+      childrens,
+      dispatch,
+      extension,
+      filePath,
+      id,
+      lpNode,
+      name,
+      onModalClose,
+      onModalOpen,
+      parentId,
+      type,
+    ],
   );
 
   const handleKeydown = useCallback(
@@ -766,7 +800,19 @@ const ListNode: FunctionComponent<Props> = ({
           });
       }
     },
-    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [
+      childrens,
+      dispatch,
+      extension,
+      filePath,
+      id,
+      lpNode,
+      name,
+      onModalClose,
+      onModalOpen,
+      parentId,
+      type,
+    ],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -828,7 +874,9 @@ const ListNode: FunctionComponent<Props> = ({
           const dropNode = _.find(lpNode, { parentId: id });
           const childrenList = lpNode.filter((node) => node.parentId === id);
           const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
-          const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
+          const duplicatedTarget = childrenList.filter(
+            (children) => children.name === dragNode?.name,
+          );
 
           const cloneDragNode = _.cloneDeep(dragNode);
 
@@ -858,7 +906,9 @@ const ListNode: FunctionComponent<Props> = ({
                   draft.push(cloneDragNode);
 
                   if (!_.isEmpty(cloneDragNode.children)) {
-                    cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                    cloneDragNode.children.map((child) =>
+                      depthChangeKey(draft, child, cloneDragNode),
+                    );
                   }
                 }
               });
@@ -880,7 +930,10 @@ const ListNode: FunctionComponent<Props> = ({
                 if (node.parentId === id) {
                   const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
                   const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
-                  if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+                  if (
+                    tempName === node.name ||
+                    (isMatch !== null && node.name.includes(`${tempName} `))
+                  ) {
                     return true;
                   }
                   return false;
@@ -908,7 +961,9 @@ const ListNode: FunctionComponent<Props> = ({
                 draft.push(cloneDragNode);
 
                 if (!_.isEmpty(cloneDragNode.children)) {
-                  cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                  cloneDragNode.children.map((child) =>
+                    depthChangeKey(draft, child, cloneDragNode),
+                  );
                 }
               }
             });
@@ -952,7 +1007,9 @@ const ListNode: FunctionComponent<Props> = ({
         const dropNode = _.find(lpNode, { parentId: id });
         const childrenList = lpNode.filter((node) => node.parentId === id);
         const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
-        const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
+        const duplicatedTarget = childrenList.filter(
+          (children) => children.name === dragNode?.name,
+        );
 
         if (dropNode && isAlreadyExist && cloneDragNode) {
           const confirmed = await getConfirm({
@@ -980,7 +1037,9 @@ const ListNode: FunctionComponent<Props> = ({
                 draft.push(cloneDragNode);
 
                 if (!_.isEmpty(cloneDragNode.children)) {
-                  cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                  cloneDragNode.children.map((child) =>
+                    depthChangeKey(draft, child, cloneDragNode),
+                  );
                 }
               }
             });
@@ -1002,7 +1061,10 @@ const ListNode: FunctionComponent<Props> = ({
               if (node.parentId === id) {
                 const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
                 const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
-                if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+                if (
+                  tempName === node.name ||
+                  (isMatch !== null && node.name.includes(`${tempName} `))
+                ) {
                   return true;
                 }
                 return false;
@@ -1043,14 +1105,28 @@ const ListNode: FunctionComponent<Props> = ({
         }
       }
     },
-    [depthChangeKey, depthCheck, dispatch, dragTarget, filePath, getConfirm, id, lpNode, name, onModalOpen, parentId, type],
+    [
+      depthChangeKey,
+      depthCheck,
+      dispatch,
+      dragTarget,
+      filePath,
+      getConfirm,
+      id,
+      lpNode,
+      name,
+      onModalOpen,
+      parentId,
+      type,
+    ],
   );
 
   /**
    * @TODO 파일명에 .(dot)이 여럿인 경우를 위해 다른 방법으로 파일명을 가져오는 방법이 필요하여 임시 대응
    */
   const splitName = name.split('.');
-  const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
+  const fileName =
+    splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
   const arrowClasses = cx('icon-arrow', {
     invisible: type === 'Motion',
@@ -1060,15 +1136,32 @@ const ListNode: FunctionComponent<Props> = ({
   return (
     <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
       <div className={cx('inner')}>
-        <div style={{ display: 'flex' }} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect}>
+        <div
+          style={{ display: 'flex' }}
+          ref={wrapperRef}
+          onClick={handleSelect}
+          onContextMenu={handleSelect}
+        >
           {/* {column.map((col, i) => (
             <div key={i} style={{ width: `${12 * col}px` }} />
           ))} */}
-          <IconWrapper icon={SvgPath.FilledArrow} className={arrowClasses} onClick={handleArrowClick} />
+          <IconWrapper
+            icon={SvgPath.FilledArrow}
+            className={arrowClasses}
+            onClick={handleArrowClick}
+          />
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
             {isEditing ? (
-              <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} defaultValue={fileName} autoFocus />
+              <input
+                placeholder={name}
+                type="text"
+                onBlur={handleBlur}
+                ref={renameRef}
+                onKeyDown={handleKeydown}
+                defaultValue={fileName}
+                autoFocus
+              />
             ) : (
               <div className={cx('name')}>{name}</div>
             )}

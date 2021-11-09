@@ -37,7 +37,6 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
   //     setTimeout(() => {
   //       setProcedure('token');
   //     }, 2000);
-
   //     // 2. 쿼리스트링 토큰 자체가 없는 경우 token 프로세스를 먼저 밟고 denied 처리
   //     if (!token) {
   //       setTimeout(() => {

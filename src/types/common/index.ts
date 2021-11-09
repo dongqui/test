@@ -3,6 +3,7 @@ import * as BABYLON from '@babylonjs/core';
 export type Nullable<T> = T | null;
 export type ScreenXY = { x: number; y: number };
 
+export type ShootView = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 export interface ShootProject {
   id: string;
   sceneList: ShootScene[];
@@ -51,15 +52,16 @@ export type ShootProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'sc
 export type ShootAxis = 'x' | 'y' | 'z' | 'w';
 
 export interface ShootTrack {
+  id: string;
   targetId: string;
   layerId: string;
   name: string;
   property: ShootProperty;
-  axis: ShootAxis;
   target: BABYLON.TransformNode | BABYLON.Mesh;
   transformKeys: BABYLON.IAnimationKey[];
   interpolationType: 'linear' | 'bezier' | 'constant';
   bezierParams?: BezierParams;
+  isMocapAnimation: boolean;
   useFilter: boolean;
   filterBeta: number;
   filterMinCutoff: number;

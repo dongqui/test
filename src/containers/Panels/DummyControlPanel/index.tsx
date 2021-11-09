@@ -1,14 +1,15 @@
 import { FunctionComponent, memo, useCallback } from 'react';
-import _ from 'lodash';
 import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
+import { v4 as uuidv4 } from 'uuid';
+import { uniq } from 'lodash';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
-import { checkIsTargetMesh } from 'utils/RP';
+import { checkIsTargetMesh, createDummyAnimation } from 'utils/RP';
+import { AnimationIngredient, ShootTrack } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { AnimationIngredient, ShootTrack } from 'types/common';
 
 const cx = classNames.bind(styles);
 
@@ -219,7 +220,7 @@ const ControlPanel: FunctionComponent = () => {
 
   const addControllers = useCallback(() => {
     const targetScene = sceneList[0];
-    const selectedAssetIds = _.uniq(selectedTargets.map((target) => target.id.split('//')[0]));
+    const selectedAssetIds = uniq(selectedTargets.map((target) => target.id.split('//')[0]));
 
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
@@ -298,15 +299,6 @@ const ControlPanel: FunctionComponent = () => {
                 ),
               );
 
-              controller.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(
-                  BABYLON.ActionManager.OnPointerOverTrigger,
-                  (event) => {
-                    targetScene.scene.hoverCursor = 'default';
-                  },
-                ),
-              );
-
               controllers.push(controller);
             }
           });
@@ -359,15 +351,16 @@ const ControlPanel: FunctionComponent = () => {
                 );
                 transformNodeTracks.forEach((transformNodeTrack) => {
                   const newTrack: ShootTrack = {
+                    id: uuidv4(),
                     targetId: controller.id,
                     layerId: layer.id,
                     name: `${transformNodeTrack.name}|controller`,
                     property: transformNodeTrack.property,
-                    axis: transformNodeTrack.axis,
                     target: controller,
                     transformKeys: [...transformNodeTrack.transformKeys],
                     interpolationType: transformNodeTrack.interpolationType,
                     bezierParams: transformNodeTrack.bezierParams,
+                    isMocapAnimation: transformNodeTrack.isMocapAnimation,
                     useFilter: transformNodeTrack.useFilter,
                     filterBeta: transformNodeTrack.filterBeta,
                     filterMinCutoff: transformNodeTrack.filterMinCutoff,
@@ -453,6 +446,16 @@ const ControlPanel: FunctionComponent = () => {
     }
   }, [animationIngredients, assetList, dispatch, sceneList, selectableObjects, selectedTargets]);
 
+  const addJsonAnimation = useCallback(async () => {
+    const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
+    const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
+
+    if (targetAssets[0]) {
+      const newAnim = await createDummyAnimation(targetAssets[0]);
+      dispatch(animationDataActions.addAnimationIngredient({ animationIngredient: newAnim }));
+    }
+  }, [assetList, dispatch, selectedTargets]);
+
   return (
     <div className={cx('wrapper')}>
       <button className={cx('button')} onClick={makeMeshesVisible}>
@@ -478,6 +481,9 @@ const ControlPanel: FunctionComponent = () => {
       </button>
       <button className={cx('button')} onClick={deleteControllers}>
         Delete Controllers
+      </button>
+      <button className={cx('button')} onClick={addJsonAnimation}>
+        Add Json Animation
       </button>
     </div>
   );
