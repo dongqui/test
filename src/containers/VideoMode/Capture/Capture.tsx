@@ -47,6 +47,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const [readyExtract, setReadyExtract] = useState<boolean>(false);
   const [basicExtractName, setBasicExtractName] = useState<string>('Exported motion');
   const [turnStandbyPhase, setTurnStandbyPhase] = useState<boolean>(false);
+  const [onExtract, setOnExtract] = useState<boolean>(false);
   const [start, setStart] = useState<number>(0);
   const [end, setEnd] = useState<number>(0);
   const [timer, setTimer] = useState<number>(5);
@@ -154,6 +155,8 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
    */
   const handleExtractMotion = useCallback(
     async ({ id, start, end, startTime, endTime, url, type, fileName, timeout, duration }) => {
+      setReadyExtract(false);
+      setOnExtract(true);
       const formData = new FormData();
       const file = await convertBlobToFile({ url, type, fileName }).then((response) => {
         formData.append('file', response);
@@ -176,7 +179,10 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         }),
         timeout,
       })
-        .then((response) => response.data)
+        .then((response) => {
+          setOnExtract(false);
+          return response.data;
+        })
         .catch((err) => {
           throw err;
         });
@@ -427,6 +433,18 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
               }}
             ></FilledButton>
           </div>
+        </BaseModal>
+      )}
+      {onExtract && (
+        <BaseModal className={cx('extract-modal', 'loading-modal')}>
+          <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
+          <h4 className={cx('modal-heading', 'loading')}>Motions Extracting</h4>
+          <p className={cx('extract-name-paragraph', 'loading')}>
+            It can take up to{' '}
+            {duration * 6 >= 60
+              ? Math.floor((duration * 6) / 60) + ' minutes'
+              : Math.floor(duration * 6) + ' seconds'}
+          </p>
         </BaseModal>
       )}
     </Fragment>

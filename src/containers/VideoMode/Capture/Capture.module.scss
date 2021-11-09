@@ -166,6 +166,22 @@
   }
 }
 
+.loading-modal {
+  & > div {
+    &:nth-of-type(1) {
+      & > div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        & > .loading {
+          text-align: center;
+        }
+      }
+    }
+  }
+}
+
 .extract-name-paragraph {
   width: 232px;
   font-size: 11px;
@@ -212,4 +228,21 @@
   font-size: 12px;
   line-height: 15px;
   color: #fff;
+}
+
+.loading-spinner {
+  & > svg {
+    width: 24px;
+    animation: spin-animation 1s infinite;
+    display: inline-block;
+  }
+}
+
+@keyframes spin-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(359deg);
+  }
 }

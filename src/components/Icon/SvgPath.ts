@@ -39,6 +39,7 @@ import Record from './svg/Record.svg';
 import PauseVideo from './svg/PauseVideo.svg';
 import EmptyDownArrow from './svg/EmptyDownArrow.svg';
 import VideoRecord from './svg/VideoRecord.svg';
+import Spinner from './svg/Spinner.svg';
 
 type Icon =
   | 'Close'
@@ -77,7 +78,8 @@ type Icon =
   | 'Record'
   | 'PauseVideo'
   | 'EmptyDownArrow'
-  | 'VideoRecord';
+  | 'VideoRecord'
+  | 'Spinner';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -121,6 +123,7 @@ const images: Images = {
   PauseVideo,
   EmptyDownArrow,
   VideoRecord,
+  Spinner,
 };
 
 export default images;
