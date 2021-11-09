@@ -1,405 +1,264 @@
-import { FunctionComponent, memo, useCallback, useState, useRef, useEffect } from 'react';
-import { useDropzone } from 'react-dropzone';
-import useLPControl from 'hooks/LP/useLPControl';
-import { v4 as uuidv4 } from 'uuid';
-import useContextMenu from 'hooks/common/useContextMenu';
-import { DEFAULT_MODELS, INITIAL_RECORDING_DATA } from 'utils/const';
-import { LPModeType } from 'types';
-import * as api from 'utils/common/api';
-import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
-import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
-import { FileType, LPItemListOldType, LPItemOldType, ROOT_FOLDER_NAME } from 'types/LP';
 import _ from 'lodash';
-import { IconView } from './IconTree/IconView';
-import { ListView } from './ListTree/ListView';
-import Breadcrumb from './Breadcrumb';
-import { Headline } from 'components/Typography';
-import { BaseModal, AlertModal } from 'components/Modal';
-import { useConfirmModal } from 'components/Modal/ConfirmModal';
-import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
-import { FORMAT_TYPES, ENABLE_VIDEO_FORMATS, PAGE_NAMES, ENABLE_FILE_FORMATS } from 'types';
-import Explorer from './Explorer/index';
+import { FunctionComponent, memo, useEffect, useState, useCallback, ChangeEvent } from 'react';
+import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import { useDropzone } from 'react-dropzone';
+import { convertFBXtoGLB } from 'api';
+import { getFileExtension } from 'utils/common';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { v4 as uuid } from 'uuid';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as shootProjectActions from 'actions/shootProjectAction';
+import * as modeSelectActions from 'actions/modeSelection';
+import Box from 'components/Layout/Box';
+import produce from 'immer';
+import LPHeader from './LPHeader';
+import LPControlbar from './LPControlbar';
+import LPBody from './LPBody';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import * as lpDataActions from 'actions/lpData';
-import { useDispatch } from 'react-redux';
-import * as lpModeActions from 'actions/lpMode';
-import * as lpSearchwordActtions from 'actions/lpSearchword';
-import * as pageInfoActions from 'actions/pageInfo';
-import * as recordingDataActions from 'actions/recordingData';
-import * as cutImagesActions from 'actions/cutImages';
-import fnGetFileName from 'utils/LP/fnGetFileName';
-import { fnQuaternionToEulerTrack } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
-export interface PagesType {
-  key: string;
-  name: string;
-  type: FileType;
-}
-
-const LibraryPanelComponent: FunctionComponent = () => {
-  const lpData = useSelector((state) => state.lpDataOld);
-  const pages = useSelector((state) => state.lpPageOld);
-  const lpmode = useSelector((state) => state.lpMode.mode);
-  const { retargetInfo } = useSelector((state) => state.retargetData);
-
+const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
 
-  const [originalLpmode, setOriginalLpmode] = useState<LPModeType | undefined>(undefined);
-  const [isOutsideClose, setIsOutsideClose] = useState(false);
-  const onChangeSearchText = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      dispatch(lpSearchwordActtions.setSearchword({ word: e.target.value }));
-      if (_.isEqual(lpmode, LPModeType.iconview)) {
-        dispatch(lpModeActions.setLPMode({ mode: 'listView' }));
-        setOriginalLpmode(LPModeType.iconview);
+  const lpNode = useSelector((state) => state.lpNode.node);
+  const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
+  const assetList = useSelector((state) => state.shootProject.assetList);
+  const animationTransformNodes = useSelector(
+    (state) => state.animationData.animationTransformNodes,
+  );
+  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+
+  const { onModalOpen, onModalClose } = useBaseModal();
+
+  const [fileExtension, setFileExtension] = useState('');
+  const [fileName, setFileName] = useState('');
+  const [assetListLength, setAssetListLength] = useState(0);
+  const [animationIngredientsLength, setAnimationIngredientsLength] = useState(0);
+
+  useEffect(() => {
+    if (
+      assetListLength !== assetList.length &&
+      animationIngredientsLength !== animationIngredients.length
+    ) {
+      let nextLPNodes = _.clone(lpNode);
+
+      const nextNodes = produce(nextLPNodes, (draft) => {
+        const ingredients = animationIngredients.filter(
+          (ingredient) => ingredient.assetId === assetList[assetList.length - 1].id,
+        );
+
+        const newModelNode: LP.Node = {
+          id: uuid(),
+          // fileURL: file,
+          filePath: lpCurrentPath,
+          parentId: '__root__',
+          name: fileName,
+          extension: fileExtension,
+          type: 'Model',
+          assetId: assetList[assetList.length - 1].id,
+          children: ingredients.map((ingredient) => ingredient.id),
+        };
+
+        draft.push(newModelNode);
+
+        const newMotionNodes = animationIngredients.map((ingredient) => {
+          const motion: LP.Node = {
+            id: ingredient.id,
+            parentId: ingredient.assetId,
+            name: ingredient.name,
+            filePath: lpCurrentPath + `\\${ingredient.name}`,
+            children: [],
+            extension: '',
+            type: 'Motion',
+          };
+
+          return motion;
+        });
+
+        draft.push(...newMotionNodes);
+      });
+
+      nextLPNodes = nextNodes;
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: nextNodes,
+        }),
+      );
+
+      setFileName('');
+      setAssetListLength(assetList.length);
+      setAnimationIngredientsLength(animationIngredients.length);
+    }
+  }, [
+    animationIngredients,
+    animationIngredientsLength,
+    assetList,
+    assetListLength,
+    dispatch,
+    fileExtension,
+    fileName,
+    lpCurrentPath,
+    lpNode,
+  ]);
+
+  const onFileLoad = useCallback(
+    async (file: File) => {
+      const extension = getFileExtension(file.name).toLowerCase();
+      const fileName = file.name;
+
+      if (extension === 'glb') {
+        setFileName(fileName);
+        setFileExtension(extension);
+
+        /**
+         * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
+         */
+
+        dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
+        return;
       }
-      if (_.isEmpty(e.target.value) && _.isEqual(originalLpmode, LPModeType.iconview)) {
-        dispatch(lpModeActions.setLPMode({ mode: 'iconView' }));
-        setOriginalLpmode(undefined);
+
+      if (extension === 'fbx') {
+        onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
+
+        await convertFBXtoGLB(file)
+          .then((response) => {
+            onModalClose();
+
+            setFileName(fileName);
+
+            /**
+             * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
+             */
+            dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
+          })
+          .catch(() => {
+            onModalOpen({
+              title: 'Warning',
+              message:
+                '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
+              confirmText: 'Contact',
+              onConfirm: () => {
+                // location.href = 'mailto:contact@plask.ai';
+                onModalClose();
+              },
+            });
+          });
+
+        return;
       }
     },
-    [dispatch, lpmode, originalLpmode],
+    [dispatch, onModalClose, onModalOpen],
   );
-  const searchWord = useSelector((state) => state.lpSearchword.word);
-  const contextmenuInfo = useSelector((state) => state.contextmenuInfo);
-  const panelWrapperRef = useRef<HTMLDivElement>(null);
-  const [showsModal, setShowsModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
-  const {
-    onClick,
-    onContextMenu,
-    onDragStart,
-    onDragEnd,
-    onDrop,
-    shortcutData,
-    filteredData,
-  } = useLPControl({
-    contextmenuInfo,
-    mainData: lpData,
-    pages,
-    searchWord,
-    lpmode,
-    showsModal,
-    setShowsModal,
-    modalMessage,
-    setModalMessage,
-    retargetInfo,
-  });
 
-  const { getConfirm } = useConfirmModal();
+  const handleDrop = useCallback(
+    async (files: File[]) => {
+      const videos = files.filter((file) => file.type.includes('video'));
+      const removedVideoFiles = files.filter((file) => !file.type.includes('video'));
 
-  const handleDrop = async (acceptedFiles: File[]) => {
-    setShowsModal(true);
-    setModalMessage('Importing the file.<br />This can take up to 3 minutes');
-    if (_.isEmpty(acceptedFiles)) {
-      setModalMessage('File not found.');
-      setIsOutsideClose(true);
-      return false;
-    }
-    if (
-      _.gt(
-        _.size(
-          _.filter(acceptedFiles, (acceptedFile) =>
-            _.includes(
-              ENABLE_VIDEO_FORMATS,
-              _.last(_.split(acceptedFile.name, '.'))?.toLowerCase(),
-            ),
-          ),
-        ),
-        1,
-      )
-    ) {
-      setModalMessage('NOT allowed to import multiple files at once.');
-      setIsOutsideClose(true);
-      return false;
-    }
-    let newLpData = _.clone(lpData);
-    // 비디오포맷은 마지막으로 재정렬
-    const sortedAcceptedFiles = _.concat(
-      _.filter(
-        acceptedFiles,
-        (file) => !_.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))?.toLowerCase()),
-      ),
-      _.filter(acceptedFiles, (file) =>
-        _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))?.toLowerCase()),
-      ),
-    );
-    for (const file of sortedAcceptedFiles) {
-      const extension = _.last(_.split(file.name, '.'));
-      if (!_.includes(ENABLE_FILE_FORMATS, extension?.toLowerCase())) {
-        setModalMessage('Unsupported file format.');
-        setIsOutsideClose(true);
-        return false;
-      }
-      if (extension && extension.toLowerCase() === 'json') {
-        const fileReader = new FileReader();
-        fileReader.onload = (event) => {
-          try {
-            let result: any = event.target?.result;
-            result = JSON.parse(result);
-            if (result.key !== 'plask') {
-              setIsOutsideClose(true);
-              setShowsModal(true);
-              setModalMessage('Unsupported data format.');
-              return;
-            }
-            const data = result.data;
-            const key = uuidv4();
-            const name = fnGetFileName({ key: '', lpData, name: file.name });
-            const newData: LPItemListOldType = [
-              {
-                key,
-                type: 'Motion',
-                name,
-                parentKey: ROOT_FOLDER_NAME,
-                baseLayer: _.map(data, (track) => {
-                  if (track.name.includes('quaternion')) {
-                    return fnQuaternionToEulerTrack({ quaternionTrack: track });
-                  } else {
-                    return track;
-                  }
-                }),
-                layers: [],
-                isExportedMotion: true,
-              },
-            ];
-            dispatch(lpDataActions.addItemListOld({ itemList: newData }));
-          } catch (error) {
-            setIsOutsideClose(true);
-            setShowsModal(true);
-            setModalMessage(error);
-          }
-        };
-        fileReader.readAsText(file);
-        continue;
-      }
-      let overlappedFile: LPItemOldType | undefined;
-      if (_.isEqual(lpmode, LPModeType.iconview)) {
-        overlappedFile = _.find(
-          lpData,
-          (item) =>
-            _.isEqual(item.name, file?.name) && _.isEqual(item.parentKey, _.last(pages)?.key),
-        );
-      }
-      if (_.isEqual(lpmode, LPModeType.listview)) {
-        overlappedFile = _.find(
-          lpData,
-          (item) => _.isEqual(item.name, file?.name) && _.isEqual(item.parentKey, ROOT_FOLDER_NAME),
-        );
-      }
-      if (!_.isEmpty(overlappedFile)) {
-        const confirmed = await getConfirm({
-          title: `You already have a file with ${overlappedFile?.name} in the same folder. Do you want to replace it?`,
-        });
+      const isInvalidFormat = removedVideoFiles.some((file) => {
+        const extension = getFileExtension(file.name).toLowerCase();
+        const isModelFormat = extension === 'glb' || extension === 'fbx';
 
-        if (confirmed) {
-          newLpData = _.filter(newLpData, (item) => !_.isEqual(item?.key, overlappedFile?.key));
-          newLpData = fnDeleteFileByKeys({
-            lpData: newLpData,
-            keys: [overlappedFile?.key ?? ''],
-            dispatch,
-          });
-        } else {
-          continue;
-        }
-      }
-
-      let url = URL.createObjectURL(file);
-      if (_.isEqual(extension?.toLowerCase(), FORMAT_TYPES.fbx)) {
-        // fbx 파일 업로드 및 변환
-        const { url: convertedUrl, error } = await api.setConvertFbxToGlb({
-          file,
-          type: FORMAT_TYPES.glb,
-        });
-        if (error) {
-          setModalMessage('Failed to upload the file.');
-          setIsOutsideClose(true);
-          return false;
-        }
-        url = convertedUrl;
-      }
-
-      if (_.includes(ENABLE_VIDEO_FORMATS, extension?.toLowerCase())) {
-        setShowsModal(false);
-        const confirmed = await getConfirm({
-          title: 'Export motion from the video?',
-        });
-
-        if (confirmed) {
-          dispatch(lpDataActions.setItemListOld({ itemList: newLpData }));
-          dispatch(recordingDataActions.setRecordingData(INITIAL_RECORDING_DATA));
-          dispatch(cutImagesActions.setCutImages({ urls: [] }));
-          dispatch(pageInfoActions.setPageInfo({ page: 'extract', videoUrl: url, extension }));
-        } else {
-          continue;
-        }
-      }
-
-      const { animations, bones = [], error } = await fnGetAnimationData({ url });
-      if (error) {
-        setModalMessage('Failed to export the animation data from the file.');
-        setIsOutsideClose(true);
-        return false;
-      }
-      const motions: LPItemListOldType = [];
-      const key = uuidv4();
-      _.forEach(animations, (clip, index) => {
-        if (bones) {
-          motions.push({
-            key: clip?.uuid,
-            name: clip?.name,
-            baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
-            layers: [],
-            type: 'Motion',
-            parentKey: key,
-            boneNames: _.map(bones, (bone) => bone.name),
-          });
-        }
+        return !isModelFormat;
       });
-      let newData: LPItemListOldType = [
-        {
-          key,
-          type: 'File',
-          name: file.name,
-          url,
-          parentKey: _.isEqual(lpmode, LPModeType.iconview) ? _.last(pages)?.key : ROOT_FOLDER_NAME,
-          baseLayer: fnGetBaseLayerWithBoneNames({
-            boneNames: _.map(bones, (bone) => bone.name),
-          }),
-          layers: [],
-          boneNames: _.map(bones, (bone) => bone.name),
-        },
-      ];
-      newData = _.concat(newData, motions);
-      dispatch(lpDataActions.addItemListOld({ itemList: newData }));
-    }
-    setShowsModal(false);
-  };
-  const handleDefaultModel = useCallback(async () => {
-    let newLpData: LPItemListOldType = [];
-    if (!_.isEmpty(lpData)) {
-      return;
-    }
-    setShowsModal(true);
-    setModalMessage('Importing the file.<br />This can take up to 3 minutes');
-    for (const model of DEFAULT_MODELS) {
-      const isExists = _.some(lpData, { key: model?.key });
-      if (isExists) {
-        continue;
+
+      const isError = videos.length > 1;
+
+      if (isError) {
+        onModalOpen({
+          title: 'Warning',
+          message: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
+          confirmText: 'Close',
+          onConfirm: () => onModalClose(),
+        });
+
+        return;
       }
-      try {
-        const { animations, bones = [], error } = await fnGetAnimationData({
-          url: model?.url ?? '',
-        });
-        if (error) {
-          // setModalMessage('Failed to export the animation data from the file.');
-          setShowsModal(false);
-          return false;
-        }
-        const motions: LPItemListOldType = [];
-        const key = uuidv4();
-        _.forEach(animations, (clip, index) => {
-          if (bones) {
-            motions.push({
-              key: clip?.uuid,
-              name: clip?.name,
-              baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
-              layers: [],
-              type: 'Motion',
-              parentKey: key,
-              boneNames: _.map(bones, (bone) => bone.name),
-            });
-          }
-        });
-        let newData: LPItemListOldType = [
-          {
-            key,
-            type: 'File',
-            name: model?.name,
-            url: model?.url,
-            parentKey: _.isEqual(lpmode, LPModeType.iconview)
-              ? _.last(pages)?.key
-              : ROOT_FOLDER_NAME,
-            baseLayer: fnGetBaseLayerWithBoneNames({
-              boneNames: _.map(bones, (bone) => bone.name),
-            }),
-            layers: [],
-            boneNames: _.map(bones, (bone) => bone.name),
+
+      if (isInvalidFormat) {
+        onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
+
+        return;
+      }
+
+      /**
+       * @TODO 하나라도 실패 시 전부 취소하거나 성공하는 포맷들만 로드하거나 필요
+       */
+      removedVideoFiles.map(async (file) => await onFileLoad(file));
+
+      if (videos.length > 0) {
+        /**
+         * @TODO 이후 사용하지 않는 경우 remove url 필요
+         */
+        const videoBlobURL = URL.createObjectURL(videos[0]);
+
+        onModalOpen({
+          title: 'Extract',
+          message: '모션을 추출하시겠습니까?',
+          confirmText: '확인',
+          cancelText: '취소',
+          onConfirm: () => {
+            dispatch(
+              modeSelectActions.changeMode({
+                mode: 'videoMode',
+                videoURL: videoBlobURL,
+              }),
+            );
           },
-        ];
-        newData = _.concat(newData, motions);
-        newLpData = _.concat(newLpData, newData);
-      } catch (error) {
-        console.log('error', error);
+          onCancel: () => onModalClose(),
+        });
       }
-      dispatch(lpDataActions.setItemListOld({ itemList: newLpData }));
-    }
-    setShowsModal(false);
-  }, [dispatch, lpData, lpmode, pages]);
+    },
+    [dispatch, onFileLoad, onModalClose, onModalOpen],
+  );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
-  const handleModalClose = useCallback(() => {
-    setIsOutsideClose(false);
-    setShowsModal(false);
-  }, []);
+  const [view, setView] = useState<LP.View>('List');
 
-  useContextMenu({ targetRef: panelWrapperRef, event: onContextMenu });
+  const [searchText, setSearchText] = useState('');
+  const [searchResultNode, setSearchResultNode] = useState<LP.Node[]>(lpNode);
 
-  const isIconView = lpmode === 'iconView';
+  const handleSearch = useCallback(
+    (text: string) => {
+      setSearchText(text);
 
-  const iconViewProps = {
-    onClick,
-    onContextMenu,
-    onDragStart,
-    onDragEnd,
-    onDrop,
-    shortcutData,
-    filteredData,
-  };
+      if (text.length > 0) {
+        const searchResult = lpNode.filter(
+          (node) =>
+            node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text),
+        );
 
-  const listViewProps = {
-    onClick,
-    onContextMenu,
-    onDragStart,
-    onDragEnd,
-    onDrop,
-    shortcutData,
-  };
-
-  useEffect(() => {
-    handleDefaultModel();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+        setSearchResultNode(searchResult);
+      }
+    },
+    [lpNode],
+  );
 
   return (
-    <div className={cx('hidden-wrapper')} ref={panelWrapperRef}>
-      <div className={cx('wrapper')} {...getRootProps()}>
-        <div className={cx('inner')}>
-          <div className={cx('header')}>
-            <Headline className={cx('title')} level="5" align="left" margin>
-              Library
-            </Headline>
-            <Explorer onChange={onChangeSearchText} />
-          </div>
-          {isIconView && (
-            <div className={cx('breadcrumb')}>
-              <Breadcrumb />
-            </div>
-          )}
-          <div className={cx('content')}>
-            {isIconView ? <IconView {...iconViewProps} /> : <ListView {...listViewProps} />}
-          </div>
-        </div>
+    <div className={cx('wrapper')} {...getRootProps()}>
+      <div className={cx('inner')}>
+        <Box id="LP-Header" noResize>
+          <LPHeader onLoad={handleDrop} />
+        </Box>
+        <Box id="LP-Controlbar" noResize>
+          <LPControlbar onSearch={handleSearch} />
+        </Box>
+        <Box id="LP-Body" className={cx('lp-body')} noResize>
+          <LPBody
+            view={view}
+            lpNode={searchText.length > 0 ? searchResultNode : lpNode}
+            disableContextMenu={!!searchText}
+          />
+        </Box>
       </div>
-      {showsModal && (
-        <BaseModal title={modalMessage} onClose={handleModalClose} hasCloseIcon={isOutsideClose} />
-      )}
     </div>
   );
 };
-export const LibraryPanel = memo(LibraryPanelComponent);
+
+export default memo(LibraryPanel);

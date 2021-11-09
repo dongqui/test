@@ -30,28 +30,7 @@ const defaultProps: Partial<Props> = {
 };
 
 const BaseInput = forwardRef<HTMLInputElement, Props>(
-  (
-    {
-      type,
-      className,
-      mask,
-      maskChar,
-      disabled,
-      invalid,
-      arrow,
-      fullSize,
-      autoComplete,
-      spellCheck,
-      readOnly,
-      isChild,
-      theme,
-      onBlur,
-      onChange,
-      onKeyUp,
-      ...rest
-    },
-    ref,
-  ) => {
+  ({ type, className, mask, maskChar, disabled, invalid, arrow, fullSize, autoComplete, spellCheck, readOnly, isChild, theme, onBlur, onChange, onKeyUp, ...rest }, ref) => {
     const classes = cx('input', className, theme, {
       arrow,
       invalid,
@@ -84,23 +63,9 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
 
     if (mask) {
       return (
-        <MaskedInput
-          className={classes}
-          mask={mask}
-          maskChar={maskChar}
-          readOnly={readOnly}
-          alwaysShowMask
-          {...rest}
-        >
+        <MaskedInput className={classes} mask={mask} maskChar={maskChar} readOnly={readOnly} alwaysShowMask {...rest}>
           {(inputProps: unknown) => (
-            <input
-              type={type}
-              ref={ref}
-              autoComplete={autoComplete ? 'on' : 'off'}
-              spellCheck={spellCheck ? 'true' : 'false'}
-              readOnly={readOnly}
-              {...inputProps}
-            />
+            <input type={type} ref={ref} autoComplete={autoComplete ? 'on' : 'off'} spellCheck={spellCheck ? 'true' : 'false'} readOnly={readOnly} {...inputProps} />
           )}
         </MaskedInput>
       );

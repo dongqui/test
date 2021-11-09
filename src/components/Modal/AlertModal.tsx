@@ -21,16 +21,7 @@ interface Props {
 // 버튼 3개는 props로 받고 1개는 primary color
 // 입력 양식 또한 props
 // 버튼 1개는 fullSize배치
-const AlertModal: FunctionComponent<Props> = ({
-  isOpen,
-  title,
-  onClose,
-  onConfirm,
-  onOutsideClose,
-  isAlert,
-  text,
-  children,
-}) => {
+const AlertModal: FunctionComponent<Props> = ({ isOpen, title, onClose, onConfirm, onOutsideClose, isAlert, text, children }) => {
   return (
     <Fragment>
       {isOpen && (
@@ -73,13 +64,7 @@ const AlertModalProvider = ({ children }: any) => {
 
   return (
     <AlertModalContext.Provider value={{ handleOpen }}>
-      <AlertModal
-        isOpen={dialogOpen}
-        title={dialogConfig?.title}
-        onConfirm={handleConfirm}
-        onClose={handleDismiss}
-        text="OK"
-      />
+      <AlertModal isOpen={dialogOpen} title={dialogConfig?.title} onConfirm={handleConfirm} onClose={handleDismiss} text="OK" />
       {children}
     </AlertModalContext.Provider>
   );

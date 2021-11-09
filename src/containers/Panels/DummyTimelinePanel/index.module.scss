@@ -1,0 +1,79 @@
+@mixin common-panel {
+  display: flex;
+  height: auto;
+  border-bottom: 1px solid #303030;
+  padding: 12px;
+}
+
+.wrapper {
+  background-color: #282727;
+  width: 100%;
+  height: 100%;
+  border-left: 1px solid #000;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: row;
+
+  .title {
+    text-align: center;
+    color: whitesmoke;
+  }
+
+  .first {
+    width: 300px;
+    height: 100%;
+    overflow-y: scroll;
+  }
+
+  .second {
+    width: 700px;
+    height: 100%;
+    overflow-y: scroll;
+
+    .track {
+      width: 100%;
+      margin: 0 5px;
+      padding: 0 5px;
+      background-color: whitesmoke;
+      overflow-x: scroll;
+      border-width: 2px;
+      border-style: outset;
+      border-color: -internal-light-dark(rgb(118, 118, 118), rgb(133, 133, 133));
+
+      &.selected {
+        background-color: cornflowerblue;
+      }
+    }
+  }
+
+  .third {
+    width: 300px;
+    height: 100%;
+    overflow-y: scroll;
+  }
+
+  .fourth {
+    width: 300px;
+    height: 100%;
+    overflow-y: scroll;
+  }
+
+  .input {
+    width: 100%;
+    margin: 0 5px;
+    padding-left: 10px;
+  }
+
+  .button {
+    width: 100%;
+    margin: 0 5px;
+
+    &.selected {
+      background-color: cornflowerblue;
+    }
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

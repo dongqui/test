@@ -39,12 +39,7 @@ export const ENABLE_VIDEO_FORMATS = [
   VIDEO_FORMAT_TYPES.webm,
   VIDEO_FORMAT_TYPES.mov,
 ];
-export const ENABLE_FILE_FORMATS = [
-  FORMAT_TYPES.glb,
-  FORMAT_TYPES.fbx,
-  FORMAT_TYPES.json,
-  ...ENABLE_VIDEO_FORMATS,
-];
+export const ENABLE_FILE_FORMATS = [FORMAT_TYPES.glb, FORMAT_TYPES.fbx, FORMAT_TYPES.json, ...ENABLE_VIDEO_FORMATS];
 export enum PROPERTY_TYPES {
   position = 'position',
   positionCnt = 3,

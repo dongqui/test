@@ -19,7 +19,7 @@
   align-items: center;
   justify-content: space-around;
   padding: 4px 8px;
-  background-color: #303030;
+  // background-color: #303030;
   color: #fff;
   min-width: 72px;
   max-height: 10rem;
@@ -62,7 +62,6 @@
   overflow: hidden;
   z-index: 999;
   letter-spacing: 1px;
-
   overflow-y: scroll;
 
   &::-webkit-scrollbar {

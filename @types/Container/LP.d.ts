@@ -1,0 +1,31 @@
+import { MutableRefObject, InputHTMLAttributes, RefObject } from 'react';
+
+export = LP;
+export as namespace LP;
+
+declare namespace LP {
+  type View = 'List' | 'Gallery';
+  type NodeType = 'Folder' | 'Model' | 'Motion';
+
+  interface Node {
+    id: string;
+    parentId: string;
+    fileURL?: string | File;
+    filePath: string;
+    name: string;
+    extension: string;
+    type: NodeType;
+    children: any[];
+    assetId?: string;
+    motionData?: {
+      id: string;
+      result: {
+        name: string;
+        times: number[];
+        values: number[];
+      }[];
+    };
+  }
+}
+
+export default LP;

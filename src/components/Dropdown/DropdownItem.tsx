@@ -1,10 +1,4 @@
-import {
-  FunctionComponent,
-  memo,
-  useCallback,
-  MouseEventHandler,
-  KeyboardEventHandler,
-} from 'react';
+import { FunctionComponent, memo, useCallback, MouseEventHandler, KeyboardEventHandler } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './DropdownItem.module.scss';
@@ -42,14 +36,7 @@ const DropdownItem: FunctionComponent<Props> = ({ item, selectedValue, onSelect 
   );
 
   return (
-    <li
-      key={item.key}
-      tabIndex={0}
-      className={cx('menu-item')}
-      onClick={handleClick}
-      onKeyDown={handleSelect}
-      role="menuitem"
-    >
+    <li key={item.key} tabIndex={0} className={cx('menu-item')} onClick={handleClick} onKeyDown={handleSelect} role="menuitem">
       {item.value}
     </li>
   );

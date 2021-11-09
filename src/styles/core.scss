@@ -1,5 +1,4 @@
-@import 'styles/libraries/_reset';
-@import 'styles/libraries/_grid';
+@import 'styles/libraries/_font';
 @import 'styles/libraries/_resizable';
 @import 'styles/timeline/_dopesheet';
 @import 'styles/timeline/_curve';
@@ -53,15 +52,12 @@ body,
   overflow: hidden;
   padding: 0;
   margin: 0;
+  background-color: #202122;
 }
 
 main {
   width: 100%;
   height: 100%;
-}
-
-* {
-  font-family: 'Noto Sans KR', Arial, sans-serif;
 }
 
 .canvas {

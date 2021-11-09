@@ -18,16 +18,7 @@ const defaultProps: Partial<BaseProps> = {
   size: 'small',
 };
 
-const TextButton: FunctionComponent<Props> = ({
-  size,
-  text,
-  color,
-  fullSize,
-  disabled,
-  className,
-  children,
-  ...rest
-}) => {
+const TextButton: FunctionComponent<Props> = ({ size, text, color, fullSize, disabled, className, children, ...rest }) => {
   const classes = cx('text', className, size, color, {
     disabled,
     fullSize,
