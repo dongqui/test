@@ -1,0 +1,24 @@
+.property-track {
+  .track-body {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 24px;
+    padding: 4px 8px 4px 44px;
+
+    &.selected {
+      background-color: #4c5d78;
+    }
+
+    // 트랙 이름
+    span {
+      font-size: 11px;
+      color: white;
+      padding: 0 !important;
+    }
+
+    .track-name {
+      margin-right: auto;
+    }
+  }
+}

@@ -1,0 +1,19 @@
+.scrubber {
+  line {
+    stroke: white;
+  }
+
+  input {
+    width: 32px;
+    height: 15px;
+    transform: translateY(-6px);
+    font-size: 8px;
+    text-align: center;
+    background-color: white;
+    color: black;
+  }
+
+  input:focus-within {
+    border: none;
+  }
+}

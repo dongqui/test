@@ -10,13 +10,18 @@
     align-items: center;
     justify-content: center;
 
+    &.record {
+      svg {
+        color: #909091;
+      }
+    }
+
     &.pause {
       border-radius: 6px;
       background-color: #0f88ff;
     }
 
     svg {
-      height: 14px;
       color: white;
     }
   }
