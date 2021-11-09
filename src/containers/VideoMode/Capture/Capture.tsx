@@ -1,6 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import produce from 'immer';
 import { UpperBar } from 'containers/UpperBar';
 import { FilledButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -10,9 +12,10 @@ import Box, { BoxProps } from 'components/Layout/Box';
 import { useMediaStream } from 'hooks/common';
 import Image from 'next/image';
 import { FunctionComponent } from 'hoist-non-react-statics/node_modules/@types/react';
-import { is } from 'immer/dist/internal';
 import axios, { Canceler } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as modeSelectActions from 'actions/modeSelection';
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
 import { BaseModal } from 'components/Modal';
@@ -24,6 +27,9 @@ interface Props {
 }
 
 export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
+  const dispatch = useDispatch();
+
+  const lpNode = useSelector((state) => state.lpNode.node);
   const { videoURL } = useSelector((state) => state.modeSelection);
   const cameraListRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -152,41 +158,58 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
    * @param endTime - 영상 전체의 종료 시간
    * @param duration - 영상의 길이 (metaData에서 자체적으로 frame 값을 추출 할 수 없을 경우 대비)
    */
-  const handleExtractMotion = useCallback(
-    async ({ id, start, end, startTime, endTime, url, type, fileName, timeout, duration }) => {
-      const formData = new FormData();
-      const file = await convertBlobToFile({ url, type, fileName }).then((response) => {
-        formData.append('file', response);
-        formData.append('type', type);
-        formData.append('id', id);
-        formData.append('start', start.toString());
-        formData.append('end', end.toString());
-        formData.append('startTime', startTime.toString());
-        formData.append('endTime', endTime.toString());
-        formData.append('duration', duration);
-      });
+  const handleExtractMotion = useCallback(async ({ id, start, end, startTime, endTime, url, type, fileName, timeout, duration }) => {
+    const formData = new FormData();
+    const file = await convertBlobToFile({ url, type, fileName }).then((response) => {
+      formData.append('file', response);
+      formData.append('type', type);
+      formData.append('id', id);
+      formData.append('start', start.toString());
+      formData.append('end', end.toString());
+      formData.append('startTime', startTime.toString());
+      formData.append('endTime', endTime.toString());
+      formData.append('duration', duration);
+    });
 
-      const result = await axios({
-        method: 'POST',
-        url: 'https://shootapi.myplask.com:6500/mocap-upload-api',
-        data: formData,
-        headers: { 'Content-Type': 'multipart/form-data' },
-        cancelToken: new axios.CancelToken((cancel) => {
-          cancelTokenSource = cancel;
-        }),
-        timeout,
-      })
-        .then((response) => response.data)
-        .catch((err) => {
-          throw err;
+    const result = await axios({
+      method: 'POST',
+      url: 'https://shootapi.myplask.com:6500/mocap-upload-api',
+      data: formData,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      cancelToken: new axios.CancelToken((cancel) => {
+        cancelTokenSource = cancel;
+      }),
+      timeout,
+    })
+      .then((response) => {
+        const newMotionNode: LP.Node = {
+          id: uuidv4(),
+          parentId: '__root__',
+          name: fileName,
+          filePath: '\\root',
+          children: [],
+          extension: '',
+          type: 'Motion',
+          motionData: response.data,
+        };
+
+        const nextNodes = produce(lpNode, (draft) => {
+          draft.push(newMotionNode);
         });
-      // return {
-      //   result,
-      // };
-      setReadyExtract(false);
-    },
-    [],
-  );
+
+        setReadyExtract(false);
+        dispatch(lpNodeActions.changeNode({ nodes: nextNodes }));
+        dispatch(modeSelectActions.changeMode({ mode: 'animationMode' }));
+        return response;
+      })
+      .catch((err) => {
+        setReadyExtract(false);
+        throw err;
+      });
+    // return {
+    //   result,
+    // };
+  }, []);
 
   const handleDeleteRecord = useCallback(
     (e) => {
@@ -270,13 +293,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       </Box>
       <div className={cx('video-wrap')}>
         <canvas className={cx('thumbnail-canvas')} ref={canvasRef}></canvas>
-        <video
-          ref={videoRef}
-          className={cx('video')}
-          {...videoOptions}
-          onTimeUpdate={handleCurrentTime}
-          onEnded={handleVideoEnd}
-        >
+        <video ref={videoRef} className={cx('video')} {...videoOptions} onTimeUpdate={handleCurrentTime} onEnded={handleVideoEnd}>
           {/* <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4" /> */}
         </video>
         {standbyState && (
@@ -314,27 +331,15 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
                   key={index}
                   className={cx('icon', item.id)}
                   icon={item.icon}
-                  tabState={
-                    (!recordState && item.id === 'playRecording') ||
-                    item.id === 'pauseRecording' ||
-                    item.id === 'stopRecording'
-                  }
+                  tabState={(!recordState && item.id === 'playRecording') || item.id === 'pauseRecording' || item.id === 'stopRecording'}
                   onClick={item.fn}
                 />
               );
             })}
             {!recordState && <div className={cx('disable-control')}></div>}
           </div>
-          {recordState && (
-            <FilledButton
-              className={cx('extract-button')}
-              text="Extract Motion"
-              onClick={() => setReadyExtract(true)}
-            />
-          )}
-          {!recordState && (
-            <FilledButton className={cx('extract-button', 'disabled')} text="Extract Motion" />
-          )}
+          {recordState && <FilledButton className={cx('extract-button')} text="Extract Motion" onClick={() => setReadyExtract(true)} />}
+          {!recordState && <FilledButton className={cx('extract-button', 'disabled')} text="Extract Motion" />}
         </div>
       </Box>
       {recordState && (
@@ -352,16 +357,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
             >
               <div className={cx('thumbnail')}>
                 {thumbnailList &&
-                  thumbnailList.map((image, idx) => (
-                    <Image
-                      key={idx}
-                      src={image}
-                      alt="timeline thumbanil"
-                      className={cx('thumbnail-image')}
-                      width={100}
-                      height={80}
-                    />
-                  ))}
+                  thumbnailList.map((image, idx) => <Image key={idx} src={image} alt="timeline thumbanil" className={cx('thumbnail-image')} width={100} height={80} />)}
                 {/* <canvas ref={frameRef} /> */}
               </div>
             </CropSlider>
@@ -371,18 +367,9 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       {readyExtract && (
         <BaseModal className={cx('extract-modal', 'extract-name-modal')}>
           <p className={cx('extract-name-paragraph')}>Enter the name of the motion to extract.</p>
-          <input
-            type="text"
-            className={cx('extract-name-input')}
-            placeholder="Exported motion"
-            onChange={(e) => setBasicExtractName(e.target.value)}
-          />
+          <input type="text" className={cx('extract-name-input')} placeholder="Exported motion" onChange={(e) => setBasicExtractName(e.target.value)} />
           <div className={cx('extract-name-wrapper')}>
-            <FilledButton
-              text="Cancel"
-              className={cx('extract-button', 'cancel')}
-              onClick={() => setReadyExtract(false)}
-            ></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setReadyExtract(false)}></FilledButton>
             <FilledButton
               text="Ok"
               className={cx('extract-button')}
@@ -411,11 +398,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
             Your video will be <strong>deleted</strong> to take a new video.
           </p>
           <div className={cx('extract-name-wrapper')}>
-            <FilledButton
-              text="Cancel"
-              className={cx('extract-button', 'cancel')}
-              onClick={() => setTurnStandbyPhase(false)}
-            ></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setTurnStandbyPhase(false)}></FilledButton>
             <FilledButton
               text="Delete"
               className={cx('extract-button')}
