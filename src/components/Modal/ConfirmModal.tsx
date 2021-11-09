@@ -18,25 +18,13 @@ interface Props {
   };
 }
 
-const ConfirmModal: FunctionComponent<Props> = ({
-  isOpen,
-  title,
-  text,
-  onClose,
-  onConfirm,
-  onOutsideClose,
-}) => {
+const ConfirmModal: FunctionComponent<Props> = ({ isOpen, title, text, onClose, onConfirm, onOutsideClose }) => {
   return (
     <Fragment>
       {isOpen && (
         <BaseModal onClose={onClose} onOutsideClose={onOutsideClose} title={title}>
           <div className={cx('inner')}>
-            <FilledButton
-              className={cx('button-cancel')}
-              onClick={onClose}
-              color="secondary"
-              fullSize
-            >
+            <FilledButton className={cx('button-cancel')} onClick={onClose} color="secondary" fullSize>
               {text.cancel}
             </FilledButton>
             <FilledButton onClick={onConfirm} color="primary" fullSize>
@@ -82,13 +70,7 @@ const ConfirmModalProvider = ({ children }: any) => {
 
   return (
     <ConfirmModalContext.Provider value={{ handleOpen, handleText }}>
-      <ConfirmModal
-        isOpen={dialogOpen}
-        title={dialogConfig?.title}
-        onConfirm={handleConfirm}
-        onClose={handleDismiss}
-        text={{ confirm: text.confirm, cancel: text.cancel }}
-      />
+      <ConfirmModal isOpen={dialogOpen} title={dialogConfig?.title} onConfirm={handleConfirm} onClose={handleDismiss} text={{ confirm: text.confirm, cancel: text.cancel }} />
       {children}
     </ConfirmModalContext.Provider>
   );

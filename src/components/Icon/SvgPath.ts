@@ -35,15 +35,17 @@ import Folder from './New_svg/Folder.svg';
 import Model from './New_svg/Model.svg';
 import Motion from './New_svg/Motion.svg';
 import SimpleMode from './svg/SimpleMode.svg';
+import TrackMode from './svg/TrackMode.svg';
 import Record from './svg/Record.svg';
 import Stop from './svg/Stop.svg';
 import InsertKeyframe from './svg/InsertKeyframe.svg';
 import Bezier from './svg/Bezier.svg';
 import Linear from './svg/Linear.svg';
 import Constant from './svg/Constant.svg';
-import TrackMode from './svg/TrackMode.svg';
 import PauseVideo from './svg/PauseVideo.svg';
 import EmptyDownArrow from './svg/EmptyDownArrow.svg';
+import VideoRecord from './svg/VideoRecord.svg';
+import Spinner from './svg/Spinner.svg';
 
 type Icon =
   | 'Close'
@@ -79,15 +81,17 @@ type Icon =
   | 'Model'
   | 'Motion'
   | 'SimpleMode'
-  | 'Record'
   | 'Stop'
+  | 'Record'
   | 'InsertKeyframe'
   | 'Bezier'
   | 'Linear'
   | 'Constant'
   | 'TrackMode'
   | 'PauseVideo'
-  | 'EmptyDownArrow';
+  | 'EmptyDownArrow'
+  | 'VideoRecord'
+  | 'Spinner';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -136,6 +140,8 @@ const images: Images = {
   TrackMode,
   PauseVideo,
   EmptyDownArrow,
+  VideoRecord,
+  Spinner,
 };
 
 export default images;

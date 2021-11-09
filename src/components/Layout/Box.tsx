@@ -25,19 +25,7 @@ export type BoxProps = BaseProps & Omit<ResizableBoxProps, Exclusion>;
 
 type Props = BoxProps & { id: string };
 
-const Box: FunctionComponent<Props> = ({
-  id,
-  width,
-  height,
-  min,
-  max,
-  handles,
-  className,
-  noResize,
-  innerRef,
-  children,
-  ...rest
-}) => {
+const Box: FunctionComponent<Props> = ({ id, width, height, min, max, handles, className, noResize, innerRef, children, ...rest }) => {
   const [innerWidth, innerHeight] = useWindowSize();
 
   const classes = cx('wrapper', className);

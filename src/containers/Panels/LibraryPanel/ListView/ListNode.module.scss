@@ -5,6 +5,7 @@
   padding-left: 7px;
   border-radius: 6px;
   user-select: none;
+  opacity: 0.999;
 
   &.selected {
     background-color: #5c6065;
@@ -27,6 +28,10 @@
     & > svg {
       display: none;
     }
+  }
+
+  &.open {
+    transform: rotate(90deg);
   }
 
   & > svg {

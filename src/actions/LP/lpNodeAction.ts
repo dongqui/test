@@ -2,11 +2,7 @@ interface State {
   nodes: LP.Node[];
 }
 
-export type LPNodeAction =
-  | ReturnType<typeof changeNode>
-  | ReturnType<typeof visualize>
-  | ReturnType<typeof changeCurrentPath>
-  | ReturnType<typeof changeClipboard>;
+export type LPNodeAction = ReturnType<typeof changeNode> | ReturnType<typeof visualize> | ReturnType<typeof changeCurrentPath> | ReturnType<typeof changeClipboard>;
 
 export const CHANGE_NODE = 'mode/CHANGE_NODE' as const;
 export const VISUALIZE = 'mode/VISUALIZE' as const;
@@ -26,7 +22,7 @@ interface ChangeCurrentPathParams {
 }
 
 interface ChangeClipboardParams {
-  data: string[];
+  data: LP.Node[];
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({

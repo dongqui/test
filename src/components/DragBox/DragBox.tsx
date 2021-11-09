@@ -1,12 +1,4 @@
-import React, {
-  memo,
-  useEffect,
-  useRef,
-  RefObject,
-  useState,
-  useCallback,
-  FunctionComponent,
-} from 'react';
+import React, { memo, useEffect, useRef, RefObject, useState, useCallback, FunctionComponent } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './DragBox.module.scss';
@@ -96,15 +88,9 @@ const DragBox: FunctionComponent<Props> = (props) => {
         updateTranslate(event.x, event.y);
         if (parentRef.current) {
           const { minX, maxX, minY, maxY } = getMinMaxXY();
-          const {
-            x: parentLeft,
-            y: parentTop,
-            width: parentWidth,
-            height: parentHeight,
-          } = parentRef.current.getBoundingClientRect();
+          const { x: parentLeft, y: parentTop, width: parentWidth, height: parentHeight } = parentRef.current.getBoundingClientRect();
           const calcBoxLeftTop = (now: number, min: number) => (now < min ? min : now);
-          const calcBoxRightBottom = (now: number, min: number, max: number) =>
-            min + max < now ? min + max : now;
+          const calcBoxRightBottom = (now: number, min: number, max: number) => (min + max < now ? min + max : now);
 
           const boxLeft = calcBoxLeftTop(minX, parentLeft);
           const boxTop = calcBoxLeftTop(minY, parentTop);
@@ -116,12 +102,7 @@ const DragBox: FunctionComponent<Props> = (props) => {
           });
 
           parentRef.current.querySelectorAll('#grabbable').forEach((element) => {
-            const {
-              x: elementLeft,
-              y: elementTop,
-              width: elementWidth,
-              height: elementHeight,
-            } = element.getBoundingClientRect();
+            const { x: elementLeft, y: elementTop, width: elementWidth, height: elementHeight } = element.getBoundingClientRect();
             const elementRight = elementLeft + elementWidth;
             const elementBottom = elementTop + elementHeight;
             const isSmallerThanBoxCoord = (box: number, element: number) => box < element;

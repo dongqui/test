@@ -31,15 +31,7 @@ const Segment: FunctionComponent<Props> = ({ list, disabled }) => {
       active: item.isSelected,
     });
     return (
-      <div
-        role="button"
-        className={buttonClasses}
-        key={item.key}
-        id={item.key}
-        tabIndex={idx}
-        onKeyPress={handleClick}
-        onClick={handleClick}
-      >
+      <div role="button" className={buttonClasses} key={item.key} id={item.key} tabIndex={idx} onKeyPress={handleClick} onClick={handleClick}>
         {item.value}
       </div>
     );

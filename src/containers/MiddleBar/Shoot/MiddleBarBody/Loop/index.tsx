@@ -8,7 +8,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const LoopRange = () => {
+const Loop = () => {
   const startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
   const currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
@@ -25,8 +25,8 @@ const LoopRange = () => {
   }, []);
 
   return (
-    <div className={cx('loop-range')}>
-      <p>Loop Range</p>
+    <div className={cx('loop')}>
+      <p>Loop</p>
       <StartInput
         startTimeIndex={startTimeIndex}
         endTimeIndex={endTimeIndex}
@@ -43,4 +43,4 @@ const LoopRange = () => {
   );
 };
 
-export default LoopRange;
+export default Loop;

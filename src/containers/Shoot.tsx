@@ -12,6 +12,7 @@ import { ResizeCallbackData } from 'react-resizable';
 import { UpperBar } from 'containers/UpperBar';
 import LibraryPanel from 'containers/Panels/LibraryPanel';
 import RenderingPanel from './Panels/RenderingPanel';
+import TimelinePanel from './Panels/TimelinePanel';
 import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
 import { useWindowSize } from 'hooks/common';
@@ -262,8 +263,8 @@ const Shoot: FunctionComponent = () => {
           <MiddleBar />
         </Box>
         <Box id="TP" {...boxProps.tp}>
-          <DummyTimelinePanel />
-          {/* <TimelinePanel /> */}
+          {/* <DummyTimelinePanel /> */}
+          <TimelinePanel />
         </Box>
       </Box>
     </Fragment>

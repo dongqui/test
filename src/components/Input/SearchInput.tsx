@@ -20,25 +20,16 @@ const defaultProps: Partial<Props> = {
   theme: 'dark',
 };
 
-const SearchInput = forwardRef<HTMLInputElement, Props>(
-  ({ className, theme, disabled, ...rest }, ref) => {
-    const classes = cx('input-wrapper', className, theme, disabled);
+const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, theme, disabled, ...rest }, ref) => {
+  const classes = cx('input-wrapper', className, theme, disabled);
 
-    return (
-      <div className={classes}>
-        <BaseInput
-          className={cx('input')}
-          ref={ref}
-          theme={theme}
-          disabled={disabled}
-          isChild
-          {...rest}
-        />
-        <IconWrapper className={cx('search')} icon={SvgPath.Search} hasFrame={false} />
-      </div>
-    );
-  },
-);
+  return (
+    <div className={classes}>
+      <BaseInput className={cx('input')} ref={ref} theme={theme} disabled={disabled} isChild {...rest} />
+      <IconWrapper className={cx('search')} icon={SvgPath.Search} hasFrame={false} />
+    </div>
+  );
+});
 
 SearchInput.displayName = 'SearchInput';
 SearchInput.defaultProps = defaultProps;

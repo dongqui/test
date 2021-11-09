@@ -29,6 +29,7 @@ export interface ShootScene {
 export interface ShootAsset {
   id: string;
   name: string;
+  extension: string;
   meshes: BABYLON.AbstractMesh[];
   geometries: BABYLON.Geometry[];
   skeleton: BABYLON.Skeleton;

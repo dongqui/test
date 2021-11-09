@@ -1,14 +1,14 @@
-import { ModeSelectionType } from 'types';
-import { ModeSelectionAction } from 'actions/modeSelection';
+import { ChangeMode, ModeSelectionAction } from 'actions/modeSelection';
 
-const defaultState: ModeSelectionType = {
+const defaultState: ChangeMode = {
   mode: 'animationMode',
+  // videoURL: 'http://media.w3.org/2010/05/sintel/trailer.mp4',
 };
 
 export const modeSelection = (state = defaultState, action: ModeSelectionAction) => {
   switch (action.type) {
-    case 'modeSelection/SET_MODE': {
-      return { ...state, mode: action.payload };
+    case 'modeSelection/CHANGE_MODE': {
+      return Object.assign({}, state, action.payload);
     }
     default: {
       return state;

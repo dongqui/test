@@ -1,0 +1,8 @@
+.keyframe {
+  cursor: pointer;
+  stroke: #fb8226;
+
+  &.clicked {
+    stroke: #fff;
+  }
+}

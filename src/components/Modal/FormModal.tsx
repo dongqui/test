@@ -24,15 +24,7 @@ export interface Props {
 // 버튼 3개 이상인 경우 세로 fullSize 배치
 // 버튼 3개는 props로 받고 1개는 primary color
 // 입력 양식 또한 props
-const FormModal: FunctionComponent<Props> = ({
-  isOpen,
-  title,
-  text,
-  onClose,
-  onSubmit,
-  onOutsideClose,
-  children,
-}) => {
+const FormModal: FunctionComponent<Props> = ({ isOpen, title, text, onClose, onSubmit, onOutsideClose, children }) => {
   const {
     register,
     handleSubmit,
@@ -48,12 +40,7 @@ const FormModal: FunctionComponent<Props> = ({
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         {children}
         <div className={cx('inner')}>
-          <FilledButton
-            className={cx('button-cancel')}
-            onClick={onClose}
-            color="secondary"
-            fullSize
-          >
+          <FilledButton className={cx('button-cancel')} onClick={onClose} color="secondary" fullSize>
             {text.cancel}
           </FilledButton>
           <FilledButton type="submit" color="primary" fullSize>
