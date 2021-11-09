@@ -44,6 +44,9 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const [standbyState, setStandbyState] = useState<boolean>(false);
   const [recordOverTwice, setRecordOverTwice] = useState<boolean>(false);
   const [cameraDropdownState, setCameraDropdownState] = useState<boolean>(false);
+  const [readyExtract, setReadyExtract] = useState<boolean>(false);
+  const [basicExtractName, setBasicExtractName] = useState<string>('Exported motion');
+  const [turnStandbyPhase, setTurnStandbyPhase] = useState<boolean>(false);
   const [start, setStart] = useState<number>(0);
   const [end, setEnd] = useState<number>(0);
   const [timer, setTimer] = useState<number>(5);
@@ -66,6 +69,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     canvasRef: canvasRef,
     recording: recording,
     currentDeviceId: currnetDeviceId,
+    recordOverTwice: recordOverTwice,
     setThumbnailList: setThumbnailList,
     setDuration: setDuration,
     setPlayState: setPlayState,
@@ -98,15 +102,6 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       height: 132,
     } as BoxProps,
   };
-
-  const playBox = [
-    { id: 'startRecording', icon: SvgPath.Record, fn: stopRecording },
-    { id: 'standbyRecording', icon: SvgPath.Record, fn: backToStandby },
-    { id: 'completeRecording', icon: SvgPath.Record, fn: startRecordingDelay },
-    { id: 'playRecording', icon: SvgPath.PlayArrow, fn: playRecording },
-    { id: 'pauseRecording', icon: SvgPath.PauseVideo, fn: pauseRecording },
-    { id: 'stopRecording', icon: SvgPath.Stop, fn: stopVideo },
-  ];
 
   // const handleChangeCamera = useCallback(() => {}, []);
 
@@ -148,8 +143,17 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     return data;
   }, []);
 
+  /**
+   * 모션을 추출하기 위한 함수
+   * @param id - 비디오의 고유 번호 (uuid를 사용한 중복되지 않는 랜덤 ID)
+   * @param start - 추출을 시작할 시작 시간
+   * @param end - 추출을 시작한 후 끝낼 시간
+   * @param startTime - 전체 영상의 시작 시간
+   * @param endTime - 영상 전체의 종료 시간
+   * @duration - 영상의 길이 (metaData에서 자체적으로 frame 값을 추출 할 수 없을 경우 대비)
+   */
   const handleExtractMotion = useCallback(
-    async ({ id, start, end, startTime, endTime, url, type, fileName, timeout }) => {
+    async ({ id, start, end, startTime, endTime, url, type, fileName, timeout, duration }) => {
       const formData = new FormData();
       const file = await convertBlobToFile({ url, type, fileName }).then((response) => {
         formData.append('file', response);
@@ -159,6 +163,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         formData.append('end', end.toString());
         formData.append('startTime', startTime.toString());
         formData.append('endTime', endTime.toString());
+        formData.append('duration', duration);
       });
 
       const result = await axios({
@@ -172,12 +177,26 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         timeout,
       })
         .then((response) => console.log(response))
-        .catch((err) => console.log(err));
+        .catch((err) => {
+          throw new Error(err);
+        });
       // return {
       //   result,
       // };
+      setReadyExtract(false);
     },
     [],
+  );
+
+  const handleDeleteRecord = useCallback(
+    (e) => {
+      if (videoRef.current!.src) {
+        setTurnStandbyPhase(true);
+      } else {
+        startRecordingDelay();
+      }
+    },
+    [startRecordingDelay, stopRecording],
   );
 
   // 단축키 이벤트의 연속발생을 위한 keydown 이벤트(버튼을 누르고 있다면 연속으로 프레임이 넘어가야함)
@@ -186,23 +205,22 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       return;
     }
     if (e.key === 'ArrowRight' || e.key === '.') {
-      console.log('arrowright');
       videoRef.current!.currentTime += 0.01;
     } else if (e.key === 'ArrowLeft' || e.key === ',') {
       videoRef.current!.currentTime -= 0.01;
-      console.log('arrowleft');
     } else if (e.key === ' ') {
-      console.log('space');
       if (videoRef.current!.paused) {
         videoRef.current!.play();
+        setPlayState(true);
       } else {
         videoRef.current!.pause();
+        setPlayState(false);
       }
     }
   };
 
+  // LP에서 비디오를 넘기지 않고 바로 VM으로 전환하는 경우
   useEffect(() => {
-    console.log('videoURL: ', videoURL);
     if (!videoURL) {
       mediaStreamInitialize();
     }
@@ -216,12 +234,23 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     }
   }, [deviceList]);
 
+  // LP에서 비디오가 넘어올 경우를 위한 분기
   useEffect(() => {
     if (videoURL) {
       videoRef.current!.src = videoURL;
       handleMetaData();
+      setRecordOverTwice(true);
     }
   }, []);
+
+  const playBox = [
+    { id: 'startRecording', icon: SvgPath.VideoRecord, fn: stopRecording },
+    { id: 'standbyRecording', icon: SvgPath.VideoRecord, fn: backToStandby },
+    { id: 'completeRecording', icon: SvgPath.VideoRecord, fn: handleDeleteRecord },
+    { id: 'playRecording', icon: SvgPath.PlayArrow, fn: playRecording },
+    { id: 'pauseRecording', icon: SvgPath.PauseVideo, fn: pauseRecording },
+    { id: 'stopRecording', icon: SvgPath.Stop, fn: stopVideo },
+  ];
 
   return (
     <Fragment>
@@ -231,8 +260,10 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           cameraListRef={cameraListRef}
           deviceList={deviceList}
           currentDevice={currentDevice}
-          handleChangeCamera={handleChangeCamera}
+          recordState={recordState}
           cameraDropdownState={cameraDropdownState}
+          standbyState={standbyState}
+          handleChangeCamera={handleChangeCamera}
           setCameraDropdownState={setCameraDropdownState}
           stopStream={stopStream}
         />
@@ -248,9 +279,11 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         >
           {/* <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4" /> */}
         </video>
-        <div className={cx('countdown-overlay')}>
-          {standbyState && <div className={cx('countdown')}>{timer}</div>}
-        </div>
+        {standbyState && (
+          <div className={cx('countdown-overlay')} onClick={backToStandby}>
+            <div className={cx('countdown')}>{timer}</div>
+          </div>
+        )}
       </div>
       <Box id="MP" {...boxProps.mb}>
         <div className={cx('middle-bar')}>
@@ -296,19 +329,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
             <FilledButton
               className={cx('extract-button')}
               text="Extract Motion"
-              onClick={() =>
-                handleExtractMotion({
-                  id: uuidv4(),
-                  fileName: 'untitled',
-                  type: browserType === 'safari' ? 'mp4' : 'webm',
-                  start: 0,
-                  end: end,
-                  startTime: 0,
-                  endTime: duration,
-                  url: videoRef.current!.src,
-                  timeout: 30 * 1000,
-                })
-              }
+              onClick={() => setReadyExtract(true)}
             />
           )}
           {!recordState && (
@@ -346,6 +367,66 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
             </CropSlider>
           </div>
         </Fragment>
+      )}
+      {readyExtract && (
+        <BaseModal className={cx('extract-modal', 'extract-name-modal')}>
+          <p className={cx('extract-name-paragraph')}>Enter the name of the motion to extract.</p>
+          <input
+            type="text"
+            className={cx('extract-name-input')}
+            placeholder="Exported motion"
+            onChange={(e) => setBasicExtractName(e.target.value)}
+          />
+          <div className={cx('extract-name-wrapper')}>
+            <FilledButton
+              text="Cancel"
+              className={cx('extract-button', 'cancel')}
+              onClick={() => setReadyExtract(false)}
+            ></FilledButton>
+            <FilledButton
+              text="Ok"
+              className={cx('extract-button')}
+              onClick={() =>
+                handleExtractMotion({
+                  id: uuidv4(),
+                  fileName: basicExtractName,
+                  type: browserType === 'safari' ? 'mp4' : 'webm',
+                  start: 0,
+                  end: end,
+                  startTime: 0,
+                  endTime: duration,
+                  url: videoRef.current!.src,
+                  timeout: videoRef.current!.duration * 30 * 1000,
+                  duration: videoRef.current!.duration,
+                })
+              }
+            ></FilledButton>
+          </div>
+        </BaseModal>
+      )}
+      {turnStandbyPhase && (
+        <BaseModal className={cx('extract-modal', 'extract-delete')}>
+          <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
+          <p className={cx('extract-name-paragraph')}>
+            Your video will be <strong>deleted</strong> to take a new video.
+          </p>
+          <div className={cx('extract-name-wrapper')}>
+            <FilledButton
+              text="Cancel"
+              className={cx('extract-button', 'cancel')}
+              onClick={() => setTurnStandbyPhase(false)}
+            ></FilledButton>
+            <FilledButton
+              text="Delete"
+              className={cx('extract-button')}
+              onClick={() => {
+                startRecordingDelay();
+                setTurnStandbyPhase(false);
+                videoRef.current!.removeAttribute('src');
+              }}
+            ></FilledButton>
+          </div>
+        </BaseModal>
       )}
     </Fragment>
   );
