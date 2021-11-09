@@ -161,6 +161,8 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
    */
   const handleExtractMotion = useCallback(
     async ({ id, start, end, startTime, endTime, url, type, fileName, timeout, duration }) => {
+      setReadyExtract(false);
+      setOnExtract(true);
       const formData = new FormData();
       const file = await convertBlobToFile({ url, type, fileName }).then((response) => {
         formData.append('file', response);
@@ -202,6 +204,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           setReadyExtract(false);
           dispatch(lpNodeActions.changeNode({ nodes: nextNodes }));
           dispatch(modeSelectActions.changeMode({ mode: 'animationMode' }));
+          setOnExtract(false);
           return response;
         })
         .catch((err) => {
