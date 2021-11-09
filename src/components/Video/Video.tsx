@@ -30,13 +30,7 @@ const defaultProps: Partial<NativeVideoProps> = {
   background: false,
 };
 
-const NativeVideo: FunctionComponent<NativeVideoProps> = ({
-  autoPlay,
-  src,
-  background,
-  fullSize,
-  ...rest
-}) => {
+const NativeVideo: FunctionComponent<NativeVideoProps> = ({ autoPlay, src, background, fullSize, ...rest }) => {
   const getFileExtension = useCallback((file: string): string => {
     const type = (/[^./\\]*$/.exec(file) || [''])[0];
 

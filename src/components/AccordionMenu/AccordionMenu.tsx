@@ -29,12 +29,7 @@ const AccordionMenu: FunctionComponent<P> = ({ children, title }) => {
   return (
     <Fragment>
       <div className={cx('accordion-wrap')}>
-        <IconWrapper
-          className={iconClasses}
-          icon={SvgPath.FilledArrow}
-          onClick={handleClick}
-          hasFrame={false}
-        />
+        <IconWrapper className={iconClasses} icon={SvgPath.FilledArrow} onClick={handleClick} hasFrame={false} />
         <span>{title}</span>
       </div>
       <div className={cx(classes)}>{children}</div>

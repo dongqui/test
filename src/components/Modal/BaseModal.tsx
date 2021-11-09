@@ -1,13 +1,4 @@
-import {
-  FunctionComponent,
-  memo,
-  ReactNode,
-  MutableRefObject,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from 'react';
+import { FunctionComponent, memo, ReactNode, MutableRefObject, useEffect, useRef, useState, useCallback } from 'react';
 import _ from 'lodash';
 import { Overlay } from 'components/Overlay';
 import { Headline, Html } from 'components/Typography';
@@ -51,17 +42,7 @@ const defaultProps: Partial<Props> = {
   hasCloseIcon: false,
 };
 
-const BaseModal: FunctionComponent<Props> = ({
-  className,
-  theme,
-  onClose,
-  hasCloseIcon,
-  hasInputChild,
-  title,
-  isAlert,
-  onOutsideClose,
-  children,
-}) => {
+const BaseModal: FunctionComponent<Props> = ({ className, theme, onClose, hasCloseIcon, hasInputChild, title, isAlert, onOutsideClose, children }) => {
   const portalRef = useRef(document.getElementById('portal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -170,9 +151,7 @@ const BaseModal: FunctionComponent<Props> = ({
     <BasePortal container={portalRef}>
       <div className={classes} ref={modalRef}>
         <div className={innerClasses} tabIndex={0}>
-          {hasCloseIcon && (
-            <IconWrapper className={cx('close')} icon={SvgPath.Close} onClick={onClose} />
-          )}
+          {hasCloseIcon && <IconWrapper className={cx('close')} icon={SvgPath.Close} onClick={onClose} />}
           <div className={cx('content')}>
             {isAlert && (
               <div className={cx('alert-wrapper')}>

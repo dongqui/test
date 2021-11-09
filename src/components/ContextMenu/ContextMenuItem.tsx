@@ -1,10 +1,4 @@
-import {
-  FunctionComponent,
-  memo,
-  useCallback,
-  MouseEventHandler,
-  KeyboardEventHandler,
-} from 'react';
+import { FunctionComponent, memo, useCallback, MouseEventHandler, KeyboardEventHandler } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames/bind';
 import styles from './ContextMenuItem.module.scss';
@@ -48,14 +42,7 @@ const ContextMenuItem: FunctionComponent<Props> = ({ item, selectedValue, onSele
   });
 
   return (
-    <li
-      key={item.key}
-      tabIndex={0}
-      className={classes}
-      onClick={handleClick}
-      onKeyDown={handleSelect}
-      role="menuitem"
-    >
+    <li key={item.key} tabIndex={0} className={classes} onClick={handleClick} onKeyDown={handleSelect} role="menuitem">
       {item.value}
     </li>
   );

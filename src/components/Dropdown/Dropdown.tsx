@@ -168,14 +168,7 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
         <ul className={dropdownClasses} style={{ transform }} role="menu">
           {_.map(list, (item, i) => {
             const key = `${item.key}_${i}`;
-            return (
-              <DropdownItem
-                key={key}
-                item={item}
-                selectedValue={selectedValue}
-                onSelect={handleSelect}
-              />
-            );
+            return <DropdownItem key={key} item={item} selectedValue={selectedValue} onSelect={handleSelect} />;
           })}
         </ul>
       )}

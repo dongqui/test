@@ -1,15 +1,4 @@
-import {
-  FunctionComponent,
-  memo,
-  MutableRefObject,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-  useLayoutEffect,
-  RefObject,
-} from 'react';
+import { FunctionComponent, memo, MutableRefObject, useState, useEffect, useCallback, useRef, useMemo, useLayoutEffect, RefObject } from 'react';
 import _ from 'lodash';
 import ContextMenuItem from './ContextMenuItem';
 import useWindowSize from 'hooks/common/useWindowSize';
@@ -87,13 +76,9 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
   );
 
   const nextPosition = useMemo(() => {
-    const nextTopValue = String(position.top).includes('px')
-      ? `${Math.floor(getNumberValue(String(position.top)))}px`
-      : `${Math.floor(Number(position.top))}px`;
+    const nextTopValue = String(position.top).includes('px') ? `${Math.floor(getNumberValue(String(position.top)))}px` : `${Math.floor(Number(position.top))}px`;
 
-    const nextLeftValue = String(position.left).includes('px')
-      ? `${Math.floor(getNumberValue(String(position.left)))}px`
-      : `${Math.floor(Number(position.left))}px`;
+    const nextLeftValue = String(position.left).includes('px') ? `${Math.floor(getNumberValue(String(position.left)))}px` : `${Math.floor(Number(position.left))}px`;
 
     const value = { top: nextTopValue, left: nextLeftValue };
 
@@ -226,14 +211,7 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
         left: resultPositionLeft,
       });
     }
-  }, [
-    injectedPosition.left,
-    injectedPosition.top,
-    innerRef,
-    isMounted,
-    nextPosition.left,
-    nextPosition.top,
-  ]);
+  }, [injectedPosition.left, injectedPosition.top, innerRef, isMounted, nextPosition.left, nextPosition.top]);
 
   useEffect(() => {
     const currentRef = innerRef?.current;
@@ -308,22 +286,11 @@ const ContextMenu: FunctionComponent<Props> = ({ innerRef, list, onSelect, posit
   }, [innerRef]);
 
   return (
-    <div
-      ref={innerRef}
-      className={cx('wrapper')}
-      style={{ top: injectedPosition.top, left: injectedPosition.left }}
-    >
+    <div ref={innerRef} className={cx('wrapper')} style={{ top: injectedPosition.top, left: injectedPosition.left }}>
       <ul className={cx('menu')} role="menu">
         {_.map(list, (item, i) => {
           const key = `${item.key}_${i}`;
-          return (
-            <ContextMenuItem
-              key={key}
-              item={item}
-              selectedValue={selectedValue}
-              onSelect={handleSelect}
-            />
-          );
+          return <ContextMenuItem key={key} item={item} selectedValue={selectedValue} onSelect={handleSelect} />;
         })}
       </ul>
     </div>

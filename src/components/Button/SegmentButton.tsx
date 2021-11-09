@@ -43,15 +43,7 @@ const SegmentButton: FunctionComponent<Props> = ({ list, color, fullSize, ...res
         const key = `${item.key}_${i}`;
 
         if (isIcon) {
-          return (
-            <IconWrapper
-              key={key}
-              className={buttonClasses}
-              onClick={handleClick}
-              icon={item.value as FunctionComponent}
-              hasFrame={false}
-            />
-          );
+          return <IconWrapper key={key} className={buttonClasses} onClick={handleClick} icon={item.value as FunctionComponent} hasFrame={false} />;
         }
 
         return <button className={cx('segment')}>{item.value}</button>;

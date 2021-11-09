@@ -18,14 +18,7 @@ const defaultProps: Partial<Props> = {
   hasFrame: false,
 };
 
-const IconWrapper: FunctionComponent<Props> = ({
-  icon,
-  hasFrame,
-  innerRef,
-  className,
-  tabState,
-  onClick,
-}) => {
+const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, innerRef, className, tabState, onClick }) => {
   const Component = icon;
 
   const isClickable = !!onClick;
@@ -47,14 +40,7 @@ const IconWrapper: FunctionComponent<Props> = ({
 
   if (isClickable) {
     return (
-      <span
-        className={classes}
-        ref={innerRef}
-        onClick={onClick}
-        onKeyDown={handleKeyDown}
-        role="button"
-        tabIndex={tabState ? -1 : 0}
-      >
+      <span className={classes} ref={innerRef} onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={tabState ? -1 : 0}>
         <Component />
       </span>
     );

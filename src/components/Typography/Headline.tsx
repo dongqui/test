@@ -21,15 +21,7 @@ const defaultProps: Partial<Props> = {
   level: '3',
 };
 
-const Headline: FunctionComponent<Props> = ({
-  level,
-  bold,
-  margin,
-  align,
-  className,
-  children,
-  ...rest
-}) => {
+const Headline: FunctionComponent<Props> = ({ level, bold, margin, align, className, children, ...rest }) => {
   const Component = `h${level}` as ElementType;
 
   const classes = cx('headline', `headline-${level}`, align, className, {
