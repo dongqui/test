@@ -4,6 +4,7 @@
   padding: 8.5px 12px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .title {
@@ -20,6 +21,7 @@
     color: #fff;
 
     & > svg {
+      display: block;
       width: 16px;
     }
   }
