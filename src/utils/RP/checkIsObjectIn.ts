@@ -14,12 +14,7 @@ import checkIsTargetMesh from './checkIsTargetMesh';
  * @param scene - dragBox와 pointer가 속하는 scene
  */
 
-const checkIsObjectIn = (
-  startPointerPosition: ScreenXY,
-  endPointerPosition: ScreenXY,
-  object: BABYLON.Mesh | BABYLON.TransformNode,
-  scene: BABYLON.Scene,
-) => {
+const checkIsObjectIn = (startPointerPosition: ScreenXY, endPointerPosition: ScreenXY, object: BABYLON.Mesh | BABYLON.TransformNode, scene: BABYLON.Scene) => {
   if (object.getClassName() === 'TransformNode') {
     // 해당 transformNode에 연결된 joint가 invisible할 경우 선택하지 않음
     const joint = scene.getMeshByID(object.id.replace('transformNode', 'joint'));
@@ -28,24 +23,14 @@ const checkIsObjectIn = (
     }
 
     // joint(transformNode)일 때는 position을 바탕으로 판단
-    return checkIsVectorIn(
-      startPointerPosition,
-      endPointerPosition,
-      object.getAbsolutePosition(),
-      scene,
-    );
+    return checkIsVectorIn(startPointerPosition, endPointerPosition, object.getAbsolutePosition(), scene);
   } else {
     // 해당 controller가 invisible할 경우 선택하지 않음
     if (checkIsTargetMesh(object) && !object.isVisible) {
       return false;
     }
     // controller일 때는 총 9개 점을 판단
-    return checkIsControllerIn(
-      startPointerPosition,
-      endPointerPosition,
-      object as BABYLON.Mesh,
-      scene,
-    );
+    return checkIsControllerIn(startPointerPosition, endPointerPosition, object as BABYLON.Mesh, scene);
   }
 };
 

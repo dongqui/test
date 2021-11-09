@@ -26,9 +26,7 @@ const LibraryPanel: FunctionComponent = () => {
   const lpNode = useSelector((state) => state.lpNode.node);
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
   const assetList = useSelector((state) => state.shootProject.assetList);
-  const animationTransformNodes = useSelector(
-    (state) => state.animationData.animationTransformNodes,
-  );
+  const animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
   const { onModalOpen, onModalClose } = useBaseModal();
@@ -39,16 +37,11 @@ const LibraryPanel: FunctionComponent = () => {
   const [animationIngredientsLength, setAnimationIngredientsLength] = useState(0);
 
   useEffect(() => {
-    if (
-      assetListLength !== assetList.length &&
-      animationIngredientsLength !== animationIngredients.length
-    ) {
+    if (assetListLength !== assetList.length && animationIngredientsLength !== animationIngredients.length) {
       let nextLPNodes = _.clone(lpNode);
 
       const nextNodes = produce(nextLPNodes, (draft) => {
-        const ingredients = animationIngredients.filter(
-          (ingredient) => ingredient.assetId === assetList[assetList.length - 1].id,
-        );
+        const ingredients = animationIngredients.filter((ingredient) => ingredient.assetId === assetList[assetList.length - 1].id);
 
         const newModelNode: LP.Node = {
           id: uuid(),
@@ -93,17 +86,7 @@ const LibraryPanel: FunctionComponent = () => {
       setAssetListLength(assetList.length);
       setAnimationIngredientsLength(animationIngredients.length);
     }
-  }, [
-    animationIngredients,
-    animationIngredientsLength,
-    assetList,
-    assetListLength,
-    dispatch,
-    fileExtension,
-    fileName,
-    lpCurrentPath,
-    lpNode,
-  ]);
+  }, [animationIngredients, animationIngredientsLength, assetList, assetListLength, dispatch, fileExtension, fileName, lpCurrentPath, lpNode]);
 
   const onFileLoad = useCallback(
     async (file: File) => {
@@ -139,8 +122,7 @@ const LibraryPanel: FunctionComponent = () => {
           .catch(() => {
             onModalOpen({
               title: 'Warning',
-              message:
-                '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
+              message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
               confirmText: 'Contact',
               onConfirm: () => {
                 // location.href = 'mailto:contact@plask.ai';
@@ -229,10 +211,7 @@ const LibraryPanel: FunctionComponent = () => {
       setSearchText(text);
 
       if (text.length > 0) {
-        const searchResult = lpNode.filter(
-          (node) =>
-            node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text),
-        );
+        const searchResult = lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
 
         setSearchResultNode(searchResult);
       }
@@ -250,11 +229,7 @@ const LibraryPanel: FunctionComponent = () => {
           <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody
-            view={view}
-            lpNode={searchText.length > 0 ? searchResultNode : lpNode}
-            disableContextMenu={!!searchText}
-          />
+          <LPBody view={view} lpNode={searchText.length > 0 ? searchResultNode : lpNode} disableContextMenu={!!searchText} />
         </Box>
       </div>
     </div>

@@ -10,16 +10,8 @@ const defaultDirection = new BABYLON.Vector3(0, 1, 0);
  * @param position - 광원의 위치 default = (0, 10, 10)
  * @param direction - 조명의 방향 default = (0, 1, 0)
  */
-const createDirectionalLight = (
-  scene: BABYLON.Scene,
-  position?: BABYLON.Vector3,
-  direction?: BABYLON.Vector3,
-) => {
-  const directionalLight = new BABYLON.DirectionalLight(
-    'directionalLight',
-    (direction = defaultDirection),
-    scene,
-  );
+const createDirectionalLight = (scene: BABYLON.Scene, position?: BABYLON.Vector3, direction?: BABYLON.Vector3) => {
+  const directionalLight = new BABYLON.DirectionalLight('directionalLight', (direction = defaultDirection), scene);
   directionalLight.position = position ?? defaultPosition;
   directionalLight.intensity = 0.1;
 

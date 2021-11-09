@@ -18,28 +18,16 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
   switch (action.type) {
     case 'animationDataAction/ADD_ASSET': {
       return Object.assign({}, state, {
-        animationTransformNodes: [
-          ...state.animationTransformNodes,
-          ...action.payload.transformNodes,
-        ],
-        animationIngredients: [
-          ...state.animationIngredients,
-          ...action.payload.animationIngredients,
-        ],
+        animationTransformNodes: [...state.animationTransformNodes, ...action.payload.transformNodes],
+        animationIngredients: [...state.animationIngredients, ...action.payload.animationIngredients],
         retargetMaps: [...state.retargetMaps, action.payload.retargetMap],
       });
     }
     case 'animationDataAction/REMOVE_ASSET': {
       return Object.assign({}, state, {
-        animationTransformNodes: state.animationTransformNodes.filter(
-          (transformNode) => !transformNode.id.includes(action.payload.assetId),
-        ),
-        animationIngredients: state.animationIngredients.filter(
-          (anim) => anim.assetId !== action.payload.assetId,
-        ),
-        retargetMaps: state.retargetMaps.filter(
-          (retargetMap) => retargetMap.assetId !== action.payload.assetId,
-        ),
+        animationTransformNodes: state.animationTransformNodes.filter((transformNode) => !transformNode.id.includes(action.payload.assetId)),
+        animationIngredients: state.animationIngredients.filter((anim) => anim.assetId !== action.payload.assetId),
+        retargetMaps: state.retargetMaps.filter((retargetMap) => retargetMap.assetId !== action.payload.assetId),
       });
     }
     case 'animationDataAction/ADD_ANIMATION_INGREDIENT': {
@@ -65,11 +53,7 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
     }
     case 'animationDataAction/EDIT_ANIMATION_INGREDIENT': {
       return Object.assign({}, state, {
-        animationIngredients: state.animationIngredients.map((anim) =>
-          anim.id === action.payload.animationIngredient.id
-            ? action.payload.animationIngredient
-            : anim,
-        ),
+        animationIngredients: state.animationIngredients.map((anim) => (anim.id === action.payload.animationIngredient.id ? action.payload.animationIngredient : anim)),
       });
     }
     case 'animationDataAction/EDIT_ANIMATION_INGREDIENTS': {
@@ -79,18 +63,12 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
     }
     case 'animationDataAction/REMOVE_ANIMATION_INGREDIENT': {
       return Object.assign({}, state, {
-        animationIngredients: state.animationIngredients.filter(
-          (anim) => anim.id !== action.payload.animationIngredientId,
-        ),
+        animationIngredients: state.animationIngredients.filter((anim) => anim.id !== action.payload.animationIngredientId),
       });
     }
     case 'animationDataAction/EDIT_RETARGET_MAP': {
       return Object.assign({}, state, {
-        retargetMaps: state.retargetMaps.map((retargetMap) =>
-          retargetMap.id === action.payload.retargetMap.id
-            ? action.payload.retargetMap
-            : retargetMap,
-        ),
+        retargetMaps: state.retargetMaps.map((retargetMap) => (retargetMap.id === action.payload.retargetMap.id ? action.payload.retargetMap : retargetMap)),
       });
     }
     default: {

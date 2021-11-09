@@ -20,11 +20,7 @@ class PropertyKeyframeRepository implements Repository {
         const { trackNumber, keyframes } = selectedKeyframe;
         const trackIndex = findElementIndex(propertyTrackList, trackNumber, 'trackNumber');
         keyframes.forEach((keyframe) => {
-          const timeIndex = findElementIndex(
-            propertyTrackList[trackIndex].keyframes,
-            keyframe.time,
-            'time',
-          );
+          const timeIndex = findElementIndex(propertyTrackList[trackIndex].keyframes, keyframe.time, 'time');
           draft[trackIndex].keyframes[timeIndex].isDeleted = true;
         });
       });

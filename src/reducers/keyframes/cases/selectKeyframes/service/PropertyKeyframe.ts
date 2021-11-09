@@ -19,13 +19,7 @@ class TransformKeyframeService extends StateUpdate implements Service {
   private readonly boneRepository: Repository;
   private readonly transformRepository: Repository;
 
-  constructor(
-    state: KeyframesState,
-    payload: SelectKeyframes,
-    layerRepository: Repository,
-    boneRepository: Repository,
-    transformRepository: Repository,
-  ) {
+  constructor(state: KeyframesState, payload: SelectKeyframes, layerRepository: Repository, boneRepository: Repository, transformRepository: Repository) {
     super(state);
     this.payload = payload;
     this.layerRepository = layerRepository;
@@ -69,9 +63,7 @@ class TransformKeyframeService extends StateUpdate implements Service {
   private selectMultipleClick = () => {
     const { state, payload } = this;
     const { selectExistedByMultipleClick, selectNotExistedByMultipleClick } = new MultipleClick();
-    return this.checkIncludedTime()
-      ? selectExistedByMultipleClick({ state, payload })
-      : selectNotExistedByMultipleClick({ state, payload });
+    return this.checkIncludedTime() ? selectExistedByMultipleClick({ state, payload }) : selectNotExistedByMultipleClick({ state, payload });
   };
 
   // 좌클릭
@@ -99,11 +91,7 @@ class TransformKeyframeService extends StateUpdate implements Service {
   };
 
   updateKeyframes = (selectedKeyframes: AllSelectedKeyframes): AllKeyframes => {
-    const {
-      selectedLayerKeyframes,
-      selectedBoneKeyframes,
-      selectedPropertyKeyframes,
-    } = selectedKeyframes;
+    const { selectedLayerKeyframes, selectedBoneKeyframes, selectedPropertyKeyframes } = selectedKeyframes;
     const layerTrack = this.layerRepository.updateIsSelected(selectedLayerKeyframes);
     const boneTrackList = this.boneRepository.updateIsSelected(selectedBoneKeyframes);
     const propertyTrackList = this.transformRepository.updateIsSelected(selectedPropertyKeyframes);

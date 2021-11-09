@@ -1,13 +1,5 @@
 import _ from 'lodash';
-import {
-  FunctionComponent,
-  Fragment,
-  useEffect,
-  useState,
-  useCallback,
-  useMemo,
-  SyntheticEvent,
-} from 'react';
+import { FunctionComponent, Fragment, useEffect, useState, useCallback, useMemo, SyntheticEvent } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import { UpperBar } from 'containers/UpperBar';
 import LibraryPanel from 'containers/Panels/LibraryPanel';
@@ -153,8 +145,7 @@ const Shoot: FunctionComponent = () => {
   }, [windowWidth, isCPResize, panelWidth.library]);
 
   useEffect(() => {
-    const prevWindowHeight =
-      sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
+    const prevWindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
 
     // LS Simple simpleMode인 경우 76px로 고정
     if (resizeState.simpleMode) {

@@ -1,15 +1,4 @@
-import {
-  Camera,
-  EventState,
-  ICameraInput,
-  Nullable,
-  Observer,
-  PointerEventTypes,
-  PointerInfo,
-  PointerTouch,
-  serialize,
-  Tools,
-} from '@babylonjs/core';
+import { Camera, EventState, ICameraInput, Nullable, Observer, PointerEventTypes, PointerInfo, PointerTouch, serialize, Tools } from '@babylonjs/core';
 import { IPointerEvent } from './types';
 
 /**
@@ -93,10 +82,8 @@ export default abstract class ShootBaseCameraPointersInput implements ICameraInp
       this._buttonsPressed = evt.buttons;
 
       if (engine.isPointerLock) {
-        const offsetX =
-          evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-        const offsetY =
-          evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+        const offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+        const offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
 
         this.onTouch(null, offsetX, offsetY);
         this.pointA = null;
@@ -216,14 +203,7 @@ export default abstract class ShootBaseCameraPointersInput implements ICameraInp
             type: p.type,
           };
 
-          this.onMultiTouch(
-            this.pointA,
-            this.pointB,
-            previousPinchSquaredDistance,
-            pinchSquaredDistance,
-            previousMultiTouchPanPosition,
-            multiTouchPanPosition,
-          );
+          this.onMultiTouch(this.pointA, this.pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
 
           previousMultiTouchPanPosition = multiTouchPanPosition;
           previousPinchSquaredDistance = pinchSquaredDistance;
@@ -235,10 +215,7 @@ export default abstract class ShootBaseCameraPointersInput implements ICameraInp
       .getScene()
       .onPointerObservable.add(
         this._pointerInput,
-        PointerEventTypes.POINTERDOWN |
-          PointerEventTypes.POINTERUP |
-          PointerEventTypes.POINTERMOVE |
-          PointerEventTypes.POINTERDOUBLETAP,
+        PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE | PointerEventTypes.POINTERDOUBLETAP,
       );
 
     this._onLostFocus = () => {
@@ -248,12 +225,7 @@ export default abstract class ShootBaseCameraPointersInput implements ICameraInp
       this.onLostFocus();
     };
 
-    element &&
-      element.addEventListener(
-        'contextmenu',
-        this.onContextMenu.bind(this) as EventListener,
-        false,
-      );
+    element && element.addEventListener('contextmenu', this.onContextMenu.bind(this) as EventListener, false);
 
     let hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
@@ -285,8 +257,7 @@ export default abstract class ShootBaseCameraPointersInput implements ICameraInp
 
       if (this.onContextMenu) {
         const inputElement = this.camera.getScene().getEngine().getInputElement();
-        inputElement &&
-          inputElement.removeEventListener('contextmenu', this.onContextMenu as EventListener);
+        inputElement && inputElement.removeEventListener('contextmenu', this.onContextMenu as EventListener);
       }
 
       this._onLostFocus = null;

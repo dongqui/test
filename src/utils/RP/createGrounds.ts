@@ -14,13 +14,7 @@ const defaultHeight = 100;
  * @param height - ground의 높이
  * @param view - camera가 위치한 방위 (front, back, top, bottom, left, right)
  */
-const createGround = (
-  scene: BABYLON.Scene,
-  useTexture: boolean,
-  width: number,
-  height: number,
-  view: ShootView,
-) => {
+const createGround = (scene: BABYLON.Scene, useTexture: boolean, width: number, height: number, view: ShootView) => {
   const ground = BABYLON.MeshBuilder.CreatePlane(
     'ground',
     {
@@ -97,19 +91,12 @@ const createGround = (
  * @param height - ground의 세로 default = 30
  * @param subdivision - 한 면당 subdivisions의 수 default = 30
  */
-const createGrounds = (
-  scene: BABYLON.Scene,
-  useTexture: boolean,
-  width?: number,
-  height?: number,
-) => {
+const createGrounds = (scene: BABYLON.Scene, useTexture: boolean, width?: number, height?: number) => {
   const grounds: BABYLON.Mesh[] = [];
 
   const views: ShootView[] = ['top', 'bottom', 'left', 'right', 'front', 'back'];
   views.forEach((view) => {
-    grounds.push(
-      createGround(scene, useTexture, width ?? defaultWidth, height ?? defaultHeight, view),
-    );
+    grounds.push(createGround(scene, useTexture, width ?? defaultWidth, height ?? defaultHeight, view));
   });
 
   return grounds;

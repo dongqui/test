@@ -50,19 +50,10 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
   return (
     <li className={cx('bone-track')} onClick={handleTrackBodyClick}>
       <div className={cx('track-body', { selected: isSelected })}>
-        <CaretButton
-          isPointedDownCaret={isPointedDownCaret}
-          trackNumber={trackNumber}
-          trackType={trackType}
-        />
+        <CaretButton isPointedDownCaret={isPointedDownCaret} trackNumber={trackNumber} trackType={trackType} />
         <span className={cx('track-name')}>{trackName}</span>
       </div>
-      <ul>
-        {isPointedDownCaret &&
-          childrenProperty.map((transformTrack) => (
-            <PropertyTrackItem key={transformTrack.trackName} {...transformTrack} />
-          ))}
-      </ul>
+      <ul>{isPointedDownCaret && childrenProperty.map((transformTrack) => <PropertyTrackItem key={transformTrack.trackName} {...transformTrack} />)}</ul>
     </li>
   );
 };
