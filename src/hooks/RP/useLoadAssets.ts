@@ -8,6 +8,7 @@ import * as shootProjectActions from 'actions/shootProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import { AnimationIngredient, ShootAsset } from 'types/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
+import { getFileExtension } from 'utils/common';
 
 const useLoadAssets = () => {
   const sceneList = useSelector((state) => state.shootProject.sceneList);
@@ -87,6 +88,7 @@ const useLoadAssets = () => {
           const newAsset: ShootAsset = {
             id: assetId,
             name: fileName,
+            extension: getFileExtension(fileName).toLowerCase(),
             meshes,
             geometries,
             skeleton: skeletons[0] ?? null,

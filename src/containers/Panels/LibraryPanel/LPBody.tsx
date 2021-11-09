@@ -1,20 +1,12 @@
 import _ from 'lodash';
-import {
-  FunctionComponent,
-  Fragment,
-  memo,
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-  createRef,
-  RefObject,
-} from 'react';
-import { connect, useDispatch } from 'react-redux';
+import { FunctionComponent, memo, useEffect, useState, useCallback, useRef, createRef, RefObject } from 'react';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
+import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
+import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
-import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { ListNode } from './ListView';
 import classNames from 'classnames/bind';
 import styles from './LPBody.module.scss';
@@ -24,129 +16,51 @@ const cx = classNames.bind(styles);
 interface Props {
   view: LP.View;
   lpNode: LP.Node[];
-  lpCurrentPath: string;
+  disableContextMenu?: boolean;
 }
 
-const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
+const LPBody: FunctionComponent<Props> = ({ lpNode, disableContextMenu }) => {
   const dispatch = useDispatch();
 
-  const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
+  const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
+  const lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  // const nodeRef = useRef<HTMLDivElement>(null);
-
   const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
 
   useEffect(() => {
     setNodeRefs(Array.from({ length: lpNode.length }).map(() => createRef()));
   }, [lpNode.length]);
 
-  const getNodeNumber = useCallback((array: number[]) => {
-    let targetValue = 0;
+  const { onContextMenuOpen } = useContextMenu();
 
-    const nextArray = array.sort((a, b) => a - b);
+  const depthChangeKey = useCallback((node: LP.Node[], childID: string, parentNode: LP.Node) => {
+    const changeNode = _.find(node, { id: childID });
 
-    if (nextArray.indexOf(0) === -1) {
-      return targetValue;
-    }
+    if (changeNode) {
+      const cloneChangeNode = _.cloneDeep(changeNode);
 
-    for (let i = 1; i < nextArray.length; i++) {
-      const currentValue = nextArray[i];
-      const isLast = nextArray.length - 1 === i;
+      cloneChangeNode.id = uuidv4();
+      cloneChangeNode.parentId = parentNode.id;
+      cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
 
-      if (isLast) {
-        targetValue = currentValue + 1;
-      }
+      _.remove(parentNode.children, (child) => child === childID);
+      parentNode.children.push(cloneChangeNode.id);
 
-      if (nextArray[1] !== 2) {
-        targetValue = 2;
-      }
+      node.push(cloneChangeNode);
 
-      const nextValue = nextArray[i + 1];
-
-      if (!isLast) {
-        if (nextValue - currentValue > 1) {
-          targetValue = currentValue + 1;
-          return targetValue;
-        }
-
-        if (nextValue - currentValue === 1) {
-          targetValue = nextValue + 1;
-        }
+      if (!_.isEmpty(cloneChangeNode.children)) {
+        cloneChangeNode.children.map((child) => depthChangeKey(node, child, cloneChangeNode));
       }
     }
-
-    return targetValue;
   }, []);
-
-  const onDuplicateCheck = useCallback(
-    (name: string) => {
-      const currentPathNodeName = lpNode
-        .filter((node) => {
-          if (node.parentId === '__root__') {
-            if (node.name.includes(name)) {
-              return true;
-            }
-
-            return false;
-            // if (node.name.replaceAll(/\s/g,'')) {
-            //   return node.name;
-            // }
-          }
-        })
-        .map((filteredNode) => filteredNode.name);
-
-      if (currentPathNodeName.length === 0) {
-        return '0';
-      }
-
-      // @todo 생성시 이름에 특수문자 불가 처리 필요
-      if (currentPathNodeName.length === 1) {
-        if (currentPathNodeName[0].includes('(')) {
-          const index = currentPathNodeName[0].indexOf('(') + 1;
-          const getNumber = currentPathNodeName[0].charAt(index);
-
-          if (typeof getNumber === 'number') {
-            return '0';
-          } else {
-            // @todo 예외처리 필요(이름에 특수문자 불가), 임시 else
-            return '0';
-          }
-        } else {
-          // 없는 경우 2
-          return '2';
-        }
-      } else {
-        const filter = currentPathNodeName.map((currentNode) => {
-          if (currentNode.includes('(')) {
-            const startIndex = currentNode.indexOf('(') + 1;
-            const endIndex = currentNode.indexOf(')');
-            // const getNumber = currentNode.charAt(index);
-            const getNumber = currentNode.substring(startIndex, endIndex);
-
-            // @todo 예외처리 예정. 현재는 반드시 number라고 가정
-            return Number(getNumber);
-          } else {
-            return 0;
-          }
-        });
-
-        const target = getNodeNumber(filter);
-
-        return String(target);
-      }
-    },
-    [getNodeNumber, lpNode],
-  );
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
-      const isOutsideNode = !nodeRefs
-        .map((nodeRef, i) => nodeRef.current?.contains(e.target as Node))
-        .some((isNodeContains) => isNodeContains);
+      const isOutsideNode = !nodeRefs.map((nodeRef, i) => nodeRef.current?.contains(e.target as Node)).some((isNodeContains) => isNodeContains);
 
       if (isContains && isOutsideNode) {
         dispatch(
@@ -162,7 +76,67 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
           menu: [
             {
               label: 'Paste',
-              onClick: () => {},
+              onClick: () => {
+                // const copyNode = _.find(lpNode, { id: lpClipboard[0].id });
+                const copyNode = lpClipboard[0];
+
+                const cloneCopyNode = _.cloneDeep(copyNode);
+
+                // @TODO 없으면 비활성 처리 필요
+                if (cloneCopyNode) {
+                  const currentPathNodeName = lpNode
+                    .filter((node) => {
+                      if (node.parentId === '__root__') {
+                        const copyMatch = cloneCopyNode.name.match(/copy/g);
+                        if (node.name.includes(cloneCopyNode.name)) {
+                          if (copyMatch !== null) {
+                            const nodeMatch = node.name.match(/copy/g);
+                            if (nodeMatch !== null && nodeMatch.length === copyMatch.length + 1) {
+                              return true;
+                            }
+                          } else {
+                            // const cloneCopyMatch = node.name.match(/`${cloneCopyNode.name} copy`/g);
+                            const firstReplacedName = cloneCopyNode.name.replaceAll('(', '\\(');
+                            const secondReplacedName = firstReplacedName.replaceAll(')', '\\)');
+                            const regex = new RegExp(`${secondReplacedName} copy`, 'g');
+                            const cloneCopyMatch = node.name.match(regex);
+                            const nodeMatch = node.name.match(/copy/g);
+                            if (cloneCopyMatch !== null && cloneCopyMatch.length === 1 && nodeMatch !== null && nodeMatch.length === 1) {
+                              return true;
+                            }
+                          }
+                        }
+                        return false;
+                      }
+                    })
+                    .map((filteredNode) => filteredNode.name);
+
+                  const nodeName = beforePaste({
+                    name: cloneCopyNode.name,
+                    comparisonNames: currentPathNodeName,
+                  });
+
+                  const nextNodes = produce(lpNode, (draft) => {
+                    cloneCopyNode.id = uuidv4();
+                    cloneCopyNode.parentId = '__root__';
+                    cloneCopyNode.filePath = '\\root' + `\\${nodeName}`;
+                    cloneCopyNode.name = nodeName;
+
+                    // @TODO 하위 노드도 추가
+                    draft.push(cloneCopyNode);
+
+                    if (!_.isEmpty(cloneCopyNode.children)) {
+                      cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
+                    }
+                  });
+
+                  dispatch(
+                    lpNodeActions.changeNode({
+                      nodes: nextNodes,
+                    }),
+                  );
+                }
+              },
               children: [],
             },
             {
@@ -170,9 +144,20 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
               onClick: () => {
                 let nextLPNodes = _.clone(lpNode);
 
-                const duplicateCheck = onDuplicateCheck('Folder');
+                const currentPathNodeName = lpNode
+                  .filter((node) => {
+                    if (node.parentId === '__root__') {
+                      if (node.name.includes('Folder')) {
+                        return true;
+                      }
+                      return false;
+                    }
+                  })
+                  .map((filteredNode) => filteredNode.name);
 
-                const nodeName = duplicateCheck === '0' ? 'Folder' : `Folder (${duplicateCheck})`;
+                const check = checkCreateDuplicates('Folder', currentPathNodeName);
+
+                const nodeName = check === '0' ? 'Folder' : `Folder (${check})`;
 
                 const nextNodes = produce(nextLPNodes, (draft) => {
                   const newNode = {
@@ -180,6 +165,7 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
                     filePath: '\\root',
                     parentId: '__root__',
                     name: nodeName,
+                    extension: '',
                     type: 'Folder',
                     children: [],
                   } as LP.Node;
@@ -197,16 +183,16 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
               },
               children: [],
             },
-            {
-              label: 'Select all',
-              onClick: () => {},
-              children: [],
-            },
-            {
-              label: 'Unselect all',
-              onClick: () => {},
-              children: [],
-            },
+            // {
+            //   label: 'Select all',
+            //   onClick: () => {},
+            //   children: [],
+            // },
+            // {
+            //   label: 'Unselect all',
+            //   onClick: () => {},
+            //   children: [],
+            // },
           ],
         });
       }
@@ -214,14 +200,14 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
 
     const currentRef = wrapperRef.current;
 
-    if (currentRef) {
+    if (currentRef && !disableContextMenu) {
       currentRef.addEventListener('contextmenu', handleContextMenu);
 
       return () => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [dispatch, lpNode, nodeRefs, onContextMenuOpen, onDuplicateCheck]);
+  }, [depthChangeKey, disableContextMenu, dispatch, lpClipboard, lpNode, nodeRefs, onContextMenuOpen]);
 
   const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
 
@@ -229,6 +215,12 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
 
   const handleSelect = useCallback((id: string) => {
     setSelectedId(id);
+  }, []);
+
+  const [dragTarget, setDragTarget] = useState<{ id: string; type: LP.Node['type']; parentId: string } | undefined>();
+
+  const handleSetDragTarget = useCallback((id: string, type: LP.Node['type'], parentId: string) => {
+    setDragTarget({ id: id, type: type, parentId: parentId });
   }, []);
 
   return (
@@ -247,6 +239,9 @@ const LPBody: FunctionComponent<Props> = ({ view, lpNode, lpCurrentPath }) => {
             selectedId={selectedId}
             isSelected={node.id === selectedId}
             childrens={node.children}
+            extension={node.extension}
+            onSetDragTarget={handleSetDragTarget}
+            dragTarget={dragTarget}
           />
         </div>
       ))}

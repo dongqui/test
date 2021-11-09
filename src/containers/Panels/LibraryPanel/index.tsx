@@ -1,15 +1,17 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, useEffect, useState, useCallback, useRef } from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback, ChangeEvent } from 'react';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
-import { connect, useDispatch } from 'react-redux';
-import { RootState } from 'reducers';
-import { v4 as uuidv4 } from 'uuid';
 import { convertFBXtoGLB } from 'api';
-import produce from 'immer';
+import { getFileExtension } from 'utils/common';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { v4 as uuid } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
+import * as modeSelectActions from 'actions/modeSelection';
 import Box from 'components/Layout/Box';
-import { useBaseModal } from 'new_components/Modal/BaseModal';
+import produce from 'immer';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -18,55 +20,65 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-type StateProps = ReturnType<typeof mapStateToProps>;
-
-interface BaseProps {}
-
-type Props = StateProps & BaseProps;
-
-const LibraryPanel: FunctionComponent<Props> = ({
-  lpNode,
-  lpCurrentPath,
-  assetList,
-  animationTransformNodes,
-  animationIngredients,
-}) => {
-  const getFileExtension = useCallback((file: string): string => {
-    const type = (/[^./\\]*$/.exec(file) || [''])[0];
-
-    return type;
-  }, []);
-
+const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
 
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const lpNode = useSelector((state) => state.lpNode.node);
+  const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
+  const assetList = useSelector((state) => state.shootProject.assetList);
+  const animationTransformNodes = useSelector(
+    (state) => state.animationData.animationTransformNodes,
+  );
+  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+
   const { onModalOpen, onModalClose } = useBaseModal();
 
-  const [isModelLoading, setIsModelLoading] = useState(false);
+  const [fileExtension, setFileExtension] = useState('');
   const [fileName, setFileName] = useState('');
   const [assetListLength, setAssetListLength] = useState(0);
-
-  const handleCreateNode = useCallback(() => {}, []);
+  const [animationIngredientsLength, setAnimationIngredientsLength] = useState(0);
 
   useEffect(() => {
-    if (isModelLoading && !_.isEmpty(assetList) && assetListLength !== assetList.length) {
+    if (
+      assetListLength !== assetList.length &&
+      animationIngredientsLength !== animationIngredients.length
+    ) {
       let nextLPNodes = _.clone(lpNode);
 
       const nextNodes = produce(nextLPNodes, (draft) => {
-        const newNode: LP.Node = {
-          id: uuidv4(),
+        const ingredients = animationIngredients.filter(
+          (ingredient) => ingredient.assetId === assetList[assetList.length - 1].id,
+        );
+
+        const newModelNode: LP.Node = {
+          id: uuid(),
           // fileURL: file,
           filePath: lpCurrentPath,
           parentId: '__root__',
           name: fileName,
+          extension: fileExtension,
           type: 'Model',
-          assetId: !_.isEmpty(assetList) ? assetList[assetList.length - 1].id : '',
-          children: animationIngredients.filter(
-            (ingredient) => ingredient.assetId === assetList[assetList.length - 1].id,
-          ),
+          assetId: assetList[assetList.length - 1].id,
+          children: ingredients.map((ingredient) => ingredient.id),
         };
 
-        draft.push(newNode);
+        draft.push(newModelNode);
+
+        const newMotionNodes = animationIngredients.map((ingredient) => {
+          const motion: LP.Node = {
+            id: ingredient.id,
+            parentId: ingredient.assetId,
+            name: ingredient.name,
+            filePath: lpCurrentPath + `\\${ingredient.name}`,
+            children: [],
+            extension: '',
+            type: 'Motion',
+          };
+
+          return motion;
+        });
+
+        draft.push(...newMotionNodes);
       });
 
       nextLPNodes = nextNodes;
@@ -77,140 +89,176 @@ const LibraryPanel: FunctionComponent<Props> = ({
         }),
       );
 
-      setIsModelLoading(false);
       setFileName('');
       setAssetListLength(assetList.length);
+      setAnimationIngredientsLength(animationIngredients.length);
     }
   }, [
     animationIngredients,
+    animationIngredientsLength,
     assetList,
     assetListLength,
     dispatch,
+    fileExtension,
     fileName,
-    isModelLoading,
     lpCurrentPath,
     lpNode,
   ]);
 
-  /**
-   * .glb or .fbx는 LPNode에 연결 그 외 AlertModal을 통한 예외 처리
-   *
-   * @param file - LP에 drop한 파일
-   * @todo 각 Folder, Model, Motion 등 이름수정을 위한 파일명과 파일확장자의 분리가 필요
-   */
   const onFileLoad = useCallback(
     async (file: File) => {
-      // 다중 or 단일 drop한 파일에 대해서 최종적으로 dispatch하기 위한 clone 처리
-      let nextLPNodes = _.clone(lpNode);
-
-      // 대소문자 관련없이 처리하기 위한 확장자의 소문자 치환
       const extension = getFileExtension(file.name).toLowerCase();
       const fileName = file.name;
 
-      switch (extension) {
-        // 1) glb(GLB) 로드
-        case 'glb': {
-          setFileName(fileName);
-          setIsModelLoading(true);
+      if (extension === 'glb') {
+        setFileName(fileName);
+        setFileExtension(extension);
 
-          // LP drop 시에 파일 로드하기 위해 아래의 코드를 추가했습니다(차)
-          dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
+        /**
+         * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
+         */
 
-          break;
-        }
+        dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
+        return;
+      }
 
-        // 2) fbx(FBX) 로드
-        case 'fbx': {
-          onModalOpen({
-            title: 'Importing the file',
-            message: 'This can take up to 3 minutes',
-          });
+      if (extension === 'fbx') {
+        onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
-          await convertFBXtoGLB(file)
-            .then((response) => {
-              onModalClose();
+        await convertFBXtoGLB(file)
+          .then((response) => {
+            onModalClose();
 
-              setFileName(fileName);
-              setIsModelLoading(true);
+            setFileName(fileName);
 
-              // LP drop 시에 파일 로드하기 위해 아래의 코드를 추가했습니다(차)
-              dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
-            })
-            .catch(() => {
-              onModalOpen({
-                title: 'Warning',
-                message:
-                  '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
-                confirmText: 'Contact',
-                onConfirm: () => {
-                  location.href = 'mailto:contact@plask.ai';
-                },
-              });
+            /**
+             * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
+             */
+            dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
+          })
+          .catch(() => {
+            onModalOpen({
+              title: 'Warning',
+              message:
+                '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
+              confirmText: 'Contact',
+              onConfirm: () => {
+                // location.href = 'mailto:contact@plask.ai';
+                onModalClose();
+              },
             });
-
-          break;
-        }
-
-        // 3) mp4(MP4), mov(MOV), avi(AVI) 로드
-        case 'mp4':
-        case 'mov':
-        case 'avi': {
-          // VM으로 전환
-          break;
-        }
-
-        // 4) glb(GLB) or fbx(FBX) 외 로드
-        default: {
-          onModalOpen({
-            title: 'Warning',
-            message: 'Unsupported file format',
-            confirmText: 'Close',
           });
-          break;
-        }
+
+        return;
       }
     },
-    [dispatch, getFileExtension, lpNode, onModalClose, onModalOpen],
+    [dispatch, onModalClose, onModalOpen],
   );
 
   const handleDrop = useCallback(
     async (files: File[]) => {
-      for (let i = 0; i < files.length; i++) {
-        await onFileLoad(files[i]);
+      const videos = files.filter((file) => file.type.includes('video'));
+      const removedVideoFiles = files.filter((file) => !file.type.includes('video'));
+
+      const isInvalidFormat = removedVideoFiles.some((file) => {
+        const extension = getFileExtension(file.name).toLowerCase();
+        const isModelFormat = extension === 'glb' || extension === 'fbx';
+
+        return !isModelFormat;
+      });
+
+      const isError = videos.length > 1;
+
+      if (isError) {
+        onModalOpen({
+          title: 'Warning',
+          message: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
+          confirmText: 'Close',
+          onConfirm: () => onModalClose(),
+        });
+
+        return;
+      }
+
+      if (isInvalidFormat) {
+        onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
+
+        return;
+      }
+
+      /**
+       * @TODO 하나라도 실패 시 전부 취소하거나 성공하는 포맷들만 로드하거나 필요
+       */
+      removedVideoFiles.map(async (file) => await onFileLoad(file));
+
+      if (videos.length > 0) {
+        /**
+         * @TODO 이후 사용하지 않는 경우 remove url 필요
+         */
+        const videoBlobURL = URL.createObjectURL(videos[0]);
+
+        onModalOpen({
+          title: 'Extract',
+          message: '모션을 추출하시겠습니까?',
+          confirmText: '확인',
+          cancelText: '취소',
+          onConfirm: () => {
+            dispatch(
+              modeSelectActions.changeMode({
+                mode: 'videoMode',
+                videoURL: videoBlobURL,
+              }),
+            );
+          },
+          onCancel: () => onModalClose(),
+        });
       }
     },
-    [onFileLoad],
+    [dispatch, onFileLoad, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
   const [view, setView] = useState<LP.View>('List');
 
+  const [searchText, setSearchText] = useState('');
+  const [searchResultNode, setSearchResultNode] = useState<LP.Node[]>(lpNode);
+
+  const handleSearch = useCallback(
+    (text: string) => {
+      setSearchText(text);
+
+      if (text.length > 0) {
+        const searchResult = lpNode.filter(
+          (node) =>
+            node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text),
+        );
+
+        setSearchResultNode(searchResult);
+      }
+    },
+    [lpNode],
+  );
+
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
       <div className={cx('inner')}>
         <Box id="LP-Header" noResize>
-          <LPHeader />
+          <LPHeader onLoad={handleDrop} />
         </Box>
         <Box id="LP-Controlbar" noResize>
-          <LPControlbar />
+          <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody view={view} lpNode={lpNode} lpCurrentPath={lpCurrentPath} />
+          <LPBody
+            view={view}
+            lpNode={searchText.length > 0 ? searchResultNode : lpNode}
+            disableContextMenu={!!searchText}
+          />
         </Box>
       </div>
     </div>
   );
 };
 
-const mapStateToProps = (state: RootState) => {
-  return {
-    lpNode: state.lpNode.node,
-    lpCurrentPath: state.lpNode.currentPath,
-    assetList: state.shootProject.assetList,
-    animationTransformNodes: state.animationData.animationTransformNodes,
-    animationIngredients: state.animationData.animationIngredients,
-  };
-};
-
-export default connect(mapStateToProps)(memo(LibraryPanel));
+export default memo(LibraryPanel);

@@ -13,10 +13,18 @@ declare namespace LP {
     fileURL?: string | File;
     filePath: string;
     name: string;
+    extension: string;
     type: NodeType;
-    hideNode?: boolean;
     children: any[];
     assetId?: string;
+    motionData?: {
+      id: string;
+      result: {
+        name: string;
+        times: number[];
+        values: number[];
+      }[];
+    };
   }
 }
 
