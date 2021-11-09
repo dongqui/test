@@ -17,6 +17,14 @@ declare namespace LP {
     type: NodeType;
     children: any[];
     assetId?: string;
+    motionData?: {
+      id: string;
+      result: {
+        name: string;
+        times: number[];
+        values: number[];
+      }[];
+    };
   }
 }
 

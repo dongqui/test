@@ -1,6 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import produce from 'immer';
 import { UpperBar } from 'containers/UpperBar';
 import { FilledButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -10,9 +12,10 @@ import Box, { BoxProps } from 'components/Layout/Box';
 import { useMediaStream } from 'hooks/common';
 import Image from 'next/image';
 import { FunctionComponent } from 'hoist-non-react-statics/node_modules/@types/react';
-import { is } from 'immer/dist/internal';
 import axios, { Canceler } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as modeSelectActions from 'actions/modeSelection';
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
 import { BaseModal } from 'components/Modal';
@@ -24,6 +27,9 @@ interface Props {
 }
 
 export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
+  const dispatch = useDispatch();
+
+  const lpNode = useSelector((state) => state.lpNode.node);
   const { videoURL } = useSelector((state) => state.modeSelection);
   const cameraListRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -155,8 +161,6 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
    */
   const handleExtractMotion = useCallback(
     async ({ id, start, end, startTime, endTime, url, type, fileName, timeout, duration }) => {
-      setReadyExtract(false);
-      setOnExtract(true);
       const formData = new FormData();
       const file = await convertBlobToFile({ url, type, fileName }).then((response) => {
         formData.append('file', response);
@@ -180,16 +184,33 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         timeout,
       })
         .then((response) => {
-          setOnExtract(false);
-          return response.data;
+          const newMotionNode: LP.Node = {
+            id: uuidv4(),
+            parentId: '__root__',
+            name: fileName,
+            filePath: '\\root',
+            children: [],
+            extension: '',
+            type: 'Motion',
+            motionData: response.data,
+          };
+
+          const nextNodes = produce(lpNode, (draft) => {
+            draft.push(newMotionNode);
+          });
+
+          setReadyExtract(false);
+          dispatch(lpNodeActions.changeNode({ nodes: nextNodes }));
+          dispatch(modeSelectActions.changeMode({ mode: 'animationMode' }));
+          return response;
         })
         .catch((err) => {
+          setReadyExtract(false);
           throw err;
         });
       // return {
       //   result,
       // };
-      setReadyExtract(false);
     },
     [],
   );

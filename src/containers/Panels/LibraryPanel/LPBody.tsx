@@ -15,12 +15,13 @@ const cx = classNames.bind(styles);
 
 interface Props {
   view: LP.View;
+  lpNode: LP.Node[];
+  disableContextMenu?: boolean;
 }
 
-const LPBody: FunctionComponent<Props> = () => {
+const LPBody: FunctionComponent<Props> = ({ lpNode, disableContextMenu }) => {
   const dispatch = useDispatch();
 
-  const lpNode = useSelector((state) => state.lpNode.node);
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
   const lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
@@ -199,14 +200,14 @@ const LPBody: FunctionComponent<Props> = () => {
 
     const currentRef = wrapperRef.current;
 
-    if (currentRef) {
+    if (currentRef && !disableContextMenu) {
       currentRef.addEventListener('contextmenu', handleContextMenu);
 
       return () => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [depthChangeKey, dispatch, lpClipboard, lpNode, nodeRefs, onContextMenuOpen]);
+  }, [depthChangeKey, disableContextMenu, dispatch, lpClipboard, lpNode, nodeRefs, onContextMenuOpen]);
 
   const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
 

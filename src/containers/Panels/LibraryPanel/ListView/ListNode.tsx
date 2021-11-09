@@ -817,16 +817,119 @@ const ListNode: FunctionComponent<Props> = ({
         return;
       }
 
+      const dragNode = _.find(lpNode, { id: dragTarget?.id });
+      const cloneDragNode = _.cloneDeep(dragNode);
+
+      if (type === 'Model') {
+        if (dragTarget?.type === 'Motion' && dragNode?.motionData) {
+          /**
+           * @TODO 리타겟 및 하위로 모션 추가
+           */
+          const dropNode = _.find(lpNode, { parentId: id });
+          const childrenList = lpNode.filter((node) => node.parentId === id);
+          const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
+          const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
+
+          const cloneDragNode = _.cloneDeep(dragNode);
+
+          if (dropNode && isAlreadyExist && cloneDragNode) {
+            const confirmed = await getConfirm({
+              title: 'Warning',
+              message: '해당 모댈에 동일한 이름의 모션이 있습니다. 덮어쓰시겠습니까?',
+              confirmText: '확인',
+              cancelText: '취소',
+            });
+
+            if (confirmed) {
+              // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
+              const filterNodes = lpNode.filter((node) => node.id !== duplicatedTarget[0].id);
+
+              const nextNodes = produce(filterNodes, (draft) => {
+                const targetNode = _.find(draft, { id });
+
+                if (targetNode) {
+                  cloneDragNode.id = uuidv4();
+                  cloneDragNode.parentId = id;
+                  cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
+
+                  targetNode.children.push(cloneDragNode.id);
+
+                  // @TODO 하위 노드도 추가
+                  draft.push(cloneDragNode);
+
+                  if (!_.isEmpty(cloneDragNode.children)) {
+                    cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                  }
+                }
+              });
+
+              dispatch(
+                lpNodeActions.changeNode({
+                  nodes: nextNodes,
+                }),
+              );
+
+              return;
+            }
+          }
+
+          // @TODO 없으면 비활성 처리 필요
+          if (cloneDragNode) {
+            const currentPathNodeName = lpNode
+              .filter((node) => {
+                if (node.parentId === id) {
+                  const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
+                  const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
+                  if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+                    return true;
+                  }
+                  return false;
+                }
+              })
+              .map((filteredNode) => filteredNode.name);
+
+            const nodeName = beforeMove({
+              name: cloneDragNode.name,
+              comparisonNames: currentPathNodeName,
+            });
+
+            const nextNodes = produce(lpNode, (draft) => {
+              const targetNode = _.find(draft, { id });
+
+              if (targetNode) {
+                cloneDragNode.id = uuidv4();
+                cloneDragNode.parentId = id;
+                cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
+                cloneDragNode.name = nodeName;
+
+                targetNode.children.push(cloneDragNode.id);
+
+                // @TODO 하위 노드도 추가
+                draft.push(cloneDragNode);
+
+                if (!_.isEmpty(cloneDragNode.children)) {
+                  cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                }
+              }
+            });
+
+            dispatch(
+              lpNodeActions.changeNode({
+                nodes: nextNodes,
+              }),
+            );
+          }
+        }
+      }
+
       if (type === 'Folder') {
-        if (dragTarget?.type === 'Motion') {
+        if (dragTarget?.type === 'Motion' && !dragNode?.motionData) {
           return;
         }
 
         const cloneLPNode = _.cloneDeep(lpNode);
 
         _.remove(cloneLPNode, (node) => node.id === dragTarget?.id);
-
-        const dragNode = _.find(lpNode, { id: dragTarget?.id });
         const cloneDragNode = _.cloneDeep(dragNode);
 
         if (cloneDragNode) {

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
@@ -203,6 +203,22 @@ const LibraryPanel: FunctionComponent = () => {
 
   const [view, setView] = useState<LP.View>('List');
 
+  const [searchText, setSearchText] = useState('');
+  const [searchResultNode, setSearchResultNode] = useState<LP.Node[]>(lpNode);
+
+  const handleSearch = useCallback(
+    (text: string) => {
+      setSearchText(text);
+
+      if (text.length > 0) {
+        const searchResult = lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
+
+        setSearchResultNode(searchResult);
+      }
+    },
+    [lpNode],
+  );
+
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
       <div className={cx('inner')}>
@@ -210,10 +226,10 @@ const LibraryPanel: FunctionComponent = () => {
           <LPHeader onLoad={handleDrop} />
         </Box>
         <Box id="LP-Controlbar" noResize>
-          <LPControlbar />
+          <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody view={view} />
+          <LPBody view={view} lpNode={searchText.length > 0 ? searchResultNode : lpNode} disableContextMenu={!!searchText} />
         </Box>
       </div>
     </div>
