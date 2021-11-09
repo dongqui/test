@@ -15,6 +15,7 @@ interface Props {
   canvasRef: RefObject<HTMLCanvasElement>;
   recording: boolean;
   currentDeviceId: string;
+  recordOverTwice: boolean;
   setThumbnailList: Dispatch<SetStateAction<never[]>>;
   setDuration: Dispatch<SetStateAction<number>>;
   setPlayState: Dispatch<SetStateAction<boolean>>;
@@ -36,11 +37,13 @@ const useMediaStream = (props: Props) => {
     canvasRef,
     recording,
     currentDeviceId,
+    recordOverTwice,
     setThumbnailList,
     setPlayState,
     setDuration,
     setRecordState,
     setRecording,
+    setRecordOverTwice,
     setStandbyState,
     setTimer,
     setDeviceList,
@@ -52,7 +55,6 @@ const useMediaStream = (props: Props) => {
   const timerRef = useRef<any>(null);
   const [currentStream, setCurrentStream] = useState<MediaStream>();
   const [recorderData, setRecorderData] = useState<MediaRecorder>();
-  const [recordOverTwice, setRecordOverTwice] = useState<boolean>(false);
   const [constraintList, setConstraint] = useState<Object>();
   const { videoURL } = useSelector((state: RootState) => state.modeSelection);
 
@@ -202,7 +204,7 @@ const useMediaStream = (props: Props) => {
     async (e) => {
       if (recorderData && recorderData.onstop) {
         if (recorderData.state === 'recording') {
-          recorderData.onstop(e);
+          await recorderData.onstop(e);
           handleMetaData();
           setRecording(false);
           recorderData.stop();
@@ -243,7 +245,11 @@ const useMediaStream = (props: Props) => {
     // 한 번 녹화 이후 두번째 녹화부터 다시 stream을 화면에 표시하기 위함
     if (recordOverTwice) {
       setThumbnailList([]);
-      mediaStreamInitialize({ video: { deviceId: { exact: currentDeviceId } } });
+      if (videoURL) {
+        mediaStreamInitialize({ video: true });
+      } else {
+        mediaStreamInitialize({ video: { deviceId: { exact: currentDeviceId } } });
+      }
       setConstraint({ video: { deviceId: { exact: currentDeviceId } } });
       ref.current!.srcObject = currentStream as MediaStream;
       ref.current!.src = '';
@@ -272,16 +278,17 @@ const useMediaStream = (props: Props) => {
     }
   }, [
     ref,
+    videoURL,
     currentStream,
+    recordOverTwice,
+    currentDeviceId,
     setThumbnailList,
     setRecording,
     setStandbyState,
     setTimer,
     startRecording,
-    recordOverTwice,
     setRecordOverTwice,
     setRecordState,
-    currentDeviceId,
     mediaStreamInitialize,
   ]);
 
