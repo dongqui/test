@@ -12,6 +12,7 @@ import {
   KeyboardEvent,
   DragEvent,
 } from 'react';
+import * as BABYLON from '@babylonjs/core';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
