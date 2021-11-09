@@ -4,6 +4,16 @@ import { ShootView } from 'types/common';
 const defaultWidth = 100;
 const defaultHeight = 100;
 
+/**
+ * 각 view의 바라보는 방향에 있는 ground를 생성합니다.
+ * 본 함수는 createGrounds 내부적으로만 사용합니다.
+ *
+ * @param scene - ground가 추가될 scene
+ * @param useTexture - texture 사용 여부
+ * @param width - ground의 너비
+ * @param height - ground의 높이
+ * @param view - camera가 위치한 방위 (front, back, top, bottom, left, right)
+ */
 const createGround = (
   scene: BABYLON.Scene,
   useTexture: boolean,
@@ -79,7 +89,7 @@ const createGround = (
 };
 
 /**
- * ground를 생성합니다.
+ * 원점을 기준으로 6방향의 ground들을 생성합니다.
  *
  * @param scene - ground를 생성할 scene
  * @param useTexture - texture 사용 여부

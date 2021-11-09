@@ -1,5 +1,12 @@
 import * as BABYLON from '@babylonjs/core';
 
+/**
+ * transformKeys를 받아 특정 시점에 value를 삽입한 후 다시 반환합니다.
+ *
+ * @param transformKeys - value를 삽입할 transformKeys
+ * @param targetFrame - value를 삽입할 시점(frame)
+ * @param value - 삽입할 값
+ */
 const getValueInsertedTransformKeys = (
   transformKeys: BABYLON.IAnimationKey[],
   targetFrame: number,
