@@ -150,7 +150,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
    * @param end - 추출을 시작한 후 끝낼 시간
    * @param startTime - 전체 영상의 시작 시간
    * @param endTime - 영상 전체의 종료 시간
-   * @duration - 영상의 길이 (metaData에서 자체적으로 frame 값을 추출 할 수 없을 경우 대비)
+   * @param duration - 영상의 길이 (metaData에서 자체적으로 frame 값을 추출 할 수 없을 경우 대비)
    */
   const handleExtractMotion = useCallback(
     async ({ id, start, end, startTime, endTime, url, type, fileName, timeout, duration }) => {
@@ -176,9 +176,9 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         }),
         timeout,
       })
-        .then((response) => console.log(response))
+        .then((response) => response.data)
         .catch((err) => {
-          throw new Error(err);
+          throw err;
         });
       // return {
       //   result,
@@ -422,6 +422,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
               onClick={() => {
                 startRecordingDelay();
                 setTurnStandbyPhase(false);
+                URL.revokeObjectURL(videoRef.current!.src);
                 videoRef.current!.removeAttribute('src');
               }}
             ></FilledButton>
