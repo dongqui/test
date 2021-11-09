@@ -73,9 +73,7 @@ const requestApi = async (payload: Payload) => {
     const error = (response && response.data) || {
       success: false,
       status: response ? response.status : 500,
-      message: response
-        ? response.statusText
-        : 'An error has occurred. Please refresh and try again',
+      message: response ? response.statusText : 'An error has occurred. Please refresh and try again',
     };
 
     throw error;

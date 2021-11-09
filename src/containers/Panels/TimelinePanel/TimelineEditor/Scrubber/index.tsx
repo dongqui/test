@@ -130,15 +130,7 @@ const Scrubber = () => {
     <g id="scrubber" className={cx('scrubber')} ref={scrubberRef}>
       <line x1="15" y1="12" x2="15" y2="2000" />
       <foreignObject width="32" height="12">
-        <BaseInput
-          arrow={false}
-          maxLength={4}
-          onBlur={handleInputBlur}
-          onChange={handleInputChange}
-          onKeyDown={handleInputKeyDown}
-          type="number"
-          value={inputValue}
-        />
+        <BaseInput arrow={false} maxLength={4} onBlur={handleInputBlur} onChange={handleInputChange} onKeyDown={handleInputKeyDown} type="number" value={inputValue} />
       </foreignObject>
     </g>
   );

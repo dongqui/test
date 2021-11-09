@@ -21,8 +21,7 @@ const useAnimation = () => {
   // 애니메이션 생성
   useEffect(() => {
     const visualizedAnimationIngredients = animationIngredients.filter(
-      (animationIngredient) =>
-        visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
+      (animationIngredient) => visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
 
     const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
@@ -45,9 +44,7 @@ const useAnimation = () => {
               );
               if (track.useFilter) {
                 // filter function 적용
-                newAnimation.setKeys(
-                  filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta),
-                );
+                newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
               } else {
                 newAnimation.setKeys(track.transformKeys);
               }
@@ -63,9 +60,7 @@ const useAnimation = () => {
               );
               if (track.useFilter) {
                 // filter function 적용
-                newAnimation.setKeys(
-                  filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta),
-                );
+                newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
               } else {
                 newAnimation.setKeys(track.transformKeys);
               }

@@ -11,12 +11,7 @@ import { checkIsVectorIn } from './';
  * @param mesh - 판단 대상 컨트롤러
  * @param scene - dragBox와 pointer가 속하는 scene
  */
-const checkIsControllerIn = (
-  start: ScreenXY,
-  end: ScreenXY,
-  mesh: BABYLON.Mesh,
-  scene: BABYLON.Scene,
-) => {
+const checkIsControllerIn = (start: ScreenXY, end: ScreenXY, mesh: BABYLON.Mesh, scene: BABYLON.Scene) => {
   mesh.computeWorldMatrix(true);
   const { centerWorld, vectorsWorld: worldVectors } = mesh.getBoundingInfo().boundingBox;
   const checkVectors = [centerWorld];

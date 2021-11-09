@@ -10,14 +10,7 @@ const defaultPosition = new BABYLON.Vector3(0, 6, 10);
  * @param initialPosition - 카메라의 초기 위치 default = (0, 6, 10)
  */
 const createCamera = (scene: BABYLON.Scene, initialPosition?: BABYLON.Vector3) => {
-  const arcRotateCamera = new BABYLON.ArcRotateCamera(
-    'arcRotateCamera',
-    0,
-    6,
-    10,
-    BABYLON.Vector3.Zero(),
-    scene,
-  );
+  const arcRotateCamera = new BABYLON.ArcRotateCamera('arcRotateCamera', 0, 6, 10, BABYLON.Vector3.Zero(), scene);
   arcRotateCamera.setPosition((initialPosition = defaultPosition));
   arcRotateCamera.attachControl(scene.getEngine().getRenderingCanvas(), false);
   arcRotateCamera.allowUpsideDown = false;

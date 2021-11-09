@@ -70,9 +70,7 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
   //   );
   // }
 
-  return (
-    <main>{mode === 'animationMode' ? <Shoot /> : <VideoMode browserType={browserType} />}</main>
-  );
+  return <main>{mode === 'animationMode' ? <Shoot /> : <VideoMode browserType={browserType} />}</main>;
 };
 
 export default memo(Index);

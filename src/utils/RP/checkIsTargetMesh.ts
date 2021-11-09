@@ -5,9 +5,7 @@ import * as BABYLON from '@babylonjs/core';
  *
  * @param target - mesh 여부 판단 대상
  */
-const checkIsTargetMesh = (
-  target: BABYLON.TransformNode | BABYLON.Mesh,
-): target is BABYLON.Mesh => {
+const checkIsTargetMesh = (target: BABYLON.TransformNode | BABYLON.Mesh): target is BABYLON.Mesh => {
   return target.getClassName() === 'Mesh';
 };
 

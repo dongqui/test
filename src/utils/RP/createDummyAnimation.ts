@@ -22,11 +22,7 @@ const createDummyAnimation = async (asset: ShootAsset): Promise<AnimationIngredi
   frames.forEach((f, idx) => {
     hipsPositionTransformKeys.push({
       frame: f,
-      value: BABYLON.Vector3.FromArray([
-        data[0].values[3 * idx],
-        data[0].values[3 * idx + 1],
-        data[0].values[3 * idx + 2],
-      ]),
+      value: BABYLON.Vector3.FromArray([data[0].values[3 * idx], data[0].values[3 * idx + 1], data[0].values[3 * idx + 2]]),
     });
   });
 
@@ -34,12 +30,7 @@ const createDummyAnimation = async (asset: ShootAsset): Promise<AnimationIngredi
   const hipsRotationTransformKeys: BABYLON.IAnimationKey[] = [];
 
   frames.forEach((f, idx) => {
-    const q = BABYLON.Quaternion.FromArray([
-      data[1].values[4 * idx],
-      data[1].values[4 * idx + 1],
-      data[1].values[4 * idx + 2],
-      data[1].values[4 * idx + 3],
-    ]);
+    const q = BABYLON.Quaternion.FromArray([data[1].values[4 * idx], data[1].values[4 * idx + 1], data[1].values[4 * idx + 2], data[1].values[4 * idx + 3]]);
 
     hipsRotationQuaternionTransformKeys.push({
       frame: f,
@@ -51,14 +42,7 @@ const createDummyAnimation = async (asset: ShootAsset): Promise<AnimationIngredi
     });
   });
 
-  const hipsPositionTrack = createShootTrack(
-    `newAnim|${hipsBone.name}|position`,
-    layerId,
-    hipsBone.getTransformNode(),
-    'position',
-    hipsPositionTransformKeys,
-    false,
-  );
+  const hipsPositionTrack = createShootTrack(`newAnim|${hipsBone.name}|position`, layerId, hipsBone.getTransformNode(), 'position', hipsPositionTransformKeys, false);
 
   const hipsRotationQuaternionTrack = createShootTrack(
     `newAnim|${hipsBone.name}|rotationQuaternion`,
@@ -69,14 +53,7 @@ const createDummyAnimation = async (asset: ShootAsset): Promise<AnimationIngredi
     false,
   );
 
-  const hipsRotationTrack = createShootTrack(
-    `newAnim|${hipsBone.name}|rotation`,
-    layerId,
-    hipsBone.getTransformNode(),
-    'rotation',
-    hipsRotationTransformKeys,
-    false,
-  );
+  const hipsRotationTrack = createShootTrack(`newAnim|${hipsBone.name}|rotation`, layerId, hipsBone.getTransformNode(), 'rotation', hipsRotationTransformKeys, false);
 
   const animationIngredient = {
     id: animId,

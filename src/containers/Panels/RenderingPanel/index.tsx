@@ -1,11 +1,5 @@
 import { FunctionComponent, useRef } from 'react';
-import {
-  useAnimation,
-  useGizmoControl,
-  useInitializeScene,
-  useLoadAssets,
-  useVisualizeModel,
-} from 'hooks/RP';
+import { useAnimation, useGizmoControl, useInitializeScene, useLoadAssets, useVisualizeModel } from 'hooks/RP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 

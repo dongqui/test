@@ -8,11 +8,7 @@ import OneEuroFilterForVector from './OneEuroFilterForVector';
  * @param minCutoff - 보정 연산 시 사용할 minCutoff
  * @param beta - 보정 연산 시 사용할 beta
  */
-const filterVector = (
-  transformKeys: BABYLON.IAnimationKey[],
-  minCutoff: number,
-  beta: number,
-): BABYLON.IAnimationKey[] => {
+const filterVector = (transformKeys: BABYLON.IAnimationKey[], minCutoff: number, beta: number): BABYLON.IAnimationKey[] => {
   const oneEuroFilterVector = new OneEuroFilterForVector(minCutoff, beta);
   const filteredTransformKeys = transformKeys.map((transformKey) => ({
     frame: transformKey.frame,
