@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
 import { filterQuaternion, filterVector } from 'utils/RP';
+import { roundToFourth } from 'utils/common';
 
 const useAnimation = () => {
   const sceneList = useSelector((state) => state.shootProject.sceneList);
@@ -11,12 +12,26 @@ const useAnimation = () => {
 
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
-  const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
-  const [isPlaying, setIsPlaying] = useState(false);
+  const playState = useSelector((state) => state.animatingControls.playState);
+  const playDirection = useSelector((state) => state.animatingControls.playDirection);
+  const playSpeed = useSelector((state) => state.animatingControls.playSpeed);
+  const startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
+  const endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
 
-  useEffect(() => {
-    console.log('animationIngredients: ', animationIngredients);
-  }, [animationIngredients]);
+  const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
+
+  // useEffect(() => {
+  //   console.log('animationIngredients: ', animationIngredients);
+  // }, [animationIngredients]);
+
+  // useEffect(() => {
+  //   console.log('fps: ', fps);
+  //   console.log('playState: ', playState);
+  //   console.log('playDirection: ', playDirection);
+  //   console.log('playSpeed: ', playSpeed);
+  //   console.log('startTimeIndex: ', startTimeIndex);
+  //   console.log('endTimeIndex: ', endTimeIndex);
+  // }, [endTimeIndex, fps, playDirection, playSpeed, playState, startTimeIndex]);
 
   // 애니메이션 생성
   useEffect(() => {
@@ -81,39 +96,36 @@ const useAnimation = () => {
       const { id: sceneId, name, scene, canvasId } = shootScene;
 
       if (currentAnimationGroup) {
-        currentAnimationGroup.onAnimationEndObservable.addOnce((...params) => {});
+        // scene.addAnimationGroup(currentAnimationGroup);
 
-        scene.addAnimationGroup(currentAnimationGroup);
-
-        if (isPlaying) {
-          currentAnimationGroup.start(true);
-        } else {
-          currentAnimationGroup.start(true);
-          currentAnimationGroup.pause();
-          currentAnimationGroup.goToFrame(0);
+        switch (playState) {
+          case 'play': {
+            console.log('currentAnimationGroup: ', currentAnimationGroup);
+            if (currentAnimationGroup.isStarted) {
+              currentAnimationGroup.play(true);
+            } else {
+              currentAnimationGroup.start(true, playSpeed * playDirection, roundToFourth(startTimeIndex / fps), roundToFourth(endTimeIndex / fps));
+            }
+            break;
+          }
+          case 'pause': {
+            console.log('currentAnimationGroup: ', currentAnimationGroup);
+            currentAnimationGroup.pause();
+            break;
+          }
+          case 'stop': {
+            console.log('currentAnimationGroup: ', currentAnimationGroup);
+            currentAnimationGroup.goToFrame(roundToFourth(startTimeIndex / fps));
+            currentAnimationGroup.stop();
+            break;
+          }
+          default: {
+            break;
+          }
         }
       }
     });
-
-    // 임시 shortcut
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // input 입력 중에는 적용되지 않도록 수정
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-
-      if (currentAnimationGroup && event.key === 'p') {
-        currentAnimationGroup.play();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [currentAnimationGroup, isPlaying, sceneList]);
+  }, [currentAnimationGroup, endTimeIndex, fps, playDirection, playSpeed, playState, sceneList, startTimeIndex]);
 };
 
 export default useAnimation;
