@@ -1,5 +1,5 @@
 import { FunctionComponent, useRef } from 'react';
-import { useAnimation, useGizmoControl, useInitializeScene, useVisualizeModel } from 'hooks/RP';
+import { useAnimation, useGizmoControl, useInitializeScene } from 'hooks/RP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -14,7 +14,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   useInitializeScene({ renderingCanvas: renderingCanvas1 });
   // useInitializeScene({ renderingCanvas: renderingCanvas2 });
 
-  useVisualizeModel();
   useGizmoControl();
   useAnimation();
 

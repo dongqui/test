@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import * as BABYLON from '@babylonjs/core';
+import '@babylonjs/loaders/glTF';
 import { clone, isUndefined } from 'lodash';
 import produce from 'immer';
 import { v4 as uuid } from 'uuid';
