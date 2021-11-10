@@ -146,6 +146,8 @@ const ListNode: FunctionComponent<Props> = ({
 
   const depth = (filePath.match(/\\/g) || []).length;
 
+  const column = Array.from({ length: depth - 1 }).map((x, i) => i);
+
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -707,8 +709,6 @@ const ListNode: FunctionComponent<Props> = ({
     sceneList,
   ]);
 
-  const column = Array.from({ length: depth - 1 }).map((x, i) => i);
-
   const classes = cx('wrapper', { selected: isSelected });
 
   // const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
@@ -1209,17 +1209,17 @@ const ListNode: FunctionComponent<Props> = ({
 
   const arrowClasses = cx('icon-arrow', {
     invisible: type === 'Motion',
-    open: showsChildren,
+    // open: showsChildren,
   });
 
   return (
     <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
       <div className={cx('inner')}>
-        <div style={{ display: 'flex' }} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect}>
+        <div className={cx('inner-row')} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect} style={{ paddingLeft: `${7 * depth}px` }}>
           {/* {column.map((col, i) => (
             <div key={i} style={{ width: `${12 * col}px` }} />
           ))} */}
-          <IconWrapper icon={SvgPath.FilledArrow} className={arrowClasses} onClick={handleArrowClick} />
+          <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={arrowClasses} onClick={handleArrowClick} />
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
             {isEditing ? (
