@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import * as animatingControlsActions from 'actions/animatingControls';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { PlayDirection_New } from 'types/RP';
 
 const Rewind = () => {

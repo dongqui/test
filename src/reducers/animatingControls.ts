@@ -1,4 +1,4 @@
-import { AnimatingControlsAction } from 'actions/animatingControls';
+import { AnimatingControlsAction } from 'actions/animatingControlsAction';
 import { TimeIndex } from 'utils/TP';
 import { PlayDirection_New, PlayState } from 'types/RP';
 

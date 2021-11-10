@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import _ from 'lodash';
 
 import { useSelector } from 'reducers';
-import * as animatingControlsActions from 'actions/animatingControls';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { BaseInput } from 'components/Input';
 import { PlayDirection_New } from 'types/RP';
 import { ScaleLinear, TimeIndex } from 'utils/TP';

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import detectSafari from 'utils/common/detectSafari';
+import { detectSafari } from 'utils/common';
 import * as modeSelectionActions from 'actions/modeSelection';
 
 import classNames from 'classnames/bind';
