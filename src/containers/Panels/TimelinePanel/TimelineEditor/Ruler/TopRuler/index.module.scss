@@ -12,12 +12,8 @@
 .top-ruler {
   transform: translate(20px, 18px);
 
-  path {
+  path, line {
     display: none;
-  }
-
-  line {
-    stroke: #292a2b;
   }
 
   text {
