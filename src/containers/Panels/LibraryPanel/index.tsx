@@ -31,68 +31,8 @@ const LibraryPanel: FunctionComponent = () => {
   const lpNode = useSelector((state) => state.lpNode.node);
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
   const sceneList = useSelector((state) => state.shootProject.sceneList);
-  const assetList = useSelector((state) => state.shootProject.assetList);
-  const animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
-  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
   const { onModalOpen, onModalClose } = useBaseModal();
-
-  const [fileExtension, setFileExtension] = useState('');
-  const [fileName, setFileName] = useState('');
-  const [assetListLength, setAssetListLength] = useState(0);
-  const [animationIngredientsLength, setAnimationIngredientsLength] = useState(0);
-
-  useEffect(() => {
-    if (assetListLength !== assetList.length && animationIngredientsLength !== animationIngredients.length) {
-      let nextLPNodes = clone(lpNode);
-
-      const nextNodes = produce(nextLPNodes, (draft) => {
-        const ingredients = animationIngredients.filter((ingredient) => ingredient.assetId === assetList[assetList.length - 1].id);
-
-        const newModelNode: LP.Node = {
-          id: uuid(),
-          // fileURL: file,
-          filePath: lpCurrentPath,
-          parentId: '__root__',
-          name: fileName,
-          extension: fileExtension,
-          type: 'Model',
-          assetId: assetList[assetList.length - 1].id,
-          children: ingredients.map((ingredient) => ingredient.id),
-        };
-
-        draft.push(newModelNode);
-
-        const newMotionNodes = animationIngredients.map((ingredient) => {
-          const motion: LP.Node = {
-            id: ingredient.id,
-            parentId: ingredient.assetId,
-            name: ingredient.name,
-            filePath: lpCurrentPath + `\\${ingredient.name}`,
-            children: [],
-            extension: '',
-            type: 'Motion',
-          };
-
-          return motion;
-        });
-
-        draft.push(...newMotionNodes);
-      });
-
-      nextLPNodes = nextNodes;
-
-      dispatch(
-        lpNodeActions.changeNode({
-          nodes: nextNodes,
-        }),
-      );
-
-      setFileName('');
-      setAssetListLength(assetList.length);
-      setAnimationIngredientsLength(animationIngredients.length);
-    }
-  }, [animationIngredients, animationIngredientsLength, assetList, assetListLength, dispatch, fileExtension, fileName, lpCurrentPath, lpNode]);
 
   const onFileLoad = useCallback(
     async (file: File) => {
@@ -113,15 +53,9 @@ const LibraryPanel: FunctionComponent = () => {
       let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
 
       if (extension === 'glb') {
-        setFileName(fileName);
-        setFileExtension(extension);
-
         /**
          * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
          */
-
-        // dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
-
         loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', (file as unknown) as string, baseScene);
       }
 
@@ -131,8 +65,6 @@ const LibraryPanel: FunctionComponent = () => {
         const fileUrl = await convertFBXtoGLB(file)
           .then((response) => {
             onModalClose();
-
-            setFileName(fileName);
 
             return response;
           })
@@ -152,7 +84,6 @@ const LibraryPanel: FunctionComponent = () => {
           /**
            * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
            */
-          // dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
           loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
         }
       }
@@ -203,7 +134,7 @@ const LibraryPanel: FunctionComponent = () => {
       const newAsset: ShootAsset = {
         id: assetId,
         name: fileName,
-        extension: getFileExtension(fileName).toLowerCase(),
+        extension,
         meshes,
         geometries,
         skeleton: skeletons[0] ?? null,
@@ -212,6 +143,44 @@ const LibraryPanel: FunctionComponent = () => {
         animationIngredientIds,
         retargetMapId: retargetMap.id,
       };
+
+      const nextNodes = produce(lpNode, (draft) => {
+        const newModelNode: LP.Node = {
+          id: uuid(),
+          // fileURL: file,
+          filePath: lpCurrentPath,
+          parentId: '__root__',
+          name: fileName,
+          extension,
+          type: 'Model',
+          assetId: newAsset.id,
+          children: animationIngredientIds,
+        };
+
+        draft.push(newModelNode);
+
+        const newMotionNodes = animationIngredients.map((ingredient) => {
+          const motion: LP.Node = {
+            id: ingredient.id,
+            parentId: ingredient.assetId,
+            name: ingredient.name,
+            filePath: lpCurrentPath + `\\${ingredient.name}`,
+            children: [],
+            extension: '',
+            type: 'Motion',
+          };
+
+          return motion;
+        });
+
+        draft.push(...newMotionNodes);
+      });
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: nextNodes,
+        }),
+      );
 
       dispatch(shootProjectActions.addAsset({ asset: newAsset }));
       dispatch(
@@ -224,7 +193,7 @@ const LibraryPanel: FunctionComponent = () => {
         }),
       );
     },
-    [dispatch, onModalClose, onModalOpen, sceneList],
+    [dispatch, lpCurrentPath, lpNode, onModalClose, onModalOpen, sceneList],
   );
 
   const handleDrop = useCallback(
