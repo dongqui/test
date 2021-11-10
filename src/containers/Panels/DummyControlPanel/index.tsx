@@ -6,27 +6,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { uniq } from 'lodash';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import { checkIsTargetMesh, createDummyAnimation } from 'utils/RP';
 import { AnimationIngredient, ShootTrack } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
-
-const DEFAULT_SKELETON_VIEWER_OPTION = {
-  pauseAnimations: false,
-  returnToRest: false,
-  computeBonesUsingShaders: true,
-  useAllBones: true, // error with false
-  displayMode: BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS,
-  displayOptions: {
-    sphereBaseSize: 0.01,
-    sphereScaleUnit: 15,
-    sphereFactor: 0.9,
-    midStep: 0.25,
-    midStepFactor: 0.05,
-  },
-};
 
 const DEFAULT_CONTROLLER_COLOR = BABYLON.Color3.FromHexString('#FFE480');
 
@@ -69,14 +55,10 @@ const ControlPanel: FunctionComponent = () => {
         const { id: assetId, meshes, bones } = asset;
 
         // bone이 invisible 하다면 joint는 visible
-        const jointTransformNodes = selectableObjects.filter(
-          (object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId),
-        );
+        const jointTransformNodes = selectableObjects.filter((object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId));
         const jointTransformNode = jointTransformNodes[1];
         if (jointTransformNode) {
-          const joint = targetScene.scene.getMeshByID(
-            jointTransformNode.id.replace('transformNode', 'joint'),
-          );
+          const joint = targetScene.scene.getMeshByID(jointTransformNode.id.replace('transformNode', 'joint'));
           if (joint && !joint.isVisible) {
             return;
           }
@@ -102,27 +84,16 @@ const ControlPanel: FunctionComponent = () => {
         const { id: assetId, meshes, skeleton } = asset;
 
         // joint visible
-        const jointTransformNodes = selectableObjects.filter(
-          (object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId),
-        );
+        const jointTransformNodes = selectableObjects.filter((object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId));
         jointTransformNodes.forEach((jointTransformNode) => {
-          const joint = targetScene.scene.getMeshByID(
-            jointTransformNode.id.replace('transformNode', 'joint'),
-          );
+          const joint = targetScene.scene.getMeshByID(jointTransformNode.id.replace('transformNode', 'joint'));
           if (joint) {
             joint.isVisible = true;
           }
         });
 
         // create skeletonView
-        const skeletonViewer = new BABYLON.SkeletonViewer(
-          skeleton,
-          meshes[0],
-          targetScene.scene,
-          true,
-          meshes[0].renderingGroupId,
-          DEFAULT_SKELETON_VIEWER_OPTION,
-        );
+        const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], targetScene.scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
         skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
         targetScene.scene.addMesh(skeletonViewer.mesh);
       });
@@ -144,13 +115,9 @@ const ControlPanel: FunctionComponent = () => {
         }
 
         // joint invisible
-        const jointTransformNodes = selectableObjects.filter(
-          (object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId),
-        );
+        const jointTransformNodes = selectableObjects.filter((object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId));
         jointTransformNodes.forEach((jointTransformNode) => {
-          const joint = targetScene.scene.getMeshByID(
-            jointTransformNode.id.replace('transformNode', 'joint'),
-          );
+          const joint = targetScene.scene.getMeshByID(jointTransformNode.id.replace('transformNode', 'joint'));
           // Object자체 선택이 가능하도록 Armature transformNode에 대해서는 visible off를 허용하지 않음
           if (joint && !joint.id.toLowerCase().includes('armature')) {
             joint.isVisible = false;
@@ -161,9 +128,7 @@ const ControlPanel: FunctionComponent = () => {
         const skeletonViewerMesh = targetScene.scene.getMeshByID(`${assetId}//skeletonViewer`);
         if (skeletonViewerMesh) {
           targetScene.scene.removeMesh(skeletonViewerMesh);
-          const skeletonViewerChildMesh = skeletonViewerMesh
-            .getChildMeshes()
-            .find((m) => m.id === 'skeletonViewer_merged');
+          const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
           if (skeletonViewerChildMesh) {
             skeletonViewerChildMesh.dispose();
           }
@@ -182,9 +147,7 @@ const ControlPanel: FunctionComponent = () => {
         const { id: assetId } = asset;
 
         // controller visible
-        const controllers = selectableObjects.filter(
-          (object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh',
-        );
+        const controllers = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh');
         controllers.forEach((controller) => {
           // type guard
           if (checkIsTargetMesh(controller) && controller.getScene().uid === targetScene.id) {
@@ -205,9 +168,7 @@ const ControlPanel: FunctionComponent = () => {
         const { id: assetId } = asset;
 
         // controller invisible
-        const controllers = selectableObjects.filter(
-          (object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh',
-        );
+        const controllers = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh');
         controllers.forEach((controller) => {
           // type guard
           if (checkIsTargetMesh(controller) && controller.getScene().uid === targetScene.id) {
@@ -230,16 +191,12 @@ const ControlPanel: FunctionComponent = () => {
 
         if (
           // 이미 해당 asset에 대한 controller가 존재한다면 생성하지 않음
-          selectableObjects.find(
-            (object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh',
-          )
+          selectableObjects.find((object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh')
         ) {
           return;
         }
 
-        const targetRetargetMap = retargetMaps.find(
-          (retargetMap) => retargetMap.assetId === assetId,
-        );
+        const targetRetargetMap = retargetMaps.find((retargetMap) => retargetMap.assetId === assetId);
 
         if (targetRetargetMap) {
           // if (
@@ -255,10 +212,7 @@ const ControlPanel: FunctionComponent = () => {
           const controllers: BABYLON.Mesh[] = [];
           // prettier-ignore
           const targetBoneIndices = [1, 56, 61, 2, 57, 62, 3, 58, 63, 4, 59, 64, 5, 8, 32, 6, 9, 33, 10, 34, 11, 35, 16, 40]; // retargetMap의 values 대신 사용
-          const controllerMaterial = new BABYLON.StandardMaterial(
-            'controllerMaterial',
-            targetScene.scene,
-          );
+          const controllerMaterial = new BABYLON.StandardMaterial('controllerMaterial', targetScene.scene);
           controllerMaterial.emissiveColor = DEFAULT_CONTROLLER_COLOR;
           controllerMaterial.disableLighting = true;
 
@@ -291,12 +245,9 @@ const ControlPanel: FunctionComponent = () => {
               );
 
               controller.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(
-                  BABYLON.ActionManager.OnPointerOverTrigger,
-                  (event) => {
-                    targetScene.scene.hoverCursor = 'pointer';
-                  },
-                ),
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, (event) => {
+                  targetScene.scene.hoverCursor = 'pointer';
+                }),
               );
 
               controllers.push(controller);
@@ -305,15 +256,11 @@ const ControlPanel: FunctionComponent = () => {
 
           // 컨트롤러 간 계층구조 생성
           controllers.forEach((controller, idx) => {
-            const targetBone = bones.find(
-              (bone) => bone.id === controller.id.replace('controller', 'bone'),
-            );
+            const targetBone = bones.find((bone) => bone.id === controller.id.replace('controller', 'bone'));
 
             if (targetBone && targetBone.children.length > 0) {
               targetBone.children.forEach((childBone) => {
-                const childController = controllers.find(
-                  (ctrl) => ctrl.id === childBone.id.replace('bone', 'controller'),
-                );
+                const childController = controllers.find((ctrl) => ctrl.id === childBone.id.replace('bone', 'controller'));
                 if (childController) {
                   childController.setParent(controller);
                 }
@@ -330,9 +277,7 @@ const ControlPanel: FunctionComponent = () => {
           dispatch(selectingDataActions.addSelectableObjects({ objects: controllers }));
 
           // 컨트롤러 애니메이션 추가 - 모든 layer에서 transformNode가 가진 트랙을 그대로 복사
-          const currentAnimationIngredient = animationIngredients.find(
-            (anim) => anim.assetId === assetId && anim.current,
-          );
+          const currentAnimationIngredient = animationIngredients.find((anim) => anim.assetId === assetId && anim.current);
           if (currentAnimationIngredient) {
             const { id, name, tracks, layers } = currentAnimationIngredient;
 
@@ -344,11 +289,7 @@ const ControlPanel: FunctionComponent = () => {
 
               // 대응하는 transformNode의 애니메이션을 사용해 controller의 애니메이션 생성 및 animationIngredient에 추가
               layers.forEach((layer) => {
-                const transformNodeTracks = tracks.filter(
-                  (t) =>
-                    t.targetId === controller.id.replace('controller', 'transformNode') &&
-                    t.layerId === layer.id,
-                );
+                const transformNodeTracks = tracks.filter((t) => t.targetId === controller.id.replace('controller', 'transformNode') && t.layerId === layer.id);
                 transformNodeTracks.forEach((transformNodeTrack) => {
                   const newTrack: ShootTrack = {
                     id: uuidv4(),
@@ -390,15 +331,7 @@ const ControlPanel: FunctionComponent = () => {
         }
       });
     }
-  }, [
-    animationIngredients,
-    assetList,
-    dispatch,
-    retargetMaps,
-    sceneList,
-    selectableObjects,
-    selectedTargets,
-  ]);
+  }, [animationIngredients, assetList, dispatch, retargetMaps, sceneList, selectableObjects, selectedTargets]);
 
   const deleteControllers = useCallback(() => {
     const targetScene = sceneList[0];
@@ -410,9 +343,7 @@ const ControlPanel: FunctionComponent = () => {
         const { id: assetId, bones } = asset;
 
         // controller 제거
-        const controllers = selectableObjects.filter(
-          (object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh',
-        );
+        const controllers = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh');
         controllers.forEach((controller) => {
           controller.dispose();
         });
@@ -421,9 +352,7 @@ const ControlPanel: FunctionComponent = () => {
         dispatch(selectingDataActions.removeSelectableControllers({ assetId }));
 
         // 컨트롤러 애니메이션 제거
-        const currentAnimationIngredient = animationIngredients.find(
-          (anim) => anim.assetId === assetId && anim.current,
-        );
+        const currentAnimationIngredient = animationIngredients.find((anim) => anim.assetId === assetId && anim.current);
         if (currentAnimationIngredient) {
           const { id, name, tracks, layers } = currentAnimationIngredient;
 

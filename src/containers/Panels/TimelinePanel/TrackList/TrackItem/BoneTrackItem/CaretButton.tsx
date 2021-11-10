@@ -24,13 +24,7 @@ const CaretButton: FunctionComponent<ClickBoneCaretButton> = (props) => {
     );
   }, [dispatch, isPointedDownCaret, trackNumber, trackType]);
 
-  return (
-    <IconWrapper
-      className={cx('caret-icon', { 'point-down': isPointedDownCaret })}
-      icon={SvgPath.CaretRight}
-      onClick={handleCaretButtonClick}
-    />
-  );
+  return <IconWrapper className={cx('caret-icon', { 'point-down': isPointedDownCaret })} icon={SvgPath.CaretRight} onClick={handleCaretButtonClick} />;
 };
 
 export default CaretButton;

@@ -18,14 +18,8 @@ export const initializeTrackList = (params: any) => ({
 });
 
 // 트랙 내부 펴닫기 버튼 클릭
-export type ClickLayerCaretButton = Pick<
-  LayerTrack,
-  'isPointedDownCaret' | 'trackId' | 'trackType'
->;
-export type ClickBoneCaretButton = Pick<
-  BoneTrack,
-  'isPointedDownCaret' | 'trackNumber' | 'trackType'
->;
+export type ClickLayerCaretButton = Pick<LayerTrack, 'isPointedDownCaret' | 'trackId' | 'trackType'>;
+export type ClickBoneCaretButton = Pick<BoneTrack, 'isPointedDownCaret' | 'trackNumber' | 'trackType'>;
 export type ClickCaretButton = ClickLayerCaretButton | ClickBoneCaretButton;
 export const clickCaretButton = (params: ClickCaretButton) => ({
   type: 'trackList/CLICK_CARET_BUTTON' as const,

@@ -18,14 +18,7 @@ const SimpleMode = () => {
     });
   }, [resizeDispatch, resizeState.simpleMode]);
 
-  return (
-    <IconWrapper
-      className={cx({ active: resizeState.simpleMode })}
-      icon={SvgPath.SimpleMode}
-      onClick={handleChange}
-      hasFrame={false}
-    />
-  );
+  return <IconWrapper className={cx({ active: resizeState.simpleMode })} icon={SvgPath.SimpleMode} onClick={handleChange} hasFrame={false} />;
 };
 
 export default SimpleMode;

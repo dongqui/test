@@ -14,11 +14,7 @@ export interface PropertyButtonProps {
   button?: 'axis' | 'isBoneOn' | 'isMeshOn' | 'isShadowOn';
 }
 
-const PropertyButton: FunctionComponent<PropertyButtonProps> = ({
-  rowKey,
-  name,
-  button = 'axis',
-}) => {
+const PropertyButton: FunctionComponent<PropertyButtonProps> = ({ rowKey, name, button = 'axis' }) => {
   // const renderingData = useSelector((state) => state.renderingData);
   // const dispatch = useDispatch();
 
@@ -74,11 +70,7 @@ const PropertyButton: FunctionComponent<PropertyButtonProps> = ({
   //   },
   // ];
 
-  return (
-    <div className={cx('segment-group')}>
-      {/* <span>{name}</span>
-      <Segment list={modeList} /> */}
-    </div>
-  );
+  return <div className={cx('segment-group')}>{/* <span>{name}</span>
+      <Segment list={modeList} /> */}</div>;
 };
 export default memo(PropertyButton);

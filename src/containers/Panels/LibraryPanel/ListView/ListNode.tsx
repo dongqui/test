@@ -1,28 +1,18 @@
 import _ from 'lodash';
-import {
-  FunctionComponent,
-  memo,
-  Fragment,
-  ReactNode,
-  FocusEvent,
-  useEffect,
-  useCallback,
-  useState,
-  useRef,
-  KeyboardEvent,
-  DragEvent,
-} from 'react';
+import { FunctionComponent, memo, Fragment, ReactNode, FocusEvent, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
 import { connect, useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
-import { AnimationIngredient, ShootLayer, ShootProperty, ShootTrack } from 'types/common';
+import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { getFileExtension } from 'utils/common';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { getFileExtension } from 'utils/common';
 import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
+import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
+import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -68,10 +58,8 @@ const ListNode: FunctionComponent<Props> = ({
   childrens,
   extension,
   selectedId,
-  visualizedAssetIds,
   animationTransformNodes,
   animationIngredients,
-  selectableObjects,
   onSetDragTarget,
   dragTarget,
 }) => {
@@ -86,6 +74,11 @@ const ListNode: FunctionComponent<Props> = ({
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
+
+  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const assetList = useSelector((state) => state.shootProject.assetList);
+  const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
+  const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
 
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
@@ -258,9 +251,7 @@ const ListNode: FunctionComponent<Props> = ({
                         draft.push(cloneCopyNode);
 
                         if (!_.isEmpty(cloneCopyNode.children)) {
-                          cloneCopyNode.children.map((child) =>
-                            depthChangeKey(draft, child, cloneCopyNode),
-                          );
+                          cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
                         }
                       }
                     });
@@ -345,10 +336,25 @@ const ListNode: FunctionComponent<Props> = ({
                   );
 
                   if (assetId) {
+                    const targetAsset = assetList.find((asset) => asset.id === assetId);
+                    const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+                    const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+
+                    // delete 대상이 render된 scene에서 대상의 요소들 remove
+                    if (targetAsset) {
+                      sceneList
+                        .map((s) => s.scene)
+                        .forEach((scene) => {
+                          removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+                        });
+                    }
+
                     // assetList에서 제외
                     dispatch(shootProjectActions.removeAsset({ assetId }));
                     // animationData 삭제
                     dispatch(animationDataActions.removeAsset({ assetId }));
+                    // 선택 대상에서 제외
+                    dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
                   }
                 },
                 children: [],
@@ -382,8 +388,121 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Visualization',
                 onClick: () => {
+                  // 기존 asset visualize cancel -> multi-model 시에는 기존 asset도 유지
+                  if (visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== assetId) {
+                    const prevAssetId = visualizedAssetIds[0];
+                    const prevAsset = assetList.find((asset) => asset.id === prevAssetId);
+                    const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(prevAssetId) && !checkIsTargetMesh(object));
+                    const targetControllers = selectableObjects.filter((object) => object.id.includes(prevAssetId) && checkIsTargetMesh(object));
+
+                    // delete 대상이 render된 scene에서 대상의 요소들 remove
+                    if (prevAsset) {
+                      sceneList
+                        .map((s) => s.scene)
+                        .forEach((scene) => {
+                          removeAssetFromScene(scene, prevAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+                        });
+                    }
+
+                    // visualizedAssetList에서 제외
+                    // dispatch(shootProjectActions.unrenderAsset({ assetId: prevAssetId })); // single-model 환경에서는 불필요
+                    // 선택 대상에서 제외
+                    dispatch(selectingDataActions.unrenderAsset({ assetId: prevAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                  }
+
+                  // 새로운 asset visualize
                   if (assetId && !visualizedAssetIds.includes(assetId)) {
-                    dispatch(shootProjectActions.renderAsset({ assetId }));
+                    const targetAsset = assetList.find((asset) => asset.id === assetId);
+
+                    if (targetAsset) {
+                      const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
+
+                      // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
+                      sceneList.forEach((shootScene) => {
+                        const { id: sceneId, name: sceneName, scene } = shootScene;
+
+                        if (scene.isReady()) {
+                          // scene들에 mesh 추가
+                          meshes.forEach((mesh) => {
+                            mesh.renderingGroupId = 1;
+                            scene.addMesh(mesh);
+                          });
+
+                          // scene들에 geometry 추가
+                          geometries.forEach((geometry) => {
+                            scene.addGeometry(geometry);
+                          });
+
+                          // scene들에 skeleton 추가
+                          scene.addSkeleton(skeleton);
+
+                          const jointTransformNodes: BABYLON.TransformNode[] = [];
+
+                          // joints 생성 및 scene들에 추가
+                          bones.forEach((bone) => {
+                            if (!bone.name.toLowerCase().includes('scene')) {
+                              const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
+                              joint.id = `${assetId}//${bone.name}//joint`;
+                              joint.renderingGroupId = 2;
+                              joint.attachToBone(bone, meshes[0]);
+
+                              const targetTransformNode = bone.getTransformNode();
+                              if (targetTransformNode) {
+                                jointTransformNodes.push(targetTransformNode);
+                              }
+
+                              // joint마다 actionManager 설정
+                              joint.actionManager = new BABYLON.ActionManager(scene);
+                              joint.actionManager.registerAction(
+                                // joint 클릭으로 bone 선택하기 위한 액션
+                                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
+                                  const targetTransformNode = bone.getTransformNode();
+                                  if (targetTransformNode) {
+                                    const sourceEvent: PointerEvent = event.sourceEvent;
+                                    if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+                                      dispatch(
+                                        selectingDataActions.ctrlKeySingleSelect({
+                                          target: targetTransformNode,
+                                        }),
+                                      );
+                                    } else {
+                                      dispatch(
+                                        selectingDataActions.defaultSingleSelect({
+                                          target: targetTransformNode,
+                                        }),
+                                      );
+                                    }
+                                  }
+                                }),
+                              );
+                              // joint hover 시 커서 모양 변경
+                              joint.actionManager.registerAction(
+                                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+                                  scene.hoverCursor = 'pointer';
+                                }),
+                              );
+                            }
+                          });
+
+                          // visualizedAssetIds에 추가
+                          dispatch(shootProjectActions.renderAsset({ assetId }));
+                          // dragBox 선택 대상에 추가
+                          dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
+
+                          // scene들에 skeletonViewer 추가
+                          const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
+                          skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
+                          scene.addMesh(skeletonViewer.mesh);
+
+                          // scene들에 애니메이션 적용을 위한 transformNode 추가
+                          transformNodes.forEach((transformNode) => {
+                            scene.addTransformNode(transformNode);
+                            // quaternionRotation 애니메이션을 적용하기 위한 코드
+                            transformNode.rotate(BABYLON.Axis.X, 0);
+                          });
+                        }
+                      });
+                    }
                   }
                 },
                 children: [],
@@ -392,7 +511,23 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'Visualization cancel',
                 onClick: () => {
                   if (assetId && visualizedAssetIds.includes(assetId)) {
-                    dispatch(shootProjectActions.unrenderAsset({ assetId }));
+                    const targetAsset = assetList.find((asset) => asset.id === assetId);
+                    const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+                    const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+
+                    // delete 대상이 render된 scene에서 대상의 요소들 remove
+                    if (targetAsset) {
+                      sceneList
+                        .map((s) => s.scene)
+                        .forEach((scene) => {
+                          removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+                        });
+                    }
+
+                    // visualizedAssetList에서 제외
+                    dispatch(shootProjectActions.unrenderAsset({}));
+                    // 선택 대상에서 제외
+                    dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
                   }
                 },
                 children: [],
@@ -410,14 +545,10 @@ const ListNode: FunctionComponent<Props> = ({
                     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
                     if (visualizedAssetIds.includes(assetId)) {
                       // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서
-                      const targets = selectableObjects.filter(
-                        (object) => object.id.split('//')[0] === assetId,
-                      );
+                      const targets = selectableObjects.filter((object) => object.id.split('//')[0] === assetId);
                     } else {
                       // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
-                      targets = animationTransformNodes.filter(
-                        (transformNode) => transformNode.id.split('//')[0] === assetId,
-                      );
+                      targets = animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
                     }
 
                     const currentPathNodeName = lpNode
@@ -572,6 +703,8 @@ const ListNode: FunctionComponent<Props> = ({
     selectableObjects,
     type,
     visualizedAssetIds,
+    assetList,
+    sceneList,
   ]);
 
   const column = Array.from({ length: depth - 1 }).map((x, i) => i);
@@ -714,19 +847,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
         });
     },
-    [
-      childrens,
-      dispatch,
-      extension,
-      filePath,
-      id,
-      lpNode,
-      name,
-      onModalClose,
-      onModalOpen,
-      parentId,
-      type,
-    ],
+    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   const handleKeydown = useCallback(
@@ -800,19 +921,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
       }
     },
-    [
-      childrens,
-      dispatch,
-      extension,
-      filePath,
-      id,
-      lpNode,
-      name,
-      onModalClose,
-      onModalOpen,
-      parentId,
-      type,
-    ],
+    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -874,9 +983,7 @@ const ListNode: FunctionComponent<Props> = ({
           const dropNode = _.find(lpNode, { parentId: id });
           const childrenList = lpNode.filter((node) => node.parentId === id);
           const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
-          const duplicatedTarget = childrenList.filter(
-            (children) => children.name === dragNode?.name,
-          );
+          const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
 
           const cloneDragNode = _.cloneDeep(dragNode);
 
@@ -906,9 +1013,7 @@ const ListNode: FunctionComponent<Props> = ({
                   draft.push(cloneDragNode);
 
                   if (!_.isEmpty(cloneDragNode.children)) {
-                    cloneDragNode.children.map((child) =>
-                      depthChangeKey(draft, child, cloneDragNode),
-                    );
+                    cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
                   }
                 }
               });
@@ -930,10 +1035,7 @@ const ListNode: FunctionComponent<Props> = ({
                 if (node.parentId === id) {
                   const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
                   const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
-                  if (
-                    tempName === node.name ||
-                    (isMatch !== null && node.name.includes(`${tempName} `))
-                  ) {
+                  if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
                     return true;
                   }
                   return false;
@@ -961,9 +1063,7 @@ const ListNode: FunctionComponent<Props> = ({
                 draft.push(cloneDragNode);
 
                 if (!_.isEmpty(cloneDragNode.children)) {
-                  cloneDragNode.children.map((child) =>
-                    depthChangeKey(draft, child, cloneDragNode),
-                  );
+                  cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
                 }
               }
             });
@@ -1007,9 +1107,7 @@ const ListNode: FunctionComponent<Props> = ({
         const dropNode = _.find(lpNode, { parentId: id });
         const childrenList = lpNode.filter((node) => node.parentId === id);
         const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
-        const duplicatedTarget = childrenList.filter(
-          (children) => children.name === dragNode?.name,
-        );
+        const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
 
         if (dropNode && isAlreadyExist && cloneDragNode) {
           const confirmed = await getConfirm({
@@ -1037,9 +1135,7 @@ const ListNode: FunctionComponent<Props> = ({
                 draft.push(cloneDragNode);
 
                 if (!_.isEmpty(cloneDragNode.children)) {
-                  cloneDragNode.children.map((child) =>
-                    depthChangeKey(draft, child, cloneDragNode),
-                  );
+                  cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
                 }
               }
             });
@@ -1061,10 +1157,7 @@ const ListNode: FunctionComponent<Props> = ({
               if (node.parentId === id) {
                 const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
                 const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
-                if (
-                  tempName === node.name ||
-                  (isMatch !== null && node.name.includes(`${tempName} `))
-                ) {
+                if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
                   return true;
                 }
                 return false;
@@ -1105,28 +1198,14 @@ const ListNode: FunctionComponent<Props> = ({
         }
       }
     },
-    [
-      depthChangeKey,
-      depthCheck,
-      dispatch,
-      dragTarget,
-      filePath,
-      getConfirm,
-      id,
-      lpNode,
-      name,
-      onModalOpen,
-      parentId,
-      type,
-    ],
+    [depthChangeKey, depthCheck, dispatch, dragTarget, filePath, getConfirm, id, lpNode, name, onModalOpen, parentId, type],
   );
 
   /**
    * @TODO 파일명에 .(dot)이 여럿인 경우를 위해 다른 방법으로 파일명을 가져오는 방법이 필요하여 임시 대응
    */
   const splitName = name.split('.');
-  const fileName =
-    splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
+  const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
   const arrowClasses = cx('icon-arrow', {
     invisible: type === 'Motion',
@@ -1136,32 +1215,15 @@ const ListNode: FunctionComponent<Props> = ({
   return (
     <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
       <div className={cx('inner')}>
-        <div
-          style={{ display: 'flex' }}
-          ref={wrapperRef}
-          onClick={handleSelect}
-          onContextMenu={handleSelect}
-        >
+        <div style={{ display: 'flex' }} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect}>
           {/* {column.map((col, i) => (
             <div key={i} style={{ width: `${12 * col}px` }} />
           ))} */}
-          <IconWrapper
-            icon={SvgPath.FilledArrow}
-            className={arrowClasses}
-            onClick={handleArrowClick}
-          />
+          <IconWrapper icon={SvgPath.FilledArrow} className={arrowClasses} onClick={handleArrowClick} />
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
             {isEditing ? (
-              <input
-                placeholder={name}
-                type="text"
-                onBlur={handleBlur}
-                ref={renameRef}
-                onKeyDown={handleKeydown}
-                defaultValue={fileName}
-                autoFocus
-              />
+              <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} defaultValue={fileName} autoFocus />
             ) : (
               <div className={cx('name')}>{name}</div>
             )}

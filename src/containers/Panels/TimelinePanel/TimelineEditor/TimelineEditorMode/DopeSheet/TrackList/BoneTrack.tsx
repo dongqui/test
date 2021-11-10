@@ -53,33 +53,15 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
   return (
     <Fragment>
       <g className={cx('track')} transform={`translate(0, ${translateY})`}>
-        <rect
-          className={cx({ selected: isSelected })}
-          height="24"
-          width="150000"
-          transform="translate(-5000 0)"
-        />
+        <rect className={cx({ selected: isSelected })} height="24" width="150000" transform="translate(-5000 0)" />
         {keyframes.map(
           (keyframe) =>
-            !keyframe.isDeleted && (
-              <Keyframe
-                key={`${keyframe.time}_${keyframe.isSelected}`}
-                trackId={trackId}
-                trackType="bone"
-                trackNumber={trackNumber}
-                {...keyframe}
-              />
-            ),
+            !keyframe.isDeleted && <Keyframe key={`${keyframe.time}_${keyframe.isSelected}`} trackId={trackId} trackType="bone" trackNumber={trackNumber} {...keyframe} />,
         )}
       </g>
       {isPointedDownCaret &&
         childrenTrackList.map((propertyTrack, index) => (
-          <PropertyTrack
-            key={propertyTrack.trackNumber}
-            translateY={translateY + (index + 1) * 24}
-            {...propertyTrack}
-            {...childrenKeyframes[index]}
-          />
+          <PropertyTrack key={propertyTrack.trackNumber} translateY={translateY + (index + 1) * 24} {...propertyTrack} {...childrenKeyframes[index]} />
         ))}
     </Fragment>
   );

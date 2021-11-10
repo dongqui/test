@@ -15,14 +15,7 @@ const Pause = () => {
     dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'pause' }));
   }, [dispatch]);
 
-  return (
-    <IconWrapper
-      className={cx('pause')}
-      onClick={handlePause}
-      icon={SvgPath.Pause}
-      hasFrame={false}
-    />
-  );
+  return <IconWrapper className={cx('pause')} onClick={handlePause} icon={SvgPath.Pause} hasFrame={false} />;
 };
 
 export default Pause;

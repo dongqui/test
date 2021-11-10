@@ -88,13 +88,8 @@ const TimelineEditor = () => {
           ]) // scale 적용 범위 지정
           .filter((event: WheelEvent) => {
             const doubleClicked = _.isEqual(event.type, 'dblclick');
-            const panned = // pan 동작 시 ctrl이나 meta를 누르지 않았다면 이벤트 종료
-              _.isEqual(event.type, 'mousedown') &&
-              _.isEqual(event.ctrlKey, false) &&
-              _.isEqual(event.metaKey, false);
-            const zoomedWithCtrl = // ctrl이나 meta를 누르고 wheel 동작 시 이벤트 종료
-              _.isEqual(event.type, 'wheel') &&
-              (_.isEqual(event.ctrlKey, true) || _.isEqual(event.metaKey, true));
+            const panned = _.isEqual(event.type, 'mousedown') && _.isEqual(event.ctrlKey, false) && _.isEqual(event.metaKey, false); // pan 동작 시 ctrl이나 meta를 누르지 않았다면 이벤트 종료
+            const zoomedWithCtrl = _.isEqual(event.type, 'wheel') && (_.isEqual(event.ctrlKey, true) || _.isEqual(event.metaKey, true)); // ctrl이나 meta를 누르고 wheel 동작 시 이벤트 종료
             if (event.altKey && event.ctrlKey) return false;
             if (doubleClicked || panned || zoomedWithCtrl) return false;
             return true;
@@ -140,10 +135,7 @@ const TimelineEditor = () => {
 
       const initializeBehavior = (width: number) => {
         const translateX = -width + -(width * 0.01) * leftTimeIndex.current; // resize가 발생해도 직전 translateX값을 기억하는 공식
-        const zoomValues = d3.zoomIdentity
-          .scale(1)
-          .translate(translateX, 0)
-          .scale(zoomLevel.current);
+        const zoomValues = d3.zoomIdentity.scale(1).translate(translateX, 0).scale(zoomLevel.current);
         const zoomBehavior = setZoomBehavior(width);
         const dragBehavior = setDragBehavior(zoomBehavior);
         zoomBehavior.transform(timelineEditor as any, zoomValues); // 최초 scale level, start/end 적용
@@ -153,10 +145,7 @@ const TimelineEditor = () => {
 
       const initializeScale = (width: number) => {
         const translateX = -width + -(width * 0.01) * leftTimeIndex.current; // resize가 발생해도 직전 translateX값을 기억하는 공식
-        const zoomValues = d3.zoomIdentity
-          .scale(1)
-          .translate(translateX, 0)
-          .scale(zoomLevel.current);
+        const zoomValues = d3.zoomIdentity.scale(1).translate(translateX, 0).scale(zoomLevel.current);
         ScaleLinear.setScaleX(width);
         ScaleLinear.setKeyframeX(zoomValues);
       };

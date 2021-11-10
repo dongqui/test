@@ -27,18 +27,8 @@ const Loop = () => {
   return (
     <div className={cx('loop')}>
       <p>Loop</p>
-      <StartInput
-        startTimeIndex={startTimeIndex}
-        endTimeIndex={endTimeIndex}
-        currentTimeIndex={currentTimeIndex}
-        keyDown={handleInputKeyDown}
-      />
-      <EndInput
-        startTimeIndex={startTimeIndex}
-        endTimeIndex={endTimeIndex}
-        currentTimeIndex={currentTimeIndex}
-        keyDown={handleInputKeyDown}
-      />
+      <StartInput startTimeIndex={startTimeIndex} endTimeIndex={endTimeIndex} currentTimeIndex={currentTimeIndex} keyDown={handleInputKeyDown} />
+      <EndInput startTimeIndex={startTimeIndex} endTimeIndex={endTimeIndex} currentTimeIndex={currentTimeIndex} keyDown={handleInputKeyDown} />
     </div>
   );
 };

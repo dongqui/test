@@ -1,14 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {
-  ReactNode,
-  FunctionComponent,
-  Fragment,
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
-  ChangeEvent,
-} from 'react';
+import { ReactNode, FunctionComponent, Fragment, useState, useRef, useCallback, useEffect, ChangeEvent } from 'react';
 import classNames from 'classnames/bind';
 import styles from './CropSlider.module.scss';
 
@@ -25,16 +16,7 @@ interface Props {
   children: ReactNode;
 }
 
-export const CropSlider: FunctionComponent<Props> = ({
-  start,
-  end,
-  duration,
-  currentVideoTime,
-  indicatorPosition,
-  handleTimeline,
-  onChange,
-  children,
-}) => {
+export const CropSlider: FunctionComponent<Props> = ({ start, end, duration, currentVideoTime, indicatorPosition, handleTimeline, onChange, children }) => {
   const [startValue, setStartValue] = useState(start);
   const [endValue, setEndValue] = useState(end);
 
@@ -42,10 +24,7 @@ export const CropSlider: FunctionComponent<Props> = ({
   const startRef = useRef(start);
   const endRef = useRef(end);
 
-  const getPercent = useCallback(
-    (value: number) => Math.round(((value - start) / (end - start)) * 100),
-    [start, end],
-  );
+  const getPercent = useCallback((value: number) => Math.round(((value - start) / (end - start)) * 100), [start, end]);
 
   const handleSlider = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.id === 'left') {
@@ -81,47 +60,15 @@ export const CropSlider: FunctionComponent<Props> = ({
 
   return (
     <Fragment>
-      <input
-        id="left"
-        type="range"
-        min={start}
-        max={end}
-        step={0.1}
-        value={startValue}
-        onChange={handleSlider}
-        className={cx('thumb', 'thumb-left')}
-      />
-      <input
-        id="right"
-        type="range"
-        min={start}
-        max={end}
-        step={0.1}
-        value={endValue}
-        onChange={handleSlider}
-        className={cx('thumb', 'thumb-right')}
-      />
+      <input id="left" type="range" min={start} max={end} step={0.1} value={startValue} onChange={handleSlider} className={cx('thumb', 'thumb-left')} />
+      <input id="right" type="range" min={start} max={end} step={0.1} value={endValue} onChange={handleSlider} className={cx('thumb', 'thumb-right')} />
       <div className={cx('slider')}>
         <div className={cx('slider-track')}></div>
         <div ref={cropRef} className={cx('slider-range')}></div>
-        <span
-          className={cx('slider-time-indicator')}
-          style={{ marginLeft: indicatorPosition + '%' }}
-        >
-          {duration < 100
-            ? Math.round(currentVideoTime * 100) / 100
-            : Math.round(currentVideoTime * 10) / 10}
+        <span className={cx('slider-time-indicator')} style={{ marginLeft: indicatorPosition + '%' }}>
+          {duration < 100 ? Math.round(currentVideoTime * 100) / 100 : Math.round(currentVideoTime * 10) / 10}
         </span>
-        <input
-          className={cx('slider-time')}
-          id="scrubber"
-          type="range"
-          min="0"
-          max={duration}
-          step="0.01"
-          value={currentVideoTime}
-          onChange={handleTimeline}
-        />
+        <input className={cx('slider-time')} id="scrubber" type="range" min="0" max={duration} step="0.01" value={currentVideoTime} onChange={handleTimeline} />
         {children}
       </div>
     </Fragment>

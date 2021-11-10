@@ -1,9 +1,4 @@
-import {
-  ClickTrackBody,
-  ClickLayerTrackBody,
-  ClickBoneTrackBody,
-  ClickPropertyTrackBody,
-} from 'actions/trackList';
+import { ClickTrackBody, ClickLayerTrackBody, ClickBoneTrackBody, ClickPropertyTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
 import { layerTrackConfig, boneTrackConfig, propertyTrackConfig } from './config';
 

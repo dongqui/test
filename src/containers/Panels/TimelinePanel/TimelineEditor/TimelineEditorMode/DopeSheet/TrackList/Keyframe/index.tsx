@@ -22,9 +22,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
   const keyframeRef = useRef<SVGPathElement>(null);
   const selectedLayerKeyframes = useSelector((state) => state.keyframes.selectedLayerKeyframes);
   const selectedBoneKeyframes = useSelector((state) => state.keyframes.selectedBoneKeyframes);
-  const selectedPropertyKeyframes = useSelector(
-    (state) => state.keyframes.selectedPropertyKeyframes,
-  );
+  const selectedPropertyKeyframes = useSelector((state) => state.keyframes.selectedPropertyKeyframes);
 
   // 키프레임 속성 값 관리
   const keyframeAttr = useMemo(() => {
@@ -133,25 +131,9 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
     return () => {
       d3.select(keyframeRef.current).on('drag', null).on('end', null);
     };
-  }, [
-    addDragEvent,
-    updateTranslateX,
-    subscribeKeyframe,
-    trackNumber,
-    selectedLayerKeyframes,
-    selectedBoneKeyframes,
-    selectedPropertyKeyframes,
-  ]);
+  }, [addDragEvent, updateTranslateX, subscribeKeyframe, trackNumber, selectedLayerKeyframes, selectedBoneKeyframes, selectedPropertyKeyframes]);
 
-  return (
-    <path
-      className={cx('keyframe', { clicked: isSelected })}
-      d={keyframeAttr.d}
-      transform={keyframeAttr.transform}
-      onClick={clickKeyframe}
-      ref={keyframeRef}
-    />
-  );
+  return <path className={cx('keyframe', { clicked: isSelected })} d={keyframeAttr.d} transform={keyframeAttr.transform} onClick={clickKeyframe} ref={keyframeRef} />;
 };
 
 export default memo(KeyframeComponent);
