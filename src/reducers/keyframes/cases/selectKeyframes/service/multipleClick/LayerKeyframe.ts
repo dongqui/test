@@ -15,19 +15,20 @@ interface Params {
 class LayerKeyframeMultipleClick implements MultipleClick {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
-  private findKeyframeValue = (keyframes: Keyframe[], time: number) => {
+  private findKeyframe = (keyframes: Keyframe[], time: number) => {
     const keyframeIndex = findElementIndex(keyframes, time, 'time');
     if (keyframeIndex === -1) return;
-    return keyframes[keyframeIndex].value;
+    return keyframes[keyframeIndex];
   };
 
   private getSelectedBones = ({ state, payload }: Params) => {
     const selectedBones: SelectedKeyframe[] = [];
     state.boneTrackList.forEach((boneTrack) => {
       const { trackId, trackNumber, trackType, keyframes } = boneTrack;
-      const value = this.findKeyframeValue(keyframes, payload.time);
-      if (value) {
-        selectedBones.push({ trackId, trackNumber, trackType, time: payload.time, value });
+      const keyframe = this.findKeyframe(keyframes, payload.time);
+      if (keyframe) {
+        const { value, isDeleted } = keyframe;
+        if (!isDeleted) selectedBones.push({ trackId, trackNumber, trackType, time: payload.time, value });
       }
     });
     return selectedBones;
@@ -36,8 +37,12 @@ class LayerKeyframeMultipleClick implements MultipleClick {
   private getSelectedProperties = ({ state, payload }: Params) => {
     const selectedPropertiess: SelectedKeyframe[] = [];
     state.propertyTrackList.forEach((propertyTrack) => {
-      const { trackType, trackId, trackNumber } = propertyTrack;
-      selectedPropertiess.push({ trackNumber, trackType, trackId, time: payload.time });
+      const { trackType, trackId, trackNumber, keyframes } = propertyTrack;
+      const keyframe = this.findKeyframe(keyframes, payload.time);
+      if (keyframe) {
+        const { isDeleted } = keyframe;
+        if (!isDeleted) selectedPropertiess.push({ trackNumber, trackType, trackId, time: payload.time });
+      }
     });
     return selectedPropertiess;
   };

@@ -39,7 +39,7 @@ class LayerKeyframeLeftClick implements LeftClick {
     state.boneTrackList.forEach((boneTrack) => {
       const { trackId, trackNumber, trackType } = boneTrack;
       const keyframe = this.findKeyframe(boneTrack.keyframes, time);
-      if (keyframe) selectedBones.push({ trackId, trackNumber, time, trackType });
+      if (keyframe && !keyframe.isDeleted) selectedBones.push({ trackId, trackNumber, time, trackType });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
   };
@@ -50,9 +50,7 @@ class LayerKeyframeLeftClick implements LeftClick {
     state.propertyTrackList.forEach((propertyTrack) => {
       const { trackId, trackNumber, trackType, keyframes } = propertyTrack;
       const keyframe = this.findKeyframe(keyframes, payload.time);
-      if (keyframe) {
-        selectedProperties.push({ trackId, trackNumber, time, value: keyframe.value, trackType });
-      }
+      if (keyframe && !keyframe.isDeleted) selectedProperties.push({ trackId, trackNumber, time, value: keyframe.value, trackType });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedProperties);
   };

@@ -20,10 +20,10 @@ class BoneKeyframeMultipleClick implements MultipleClick {
     return editorTrackList[trackIndex];
   };
 
-  private findKeyframeValue = (keyframes: Keyframe[], time: number) => {
+  private findKeyframe = (keyframes: Keyframe[], time: number) => {
     const keyframeIndex = findElementIndex(keyframes, time, 'time');
     if (keyframeIndex === -1) return;
-    return keyframes[keyframeIndex].value;
+    return keyframes[keyframeIndex];
   };
 
   private getSelectedProperties = ({ state, payload }: Params) => {
@@ -32,9 +32,10 @@ class BoneKeyframeMultipleClick implements MultipleClick {
     const selectedProperties: SelectedKeyframe[] = [];
     for (let property = trackNumber + 1; property <= trackNumber + 3; property++) {
       const { trackId, trackType, keyframes } = this.findEditorTrack(propertyTrackList, property);
-      const value = this.findKeyframeValue(keyframes, time);
-      if (value) {
-        selectedProperties.push({ trackNumber: property, time, value, trackId, trackType });
+      const keyframe = this.findKeyframe(keyframes, time);
+      if (keyframe) {
+        const { value, isDeleted } = keyframe;
+        if (!isDeleted) selectedProperties.push({ trackNumber: property, time, value, trackId, trackType });
       }
     }
     return selectedProperties;
