@@ -9,11 +9,6 @@ export interface ShootProject {
   sceneList: ShootScene[];
   assetList: ShootAsset[];
   visualizedAssetIds: string[];
-  fileToLoad: string | File | null;
-  fileNameToLoad: string | null;
-  assetIdToRender: string | null;
-  assetIdToUnrender: string | null;
-  assetToRemove: ShootAsset | null;
   fps: number;
 }
 
