@@ -1,17 +1,21 @@
-import _ from 'lodash';
 import { FunctionComponent, memo, useEffect, useState, useCallback, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
+import * as BABYLON from '@babylonjs/core';
+import { clone, isUndefined } from 'lodash';
+import produce from 'immer';
+import { v4 as uuid } from 'uuid';
 import { convertFBXtoGLB } from 'api';
 import { getFileExtension } from 'utils/common';
-import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { v4 as uuid } from 'uuid';
+import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
+import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as modeSelectActions from 'actions/modeSelection';
+import { AnimationIngredient, ShootAsset } from 'types/common';
 import Box from 'components/Layout/Box';
-import produce from 'immer';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -25,6 +29,7 @@ const LibraryPanel: FunctionComponent = () => {
 
   const lpNode = useSelector((state) => state.lpNode.node);
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
+  const sceneList = useSelector((state) => state.shootProject.sceneList);
   const assetList = useSelector((state) => state.shootProject.assetList);
   const animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
@@ -38,7 +43,7 @@ const LibraryPanel: FunctionComponent = () => {
 
   useEffect(() => {
     if (assetListLength !== assetList.length && animationIngredientsLength !== animationIngredients.length) {
-      let nextLPNodes = _.clone(lpNode);
+      let nextLPNodes = clone(lpNode);
 
       const nextNodes = produce(nextLPNodes, (draft) => {
         const ingredients = animationIngredients.filter((ingredient) => ingredient.assetId === assetList[assetList.length - 1].id);
@@ -93,6 +98,19 @@ const LibraryPanel: FunctionComponent = () => {
       const extension = getFileExtension(file.name).toLowerCase();
       const fileName = file.name;
 
+      // reducer에 최소 하나의 scene도 없는 경우 return
+      if (!sceneList[0]) {
+        return;
+      }
+
+      // assetLoad에 사용할 baseScene이 없거나 준비되지 않은 상태라면 return
+      const baseScene = sceneList[0].scene;
+      if (!(baseScene && baseScene.isReady())) {
+        return;
+      }
+
+      let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
+
       if (extension === 'glb') {
         setFileName(fileName);
         setFileExtension(extension);
@@ -101,23 +119,21 @@ const LibraryPanel: FunctionComponent = () => {
          * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
          */
 
-        dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
-        return;
+        // dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
+
+        loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', (file as unknown) as string, baseScene);
       }
 
       if (extension === 'fbx') {
         onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
-        await convertFBXtoGLB(file)
+        const fileUrl = await convertFBXtoGLB(file)
           .then((response) => {
             onModalClose();
 
             setFileName(fileName);
 
-            /**
-             * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
-             */
-            dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
+            return response;
           })
           .catch(() => {
             onModalOpen({
@@ -131,10 +147,83 @@ const LibraryPanel: FunctionComponent = () => {
             });
           });
 
+        if (fileUrl) {
+          /**
+           * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
+           */
+          // dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
+          loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
+        }
+      }
+
+      if (isUndefined(loadedAssetContainer)) {
         return;
       }
+
+      const { meshes, geometries, skeletons, transformNodes, animationGroups } = loadedAssetContainer;
+
+      const assetId = uuid();
+
+      meshes.forEach((mesh) => {
+        // joint 클릭을 위해 mesh의 클릭을 막습니다.
+        mesh.isPickable = false;
+      });
+
+      skeletons[0].bones.forEach((bone) => {
+        // bone id를 자체적인 규칙에 따라 유일한 식별자로 만듭니다.
+        bone.id = `${assetId}//${bone.name}//bone`;
+      });
+
+      transformNodes.forEach((transformNode) => {
+        // transformNode id를 자체적인 규칙에 따라 유일한 식별자로 만듭니다.
+        transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
+      });
+
+      const animationIngredientIds: string[] = [];
+      const animationIngredients: AnimationIngredient[] = [];
+      animationGroups.forEach((animationGroup, idx) => {
+        // load 시에 애니메이션이 재생되는 경우를 방지
+        animationGroup.pause();
+        // 모델 파일이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
+        const animationIngredient = createAnimationIngredient(
+          assetId,
+          animationGroup,
+          false,
+          idx === 0, // load 시에는 첫번째 animationGroup을 current로 사용
+        );
+        animationIngredientIds.push(animationIngredient.id);
+        animationIngredients.push(animationIngredient);
+      });
+
+      // 모델에 대한 빈 retargetMap을 생성
+      // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
+      const retargetMap = createEmptyRetargetMap(assetId);
+
+      const newAsset: ShootAsset = {
+        id: assetId,
+        name: fileName,
+        extension: getFileExtension(fileName).toLowerCase(),
+        meshes,
+        geometries,
+        skeleton: skeletons[0] ?? null,
+        bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
+        transformNodes,
+        animationIngredientIds,
+        retargetMapId: retargetMap.id,
+      };
+
+      dispatch(shootProjectActions.addAsset({ asset: newAsset }));
+      dispatch(
+        animationDataActions.addAsset({
+          transformNodes: transformNodes.filter(
+            (t) => !t.name.toLowerCase().includes('camera') && !t.name.toLowerCase().includes('scene') && !t.name.toLowerCase().includes('armature'),
+          ),
+          animationIngredients,
+          retargetMap,
+        }),
+      );
     },
-    [dispatch, onModalClose, onModalOpen],
+    [dispatch, onModalClose, onModalOpen, sceneList],
   );
 
   const handleDrop = useCallback(
