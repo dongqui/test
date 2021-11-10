@@ -1,3 +1,20 @@
+import * as BABYLON from '@babylonjs/core';
+
+export const DEFAULT_SKELETON_VIEWER_OPTION = {
+  pauseAnimations: false,
+  returnToRest: false,
+  computeBonesUsingShaders: true,
+  useAllBones: true, // error with false
+  displayMode: BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS,
+  displayOptions: {
+    sphereBaseSize: 0.01,
+    sphereScaleUnit: 15,
+    sphereFactor: 0.9,
+    midStep: 0.25,
+    midStepFactor: 0.05,
+  },
+};
+
 // TP Track 별 Index 규칙
 export const TP_TRACK_INDEX = {
   SUMMARY: 1, // Summary 트랙

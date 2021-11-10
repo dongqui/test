@@ -6,27 +6,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { uniq } from 'lodash';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import { checkIsTargetMesh, createDummyAnimation } from 'utils/RP';
 import { AnimationIngredient, ShootTrack } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
-
-const DEFAULT_SKELETON_VIEWER_OPTION = {
-  pauseAnimations: false,
-  returnToRest: false,
-  computeBonesUsingShaders: true,
-  useAllBones: true, // error with false
-  displayMode: BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS,
-  displayOptions: {
-    sphereBaseSize: 0.01,
-    sphereScaleUnit: 15,
-    sphereFactor: 0.9,
-    midStep: 0.25,
-    midStepFactor: 0.05,
-  },
-};
 
 const DEFAULT_CONTROLLER_COLOR = BABYLON.Color3.FromHexString('#FFE480');
 

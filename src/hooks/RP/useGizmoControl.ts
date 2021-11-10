@@ -476,6 +476,12 @@ const useGizmoControl = () => {
   useEffect(() => {
     if (gizmoManager) {
       const handleKeyDown = (event: KeyboardEvent) => {
+        // input 입력 중에는 적용되지 않도록 수정
+        const target = event.target as Element;
+        if (target.tagName.toLowerCase() === 'input') {
+          return;
+        }
+
         switch (event.key) {
           case 'w':
           case 'W':
