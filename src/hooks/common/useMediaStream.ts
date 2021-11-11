@@ -24,6 +24,7 @@ interface Props {
   setRecordState: Dispatch<SetStateAction<boolean>>;
   setRecording: Dispatch<SetStateAction<boolean>>;
   setStandbyState: Dispatch<SetStateAction<boolean>>;
+  setSrcAddress: Dispatch<SetStateAction<string>>;
   setRecordOverTwice: Dispatch<SetStateAction<boolean>>;
   setTimer: Dispatch<SetStateAction<number>>;
   setDeviceList: Dispatch<SetStateAction<MediaDeviceInfo[]>>;
@@ -49,6 +50,7 @@ const useMediaStream = (props: Props) => {
     setRecording,
     setRecordOverTwice,
     setStandbyState,
+    setSrcAddress,
     setTimer,
     setDeviceList,
     setCurrentDevice,
@@ -166,6 +168,7 @@ const useMediaStream = (props: Props) => {
           new Blob(blobs, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }),
         );
         stopStream();
+        setSrcAddress(video_local);
         ref.current!.src = video_local;
       };
 
@@ -182,6 +185,7 @@ const useMediaStream = (props: Props) => {
     ref,
     stopStream,
     setThumbnailList,
+    setSrcAddress,
     setRecordState,
   ]);
 

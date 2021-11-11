@@ -40,6 +40,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [currentDevice, setCurrentDevice] = useState<string>('');
   const [currnetDeviceId, setCurrentDeviceId] = useState<string>('');
+  const [srcAddress, setSrcAddress] = useState<string>('');
   const [thumbnailList, setThumbnailList] = useState([]);
   const [duration, setDuration] = useState<number>(0);
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
@@ -86,6 +87,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     setRecording: setRecording,
     setRecordOverTwice: setRecordOverTwice,
     setStandbyState: setStandbyState,
+    setSrcAddress: setSrcAddress,
     setTimer: setTimer,
     setDeviceList: setDeviceList,
     setCurrentDevice: setCurrentDevice,
@@ -315,6 +317,9 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           recordState={recordState}
           cameraDropdownState={cameraDropdownState}
           standbyState={standbyState}
+          srcAddress={srcAddress}
+          videoRef={videoRef}
+          setSrcAddress={setSrcAddress}
           handleChangeCamera={handleChangeCamera}
           setCameraDropdownState={setCameraDropdownState}
           stopStream={stopStream}
