@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
 import { filterQuaternion, filterVector } from 'utils/RP';
-import { roundToFourth } from 'utils/common';
+import { round } from 'lodash';
 
 const useAnimation = () => {
   const sceneList = useSelector((state) => state.shootProject.sceneList);
@@ -50,18 +50,14 @@ const useAnimation = () => {
           // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
           if (track.isIncluded) {
             if (track.property === 'position' || track.property === 'scaling') {
-              const newAnimation = new BABYLON.Animation(
-                track.name,
-                `${track.property}`,
-                fps / 30,
-                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-              );
+              const newAnimation = new BABYLON.Animation(track.name, `${track.property}`, fps, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
               if (track.useFilter) {
                 // filter function 적용
-                newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                newAnimation.setKeys(
+                  filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta).map((key) => ({ frame: round(key.frame * fps), value: key.value })),
+                );
               } else {
-                newAnimation.setKeys(track.transformKeys);
+                newAnimation.setKeys(track.transformKeys.map((key) => ({ frame: round(key.frame * fps), value: key.value })));
               }
               track.target.animations.push(newAnimation);
               newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
@@ -69,15 +65,17 @@ const useAnimation = () => {
               const newAnimation = new BABYLON.Animation(
                 track.name,
                 `${track.property}`,
-                fps / 30,
+                fps,
                 BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
               );
               if (track.useFilter) {
                 // filter function 적용
-                newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                newAnimation.setKeys(
+                  filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta).map((key) => ({ frame: round(key.frame * fps), value: key.value })),
+                );
               } else {
-                newAnimation.setKeys(track.transformKeys);
+                newAnimation.setKeys(track.transformKeys.map((key) => ({ frame: round(key.frame * fps), value: key.value })));
               }
               track.target.animations.push(newAnimation);
               newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
@@ -104,7 +102,7 @@ const useAnimation = () => {
             if (currentAnimationGroup.isStarted) {
               currentAnimationGroup.play(true);
             } else {
-              currentAnimationGroup.start(true, playSpeed * playDirection, roundToFourth(startTimeIndex / fps), roundToFourth(endTimeIndex / fps));
+              currentAnimationGroup.start(true, playSpeed * playDirection, startTimeIndex, endTimeIndex);
             }
             break;
           }
@@ -115,7 +113,7 @@ const useAnimation = () => {
           }
           case 'stop': {
             console.log('currentAnimationGroup: ', currentAnimationGroup);
-            currentAnimationGroup.goToFrame(roundToFourth(startTimeIndex / fps));
+            currentAnimationGroup.goToFrame(startTimeIndex);
             currentAnimationGroup.stop();
             break;
           }
