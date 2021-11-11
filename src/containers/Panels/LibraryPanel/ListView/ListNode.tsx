@@ -1005,7 +1005,8 @@ const ListNode: FunctionComponent<Props> = ({
                 if (targetNode) {
                   cloneDragNode.id = uuidv4();
                   cloneDragNode.parentId = id;
-                  cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
+                  // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
+                  cloneDragNode.filePath = filePath + `\\${name}`;
 
                   targetNode.children.push(cloneDragNode.id);
 
@@ -1054,7 +1055,8 @@ const ListNode: FunctionComponent<Props> = ({
               if (targetNode) {
                 cloneDragNode.id = uuidv4();
                 cloneDragNode.parentId = id;
-                cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
+                // cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
+                cloneDragNode.filePath = filePath + `\\${name}`;
                 cloneDragNode.name = nodeName;
 
                 targetNode.children.push(cloneDragNode.id);
@@ -1127,7 +1129,8 @@ const ListNode: FunctionComponent<Props> = ({
               if (targetNode) {
                 cloneDragNode.id = uuidv4();
                 cloneDragNode.parentId = id;
-                cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
+                // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
+                cloneDragNode.filePath = filePath + `\\${name}`;
 
                 targetNode.children.push(cloneDragNode.id);
 
@@ -1176,7 +1179,8 @@ const ListNode: FunctionComponent<Props> = ({
             if (targetNode) {
               cloneDragNode.id = uuidv4();
               cloneDragNode.parentId = id;
-              cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
+              // cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
+              cloneDragNode.filePath = filePath + `\\${name}`;
               cloneDragNode.name = nodeName;
 
               targetNode.children.push(cloneDragNode.id);
