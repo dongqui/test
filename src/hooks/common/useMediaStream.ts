@@ -16,6 +16,8 @@ interface Props {
   recording: boolean;
   currentDeviceId: string;
   recordOverTwice: boolean;
+  start: number;
+  end: number;
   setThumbnailList: Dispatch<SetStateAction<never[]>>;
   setDuration: Dispatch<SetStateAction<number>>;
   setPlayState: Dispatch<SetStateAction<boolean>>;
@@ -38,6 +40,8 @@ const useMediaStream = (props: Props) => {
     recording,
     currentDeviceId,
     recordOverTwice,
+    start,
+    end,
     setThumbnailList,
     setPlayState,
     setDuration,
@@ -215,11 +219,14 @@ const useMediaStream = (props: Props) => {
   );
 
   const playRecording = useCallback(() => {
+    if (ref.current!.currentTime >= end) {
+      return;
+    }
     if (ref) {
       setPlayState(true);
       ref.current!.play();
     }
-  }, [ref, setPlayState]);
+  }, [ref, setPlayState, end]);
 
   const pauseRecording = useCallback(() => {
     if (ref) {
@@ -235,9 +242,9 @@ const useMediaStream = (props: Props) => {
     if (ref) {
       setPlayState(false);
       ref.current!.pause();
-      ref.current!.currentTime = 0;
+      ref.current!.currentTime = start;
     }
-  }, [setPlayState, ref]);
+  }, [setPlayState, ref, start]);
 
   const startRecordingDelay = useCallback(() => {
     let sec = 4;
