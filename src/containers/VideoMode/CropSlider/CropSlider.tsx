@@ -8,6 +8,9 @@ import {
   useCallback,
   useEffect,
   ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  RefObject,
 } from 'react';
 import classNames from 'classnames/bind';
 import styles from './CropSlider.module.scss';
@@ -21,6 +24,7 @@ interface Props {
   currentVideoTime: number;
   indicatorPosition: number;
   handleTimeline: (e: any) => void;
+  videoRef: RefObject<HTMLVideoElement>;
   onChange: Function;
   children: ReactNode;
 }
@@ -32,6 +36,7 @@ export const CropSlider: FunctionComponent<Props> = ({
   currentVideoTime,
   indicatorPosition,
   handleTimeline,
+  videoRef,
   onChange,
   children,
 }) => {
@@ -43,7 +48,9 @@ export const CropSlider: FunctionComponent<Props> = ({
   const endRef = useRef(end);
 
   const getPercent = useCallback(
-    (value: number) => Math.round(((value - start) / (end - start)) * 100),
+    (value: number) => {
+      return Math.round(((value - start) / (end - start)) * 1000) / 10;
+    },
     [start, end],
   );
 
@@ -52,10 +59,16 @@ export const CropSlider: FunctionComponent<Props> = ({
       const value = Math.min(Number(event.target.value), endValue - 1);
       startRef.current = value;
       setStartValue(value);
+      if (videoRef.current!.currentTime <= Math.round(((duration * 100) / 100) * value) / 100) {
+        videoRef.current!.currentTime = Math.round(((duration * 100) / 100) * value) / 100;
+      }
     } else {
       const value = Math.max(Number(event.target.value), startValue + 1);
       endRef.current = value;
       setEndValue(value);
+      if (videoRef.current!.currentTime >= Math.round(((duration * 100) / 100) * value) / 100) {
+        videoRef.current!.currentTime = Math.round(((duration * 100) / 100) * value) / 100;
+      }
     }
   };
 
@@ -86,7 +99,7 @@ export const CropSlider: FunctionComponent<Props> = ({
         type="range"
         min={start}
         max={end}
-        step={0.1}
+        step={0.001}
         value={startValue}
         onChange={handleSlider}
         className={cx('thumb', 'thumb-left')}
@@ -96,7 +109,7 @@ export const CropSlider: FunctionComponent<Props> = ({
         type="range"
         min={start}
         max={end}
-        step={0.1}
+        step={0.001}
         value={endValue}
         onChange={handleSlider}
         className={cx('thumb', 'thumb-right')}
@@ -108,9 +121,7 @@ export const CropSlider: FunctionComponent<Props> = ({
           className={cx('slider-time-indicator')}
           style={{ marginLeft: indicatorPosition + '%' }}
         >
-          {duration < 100
-            ? Math.round(currentVideoTime * 100) / 100
-            : Math.round(currentVideoTime * 10) / 10}
+          {Math.round(currentVideoTime * 10) / 10}
         </span>
         <input
           className={cx('slider-time')}
