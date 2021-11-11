@@ -119,7 +119,8 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, disableContextMenu }) => {
                   const nextNodes = produce(lpNode, (draft) => {
                     cloneCopyNode.id = uuidv4();
                     cloneCopyNode.parentId = '__root__';
-                    cloneCopyNode.filePath = '\\root' + `\\${nodeName}`;
+                    // cloneCopyNode.filePath = '\\root' + `\\${nodeName}`;
+                    cloneCopyNode.filePath = '\\root';
                     cloneCopyNode.name = nodeName;
 
                     // @TODO 하위 노드도 추가
