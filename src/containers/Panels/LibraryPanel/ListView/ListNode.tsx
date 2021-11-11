@@ -274,7 +274,7 @@ const ListNode: FunctionComponent<Props> = ({
                   const currentPathNodeName = lpNode
                     .filter((node) => {
                       if (node.parentId === id) {
-                        if (node.name.includes('Folder')) {
+                        if (node.name.includes('Untitled')) {
                           return true;
                         }
                         return false;
@@ -282,9 +282,9 @@ const ListNode: FunctionComponent<Props> = ({
                     })
                     .map((filteredNode) => filteredNode.name);
 
-                  const check = checkCreateDuplicates('Folder', currentPathNodeName);
+                  const check = checkCreateDuplicates('Untitled', currentPathNodeName);
 
-                  const nodeName = check === '0' ? 'Folder' : `Folder (${check})`;
+                  const nodeName = check === '0' ? 'Untitled' : `Untitled (${check})`;
 
                   const nextNodes = produce(lpNode, (draft) => {
                     const parent = _.find(draft, { id });
