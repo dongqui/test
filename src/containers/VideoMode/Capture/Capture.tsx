@@ -73,6 +73,8 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     stopStream,
   } = useMediaStream({
     ref: videoRef,
+    start: start,
+    end: end,
     canvasRef: canvasRef,
     recording: recording,
     currentDeviceId: currnetDeviceId,
@@ -124,9 +126,17 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     setEnd(cutEndTime);
   };
 
-  const handleTimeline = useCallback((e) => {
-    videoRef.current!.currentTime = e.target.value;
-  }, []);
+  const handleTimeline = useCallback(
+    (e) => {
+      videoRef.current!.currentTime = e.target.value;
+      if (e.target.value < start) {
+        videoRef.current!.currentTime = start;
+      } else if (e.target.value > end) {
+        videoRef.current!.currentTime = end;
+      }
+    },
+    [start, end],
+  );
 
   const handleCurrentTime = useCallback(() => {
     setCurrentVideoTime(videoRef.current!.currentTime);
@@ -204,6 +214,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           setReadyExtract(false);
           dispatch(lpNodeActions.changeNode({ nodes: nextNodes }));
           dispatch(modeSelectActions.changeMode({ mode: 'animationMode' }));
+          dispatch(modeSelectActions.changeMode({ videoURL: '' }));
           setOnExtract(false);
           return response;
         })
@@ -231,20 +242,25 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
 
   // 단축키 이벤트의 연속발생을 위한 keydown 이벤트(버튼을 누르고 있다면 연속으로 프레임이 넘어가야함)
   window.onkeydown = (e) => {
+    e.preventDefault();
     if (!videoRef.current!.src) {
       return;
     }
     if (e.key === 'ArrowRight' || e.key === '.') {
-      videoRef.current!.currentTime += 0.01;
+      if (videoRef.current!.currentTime > end) {
+        return;
+      }
+      videoRef.current!.currentTime += 0.1;
     } else if (e.key === 'ArrowLeft' || e.key === ',') {
-      videoRef.current!.currentTime -= 0.01;
+      if (videoRef.current!.currentTime < start) {
+        return;
+      }
+      videoRef.current!.currentTime -= 0.1;
     } else if (e.key === ' ') {
       if (videoRef.current!.paused) {
-        videoRef.current!.play();
-        setPlayState(true);
+        playRecording();
       } else {
-        videoRef.current!.pause();
-        setPlayState(false);
+        pauseRecording();
       }
     }
   };
@@ -272,6 +288,12 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       setRecordOverTwice(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (currentVideoTime >= end - 0.25 && recordState && playState) {
+      videoRef.current!.currentTime = start;
+    }
+  }, [currentVideoTime, end]);
 
   const playBox = [
     { id: 'startRecording', icon: SvgPath.VideoRecord, fn: stopRecording },
@@ -312,6 +334,14 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         {standbyState && (
           <div className={cx('countdown-overlay')} onClick={backToStandby}>
             <div className={cx('countdown')}>{timer}</div>
+          </div>
+        )}
+        {!currentDevice && !videoURL && (
+          <div className={cx('countdown-overlay')}>
+            <div className={cx('notification-wrapper')}>
+              <IconWrapper className={cx('camera-icon')} icon={SvgPath.NoCamera}></IconWrapper>
+              <p className={cx('no-camera-notification')}>There is No Connected Camera</p>
+            </div>
           </div>
         )}
       </div>
@@ -377,6 +407,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
               duration={duration}
               currentVideoTime={currentVideoTime}
               handleTimeline={handleTimeline}
+              videoRef={videoRef}
               indicatorPosition={indicatorPosition}
               onChange={handleSlider}
             >
@@ -471,6 +502,17 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           </p>
         </BaseModal>
       )}
+      {/* <BaseModal className={cx('extract-modal', 'loading-modal')}>
+        <h4 className={cx('modal-heading')}>Extract Failed</h4>
+        <p className={cx('extract-name-paragraph')}>
+          Motion extraction <strong>failed</strong>. please try again.
+        </p>
+        <FilledButton
+          text="Cancel"
+          className={cx('extract-button', 'cancel')}
+          onClick={() => setTurnStandbyPhase(false)}
+        ></FilledButton>
+      </BaseModal> */}
     </Fragment>
   );
 };

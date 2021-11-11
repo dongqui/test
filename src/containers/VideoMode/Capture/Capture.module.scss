@@ -39,6 +39,7 @@
   width: 100%;
   height: 100%;
   cursor: pointer;
+
 }
 
 .countdown {
@@ -55,6 +56,27 @@
   1px -1px 0 #000,
   -1px 1px 0 #000,
   1px 1px 0 #000;  
+}
+
+.notification-wrapper {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.camera-icon {
+  & > svg {
+    width: 50px;
+  }
+}
+
+.no-camera-notification {
+  font-size: 12px;
+  font-weight: 700;
+  color: #D3D3D3;
+  line-height: 15px;
 }
 
 .playbox {
