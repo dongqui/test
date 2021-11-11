@@ -297,6 +297,8 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     }
   }, [currentVideoTime, end]);
 
+  console.log(recordOverTwice);
+
   const playBox = [
     { id: 'startRecording', icon: SvgPath.VideoRecord, fn: stopRecording },
     { id: 'standbyRecording', icon: SvgPath.VideoRecord, fn: backToStandby },
@@ -319,6 +321,8 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           standbyState={standbyState}
           srcAddress={srcAddress}
           videoRef={videoRef}
+          recording={recording}
+          recordOverTwice={recordOverTwice}
           setSrcAddress={setSrcAddress}
           handleChangeCamera={handleChangeCamera}
           setCameraDropdownState={setCameraDropdownState}

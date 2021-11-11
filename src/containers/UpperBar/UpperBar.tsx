@@ -24,6 +24,8 @@ interface Props {
   recordState?: boolean;
   standbyState?: boolean;
   srcAddress?: string;
+  recording?: boolean;
+  recordOverTwice?: boolean;
   videoRef?: RefObject<HTMLVideoElement>;
   setSrcAddress?: Dispatch<SetStateAction<string>>;
   handleChangeCamera?: (e: any) => void;
@@ -40,6 +42,8 @@ const UpperBar: FunctionComponent<Props> = ({
   standbyState,
   srcAddress,
   videoRef,
+  recording,
+  recordOverTwice,
   setSrcAddress,
   setCameraDropdownState,
   stopStream,
@@ -99,12 +103,12 @@ const UpperBar: FunctionComponent<Props> = ({
         <IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />
         <SegmentButton list={modeList} />
         {standbyState && <div className={cx('segment-disable')}></div>}
-        {mode === 'videoMode' && !recordState && (
+        {mode === 'videoMode' && !recording && !recordOverTwice && (
           <div className={cx('device-select')} onClick={handleCameraDropdown}>
             Camera<IconWrapper icon={SvgPath.EmptyDownArrow}></IconWrapper>
           </div>
         )}
-        {mode === 'videoMode' && recordState && (
+        {mode === 'videoMode' && (recording || recordOverTwice) && (
           <div className={cx('device-select', 'disable')}>
             Camera<IconWrapper icon={SvgPath.EmptyDownArrow}></IconWrapper>
           </div>
