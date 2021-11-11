@@ -274,7 +274,7 @@ const ListNode: FunctionComponent<Props> = ({
                   const currentPathNodeName = lpNode
                     .filter((node) => {
                       if (node.parentId === id) {
-                        if (node.name.includes('Folder')) {
+                        if (node.name.includes('Untitled')) {
                           return true;
                         }
                         return false;
@@ -282,9 +282,9 @@ const ListNode: FunctionComponent<Props> = ({
                     })
                     .map((filteredNode) => filteredNode.name);
 
-                  const check = checkCreateDuplicates('Folder', currentPathNodeName);
+                  const check = checkCreateDuplicates('Untitled', currentPathNodeName);
 
-                  const nodeName = check === '0' ? 'Folder' : `Folder (${check})`;
+                  const nodeName = check === '0' ? 'Untitled' : `Untitled (${check})`;
 
                   const nextNodes = produce(lpNode, (draft) => {
                     const parent = _.find(draft, { id });
@@ -1211,19 +1211,15 @@ const ListNode: FunctionComponent<Props> = ({
   const splitName = name.split('.');
   const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
-  const arrowClasses = cx('icon-arrow', {
-    invisible: type === 'Motion',
-    // open: showsChildren,
-  });
-
   return (
     <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
       <div className={cx('inner')}>
-        <div className={cx('inner-row')} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect} style={{ paddingLeft: `${7 * depth}px` }}>
+        <div className={cx('inner-row')} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}>
           {/* {column.map((col, i) => (
             <div key={i} style={{ width: `${12 * col}px` }} />
           ))} */}
-          <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={arrowClasses} onClick={handleArrowClick} />
+          <div style={{ paddingLeft: '7px' }} />
+          {type !== 'Motion' && <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} onClick={handleArrowClick} />}
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
             {isEditing ? (

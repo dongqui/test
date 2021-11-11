@@ -24,7 +24,7 @@ const beforePaste = (params: Params): string => {
 
   const resultName = duplicatesNumber === '0' ? tempName : `${tempName} (${duplicatesNumber})`;
 
-  // lastIndexOf tempName.lastIndexOf(' (')); -> Folder (2) -> 6 // ('(') -> 7
+  // lastIndexOf tempName.lastIndexOf(' (')); -> Untitled (2) -> 6 // ('(') -> 7
   // if (isNameHasCopy) {
   //   const matchingNumber = name.match(/\(/g);
 

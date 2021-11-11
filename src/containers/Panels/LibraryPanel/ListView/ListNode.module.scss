@@ -1,7 +1,6 @@
 .wrapper {
   display: flex;
   align-items: center;
-  // padding-left: 7px;
   user-select: none;
   opacity: 0.999;
 
@@ -33,22 +32,11 @@
   width: 16px;
   height: 24px;
 
-  &.invisible {
-    & > svg {
-      display: none;
-    }
-  }
-
-  // &.open {
-  //   transform: rotate(90deg);
-  // }
-
   & > svg {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    // height: 11px;
     margin: auto;
     color: #fff;
   }
