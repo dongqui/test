@@ -59,8 +59,9 @@ const UpperBar: FunctionComponent<Props> = ({
     videoRef && (videoRef.current!.src = '');
     dispatch(changeMode({ videoURL: '' }));
     setDeleteModal(false);
+    stopStream && stopStream();
     dispatch(changeMode({ mode: 'animationMode' }));
-  }, [setSrcAddress, videoRef, dispatch]);
+  }, [setSrcAddress, videoRef, stopStream, dispatch]);
 
   const handleCameraDropdown = useCallback(() => {
     setCameraDropdownState && setCameraDropdownState(!cameraDropdownState);
@@ -75,8 +76,8 @@ const UpperBar: FunctionComponent<Props> = ({
         if (srcAddress || videoURL) {
           setDeleteModal(true);
         } else {
-          dispatch(changeMode({ mode: 'animationMode' }));
           stopStream && stopStream();
+          dispatch(changeMode({ mode: 'animationMode' }));
         }
       },
     },

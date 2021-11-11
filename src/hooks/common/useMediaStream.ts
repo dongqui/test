@@ -86,7 +86,7 @@ const useMediaStream = (props: Props) => {
   );
 
   const stopStream = useCallback(() => {
-    if (currentStream && ref.current!.srcObject) {
+    if (currentStream && ref.current && ref.current!.srcObject) {
       const tracks = currentStream.getTracks();
       const stream = ref.current!.srcObject as MediaStream;
       const tracks2 = stream.getTracks();
@@ -155,9 +155,9 @@ const useMediaStream = (props: Props) => {
       });
       let blobs: Blob[] = [];
 
-      if (recorder.state === 'inactive') {
-        mediaStreamInitialize(constraintList);
-      }
+      // if (recorder.state === 'inactive') {
+      //   mediaStreamInitialize(constraintList);
+      // }
 
       recorder.ondataavailable = (e) => {
         blobs.push(e.data);
@@ -169,7 +169,9 @@ const useMediaStream = (props: Props) => {
         );
         stopStream();
         setSrcAddress(video_local);
-        ref.current!.src = video_local;
+        if (ref.current) {
+          ref.current!.src = video_local;
+        }
       };
 
       recorder.start(1000);
@@ -179,8 +181,8 @@ const useMediaStream = (props: Props) => {
   }, [
     recorderData,
     currentStream,
-    mediaStreamInitialize,
-    constraintList,
+    // mediaStreamInitialize,
+    // constraintList,
     browserType,
     ref,
     stopStream,
