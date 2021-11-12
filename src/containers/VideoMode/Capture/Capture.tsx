@@ -245,19 +245,26 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   // 단축키 이벤트의 연속발생을 위한 keydown 이벤트(버튼을 누르고 있다면 연속으로 프레임이 넘어가야함)
   window.onkeydown = (e) => {
     e.preventDefault();
+    const currentTime = videoRef.current!.currentTime;
     if (!videoRef.current!.src) {
       return;
     }
     if (e.key === 'ArrowRight' || e.key === '.') {
-      if (videoRef.current!.currentTime > end) {
+      if (currentTime >= end) {
         return;
+      } else if (currentTime <= end && currentTime > end - 0.1) {
+        videoRef.current!.currentTime = end;
+      } else if (currentTime < end) {
+        videoRef.current!.currentTime += 0.1;
       }
-      videoRef.current!.currentTime += 0.1;
     } else if (e.key === 'ArrowLeft' || e.key === ',') {
-      if (videoRef.current!.currentTime < start) {
+      if (currentTime <= start) {
         return;
+      } else if (currentTime >= start && currentTime < start + 0.1) {
+        videoRef.current!.currentTime = start;
+      } else if (currentTime > start) {
+        videoRef.current!.currentTime -= 0.1;
       }
-      videoRef.current!.currentTime -= 0.1;
     } else if (e.key === ' ') {
       if (videoRef.current!.paused) {
         playRecording();
