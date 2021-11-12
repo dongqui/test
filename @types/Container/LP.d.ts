@@ -9,14 +9,14 @@ declare namespace LP {
 
   interface Node {
     id: string;
-    parentId: string;
-    fileURL?: string | File;
-    filePath: string;
-    name: string;
-    extension: string;
-    type: NodeType;
-    children: any[];
     assetId?: string;
+    parentId: string;
+    type: NodeType;
+    name: string;
+    fileUrl?: string | File;
+    filePath: string;
+    children: any[];
+    extension: string;
     motionData?: {
       id: string;
       result: {

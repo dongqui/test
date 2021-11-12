@@ -1,13 +1,13 @@
-import _ from 'lodash';
-import { FunctionComponent, memo, useEffect, useState, useCallback, useRef, createRef, RefObject } from 'react';
+import { find, remove, cloneDeep } from 'lodash';
+import { FunctionComponent, memo, useEffect, useState, useCallback, useMemo, useRef, createRef, RefObject } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
+import { v4 as uuid } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import { v4 as uuidv4 } from 'uuid';
 import produce from 'immer';
-import { ListNode } from './ListView';
+import ListNode from './ListView/ListNode';
 import classNames from 'classnames/bind';
 import styles from './LPBody.module.scss';
 
@@ -16,199 +16,185 @@ const cx = classNames.bind(styles);
 interface Props {
   view: LP.View;
   lpNode: LP.Node[];
-  disableContextMenu?: boolean;
+  isPreventContextmenu?: boolean;
 }
 
-const LPBody: FunctionComponent<Props> = ({ lpNode, disableContextMenu }) => {
+const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const dispatch = useDispatch();
-
-  const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
-  const lpClipboard = useSelector((state) => state.lpNode.clipboard);
+  const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
-
-  useEffect(() => {
-    setNodeRefs(Array.from({ length: lpNode.length }).map(() => createRef()));
-  }, [lpNode.length]);
+  const [rowNodeRef, setRowNodeRef] = useState<RefObject<HTMLDivElement>[]>([]);
 
   const { onContextMenuOpen } = useContextMenu();
 
-  const depthChangeKey = useCallback((node: LP.Node[], childID: string, parentNode: LP.Node) => {
-    const changeNode = _.find(node, { id: childID });
+  useEffect(() => {
+    setRowNodeRef(Array.from({ length: lpNode.length }).map(() => createRef()));
+  }, [lpNode.length]);
+
+  const handleDepthChange = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
+    const changeNode = find(node, { id: childId });
 
     if (changeNode) {
-      const cloneChangeNode = _.cloneDeep(changeNode);
+      const cloneChangeNode = cloneDeep(changeNode);
 
-      cloneChangeNode.id = uuidv4();
+      cloneChangeNode.id = uuid();
       cloneChangeNode.parentId = parentNode.id;
       cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
 
-      _.remove(parentNode.children, (child) => child === childID);
+      remove(parentNode.children, (child) => child === childId);
+
       parentNode.children.push(cloneChangeNode.id);
 
       node.push(cloneChangeNode);
 
-      if (!_.isEmpty(cloneChangeNode.children)) {
-        cloneChangeNode.children.map((child) => depthChangeKey(node, child, cloneChangeNode));
+      if (cloneChangeNode.children.length > 0) {
+        cloneChangeNode.children.map((child) => handleDepthChange(node, child, cloneChangeNode));
       }
     }
   }, []);
+
+  const handlePaste = useCallback(() => {
+    const copyNode = _lpClipboard[0];
+    const cloneCopyNode = cloneDeep(copyNode);
+
+    if (cloneCopyNode) {
+      const currentPathNodeName = lpNode
+        .filter((node) => {
+          if (node.parentId === '__root__') {
+            const copyMatch = cloneCopyNode.name.match(/copy/g);
+            if (node.name.includes(cloneCopyNode.name)) {
+              if (copyMatch !== null) {
+                const nodeMatch = node.name.match(/copy/g);
+                if (nodeMatch !== null && nodeMatch.length === copyMatch.length + 1) {
+                  return true;
+                }
+              } else {
+                const firstReplacedName = cloneCopyNode.name.replaceAll('(', '\\(');
+                const secondReplacedName = firstReplacedName.replaceAll(')', '\\)');
+                const regex = new RegExp(`${secondReplacedName} copy`, 'g');
+                const cloneCopyMatch = node.name.match(regex);
+                const nodeMatch = node.name.match(/copy/g);
+                if (cloneCopyMatch !== null && cloneCopyMatch.length === 1 && nodeMatch !== null && nodeMatch.length === 1) {
+                  return true;
+                }
+              }
+            }
+            return false;
+          }
+        })
+        .map((filteredNode) => filteredNode.name);
+
+      const nodeName = beforePaste({
+        name: cloneCopyNode.name,
+        comparisonNames: currentPathNodeName,
+      });
+
+      const nextNodes = produce(lpNode, (draft) => {
+        cloneCopyNode.id = uuid();
+        cloneCopyNode.parentId = '__root__';
+        cloneCopyNode.filePath = '\\root';
+        cloneCopyNode.name = nodeName;
+
+        draft.push(cloneCopyNode);
+
+        if (cloneCopyNode.children.length > 0) {
+          cloneCopyNode.children.map((child) => handleDepthChange(draft, child, cloneCopyNode));
+        }
+      });
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: nextNodes,
+        }),
+      );
+    }
+  }, [_lpClipboard, dispatch, handleDepthChange, lpNode]);
+
+  const handleCreateDirectory = useCallback(() => {
+    const currentPathNodeNames = lpNode.filter((node) => node.parentId === '__root__' && node.name.includes('Untitled')).map((filteredNode) => filteredNode.name);
+
+    const check = checkCreateDuplicates('Untitled', currentPathNodeNames);
+
+    const nodeName = check === '0' ? 'Untitled' : `Untitled (${check})`;
+
+    const nextNodes = produce(lpNode, (draft) => {
+      const newNode = {
+        id: uuid(),
+        parentId: '__root__',
+        filePath: '\\root',
+        name: nodeName,
+        extension: '',
+        type: 'Folder',
+        children: [],
+      } as LP.Node;
+
+      draft.push(newNode);
+    });
+
+    dispatch(
+      lpNodeActions.changeNode({
+        nodes: nextNodes,
+      }),
+    );
+  }, [dispatch, lpNode]);
+
+  const handleSelectAll = useCallback(() => {}, []);
+
+  const handleUnSelectAll = useCallback(() => {}, []);
+
+  const contextMenuList = useMemo(
+    () => [
+      {
+        label: 'Paste',
+        onClick: handlePaste,
+      },
+      {
+        label: 'New Directory',
+        onClick: handleCreateDirectory,
+      },
+      {
+        label: 'Select all',
+        onClick: handleSelectAll,
+      },
+      {
+        label: 'Unselect all',
+        onClick: handleUnSelectAll,
+      },
+    ],
+    [handlePaste, handleCreateDirectory, handleSelectAll, handleUnSelectAll],
+  );
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
-      const isOutsideNode = !nodeRefs.map((nodeRef, i) => nodeRef.current?.contains(e.target as Node)).some((isNodeContains) => isNodeContains);
+      const isOutsideRowNode = !rowNodeRef.map((nodeRef) => nodeRef.current?.contains(e.target as Node)).some((isNodeContains) => isNodeContains);
 
-      if (isContains && isOutsideNode) {
-        dispatch(
-          lpNodeActions.changeCurrentPath({
-            currentPath: '\\root',
-            id: '__root__',
-          }),
-        );
+      const isBodyClick = isContains && isOutsideRowNode;
+
+      if (isBodyClick) {
+        dispatch(lpNodeActions.changeCurrentPath({ currentPath: '\\root', id: '__root__' }));
 
         onContextMenuOpen({
           top: e.clientY,
           left: e.clientX,
-          menu: [
-            {
-              label: 'Paste',
-              onClick: () => {
-                // const copyNode = _.find(lpNode, { id: lpClipboard[0].id });
-                const copyNode = lpClipboard[0];
-
-                const cloneCopyNode = _.cloneDeep(copyNode);
-
-                // @TODO 없으면 비활성 처리 필요
-                if (cloneCopyNode) {
-                  const currentPathNodeName = lpNode
-                    .filter((node) => {
-                      if (node.parentId === '__root__') {
-                        const copyMatch = cloneCopyNode.name.match(/copy/g);
-                        if (node.name.includes(cloneCopyNode.name)) {
-                          if (copyMatch !== null) {
-                            const nodeMatch = node.name.match(/copy/g);
-                            if (nodeMatch !== null && nodeMatch.length === copyMatch.length + 1) {
-                              return true;
-                            }
-                          } else {
-                            // const cloneCopyMatch = node.name.match(/`${cloneCopyNode.name} copy`/g);
-                            const firstReplacedName = cloneCopyNode.name.replaceAll('(', '\\(');
-                            const secondReplacedName = firstReplacedName.replaceAll(')', '\\)');
-                            const regex = new RegExp(`${secondReplacedName} copy`, 'g');
-                            const cloneCopyMatch = node.name.match(regex);
-                            const nodeMatch = node.name.match(/copy/g);
-                            if (cloneCopyMatch !== null && cloneCopyMatch.length === 1 && nodeMatch !== null && nodeMatch.length === 1) {
-                              return true;
-                            }
-                          }
-                        }
-                        return false;
-                      }
-                    })
-                    .map((filteredNode) => filteredNode.name);
-
-                  const nodeName = beforePaste({
-                    name: cloneCopyNode.name,
-                    comparisonNames: currentPathNodeName,
-                  });
-
-                  const nextNodes = produce(lpNode, (draft) => {
-                    cloneCopyNode.id = uuidv4();
-                    cloneCopyNode.parentId = '__root__';
-                    // cloneCopyNode.filePath = '\\root' + `\\${nodeName}`;
-                    cloneCopyNode.filePath = '\\root';
-                    cloneCopyNode.name = nodeName;
-
-                    // @TODO 하위 노드도 추가
-                    draft.push(cloneCopyNode);
-
-                    if (!_.isEmpty(cloneCopyNode.children)) {
-                      cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
-                    }
-                  });
-
-                  dispatch(
-                    lpNodeActions.changeNode({
-                      nodes: nextNodes,
-                    }),
-                  );
-                }
-              },
-              children: [],
-            },
-            {
-              label: 'New directory',
-              onClick: () => {
-                let nextLPNodes = _.clone(lpNode);
-
-                const currentPathNodeName = lpNode
-                  .filter((node) => {
-                    if (node.parentId === '__root__') {
-                      if (node.name.includes('Untitled')) {
-                        return true;
-                      }
-                      return false;
-                    }
-                  })
-                  .map((filteredNode) => filteredNode.name);
-
-                const check = checkCreateDuplicates('Untitled', currentPathNodeName);
-
-                const nodeName = check === '0' ? 'Untitled' : `Untitled (${check})`;
-
-                const nextNodes = produce(nextLPNodes, (draft) => {
-                  const newNode = {
-                    id: uuidv4(),
-                    filePath: '\\root',
-                    parentId: '__root__',
-                    name: nodeName,
-                    extension: '',
-                    type: 'Folder',
-                    children: [],
-                  } as LP.Node;
-
-                  draft.push(newNode);
-                });
-
-                nextLPNodes = nextNodes;
-
-                dispatch(
-                  lpNodeActions.changeNode({
-                    nodes: nextNodes,
-                  }),
-                );
-              },
-              children: [],
-            },
-            // {
-            //   label: 'Select all',
-            //   onClick: () => {},
-            //   children: [],
-            // },
-            // {
-            //   label: 'Unselect all',
-            //   onClick: () => {},
-            //   children: [],
-            // },
-          ],
+          menu: contextMenuList,
         });
       }
     };
 
     const currentRef = wrapperRef.current;
 
-    if (currentRef && !disableContextMenu) {
+    if (currentRef && !isPreventContextmenu) {
       currentRef.addEventListener('contextmenu', handleContextMenu);
 
       return () => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [depthChangeKey, disableContextMenu, dispatch, lpClipboard, lpNode, nodeRefs, onContextMenuOpen]);
+  }, [contextMenuList, dispatch, isPreventContextmenu, onContextMenuOpen, rowNodeRef]);
 
   const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
 
@@ -227,22 +213,15 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, disableContextMenu }) => {
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>
       {rootPathNode.map((node, i) => (
-        <div className={cx('node-row')} ref={nodeRefs[i]} key={node.id}>
+        <div className={cx('node-row')} ref={rowNodeRef[i]} key={node.id}>
           <ListNode
-            id={node.id}
-            assetId={node.assetId}
-            parentId={node.parentId}
-            type={node.type}
-            name={node.name}
-            fileURL={node.fileURL}
-            filePath={node.filePath}
+            isSelected={node.id === selectedId}
             onSelect={handleSelect}
             selectedId={selectedId}
-            isSelected={node.id === selectedId}
-            childrens={node.children}
-            extension={node.extension}
             onSetDragTarget={handleSetDragTarget}
             dragTarget={dragTarget}
+            childrens={node.children}
+            {...node}
           />
         </div>
       ))}

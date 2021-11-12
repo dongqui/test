@@ -25,18 +25,18 @@ const cx = classNames.bind(styles);
 // type StateProps = ReturnType<typeof mapStateToProps>;
 
 interface BaseProps {
-  type: 'Folder' | 'Model' | 'Motion';
-  name: string;
-  fileURL?: string | File;
-  filePath: string;
   id: string;
   assetId?: string;
   parentId: string;
+  type: 'Folder' | 'Model' | 'Motion';
+  name: string;
+  fileUrl?: string | File;
+  filePath: string;
   onSelect?: (id: string) => void;
+  selectedId?: string;
   isSelected?: boolean;
   childrens: any[];
   extension: string;
-  selectedId?: string;
   onSetDragTarget: (id: string, type: LP.Node['type'], parentId: string) => void;
   dragTarget?: { id: string; type: LP.Node['type']; parentId: string };
 }
@@ -48,7 +48,7 @@ type Props = StateProps & BaseProps;
 const ListNode: FunctionComponent<Props> = ({
   type,
   name,
-  fileURL,
+  fileUrl,
   filePath,
   id,
   assetId,
@@ -85,7 +85,7 @@ const ListNode: FunctionComponent<Props> = ({
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   const handleArrowClick = useCallback(() => {
-    // dispatch(lpNodeActions.visualize(fileURL));
+    // dispatch(lpNodeActions.visualize(fileUrl));
     setShowsChildren(!showsChildren);
   }, [showsChildren]);
 
@@ -725,7 +725,7 @@ const ListNode: FunctionComponent<Props> = ({
               parentId={node.parentId}
               type={node.type}
               name={node.name}
-              fileURL={node.fileURL}
+              fileUrl={node.fileUrl}
               filePath={node.filePath}
               extension={node.extension}
               onSelect={handleSelect}
