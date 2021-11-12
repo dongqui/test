@@ -1,126 +1,19 @@
-import { CPItemType } from 'types/CP';
-import { LPItemListOldType } from 'types/LP';
+import * as BABYLON from '@babylonjs/core';
 
-//////////////////// old ////////////////////
-export const isClient = typeof window !== 'undefined';
-export const CUT_IMAGES_CNT = 20;
-
-export const STANDARD_TIME_UNIT = 1 / 30;
-
-export const DEFAULT_MODELS: LPItemListOldType = [
-  {
-    key: 'defaultmodel1',
-    name: 'zombie.fbx',
-    url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493576/zombie_bkqv8g.glb',
-    type: 'File',
-    baseLayer: [],
-    layers: [],
+export const DEFAULT_SKELETON_VIEWER_OPTION = {
+  pauseAnimations: false,
+  returnToRest: false,
+  computeBonesUsingShaders: true,
+  useAllBones: true, // error with false
+  displayMode: BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS,
+  displayOptions: {
+    sphereBaseSize: 0.01,
+    sphereScaleUnit: 15,
+    sphereFactor: 0.9,
+    midStep: 0.25,
+    midStepFactor: 0.05,
   },
-  {
-    key: 'defaultmodel2',
-    name: 'knight.fbx',
-    url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619493584/knight_zizg5n.glb',
-    type: 'File',
-    baseLayer: [],
-    layers: [],
-  },
-  {
-    key: 'defaultmodel3',
-    name: 'vanguard.fbx',
-    url: 'https://res.cloudinary.com/dkp8v4ni8/image/upload/v1619494583/vanguard_t_cslcnl.glb',
-    type: 'File',
-    baseLayer: [],
-    layers: [],
-  },
-];
-
-export const INITIAL_LP_DATA: LPItemListOldType = [];
-
-export const CP_ITEMS: CPItemType[] = [
-  {
-    key: '0',
-    name: 'Transform',
-    type: 'parent',
-    isExpanded: true,
-  },
-  {
-    key: '0-1',
-    name: 'Position',
-    type: 'input',
-    parentKey: '0',
-  },
-  {
-    key: '0-2',
-    name: 'Rotation',
-    type: 'input',
-    parentKey: '0',
-  },
-  {
-    key: '0-3',
-    name: 'Scale',
-    type: 'input',
-    parentKey: '0',
-  },
-  {
-    key: '2',
-    name: 'Visibility',
-    type: 'parent',
-    isExpanded: true,
-  },
-  {
-    key: '2-1',
-    name: 'Axis',
-    type: 'select',
-    button: 'axis',
-    parentKey: '2',
-  },
-  {
-    key: '2-2',
-    name: 'Bone',
-    type: 'select',
-    button: 'isBoneOn',
-    parentKey: '2',
-  },
-  {
-    key: '2-4',
-    name: 'Mesh',
-    type: 'select',
-    button: 'isMeshOn',
-    parentKey: '2',
-  },
-  {
-    key: '2-5',
-    name: 'Shadow',
-    type: 'select',
-    button: 'isShadowOn',
-    parentKey: '2',
-  },
-];
-
-export const INITIAL_RECORDING_DATA = {
-  duration: 10,
-  rangeBoxInfo: {
-    // width: window.innerWidth * 0.9,
-    // width: 1700,
-    width: 0,
-    height: 128,
-    x: 0,
-    barX: 0,
-    y: 0,
-  },
-  isPlaying: false,
-  motionName: '',
-  isRecording: undefined,
-  count: undefined,
 };
-
-export const DEFAULT_TARGETBONES = [
-  'Source Bone1',
-  'Source Bone2',
-  'Source Bone3',
-  'Source Bone4',
-  'Source Bone5',
-];
 
 // TP Track 별 Index 규칙
 export const TP_TRACK_INDEX = {

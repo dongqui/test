@@ -11,11 +11,7 @@ import LayerKeyframesRepository from './repository/LayerKeyframes';
 import BoneKeyframesRepository from './repository/BoneKeyframes';
 import PropertyKeyframesRepository from './repository/PropertyKeyframe';
 
-const createService = (
-  Constructor: ServiceConstructor,
-  state: KeyframesState,
-  payload: SelectKeyframes,
-) => {
+const createService = (Constructor: ServiceConstructor, state: KeyframesState, payload: SelectKeyframes) => {
   const layerRepo = new LayerKeyframesRepository(state);
   const boneRepo = new BoneKeyframesRepository(state);
   const propertyRepo = new PropertyKeyframesRepository(state);

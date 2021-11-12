@@ -1,12 +1,7 @@
 import { BoneTrack, PropertyTrack } from 'types/TP/track';
 import { ClickBoneTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
-import {
-  BoneTrackList,
-  PropertyTrackList,
-  SelectedBones,
-  SelectedProperties,
-} from 'reducers/trackList/types';
+import { BoneTrackList, PropertyTrackList, SelectedBones, SelectedProperties } from 'reducers/trackList/types';
 import { StateUpdate } from 'reducers/trackList/classes';
 
 import { Service } from './index';
@@ -23,12 +18,7 @@ class BoneTrackService extends StateUpdate implements Service {
   private readonly boneRepository: Repository;
   private readonly propertyRepository: Repository;
 
-  constructor(
-    state: TrackListState,
-    payload: ClickBoneTrackBody,
-    boneRepository: Repository,
-    propertyRepository: Repository,
-  ) {
+  constructor(state: TrackListState, payload: ClickBoneTrackBody, boneRepository: Repository, propertyRepository: Repository) {
     super(state);
     this.payload = payload;
     this.boneRepository = boneRepository;
@@ -46,18 +36,14 @@ class BoneTrackService extends StateUpdate implements Service {
     const { state, payload } = this;
     const { clickRightNotSelectedTrack, clickRightSelectedTrack } = new RightClick();
     const isSelectedTrack = state.selectedBones.includes(payload.trackNumber);
-    return isSelectedTrack
-      ? clickRightSelectedTrack({ state })
-      : clickRightNotSelectedTrack({ payload });
+    return isSelectedTrack ? clickRightSelectedTrack({ state }) : clickRightNotSelectedTrack({ payload });
   };
 
   private selectMultipleClick = () => {
     const { state, payload } = this;
     const multipleClick = new MultipleClick();
     const isSelectedTrack = this.state.selectedBones.includes(this.payload.trackNumber);
-    return isSelectedTrack
-      ? multipleClick.clickMultipleSelectedTrack({ state, payload })
-      : multipleClick.clickMultipleNotSelectedTrack({ state, payload });
+    return isSelectedTrack ? multipleClick.clickMultipleSelectedTrack({ state, payload }) : multipleClick.clickMultipleNotSelectedTrack({ state, payload });
   };
 
   private selectLeftClick = () => {

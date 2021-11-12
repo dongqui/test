@@ -1,17 +1,21 @@
-import _ from 'lodash';
-import { FunctionComponent, memo, useEffect, useState, useCallback, ChangeEvent } from 'react';
+import '@babylonjs/loaders/glTF';
+import { FunctionComponent, memo, useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import { convertFBXtoGLB } from 'api';
+import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 import { getFileExtension } from 'utils/common';
+import { AnimationIngredient, ShootAsset } from 'types/common';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { v4 as uuid } from 'uuid';
+import * as BABYLON from '@babylonjs/core';
+import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import Box from 'components/Layout/Box';
 import produce from 'immer';
+import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -22,125 +26,46 @@ const cx = classNames.bind(styles);
 
 const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
+  const _lpNode = useSelector((state) => state.lpNode.node);
+  const _lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
+  const _sceneList = useSelector((state) => state.shootProject.sceneList);
 
-  const lpNode = useSelector((state) => state.lpNode.node);
-  const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
-  const assetList = useSelector((state) => state.shootProject.assetList);
-  const animationTransformNodes = useSelector(
-    (state) => state.animationData.animationTransformNodes,
-  );
-  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+  const [view, setView] = useState<LP.View>('List');
+  const [searchText, setSearchText] = useState('');
+  const [searchResultNode, setSearchResultNode] = useState(_lpNode);
 
   const { onModalOpen, onModalClose } = useBaseModal();
 
-  const [fileExtension, setFileExtension] = useState('');
-  const [fileName, setFileName] = useState('');
-  const [assetListLength, setAssetListLength] = useState(0);
-  const [animationIngredientsLength, setAnimationIngredientsLength] = useState(0);
-
-  useEffect(() => {
-    if (
-      assetListLength !== assetList.length &&
-      animationIngredientsLength !== animationIngredients.length
-    ) {
-      let nextLPNodes = _.clone(lpNode);
-
-      const nextNodes = produce(nextLPNodes, (draft) => {
-        const ingredients = animationIngredients.filter(
-          (ingredient) => ingredient.assetId === assetList[assetList.length - 1].id,
-        );
-
-        const newModelNode: LP.Node = {
-          id: uuid(),
-          // fileURL: file,
-          filePath: lpCurrentPath,
-          parentId: '__root__',
-          name: fileName,
-          extension: fileExtension,
-          type: 'Model',
-          assetId: assetList[assetList.length - 1].id,
-          children: ingredients.map((ingredient) => ingredient.id),
-        };
-
-        draft.push(newModelNode);
-
-        const newMotionNodes = animationIngredients.map((ingredient) => {
-          const motion: LP.Node = {
-            id: ingredient.id,
-            parentId: ingredient.assetId,
-            name: ingredient.name,
-            filePath: lpCurrentPath + `\\${ingredient.name}`,
-            children: [],
-            extension: '',
-            type: 'Motion',
-          };
-
-          return motion;
-        });
-
-        draft.push(...newMotionNodes);
-      });
-
-      nextLPNodes = nextNodes;
-
-      dispatch(
-        lpNodeActions.changeNode({
-          nodes: nextNodes,
-        }),
-      );
-
-      setFileName('');
-      setAssetListLength(assetList.length);
-      setAnimationIngredientsLength(animationIngredients.length);
-    }
-  }, [
-    animationIngredients,
-    animationIngredientsLength,
-    assetList,
-    assetListLength,
-    dispatch,
-    fileExtension,
-    fileName,
-    lpCurrentPath,
-    lpNode,
-  ]);
-
-  const onFileLoad = useCallback(
+  const handleFileLoad = useCallback(
     async (file: File) => {
+      const isSceneReady = _sceneList.length > 0 && _sceneList[0].scene && _sceneList[0].scene.isReady();
+
+      if (!isSceneReady) {
+        return;
+      }
+
+      const baseScene = _sceneList[0].scene;
+      let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
+
       const extension = getFileExtension(file.name).toLowerCase();
       const fileName = file.name;
 
       if (extension === 'glb') {
-        setFileName(fileName);
-        setFileExtension(extension);
-
-        /**
-         * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
-         */
-
-        dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
-        return;
+        loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', (file as unknown) as string, baseScene);
       }
 
       if (extension === 'fbx') {
-        onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
+        await onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
-        await convertFBXtoGLB(file)
+        const fileUrl = await convertFBXtoGLB(file)
           .then((response) => {
             onModalClose();
-
-            setFileName(fileName);
-
-            /**
-             * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
-             */
-            dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
+            return response;
           })
-          .catch(() => {
-            onModalOpen({
+          .catch(async () => {
+            await onModalOpen({
               title: 'Warning',
-              message:
-                '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
+              message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
               confirmText: 'Contact',
               onConfirm: () => {
                 // location.href = 'mailto:contact@plask.ai';
@@ -149,10 +74,120 @@ const LibraryPanel: FunctionComponent = () => {
             });
           });
 
+        if (fileUrl) {
+          loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
+        }
+      }
+
+      if (!loadedAssetContainer) {
         return;
       }
+
+      const { meshes, geometries, skeletons, transformNodes, animationGroups } = loadedAssetContainer;
+
+      const assetId = uuid();
+
+      meshes.forEach((mesh) => {
+        // joint 클릭을 위해 mesh 클릭을 불가능하게 처리
+        mesh.isPickable = false;
+      });
+
+      skeletons[0].bones.forEach((bone) => {
+        // bone id를 unique한 id로 생성
+        bone.id = `${assetId}//${bone.name}//bone`;
+      });
+
+      transformNodes.forEach((transformNode) => {
+        // transformNode id를 unique한 id로 생성
+        transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
+      });
+
+      const animationIngredientIds: string[] = [];
+      const animationIngredients: AnimationIngredient[] = [];
+
+      animationGroups.forEach((animationGroup, idx) => {
+        // 모델 로드 시 animation 재생을 방지
+        animationGroup.pause();
+
+        //
+        /**
+         * 모델이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
+         * 첫 번째 animationGroup을 current로 사용 (idx === 0)
+         */
+        const animationIngredient = createAnimationIngredient(assetId, animationGroup, false, idx === 0);
+
+        animationIngredientIds.push(animationIngredient.id);
+        animationIngredients.push(animationIngredient);
+      });
+
+      // 모델에 대한 빈 retargetMap을 생성
+      // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
+      const retargetMap = createEmptyRetargetMap(assetId);
+
+      const newAsset: ShootAsset = {
+        id: assetId,
+        name: fileName,
+        extension,
+        meshes,
+        geometries,
+        skeleton: skeletons[0] ?? null,
+        bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
+        transformNodes,
+        animationIngredientIds,
+        retargetMapId: retargetMap.id,
+      };
+
+      const nextNodes = produce(_lpNode, (draft) => {
+        // 로드한 모델을 통해 LP 모델 노드 생성
+        const newModelNode: LP.Node = {
+          id: uuid(),
+          parentId: '__root__',
+          filePath: _lpCurrentPath,
+          name: fileName,
+          extension,
+          type: 'Model',
+          assetId: newAsset.id,
+          children: animationIngredientIds,
+        };
+
+        draft.push(newModelNode);
+
+        // 로드한 모델의 모션을 통해 LP 모션 노드 생성
+        const newMotionNodes = animationIngredients.map((ingredient) => {
+          const motion: LP.Node = {
+            id: ingredient.id,
+            parentId: ingredient.assetId,
+            filePath: _lpCurrentPath + `\\${ingredient.name}`,
+            name: ingredient.name,
+            extension: '',
+            type: 'Motion',
+            children: [],
+          };
+
+          return motion;
+        });
+
+        draft.push(...newMotionNodes);
+      });
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: nextNodes,
+        }),
+      );
+
+      dispatch(shootProjectActions.addAsset({ asset: newAsset }));
+      dispatch(
+        animationDataActions.addAsset({
+          transformNodes: transformNodes.filter(
+            (t) => !t.name.toLowerCase().includes('camera') && !t.name.toLowerCase().includes('scene') && !t.name.toLowerCase().includes('armature'),
+          ),
+          animationIngredients,
+          retargetMap,
+        }),
+      );
     },
-    [dispatch, onModalClose, onModalOpen],
+    [_lpCurrentPath, _lpNode, _sceneList, dispatch, onModalClose, onModalOpen],
   );
 
   const handleDrop = useCallback(
@@ -170,7 +205,7 @@ const LibraryPanel: FunctionComponent = () => {
       const isError = videos.length > 1;
 
       if (isError) {
-        onModalOpen({
+        await onModalOpen({
           title: 'Warning',
           message: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
           confirmText: 'Close',
@@ -181,64 +216,56 @@ const LibraryPanel: FunctionComponent = () => {
       }
 
       if (isInvalidFormat) {
-        onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
+        await onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
 
         return;
       }
 
-      /**
-       * @TODO 하나라도 실패 시 전부 취소하거나 성공하는 포맷들만 로드하거나 필요
-       */
-      removedVideoFiles.map(async (file) => await onFileLoad(file));
+      await Promise.all(removedVideoFiles.map(async (file) => await handleFileLoad(file))).then(async () => {
+        if (videos.length > 0) {
+          /**
+           * @TODO 이후 사용하지 않는 경우 remove url 필요
+           */
+          const videoBlobURL = URL.createObjectURL(videos[0]);
 
-      if (videos.length > 0) {
-        /**
-         * @TODO 이후 사용하지 않는 경우 remove url 필요
-         */
-        const videoBlobURL = URL.createObjectURL(videos[0]);
-
-        onModalOpen({
-          title: 'Extract',
-          message: '모션을 추출하시겠습니까?',
-          confirmText: '확인',
-          cancelText: '취소',
-          onConfirm: () => {
-            dispatch(
-              modeSelectActions.changeMode({
-                mode: 'videoMode',
-                videoURL: videoBlobURL,
-              }),
-            );
-          },
-          onCancel: () => onModalClose(),
-        });
-      }
+          await onModalOpen({
+            title: 'Extract',
+            message: '모션을 추출하시겠습니까?',
+            confirmText: '확인',
+            cancelText: '취소',
+            onConfirm: () => {
+              dispatch(
+                modeSelectActions.changeMode({
+                  mode: 'videoMode',
+                  videoURL: videoBlobURL,
+                }),
+              );
+            },
+            onCancel: () => onModalClose(),
+          });
+        }
+      });
     },
-    [dispatch, onFileLoad, onModalClose, onModalOpen],
+    [dispatch, handleFileLoad, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
-
-  const [view, setView] = useState<LP.View>('List');
-
-  const [searchText, setSearchText] = useState('');
-  const [searchResultNode, setSearchResultNode] = useState<LP.Node[]>(lpNode);
 
   const handleSearch = useCallback(
     (text: string) => {
       setSearchText(text);
 
       if (text.length > 0) {
-        const searchResult = lpNode.filter(
-          (node) =>
-            node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text),
-        );
+        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
 
         setSearchResultNode(searchResult);
       }
     },
-    [lpNode],
+    [_lpNode],
   );
+
+  const nodes = searchText.length > 0 ? searchResultNode : _lpNode;
+  const isPreventContextmenu = !!searchText;
 
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
@@ -250,11 +277,7 @@ const LibraryPanel: FunctionComponent = () => {
           <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody
-            view={view}
-            lpNode={searchText.length > 0 ? searchResultNode : lpNode}
-            disableContextMenu={!!searchText}
-          />
+          <LPBody view={view} lpNode={nodes} isPreventContextmenu={isPreventContextmenu} />
         </Box>
       </div>
     </div>

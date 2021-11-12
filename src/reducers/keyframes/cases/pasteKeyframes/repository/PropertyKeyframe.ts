@@ -17,10 +17,7 @@ class PropertyKeyframeRepository implements Repository {
     return { isSelected: true, isDeleted: false, time, value: trasnformKey.value };
   };
 
-  private updateValues = <T extends ClusteredKeyframe | TimeEditorTrack>(
-    base: T[],
-    scrubberTime: number,
-  ) => {
+  private updateValues = <T extends ClusteredKeyframe | TimeEditorTrack>(base: T[], scrubberTime: number) => {
     const { copiedPropertyKeyframes } = this.state;
     return produce(base, (draft) => {
       copiedPropertyKeyframes.forEach((copiedGroup) => {

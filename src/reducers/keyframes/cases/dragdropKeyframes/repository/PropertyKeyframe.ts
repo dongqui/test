@@ -19,12 +19,7 @@ class PropertyKeyframeRepository implements Repository {
   };
 
   // 키프레임 업데이트
-  private updatePropertyKeyframes = (
-    draft: Draft<TimeEditorTrack>[],
-    trackNumber: number,
-    transformKey: TrasnformKey,
-    timeDiff: number,
-  ) => {
+  private updatePropertyKeyframes = (draft: Draft<TimeEditorTrack>[], trackNumber: number, transformKey: TrasnformKey, timeDiff: number) => {
     const { propertyTrackList } = this.state;
     const trackIndex = findElementIndex(propertyTrackList, trackNumber, 'trackNumber');
     const propertyKeyframes = propertyTrackList[trackIndex].keyframes;

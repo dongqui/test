@@ -1,16 +1,5 @@
 import _ from 'lodash';
-import {
-  FunctionComponent,
-  memo,
-  ReactNode,
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-  useContext,
-  useLayoutEffect,
-  createContext,
-} from 'react';
+import { FunctionComponent, memo, ReactNode, useEffect, useState, useCallback, useRef, useContext, useLayoutEffect, createContext } from 'react';
 import { BasePortal } from 'components/Modal';
 import classnames from 'classnames/bind';
 import styles from './ContextMenu.module.scss';
@@ -128,11 +117,7 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
 
   return (
     <BasePortal container={portalRef}>
-      <div
-        className={cx('wrapper')}
-        ref={wrapperRef}
-        style={{ top: position.top, left: position.left }}
-      >
+      <div className={cx('wrapper')} ref={wrapperRef} style={{ top: position.top, left: position.left }}>
         {menu &&
           menu.map((item, i) => {
             const classes = cx('inner', item.visibility);

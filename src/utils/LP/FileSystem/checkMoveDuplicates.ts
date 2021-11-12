@@ -9,7 +9,7 @@ const checkMoveDuplicates = (name: string, nameArray: string[]) => {
   if (nameArray.length === 1) {
     const currentNode = nameArray[0];
 
-    // 번호 앞에는 반드시 하나의 공백 - ex) 'Folder (2)'
+    // 번호 앞에는 반드시 하나의 공백 - ex) 'Untitled (2)'
     const extractedNumber = currentNode.match(/ \(\d+\)$/g);
 
     if (!_.isNull(extractedNumber)) {

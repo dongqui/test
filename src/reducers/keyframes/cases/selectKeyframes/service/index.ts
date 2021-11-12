@@ -13,11 +13,5 @@ export interface Service {
 }
 
 export interface ServiceConstructor {
-  new (
-    state: KeyframesState,
-    payload: SelectKeyframes,
-    layerRepo: Repository,
-    boneRepo: Repository,
-    transformRepo: Repository,
-  ): Service;
+  new (state: KeyframesState, payload: SelectKeyframes, layerRepo: Repository, boneRepo: Repository, transformRepo: Repository): Service;
 }

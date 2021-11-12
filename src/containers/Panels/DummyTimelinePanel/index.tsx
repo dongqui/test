@@ -6,12 +6,7 @@ import { isUndefined, range, uniq } from 'lodash';
 import produce from 'immer';
 import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
 import * as animationDataActions from 'actions/animationDataAction';
-import {
-  createShootTrack,
-  getInterpolatedQuaternion,
-  getInterpolatedVector,
-  getValueInsertedTransformKeys,
-} from 'utils/RP';
+import { createShootTrack, getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
 import { roundToFourth } from 'utils/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -56,9 +51,7 @@ const TimelinePanel: FunctionComponent = () => {
     targetAssets.forEach((asset) => {
       const { id: assetId } = asset;
 
-      const currentAnimationIngredient = animationIngredients.find(
-        (anim) => anim.assetId === assetId && anim.current,
-      );
+      const currentAnimationIngredient = animationIngredients.find((anim) => anim.assetId === assetId && anim.current);
 
       if (currentAnimationIngredient) {
         currentAnimationIngredient.layers.forEach((layer) => {
@@ -98,43 +91,25 @@ const TimelinePanel: FunctionComponent = () => {
           const newScaling = scaling.clone();
 
           // 같은 대상에 대한 다른 layer의 트랙들
-          const otherLayerTracks = tracks.filter(
-            (t) => t.targetId === track.targetId && t.layerId !== targetLayerId,
-          );
+          const otherLayerTracks = tracks.filter((t) => t.targetId === track.targetId && t.layerId !== targetLayerId);
 
           otherLayerTracks.forEach((otherTrack) => {
             let transformKey = otherTrack.transformKeys.find((key) => key.frame === targetFrame);
             switch (otherTrack.property) {
               case 'position': {
-                newPosition.subtract(
-                  transformKey
-                    ? transformKey.value
-                    : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
-                );
+                newPosition.subtract(transformKey ? transformKey.value : getInterpolatedVector(otherTrack.transformKeys, targetFrame));
                 break;
               }
               case 'rotationQuaternion': {
-                newRotationQuaternion.subtract(
-                  transformKey
-                    ? transformKey.value
-                    : getInterpolatedQuaternion(otherTrack.transformKeys, targetFrame),
-                );
+                newRotationQuaternion.subtract(transformKey ? transformKey.value : getInterpolatedQuaternion(otherTrack.transformKeys, targetFrame));
                 break;
               }
               case 'rotation': {
-                newRotation.subtract(
-                  transformKey
-                    ? transformKey.value
-                    : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
-                );
+                newRotation.subtract(transformKey ? transformKey.value : getInterpolatedVector(otherTrack.transformKeys, targetFrame));
                 break;
               }
               case 'scaling': {
-                newScaling.subtract(
-                  transformKey
-                    ? transformKey.value
-                    : getInterpolatedVector(otherTrack.transformKeys, targetFrame),
-                );
+                newScaling.subtract(transformKey ? transformKey.value : getInterpolatedVector(otherTrack.transformKeys, targetFrame));
                 break;
               }
               default: {
@@ -143,46 +118,26 @@ const TimelinePanel: FunctionComponent = () => {
             }
           });
 
-          const targetAnim = draft.find(
-            (anim) => anim.current && track.targetId.includes(anim.assetId),
-          );
+          const targetAnim = draft.find((anim) => anim.current && track.targetId.includes(anim.assetId));
 
           if (targetAnim) {
-            const targetTracks = targetAnim.tracks.filter(
-              (t) => t.layerId === targetLayerId && t.targetId === track.targetId,
-            );
+            const targetTracks = targetAnim.tracks.filter((t) => t.layerId === targetLayerId && t.targetId === track.targetId);
             targetTracks.forEach((t) => {
               switch (t.property) {
                 case 'position': {
-                  t.transformKeys = getValueInsertedTransformKeys(
-                    t.transformKeys,
-                    targetFrame,
-                    newPosition,
-                  );
+                  t.transformKeys = getValueInsertedTransformKeys(t.transformKeys, targetFrame, newPosition);
                   break;
                 }
                 case 'rotationQuaternion': {
-                  t.transformKeys = getValueInsertedTransformKeys(
-                    t.transformKeys,
-                    targetFrame,
-                    newRotationQuaternion,
-                  );
+                  t.transformKeys = getValueInsertedTransformKeys(t.transformKeys, targetFrame, newRotationQuaternion);
                   break;
                 }
                 case 'rotation': {
-                  t.transformKeys = getValueInsertedTransformKeys(
-                    t.transformKeys,
-                    targetFrame,
-                    newRotation,
-                  );
+                  t.transformKeys = getValueInsertedTransformKeys(t.transformKeys, targetFrame, newRotation);
                   break;
                 }
                 case 'scaling': {
-                  t.transformKeys = getValueInsertedTransformKeys(
-                    t.transformKeys,
-                    targetFrame,
-                    newScaling,
-                  );
+                  t.transformKeys = getValueInsertedTransformKeys(t.transformKeys, targetFrame, newScaling);
                 }
                 default: {
                   break;
@@ -202,9 +157,7 @@ const TimelinePanel: FunctionComponent = () => {
   }, [animationIngredients, dispatch, targetFrame, targetLayerId, tracks]);
 
   const deleteKeyframe = useCallback(() => {
-    const currentAnimationIngredient = animationIngredients.find(
-      (anim) => visualizedAssetIds.includes(anim.assetId) && anim.current,
-    );
+    const currentAnimationIngredient = animationIngredients.find((anim) => visualizedAssetIds.includes(anim.assetId) && anim.current);
 
     if (currentAnimationIngredient) {
       const { tracks: currentTracks } = currentAnimationIngredient;
@@ -226,9 +179,7 @@ const TimelinePanel: FunctionComponent = () => {
                   track.isMocapAnimation,
                 ),
               );
-              const rotationTrack = currentTracks.find(
-                (t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'),
-              );
+              const rotationTrack = currentTracks.find((t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'));
               if (rotationTrack) {
                 newTracks.push(
                   createShootTrack(
@@ -243,9 +194,7 @@ const TimelinePanel: FunctionComponent = () => {
               }
             } else {
               newTracks.push(track);
-              const rotationTrack = currentTracks.find(
-                (t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'),
-              );
+              const rotationTrack = currentTracks.find((t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'));
               if (rotationTrack) {
                 newTracks.push(rotationTrack);
               }
@@ -292,9 +241,7 @@ const TimelinePanel: FunctionComponent = () => {
     // track과 frame은 다수일 수 있음
     // single model visualze 상태에서는 visualizedAssetIds를 통해서 currentAnimationIngredient를 선택
     // multi model visualize 상태에서는 selectedAssetIds를 통해서 currentAnimationIngredient를 선택하도록 수정해야 함
-    const currentAnimationIngredient = animationIngredients.find(
-      (anim) => visualizedAssetIds.includes(anim.assetId) && anim.current,
-    );
+    const currentAnimationIngredient = animationIngredients.find((anim) => visualizedAssetIds.includes(anim.assetId) && anim.current);
 
     if (currentAnimationIngredient) {
       const { tracks: currentTracks } = currentAnimationIngredient;
@@ -316,9 +263,7 @@ const TimelinePanel: FunctionComponent = () => {
                   track.isMocapAnimation,
                 ),
               );
-              const rotationTrack = currentTracks.find(
-                (t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'),
-              );
+              const rotationTrack = currentTracks.find((t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'));
               if (rotationTrack) {
                 newTracks.push(
                   createShootTrack(
@@ -326,18 +271,14 @@ const TimelinePanel: FunctionComponent = () => {
                     rotationTrack.layerId,
                     rotationTrack.target,
                     rotationTrack.property,
-                    rotationTrack.transformKeys.filter(
-                      (key) => !DUMMY_DELETE_FRAMES.includes(key.frame),
-                    ),
+                    rotationTrack.transformKeys.filter((key) => !DUMMY_DELETE_FRAMES.includes(key.frame)),
                     rotationTrack.isMocapAnimation,
                   ),
                 );
               }
             } else {
               newTracks.push(track);
-              const rotationTrack = currentTracks.find(
-                (t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'),
-              );
+              const rotationTrack = currentTracks.find((t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'));
               if (rotationTrack) {
                 newTracks.push(rotationTrack);
               }
@@ -389,9 +330,7 @@ const TimelinePanel: FunctionComponent = () => {
     targetAssets.forEach((asset) => {
       const { id: assetId } = asset;
 
-      const currentAnimationIngredient = animationIngredients.find(
-        (anim) => anim.assetId === assetId && anim.current,
-      );
+      const currentAnimationIngredient = animationIngredients.find((anim) => anim.assetId === assetId && anim.current);
 
       if (currentAnimationIngredient) {
         const { id, name, assetId, current, layers, tracks } = currentAnimationIngredient;
@@ -424,9 +363,7 @@ const TimelinePanel: FunctionComponent = () => {
     targetAssets.forEach((asset) => {
       const { id: assetId } = asset;
 
-      const currentAnimationIngredient = animationIngredients.find(
-        (anim) => anim.assetId === assetId && anim.current,
-      );
+      const currentAnimationIngredient = animationIngredients.find((anim) => anim.assetId === assetId && anim.current);
 
       if (currentAnimationIngredient) {
         const { id, name, assetId, current, layers, tracks } = currentAnimationIngredient;
@@ -484,13 +421,7 @@ const TimelinePanel: FunctionComponent = () => {
             <button
               className={cx('track', { selected: deleteTargetTrackIds.includes(track.id) })}
               key={`${track.layerId}&${track.targetId}&${track.property}`}
-              onClick={() =>
-                setDeleteTargetTrackIds((prev) =>
-                  prev.includes(track.id)
-                    ? prev.filter((str) => str !== track.id)
-                    : [...prev, track.id],
-                )
-              }
+              onClick={() => setDeleteTargetTrackIds((prev) => (prev.includes(track.id) ? prev.filter((str) => str !== track.id) : [...prev, track.id]))}
             >
               {`${track.target.name}//${track.property}`}
             </button>
@@ -500,12 +431,7 @@ const TimelinePanel: FunctionComponent = () => {
       {/* 키프레임 편집 혹은 삭제 시 대상이 되는 frame */}
       <div className={cx('third')}>
         <div className={cx('title')}>Frame</div>
-        <input
-          className={cx('input')}
-          type="number"
-          placeholder="type target frame"
-          onChange={handleChangeKeyframe}
-        />
+        <input className={cx('input')} type="number" placeholder="type target frame" onChange={handleChangeKeyframe} />
       </div>
       {/* 키프레임 관련 조작 버튼 */}
       <div className={cx('fourth')}>
@@ -525,11 +451,7 @@ const TimelinePanel: FunctionComponent = () => {
         <button className={cx('button')} onClick={pasteKeyframes}>
           Paste Keyframes
         </button>
-        <input
-          className={cx('input')}
-          placeholder="type layer name"
-          onChange={handleChangeLayerName}
-        />
+        <input className={cx('input')} placeholder="type layer name" onChange={handleChangeLayerName} />
         <button className={cx('button')} onClick={addLayer}>
           Add Layer
         </button>

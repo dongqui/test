@@ -1,15 +1,16 @@
 import * as BABYLON from '@babylonjs/core';
 
-const getValueInsertedTransformKeys = (
-  transformKeys: BABYLON.IAnimationKey[],
-  targetFrame: number,
-  value: BABYLON.Vector3 | BABYLON.Quaternion,
-): BABYLON.IAnimationKey[] => {
+/**
+ * transformKeys를 받아 특정 시점에 value를 삽입한 후 다시 반환합니다.
+ *
+ * @param transformKeys - value를 삽입할 transformKeys
+ * @param targetFrame - value를 삽입할 시점(frame)
+ * @param value - 삽입할 값
+ */
+const getValueInsertedTransformKeys = (transformKeys: BABYLON.IAnimationKey[], targetFrame: number, value: BABYLON.Vector3 | BABYLON.Quaternion): BABYLON.IAnimationKey[] => {
   if (transformKeys.find((key) => key.frame === targetFrame)) {
     // targetFrame에 위치한 key가 있을 때, 해당 값만 교체해서 return
-    return transformKeys.map((key) =>
-      key.frame === targetFrame ? { frame: key.frame, value } : key,
-    );
+    return transformKeys.map((key) => (key.frame === targetFrame ? { frame: key.frame, value } : key));
   } else {
     // targetFrame에 위치한 key가 없을 때
     if (transformKeys.length === 0) {
@@ -33,11 +34,7 @@ const getValueInsertedTransformKeys = (
             break;
           }
         }
-        return [
-          ...transformKeys.slice(0, idx),
-          { frame: targetFrame, value },
-          ...transformKeys.slice(idx),
-        ];
+        return [...transformKeys.slice(0, idx), { frame: targetFrame, value }, ...transformKeys.slice(idx)];
       }
     }
   }
