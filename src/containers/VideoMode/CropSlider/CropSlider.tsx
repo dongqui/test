@@ -44,6 +44,7 @@ export const CropSlider: FunctionComponent<Props> = ({
   const [endValue, setEndValue] = useState(end);
 
   const cropRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLInputElement>(null);
   const startRef = useRef(start);
   const endRef = useRef(end);
 
@@ -71,6 +72,10 @@ export const CropSlider: FunctionComponent<Props> = ({
       }
     }
   };
+
+  const handlePreventEvent = useCallback((e) => {
+    e.preventDefault();
+  }, []);
 
   let min = getPercent(startRef.current);
   let max = getPercent(endRef.current);
@@ -132,6 +137,7 @@ export const CropSlider: FunctionComponent<Props> = ({
           step="0.01"
           value={currentVideoTime}
           onChange={handleTimeline}
+          onKeyDown={handlePreventEvent}
         />
         {children}
       </div>
