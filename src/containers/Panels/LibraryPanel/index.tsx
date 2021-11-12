@@ -1,22 +1,21 @@
-import { FunctionComponent, memo, useEffect, useState, useCallback, ChangeEvent } from 'react';
+import '@babylonjs/loaders/glTF';
+import { FunctionComponent, memo, useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
-import * as BABYLON from '@babylonjs/core';
-import '@babylonjs/loaders/glTF';
-import { clone, isUndefined } from 'lodash';
-import produce from 'immer';
-import { v4 as uuid } from 'uuid';
 import { convertFBXtoGLB } from 'api';
-import { getFileExtension } from 'utils/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
+import { getFileExtension } from 'utils/common';
+import { AnimationIngredient, ShootAsset } from 'types/common';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { v4 as uuid } from 'uuid';
+import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as shootProjectActions from 'actions/shootProjectAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import { AnimationIngredient, ShootAsset } from 'types/common';
+import produce from 'immer';
 import Box from 'components/Layout/Box';
-import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -27,49 +26,44 @@ const cx = classNames.bind(styles);
 
 const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
+  const _lpNode = useSelector((state) => state.lpNode.node);
+  const _lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
+  const _sceneList = useSelector((state) => state.shootProject.sceneList);
 
-  const lpNode = useSelector((state) => state.lpNode.node);
-  const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
-  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const [view, setView] = useState<LP.View>('List');
+  const [searchText, setSearchText] = useState('');
+  const [searchResultNode, setSearchResultNode] = useState(_lpNode);
 
   const { onModalOpen, onModalClose } = useBaseModal();
 
-  const onFileLoad = useCallback(
+  const handleFileLoad = useCallback(
     async (file: File) => {
+      const isSceneReady = _sceneList.length > 0 && _sceneList[0].scene && _sceneList[0].scene.isReady();
+
+      if (!isSceneReady) {
+        return;
+      }
+
+      const baseScene = _sceneList[0].scene;
+      let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
+
       const extension = getFileExtension(file.name).toLowerCase();
       const fileName = file.name;
 
-      // reducer에 최소 하나의 scene도 없는 경우 return
-      if (!sceneList[0]) {
-        return;
-      }
-
-      // assetLoad에 사용할 baseScene이 없거나 준비되지 않은 상태라면 return
-      const baseScene = sceneList[0].scene;
-      if (!(baseScene && baseScene.isReady())) {
-        return;
-      }
-
-      let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
-
       if (extension === 'glb') {
-        /**
-         * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
-         */
         loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', (file as unknown) as string, baseScene);
       }
 
       if (extension === 'fbx') {
-        onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
+        await onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
         const fileUrl = await convertFBXtoGLB(file)
           .then((response) => {
             onModalClose();
-
             return response;
           })
-          .catch(() => {
-            onModalOpen({
+          .catch(async () => {
+            await onModalOpen({
               title: 'Warning',
               message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
               confirmText: 'Contact',
@@ -81,14 +75,11 @@ const LibraryPanel: FunctionComponent = () => {
           });
 
         if (fileUrl) {
-          /**
-           * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
-           */
           loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
         }
       }
 
-      if (isUndefined(loadedAssetContainer)) {
+      if (!loadedAssetContainer) {
         return;
       }
 
@@ -97,32 +88,34 @@ const LibraryPanel: FunctionComponent = () => {
       const assetId = uuid();
 
       meshes.forEach((mesh) => {
-        // joint 클릭을 위해 mesh의 클릭을 막습니다.
+        // joint 클릭을 위해 mesh 클릭을 불가능하게 처리
         mesh.isPickable = false;
       });
 
       skeletons[0].bones.forEach((bone) => {
-        // bone id를 자체적인 규칙에 따라 유일한 식별자로 만듭니다.
+        // bone id를 unique한 id로 생성
         bone.id = `${assetId}//${bone.name}//bone`;
       });
 
       transformNodes.forEach((transformNode) => {
-        // transformNode id를 자체적인 규칙에 따라 유일한 식별자로 만듭니다.
+        // transformNode id를 unique한 id로 생성
         transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
       });
 
       const animationIngredientIds: string[] = [];
       const animationIngredients: AnimationIngredient[] = [];
+
       animationGroups.forEach((animationGroup, idx) => {
-        // load 시에 애니메이션이 재생되는 경우를 방지
+        // 모델 로드 시 animation 재생을 방지
         animationGroup.pause();
-        // 모델 파일이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
-        const animationIngredient = createAnimationIngredient(
-          assetId,
-          animationGroup,
-          false,
-          idx === 0, // load 시에는 첫번째 animationGroup을 current로 사용
-        );
+
+        //
+        /**
+         * 모델이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
+         * 첫 번째 animationGroup을 current로 사용 (idx === 0)
+         */
+        const animationIngredient = createAnimationIngredient(assetId, animationGroup, false, idx === 0);
+
         animationIngredientIds.push(animationIngredient.id);
         animationIngredients.push(animationIngredient);
       });
@@ -144,12 +137,12 @@ const LibraryPanel: FunctionComponent = () => {
         retargetMapId: retargetMap.id,
       };
 
-      const nextNodes = produce(lpNode, (draft) => {
+      const nextNodes = produce(_lpNode, (draft) => {
+        // 로드한 모델을 통해 LP 모델 노드 생성
         const newModelNode: LP.Node = {
           id: uuid(),
-          // fileURL: file,
-          filePath: lpCurrentPath,
           parentId: '__root__',
+          filePath: _lpCurrentPath,
           name: fileName,
           extension,
           type: 'Model',
@@ -159,15 +152,16 @@ const LibraryPanel: FunctionComponent = () => {
 
         draft.push(newModelNode);
 
+        // 로드한 모델의 모션을 통해 LP 모션 노드 생성
         const newMotionNodes = animationIngredients.map((ingredient) => {
           const motion: LP.Node = {
             id: ingredient.id,
             parentId: ingredient.assetId,
+            filePath: _lpCurrentPath + `\\${ingredient.name}`,
             name: ingredient.name,
-            filePath: lpCurrentPath + `\\${ingredient.name}`,
-            children: [],
             extension: '',
             type: 'Motion',
+            children: [],
           };
 
           return motion;
@@ -193,7 +187,7 @@ const LibraryPanel: FunctionComponent = () => {
         }),
       );
     },
-    [dispatch, lpCurrentPath, lpNode, onModalClose, onModalOpen, sceneList],
+    [_lpCurrentPath, _lpNode, _sceneList, dispatch, onModalClose, onModalOpen],
   );
 
   const handleDrop = useCallback(
@@ -211,7 +205,7 @@ const LibraryPanel: FunctionComponent = () => {
       const isError = videos.length > 1;
 
       if (isError) {
-        onModalOpen({
+        await onModalOpen({
           title: 'Warning',
           message: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
           confirmText: 'Close',
@@ -222,61 +216,56 @@ const LibraryPanel: FunctionComponent = () => {
       }
 
       if (isInvalidFormat) {
-        onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
+        await onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
 
         return;
       }
 
-      /**
-       * @TODO 하나라도 실패 시 전부 취소하거나 성공하는 포맷들만 로드하거나 필요
-       */
-      removedVideoFiles.map(async (file) => await onFileLoad(file));
+      await Promise.all(removedVideoFiles.map(async (file) => await handleFileLoad(file))).then(async () => {
+        if (videos.length > 0) {
+          /**
+           * @TODO 이후 사용하지 않는 경우 remove url 필요
+           */
+          const videoBlobURL = URL.createObjectURL(videos[0]);
 
-      if (videos.length > 0) {
-        /**
-         * @TODO 이후 사용하지 않는 경우 remove url 필요
-         */
-        const videoBlobURL = URL.createObjectURL(videos[0]);
-
-        onModalOpen({
-          title: 'Extract',
-          message: '모션을 추출하시겠습니까?',
-          confirmText: '확인',
-          cancelText: '취소',
-          onConfirm: () => {
-            dispatch(
-              modeSelectActions.changeMode({
-                mode: 'videoMode',
-                videoURL: videoBlobURL,
-              }),
-            );
-          },
-          onCancel: () => onModalClose(),
-        });
-      }
+          await onModalOpen({
+            title: 'Extract',
+            message: '모션을 추출하시겠습니까?',
+            confirmText: '확인',
+            cancelText: '취소',
+            onConfirm: () => {
+              dispatch(
+                modeSelectActions.changeMode({
+                  mode: 'videoMode',
+                  videoURL: videoBlobURL,
+                }),
+              );
+            },
+            onCancel: () => onModalClose(),
+          });
+        }
+      });
     },
-    [dispatch, onFileLoad, onModalClose, onModalOpen],
+    [dispatch, handleFileLoad, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
-
-  const [view, setView] = useState<LP.View>('List');
-
-  const [searchText, setSearchText] = useState('');
-  const [searchResultNode, setSearchResultNode] = useState<LP.Node[]>(lpNode);
 
   const handleSearch = useCallback(
     (text: string) => {
       setSearchText(text);
 
       if (text.length > 0) {
-        const searchResult = lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
+        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
 
         setSearchResultNode(searchResult);
       }
     },
-    [lpNode],
+    [_lpNode],
   );
+
+  const nodes = searchText.length > 0 ? searchResultNode : _lpNode;
+  const isPreventContextmenu = !!searchText;
 
   return (
     <div className={cx('wrapper')} {...getRootProps()}>
@@ -288,7 +277,7 @@ const LibraryPanel: FunctionComponent = () => {
           <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody view={view} lpNode={searchText.length > 0 ? searchResultNode : lpNode} disableContextMenu={!!searchText} />
+          <LPBody view={view} lpNode={nodes} isPreventContextmenu={isPreventContextmenu} />
         </Box>
       </div>
     </div>
