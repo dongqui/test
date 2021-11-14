@@ -159,7 +159,7 @@ const LibraryPanel: FunctionComponent = () => {
           const motion: LP.Node = {
             id: ingredient.id,
             parentId: ingredient.assetId,
-            filePath: _lpCurrentPath + `\\${ingredient.name}`,
+            filePath: '\\root' + `\\${fileName}`,
             name: ingredient.name,
             extension: '',
             type: 'Motion',
@@ -191,7 +191,7 @@ const LibraryPanel: FunctionComponent = () => {
 
       return nextNodes;
     },
-    [_lpCurrentPath, _sceneList, dispatch, onModalClose, onModalOpen],
+    [_sceneList, dispatch, onModalClose, onModalOpen],
   );
 
   const handleDrop = useCallback(
