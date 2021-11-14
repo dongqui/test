@@ -958,7 +958,7 @@ const ListNode: FunctionComponent<Props> = ({
           if (dropNode && isAlreadyExist && cloneDragNode) {
             const confirmed = await getConfirm({
               title: 'Warning',
-              message: '해당 모댈에 동일한 이름의 모션이 있습니다. 덮어쓰시겠습니까?',
+              message: '해당 모델에 동일한 이름의 모션이 있습니다. 덮어쓰시겠습니까?',
               confirmText: '확인',
               cancelText: '취소',
             });

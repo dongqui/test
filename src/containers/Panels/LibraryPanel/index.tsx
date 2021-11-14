@@ -55,7 +55,7 @@ const LibraryPanel: FunctionComponent = () => {
       }
 
       if (extension === 'fbx') {
-        await onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
+        onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
         const fileUrl = await convertFBXtoGLB(file)
           .then((response) => {
@@ -63,7 +63,7 @@ const LibraryPanel: FunctionComponent = () => {
             return response;
           })
           .catch(async () => {
-            await onModalOpen({
+            onModalOpen({
               title: 'Warning',
               message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
               confirmText: 'Contact',
@@ -209,7 +209,7 @@ const LibraryPanel: FunctionComponent = () => {
       const isError = videos.length > 1;
 
       if (isError) {
-        await onModalOpen({
+        onModalOpen({
           title: 'Warning',
           message: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
           confirmText: 'Close',
@@ -220,7 +220,7 @@ const LibraryPanel: FunctionComponent = () => {
       }
 
       if (isInvalidFormat) {
-        await onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
+        onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
 
         return;
       }
@@ -251,7 +251,7 @@ const LibraryPanel: FunctionComponent = () => {
          */
         const videoBlobURL = URL.createObjectURL(videos[0]);
 
-        await onModalOpen({
+        onModalOpen({
           title: 'Extract',
           message: '모션을 추출하시겠습니까?',
           confirmText: '확인',
@@ -267,31 +267,6 @@ const LibraryPanel: FunctionComponent = () => {
           onCancel: () => onModalClose(),
         });
       }
-
-      // await Promise.all(removedVideoFiles.map(async (file) => await handleFileLoad(file))).then(async () => {
-      // if (videos.length > 0) {
-      //   /**
-      //    * @TODO 이후 사용하지 않는 경우 remove url 필요
-      //    */
-      //   const videoBlobURL = URL.createObjectURL(videos[0]);
-
-      //   await onModalOpen({
-      //     title: 'Extract',
-      //     message: '모션을 추출하시겠습니까?',
-      //     confirmText: '확인',
-      //     cancelText: '취소',
-      //     onConfirm: () => {
-      //       dispatch(
-      //         modeSelectActions.changeMode({
-      //           mode: 'videoMode',
-      //           videoURL: videoBlobURL,
-      //         }),
-      //       );
-      //     },
-      //     onCancel: () => onModalClose(),
-      //   });
-      // }
-      // });
     },
     [_lpNode, dispatch, handleFileLoad, onModalClose, onModalOpen],
   );
