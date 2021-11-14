@@ -144,7 +144,7 @@ const LibraryPanel: FunctionComponent = () => {
         const newModelNode: LP.Node = {
           id: uuid(),
           parentId: '__root__',
-          filePath: _lpCurrentPath,
+          filePath: '\\root',
           name: fileName,
           extension,
           type: 'Model',
