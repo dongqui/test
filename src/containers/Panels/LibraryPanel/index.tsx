@@ -137,7 +137,9 @@ const LibraryPanel: FunctionComponent = () => {
         retargetMapId: retargetMap.id,
       };
 
-      const nextNodes = produce(_lpNode, (draft) => {
+      const nodes: LP.Node[] = [];
+
+      const nextNodes = produce(nodes, (draft) => {
         // 로드한 모델을 통해 LP 모델 노드 생성
         const newModelNode: LP.Node = {
           id: uuid(),
@@ -170,11 +172,11 @@ const LibraryPanel: FunctionComponent = () => {
         draft.push(...newMotionNodes);
       });
 
-      dispatch(
-        lpNodeActions.changeNode({
-          nodes: nextNodes,
-        }),
-      );
+      // dispatch(
+      //   lpNodeActions.changeNode({
+      //     nodes: nextNodes,
+      //   }),
+      // );
 
       dispatch(shootProjectActions.addAsset({ asset: newAsset }));
       dispatch(
@@ -186,8 +188,10 @@ const LibraryPanel: FunctionComponent = () => {
           retargetMap,
         }),
       );
+
+      return nextNodes;
     },
-    [_lpCurrentPath, _lpNode, _sceneList, dispatch, onModalClose, onModalOpen],
+    [_lpCurrentPath, _sceneList, dispatch, onModalClose, onModalOpen],
   );
 
   const handleDrop = useCallback(
@@ -221,32 +225,75 @@ const LibraryPanel: FunctionComponent = () => {
         return;
       }
 
-      await Promise.all(removedVideoFiles.map(async (file) => await handleFileLoad(file))).then(async () => {
-        if (videos.length > 0) {
-          /**
-           * @TODO 이후 사용하지 않는 경우 remove url 필요
-           */
-          const videoBlobURL = URL.createObjectURL(videos[0]);
+      const nextLoadedNodes: LP.Node[] = [];
 
-          await onModalOpen({
-            title: 'Extract',
-            message: '모션을 추출하시겠습니까?',
-            confirmText: '확인',
-            cancelText: '취소',
-            onConfirm: () => {
-              dispatch(
-                modeSelectActions.changeMode({
-                  mode: 'videoMode',
-                  videoURL: videoBlobURL,
-                }),
-              );
-            },
-            onCancel: () => onModalClose(),
-          });
-        }
+      for (const current of removedVideoFiles) {
+        await handleFileLoad(current).then((res) => {
+          if (res) {
+            nextLoadedNodes.push(...res);
+          }
+        });
+      }
+
+      const nextNodes = produce(_lpNode, (draft) => {
+        draft.push(...nextLoadedNodes);
       });
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: nextNodes,
+        }),
+      );
+
+      if (videos.length > 0) {
+        /**
+         * @TODO 이후 사용하지 않는 경우 remove url 필요
+         */
+        const videoBlobURL = URL.createObjectURL(videos[0]);
+
+        await onModalOpen({
+          title: 'Extract',
+          message: '모션을 추출하시겠습니까?',
+          confirmText: '확인',
+          cancelText: '취소',
+          onConfirm: () => {
+            dispatch(
+              modeSelectActions.changeMode({
+                mode: 'videoMode',
+                videoURL: videoBlobURL,
+              }),
+            );
+          },
+          onCancel: () => onModalClose(),
+        });
+      }
+
+      // await Promise.all(removedVideoFiles.map(async (file) => await handleFileLoad(file))).then(async () => {
+      // if (videos.length > 0) {
+      //   /**
+      //    * @TODO 이후 사용하지 않는 경우 remove url 필요
+      //    */
+      //   const videoBlobURL = URL.createObjectURL(videos[0]);
+
+      //   await onModalOpen({
+      //     title: 'Extract',
+      //     message: '모션을 추출하시겠습니까?',
+      //     confirmText: '확인',
+      //     cancelText: '취소',
+      //     onConfirm: () => {
+      //       dispatch(
+      //         modeSelectActions.changeMode({
+      //           mode: 'videoMode',
+      //           videoURL: videoBlobURL,
+      //         }),
+      //       );
+      //     },
+      //     onCancel: () => onModalClose(),
+      //   });
+      // }
+      // });
     },
-    [dispatch, handleFileLoad, onModalClose, onModalOpen],
+    [_lpNode, dispatch, handleFileLoad, onModalClose, onModalOpen],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
