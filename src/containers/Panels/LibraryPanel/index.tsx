@@ -7,6 +7,7 @@ import { convertFBXtoGLB } from 'api';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 import { getFileExtension } from 'utils/common';
 import { AnimationIngredient, ShootAsset } from 'types/common';
+import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { v4 as uuid } from 'uuid';
 import * as BABYLON from '@babylonjs/core';
@@ -124,9 +125,15 @@ const LibraryPanel: FunctionComponent = () => {
       // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
       const retargetMap = createEmptyRetargetMap(assetId);
 
+      const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
+
+      const check = checkCreateDuplicates(`${fileName}`, currentPathNodeNames);
+
+      const nodeName = check === '0' ? `${fileName}` : `${fileName} (${check})`;
+
       const newAsset: ShootAsset = {
         id: assetId,
-        name: fileName,
+        name: nodeName,
         extension,
         meshes,
         geometries,
@@ -145,7 +152,7 @@ const LibraryPanel: FunctionComponent = () => {
           id: uuid(),
           parentId: '__root__',
           filePath: '\\root',
-          name: fileName,
+          name: nodeName,
           extension,
           type: 'Model',
           assetId: newAsset.id,
@@ -159,7 +166,7 @@ const LibraryPanel: FunctionComponent = () => {
           const motion: LP.Node = {
             id: ingredient.id,
             parentId: ingredient.assetId,
-            filePath: '\\root' + `\\${fileName}`,
+            filePath: '\\root' + `\\${nodeName}`,
             name: ingredient.name,
             extension: '',
             type: 'Motion',
@@ -191,7 +198,7 @@ const LibraryPanel: FunctionComponent = () => {
 
       return nextNodes;
     },
-    [_sceneList, dispatch, onModalClose, onModalOpen],
+    [_lpNode, _sceneList, dispatch, onModalClose, onModalOpen],
   );
 
   const handleDrop = useCallback(
