@@ -25,8 +25,11 @@ class TransformKeyframeHorizontal implements HorizontalSelection {
   private getSelectedProperties = ({ state, payload }: Params) => {
     const selectedTransforms: SelectedKeyframe[] = [];
     const { trackNumber, keyframes, trackId } = this.findPropertyTrack({ state, payload });
-    keyframes.forEach(({ time, value }) => {
-      selectedTransforms.push({ trackNumber, time, value, trackId, trackType: 'property' });
+    keyframes.forEach((keyframe) => {
+      const { time, value, isDeleted } = keyframe;
+      if (!isDeleted) {
+        selectedTransforms.push({ trackNumber, time, value, trackId, trackType: 'property' });
+      }
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);
   };

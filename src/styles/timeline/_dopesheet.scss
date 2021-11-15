@@ -7,3 +7,8 @@
 .circle-group {
   border-bottom: 2px solid $gray300;
 }
+
+// drag box로 키프레임 선택 시 부여되는 id
+#keyframe-selected {
+  stroke: white;
+}

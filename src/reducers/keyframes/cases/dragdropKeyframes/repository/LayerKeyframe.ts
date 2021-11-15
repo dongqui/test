@@ -69,7 +69,6 @@ class LayerKeyframeRepository implements Repository {
 
   // layer 트랙 업데이트
   updateTimeEditorTrack = (timeDiff: number, updatedPropertyTrackList: TimeEditorTrack[], selectedTimes: number[]): TimeEditorTrack => {
-    console.log('updatedPropertyTrackList', updatedPropertyTrackList);
     return produce(this.state.layerTrack, (draft) => {
       this.deleteLayerKeyframes(draft, updatedPropertyTrackList, selectedTimes);
       this.addLayerKeyframes(draft, selectedTimes, timeDiff);
