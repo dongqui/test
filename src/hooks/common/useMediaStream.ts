@@ -1,4 +1,12 @@
-import { RefObject, useCallback, useState, useEffect, useRef, Dispatch, SetStateAction } from 'react';
+import {
+  RefObject,
+  useCallback,
+  useState,
+  useEffect,
+  useRef,
+  Dispatch,
+  SetStateAction,
+} from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from 'reducers';
 
@@ -8,12 +16,15 @@ interface Props {
   recording: boolean;
   currentDeviceId: string;
   recordOverTwice: boolean;
+  start: number;
+  end: number;
   setThumbnailList: Dispatch<SetStateAction<never[]>>;
   setDuration: Dispatch<SetStateAction<number>>;
   setPlayState: Dispatch<SetStateAction<boolean>>;
   setRecordState: Dispatch<SetStateAction<boolean>>;
   setRecording: Dispatch<SetStateAction<boolean>>;
   setStandbyState: Dispatch<SetStateAction<boolean>>;
+  setSrcAddress: Dispatch<SetStateAction<string>>;
   setRecordOverTwice: Dispatch<SetStateAction<boolean>>;
   setTimer: Dispatch<SetStateAction<number>>;
   setDeviceList: Dispatch<SetStateAction<MediaDeviceInfo[]>>;
@@ -30,6 +41,8 @@ const useMediaStream = (props: Props) => {
     recording,
     currentDeviceId,
     recordOverTwice,
+    start,
+    end,
     setThumbnailList,
     setPlayState,
     setDuration,
@@ -37,6 +50,7 @@ const useMediaStream = (props: Props) => {
     setRecording,
     setRecordOverTwice,
     setStandbyState,
+    setSrcAddress,
     setTimer,
     setDeviceList,
     setCurrentDevice,
@@ -51,7 +65,9 @@ const useMediaStream = (props: Props) => {
   const { videoURL } = useSelector((state: RootState) => state.modeSelection);
 
   const handleCameraList = useCallback(async () => {
-    const devices = await navigator.mediaDevices.enumerateDevices().then((totalDevice) => totalDevice.filter((device) => device.kind === 'videoinput'));
+    const devices = await navigator.mediaDevices
+      .enumerateDevices()
+      .then((totalDevice) => totalDevice.filter((device) => device.kind === 'videoinput'));
     // const videoDevice = devices.filter((device) => device.kind === 'videoinput');
 
     setDeviceList(devices);
@@ -70,7 +86,7 @@ const useMediaStream = (props: Props) => {
   );
 
   const stopStream = useCallback(() => {
-    if (currentStream && ref.current!.srcObject) {
+    if (currentStream && ref.current && ref.current!.srcObject) {
       const tracks = currentStream.getTracks();
       const stream = ref.current!.srcObject as MediaStream;
       const tracks2 = stream.getTracks();
@@ -139,25 +155,41 @@ const useMediaStream = (props: Props) => {
       });
       let blobs: Blob[] = [];
 
-      if (recorder.state === 'inactive') {
-        mediaStreamInitialize(constraintList);
-      }
+      // if (recorder.state === 'inactive') {
+      //   mediaStreamInitialize(constraintList);
+      // }
 
       recorder.ondataavailable = (e) => {
         blobs.push(e.data);
       };
 
       recorder.onstop = () => {
-        let video_local = URL.createObjectURL(new Blob(blobs, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
+        let video_local = URL.createObjectURL(
+          new Blob(blobs, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }),
+        );
         stopStream();
-        ref.current!.src = video_local;
+        setSrcAddress(video_local);
+        if (ref.current) {
+          ref.current!.src = video_local;
+        }
       };
 
       recorder.start(1000);
 
       setRecorderData(recorder);
     }
-  }, [recorderData, currentStream, mediaStreamInitialize, constraintList, browserType, ref, stopStream, setThumbnailList, setRecordState]);
+  }, [
+    recorderData,
+    currentStream,
+    // mediaStreamInitialize,
+    // constraintList,
+    browserType,
+    ref,
+    stopStream,
+    setThumbnailList,
+    setSrcAddress,
+    setRecordState,
+  ]);
 
   const handleChangeCamera = useCallback(
     (e) => {
@@ -168,7 +200,14 @@ const useMediaStream = (props: Props) => {
       setCurrentDeviceId(e.target.id);
       setCameraDropdownState(false);
     },
-    [mediaStreamInitialize, stopStream, setConstraint, setCurrentDevice, setCurrentDeviceId, setCameraDropdownState],
+    [
+      mediaStreamInitialize,
+      stopStream,
+      setConstraint,
+      setCurrentDevice,
+      setCurrentDeviceId,
+      setCameraDropdownState,
+    ],
   );
 
   const stopRecording = useCallback(
@@ -186,11 +225,14 @@ const useMediaStream = (props: Props) => {
   );
 
   const playRecording = useCallback(() => {
+    if (ref.current!.currentTime >= end) {
+      return;
+    }
     if (ref) {
       setPlayState(true);
       ref.current!.play();
     }
-  }, [ref, setPlayState]);
+  }, [ref, setPlayState, end]);
 
   const pauseRecording = useCallback(() => {
     if (ref) {
@@ -206,9 +248,9 @@ const useMediaStream = (props: Props) => {
     if (ref) {
       setPlayState(false);
       ref.current!.pause();
-      ref.current!.currentTime = 0;
+      ref.current!.currentTime = start;
     }
-  }, [setPlayState, ref]);
+  }, [setPlayState, ref, start]);
 
   const startRecordingDelay = useCallback(() => {
     let sec = 4;
