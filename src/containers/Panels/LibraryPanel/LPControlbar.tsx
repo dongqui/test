@@ -28,11 +28,9 @@ const LPControlbar: FunctionComponent<Props> = ({ onSearch }) => {
 
   return (
     <div className={cx('wrapper')}>
-      <IconWrapper className={cx('icon-search')} icon={SvgPath.Search} />
-      <input className={cx('input-search')} placeholder="Search" onChange={handleSearch} />
-      <div className={cx('view')}>
-        <IconWrapper className={cx('icon-iconview')} icon={SvgPath.IconView} />
-        <IconWrapper className={cx('icon-listview')} icon={SvgPath.ListView} />
+      <div className={cx('search-wrapper')}>
+        <IconWrapper className={cx('icon-search')} icon={SvgPath.Search} />
+        <input className={cx('input-search')} placeholder="Search" onChange={handleSearch} />
       </div>
     </div>
   );

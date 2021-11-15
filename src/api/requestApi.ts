@@ -52,7 +52,7 @@ const requestApi = async (payload: Payload) => {
     // timeout: 15000,
   };
 
-  // axios.defaults.withCredentials = true;
+  axios.defaults.withCredentials = true;
   options.headers['Accept'] = 'application/json';
   options.headers['Content-Type'] = 'application/json; charset=utf-8';
 
@@ -68,14 +68,12 @@ const requestApi = async (payload: Payload) => {
     const response = await axios(options);
 
     return response.data;
-  } catch (e) {
+  } catch (e: any) {
     const response = e.response;
     const error = (response && response.data) || {
       success: false,
       status: response ? response.status : 500,
-      message: response
-        ? response.statusText
-        : 'An error has occurred. Please refresh and try again',
+      message: response ? response.statusText : 'An error has occurred. Please refresh and try again',
     };
 
     throw error;

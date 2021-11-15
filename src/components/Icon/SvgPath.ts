@@ -34,6 +34,8 @@ import IconView from './New_svg/IconView.svg';
 import Folder from './New_svg/Folder.svg';
 import Model from './New_svg/Model.svg';
 import Motion from './New_svg/Motion.svg';
+import ArrowOpen from './New_svg/ArrowOpen.svg';
+import ArrowClose from './New_svg/ArrowClose.svg';
 import SimpleMode from './svg/SimpleMode.svg';
 import TrackMode from './svg/TrackMode.svg';
 import Record from './svg/Record.svg';
@@ -93,7 +95,9 @@ type Icon =
   | 'EmptyDownArrow'
   | 'VideoRecord'
   | 'Spinner'
-  | 'NoCamera';
+  | 'NoCamera'
+  | 'ArrowOpen'
+  | 'ArrowClose';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -145,6 +149,8 @@ const images: Images = {
   VideoRecord,
   Spinner,
   NoCamera,
+  ArrowOpen,
+  ArrowClose,
 };
 
 export default images;

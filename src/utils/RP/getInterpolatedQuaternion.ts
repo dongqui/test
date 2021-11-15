@@ -6,10 +6,7 @@ import * as BABYLON from '@babylonjs/core';
  * @param transformKeys - quaternion값을 구하기 위한 transformKey 배열
  * @param targetFrame - 목표로 하는 frame
  */
-const getInterpolatedQuaternion = (
-  transformKeys: BABYLON.IAnimationKey[],
-  targetFrame: number,
-): BABYLON.Quaternion => {
+const getInterpolatedQuaternion = (transformKeys: BABYLON.IAnimationKey[], targetFrame: number): BABYLON.Quaternion => {
   // 이때 transformKeys에는 frame이 targetFrame과 일치하는 값은 없음을 전제
   if (transformKeys.length === 0) {
     // 빈 배열인 경우 (0, 0, 0, 1)을 return

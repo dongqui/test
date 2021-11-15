@@ -23,13 +23,7 @@ class DragDropKeyframesService implements Service {
   private readonly boneRepository: Repository;
   private readonly transformRepository: Repository;
 
-  constructor(
-    state: KeyframesState,
-    payload: DragDropKeyframes,
-    layerRepository: Repository,
-    boneRepository: Repository,
-    transformRepository: Repository,
-  ) {
+  constructor(state: KeyframesState, payload: DragDropKeyframes, layerRepository: Repository, boneRepository: Repository, transformRepository: Repository) {
     this.state = state;
     this.payload = payload;
     this.layerRepository = layerRepository;

@@ -24,11 +24,7 @@ class DeleteKeyframesService implements Service {
   private readonly boneRepository: Repository;
   private readonly transformRepository: Repository;
 
-  constructor(
-    layerRepository: Repository,
-    boneRepository: Repository,
-    transformRepository: Repository,
-  ) {
+  constructor(layerRepository: Repository, boneRepository: Repository, transformRepository: Repository) {
     this.layerRepository = layerRepository;
     this.boneRepository = boneRepository;
     this.transformRepository = transformRepository;

@@ -1,11 +1,7 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
 
 import { ClusteredKeyframe, ModifiedPropertyKeyframe } from 'types/TP/keyframe';
-import {
-  ENTER_KEYFRAME_DRAG_DROP_KEY,
-  enterKeyframeDragDropKey,
-  dragDropKeyframes,
-} from 'actions/keyframes';
+import { ENTER_KEYFRAME_DRAG_DROP_KEY, enterKeyframeDragDropKey, dragDropKeyframes } from 'actions/keyframes';
 import { RootState } from 'reducers';
 import { findElementIndex } from 'utils/TP';
 
@@ -42,10 +38,7 @@ function setModifiedPropertyKeyframes(selectedGroups: ClusteredKeyframe[], timeD
 function* worker(params: ReturnType<typeof enterKeyframeDragDropKey>) {
   const { timeDiff } = params.payload;
   const selectedPropertyKeyframes = getSelectedPropertyKeyframes(yield select());
-  const modifiedPropertyKeyframes = setModifiedPropertyKeyframes(
-    selectedPropertyKeyframes,
-    timeDiff,
-  );
+  const modifiedPropertyKeyframes = setModifiedPropertyKeyframes(selectedPropertyKeyframes, timeDiff);
   yield put(dragDropKeyframes({ timeDiff: timeDiff }));
 
   // 이후부터 RP쪽 액션 호출 부분

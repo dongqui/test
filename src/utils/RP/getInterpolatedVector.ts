@@ -6,10 +6,7 @@ import * as BABYLON from '@babylonjs/core';
  * @param transformKeys - vector값을 구하기 위한 transformKey 배열
  * @param targetFrame - 목표로 하는 frame
  */
-const getInterpolatedVector = (
-  transformKeys: BABYLON.IAnimationKey[],
-  targetFrame: number,
-): BABYLON.Vector3 => {
+const getInterpolatedVector = (transformKeys: BABYLON.IAnimationKey[], targetFrame: number): BABYLON.Vector3 => {
   // 이때 transformKeys에는 frame이 targetFrame과 일치하는 값은 없음을 전제
   if (transformKeys.length === 0) {
     // 빈 배열인 경우 (0, 0, 0)을 return (+, - 에 대한 항등원)

@@ -11,12 +11,7 @@ import createShootTrack from './createShootTrack';
  * @param isMocapAnimation - filter parameter 적용을 위한 mocap 결과물인지 여부
  * @param current - 현재 scene에서 사용 중인지 여부
  */
-const createAnimationIngredient = (
-  assetId: string,
-  animationGroup: BABYLON.AnimationGroup,
-  isMocapAnimation: boolean,
-  current: boolean,
-): AnimationIngredient => {
+const createAnimationIngredient = (assetId: string, animationGroup: BABYLON.AnimationGroup, isMocapAnimation: boolean, current: boolean): AnimationIngredient => {
   const layerId = uuidv4();
 
   const tracks: ShootTrack[] = [];
@@ -25,66 +20,26 @@ const createAnimationIngredient = (
     const { target, animation } = targetAnimation;
     if (animation.targetProperty === 'position') {
       // position 트랙들 전처리
-      tracks.push(
-        createShootTrack(
-          `${animation.name}`,
-          layerId,
-          target,
-          'position',
-          animation.getKeys(),
-          isMocapAnimation,
-        ),
-      );
+      tracks.push(createShootTrack(`${animation.name}`, layerId, target, 'position', animation.getKeys(), isMocapAnimation));
     } else if (animation.targetProperty === 'rotationQuaternion') {
       const quaternionTransformKeys = animation.getKeys();
 
-      const eulerTransformKeys: BABYLON.IAnimationKey[] = quaternionTransformKeys.map(
-        (transformKey) => {
-          const q: BABYLON.Quaternion = transformKey.value;
-          const e = q.normalize().toEulerAngles();
-          return { frame: transformKey.frame, value: e };
-        },
-      );
+      const eulerTransformKeys: BABYLON.IAnimationKey[] = quaternionTransformKeys.map((transformKey) => {
+        const q: BABYLON.Quaternion = transformKey.value;
+        const e = q.normalize().toEulerAngles();
+        return { frame: transformKey.frame, value: e };
+      });
 
       // rotationQuaternion 트랙들 전처리
-      tracks.push(
-        createShootTrack(
-          `${animation.name}`,
-          layerId,
-          target,
-          'rotationQuaternion',
-          quaternionTransformKeys,
-          isMocapAnimation,
-        ),
-      );
+      tracks.push(createShootTrack(`${animation.name}`, layerId, target, 'rotationQuaternion', quaternionTransformKeys, isMocapAnimation));
 
       // rotation 트랙들 전처리
-      tracks.push(
-        createShootTrack(
-          `${animation.name}`,
-          layerId,
-          target,
-          'rotation',
-          eulerTransformKeys,
-          isMocapAnimation,
-        ),
-      );
+      tracks.push(createShootTrack(`${animation.name}`, layerId, target, 'rotation', eulerTransformKeys, isMocapAnimation));
     } else if (animation.targetProperty === 'scaling') {
-      tracks.push(
-        createShootTrack(
-          `${animation.name}`,
-          layerId,
-          target,
-          'scaling',
-          animation.getKeys(),
-          isMocapAnimation,
-        ),
-      );
+      tracks.push(createShootTrack(`${animation.name}`, layerId, target, 'scaling', animation.getKeys(), isMocapAnimation));
     }
     // 전처리를 끝낸 source animation은 타겟의 애니메이션 목록에서 지워줍니다.
-    target.animations = target.animations.filter(
-      (animation: BABYLON.Animation) => animation !== animation,
-    );
+    target.animations = target.animations.filter((animation: BABYLON.Animation) => animation !== animation);
   });
 
   const animationIngredient = {
