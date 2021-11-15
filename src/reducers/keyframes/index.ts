@@ -23,7 +23,7 @@ const layerKeyframes: TimeEditorTrack = {
   trackId: 'layer-1',
   trackNumber: -1,
   trackType: 'layer',
-  keyframes: Array(5)
+  keyframes: Array(50)
     .fill(1)
     .map((_, index) => ({
       isSelected: false,
@@ -38,7 +38,7 @@ const boneKeyframes: TimeEditorTrack[] = Array(3)
     trackNumber: index * 10,
     trackId: 'bone' + index,
     trackType: 'bone',
-    keyframes: Array(5)
+    keyframes: Array(50)
       .fill(1)
       .map((_, index) => ({
         isSelected: false,
@@ -54,7 +54,7 @@ const propertyKeyframes: TimeEditorTrack[] = [
       trackId: 'property-aaaaa' + index,
       trackNumber: index + 1,
       trackType: 'property',
-      keyframes: Array(5)
+      keyframes: Array(50)
         .fill(1)
         .map<Keyframe>((_, index) => ({
           isSelected: false,
@@ -69,7 +69,7 @@ const propertyKeyframes: TimeEditorTrack[] = [
       trackId: 'property-bbbbb' + index,
       trackNumber: index + 11,
       trackType: 'property',
-      keyframes: Array(5)
+      keyframes: Array(50)
         .fill(1)
         .map<Keyframe>((_, index) => ({
           isSelected: false,
@@ -84,7 +84,7 @@ const propertyKeyframes: TimeEditorTrack[] = [
       trackId: 'property-ccccc' + index,
       trackNumber: index + 21,
       trackType: 'property',
-      keyframes: Array(5)
+      keyframes: Array(50)
         .fill(1)
         .map<Keyframe>((_, index) => ({
           isSelected: false,

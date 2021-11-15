@@ -26,22 +26,21 @@ class BoneKeyframeMultipleClick implements MultipleClick {
     return keyframes[keyframeIndex];
   };
 
-  private getSelectedProperties = ({ state, payload }: Params) => {
-    const { propertyTrackList } = state;
+  private getSelectedPropertyKeyframes = ({ state, payload }: Params) => {
     const { trackNumber, time } = payload;
-    const selectedProperties: SelectedKeyframe[] = [];
-    for (let property = trackNumber + 1; property <= trackNumber + 3; property++) {
-      const { trackId, trackType, keyframes } = this.findEditorTrack(propertyTrackList, property);
+    const selectedPropertyKeyframes: SelectedKeyframe[] = [];
+    for (let propertyNumber = trackNumber + 1; propertyNumber <= trackNumber + 3; propertyNumber++) {
+      const { trackId, trackType, keyframes } = this.findEditorTrack(state.propertyTrackList, propertyNumber);
       const keyframe = this.findKeyframe(keyframes, time);
       if (keyframe) {
         const { value, isDeleted } = keyframe;
-        if (!isDeleted) selectedProperties.push({ trackNumber: property, time, value, trackId, trackType });
+        if (!isDeleted) selectedPropertyKeyframes.push({ trackNumber: propertyNumber, time, value, trackId, trackType });
       }
     }
-    return selectedProperties;
+    return selectedPropertyKeyframes;
   };
 
-  private filterSelectedLayer = ({ state, payload }: Params) => {
+  private filterSelectedLayerKeyframes = ({ state, payload }: Params) => {
     const { selectedLayerKeyframes, layerTrack } = state;
     const { time } = payload;
     const { trackId, trackType } = layerTrack;
@@ -49,37 +48,37 @@ class BoneKeyframeMultipleClick implements MultipleClick {
     return this.clusterKeyframes.filterKeyframeTimes(selectedLayerKeyframes, [selectedLayer]);
   };
 
-  private filterSelectedBone = ({ state, payload }: Params) => {
+  private filterSelectedBoneKeyframes = ({ state, payload }: Params) => {
     const { boneTrackList, selectedBoneKeyframes } = state;
     const { trackId } = this.findEditorTrack(boneTrackList, payload.trackNumber);
     const selectedKeyframe = { ...payload, trackId };
     return this.clusterKeyframes.filterKeyframeTimes(selectedBoneKeyframes, [selectedKeyframe]);
   };
 
-  private filterSelectedProperties = ({ state, payload }: Params) => {
+  private filterSelectedPropertyKeyframes = ({ state, payload }: Params) => {
     const { selectedPropertyKeyframes } = state;
-    const selectedProperties = this.getSelectedProperties({ state, payload });
+    const selectedProperties = this.getSelectedPropertyKeyframes({ state, payload });
     return this.clusterKeyframes.filterKeyframeTimes(selectedPropertyKeyframes, selectedProperties);
   };
 
-  private addBoneTimes = ({ state, payload }: Params) => {
+  private addSelectedBoneKeyframes = ({ state, payload }: Params) => {
     const { boneTrackList, selectedBoneKeyframes } = state;
     const { trackId } = this.findEditorTrack(boneTrackList, payload.trackNumber);
     const selectedKeyframe = { ...payload, trackId };
     return this.clusterKeyframes.addKeyframeTimes(selectedBoneKeyframes, [selectedKeyframe]);
   };
 
-  private addPropertyTimes = ({ state, payload }: Params) => {
+  private addSelectedPropertyKeyframes = ({ state, payload }: Params) => {
     const { selectedPropertyKeyframes } = state;
-    const selectedProperties = this.getSelectedProperties({ state, payload });
+    const selectedProperties = this.getSelectedPropertyKeyframes({ state, payload });
     return this.clusterKeyframes.addKeyframeTimes(selectedPropertyKeyframes, selectedProperties);
   };
 
   selectExistedByMultipleClick = (params: Params): AllSelectedKeyframes => {
     return {
-      selectedLayerKeyframes: this.filterSelectedLayer(params),
-      selectedBoneKeyframes: this.filterSelectedBone(params),
-      selectedPropertyKeyframes: this.filterSelectedProperties(params),
+      selectedLayerKeyframes: this.filterSelectedLayerKeyframes(params),
+      selectedBoneKeyframes: this.filterSelectedBoneKeyframes(params),
+      selectedPropertyKeyframes: this.filterSelectedPropertyKeyframes(params),
     };
   };
 
@@ -87,8 +86,8 @@ class BoneKeyframeMultipleClick implements MultipleClick {
     const { selectedLayerKeyframes } = params.state;
     return {
       selectedLayerKeyframes,
-      selectedBoneKeyframes: this.addBoneTimes(params),
-      selectedPropertyKeyframes: this.addPropertyTimes(params),
+      selectedBoneKeyframes: this.addSelectedBoneKeyframes(params),
+      selectedPropertyKeyframes: this.addSelectedPropertyKeyframes(params),
     };
   };
 }

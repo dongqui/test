@@ -26,32 +26,32 @@ class BoneKeyframeLeftClick extends ClusterKeyframes implements LeftClick {
     return keyframes[keyframeIndex];
   };
 
-  private getSelectedBones = ({ state, payload }: Params) => {
+  private getSelectedBoneKeyframes = ({ state, payload }: Params) => {
     const { trackId } = this.findEditorTrack(state.boneTrackList, payload.trackNumber);
-    const selectedBones: SelectedKeyframe[] = [{ ...payload, trackId }];
-    return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
+    const selectedBoneKeyframes: SelectedKeyframe[] = [{ ...payload, trackId }];
+    return this.clusterKeyframes.initializeClusterKeyframes(selectedBoneKeyframes);
   };
 
-  private getSelectedProperties = ({ state, payload }: Params) => {
+  private getSelectedPropertyKeyframes = ({ state, payload }: Params) => {
     const { propertyTrackList } = state;
     const { trackNumber, time } = payload;
-    const selectedProperties: SelectedKeyframe[] = [];
-    for (let transform = trackNumber + 1; transform <= trackNumber + 3; transform++) {
-      const { trackId, keyframes, trackType } = this.findEditorTrack(propertyTrackList, transform);
+    const selectedPropertyKeyframes: SelectedKeyframe[] = [];
+    for (let propertyNumber = trackNumber + 1; propertyNumber <= trackNumber + 3; propertyNumber++) {
+      const { trackId, keyframes, trackType } = this.findEditorTrack(propertyTrackList, propertyNumber);
       const keyframe = this.findKeyframe(keyframes, payload.time);
       if (keyframe) {
         const { value, isDeleted } = keyframe;
-        if (!isDeleted) selectedProperties.push({ trackNumber: transform, trackId, time, value, trackType });
+        if (!isDeleted) selectedPropertyKeyframes.push({ trackNumber: propertyNumber, trackId, time, value, trackType });
       }
     }
-    return this.clusterKeyframes.initializeClusterKeyframes(selectedProperties);
+    return this.clusterKeyframes.initializeClusterKeyframes(selectedPropertyKeyframes);
   };
 
   selectByLeftClick = (params: Params): AllSelectedKeyframes => {
     return {
       selectedLayerKeyframes: [],
-      selectedBoneKeyframes: this.getSelectedBones(params),
-      selectedPropertyKeyframes: this.getSelectedProperties(params),
+      selectedBoneKeyframes: this.getSelectedBoneKeyframes(params),
+      selectedPropertyKeyframes: this.getSelectedPropertyKeyframes(params),
     };
   };
 }

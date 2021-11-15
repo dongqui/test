@@ -1,12 +1,4 @@
-import { KeyframesState } from 'reducers/keyframes';
-import {
-  AllKeyframes,
-  AllSelectedKeyframes,
-  PropertyKeyframes,
-  SelectedPropertyKeyframes,
-} from 'reducers/keyframes/types';
-
-type NewValues = AllKeyframes & AllSelectedKeyframes;
+import { AllKeyframes, AllSelectedKeyframes, PropertyKeyframes, SelectedPropertyKeyframes } from 'reducers/keyframes/types';
 
 export interface Service {
   updateTimeEditorTrackList(): PropertyKeyframes;

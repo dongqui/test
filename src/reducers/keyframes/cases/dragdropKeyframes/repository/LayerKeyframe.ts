@@ -14,11 +14,7 @@ class LayerKeyframeRepository implements Repository {
   }
 
   // 삭제 된 property keyframe인지 확인
-  private isExistedPropertyKeyframe = (
-    propertyTrackList: TimeEditorTrack[],
-    propertyNumber: number,
-    time: number,
-  ) => {
+  private isExistedPropertyKeyframe = (propertyTrackList: TimeEditorTrack[], propertyNumber: number, time: number) => {
     const propertyIndex = findElementIndex(propertyTrackList, propertyNumber, 'trackNumber');
     const timeIndex = findElementIndex(propertyTrackList[propertyIndex].keyframes, time, 'time');
     if (timeIndex === -1) return;
@@ -27,11 +23,7 @@ class LayerKeyframeRepository implements Repository {
   };
 
   // 하위 property keyframe이 모두 삭제 될 경우, layer keyframe 삭제
-  private deleteLayerKeyframes = (
-    draft: Draft<TimeEditorTrack>,
-    updatedPropertyTrackList: TimeEditorTrack[],
-    selectedTimes: number[],
-  ) => {
+  private deleteLayerKeyframes = (draft: Draft<TimeEditorTrack>, updatedPropertyTrackList: TimeEditorTrack[], selectedTimes: number[]) => {
     const { isExistedPropertyKeyframe } = this;
     const { propertyTrackList } = this.state;
     selectedTimes.forEach((time) => {
@@ -50,11 +42,7 @@ class LayerKeyframeRepository implements Repository {
   };
 
   // property keyframe 드랍 시, 상위 layer keyframe 추가
-  private addLayerKeyframes = (
-    draft: Draft<TimeEditorTrack>,
-    selectedTimes: number[],
-    timeDiff: number,
-  ) => {
+  private addLayerKeyframes = (draft: Draft<TimeEditorTrack>, selectedTimes: number[], timeDiff: number) => {
     selectedTimes.forEach((time) => {
       const nextTime = time + timeDiff;
       const keyframeIndex = findElementIndex(draft.keyframes, nextTime, 'time');
@@ -80,12 +68,7 @@ class LayerKeyframeRepository implements Repository {
   };
 
   // layer 트랙 업데이트
-  updateTimeEditorTrack = (
-    timeDiff: number,
-    updatedPropertyTrackList: TimeEditorTrack[],
-    selectedTimes: number[],
-  ): TimeEditorTrack => {
-    console.log('updatedPropertyTrackList', updatedPropertyTrackList);
+  updateTimeEditorTrack = (timeDiff: number, updatedPropertyTrackList: TimeEditorTrack[], selectedTimes: number[]): TimeEditorTrack => {
     return produce(this.state.layerTrack, (draft) => {
       this.deleteLayerKeyframes(draft, updatedPropertyTrackList, selectedTimes);
       this.addLayerKeyframes(draft, selectedTimes, timeDiff);

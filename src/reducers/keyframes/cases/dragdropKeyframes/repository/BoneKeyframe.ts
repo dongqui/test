@@ -14,24 +14,16 @@ class BoneKeyframeRepository implements Repository {
   }
 
   // 삭제 된 property keyframe인지 확인
-  private isExistedPropertyKeyframe = (
-    propertyTrackList: TimeEditorTrack[],
-    propertyNumber: number,
-    time: number,
-  ) => {
-    const propertyIndex = findElementIndex(propertyTrackList, propertyNumber, 'trackNumber');
-    const timeIndex = findElementIndex(propertyTrackList[propertyIndex].keyframes, time, 'time');
-    if (timeIndex === -1) return;
-    const isExisted = !propertyTrackList[propertyIndex].keyframes[timeIndex].isDeleted;
+  private isExistedPropertyKeyframe = (propertyTrackList: TimeEditorTrack[], propertyNumber: number, time: number) => {
+    const trackIndex = findElementIndex(propertyTrackList, propertyNumber, 'trackNumber');
+    const keyframeIndex = findElementIndex(propertyTrackList[trackIndex].keyframes, time, 'time');
+    if (keyframeIndex === -1) return;
+    const isExisted = !propertyTrackList[trackIndex].keyframes[keyframeIndex].isDeleted;
     return isExisted;
   };
 
   // 하위 property keyframe이 모두 삭제 될 경우, bone keyframe 삭제
-  private deleteBoneKeyframes = (
-    draft: Draft<TimeEditorTrack>[],
-    propertyTrackList: TimeEditorTrack[],
-    selectedTimes: Map<number, number[]>,
-  ) => {
+  private deleteBoneKeyframes = (draft: Draft<TimeEditorTrack>[], propertyTrackList: TimeEditorTrack[], selectedTimes: Map<number, number[]>) => {
     for (const [boneNumber, times] of selectedTimes.entries()) {
       times.forEach((time) => {
         const position = this.isExistedPropertyKeyframe(propertyTrackList, boneNumber + 1, time);
@@ -50,11 +42,7 @@ class BoneKeyframeRepository implements Repository {
   };
 
   // property keyframe 드랍 시, 상위 bone keyframe 추가
-  private addBoneKeyframes = (
-    draft: Draft<TimeEditorTrack>[],
-    selectedTimes: Map<number, number[]>,
-    timeDiff: number,
-  ) => {
+  private addBoneKeyframes = (draft: Draft<TimeEditorTrack>[], selectedTimes: Map<number, number[]>, timeDiff: number) => {
     for (const [boneNumber, times] of selectedTimes.entries()) {
       times.forEach((time) => {
         const nextTime = time + timeDiff;
@@ -87,11 +75,7 @@ class BoneKeyframeRepository implements Repository {
   };
 
   // bone 트랙 리스트 업데이트
-  updateTimeEditorTrack = (
-    timeDiff: number,
-    updatedPropertyTrackList: TimeEditorTrack[],
-    selectedTimes: Map<number, number[]>,
-  ): TimeEditorTrack[] => {
+  updateTimeEditorTrack = (timeDiff: number, updatedPropertyTrackList: TimeEditorTrack[], selectedTimes: Map<number, number[]>): TimeEditorTrack[] => {
     return produce(this.state.boneTrackList, (draft) => {
       this.deleteBoneKeyframes(draft, updatedPropertyTrackList, selectedTimes);
       this.addBoneKeyframes(draft, selectedTimes, timeDiff);

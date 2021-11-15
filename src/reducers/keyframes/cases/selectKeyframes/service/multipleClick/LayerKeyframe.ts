@@ -21,83 +21,78 @@ class LayerKeyframeMultipleClick implements MultipleClick {
     return keyframes[keyframeIndex];
   };
 
-  private getSelectedBones = ({ state, payload }: Params) => {
-    const selectedBones: SelectedKeyframe[] = [];
+  private getSelectedBoneKeyframes = ({ state, payload }: Params) => {
+    const selectedBoneKeyframes: SelectedKeyframe[] = [];
     state.boneTrackList.forEach((boneTrack) => {
       const { trackId, trackNumber, trackType, keyframes } = boneTrack;
       const keyframe = this.findKeyframe(keyframes, payload.time);
-      if (keyframe) {
-        const { value, isDeleted } = keyframe;
-        if (!isDeleted) selectedBones.push({ trackId, trackNumber, trackType, time: payload.time, value });
-      }
+      if (keyframe && !keyframe.isDeleted) selectedBoneKeyframes.push({ trackId, trackNumber, trackType, time: payload.time });
     });
-    return selectedBones;
+    return selectedBoneKeyframes;
   };
 
-  private getSelectedProperties = ({ state, payload }: Params) => {
-    const selectedPropertiess: SelectedKeyframe[] = [];
+  private getSelectedPropertyKeyframes = ({ state, payload }: Params) => {
+    const selectedPropertyKeyframes: SelectedKeyframe[] = [];
     state.propertyTrackList.forEach((propertyTrack) => {
       const { trackType, trackId, trackNumber, keyframes } = propertyTrack;
       const keyframe = this.findKeyframe(keyframes, payload.time);
       if (keyframe) {
-        const { isDeleted } = keyframe;
-        if (!isDeleted) selectedPropertiess.push({ trackNumber, trackType, trackId, time: payload.time });
+        const { isDeleted, value } = keyframe;
+        if (!isDeleted) selectedPropertyKeyframes.push({ trackNumber, trackType, trackId, time: payload.time, value });
       }
     });
-    return selectedPropertiess;
+    return selectedPropertyKeyframes;
   };
 
-  private filterSelectedLayer = ({ state, payload }: Params) => {
+  private filterSelectedLayerKeyframes = ({ state, payload }: Params) => {
     const { selectedLayerKeyframes, layerTrack } = state;
     const selectedKeyframe = { ...payload, trackId: layerTrack.trackId };
     return this.clusterKeyframes.filterKeyframeTimes(selectedLayerKeyframes, [selectedKeyframe]);
   };
 
-  private filterSelectedBone = ({ state, payload }: Params) => {
+  private filterSelectedBoneKeyframes = ({ state, payload }: Params) => {
     const { selectedBoneKeyframes } = state;
-    const selectedBones = this.getSelectedBones({ state, payload });
+    const selectedBones = this.getSelectedBoneKeyframes({ state, payload });
     return this.clusterKeyframes.filterKeyframeTimes(selectedBoneKeyframes, selectedBones);
   };
 
-  private filterSelectedProperty = ({ state, payload }: Params) => {
+  private filterSelectedPropertyKeyframes = ({ state, payload }: Params) => {
     const { selectedPropertyKeyframes } = state;
-    const selectedProperty = this.getSelectedProperties({ state, payload });
+    const selectedProperty = this.getSelectedPropertyKeyframes({ state, payload });
     return this.clusterKeyframes.filterKeyframeTimes(selectedPropertyKeyframes, selectedProperty);
   };
 
-  private addLayerTimes = ({ state, payload }: Params) => {
+  private addSelectedLayerKeyframes = ({ state, payload }: Params) => {
     const { selectedLayerKeyframes, layerTrack } = state;
     const selectedKeyframe = { ...payload, trackId: layerTrack.trackId };
     return this.clusterKeyframes.addKeyframeTimes(selectedLayerKeyframes, [selectedKeyframe]);
   };
 
-  private addBoneTimes = ({ state, payload }: Params) => {
+  private addSelectedBoneKeyframes = ({ state, payload }: Params) => {
     const { selectedBoneKeyframes } = state;
-    const selectedBones = this.getSelectedBones({ state, payload });
+    const selectedBones = this.getSelectedBoneKeyframes({ state, payload });
     return this.clusterKeyframes.addKeyframeTimes(selectedBoneKeyframes, selectedBones);
   };
 
-  private addPropertyTimes = ({ state, payload }: Params) => {
+  private addSelectedPropertyKeyframes = ({ state, payload }: Params) => {
     const { selectedPropertyKeyframes } = state;
-    const selectedProperty = this.getSelectedProperties({ state, payload });
+    const selectedProperty = this.getSelectedPropertyKeyframes({ state, payload });
     return this.clusterKeyframes.addKeyframeTimes(selectedPropertyKeyframes, selectedProperty);
   };
 
   selectExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
-    const { filterSelectedLayer, filterSelectedBone, filterSelectedProperty } = this;
     return {
-      selectedLayerKeyframes: filterSelectedLayer({ state, payload }),
-      selectedBoneKeyframes: filterSelectedBone({ state, payload }),
-      selectedPropertyKeyframes: filterSelectedProperty({ state, payload }),
+      selectedLayerKeyframes: this.filterSelectedLayerKeyframes({ state, payload }),
+      selectedBoneKeyframes: this.filterSelectedBoneKeyframes({ state, payload }),
+      selectedPropertyKeyframes: this.filterSelectedPropertyKeyframes({ state, payload }),
     };
   };
 
   selectNotExistedByMultipleClick = ({ state, payload }: Params): AllSelectedKeyframes => {
-    const { addLayerTimes, addBoneTimes, addPropertyTimes } = this;
     return {
-      selectedLayerKeyframes: addLayerTimes({ state, payload }),
-      selectedBoneKeyframes: addBoneTimes({ state, payload }),
-      selectedPropertyKeyframes: addPropertyTimes({ state, payload }),
+      selectedLayerKeyframes: this.addSelectedLayerKeyframes({ state, payload }),
+      selectedBoneKeyframes: this.addSelectedBoneKeyframes({ state, payload }),
+      selectedPropertyKeyframes: this.addSelectedPropertyKeyframes({ state, payload }),
     };
   };
 }

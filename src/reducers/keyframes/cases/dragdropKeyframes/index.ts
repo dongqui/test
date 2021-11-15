@@ -12,13 +12,7 @@ const dragDropKeyframes = (state: KeyframesState, payload: DragDropKeyframes) =>
   const layerRepo = new LayerKeyframeRepo(state);
   const boneKeyframeRepo = new BoneKeyframeRepo(state);
   const propertyKeyframeRepo = new PropertyKeyframeRepo(state);
-  const service = new KeyframeService(
-    state,
-    payload,
-    layerRepo,
-    boneKeyframeRepo,
-    propertyKeyframeRepo,
-  );
+  const service = new KeyframeService(state, payload, layerRepo, boneKeyframeRepo, propertyKeyframeRepo);
   const timeEditorTrackList = service.updateTimeEditorTrackList();
   const selectedKeyframes = service.updateSelectedTrackKeyframes();
   return new StateUpdate(state).updateState({ ...timeEditorTrackList, ...selectedKeyframes });
