@@ -11,27 +11,27 @@ const convertFBXtoGLB = async (file: File) => {
     const formData = new FormData();
 
     formData.append('file', file);
-    formData.append('type', 'fbx');
+    formData.append('type', 'glb');
     formData.append('id', String(Date.now() / 1000));
 
-    // const response = await requestApi({
-    //   method: 'POST',
-    //   // baseURL: 'https://blenderapi.myplask.com:5000',
-    //   base: 'https://dev.plask.ai/api',
-    //   url: '/converter/model',
-    //   data: formData,
-    //   headers: { 'Content-Type': 'multipart/form-data' },
-    // });
-
-    const response = await axios({
+    const response = await requestApi({
       method: 'POST',
-      baseURL: 'https://blenderapi.myplask.com:5000',
-      url: '/fbx2glb-upload-api',
+      // baseURL: 'https://blenderapi.myplask.com:5000',
+      base: 'https://dev.plask.ai/api',
+      url: '/converter/model',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
-    return response.data.result;
+    // const response = await axios({
+    //   method: 'POST',
+    //   baseURL: 'https://blenderapi.myplask.com:5000',
+    //   url: '/fbx2glb-upload-api',
+    //   data: formData,
+    //   headers: { 'Content-Type': 'multipart/form-data' },
+    // });
+
+    return response.data.url;
   } catch (error) {
     throw error;
   }
