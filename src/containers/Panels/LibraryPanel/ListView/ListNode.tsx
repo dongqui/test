@@ -782,7 +782,8 @@ const ListNode: FunctionComponent<Props> = ({
             const newNode: LP.Node = {
               id: id,
               // filePath: lpCurrentPath + `\\${name}`,
-              filePath: filePath + `\\${name}`, //@todo
+              // filePath: filePath + `\\${name}`, //@todo
+              filePath: filePath,
               parentId: parentId,
               name: type === 'Model' ? `${name}.${extension}` : name,
               type: type,
@@ -855,7 +856,8 @@ const ListNode: FunctionComponent<Props> = ({
               const newNode: LP.Node = {
                 id: id,
                 // filePath: lpCurrentPath + `\\${name}`,
-                filePath: filePath + `\\${name}`, //@todo
+                // filePath: filePath + `\\${name}`, //@todo
+                filePath: filePath,
                 parentId: parentId,
                 name: type === 'Model' ? `${name}.${extension}` : name,
                 type: type,
