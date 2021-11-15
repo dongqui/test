@@ -8,11 +8,7 @@ import OneEuroFilterForQuaternion from './OneEuroFilterForQuaternion';
  * @param minCutoff - 보정 연산 시 사용할 minCutoff
  * @param beta - 보정 연산 시 사용할 beta
  */
-const filterQuaternion = (
-  transformKeys: BABYLON.IAnimationKey[],
-  minCutoff: number,
-  beta: number,
-): BABYLON.IAnimationKey[] => {
+const filterQuaternion = (transformKeys: BABYLON.IAnimationKey[], minCutoff: number, beta: number): BABYLON.IAnimationKey[] => {
   const oneEuroFilterQuaternion = new OneEuroFilterForQuaternion(minCutoff, beta);
   const filteredTransformKeys = transformKeys.map((transformKey) => ({
     frame: transformKey.frame,

@@ -1,14 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {
-  ReactNode,
-  FunctionComponent,
-  Fragment,
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
-  ChangeEvent,
-} from 'react';
+import { ReactNode, FunctionComponent, Fragment, useState, useRef, useCallback, useEffect, ChangeEvent, Dispatch, SetStateAction, RefObject } from 'react';
 import classNames from 'classnames/bind';
 import styles from './CropSlider.module.scss';
 
@@ -21,29 +12,24 @@ interface Props {
   currentVideoTime: number;
   indicatorPosition: number;
   handleTimeline: (e: any) => void;
+  videoRef: RefObject<HTMLVideoElement>;
   onChange: Function;
   children: ReactNode;
 }
 
-export const CropSlider: FunctionComponent<Props> = ({
-  start,
-  end,
-  duration,
-  currentVideoTime,
-  indicatorPosition,
-  handleTimeline,
-  onChange,
-  children,
-}) => {
+export const CropSlider: FunctionComponent<Props> = ({ start, end, duration, currentVideoTime, indicatorPosition, handleTimeline, videoRef, onChange, children }) => {
   const [startValue, setStartValue] = useState(start);
   const [endValue, setEndValue] = useState(end);
 
   const cropRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLInputElement>(null);
   const startRef = useRef(start);
   const endRef = useRef(end);
 
   const getPercent = useCallback(
-    (value: number) => Math.round(((value - start) / (end - start)) * 100),
+    (value: number) => {
+      return Math.round(((value - start) / (end - start)) * 1000) / 10;
+    },
     [start, end],
   );
 
@@ -52,12 +38,22 @@ export const CropSlider: FunctionComponent<Props> = ({
       const value = Math.min(Number(event.target.value), endValue - 1);
       startRef.current = value;
       setStartValue(value);
+      if (videoRef.current!.currentTime <= Math.round(((duration * 100) / 100) * value) / 100) {
+        videoRef.current!.currentTime = Math.round(((duration * 100) / 100) * value) / 100;
+      }
     } else {
       const value = Math.max(Number(event.target.value), startValue + 1);
       endRef.current = value;
       setEndValue(value);
+      if (videoRef.current!.currentTime >= Math.round(((duration * 100) / 100) * value) / 100) {
+        videoRef.current!.currentTime = Math.round(((duration * 100) / 100) * value) / 100;
+      }
     }
   };
+
+  const handlePreventEvent = useCallback((e) => {
+    e.preventDefault();
+  }, []);
 
   let min = getPercent(startRef.current);
   let max = getPercent(endRef.current);
@@ -81,36 +77,13 @@ export const CropSlider: FunctionComponent<Props> = ({
 
   return (
     <Fragment>
-      <input
-        id="left"
-        type="range"
-        min={start}
-        max={end}
-        step={0.1}
-        value={startValue}
-        onChange={handleSlider}
-        className={cx('thumb', 'thumb-left')}
-      />
-      <input
-        id="right"
-        type="range"
-        min={start}
-        max={end}
-        step={0.1}
-        value={endValue}
-        onChange={handleSlider}
-        className={cx('thumb', 'thumb-right')}
-      />
+      <input id="left" type="range" min={start} max={end} step={0.001} value={startValue} onChange={handleSlider} className={cx('thumb', 'thumb-left')} />
+      <input id="right" type="range" min={start} max={end} step={0.001} value={endValue} onChange={handleSlider} className={cx('thumb', 'thumb-right')} />
       <div className={cx('slider')}>
         <div className={cx('slider-track')}></div>
         <div ref={cropRef} className={cx('slider-range')}></div>
-        <span
-          className={cx('slider-time-indicator')}
-          style={{ marginLeft: indicatorPosition + '%' }}
-        >
-          {duration < 100
-            ? Math.round(currentVideoTime * 100) / 100
-            : Math.round(currentVideoTime * 10) / 10}
+        <span className={cx('slider-time-indicator')} style={{ marginLeft: indicatorPosition + '%' }}>
+          {Math.round(currentVideoTime * 10) / 10}
         </span>
         <input
           className={cx('slider-time')}
@@ -121,6 +94,7 @@ export const CropSlider: FunctionComponent<Props> = ({
           step="0.01"
           value={currentVideoTime}
           onChange={handleTimeline}
+          onKeyDown={handlePreventEvent}
         />
         {children}
       </div>

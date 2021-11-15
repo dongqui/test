@@ -3,7 +3,6 @@ import { ShootAsset, ShootScene } from 'types/common';
 export type ShootProjectAction =
   | ReturnType<typeof addScene>
   | ReturnType<typeof removeScene>
-  | ReturnType<typeof changeFileToLoad>
   | ReturnType<typeof addAsset>
   | ReturnType<typeof renderAsset>
   | ReturnType<typeof unrenderAsset>
@@ -12,7 +11,6 @@ export type ShootProjectAction =
 
 export const ADD_SCENE = 'shootProject/ADD_SCENE' as const;
 export const REMOVE_SCENE = 'shootProject/REMOVE_SCENE' as const;
-export const CHANGE_FILE_TO_LOAD = 'shootProject/CHANGE_FILE_TO_LOAD' as const;
 export const ADD_ASSET = 'shootProject/ADD_ASSET' as const;
 export const RENDER_ASSET = 'shootProject/RENDER_ASSET' as const;
 export const UNRENDER_ASSET = 'shootProject/UNRENDER_ASSET' as const;
@@ -27,11 +25,6 @@ export interface RemoveScene {
   sceneId: string;
 }
 
-export interface ChangeFileToLoad {
-  file: string | File;
-  fileName: string;
-}
-
 export interface AddAsset {
   asset: ShootAsset;
 }
@@ -41,7 +34,8 @@ export interface RenderAsset {
 }
 
 export interface UnrenderAsset {
-  assetId: string;
+  // 단일 모델일 때는 unrender가 아니라 reset의 기능이기 때문에, 삭제할 asset의 id가 필요없음
+  // assetId: string;
 }
 
 export interface RemoveAsset {
@@ -72,19 +66,6 @@ export const addScene = (params: AddScene) => ({
  */
 export const removeScene = (params: RemoveScene) => ({
   type: REMOVE_SCENE,
-  payload: {
-    ...params,
-  },
-});
-
-/**
- * 읽어들일 파일을 변경합니다.
- *
- * @param file - 읽어들일 파일의 주소 혹은 파일 그 자체
- * @param fileName - LP에서 사용할 파일의 이름
- */
-export const changeFileToLoad = (params: ChangeFileToLoad) => ({
-  type: CHANGE_FILE_TO_LOAD,
   payload: {
     ...params,
   },

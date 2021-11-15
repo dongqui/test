@@ -10,11 +10,6 @@ const defaultState: State = {
   sceneList: [],
   assetList: [],
   visualizedAssetIds: [],
-  fileToLoad: null,
-  fileNameToLoad: null,
-  assetIdToRender: null,
-  assetIdToUnrender: null,
-  assetToRemove: null,
   fps: 30,
 };
 
@@ -30,44 +25,23 @@ export const shootProject = (state = defaultState, action: ShootProjectAction) =
         sceneList: state.sceneList.filter((scene) => scene.id !== action.payload.sceneId),
       });
     }
-    case 'shootProject/CHANGE_FILE_TO_LOAD': {
-      return Object.assign({}, state, {
-        fileToLoad: action.payload.file,
-        fileNameToLoad: action.payload.fileName,
-      });
-    }
     case 'shootProject/ADD_ASSET': {
       return Object.assign({}, state, {
         assetList: [...state.assetList, action.payload.asset],
       });
     }
     case 'shootProject/RENDER_ASSET': {
-      if (state.visualizedAssetIds.length === 1) {
-        return Object.assign({}, state, {
-          assetIdToRender: action.payload.assetId,
-          assetIdToUnrender: state.visualizedAssetIds[0],
-          visualizedAssetIds: [action.payload.assetId], // 다중모델 로드 가능한 버전에서는 push로 변경 필요
-        });
-      } else {
-        return Object.assign({}, state, {
-          assetIdToRender: action.payload.assetId,
-          assetIdToUnrender: null,
-          visualizedAssetIds: [action.payload.assetId], // 다중모델 로드 가능한 버전에서는 push로 변경 필요
-        });
-      }
+      return Object.assign({}, state, {
+        visualizedAssetIds: [action.payload.assetId], // 다중모델 로드 가능한 버전에서는 push로 변경 필요
+      });
     }
     case 'shootProject/UNRENDER_ASSET': {
       return Object.assign({}, state, {
-        assetIdToRender: null,
-        assetIdToUnrender: action.payload.assetId,
         visualizedAssetIds: [], // 다중모델 로드 가능한 버전에서는 filter로 변경 필요
       });
     }
     case 'shootProject/REMOVE_ASSET': {
       return Object.assign({}, state, {
-        assetIdToRender: null,
-        assetIdToUnrender: action.payload.assetId,
-        assetToRemove: state.assetList.find((asset) => asset.id === action.payload.assetId),
         assetList: state.assetList.filter((asset) => asset.id !== action.payload.assetId),
         visualizedAssetIds: state.visualizedAssetIds.filter((id) => id !== action.payload.assetId),
       });

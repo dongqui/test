@@ -40,22 +40,12 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
   return (
     <li className={cx('layer-track')} onClick={handleTrackBodyClick}>
       <div className={cx('track-body', { selected: isSelected, muted: isMuted })}>
-        <CaretButton
-          isPointedDownCaret={isPointedDownCaret}
-          trackId={trackId}
-          trackType={trackType}
-        />
+        <CaretButton isPointedDownCaret={isPointedDownCaret} trackId={trackId} trackType={trackType} />
         <IconWrapper className={cx('layer-icon')} icon={SvgPath.Layer} />
         <span className={cx('track-name')}>{trackName}</span>
         <MuteButton trackName={trackName} isMuted={isMuted} />
       </div>
-      <ul>
-        {isSelected &&
-          isPointedDownCaret &&
-          boneTrackList.map((boneTrack) => (
-            <BoneTrackItem key={boneTrack.trackName} {...boneTrack} />
-          ))}
-      </ul>
+      <ul>{isSelected && isPointedDownCaret && boneTrackList.map((boneTrack) => <BoneTrackItem key={boneTrack.trackName} {...boneTrack} />)}</ul>
     </li>
   );
 };

@@ -20,13 +20,7 @@ const MuteButton: FunctionComponent<Props> = (props) => {
     dispatch(muteLayerTrack({ isMuted: !isMuted, trackName }));
   }, [dispatch, isMuted, trackName]);
 
-  return (
-    <IconWrapper
-      className={cx('mute-icon')}
-      icon={isMuted ? SvgPath.EyeClose : SvgPath.EyeOpen}
-      onClick={handleMuteButtonClick}
-    />
-  );
+  return <IconWrapper className={cx('mute-icon')} icon={isMuted ? SvgPath.EyeClose : SvgPath.EyeOpen} onClick={handleMuteButtonClick} />;
 };
 
 export default MuteButton;

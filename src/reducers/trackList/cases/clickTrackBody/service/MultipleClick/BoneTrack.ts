@@ -36,10 +36,7 @@ class BoneTrackMultipleClick implements MultipleClick {
   public clickMultipleSelectedTrack = ({ state, payload }: Parmas): SelectedTracks => {
     const { selectedBones, selectedProperties } = this.setSelectedTracks(payload);
     const nextSelectedBones = this.filterSelectedTracks(state.selectedBones, selectedBones);
-    const nextSelectedProselectedProperties = this.filterSelectedTracks(
-      state.selectedProperties,
-      selectedProperties,
-    );
+    const nextSelectedProselectedProperties = this.filterSelectedTracks(state.selectedProperties, selectedProperties);
     return {
       selectedBones: nextSelectedBones,
       selectedProperties: nextSelectedProselectedProperties,
@@ -49,10 +46,7 @@ class BoneTrackMultipleClick implements MultipleClick {
   public clickMultipleNotSelectedTrack = ({ state, payload }: Parmas): SelectedTracks => {
     const { selectedBones, selectedProperties } = this.setSelectedTracks(payload);
     const nextSelectedBones = this.sortAscendingNumbers(state.selectedBones, selectedBones);
-    const nextSelectedProselectedProperties = this.sortAscendingNumbers(
-      state.selectedProperties,
-      selectedProperties,
-    );
+    const nextSelectedProselectedProperties = this.sortAscendingNumbers(state.selectedProperties, selectedProperties);
     return {
       selectedBones: nextSelectedBones,
       selectedProperties: nextSelectedProselectedProperties,

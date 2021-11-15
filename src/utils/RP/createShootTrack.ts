@@ -1,14 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 import { ShootProperty, ShootTrack } from 'types/common';
 import { roundToFourth } from 'utils/common';
-import {
-  DEFAULT_BETA,
-  DEFAULT_MIN_CUTOFF,
-  MOCAP_QUATERNION_BETA,
-  MOCAP_QUATERNION_MIN_CUTOFF,
-  MOCAP_POSITION_BETA,
-  MOCAP_POSITION_MIN_CUTOFF,
-} from 'utils/const';
+import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNION_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_MIN_CUTOFF } from 'utils/const';
 
 /**
  * AnimationIngredient를 구성하는 자체 데이터인 ShootTrack을 생성합니다.
@@ -21,14 +14,7 @@ import {
  * @param transformKeys - frame과 value 쌍으로 이루어진 transformKey 배열
  * @param isMocapAnimation - mocap 결과물인지 여부
  */
-const createShootTrack = (
-  name: string,
-  layerId: string,
-  target: any,
-  property: ShootProperty,
-  transformKeys: BABYLON.IAnimationKey[],
-  isMocapAnimation: boolean,
-): ShootTrack => {
+const createShootTrack = (name: string, layerId: string, target: any, property: ShootProperty, transformKeys: BABYLON.IAnimationKey[], isMocapAnimation: boolean): ShootTrack => {
   let filterBeta = DEFAULT_BETA;
   let filterMinCutoff = DEFAULT_MIN_CUTOFF;
 

@@ -1,11 +1,4 @@
-import {
-  ArcRotateCamera,
-  Camera,
-  CameraInputTypes,
-  Nullable,
-  PointerTouch,
-  serialize,
-} from '@babylonjs/core';
+import { ArcRotateCamera, Camera, CameraInputTypes, Nullable, PointerTouch, serialize } from '@babylonjs/core';
 import ShootBaseCameraPointersInput from './ShootBaseCameraPointersInput';
 import { IPointerEvent } from './types';
 
@@ -106,10 +99,7 @@ export default class ShootArcRotateCameraPointersInput extends ShootBaseCameraPo
   /**
    * Move camera from multi touch panning positions.
    */
-  private _computeMultiTouchPanning(
-    previousMultiTouchPanPosition: Nullable<PointerTouch>,
-    multiTouchPanPosition: Nullable<PointerTouch>,
-  ): void {
+  private _computeMultiTouchPanning(previousMultiTouchPanPosition: Nullable<PointerTouch>, multiTouchPanPosition: Nullable<PointerTouch>): void {
     if (this.panningSensibility !== 0 && previousMultiTouchPanPosition && multiTouchPanPosition) {
       var moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
       var moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
@@ -121,27 +111,15 @@ export default class ShootArcRotateCameraPointersInput extends ShootBaseCameraPo
   /**
    * Move camera from pinch zoom distances.
    */
-  private _computePinchZoom(
-    previousPinchSquaredDistance: number,
-    pinchSquaredDistance: number,
-  ): void {
+  private _computePinchZoom(previousPinchSquaredDistance: number, pinchSquaredDistance: number): void {
     const radius = this.camera.radius || ShootArcRotateCameraPointersInput.MinimumRadiusForPinch;
     if (this.useNaturalPinchZoom) {
-      this.camera.radius =
-        (radius * Math.sqrt(previousPinchSquaredDistance)) / Math.sqrt(pinchSquaredDistance);
+      this.camera.radius = (radius * Math.sqrt(previousPinchSquaredDistance)) / Math.sqrt(pinchSquaredDistance);
     } else if (this.pinchDeltaPercentage) {
-      this.camera.inertialRadiusOffset +=
-        (pinchSquaredDistance - previousPinchSquaredDistance) *
-        0.001 *
-        radius *
-        this.pinchDeltaPercentage;
+      this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 * radius * this.pinchDeltaPercentage;
     } else {
       this.camera.inertialRadiusOffset +=
-        (pinchSquaredDistance - previousPinchSquaredDistance) /
-        ((this.pinchPrecision *
-          (this.pinchInwards ? 1 : -1) *
-          (this.angularSensibilityX + this.angularSensibilityY)) /
-          2);
+        (pinchSquaredDistance - previousPinchSquaredDistance) / ((this.pinchPrecision * (this.pinchInwards ? 1 : -1) * (this.angularSensibilityX + this.angularSensibilityY)) / 2);
     }
   }
 
@@ -149,10 +127,7 @@ export default class ShootArcRotateCameraPointersInput extends ShootBaseCameraPo
    * Called on pointer POINTERMOVE event if only a single touch is active.
    */
   protected onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
-    if (
-      this.panningSensibility !== 0 &&
-      ((this._ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)
-    ) {
+    if (this.panningSensibility !== 0 && ((this._ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)) {
       this.camera.inertialPanningX += -offsetX / this.panningSensibility;
       this.camera.inertialPanningY += offsetY / this.panningSensibility;
     } else {
@@ -204,9 +179,7 @@ export default class ShootArcRotateCameraPointersInput extends ShootBaseCameraPo
       if (
         // rotate only with altKey
         (this._isPinching && this._altKey) ||
-        (this._twoFingerActivityCount < 20 &&
-          Math.abs(Math.sqrt(pinchSquaredDistance) - Math.sqrt(previousPinchSquaredDistance)) >
-            this.camera.pinchToPanMaxDistance)
+        (this._twoFingerActivityCount < 20 && Math.abs(Math.sqrt(pinchSquaredDistance) - Math.sqrt(previousPinchSquaredDistance)) > this.camera.pinchToPanMaxDistance)
       ) {
         // Since pinch has not been active long, assume we intend to zoom.
         this._computePinchZoom(previousPinchSquaredDistance, pinchSquaredDistance);
