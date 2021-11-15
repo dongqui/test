@@ -117,19 +117,21 @@ const ListNode: FunctionComponent<Props> = ({
     const changeNode = find(node, { id: childID });
 
     if (changeNode) {
-      const cloneChangeNode = cloneDeep(changeNode);
+      changeNode.parentId = parentNode.id;
+      changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+      // const cloneChangeNode = cloneDeep(changeNode);
 
-      cloneChangeNode.id = uuid();
-      cloneChangeNode.parentId = parentNode.id;
-      cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
+      // cloneChangeNode.id = uuid();
+      // cloneChangeNode.parentId = parentNode.id;
+      // cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
 
-      remove(parentNode.children, (child) => child === childID);
-      parentNode.children.push(cloneChangeNode.id);
+      // // remove(parentNode.children, (child) => child === childID);
+      // parentNode.children.push(cloneChangeNode.id);
 
-      node.push(cloneChangeNode);
+      // node.push(cloneChangeNode);
 
-      if (cloneChangeNode.children.length > 0) {
-        cloneChangeNode.children.map((child) => depthChangeKey(node, child, cloneChangeNode));
+      if (changeNode.children.length > 0) {
+        changeNode.children.map((child) => depthChangeKey(node, child, changeNode));
       }
     }
   }, []);
@@ -953,8 +955,6 @@ const ListNode: FunctionComponent<Props> = ({
           const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
           const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
 
-          const cloneDragNode = cloneDeep(dragNode);
-
           if (dropNode && isAlreadyExist && cloneDragNode) {
             const confirmed = await getConfirm({
               title: 'Warning',
@@ -1083,8 +1083,10 @@ const ListNode: FunctionComponent<Props> = ({
           const confirmed = await getConfirm({
             title: 'Warning',
             message: '해당 디렉토리에 동일한 이름의 파일이 있습니다. 덮어쓰시겠습니까?',
-            confirmText: '확인',
-            cancelText: '취소',
+            confirmText: '덮어쓰기',
+            cancelText: '무시하기',
+          }).then((response) => {
+            return response;
           });
 
           if (confirmed) {
@@ -1092,21 +1094,27 @@ const ListNode: FunctionComponent<Props> = ({
             const filterNodes = cloneLPNode.filter((node) => node.id !== duplicatedTarget[0].id);
 
             const nextNodes = produce(filterNodes, (draft) => {
-              const targetNode = find(draft, { id });
+              const targetNode = find(filterNodes, { id });
+
+              const clondDragNodeId = uuid();
 
               if (targetNode) {
-                cloneDragNode.id = uuid();
+                cloneDragNode.id = clondDragNodeId;
                 cloneDragNode.parentId = id;
                 // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
                 cloneDragNode.filePath = filePath + `\\${name}`;
 
-                targetNode.children.push(cloneDragNode.id);
+                const nextChildren = targetNode.children.filter((current) => current !== duplicatedTarget[0].id);
+
+                nextChildren.push(clondDragNodeId);
+
+                targetNode.children = nextChildren;
 
                 // @TODO 하위 노드도 추가
                 draft.push(cloneDragNode);
 
                 if (cloneDragNode.children.length > 0) {
-                  cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                  cloneDragNode.children.map((child) => depthChangeKey(filterNodes, child, cloneDragNode));
                 }
               }
             });
