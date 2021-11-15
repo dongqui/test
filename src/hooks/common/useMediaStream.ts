@@ -1,12 +1,4 @@
-import {
-  RefObject,
-  useCallback,
-  useState,
-  useEffect,
-  useRef,
-  Dispatch,
-  SetStateAction,
-} from 'react';
+import { RefObject, useCallback, useState, useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from 'reducers';
 
@@ -65,9 +57,7 @@ const useMediaStream = (props: Props) => {
   const { videoURL } = useSelector((state: RootState) => state.modeSelection);
 
   const handleCameraList = useCallback(async () => {
-    const devices = await navigator.mediaDevices
-      .enumerateDevices()
-      .then((totalDevice) => totalDevice.filter((device) => device.kind === 'videoinput'));
+    const devices = await navigator.mediaDevices.enumerateDevices().then((totalDevice) => totalDevice.filter((device) => device.kind === 'videoinput'));
     // const videoDevice = devices.filter((device) => device.kind === 'videoinput');
 
     setDeviceList(devices);
@@ -164,9 +154,7 @@ const useMediaStream = (props: Props) => {
       };
 
       recorder.onstop = () => {
-        let video_local = URL.createObjectURL(
-          new Blob(blobs, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }),
-        );
+        let video_local = URL.createObjectURL(new Blob(blobs, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
         stopStream();
         setSrcAddress(video_local);
         if (ref.current) {
@@ -200,14 +188,7 @@ const useMediaStream = (props: Props) => {
       setCurrentDeviceId(e.target.id);
       setCameraDropdownState(false);
     },
-    [
-      mediaStreamInitialize,
-      stopStream,
-      setConstraint,
-      setCurrentDevice,
-      setCurrentDeviceId,
-      setCameraDropdownState,
-    ],
+    [mediaStreamInitialize, stopStream, setConstraint, setCurrentDevice, setCurrentDeviceId, setCameraDropdownState],
   );
 
   const stopRecording = useCallback(
