@@ -1,9 +1,5 @@
 import { FunctionComponent, useCallback, useState } from 'react';
-import {
-  Dispatch,
-  RefObject,
-  SetStateAction,
-} from 'hoist-non-react-statics/node_modules/@types/react';
+import { Dispatch, RefObject, SetStateAction } from 'hoist-non-react-statics/node_modules/@types/react';
 import { useDispatch } from 'react-redux';
 import { FilledButton, SegmentButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -120,18 +116,9 @@ const UpperBar: FunctionComponent<Props> = ({
             {deviceList &&
               deviceList.map((device, idx) => (
                 <li key={idx} className={cx('device-select-dropdown')} data-value>
-                  {currentDevice === device.label && (
-                    <IconWrapper
-                      className={cx('device-select-check')}
-                      icon={SvgPath.Check}
-                    ></IconWrapper>
-                  )}
+                  {currentDevice === device.label && <IconWrapper className={cx('device-select-check')} icon={SvgPath.Check}></IconWrapper>}
                   <div className={cx('device-label')}>{device.label}</div>
-                  <div
-                    className={cx('button-overlay')}
-                    id={device.deviceId}
-                    onClick={handleChangeCamera}
-                  ></div>
+                  <div className={cx('button-overlay')} id={device.deviceId} onClick={handleChangeCamera}></div>
                 </li>
               ))}
           </ul>
@@ -144,16 +131,8 @@ const UpperBar: FunctionComponent<Props> = ({
             Your video will be <strong>deleted</strong> to take a new video.
           </p>
           <div className={cx('extract-name-wrapper')}>
-            <FilledButton
-              text="Cancel"
-              className={cx('extract-button', 'cancel')}
-              onClick={() => setDeleteModal(false)}
-            ></FilledButton>
-            <FilledButton
-              text="Delete"
-              className={cx('extract-button')}
-              onClick={handleChangeMode}
-            ></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setDeleteModal(false)}></FilledButton>
+            <FilledButton text="Delete" className={cx('extract-button')} onClick={handleChangeMode}></FilledButton>
           </div>
         </BaseModal>
       )}
