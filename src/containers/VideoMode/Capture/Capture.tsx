@@ -35,7 +35,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const testRef = useRef<HTMLDivElement>(null);
-  let cancelTokenSource: Canceler;
+  let cancelTokenSource = useRef<Canceler>();
 
   const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [currentDevice, setCurrentDevice] = useState<string>('');
@@ -114,8 +114,6 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     } as BoxProps,
   };
 
-  // const handleChangeCamera = useCallback(() => {}, []);
-
   const handleVideoEnd = useCallback(() => {
     setPlayState(false);
   }, []);
@@ -193,7 +191,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         data: formData,
         headers: { 'Content-Type': 'multipart/form-data' },
         cancelToken: new axios.CancelToken((cancel) => {
-          cancelTokenSource = cancel;
+          cancelTokenSource.current = cancel;
         }),
         timeout,
       })
@@ -452,7 +450,6 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
             className={cx('extract-name-input')}
             placeholder="Exported motion"
             onChange={(e) => {
-              console.log(e.target.value);
               setBasicExtractName(e.target.value);
             }}
           />
@@ -521,7 +518,10 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           <FilledButton
             text="Cancel"
             className={cx('extract-button', 'cancel')}
-            onClick={() => cancelTokenSource()}
+            onClick={() => {
+              setOnExtract(false);
+              cancelTokenSource.current && cancelTokenSource.current();
+            }}
           ></FilledButton>
         </BaseModal>
       )}
