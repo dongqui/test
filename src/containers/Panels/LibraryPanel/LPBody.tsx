@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
+import { DragBox } from 'components/DragBox';
 import { v4 as uuid } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import produce from 'immer';
@@ -198,10 +199,10 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
   const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
 
-  const [selectedId, setSelectedId] = useState<string>();
+  const [selectedId, setSelectedId] = useState<string[]>([]);
 
   const handleSelect = useCallback((id: string) => {
-    setSelectedId(id);
+    setSelectedId([id]);
   }, []);
 
   const [dragTarget, setDragTarget] = useState<{ id: string; type: LP.Node['type']; parentId: string } | undefined>();
@@ -210,12 +211,18 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     setDragTarget({ id: id, type: type, parentId: parentId });
   }, []);
 
+  const handleDragEnd = useCallback((list: NodeListOf<Element>) => {
+    console.log('handleDragEnd');
+    console.log(list);
+  }, []);
+
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>
       {rootPathNode.map((node, i) => (
         <div className={cx('node-row')} ref={rowNodeRef[i]} key={node.id}>
           <ListNode
-            isSelected={node.id === selectedId}
+            selectableId="node-selectable"
+            isSelected={selectedId.includes(node.id)}
             onSelect={handleSelect}
             selectedId={selectedId}
             onSetDragTarget={handleSetDragTarget}
@@ -225,6 +232,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
           />
         </div>
       ))}
+      <DragBox areaRef={wrapperRef} onDragEnd={handleDragEnd} selectableId="node-selectable" selectedId="node-selected" />
     </div>
   );
 };

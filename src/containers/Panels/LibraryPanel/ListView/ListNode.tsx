@@ -22,6 +22,7 @@ import styles from './ListNode.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
+  selectableId: string;
   id: string;
   assetId?: string;
   parentId: string;
@@ -30,7 +31,7 @@ interface Props {
   fileUrl?: string | File;
   filePath: string;
   onSelect?: (id: string) => void;
-  selectedId?: string;
+  selectedId?: string[];
   isSelected?: boolean;
   childrens: any[];
   extension: string;
@@ -39,6 +40,7 @@ interface Props {
 }
 
 const ListNode: FunctionComponent<Props> = ({
+  selectableId,
   type,
   name,
   filePath,
@@ -68,8 +70,27 @@ const ListNode: FunctionComponent<Props> = ({
 
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
 
+  const outerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const config: MutationObserverInit = { attributes: true };
+
+    const handleCheck = () => {
+      console.log('current >> ' + id);
+    };
+
+    const checkObserver = new MutationObserver(handleCheck);
+
+    if (outerRef.current) {
+      checkObserver.observe(outerRef.current, config);
+    }
+
+    return () => {
+      checkObserver.disconnect();
+    };
+  }, [id]);
 
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
@@ -713,6 +734,7 @@ const ListNode: FunctionComponent<Props> = ({
         if (node) {
           return (
             <ListNode
+              selectableId={selectableId}
               id={node.id}
               parentId={node.parentId}
               type={node.type}
@@ -721,7 +743,7 @@ const ListNode: FunctionComponent<Props> = ({
               filePath={node.filePath}
               extension={node.extension}
               onSelect={handleSelect}
-              isSelected={node.id === selectedId}
+              isSelected={selectedId?.includes(node.id)}
               childrens={node.children}
               assetId={node.assetId}
               onSetDragTarget={onSetDragTarget}
@@ -734,6 +756,7 @@ const ListNode: FunctionComponent<Props> = ({
       if (typeof paramId === 'object') {
         return (
           <ListNode
+            selectableId={selectableId}
             id={paramId.id}
             parentId={parentId}
             type="Motion"
@@ -741,7 +764,7 @@ const ListNode: FunctionComponent<Props> = ({
             filePath={filePath + `\\${name}`}
             extension={paramId.extension}
             onSelect={handleSelect}
-            isSelected={id === selectedId && paramId.current}
+            isSelected={selectedId?.includes(id) && paramId.current}
             childrens={[]}
             assetId={paramId.assetId}
             onSetDragTarget={onSetDragTarget}
@@ -750,7 +773,7 @@ const ListNode: FunctionComponent<Props> = ({
         );
       }
     },
-    [dragTarget, filePath, handleSelect, id, lpNode, name, onSetDragTarget, parentId, selectedId],
+    [dragTarget, filePath, handleSelect, id, lpNode, name, onSetDragTarget, parentId, selectableId, selectedId],
   );
 
   const handleBlur = useCallback(
@@ -1190,7 +1213,7 @@ const ListNode: FunctionComponent<Props> = ({
   const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
   return (
-    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
+    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} id={selectableId} ref={outerRef}>
       <div className={cx('inner')}>
         <div className={cx('inner-row')} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}>
           {/* {column.map((col, i) => (

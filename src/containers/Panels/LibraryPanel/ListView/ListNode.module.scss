@@ -5,7 +5,7 @@
   opacity: 0.999;
 
   &.selected {
-    background-color: #5c6065;
+    background-color: var(--gray400);
   }
 }
 
@@ -22,7 +22,7 @@
   border: 1px solid transparent;
 
   &:hover {
-    border: 1px solid #0F88FF;
+    border: 1px solid #0f88ff;
   }
 }
 
