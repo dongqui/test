@@ -1,5 +1,5 @@
 @import 'styles/libraries/_mixins';
-@import 'styles/libraries/_colors';
+
 @import 'styles/libraries/_functions';
 
 .menu-item {
@@ -14,12 +14,12 @@
   }
 
   &:hover {
-    background-color: $primaryColor;
+    background-color: #0f88ff;
     color: #fff;
   }
 
   &:focus {
-    background-color: $primaryColor;
+    background-color: #0f88ff;
     color: #fff;
   }
 }

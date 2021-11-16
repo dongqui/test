@@ -1,4 +1,3 @@
-@import 'styles/libraries/_colors';
 
 .panel-wrap {
   * {
@@ -55,7 +54,7 @@
     border: none;
 
     &.ready {
-      color: $primaryColor;
+      color: #0f88ff;
     }
 
     &.submit {

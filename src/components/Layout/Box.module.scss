@@ -1,9 +1,8 @@
-@import 'styles/libraries/_colors';
 
 .wrapper {
   display: flex;
   position: relative;
-  background-color: $boxColor;
+  background-color: var(--gray200);
   padding: 1px;
 }
 
