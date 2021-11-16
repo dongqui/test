@@ -1,4 +1,4 @@
-@import 'styles/libraries/_colors';
+
 @import 'styles/libraries/_mixins';
 
 .filled {
@@ -34,12 +34,12 @@
 }
 
 .primary {
-  background-color: $primaryColor;
+  background-color: #0f88ff;
   color: #fff;
 
   &:focus,
   &:hover {
-    background-color: lighten($color: $primaryColor, $amount: 4%);
+    background-color: lighten($color:  #0f88ff, $amount: 4%);
   }
 }
 
