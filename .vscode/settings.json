@@ -6,6 +6,7 @@
   "editor.tabSize": 2,
   "editor.formatOnSave": false,
   "eslint.alwaysShowStatus": true,
+  "stylelint.validate": ["css", "scss", ".module.scss"],
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "typescript.tsdk": "node_modules/typescript/lib"
 }

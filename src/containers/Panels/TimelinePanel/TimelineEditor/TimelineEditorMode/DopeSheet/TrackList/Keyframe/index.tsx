@@ -133,7 +133,9 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
     };
   }, [addDragEvent, updateTranslateX, subscribeKeyframe, trackNumber, selectedLayerKeyframes, selectedBoneKeyframes, selectedPropertyKeyframes]);
 
-  return <path className={cx('keyframe', { clicked: isSelected })} d={keyframeAttr.d} transform={keyframeAttr.transform} onClick={clickKeyframe} ref={keyframeRef} />;
+  return (
+    <path className={cx('keyframe', { clicked: isSelected })} id="selectable" d={keyframeAttr.d} transform={keyframeAttr.transform} onClick={clickKeyframe} ref={keyframeRef} />
+  );
 };
 
 export default memo(KeyframeComponent);
