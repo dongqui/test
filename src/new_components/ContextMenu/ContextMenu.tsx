@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, ReactNode, useEffect, useState, useCallback, useRef, useContext, useLayoutEffect, createContext } from 'react';
+import { FunctionComponent, memo, ReactNode, useEffect, useState, useCallback, useRef, useContext, useLayoutEffect, createContext, Fragment } from 'react';
 import { BasePortal } from 'components/Modal';
 import classnames from 'classnames/bind';
 import styles from './ContextMenu.module.scss';
@@ -104,30 +104,29 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
     };
   }, [onContextMenuClose]);
 
-  /**
-   * Close contextmenu after menu click
-   */
-  const handleClick = useCallback(
-    (onClick: () => void) => {
-      onClick();
-      onContextMenuClose();
-    },
-    [onContextMenuClose],
-  );
-
   return (
     <BasePortal container={portalRef}>
       <div className={cx('wrapper')} ref={wrapperRef} style={{ top: position.top, left: position.left }}>
         {menu &&
           menu.map((item, i) => {
-            const classes = cx('inner', item.visibility);
+            const classes = cx('inner', item.visibility, { disabled: item.disabled });
+
+            const handleMenuClick = () => {
+              if (!item.disabled && item.onClick) {
+                item.onClick();
+                onContextMenuClose();
+              }
+            };
 
             return (
-              <div className={classes} key={i}>
-                <div className={cx('item')} onClick={() => handleClick(item.onClick)}>
-                  {item.label}
+              <Fragment key={i}>
+                <div className={classes}>
+                  <div className={cx('item', { disabled: item.disabled })} onClick={handleMenuClick}>
+                    {item.label}
+                  </div>
                 </div>
-              </div>
+                {item.separator && <div className={cx('separator')} />}
+              </Fragment>
             );
           })}
       </div>

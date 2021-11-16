@@ -6,9 +6,11 @@ export as namespace ContextMenu;
 declare namespace ContextMenu {
   interface MenuItem {
     label: string;
+    separator?: boolean;
     visibility?: 'invisible' | 'disable' | 'visible';
-    onClick: (...args: any[]) => void;
+    onClick?: (...args: any[]) => void;
     children?: MenuItem[];
+    disabled?: boolean;
   }
 
   interface BaseProps {
