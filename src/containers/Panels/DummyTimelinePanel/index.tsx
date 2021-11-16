@@ -35,10 +35,11 @@ const TimelinePanel: FunctionComponent = () => {
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    console.log('layers: ', layers);
-    console.log('tracks: ', tracks);
-  }, [layers, tracks]);
+  // temp comment
+  // useEffect(() => {
+  //   console.log('layers: ', layers);
+  //   console.log('tracks: ', tracks);
+  // }, [layers, tracks]);
 
   useEffect(() => {
     const selectedTargetIds = selectedTargets.map((target) => target.id);
@@ -75,8 +76,9 @@ const TimelinePanel: FunctionComponent = () => {
       // 선택된 targets의 tracks 중 layer 또한 선택된 layer와 일치하는 track들
       const targetLayerTracks = tracks.filter((track) => track.layerId === targetLayerId);
 
-      console.log('targetLayerTracks: ', targetLayerTracks);
-      console.log('targetFrame: ', targetFrame);
+      // temp comment
+      // console.log('targetLayerTracks: ', targetLayerTracks);
+      // console.log('targetFrame: ', targetFrame);
 
       // new 값들 insert
       const newAnimationIngredients = produce(animationIngredients, (draft) => {

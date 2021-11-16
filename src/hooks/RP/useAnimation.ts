@@ -17,6 +17,7 @@ const useAnimation = () => {
   const playSpeed = useSelector((state) => state.animatingControls.playSpeed);
   const startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
+  const currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
 
   const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
 
@@ -86,7 +87,7 @@ const useAnimation = () => {
     });
 
     setCurrentAnimationGroup(newAnimationGroup);
-  }, [animationIngredients, assetList, fps, visualizedAssetIds]);
+  }, [animationIngredients, fps, visualizedAssetIds]);
 
   // 애니메이션 재생 조작
   useEffect(() => {
@@ -98,7 +99,6 @@ const useAnimation = () => {
 
         switch (playState) {
           case 'play': {
-            console.log('currentAnimationGroup: ', currentAnimationGroup);
             if (currentAnimationGroup.isStarted) {
               currentAnimationGroup.play(true);
             } else {
@@ -107,14 +107,12 @@ const useAnimation = () => {
             break;
           }
           case 'pause': {
-            console.log('currentAnimationGroup: ', currentAnimationGroup);
             currentAnimationGroup.pause();
             break;
           }
           case 'stop': {
-            console.log('currentAnimationGroup: ', currentAnimationGroup);
+            currentAnimationGroup.pause();
             currentAnimationGroup.goToFrame(startTimeIndex);
-            currentAnimationGroup.stop();
             break;
           }
           default: {
@@ -123,7 +121,7 @@ const useAnimation = () => {
         }
       }
     });
-  }, [currentAnimationGroup, endTimeIndex, fps, playDirection, playSpeed, playState, sceneList, startTimeIndex]);
+  }, [currentAnimationGroup, endTimeIndex, playDirection, playSpeed, playState, sceneList, startTimeIndex]);
 };
 
 export default useAnimation;
