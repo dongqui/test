@@ -49,7 +49,7 @@ const LibraryPanel: FunctionComponent = () => {
       let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
 
       const extension = getFileExtension(file.name).toLowerCase();
-      const fileName = file.name;
+      const fileName = file.name.split('.').slice(0, -1).join('.');
 
       if (extension === 'glb') {
         loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', (file as unknown) as string, baseScene);
@@ -129,7 +129,7 @@ const LibraryPanel: FunctionComponent = () => {
 
       const check = checkCreateDuplicates(`${fileName}`, currentPathNodeNames);
 
-      const nodeName = check === '0' ? `${fileName}` : `${fileName} (${check})`;
+      const nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
 
       const newAsset: ShootAsset = {
         id: assetId,
