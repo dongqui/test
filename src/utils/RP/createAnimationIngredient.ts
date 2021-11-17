@@ -12,7 +12,8 @@ import createShootTrack from './createShootTrack';
  * @param current - 현재 scene에서 사용 중인지 여부
  */
 const createAnimationIngredient = (assetId: string, animationGroup: BABYLON.AnimationGroup, isMocapAnimation: boolean, current: boolean): AnimationIngredient => {
-  const layerId = uuidv4();
+  // base layer에 대해서는 id 앞에 baseLayer// 를 추가
+  const layerId = `baseLayer//${uuidv4()}`;
 
   const tracks: ShootTrack[] = [];
   // animationGroup을 생성하기 위해 사용한 targetAnimations를 순회하며 Property-depth의 트랙들을 구성합니다.
@@ -48,7 +49,7 @@ const createAnimationIngredient = (assetId: string, animationGroup: BABYLON.Anim
     assetId,
     current,
     tracks,
-    layers: [{ id: layerId, name: 'layer1' }],
+    layers: [{ id: layerId, name: 'Base Layer' }],
   };
 
   return animationIngredient;
