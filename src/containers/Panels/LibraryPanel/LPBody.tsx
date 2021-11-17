@@ -166,9 +166,59 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     [handlePaste, handleCreateDirectory, handleSelectAll, handleUnSelectAll],
   );
 
+  const [selectedId, setSelectedId] = useState<string[]>([]);
+
+  const handleSelect = useCallback(
+    (id: string, multiple?: boolean) => {
+      if (multiple) {
+        const nextSelectedIds = produce(selectedId, (draft) => {
+          if (!draft.includes(id)) {
+            draft.push(id);
+          }
+        });
+
+        setSelectedId(nextSelectedIds);
+      }
+
+      if (!multiple) {
+        setSelectedId([id]);
+      }
+    },
+    [selectedId],
+  );
+
+  const handleReject = useCallback(
+    (id: string) => {
+      // console.log('selectedId');
+      // console.log(selectedId, id);
+      if (selectedId.includes(id)) {
+        // const cloneSelectedIds = cloneDeep(selectedId);
+        // const index = cloneSelectedIds.indexOf(id);
+        // if (index > -1) {
+        //   cloneSelectedIds.splice(index, 1);
+        // }
+
+        // setSelectedId(cloneSelectedIds);
+        const nextSelectedIds = produce(selectedId, (draft) => {
+          const index = draft.indexOf(id);
+          if (index > -1) {
+            draft.splice(index, 1);
+          }
+        });
+
+        setSelectedId(nextSelectedIds);
+      }
+    },
+    [selectedId],
+  );
+
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
+
+      if (isPreventContextmenu) {
+        return;
+      }
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
       const isOutsideRowNode = !rowNodeRef.map((nodeRef) => nodeRef.current?.contains(e.target as Node)).some((isNodeContains) => isNodeContains);
@@ -186,24 +236,32 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       }
     };
 
+    const handleResetSelect = (e: MouseEvent) => {
+      const isContains = wrapperRef.current?.contains(e.target as Node);
+      const isOutsideRowNode = !rowNodeRef.map((nodeRef) => nodeRef.current?.contains(e.target as Node)).some((isNodeContains) => isNodeContains);
+
+      const isBodyClick = isContains && isOutsideRowNode;
+
+      if (isBodyClick) {
+        console.log('RESET');
+        setSelectedId([]);
+      }
+    };
+
     const currentRef = wrapperRef.current;
 
-    if (currentRef && !isPreventContextmenu) {
+    if (currentRef) {
+      currentRef.addEventListener('mousedown', handleResetSelect);
       currentRef.addEventListener('contextmenu', handleContextMenu);
 
       return () => {
+        currentRef.removeEventListener('mousedown', handleResetSelect);
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
   }, [contextMenuList, dispatch, isPreventContextmenu, onContextMenuOpen, rowNodeRef]);
 
   const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
-
-  const [selectedId, setSelectedId] = useState<string[]>([]);
-
-  const handleSelect = useCallback((id: string) => {
-    setSelectedId([id]);
-  }, []);
 
   const [dragTarget, setDragTarget] = useState<{ id: string; type: LP.Node['type']; parentId: string } | undefined>();
 
@@ -212,9 +270,11 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   }, []);
 
   const handleDragEnd = useCallback((list: NodeListOf<Element>) => {
-    console.log('handleDragEnd');
-    console.log(list);
+    // console.log('handleDragEnd');
+    // console.log(list);
   }, []);
+
+  console.log(selectedId);
 
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>
@@ -224,6 +284,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
             selectableId="node-selectable"
             isSelected={selectedId.includes(node.id)}
             onSelect={handleSelect}
+            onReject={handleReject}
             selectedId={selectedId}
             onSetDragTarget={handleSetDragTarget}
             dragTarget={dragTarget}

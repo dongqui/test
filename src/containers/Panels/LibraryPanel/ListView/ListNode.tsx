@@ -30,7 +30,8 @@ interface Props {
   name: string;
   fileUrl?: string | File;
   filePath: string;
-  onSelect?: (id: string) => void;
+  onSelect?: (id: string, multiple?: boolean) => void;
+  onReject: (id: string) => void;
   selectedId?: string[];
   isSelected?: boolean;
   childrens: any[];
@@ -48,6 +49,7 @@ const ListNode: FunctionComponent<Props> = ({
   assetId,
   parentId,
   onSelect,
+  onReject,
   isSelected,
   childrens,
   extension,
@@ -74,11 +76,33 @@ const ListNode: FunctionComponent<Props> = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
 
+  const [isHover, setIsHover] = useState(false);
+  const wrapperClasses = cx('inner-row', { hovered: isHover });
+
+  const [currentSelectableId, setCurrentSelectableId] = useState('');
+  // console.log(name, id);
+
   useEffect(() => {
     const config: MutationObserverInit = { attributes: true };
 
     const handleCheck = () => {
-      console.log('current >> ' + id);
+      const currentRef = outerRef.current;
+
+      if (currentRef) {
+        const currentRefId = currentRef.id;
+
+        if (currentRefId === 'node-selected' && currentRefId !== currentSelectableId) {
+          console.log('==onselect==');
+          onSelect && onSelect(id, true);
+          setCurrentSelectableId(currentRefId);
+        }
+
+        if (currentRefId === 'node-selectable' && currentRefId !== currentSelectableId) {
+          // console.log('check', name, id);
+          onReject(id);
+          setCurrentSelectableId(currentRefId);
+        }
+      }
     };
 
     const checkObserver = new MutationObserver(handleCheck);
@@ -87,10 +111,26 @@ const ListNode: FunctionComponent<Props> = ({
       checkObserver.observe(outerRef.current, config);
     }
 
+    const currentRef = wrapperRef.current;
+
+    const handleHover = () => {
+      // setIsHover(!isHover);
+    };
+
+    if (currentRef) {
+      currentRef.addEventListener('mouseenter', handleHover);
+      currentRef.addEventListener('mouseleave', handleHover);
+    }
+
     return () => {
       checkObserver.disconnect();
+
+      if (currentRef) {
+        currentRef.removeEventListener('mouseenter', handleHover);
+        currentRef.removeEventListener('mouseleave', handleHover);
+      }
     };
-  }, [id]);
+  }, [currentSelectableId, id, isHover, name, onReject, onSelect, parentId]);
 
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
@@ -743,6 +783,7 @@ const ListNode: FunctionComponent<Props> = ({
               filePath={node.filePath}
               extension={node.extension}
               onSelect={handleSelect}
+              onReject={onReject}
               isSelected={selectedId?.includes(node.id)}
               childrens={node.children}
               assetId={node.assetId}
@@ -764,6 +805,7 @@ const ListNode: FunctionComponent<Props> = ({
             filePath={filePath + `\\${name}`}
             extension={paramId.extension}
             onSelect={handleSelect}
+            onReject={onReject}
             isSelected={selectedId?.includes(id) && paramId.current}
             childrens={[]}
             assetId={paramId.assetId}
@@ -773,7 +815,7 @@ const ListNode: FunctionComponent<Props> = ({
         );
       }
     },
-    [dragTarget, filePath, handleSelect, id, lpNode, name, onSetDragTarget, parentId, selectableId, selectedId],
+    [dragTarget, filePath, handleSelect, id, lpNode, name, onReject, onSetDragTarget, parentId, selectableId, selectedId],
   );
 
   const handleBlur = useCallback(
@@ -1215,7 +1257,7 @@ const ListNode: FunctionComponent<Props> = ({
   return (
     <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} id={selectableId} ref={outerRef}>
       <div className={cx('inner')}>
-        <div className={cx('inner-row')} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}>
+        <div className={wrapperClasses} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}>
           {/* {column.map((col, i) => (
             <div key={i} style={{ width: `${12 * col}px` }} />
           ))} */}

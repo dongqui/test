@@ -21,7 +21,11 @@
   flex-basis: 100%;
   border: 1px solid transparent;
 
-  &:hover {
+  // &:hover {
+  //   border: 1px solid #0f88ff;
+  // }
+
+  &.hovered {
     border: 1px solid #0f88ff;
   }
 }
