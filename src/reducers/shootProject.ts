@@ -1,12 +1,12 @@
 import produce from 'immer';
 import { ShootProjectAction } from 'actions/shootProjectAction';
 import { ShootProject } from 'types/common';
-import { v4 as uuidv4 } from 'uuid';
+import { getRandomStringKey } from 'utils/common';
 
 type State = ShootProject;
 
 const defaultState: State = {
-  id: uuidv4(),
+  id: getRandomStringKey(),
   sceneList: [],
   assetList: [],
   visualizedAssetIds: [],

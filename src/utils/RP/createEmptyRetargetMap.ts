@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import { ShootRetargetMap } from 'types/common';
+import { getRandomStringKey } from 'utils/common';
 
 const DEFAULT_HIP_SPACE = 100;
 
@@ -11,7 +11,7 @@ const DEFAULT_HIP_SPACE = 100;
  */
 const createEmptyRetargetMap = (assetId: string): ShootRetargetMap => {
   return {
-    id: uuidv4(),
+    id: getRandomStringKey(),
     assetId,
     value: {
       hips: { hipSpace: DEFAULT_HIP_SPACE },

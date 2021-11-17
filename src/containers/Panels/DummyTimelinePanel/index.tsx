@@ -1,5 +1,4 @@
 import { ChangeEvent, FunctionComponent, memo, useCallback, useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { isUndefined, range, uniq } from 'lodash';
@@ -7,7 +6,7 @@ import produce from 'immer';
 import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
 import * as animationDataActions from 'actions/animationDataAction';
 import { createShootTrack, getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
-import { roundToFourth } from 'utils/common';
+import { getRandomStringKey, roundToFourth } from 'utils/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -337,7 +336,7 @@ const TimelinePanel: FunctionComponent = () => {
       if (currentAnimationIngredient) {
         const { id, name, assetId, current, layers, tracks } = currentAnimationIngredient;
         const newLayer = {
-          id: uuidv4(),
+          id: getRandomStringKey(),
           name: newLayerName,
         };
         const newAnimationIngredient: AnimationIngredient = {

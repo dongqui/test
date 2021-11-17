@@ -9,7 +9,7 @@ import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { getFileExtension } from 'utils/common';
+import { getFileExtension, getRandomStringKey } from 'utils/common';
 import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
@@ -538,8 +538,9 @@ const ListNode: FunctionComponent<Props> = ({
                   if (assetId) {
                     const cloneLPNode = _.clone(lpNode);
 
-                    const layerName = 'layer1';
-                    const layers: ShootLayer[] = [{ id: uuidv4(), name: layerName }];
+                    const layerName = 'Base Layer';
+                    // base layer의 id 및 name
+                    const layers: ShootLayer[] = [{ id: `baseLayer//${getRandomStringKey()}`, name: layerName }];
 
                     const tracks: ShootTrack[] = [];
                     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
@@ -567,7 +568,7 @@ const ListNode: FunctionComponent<Props> = ({
                     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
 
                     const nextIngredient: AnimationIngredient = {
-                      id: uuidv4(),
+                      id: getRandomStringKey(),
                       name: nodeName,
                       assetId: assetId,
                       current: false,

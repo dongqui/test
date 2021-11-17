@@ -1,8 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
-import { v4 as uuidv4 } from 'uuid';
 import { AnimationIngredient, ShootAsset } from 'types/common';
 import createShootTrack from './createShootTrack';
-import { roundToFourth } from 'utils/common';
+import { getRandomStringKey, roundToFourth } from 'utils/common';
 
 const DUMMY_JSON_URL = 'motions/dummyMotion.json';
 
@@ -11,8 +10,8 @@ const createDummyAnimation = async (asset: ShootAsset): Promise<AnimationIngredi
     .then((file) => file.json())
     .then((res) => res.data);
 
-  const animId = uuidv4();
-  const layerId = uuidv4();
+  const animId = getRandomStringKey();
+  const layerId = getRandomStringKey();
 
   const hipsBone = asset.bones[1];
 

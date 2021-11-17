@@ -8,7 +8,7 @@ import { clone, isUndefined } from 'lodash';
 import produce from 'immer';
 import { v4 as uuid } from 'uuid';
 import { convertFBXtoGLB } from 'api';
-import { getFileExtension } from 'utils/common';
+import { getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -163,7 +163,7 @@ const LibraryPanel: FunctionComponent = () => {
 
       const { meshes, geometries, skeletons, transformNodes, animationGroups } = loadedAssetContainer;
 
-      const assetId = uuid();
+      const assetId = getRandomStringKey();
 
       meshes.forEach((mesh) => {
         // joint 클릭을 위해 mesh의 클릭을 막습니다.
