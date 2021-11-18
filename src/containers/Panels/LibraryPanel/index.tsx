@@ -12,9 +12,9 @@ import { getFileExtension } from 'utils/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as shootProjectActions from 'actions/shootProjectAction';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import { AnimationIngredient, ShootAsset } from 'types/common';
+import { AnimationIngredient, PlaskAsset } from 'types/common';
 import Box from 'components/Layout/Box';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
@@ -30,8 +30,8 @@ const LibraryPanel: FunctionComponent = () => {
 
   const lpNode = useSelector((state) => state.lpNode.node);
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
-  const sceneList = useSelector((state) => state.shootProject.sceneList);
-  const assetList = useSelector((state) => state.shootProject.assetList);
+  const sceneList = useSelector((state) => state.plaskProject.sceneList);
+  const assetList = useSelector((state) => state.plaskProject.assetList);
   const animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
@@ -120,7 +120,7 @@ const LibraryPanel: FunctionComponent = () => {
          * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
          */
 
-        // dispatch(shootProjectActions.changeFileToLoad({ file, fileName }));
+        // dispatch(plaskProjectActions.changeFileToLoad({ file, fileName }));
 
         loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', (file as unknown) as string, baseScene);
       }
@@ -152,7 +152,7 @@ const LibraryPanel: FunctionComponent = () => {
           /**
            * @TODO 파일 확장자 저장 필요 및 이후 rename시에 확장자는 제외하고 수정하고 확정시에 확장자를 붙여주어야 한다.
            */
-          // dispatch(shootProjectActions.changeFileToLoad({ file: response, fileName }));
+          // dispatch(plaskProjectActions.changeFileToLoad({ file: response, fileName }));
           loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
         }
       }
@@ -200,7 +200,7 @@ const LibraryPanel: FunctionComponent = () => {
       // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
       const retargetMap = createEmptyRetargetMap(assetId);
 
-      const newAsset: ShootAsset = {
+      const newAsset: PlaskAsset = {
         id: assetId,
         name: fileName,
         extension: getFileExtension(fileName).toLowerCase(),
@@ -213,7 +213,7 @@ const LibraryPanel: FunctionComponent = () => {
         retargetMapId: retargetMap.id,
       };
 
-      dispatch(shootProjectActions.addAsset({ asset: newAsset }));
+      dispatch(plaskProjectActions.addAsset({ asset: newAsset }));
       dispatch(
         animationDataActions.addAsset({
           transformNodes: transformNodes.filter(

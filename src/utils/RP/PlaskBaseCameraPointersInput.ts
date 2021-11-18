@@ -8,7 +8,7 @@ import { IPointerEvent } from './types';
  * See FollowCameraPointersInput in src/Cameras/Inputs/followCameraPointersInput.ts
  * for example usage.
  */
-export default abstract class ShootBaseCameraPointersInput implements ICameraInput<Camera> {
+export default abstract class PlaskBaseCameraPointersInput implements ICameraInput<Camera> {
   /**
    * Defines the camera the input is attached to.
    */
@@ -275,7 +275,7 @@ export default abstract class ShootBaseCameraPointersInput implements ICameraInp
    * @returns the class name
    */
   public getClassName(): string {
-    return 'ShootBaseCameraPointersInput';
+    return 'PlaskBaseCameraPointersInput';
   }
 
   /**

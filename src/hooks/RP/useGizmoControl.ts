@@ -8,7 +8,7 @@ import { checkIsTargetMesh } from 'utils/RP';
 type GizmoMode = 'position' | 'rotation' | 'scale';
 
 const useGizmoControl = () => {
-  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const sceneList = useSelector((state) => state.plaskProject.sceneList);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
 
   const dispatch = useDispatch();

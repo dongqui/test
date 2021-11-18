@@ -1,11 +1,11 @@
 import * as BABYLON from '@babylonjs/core';
 import { RefObject, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import * as shootProjectActions from 'actions/shootProjectAction';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import { checkIsObjectIn, createCamera, createDirectionalLight, createGrounds, createHemisphericLight } from 'utils/RP';
 import { useSelector } from 'reducers';
-import { Nullable, ScreenXY, ShootView } from 'types/common';
+import { Nullable, ScreenXY, PlaskView } from 'types/common';
 
 interface Params {
   renderingCanvas: RefObject<HTMLCanvasElement>;
@@ -23,7 +23,7 @@ type PrevCameraPositions = {
 const useInitializeScene = (params: Params) => {
   const { renderingCanvas } = params;
 
-  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const sceneList = useSelector((state) => state.plaskProject.sceneList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const dispatch = useDispatch();
@@ -82,7 +82,7 @@ const useInitializeScene = (params: Params) => {
           hasShadow: true,
           hasGroundTexture: true,
         };
-        dispatch(shootProjectActions.addScene({ scene: newScene }));
+        dispatch(plaskProjectActions.addScene({ scene: newScene }));
       });
 
       innerScene.onDisposeObservable.addOnce((scene) => {
@@ -147,7 +147,7 @@ const useInitializeScene = (params: Params) => {
       return () => {
         // engine을 없앱니다.
         engine.dispose();
-        dispatch(shootProjectActions.removeScene({ sceneId: innerScene.uid }));
+        dispatch(plaskProjectActions.removeScene({ sceneId: innerScene.uid }));
 
         resizeMutationObserver.disconnect();
       };
@@ -233,7 +233,7 @@ const useInitializeScene = (params: Params) => {
   }, [dispatch, renderingCanvas, sceneList, selectableObjects]);
 
   useEffect(() => {
-    const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: ShootView) => {
+    const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
       camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
       camera.orthoTop = 2;
       camera.orthoBottom = -2;
@@ -259,8 +259,8 @@ const useInitializeScene = (params: Params) => {
 
       const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
       if (focusedCanvas) {
-        const focusedShootScene = sceneList.find((s) => s.canvasId === focusedCanvas.id);
-        const focusedScene = focusedShootScene?.scene;
+        const focusedPlaskScene = sceneList.find((s) => s.canvasId === focusedCanvas.id);
+        const focusedScene = focusedPlaskScene?.scene;
 
         if (focusedScene && focusedScene.activeCamera) {
           const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
