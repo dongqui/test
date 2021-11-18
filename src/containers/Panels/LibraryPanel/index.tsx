@@ -30,7 +30,7 @@ const LibraryPanel: FunctionComponent = () => {
 
   const lpNode = useSelector((state) => state.lpNode.node);
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
-  const sceneList = useSelector((state) => state.plaskProject.sceneList);
+  const screenList = useSelector((state) => state.plaskProject.screenList);
   const assetList = useSelector((state) => state.plaskProject.assetList);
   const animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
@@ -100,12 +100,12 @@ const LibraryPanel: FunctionComponent = () => {
       const fileName = file.name;
 
       // reducer에 최소 하나의 scene도 없는 경우 return
-      if (!sceneList[0]) {
+      if (!screenList[0]) {
         return;
       }
 
       // assetLoad에 사용할 baseScene이 없거나 준비되지 않은 상태라면 return
-      const baseScene = sceneList[0].scene;
+      const baseScene = screenList[0].scene;
       if (!(baseScene && baseScene.isReady())) {
         return;
       }
@@ -224,7 +224,7 @@ const LibraryPanel: FunctionComponent = () => {
         }),
       );
     },
-    [dispatch, onModalClose, onModalOpen, sceneList],
+    [dispatch, onModalClose, onModalOpen, screenList],
   );
 
   const handleDrop = useCallback(

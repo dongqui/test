@@ -75,7 +75,7 @@ const ListNode: FunctionComponent<Props> = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
 
-  const sceneList = useSelector((state) => state.plaskProject.sceneList);
+  const screenList = useSelector((state) => state.plaskProject.screenList);
   const assetList = useSelector((state) => state.plaskProject.assetList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
@@ -342,8 +342,8 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (targetAsset) {
-                      sceneList
-                        .map((s) => s.scene)
+                      screenList
+                        .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
                         });
@@ -397,8 +397,8 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (prevAsset) {
-                      sceneList
-                        .map((s) => s.scene)
+                      screenList
+                        .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, prevAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
                         });
@@ -418,8 +418,8 @@ const ListNode: FunctionComponent<Props> = ({
                       const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
 
                       // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
-                      sceneList.forEach((plaskScene) => {
-                        const { id: sceneId, scene } = plaskScene;
+                      screenList.forEach((PlaskScreen) => {
+                        const { id: sceneId, scene } = PlaskScreen;
 
                         if (scene.isReady()) {
                           // scene들에 mesh 추가
@@ -517,8 +517,8 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (targetAsset) {
-                      sceneList
-                        .map((s) => s.scene)
+                      screenList
+                        .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
                         });
@@ -704,7 +704,7 @@ const ListNode: FunctionComponent<Props> = ({
     type,
     visualizedAssetIds,
     assetList,
-    sceneList,
+    screenList,
   ]);
 
   const column = Array.from({ length: depth - 1 }).map((x, i) => i);
