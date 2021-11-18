@@ -1,16 +1,7 @@
 import { TimeEditorTrack, ClusteredKeyframe, TrasnformKey } from 'types/TP/keyframe';
 import { DragDropKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
-import {
-  AllKeyframes,
-  AllSelectedKeyframes,
-  LayerKeyframes,
-  BoneKeyframes,
-  PropertyKeyframes,
-  SelectedLayerKeyframes,
-  SelectedBoneKeyframes,
-  SelectedPropertyKeyframes,
-} from 'reducers/keyframes/types';
+import { LayerKeyframes, BoneKeyframes, PropertyKeyframes, SelectedLayerKeyframes, SelectedBoneKeyframes, SelectedPropertyKeyframes } from 'reducers/keyframes/types';
 import { getBoneTrackIndex, getBinarySearch } from 'utils/TP';
 
 import { Service } from './index';

@@ -1,16 +1,11 @@
-// .top-ruler {
-//   transform: translate(20px, 18px);
+.top-grid {
+  transform: translate(20px, 18px);
 
-//   path {
-//     display: none;
-//   }
+  path, text {
+    display: none;
+  }
 
-//   line {
-//     stroke: #292a2b;
-//   }
-
-//   text {
-//     font-size: 9px;
-//     fill: white;
-//   }
-// }
+  line {
+    stroke: rgba(255, 255, 255, 0.2);
+  }
+}

@@ -1,3 +1,4 @@
+import requestApi from './requestApi';
 import axios from 'axios';
 
 /**
@@ -12,6 +13,15 @@ const convertFBXtoGLB = async (file: File) => {
     formData.append('file', file);
     formData.append('type', 'fbx');
     formData.append('id', String(Date.now() / 1000));
+
+    // const response = await requestApi({
+    //   method: 'POST',
+    //   // baseURL: 'https://blenderapi.myplask.com:5000',
+    //   base: 'https://dev.plask.ai/api',
+    //   url: '/converter/model',
+    //   data: formData,
+    //   headers: { 'Content-Type': 'multipart/form-data' },
+    // });
 
     const response = await axios({
       method: 'POST',
