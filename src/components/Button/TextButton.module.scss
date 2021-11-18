@@ -1,4 +1,4 @@
-@import 'styles/libraries/_colors';
+
 @import 'styles/libraries/_mixins';
 
 .text {
@@ -12,10 +12,10 @@
 
   &.disabled {
     cursor: not-allowed;
-    color: lighten($color: $primaryColor, $amount: 4%);
+    color: lighten($color:  #0f88ff, $amount: 4%);
 
     &:hover {
-      color: lighten($color: $primaryColor, $amount: 4%);
+      color: lighten($color:  #0f88ff, $amount: 4%);
     }
   }
 }
@@ -27,7 +27,7 @@
 }
 
 .primary {
-  color: $primaryColor;
+  color: #0f88ff;
 
   // &:focus,
   // &:hover {
@@ -35,6 +35,6 @@
   // }
 
   &:active {
-    color: darken($color: $primaryColor, $amount: 4%);
+    color: darken($color:  #0f88ff, $amount: 4%);
   }
 }

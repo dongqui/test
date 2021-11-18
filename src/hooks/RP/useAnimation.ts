@@ -5,10 +5,10 @@ import { filterQuaternion, filterVector } from 'utils/RP';
 import { round } from 'lodash';
 
 const useAnimation = () => {
-  const sceneList = useSelector((state) => state.shootProject.sceneList);
-  const assetList = useSelector((state) => state.shootProject.assetList);
-  const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
-  const fps = useSelector((state) => state.shootProject.fps);
+  const screenList = useSelector((state) => state.plaskProject.screenList);
+  const assetList = useSelector((state) => state.plaskProject.assetList);
+  const visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const fps = useSelector((state) => state.plaskProject.fps);
 
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
@@ -91,8 +91,8 @@ const useAnimation = () => {
 
   // 애니메이션 재생 조작
   useEffect(() => {
-    sceneList.forEach((shootScene) => {
-      const { id: sceneId, name, scene, canvasId } = shootScene;
+    screenList.forEach((PlaskScreen) => {
+      const { id: sceneId, scene, canvasId } = PlaskScreen;
 
       if (currentAnimationGroup) {
         // scene.addAnimationGroup(currentAnimationGroup);
@@ -121,7 +121,7 @@ const useAnimation = () => {
         }
       }
     });
-  }, [currentAnimationGroup, endTimeIndex, playDirection, playSpeed, playState, sceneList, startTimeIndex]);
+  }, [currentAnimationGroup, endTimeIndex, playDirection, playSpeed, playState, screenList, startTimeIndex]);
 };
 
 export default useAnimation;

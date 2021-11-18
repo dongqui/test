@@ -3,9 +3,9 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { isUndefined, range, uniq } from 'lodash';
 import produce from 'immer';
-import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
+import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
 import * as animationDataActions from 'actions/animationDataAction';
-import { createShootTrack, getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
+import { createPlaskTrack, getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
 import { getRandomStringKey, roundToFourth } from 'utils/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -16,15 +16,15 @@ const DUMMY_DELETE_FRAME = roundToFourth(3 / 30);
 const DUMMY_DELETE_FRAMES = range(1, 100).map((num) => roundToFourth(num / 30));
 
 const TimelinePanel: FunctionComponent = () => {
-  const assetList = useSelector((state) => state.shootProject.assetList);
-  const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
-  const fps = useSelector((state) => state.shootProject.fps);
+  const assetList = useSelector((state) => state.plaskProject.assetList);
+  const visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const fps = useSelector((state) => state.plaskProject.fps);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
   // 선택된 target들이 가진 layers, tracks만 남긴 배열들
-  const [layers, setLayers] = useState<ShootLayer[]>([]);
-  const [tracks, setTracks] = useState<ShootTrack[]>([]);
+  const [layers, setLayers] = useState<PlaskLayer[]>([]);
+  const [tracks, setTracks] = useState<PlaskTrack[]>([]);
 
   const [targetLayerId, setTargetLayerId] = useState<string>();
   const [targetFrame, setTargetFrame] = useState<number>();
@@ -45,8 +45,8 @@ const TimelinePanel: FunctionComponent = () => {
     const selectedAssetIds = uniq(selectedTargets.map((target) => target.id.split('//')[0]));
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
-    const totalLayers: ShootLayer[] = [];
-    const totalTracks: ShootTrack[] = [];
+    const totalLayers: PlaskLayer[] = [];
+    const totalTracks: PlaskTrack[] = [];
 
     targetAssets.forEach((asset) => {
       const { id: assetId } = asset;
@@ -164,14 +164,14 @@ const TimelinePanel: FunctionComponent = () => {
       const { tracks: currentTracks } = currentAnimationIngredient;
 
       if (targetLayerId) {
-        const newTracks: ShootTrack[] = [];
+        const newTracks: PlaskTrack[] = [];
 
         currentTracks.forEach((track) => {
           // rotationQuaternion과 rotation의 경우 동시에 편집되도록
           if (track.property === 'rotationQuaternion') {
             if (deleteTargetTrackIds.includes(track.id)) {
               newTracks.push(
-                createShootTrack(
+                createPlaskTrack(
                   track.name,
                   track.layerId,
                   track.target,
@@ -183,7 +183,7 @@ const TimelinePanel: FunctionComponent = () => {
               const rotationTrack = currentTracks.find((t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'));
               if (rotationTrack) {
                 newTracks.push(
-                  createShootTrack(
+                  createPlaskTrack(
                     rotationTrack.name,
                     rotationTrack.layerId,
                     rotationTrack.target,
@@ -203,7 +203,7 @@ const TimelinePanel: FunctionComponent = () => {
           } else if (track.property === 'position' || track.property === 'scaling') {
             if (deleteTargetTrackIds.includes(track.id)) {
               newTracks.push(
-                createShootTrack(
+                createPlaskTrack(
                   track.name,
                   track.layerId,
                   track.target,
@@ -248,14 +248,14 @@ const TimelinePanel: FunctionComponent = () => {
       const { tracks: currentTracks } = currentAnimationIngredient;
 
       if (targetLayerId) {
-        const newTracks: ShootTrack[] = [];
+        const newTracks: PlaskTrack[] = [];
 
         currentTracks.forEach((track) => {
           // rotationQuaternion과 rotation의 경우 동시에 편집되도록
           if (track.property === 'rotationQuaternion') {
             if (deleteTargetTrackIds.includes(track.id)) {
               newTracks.push(
-                createShootTrack(
+                createPlaskTrack(
                   track.name,
                   track.layerId,
                   track.target,
@@ -267,7 +267,7 @@ const TimelinePanel: FunctionComponent = () => {
               const rotationTrack = currentTracks.find((t) => t.id === track.id.replace('//rotationQuaternion', '//rotation'));
               if (rotationTrack) {
                 newTracks.push(
-                  createShootTrack(
+                  createPlaskTrack(
                     rotationTrack.name,
                     rotationTrack.layerId,
                     rotationTrack.target,
@@ -287,7 +287,7 @@ const TimelinePanel: FunctionComponent = () => {
           } else if (track.property === 'position' || track.property === 'scaling') {
             if (deleteTargetTrackIds.includes(track.id)) {
               newTracks.push(
-                createShootTrack(
+                createPlaskTrack(
                   track.name,
                   track.layerId,
                   track.target,

@@ -15,17 +15,18 @@ interface Params {
 class KeyframeVerticalSelection implements VerticalSelection {
   private readonly clusterKeyframes = new ClusterKeyframes();
 
-  private findKeyframeValue = (keyframes: Keyframe[], time: number) => {
+  private findKeyframe = (keyframes: Keyframe[], time: number) => {
     const keyframeIndex = findElementIndex(keyframes, time, 'time');
     if (keyframeIndex === -1) return;
-    return keyframes[keyframeIndex].value;
+    return keyframes[keyframeIndex];
   };
 
   private getSelectedLayers = ({ state, payload }: Params) => {
     const { layerTrack } = state;
-    const { trackId, trackNumber, trackType } = layerTrack;
+    const { trackId, trackNumber, trackType, keyframes } = layerTrack;
     const selectedLayer: SelectedKeyframe[] = [];
-    selectedLayer.push({ trackId, trackNumber, trackType, time: payload.time });
+    const keyframe = this.findKeyframe(keyframes, payload.time);
+    if (keyframe && keyframe.isDeleted) selectedLayer.push({ trackId, trackNumber, trackType, time: payload.time });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedLayer);
   };
 
@@ -33,8 +34,9 @@ class KeyframeVerticalSelection implements VerticalSelection {
     const { boneTrackList } = state;
     const selectedBones: SelectedKeyframe[] = [];
     boneTrackList.forEach((boneKeyframe) => {
-      const { trackNumber, trackId, trackType } = boneKeyframe;
-      selectedBones.push({ trackNumber, trackId, trackType, time: payload.time });
+      const { trackNumber, trackId, trackType, keyframes } = boneKeyframe;
+      const keyframe = this.findKeyframe(keyframes, payload.time);
+      if (keyframe && keyframe.isDeleted) selectedBones.push({ trackNumber, trackId, trackType, time: payload.time });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
   };
@@ -44,9 +46,10 @@ class KeyframeVerticalSelection implements VerticalSelection {
     const selectedTransforms: SelectedKeyframe[] = [];
     propertyTrackList.forEach((transformKeyframe) => {
       const { trackNumber, trackType, trackId, keyframes } = transformKeyframe;
-      const value = this.findKeyframeValue(keyframes, payload.time);
-      if (value) {
-        selectedTransforms.push({ trackNumber, trackType, trackId, time: payload.time, value });
+      const keyframe = this.findKeyframe(keyframes, payload.time);
+      if (keyframe) {
+        const { value, isDeleted } = keyframe;
+        if (!isDeleted) selectedTransforms.push({ trackNumber, trackType, trackId, time: payload.time, value });
       }
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);

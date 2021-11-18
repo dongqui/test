@@ -1,4 +1,4 @@
-import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP/keyframe';
+import { TimeEditorTrack, ClusteredKeyframe, Keyframe } from 'types/TP/keyframe';
 import { KeyframesAction } from 'actions/keyframes';
 import { Observer } from 'utils/TP';
 
@@ -23,7 +23,7 @@ const layerKeyframes: TimeEditorTrack = {
   trackId: 'layer-1',
   trackNumber: -1,
   trackType: 'layer',
-  keyframes: Array(5)
+  keyframes: Array(50)
     .fill(1)
     .map((_, index) => ({
       isSelected: false,
@@ -38,7 +38,7 @@ const boneKeyframes: TimeEditorTrack[] = Array(3)
     trackNumber: index * 10,
     trackId: 'bone' + index,
     trackType: 'bone',
-    keyframes: Array(5)
+    keyframes: Array(50)
       .fill(1)
       .map((_, index) => ({
         isSelected: false,
@@ -48,51 +48,51 @@ const boneKeyframes: TimeEditorTrack[] = Array(3)
   }));
 
 const propertyKeyframes: TimeEditorTrack[] = [
-  // ...Array(3)
-  //   .fill(1)
-  //   .map((_, index) => ({
-  //     trackId: 'property-aaaaa' + index,
-  //     trackNumber: index + 1,
-  //     trackType: 'property',
-  //     keyframes: Array(5)
-  //       .fill(1)
-  //       .map((_, index) => ({
-  //         isSelected: false,
-  //         isDeleted: false,
-  //         time: index,
-  //         value: { x: 1, y: 1, z: 1 },
-  //       })),
-  //   })),
-  // ...Array(3)
-  //   .fill(1)
-  //   .map((_, index) => ({
-  //     trackId: 'property-bbbbb' + index,
-  //     trackNumber: index + 11,
-  //     trackType: 'property',
-  //     keyframes: Array(5)
-  //       .fill(1)
-  //       .map((_, index) => ({
-  //         isSelected: false,
-  //         isDeleted: false,
-  //         time: index,
-  //         value: { x: 1, y: 1, z: 1 },
-  //       })),
-  //   })),
-  // ...Array(3)
-  //   .fill(1)
-  //   .map((_, index) => ({
-  //     trackId: 'property-ccccc' + index,
-  //     trackNumber: index + 21,
-  //     trackType: 'property',
-  //     keyframes: Array(5)
-  //       .fill(1)
-  //       .map((_, index) => ({
-  //         isSelected: false,
-  //         isDeleted: false,
-  //         time: index,
-  //         value: { x: 1, y: 1, z: 1 },
-  //       })),
-  //   })),
+  ...Array(3)
+    .fill(1)
+    .map<TimeEditorTrack>((_, index) => ({
+      trackId: 'property-aaaaa' + index,
+      trackNumber: index + 1,
+      trackType: 'property',
+      keyframes: Array(50)
+        .fill(1)
+        .map<Keyframe>((_, index) => ({
+          isSelected: false,
+          isDeleted: false,
+          time: index,
+          value: { x: 1, y: 1, z: 1 },
+        })),
+    })),
+  ...Array(3)
+    .fill(1)
+    .map<TimeEditorTrack>((_, index) => ({
+      trackId: 'property-bbbbb' + index,
+      trackNumber: index + 11,
+      trackType: 'property',
+      keyframes: Array(50)
+        .fill(1)
+        .map<Keyframe>((_, index) => ({
+          isSelected: false,
+          isDeleted: false,
+          time: index,
+          value: { x: 1, y: 1, z: 1 },
+        })),
+    })),
+  ...Array(3)
+    .fill(1)
+    .map<TimeEditorTrack>((_, index) => ({
+      trackId: 'property-ccccc' + index,
+      trackNumber: index + 21,
+      trackType: 'property',
+      keyframes: Array(50)
+        .fill(1)
+        .map<Keyframe>((_, index) => ({
+          isSelected: false,
+          isDeleted: false,
+          time: index,
+          value: { x: 1, y: 1, z: 1 },
+        })),
+    })),
 ];
 
 const initialState: KeyframesState = {

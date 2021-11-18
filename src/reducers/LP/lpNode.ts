@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 interface State {
   node: LP.Node[];
-  visualizedFileURL: string | File;
+  visualizedfileUrl: string | File;
   currentPath: string;
   currentPathId: string;
   clipboard: LP.Node[];
@@ -15,7 +15,7 @@ const defaultState: State = {
       id: uuidv4(),
       filePath: '\\root',
       parentId: '__root__',
-      fileURL: '/models/Zombie.glb',
+      fileUrl: '/models/Zombie.glb',
       name: 'Zombie.glb',
       extension: 'glb',
       type: 'Model',
@@ -25,7 +25,7 @@ const defaultState: State = {
       id: uuidv4(),
       filePath: '\\root',
       parentId: '__root__',
-      fileURL: '/models/Knight.glb',
+      fileUrl: '/models/Knight.glb',
       name: 'Knight.glb',
       extension: 'glb',
       type: 'Model',
@@ -35,14 +35,14 @@ const defaultState: State = {
       id: uuidv4(),
       filePath: '\\root',
       parentId: '__root__',
-      fileURL: '/models/Vanguard.glb',
+      fileUrl: '/models/Vanguard.glb',
       name: 'Vanguard.glb',
       extension: 'glb',
       type: 'Model',
       children: [],
     },
   ],
-  visualizedFileURL: '',
+  visualizedfileUrl: '',
   currentPath: '\\root',
   currentPathId: '\\root',
   clipboard: [],
@@ -57,7 +57,7 @@ export const lpNode = (state = defaultState, action: LPNodeAction) => {
     }
     case 'mode/VISUALIZE': {
       return Object.assign({}, state, {
-        visualizedFileURL: action.payload,
+        visualizedfileUrl: action.payload,
       });
     }
     case 'mode/CHANGE_CURRENT_PATH': {

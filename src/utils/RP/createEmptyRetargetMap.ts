@@ -1,44 +1,45 @@
-import { ShootRetargetMap } from 'types/common';
+import { PlaskRetargetMap } from 'types/common';
 import { getRandomStringKey } from 'utils/common';
 
-const DEFAULT_HIP_SPACE = 100;
+const DEFAULT_HIP_SPACE = 106;
 
 /**
  * targetBone을 포함하지 않는 기본 리타겟맵을 생성합니다.
- * 각 sourceBone은 기본 hipSpace 값으로 100(%)를 가집니다.
+ * 기본 hipSpace 값으로 106(%)를 가집니다.
  *
  * @param assetId - 대상 asset의 id
  */
-const createEmptyRetargetMap = (assetId: string): ShootRetargetMap => {
+const createEmptyRetargetMap = (assetId: string): PlaskRetargetMap => {
   return {
     id: getRandomStringKey(),
     assetId,
-    value: {
-      hips: { hipSpace: DEFAULT_HIP_SPACE },
-      leftUpLeg: { hipSpace: DEFAULT_HIP_SPACE },
-      rightUpLeg: { hipSpace: DEFAULT_HIP_SPACE },
-      spine: { hipSpace: DEFAULT_HIP_SPACE },
-      leftLeg: { hipSpace: DEFAULT_HIP_SPACE },
-      rightLeg: { hipSpace: DEFAULT_HIP_SPACE },
-      spine1: { hipSpace: DEFAULT_HIP_SPACE },
-      leftFoot: { hipSpace: DEFAULT_HIP_SPACE },
-      rightFoot: { hipSpace: DEFAULT_HIP_SPACE },
-      spine2: { hipSpace: DEFAULT_HIP_SPACE },
-      leftToeBase: { hipSpace: DEFAULT_HIP_SPACE },
-      rightToeBase: { hipSpace: DEFAULT_HIP_SPACE },
-      neck: { hipSpace: DEFAULT_HIP_SPACE },
-      leftShoulder: { hipSpace: DEFAULT_HIP_SPACE },
-      rightShoulder: { hipSpace: DEFAULT_HIP_SPACE },
-      head: { hipSpace: DEFAULT_HIP_SPACE },
-      leftArm: { hipSpace: DEFAULT_HIP_SPACE },
-      rightArm: { hipSpace: DEFAULT_HIP_SPACE },
-      leftForeArm: { hipSpace: DEFAULT_HIP_SPACE },
-      rightForeArm: { hipSpace: DEFAULT_HIP_SPACE },
-      leftHand: { hipSpace: DEFAULT_HIP_SPACE },
-      rightHand: { hipSpace: DEFAULT_HIP_SPACE },
-      leftHandIndex1: { hipSpace: DEFAULT_HIP_SPACE },
-      rightHandIndex1: { hipSpace: DEFAULT_HIP_SPACE },
-    },
+    hipSpace: DEFAULT_HIP_SPACE,
+    values: [
+      { sourceBoneName: 'hips', targetBoneId: null },
+      { sourceBoneName: 'leftUpLeg', targetBoneId: null },
+      { sourceBoneName: 'rightUpLeg', targetBoneId: null },
+      { sourceBoneName: 'spine', targetBoneId: null },
+      { sourceBoneName: 'leftLeg', targetBoneId: null },
+      { sourceBoneName: 'rightLeg', targetBoneId: null },
+      { sourceBoneName: 'spine1', targetBoneId: null },
+      { sourceBoneName: 'leftFoot', targetBoneId: null },
+      { sourceBoneName: 'rightFoot', targetBoneId: null },
+      { sourceBoneName: 'spine2', targetBoneId: null },
+      { sourceBoneName: 'leftToeBase', targetBoneId: null },
+      { sourceBoneName: 'rightToeBase', targetBoneId: null },
+      { sourceBoneName: 'neck', targetBoneId: null },
+      { sourceBoneName: 'leftShoulder', targetBoneId: null },
+      { sourceBoneName: 'rightShoulder', targetBoneId: null },
+      { sourceBoneName: 'head', targetBoneId: null },
+      { sourceBoneName: 'leftArm', targetBoneId: null },
+      { sourceBoneName: 'rightArm', targetBoneId: null },
+      { sourceBoneName: 'leftForeArm', targetBoneId: null },
+      { sourceBoneName: 'rightForeArm', targetBoneId: null },
+      { sourceBoneName: 'leftHand', targetBoneId: null },
+      { sourceBoneName: 'rightHand', targetBoneId: null },
+      { sourceBoneName: 'leftHandIndex1', targetBoneId: null },
+      { sourceBoneName: 'rightHandIndex1', targetBoneId: null },
+    ],
   };
 };
 

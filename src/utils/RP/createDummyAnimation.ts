@@ -1,11 +1,11 @@
 import * as BABYLON from '@babylonjs/core';
-import { AnimationIngredient, ShootAsset } from 'types/common';
-import createShootTrack from './createShootTrack';
+import { AnimationIngredient, PlaskAsset } from 'types/common';
+import createPlaskTrack from './createPlaskTrack';
 import { getRandomStringKey, roundToFourth } from 'utils/common';
 
 const DUMMY_JSON_URL = 'motions/dummyMotion.json';
 
-const createDummyAnimation = async (asset: ShootAsset): Promise<AnimationIngredient> => {
+const createDummyAnimation = async (asset: PlaskAsset): Promise<AnimationIngredient> => {
   const data: { name: string; times: number[]; values: number[] }[] = await fetch(DUMMY_JSON_URL)
     .then((file) => file.json())
     .then((res) => res.data);
@@ -41,9 +41,9 @@ const createDummyAnimation = async (asset: ShootAsset): Promise<AnimationIngredi
     });
   });
 
-  const hipsPositionTrack = createShootTrack(`newAnim|${hipsBone.name}|position`, layerId, hipsBone.getTransformNode(), 'position', hipsPositionTransformKeys, false);
+  const hipsPositionTrack = createPlaskTrack(`newAnim|${hipsBone.name}|position`, layerId, hipsBone.getTransformNode(), 'position', hipsPositionTransformKeys, false);
 
-  const hipsRotationQuaternionTrack = createShootTrack(
+  const hipsRotationQuaternionTrack = createPlaskTrack(
     `newAnim|${hipsBone.name}|rotationQuaternion`,
     layerId,
     hipsBone.getTransformNode(),
@@ -52,7 +52,7 @@ const createDummyAnimation = async (asset: ShootAsset): Promise<AnimationIngredi
     false,
   );
 
-  const hipsRotationTrack = createShootTrack(`newAnim|${hipsBone.name}|rotation`, layerId, hipsBone.getTransformNode(), 'rotation', hipsRotationTransformKeys, false);
+  const hipsRotationTrack = createPlaskTrack(`newAnim|${hipsBone.name}|rotation`, layerId, hipsBone.getTransformNode(), 'rotation', hipsRotationTransformKeys, false);
 
   const animationIngredient = {
     id: animId,

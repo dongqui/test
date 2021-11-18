@@ -8,7 +8,7 @@ const cx = classNames.bind(styles);
 const GridLine = () => {
   return (
     <Fragment>
-      <g id="top-ruler" className={cx('top-ruler')} />
+      <g id="top-grid" className={cx('top-grid')} />
     </Fragment>
   );
 };
