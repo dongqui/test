@@ -1,6 +1,6 @@
-import { ShootAsset, ShootScene } from 'types/common';
+import { PlaskAsset, PlaskScene } from 'types/common';
 
-export type ShootProjectAction =
+export type PlaskProjectAction =
   | ReturnType<typeof addScene>
   | ReturnType<typeof removeScene>
   | ReturnType<typeof addAsset>
@@ -9,16 +9,16 @@ export type ShootProjectAction =
   | ReturnType<typeof removeAsset>
   | ReturnType<typeof addMotion>;
 
-export const ADD_SCENE = 'shootProject/ADD_SCENE' as const;
-export const REMOVE_SCENE = 'shootProject/REMOVE_SCENE' as const;
-export const ADD_ASSET = 'shootProject/ADD_ASSET' as const;
-export const RENDER_ASSET = 'shootProject/RENDER_ASSET' as const;
-export const UNRENDER_ASSET = 'shootProject/UNRENDER_ASSET' as const;
-export const REMOVE_ASSET = 'shootProject/REMOVE_ASSET' as const;
-export const ADD_MOTION = 'shootProject/ADD_MOTION' as const;
+export const ADD_SCENE = 'plaskProject/ADD_SCENE' as const;
+export const REMOVE_SCENE = 'plaskProject/REMOVE_SCENE' as const;
+export const ADD_ASSET = 'plaskProject/ADD_ASSET' as const;
+export const RENDER_ASSET = 'plaskProject/RENDER_ASSET' as const;
+export const UNRENDER_ASSET = 'plaskProject/UNRENDER_ASSET' as const;
+export const REMOVE_ASSET = 'plaskProject/REMOVE_ASSET' as const;
+export const ADD_MOTION = 'plaskProject/ADD_MOTION' as const;
 
 export interface AddScene {
-  scene: ShootScene;
+  scene: PlaskScene;
 }
 
 export interface RemoveScene {
@@ -26,7 +26,7 @@ export interface RemoveScene {
 }
 
 export interface AddAsset {
-  asset: ShootAsset;
+  asset: PlaskAsset;
 }
 
 export interface RenderAsset {

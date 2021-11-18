@@ -1,27 +1,29 @@
 import * as BABYLON from '@babylonjs/core';
 
 export type Nullable<T> = T | null;
+
 export type ScreenXY = { x: number; y: number };
 
-export type ShootView = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
-export interface ShootProject {
+export type PlaskView = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
+
+export interface PlaskProject {
   id: string;
-  sceneList: ShootScene[];
-  assetList: ShootAsset[];
+  name: string;
+  sceneList: PlaskScene[];
+  assetList: PlaskAsset[];
   visualizedAssetIds: string[];
   fps: number;
 }
 
-export interface ShootScene {
+export interface PlaskScene {
   id: string;
-  name: string;
   scene: BABYLON.Scene;
   canvasId: string;
   hasShadow: boolean;
   hasGroundTexture: boolean;
 }
 
-export interface ShootAsset {
+export interface PlaskAsset {
   id: string;
   name: string;
   extension: string;
@@ -39,19 +41,19 @@ export interface AnimationIngredient {
   name: string;
   assetId: string;
   current: boolean;
-  tracks: ShootTrack[];
-  layers: ShootLayer[];
+  tracks: PlaskTrack[];
+  layers: PlaskLayer[];
 }
 
-export type ShootProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling';
-export type ShootAxis = 'x' | 'y' | 'z' | 'w';
+export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling';
+export type PlaskAxis = 'x' | 'y' | 'z' | 'w';
 
-export interface ShootTrack {
+export interface PlaskTrack {
   id: string;
   targetId: string;
   layerId: string;
   name: string;
-  property: ShootProperty;
+  property: PlaskProperty;
   target: BABYLON.TransformNode | BABYLON.Mesh;
   transformKeys: BABYLON.IAnimationKey[];
   interpolationType: 'linear' | 'bezier' | 'constant';
@@ -71,7 +73,7 @@ export interface BezierParams {
   y2: number;
 }
 
-export interface ShootLayer {
+export interface PlaskLayer {
   id: string;
   name: string;
 }
@@ -102,11 +104,14 @@ export type RetargetSourceBoneType =
   | 'leftHandIndex1'
   | 'rightHandIndex1';
 
-export type ShootRetargetMap = { id: string; assetId: string; value: RetargetMapValue };
+export type PlaskRetargetMap = {
+  id: string;
+  assetId: string;
+  hipSpace: number;
+  values: RetargetMapValue[];
+};
 
 type RetargetMapValue = {
-  [sourceBone in RetargetSourceBoneType]: {
-    targetBoneId?: string;
-    hipSpace: number;
-  };
+  sourceBoneName: RetargetSourceBoneType;
+  targetBoneId: Nullable<string>;
 };

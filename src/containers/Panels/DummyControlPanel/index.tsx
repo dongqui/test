@@ -8,7 +8,7 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import { checkIsTargetMesh, createDummyAnimation } from 'utils/RP';
-import { AnimationIngredient, ShootTrack } from 'types/common';
+import { AnimationIngredient, PlaskTrack } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -17,8 +17,8 @@ const cx = classNames.bind(styles);
 const DEFAULT_CONTROLLER_COLOR = BABYLON.Color3.FromHexString('#FFE480');
 
 const ControlPanel: FunctionComponent = () => {
-  const sceneList = useSelector((state) => state.shootProject.sceneList);
-  const assetList = useSelector((state) => state.shootProject.assetList);
+  const sceneList = useSelector((state) => state.plaskProject.sceneList);
+  const assetList = useSelector((state) => state.plaskProject.assetList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
@@ -281,7 +281,7 @@ const ControlPanel: FunctionComponent = () => {
           if (currentAnimationIngredient) {
             const { id, name, tracks, layers } = currentAnimationIngredient;
 
-            const newTracks: ShootTrack[] = [];
+            const newTracks: PlaskTrack[] = [];
 
             controllers.forEach((controller) => {
               // rotationQuaternion으로 회전법 바꾸는 처리
@@ -291,7 +291,7 @@ const ControlPanel: FunctionComponent = () => {
               layers.forEach((layer) => {
                 const transformNodeTracks = tracks.filter((t) => t.targetId === controller.id.replace('controller', 'transformNode') && t.layerId === layer.id);
                 transformNodeTracks.forEach((transformNodeTrack) => {
-                  const newTrack: ShootTrack = {
+                  const newTrack: PlaskTrack = {
                     id: uuidv4(),
                     targetId: controller.id,
                     layerId: layer.id,
