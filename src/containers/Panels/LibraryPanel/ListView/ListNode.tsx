@@ -2,20 +2,21 @@ import { max, find, remove, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
+import * as BABYLON from '@babylonjs/core';
+import produce from 'immer';
+import { v4 as uuid } from 'uuid';
+import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { getFileExtension } from 'utils/common';
 import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
-import { v4 as uuid } from 'uuid';
-import * as BABYLON from '@babylonjs/core';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as shootProjectActions from 'actions/shootProjectAction';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import produce from 'immer';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
@@ -54,10 +55,11 @@ const ListNode: FunctionComponent<Props> = ({
   dragTarget,
 }) => {
   const dispatch = useDispatch();
-  const sceneList = useSelector((state) => state.shootProject.sceneList);
-  const assetList = useSelector((state) => state.shootProject.assetList);
+
+  const screenList = useSelector((state) => state.plaskProject.screenList);
+  const assetList = useSelector((state) => state.plaskProject.assetList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
-  const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
+  const visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
 
@@ -334,15 +336,15 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (targetAsset) {
-                      sceneList
-                        .map((s) => s.scene)
+                      screenList
+                        .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
                         });
                     }
 
                     // assetList에서 제외
-                    dispatch(shootProjectActions.removeAsset({ assetId }));
+                    dispatch(plaskProjectActions.removeAsset({ assetId }));
                     // animationData 삭제
                     dispatch(animationDataActions.removeAsset({ assetId }));
                     // 선택 대상에서 제외
@@ -389,15 +391,15 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (prevAsset) {
-                      sceneList
-                        .map((s) => s.scene)
+                      screenList
+                        .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, prevAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
                         });
                     }
 
                     // visualizedAssetList에서 제외
-                    // dispatch(shootProjectActions.unrenderAsset({ assetId: prevAssetId })); // single-model 환경에서는 불필요
+                    // dispatch(plaskProjectActions.unrenderAsset({ assetId: prevAssetId })); // single-model 환경에서는 불필요
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId: prevAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
                   }
@@ -410,8 +412,8 @@ const ListNode: FunctionComponent<Props> = ({
                       const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
 
                       // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
-                      sceneList.forEach((shootScene) => {
-                        const { id: sceneId, name: sceneName, scene } = shootScene;
+                      screenList.forEach((PlaskScreen) => {
+                        const { id: sceneId, scene } = PlaskScreen;
 
                         if (scene.isReady()) {
                           // scene들에 mesh 추가
@@ -477,7 +479,7 @@ const ListNode: FunctionComponent<Props> = ({
                           });
 
                           // visualizedAssetIds에 추가
-                          dispatch(shootProjectActions.renderAsset({ assetId }));
+                          dispatch(plaskProjectActions.renderAsset({ assetId }));
                           // dragBox 선택 대상에 추가
                           dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
 
@@ -509,15 +511,15 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (targetAsset) {
-                      sceneList
-                        .map((s) => s.scene)
+                      screenList
+                        .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
                         });
                     }
 
                     // visualizedAssetList에서 제외
-                    dispatch(shootProjectActions.unrenderAsset({}));
+                    dispatch(plaskProjectActions.unrenderAsset({}));
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
                   }
@@ -531,9 +533,9 @@ const ListNode: FunctionComponent<Props> = ({
                     const cloneLPNode = cloneDeep(lpNode);
 
                     const layerName = 'layer1';
-                    const layers: ShootLayer[] = [{ id: uuid(), name: layerName }];
+                    const layers: PlaskLayer[] = [{ id: uuid(), name: layerName }];
 
-                    const tracks: ShootTrack[] = [];
+                    const tracks: PlaskTrack[] = [];
                     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
                     if (visualizedAssetIds.includes(assetId)) {
                       // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서
@@ -600,7 +602,7 @@ const ListNode: FunctionComponent<Props> = ({
                     );
 
                     dispatch(
-                      shootProjectActions.addMotion({
+                      plaskProjectActions.addMotion({
                         assetId: assetId,
                         motionId: nextIngredient.id,
                       }),
@@ -696,7 +698,7 @@ const ListNode: FunctionComponent<Props> = ({
     type,
     visualizedAssetIds,
     assetList,
-    sceneList,
+    screenList,
   ]);
 
   const classes = cx('wrapper', { selected: isSelected });
@@ -907,12 +909,12 @@ const ListNode: FunctionComponent<Props> = ({
   //     // render/unrender 기능 구현을 임의로 click/altClick으로 구분해두었습니다.
   //     if (event.altKey) {
   //       if (targetAsset && visualizedAssetIds.includes(targetAsset.id)) {
-  //         dispatch(shootProjectActions.unrenderAsset({ assetId: targetAsset.id }));
+  //         dispatch(plaskProjectActions.unrenderAsset({ assetId: targetAsset.id }));
   //       }
   //     } else {
   //       // 이미 render된 asset이 아닌 경우에만
   //       if (targetAsset && !visualizedAssetIds.includes(targetAsset.id)) {
-  //         dispatch(shootProjectActions.renderAsset({ assetId: targetAsset.id }));
+  //         dispatch(plaskProjectActions.renderAsset({ assetId: targetAsset.id }));
   //       }
   //     }
   //   },

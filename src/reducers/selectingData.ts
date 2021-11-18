@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { SelectingDataAction } from 'actions/selectingDataAction';
-import _ from 'lodash';
+import { xorBy } from 'lodash';
 
 interface State {
   selectableObjects: Array<BABYLON.Mesh | BABYLON.TransformNode>;
@@ -65,7 +65,7 @@ export const selectingData = (state = defaultState, action: SelectingDataAction)
     }
     case 'selectingDataAction/CTRL_KEY_MULTI_SELECT': {
       return Object.assign({}, state, {
-        selectedTargets: _.xorBy(state.selectedTargets, action.payload.targets, 'id'),
+        selectedTargets: xorBy(state.selectedTargets, action.payload.targets, 'id'),
       });
     }
     case 'selectingDataAction/RESET_SELECTED_TARGETS': {
