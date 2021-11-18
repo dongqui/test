@@ -9,13 +9,13 @@ export type PlaskView = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 export interface PlaskProject {
   id: string;
   name: string;
-  sceneList: PlaskScene[];
+  screenList: PlaskScreen[];
   assetList: PlaskAsset[];
   visualizedAssetIds: string[];
   fps: number;
 }
 
-export interface PlaskScene {
+export interface PlaskScreen {
   id: string;
   scene: BABYLON.Scene;
   canvasId: string;

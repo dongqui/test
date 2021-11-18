@@ -4,7 +4,7 @@ import { useSelector } from 'reducers';
 import { filterQuaternion, filterVector } from 'utils/RP';
 
 const useAnimation = () => {
-  const sceneList = useSelector((state) => state.plaskProject.sceneList);
+  const screenList = useSelector((state) => state.plaskProject.screenList);
   const assetList = useSelector((state) => state.plaskProject.assetList);
   const visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const fps = useSelector((state) => state.plaskProject.fps);
@@ -77,8 +77,8 @@ const useAnimation = () => {
 
   // 애니메이션 재생 조작
   useEffect(() => {
-    sceneList.forEach((plaskScene) => {
-      const { id: sceneId, scene, canvasId } = plaskScene;
+    screenList.forEach((PlaskScreen) => {
+      const { id: sceneId, scene, canvasId } = PlaskScreen;
 
       if (currentAnimationGroup) {
         currentAnimationGroup.onAnimationEndObservable.addOnce((...params) => {});
@@ -113,7 +113,7 @@ const useAnimation = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [currentAnimationGroup, isPlaying, sceneList]);
+  }, [currentAnimationGroup, isPlaying, screenList]);
 };
 
 export default useAnimation;

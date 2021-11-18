@@ -23,7 +23,7 @@ type PrevCameraPositions = {
 const useInitializeScene = (params: Params) => {
   const { renderingCanvas } = params;
 
-  const sceneList = useSelector((state) => state.plaskProject.sceneList);
+  const screenList = useSelector((state) => state.plaskProject.screenList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const dispatch = useDispatch();
@@ -74,7 +74,7 @@ const useInitializeScene = (params: Params) => {
       innerScene.onReadyObservable.addOnce((scene) => {
         handleSceneReady(scene);
         // scene을 project reducer에 등록합니다.
-        const newScene = {
+        const newScreen = {
           id: innerScene.uid,
           name: renderingCanvas.current!.id.replace('renderingCanvas', 'scene'),
           scene: innerScene,
@@ -82,7 +82,7 @@ const useInitializeScene = (params: Params) => {
           hasShadow: true,
           hasGroundTexture: true,
         };
-        dispatch(plaskProjectActions.addScene({ scene: newScene }));
+        dispatch(plaskProjectActions.addScreen({ screen: newScreen }));
       });
 
       innerScene.onDisposeObservable.addOnce((scene) => {
@@ -147,7 +147,7 @@ const useInitializeScene = (params: Params) => {
       return () => {
         // engine을 없앱니다.
         engine.dispose();
-        dispatch(plaskProjectActions.removeScene({ sceneId: innerScene.uid }));
+        dispatch(plaskProjectActions.removeScreen({ screenId: innerScene.uid }));
 
         resizeMutationObserver.disconnect();
       };
@@ -156,10 +156,10 @@ const useInitializeScene = (params: Params) => {
 
   // dragBox 사용
   useEffect(() => {
-    const targetScene = sceneList.find((scene) => scene.canvasId === renderingCanvas.current?.id);
+    const targetScreen = screenList.find((screen) => screen.canvasId === renderingCanvas.current?.id);
 
-    if (targetScene) {
-      const { scene } = targetScene;
+    if (targetScreen) {
+      const { scene } = targetScreen;
       let startPointerPosition: Nullable<ScreenXY> = null;
 
       const dragBox = document.querySelector('#_dragBox') as HTMLDivElement;
@@ -230,7 +230,7 @@ const useInitializeScene = (params: Params) => {
         scene.onPointerObservable.remove(dragBoxObserver);
       };
     }
-  }, [dispatch, renderingCanvas, sceneList, selectableObjects]);
+  }, [dispatch, renderingCanvas, screenList, selectableObjects]);
 
   useEffect(() => {
     const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
@@ -259,8 +259,8 @@ const useInitializeScene = (params: Params) => {
 
       const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
       if (focusedCanvas) {
-        const focusedPlaskScene = sceneList.find((s) => s.canvasId === focusedCanvas.id);
-        const focusedScene = focusedPlaskScene?.scene;
+        const focusedPlaskScreen = screenList.find((screen) => screen.canvasId === focusedCanvas.id);
+        const focusedScene = focusedPlaskScreen?.scene;
 
         if (focusedScene && focusedScene.activeCamera) {
           const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
@@ -407,7 +407,7 @@ const useInitializeScene = (params: Params) => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [multiKeyController, prevCameraPositions, sceneList]);
+  }, [multiKeyController, prevCameraPositions, screenList]);
 };
 
 export default useInitializeScene;

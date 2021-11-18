@@ -8,7 +8,7 @@ type State = PlaskProject;
 const defaultState: State = {
   id: uuidv4(),
   name: 'New Project',
-  sceneList: [],
+  screenList: [],
   assetList: [],
   visualizedAssetIds: [],
   fps: 30,
@@ -16,14 +16,14 @@ const defaultState: State = {
 
 export const plaskProject = (state = defaultState, action: PlaskProjectAction) => {
   switch (action.type) {
-    case 'plaskProject/ADD_SCENE': {
+    case 'plaskProject/ADD_SCREEN': {
       return Object.assign({}, state, {
-        sceneList: [...state.sceneList, action.payload.scene],
+        screenList: [...state.screenList, action.payload.screen],
       });
     }
-    case 'plaskProject/REMOVE_SCENE': {
+    case 'plaskProject/REMOVE_SCREEN': {
       return Object.assign({}, state, {
-        sceneList: state.sceneList.filter((scene) => scene.id !== action.payload.sceneId),
+        screenList: state.screenList.filter((screen) => screen.id !== action.payload.screenId),
       });
     }
     case 'plaskProject/ADD_ASSET': {
