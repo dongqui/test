@@ -9,7 +9,7 @@ import { checkIsTargetMesh } from 'utils/RP';
 type GizmoMode = 'position' | 'rotation' | 'scale';
 
 const useGizmoControl = () => {
-  const sceneList = useSelector((state) => state.shootProject.sceneList);
+  const screenList = useSelector((state) => state.plaskProject.screenList);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
 
   const dispatch = useDispatch();
@@ -29,15 +29,15 @@ const useGizmoControl = () => {
 
   // gizmoManager 생성
   useEffect(() => {
-    const baseScene = sceneList[0];
-    if (baseScene && baseScene.scene) {
-      const innerGizmoManager = new BABYLON.GizmoManager(baseScene.scene);
+    const baseScreen = screenList[0];
+    if (baseScreen && baseScreen.scene) {
+      const innerGizmoManager = new BABYLON.GizmoManager(baseScreen.scene);
 
       setGizmoManager(innerGizmoManager);
       innerGizmoManager.usePointerToAttachGizmos = false;
       innerGizmoManager.positionGizmoEnabled = true; // position을 기본 모드로 설정
     }
-  }, [sceneList]);
+  }, [screenList]);
 
   // 선택 대상 변경에 따른 gizmo attach
   useEffect(() => {

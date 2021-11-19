@@ -1,5 +1,5 @@
 import { ArcRotateCamera, Camera, CameraInputTypes, Nullable, PointerTouch, serialize } from '@babylonjs/core';
-import ShootBaseCameraPointersInput from './ShootBaseCameraPointersInput';
+import PlaskBaseCameraPointersInput from './PlaskBaseCameraPointersInput';
 import { IPointerEvent } from './types';
 
 /**
@@ -8,7 +8,7 @@ import { IPointerEvent } from './types';
  * Manage the pointers inputs to control an arc rotate camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
-export default class ShootArcRotateCameraPointersInput extends ShootBaseCameraPointersInput {
+export default class PlaskArcRotateCameraPointersInput extends PlaskBaseCameraPointersInput {
   /**
    * Defines the camera the input is attached to.
    */
@@ -25,7 +25,7 @@ export default class ShootArcRotateCameraPointersInput extends ShootBaseCameraPo
    * @returns the class name
    */
   public getClassName(): string {
-    return 'ShootArcRotateCameraPointersInput';
+    return 'PlaskArcRotateCameraPointersInput';
   }
 
   /**
@@ -112,7 +112,7 @@ export default class ShootArcRotateCameraPointersInput extends ShootBaseCameraPo
    * Move camera from pinch zoom distances.
    */
   private _computePinchZoom(previousPinchSquaredDistance: number, pinchSquaredDistance: number): void {
-    const radius = this.camera.radius || ShootArcRotateCameraPointersInput.MinimumRadiusForPinch;
+    const radius = this.camera.radius || PlaskArcRotateCameraPointersInput.MinimumRadiusForPinch;
     if (this.useNaturalPinchZoom) {
       this.camera.radius = (radius * Math.sqrt(previousPinchSquaredDistance)) / Math.sqrt(pinchSquaredDistance);
     } else if (this.pinchDeltaPercentage) {
@@ -228,4 +228,4 @@ export default class ShootArcRotateCameraPointersInput extends ShootBaseCameraPo
     this._isPinching = false;
   }
 }
-(CameraInputTypes as any)['ShootArcRotateCameraPointersInput'] = ShootArcRotateCameraPointersInput;
+(CameraInputTypes as any)['PlaskArcRotateCameraPointersInput'] = PlaskArcRotateCameraPointersInput;
