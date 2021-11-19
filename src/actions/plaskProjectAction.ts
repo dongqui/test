@@ -1,32 +1,32 @@
-import { ShootAsset, ShootScene } from 'types/common';
+import { PlaskAsset, PlaskScreen } from 'types/common';
 
-export type ShootProjectAction =
-  | ReturnType<typeof addScene>
-  | ReturnType<typeof removeScene>
+export type PlaskProjectAction =
+  | ReturnType<typeof addScreen>
+  | ReturnType<typeof removeScreen>
   | ReturnType<typeof addAsset>
   | ReturnType<typeof renderAsset>
   | ReturnType<typeof unrenderAsset>
   | ReturnType<typeof removeAsset>
   | ReturnType<typeof addMotion>;
 
-export const ADD_SCENE = 'shootProject/ADD_SCENE' as const;
-export const REMOVE_SCENE = 'shootProject/REMOVE_SCENE' as const;
-export const ADD_ASSET = 'shootProject/ADD_ASSET' as const;
-export const RENDER_ASSET = 'shootProject/RENDER_ASSET' as const;
-export const UNRENDER_ASSET = 'shootProject/UNRENDER_ASSET' as const;
-export const REMOVE_ASSET = 'shootProject/REMOVE_ASSET' as const;
-export const ADD_MOTION = 'shootProject/ADD_MOTION' as const;
+export const ADD_SCREEN = 'plaskProject/ADD_SCREEN' as const;
+export const REMOVE_SCREEN = 'plaskProject/REMOVE_SCREEN' as const;
+export const ADD_ASSET = 'plaskProject/ADD_ASSET' as const;
+export const RENDER_ASSET = 'plaskProject/RENDER_ASSET' as const;
+export const UNRENDER_ASSET = 'plaskProject/UNRENDER_ASSET' as const;
+export const REMOVE_ASSET = 'plaskProject/REMOVE_ASSET' as const;
+export const ADD_MOTION = 'plaskProject/ADD_MOTION' as const;
 
-export interface AddScene {
-  scene: ShootScene;
+export interface AddScreen {
+  screen: PlaskScreen;
 }
 
-export interface RemoveScene {
-  sceneId: string;
+export interface RemoveScreen {
+  screenId: string;
 }
 
 export interface AddAsset {
-  asset: ShootAsset;
+  asset: PlaskAsset;
 }
 
 export interface RenderAsset {
@@ -48,24 +48,24 @@ export interface AddMotion {
 }
 
 /**
- * scene을 추가합니다.
+ * screen을 추가합니다.
  *
- * @param scene - 각 canvas에서  해당하는 scene
+ * @param screen - 각 canvas에서  해당하는 screen
  */
-export const addScene = (params: AddScene) => ({
-  type: ADD_SCENE,
+export const addScreen = (params: AddScreen) => ({
+  type: ADD_SCREEN,
   payload: {
     ...params,
   },
 });
 
 /**
- * scene을 list에서 제거합니다.
+ * screen을 list에서 제거합니다.
  *
- * @param sceneId - 제거할 scene의 id
+ * @param screenId - 제거할 screen의 id
  */
-export const removeScene = (params: RemoveScene) => ({
-  type: REMOVE_SCENE,
+export const removeScreen = (params: RemoveScreen) => ({
+  type: REMOVE_SCREEN,
   payload: {
     ...params,
   },
@@ -84,7 +84,7 @@ export const addAsset = (params: AddAsset) => ({
 });
 
 /**
- * 전달받은 id에 해당하는 asset을 sceneList에 있는 모든 scene들에 추가합니다.
+ * 전달받은 id에 해당하는 asset을 screenList에 있는 모든 scene들에 추가합니다.
  *
  * @param assetId - scene들에 추가할 asset의 id
  */
@@ -96,7 +96,7 @@ export const renderAsset = (params: RenderAsset) => ({
 });
 
 /**
- * 전달받은 id에 해당하는 asset을 sceneList에 있는 모든 scene들에서 제거합니다.
+ * 전달받은 id에 해당하는 asset을 screenList에 있는 모든 scene들에서 제거합니다.
  *
  * @param assetId - scene들에서 제거할 asset의 id
  */

@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
-import { ShootAsset } from 'types/common';
+import { PlaskAsset } from 'types/common';
 
-const removeAssetFromScene = (scene: BABYLON.Scene, asset: ShootAsset, jointTransformNodes: BABYLON.TransformNode[], controllers: BABYLON.Mesh[]) => {
+const removeAssetFromScene = (scene: BABYLON.Scene, asset: PlaskAsset, jointTransformNodes: BABYLON.TransformNode[], controllers: BABYLON.Mesh[]) => {
   const { id: assetId, meshes, geometries, skeleton, transformNodes } = asset;
 
   // scene들에서 mesh 삭제
