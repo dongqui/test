@@ -189,8 +189,8 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
   const handleReject = useCallback(
     (id: string) => {
-      // console.log('selectedId');
-      // console.log(selectedId, id);
+      //
+      //
       if (selectedId.includes(id)) {
         // const cloneSelectedIds = cloneDeep(selectedId);
         // const index = cloneSelectedIds.indexOf(id);
@@ -243,7 +243,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       const isBodyClick = isContains && isOutsideRowNode;
 
       if (isBodyClick) {
-        console.log('RESET');
         setSelectedId([]);
       }
     };
@@ -270,11 +269,8 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   }, []);
 
   const handleDragEnd = useCallback((list: NodeListOf<Element>) => {
-    // console.log('handleDragEnd');
-    // console.log(list);
+    //
   }, []);
-
-  console.log(selectedId);
 
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>

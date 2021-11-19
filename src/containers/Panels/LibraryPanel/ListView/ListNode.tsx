@@ -82,7 +82,7 @@ const ListNode: FunctionComponent<Props> = ({
   const wrapperClasses = cx('inner-row', { hovered: isHover });
 
   const [currentSelectableId, setCurrentSelectableId] = useState('');
-  // console.log(name, id);
+  //
 
   useEffect(() => {
     const config: MutationObserverInit = { attributes: true };
@@ -94,13 +94,12 @@ const ListNode: FunctionComponent<Props> = ({
         const currentRefId = currentRef.id;
 
         if (currentRefId === 'node-selected' && currentRefId !== currentSelectableId) {
-          console.log('==onselect==');
           onSelect && onSelect(id, true);
           setCurrentSelectableId(currentRefId);
         }
 
         if (currentRefId === 'node-selectable' && currentRefId !== currentSelectableId) {
-          // console.log('check', name, id);
+          //
           onReject(id);
           setCurrentSelectableId(currentRefId);
         }
@@ -1255,6 +1254,21 @@ const ListNode: FunctionComponent<Props> = ({
    */
   const splitName = name.split('.');
   const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
+
+  useEffect(() => {
+    const currentRef = outerRef.current;
+    if (currentRef) {
+      const handleMouseDown = (e: MouseEvent) => {
+        e.stopPropagation();
+      };
+
+      currentRef.addEventListener('mousedown', handleMouseDown);
+
+      return () => {
+        currentRef.removeEventListener('mousedown', handleMouseDown);
+      };
+    }
+  }, []);
 
   return (
     <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} id={selectableId} ref={outerRef}>
