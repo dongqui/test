@@ -2,110 +2,11 @@ import { TrackListAction } from 'actions/trackList';
 import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
 
 import addLayerTrack from './cases/addLayerTrack';
-// import initializeTrackList from './cases/createTrackList';
+import initializeTrackList from './cases/initializeTrackList';
 import clickCaretButton from './cases/clickCaretButton';
 import clickTrackBody from './cases/clickTrackBody';
 import deleteLayerTrack from './cases/deleteLayerTrack';
 import muteLayerTrack from './cases/muteLayerTrack';
-
-const propertyTrackList1: PropertyTrack[] = Array(3)
-  .fill(0)
-  .map(
-    (_, index) =>
-      ({
-        isSelected: false,
-        trackName: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
-        trackId: 'property-aaaaa' + index,
-        interpolationType: 'linear',
-        trackNumber: index + 1,
-        trackType: 'property',
-      } as PropertyTrack),
-  );
-
-const propertyTrackList2: PropertyTrack[] = Array(3)
-  .fill(0)
-  .map(
-    (_, index) =>
-      ({
-        isSelected: false,
-        trackName: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
-        trackId: 'property-bbbbb' + index,
-        interpolationType: 'linear',
-        trackNumber: index + 11,
-        trackType: 'property',
-      } as PropertyTrack),
-  );
-
-const propertyTrackList3: PropertyTrack[] = Array(3)
-  .fill(0)
-  .map(
-    (_, index) =>
-      ({
-        isSelected: false,
-        trackName: index === 0 ? 'position' : index === 1 ? 'rotation' : 'scale',
-        trackId: 'property-ccccc' + index,
-        interpolationType: 'linear',
-        trackNumber: index + 21,
-        trackType: 'property',
-      } as PropertyTrack),
-  );
-
-const boneTrackList: BoneTrack[] = [
-  {
-    isSelected: false,
-    trackName: 'Left Shoulder',
-    isPointedDownCaret: false,
-    trackNumber: 0,
-    trackId: 'bone-0',
-    trackType: 'bone',
-  },
-  {
-    isSelected: false,
-    trackName: 'Left Arm',
-    isPointedDownCaret: false,
-    trackNumber: 10,
-    trackId: 'bone-1',
-    trackType: 'bone',
-  },
-  {
-    isSelected: false,
-    trackName: 'Left Hand',
-    isPointedDownCaret: false,
-    trackNumber: 20,
-    trackId: 'bone-2',
-    trackType: 'bone',
-  },
-];
-
-const layerTrackList: LayerTrack[] = [
-  {
-    trackNumber: -1,
-    trackId: 'layer-0',
-    trackName: 'Layer1',
-    isMuted: false,
-    isPointedDownCaret: false,
-    isSelected: true,
-    trackType: 'layer',
-  },
-  {
-    trackNumber: -1,
-    trackId: 'layer-1',
-    trackName: 'Layer2',
-    isMuted: false,
-    isPointedDownCaret: false,
-    isSelected: false,
-    trackType: 'layer',
-  },
-  {
-    trackNumber: -1,
-    trackId: 'layer-2',
-    trackName: 'Layer3',
-    isMuted: false,
-    isPointedDownCaret: false,
-    isSelected: false,
-    trackType: 'layer',
-  },
-];
 
 export interface TrackListState {
   layerTrackList: LayerTrack[];
@@ -122,11 +23,11 @@ export interface TrackListState {
 }
 
 const initialState: TrackListState = {
-  layerTrackList: layerTrackList,
-  boneTrackList: boneTrackList,
-  propertyTrackList: [...propertyTrackList1, ...propertyTrackList2, ...propertyTrackList3],
+  layerTrackList: [],
+  boneTrackList: [],
+  propertyTrackList: [],
 
-  selectedLayer: 'layer-0',
+  selectedLayer: '',
   selectedBones: [],
   selectedProperties: [],
 
@@ -137,9 +38,9 @@ const initialState: TrackListState = {
 
 export const trackList = (state = initialState, action: TrackListAction) => {
   switch (action.type) {
-    // case 'trackList/INITIALIZE_TRACK_LIST': {
-    //   return initializeTrackList(state, action.payload);
-    // }
+    case 'trackList/INITIALIZE_TRACK_LIST': {
+      return initializeTrackList(state, action.payload);
+    }
     case 'trackList/ADD_LAYER_TRACK': {
       return addLayerTrack(state, action.payload);
     }
