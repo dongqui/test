@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
+import * as trackListActions from 'actions/trackList';
 import { filterQuaternion, filterVector } from 'utils/RP';
 
 const useAnimation = () => {
+  const dispatch = useDispatch();
   const sceneList = useSelector((state) => state.shootProject.sceneList);
   const assetList = useSelector((state) => state.shootProject.assetList);
   const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
@@ -23,6 +26,11 @@ const useAnimation = () => {
     const visualizedAnimationIngredients = animationIngredients.filter(
       (animationIngredient) => visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
+
+    // 최초 모델 visualize/모델 변경 시, 트랙 리스트 생성 함수 호출
+    if (visualizedAnimationIngredients.length) {
+      dispatch(trackListActions.initializeTrackList({ list: visualizedAnimationIngredients[0].layers }));
+    }
 
     const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
 
@@ -73,7 +81,7 @@ const useAnimation = () => {
     });
 
     setCurrentAnimationGroup(newAnimationGroup);
-  }, [animationIngredients, assetList, fps, visualizedAssetIds]);
+  }, [dispatch, animationIngredients, assetList, fps, visualizedAssetIds]);
 
   // 애니메이션 재생 조작
   useEffect(() => {
