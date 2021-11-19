@@ -21,16 +21,9 @@ function setModifiedPropertyKeyframes(collection: ClusteredKeyframe[], currentTi
       const targetFrame = currentTimeIndex + count;
       const timeIndex = findElementIndex(modifiedPropertyKeyframes, targetFrame, 'targetFrame');
       if (timeIndex === -1) {
-        modifiedPropertyKeyframes.push({
-          targetFrame,
-          propertyTracks: [{ trackId, trackNumber, transformKey }],
-        });
+        modifiedPropertyKeyframes.push({ targetFrame, propertyTracks: [{ trackId, trackNumber, transformKey }] });
       } else {
-        modifiedPropertyKeyframes[timeIndex].propertyTracks.push({
-          trackId,
-          trackNumber,
-          transformKey,
-        });
+        modifiedPropertyKeyframes[timeIndex].propertyTracks.push({ trackId, trackNumber, transformKey });
       }
     });
   });
@@ -44,6 +37,7 @@ function* worker() {
   yield put(keyframesAction.paste({ currentTimeIndex }));
 
   // 이후부터 RP쪽 액션 호출
+  // yield put(RP액션.키프레임추가(modifiedKeyframes));
 }
 
 // 키프레임 드래그 드랍 입력 감지
