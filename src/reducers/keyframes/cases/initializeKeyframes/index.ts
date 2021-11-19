@@ -15,8 +15,13 @@ const initializeTrackList = (state: KeyframesState, payload: InitializeTrackList
   const propertyKeyframeRepo = new PropertyKeyframeRepository();
   const service = new KeyframeService(layerKeyframeRepo, boneKeyframeRepo, propertyKeyframeRepo);
   const stateUpdate = new StateUpdate(state);
-  const newValues = service.changeSelectedTargets(payload.list as ShootTrack[]);
-  return stateUpdate.updateState(newValues);
+  if (payload.clearAnimation) {
+    const newValues = service.clearAnimation();
+    return stateUpdate.updateState(newValues);
+  } else {
+    const newValues = service.changeSelectedTargets(payload.list as ShootTrack[]);
+    return stateUpdate.updateState(newValues);
+  }
 };
 
 export default initializeTrackList;

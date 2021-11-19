@@ -55,8 +55,8 @@ function* filterShootTracks(visualizedAnimationIngredient: AnimationIngredient) 
 function* worker() {
   const visualizedAnimationIngredients: AnimationIngredient[] = yield findVisualizedAnimationIngredients();
   const filteredShootTracks: ShootTrack[] = yield filterShootTracks(visualizedAnimationIngredients[0]);
-  yield put(trackListActions.initializeTrackList({ list: filteredShootTracks }));
-  yield put(keyframesActions.initializeKeyframes({ list: filteredShootTracks }));
+  yield put(trackListActions.initializeTrackList({ list: filteredShootTracks, clearAnimation: !visualizedAnimationIngredients.length }));
+  yield put(keyframesActions.initializeKeyframes({ list: filteredShootTracks, clearAnimation: !visualizedAnimationIngredients.length }));
 }
 
 // 키프레임 드래그 드랍 입력 감지

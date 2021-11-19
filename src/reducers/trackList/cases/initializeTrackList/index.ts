@@ -19,6 +19,14 @@ const initializeTrackList = (state: TrackListState, payload: InitializeTrackList
   const propertyTrackRepo = new PropertyTrackRepository();
   const service = new TrackService(layerTrackRepo, boneTrackRepo, propertyTrackRepo);
   const stateUpdate = new StateUpdate(state);
+  if (payload.clearAnimation) {
+    const newValues = service.clearAnimation();
+    return stateUpdate.updateState(newValues);
+  }
+  if (!payload.list.length) {
+    const newValues = service.changeSelectedTargets([]);
+    return stateUpdate.updateState(newValues);
+  }
   if (isShootTrack(payload.list)) {
     const newValues = service.changeSelectedTargets(payload.list);
     return stateUpdate.updateState(newValues);

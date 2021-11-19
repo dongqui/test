@@ -27,6 +27,18 @@ class KeyframeService implements Service {
       copiedPropertyKeyframes: [],
     };
   };
+
+  clearAnimation = (): Partial<KeyframesState> => {
+    return {
+      layerTrack: null,
+      boneTrackList: [],
+      propertyTrackList: [],
+      selectedLayerKeyframes: [],
+      selectedBoneKeyframes: [],
+      selectedPropertyKeyframes: [],
+      copiedPropertyKeyframes: [],
+    };
+  };
 }
 
 export default KeyframeService;

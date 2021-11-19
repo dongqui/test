@@ -14,15 +14,18 @@ class LayerKeyframeRepository implements Repository {
       .map<Keyframe>((frame) => ({ isDeleted: false, isSelected: false, time: frame }));
   };
 
-  initializeTimeEditorTrack = (shootTracks: ShootTrack[]): TimeEditorTrack => {
-    const layerKeyframes = this.setLayerKeyframes(shootTracks);
-    const layerTimeEditorTrack: TimeEditorTrack = {
-      trackNumber: -1,
-      trackId: shootTracks[0].layerId,
-      trackType: 'layer',
-      keyframes: layerKeyframes,
-    };
-    return layerTimeEditorTrack;
+  initializeTimeEditorTrack = (shootTracks: ShootTrack[]): TimeEditorTrack | null => {
+    if (shootTracks.length) {
+      const layerKeyframes = this.setLayerKeyframes(shootTracks);
+      const layerTimeEditorTrack: TimeEditorTrack = {
+        trackNumber: -1,
+        trackId: shootTracks[0].layerId,
+        trackType: 'layer',
+        keyframes: layerKeyframes,
+      };
+      return layerTimeEditorTrack;
+    }
+    return null;
   };
 
   clearSelectedKeyframes = (): ClusteredKeyframe[] => {

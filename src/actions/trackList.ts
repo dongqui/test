@@ -15,6 +15,7 @@ export type TrackListAction =
 // 트랙 리스트 생성
 export interface InitializeTrackList {
   list: ShootLayer[] | ShootTrack[];
+  clearAnimation?: boolean;
 }
 export const initializeTrackList = (params: InitializeTrackList) => ({
   type: 'trackList/INITIALIZE_TRACK_LIST' as const,

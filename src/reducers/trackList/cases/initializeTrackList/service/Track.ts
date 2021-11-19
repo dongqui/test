@@ -24,6 +24,7 @@ class TrackService implements Serivice {
       selectedLayer: this.layerTrackRepo.initializeSelectedTracks(list) as string,
       selectedBones: this.boneTrackRepo.initializeSelectedTracks() as number[],
       selectedProperties: this.propertyTrackRepo.initializeSelectedTracks() as number[],
+      trackScrollTop: 0,
     };
   };
 
@@ -31,6 +32,21 @@ class TrackService implements Serivice {
     return {
       boneTrackList: this.boneTrackRepo.initializeTrackList(list) as BoneTrack[],
       propertyTrackList: this.propertyTrackRepo.initializeTrackList(list) as PropertyTrack[],
+      selectedBones: this.boneTrackRepo.initializeSelectedTracks() as number[],
+      selectedProperties: this.propertyTrackRepo.initializeSelectedTracks() as number[],
+      trackScrollTop: 0,
+    };
+  };
+
+  clearAnimation = (): Partial<TrackListState> => {
+    return {
+      layerTrackList: [],
+      boneTrackList: [],
+      propertyTrackList: [],
+      selectedLayer: '',
+      selectedBones: [],
+      selectedProperties: [],
+      trackScrollTop: 0,
     };
   };
 }

@@ -14,6 +14,7 @@ export type KeyframesAction =
 // 키프레임 생성
 export interface InitializeKeyframes {
   list: ShootTrack[];
+  clearAnimation?: boolean;
 }
 export const initializeKeyframes = (params: InitializeKeyframes) => ({
   type: 'keyframes/INITIALIZE_KEYFRAMES' as const,
