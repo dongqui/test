@@ -85,7 +85,7 @@ const useAnimation = () => {
         }
       });
     });
-    // newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
+    newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
     setCurrentAnimationGroup(newAnimationGroup);
   }, [_animationIngredients, _endTimeIndex, _fps, _startTimeIndex, _visualizedAssetIds]);
 
