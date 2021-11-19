@@ -147,6 +147,17 @@ const DragBox: FunctionComponent<Props> = (props) => {
           node.id = selectableId;
         }
       });
+
+      const scrollDiffBottom = Math.abs(areaRef.current.getBoundingClientRect().bottom - event.clientY);
+      const scrollDiffTop = Math.abs(areaRef.current.getBoundingClientRect().top - event.clientY);
+
+      if (event.clientY > areaRef.current.getBoundingClientRect().bottom) {
+        areaRef.current.scrollTop = areaRef.current.scrollTop + scrollDiffBottom;
+      }
+
+      if (event.clientY < areaRef.current.getBoundingClientRect().top) {
+        areaRef.current.scrollTop = areaRef.current.scrollTop - scrollDiffTop;
+      }
     },
     [areaRef, selectableId, selectedId, updateDragBoxStyle, getDragBoxLeftTop, getDragBoxRightBottom],
   );
