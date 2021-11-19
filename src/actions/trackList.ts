@@ -1,3 +1,4 @@
+import { ShootLayer, ShootTrack } from 'types/common';
 import { TrackType } from 'types/TP';
 import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
 
@@ -12,9 +13,17 @@ export type TrackListAction =
   | ReturnType<typeof changeTrackScrollTop>;
 
 // 트랙 리스트 생성
-export const initializeTrackList = (params: any) => ({
+export interface InitializeTrackList {
+  list: ShootLayer[] | ShootTrack[];
+}
+export const initializeTrackList = (params: InitializeTrackList) => ({
   type: 'trackList/INITIALIZE_TRACK_LIST' as const,
   payload: { ...params },
+});
+
+export const CHANGE_SELECTED_TARGETS = 'trackList/CHANGE_SELECTED_TARGETS' as const;
+export const changeSelectedTargets = () => ({
+  type: CHANGE_SELECTED_TARGETS,
 });
 
 // 트랙 내부 펴닫기 버튼 클릭

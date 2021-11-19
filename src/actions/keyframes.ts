@@ -1,6 +1,8 @@
+import { ShootTrack } from 'types/common';
 import { TrackIdentifier } from 'types/TP';
 
 export type KeyframesAction =
+  | ReturnType<typeof initializeKeyframes>
   | ReturnType<typeof selectKeyframes>
   | ReturnType<typeof addKeyframes>
   | ReturnType<typeof copyKeyframes>
@@ -8,6 +10,15 @@ export type KeyframesAction =
   | ReturnType<typeof deleteKeyframes>
   | ReturnType<typeof dragDropKeyframes>
   | ReturnType<typeof paste>;
+
+// 키프레임 생성
+export interface InitializeKeyframes {
+  list: ShootTrack[];
+}
+export const initializeKeyframes = (params: InitializeKeyframes) => ({
+  type: 'keyframes/INITIALIZE_KEYFRAMES' as const,
+  payload: { ...params },
+});
 
 // 키프레임 삭제 단축키 입력
 export const ENTER_KEYFRAME_DELETE_KEY = 'keyframes/ENTER_KEYFRAME_DELETE_KEY' as const;
@@ -28,7 +39,7 @@ export const enterKeyframeDragDropKey = (params: EnterKeyframeDragDropKey) => ({
 // 키프레임 붙이기 키 입력
 export const ENTER_PASTE_KEY = 'keyframes/ENTER_PASTE_KEY' as const;
 export const enterPasteKey = () => ({
-  type: ENTER_PASTE_KEY,
+  type: 'keyframes/ENTER_PASTE_KEY' as const,
 });
 
 // 키프레임 선택
