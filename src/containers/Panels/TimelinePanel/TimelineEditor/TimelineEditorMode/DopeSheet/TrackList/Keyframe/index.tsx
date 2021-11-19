@@ -39,27 +39,28 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
   const contextMenuList = useMemo(
     () => [
       {
-        label: 'Delete keyframe',
-        onClick: () => {
-          dispatch(keyframeActions.deleteKeyframes());
-        },
-      },
-      {
-        label: 'Select all(가로)',
+        label: 'Select All Row',
         onClick: () => {
           dispatch(keyframeActions.selectKeyframes({ selectType: 'horizontal', trackId, trackNumber, trackType, time }));
         },
       },
       {
-        label: 'Select all(세로)',
+        label: 'Select All Column',
         onClick: () => {
           dispatch(keyframeActions.selectKeyframes({ selectType: 'vertical', trackId, trackNumber, trackType, time }));
         },
       },
       {
-        label: 'Unselect all',
+        label: 'Unselect All',
+        separator: true,
         onClick: () => {
           dispatch(keyframeActions.selectKeyframes({ selectType: 'unselectAll', trackId, trackNumber, trackType, time }));
+        },
+      },
+      {
+        label: 'Delete Keyframe',
+        onClick: () => {
+          dispatch(keyframeActions.deleteKeyframes());
         },
       },
     ],

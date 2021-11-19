@@ -254,9 +254,11 @@ const Shoot: FunctionComponent = () => {
           <MiddleBar />
         </Box>
         <Box id="TP" {...boxProps.tp}>
-          <ContextMenuProvider>
-            <TimelinePanel />
-          </ContextMenuProvider>
+          <BaseModalProvider>
+            <ContextMenuProvider>
+              <TimelinePanel />
+            </ContextMenuProvider>
+          </BaseModalProvider>
         </Box>
       </Box>
     </Fragment>
