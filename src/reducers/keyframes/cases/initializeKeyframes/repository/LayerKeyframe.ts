@@ -1,25 +1,25 @@
-import { ShootTrack } from 'types/common';
+import { PlaskTrack } from 'types/common';
 import { TimeEditorTrack, ClusteredKeyframe, Keyframe } from 'types/TP/keyframe';
 import { Repository } from './index';
 
 class LayerKeyframeRepository implements Repository {
   // layer 키프레임 구하ㅣ
-  private setLayerKeyframes = (shootTracks: ShootTrack[]) => {
+  private setLayerKeyframes = (plaskTracks: PlaskTrack[]) => {
     const layerFrames = new Set<number>();
-    shootTracks.forEach((shootTrack) => {
-      shootTrack.transformKeys.forEach((transformKey) => layerFrames.add(transformKey.frame));
+    plaskTracks.forEach((plaskTrack) => {
+      plaskTrack.transformKeys.forEach((transformKey) => layerFrames.add(transformKey.frame));
     });
     return [...layerFrames]
       .sort((a, b) => a - b)
       .map<Keyframe>((frame) => ({ isDeleted: false, isSelected: false, time: frame }));
   };
 
-  initializeTimeEditorTrack = (shootTracks: ShootTrack[]): TimeEditorTrack | null => {
-    if (shootTracks.length) {
-      const layerKeyframes = this.setLayerKeyframes(shootTracks);
+  initializeTimeEditorTrack = (plaskTracks: PlaskTrack[]): TimeEditorTrack | null => {
+    if (plaskTracks.length) {
+      const layerKeyframes = this.setLayerKeyframes(plaskTracks);
       const layerTimeEditorTrack: TimeEditorTrack = {
         trackNumber: -1,
-        trackId: shootTracks[0].layerId,
+        trackId: plaskTracks[0].layerId,
         trackType: 'layer',
         keyframes: layerKeyframes,
       };

@@ -1,11 +1,11 @@
-import { ShootTrack } from 'types/common';
+import { PlaskTrack } from 'types/common';
 import { TimeEditorTrack, ClusteredKeyframe, Keyframe } from 'types/TP/keyframe';
 import { Repository } from './index';
 
 class BoneKeyframeRepository implements Repository {
   // property 별 frame 구하기
-  private getPropertyFrames = (shootTrack: ShootTrack) => {
-    const propertyFrames = shootTrack.transformKeys.map((transformKey) => transformKey.frame);
+  private getPropertyFrames = (plaskTrack: PlaskTrack) => {
+    const propertyFrames = plaskTrack.transformKeys.map((transformKey) => transformKey.frame);
     return propertyFrames;
   };
 
@@ -21,16 +21,16 @@ class BoneKeyframeRepository implements Repository {
   };
 
   // bone 트랙 리스트 초기화
-  initializeTimeEditorTrack = (shootTracks: ShootTrack[]): TimeEditorTrack[] => {
+  initializeTimeEditorTrack = (plaskTracks: PlaskTrack[]): TimeEditorTrack[] => {
     const boneTimeEditorTrackList: TimeEditorTrack[] = [];
     let boneTrackNumber = 0;
-    for (let index = 0; index < shootTracks.length; index += 3) {
-      const positionFrames = this.getPropertyFrames(shootTracks[index]);
-      const rotationFrames = this.getPropertyFrames(shootTracks[index + 1]);
-      const scaleFrames = this.getPropertyFrames(shootTracks[index + 2]);
+    for (let index = 0; index < plaskTracks.length; index += 3) {
+      const positionFrames = this.getPropertyFrames(plaskTracks[index]);
+      const rotationFrames = this.getPropertyFrames(plaskTracks[index + 1]);
+      const scaleFrames = this.getPropertyFrames(plaskTracks[index + 2]);
       const boneKeyFrames = this.getBoneKeyframes(positionFrames, rotationFrames, scaleFrames);
       boneTimeEditorTrackList.push({
-        trackId: shootTracks[index].targetId,
+        trackId: plaskTracks[index].targetId,
         trackType: 'bone',
         trackNumber: boneTrackNumber,
         keyframes: boneKeyFrames,

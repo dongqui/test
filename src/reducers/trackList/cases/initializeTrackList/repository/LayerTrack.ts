@@ -1,4 +1,4 @@
-import { ShootLayer } from 'types/common';
+import { PlaskLayer } from 'types/common';
 import { TrackNumber } from 'types/TP';
 import { LayerTrack } from 'types/TP/track';
 
@@ -6,8 +6,8 @@ import { Repository } from './index';
 
 class LayerTrackRepository implements Repository {
   // layer track list 초기화
-  initializeTrackList = (shootLayers: ShootLayer[]): LayerTrack[] => {
-    const layerTrackList: LayerTrack[] = shootLayers.map((layer, index) => ({
+  initializeTrackList = (plaskLayers: PlaskLayer[]): LayerTrack[] => {
+    const layerTrackList: LayerTrack[] = plaskLayers.map((layer, index) => ({
       trackId: layer.id,
       trackName: layer.name,
       trackType: 'layer',
@@ -20,8 +20,8 @@ class LayerTrackRepository implements Repository {
   };
 
   // 선택 된 layer track 초기화
-  initializeSelectedTracks = (shootLayers: ShootLayer[]): string => {
-    return shootLayers[0].id;
+  initializeSelectedTracks = (plaskLayers: PlaskLayer[]): string => {
+    return plaskLayers[0].id;
   };
 }
 

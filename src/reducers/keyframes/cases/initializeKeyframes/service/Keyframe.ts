@@ -1,4 +1,4 @@
-import { ShootTrack } from 'types/common';
+import { PlaskTrack } from 'types/common';
 import { TimeEditorTrack } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
 
@@ -16,11 +16,11 @@ class KeyframeService implements Service {
     this.propertyTrackRepo = propertyTrackRepo;
   }
 
-  changeSelectedTargets = (shootTracks: ShootTrack[]): Partial<KeyframesState> => {
+  changeSelectedTargets = (plaskTracks: PlaskTrack[]): Partial<KeyframesState> => {
     return {
-      layerTrack: this.layerTrackRepo.initializeTimeEditorTrack(shootTracks) as TimeEditorTrack,
-      boneTrackList: this.boneTrackRepo.initializeTimeEditorTrack(shootTracks) as TimeEditorTrack[],
-      propertyTrackList: this.propertyTrackRepo.initializeTimeEditorTrack(shootTracks) as TimeEditorTrack[],
+      layerTrack: this.layerTrackRepo.initializeTimeEditorTrack(plaskTracks) as TimeEditorTrack,
+      boneTrackList: this.boneTrackRepo.initializeTimeEditorTrack(plaskTracks) as TimeEditorTrack[],
+      propertyTrackList: this.propertyTrackRepo.initializeTimeEditorTrack(plaskTracks) as TimeEditorTrack[],
       selectedLayerKeyframes: this.layerTrackRepo.clearSelectedKeyframes(),
       selectedBoneKeyframes: this.boneTrackRepo.clearSelectedKeyframes(),
       selectedPropertyKeyframes: this.propertyTrackRepo.clearSelectedKeyframes(),
@@ -30,7 +30,7 @@ class KeyframeService implements Service {
 
   clearAnimation = (): Partial<KeyframesState> => {
     return {
-      layerTrack: null,
+      layerTrack: { trackId: '', trackType: 'layer', trackNumber: -1, keyframes: [] },
       boneTrackList: [],
       propertyTrackList: [],
       selectedLayerKeyframes: [],

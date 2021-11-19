@@ -1,8 +1,8 @@
-import { ShootLayer, ShootTrack } from 'types/common';
+import { PlaskLayer, PlaskTrack } from 'types/common';
 import { Track } from 'types/TP/track';
 
 export interface Repository {
-  initializeTrackList(list?: ShootLayer[] | ShootTrack[]): Track[];
+  initializeTrackList(list?: PlaskLayer[] | PlaskTrack[]): Track[];
 
-  initializeSelectedTracks(list?: ShootLayer[]): string | number[];
+  initializeSelectedTracks(list?: PlaskLayer[]): string | number[];
 }

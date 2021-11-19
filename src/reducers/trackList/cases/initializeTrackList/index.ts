@@ -1,4 +1,4 @@
-import { ShootLayer, ShootTrack } from 'types/common';
+import { PlaskLayer, PlaskTrack } from 'types/common';
 import { TrackListState } from 'reducers/trackList';
 import { StateUpdate } from 'reducers/trackList/classes';
 import { InitializeTrackList } from 'actions/trackList';
@@ -9,8 +9,8 @@ import LayerTrackRepository from './repository/LayerTrack';
 import BoneTrackRepository from './repository/BoneTrack';
 import PropertyTrackRepository from './repository/PropertyTrack';
 
-const isShootTrack = (list: ShootLayer[] | ShootTrack[]): list is ShootTrack[] => {
-  return (list as ShootTrack[])[0].transformKeys !== undefined;
+const isPlaskTrack = (list: PlaskLayer[] | PlaskTrack[]): list is PlaskTrack[] => {
+  return (list as PlaskTrack[])[0].transformKeys !== undefined;
 };
 
 const initializeTrackList = (state: TrackListState, payload: InitializeTrackList) => {
@@ -27,7 +27,7 @@ const initializeTrackList = (state: TrackListState, payload: InitializeTrackList
     const newValues = service.changeSelectedTargets([]);
     return stateUpdate.updateState(newValues);
   }
-  if (isShootTrack(payload.list)) {
+  if (isPlaskTrack(payload.list)) {
     const newValues = service.changeSelectedTargets(payload.list);
     return stateUpdate.updateState(newValues);
   } else {

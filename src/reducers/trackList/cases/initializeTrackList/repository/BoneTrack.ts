@@ -1,4 +1,4 @@
-import { ShootTrack } from 'types/common';
+import { PlaskTrack } from 'types/common';
 import { BoneTrack } from 'types/TP/track';
 import { Repository } from './index';
 
@@ -12,14 +12,14 @@ class BoneTrackRepository implements Repository {
   };
 
   // bone track list 초기화
-  initializeTrackList = (shootTracks: ShootTrack[]): BoneTrack[] => {
+  initializeTrackList = (plaskTracks: PlaskTrack[]): BoneTrack[] => {
     const boneTrackList: BoneTrack[] = [];
-    shootTracks.forEach((shootTrack) => {
-      const boneName = this.setBoneName(shootTrack.targetId);
+    plaskTracks.forEach((plaskTrack) => {
+      const boneName = this.setBoneName(plaskTrack.targetId);
       const index = boneTrackList.findIndex((boneTrack) => boneTrack.trackName === boneName);
       if (index === -1) {
         boneTrackList.push({
-          trackId: shootTrack.targetId,
+          trackId: plaskTrack.targetId,
           trackName: boneName,
           trackNumber: boneTrackList.length * 10,
           trackType: 'bone',

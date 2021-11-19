@@ -9,7 +9,7 @@ import selectKeyframes from './cases/selectKeyframes';
 import pasteKeyframes from './cases/pasteKeyframes';
 
 export interface KeyframesState {
-  layerTrack: TimeEditorTrack | null;
+  layerTrack: TimeEditorTrack;
   boneTrackList: TimeEditorTrack[];
   propertyTrackList: TimeEditorTrack[];
 
@@ -21,7 +21,7 @@ export interface KeyframesState {
 }
 
 const initialState: KeyframesState = {
-  layerTrack: null,
+  layerTrack: { trackId: '', trackType: 'layer', trackNumber: -1, keyframes: [] },
   boneTrackList: [],
   propertyTrackList: [],
 

@@ -1,4 +1,4 @@
-import { ShootTrack } from 'types/common';
+import { PlaskTrack } from 'types/common';
 import { TrackIdentifier } from 'types/TP';
 
 export type KeyframesAction =
@@ -13,7 +13,7 @@ export type KeyframesAction =
 
 // 키프레임 생성
 export interface InitializeKeyframes {
-  list: ShootTrack[];
+  list: PlaskTrack[];
   clearAnimation?: boolean;
 }
 export const initializeKeyframes = (params: InitializeKeyframes) => ({

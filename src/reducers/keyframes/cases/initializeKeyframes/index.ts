@@ -1,4 +1,4 @@
-import { ShootTrack } from 'types/common';
+import { PlaskTrack } from 'types/common';
 import { KeyframesState } from 'reducers/keyframes';
 import { StateUpdate } from 'reducers/keyframes/classes';
 import { InitializeTrackList } from 'actions/trackList';
@@ -19,7 +19,7 @@ const initializeTrackList = (state: KeyframesState, payload: InitializeTrackList
     const newValues = service.clearAnimation();
     return stateUpdate.updateState(newValues);
   } else {
-    const newValues = service.changeSelectedTargets(payload.list as ShootTrack[]);
+    const newValues = service.changeSelectedTargets(payload.list as PlaskTrack[]);
     return stateUpdate.updateState(newValues);
   }
 };

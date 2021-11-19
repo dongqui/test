@@ -1,4 +1,4 @@
-import { ShootLayer, ShootTrack } from 'types/common';
+import { PlaskLayer, PlaskTrack } from 'types/common';
 import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
 import { TrackListState } from 'reducers/trackList';
 
@@ -16,7 +16,7 @@ class TrackService implements Serivice {
     this.propertyTrackRepo = propertyTrackRepo;
   }
 
-  visualizeAnimation = (list: ShootLayer[]): Partial<TrackListState> => {
+  visualizeAnimation = (list: PlaskLayer[]): Partial<TrackListState> => {
     return {
       layerTrackList: this.layerTrackRepo.initializeTrackList(list) as LayerTrack[],
       boneTrackList: [],
@@ -28,7 +28,7 @@ class TrackService implements Serivice {
     };
   };
 
-  changeSelectedTargets = (list: ShootTrack[]): Partial<TrackListState> => {
+  changeSelectedTargets = (list: PlaskTrack[]): Partial<TrackListState> => {
     return {
       boneTrackList: this.boneTrackRepo.initializeTrackList(list) as BoneTrack[],
       propertyTrackList: this.propertyTrackRepo.initializeTrackList(list) as PropertyTrack[],

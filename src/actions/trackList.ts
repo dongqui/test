@@ -1,4 +1,4 @@
-import { ShootLayer, ShootTrack } from 'types/common';
+import { PlaskLayer, PlaskTrack } from 'types/common';
 import { TrackType } from 'types/TP';
 import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
 
@@ -14,7 +14,7 @@ export type TrackListAction =
 
 // 트랙 리스트 생성
 export interface InitializeTrackList {
-  list: ShootLayer[] | ShootTrack[];
+  list: PlaskLayer[] | PlaskTrack[];
   clearAnimation?: boolean;
 }
 export const initializeTrackList = (params: InitializeTrackList) => ({

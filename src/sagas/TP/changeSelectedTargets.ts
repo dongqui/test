@@ -1,7 +1,7 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
 
 import { RootState } from 'reducers';
-import { AnimationIngredient, ShootTrack } from 'types/common';
+import { AnimationIngredient, PlaskTrack } from 'types/common';
 import * as trackListActions from 'actions/trackList';
 import * as keyframesActions from 'actions/keyframes';
 
@@ -10,7 +10,7 @@ function getAnimationIngredients(state: RootState) {
 }
 
 function getVisualizedAssetIds(state: RootState) {
-  return state.shootProject.visualizedAssetIds;
+  return state.plaskProject.visualizedAssetIds;
 }
 
 function getSelectedTargets(state: RootState) {
@@ -32,10 +32,10 @@ function* findVisualizedAnimationIngredients() {
 }
 
 // viewport에서 선택 된 bone/controller 필터링
-function* filterShootTracks(visualizedAnimationIngredient: AnimationIngredient) {
+function* filterPlaskTracks(visualizedAnimationIngredient: AnimationIngredient) {
   const selectedTargets = getSelectedTargets(yield select());
   const selectedLayer = getSelectedLayer(yield select());
-  const filteredTracks: ShootTrack[] = [];
+  const filteredTracks: PlaskTrack[] = [];
   for (let index = 0; index < selectedTargets.length; index += 1) {
     const { id, name } = selectedTargets[index];
     if (name !== 'Armature') {
@@ -54,9 +54,9 @@ function* filterShootTracks(visualizedAnimationIngredient: AnimationIngredient) 
 
 function* worker() {
   const visualizedAnimationIngredients: AnimationIngredient[] = yield findVisualizedAnimationIngredients();
-  const filteredShootTracks: ShootTrack[] = yield filterShootTracks(visualizedAnimationIngredients[0]);
-  yield put(trackListActions.initializeTrackList({ list: filteredShootTracks, clearAnimation: !visualizedAnimationIngredients.length }));
-  yield put(keyframesActions.initializeKeyframes({ list: filteredShootTracks, clearAnimation: !visualizedAnimationIngredients.length }));
+  const filteredPlaskTracks: PlaskTrack[] = yield filterPlaskTracks(visualizedAnimationIngredients[0]);
+  yield put(trackListActions.initializeTrackList({ list: filteredPlaskTracks, clearAnimation: !visualizedAnimationIngredients.length }));
+  yield put(keyframesActions.initializeKeyframes({ list: filteredPlaskTracks, clearAnimation: !visualizedAnimationIngredients.length }));
 }
 
 // 키프레임 드래그 드랍 입력 감지
