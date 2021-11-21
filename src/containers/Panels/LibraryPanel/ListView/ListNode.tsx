@@ -33,7 +33,7 @@ interface Props {
   filePath: string;
   onSelect?: (id: string, multiple?: boolean) => void;
   onReject: (id: string) => void;
-  selectedId?: string[];
+  selectedId: string[];
   isSelected?: boolean;
   childrens: any[];
   extension: string;
@@ -207,8 +207,34 @@ const ListNode: FunctionComponent<Props> = ({
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
+      e.stopPropagation();
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
+
+      if (selectedId.length > 1) {
+        onContextMenuOpen({
+          top: e.clientY,
+          left: e.clientX,
+          menu: [
+            {
+              label: 'Delete',
+              onClick: () => {
+                console.log('Multiple delete');
+              },
+              children: [],
+            },
+            {
+              label: 'Copy',
+              onClick: () => {
+                console.log('Multiple Copy');
+              },
+              children: [],
+            },
+          ],
+        });
+
+        return;
+      }
 
       if (isContains) {
         if (type === 'Folder') {
@@ -761,6 +787,7 @@ const ListNode: FunctionComponent<Props> = ({
     visualizedAssetIds,
     assetList,
     screenList,
+    selectedId.length,
   ]);
 
   const classes = cx('wrapper', { selected: isSelected });
@@ -785,7 +812,8 @@ const ListNode: FunctionComponent<Props> = ({
               extension={node.extension}
               onSelect={handleSelect}
               onReject={onReject}
-              isSelected={selectedId?.includes(node.id)}
+              selectedId={selectedId}
+              isSelected={selectedId.includes(node.id)}
               childrens={node.children}
               assetId={node.assetId}
               onSetDragTarget={onSetDragTarget}
@@ -807,7 +835,8 @@ const ListNode: FunctionComponent<Props> = ({
             extension={paramId.extension}
             onSelect={handleSelect}
             onReject={onReject}
-            isSelected={selectedId?.includes(id) && paramId.current}
+            selectedId={selectedId}
+            isSelected={selectedId.includes(id) && paramId.current}
             childrens={[]}
             assetId={paramId.assetId}
             onSetDragTarget={onSetDragTarget}
