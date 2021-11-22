@@ -1,0 +1,36 @@
+.wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 24px;
+
+  & > button {
+    width: 33%;
+    color: #fff;
+    background-color: #353739;
+    border: none;
+    font-size: 11px;
+    line-height: 13px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #4f4f4f;
+    }
+
+    &:first-child {
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+      border-right: 1px solid #212121;
+    }
+
+    &:last-child {
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+      border-left: 1px solid #212121;
+    }
+
+    &.active {
+      background-color: #0f88ff;
+    }
+  }
+}
