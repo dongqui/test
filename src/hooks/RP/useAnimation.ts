@@ -29,7 +29,9 @@ const useAnimation = () => {
 
     // 최초 모델 visualize/모델 변경 시, 트랙 리스트 생성 함수 호출
     if (visualizedAnimationIngredients.length) {
-      dispatch(trackListActions.initializeTrackList({ list: visualizedAnimationIngredients[0].layers }));
+      dispatch(trackListActions.initializeTrackList({ list: visualizedAnimationIngredients[0].layers, animationIngredientId: visualizedAnimationIngredients[0].id }));
+    } else {
+      dispatch(trackListActions.initializeTrackList({ list: [], animationIngredientId: '', clearAnimation: true }));
     }
 
     const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
