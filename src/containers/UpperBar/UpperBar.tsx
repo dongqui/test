@@ -1,12 +1,13 @@
-import { FunctionComponent, useCallback } from 'react';
+import { FunctionComponent, useCallback, useState } from 'react';
 import { Dispatch, RefObject, SetStateAction } from 'hoist-non-react-statics/node_modules/@types/react';
 import { useDispatch } from 'react-redux';
-import { SegmentButton } from 'components/Button';
+import { FilledButton, SegmentButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { changeMode } from 'actions/modeSelection';
 import { RootState, useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
+import { BaseModal } from 'components/Modal';
 
 const cx = classNames.bind(styles);
 
@@ -18,6 +19,11 @@ interface Props {
   cameraDropdownState?: boolean;
   recordState?: boolean;
   standbyState?: boolean;
+  srcAddress?: string;
+  recording?: boolean;
+  recordOverTwice?: boolean;
+  videoRef?: RefObject<HTMLVideoElement>;
+  setSrcAddress?: Dispatch<SetStateAction<string>>;
   handleChangeCamera?: (e: any) => void;
   setCameraDropdownState?: Dispatch<SetStateAction<boolean>>;
   stopStream?: () => void;
@@ -30,12 +36,32 @@ const UpperBar: FunctionComponent<Props> = ({
   cameraDropdownState,
   recordState,
   standbyState,
+  srcAddress,
+  videoRef,
+  recording,
+  recordOverTwice,
+  setSrcAddress,
   setCameraDropdownState,
   stopStream,
   deviceList,
 }) => {
   const dispatch = useDispatch();
+  const [deleteModal, setDeleteModal] = useState<boolean>(false);
   const { mode } = useSelector((state: RootState) => state.modeSelection);
+  const { videoURL } = useSelector((state: RootState) => state.modeSelection);
+
+  const handleChangeMode = useCallback(() => {
+    setSrcAddress && setSrcAddress('');
+    videoRef && (videoRef.current!.src = '');
+    dispatch(changeMode({ videoURL: '' }));
+    setDeleteModal(false);
+    stopStream && stopStream();
+    dispatch(changeMode({ mode: 'animationMode' }));
+  }, [setSrcAddress, videoRef, stopStream, dispatch]);
+
+  const handleCameraDropdown = useCallback(() => {
+    setCameraDropdownState && setCameraDropdownState(!cameraDropdownState);
+  }, [cameraDropdownState, setCameraDropdownState]);
 
   const modeList = [
     {
@@ -43,8 +69,12 @@ const UpperBar: FunctionComponent<Props> = ({
       value: SvgPath.TrackMode,
       isSelected: mode === 'animationMode',
       onClick: () => {
-        dispatch(changeMode({ mode: 'animationMode' }));
-        stopStream && stopStream();
+        if (srcAddress || videoURL) {
+          setDeleteModal(true);
+        } else {
+          stopStream && stopStream();
+          dispatch(changeMode({ mode: 'animationMode' }));
+        }
       },
     },
     {
@@ -56,10 +86,6 @@ const UpperBar: FunctionComponent<Props> = ({
       },
     },
   ];
-
-  const handleCameraDropdown = useCallback(() => {
-    setCameraDropdownState && setCameraDropdownState(!cameraDropdownState);
-  }, [cameraDropdownState, setCameraDropdownState]);
 
   return (
     <div className={cx('wrap')}>
@@ -74,12 +100,12 @@ const UpperBar: FunctionComponent<Props> = ({
         <IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />
         <SegmentButton list={modeList} />
         {standbyState && <div className={cx('segment-disable')}></div>}
-        {mode === 'videoMode' && !recordState && (
+        {mode === 'videoMode' && !recording && !recordOverTwice && (
           <div className={cx('device-select')} onClick={handleCameraDropdown}>
             Camera<IconWrapper icon={SvgPath.EmptyDownArrow}></IconWrapper>
           </div>
         )}
-        {mode === 'videoMode' && recordState && (
+        {mode === 'videoMode' && (recording || recordOverTwice) && (
           <div className={cx('device-select', 'disable')}>
             Camera<IconWrapper icon={SvgPath.EmptyDownArrow}></IconWrapper>
           </div>
@@ -98,6 +124,18 @@ const UpperBar: FunctionComponent<Props> = ({
           </ul>
         )}
       </div>
+      {deleteModal && (
+        <BaseModal className={cx('extract-modal', 'extract-delete')}>
+          <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
+          <p className={cx('extract-name-paragraph')}>
+            Your video will be <strong>deleted</strong> to take a new video.
+          </p>
+          <div className={cx('extract-name-wrapper')}>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setDeleteModal(false)}></FilledButton>
+            <FilledButton text="Delete" className={cx('extract-button')} onClick={handleChangeMode}></FilledButton>
+          </div>
+        </BaseModal>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-@import 'styles/libraries/_colors';
+
 @import 'styles/libraries/_mixins';
 
 .segment-group {
@@ -32,17 +32,17 @@
   }
 
   &:hover {
-    background-color: $gray400;
-    color: $gray600;
+    background-color: var(--gray400);
+    color: var(--gray600);
   }
 
   &:active {
-    background-color: $primaryColor;
+    background-color: #0f88ff;
     color: #fff;
   }
 
   &.selected {
-    background-color: $primaryColor;
+    background-color: #0f88ff;
     color: #fff;
   }
 

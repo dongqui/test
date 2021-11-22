@@ -1,21 +1,22 @@
-import '@babylonjs/loaders/glTF';
 import { FunctionComponent, memo, useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
+import produce from 'immer';
+import * as BABYLON from '@babylonjs/core';
+import '@babylonjs/loaders/glTF';
+import { v4 as uuid } from 'uuid';
+import { clone, isUndefined } from 'lodash';
 import { convertFBXtoGLB } from 'api';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
 import { getFileExtension } from 'utils/common';
-import { AnimationIngredient, ShootAsset } from 'types/common';
-import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { v4 as uuid } from 'uuid';
-import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as shootProjectActions from 'actions/shootProjectAction';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import produce from 'immer';
+import { AnimationIngredient, PlaskAsset } from 'types/common';
 import Box from 'components/Layout/Box';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -28,7 +29,7 @@ const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
   const _lpNode = useSelector((state) => state.lpNode.node);
   const _lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
-  const _sceneList = useSelector((state) => state.shootProject.sceneList);
+  const _screenList = useSelector((state) => state.plaskProject.screenList);
 
   const [view, setView] = useState<LP.View>('List');
   const [searchText, setSearchText] = useState('');
@@ -38,13 +39,13 @@ const LibraryPanel: FunctionComponent = () => {
 
   const handleFileLoad = useCallback(
     async (file: File) => {
-      const isSceneReady = _sceneList.length > 0 && _sceneList[0].scene && _sceneList[0].scene.isReady();
+      const isSceneReady = _screenList.length > 0 && _screenList[0].scene && _screenList[0].scene.isReady();
 
       if (!isSceneReady) {
         return;
       }
 
-      const baseScene = _sceneList[0].scene;
+      const baseScene = _screenList[0].scene;
       let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
 
       const extension = getFileExtension(file.name).toLowerCase();
@@ -124,7 +125,7 @@ const LibraryPanel: FunctionComponent = () => {
       // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
       const retargetMap = createEmptyRetargetMap(assetId);
 
-      const newAsset: ShootAsset = {
+      const newAsset: PlaskAsset = {
         id: assetId,
         name: fileName,
         extension,
@@ -178,7 +179,7 @@ const LibraryPanel: FunctionComponent = () => {
       //   }),
       // );
 
-      dispatch(shootProjectActions.addAsset({ asset: newAsset }));
+      dispatch(plaskProjectActions.addAsset({ asset: newAsset }));
       dispatch(
         animationDataActions.addAsset({
           transformNodes: transformNodes.filter(
@@ -191,7 +192,7 @@ const LibraryPanel: FunctionComponent = () => {
 
       return nextNodes;
     },
-    [_lpCurrentPath, _sceneList, dispatch, onModalClose, onModalOpen],
+    [_lpCurrentPath, _screenList, dispatch, onModalClose, onModalOpen],
   );
 
   const handleDrop = useCallback(

@@ -1,163 +1,190 @@
-import React, { memo, useEffect, useRef, RefObject, useState, useCallback, FunctionComponent } from 'react';
+import React, { useCallback, useEffect, useRef, RefObject, useState, Fragment, FunctionComponent } from 'react';
 import _ from 'lodash';
+
 import classNames from 'classnames/bind';
 import styles from './DragBox.module.scss';
 
 const cx = classNames.bind(styles);
 
 interface Props {
-  isAllCovered: boolean;
-  parentRef: RefObject<HTMLElement>;
+  /**
+   * @description dragbox의 영역이 될 ref
+   */
+  areaRef: RefObject<HTMLElement | SVGElement>;
+
+  /**
+   * @description selectabled id가 있는 node만 dragbox에 포함되어 있는지 확인
+   */
+  selectableId: string;
+
+  /**
+   * @description dragbox 안에 selectabled node가 포함 될 경우, 이를 구별하기 위해 selected id로 변경
+   */
+  selectedId: string;
+
+  /**
+   * @description 드래그 종료 시, dragbox에 포함 된 node list를 인자값으로 전달
+   * @argument list 마우스를 뗐을 때 dragbox에 포함 된 node list
+   */
+  onDragEnd: (list: NodeListOf<Element>) => void;
 }
 
 const DragBox: FunctionComponent<Props> = (props) => {
-  const { isAllCovered, parentRef } = props;
+  const { areaRef, selectableId, selectedId, onDragEnd } = props;
   const [isOpenedDragBox, setIsOpenedDragBox] = useState(false);
-  const svgRef = useRef<SVGSVGElement>(null);
-  const rectRef = useRef<SVGRectElement>(null);
+  const dragBoxRef = useRef<HTMLDivElement>(null);
 
-  const originX = useRef(0); // 최초 드래그가 발생한 x좌표
-  const originY = useRef(0); // 최초 드래그가 발생한 y좌표
+  const initialX = useRef(0); // 최초 드래그가 발생한 x좌표
+  const initialY = useRef(0); // 최초 드래그가 발생한 y좌표
   const currentX = useRef(0); // 현재 드래그가 발생하고 있는 x좌표
   const currentY = useRef(0); // 현재 드래그가 발생하고 있는 x좌표
 
   // min XY, max XY 구하기
   const getMinMaxXY = () => {
-    const minX = Math.min(originX.current, currentX.current);
-    const maxX = Math.max(originX.current, currentX.current);
-    const minY = Math.min(originY.current, currentY.current);
-    const maxY = Math.max(originY.current, currentY.current);
+    const minX = Math.min(initialX.current, currentX.current);
+    const maxX = Math.max(initialX.current, currentX.current);
+    const minY = Math.min(initialY.current, currentY.current);
+    const maxY = Math.max(initialY.current, currentY.current);
     return { minX, maxX, minY, maxY };
   };
 
-  // tttt
-  const tttt = useCallback(() => {
-    const { left: parentLeft, top: parentTop } = parentRef.current!.getBoundingClientRect();
+  // 드래그 박스의 좌측 상단 위치 구하기
+  const getDragBoxLeftTop = useCallback((areaLeft: number, areaTop: number) => {
+    const { minX, minY } = getMinMaxXY();
+    const left = minX < areaLeft ? areaLeft : minX;
+    const top = minY < areaTop ? areaTop : minY;
+    return { left, top };
+  }, []);
+
+  // 드래그 박스의 우측 하단 위치 구하기
+  const getDragBoxRightBottom = useCallback((areaLeft: number, areaTop: number, areaWidth: number, areaHeight: number) => {
+    const { maxX, maxY } = getMinMaxXY();
+    const right = areaLeft + areaWidth < maxX ? areaLeft + areaWidth : maxX;
+    const bottom = areaTop + areaHeight < maxY ? areaTop + areaHeight : maxY;
+    return { right, bottom };
+  }, []);
+
+  // 드래그 박스에 새로운 size 구하기
+  const getDragBoxNewSize = useCallback((areaLeft: number, areaTop: number) => {
     const { minX, maxX, minY, maxY } = getMinMaxXY();
-    const translateX = minX - parentLeft;
-    const translateY = minY - parentTop;
+    const translateX = minX - areaLeft;
+    const translateY = minY - areaTop;
     const width = maxX - minX;
     const height = maxY - minY;
     return { translateX, translateY, width, height };
-  }, [parentRef]);
+  }, []);
 
-  // 새로 구한 x, y, width, height로 translate 적용
-  const updateTranslate = useCallback(
-    (newX: number, newY: number) => {
-      currentX.current = newX;
-      currentY.current = newY;
-      const { width, height, translateX, translateY } = tttt();
-      const svg = svgRef.current;
-      const rect = rectRef.current;
-      if (svg && rect) {
-        svg.style.cssText = `width:${width}px; height:${height}px; trnasform:translate3d(${translateX}px, ${translateY}px, 0)`;
-        rect.style.cssText = `width:${width}px; height:${height}px;`;
+  // 새로 구한 x, y, width, height로 style 적용
+  const updateDragBoxStyle = useCallback(
+    (cursorX: number, cursorY: number, areaLeft: number, areaTop: number) => {
+      currentX.current = cursorX;
+      currentY.current = cursorY;
+      if (dragBoxRef.current && cursorX && cursorY) {
+        const { width, height, translateX, translateY } = getDragBoxNewSize(areaLeft, areaTop);
+        dragBoxRef.current.style.cssText = `width:${width}px; height:${height}px; transform:translate3d(${translateX}px, ${translateY}px, 0)`;
       }
     },
-    [tttt],
+    [getDragBoxNewSize],
   );
+
+  // 최초 xy 위치 설정
+  const setInitialXY = useCallback(
+    (cursorX: number, cursorY: number, areaLeft: number, areaTop: number) => {
+      initialX.current = cursorX;
+      initialY.current = cursorY;
+      updateDragBoxStyle(cursorX, cursorY, areaLeft, areaTop);
+    },
+    [updateDragBoxStyle],
+  );
+
+  // selected id로 적용 된 node에다가 원래 selecteable id로 변경
+  const changeSelectedToSelectable = useCallback(() => {
+    if (!areaRef.current) return;
+    areaRef.current.querySelectorAll(`#${selectedId}`).forEach((element) => {
+      element.id = selectableId;
+    });
+  }, [areaRef, selectableId, selectedId]);
+
+  // 마우스 왼쪽 클릭 이벤트 감지
+  const handleMouseDown = useCallback(
+    (event: any) => {
+      if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey || !areaRef.current) return;
+      const { x: areaLeft, y: areaTop } = areaRef.current.getBoundingClientRect();
+      setInitialXY(event.x, event.y, areaLeft, areaTop);
+      setIsOpenedDragBox(true);
+    },
+    [areaRef, setInitialXY],
+  );
+
+  // 마우스 이동 이벤트 감지
+  const handleMouseMove = useCallback(
+    (event: MouseEvent) => {
+      if (!areaRef.current) return;
+      const { x: areaLeft, y: areaTop, width: areaWidth, height: areaHeight } = areaRef.current.getBoundingClientRect();
+      const { left, top } = getDragBoxLeftTop(areaLeft, areaTop);
+      const { right, bottom } = getDragBoxRightBottom(areaLeft, areaTop, areaWidth, areaHeight);
+
+      updateDragBoxStyle(event.x, event.y, areaLeft, areaTop);
+      changeSelectedToSelectable();
+
+      areaRef.current.querySelectorAll(`#${selectableId}`).forEach((node) => {
+        const { x: nodeLeft, y: nodeTop, width: nodeWidth, height: nodeHeight } = node.getBoundingClientRect();
+        const nodeRight = nodeLeft + nodeWidth;
+        const nodeBottom = nodeTop + nodeHeight;
+        const isContained = left < nodeRight && top < nodeBottom && nodeLeft < right && nodeTop < bottom;
+        if (isContained) node.id = selectedId;
+      });
+    },
+    [areaRef, selectableId, selectedId, changeSelectedToSelectable, updateDragBoxStyle, getDragBoxLeftTop, getDragBoxRightBottom],
+  );
+
+  // 마우스 왼쪽 뗌 이벤트 감지
+  const handleMouseUp = useCallback(() => {
+    if (!areaRef.current) return;
+    const selectedNodes = areaRef.current.querySelectorAll(`#${selectedId}`);
+    setInitialXY(0, 0, 0, 0);
+    setIsOpenedDragBox(false);
+    onDragEnd(selectedNodes);
+    changeSelectedToSelectable();
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  }, [areaRef, selectedId, changeSelectedToSelectable, handleMouseMove, onDragEnd, setInitialXY]);
 
   // 부모 컴포넌트에 mousedown 이벤트 추가
   useEffect(() => {
-    const handleMouseDown = (event: MouseEvent) => {
-      if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
-      originX.current = event.x;
-      originY.current = event.y;
-      updateTranslate(originX.current, originY.current);
-      setIsOpenedDragBox(true);
-    };
-
-    const handleDragStart = () => {
-      setIsOpenedDragBox(false);
-    };
-
-    parentRef.current?.addEventListener('mousedown', handleMouseDown);
-    parentRef.current?.addEventListener('dragstart', handleDragStart);
-
+    const area = areaRef.current;
+    area?.addEventListener('mousedown', handleMouseDown);
     return () => {
-      parentRef.current?.removeEventListener('mousedown', handleMouseDown);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      parentRef.current?.removeEventListener('dragstart', handleDragStart);
+      area?.removeEventListener('mousedown', handleMouseDown);
     };
-  }, [parentRef, updateTranslate]);
+  }, [areaRef, handleMouseDown]);
 
-  // drag box에 mousemove, mouseup 이벤트 추가
+  // 드래그 박스가 화면에 보일 경우, document에 mousemove, mouseup 이벤트 추가
   useEffect(() => {
+    const throttledThing = _.throttle(handleMouseMove, 75);
+    const throttledCancel = () => {
+      throttledThing.cancel();
+      handleMouseUp();
+    };
     if (isOpenedDragBox) {
-      const handleMouseMove = (event: MouseEvent) => {
-        updateTranslate(event.x, event.y);
-        if (parentRef.current) {
-          const { minX, maxX, minY, maxY } = getMinMaxXY();
-          const { x: parentLeft, y: parentTop, width: parentWidth, height: parentHeight } = parentRef.current.getBoundingClientRect();
-          const calcBoxLeftTop = (now: number, min: number) => (now < min ? min : now);
-          const calcBoxRightBottom = (now: number, min: number, max: number) => (min + max < now ? min + max : now);
-
-          const boxLeft = calcBoxLeftTop(minX, parentLeft);
-          const boxTop = calcBoxLeftTop(minY, parentTop);
-          const boxRight = calcBoxRightBottom(maxX, parentLeft, parentWidth);
-          const boxBottom = calcBoxRightBottom(maxY, parentTop, parentHeight);
-
-          parentRef.current.querySelectorAll('#grabbed').forEach((element) => {
-            element.id = 'grabbable';
-          });
-
-          parentRef.current.querySelectorAll('#grabbable').forEach((element) => {
-            const { x: elementLeft, y: elementTop, width: elementWidth, height: elementHeight } = element.getBoundingClientRect();
-            const elementRight = elementLeft + elementWidth;
-            const elementBottom = elementTop + elementHeight;
-            const isSmallerThanBoxCoord = (box: number, element: number) => box < element;
-            const isBiggerThanBoxCoord = (box: number, element: number) => element < box;
-
-            const allContains =
-              isSmallerThanBoxCoord(boxLeft, elementLeft) &&
-              isSmallerThanBoxCoord(boxTop, elementTop) &&
-              isBiggerThanBoxCoord(boxRight, elementRight) &&
-              isBiggerThanBoxCoord(boxBottom, elementBottom);
-
-            const partialContains =
-              isSmallerThanBoxCoord(boxLeft, elementRight) &&
-              isSmallerThanBoxCoord(boxTop, elementBottom) &&
-              isBiggerThanBoxCoord(boxRight, elementLeft) &&
-              isBiggerThanBoxCoord(boxBottom, elementTop);
-
-            if (isAllCovered && allContains) {
-              element.id = 'grabbed';
-            } else if (!isAllCovered && partialContains) {
-              element.id = 'grabbed';
-            }
-          });
-        }
-      };
-
-      const handleMouseUp = () => {
-        if (parentRef.current) {
-          originX.current = 0;
-          originY.current = 0;
-          currentX.current = 0;
-          currentY.current = 0;
-
-          setIsOpenedDragBox(false);
-          document.removeEventListener('mousemove', handleMouseMove);
-          document.removeEventListener('mouseup', handleMouseUp);
-        }
-      };
-
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('mousemove', throttledThing);
+      document.addEventListener('mouseup', throttledCancel);
     }
-  }, [isAllCovered, isOpenedDragBox, parentRef, updateTranslate]);
+    return () => {
+      document.removeEventListener('mousemove', throttledThing);
+      document.removeEventListener('mouseup', throttledCancel);
+    };
+  }, [isOpenedDragBox, areaRef, updateDragBoxStyle, handleMouseMove, handleMouseUp]);
 
   return (
-    <div className={cx('wrapper')}>
+    <Fragment>
       {isOpenedDragBox && (
-        <div className={cx('drag-box')}>
-          <svg width="0" height="0" ref={svgRef}>
-            <rect width="0" height="0" ref={rectRef} />
-          </svg>
+        <div className={cx('wrapper')}>
+          <div ref={dragBoxRef} className={cx('drag-box')} />
         </div>
       )}
-    </div>
+    </Fragment>
   );
 };
 
-export default memo(DragBox);
+export default DragBox;

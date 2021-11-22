@@ -1,52 +1,53 @@
 import produce from 'immer';
-import { ShootProjectAction } from 'actions/shootProjectAction';
-import { ShootProject } from 'types/common';
+import { PlaskProjectAction } from 'actions/plaskProjectAction';
+import { PlaskProject } from 'types/common';
 import { v4 as uuidv4 } from 'uuid';
 
-type State = ShootProject;
+type State = PlaskProject;
 
 const defaultState: State = {
   id: uuidv4(),
-  sceneList: [],
+  name: 'New Project',
+  screenList: [],
   assetList: [],
   visualizedAssetIds: [],
   fps: 30,
 };
 
-export const shootProject = (state = defaultState, action: ShootProjectAction) => {
+export const plaskProject = (state = defaultState, action: PlaskProjectAction) => {
   switch (action.type) {
-    case 'shootProject/ADD_SCENE': {
+    case 'plaskProject/ADD_SCREEN': {
       return Object.assign({}, state, {
-        sceneList: [...state.sceneList, action.payload.scene],
+        screenList: [...state.screenList, action.payload.screen],
       });
     }
-    case 'shootProject/REMOVE_SCENE': {
+    case 'plaskProject/REMOVE_SCREEN': {
       return Object.assign({}, state, {
-        sceneList: state.sceneList.filter((scene) => scene.id !== action.payload.sceneId),
+        screenList: state.screenList.filter((screen) => screen.id !== action.payload.screenId),
       });
     }
-    case 'shootProject/ADD_ASSET': {
+    case 'plaskProject/ADD_ASSET': {
       return Object.assign({}, state, {
         assetList: [...state.assetList, action.payload.asset],
       });
     }
-    case 'shootProject/RENDER_ASSET': {
+    case 'plaskProject/RENDER_ASSET': {
       return Object.assign({}, state, {
         visualizedAssetIds: [action.payload.assetId], // 다중모델 로드 가능한 버전에서는 push로 변경 필요
       });
     }
-    case 'shootProject/UNRENDER_ASSET': {
+    case 'plaskProject/UNRENDER_ASSET': {
       return Object.assign({}, state, {
         visualizedAssetIds: [], // 다중모델 로드 가능한 버전에서는 filter로 변경 필요
       });
     }
-    case 'shootProject/REMOVE_ASSET': {
+    case 'plaskProject/REMOVE_ASSET': {
       return Object.assign({}, state, {
         assetList: state.assetList.filter((asset) => asset.id !== action.payload.assetId),
         visualizedAssetIds: state.visualizedAssetIds.filter((id) => id !== action.payload.assetId),
       });
     }
-    case 'shootProject/ADD_MOTION': {
+    case 'plaskProject/ADD_MOTION': {
       const nextAssetList = produce(state.assetList, (draft) => {
         const target = draft.filter((asset) => asset.id === action.payload.assetId)[0];
         target.animationIngredientIds.push(action.payload.motionId);

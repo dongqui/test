@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { AnimationIngredient, ShootRetargetMap } from 'types/common';
+import { AnimationIngredient, PlaskRetargetMap } from 'types/common';
 
 export type AnimationDataAction =
   | ReturnType<typeof addAsset>
@@ -24,7 +24,7 @@ const EDIT_RETARGET_MAP = 'animationDataAction/EDIT_RETARGET_MAP' as const;
 interface AddAsset {
   transformNodes: BABYLON.TransformNode[];
   animationIngredients: AnimationIngredient[];
-  retargetMap: ShootRetargetMap;
+  retargetMap: PlaskRetargetMap;
 }
 
 interface RemoveAsset {
@@ -48,7 +48,7 @@ interface RemoveAnimationIngredient {
 }
 
 interface EditRetargetMap {
-  retargetMap: ShootRetargetMap;
+  retargetMap: PlaskRetargetMap;
 }
 
 /**

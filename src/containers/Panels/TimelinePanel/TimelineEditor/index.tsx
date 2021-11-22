@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
 
 import { ScaleLinear, TimeIndex } from 'utils/TP';
 import { D3ScaleLinear, D3ZoomDatum } from 'types/TP/d3';
+import { DragBox } from 'components/DragBox';
 
 import { TopRuler } from './Ruler';
 import { createTopGridLine } from './GridLine/createGridLineElements';
@@ -23,19 +24,24 @@ const TimelineEditor = () => {
   const zoomLevel = useRef(100);
   const [isNotEmptyScaleLinear, setIsNotEmptyScaleLinear] = useState<boolean>(false); // 테스트 용도
 
+  // 드래그 박스 dragEnd 이벤트 발생
+  const handleDragEnd = useCallback((list: NodeListOf<Element>) => {}, []);
+
   // timeline editor zoom/pan 이벤트 적용
   useEffect(() => {
     if (timelineEditorRef.current) {
       const loopRange = timelineEditorRef.current.getElementById('range') as SVGRectElement;
-      const scrubber = timelineEditorRef.current.getElementById('scrubber') as SVGGElement;
       const topRuler = timelineEditorRef.current.getElementById('top-ruler') as SVGGElement;
+      const topGrid = timelineEditorRef.current.getElementById('top-grid') as SVGGElement;
+      const scrubber = timelineEditorRef.current.getElementById('scrubber') as SVGGElement;
       const editorBody = timelineEditorRef.current.getElementById('editor-body') as SVGGElement;
       const topRulerD3 = d3.select(topRuler);
+      const topGridD3 = d3.select(topGrid);
       const timelineEditor = d3.select(timelineEditorRef.current);
 
       const createRulerElements = (scaleX: D3ScaleLinear) => {
         createTopRulerNumbers(topRulerD3, scaleX);
-        // createTopGridLine(topRulerD3);
+        createTopGridLine(topGridD3, scaleX);
       };
 
       const translateLoopRange = (scaleX: D3ScaleLinear) => {
@@ -157,7 +163,7 @@ const TimelineEditor = () => {
 
       const width = window.innerWidth - 240;
       initializeScale(width);
-      initializeBehavior(width); // 최초 실행
+      initializeBehavior(width);
       setIsNotEmptyScaleLinear(true);
       window.addEventListener('resize', resizeListener);
       return () => {
@@ -169,15 +175,14 @@ const TimelineEditor = () => {
   return (
     <div className={cx('timeline-editor')}>
       <svg ref={timelineEditorRef}>
-        {/* <GridLine /> */}
+        <GridLine />
         <g className={cx('editor-body')} id="editor-body">
           {isNotEmptyScaleLinear && <TimelineEditorMode />}
         </g>
-        <g className={cx('ruler-wrapper')}>
-          <TopRuler />
-        </g>
+        <TopRuler />
         <Scrubber />
       </svg>
+      <DragBox areaRef={timelineEditorRef} onDragEnd={handleDragEnd} selectableId="selectable" selectedId="keyframe-selected" />
     </div>
   );
 };

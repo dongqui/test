@@ -15,10 +15,10 @@ class BoneKeyframeRepository implements Repository {
 
   // 삭제 된 property keyframe인지 확인
   private isExistedPropertyKeyframe = (propertyTrackList: TimeEditorTrack[], propertyNumber: number, time: number) => {
-    const propertyIndex = findElementIndex(propertyTrackList, propertyNumber, 'trackNumber');
-    const timeIndex = findElementIndex(propertyTrackList[propertyIndex].keyframes, time, 'time');
-    if (timeIndex === -1) return;
-    const isExisted = !propertyTrackList[propertyIndex].keyframes[timeIndex].isDeleted;
+    const trackIndex = findElementIndex(propertyTrackList, propertyNumber, 'trackNumber');
+    const keyframeIndex = findElementIndex(propertyTrackList[trackIndex].keyframes, time, 'time');
+    if (keyframeIndex === -1) return;
+    const isExisted = !propertyTrackList[trackIndex].keyframes[keyframeIndex].isDeleted;
     return isExisted;
   };
 
