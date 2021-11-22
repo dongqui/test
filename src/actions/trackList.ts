@@ -82,9 +82,15 @@ export const deleteLayerTrack = (params: PlaskLayer) => ({
   payload: { ...params },
 });
 
+// mute/unmute 버튼 클릭
+export const CLICK_LAYER_TRACK_MUTE_BUTTON = 'trackList/CLICK_LAYER_TRACK_MUTE_BUTTON' as const;
+export const clickLayerTrackMuteButton = (params: PlaskLayer) => ({
+  type: CLICK_LAYER_TRACK_MUTE_BUTTON,
+  payload: { ...params },
+});
+
 // 레이어 트랙 mute/unmute
-export type MuteLayerTrack = Pick<LayerTrack, 'isMuted' | 'trackName'>;
-export const muteLayerTrack = (params: MuteLayerTrack) => ({
+export const muteLayerTrack = (params: PlaskLayer) => ({
   type: 'trackList/MUTE_LAYER_TRACK' as const,
   payload: { ...params },
 });

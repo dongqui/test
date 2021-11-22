@@ -16,8 +16,8 @@ function* worker({ payload }: ReturnType<typeof trackListActions.clickDeleteLaye
   // yield put(RP액션.deleteLayerTrack({ animationIngredientId, ...newLayerTrack }))
 }
 
-function* watchDeleteNewLayerTrack() {
+function* watchDeleteLayerTrack() {
   yield takeLatest(trackListActions.CLICK_DELETE_LAYER_TRACK_BUTTON, worker);
 }
 
-export default watchDeleteNewLayerTrack;
+export default watchDeleteLayerTrack;
