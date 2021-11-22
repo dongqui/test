@@ -55,8 +55,8 @@ function* filterPlaskTracks(visualizedAnimationIngredient: AnimationIngredient) 
 function* worker() {
   const visualizedAnimationIngredients: AnimationIngredient[] = yield findVisualizedAnimationIngredients();
   const filteredPlaskTracks: PlaskTrack[] = yield filterPlaskTracks(visualizedAnimationIngredients[0]);
-  yield put(trackListActions.initializeTrackList({ list: filteredPlaskTracks, clearAnimation: !visualizedAnimationIngredients.length }));
-  yield put(keyframesActions.initializeKeyframes({ list: filteredPlaskTracks, clearAnimation: !visualizedAnimationIngredients.length }));
+  yield put(trackListActions.initializeTrackList({ list: filteredPlaskTracks }));
+  yield put(keyframesActions.initializeKeyframes({ list: filteredPlaskTracks }));
 }
 
 // 키프레임 드래그 드랍 입력 감지
