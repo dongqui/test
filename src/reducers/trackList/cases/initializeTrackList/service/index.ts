@@ -3,7 +3,7 @@ import { TrackListState } from 'reducers/trackList';
 
 export interface Serivice {
   // viewport에 visualize 시, TP 내 데이터 초기화
-  visualizeAnimation(list: PlaskLayer[]): Partial<TrackListState>;
+  visualizeAnimation(list: PlaskLayer[], animationIngredientId: string): Partial<TrackListState>;
 
   // viewport에 selected targets 변경 시, TP 내 데이터 초기화
   changeSelectedTargets(list: PlaskTrack[]): Partial<TrackListState>;

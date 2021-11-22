@@ -29,12 +29,7 @@ class BoneKeyframeRepository implements Repository {
       const rotationFrames = this.getPropertyFrames(plaskTracks[index + 1]);
       const scaleFrames = this.getPropertyFrames(plaskTracks[index + 2]);
       const boneKeyFrames = this.getBoneKeyframes(positionFrames, rotationFrames, scaleFrames);
-      boneTimeEditorTrackList.push({
-        trackId: plaskTracks[index].targetId,
-        trackType: 'bone',
-        trackNumber: boneTrackNumber,
-        keyframes: boneKeyFrames,
-      });
+      boneTimeEditorTrackList.push({ trackId: plaskTracks[index].targetId, trackType: 'bone', trackNumber: boneTrackNumber, keyframes: boneKeyFrames });
       boneTrackNumber += 10; // 0 -> 10 -> 20
     }
     return boneTimeEditorTrackList;

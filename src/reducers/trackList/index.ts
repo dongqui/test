@@ -9,6 +9,8 @@ import deleteLayerTrack from './cases/deleteLayerTrack';
 import muteLayerTrack from './cases/muteLayerTrack';
 
 export interface TrackListState {
+  animationIngredientId: string;
+
   layerTrackList: LayerTrack[];
   boneTrackList: BoneTrack[];
   propertyTrackList: PropertyTrack[];
@@ -23,6 +25,8 @@ export interface TrackListState {
 }
 
 const initialState: TrackListState = {
+  animationIngredientId: '',
+
   layerTrackList: [],
   boneTrackList: [],
   propertyTrackList: [],

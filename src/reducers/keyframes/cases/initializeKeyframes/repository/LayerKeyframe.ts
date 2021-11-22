@@ -17,12 +17,7 @@ class LayerKeyframeRepository implements Repository {
   initializeTimeEditorTrack = (plaskTracks: PlaskTrack[]): TimeEditorTrack | null => {
     if (plaskTracks.length) {
       const layerKeyframes = this.setLayerKeyframes(plaskTracks);
-      const layerTimeEditorTrack: TimeEditorTrack = {
-        trackNumber: -1,
-        trackId: plaskTracks[0].layerId,
-        trackType: 'layer',
-        keyframes: layerKeyframes,
-      };
+      const layerTimeEditorTrack: TimeEditorTrack = { trackNumber: -1, trackId: plaskTracks[0].layerId, trackType: 'layer', keyframes: layerKeyframes };
       return layerTimeEditorTrack;
     }
     return null;

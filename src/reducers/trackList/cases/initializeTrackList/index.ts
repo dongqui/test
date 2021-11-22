@@ -9,10 +9,6 @@ import LayerTrackRepository from './repository/LayerTrack';
 import BoneTrackRepository from './repository/BoneTrack';
 import PropertyTrackRepository from './repository/PropertyTrack';
 
-const isPlaskTrack = (list: PlaskLayer[] | PlaskTrack[]): list is PlaskTrack[] => {
-  return (list as PlaskTrack[])[0].transformKeys !== undefined;
-};
-
 const initializeTrackList = (state: TrackListState, payload: InitializeTrackList) => {
   const layerTrackRepo = new LayerTrackRepository();
   const boneTrackRepo = new BoneTrackRepository();
@@ -27,11 +23,11 @@ const initializeTrackList = (state: TrackListState, payload: InitializeTrackList
     const newValues = service.changeSelectedTargets([]);
     return stateUpdate.updateState(newValues);
   }
-  if (isPlaskTrack(payload.list)) {
-    const newValues = service.changeSelectedTargets(payload.list);
+  if (payload.animationIngredientId) {
+    const newValues = service.visualizeAnimation(payload.list, payload.animationIngredientId);
     return stateUpdate.updateState(newValues);
   } else {
-    const newValues = service.visualizeAnimation(payload.list);
+    const newValues = service.changeSelectedTargets(payload.list as PlaskTrack[]);
     return stateUpdate.updateState(newValues);
   }
 };

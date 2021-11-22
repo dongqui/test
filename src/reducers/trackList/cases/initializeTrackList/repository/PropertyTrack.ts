@@ -6,7 +6,7 @@ class PropertyTrackRepository implements Repository {
   // property track list 초기화
   initializeTrackList = (plaskTracks: PlaskTrack[]): PropertyTrack[] => {
     let trackNumber = 0;
-    const propertyTrackList: PropertyTrack[] = plaskTracks.map((track, index) => {
+    const propertyTrackList: PropertyTrack[] = plaskTracks.map((track) => {
       trackNumber += 1;
       if (trackNumber % 10 === 4) trackNumber += 7; // 4 -> 11, 14 -> 21
       return {

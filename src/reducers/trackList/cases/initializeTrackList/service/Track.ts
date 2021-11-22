@@ -16,8 +16,9 @@ class TrackService implements Serivice {
     this.propertyTrackRepo = propertyTrackRepo;
   }
 
-  visualizeAnimation = (list: PlaskLayer[]): Partial<TrackListState> => {
+  visualizeAnimation = (list: PlaskLayer[], animationIngredientId: string): Partial<TrackListState> => {
     return {
+      animationIngredientId,
       layerTrackList: this.layerTrackRepo.initializeTrackList(list) as LayerTrack[],
       boneTrackList: [],
       propertyTrackList: [],
@@ -40,6 +41,7 @@ class TrackService implements Serivice {
 
   clearAnimation = (): Partial<TrackListState> => {
     return {
+      animationIngredientId: '',
       layerTrackList: [],
       boneTrackList: [],
       propertyTrackList: [],
