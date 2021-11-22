@@ -1,0 +1,38 @@
+@mixin common-panel {
+  display: flex;
+  height: auto;
+  border-bottom: 1px solid #4f4f4f;
+  padding: 12px 0;
+  margin: 0 12px;
+}
+
+.panel-wrap {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.body-icon {
+  & > svg {
+    width: 184px;
+    height: 366px;
+    color: #353739;
+  }
+}
+
+.container {
+  display: none;
+
+  &.active {
+    display: block;
+
+    &.mapping-icon {
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
+.panel-mapping {
+  @include common-panel;
+  flex-direction: column;
+}
