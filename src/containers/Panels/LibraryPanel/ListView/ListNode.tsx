@@ -82,7 +82,6 @@ const ListNode: FunctionComponent<Props> = ({
   const wrapperClasses = cx('inner-row', { hovered: isHover });
 
   const [currentSelectableId, setCurrentSelectableId] = useState('');
-  //
 
   useEffect(() => {
     const config: MutationObserverInit = { attributes: true };
@@ -99,7 +98,6 @@ const ListNode: FunctionComponent<Props> = ({
         }
 
         if (currentRefId === 'node-selectable' && currentRefId !== currentSelectableId) {
-          //
           onReject(id);
           setCurrentSelectableId(currentRefId);
         }
@@ -136,21 +134,6 @@ const ListNode: FunctionComponent<Props> = ({
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
-
-  const handleArrowClick = useCallback(() => {
-    setShowsChildren(!showsChildren);
-  }, [showsChildren]);
-
-  const handleSelect = useCallback(() => {
-    onSelect && onSelect(id);
-
-    dispatch(
-      lpNodeActions.changeCurrentPath({
-        currentPath: filePath + `\\${name}`,
-        id: id,
-      }),
-    );
-  }, [dispatch, filePath, id, name, onSelect]);
 
   const depthCheck = useCallback(
     (arr: string[], maximum: number, original: number[]) => {
@@ -200,8 +183,6 @@ const ListNode: FunctionComponent<Props> = ({
 
   const depth = (filePath.match(/\\/g) || []).length;
 
-  const column = Array.from({ length: depth - 1 }).map((x, i) => i);
-
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -211,7 +192,9 @@ const ListNode: FunctionComponent<Props> = ({
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
 
-      if (selectedId.length > 1) {
+      const isContainsSelectedArea = selectedId.includes(id);
+
+      if (isContainsSelectedArea && selectedId.length > 1) {
         onContextMenuOpen({
           top: e.clientY,
           left: e.clientX,
@@ -237,6 +220,15 @@ const ListNode: FunctionComponent<Props> = ({
       }
 
       if (isContains) {
+        onSelect && onSelect(id);
+
+        dispatch(
+          lpNodeActions.changeCurrentPath({
+            currentPath: filePath + `\\${name}`,
+            id: id,
+          }),
+        );
+
         if (type === 'Folder') {
           onContextMenuOpen({
             top: e.clientY,
@@ -788,11 +780,36 @@ const ListNode: FunctionComponent<Props> = ({
     assetList,
     screenList,
     selectedId.length,
+    selectedId,
+    onSelect,
   ]);
 
   const classes = cx('wrapper', { selected: isSelected });
 
-  // const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
+  useEffect(() => {
+    const currentRef = wrapperRef && wrapperRef.current;
+
+    if (currentRef) {
+      const handleSelect = (e: MouseEvent) => {
+        e.stopPropagation();
+
+        onSelect && onSelect(id);
+
+        dispatch(
+          lpNodeActions.changeCurrentPath({
+            currentPath: filePath + `\\${name}`,
+            id: id,
+          }),
+        );
+      };
+
+      currentRef.addEventListener('click', handleSelect);
+
+      return () => {
+        currentRef.removeEventListener('click', handleSelect);
+      };
+    }
+  }, [dispatch, filePath, id, name, onSelect]);
 
   const renderChildren = useCallback(
     (paramId: any) => {
@@ -810,7 +827,7 @@ const ListNode: FunctionComponent<Props> = ({
               fileUrl={node.fileUrl}
               filePath={node.filePath}
               extension={node.extension}
-              onSelect={handleSelect}
+              onSelect={onSelect}
               onReject={onReject}
               selectedId={selectedId}
               isSelected={selectedId.includes(node.id)}
@@ -833,7 +850,7 @@ const ListNode: FunctionComponent<Props> = ({
             name={paramId.name}
             filePath={filePath + `\\${name}`}
             extension={paramId.extension}
-            onSelect={handleSelect}
+            onSelect={onSelect}
             onReject={onReject}
             selectedId={selectedId}
             isSelected={selectedId.includes(id) && paramId.current}
@@ -845,7 +862,7 @@ const ListNode: FunctionComponent<Props> = ({
         );
       }
     },
-    [dragTarget, filePath, handleSelect, id, lpNode, name, onReject, onSetDragTarget, parentId, selectableId, selectedId],
+    [dragTarget, filePath, id, lpNode, name, onReject, onSelect, onSetDragTarget, parentId, selectableId, selectedId],
   );
 
   const handleBlur = useCallback(
@@ -1026,9 +1043,9 @@ const ListNode: FunctionComponent<Props> = ({
       // 드래그 시작시 선택 및 스타일 적용
       onSetDragTarget(id, type, parentId);
 
-      handleSelect();
+      onSelect && onSelect(id);
     },
-    [handleSelect, id, onSetDragTarget, parentId, type],
+    [id, onSelect, onSetDragTarget, parentId, type],
   );
 
   const handleDrop = useCallback(
@@ -1299,15 +1316,35 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, []);
 
+  const arrowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const currentRef = arrowRef && arrowRef.current;
+
+    if (currentRef) {
+      const handleArrowClick = () => {
+        setShowsChildren(!showsChildren);
+      };
+
+      currentRef.addEventListener('mouseup', handleArrowClick);
+
+      return () => {
+        currentRef.removeEventListener('mouseup', handleArrowClick);
+      };
+    }
+  }, [showsChildren]);
+
   return (
     <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} id={selectableId} ref={outerRef}>
       <div className={cx('inner')}>
-        <div className={wrapperClasses} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}>
-          {/* {column.map((col, i) => (
-            <div key={i} style={{ width: `${12 * col}px` }} />
-          ))} */}
+        {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
+        <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }}>
           <div style={{ paddingLeft: '7px' }} />
-          {type !== 'Motion' && <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} onClick={handleArrowClick} />}
+          {type !== 'Motion' && (
+            <div className={cx('arrow-wrapper')} ref={arrowRef}>
+              <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} />
+            </div>
+          )}
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
             {isEditing ? (
