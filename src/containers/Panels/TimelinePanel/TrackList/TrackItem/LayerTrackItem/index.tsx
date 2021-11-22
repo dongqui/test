@@ -2,7 +2,7 @@ import { useCallback, useMemo, useEffect, useRef, FunctionComponent } from 'reac
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 
-import { clickTrackBody, ClickLayerTrackBody } from 'actions/trackList';
+import * as trackListActions from 'actions/trackList';
 import { LayerTrack } from 'types/TP/track';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
@@ -34,19 +34,21 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
         disabled: isSelected,
         separator: true,
         onClick: () => {
-          const payload: ClickLayerTrackBody = { eventType: 'leftClick', trackId, trackType: 'layer' };
-          dispatch(clickTrackBody(payload));
+          const payload: trackListActions.ClickLayerTrackBody = { eventType: 'leftClick', trackId, trackType: 'layer' };
+          dispatch(trackListActions.clickTrackBody(payload));
+          dispatch(trackListActions.changeSelectedTargets());
         },
       },
       {
         label: 'Delete Layer',
-        disabled: trackName === 'Base Layer',
+        disabled: trackName === 'Base Layer' || isSelected,
         onClick: () => {
           onModalOpen({
             title: 'Delete Layer',
             message: 'Are you sure you want to delete a animation layer?<br />This will delete all keyframes in this layer',
             confirmText: 'Delete',
             onConfirm: () => {
+              dispatch(trackListActions.clickDeleteLayerTrackButton({ id: trackId, name: trackName }));
               onModalClose();
             },
             cancelText: 'Cancel',
@@ -66,8 +68,9 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
     (event: React.MouseEvent<Element>) => {
       const { nodeName } = event.target as Element;
       if (nodeName === 'DIV') {
-        const payload: ClickLayerTrackBody = { trackId, eventType: 'leftClick', trackType: 'layer' };
-        dispatch(clickTrackBody(payload));
+        const payload: trackListActions.ClickLayerTrackBody = { trackId, eventType: 'leftClick', trackType: 'layer' };
+        dispatch(trackListActions.clickTrackBody(payload));
+        dispatch(trackListActions.changeSelectedTargets());
       }
     },
     [dispatch, trackId],

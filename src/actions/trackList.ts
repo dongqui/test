@@ -15,6 +15,7 @@ export type TrackListAction =
 // 트랙 리스트 생성
 export interface InitializeTrackList {
   list: PlaskLayer[] | PlaskTrack[];
+  animationIngredientId?: string;
   clearAnimation?: boolean;
 }
 export const initializeTrackList = (params: InitializeTrackList) => ({
@@ -56,16 +57,27 @@ export const clickInterpolationMode = (params: ClickInterpolationMode) => ({
   payload: { ...params },
 });
 
+// 레이어 트랙 추가 버튼 클릭
+export const CLICK_ADD_LAYER_TRACK_BUTTON = 'trackList/CLICK_ADD_LAYER_TRACK_BUTTON' as const;
+export const clickAddLayerTrackButton = () => ({
+  type: CLICK_ADD_LAYER_TRACK_BUTTON,
+});
+
 // 레이어 트랙 추가
-export type AddLayerTrack = Pick<LayerTrack, 'trackName'>;
-export const addLayerTrack = (params: AddLayerTrack) => ({
+export const addLayerTrack = (params: PlaskLayer) => ({
   type: 'trackList/ADD_LAYER_TRACK' as const,
   payload: { ...params },
 });
 
+// 레이어 트랙 삭제 버튼 클릭
+export const CLICK_DELETE_LAYER_TRACK_BUTTON = 'trackList/CLICK_DELETE_LAYER_TRACK_BUTTON' as const;
+export const clickDeleteLayerTrackButton = (params: PlaskLayer) => ({
+  type: CLICK_DELETE_LAYER_TRACK_BUTTON,
+  payload: { ...params },
+});
+
 // 레이어 트랙 삭제
-export type DeleteLayerTrack = Pick<LayerTrack, 'trackName'>;
-export const deleteLayerTrack = (params: DeleteLayerTrack) => ({
+export const deleteLayerTrack = (params: PlaskLayer) => ({
   type: 'trackList/DELETE_LAYER_TRACK' as const,
   payload: { ...params },
 });
