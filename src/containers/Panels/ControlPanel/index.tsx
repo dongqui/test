@@ -7,7 +7,7 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const ControlPanel: FunctionComponent = () => {
-  const [isAllActive, setIsAllActive] = useState<boolean>(false);
+  const [isAllActive, setIsAllActive] = useState<boolean>(true);
   const [activeMode, setActiveMode] = useState<string>('Animation');
 
   return (
