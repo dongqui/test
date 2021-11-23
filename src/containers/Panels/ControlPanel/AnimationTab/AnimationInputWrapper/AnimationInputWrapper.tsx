@@ -51,7 +51,7 @@ const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle
       </div>
       {dropdownList && (
         <Fragment>
-          <div className={cx('dropdown-button')} onClick={() => setActiveDropdown(!activeDropdown)}>
+          <div className={cx('dropdown-button', { active: activeStatus })} onClick={() => setActiveDropdown(!activeDropdown)}>
             <IconWrapper className={cx('arrowdown-icon')} icon={SvgPath.EmptyDownArrow} />
           </div>
           {activeDropdown && (

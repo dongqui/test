@@ -83,6 +83,14 @@
   display: flex;
 
   & > svg {
-    color: #fff !important;
+    color: #4f4f4f;
+  }
+}
+
+.active {
+  & > .arrowdown-icon {
+    & > svg {
+      color: #fff;
+    }
   }
 }
