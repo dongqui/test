@@ -10,11 +10,12 @@ export type ButtonInfo = {
 interface Props {
   className?: string;
   buttonInfo: ButtonInfo[];
+  activeStatus?: boolean;
 }
 
 const cx = classNames.bind(styles);
 
-const AnimationButton: FunctionComponent<Props> = ({ className, buttonInfo }) => {
+const AnimationButton: FunctionComponent<Props> = ({ className, buttonInfo, activeStatus }) => {
   const [activeButton, setActiveButton] = useState<string>(buttonInfo[0].text);
 
   const classes = cx('wrapper', className);
@@ -24,7 +25,7 @@ const AnimationButton: FunctionComponent<Props> = ({ className, buttonInfo }) =>
       {buttonInfo.map((info, idx) => {
         return (
           <button
-            className={cx({ active: activeButton === info.text }, 'disable')}
+            className={cx({ active: activeButton === info.text }, { disable: !activeStatus })}
             key={idx}
             onClick={() => {
               info.func();

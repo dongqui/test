@@ -31,6 +31,15 @@
 
     &.active {
       background-color: #0f88ff;
+
+      &.disable {
+        background-color: #1d364e;
+      }
+    }
+
+    &.disable {
+      color: #4f4f4f;
+      background-color: #353739;
     }
   }
 }
