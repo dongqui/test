@@ -14,14 +14,14 @@ interface Props {
   title?: string;
   text?: string;
   message: string;
-  buttonText: string;
+  buttonText?: string;
 }
 
 const AlertModal: FunctionComponent<Props> = ({ closeModal, title, onConfirm, message, buttonText = 'Confirm' }) => {
   const onClickButton = () => {
     onConfirm && onConfirm();
     closeModal();
-  }
+  };
   return (
     <Fragment>
       <BaseModal>
