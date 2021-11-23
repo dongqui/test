@@ -23,14 +23,20 @@ interface Props {
   selectedId: string;
 
   /**
+   * @description 드래그 이동 시, dragbox에 포함된 node list를 인자값으로 전달
+   * @argument list 마우스를 이동할 때 dragbox에 포함 된 node list
+   */
+  onDragMove?: (list: NodeListOf<HTMLElement>) => void;
+
+  /**
    * @description 드래그 종료 시, dragbox에 포함 된 node list를 인자값으로 전달
    * @argument list 마우스를 뗐을 때 dragbox에 포함 된 node list
    */
-  onDragEnd: (list: NodeListOf<Element>) => void;
+  onDragEnd?: (list: NodeListOf<HTMLElement>) => void;
 }
 
 const DragBox: FunctionComponent<Props> = (props) => {
-  const { areaRef, selectableId, selectedId, onDragEnd } = props;
+  const { areaRef, selectableId, selectedId, onDragMove, onDragEnd } = props;
   const [isOpenedDragBox, setIsOpenedDragBox] = useState(false);
   const dragBoxRef = useRef<HTMLDivElement>(null);
 
@@ -158,17 +164,21 @@ const DragBox: FunctionComponent<Props> = (props) => {
       if (event.clientY < areaRef.current.getBoundingClientRect().top) {
         areaRef.current.scrollTop = areaRef.current.scrollTop - scrollDiffTop;
       }
+
+      const selectedNodes: NodeListOf<HTMLElement> = areaRef.current.querySelectorAll(`#${selectedId}`);
+
+      onDragMove && onDragMove(selectedNodes);
     },
-    [areaRef, selectableId, selectedId, updateDragBoxStyle, getDragBoxLeftTop, getDragBoxRightBottom],
+    [areaRef, getDragBoxLeftTop, getDragBoxRightBottom, updateDragBoxStyle, selectableId, selectedId, onDragMove],
   );
 
   // 마우스 왼쪽 뗌 이벤트 감지
   const handleMouseUp = useCallback(() => {
     if (!areaRef.current) return;
-    const selectedNodes = areaRef.current.querySelectorAll(`#${selectedId}`);
+    const selectedNodes: NodeListOf<HTMLElement> = areaRef.current.querySelectorAll(`#${selectedId}`);
     setInitialXY(0, 0, 0, 0);
     setIsOpenedDragBox(false);
-    onDragEnd(selectedNodes);
+    onDragEnd && onDragEnd(selectedNodes);
     // changeSelectedToSelectable();
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
