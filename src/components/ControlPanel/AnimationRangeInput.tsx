@@ -108,7 +108,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
   useEffect(() => {
     if (rangeRef) {
       rangeRef.current!.value = currentMax + '';
-      console.log((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
+      // console.log((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
     }
   }, [currentMax]);
 
@@ -134,7 +134,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
           onMouseUp={handleMaxLimit}
           ref={rangeRef}
           tabIndex={activeStatus ? 0 : -1}
-          style={{ backgroundSize: rangeRef.current ? `${progressBar}% 100%` : 0 }}
+          style={{ backgroundSize: rangeRef.current ? `${progressBar}% 100%` : `100% 100%` }}
         />
         <input
           type="number"
