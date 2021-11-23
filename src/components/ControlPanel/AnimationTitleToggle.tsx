@@ -13,7 +13,7 @@ interface Props {
   className?: string;
   addSwitch?: boolean;
   checked?: boolean;
-  activeStatus?: boolean;
+  activeStatus: boolean;
   setSpreadRef: Dispatch<SetStateAction<boolean>>;
   setToggleRef?: Dispatch<SetStateAction<boolean>>;
 }
@@ -48,7 +48,7 @@ const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, addSw
         <Switch
           className={cx('toggle-switch')}
           onChange={handleToggle}
-          checked={toggleRef}
+          checked={activeStatus && toggleRef}
           onColor="#0F88FF"
           checkedIcon={false}
           uncheckedIcon={false}
