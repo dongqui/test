@@ -31,7 +31,7 @@ interface Props {
   name: string;
   fileUrl?: string | File;
   filePath: string;
-  onSelect?: (id: string, multiple?: boolean) => void;
+  onSelect?: (id: string, childrens?: string[], multiple?: boolean) => void;
   onReject: (id: string) => void;
   selectedId: string[];
   isSelected?: boolean;
@@ -87,18 +87,18 @@ const ListNode: FunctionComponent<Props> = ({
     const config: MutationObserverInit = { attributes: true };
 
     const handleCheck = () => {
-      const currentRef = outerRef.current;
+      const currentRef = wrapperRef.current;
 
       if (currentRef) {
         const currentRefId = currentRef.id;
 
         if (currentRefId === 'node-selected' && currentRefId !== currentSelectableId) {
-          onSelect && onSelect(id, true);
+          // onSelect && onSelect(id, childrens, true);
           setCurrentSelectableId(currentRefId);
         }
 
         if (currentRefId === 'node-selectable' && currentRefId !== currentSelectableId) {
-          onReject(id);
+          // onReject(id);
           setCurrentSelectableId(currentRefId);
         }
       }
@@ -106,8 +106,8 @@ const ListNode: FunctionComponent<Props> = ({
 
     const checkObserver = new MutationObserver(handleCheck);
 
-    if (outerRef.current) {
-      checkObserver.observe(outerRef.current, config);
+    if (wrapperRef.current) {
+      checkObserver.observe(wrapperRef.current, config);
     }
 
     const currentRef = wrapperRef.current;
@@ -129,7 +129,7 @@ const ListNode: FunctionComponent<Props> = ({
         currentRef.removeEventListener('mouseleave', handleHover);
       }
     };
-  }, [currentSelectableId, id, isHover, name, onReject, onSelect, parentId]);
+  }, [childrens, currentSelectableId, id, isHover, name, onReject, onSelect, parentId]);
 
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
@@ -1335,10 +1335,10 @@ const ListNode: FunctionComponent<Props> = ({
   }, [showsChildren]);
 
   return (
-    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} id={selectableId} ref={outerRef}>
+    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} ref={outerRef}>
       <div className={cx('inner')}>
         {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
-        <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }}>
+        <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id}>
           <div style={{ paddingLeft: '7px' }} />
           {type !== 'Motion' && (
             <div className={cx('arrow-wrapper')} ref={arrowRef}>

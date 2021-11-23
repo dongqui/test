@@ -169,13 +169,20 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const [selectedId, setSelectedId] = useState<string[]>([]);
 
   const handleSelect = useCallback(
-    (id: string, multiple?: boolean) => {
+    (id: string, childrens?: string[], multiple?: boolean) => {
       if (multiple) {
         const nextSelectedIds = produce(selectedId, (draft) => {
           if (!draft.includes(id)) {
             draft.push(id);
           }
         });
+
+        // if (childrens && childrens.length > 0) {
+        //   const nextIds = nextSelectedIds.filter((currentId) => !childrens.includes(currentId));
+        //   setSelectedId(nextIds);
+
+        //   return;
+        // }
 
         setSelectedId(nextSelectedIds);
       }
@@ -189,16 +196,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
   const handleReject = useCallback(
     (id: string) => {
-      //
-      //
       if (selectedId.includes(id)) {
-        // const cloneSelectedIds = cloneDeep(selectedId);
-        // const index = cloneSelectedIds.indexOf(id);
-        // if (index > -1) {
-        //   cloneSelectedIds.splice(index, 1);
-        // }
-
-        // setSelectedId(cloneSelectedIds);
         const nextSelectedIds = produce(selectedId, (draft) => {
           const index = draft.indexOf(id);
           if (index > -1) {
@@ -268,9 +266,78 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     setDragTarget({ id: id, type: type, parentId: parentId });
   }, []);
 
-  const handleDragEnd = useCallback((list: NodeListOf<Element>) => {
-    //
-  }, []);
+  const handleDragMove = useCallback(
+    (list: NodeListOf<HTMLElement>) => {
+      const nextIds: string[] = [];
+
+      list.forEach((item) => {
+        if (item.dataset.id) {
+          nextIds.push(item.dataset.id);
+        }
+      });
+
+      let resultSelectedId: string[] = [];
+
+      nextIds.forEach((current) => {
+        const selectedNode = find(lpNode, { id: current });
+
+        if (selectedNode) {
+          if (selectedNode.children.length > 0) {
+            const tempIds = nextIds.filter((currentId) => !selectedNode.children.includes(currentId));
+            resultSelectedId = tempIds;
+            return;
+          }
+
+          if (selectedNode.children.length === 0) {
+            resultSelectedId.push(current);
+          }
+        }
+      });
+
+      setSelectedId(resultSelectedId);
+    },
+    [lpNode],
+  );
+
+  const handleDragEnd = useCallback(
+    (list: NodeListOf<HTMLElement>) => {
+      const nextIds: string[] = [];
+
+      list.forEach((item) => {
+        if (item.dataset.id) {
+          nextIds.push(item.dataset.id);
+        }
+      });
+
+      let resultSelectedId: string[] = [];
+
+      nextIds.forEach((current) => {
+        const selectedNode = find(lpNode, { id: current });
+
+        if (selectedNode) {
+          console.log(selectedNode);
+
+          const isIncludes = nextIds.includes(selectedNode.parentId);
+
+          if (isIncludes) {
+            const nextSelectedIds = produce(nextIds, (draft) => {
+              const index = draft.indexOf(current);
+              if (index > -1) {
+                draft.splice(index, 1);
+              }
+            });
+
+            resultSelectedId = nextSelectedIds;
+          }
+
+          if (!isIncludes && !nextIds.includes(current)) {
+            resultSelectedId.push(current);
+          }
+        }
+      });
+    },
+    [lpNode],
+  );
 
   return (
     <div className={cx('wrapper')} ref={wrapperRef}>
@@ -289,7 +356,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
           />
         </div>
       ))}
-      <DragBox areaRef={wrapperRef} onDragEnd={handleDragEnd} selectableId="node-selectable" selectedId="node-selected" />
+      <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId="node-selectable" selectedId="node-selected" />
     </div>
   );
 };
