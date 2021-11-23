@@ -54,12 +54,12 @@
 
 .container {
   display: none;
+  position: relative;
 
   &.active {
     display: block;
 
     &.mapping-icon {
-      position: relative;
       display: flex;
       justify-content: center;
       height: 398px;
