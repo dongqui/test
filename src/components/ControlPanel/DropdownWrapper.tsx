@@ -21,7 +21,7 @@ const DropdownWrapper: FunctionComponent<Props> = ({ className, text, options, a
   return (
     <div className={cx(classes)}>
       <p>{text}</p>
-      <Dropdown options={options} currentOption={currentOption} setCurrentOption={setCurrentOption} />
+      <Dropdown options={options} currentOption={currentOption} setCurrentOption={setCurrentOption} activeStatus={activeStatus} />
     </div>
   );
 };
