@@ -7,8 +7,12 @@ import styles from './AnimationTab.module.scss';
 
 const cx = classNames.bind(styles);
 
-const AnimationTab: FunctionComponent = () => {
-  const [isAllActive, setIsTotalSectionActive] = useState<boolean>(false);
+interface Props {
+  isAllActive: boolean;
+}
+
+const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
+  // const [isAllActive, setIsTotalSectionActive] = useState<boolean>(true);
   const [spreadTransform, setSpreadTransform] = useState<boolean>(true);
   const [spreadVisibility, setSpreadVisibility] = useState<boolean>(true);
   const [spreadFk, setSpreadFk] = useState<boolean>(true);
@@ -66,20 +70,27 @@ const AnimationTab: FunctionComponent = () => {
   return (
     <div className={cx('panel-wrap')}>
       <section className={cx('panel-transform')}>
-        <AnimationTitleToggle text="Transform" spreadRef={spreadTransform} setSpreadRef={setSpreadTransform} />
+        <AnimationTitleToggle text="Transform" spreadRef={spreadTransform} setSpreadRef={setSpreadTransform} activeStatus={isAllActive} />
         <div className={cx('container', { active: spreadTransform })}>
-          <AnimationInputWrapper inputTitle="Position" inputInfo={position} />
-          {isEuler && <AnimationInputWrapper inputTitle="Euler" inputInfo={euler} dropdownList={dropdownList} setIsEuler={setIsEuler} />}
-          {!isEuler && <AnimationInputWrapper inputTitle="Quaternion" inputInfo={quaternion} dropdownList={dropdownList} setIsEuler={setIsEuler} />}
-          <AnimationInputWrapper inputTitle="Scale" inputInfo={scale} />
+          <AnimationInputWrapper inputTitle="Position" inputInfo={position} activeStatus={isAllActive} />
+          {isEuler && <AnimationInputWrapper inputTitle="Euler" inputInfo={euler} dropdownList={dropdownList} setIsEuler={setIsEuler} activeStatus={isAllActive} />}
+          {!isEuler && <AnimationInputWrapper inputTitle="Quaternion" inputInfo={quaternion} dropdownList={dropdownList} setIsEuler={setIsEuler} activeStatus={isAllActive} />}
+          <AnimationInputWrapper inputTitle="Scale" inputInfo={scale} activeStatus={isAllActive} />
+          {!isAllActive && <div className={cx('toggle-overlay')}></div>}
         </div>
       </section>
-      <section className={cx('panel-visibility')}>
-        <AnimationTitleToggle text="Visibility" spreadRef={spreadVisibility} setSpreadRef={setSpreadVisibility} />
+      {/**
+       * Visibility Section
+       * @alpha
+       * Visibility Section is not included on Plask v1.0
+       */}
+      {/* <section className={cx('panel-visibility')}>
+        <AnimationTitleToggle text="Visibility" spreadRef={spreadVisibility} setSpreadRef={setSpreadVisibility} activeStatus={isAllActive} />
         <div className={cx('container', { active: spreadVisibility })}>
-          <AnimationButton buttonInfo={buttonInfo}></AnimationButton>
+          <AnimationButton buttonInfo={buttonInfo} activeStatus={isAllActive}></AnimationButton>
+          {!isAllActive && <div className={cx('toggle-overlay')}></div>}
         </div>
-      </section>
+      </section> */}
       <section className={cx('panel-fk-controller')}>
         <AnimationTitleToggle
           text="FK Controller"
@@ -89,11 +100,11 @@ const AnimationTab: FunctionComponent = () => {
           setToggleRef={setToggleFk}
           addSwitch={true}
           checked={toggleFk}
-          activeStatus={toggleFk}
+          activeStatus={isAllActive && toggleFk}
         />
         <div className={cx('container', { active: spreadFk })}>
-          <AnimationFKWrapper fkInfo={fkInfo} activeStatus={toggleFk} />
-          {!toggleFk && <div className={cx('toggle-overlay')}></div>}
+          <AnimationFKWrapper fkInfo={fkInfo} activeStatus={isAllActive && toggleFk} />
+          {(!isAllActive || !toggleFk) && <div className={cx('toggle-overlay')}></div>}
         </div>
       </section>
       <section className={cx('panel-filter')}>
@@ -105,7 +116,7 @@ const AnimationTab: FunctionComponent = () => {
           setToggleRef={setToggleFilter}
           addSwitch={true}
           checked={toggleFilter}
-          activeStatus={toggleFilter}
+          activeStatus={isAllActive && toggleFilter}
         />
         <div className={cx('container', { active: spreadFilter })}>
           {filterInfo.map((info, idx) => (
@@ -117,10 +128,10 @@ const AnimationTab: FunctionComponent = () => {
               currentValue={info.currentValue}
               setCurrentValue={info.setCurrentValue}
               decimalDigit={info.decimalDigit}
-              activeStatus={toggleFilter}
+              activeStatus={isAllActive && toggleFilter}
             />
           ))}
-          {!toggleFilter && <div className={cx('toggle-overlay')}></div>}
+          {(!isAllActive || !toggleFilter) && <div className={cx('toggle-overlay')}></div>}
         </div>
       </section>
     </div>
