@@ -39,7 +39,7 @@ const LayerTrackComponent: FunctionComponent<Props> = (props) => {
       <g className={cx('track')} transform={`translate(0, ${translateY})`}>
         <rect className={cx({ selected: isSelected })} height="32" width="150000" transform="translate(-5000 0)" />
         {isSelected &&
-          layerKeyframes.keyframes.map(
+          layerKeyframes?.keyframes.map(
             (keyframe) =>
               !keyframe.isDeleted && <Keyframe key={`${keyframe.time}_${keyframe.isSelected}`} trackId={trackId} trackType="layer" trackNumber={trackNumber} {...keyframe} />,
           )}
