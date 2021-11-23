@@ -1,12 +1,9 @@
 import { all } from 'redux-saga/effects';
 
-import addNewLayerTrack from './addNewLayerTrack';
 import changeSelectedTargets from './changeSelectedTargets';
-import deleteLayerTrack from './deleteLayerTrack';
-import dragDropKeyframes from './dragDropKeyframes';
-import muteLayerTrack from './muteLayerTrack';
-import pasteKeyframes from './pasteKeyframes';
+import keyframesSaga from './keyframes';
+import trackListSaga from './trackList';
 
 export default function* TPSaga() {
-  yield all([addNewLayerTrack(), changeSelectedTargets(), deleteLayerTrack(), dragDropKeyframes(), muteLayerTrack(), pasteKeyframes()]);
+  yield all([changeSelectedTargets(), keyframesSaga(), trackListSaga()]);
 }
