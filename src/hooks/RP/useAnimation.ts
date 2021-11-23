@@ -97,21 +97,33 @@ const useAnimation = () => {
       if (currentAnimationGroup) {
         switch (_playState) {
           case 'play': {
-            if (currentAnimationGroup.isStarted) {
-              currentAnimationGroup.speedRatio = _playSpeed * _playDirection;
-              currentAnimationGroup.play(true);
+            if (currentAnimationGroup.isPlaying) {
+              currentAnimationGroup.speedRatio = _playDirection * _playSpeed;
+            } else if (currentAnimationGroup.isStarted) {
+              currentAnimationGroup.speedRatio = _playDirection * _playSpeed;
+              currentAnimationGroup.play();
             } else {
-              currentAnimationGroup.start(true, _playSpeed * _playDirection, _startTimeIndex, _endTimeIndex);
+              currentAnimationGroup.start(true, _playDirection * _playSpeed, _startTimeIndex, _endTimeIndex);
             }
             break;
           }
           case 'pause': {
-            currentAnimationGroup.pause();
+            if (currentAnimationGroup.isPlaying) {
+              currentAnimationGroup.pause();
+            } else {
+              if (currentAnimationGroup.animatables[0]?.masterFrame !== _currentTimeIndex) {
+                currentAnimationGroup.goToFrame(_currentTimeIndex);
+              }
+            }
             break;
           }
           case 'stop': {
-            currentAnimationGroup.pause();
-            currentAnimationGroup.goToFrame(_startTimeIndex);
+            if (currentAnimationGroup.isPlaying) {
+              currentAnimationGroup.goToFrame(_startTimeIndex);
+              currentAnimationGroup.stop(); // stop method 사용 후 scrubber 움직이는 경우에 대해서는 핸들이 필요
+            } else if (currentAnimationGroup.isStarted) {
+              currentAnimationGroup.goToFrame(_currentTimeIndex);
+            }
             break;
           }
           default: {
@@ -120,7 +132,7 @@ const useAnimation = () => {
         }
       }
     });
-  }, [currentAnimationGroup, _endTimeIndex, _playDirection, _playSpeed, _playState, _screenList, _startTimeIndex]);
+  }, [_currentTimeIndex, _endTimeIndex, _playDirection, _playSpeed, _playState, _screenList, _startTimeIndex, currentAnimationGroup]);
 };
 
 export default useAnimation;
