@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { deleteKeyframes, copyKeyframes, enterPasteKey } from 'actions/keyframes';
+import * as keyframesActions from 'actions/keyframes';
 import { useSelector } from 'reducers';
 
 import { LayerTrack } from './TrackList';
@@ -41,9 +41,9 @@ const DopeSheet = () => {
   // 키프레임 삭제 단축키
   useEffect(() => {
     const keyupListener = (event: KeyboardEvent) => {
-      if (event.key === 'Delete') dispatch(deleteKeyframes());
-      else if (event.code === 'KeyC') dispatch(copyKeyframes());
-      else if (event.code === 'KeyV') dispatch(enterPasteKey());
+      if (event.key === 'Delete') dispatch(keyframesActions.enterKeyframeDeleteKey());
+      else if (event.code === 'KeyC') dispatch(keyframesActions.copyKeyframes());
+      else if (event.code === 'KeyV') dispatch(keyframesActions.enterPasteKey());
     };
     document.addEventListener('keyup', keyupListener);
     return () => {

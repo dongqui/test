@@ -5,7 +5,8 @@ export type AnimatingControlsAction =
   | ReturnType<typeof blurEndInput>
   | ReturnType<typeof moveScrubber>
   | ReturnType<typeof clickPlayStateButton>
-  | ReturnType<typeof selectFasterDropdown>;
+  | ReturnType<typeof selectFasterDropdown>
+  | ReturnType<typeof clickAutoKeyButton>;
 
 // start input blur 이벤트
 interface BlurStartInput {
@@ -71,4 +72,9 @@ export const selectFasterDropdown = (params: SelectFasterDropdown) => ({
   payload: {
     ...params,
   },
+});
+
+// auto key 모든 클릭
+export const clickAutoKeyButton = () => ({
+  type: 'animatingControls/CLICK_AUTO_KEY_BUTTON' as const,
 });

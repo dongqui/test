@@ -60,7 +60,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
       {
         label: 'Delete Keyframe',
         onClick: () => {
-          dispatch(keyframeActions.deleteKeyframes());
+          dispatch(keyframeActions.enterKeyframeDeleteKey());
         },
       },
     ],

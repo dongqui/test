@@ -9,6 +9,7 @@ interface AnimatingContolsState {
   currentTimeIndex: number;
   startTimeIndex: number;
   endTimeIndex: number;
+  autokey: boolean;
 }
 
 const defaultState: AnimatingContolsState = {
@@ -18,6 +19,7 @@ const defaultState: AnimatingContolsState = {
   currentTimeIndex: 0,
   startTimeIndex: 0,
   endTimeIndex: 100,
+  autokey: false,
 };
 
 export const animatingControls = (state = defaultState, action: AnimatingControlsAction) => {
@@ -53,6 +55,11 @@ export const animatingControls = (state = defaultState, action: AnimatingControl
     case 'animatingControls/SELECT_FASTER_DROPDOWN': {
       return Object.assign({}, state, {
         playSpeed: action.payload.playSpeed,
+      });
+    }
+    case 'animatingControls/CLICK_AUTO_KEY_BUTTON': {
+      return Object.assign({}, state, {
+        autokey: !state.autokey,
       });
     }
     default: {
