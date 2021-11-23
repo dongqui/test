@@ -7,6 +7,7 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const ControlPanel: FunctionComponent = () => {
+  const [isAllActive, setIsAllActive] = useState<boolean>(false);
   const [activeMode, setActiveMode] = useState<string>('Animation');
 
   return (
@@ -19,7 +20,7 @@ const ControlPanel: FunctionComponent = () => {
           Retargeting
         </button>
       </div>
-      {activeMode === 'Animation' ? <AnimationTab /> : <RetargetTab />}
+      {activeMode === 'Animation' ? <AnimationTab isAllActive={isAllActive} /> : <RetargetTab isAllActive={isAllActive} />}
     </div>
   );
 };
