@@ -5,7 +5,7 @@ import { UpperBar } from 'containers/UpperBar';
 import LibraryPanel from 'containers/Panels/LibraryPanel';
 import RenderingPanel from './Panels/RenderingPanel';
 import TimelinePanel from './Panels/TimelinePanel';
-import { ModalContextProvider } from 'components/Modal/Modal';
+import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
 import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
@@ -248,11 +248,11 @@ const Shoot: FunctionComponent = () => {
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.us}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
-          <ModalContextProvider>
+          <BaseModalProvider>
             <ContextMenuProvider>
               <LibraryPanel />
             </ContextMenuProvider>
-          </ModalContextProvider>
+          </BaseModalProvider>
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
           <RenderingPanel />
