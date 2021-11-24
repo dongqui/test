@@ -289,10 +289,10 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: () => {
                   const copyNode = lpClipboard[0];
 
-                  const cloneCopyNode = cloneDeep(copyNode);
+                  let isMaxDepth = false;
 
-                  if (cloneCopyNode) {
-                    const max = depthCheck(cloneCopyNode.children, 0, []) || 0;
+                  lpClipboard.forEach((value) => {
+                    const max = depthCheck(value.children, 0, []) || 0;
 
                     const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
@@ -302,9 +302,17 @@ const ListNode: FunctionComponent<Props> = ({
                         message: '디렉토리를 복사할 수 없습니다. 계층 초과',
                         confirmText: '확인',
                       });
-                      return;
+
+                      isMaxDepth = true;
+                      return false;
                     }
+                  });
+
+                  if (isMaxDepth) {
+                    return;
                   }
+
+                  const cloneCopyNode = cloneDeep(copyNode);
 
                   // @TODO 없으면 비활성 처리 필요
                   if (cloneCopyNode) {
