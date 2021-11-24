@@ -35,11 +35,12 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const testRef = useRef<HTMLDivElement>(null);
-  let cancelTokenSource: Canceler;
+  let cancelTokenSource = useRef<Canceler>();
 
   const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [currentDevice, setCurrentDevice] = useState<string>('');
   const [currnetDeviceId, setCurrentDeviceId] = useState<string>('');
+  const [srcAddress, setSrcAddress] = useState<string>('');
   const [thumbnailList, setThumbnailList] = useState([]);
   const [duration, setDuration] = useState<number>(0);
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
@@ -73,6 +74,8 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     stopStream,
   } = useMediaStream({
     ref: videoRef,
+    start: start,
+    end: end,
     canvasRef: canvasRef,
     recording: recording,
     currentDeviceId: currnetDeviceId,
@@ -84,6 +87,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     setRecording: setRecording,
     setRecordOverTwice: setRecordOverTwice,
     setStandbyState: setStandbyState,
+    setSrcAddress: setSrcAddress,
     setTimer: setTimer,
     setDeviceList: setDeviceList,
     setCurrentDevice: setCurrentDevice,
@@ -110,8 +114,6 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     } as BoxProps,
   };
 
-  // const handleChangeCamera = useCallback(() => {}, []);
-
   const handleVideoEnd = useCallback(() => {
     setPlayState(false);
   }, []);
@@ -124,9 +126,17 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     setEnd(cutEndTime);
   };
 
-  const handleTimeline = useCallback((e) => {
-    videoRef.current!.currentTime = e.target.value;
-  }, []);
+  const handleTimeline = useCallback(
+    (e) => {
+      videoRef.current!.currentTime = e.target.value;
+      if (e.target.value < start) {
+        videoRef.current!.currentTime = start;
+      } else if (e.target.value > end) {
+        videoRef.current!.currentTime = end;
+      }
+    },
+    [start, end],
+  );
 
   const handleCurrentTime = useCallback(() => {
     setCurrentVideoTime(videoRef.current!.currentTime);
@@ -180,7 +190,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
       cancelToken: new axios.CancelToken((cancel) => {
-        cancelTokenSource = cancel;
+        cancelTokenSource.current = cancel;
       }),
       timeout,
     })
@@ -203,6 +213,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         setReadyExtract(false);
         dispatch(lpNodeActions.changeNode({ nodes: nextNodes }));
         dispatch(modeSelectActions.changeMode({ mode: 'animationMode' }));
+        dispatch(modeSelectActions.changeMode({ videoURL: '' }));
         setOnExtract(false);
         return response;
       })
@@ -228,20 +239,33 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
 
   // 단축키 이벤트의 연속발생을 위한 keydown 이벤트(버튼을 누르고 있다면 연속으로 프레임이 넘어가야함)
   window.onkeydown = (e: KeyboardEvent) => {
+    const currentTime = videoRef.current!.currentTime;
     if (!videoRef.current!.src) {
       return;
     }
-    if (e.key === 'ArrowRight' || e.key === '.') {
-      videoRef.current!.currentTime += 0.01;
-    } else if (e.key === 'ArrowLeft' || e.key === ',') {
-      videoRef.current!.currentTime -= 0.01;
-    } else if (e.key === ' ') {
-      if (videoRef.current!.paused) {
-        videoRef.current!.play();
-        setPlayState(true);
-      } else {
-        videoRef.current!.pause();
-        setPlayState(false);
+    if (!turnStandbyPhase && !readyExtract && !onExtract) {
+      if (e.key === 'ArrowRight' || e.key === '.') {
+        if (currentTime >= end) {
+          return;
+        } else if (currentTime <= end && currentTime > end - 0.1) {
+          videoRef.current!.currentTime = end;
+        } else if (currentTime < end) {
+          videoRef.current!.currentTime += 0.1;
+        }
+      } else if (e.key === 'ArrowLeft' || e.key === ',') {
+        if (currentTime <= start) {
+          return;
+        } else if (currentTime >= start && currentTime < start + 0.1) {
+          videoRef.current!.currentTime = start;
+        } else if (currentTime > start) {
+          videoRef.current!.currentTime -= 0.1;
+        }
+      } else if (e.key === ' ') {
+        if (videoRef.current!.paused) {
+          playRecording();
+        } else {
+          pauseRecording();
+        }
       }
     }
   };
@@ -270,6 +294,12 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (currentVideoTime >= end - 0.25 && recordState && playState) {
+      videoRef.current!.currentTime = start;
+    }
+  }, [currentVideoTime, end]);
+
   const playBox = [
     { id: 'startRecording', icon: SvgPath.VideoRecord, fn: stopRecording },
     { id: 'standbyRecording', icon: SvgPath.VideoRecord, fn: backToStandby },
@@ -290,6 +320,11 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           recordState={recordState}
           cameraDropdownState={cameraDropdownState}
           standbyState={standbyState}
+          srcAddress={srcAddress}
+          videoRef={videoRef}
+          recording={recording}
+          recordOverTwice={recordOverTwice}
+          setSrcAddress={setSrcAddress}
           handleChangeCamera={handleChangeCamera}
           setCameraDropdownState={setCameraDropdownState}
           stopStream={stopStream}
@@ -303,6 +338,14 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         {standbyState && (
           <div className={cx('countdown-overlay')} onClick={backToStandby}>
             <div className={cx('countdown')}>{timer}</div>
+          </div>
+        )}
+        {!currentDevice && !videoURL && (
+          <div className={cx('countdown-overlay')}>
+            <div className={cx('notification-wrapper')}>
+              <IconWrapper className={cx('camera-icon')} icon={SvgPath.NoCamera}></IconWrapper>
+              <p className={cx('no-camera-notification')}>There is No Connected Camera</p>
+            </div>
           </div>
         )}
       </div>
@@ -356,6 +399,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
               duration={duration}
               currentVideoTime={currentVideoTime}
               handleTimeline={handleTimeline}
+              videoRef={videoRef}
               indicatorPosition={indicatorPosition}
               onChange={handleSlider}
             >
@@ -371,7 +415,14 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       {readyExtract && (
         <BaseModal className={cx('extract-modal', 'extract-name-modal')}>
           <p className={cx('extract-name-paragraph')}>Enter the name of the motion to extract.</p>
-          <input type="text" className={cx('extract-name-input')} placeholder="Exported motion" onChange={(e) => setBasicExtractName(e.target.value)} />
+          <input
+            type="text"
+            className={cx('extract-name-input')}
+            placeholder="Exported motion"
+            onChange={(e) => {
+              setBasicExtractName(e.target.value);
+            }}
+          />
           <div className={cx('extract-name-wrapper')}>
             <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setReadyExtract(false)}></FilledButton>
             <FilledButton
@@ -423,8 +474,27 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           <p className={cx('extract-name-paragraph', 'loading')}>
             It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}
           </p>
+          <FilledButton
+            text="Cancel"
+            className={cx('extract-button', 'cancel')}
+            onClick={() => {
+              setOnExtract(false);
+              cancelTokenSource.current && cancelTokenSource.current();
+            }}
+          ></FilledButton>
         </BaseModal>
       )}
+      {/* <BaseModal className={cx('extract-modal', 'loading-modal')}>
+        <h4 className={cx('modal-heading')}>Extract Failed</h4>
+        <p className={cx('extract-name-paragraph')}>
+          Motion extraction <strong>failed</strong>. please try again.
+        </p>
+        <FilledButton
+          text="Cancel"
+          className={cx('extract-button', 'cancel')}
+          onClick={() => setTurnStandbyPhase(false)}
+        ></FilledButton>
+      </BaseModal> */}
     </Fragment>
   );
 };

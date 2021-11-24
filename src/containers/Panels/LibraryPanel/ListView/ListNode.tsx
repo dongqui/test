@@ -2,26 +2,28 @@ import { max, find, remove, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import { AnimationIngredient, ShootLayer, ShootTrack } from 'types/common';
+import * as BABYLON from '@babylonjs/core';
+import produce from 'immer';
+import { v4 as uuid } from 'uuid';
+import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { getFileExtension } from 'utils/common';
 import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
-import { v4 as uuid } from 'uuid';
-import * as BABYLON from '@babylonjs/core';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as shootProjectActions from 'actions/shootProjectAction';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import produce from 'immer';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
 const cx = classNames.bind(styles);
 
 interface Props {
+  selectableId: string;
   id: string;
   assetId?: string;
   parentId: string;
@@ -29,8 +31,9 @@ interface Props {
   name: string;
   fileUrl?: string | File;
   filePath: string;
-  onSelect?: (id: string) => void;
-  selectedId?: string;
+  onSelect?: (id: string, childrens?: string[], multiple?: boolean) => void;
+  onReject: (id: string) => void;
+  selectedId: string[];
   isSelected?: boolean;
   childrens: any[];
   extension: string;
@@ -39,6 +42,7 @@ interface Props {
 }
 
 const ListNode: FunctionComponent<Props> = ({
+  selectableId,
   type,
   name,
   filePath,
@@ -46,6 +50,7 @@ const ListNode: FunctionComponent<Props> = ({
   assetId,
   parentId,
   onSelect,
+  onReject,
   isSelected,
   childrens,
   extension,
@@ -54,10 +59,11 @@ const ListNode: FunctionComponent<Props> = ({
   dragTarget,
 }) => {
   const dispatch = useDispatch();
-  const sceneList = useSelector((state) => state.shootProject.sceneList);
-  const assetList = useSelector((state) => state.shootProject.assetList);
+
+  const screenList = useSelector((state) => state.plaskProject.screenList);
+  const assetList = useSelector((state) => state.plaskProject.assetList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
-  const visualizedAssetIds = useSelector((state) => state.shootProject.visualizedAssetIds);
+  const visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
 
@@ -68,27 +74,66 @@ const ListNode: FunctionComponent<Props> = ({
 
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
 
+  const outerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
+
+  const [isHover, setIsHover] = useState(false);
+  const wrapperClasses = cx('inner-row', { hovered: isHover });
+
+  const [currentSelectableId, setCurrentSelectableId] = useState('');
+
+  useEffect(() => {
+    const config: MutationObserverInit = { attributes: true };
+
+    const handleCheck = () => {
+      const currentRef = wrapperRef.current;
+
+      if (currentRef) {
+        const currentRefId = currentRef.id;
+
+        if (currentRefId === 'node-selected' && currentRefId !== currentSelectableId) {
+          // onSelect && onSelect(id, childrens, true);
+          setCurrentSelectableId(currentRefId);
+        }
+
+        if (currentRefId === 'node-selectable' && currentRefId !== currentSelectableId) {
+          // onReject(id);
+          setCurrentSelectableId(currentRefId);
+        }
+      }
+    };
+
+    const checkObserver = new MutationObserver(handleCheck);
+
+    if (wrapperRef.current) {
+      checkObserver.observe(wrapperRef.current, config);
+    }
+
+    const currentRef = wrapperRef.current;
+
+    const handleHover = () => {
+      // setIsHover(!isHover);
+    };
+
+    if (currentRef) {
+      currentRef.addEventListener('mouseenter', handleHover);
+      currentRef.addEventListener('mouseleave', handleHover);
+    }
+
+    return () => {
+      checkObserver.disconnect();
+
+      if (currentRef) {
+        currentRef.removeEventListener('mouseenter', handleHover);
+        currentRef.removeEventListener('mouseleave', handleHover);
+      }
+    };
+  }, [childrens, currentSelectableId, id, isHover, name, onReject, onSelect, parentId]);
 
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
-
-  const handleArrowClick = useCallback(() => {
-    setShowsChildren(!showsChildren);
-  }, [showsChildren]);
-
-  const handleSelect = useCallback(() => {
-    onSelect && onSelect(id);
-
-    dispatch(
-      lpNodeActions.changeCurrentPath({
-        currentPath: filePath + `\\${name}`,
-        id: id,
-      }),
-    );
-  }, [dispatch, filePath, id, name, onSelect]);
 
   const depthCheck = useCallback(
     (arr: string[], maximum: number, original: number[]) => {
@@ -117,36 +162,88 @@ const ListNode: FunctionComponent<Props> = ({
     const changeNode = find(node, { id: childID });
 
     if (changeNode) {
-      const cloneChangeNode = cloneDeep(changeNode);
+      changeNode.parentId = parentNode.id;
+      changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+      // const cloneChangeNode = cloneDeep(changeNode);
 
-      cloneChangeNode.id = uuid();
-      cloneChangeNode.parentId = parentNode.id;
-      cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
+      // cloneChangeNode.id = uuid();
+      // cloneChangeNode.parentId = parentNode.id;
+      // cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
 
-      remove(parentNode.children, (child) => child === childID);
-      parentNode.children.push(cloneChangeNode.id);
+      // // remove(parentNode.children, (child) => child === childID);
+      // parentNode.children.push(cloneChangeNode.id);
 
-      node.push(cloneChangeNode);
+      // node.push(cloneChangeNode);
 
-      if (cloneChangeNode.children.length > 0) {
-        cloneChangeNode.children.map((child) => depthChangeKey(node, child, cloneChangeNode));
+      if (changeNode.children.length > 0) {
+        changeNode.children.map((child) => depthChangeKey(node, child, changeNode));
       }
     }
   }, []);
 
   const depth = (filePath.match(/\\/g) || []).length;
 
-  const column = Array.from({ length: depth - 1 }).map((x, i) => i);
-
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
+      e.stopPropagation();
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
 
+      const isContainsSelectedArea = selectedId.includes(id);
+
+      if (isContainsSelectedArea && selectedId.length > 1) {
+        onContextMenuOpen({
+          top: e.clientY,
+          left: e.clientX,
+          menu: [
+            {
+              label: 'Delete',
+              onClick: () => {
+                const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+
+                dispatch(
+                  lpNodeActions.changeNode({
+                    nodes: afterNodes,
+                  }),
+                );
+              },
+              children: [],
+            },
+            {
+              label: 'Copy',
+              onClick: () => {
+                const finded = find(lpNode, { id });
+                const list = lpNode.filter((node) => selectedId.includes(node.id));
+
+                if (finded) {
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: list,
+                    }),
+                  );
+                }
+              },
+              children: [],
+            },
+          ],
+        });
+
+        return;
+      }
+
       if (isContains) {
+        onSelect && onSelect(id);
+
+        dispatch(
+          lpNodeActions.changeCurrentPath({
+            currentPath: filePath + `\\${name}`,
+            id: id,
+          }),
+        );
+
         if (type === 'Folder') {
           onContextMenuOpen({
             top: e.clientY,
@@ -190,7 +287,6 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Paste',
                 onClick: () => {
-                  // const copyNode = _.find(lpNode, { id: lpClipboard[0].id });
                   const copyNode = lpClipboard[0];
 
                   const cloneCopyNode = cloneDeep(copyNode);
@@ -334,15 +430,15 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (targetAsset) {
-                      sceneList
-                        .map((s) => s.scene)
+                      screenList
+                        .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
                         });
                     }
 
                     // assetList에서 제외
-                    dispatch(shootProjectActions.removeAsset({ assetId }));
+                    dispatch(plaskProjectActions.removeAsset({ assetId }));
                     // animationData 삭제
                     dispatch(animationDataActions.removeAsset({ assetId }));
                     // 선택 대상에서 제외
@@ -389,15 +485,15 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (prevAsset) {
-                      sceneList
-                        .map((s) => s.scene)
+                      screenList
+                        .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, prevAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
                         });
                     }
 
                     // visualizedAssetList에서 제외
-                    // dispatch(shootProjectActions.unrenderAsset({ assetId: prevAssetId })); // single-model 환경에서는 불필요
+                    // dispatch(plaskProjectActions.unrenderAsset({ assetId: prevAssetId })); // single-model 환경에서는 불필요
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId: prevAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
                   }
@@ -410,8 +506,8 @@ const ListNode: FunctionComponent<Props> = ({
                       const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
 
                       // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
-                      sceneList.forEach((shootScene) => {
-                        const { id: sceneId, name: sceneName, scene } = shootScene;
+                      screenList.forEach((PlaskScreen) => {
+                        const { id: sceneId, scene } = PlaskScreen;
 
                         if (scene.isReady()) {
                           // scene들에 mesh 추가
@@ -477,7 +573,7 @@ const ListNode: FunctionComponent<Props> = ({
                           });
 
                           // visualizedAssetIds에 추가
-                          dispatch(shootProjectActions.renderAsset({ assetId }));
+                          dispatch(plaskProjectActions.renderAsset({ assetId }));
                           // dragBox 선택 대상에 추가
                           dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
 
@@ -509,15 +605,15 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (targetAsset) {
-                      sceneList
-                        .map((s) => s.scene)
+                      screenList
+                        .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
                         });
                     }
 
                     // visualizedAssetList에서 제외
-                    dispatch(shootProjectActions.unrenderAsset({}));
+                    dispatch(plaskProjectActions.unrenderAsset({}));
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
                   }
@@ -531,9 +627,9 @@ const ListNode: FunctionComponent<Props> = ({
                     const cloneLPNode = cloneDeep(lpNode);
 
                     const layerName = 'layer1';
-                    const layers: ShootLayer[] = [{ id: uuid(), name: layerName }];
+                    const layers: PlaskLayer[] = [{ id: uuid(), name: layerName }];
 
-                    const tracks: ShootTrack[] = [];
+                    const tracks: PlaskTrack[] = [];
                     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
                     if (visualizedAssetIds.includes(assetId)) {
                       // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서
@@ -600,7 +696,7 @@ const ListNode: FunctionComponent<Props> = ({
                     );
 
                     dispatch(
-                      shootProjectActions.addMotion({
+                      plaskProjectActions.addMotion({
                         assetId: assetId,
                         motionId: nextIngredient.id,
                       }),
@@ -696,12 +792,38 @@ const ListNode: FunctionComponent<Props> = ({
     type,
     visualizedAssetIds,
     assetList,
-    sceneList,
+    screenList,
+    selectedId.length,
+    selectedId,
+    onSelect,
   ]);
 
   const classes = cx('wrapper', { selected: isSelected });
 
-  // const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
+  useEffect(() => {
+    const currentRef = wrapperRef && wrapperRef.current;
+
+    if (currentRef) {
+      const handleSelect = (e: MouseEvent) => {
+        e.stopPropagation();
+
+        onSelect && onSelect(id);
+
+        dispatch(
+          lpNodeActions.changeCurrentPath({
+            currentPath: filePath + `\\${name}`,
+            id: id,
+          }),
+        );
+      };
+
+      currentRef.addEventListener('click', handleSelect);
+
+      return () => {
+        currentRef.removeEventListener('click', handleSelect);
+      };
+    }
+  }, [dispatch, filePath, id, name, onSelect]);
 
   const renderChildren = useCallback(
     (paramId: any) => {
@@ -711,6 +833,7 @@ const ListNode: FunctionComponent<Props> = ({
         if (node) {
           return (
             <ListNode
+              selectableId={selectableId}
               id={node.id}
               parentId={node.parentId}
               type={node.type}
@@ -718,8 +841,10 @@ const ListNode: FunctionComponent<Props> = ({
               fileUrl={node.fileUrl}
               filePath={node.filePath}
               extension={node.extension}
-              onSelect={handleSelect}
-              isSelected={node.id === selectedId}
+              onSelect={onSelect}
+              onReject={onReject}
+              selectedId={selectedId}
+              isSelected={selectedId.includes(node.id)}
               childrens={node.children}
               assetId={node.assetId}
               onSetDragTarget={onSetDragTarget}
@@ -732,14 +857,17 @@ const ListNode: FunctionComponent<Props> = ({
       if (typeof paramId === 'object') {
         return (
           <ListNode
+            selectableId={selectableId}
             id={paramId.id}
             parentId={parentId}
             type="Motion"
             name={paramId.name}
             filePath={filePath + `\\${name}`}
             extension={paramId.extension}
-            onSelect={handleSelect}
-            isSelected={id === selectedId && paramId.current}
+            onSelect={onSelect}
+            onReject={onReject}
+            selectedId={selectedId}
+            isSelected={selectedId.includes(id) && paramId.current}
             childrens={[]}
             assetId={paramId.assetId}
             onSetDragTarget={onSetDragTarget}
@@ -748,7 +876,7 @@ const ListNode: FunctionComponent<Props> = ({
         );
       }
     },
-    [dragTarget, filePath, handleSelect, id, lpNode, name, onSetDragTarget, parentId, selectedId],
+    [dragTarget, filePath, id, lpNode, name, onReject, onSelect, onSetDragTarget, parentId, selectableId, selectedId],
   );
 
   const handleBlur = useCallback(
@@ -780,7 +908,8 @@ const ListNode: FunctionComponent<Props> = ({
             const newNode: LP.Node = {
               id: id,
               // filePath: lpCurrentPath + `\\${name}`,
-              filePath: filePath + `\\${name}`, //@todo
+              // filePath: filePath + `\\${name}`, //@todo
+              filePath: filePath,
               parentId: parentId,
               name: type === 'Model' ? `${name}.${extension}` : name,
               type: type,
@@ -853,7 +982,8 @@ const ListNode: FunctionComponent<Props> = ({
               const newNode: LP.Node = {
                 id: id,
                 // filePath: lpCurrentPath + `\\${name}`,
-                filePath: filePath + `\\${name}`, //@todo
+                // filePath: filePath + `\\${name}`, //@todo
+                filePath: filePath,
                 parentId: parentId,
                 name: type === 'Model' ? `${name}.${extension}` : name,
                 type: type,
@@ -907,12 +1037,12 @@ const ListNode: FunctionComponent<Props> = ({
   //     // render/unrender 기능 구현을 임의로 click/altClick으로 구분해두었습니다.
   //     if (event.altKey) {
   //       if (targetAsset && visualizedAssetIds.includes(targetAsset.id)) {
-  //         dispatch(shootProjectActions.unrenderAsset({ assetId: targetAsset.id }));
+  //         dispatch(plaskProjectActions.unrenderAsset({ assetId: targetAsset.id }));
   //       }
   //     } else {
   //       // 이미 render된 asset이 아닌 경우에만
   //       if (targetAsset && !visualizedAssetIds.includes(targetAsset.id)) {
-  //         dispatch(shootProjectActions.renderAsset({ assetId: targetAsset.id }));
+  //         dispatch(plaskProjectActions.renderAsset({ assetId: targetAsset.id }));
   //       }
   //     }
   //   },
@@ -927,9 +1057,9 @@ const ListNode: FunctionComponent<Props> = ({
       // 드래그 시작시 선택 및 스타일 적용
       onSetDragTarget(id, type, parentId);
 
-      handleSelect();
+      onSelect && onSelect(id);
     },
-    [handleSelect, id, onSetDragTarget, parentId, type],
+    [id, onSelect, onSetDragTarget, parentId, type],
   );
 
   const handleDrop = useCallback(
@@ -952,8 +1082,6 @@ const ListNode: FunctionComponent<Props> = ({
           const childrenList = lpNode.filter((node) => node.parentId === id);
           const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
           const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
-
-          const cloneDragNode = cloneDeep(dragNode);
 
           if (dropNode && isAlreadyExist && cloneDragNode) {
             const confirmed = await getConfirm({
@@ -1083,8 +1211,8 @@ const ListNode: FunctionComponent<Props> = ({
           const confirmed = await getConfirm({
             title: 'Warning',
             message: '해당 디렉토리에 동일한 이름의 파일이 있습니다. 덮어쓰시겠습니까?',
-            confirmText: '확인',
-            cancelText: '취소',
+            confirmText: '덮어쓰기',
+            cancelText: '무시하기',
           });
 
           if (confirmed) {
@@ -1092,21 +1220,27 @@ const ListNode: FunctionComponent<Props> = ({
             const filterNodes = cloneLPNode.filter((node) => node.id !== duplicatedTarget[0].id);
 
             const nextNodes = produce(filterNodes, (draft) => {
-              const targetNode = find(draft, { id });
+              const targetNode = find(filterNodes, { id });
+
+              const clondDragNodeId = uuid();
 
               if (targetNode) {
-                cloneDragNode.id = uuid();
+                cloneDragNode.id = clondDragNodeId;
                 cloneDragNode.parentId = id;
                 // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
                 cloneDragNode.filePath = filePath + `\\${name}`;
 
-                targetNode.children.push(cloneDragNode.id);
+                const nextChildren = targetNode.children.filter((current) => current !== duplicatedTarget[0].id);
+
+                nextChildren.push(clondDragNodeId);
+
+                targetNode.children = nextChildren;
 
                 // @TODO 하위 노드도 추가
                 draft.push(cloneDragNode);
 
                 if (cloneDragNode.children.length > 0) {
-                  cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                  cloneDragNode.children.map((child) => depthChangeKey(filterNodes, child, cloneDragNode));
                 }
               }
             });
@@ -1179,15 +1313,50 @@ const ListNode: FunctionComponent<Props> = ({
   const splitName = name.split('.');
   const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
+  useEffect(() => {
+    const currentRef = outerRef.current;
+    if (currentRef) {
+      const handleMouseDown = (e: MouseEvent) => {
+        e.stopPropagation();
+      };
+
+      currentRef.addEventListener('mousedown', handleMouseDown);
+
+      return () => {
+        currentRef.removeEventListener('mousedown', handleMouseDown);
+      };
+    }
+  }, []);
+
+  const arrowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const currentRef = arrowRef && arrowRef.current;
+
+    if (currentRef) {
+      const handleArrowClick = () => {
+        setShowsChildren(!showsChildren);
+      };
+
+      currentRef.addEventListener('mouseup', handleArrowClick);
+
+      return () => {
+        currentRef.removeEventListener('mouseup', handleArrowClick);
+      };
+    }
+  }, [showsChildren]);
+
   return (
-    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
+    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} ref={outerRef}>
       <div className={cx('inner')}>
-        <div className={cx('inner-row')} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}>
-          {/* {column.map((col, i) => (
-            <div key={i} style={{ width: `${12 * col}px` }} />
-          ))} */}
+        {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
+        <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id}>
           <div style={{ paddingLeft: '7px' }} />
-          {type !== 'Motion' && <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} onClick={handleArrowClick} />}
+          {type !== 'Motion' && (
+            <div className={cx('arrow-wrapper')} ref={arrowRef}>
+              <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} />
+            </div>
+          )}
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
             {isEditing ? (

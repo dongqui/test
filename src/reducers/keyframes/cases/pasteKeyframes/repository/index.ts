@@ -1,7 +1,9 @@
 import { ClusteredKeyframe, TimeEditorTrack } from 'types/TP/keyframe';
 
-export interface Repository {
-  updateTimeEditorTrack(scrubberTime: number): TimeEditorTrack[];
+type SelectedChildren = Map<number, number[]> | number[];
 
-  updateSelectedKeyframes(scrubberTime: number): ClusteredKeyframe[];
+export interface Repository {
+  updateTimeEditorTrack(scrubberTime: number, selectedChildren?: SelectedChildren): TimeEditorTrack | TimeEditorTrack[];
+
+  updateSelectedKeyframes(scrubberTime: number, selectedChildren?: SelectedChildren): ClusteredKeyframe[];
 }

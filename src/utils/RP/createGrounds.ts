@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { ShootView } from 'types/common';
+import { PlaskView } from 'types/common';
 
 const defaultWidth = 100;
 const defaultHeight = 100;
@@ -14,7 +14,7 @@ const defaultHeight = 100;
  * @param height - ground의 높이
  * @param view - camera가 위치한 방위 (front, back, top, bottom, left, right)
  */
-const createGround = (scene: BABYLON.Scene, useTexture: boolean, width: number, height: number, view: ShootView) => {
+const createGround = (scene: BABYLON.Scene, useTexture: boolean, width: number, height: number, view: PlaskView) => {
   const ground = BABYLON.MeshBuilder.CreatePlane(
     'ground',
     {
@@ -94,7 +94,7 @@ const createGround = (scene: BABYLON.Scene, useTexture: boolean, width: number, 
 const createGrounds = (scene: BABYLON.Scene, useTexture: boolean, width?: number, height?: number) => {
   const grounds: BABYLON.Mesh[] = [];
 
-  const views: ShootView[] = ['top', 'bottom', 'left', 'right', 'front', 'back'];
+  const views: PlaskView[] = ['top', 'bottom', 'left', 'right', 'front', 'back'];
   views.forEach((view) => {
     grounds.push(createGround(scene, useTexture, width ?? defaultWidth, height ?? defaultHeight, view));
   });

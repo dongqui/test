@@ -8,7 +8,7 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import { checkIsTargetMesh, createDummyAnimation } from 'utils/RP';
-import { AnimationIngredient, ShootTrack } from 'types/common';
+import { AnimationIngredient, PlaskTrack } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -17,8 +17,8 @@ const cx = classNames.bind(styles);
 const DEFAULT_CONTROLLER_COLOR = BABYLON.Color3.FromHexString('#FFE480');
 
 const ControlPanel: FunctionComponent = () => {
-  const sceneList = useSelector((state) => state.shootProject.sceneList);
-  const assetList = useSelector((state) => state.shootProject.assetList);
+  const screenList = useSelector((state) => state.plaskProject.screenList);
+  const assetList = useSelector((state) => state.plaskProject.assetList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
@@ -27,30 +27,30 @@ const ControlPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
 
   const makeMeshesVisible = useCallback(() => {
-    const targetScene = sceneList[0];
+    const targetScreen = screenList[0];
     const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
-    if (targetScene && targetAssets) {
+    if (targetScreen && targetAssets) {
       targetAssets.forEach((asset) => {
         const { id: assetId, meshes } = asset;
 
         // mesh visible
         meshes.forEach((mesh) => {
-          if (mesh.getScene().uid === targetScene.id) {
+          if (mesh.getScene().uid === targetScreen.id) {
             mesh.isVisible = true;
           }
         });
       });
     }
-  }, [assetList, sceneList, selectedTargets]);
+  }, [assetList, screenList, selectedTargets]);
 
   const makeMeshesInvisible = useCallback(() => {
-    const targetScene = sceneList[0];
+    const targetScreen = screenList[0];
     const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
-    if (targetScene && targetAssets) {
+    if (targetScreen && targetAssets) {
       targetAssets.forEach((asset) => {
         const { id: assetId, meshes, bones } = asset;
 
@@ -58,7 +58,7 @@ const ControlPanel: FunctionComponent = () => {
         const jointTransformNodes = selectableObjects.filter((object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId));
         const jointTransformNode = jointTransformNodes[1];
         if (jointTransformNode) {
-          const joint = targetScene.scene.getMeshByID(jointTransformNode.id.replace('transformNode', 'joint'));
+          const joint = targetScreen.scene.getMeshByID(jointTransformNode.id.replace('transformNode', 'joint'));
           if (joint && !joint.isVisible) {
             return;
           }
@@ -66,46 +66,46 @@ const ControlPanel: FunctionComponent = () => {
 
         // mesh visible
         meshes.forEach((mesh) => {
-          if (mesh.getScene().uid === targetScene.id) {
+          if (mesh.getScene().uid === targetScreen.id) {
             mesh.isVisible = false;
           }
         });
       });
     }
-  }, [assetList, sceneList, selectableObjects, selectedTargets]);
+  }, [assetList, screenList, selectableObjects, selectedTargets]);
 
   const makeBonesVisible = useCallback(() => {
-    const targetScene = sceneList[0];
+    const targetScreen = screenList[0];
     const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
-    if (targetScene && targetAssets) {
+    if (targetScreen && targetAssets) {
       targetAssets.forEach((asset) => {
         const { id: assetId, meshes, skeleton } = asset;
 
         // joint visible
         const jointTransformNodes = selectableObjects.filter((object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId));
         jointTransformNodes.forEach((jointTransformNode) => {
-          const joint = targetScene.scene.getMeshByID(jointTransformNode.id.replace('transformNode', 'joint'));
+          const joint = targetScreen.scene.getMeshByID(jointTransformNode.id.replace('transformNode', 'joint'));
           if (joint) {
             joint.isVisible = true;
           }
         });
 
         // create skeletonView
-        const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], targetScene.scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
+        const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], targetScreen.scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
         skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
-        targetScene.scene.addMesh(skeletonViewer.mesh);
+        targetScreen.scene.addMesh(skeletonViewer.mesh);
       });
     }
-  }, [assetList, sceneList, selectableObjects, selectedTargets]);
+  }, [assetList, screenList, selectableObjects, selectedTargets]);
 
   const makeBonesInvisible = useCallback(() => {
-    const targetScene = sceneList[0];
+    const targetScreen = screenList[0];
     const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
-    if (targetScene && targetAssets) {
+    if (targetScreen && targetAssets) {
       targetAssets.forEach((asset) => {
         const { id: assetId, meshes } = asset;
 
@@ -117,7 +117,7 @@ const ControlPanel: FunctionComponent = () => {
         // joint invisible
         const jointTransformNodes = selectableObjects.filter((object) => object.getClassName() === 'TransformNode' && object.id.includes(assetId));
         jointTransformNodes.forEach((jointTransformNode) => {
-          const joint = targetScene.scene.getMeshByID(jointTransformNode.id.replace('transformNode', 'joint'));
+          const joint = targetScreen.scene.getMeshByID(jointTransformNode.id.replace('transformNode', 'joint'));
           // Object자체 선택이 가능하도록 Armature transformNode에 대해서는 visible off를 허용하지 않음
           if (joint && !joint.id.toLowerCase().includes('armature')) {
             joint.isVisible = false;
@@ -125,9 +125,9 @@ const ControlPanel: FunctionComponent = () => {
         });
 
         // skeletonView dispose
-        const skeletonViewerMesh = targetScene.scene.getMeshByID(`${assetId}//skeletonViewer`);
+        const skeletonViewerMesh = targetScreen.scene.getMeshByID(`${assetId}//skeletonViewer`);
         if (skeletonViewerMesh) {
-          targetScene.scene.removeMesh(skeletonViewerMesh);
+          targetScreen.scene.removeMesh(skeletonViewerMesh);
           const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
           if (skeletonViewerChildMesh) {
             skeletonViewerChildMesh.dispose();
@@ -135,14 +135,14 @@ const ControlPanel: FunctionComponent = () => {
         }
       });
     }
-  }, [assetList, sceneList, selectableObjects, selectedTargets]);
+  }, [assetList, screenList, selectableObjects, selectedTargets]);
 
   const makeControllersVisible = useCallback(() => {
-    const targetScene = sceneList[0];
+    const targetScreen = screenList[0];
     const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
-    if (targetScene && targetAssets) {
+    if (targetScreen && targetAssets) {
       targetAssets.forEach((asset) => {
         const { id: assetId } = asset;
 
@@ -150,20 +150,20 @@ const ControlPanel: FunctionComponent = () => {
         const controllers = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh');
         controllers.forEach((controller) => {
           // type guard
-          if (checkIsTargetMesh(controller) && controller.getScene().uid === targetScene.id) {
+          if (checkIsTargetMesh(controller) && controller.getScene().uid === targetScreen.id) {
             controller.isVisible = true;
           }
         });
       });
     }
-  }, [assetList, sceneList, selectableObjects, selectedTargets]);
+  }, [assetList, screenList, selectableObjects, selectedTargets]);
 
   const makeControllersInvisible = useCallback(() => {
-    const targetScene = sceneList[0];
+    const targetScreen = screenList[0];
     const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
-    if (targetScene && targetAssets) {
+    if (targetScreen && targetAssets) {
       targetAssets.forEach((asset) => {
         const { id: assetId } = asset;
 
@@ -171,21 +171,21 @@ const ControlPanel: FunctionComponent = () => {
         const controllers = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && object.getClassName() === 'Mesh');
         controllers.forEach((controller) => {
           // type guard
-          if (checkIsTargetMesh(controller) && controller.getScene().uid === targetScene.id) {
+          if (checkIsTargetMesh(controller) && controller.getScene().uid === targetScreen.id) {
             controller.isVisible = false;
           }
         });
       });
     }
-  }, [assetList, sceneList, selectableObjects, selectedTargets]);
+  }, [assetList, screenList, selectableObjects, selectedTargets]);
 
   const addControllers = useCallback(() => {
-    const targetScene = sceneList[0];
+    const targetScreen = screenList[0];
     const selectedAssetIds = uniq(selectedTargets.map((target) => target.id.split('//')[0]));
 
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
-    if (targetScene && targetAssets) {
+    if (targetScreen && targetAssets) {
       targetAssets.forEach((asset) => {
         const { id: assetId, bones } = asset;
 
@@ -212,7 +212,7 @@ const ControlPanel: FunctionComponent = () => {
           const controllers: BABYLON.Mesh[] = [];
           // prettier-ignore
           const targetBoneIndices = [1, 56, 61, 2, 57, 62, 3, 58, 63, 4, 59, 64, 5, 8, 32, 6, 9, 33, 10, 34, 11, 35, 16, 40]; // retargetMap의 values 대신 사용
-          const controllerMaterial = new BABYLON.StandardMaterial('controllerMaterial', targetScene.scene);
+          const controllerMaterial = new BABYLON.StandardMaterial('controllerMaterial', targetScreen.scene);
           controllerMaterial.emissiveColor = DEFAULT_CONTROLLER_COLOR;
           controllerMaterial.disableLighting = true;
 
@@ -225,7 +225,7 @@ const ControlPanel: FunctionComponent = () => {
                   thickness: 0.2,
                   tessellation: 64,
                 },
-                targetScene.scene,
+                targetScreen.scene,
               );
               controller.renderingGroupId = 3;
               controller.id = `${assetId}//${bone.name}//controller`;
@@ -237,7 +237,7 @@ const ControlPanel: FunctionComponent = () => {
               }
 
               // controller actionManager 생성 및 pick, hover action 등록
-              controller.actionManager = new BABYLON.ActionManager(targetScene.scene);
+              controller.actionManager = new BABYLON.ActionManager(targetScreen.scene);
               controller.actionManager.registerAction(
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event) => {
                   dispatch(selectingDataActions.defaultSingleSelect({ target: controller }));
@@ -246,7 +246,7 @@ const ControlPanel: FunctionComponent = () => {
 
               controller.actionManager.registerAction(
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, (event) => {
-                  targetScene.scene.hoverCursor = 'pointer';
+                  targetScreen.scene.hoverCursor = 'pointer';
                 }),
               );
 
@@ -281,7 +281,7 @@ const ControlPanel: FunctionComponent = () => {
           if (currentAnimationIngredient) {
             const { id, name, tracks, layers } = currentAnimationIngredient;
 
-            const newTracks: ShootTrack[] = [];
+            const newTracks: PlaskTrack[] = [];
 
             controllers.forEach((controller) => {
               // rotationQuaternion으로 회전법 바꾸는 처리
@@ -291,7 +291,7 @@ const ControlPanel: FunctionComponent = () => {
               layers.forEach((layer) => {
                 const transformNodeTracks = tracks.filter((t) => t.targetId === controller.id.replace('controller', 'transformNode') && t.layerId === layer.id);
                 transformNodeTracks.forEach((transformNodeTrack) => {
-                  const newTrack: ShootTrack = {
+                  const newTrack: PlaskTrack = {
                     id: uuidv4(),
                     targetId: controller.id,
                     layerId: layer.id,
@@ -331,14 +331,14 @@ const ControlPanel: FunctionComponent = () => {
         }
       });
     }
-  }, [animationIngredients, assetList, dispatch, retargetMaps, sceneList, selectableObjects, selectedTargets]);
+  }, [animationIngredients, assetList, dispatch, retargetMaps, screenList, selectableObjects, selectedTargets]);
 
   const deleteControllers = useCallback(() => {
-    const targetScene = sceneList[0];
+    const targetScreen = screenList[0];
     const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
     const targetAssets = assetList.filter((asset) => selectedAssetIds.includes(asset.id));
 
-    if (targetScene && targetAssets) {
+    if (targetScreen && targetAssets) {
       targetAssets.forEach((asset) => {
         const { id: assetId, bones } = asset;
 
@@ -373,7 +373,7 @@ const ControlPanel: FunctionComponent = () => {
         }
       });
     }
-  }, [animationIngredients, assetList, dispatch, sceneList, selectableObjects, selectedTargets]);
+  }, [animationIngredients, assetList, dispatch, screenList, selectableObjects, selectedTargets]);
 
   const addJsonAnimation = useCallback(async () => {
     const selectedAssetIds = selectedTargets.map((target) => target.id.split('//')[0]);
