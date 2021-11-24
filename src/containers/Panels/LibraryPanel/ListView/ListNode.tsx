@@ -202,14 +202,29 @@ const ListNode: FunctionComponent<Props> = ({
             {
               label: 'Delete',
               onClick: () => {
-                console.log('Multiple delete');
+                const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+
+                dispatch(
+                  lpNodeActions.changeNode({
+                    nodes: afterNodes,
+                  }),
+                );
               },
               children: [],
             },
             {
               label: 'Copy',
               onClick: () => {
-                console.log('Multiple Copy');
+                const finded = find(lpNode, { id });
+                const list = lpNode.filter((node) => selectedId.includes(node.id));
+
+                if (finded) {
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: list,
+                    }),
+                  );
+                }
               },
               children: [],
             },
@@ -272,7 +287,6 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Paste',
                 onClick: () => {
-                  // const copyNode = _.find(lpNode, { id: lpClipboard[0].id });
                   const copyNode = lpClipboard[0];
 
                   const cloneCopyNode = cloneDeep(copyNode);
@@ -1199,8 +1213,6 @@ const ListNode: FunctionComponent<Props> = ({
             message: '해당 디렉토리에 동일한 이름의 파일이 있습니다. 덮어쓰시겠습니까?',
             confirmText: '덮어쓰기',
             cancelText: '무시하기',
-          }).then((response) => {
-            return response;
           });
 
           if (confirmed) {

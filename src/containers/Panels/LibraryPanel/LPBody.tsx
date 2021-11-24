@@ -314,10 +314,14 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       nextIds.forEach((current) => {
         const selectedNode = find(lpNode, { id: current });
 
-        if (selectedNode) {
-          console.log(selectedNode);
+        const isCurrentIncludes = resultSelectedId.includes(current);
 
+        if (selectedNode && !isCurrentIncludes) {
           const isIncludes = nextIds.includes(selectedNode.parentId);
+          // if (!isIncludes && !nextIds.includes(current)) {
+          if (!isIncludes) {
+            resultSelectedId.push(current);
+          }
 
           if (isIncludes) {
             const nextSelectedIds = produce(nextIds, (draft) => {
@@ -327,14 +331,12 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
               }
             });
 
-            resultSelectedId = nextSelectedIds;
-          }
-
-          if (!isIncludes && !nextIds.includes(current)) {
-            resultSelectedId.push(current);
+            resultSelectedId = [...nextSelectedIds];
           }
         }
       });
+
+      setSelectedId(resultSelectedId);
     },
     [lpNode],
   );
