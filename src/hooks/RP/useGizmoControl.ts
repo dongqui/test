@@ -16,9 +16,10 @@ const useGizmoControl = () => {
   const [gizmoManager, setGizmoManager] = useState<BABYLON.GizmoManager>();
   const [currentGizmoMode, setCurrentGizmoMode] = useState<GizmoMode>('position');
 
-  useEffect(() => {
-    console.log('selectedTargets: ', selectedTargets);
-  }, [selectedTargets]);
+  // temp comment
+  // useEffect(() => {
+  //   console.log('selectedTargets: ', selectedTargets);
+  // }, [selectedTargets]);
 
   // gizmoManager 생성
   useEffect(() => {

@@ -1,9 +1,9 @@
 import { useCallback, FunctionComponent } from 'react';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import _ from 'lodash';
+import { isEqual } from 'lodash';
 import { Dropdown } from 'components/Dropdown';
-import * as animatingControlsActions from 'actions/animatingControls';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -16,7 +16,7 @@ const FasterDropdown: FunctionComponent<Props> = () => {
   const playSpeed = useSelector((state) => state.animatingControls.playSpeed);
 
   const handleFasterSelect = useCallback(
-    (key: string, _value: string) => {
+    (key: string, value: string) => {
       dispatch(animatingControlsActions.selectFasterDropdown({ playSpeed: Number(key) }));
     },
     [dispatch],
@@ -26,32 +26,32 @@ const FasterDropdown: FunctionComponent<Props> = () => {
     {
       key: '0.25',
       value: '0.25X',
-      isSelected: _.isEqual(playSpeed, 0.25),
+      isSelected: isEqual(playSpeed, 0.25),
     },
     {
       key: '0.5',
       value: '0.5X',
-      isSelected: _.isEqual(playSpeed, 0.5),
+      isSelected: isEqual(playSpeed, 0.5),
     },
     {
       key: '1',
       value: '1X',
-      isSelected: _.isEqual(playSpeed, 1),
+      isSelected: isEqual(playSpeed, 1),
     },
     {
       key: '1.25',
       value: '1.25X',
-      isSelected: _.isEqual(playSpeed, 1.25),
+      isSelected: isEqual(playSpeed, 1.25),
     },
     {
       key: '1.75',
       value: '1.75X',
-      isSelected: _.isEqual(playSpeed, 1.75),
+      isSelected: isEqual(playSpeed, 1.75),
     },
     {
       key: '2',
       value: '2X',
-      isSelected: _.isEqual(playSpeed, 2),
+      isSelected: isEqual(playSpeed, 2),
     },
   ];
 

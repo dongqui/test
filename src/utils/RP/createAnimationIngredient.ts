@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { AnimationIngredient, PlaskTrack } from 'types/common';
-import { v4 as uuidv4 } from 'uuid';
+import { getRandomStringKey } from 'utils/common';
 import createPlaskTrack from './createPlaskTrack';
 
 /**
@@ -13,7 +13,7 @@ import createPlaskTrack from './createPlaskTrack';
  */
 const createAnimationIngredient = (assetId: string, animationGroup: BABYLON.AnimationGroup, isMocapAnimation: boolean, current: boolean): AnimationIngredient => {
   // base layer에 대해서는 id 앞에 baseLayer// 를 추가
-  const layerId = `baseLayer//${uuidv4()}`;
+  const layerId = `baseLayer//${getRandomStringKey()}`;
 
   const tracks: PlaskTrack[] = [];
   // animationGroup을 생성하기 위해 사용한 targetAnimations를 순회하며 Property-depth의 트랙들을 구성합니다.
@@ -44,7 +44,7 @@ const createAnimationIngredient = (assetId: string, animationGroup: BABYLON.Anim
   });
 
   const animationIngredient = {
-    id: uuidv4(),
+    id: getRandomStringKey(),
     name: animationGroup.name,
     assetId,
     current,

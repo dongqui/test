@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import { PlaskRetargetMap } from 'types/common';
+import { getRandomStringKey } from 'utils/common';
 
 const DEFAULT_HIP_SPACE = 106;
 
@@ -11,7 +11,7 @@ const DEFAULT_HIP_SPACE = 106;
  */
 const createEmptyRetargetMap = (assetId: string): PlaskRetargetMap => {
   return {
-    id: uuidv4(),
+    id: getRandomStringKey(),
     assetId,
     hipSpace: DEFAULT_HIP_SPACE,
     values: [

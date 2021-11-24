@@ -8,8 +8,8 @@ import '@babylonjs/loaders/glTF';
 import { v4 as uuid } from 'uuid';
 import { clone, isUndefined } from 'lodash';
 import { convertFBXtoGLB } from 'api';
+import { getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
-import { getFileExtension } from 'utils/common';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
@@ -86,7 +86,7 @@ const LibraryPanel: FunctionComponent = () => {
 
       const { meshes, geometries, skeletons, transformNodes, animationGroups } = loadedAssetContainer;
 
-      const assetId = uuid();
+      const assetId = getRandomStringKey();
 
       meshes.forEach((mesh) => {
         // joint 클릭을 위해 mesh 클릭을 불가능하게 처리

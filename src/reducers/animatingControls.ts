@@ -1,10 +1,10 @@
-import { AnimatingControlsAction } from 'actions/animatingControls';
+import { AnimatingControlsAction } from 'actions/animatingControlsAction';
 import { TimeIndex } from 'utils/TP';
-import { PlayDirection_New, PlayState } from 'types/RP';
+import { PlayDirection, PlayState } from 'types/RP';
 
 interface AnimatingContolsState {
   playState: PlayState;
-  playDirection: PlayDirection_New;
+  playDirection: PlayDirection;
   playSpeed: number;
   currentTimeIndex: number;
   startTimeIndex: number;
@@ -13,7 +13,7 @@ interface AnimatingContolsState {
 
 const defaultState: AnimatingContolsState = {
   playState: 'stop',
-  playDirection: PlayDirection_New.forward,
+  playDirection: PlayDirection.forward,
   playSpeed: 1,
   currentTimeIndex: 0,
   startTimeIndex: 0,

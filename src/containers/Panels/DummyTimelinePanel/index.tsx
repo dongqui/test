@@ -1,5 +1,4 @@
 import { ChangeEvent, FunctionComponent, memo, useCallback, useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { isUndefined, range, uniq } from 'lodash';
@@ -7,7 +6,7 @@ import produce from 'immer';
 import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
 import * as animationDataActions from 'actions/animationDataAction';
 import { createPlaskTrack, getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
-import { roundToFourth } from 'utils/common';
+import { getRandomStringKey, roundToFourth } from 'utils/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -35,10 +34,11 @@ const TimelinePanel: FunctionComponent = () => {
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    console.log('layers: ', layers);
-    console.log('tracks: ', tracks);
-  }, [layers, tracks]);
+  // temp comment
+  // useEffect(() => {
+  //   console.log('layers: ', layers);
+  //   console.log('tracks: ', tracks);
+  // }, [layers, tracks]);
 
   useEffect(() => {
     const selectedTargetIds = selectedTargets.map((target) => target.id);
@@ -75,8 +75,9 @@ const TimelinePanel: FunctionComponent = () => {
       // 선택된 targets의 tracks 중 layer 또한 선택된 layer와 일치하는 track들
       const targetLayerTracks = tracks.filter((track) => track.layerId === targetLayerId);
 
-      console.log('targetLayerTracks: ', targetLayerTracks);
-      console.log('targetFrame: ', targetFrame);
+      // temp comment
+      // console.log('targetLayerTracks: ', targetLayerTracks);
+      // console.log('targetFrame: ', targetFrame);
 
       // new 값들 insert
       const newAnimationIngredients = produce(animationIngredients, (draft) => {
@@ -335,7 +336,7 @@ const TimelinePanel: FunctionComponent = () => {
       if (currentAnimationIngredient) {
         const { id, name, assetId, current, layers, tracks } = currentAnimationIngredient;
         const newLayer = {
-          id: uuidv4(),
+          id: getRandomStringKey(),
           name: newLayerName,
         };
         const newAnimationIngredient: AnimationIngredient = {

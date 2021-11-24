@@ -4,9 +4,9 @@ import * as d3 from 'd3';
 import _ from 'lodash';
 
 import { useSelector } from 'reducers';
-import * as animatingControlsActions from 'actions/animatingControls';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { BaseInput } from 'components/Input';
-import { PlayDirection_New } from 'types/RP';
+import { PlayDirection } from 'types/RP';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
 
 import classNames from 'classnames/bind';
@@ -79,7 +79,7 @@ const Scrubber = () => {
       const endTimeIndex = TimeIndex.getEndTimeIndex();
       const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
       const nextValue = currentTimeIndex + playDirection * playSpeed;
-      if (playDirection === PlayDirection_New.forward) {
+      if (playDirection === PlayDirection.forward) {
         const payload = { currentTimeIndex: endTimeIndex < nextValue ? startTimeIndex : nextValue };
         dispatchMoveScrubber(payload);
       } else {

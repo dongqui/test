@@ -1,27 +1,43 @@
 import { useEffect, useState } from 'react';
-import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
+import * as BABYLON from '@babylonjs/core';
+import { round } from 'lodash';
 import { filterQuaternion, filterVector } from 'utils/RP';
 
 const useAnimation = () => {
-  const screenList = useSelector((state) => state.plaskProject.screenList);
-  const assetList = useSelector((state) => state.plaskProject.assetList);
-  const visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
-  const fps = useSelector((state) => state.plaskProject.fps);
+  const _screenList = useSelector((state) => state.plaskProject.screenList);
+  const _assetList = useSelector((state) => state.plaskProject.assetList);
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const _fps = useSelector((state) => state.plaskProject.fps);
 
-  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+  const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+
+  const _playState = useSelector((state) => state.animatingControls.playState);
+  const _playDirection = useSelector((state) => state.animatingControls.playDirection);
+  const _playSpeed = useSelector((state) => state.animatingControls.playSpeed);
+  const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
+  const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
+  const _currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
 
   const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
-  const [isPlaying, setIsPlaying] = useState(false);
+
+  // useEffect(() => {
+  //   console.log('animationIngredients: ', animationIngredients);
+  // }, [animationIngredients]);
 
   useEffect(() => {
-    console.log('animationIngredients: ', animationIngredients);
-  }, [animationIngredients]);
+    console.log('fps: ', _fps);
+    console.log('playState: ', _playState);
+    console.log('playDirection: ', _playDirection);
+    console.log('playSpeed: ', _playSpeed);
+    console.log('startTimeIndex: ', _startTimeIndex);
+    console.log('endTimeIndex: ', _endTimeIndex);
+  }, [_endTimeIndex, _fps, _playDirection, _playSpeed, _playState, _startTimeIndex]);
 
   // 애니메이션 생성
   useEffect(() => {
-    const visualizedAnimationIngredients = animationIngredients.filter(
-      (animationIngredient) => visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
+    const visualizedAnimationIngredients = _animationIngredients.filter(
+      (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
 
     const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
@@ -35,85 +51,88 @@ const useAnimation = () => {
           // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
           if (track.isIncluded) {
             if (track.property === 'position' || track.property === 'scaling') {
-              const newAnimation = new BABYLON.Animation(
-                track.name,
-                `${track.property}`,
-                fps / 30,
-                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-              );
+              const newAnimation = new BABYLON.Animation(track.name, `${track.property}`, _fps, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
               if (track.useFilter) {
                 // filter function 적용
-                newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                newAnimation.setKeys(
+                  filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta).map((key) => ({ frame: round(key.frame * _fps), value: key.value })),
+                );
               } else {
-                newAnimation.setKeys(track.transformKeys);
+                newAnimation.setKeys(track.transformKeys.map((key) => ({ frame: round(key.frame * _fps), value: key.value })));
               }
               track.target.animations.push(newAnimation);
-              newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
+              newAnimationGroup.addTargetedAnimation(newAnimation.clone(), track.target);
             } else if (track.property === 'rotationQuaternion') {
               const newAnimation = new BABYLON.Animation(
                 track.name,
                 `${track.property}`,
-                fps / 30,
+                _fps,
                 BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
                 BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
               );
               if (track.useFilter) {
                 // filter function 적용
-                newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                newAnimation.setKeys(
+                  filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta).map((key) => ({ frame: round(key.frame * _fps), value: key.value })),
+                );
               } else {
-                newAnimation.setKeys(track.transformKeys);
+                newAnimation.setKeys(track.transformKeys.map((key) => ({ frame: round(key.frame * _fps), value: key.value })));
               }
               track.target.animations.push(newAnimation);
-              newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
+              newAnimationGroup.addTargetedAnimation(newAnimation.clone(), track.target);
             }
           }
         }
       });
     });
-
+    newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
     setCurrentAnimationGroup(newAnimationGroup);
-  }, [animationIngredients, assetList, fps, visualizedAssetIds]);
+  }, [_animationIngredients, _endTimeIndex, _fps, _startTimeIndex, _visualizedAssetIds]);
 
   // 애니메이션 재생 조작
   useEffect(() => {
-    screenList.forEach((PlaskScreen) => {
+    _screenList.forEach((PlaskScreen) => {
       const { id: sceneId, scene, canvasId } = PlaskScreen;
 
       if (currentAnimationGroup) {
-        currentAnimationGroup.onAnimationEndObservable.addOnce((...params) => {});
-
-        scene.addAnimationGroup(currentAnimationGroup);
-
-        if (isPlaying) {
-          currentAnimationGroup.start(true);
-        } else {
-          currentAnimationGroup.start(true);
-          currentAnimationGroup.pause();
-          currentAnimationGroup.goToFrame(0);
+        switch (_playState) {
+          case 'play': {
+            if (currentAnimationGroup.isPlaying) {
+              currentAnimationGroup.speedRatio = _playDirection * _playSpeed;
+            } else if (currentAnimationGroup.isStarted) {
+              currentAnimationGroup.speedRatio = _playDirection * _playSpeed;
+              currentAnimationGroup.play();
+            } else {
+              currentAnimationGroup.start(true, _playDirection * _playSpeed, _startTimeIndex, _endTimeIndex);
+            }
+            break;
+          }
+          case 'pause': {
+            if (currentAnimationGroup.isPlaying) {
+              currentAnimationGroup.pause();
+            } else {
+              if (currentAnimationGroup.animatables[0]?.masterFrame !== _currentTimeIndex) {
+                currentAnimationGroup.goToFrame(_currentTimeIndex);
+              }
+            }
+            break;
+          }
+          case 'stop': {
+            if (currentAnimationGroup.isPlaying) {
+              currentAnimationGroup.goToFrame(_startTimeIndex);
+              currentAnimationGroup.stop(); // stop method 사용 후 scrubber 움직이는 경우에 대해서는 핸들이 필요
+            } else if (currentAnimationGroup.isStarted) {
+              currentAnimationGroup.goToFrame(_currentTimeIndex);
+            }
+            break;
+          }
+          default: {
+            break;
+          }
         }
       }
     });
-
-    // 임시 shortcut
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // input 입력 중에는 적용되지 않도록 수정
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-
-      if (currentAnimationGroup && event.key === 'p') {
-        currentAnimationGroup.play();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [currentAnimationGroup, isPlaying, screenList]);
+  }, [_currentTimeIndex, _endTimeIndex, _playDirection, _playSpeed, _playState, _screenList, _startTimeIndex, currentAnimationGroup]);
 };
 
 export default useAnimation;
