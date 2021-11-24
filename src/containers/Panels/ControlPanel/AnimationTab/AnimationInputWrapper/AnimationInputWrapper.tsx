@@ -1,5 +1,4 @@
-import { FunctionComponent, Dispatch, Fragment, useState } from 'react';
-import { SetStateAction } from 'hoist-non-react-statics/node_modules/@types/react';
+import { FunctionComponent, Dispatch, Fragment, useState, SetStateAction } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { AnimationInput } from 'components/ControlPanel';
 import classNames from 'classnames/bind';

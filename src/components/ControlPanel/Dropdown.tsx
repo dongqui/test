@@ -1,5 +1,4 @@
-import { FunctionComponent, Fragment, useState, Dispatch } from 'react';
-import { SetStateAction } from 'hoist-non-react-statics/node_modules/@types/react';
+import { FunctionComponent, Fragment, useState, Dispatch, SetStateAction } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
 import styles from './Dropdown.module.scss';
