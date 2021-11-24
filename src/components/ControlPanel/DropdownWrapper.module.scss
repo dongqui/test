@@ -1,0 +1,23 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 16px;
+  width: 100%;
+  margin: 6px 0;
+  align-items: center;
+
+  & > p {
+    color: #4f4f4f;
+    font-size: 11px;
+    line-height: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  &.able {
+    & > p {
+      color: #d3d3d3;
+    }
+  }
+}
