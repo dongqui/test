@@ -30,9 +30,10 @@ interface Props {
   cancelText?: string;
   onConfirm?: () => void;
   onCancel?: () => void;
+  confirmColor?: string;
 }
 
-const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message, confirmText, onConfirm, cancelText, onCancel }) => {
+const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message, confirmText, onConfirm, cancelText, onCancel, confirmColor }) => {
   const portalRef = useRef(document.getElementById('portal_modal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -60,6 +61,8 @@ const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message,
     onModalClose();
   }, [onCancel, onModalClose]);
 
+  const classes = cx('button', 'confirm', confirmColor);
+
   return (
     <BasePortal container={portalRef}>
       {isOpen && (
@@ -71,14 +74,14 @@ const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message,
                 <Html content={message} />
               </div>
               <div className={cx('buttons')}>
-                {confirmText && (
-                  <button className={cx('button')} onClick={handleConfirm}>
-                    {confirmText}
+                {cancelText && (
+                  <button className={cx('button', 'cancel')} onClick={handleCancel}>
+                    {cancelText}
                   </button>
                 )}
-                {cancelText && (
-                  <button className={cx('button')} onClick={handleCancel}>
-                    {cancelText}
+                {confirmText && (
+                  <button className={classes} onClick={handleConfirm}>
+                    {confirmText}
                   </button>
                 )}
               </div>
@@ -97,10 +100,10 @@ const BaseModalProvider = ({ children }: any) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<any>({});
 
-  const handleOpen = ({ title, message, confirmText, onConfirm, actionCallback, cancelText, onCancel }: any) => {
+  const handleOpen = ({ title, message, confirmText, onConfirm, actionCallback, cancelText, onCancel, confirmColor }: any) => {
     setDialogOpen(true);
 
-    setDialogConfig({ title, message, confirmText, actionCallback, cancelText, onConfirm, onCancel });
+    setDialogConfig({ title, message, confirmText, actionCallback, cancelText, onConfirm, onCancel, confirmColor });
   };
 
   const handleClose = () => {

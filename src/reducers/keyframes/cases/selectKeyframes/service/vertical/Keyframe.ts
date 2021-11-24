@@ -26,7 +26,7 @@ class KeyframeVerticalSelection implements VerticalSelection {
     const { trackId, trackNumber, trackType, keyframes } = layerTrack;
     const selectedLayer: SelectedKeyframe[] = [];
     const keyframe = this.findKeyframe(keyframes, payload.time);
-    if (keyframe && keyframe.isDeleted) selectedLayer.push({ trackId, trackNumber, trackType, time: payload.time });
+    if (keyframe && !keyframe.isDeleted) selectedLayer.push({ trackId, trackNumber, trackType, time: payload.time });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedLayer);
   };
 
@@ -36,7 +36,7 @@ class KeyframeVerticalSelection implements VerticalSelection {
     boneTrackList.forEach((boneKeyframe) => {
       const { trackNumber, trackId, trackType, keyframes } = boneKeyframe;
       const keyframe = this.findKeyframe(keyframes, payload.time);
-      if (keyframe && keyframe.isDeleted) selectedBones.push({ trackNumber, trackId, trackType, time: payload.time });
+      if (keyframe && !keyframe.isDeleted) selectedBones.push({ trackNumber, trackId, trackType, time: payload.time });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
   };

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import _ from 'lodash';
 
-import { ScaleLinear, TimeIndex } from 'utils/TP';
 import { D3ScaleLinear, D3ZoomDatum } from 'types/TP/d3';
+import { ScaleLinear, TimeIndex } from 'utils/TP';
 import { DragBox } from 'components/DragBox';
 
 import { TopRuler } from './Ruler';
@@ -22,7 +22,6 @@ const TimelineEditor = () => {
   const timelineEditorRef = useRef<SVGSVGElement>(null);
   const leftTimeIndex = useRef(0);
   const zoomLevel = useRef(100);
-  const [isNotEmptyScaleLinear, setIsNotEmptyScaleLinear] = useState<boolean>(false); // 테스트 용도
 
   // 드래그 박스 dragEnd 이벤트 발생
   const handleDragEnd = useCallback((list: NodeListOf<Element>) => {}, []);
@@ -164,7 +163,6 @@ const TimelineEditor = () => {
       const width = window.innerWidth - 240;
       initializeScale(width);
       initializeBehavior(width);
-      setIsNotEmptyScaleLinear(true);
       window.addEventListener('resize', resizeListener);
       return () => {
         window.removeEventListener('resize', resizeListener);
@@ -177,7 +175,7 @@ const TimelineEditor = () => {
       <svg ref={timelineEditorRef}>
         <GridLine />
         <g className={cx('editor-body')} id="editor-body">
-          {isNotEmptyScaleLinear && <TimelineEditorMode />}
+          <TimelineEditorMode />
         </g>
         <TopRuler />
         <Scrubber />

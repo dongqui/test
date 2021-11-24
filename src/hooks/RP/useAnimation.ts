@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useSelector } from 'reducers';
-import * as BABYLON from '@babylonjs/core';
+
 import { round } from 'lodash';
+import { useDispatch } from 'react-redux';
+import * as BABYLON from '@babylonjs/core';
+import * as trackListActions from 'actions/trackList';
+import { useSelector } from 'reducers';
 import { filterQuaternion, filterVector } from 'utils/RP';
 
 const useAnimation = () => {
+  const dispatch = useDispatch();
+
   const _screenList = useSelector((state) => state.plaskProject.screenList);
   const _assetList = useSelector((state) => state.plaskProject.assetList);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
@@ -25,20 +30,18 @@ const useAnimation = () => {
   //   console.log('animationIngredients: ', animationIngredients);
   // }, [animationIngredients]);
 
-  useEffect(() => {
-    console.log('fps: ', _fps);
-    console.log('playState: ', _playState);
-    console.log('playDirection: ', _playDirection);
-    console.log('playSpeed: ', _playSpeed);
-    console.log('startTimeIndex: ', _startTimeIndex);
-    console.log('endTimeIndex: ', _endTimeIndex);
-  }, [_endTimeIndex, _fps, _playDirection, _playSpeed, _playState, _startTimeIndex]);
-
   // 애니메이션 생성
   useEffect(() => {
     const visualizedAnimationIngredients = _animationIngredients.filter(
       (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
+
+    // 최초 모델 visualize/모델 변경 시, 트랙 리스트 생성 함수 호출
+    if (visualizedAnimationIngredients.length) {
+      dispatch(trackListActions.initializeTrackList({ list: visualizedAnimationIngredients[0].layers, animationIngredientId: visualizedAnimationIngredients[0].id }));
+    } else {
+      dispatch(trackListActions.initializeTrackList({ list: [], animationIngredientId: '', clearAnimation: true }));
+    }
 
     const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
 
@@ -87,7 +90,7 @@ const useAnimation = () => {
     });
     newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
     setCurrentAnimationGroup(newAnimationGroup);
-  }, [_animationIngredients, _endTimeIndex, _fps, _startTimeIndex, _visualizedAssetIds]);
+  }, [_animationIngredients, _endTimeIndex, _fps, _startTimeIndex, _visualizedAssetIds, dispatch]);
 
   // 애니메이션 재생 조작
   useEffect(() => {

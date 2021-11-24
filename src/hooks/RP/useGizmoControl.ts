@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import * as trackListActions from 'actions/trackList';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import { checkIsTargetMesh } from 'utils/RP';
 
@@ -20,6 +21,16 @@ const useGizmoControl = () => {
   // useEffect(() => {
   //   console.log('selectedTargets: ', selectedTargets);
   // }, [selectedTargets]);
+
+  // selectedTargets 기준으로 property tracks 필터링
+  const isMountRef = useRef(true);
+  useEffect(() => {
+    if (!isMountRef.current) {
+      dispatch(trackListActions.changeSelectedTargets());
+    } else {
+      isMountRef.current = false;
+    }
+  }, [dispatch, selectedTargets]);
 
   // gizmoManager 생성
   useEffect(() => {
