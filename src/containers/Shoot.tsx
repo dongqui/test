@@ -4,6 +4,7 @@ import { ResizeCallbackData } from 'react-resizable';
 import { UpperBar } from 'containers/UpperBar';
 import LibraryPanel from 'containers/Panels/LibraryPanel';
 import RenderingPanel from './Panels/RenderingPanel';
+import ControlPanel from './Panels/ControlPanel';
 import TimelinePanel from './Panels/TimelinePanel';
 import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
@@ -11,9 +12,10 @@ import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
+
 import DummyControlPanel from './Panels/DummyControlPanel';
 import DummyTimelinePanel from './Panels/DummyTimelinePanel';
-import ControlPanel from './Panels/ControlPanel';
+
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
 
@@ -61,9 +63,8 @@ const Shoot: FunctionComponent = () => {
     control: constants.width.cp,
   });
 
-  const [isCPResize, setIsCPResize] = useState(false);
-
-  const cpTarget = useRef<boolean>(true);
+  const isResizingCP = useRef<boolean>(false);
+  const isTargetingCP = useRef<boolean>(true);
 
   // LowerSection의 height 비율
   const [rate, setRate] = useState(getFixedNumber(sectionHeight.lowerSection / windowHeight, 2));
@@ -93,13 +94,13 @@ const Shoot: FunctionComponent = () => {
         control: panelWidth.control,
       });
 
-      setIsCPResize(false);
+      isResizingCP.current = false;
     },
     [panelWidth.control],
   );
 
   const handleCPResizeStart = useCallback((_e: SyntheticEvent, _data: ResizeCallbackData) => {
-    setIsCPResize(true);
+    isResizingCP.current = true;
   }, []);
 
   const handleCPResizeStop = useCallback(
@@ -128,13 +129,13 @@ const Shoot: FunctionComponent = () => {
      * 추가로 숨김 처리가 8px로 줄이는 것이기 때문에 CP 내부적으로 children에 대한 보이지 않게 처리가 필요
      */
     const handleMouseDown = (e: MouseEvent) => {
-      if (isCPResize && (e.target as Element).classList.contains('react-resizable-handle')) {
-        cpTarget.current = true;
+      if (isResizingCP.current && (e.target as Element).classList.contains('react-resizable-handle')) {
+        isTargetingCP.current = true;
       }
     };
 
     const handleMouseUp = _.debounce((e: MouseEvent) => {
-      if (isCPResize && cpTarget.current) {
+      if (isResizingCP.current && isTargetingCP.current) {
         const isHide = windowWidth - e.clientX <= 140;
 
         if (isHide) {
@@ -143,7 +144,7 @@ const Shoot: FunctionComponent = () => {
             control: 8,
           });
         }
-        cpTarget.current = false;
+        isTargetingCP.current = false;
       }
     }, 200);
 
@@ -154,7 +155,7 @@ const Shoot: FunctionComponent = () => {
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [windowWidth, isCPResize, panelWidth.library, cpTarget]);
+  }, [panelWidth.library, windowWidth]);
 
   useEffect(() => {
     const prevWindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
@@ -258,8 +259,8 @@ const Shoot: FunctionComponent = () => {
           <RenderingPanel />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-          <DummyControlPanel />
-          {/* <ControlPanel /> */}
+          <ControlPanel />
+          {/* <DummyControlPanel /> */}
         </Box>
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
