@@ -16,7 +16,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [spreadMapping, setSpreadMapping] = useState<boolean>(true);
   const [currentSource, setCurrentSource] = useState<string>('Option1');
   const [currentTarget, setCurrentTarget] = useState<string>('Option2');
-  const [currentHipValue, setCurrentHipValue] = useState<number>(0);
+  const [currentHipValue, setCurrentHipValue] = useState<number>(10);
   const [selectedJoints, setSelectedJoints] = useState<string[]>([]);
 
   const handleJoints = useCallback(
