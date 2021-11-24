@@ -75,9 +75,11 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
         }
       } else if (num <= 10 && num > 5) {
         rangeRef.current!.max = 10 + '';
-      } else if (num > 1 && num < 5) {
+      } else if (num > 2 && num < 5) {
         rangeRef.current!.max = 5 + '';
-      } else if (num < 1) {
+      } else if (num <= 2 && num > 1) {
+        rangeRef.current!.max = 2 + '';
+      } else if (num <= 1) {
         rangeRef.current!.max = 1 + '';
       }
 
@@ -109,6 +111,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
     if (rangeRef) {
       rangeRef.current!.value = currentMax + '';
       // console.log((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
+      console.log('currentMax: ', currentMax);
     }
   }, [currentMax]);
 
