@@ -64,7 +64,7 @@ const useAnimation = () => {
                 newAnimation.setKeys(track.transformKeys.map((key) => ({ frame: round(key.frame * _fps), value: key.value })));
               }
               track.target.animations.push(newAnimation);
-              newAnimationGroup.addTargetedAnimation(newAnimation.clone(), track.target);
+              newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
             } else if (track.property === 'rotationQuaternion') {
               const newAnimation = new BABYLON.Animation(
                 track.name,
@@ -82,7 +82,7 @@ const useAnimation = () => {
                 newAnimation.setKeys(track.transformKeys.map((key) => ({ frame: round(key.frame * _fps), value: key.value })));
               }
               track.target.animations.push(newAnimation);
-              newAnimationGroup.addTargetedAnimation(newAnimation.clone(), track.target);
+              newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
             }
           }
         }
@@ -113,19 +113,30 @@ const useAnimation = () => {
           case 'pause': {
             if (currentAnimationGroup.isPlaying) {
               currentAnimationGroup.pause();
-            } else {
+            } else if (currentAnimationGroup.isStarted) {
               if (currentAnimationGroup.animatables[0]?.masterFrame !== _currentTimeIndex) {
                 currentAnimationGroup.goToFrame(_currentTimeIndex);
               }
+            } else {
+              currentAnimationGroup
+                .start(true, _playDirection * _playSpeed, _startTimeIndex, _endTimeIndex)
+                .pause()
+                .goToFrame(_currentTimeIndex);
             }
             break;
           }
           case 'stop': {
             if (currentAnimationGroup.isPlaying) {
-              currentAnimationGroup.goToFrame(_startTimeIndex);
-              currentAnimationGroup.stop(); // stop method 사용 후 scrubber 움직이는 경우에 대해서는 핸들이 필요
+              currentAnimationGroup.goToFrame(_startTimeIndex).stop();
             } else if (currentAnimationGroup.isStarted) {
-              currentAnimationGroup.goToFrame(_currentTimeIndex);
+              if (currentAnimationGroup.animatables[0]?.masterFrame !== _currentTimeIndex) {
+                currentAnimationGroup.goToFrame(_currentTimeIndex);
+              }
+            } else {
+              currentAnimationGroup
+                .start(true, _playDirection * _playSpeed, _startTimeIndex, _endTimeIndex)
+                .pause()
+                .goToFrame(_currentTimeIndex);
             }
             break;
           }
