@@ -17,6 +17,11 @@ const useGizmoControl = () => {
   const [gizmoManager, setGizmoManager] = useState<BABYLON.GizmoManager>();
   const [currentGizmoMode, setCurrentGizmoMode] = useState<GizmoMode>('position');
 
+  // temp comment
+  // useEffect(() => {
+  //   console.log('selectedTargets: ', selectedTargets);
+  // }, [selectedTargets]);
+
   // selectedTargets 기준으로 property tracks 필터링
   const isMountRef = useRef(true);
   useEffect(() => {

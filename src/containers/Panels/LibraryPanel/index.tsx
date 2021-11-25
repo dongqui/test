@@ -6,8 +6,8 @@ import produce from 'immer';
 import '@babylonjs/loaders/glTF';
 import { clone, isUndefined } from 'lodash';
 import { convertFBXtoGLB } from 'api';
+import { getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
-import { getFileExtension } from 'utils/common';
 import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { v4 as uuid } from 'uuid';
 import * as BABYLON from '@babylonjs/core';
@@ -91,7 +91,7 @@ const LibraryPanel: FunctionComponent = () => {
 
       const { meshes, geometries, skeletons, transformNodes, animationGroups } = loadedAssetContainer;
 
-      const assetId = uuid();
+      const assetId = getRandomStringKey();
 
       meshes.forEach((mesh) => {
         // joint 클릭을 위해 mesh 클릭을 불가능하게 처리

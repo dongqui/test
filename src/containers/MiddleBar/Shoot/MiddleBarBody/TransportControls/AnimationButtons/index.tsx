@@ -1,7 +1,6 @@
 import { Fragment } from 'react';
 import { useSelector } from 'reducers';
-import _ from 'lodash';
-import { PlayDirection_New } from 'types/RP';
+import { PlayDirection } from 'types/RP';
 import Pause from './Pause';
 import Play from './Play';
 import Record from './Record';
@@ -17,9 +16,9 @@ const Buttons = () => {
   const playDirection = useSelector((state) => state.animatingControls.playDirection);
 
   const ButtonState = () => {
-    const isPlaying = _.isEqual(playState, 'play');
+    const isPlaying = playState === 'play';
     if (isPlaying) {
-      if (playDirection === PlayDirection_New.forward) {
+      if (playDirection === PlayDirection.forward) {
         return (
           <Fragment>
             <Rewind />

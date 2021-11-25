@@ -1,12 +1,12 @@
 import produce from 'immer';
 import { PlaskProjectAction } from 'actions/plaskProjectAction';
 import { PlaskProject } from 'types/common';
-import { v4 as uuidv4 } from 'uuid';
+import { getRandomStringKey } from 'utils/common';
 
 type State = PlaskProject;
 
 const defaultState: State = {
-  id: uuidv4(),
+  id: getRandomStringKey(),
   name: 'New Project',
   screenList: [],
   assetList: [],

@@ -1,6 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
+import { round } from 'lodash';
 import { AnimationIngredient, PlaskTrack } from 'types/common';
-import { v4 as uuidv4 } from 'uuid';
+import { getRandomStringKey } from 'utils/common';
 import createPlaskTrack from './createPlaskTrack';
 
 /**
@@ -13,7 +14,7 @@ import createPlaskTrack from './createPlaskTrack';
  */
 const createAnimationIngredient = (assetId: string, animationGroup: BABYLON.AnimationGroup, isMocapAnimation: boolean, current: boolean): AnimationIngredient => {
   // base layer에 대해서는 id 앞에 baseLayer// 를 추가
-  const layerId = `baseLayer//${uuidv4()}`;
+  const layerId = `baseLayer//${getRandomStringKey()}`;
 
   const tracks: PlaskTrack[] = [];
   // animationGroup을 생성하기 위해 사용한 targetAnimations를 순회하며 Property-depth의 트랙들을 구성합니다.
@@ -21,9 +22,18 @@ const createAnimationIngredient = (assetId: string, animationGroup: BABYLON.Anim
     const { target, animation } = targetAnimation;
     if (animation.targetProperty === 'position') {
       // position 트랙들 전처리
-      tracks.push(createPlaskTrack(`${animation.name}`, layerId, target, 'position', animation.getKeys(), isMocapAnimation));
+      tracks.push(
+        createPlaskTrack(
+          `${animation.name}`,
+          layerId,
+          target,
+          'position',
+          animation.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })), // integer frame 사용
+          isMocapAnimation,
+        ),
+      );
     } else if (animation.targetProperty === 'rotationQuaternion') {
-      const quaternionTransformKeys = animation.getKeys();
+      const quaternionTransformKeys = animation.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // integer frame 사용
 
       const eulerTransformKeys: BABYLON.IAnimationKey[] = quaternionTransformKeys.map((transformKey) => {
         const q: BABYLON.Quaternion = transformKey.value;
@@ -37,14 +47,23 @@ const createAnimationIngredient = (assetId: string, animationGroup: BABYLON.Anim
       // rotation 트랙들 전처리
       tracks.push(createPlaskTrack(`${animation.name}`, layerId, target, 'rotation', eulerTransformKeys, isMocapAnimation));
     } else if (animation.targetProperty === 'scaling') {
-      tracks.push(createPlaskTrack(`${animation.name}`, layerId, target, 'scaling', animation.getKeys(), isMocapAnimation));
+      tracks.push(
+        createPlaskTrack(
+          `${animation.name}`,
+          layerId,
+          target,
+          'scaling',
+          animation.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })), // integer frame 사용
+          isMocapAnimation,
+        ),
+      );
     }
     // 전처리를 끝낸 source animation은 타겟의 애니메이션 목록에서 지워줍니다.
     target.animations = target.animations.filter((animation: BABYLON.Animation) => animation !== animation);
   });
 
   const animationIngredient = {
-    id: uuidv4(),
+    id: getRandomStringKey(),
     name: animationGroup.name,
     assetId,
     current,

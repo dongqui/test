@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import * as animatingControlsActions from 'actions/animatingControls';
-import { PlayDirection_New } from 'types/RP';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
+import { PlayDirection } from 'types/RP';
 
 const Rewind = () => {
   const dispatch = useDispatch();
@@ -12,7 +12,7 @@ const Rewind = () => {
     dispatch(
       animatingControlsActions.clickPlayStateButton({
         playState: 'play',
-        playDirection: PlayDirection_New.backward,
+        playDirection: PlayDirection.backward,
       }),
     );
   }, [dispatch]);
