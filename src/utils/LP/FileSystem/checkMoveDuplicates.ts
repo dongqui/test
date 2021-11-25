@@ -14,7 +14,7 @@ const checkMoveDuplicates = (name: string, nameArray: string[]) => {
 
     if (!_.isNull(extractedNumber)) {
       const number = (currentNode.match(/\d/g) as unknown) as string;
-      console.log('number > ' + number);
+
       const resultNumber = number === '0' ? '2' : '0';
       return resultNumber;
     } else {
@@ -32,8 +32,6 @@ const checkMoveDuplicates = (name: string, nameArray: string[]) => {
       return 0;
     }
   });
-  console.log('filteredArray');
-  console.log(filteredArray);
 
   const result = String(getNodeNumber(filteredArray));
   return result;
