@@ -150,9 +150,19 @@ const useBaseModal = () => {
       handleClose();
     });
 
-  const getConfirm = ({ ...options }) =>
+  const getConfirm = ({ onConfirm, onCancel, ...options }: any) =>
     new Promise((res) => {
-      handleOpen({ actionCallback: res, ...options });
+      const handleConfirm = () => {
+        onConfirm && onConfirm();
+        res(true);
+      };
+
+      const handleCancel = () => {
+        onCancel && onCancel();
+        res(false);
+      };
+
+      handleOpen({ actionCallback: res, onConfirm: handleConfirm, onCancel: handleCancel, ...options });
     });
 
   return { getConfirm, onModalOpen, onModalClose };
