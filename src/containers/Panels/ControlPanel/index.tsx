@@ -3,11 +3,13 @@ import AnimationTab from './AnimationTab/AnimationTab';
 import RetargetTab from './RetargetTab/RetargetTab';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
 const ControlPanel: FunctionComponent = () => {
-  const [isAllActive, setIsAllActive] = useState<boolean>(true);
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+
   const [activeMode, setActiveMode] = useState<string>('Animation');
 
   return (
@@ -20,7 +22,7 @@ const ControlPanel: FunctionComponent = () => {
           Retargeting
         </button>
       </div>
-      {activeMode === 'Animation' ? <AnimationTab isAllActive={isAllActive} /> : <RetargetTab isAllActive={isAllActive} />}
+      {activeMode === 'Animation' ? <AnimationTab isAllActive={_visualizedAssetIds.length !== 0} /> : <RetargetTab isAllActive={_visualizedAssetIds.length !== 0} />}
     </div>
   );
 };
