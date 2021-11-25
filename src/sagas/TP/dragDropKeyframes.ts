@@ -42,6 +42,7 @@ function* worker(params: ReturnType<typeof enterKeyframeDragDropKey>) {
   yield put(dragDropKeyframes({ timeDiff: timeDiff }));
 
   // 이후부터 RP쪽 액션 호출 부분
+  // yield put(RP액션.키프레임추가(modifiedKeyframes));
 }
 
 // 키프레임 드래그 드랍 입력 감지

@@ -1,0 +1,39 @@
+.wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+
+  &.able {
+    & > .toggle {
+      color: #fff;
+    }
+  }
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  border: none;
+  background-color: transparent;
+  color: #4f4f4f;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 15px;
+}
+
+.arrowdown-icon {
+  margin-right: 13px;
+
+  & > svg {
+    transform: rotate(-90deg);
+    transition: 0.2s ease-in-out;
+    color: #fff !important;
+  }
+
+  &.active {
+    & > svg {
+      transform: rotate(0deg);
+    }
+  }
+}

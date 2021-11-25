@@ -52,7 +52,7 @@ const requestApi = async (payload: Payload) => {
     // timeout: 15000,
   };
 
-  axios.defaults.withCredentials = true;
+  // axios.defaults.withCredentials = true;
   options.headers['Accept'] = 'application/json';
   options.headers['Content-Type'] = 'application/json; charset=utf-8';
 
