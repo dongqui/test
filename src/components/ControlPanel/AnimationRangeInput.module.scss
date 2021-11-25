@@ -1,0 +1,103 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+
+  & > p {
+    color: #4f4f4f;
+    font-size: 11px;
+    line-height: 13px;
+  }
+
+  &.able {
+    & > p {
+      color: #d3d3d3;
+    }
+  }
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+
+  :first-child[type=range] {
+    width: 66%;
+    height: 2px;
+    background-color: #4f4f4f;
+    appearance: none;
+    background-size: 50% 100%;
+    background-repeat: no-repeat;
+    background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #353739), color-stop(100%, #4f4f4f));
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  :first-child[type=range]::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    background-color: #4f4f4f;
+    margin-top: -5px;
+    cursor: pointer;
+  }
+
+  :first-child[type=range]::-webkit-slider-runnable-track {
+    appearance: none;
+    height: 2px;
+  }
+
+  :last-child {
+    border: none;
+    width: 33%;
+    height: 24px;
+    padding-left: 8px;
+    border-radius: 6px;
+    background-color: #353739;
+    color: #4f4f4f;
+
+    &::placeholder {
+      color: #4f4f4f;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  // chrome, safari 등 대응
+  :last-child::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  :last-child::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  // Firefox 대응
+  :last-child[type=number] {
+    appearance: none;
+  }
+
+  &.able {
+    :first-child[type=range] {
+      background-color: #353739;
+      background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #353739), color-stop(100%, #0f88ff));
+    }
+
+    :first-child[type=range]::-webkit-slider-thumb {
+      background-color: #0f88ff;
+    }
+
+    :last-child {
+      color: #fff;
+
+      &::placeholder {
+        color: #fff;
+      }
+    }
+  }
+}

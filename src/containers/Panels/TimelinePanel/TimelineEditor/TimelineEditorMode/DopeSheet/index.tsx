@@ -15,24 +15,27 @@ const DopeSheet = () => {
 
   // layer 트랙 translateY 계산
   const layerTranslateY = useMemo(() => {
-    const selectedLayerIndex = layerTrackList.findIndex(({ trackId }) => trackId === selectedLayer);
-    const layerCaretDown = layerTrackList[selectedLayerIndex].isPointedDownCaret;
-    const result = Array(layerTrackList.length)
-      .fill(1)
-      .map((_, index) => index * 32);
-    if (layerCaretDown) {
-      let boneCaretDownCount = 0;
-      for (let index = 0; index < boneTrackList.length; index++) {
-        const boneCaretDown = boneTrackList[index].isPointedDownCaret;
-        if (boneCaretDown) boneCaretDownCount += 1;
+    if (layerTrackList.length) {
+      const selectedLayerIndex = layerTrackList.findIndex(({ trackId }) => trackId === selectedLayer);
+      const layerCaretDown = layerTrackList[selectedLayerIndex].isPointedDownCaret;
+      const result = Array(layerTrackList.length)
+        .fill(1)
+        .map((_, index) => index * 32);
+      if (layerCaretDown) {
+        let boneCaretDownCount = 0;
+        for (let index = 0; index < boneTrackList.length; index++) {
+          const boneCaretDown = boneTrackList[index].isPointedDownCaret;
+          if (boneCaretDown) boneCaretDownCount += 1;
+        }
+        for (let index = selectedLayerIndex + 1; index < layerTrackList.length; index++) {
+          const totalBoneHeight = boneTrackList.length * 24;
+          const totalTransformHeight = boneCaretDownCount * 3 * 24;
+          result[index] += totalBoneHeight + totalTransformHeight;
+        }
       }
-      for (let index = selectedLayerIndex + 1; index < layerTrackList.length; index++) {
-        const totalBoneHeight = boneTrackList.length * 24;
-        const totalTransformHeight = boneCaretDownCount * 3 * 24;
-        result[index] += totalBoneHeight + totalTransformHeight;
-      }
+      return result;
     }
-    return result;
+    return [];
   }, [boneTrackList, layerTrackList, selectedLayer]);
 
   // 키프레임 삭제 단축키

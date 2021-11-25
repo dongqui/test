@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FunctionComponent, Fragment, useEffect, useState, useCallback, useMemo, SyntheticEvent } from 'react';
+import { FunctionComponent, Fragment, useEffect, useState, useRef, useCallback, useMemo, SyntheticEvent } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import { UpperBar } from 'containers/UpperBar';
 import LibraryPanel from 'containers/Panels/LibraryPanel';
@@ -13,6 +13,7 @@ import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
 import DummyControlPanel from './Panels/DummyControlPanel';
 import DummyTimelinePanel from './Panels/DummyTimelinePanel';
+import ControlPanel from './Panels/ControlPanel';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
 
@@ -61,6 +62,8 @@ const Shoot: FunctionComponent = () => {
   });
 
   const [isCPResize, setIsCPResize] = useState(false);
+
+  const cpTarget = useRef<boolean>(true);
 
   // LowerSection의 height 비율
   const [rate, setRate] = useState(getFixedNumber(sectionHeight.lowerSection / windowHeight, 2));
@@ -124,8 +127,14 @@ const Shoot: FunctionComponent = () => {
      * CP x축 리사이즈하는 경우 140px이상 drag하면 CP 숨김 처리
      * 추가로 숨김 처리가 8px로 줄이는 것이기 때문에 CP 내부적으로 children에 대한 보이지 않게 처리가 필요
      */
+    const handleMouseDown = (e: MouseEvent) => {
+      if (isCPResize && (e.target as Element).classList.contains('react-resizable-handle')) {
+        cpTarget.current = true;
+      }
+    };
+
     const handleMouseUp = _.debounce((e: MouseEvent) => {
-      if (isCPResize) {
+      if (isCPResize && cpTarget.current) {
         const isHide = windowWidth - e.clientX <= 140;
 
         if (isHide) {
@@ -134,15 +143,18 @@ const Shoot: FunctionComponent = () => {
             control: 8,
           });
         }
+        cpTarget.current = false;
       }
     }, 200);
 
+    window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
 
     return () => {
+      window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [windowWidth, isCPResize, panelWidth.library]);
+  }, [windowWidth, isCPResize, panelWidth.library, cpTarget]);
 
   useEffect(() => {
     const prevWindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
@@ -247,6 +259,7 @@ const Shoot: FunctionComponent = () => {
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
           <DummyControlPanel />
+          {/* <ControlPanel /> */}
         </Box>
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
@@ -254,8 +267,11 @@ const Shoot: FunctionComponent = () => {
           <MiddleBar />
         </Box>
         <Box id="TP" {...boxProps.tp}>
-          {/* <DummyTimelinePanel /> */}
-          <TimelinePanel />
+          <BaseModalProvider>
+            <ContextMenuProvider>
+              <TimelinePanel />
+            </ContextMenuProvider>
+          </BaseModalProvider>
         </Box>
       </Box>
     </Fragment>

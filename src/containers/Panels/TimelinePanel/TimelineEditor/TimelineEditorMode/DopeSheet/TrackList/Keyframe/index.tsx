@@ -6,7 +6,8 @@ import _ from 'lodash';
 import { useSelector } from 'reducers';
 import { TrackIdentifier, TrackNumber } from 'types/TP';
 import { ClusteredKeyframe, Keyframe } from 'types/TP/keyframe';
-import { enterKeyframeDragDropKey, selectKeyframes } from 'actions/keyframes';
+import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
+import * as keyframeActions from 'actions/keyframes';
 import { findElementIndex, Observer, ScaleLinear } from 'utils/TP';
 
 import classNames from 'classnames/bind';
@@ -24,6 +25,8 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
   const selectedBoneKeyframes = useSelector((state) => state.keyframes.selectedBoneKeyframes);
   const selectedPropertyKeyframes = useSelector((state) => state.keyframes.selectedPropertyKeyframes);
 
+  const { onContextMenuOpen } = useContextMenu();
+
   // 키프레임 속성 값 관리
   const keyframeAttr = useMemo(() => {
     const scaleX = ScaleLinear.getKeyframeX();
@@ -32,11 +35,43 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
     return { d: `M0,0 V${height}`, transform: `translate(${x} 0)` };
   }, [time, trackType]);
 
+  // 컨텍스트 메뉴 리스트
+  const contextMenuList = useMemo(
+    () => [
+      {
+        label: 'Select All Row',
+        onClick: () => {
+          dispatch(keyframeActions.selectKeyframes({ selectType: 'horizontal', trackId, trackNumber, trackType, time }));
+        },
+      },
+      {
+        label: 'Select All Column',
+        onClick: () => {
+          dispatch(keyframeActions.selectKeyframes({ selectType: 'vertical', trackId, trackNumber, trackType, time }));
+        },
+      },
+      {
+        label: 'Unselect All',
+        separator: true,
+        onClick: () => {
+          dispatch(keyframeActions.selectKeyframes({ selectType: 'unselectAll', trackId, trackNumber, trackType, time }));
+        },
+      },
+      {
+        label: 'Delete Keyframe',
+        onClick: () => {
+          dispatch(keyframeActions.deleteKeyframes());
+        },
+      },
+    ],
+    [dispatch, time, trackId, trackNumber, trackType],
+  );
+
   // 키프레임 클릭
   const clickKeyframe = useCallback(
     (event: React.MouseEvent<Element>) => {
       dispatch(
-        selectKeyframes({
+        keyframeActions.selectKeyframes({
           selectType: event.ctrlKey ? 'multiple' : 'left',
           trackId,
           trackType,
@@ -68,7 +103,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
       const scaleX = ScaleLinear.getKeyframeX();
       const originTime = Math.round(scaleX.invert(event.subject.x as number));
       const currentTime = Math.round(scaleX.invert(event.x as number));
-      dispatch(enterKeyframeDragDropKey({ timeDiff: currentTime - originTime }));
+      dispatch(keyframeActions.enterKeyframeDragDropKey({ timeDiff: currentTime - originTime }));
       document.body.style.cursor = 'default';
     },
     [dispatch],
@@ -121,6 +156,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
 
   // 선택 된 키프레임 리스트에 포함되어 있을 경우 드래그 이벤트 적용
   useEffect(() => {
+    const keyframe = keyframeRef.current;
     if (trackNumber === TrackNumber.LAYER) {
       subscribeKeyframe(selectedLayerKeyframes);
     } else if (trackNumber % 10 === TrackNumber.BONE) {
@@ -129,9 +165,25 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
       subscribeKeyframe(selectedPropertyKeyframes);
     }
     return () => {
-      d3.select(keyframeRef.current).on('drag', null).on('end', null);
+      d3.select(keyframe).on('drag', null).on('end', null);
     };
   }, [addDragEvent, updateTranslateX, subscribeKeyframe, trackNumber, selectedLayerKeyframes, selectedBoneKeyframes, selectedPropertyKeyframes]);
+
+  // 키프레임 컨텍스트 메뉴 설정
+  useEffect(() => {
+    const currentRef = keyframeRef.current;
+    const handleContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
+      const isContains = keyframeRef.current?.contains(event.target as Node);
+      if (isContains) onContextMenuOpen({ top: event.clientY, left: event.clientX, menu: contextMenuList });
+    };
+    if (currentRef) {
+      currentRef.addEventListener('contextmenu', handleContextMenu);
+      return () => {
+        currentRef.removeEventListener('contextmenu', handleContextMenu);
+      };
+    }
+  }, [contextMenuList, onContextMenuOpen]);
 
   return (
     <path className={cx('keyframe', { clicked: isSelected })} id="selectable" d={keyframeAttr.d} transform={keyframeAttr.transform} onClick={clickKeyframe} ref={keyframeRef} />

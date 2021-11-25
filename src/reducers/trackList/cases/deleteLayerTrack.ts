@@ -1,7 +1,7 @@
 import produce from 'immer';
 
+import { PlaskLayer } from 'types/common';
 import { LayerTrack } from 'types/TP/track';
-import { DeleteLayerTrack } from 'actions/trackList';
 import { TrackListState } from '../index';
 
 function updateState(state: TrackListState, newValues: Partial<TrackListState>) {
@@ -15,8 +15,8 @@ function updateLayerTrackList(state: TrackListState, trackName: string): LayerTr
   });
 }
 
-function deleteLayerTrack(state: TrackListState, payload: DeleteLayerTrack) {
-  const layerTrackList = updateLayerTrackList(state, payload.trackName);
+function deleteLayerTrack(state: TrackListState, payload: PlaskLayer) {
+  const layerTrackList = updateLayerTrackList(state, payload.name);
   return updateState(state, { layerTrackList });
 }
 
