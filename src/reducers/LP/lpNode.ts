@@ -10,38 +10,7 @@ interface State {
 }
 
 const defaultState: State = {
-  node: [
-    {
-      id: uuidv4(),
-      filePath: '\\root',
-      parentId: '__root__',
-      fileUrl: '/models/Zombie.glb',
-      name: 'Zombie.glb',
-      extension: 'glb',
-      type: 'Model',
-      children: [],
-    },
-    {
-      id: uuidv4(),
-      filePath: '\\root',
-      parentId: '__root__',
-      fileUrl: '/models/Knight.glb',
-      name: 'Knight.glb',
-      extension: 'glb',
-      type: 'Model',
-      children: [],
-    },
-    {
-      id: uuidv4(),
-      filePath: '\\root',
-      parentId: '__root__',
-      fileUrl: '/models/Vanguard.glb',
-      name: 'Vanguard.glb',
-      extension: 'glb',
-      type: 'Model',
-      children: [],
-    },
-  ],
+  node: [],
   visualizedfileUrl: '',
   currentPath: '\\root',
   currentPathId: '\\root',

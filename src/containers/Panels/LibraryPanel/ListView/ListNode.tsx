@@ -287,12 +287,10 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Paste',
                 onClick: () => {
-                  const copyNode = lpClipboard[0];
+                  let isMaxDepth = false;
 
-                  const cloneCopyNode = cloneDeep(copyNode);
-
-                  if (cloneCopyNode) {
-                    const max = depthCheck(cloneCopyNode.children, 0, []) || 0;
+                  lpClipboard.forEach((value) => {
+                    const max = depthCheck(value.children, 0, []) || 0;
 
                     const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
@@ -302,54 +300,71 @@ const ListNode: FunctionComponent<Props> = ({
                         message: '디렉토리를 복사할 수 없습니다. 계층 초과',
                         confirmText: '확인',
                       });
-                      return;
+
+                      isMaxDepth = true;
+                      return false;
                     }
+                  });
+
+                  if (isMaxDepth) {
+                    return;
                   }
 
-                  // @TODO 없으면 비활성 처리 필요
-                  if (cloneCopyNode) {
-                    const currentPathNodeName = lpNode
-                      .filter((node) => {
-                        if (node.parentId === id) {
-                          if (node.name.includes(cloneCopyNode.name)) {
-                            return true;
+                  let nextLPNodes = cloneDeep(lpNode);
+
+                  lpClipboard.forEach((value) => {
+                    const copyNode = value;
+                    const cloneCopyNode = cloneDeep(copyNode);
+
+                    // @TODO 없으면 비활성 처리 필요
+                    if (cloneCopyNode) {
+                      const currentPathNodeName = lpNode
+                        .filter((node) => {
+                          if (node.parentId === id) {
+                            if (node.name.includes(cloneCopyNode.name)) {
+                              return true;
+                            }
+                            return false;
                           }
-                          return false;
+                        })
+                        .map((filteredNode) => filteredNode.name);
+
+                      const nodeName = beforePaste({
+                        name: cloneCopyNode.name,
+                        comparisonNames: currentPathNodeName,
+                      });
+
+                      const nextNodes = produce(nextLPNodes, (draft) => {
+                        const targetNode = find(draft, { id });
+
+                        if (targetNode) {
+                          cloneCopyNode.id = uuid();
+                          cloneCopyNode.parentId = id;
+                          cloneCopyNode.filePath = filePath + `\\${nodeName}`;
+                          cloneCopyNode.name = nodeName;
+
+                          targetNode.children.push(cloneCopyNode.id);
+
+                          // @TODO 하위 노드도 추가
+                          draft.push(cloneCopyNode);
+
+                          if (cloneCopyNode.children.length > 0) {
+                            cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
+                          }
                         }
-                      })
-                      .map((filteredNode) => filteredNode.name);
+                      });
 
-                    const nodeName = beforePaste({
-                      name: cloneCopyNode.name,
-                      comparisonNames: currentPathNodeName,
-                    });
+                      nextLPNodes = nextNodes;
+                    }
+                  });
 
-                    const nextNodes = produce(lpNode, (draft) => {
-                      const targetNode = find(draft, { id });
+                  dispatch(
+                    lpNodeActions.changeNode({
+                      nodes: nextLPNodes,
+                    }),
+                  );
 
-                      if (targetNode) {
-                        cloneCopyNode.id = uuid();
-                        cloneCopyNode.parentId = id;
-                        cloneCopyNode.filePath = filePath + `\\${nodeName}`;
-                        cloneCopyNode.name = nodeName;
-
-                        targetNode.children.push(cloneCopyNode.id);
-
-                        // @TODO 하위 노드도 추가
-                        draft.push(cloneCopyNode);
-
-                        if (cloneCopyNode.children.length > 0) {
-                          cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
-                        }
-                      }
-                    });
-
-                    dispatch(
-                      lpNodeActions.changeNode({
-                        nodes: nextNodes,
-                      }),
-                    );
-                  }
+                  // const copyNode = lpClipboard[0];
                 },
                 children: [],
               },
