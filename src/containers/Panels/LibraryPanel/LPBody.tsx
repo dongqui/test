@@ -140,9 +140,16 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     );
   }, [dispatch, lpNode]);
 
-  const handleSelectAll = useCallback(() => {}, []);
+  const handleSelectAll = useCallback(() => {
+    const rootPathNodes = lpNode.filter((node) => node.parentId === '__root__');
+    const seletedIds = rootPathNodes.map((node) => node.id);
 
-  const handleUnSelectAll = useCallback(() => {}, []);
+    setSelectedId(seletedIds);
+  }, [lpNode]);
+
+  const handleUnSelectAll = useCallback(() => {
+    setSelectedId([]);
+  }, []);
 
   const contextMenuList = useMemo(
     () => [
@@ -169,7 +176,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const [selectedId, setSelectedId] = useState<string[]>([]);
 
   const handleSelect = useCallback(
-    (id: string, childrens?: string[], multiple?: boolean) => {
+    (id: string, multiple?: boolean) => {
       if (multiple) {
         const nextSelectedIds = produce(selectedId, (draft) => {
           if (!draft.includes(id)) {

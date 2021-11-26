@@ -61,9 +61,11 @@ const Shoot: FunctionComponent = () => {
     control: constants.width.cp,
   });
 
-  const [isCPResize, setIsCPResize] = useState(false);
+  const isResizingCP = useRef<boolean>(false);
 
-  const cpTarget = useRef<boolean>(true);
+  const isTargetingCP = useRef<boolean>(false);
+
+  const showCPWidth = useRef<number>(panelWidth.control);
 
   // LowerSection의 height 비율
   const [rate, setRate] = useState(getFixedNumber(sectionHeight.lowerSection / windowHeight, 2));
@@ -93,23 +95,42 @@ const Shoot: FunctionComponent = () => {
         control: panelWidth.control,
       });
 
-      setIsCPResize(false);
+      isResizingCP.current = false;
     },
     [panelWidth.control],
   );
 
   const handleCPResizeStart = useCallback((_e: SyntheticEvent, _data: ResizeCallbackData) => {
-    setIsCPResize(true);
+    isResizingCP.current = true;
   }, []);
+
+  const handleCPResizing = useCallback(
+    (_e: SyntheticEvent, _data: ResizeCallbackData) => {
+      showCPWidth.current = windowWidth - (_e as any).clientX;
+      setPanelWidth({
+        library: panelWidth.library,
+        control: _data.size.width,
+      });
+    },
+    [windowWidth, panelWidth.library],
+  );
 
   const handleCPResizeStop = useCallback(
     (_e: SyntheticEvent, data: ResizeCallbackData) => {
-      setPanelWidth({
-        library: panelWidth.library,
-        control: data.size.width,
-      });
+      showCPWidth.current = windowWidth - (_e as any).clientX;
+      if (showCPWidth.current <= 140) {
+        setPanelWidth({
+          library: panelWidth.library,
+          control: 32,
+        });
+      } else {
+        setPanelWidth({
+          library: panelWidth.library,
+          control: data.size.width,
+        });
+      }
     },
-    [panelWidth.library],
+    [panelWidth.library, showCPWidth, windowWidth],
   );
 
   useEffect(() => {
@@ -128,22 +149,22 @@ const Shoot: FunctionComponent = () => {
      * 추가로 숨김 처리가 8px로 줄이는 것이기 때문에 CP 내부적으로 children에 대한 보이지 않게 처리가 필요
      */
     const handleMouseDown = (e: MouseEvent) => {
-      if (isCPResize && (e.target as Element).classList.contains('react-resizable-handle')) {
-        cpTarget.current = true;
+      if (isResizingCP && (e.target as Element).classList.contains('react-resizable-handle')) {
+        isTargetingCP.current = true;
       }
     };
 
     const handleMouseUp = _.debounce((e: MouseEvent) => {
-      if (isCPResize && cpTarget.current) {
+      if (isResizingCP && isTargetingCP.current) {
         const isHide = windowWidth - e.clientX <= 140;
 
         if (isHide) {
           setPanelWidth({
             library: panelWidth.library,
-            control: 8,
+            control: 32,
           });
         }
-        cpTarget.current = false;
+        isTargetingCP.current = false;
       }
     }, 200);
 
@@ -154,7 +175,7 @@ const Shoot: FunctionComponent = () => {
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [windowWidth, isCPResize, panelWidth.library, cpTarget]);
+  }, [windowWidth, isResizingCP, panelWidth.library, isTargetingCP]);
 
   useEffect(() => {
     const prevWindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
@@ -224,11 +245,12 @@ const Shoot: FunctionComponent = () => {
     cp: {
       width: panelWidth.control,
       height: sectionHeight.upperSection,
-      min: [constants.width.cp, (windowHeight - constants.height.up) / 2],
+      min: [showCPWidth.current <= 140 ? 32 : constants.width.cp, (windowHeight - constants.height.up) / 2],
       max: [450, windowHeight - 76 - constants.height.up],
       handles: ['w'],
       axis: 'x',
       onResizeStart: handleCPResizeStart,
+      onResize: handleCPResizing,
       onResizeStop: handleCPResizeStop,
     } as BoxProps,
 
@@ -258,8 +280,8 @@ const Shoot: FunctionComponent = () => {
           <RenderingPanel />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-          <DummyControlPanel />
-          {/* <ControlPanel /> */}
+          {/* <DummyControlPanel /> */}
+          <ControlPanel />
         </Box>
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
