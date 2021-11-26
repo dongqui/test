@@ -1,7 +1,7 @@
 import { FunctionComponent } from 'react';
 import { BaseModal } from 'components/Modal';
 import { FilledButton } from 'components/Button';
-import { Html } from '../Typography';
+import { Html } from 'components/Typography';
 import classnames from 'classnames/bind';
 import styles from './ConfirmModal.module.scss';
 
@@ -14,18 +14,20 @@ interface Props {
   cancelText: string;
   onConfirm: () => void;
   onCancel: () => void;
-  closeModal: () => void;
+  onClose: () => void;
 }
 
-const ConfirmModal: FunctionComponent<Props> = ({ closeModal, title, message, confirmText, cancelText, onConfirm, onCancel }) => {
+const ConfirmModal: FunctionComponent<Props> = ({ onClose, title, message, confirmText, cancelText, onConfirm, onCancel }) => {
   const onClickConfirm = () => {
     onConfirm();
-    closeModal();
+    onClose();
   };
+
   const onClickCancel = () => {
     onCancel();
-    closeModal();
+    onClose();
   };
+
   return (
     <BaseModal>
       <div className={cx('inner')}>

@@ -1,9 +1,9 @@
 import { FunctionComponent, Fragment, memo } from 'react';
 import { BaseModal } from 'components/Modal';
 import { FilledButton } from 'components/Button';
+import { Html } from 'components/Typography';
 import classnames from 'classnames/bind';
 import styles from './AlertModal.module.scss';
-import { Html } from '../Typography';
 
 const cx = classnames.bind(styles);
 
@@ -20,6 +20,7 @@ const AlertModal: FunctionComponent<Props> = ({ closeModal, title, onConfirm, me
     onConfirm && onConfirm();
     closeModal();
   };
+
   return (
     <Fragment>
       <BaseModal>

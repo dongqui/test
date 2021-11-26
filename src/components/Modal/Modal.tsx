@@ -7,7 +7,7 @@ interface Modal {
 }
 
 interface ModalDefaultProps {
-  closeModal: () => void;
+  onClose: () => void;
 }
 
 interface ModalRendererProps extends ModalDefaultProps {
@@ -15,35 +15,35 @@ interface ModalRendererProps extends ModalDefaultProps {
 }
 
 interface ModalContextValue {
-  openModal: <T extends Modal['name']>(name: T, props: Omit<React.ComponentProps<typeof Modals[T]>, keyof ModalDefaultProps>) => void;
-  closeModal: () => void;
+  onModalOpen: <T extends Modal['name']>(name: T, props: Omit<React.ComponentProps<typeof Modals[T]>, keyof ModalDefaultProps>) => void;
+  onModalClose: () => void;
 }
 
 const ModalContext = createContext<ModalContextValue>({
-  openModal: () => {},
-  closeModal: () => {},
+  onModalOpen: () => {},
+  onModalClose: () => {},
 });
 
-const ModalRenderer = ({ closeModal, modal }: ModalRendererProps) => {
+const ModalRenderer = ({ onClose, modal }: ModalRendererProps) => {
   const Modal = Modals[modal.name];
-  return <Modal closeModal={closeModal} {...(modal.props as any)} />;
+  return <Modal onClose={onClose} {...(modal.props as any)} />;
 };
 
 export function ModalContextProvider({ children }: { children: ReactNode }) {
   const [modal, setModal] = useState<Modal | null>(null);
 
-  const openModal: ModalContextValue['openModal'] = useCallback((name, props) => {
+  const onModalOpen: ModalContextValue['onModalOpen'] = useCallback((name, props) => {
     setModal({ name, props });
   }, []);
 
-  const closeModal = useCallback(() => {
+  const onModalClose = useCallback(() => {
     setModal(null);
   }, []);
 
   return (
-    <ModalContext.Provider value={{ openModal, closeModal }}>
+    <ModalContext.Provider value={{ onModalOpen, onModalClose }}>
       {children}
-      {modal && <ModalRenderer closeModal={closeModal} modal={modal} />}
+      {modal && <ModalRenderer onClose={onModalClose} modal={modal} />}
     </ModalContext.Provider>
   );
 }
