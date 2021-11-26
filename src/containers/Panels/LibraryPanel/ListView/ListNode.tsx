@@ -31,7 +31,7 @@ interface Props {
   name: string;
   fileUrl?: string | File;
   filePath: string;
-  onSelect?: (id: string, childrens?: string[], multiple?: boolean) => void;
+  onSelect?: (id: string, multiple?: boolean) => void;
   onReject: (id: string) => void;
   selectedId: string[];
   isSelected?: boolean;
