@@ -55,9 +55,9 @@
   transition: background-color 0.25s, color 0.25s, border-color 0.25s;
   border: 1px solid transparent;
 
-  &:focus-within {
-    border: 1px solid  #0f88ff;
-  }
+  // &:focus-within {
+  //   border: 1px solid  #0f88ff;
+  // }
 
   &:-webkit-autofill,
   &:-webkit-autofill:hover,
