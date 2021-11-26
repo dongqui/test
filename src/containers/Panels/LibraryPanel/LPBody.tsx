@@ -169,7 +169,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const [selectedId, setSelectedId] = useState<string[]>([]);
 
   const handleSelect = useCallback(
-    (id: string, childrens?: string[], multiple?: boolean) => {
+    (id: string, multiple?: boolean) => {
       if (multiple) {
         const nextSelectedIds = produce(selectedId, (draft) => {
           if (!draft.includes(id)) {
