@@ -1,5 +1,4 @@
-import { FunctionComponent, useCallback, useState } from 'react';
-import { Dispatch, RefObject, SetStateAction } from 'hoist-non-react-statics/node_modules/@types/react';
+import { FunctionComponent, useCallback, useState, Dispatch, RefObject, SetStateAction } from 'react';
 import { useDispatch } from 'react-redux';
 import { FilledButton, SegmentButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Fragment, useState, useCallback, useRef, useEffect } from 'react';
+import { Fragment, useState, useCallback, useRef, useEffect, FunctionComponent } from 'react';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
@@ -11,7 +11,6 @@ import { VMRuler } from '../VMRuler';
 import Box, { BoxProps } from 'components/Layout/Box';
 import { useMediaStream } from 'hooks/common';
 import Image from 'next/image';
-import { FunctionComponent } from 'hoist-non-react-statics/node_modules/@types/react';
 import axios, { Canceler } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -246,7 +245,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         return;
       }
       if (!turnStandbyPhase && !readyExtract && !onExtract) {
-        if (e.key === 'ArrowRight' || e.key === '.') {
+        if (e.key === 's') {
           if (currentTime >= end) {
             return;
           } else if (currentTime <= end && currentTime > end - 0.1) {
@@ -254,7 +253,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           } else if (currentTime < end) {
             videoRef.current!.currentTime += 0.1;
           }
-        } else if (e.key === 'ArrowLeft' || e.key === ',') {
+        } else if (e.key === 'a') {
           if (currentTime <= start) {
             return;
           } else if (currentTime >= start && currentTime < start + 0.1) {
