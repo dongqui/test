@@ -78,7 +78,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
         onBlur: handleBlur,
         onChange: handleChange,
         onKeyUp: handleKeyUp,
-        onkeydown: handleKeyDown,
+        onKeyDown: handleKeyDown,
       };
     }, [handleBlur, handleChange, handleKeyDown, handleKeyUp]);
 

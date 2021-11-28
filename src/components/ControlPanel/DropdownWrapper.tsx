@@ -1,5 +1,4 @@
-import { FunctionComponent, useState, Dispatch } from 'react';
-import { SetStateAction } from 'hoist-non-react-statics/node_modules/@types/react';
+import { FunctionComponent, useState, Dispatch, SetStateAction } from 'react';
 import { Dropdown } from 'components/ControlPanel';
 import classNames from 'classnames/bind';
 import styles from './DropdownWrapper.module.scss';
