@@ -838,6 +838,7 @@ const ListNode: FunctionComponent<Props> = ({
     if (currentRef) {
       const handleSelect = (e: MouseEvent) => {
         e.stopPropagation();
+        onContextMenuClose();
 
         onSelect && onSelect(id);
 
@@ -849,13 +850,13 @@ const ListNode: FunctionComponent<Props> = ({
         );
       };
 
-      currentRef.addEventListener('mousedown', handleSelect);
+      currentRef.addEventListener('click', handleSelect);
 
       return () => {
-        currentRef.removeEventListener('mousedown', handleSelect);
+        currentRef.removeEventListener('click', handleSelect);
       };
     }
-  }, [dispatch, filePath, id, name, onSelect]);
+  }, [dispatch, filePath, id, name, onContextMenuClose, onSelect]);
 
   const renderChildren = useCallback(
     (paramId: any) => {
