@@ -114,11 +114,10 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
     (gapX: number) => {
       if (!keyframeRef.current) return;
       const scaleX = ScaleLinear.getKeyframeX();
-      const translateX = gapX + scaleX(time);
-      keyframeRef.current.style.cssText = `transform:translate(${translateX}px, 0px)`;
-
       const parentNode = keyframeRef.current.parentNode;
+      const translateX = gapX + scaleX(time);
       parentNode?.appendChild(keyframeRef.current);
+      keyframeRef.current.style.cssText = `transform:translate(${translateX}px, 0px)`;
     },
     [time],
   );
@@ -157,17 +156,20 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
   // 선택 된 키프레임 리스트에 포함되어 있을 경우 드래그 이벤트 적용
   useEffect(() => {
     const keyframe = keyframeRef.current;
-    if (trackNumber === TrackNumber.LAYER) {
-      subscribeKeyframe(selectedLayerKeyframes);
-    } else if (trackNumber % 10 === TrackNumber.BONE) {
-      subscribeKeyframe(selectedBoneKeyframes);
-    } else {
-      subscribeKeyframe(selectedPropertyKeyframes);
+    if (isSelected && keyframe) {
+      if (trackNumber === TrackNumber.LAYER) {
+        subscribeKeyframe(selectedLayerKeyframes);
+      } else if (trackNumber % 10 === TrackNumber.BONE) {
+        subscribeKeyframe(selectedBoneKeyframes);
+      } else {
+        subscribeKeyframe(selectedPropertyKeyframes);
+      }
+      return () => {
+        d3.select(keyframe).on('drag', null).on('end', null);
+        keyframe.style.cssText = '';
+      };
     }
-    return () => {
-      d3.select(keyframe).on('drag', null).on('end', null);
-    };
-  }, [addDragEvent, updateTranslateX, subscribeKeyframe, trackNumber, selectedLayerKeyframes, selectedBoneKeyframes, selectedPropertyKeyframes]);
+  }, [addDragEvent, updateTranslateX, subscribeKeyframe, isSelected, trackNumber, selectedLayerKeyframes, selectedBoneKeyframes, selectedPropertyKeyframes]);
 
   // 키프레임 컨텍스트 메뉴 설정
   useEffect(() => {
