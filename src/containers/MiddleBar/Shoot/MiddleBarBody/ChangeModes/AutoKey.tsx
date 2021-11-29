@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { useSelector } from 'reducers';
-import * as animatingControlsActions from 'actions/animatingControls';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { TextButton } from 'components/Button';
 
 import classNames from 'classnames/bind';
