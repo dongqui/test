@@ -86,15 +86,7 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
   useEffect(() => {
     const handleOutSideClick = (e: MouseEvent) => {
       e.preventDefault();
-      const target = e.target as Node;
-
-      if (wrapperRef.current) {
-        const isContains = wrapperRef.current.contains(target);
-
-        if (!isContains) {
-          onContextMenuClose();
-        }
-      }
+      onContextMenuClose();
     };
 
     window.addEventListener('click', handleOutSideClick);
