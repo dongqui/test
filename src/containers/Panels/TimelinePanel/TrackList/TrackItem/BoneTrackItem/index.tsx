@@ -87,7 +87,7 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
     <li className={cx('bone-track')} ref={trackItemRef} onClick={handleTrackBodyClick}>
       <div className={cx('track-body', { selected: isSelected })}>
         <CaretButton isPointedDownCaret={isPointedDownCaret} trackNumber={trackNumber} trackType={trackType} />
-        <span className={cx('track-name')}>{trackName}</span>
+        <div className={cx('track-name')}>{trackName}</div>
       </div>
       <ul>
         {isPointedDownCaret &&

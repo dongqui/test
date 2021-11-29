@@ -80,7 +80,7 @@ const PropertyTrackItem: FunctionComponent<PropertyTrack> = (props) => {
   return (
     <li className={cx('property-track')} ref={trackItemRef} onClick={handleTrackBodyClick}>
       <div className={cx('track-body', { selected: isSelected })}>
-        <span className={cx('track-name')}>{trackName}</span>
+        <div className={cx('track-name')}>{trackName}</div>
       </div>
     </li>
   );
