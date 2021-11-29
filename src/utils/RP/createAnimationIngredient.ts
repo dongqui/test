@@ -1,4 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
+import { round } from 'lodash';
 import { AnimationIngredient, PlaskTrack } from 'types/common';
 import { getRandomStringKey } from 'utils/common';
 import createPlaskTrack from './createPlaskTrack';
@@ -21,9 +22,18 @@ const createAnimationIngredient = (assetId: string, animationGroup: BABYLON.Anim
     const { target, animation } = targetAnimation;
     if (animation.targetProperty === 'position') {
       // position 트랙들 전처리
-      tracks.push(createPlaskTrack(`${animation.name}`, layerId, target, 'position', animation.getKeys(), isMocapAnimation));
+      tracks.push(
+        createPlaskTrack(
+          `${animation.name}`,
+          layerId,
+          target,
+          'position',
+          animation.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })), // integer frame 사용
+          isMocapAnimation,
+        ),
+      );
     } else if (animation.targetProperty === 'rotationQuaternion') {
-      const quaternionTransformKeys = animation.getKeys();
+      const quaternionTransformKeys = animation.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // integer frame 사용
 
       const eulerTransformKeys: BABYLON.IAnimationKey[] = quaternionTransformKeys.map((transformKey) => {
         const q: BABYLON.Quaternion = transformKey.value;
@@ -37,7 +47,16 @@ const createAnimationIngredient = (assetId: string, animationGroup: BABYLON.Anim
       // rotation 트랙들 전처리
       tracks.push(createPlaskTrack(`${animation.name}`, layerId, target, 'rotation', eulerTransformKeys, isMocapAnimation));
     } else if (animation.targetProperty === 'scaling') {
-      tracks.push(createPlaskTrack(`${animation.name}`, layerId, target, 'scaling', animation.getKeys(), isMocapAnimation));
+      tracks.push(
+        createPlaskTrack(
+          `${animation.name}`,
+          layerId,
+          target,
+          'scaling',
+          animation.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })), // integer frame 사용
+          isMocapAnimation,
+        ),
+      );
     }
     // 전처리를 끝낸 source animation은 타겟의 애니메이션 목록에서 지워줍니다.
     target.animations = target.animations.filter((animation: BABYLON.Animation) => animation !== animation);

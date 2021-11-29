@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-
-import { round } from 'lodash';
 import { useDispatch } from 'react-redux';
 import * as BABYLON from '@babylonjs/core';
 import * as trackListActions from 'actions/trackList';
@@ -57,14 +55,12 @@ const useAnimation = () => {
               const newAnimation = new BABYLON.Animation(track.name, `${track.property}`, _fps, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
               if (track.useFilter) {
                 // filter function 적용
-                newAnimation.setKeys(
-                  filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta).map((key) => ({ frame: round(key.frame * _fps), value: key.value })),
-                );
+                newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
               } else {
-                newAnimation.setKeys(track.transformKeys.map((key) => ({ frame: round(key.frame * _fps), value: key.value })));
+                newAnimation.setKeys(track.transformKeys);
               }
               track.target.animations.push(newAnimation);
-              newAnimationGroup.addTargetedAnimation(newAnimation.clone(), track.target);
+              newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
             } else if (track.property === 'rotationQuaternion') {
               const newAnimation = new BABYLON.Animation(
                 track.name,
@@ -75,14 +71,12 @@ const useAnimation = () => {
               );
               if (track.useFilter) {
                 // filter function 적용
-                newAnimation.setKeys(
-                  filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta).map((key) => ({ frame: round(key.frame * _fps), value: key.value })),
-                );
+                newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
               } else {
-                newAnimation.setKeys(track.transformKeys.map((key) => ({ frame: round(key.frame * _fps), value: key.value })));
+                newAnimation.setKeys(track.transformKeys);
               }
               track.target.animations.push(newAnimation);
-              newAnimationGroup.addTargetedAnimation(newAnimation.clone(), track.target);
+              newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
             }
           }
         }
@@ -113,19 +107,30 @@ const useAnimation = () => {
           case 'pause': {
             if (currentAnimationGroup.isPlaying) {
               currentAnimationGroup.pause();
-            } else {
+            } else if (currentAnimationGroup.isStarted) {
               if (currentAnimationGroup.animatables[0]?.masterFrame !== _currentTimeIndex) {
                 currentAnimationGroup.goToFrame(_currentTimeIndex);
               }
+            } else {
+              currentAnimationGroup
+                .start(true, _playDirection * _playSpeed, _startTimeIndex, _endTimeIndex)
+                .pause()
+                .goToFrame(_currentTimeIndex);
             }
             break;
           }
           case 'stop': {
             if (currentAnimationGroup.isPlaying) {
-              currentAnimationGroup.goToFrame(_startTimeIndex);
-              currentAnimationGroup.stop(); // stop method 사용 후 scrubber 움직이는 경우에 대해서는 핸들이 필요
+              currentAnimationGroup.goToFrame(_startTimeIndex).stop();
             } else if (currentAnimationGroup.isStarted) {
-              currentAnimationGroup.goToFrame(_currentTimeIndex);
+              if (currentAnimationGroup.animatables[0]?.masterFrame !== _currentTimeIndex) {
+                currentAnimationGroup.goToFrame(_currentTimeIndex);
+              }
+            } else {
+              currentAnimationGroup
+                .start(true, _playDirection * _playSpeed, _startTimeIndex, _endTimeIndex)
+                .pause()
+                .goToFrame(_currentTimeIndex);
             }
             break;
           }
