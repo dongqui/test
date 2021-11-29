@@ -94,7 +94,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
   }, [contextMenuList, onContextMenuOpen]);
 
   return (
-    <li className={cx('layer-track')} ref={trackItemRef} onClick={handleTrackBodyClick}>
+    <li className={cx('layer-track')} ref={trackItemRef} onMouseDown={handleTrackBodyClick}>
       <div className={cx('track-body', { selected: isSelected, muted: isMuted })}>
         <CaretButton isPointedDownCaret={isPointedDownCaret} trackId={trackId} trackType={trackType} />
         <IconWrapper className={cx('layer-icon')} icon={SvgPath.Layer} />

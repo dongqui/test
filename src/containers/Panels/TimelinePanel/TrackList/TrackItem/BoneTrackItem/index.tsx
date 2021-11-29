@@ -84,7 +84,7 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
   }, [contextMenuList, onContextMenuOpen]);
 
   return (
-    <li className={cx('bone-track')} ref={trackItemRef} onClick={handleTrackBodyClick}>
+    <li className={cx('bone-track')} ref={trackItemRef} onMouseDown={handleTrackBodyClick}>
       <div className={cx('track-body', { selected: isSelected })}>
         <CaretButton isPointedDownCaret={isPointedDownCaret} trackNumber={trackNumber} trackType={trackType} />
         <div className={cx('track-name')}>{trackName}</div>

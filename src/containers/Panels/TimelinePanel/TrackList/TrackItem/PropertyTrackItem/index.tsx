@@ -78,7 +78,7 @@ const PropertyTrackItem: FunctionComponent<PropertyTrack> = (props) => {
   }, [contextMenuList, onContextMenuOpen]);
 
   return (
-    <li className={cx('property-track')} ref={trackItemRef} onClick={handleTrackBodyClick}>
+    <li className={cx('property-track')} ref={trackItemRef} onMouseDown={handleTrackBodyClick}>
       <div className={cx('track-body', { selected: isSelected })}>
         <div className={cx('track-name')}>{trackName}</div>
       </div>
