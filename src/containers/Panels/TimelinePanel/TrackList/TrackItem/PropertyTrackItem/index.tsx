@@ -15,7 +15,7 @@ const PropertyTrackItem: FunctionComponent<PropertyTrack> = (props) => {
   const dispatch = useDispatch();
   const trackItemRef = useRef<HTMLLIElement>(null);
 
-  const { onContextMenuOpen } = useContextMenu();
+  const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   // 컨텍스트 메뉴 리스트
   const contextMenuList = useMemo(
@@ -50,6 +50,7 @@ const PropertyTrackItem: FunctionComponent<PropertyTrack> = (props) => {
   const handleTrackBodyClick = useCallback(
     (event: React.MouseEvent<Element>) => {
       event.stopPropagation(); // bone, layer 트랙에 클릭 효과 전파를 방지
+      onContextMenuClose();
       const { nodeName } = event.target as Element;
       if (nodeName === 'DIV') {
         const eventType = event.ctrlKey ? 'multipleClick' : 'leftClick';
@@ -57,7 +58,7 @@ const PropertyTrackItem: FunctionComponent<PropertyTrack> = (props) => {
         dispatch(clickTrackBody(payload));
       }
     },
-    [dispatch, trackNumber],
+    [dispatch, onContextMenuClose, trackNumber],
   );
 
   // 키프레임 컨텍스트 메뉴 설정
@@ -78,7 +79,7 @@ const PropertyTrackItem: FunctionComponent<PropertyTrack> = (props) => {
   }, [contextMenuList, onContextMenuOpen]);
 
   return (
-    <li className={cx('property-track')} ref={trackItemRef} onMouseDown={handleTrackBodyClick}>
+    <li className={cx('property-track')} ref={trackItemRef} onClick={handleTrackBodyClick}>
       <div className={cx('track-body', { selected: isSelected })}>
         <div className={cx('track-name')}>{trackName}</div>
       </div>
