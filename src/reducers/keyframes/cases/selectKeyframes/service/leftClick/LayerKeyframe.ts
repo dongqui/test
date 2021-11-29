@@ -21,14 +21,14 @@ class LayerKeyframeLeftClick implements LeftClick {
     return keyframes[keyframeIndex];
   };
 
-  private getSelectedLayerKeyframes = ({ state, payload }: Parmas) => {
+  private selectLayerKeyframes = ({ state, payload }: Parmas) => {
     const { time, trackType, trackNumber } = payload;
     const { trackId } = state.layerTrack;
     const selectedLayerKeyframe: SelectedKeyframe = { time, trackType, trackNumber, trackId };
     return this.clusterKeyframes.initializeClusterKeyframes([selectedLayerKeyframe]);
   };
 
-  private getSelectedBoneKeyframes = ({ state, payload }: Parmas) => {
+  private selectBoneKeyframes = ({ state, payload }: Parmas) => {
     const { time } = payload;
     const selectedBoneKeyframes: SelectedKeyframe[] = [];
     state.boneTrackList.forEach((boneTrack) => {
@@ -39,22 +39,24 @@ class LayerKeyframeLeftClick implements LeftClick {
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBoneKeyframes);
   };
 
-  private getSelectedPropertyKeyframes = ({ state, payload }: Parmas) => {
+  private selectPropertyKeyframes = ({ state, payload }: Parmas) => {
     const { time } = payload;
     const selectedPropertyKeyframes: SelectedKeyframe[] = [];
     state.propertyTrackList.forEach((propertyTrack) => {
       const { trackId, trackNumber, trackType, keyframes } = propertyTrack;
       const keyframe = this.findKeyframe(keyframes, time);
-      if (keyframe && !keyframe.isDeleted) selectedPropertyKeyframes.push({ trackId, trackNumber, trackType, time, value: keyframe.value });
+      if (keyframe && !keyframe.isDeleted) {
+        selectedPropertyKeyframes.push({ trackId, trackNumber, trackType, time, value: keyframe.value });
+      }
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedPropertyKeyframes);
   };
 
   selectByLeftClick = (payload: Parmas): AllSelectedKeyframes => {
     return {
-      selectedLayerKeyframes: this.getSelectedLayerKeyframes(payload),
-      selectedBoneKeyframes: this.getSelectedBoneKeyframes(payload),
-      selectedPropertyKeyframes: this.getSelectedPropertyKeyframes(payload),
+      selectedLayerKeyframes: this.selectLayerKeyframes(payload),
+      selectedBoneKeyframes: this.selectBoneKeyframes(payload),
+      selectedPropertyKeyframes: this.selectPropertyKeyframes(payload),
     };
   };
 }

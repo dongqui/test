@@ -1,6 +1,6 @@
 import produce, { Draft } from 'immer';
 
-import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP/keyframe';
+import { TimeEditorTrack, ClusteredKeyframe, TrasnformKey } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
 import { findElementIndex } from 'utils/TP';
 
@@ -14,26 +14,25 @@ class BoneKeyframeRepository implements Repository {
   }
 
   // 삭제 된 property keyframe인지 확인
-  private isExistedPropertyKeyframe = (propertyTrackList: TimeEditorTrack[], propertyNumber: number, time: number) => {
-    const trackIndex = findElementIndex(propertyTrackList, propertyNumber, 'trackNumber');
-    const keyframeIndex = findElementIndex(propertyTrackList[trackIndex].keyframes, time, 'time');
+  private isExistedPropertyKeyframe = (updatedPropertyTrackList: TimeEditorTrack[], propertyNumber: number, time: number) => {
+    const trackIndex = findElementIndex(updatedPropertyTrackList, propertyNumber, 'trackNumber');
+    const keyframeIndex = findElementIndex(updatedPropertyTrackList[trackIndex].keyframes, time, 'time');
     if (keyframeIndex === -1) return;
-    const isExisted = !propertyTrackList[trackIndex].keyframes[keyframeIndex].isDeleted;
+    const isExisted = !updatedPropertyTrackList[trackIndex].keyframes[keyframeIndex].isDeleted;
     return isExisted;
   };
 
   // 하위 property keyframe이 모두 삭제 될 경우, bone keyframe 삭제
-  private deleteBoneKeyframes = (draft: Draft<TimeEditorTrack>[], propertyTrackList: TimeEditorTrack[], selectedTimes: Map<number, number[]>) => {
+  private deleteBoneKeyframes = (draft: Draft<TimeEditorTrack>[], updatedPropertyTrackList: TimeEditorTrack[], selectedTimes: Map<number, number[]>) => {
     for (const [boneNumber, times] of selectedTimes.entries()) {
       times.forEach((time) => {
-        const position = this.isExistedPropertyKeyframe(propertyTrackList, boneNumber + 1, time);
-        const rotation = this.isExistedPropertyKeyframe(propertyTrackList, boneNumber + 2, time);
-        const scale = this.isExistedPropertyKeyframe(propertyTrackList, boneNumber + 3, time);
+        const position = this.isExistedPropertyKeyframe(updatedPropertyTrackList, boneNumber + 1, time);
+        const rotation = this.isExistedPropertyKeyframe(updatedPropertyTrackList, boneNumber + 2, time);
+        const scale = this.isExistedPropertyKeyframe(updatedPropertyTrackList, boneNumber + 3, time);
         const isAllDeleted = !position && !rotation && !scale;
         if (isAllDeleted) {
           const boneIndex = findElementIndex(draft, boneNumber, 'trackNumber');
-          const keyframes = draft[boneIndex].keyframes;
-          const keyframeIndex = findElementIndex(keyframes, time, 'time');
+          const keyframeIndex = findElementIndex(draft[boneIndex].keyframes, time, 'time');
           draft[boneIndex].keyframes[keyframeIndex].isDeleted = true;
           draft[boneIndex].keyframes[keyframeIndex].isSelected = false;
         }
@@ -47,10 +46,10 @@ class BoneKeyframeRepository implements Repository {
       times.forEach((time) => {
         const nextTime = time + timeDiff;
         const boneIndex = findElementIndex(draft, boneNumber, 'trackNumber');
-        const keyframes = draft[boneIndex].keyframes;
-        const keyframeIndex = findElementIndex(keyframes, nextTime, 'time');
+        const keyframeIndex = findElementIndex(draft[boneIndex].keyframes, nextTime, 'time');
         if (keyframeIndex !== -1) {
           draft[boneIndex].keyframes[keyframeIndex].isDeleted = false;
+          draft[boneIndex].keyframes[keyframeIndex].isSelected = false;
         } else {
           draft[boneIndex].keyframes.push({ isDeleted: false, isSelected: false, time: nextTime });
           draft[boneIndex].keyframes.sort((a, b) => a.time - b.time);
@@ -65,10 +64,9 @@ class BoneKeyframeRepository implements Repository {
     selectedBoneKeyframes.forEach((selectedGroup) => {
       const { trackNumber } = selectedGroup;
       const boneIndex = findElementIndex(draft, trackNumber, 'trackNumber');
-      const boneKeyframes = draft[boneIndex].keyframes;
       selectedGroup.keyframes.forEach((keyframe) => {
         const nextTime = keyframe.time + timeDiff;
-        const keyframeIndex = findElementIndex(boneKeyframes, nextTime, 'time');
+        const keyframeIndex = findElementIndex(draft[boneIndex].keyframes, nextTime, 'time');
         draft[boneIndex].keyframes[keyframeIndex].isSelected = true;
       });
     });

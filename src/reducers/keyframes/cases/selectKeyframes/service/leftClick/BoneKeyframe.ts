@@ -26,22 +26,21 @@ class BoneKeyframeLeftClick extends ClusterKeyframes implements LeftClick {
     return keyframes[keyframeIndex];
   };
 
-  private getSelectedBoneKeyframes = ({ state, payload }: Params) => {
+  private selectBoneKeyframes = ({ state, payload }: Params) => {
     const { trackId } = this.findEditorTrack(state.boneTrackList, payload.trackNumber);
     const selectedBoneKeyframes: SelectedKeyframe[] = [{ ...payload, trackId }];
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBoneKeyframes);
   };
 
-  private getSelectedPropertyKeyframes = ({ state, payload }: Params) => {
+  private selectPropertyKeyframes = ({ state, payload }: Params) => {
     const { propertyTrackList } = state;
     const { trackNumber, time } = payload;
     const selectedPropertyKeyframes: SelectedKeyframe[] = [];
     for (let propertyNumber = trackNumber + 1; propertyNumber <= trackNumber + 3; propertyNumber++) {
       const { trackId, keyframes, trackType } = this.findEditorTrack(propertyTrackList, propertyNumber);
       const keyframe = this.findKeyframe(keyframes, payload.time);
-      if (keyframe) {
-        const { value, isDeleted } = keyframe;
-        if (!isDeleted) selectedPropertyKeyframes.push({ trackNumber: propertyNumber, trackId, time, value, trackType });
+      if (keyframe && !keyframe.isDeleted) {
+        selectedPropertyKeyframes.push({ trackNumber: propertyNumber, trackId, time, value: keyframe.value, trackType });
       }
     }
     return this.clusterKeyframes.initializeClusterKeyframes(selectedPropertyKeyframes);
@@ -50,8 +49,8 @@ class BoneKeyframeLeftClick extends ClusterKeyframes implements LeftClick {
   selectByLeftClick = (params: Params): AllSelectedKeyframes => {
     return {
       selectedLayerKeyframes: [],
-      selectedBoneKeyframes: this.getSelectedBoneKeyframes(params),
-      selectedPropertyKeyframes: this.getSelectedPropertyKeyframes(params),
+      selectedBoneKeyframes: this.selectBoneKeyframes(params),
+      selectedPropertyKeyframes: this.selectPropertyKeyframes(params),
     };
   };
 }
