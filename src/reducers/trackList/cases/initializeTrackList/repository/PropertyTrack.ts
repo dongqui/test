@@ -13,7 +13,7 @@ class PropertyTrackRepository implements Repository {
         trackId: track.id,
         trackNumber,
         trackType: 'property',
-        trackName: track.property, // 'mixamo:RightHand4' -> ['mixamo', 'RightHand4'] -> 'RightHand4'
+        trackName: track.property === 'scaling' ? 'scale' : track.property, // scaling이면 scale로 변경
         interpolationType: track.interpolationType,
         isPointedDownCaret: false,
         isSelected: false,
