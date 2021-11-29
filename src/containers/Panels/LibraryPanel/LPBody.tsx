@@ -56,60 +56,65 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   }, []);
 
   const handlePaste = useCallback(() => {
-    const copyNode = _lpClipboard[0];
-    const cloneCopyNode = cloneDeep(copyNode);
+    let nextLPNodes = cloneDeep(lpNode);
 
-    if (cloneCopyNode) {
-      const currentPathNodeName = lpNode
-        .filter((node) => {
-          if (node.parentId === '__root__') {
-            const copyMatch = cloneCopyNode.name.match(/copy/g);
-            if (node.name.includes(cloneCopyNode.name)) {
-              if (copyMatch !== null) {
-                const nodeMatch = node.name.match(/copy/g);
-                if (nodeMatch !== null && nodeMatch.length === copyMatch.length + 1) {
-                  return true;
-                }
-              } else {
-                const firstReplacedName = cloneCopyNode.name.replaceAll('(', '\\(');
-                const secondReplacedName = firstReplacedName.replaceAll(')', '\\)');
-                const regex = new RegExp(`${secondReplacedName} copy`, 'g');
-                const cloneCopyMatch = node.name.match(regex);
-                const nodeMatch = node.name.match(/copy/g);
-                if (cloneCopyMatch !== null && cloneCopyMatch.length === 1 && nodeMatch !== null && nodeMatch.length === 1) {
-                  return true;
-                }
+    _lpClipboard.forEach((value) => {
+      const cloneCopyNode = cloneDeep(value);
+
+      const splitName = cloneCopyNode.name.split('.');
+      const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
+
+      const compareTargetName = cloneCopyNode.type === 'Model' ? fileName : cloneCopyNode.name;
+
+      if (cloneCopyNode) {
+        const currentPathNodeName = lpNode
+          .filter((node) => {
+            if (node.parentId === '__root__') {
+              const condition = cloneCopyNode.type === 'Model' ? node.name.includes(compareTargetName) && node.name.includes(splitName[1]) : node.name.includes(compareTargetName);
+              if (condition) {
+                return true;
               }
+              return false;
             }
-            return false;
+          })
+          .map((filteredNode) => filteredNode.name);
+
+        const nodeName = beforePaste({
+          name: compareTargetName,
+          comparisonNames: currentPathNodeName,
+          hasExtension: cloneCopyNode.type === 'Model',
+        });
+
+        const resultNodeName =
+          cloneCopyNode.type === 'Model'
+            ? `${nodeName
+                .split('.')
+                .slice(0, splitName.length - 1)
+                .join('.')}.${splitName[1]}`
+            : nodeName;
+
+        const nextNodes = produce(nextLPNodes, (draft) => {
+          cloneCopyNode.id = uuid();
+          cloneCopyNode.parentId = '__root__';
+          cloneCopyNode.filePath = '\\root';
+          cloneCopyNode.name = resultNodeName;
+
+          draft.push(cloneCopyNode);
+
+          if (cloneCopyNode.children.length > 0) {
+            cloneCopyNode.children.map((child) => handleDepthChange(draft, child, cloneCopyNode));
           }
-        })
-        .map((filteredNode) => filteredNode.name);
+        });
 
-      const nodeName = beforePaste({
-        name: cloneCopyNode.name,
-        comparisonNames: currentPathNodeName,
-      });
+        nextLPNodes = nextNodes;
+      }
+    });
 
-      const nextNodes = produce(lpNode, (draft) => {
-        cloneCopyNode.id = uuid();
-        cloneCopyNode.parentId = '__root__';
-        cloneCopyNode.filePath = '\\root';
-        cloneCopyNode.name = nodeName;
-
-        draft.push(cloneCopyNode);
-
-        if (cloneCopyNode.children.length > 0) {
-          cloneCopyNode.children.map((child) => handleDepthChange(draft, child, cloneCopyNode));
-        }
-      });
-
-      dispatch(
-        lpNodeActions.changeNode({
-          nodes: nextNodes,
-        }),
-      );
-    }
+    dispatch(
+      lpNodeActions.changeNode({
+        nodes: nextLPNodes,
+      }),
+    );
   }, [_lpClipboard, dispatch, handleDepthChange, lpNode]);
 
   const handleCreateDirectory = useCallback(() => {
