@@ -23,14 +23,20 @@ interface Props {
   selectedId: string;
 
   /**
+   * @description 드래그 이동 시, dragbox에 포함된 node list를 인자값으로 전달
+   * @argument list 마우스를 이동할 때 dragbox에 포함 된 node list
+   */
+  onDragMove?: (list: NodeListOf<HTMLElement>) => void;
+
+  /**
    * @description 드래그 종료 시, dragbox에 포함 된 node list를 인자값으로 전달
    * @argument list 마우스를 뗐을 때 dragbox에 포함 된 node list
    */
-  onDragEnd: (list: NodeListOf<Element>) => void;
+  onDragEnd?: (list: NodeListOf<HTMLElement>) => void;
 }
 
 const DragBox: FunctionComponent<Props> = (props) => {
-  const { areaRef, selectableId, selectedId, onDragEnd } = props;
+  const { areaRef, selectableId, selectedId, onDragMove, onDragEnd } = props;
   const [isOpenedDragBox, setIsOpenedDragBox] = useState(false);
   const dragBoxRef = useRef<HTMLDivElement>(null);
 
@@ -112,6 +118,7 @@ const DragBox: FunctionComponent<Props> = (props) => {
       const { x: areaLeft, y: areaTop } = areaRef.current.getBoundingClientRect();
       setInitialXY(event.x, event.y, areaLeft, areaTop);
       setIsOpenedDragBox(true);
+      // changeSelectedToSelectable();
     },
     [areaRef, setInitialXY],
   );
@@ -125,30 +132,57 @@ const DragBox: FunctionComponent<Props> = (props) => {
       const { right, bottom } = getDragBoxRightBottom(areaLeft, areaTop, areaWidth, areaHeight);
 
       updateDragBoxStyle(event.x, event.y, areaLeft, areaTop);
-      changeSelectedToSelectable();
+      // changeSelectedToSelectable();
 
       areaRef.current.querySelectorAll(`#${selectableId}`).forEach((node) => {
         const { x: nodeLeft, y: nodeTop, width: nodeWidth, height: nodeHeight } = node.getBoundingClientRect();
         const nodeRight = nodeLeft + nodeWidth;
         const nodeBottom = nodeTop + nodeHeight;
         const isContained = left < nodeRight && top < nodeBottom && nodeLeft < right && nodeTop < bottom;
-        if (isContained) node.id = selectedId;
+        if (isContained) {
+          node.id = selectedId;
+        }
       });
+
+      areaRef.current.querySelectorAll(`#${selectedId}`).forEach((node) => {
+        const { x: nodeLeft, y: nodeTop, width: nodeWidth, height: nodeHeight } = node.getBoundingClientRect();
+        const nodeRight = nodeLeft + nodeWidth;
+        const nodeBottom = nodeTop + nodeHeight;
+        const isContained = left < nodeRight && top < nodeBottom && nodeLeft < right && nodeTop < bottom;
+        if (!isContained) {
+          node.id = selectableId;
+        }
+      });
+
+      const scrollDiffBottom = Math.abs(areaRef.current.getBoundingClientRect().bottom - event.clientY);
+      const scrollDiffTop = Math.abs(areaRef.current.getBoundingClientRect().top - event.clientY);
+
+      if (event.clientY > areaRef.current.getBoundingClientRect().bottom) {
+        areaRef.current.scrollTop = areaRef.current.scrollTop + scrollDiffBottom;
+      }
+
+      if (event.clientY < areaRef.current.getBoundingClientRect().top) {
+        areaRef.current.scrollTop = areaRef.current.scrollTop - scrollDiffTop;
+      }
+
+      const selectedNodes: NodeListOf<HTMLElement> = areaRef.current.querySelectorAll(`#${selectedId}`);
+
+      onDragMove && onDragMove(selectedNodes);
     },
-    [areaRef, selectableId, selectedId, changeSelectedToSelectable, updateDragBoxStyle, getDragBoxLeftTop, getDragBoxRightBottom],
+    [areaRef, getDragBoxLeftTop, getDragBoxRightBottom, updateDragBoxStyle, selectableId, selectedId, onDragMove],
   );
 
   // 마우스 왼쪽 뗌 이벤트 감지
   const handleMouseUp = useCallback(() => {
     if (!areaRef.current) return;
-    const selectedNodes = areaRef.current.querySelectorAll(`#${selectedId}`);
+    const selectedNodes: NodeListOf<HTMLElement> = areaRef.current.querySelectorAll(`#${selectedId}`);
     setInitialXY(0, 0, 0, 0);
     setIsOpenedDragBox(false);
-    onDragEnd(selectedNodes);
-    changeSelectedToSelectable();
+    onDragEnd && onDragEnd(selectedNodes);
+    // changeSelectedToSelectable();
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
-  }, [areaRef, selectedId, changeSelectedToSelectable, handleMouseMove, onDragEnd, setInitialXY]);
+  }, [areaRef, selectedId, handleMouseMove, onDragEnd, setInitialXY]);
 
   // 부모 컴포넌트에 mousedown 이벤트 추가
   useEffect(() => {
@@ -161,7 +195,7 @@ const DragBox: FunctionComponent<Props> = (props) => {
 
   // 드래그 박스가 화면에 보일 경우, document에 mousemove, mouseup 이벤트 추가
   useEffect(() => {
-    const throttledThing = _.throttle(handleMouseMove, 75);
+    const throttledThing = _.throttle(handleMouseMove, 0);
     const throttledCancel = () => {
       throttledThing.cancel();
       handleMouseUp();

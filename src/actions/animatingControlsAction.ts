@@ -1,4 +1,4 @@
-import { PlayDirection_New, PlayState } from 'types/RP';
+import { PlayDirection, PlayState } from 'types/RP';
 
 export type AnimatingControlsAction =
   | ReturnType<typeof blurStartInput>
@@ -51,7 +51,7 @@ export const moveScrubber = (params: MoveScrubber) => ({
 // play, rewind, stop, pause 버튼 클릭
 interface ClickPlayStateButton {
   playState: PlayState;
-  playDirection?: PlayDirection_New; // play, rewind
+  playDirection?: PlayDirection; // play, rewind
   currentTimeIndex?: number; // stop
 }
 export const CLICK_PLAY_STATE_BUTTON = 'animatingControls/CLICK_PLAY_STATE_BUTTON' as const;

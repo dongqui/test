@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FunctionComponent, Fragment, useEffect, useState, useCallback, useMemo, SyntheticEvent } from 'react';
+import { FunctionComponent, Fragment, useEffect, useState, useRef, useCallback, useMemo, SyntheticEvent } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import { UpperBar } from 'containers/UpperBar';
 import LibraryPanel from 'containers/Panels/LibraryPanel';
@@ -13,6 +13,7 @@ import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
 import DummyControlPanel from './Panels/DummyControlPanel';
 import DummyTimelinePanel from './Panels/DummyTimelinePanel';
+import ControlPanel from './Panels/ControlPanel';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
 
@@ -60,7 +61,11 @@ const Shoot: FunctionComponent = () => {
     control: constants.width.cp,
   });
 
-  const [isCPResize, setIsCPResize] = useState(false);
+  const isResizingCP = useRef<boolean>(false);
+
+  const isTargetingCP = useRef<boolean>(false);
+
+  const showCPWidth = useRef<number>(panelWidth.control);
 
   // LowerSection의 height 비율
   const [rate, setRate] = useState(getFixedNumber(sectionHeight.lowerSection / windowHeight, 2));
@@ -90,23 +95,42 @@ const Shoot: FunctionComponent = () => {
         control: panelWidth.control,
       });
 
-      setIsCPResize(false);
+      isResizingCP.current = false;
     },
     [panelWidth.control],
   );
 
   const handleCPResizeStart = useCallback((_e: SyntheticEvent, _data: ResizeCallbackData) => {
-    setIsCPResize(true);
+    isResizingCP.current = true;
   }, []);
+
+  const handleCPResizing = useCallback(
+    (_e: SyntheticEvent, _data: ResizeCallbackData) => {
+      showCPWidth.current = windowWidth - (_e as any).clientX;
+      setPanelWidth({
+        library: panelWidth.library,
+        control: _data.size.width,
+      });
+    },
+    [windowWidth, panelWidth.library],
+  );
 
   const handleCPResizeStop = useCallback(
     (_e: SyntheticEvent, data: ResizeCallbackData) => {
-      setPanelWidth({
-        library: panelWidth.library,
-        control: data.size.width,
-      });
+      showCPWidth.current = windowWidth - (_e as any).clientX;
+      if (showCPWidth.current <= 140) {
+        setPanelWidth({
+          library: panelWidth.library,
+          control: 32,
+        });
+      } else {
+        setPanelWidth({
+          library: panelWidth.library,
+          control: data.size.width,
+        });
+      }
     },
-    [panelWidth.library],
+    [panelWidth.library, showCPWidth, windowWidth],
   );
 
   useEffect(() => {
@@ -124,25 +148,34 @@ const Shoot: FunctionComponent = () => {
      * CP x축 리사이즈하는 경우 140px이상 drag하면 CP 숨김 처리
      * 추가로 숨김 처리가 8px로 줄이는 것이기 때문에 CP 내부적으로 children에 대한 보이지 않게 처리가 필요
      */
+    const handleMouseDown = (e: MouseEvent) => {
+      if (isResizingCP && (e.target as Element).classList.contains('react-resizable-handle')) {
+        isTargetingCP.current = true;
+      }
+    };
+
     const handleMouseUp = _.debounce((e: MouseEvent) => {
-      if (isCPResize) {
+      if (isResizingCP && isTargetingCP.current) {
         const isHide = windowWidth - e.clientX <= 140;
 
         if (isHide) {
           setPanelWidth({
             library: panelWidth.library,
-            control: 8,
+            control: 32,
           });
         }
+        isTargetingCP.current = false;
       }
     }, 200);
 
+    window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
 
     return () => {
+      window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [windowWidth, isCPResize, panelWidth.library]);
+  }, [windowWidth, isResizingCP, panelWidth.library, isTargetingCP]);
 
   useEffect(() => {
     const prevWindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;
@@ -212,11 +245,12 @@ const Shoot: FunctionComponent = () => {
     cp: {
       width: panelWidth.control,
       height: sectionHeight.upperSection,
-      min: [constants.width.cp, (windowHeight - constants.height.up) / 2],
+      min: [showCPWidth.current <= 140 ? 32 : constants.width.cp, (windowHeight - constants.height.up) / 2],
       max: [450, windowHeight - 76 - constants.height.up],
       handles: ['w'],
       axis: 'x',
       onResizeStart: handleCPResizeStart,
+      onResize: handleCPResizing,
       onResizeStop: handleCPResizeStop,
     } as BoxProps,
 
@@ -246,7 +280,8 @@ const Shoot: FunctionComponent = () => {
           <RenderingPanel />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-          <DummyControlPanel />
+          {/* <DummyControlPanel /> */}
+          <ControlPanel />
         </Box>
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>

@@ -1,7 +1,7 @@
 import { useCallback, FunctionComponent } from 'react';
-import _ from 'lodash';
+import { debounce } from 'lodash';
 import { useDispatch } from 'react-redux';
-import * as animatingControlsActions from 'actions/animatingControls';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { PrefixInput } from 'components/Input';
 
 interface Props {
@@ -16,7 +16,7 @@ const StartInput: FunctionComponent<Props> = (props) => {
   const dispatch = useDispatch();
 
   // start input에 debounce 적용
-  const handleStartInputChange = _.debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleStartInputChange = debounce((event: React.ChangeEvent<HTMLInputElement>) => {
     event.target.blur();
   }, 1500);
 

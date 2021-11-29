@@ -1,15 +1,16 @@
-import { FunctionComponent, memo, useState, useCallback } from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import produce from 'immer';
-import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
-import { v4 as uuid } from 'uuid';
 import { clone, isUndefined } from 'lodash';
 import { convertFBXtoGLB } from 'api';
+import { getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
-import { getFileExtension } from 'utils/common';
+import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
+import { v4 as uuid } from 'uuid';
+import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
@@ -38,45 +39,49 @@ const LibraryPanel: FunctionComponent = () => {
   const { onModalOpen, onModalClose } = useBaseModal();
 
   const handleFileLoad = useCallback(
-    async (file: File) => {
-      const isSceneReady = _screenList.length > 0 && _screenList[0].scene && _screenList[0].scene.isReady();
-
-      if (!isSceneReady) {
-        return;
-      }
-
+    async (file: File | string) => {
       const baseScene = _screenList[0].scene;
       let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
 
-      const extension = getFileExtension(file.name).toLowerCase();
-      const fileName = file.name;
+      const targetName = file instanceof File ? file.name : file;
 
-      if (extension === 'glb') {
-        loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', (file as unknown) as string, baseScene);
-      }
+      const extension = getFileExtension(targetName).toLowerCase();
+      const fileName = targetName.split('.').slice(0, -1).join('.');
 
       if (extension === 'fbx') {
         onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
-        const fileUrl = await convertFBXtoGLB(file)
-          .then((response) => {
-            onModalClose();
-            return response;
-          })
-          .catch(async () => {
-            onModalOpen({
-              title: 'Warning',
-              message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
-              confirmText: 'Contact',
-              onConfirm: () => {
-                // location.href = 'mailto:contact@plask.ai';
-                onModalClose();
-              },
+        if (file instanceof File) {
+          const fileUrl = await convertFBXtoGLB(file)
+            .then((response) => {
+              onModalClose();
+              return response;
+            })
+            .catch(async () => {
+              onModalOpen({
+                title: 'Warning',
+                message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
+                confirmText: 'Contact',
+                onConfirm: () => {
+                  // location.href = 'mailto:contact@plask.ai';
+                  onModalClose();
+                },
+              });
             });
-          });
 
-        if (fileUrl) {
-          loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
+          if (fileUrl) {
+            loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
+          }
+        }
+      }
+
+      if (extension === 'glb') {
+        if (file instanceof File) {
+          loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', (file as unknown) as string, baseScene);
+        }
+
+        if (typeof file === 'string') {
+          loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(`/models/${file}`, '', baseScene);
         }
       }
 
@@ -86,7 +91,7 @@ const LibraryPanel: FunctionComponent = () => {
 
       const { meshes, geometries, skeletons, transformNodes, animationGroups } = loadedAssetContainer;
 
-      const assetId = uuid();
+      const assetId = getRandomStringKey();
 
       meshes.forEach((mesh) => {
         // joint 클릭을 위해 mesh 클릭을 불가능하게 처리
@@ -125,9 +130,15 @@ const LibraryPanel: FunctionComponent = () => {
       // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
       const retargetMap = createEmptyRetargetMap(assetId);
 
+      const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
+
+      const check = checkCreateDuplicates(`${fileName}`, currentPathNodeNames);
+
+      const nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
+
       const newAsset: PlaskAsset = {
         id: assetId,
-        name: fileName,
+        name: nodeName,
         extension,
         meshes,
         geometries,
@@ -146,7 +157,7 @@ const LibraryPanel: FunctionComponent = () => {
           id: uuid(),
           parentId: '__root__',
           filePath: '\\root',
-          name: fileName,
+          name: nodeName,
           extension,
           type: 'Model',
           assetId: newAsset.id,
@@ -160,7 +171,7 @@ const LibraryPanel: FunctionComponent = () => {
           const motion: LP.Node = {
             id: ingredient.id,
             parentId: ingredient.assetId,
-            filePath: _lpCurrentPath + `\\${ingredient.name}`,
+            filePath: '\\root' + `\\${nodeName}`,
             name: ingredient.name,
             extension: '',
             type: 'Motion',
@@ -172,12 +183,6 @@ const LibraryPanel: FunctionComponent = () => {
 
         draft.push(...newMotionNodes);
       });
-
-      // dispatch(
-      //   lpNodeActions.changeNode({
-      //     nodes: nextNodes,
-      //   }),
-      // );
 
       dispatch(plaskProjectActions.addAsset({ asset: newAsset }));
       dispatch(
@@ -192,7 +197,32 @@ const LibraryPanel: FunctionComponent = () => {
 
       return nextNodes;
     },
-    [_lpCurrentPath, _screenList, dispatch, onModalClose, onModalOpen],
+    [_lpNode, _screenList, dispatch, onModalClose, onModalOpen],
+  );
+
+  const onNodeChange = useCallback(
+    async (files: File[] | string[]) => {
+      const nextLoadedNodes: LP.Node[] = [];
+
+      for (const current of files) {
+        await handleFileLoad(current).then((res) => {
+          if (res) {
+            nextLoadedNodes.push(...res);
+          }
+        });
+      }
+
+      const nextNodes = produce(_lpNode, (draft) => {
+        draft.push(...nextLoadedNodes);
+      });
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: nextNodes,
+        }),
+      );
+    },
+    [_lpNode, dispatch, handleFileLoad],
   );
 
   const handleDrop = useCallback(
@@ -226,25 +256,7 @@ const LibraryPanel: FunctionComponent = () => {
         return;
       }
 
-      const nextLoadedNodes: LP.Node[] = [];
-
-      for (const current of removedVideoFiles) {
-        await handleFileLoad(current).then((res) => {
-          if (res) {
-            nextLoadedNodes.push(...res);
-          }
-        });
-      }
-
-      const nextNodes = produce(_lpNode, (draft) => {
-        draft.push(...nextLoadedNodes);
-      });
-
-      dispatch(
-        lpNodeActions.changeNode({
-          nodes: nextNodes,
-        }),
-      );
+      onNodeChange(removedVideoFiles);
 
       if (videos.length > 0) {
         /**
@@ -269,10 +281,35 @@ const LibraryPanel: FunctionComponent = () => {
         });
       }
     },
-    [_lpNode, dispatch, handleFileLoad, onModalClose, onModalOpen],
+    [dispatch, onModalClose, onModalOpen, onNodeChange],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
+
+  const [isDefaultModelLoaded, setIsDefaultModelLoaded] = useState(false);
+  const [isSceneReady, setIsSceneReady] = useState(false);
+
+  useEffect(() => {
+    const isSceneExist = _screenList.length > 0 && _screenList[0].scene;
+    if (isSceneExist) {
+      const scene = _screenList[0].scene;
+
+      scene.executeWhenReady(() => {
+        setIsSceneReady(true);
+      });
+    }
+  }, [_screenList, isDefaultModelLoaded, isSceneReady, onNodeChange]);
+
+  useEffect(() => {
+    if (isSceneReady) {
+      if (!isDefaultModelLoaded) {
+        const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
+
+        onNodeChange(defaultModels);
+        setIsDefaultModelLoaded(true);
+      }
+    }
+  }, [isDefaultModelLoaded, isSceneReady, onNodeChange]);
 
   const handleSearch = useCallback(
     (text: string) => {

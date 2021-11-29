@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import _ from 'lodash';
 import { useSelector } from 'reducers';
 import StartInput from './StartInput';
 import EndInput from './EndInput';

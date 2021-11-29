@@ -9,7 +9,7 @@ import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { getFileExtension } from 'utils/common';
+import { getFileExtension, getRandomStringKey } from 'utils/common';
 import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
@@ -23,6 +23,7 @@ import styles from './ListNode.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
+  selectableId: string;
   id: string;
   assetId?: string;
   parentId: string;
@@ -30,8 +31,9 @@ interface Props {
   name: string;
   fileUrl?: string | File;
   filePath: string;
-  onSelect?: (id: string) => void;
-  selectedId?: string;
+  onSelect?: (id: string, multiple?: boolean) => void;
+  onReject: (id: string) => void;
+  selectedId: string[];
   isSelected?: boolean;
   childrens: any[];
   extension: string;
@@ -40,6 +42,7 @@ interface Props {
 }
 
 const ListNode: FunctionComponent<Props> = ({
+  selectableId,
   type,
   name,
   filePath,
@@ -47,6 +50,7 @@ const ListNode: FunctionComponent<Props> = ({
   assetId,
   parentId,
   onSelect,
+  onReject,
   isSelected,
   childrens,
   extension,
@@ -70,27 +74,66 @@ const ListNode: FunctionComponent<Props> = ({
 
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
 
+  const outerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
+
+  const [isHover, setIsHover] = useState(false);
+  const wrapperClasses = cx('inner-row', { hovered: isHover });
+
+  const [currentSelectableId, setCurrentSelectableId] = useState('');
+
+  useEffect(() => {
+    const config: MutationObserverInit = { attributes: true };
+
+    const handleCheck = () => {
+      const currentRef = wrapperRef.current;
+
+      if (currentRef) {
+        const currentRefId = currentRef.id;
+
+        if (currentRefId === 'node-selected' && currentRefId !== currentSelectableId) {
+          // onSelect && onSelect(id, childrens, true);
+          setCurrentSelectableId(currentRefId);
+        }
+
+        if (currentRefId === 'node-selectable' && currentRefId !== currentSelectableId) {
+          // onReject(id);
+          setCurrentSelectableId(currentRefId);
+        }
+      }
+    };
+
+    const checkObserver = new MutationObserver(handleCheck);
+
+    if (wrapperRef.current) {
+      checkObserver.observe(wrapperRef.current, config);
+    }
+
+    const currentRef = wrapperRef.current;
+
+    const handleHover = () => {
+      // setIsHover(!isHover);
+    };
+
+    if (currentRef) {
+      currentRef.addEventListener('mouseenter', handleHover);
+      currentRef.addEventListener('mouseleave', handleHover);
+    }
+
+    return () => {
+      checkObserver.disconnect();
+
+      if (currentRef) {
+        currentRef.removeEventListener('mouseenter', handleHover);
+        currentRef.removeEventListener('mouseleave', handleHover);
+      }
+    };
+  }, [childrens, currentSelectableId, id, isHover, name, onReject, onSelect, parentId]);
 
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
-
-  const handleArrowClick = useCallback(() => {
-    setShowsChildren(!showsChildren);
-  }, [showsChildren]);
-
-  const handleSelect = useCallback(() => {
-    onSelect && onSelect(id);
-
-    dispatch(
-      lpNodeActions.changeCurrentPath({
-        currentPath: filePath + `\\${name}`,
-        id: id,
-      }),
-    );
-  }, [dispatch, filePath, id, name, onSelect]);
 
   const depthCheck = useCallback(
     (arr: string[], maximum: number, original: number[]) => {
@@ -119,36 +162,88 @@ const ListNode: FunctionComponent<Props> = ({
     const changeNode = find(node, { id: childID });
 
     if (changeNode) {
-      const cloneChangeNode = cloneDeep(changeNode);
+      changeNode.parentId = parentNode.id;
+      changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+      // const cloneChangeNode = cloneDeep(changeNode);
 
-      cloneChangeNode.id = uuid();
-      cloneChangeNode.parentId = parentNode.id;
-      cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
+      // cloneChangeNode.id = uuid();
+      // cloneChangeNode.parentId = parentNode.id;
+      // cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
 
-      remove(parentNode.children, (child) => child === childID);
-      parentNode.children.push(cloneChangeNode.id);
+      // // remove(parentNode.children, (child) => child === childID);
+      // parentNode.children.push(cloneChangeNode.id);
 
-      node.push(cloneChangeNode);
+      // node.push(cloneChangeNode);
 
-      if (cloneChangeNode.children.length > 0) {
-        cloneChangeNode.children.map((child) => depthChangeKey(node, child, cloneChangeNode));
+      if (changeNode.children.length > 0) {
+        changeNode.children.map((child) => depthChangeKey(node, child, changeNode));
       }
     }
   }, []);
 
   const depth = (filePath.match(/\\/g) || []).length;
 
-  const column = Array.from({ length: depth - 1 }).map((x, i) => i);
-
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
+      e.stopPropagation();
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
 
+      const isContainsSelectedArea = selectedId.includes(id);
+
+      if (isContainsSelectedArea && selectedId.length > 1) {
+        onContextMenuOpen({
+          top: e.clientY,
+          left: e.clientX,
+          menu: [
+            {
+              label: 'Delete',
+              onClick: () => {
+                const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+
+                dispatch(
+                  lpNodeActions.changeNode({
+                    nodes: afterNodes,
+                  }),
+                );
+              },
+              children: [],
+            },
+            {
+              label: 'Copy',
+              onClick: () => {
+                const finded = find(lpNode, { id });
+                const list = lpNode.filter((node) => selectedId.includes(node.id));
+
+                if (finded) {
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: list,
+                    }),
+                  );
+                }
+              },
+              children: [],
+            },
+          ],
+        });
+
+        return;
+      }
+
       if (isContains) {
+        onSelect && onSelect(id);
+
+        dispatch(
+          lpNodeActions.changeCurrentPath({
+            currentPath: filePath + `\\${name}`,
+            id: id,
+          }),
+        );
+
         if (type === 'Folder') {
           onContextMenuOpen({
             top: e.clientY,
@@ -192,13 +287,10 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Paste',
                 onClick: () => {
-                  // const copyNode = _.find(lpNode, { id: lpClipboard[0].id });
-                  const copyNode = lpClipboard[0];
+                  let isMaxDepth = false;
 
-                  const cloneCopyNode = cloneDeep(copyNode);
-
-                  if (cloneCopyNode) {
-                    const max = depthCheck(cloneCopyNode.children, 0, []) || 0;
+                  lpClipboard.forEach((value) => {
+                    const max = depthCheck(value.children, 0, []) || 0;
 
                     const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
@@ -208,54 +300,71 @@ const ListNode: FunctionComponent<Props> = ({
                         message: '디렉토리를 복사할 수 없습니다. 계층 초과',
                         confirmText: '확인',
                       });
-                      return;
+
+                      isMaxDepth = true;
+                      return false;
                     }
+                  });
+
+                  if (isMaxDepth) {
+                    return;
                   }
 
-                  // @TODO 없으면 비활성 처리 필요
-                  if (cloneCopyNode) {
-                    const currentPathNodeName = lpNode
-                      .filter((node) => {
-                        if (node.parentId === id) {
-                          if (node.name.includes(cloneCopyNode.name)) {
-                            return true;
+                  let nextLPNodes = cloneDeep(lpNode);
+
+                  lpClipboard.forEach((value) => {
+                    const copyNode = value;
+                    const cloneCopyNode = cloneDeep(copyNode);
+
+                    // @TODO 없으면 비활성 처리 필요
+                    if (cloneCopyNode) {
+                      const currentPathNodeName = lpNode
+                        .filter((node) => {
+                          if (node.parentId === id) {
+                            if (node.name.includes(cloneCopyNode.name)) {
+                              return true;
+                            }
+                            return false;
                           }
-                          return false;
+                        })
+                        .map((filteredNode) => filteredNode.name);
+
+                      const nodeName = beforePaste({
+                        name: cloneCopyNode.name,
+                        comparisonNames: currentPathNodeName,
+                      });
+
+                      const nextNodes = produce(nextLPNodes, (draft) => {
+                        const targetNode = find(draft, { id });
+
+                        if (targetNode) {
+                          cloneCopyNode.id = uuid();
+                          cloneCopyNode.parentId = id;
+                          cloneCopyNode.filePath = filePath + `\\${nodeName}`;
+                          cloneCopyNode.name = nodeName;
+
+                          targetNode.children.push(cloneCopyNode.id);
+
+                          // @TODO 하위 노드도 추가
+                          draft.push(cloneCopyNode);
+
+                          if (cloneCopyNode.children.length > 0) {
+                            cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
+                          }
                         }
-                      })
-                      .map((filteredNode) => filteredNode.name);
+                      });
 
-                    const nodeName = beforePaste({
-                      name: cloneCopyNode.name,
-                      comparisonNames: currentPathNodeName,
-                    });
+                      nextLPNodes = nextNodes;
+                    }
+                  });
 
-                    const nextNodes = produce(lpNode, (draft) => {
-                      const targetNode = find(draft, { id });
+                  dispatch(
+                    lpNodeActions.changeNode({
+                      nodes: nextLPNodes,
+                    }),
+                  );
 
-                      if (targetNode) {
-                        cloneCopyNode.id = uuid();
-                        cloneCopyNode.parentId = id;
-                        cloneCopyNode.filePath = filePath + `\\${nodeName}`;
-                        cloneCopyNode.name = nodeName;
-
-                        targetNode.children.push(cloneCopyNode.id);
-
-                        // @TODO 하위 노드도 추가
-                        draft.push(cloneCopyNode);
-
-                        if (cloneCopyNode.children.length > 0) {
-                          cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
-                        }
-                      }
-                    });
-
-                    dispatch(
-                      lpNodeActions.changeNode({
-                        nodes: nextNodes,
-                      }),
-                    );
-                  }
+                  // const copyNode = lpClipboard[0];
                 },
                 children: [],
               },
@@ -532,8 +641,9 @@ const ListNode: FunctionComponent<Props> = ({
                   if (assetId) {
                     const cloneLPNode = cloneDeep(lpNode);
 
-                    const layerName = 'layer1';
-                    const layers: PlaskLayer[] = [{ id: uuid(), name: layerName }];
+                    const layerName = 'Base Layer';
+                    // base layer의 id 및 name
+                    const layers: PlaskLayer[] = [{ id: `baseLayer//${getRandomStringKey()}`, name: layerName }];
 
                     const tracks: PlaskTrack[] = [];
                     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
@@ -561,7 +671,7 @@ const ListNode: FunctionComponent<Props> = ({
                     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
 
                     const nextIngredient: AnimationIngredient = {
-                      id: uuid(),
+                      id: getRandomStringKey(),
                       name: nodeName,
                       assetId: assetId,
                       current: false,
@@ -699,11 +809,37 @@ const ListNode: FunctionComponent<Props> = ({
     visualizedAssetIds,
     assetList,
     screenList,
+    selectedId.length,
+    selectedId,
+    onSelect,
   ]);
 
   const classes = cx('wrapper', { selected: isSelected });
 
-  // const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
+  useEffect(() => {
+    const currentRef = wrapperRef && wrapperRef.current;
+
+    if (currentRef) {
+      const handleSelect = (e: MouseEvent) => {
+        e.stopPropagation();
+
+        onSelect && onSelect(id);
+
+        dispatch(
+          lpNodeActions.changeCurrentPath({
+            currentPath: filePath + `\\${name}`,
+            id: id,
+          }),
+        );
+      };
+
+      currentRef.addEventListener('click', handleSelect);
+
+      return () => {
+        currentRef.removeEventListener('click', handleSelect);
+      };
+    }
+  }, [dispatch, filePath, id, name, onSelect]);
 
   const renderChildren = useCallback(
     (paramId: any) => {
@@ -713,6 +849,7 @@ const ListNode: FunctionComponent<Props> = ({
         if (node) {
           return (
             <ListNode
+              selectableId={selectableId}
               id={node.id}
               parentId={node.parentId}
               type={node.type}
@@ -720,8 +857,10 @@ const ListNode: FunctionComponent<Props> = ({
               fileUrl={node.fileUrl}
               filePath={node.filePath}
               extension={node.extension}
-              onSelect={handleSelect}
-              isSelected={node.id === selectedId}
+              onSelect={onSelect}
+              onReject={onReject}
+              selectedId={selectedId}
+              isSelected={selectedId.includes(node.id)}
               childrens={node.children}
               assetId={node.assetId}
               onSetDragTarget={onSetDragTarget}
@@ -734,14 +873,17 @@ const ListNode: FunctionComponent<Props> = ({
       if (typeof paramId === 'object') {
         return (
           <ListNode
+            selectableId={selectableId}
             id={paramId.id}
             parentId={parentId}
             type="Motion"
             name={paramId.name}
             filePath={filePath + `\\${name}`}
             extension={paramId.extension}
-            onSelect={handleSelect}
-            isSelected={id === selectedId && paramId.current}
+            onSelect={onSelect}
+            onReject={onReject}
+            selectedId={selectedId}
+            isSelected={selectedId.includes(id) && paramId.current}
             childrens={[]}
             assetId={paramId.assetId}
             onSetDragTarget={onSetDragTarget}
@@ -750,7 +892,7 @@ const ListNode: FunctionComponent<Props> = ({
         );
       }
     },
-    [dragTarget, filePath, handleSelect, id, lpNode, name, onSetDragTarget, parentId, selectedId],
+    [dragTarget, filePath, id, lpNode, name, onReject, onSelect, onSetDragTarget, parentId, selectableId, selectedId],
   );
 
   const handleBlur = useCallback(
@@ -782,7 +924,8 @@ const ListNode: FunctionComponent<Props> = ({
             const newNode: LP.Node = {
               id: id,
               // filePath: lpCurrentPath + `\\${name}`,
-              filePath: filePath + `\\${name}`, //@todo
+              // filePath: filePath + `\\${name}`, //@todo
+              filePath: filePath,
               parentId: parentId,
               name: type === 'Model' ? `${name}.${extension}` : name,
               type: type,
@@ -855,7 +998,8 @@ const ListNode: FunctionComponent<Props> = ({
               const newNode: LP.Node = {
                 id: id,
                 // filePath: lpCurrentPath + `\\${name}`,
-                filePath: filePath + `\\${name}`, //@todo
+                // filePath: filePath + `\\${name}`, //@todo
+                filePath: filePath,
                 parentId: parentId,
                 name: type === 'Model' ? `${name}.${extension}` : name,
                 type: type,
@@ -929,9 +1073,9 @@ const ListNode: FunctionComponent<Props> = ({
       // 드래그 시작시 선택 및 스타일 적용
       onSetDragTarget(id, type, parentId);
 
-      handleSelect();
+      onSelect && onSelect(id);
     },
-    [handleSelect, id, onSetDragTarget, parentId, type],
+    [id, onSelect, onSetDragTarget, parentId, type],
   );
 
   const handleDrop = useCallback(
@@ -954,8 +1098,6 @@ const ListNode: FunctionComponent<Props> = ({
           const childrenList = lpNode.filter((node) => node.parentId === id);
           const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
           const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
-
-          const cloneDragNode = cloneDeep(dragNode);
 
           if (dropNode && isAlreadyExist && cloneDragNode) {
             const confirmed = await getConfirm({
@@ -1085,8 +1227,8 @@ const ListNode: FunctionComponent<Props> = ({
           const confirmed = await getConfirm({
             title: 'Warning',
             message: '해당 디렉토리에 동일한 이름의 파일이 있습니다. 덮어쓰시겠습니까?',
-            confirmText: '확인',
-            cancelText: '취소',
+            confirmText: '덮어쓰기',
+            cancelText: '무시하기',
           });
 
           if (confirmed) {
@@ -1094,21 +1236,27 @@ const ListNode: FunctionComponent<Props> = ({
             const filterNodes = cloneLPNode.filter((node) => node.id !== duplicatedTarget[0].id);
 
             const nextNodes = produce(filterNodes, (draft) => {
-              const targetNode = find(draft, { id });
+              const targetNode = find(filterNodes, { id });
+
+              const clondDragNodeId = uuid();
 
               if (targetNode) {
-                cloneDragNode.id = uuid();
+                cloneDragNode.id = clondDragNodeId;
                 cloneDragNode.parentId = id;
                 // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
                 cloneDragNode.filePath = filePath + `\\${name}`;
 
-                targetNode.children.push(cloneDragNode.id);
+                const nextChildren = targetNode.children.filter((current) => current !== duplicatedTarget[0].id);
+
+                nextChildren.push(clondDragNodeId);
+
+                targetNode.children = nextChildren;
 
                 // @TODO 하위 노드도 추가
                 draft.push(cloneDragNode);
 
                 if (cloneDragNode.children.length > 0) {
-                  cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                  cloneDragNode.children.map((child) => depthChangeKey(filterNodes, child, cloneDragNode));
                 }
               }
             });
@@ -1181,15 +1329,50 @@ const ListNode: FunctionComponent<Props> = ({
   const splitName = name.split('.');
   const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
+  useEffect(() => {
+    const currentRef = outerRef.current;
+    if (currentRef) {
+      const handleMouseDown = (e: MouseEvent) => {
+        e.stopPropagation();
+      };
+
+      currentRef.addEventListener('mousedown', handleMouseDown);
+
+      return () => {
+        currentRef.removeEventListener('mousedown', handleMouseDown);
+      };
+    }
+  }, []);
+
+  const arrowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const currentRef = arrowRef && arrowRef.current;
+
+    if (currentRef) {
+      const handleArrowClick = () => {
+        setShowsChildren(!showsChildren);
+      };
+
+      currentRef.addEventListener('mouseup', handleArrowClick);
+
+      return () => {
+        currentRef.removeEventListener('mouseup', handleArrowClick);
+      };
+    }
+  }, [showsChildren]);
+
   return (
-    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop}>
+    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} ref={outerRef}>
       <div className={cx('inner')}>
-        <div className={cx('inner-row')} ref={wrapperRef} onClick={handleSelect} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}>
-          {/* {column.map((col, i) => (
-            <div key={i} style={{ width: `${12 * col}px` }} />
-          ))} */}
+        {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
+        <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id}>
           <div style={{ paddingLeft: '7px' }} />
-          {type !== 'Motion' && <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} onClick={handleArrowClick} />}
+          {type !== 'Motion' && (
+            <div className={cx('arrow-wrapper')} ref={arrowRef}>
+              <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} />
+            </div>
+          )}
           <div className={cx('info')}>
             <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
             {isEditing ? (

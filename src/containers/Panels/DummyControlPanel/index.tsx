@@ -2,7 +2,6 @@ import { FunctionComponent, memo, useCallback } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import { v4 as uuidv4 } from 'uuid';
 import { uniq } from 'lodash';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -11,6 +10,7 @@ import { checkIsTargetMesh, createDummyAnimation } from 'utils/RP';
 import { AnimationIngredient, PlaskTrack } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { getRandomStringKey } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
@@ -292,7 +292,7 @@ const ControlPanel: FunctionComponent = () => {
                 const transformNodeTracks = tracks.filter((t) => t.targetId === controller.id.replace('controller', 'transformNode') && t.layerId === layer.id);
                 transformNodeTracks.forEach((transformNodeTrack) => {
                   const newTrack: PlaskTrack = {
-                    id: uuidv4(),
+                    id: getRandomStringKey(),
                     targetId: controller.id,
                     layerId: layer.id,
                     name: `${transformNodeTrack.name}|controller`,
