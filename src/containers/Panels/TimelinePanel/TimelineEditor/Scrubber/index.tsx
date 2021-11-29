@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -16,13 +16,24 @@ const cx = classNames.bind(styles);
 
 const Scrubber = () => {
   const dispatch = useDispatch();
+
   const currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
   const playState = useSelector((state) => state.animatingControls.playState);
   const playDirection = useSelector((state) => state.animatingControls.playDirection);
   const playSpeed = useSelector((state) => state.animatingControls.playSpeed);
+
   const [inputValue, setInputValue] = useState<number | string>(0);
+
   const scrubberRef = useRef<SVGGElement>(null);
   const scrubberLoopId = useRef(0);
+
+  const clampTimeIndex = (timeIndex: number) => {
+    const startTimeIndex = TimeIndex.getStartTimeIndex();
+    const endTimeIndex = TimeIndex.getEndTimeIndex();
+    if (timeIndex < startTimeIndex) return startTimeIndex;
+    if (endTimeIndex < timeIndex) return endTimeIndex;
+    return timeIndex;
+  };
 
   // value값 변경
   const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,20 +109,13 @@ const Scrubber = () => {
   // 드래그 이벤트 적용
   useEffect(() => {
     if (!scrubberRef.current) return;
-    const clampTimeIndex = (timeIndex: number) => {
-      const startTimeIndex = TimeIndex.getStartTimeIndex();
-      const endTimeIndex = TimeIndex.getEndTimeIndex();
-      if (timeIndex < startTimeIndex) return startTimeIndex;
-      if (endTimeIndex < timeIndex) return endTimeIndex;
-      return timeIndex;
-    };
     const setDragBehavior = () => {
       const throttledThing = _.throttle((event) => {
         const scaleX = ScaleLinear.getScaleX();
         const subValue = 15; // now input 가로 절반 길이
         const cursorTimeIndex = _.floor(scaleX.invert(event.x - subValue));
-        const currentTimeIndex = clampTimeIndex(cursorTimeIndex);
-        dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex }));
+        const clampedTimeIndex = clampTimeIndex(cursorTimeIndex);
+        dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
       }, 75);
       const dragBehavior = d3
         .drag()
@@ -124,6 +128,25 @@ const Scrubber = () => {
     const scrubber = d3.select(scrubberRef.current);
     const dragBehavior = setDragBehavior();
     scrubber.call(dragBehavior as any);
+  }, [dispatch]);
+
+  // a/s 키 입력 시, scrubber 이동
+  useEffect(() => {
+    const keydownListener = (event: KeyboardEvent) => {
+      if (event.key === ('a' || 'A')) {
+        const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
+        const clampedTimeIndex = clampTimeIndex(currentTimeIndex - 1);
+        dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
+      } else if (event.key === ('s' || 'S')) {
+        const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
+        const clampedTimeIndex = clampTimeIndex(currentTimeIndex + 1);
+        dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
+      }
+    };
+    document.addEventListener('keydown', keydownListener);
+    return () => {
+      document.removeEventListener('keydown', keydownListener);
+    };
   }, [dispatch]);
 
   return (
