@@ -13,12 +13,14 @@ function getSelectedPropertyKeyframes(state: RootState) {
 // 키프레임 드래그 드랍 입력 비즈니스 로직
 function* worker(params: ReturnType<typeof keyframesAction.enterKeyframeDragDropKey>) {
   const { timeDiff } = params.payload;
-  const selectedPropertyKeyframes = getSelectedPropertyKeyframes(yield select());
-  const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, selectedPropertyKeyframes, timeDiff);
-  yield put(keyframesAction.dragDropKeyframes({ timeDiff: timeDiff }));
+  if (timeDiff) {
+    const selectedPropertyKeyframes = getSelectedPropertyKeyframes(yield select());
+    const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, selectedPropertyKeyframes, timeDiff);
+    yield put(keyframesAction.dragDropKeyframes({ timeDiff: timeDiff }));
 
-  // 이후부터 RP쪽 액션 호출 부분
-  // yield put(RP액션.키프레임드래그드랍(updatedPropertyKeyframes));
+    // 이후부터 RP쪽 액션 호출 부분
+    // yield put(RP액션.키프레임드래그드랍(updatedPropertyKeyframes));
+  }
 }
 
 // 키프레임 드래그 드랍 입력 감지
