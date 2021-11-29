@@ -349,7 +349,6 @@ const ListNode: FunctionComponent<Props> = ({
                               .slice(0, splitName.length - 1)
                               .join('.')}.${splitName[1]}`
                           : nodeName;
-                      //
 
                       const nextNodes = produce(nextLPNodes, (draft) => {
                         const targetNode = find(draft, { id });
@@ -850,10 +849,10 @@ const ListNode: FunctionComponent<Props> = ({
         );
       };
 
-      currentRef.addEventListener('click', handleSelect);
+      currentRef.addEventListener('mousedown', handleSelect);
 
       return () => {
-        currentRef.removeEventListener('click', handleSelect);
+        currentRef.removeEventListener('mousedown', handleSelect);
       };
     }
   }, [dispatch, filePath, id, name, onSelect]);
