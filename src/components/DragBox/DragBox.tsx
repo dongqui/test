@@ -176,10 +176,13 @@ const DragBox: FunctionComponent<Props> = (props) => {
   const handleMouseUp = useCallback(() => {
     if (!areaRef.current) return;
     const selectedNodes: NodeListOf<HTMLElement> = areaRef.current.querySelectorAll(`#${selectedId}`);
+
+    if (initialX.current !== currentX.current || initialY.current !== currentY.current) {
+      onDragEnd && onDragEnd(selectedNodes);
+    }
+    // changeSelectedToSelectable();
     setInitialXY(0, 0, 0, 0);
     setIsOpenedDragBox(false);
-    onDragEnd && onDragEnd(selectedNodes);
-    // changeSelectedToSelectable();
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
   }, [areaRef, selectedId, handleMouseMove, onDragEnd, setInitialXY]);
