@@ -6,6 +6,8 @@ export type ScreenXY = { x: number; y: number };
 
 export type PlaskView = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
+export type PlaskRotationType = 'euler' | 'quaternion';
+
 export interface PlaskProject {
   id: string;
   name: string;
@@ -113,5 +115,5 @@ export type PlaskRetargetMap = {
 
 type RetargetMapValue = {
   sourceBoneName: RetargetSourceBoneType;
-  targetBoneId: Nullable<string>;
+  targetTransformNodeId: Nullable<string>;
 };
