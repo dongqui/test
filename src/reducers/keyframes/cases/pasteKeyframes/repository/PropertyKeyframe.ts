@@ -27,10 +27,11 @@ class PropertyKeyframeRepository implements Repository {
     return smallestTime;
   };
 
-  private updateValues = <T extends ClusteredKeyframe | TimeEditorTrack>(base: T[], scrubberTime: number) => {
-    const { copiedPropertyKeyframes } = this.state;
+  // property track list 업데이트
+  updateTimeEditorTrack = (scrubberTime: number): TimeEditorTrack[] => {
+    const { copiedPropertyKeyframes, propertyTrackList } = this.state;
     const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
-    return produce(base, (draft) => {
+    return produce(propertyTrackList, (draft) => {
       copiedPropertyKeyframes.forEach((copiedGroup) => {
         const { trackNumber, keyframes } = copiedGroup;
         const trackIndex = findElementIndex(draft, trackNumber, 'trackNumber');
@@ -49,16 +50,32 @@ class PropertyKeyframeRepository implements Repository {
     });
   };
 
-  // property track list 업데이트
-  updateTimeEditorTrack = (scrubberTime: number): TimeEditorTrack[] => {
-    const { propertyTrackList } = this.state;
-    return this.updateValues(propertyTrackList, scrubberTime);
-  };
-
   // 선택 된 property keyframes 업데이트
   updateSelectedKeyframes = (scrubberTime: number): ClusteredKeyframe[] => {
-    const { selectedPropertyKeyframes } = this.state;
-    return this.updateValues(selectedPropertyKeyframes, scrubberTime);
+    const { selectedPropertyKeyframes, copiedPropertyKeyframes } = this.state;
+    const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
+    return produce(selectedPropertyKeyframes, (draft) => {
+      copiedPropertyKeyframes.forEach((copied) => {
+        const { trackNumber, trackId, keyframes } = copied;
+        let trackIndex = findElementIndex(draft, trackNumber, 'trackNumber');
+        if (trackIndex === -1) {
+          draft.push({ keyframes: [], trackType: 'property', trackNumber: trackNumber, trackId: trackId });
+          draft.sort((a, b) => a.trackNumber - b.trackNumber);
+          trackIndex = findElementIndex(draft, trackNumber, 'trackNumber');
+        }
+        keyframes.forEach((keyframe) => {
+          const nextTime = timeDiff + keyframe.time;
+          const keyframeIndex = findElementIndex(draft[trackIndex].keyframes, nextTime, 'time');
+          const nextKeyframeValue = this.createNextKeyframeValue(nextTime, keyframe);
+          if (keyframeIndex === -1) {
+            draft[trackIndex].keyframes.push(nextKeyframeValue);
+            draft[trackIndex].keyframes.sort((a, b) => a.time - b.time);
+          } else {
+            draft[trackIndex].keyframes[keyframeIndex] = nextKeyframeValue;
+          }
+        });
+      });
+    });
   };
 }
 

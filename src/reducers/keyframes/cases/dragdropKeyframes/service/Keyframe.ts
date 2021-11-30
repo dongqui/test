@@ -1,8 +1,8 @@
-import { TimeEditorTrack, ClusteredKeyframe, TrasnformKey } from 'types/TP/keyframe';
+import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP/keyframe';
 import { DragDropKeyframes } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import { LayerKeyframes, BoneKeyframes, PropertyKeyframes, SelectedLayerKeyframes, SelectedBoneKeyframes, SelectedPropertyKeyframes } from 'reducers/keyframes/types';
-import { getBoneTrackIndex, getBinarySearch } from 'utils/TP';
+import { getBoneTrackIndex } from 'utils/TP';
 
 import { Service } from './index';
 import { Repository } from '../repository';
@@ -22,26 +22,17 @@ class DragDropKeyframesService implements Service {
     this.transformRepository = transformRepository;
   }
 
-  private setUniqueTimes = (currentTimes: number[], transformKeys: TrasnformKey[]) => {
-    const uniqueTimes: number[] = [];
-    transformKeys.forEach(({ time }) => {
-      const index = getBinarySearch({ collection: currentTimes, index: time });
-      if (index === -1) uniqueTimes.push(time);
-    });
-    return uniqueTimes;
-  };
-
   // layer keyframe 하위에 선택 된 property keyframe 탐색
   private findSelectedChildrenToLayer = () => {
     const { selectedPropertyKeyframes } = this.state;
-    const selectedChildren: number[] = [];
+    const selectedChildren = new Set<number>();
     selectedPropertyKeyframes.forEach((selectedGroup) => {
       const { keyframes } = selectedGroup;
-      const times = this.setUniqueTimes(selectedChildren, keyframes);
-      selectedChildren.push(...times);
-      selectedChildren.sort((a, b) => a - b);
+      keyframes.forEach((keyframe) => {
+        selectedChildren.add(keyframe.time);
+      });
     });
-    return selectedChildren;
+    return [...selectedChildren].sort((a, b) => a - b);
   };
 
   // bone keyframe 하위에 선택 된 property keyframe 탐색
@@ -51,15 +42,13 @@ class DragDropKeyframesService implements Service {
     selectedPropertyKeyframes.forEach((selectedGroup) => {
       const { trackNumber, keyframes } = selectedGroup;
       const boneNumber = getBoneTrackIndex(trackNumber);
-      const currentTimes = selectedChildren.get(boneNumber);
-      if (currentTimes) {
-        const uniqueTimes = this.setUniqueTimes(currentTimes, keyframes);
-        const newTimes = [...currentTimes, ...uniqueTimes].sort((a, b) => a - b);
-        selectedChildren.set(boneNumber, newTimes);
-      } else {
-        const newTimes = keyframes.map((keyframe) => keyframe.time);
-        selectedChildren.set(boneNumber, newTimes);
-      }
+      const currentKeyframeTimes = selectedChildren.get(boneNumber);
+      const set = new Set<number>(currentKeyframeTimes);
+      keyframes.forEach((keyframe) => set.add(keyframe.time));
+      selectedChildren.set(
+        boneNumber,
+        [...set].sort((a, b) => a - b),
+      );
     });
     return selectedChildren;
   };
