@@ -1,7 +1,13 @@
-import { FunctionComponent, useState, useCallback, memo } from 'react';
-import { AnimationRangeInput, AnimationTitleToggle } from 'components/ControlPanel';
+import { FunctionComponent, useState, memo, Fragment, useEffect, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
+import * as BABYLON from '@babylonjs/core';
+import { isNull } from 'lodash';
+import { useSelector } from 'reducers';
+import { AnimationRangeInput, AnimationTitleToggle, DropdownWrapper } from 'components/ControlPanel';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import DropdownWrapper from 'components/ControlPanel/DropdownWrapper';
+import { RetargetSourceBoneType } from 'types/common';
+import * as selectingDataActions from 'actions/selectingDataAction';
+import { checkIsTargetMesh } from 'utils/RP';
 import classNames from 'classnames/bind';
 import styles from './RetargetTab.module.scss';
 
@@ -12,100 +18,124 @@ interface Props {
 }
 
 const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
-  // const [isAllActive, setIsAllActive] = useState<boolean>(true);
-  const [spreadMapping, setSpreadMapping] = useState<boolean>(true);
-  const [currentSource, setCurrentSource] = useState<string>('Option1');
-  const [currentTarget, setCurrentTarget] = useState<string>('Option2');
-  const [currentHipValue, setCurrentHipValue] = useState<number>(10);
-  const [selectedJoints, setSelectedJoints] = useState<string[]>([]);
+  const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
+  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
-  const handleJoints = useCallback(
-    (e) => {
-      if (selectedJoints.includes(e.target.id)) {
-        setSelectedJoints(selectedJoints.filter((joint) => joint !== e.target.id));
-      } else {
-        setSelectedJoints(selectedJoints.concat(e.target.id));
+  const dispatch = useDispatch();
+
+  // mapping setion의 펼침여부
+  const [isMappingSectionSpread, setIsMappingSectionSpread] = useState<boolean>(true);
+  // 아래 2가지가 선택된 상태에서 assign 버튼을 누르면 retargetMap의 values update
+  const [currentSourceBoneName, setCurrentSourceBoneName] = useState<RetargetSourceBoneType>();
+  const [currentTargetTransformNode, setCurrentTargetTransformNode] = useState<BABYLON.TransformNode>();
+  // hipsSpace 조절하면 retargetMap의 hipSpace update
+  const [hipSpace, setHipSpace] = useState<number>(10);
+  // mappedBones에 속하는 bone은 파란색 배경색을 입힘
+  const [mappedBones, setMappedBones] = useState<string[]>([]);
+
+  // map 완료된 bone set하는 로직
+  useEffect(() => {
+    const visualizedRetargetMap = _retargetMaps.find((retargetMap) => retargetMap.assetId === _visualizedAssetIds[0]); // 단일 모델
+    // visualize된 asset에 해당하는 retargetMap을 찾음
+    if (visualizedRetargetMap) {
+      // targetTransformNodeId가 null이 아닌 sourceBone의 이름들
+      const mappedSourceBoneNames = visualizedRetargetMap.values.filter((value) => !isNull(value.targetTransformNodeId)).map((v) => v.sourceBoneName);
+      // mapping이 완료된 bone들을 의미하는 mappedBones로 set
+      setMappedBones(mappedSourceBoneNames);
+
+      console.log('mappedSourceBoneNames: ', mappedSourceBoneNames);
+    }
+  }, [_retargetMaps, _visualizedAssetIds]);
+
+  // rp 선택에 의한 targetTransformNode 변경
+  useEffect(() => {
+    // 단일 선택 시에 (cf. 다중 선택 시에는 RT에 영향을 주지 않음)
+    if (_selectedTargets.length === 1) {
+      // controller가 아니라면
+      if (!checkIsTargetMesh(_selectedTargets[0]) && !_selectedTargets[0].name.toLowerCase().includes('armature')) {
+        setCurrentTargetTransformNode(_selectedTargets[0]);
       }
-    },
-    [selectedJoints],
-  );
+    }
+  }, [_selectedTargets]);
 
-  const jointList = [
-    { left: 92, top: 23, id: 'head' },
-    { left: 92, top: 96, id: 'spine2' },
-    { left: 92, top: 57, id: 'neck' },
-    { left: 92, top: 124, id: 'spine1' },
-    { left: 92, top: 152, id: 'spine' },
-    { left: 92, top: 186, id: 'hips' },
-    { left: 83, top: 72, id: 'leftShoulder' },
-    { left: 57, top: 78, id: 'leftArm' },
-    { left: 47, top: 130, id: 'leftForeArm' },
-    { left: 29, top: 163, id: 'leftHand' },
-    { left: 71, top: 201, id: 'leftUpLeg' },
-    { left: 69, top: 255, id: 'leftLeg' },
-    { left: 66, top: 327, id: 'leftFoot' },
-    { left: 63, top: 352, id: 'leftToeBase' },
-    { left: 20, top: 181, id: 'leftHandIndex1' },
-    { left: 101, top: 72, id: 'rightShoulder' },
-    { left: 127, top: 78, id: 'rightArm' },
-    { left: 137, top: 130, id: 'rightForeArm' },
-    { left: 155, top: 163, id: 'rightHand' },
-    { left: 113, top: 201, id: 'rightUpLeg' },
-    { left: 115, top: 255, id: 'rightLeg' },
-    { left: 118, top: 327, id: 'rightFoot' },
-    { left: 121, top: 352, id: 'rightToeBase' },
-    { left: 164, top: 181, id: 'rightHandIndex1' },
+  // 스켈레톤 icon 위에 circle로 bone들을 찍기위한 데이터
+  const sourceBoneList = [
+    { left: 92, top: 186, name: 'hips' },
+    { left: 92, top: 152, name: 'spine' },
+    { left: 92, top: 124, name: 'spine1' },
+    { left: 92, top: 96, name: 'spine2' },
+    { left: 92, top: 57, name: 'neck' },
+    { left: 92, top: 23, name: 'head' },
+    { left: 83, top: 72, name: 'leftShoulder' },
+    { left: 57, top: 78, name: 'leftArm' },
+    { left: 47, top: 130, name: 'leftForeArm' },
+    { left: 29, top: 163, name: 'leftHand' },
+    { left: 20, top: 181, name: 'leftHandIndex1' },
+    { left: 101, top: 72, name: 'rightShoulder' },
+    { left: 127, top: 78, name: 'rightArm' },
+    { left: 137, top: 130, name: 'rightForeArm' },
+    { left: 155, top: 163, name: 'rightHand' },
+    { left: 164, top: 181, name: 'rightHandIndex1' },
+    { left: 71, top: 201, name: 'leftUpLeg' },
+    { left: 69, top: 255, name: 'leftLeg' },
+    { left: 66, top: 327, name: 'leftFoot' },
+    { left: 63, top: 352, name: 'leftToeBase' },
+    { left: 113, top: 201, name: 'rightUpLeg' },
+    { left: 115, top: 255, name: 'rightLeg' },
+    { left: 118, top: 327, name: 'rightFoot' },
+    { left: 121, top: 352, name: 'rightToeBase' },
   ];
 
-  const mappingDropdown = [
-    { text: 'Source', currentOption: currentSource, setCurrentOption: setCurrentSource, option: ['Option1', 'Option2', 'Option3', 'Option4', 'Option5'] },
-    { text: 'Target', currentOption: currentTarget, setCurrentOption: setCurrentTarget, option: ['Option1', 'Option2', 'Option3', 'Option4', 'Option5'] },
-  ];
+  // sourceBone을 선택하기 위한 드랍다운으로 넘길 데이터
+  const sourceBoneOptions = sourceBoneList.map((bone) => ({
+    text: bone.name,
+    handleSelect: () => setCurrentSourceBoneName(bone.name as RetargetSourceBoneType),
+  }));
+
+  // targetBone(targetTransformNode)를 선택하기 위한 드랍다운으로 넘길 데이터
+  const targetTransformNodeOptions = useMemo(() => {
+    const visualizedTransformNodes = _selectableObjects.filter((object) => !checkIsTargetMesh(object) && !object.name.toLowerCase().includes('armature'));
+
+    return visualizedTransformNodes.map((transformNode) => ({
+      text: transformNode.name,
+      handleSelect: () => {
+        // current targetBone(transformNode)으로 선택
+        setCurrentTargetTransformNode(transformNode);
+        // RP에서 gizmo 부착
+        dispatch(selectingDataActions.defaultSingleSelect({ target: transformNode }));
+      },
+    }));
+  }, [_selectableObjects, dispatch]);
 
   return (
-    <div className={cx('panel-wrap')}>
-      <section className={cx('panel-mapping')}>
-        <AnimationTitleToggle text="Mapping" spreadRef={spreadMapping} setSpreadRef={setSpreadMapping} activeStatus={isAllActive} />
-        <div className={cx('container', 'mapping-icon', { active: spreadMapping })}>
-          <div className={cx('body-icon-wrapper')}>
-            <IconWrapper icon={SvgPath.Body} className={cx('body-icon')} />
+    <Fragment>
+      <section className={cx('mapping-section')}>
+        <AnimationTitleToggle text="Mapping" isSpread={isMappingSectionSpread} setIsSpread={setIsMappingSectionSpread} activeStatus={isAllActive} />
+        <div className={cx('container', 'mapping-icon', { active: isMappingSectionSpread })}>
+          <div className={cx('skeleton-wrapper')}>
+            <IconWrapper icon={SvgPath.Body} className={cx('skeleton')} />
           </div>
-          <div className={cx('body-icon-wrapper')}>
-            <div className={cx('joint-wrapper')}>
-              {jointList.map((joint, idx) => (
-                <div key={idx} id={joint.id} style={{ left: joint.left, top: joint.top }} onClick={handleJoints}>
-                  <div className={cx('circle', { active: selectedJoints.includes(joint.id) })} id={joint.id}></div>
-                </div>
-              ))}
-            </div>
+          <div className={cx('bones-wrapper')}>
+            {sourceBoneList.map((bone, idx) => (
+              <div key={idx} id={bone.name} style={{ left: bone.left, top: bone.top }} onClick={() => setCurrentSourceBoneName(bone.name as RetargetSourceBoneType)}>
+                <div className={cx('bone', { mapped: mappedBones.includes(bone.name), selected: bone.name === currentSourceBoneName })}></div>
+              </div>
+            ))}
           </div>
-          {!isAllActive && <div className={cx('toggle-overlay')}></div>}
+          {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')}></div>}
         </div>
-        <div className={cx('container', { active: spreadMapping })}>
-          {mappingDropdown.map((item, idx) => (
-            <DropdownWrapper
-              className={cx('mapping-dropdown')}
-              key={idx}
-              text={item.text}
-              currentOption={item.currentOption}
-              setCurrentOption={item.setCurrentOption}
-              options={item.option}
-              activeStatus={isAllActive}
-            />
-          ))}
-          <AnimationRangeInput
-            text="Hip space"
-            step={0.01}
-            currentMax={10}
-            currentValue={currentHipValue}
-            setCurrentValue={setCurrentHipValue}
-            decimalDigit={1}
-            activeStatus={isAllActive}
+        <div className={cx('container', { active: isMappingSectionSpread })}>
+          <DropdownWrapper className={cx('mapping-dropdown')} text="Source" currentValue={currentSourceBoneName} options={sourceBoneOptions} activeStatus={isAllActive} />
+          {/* prettier-ignore */}
+          <DropdownWrapper className={cx('mapping-dropdown')} text="Target" currentValue={currentTargetTransformNode?.name} options={targetTransformNodeOptions} activeStatus={isAllActive}
           />
-          {!isAllActive && <div className={cx('toggle-overlay')}></div>}
+          <AnimationRangeInput text="Hip space" step={0.01} currentMax={10} currentValue={hipSpace} setCurrentValue={setHipSpace} decimalDigit={1} activeStatus={isAllActive} />
+          {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')}></div>}
         </div>
       </section>
-    </div>
+    </Fragment>
   );
 };
 
