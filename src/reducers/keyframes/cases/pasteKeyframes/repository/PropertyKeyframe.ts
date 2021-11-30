@@ -17,9 +17,19 @@ class PropertyKeyframeRepository implements Repository {
     return { isSelected: true, isDeleted: false, time, value: trasnformKey.value };
   };
 
+  private getSmallestKeyframeTime = () => {
+    const { copiedPropertyKeyframes } = this.state;
+    let smallestTime = Infinity;
+    copiedPropertyKeyframes.forEach((copied) => {
+      const time = copied.keyframes[0].time;
+      if (time < smallestTime) smallestTime = time;
+    });
+    return smallestTime;
+  };
+
   private updateValues = <T extends ClusteredKeyframe | TimeEditorTrack>(base: T[], scrubberTime: number) => {
     const { copiedPropertyKeyframes } = this.state;
-    const timeDiff = scrubberTime - copiedPropertyKeyframes[0].keyframes[0].time;
+    const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
     return produce(base, (draft) => {
       copiedPropertyKeyframes.forEach((copiedGroup) => {
         const { trackNumber, keyframes } = copiedGroup;

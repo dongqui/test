@@ -17,6 +17,8 @@ export interface KeyframesState {
   selectedBoneKeyframes: ClusteredKeyframe[];
   selectedPropertyKeyframes: ClusteredKeyframe[];
 
+  copiedLayerKeyframes: ClusteredKeyframe[];
+  copiedBoneKeyframes: ClusteredKeyframe[];
   copiedPropertyKeyframes: ClusteredKeyframe[];
 }
 
@@ -29,6 +31,8 @@ const initialState: KeyframesState = {
   selectedBoneKeyframes: [],
   selectedPropertyKeyframes: [],
 
+  copiedLayerKeyframes: [],
+  copiedBoneKeyframes: [],
   copiedPropertyKeyframes: [],
 };
 
@@ -51,6 +55,8 @@ export const keyframes = (state = initialState, action: KeyframesAction) => {
     }
     case 'keyframes/COPY_KEYFRAMES': {
       return Object.assign<{}, KeyframesState, Partial<KeyframesState>>({}, state, {
+        copiedLayerKeyframes: state.selectedLayerKeyframes,
+        copiedBoneKeyframes: state.selectedBoneKeyframes,
         copiedPropertyKeyframes: state.selectedPropertyKeyframes,
       });
     }

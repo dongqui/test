@@ -47,14 +47,20 @@ export type ClusteredKeyframe = TrackIdentifier & {
   keyframes: TrasnformKey[];
 };
 
-export interface ModifiedPropertyKeyframe {
-  /**
-   * @description
-   */
-  targetFrame: number;
+export interface UpdatedTransformKey {
+  trackId: string;
 
-  /**
-   * @description
-   */
-  propertyTracks: { trackId: string; trackNumber: number; transformKey: TrasnformKey }[];
+  from?: number;
+
+  to: number;
+
+  value: Vector3;
+}
+
+export interface UpdatedPropertyKeyframes {
+  animationIngredientId: string;
+
+  layerId: string;
+
+  transformKeys: UpdatedTransformKey[];
 }

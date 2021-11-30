@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { VideoMode } from './VideoMode';
 import Shoot from './Shoot';
 import { RootState } from 'reducers';
+import { ResizeProvider } from 'contexts/LS/ResizeContext';
 // import Process from 'containers/Process';
 
 export type Procedure = 'service' | 'token' | 'success' | 'denied';
@@ -70,7 +71,17 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
   //   );
   // }
 
-  return <main>{mode === 'animationMode' ? <Shoot /> : <VideoMode browserType={browserType} />}</main>;
+  return (
+    <main>
+      {mode === 'animationMode' ? (
+        <ResizeProvider>
+          <Shoot />
+        </ResizeProvider>
+      ) : (
+        <VideoMode browserType={browserType} />
+      )}
+    </main>
+  );
 };
 
 export default memo(Index);

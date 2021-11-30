@@ -25,7 +25,7 @@ class PropertyKeyframeLeftClick implements LeftClick {
     return keyframes[keyframeIndex].value;
   };
 
-  private getSelectedPropertyKeyframes = ({ state, payload }: Parmas) => {
+  private selectPropertyKeyframes = ({ state, payload }: Parmas) => {
     const { time, trackNumber, trackType } = payload;
     const { trackId, keyframes } = this.findEditorTrack(state.propertyTrackList, trackNumber);
     const value = this.findKeyframeValue(keyframes, time);
@@ -37,7 +37,7 @@ class PropertyKeyframeLeftClick implements LeftClick {
     return {
       selectedLayerKeyframes: [],
       selectedBoneKeyframes: [],
-      selectedPropertyKeyframes: this.getSelectedPropertyKeyframes(params),
+      selectedPropertyKeyframes: this.selectPropertyKeyframes(params),
     };
   };
 }

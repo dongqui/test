@@ -47,12 +47,13 @@ class LayerKeyframeRepository implements Repository {
       selectedLayerKeyframes.forEach(({ keyframes }) => {
         keyframes.forEach((keyframe) => {
           const timeIndex = findElementIndex(layerTrack.keyframes, keyframe.time, 'time');
-          draft.keyframes[timeIndex].isDeleted = true;
+          draft.keyframes[timeIndex].isSelected = false;
         });
       });
       deletedLayerTimes.forEach((time) => {
         const timeIndex = findElementIndex(layerTrack.keyframes, time, 'time');
         draft.keyframes[timeIndex].isDeleted = true;
+        draft.keyframes[timeIndex].isSelected = false;
       });
     });
   };

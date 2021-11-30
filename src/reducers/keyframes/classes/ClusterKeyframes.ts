@@ -15,7 +15,7 @@ class ClusterKeyframes {
       const { time, value, trackNumber, ...rest } = selectedKeyframe;
       const trackIndex = findElementIndex(clusteredKeyframes, trackNumber, 'trackNumber');
       if (trackIndex === -1) {
-        clusteredKeyframes.push({ trackNumber, keyframes: [{ time, value }], ...(rest as any) });
+        clusteredKeyframes.push({ trackNumber, keyframes: [{ time, value }], ...rest });
       } else {
         clusteredKeyframes[trackIndex].keyframes.push({ time, value });
       }
@@ -28,13 +28,13 @@ class ClusterKeyframes {
     return produce(oldValues, (draft) => {
       clusteredKeyframes.forEach((track) => {
         const { keyframes, trackNumber, ...rest } = track;
-        const trackIndex = findElementIndex(oldValues, track.trackNumber, 'trackNumber');
-        if (trackIndex !== -1) {
-          draft[trackIndex].keyframes = [...draft[trackIndex].keyframes, ...track.keyframes];
-          draft[trackIndex].keyframes.sort((a, b) => a.time - b.time);
-        } else {
-          draft.push({ keyframes, trackNumber, ...(rest as any) });
+        const trackIndex = findElementIndex(draft, track.trackNumber, 'trackNumber');
+        if (trackIndex === -1) {
+          draft.push({ keyframes, trackNumber, ...rest });
           draft.sort((a, b) => a.trackNumber - b.trackNumber);
+        } else {
+          draft[trackIndex].keyframes.push(...keyframes);
+          draft[trackIndex].keyframes.sort((a, b) => a.time - b.time);
         }
       });
     });
@@ -45,7 +45,7 @@ class ClusterKeyframes {
     return produce(oldValues, (draft) => {
       clusteredKeyframes.forEach((track) => {
         const { keyframes, trackNumber } = track;
-        const trackIndex = findElementIndex(oldValues, trackNumber, 'trackNumber');
+        const trackIndex = findElementIndex(draft, trackNumber, 'trackNumber');
         if (trackIndex !== -1) {
           const filteredTimes = draft[trackIndex].keyframes.filter((keyframe) => {
             return this.checkIncludedTime(keyframes, keyframe.time, 'time');

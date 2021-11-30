@@ -31,7 +31,7 @@ interface Props {
   name: string;
   fileUrl?: string | File;
   filePath: string;
-  onSelect?: (id: string, childrens?: string[], multiple?: boolean) => void;
+  onSelect?: (id: string, multiple?: boolean) => void;
   onReject: (id: string) => void;
   selectedId: string[];
   isSelected?: boolean;
@@ -316,12 +316,19 @@ const ListNode: FunctionComponent<Props> = ({
                     const copyNode = value;
                     const cloneCopyNode = cloneDeep(copyNode);
 
+                    const splitName = cloneCopyNode.name.split('.');
+                    const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
+
+                    const compareTargetName = cloneCopyNode.type === 'Model' ? fileName : cloneCopyNode.name;
+
                     // @TODO 없으면 비활성 처리 필요
                     if (cloneCopyNode) {
                       const currentPathNodeName = lpNode
                         .filter((node) => {
                           if (node.parentId === id) {
-                            if (node.name.includes(cloneCopyNode.name)) {
+                            const condition =
+                              cloneCopyNode.type === 'Model' ? node.name.includes(compareTargetName) && node.name.includes(splitName[1]) : node.name.includes(compareTargetName);
+                            if (condition) {
                               return true;
                             }
                             return false;
@@ -330,9 +337,18 @@ const ListNode: FunctionComponent<Props> = ({
                         .map((filteredNode) => filteredNode.name);
 
                       const nodeName = beforePaste({
-                        name: cloneCopyNode.name,
+                        name: compareTargetName,
                         comparisonNames: currentPathNodeName,
+                        hasExtension: cloneCopyNode.type === 'Model',
                       });
+
+                      const resultNodeName =
+                        cloneCopyNode.type === 'Model'
+                          ? `${nodeName
+                              .split('.')
+                              .slice(0, splitName.length - 1)
+                              .join('.')}.${splitName[1]}`
+                          : nodeName;
 
                       const nextNodes = produce(nextLPNodes, (draft) => {
                         const targetNode = find(draft, { id });
@@ -340,8 +356,8 @@ const ListNode: FunctionComponent<Props> = ({
                         if (targetNode) {
                           cloneCopyNode.id = uuid();
                           cloneCopyNode.parentId = id;
-                          cloneCopyNode.filePath = filePath + `\\${nodeName}`;
-                          cloneCopyNode.name = nodeName;
+                          cloneCopyNode.filePath = filePath + `\\${resultNodeName}`;
+                          cloneCopyNode.name = resultNodeName;
 
                           targetNode.children.push(cloneCopyNode.id);
 
@@ -822,6 +838,7 @@ const ListNode: FunctionComponent<Props> = ({
     if (currentRef) {
       const handleSelect = (e: MouseEvent) => {
         e.stopPropagation();
+        onContextMenuClose();
 
         onSelect && onSelect(id);
 
@@ -839,7 +856,7 @@ const ListNode: FunctionComponent<Props> = ({
         currentRef.removeEventListener('click', handleSelect);
       };
     }
-  }, [dispatch, filePath, id, name, onSelect]);
+  }, [dispatch, filePath, id, name, onContextMenuClose, onSelect]);
 
   const renderChildren = useCallback(
     (paramId: any) => {

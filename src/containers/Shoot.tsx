@@ -64,7 +64,9 @@ const Shoot: FunctionComponent = () => {
   });
 
   const isResizingCP = useRef<boolean>(false);
-  const isTargetingCP = useRef<boolean>(true);
+  const isTargetingCP = useRef<boolean>(false);
+
+  const showCPWidth = useRef<number>(panelWidth.control);
 
   // LowerSection의 height 비율
   const [rate, setRate] = useState(getFixedNumber(sectionHeight.lowerSection / windowHeight, 2));
@@ -103,14 +105,33 @@ const Shoot: FunctionComponent = () => {
     isResizingCP.current = true;
   }, []);
 
-  const handleCPResizeStop = useCallback(
-    (_e: SyntheticEvent, data: ResizeCallbackData) => {
+  const handleCPResizing = useCallback(
+    (_e: SyntheticEvent, _data: ResizeCallbackData) => {
+      showCPWidth.current = windowWidth - (_e as any).clientX;
       setPanelWidth({
         library: panelWidth.library,
-        control: data.size.width,
+        control: _data.size.width,
       });
     },
-    [panelWidth.library],
+    [windowWidth, panelWidth.library],
+  );
+
+  const handleCPResizeStop = useCallback(
+    (_e: SyntheticEvent, data: ResizeCallbackData) => {
+      showCPWidth.current = windowWidth - (_e as any).clientX;
+      if (showCPWidth.current <= 140) {
+        setPanelWidth({
+          library: panelWidth.library,
+          control: 32,
+        });
+      } else {
+        setPanelWidth({
+          library: panelWidth.library,
+          control: data.size.width,
+        });
+      }
+    },
+    [panelWidth.library, showCPWidth, windowWidth],
   );
 
   useEffect(() => {
@@ -141,7 +162,7 @@ const Shoot: FunctionComponent = () => {
         if (isHide) {
           setPanelWidth({
             library: panelWidth.library,
-            control: 8,
+            control: 32,
           });
         }
         isTargetingCP.current = false;
@@ -225,11 +246,12 @@ const Shoot: FunctionComponent = () => {
     cp: {
       width: panelWidth.control,
       height: sectionHeight.upperSection,
-      min: [constants.width.cp, (windowHeight - constants.height.up) / 2],
+      min: [showCPWidth.current <= 140 ? 32 : constants.width.cp, (windowHeight - constants.height.up) / 2],
       max: [450, windowHeight - 76 - constants.height.up],
       handles: ['w'],
       axis: 'x',
       onResizeStart: handleCPResizeStart,
+      onResize: handleCPResizing,
       onResizeStop: handleCPResizeStop,
     } as BoxProps,
 
@@ -259,8 +281,8 @@ const Shoot: FunctionComponent = () => {
           <RenderingPanel />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-          <ControlPanel />
           {/* <DummyControlPanel /> */}
+          <ControlPanel />
         </Box>
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>

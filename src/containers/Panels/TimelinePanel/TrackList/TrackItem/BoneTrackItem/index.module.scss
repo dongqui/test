@@ -11,7 +11,8 @@
     }
 
     // 트랙 이름, 아이콘
-    span {
+    span,
+    .track-name {
       font-size: 11px;
       color: white;
       padding: 0 !important;

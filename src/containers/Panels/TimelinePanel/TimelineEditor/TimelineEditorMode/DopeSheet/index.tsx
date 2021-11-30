@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { deleteKeyframes, copyKeyframes, enterPasteKey } from 'actions/keyframes';
+import * as keyframesActions from 'actions/keyframes';
 import { useSelector } from 'reducers';
 
 import { LayerTrack } from './TrackList';
@@ -40,14 +40,18 @@ const DopeSheet = () => {
 
   // 키프레임 삭제 단축키
   useEffect(() => {
-    const keyupListener = (event: KeyboardEvent) => {
-      if (event.key === 'Delete') dispatch(deleteKeyframes());
-      else if (event.code === 'KeyC') dispatch(copyKeyframes());
-      else if (event.code === 'KeyV') dispatch(enterPasteKey());
+    const keydownListener = (event: KeyboardEvent) => {
+      if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || (event.altKey && (event.ctrlKey || event.metaKey) && event.key === ('d' || 'D'))) {
+        dispatch(keyframesActions.enterKeyframeDeleteKey());
+      } else if ((event.metaKey || event.ctrlKey) && event.key === ('c' || 'C')) {
+        dispatch(keyframesActions.copyKeyframes());
+      } else if ((event.metaKey || event.ctrlKey) && event.key === ('v' || 'V')) {
+        dispatch(keyframesActions.enterPasteKey());
+      }
     };
-    document.addEventListener('keyup', keyupListener);
+    document.addEventListener('keydown', keydownListener);
     return () => {
-      document.removeEventListener('keyup', keyupListener);
+      document.removeEventListener('keydown', keydownListener);
     };
   }, [dispatch]);
 

@@ -24,13 +24,12 @@ class LayerKeyframeRepository implements Repository {
 
   // 하위 property keyframe이 모두 삭제 될 경우, layer keyframe 삭제
   private deleteLayerKeyframes = (draft: Draft<TimeEditorTrack>, updatedPropertyTrackList: TimeEditorTrack[], selectedTimes: number[]) => {
-    const { isExistedPropertyKeyframe } = this;
     const { propertyTrackList } = this.state;
     selectedTimes.forEach((time) => {
       let deletedCount = 0;
       propertyTrackList.forEach((prpertyTrack) => {
         const { trackNumber } = prpertyTrack;
-        const isExisted = isExistedPropertyKeyframe(updatedPropertyTrackList, trackNumber, time);
+        const isExisted = this.isExistedPropertyKeyframe(updatedPropertyTrackList, trackNumber, time);
         if (isExisted) deletedCount += 1;
       });
       if (deletedCount === 0) {
@@ -48,6 +47,7 @@ class LayerKeyframeRepository implements Repository {
       const keyframeIndex = findElementIndex(draft.keyframes, nextTime, 'time');
       if (keyframeIndex !== -1) {
         draft.keyframes[keyframeIndex].isDeleted = false;
+        draft.keyframes[keyframeIndex].isSelected = false;
       } else {
         draft.keyframes.push({ isDeleted: false, isSelected: false, time: nextTime });
         draft.keyframes.sort((a, b) => a.time - b.time);

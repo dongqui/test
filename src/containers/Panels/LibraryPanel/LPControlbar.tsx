@@ -1,6 +1,7 @@
 import { throttle } from 'lodash';
-import { FunctionComponent, useCallback, useMemo, ChangeEvent } from 'react';
+import { FunctionComponent, memo, useCallback, useMemo, ChangeEvent } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { BaseInput } from 'components/Input';
 import classNames from 'classnames/bind';
 import styles from './LPControlbar.module.scss';
 
@@ -30,10 +31,10 @@ const LPControlbar: FunctionComponent<Props> = ({ onSearch }) => {
     <div className={cx('wrapper')}>
       <div className={cx('search-wrapper')}>
         <IconWrapper className={cx('icon-search')} icon={SvgPath.Search} />
-        <input className={cx('input-search')} placeholder="Search" onChange={handleSearch} />
+        <BaseInput className={cx('input-search')} placeholder="Search" onChange={handleSearch} />
       </div>
     </div>
   );
 };
 
-export default LPControlbar;
+export default memo(LPControlbar);
