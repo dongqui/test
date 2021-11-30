@@ -2,6 +2,7 @@ import { find, remove, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, useEffect, useState, useCallback, useMemo, useRef, createRef, RefObject } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import { HotKeys } from 'react-hotkeys';
 import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { DragBox } from 'components/DragBox';
@@ -353,25 +354,31 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     [lpNode],
   );
 
+  const handlers = {
+    LP_PASTE: handlePaste,
+  };
+
   return (
-    <div className={cx('wrapper')} ref={wrapperRef}>
-      {rootPathNode.map((node, i) => (
-        <div className={cx('node-row')} ref={rowNodeRef[i]} key={node.id}>
-          <ListNode
-            selectableId="node-selectable"
-            isSelected={selectedId.includes(node.id)}
-            onSelect={handleSelect}
-            onReject={handleReject}
-            selectedId={selectedId}
-            onSetDragTarget={handleSetDragTarget}
-            dragTarget={dragTarget}
-            childrens={node.children}
-            {...node}
-          />
-        </div>
-      ))}
-      <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId="node-selectable" selectedId="node-selected" />
-    </div>
+    <HotKeys className={cx('wrapper')} handlers={handlers}>
+      <div className={cx('inner')} ref={wrapperRef}>
+        {rootPathNode.map((node, i) => (
+          <div className={cx('node-row')} ref={rowNodeRef[i]} key={node.id}>
+            <ListNode
+              selectableId="node-selectable"
+              isSelected={selectedId.includes(node.id)}
+              onSelect={handleSelect}
+              onReject={handleReject}
+              selectedId={selectedId}
+              onSetDragTarget={handleSetDragTarget}
+              dragTarget={dragTarget}
+              childrens={node.children}
+              {...node}
+            />
+          </div>
+        ))}
+        <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId="node-selectable" selectedId="node-selected" />
+      </div>
+    </HotKeys>
   );
 };
 
