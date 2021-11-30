@@ -6,16 +6,25 @@
   margin: 0 12px;
 }
 
-.panel-wrap {
-  overflow-y: auto;
-  height: 100%;
+.mapping-section {
+  @include common-panel;
+  flex-direction: column;
 }
 
-.body-icon-wrapper {
+.skeleton-wrapper {
   position: absolute;
+
+  .skeleton {
+    & > svg {
+      width: 184px;
+      height: 366px;
+      color: #353739;
+    }
+  }
 }
 
-.joint-wrapper {
+.bones-wrapper {
+  position: absolute;
   width: 192px;
   height: 366px;
 
@@ -28,7 +37,7 @@
     cursor: pointer;
     box-sizing: border-box;
 
-    & > .circle {
+    & > .bone {
       width: 10px;
       height: 10px;
       clip-path: circle(45%);
@@ -37,18 +46,14 @@
       cursor: pointer;
       box-sizing: border-box;
 
-      &.active {
+      &.mapped {
         background-color: #0f88ff;
       }
-    }
-  }
-}
 
-.body-icon {
-  & > svg {
-    width: 184px;
-    height: 366px;
-    color: #353739;
+      &.selected {
+        background-color: white; // 효과 및 색상 변경 필요
+      }
+    }
   }
 }
 
@@ -67,12 +72,7 @@
   }
 }
 
-.panel-mapping {
-  @include common-panel;
-  flex-direction: column;
-}
-
-.toggle-overlay {
+.inactive-overlay {
   position: absolute;
   top: 0;
   left: 0;
