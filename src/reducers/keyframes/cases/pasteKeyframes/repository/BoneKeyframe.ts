@@ -13,25 +13,39 @@ class BoneKeyframeRepository implements Repository {
     this.state = state;
   }
 
-  private createNextKeyframeValue = (time: number): Keyframe => {
-    return { isSelected: true, isDeleted: false, time };
+  private getSmallestKeyframeTime = () => {
+    const { copiedPropertyKeyframes } = this.state;
+    let smallestTime = Infinity;
+    copiedPropertyKeyframes.forEach((copied) => {
+      const time = copied.keyframes[0].time;
+      if (time < smallestTime) smallestTime = time;
+    });
+    return smallestTime;
   };
 
   // bone track list 업데이트
   updateTimeEditorTrack = (scrubberTime: number, selectedChildren: Map<number, number[]>): TimeEditorTrack[] => {
-    const { boneTrackList } = this.state;
+    const { boneTrackList, copiedBoneKeyframes, copiedPropertyKeyframes } = this.state;
+    const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
     return produce(boneTrackList, (draft) => {
       selectedChildren.forEach((times, boneNumber) => {
         const trackIndex = findElementIndex(draft, boneNumber, 'trackNumber');
         times.forEach((time) => {
           const keyframeIndex = findElementIndex(draft[trackIndex].keyframes, time, 'time');
-          const nextKeyframeValue = this.createNextKeyframeValue(time);
           if (keyframeIndex === -1) {
-            draft[trackIndex].keyframes.push(nextKeyframeValue);
+            draft[trackIndex].keyframes.push({ isSelected: false, isDeleted: false, time });
             draft[trackIndex].keyframes.sort((a, b) => a.time - b.time);
           } else {
-            draft[trackIndex].keyframes[keyframeIndex] = nextKeyframeValue;
+            draft[trackIndex].keyframes[keyframeIndex].isDeleted = false;
           }
+        });
+      });
+      copiedBoneKeyframes.forEach((copied) => {
+        const trackIndex = findElementIndex(draft, copied.trackNumber, 'trackNumber');
+        copied.keyframes.forEach((keyframe) => {
+          const nextTime = timeDiff + keyframe.time;
+          const keyframeIndex = findElementIndex(draft[trackIndex].keyframes, nextTime, 'time');
+          draft[trackIndex].keyframes[keyframeIndex].isSelected = true;
         });
       });
     });
@@ -39,7 +53,8 @@ class BoneKeyframeRepository implements Repository {
 
   // 선택 된 bone keyframes 업데이트
   updateSelectedKeyframes = (scrubberTime: number, selectedChildren: Map<number, number[]>): ClusteredKeyframe[] => {
-    const { selectedBoneKeyframes, boneTrackList } = this.state;
+    const { selectedBoneKeyframes, boneTrackList, copiedBoneKeyframes, copiedPropertyKeyframes } = this.state;
+    const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
     return produce(selectedBoneKeyframes, (draft) => {
       selectedChildren.forEach((times, boneNumber) => {
         let trackIndex = findElementIndex(draft, boneNumber, 'trackNumber');
@@ -52,12 +67,20 @@ class BoneKeyframeRepository implements Repository {
         }
         times.forEach((time) => {
           const keyframeIndex = findElementIndex(draft[trackIndex].keyframes, time, 'time');
-          const nextKeyframeValue = this.createNextKeyframeValue(time);
           if (keyframeIndex === -1) {
-            draft[trackIndex].keyframes.push(nextKeyframeValue);
+            draft[trackIndex].keyframes.push({ time });
             draft[trackIndex].keyframes.sort((a, b) => a.time - b.time);
-          } else {
-            draft[trackIndex].keyframes[keyframeIndex] = nextKeyframeValue;
+          }
+        });
+      });
+      copiedBoneKeyframes.forEach((copied) => {
+        const trackIndex = findElementIndex(draft, copied.trackNumber, 'trackNumber');
+        copied.keyframes.forEach((keyframe) => {
+          const nextTime = timeDiff + keyframe.time;
+          const keyframeIndex = findElementIndex(draft[trackIndex].keyframes, nextTime, 'time');
+          if (keyframeIndex === -1) {
+            draft[trackIndex].keyframes.push({ time: nextTime });
+            draft[trackIndex].keyframes.sort((a, b) => a.time - b.time);
           }
         });
       });

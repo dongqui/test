@@ -92,12 +92,9 @@ const TimelineEditor = () => {
             [width, 0],
           ]) // scale 적용 범위 지정
           .filter((event: WheelEvent) => {
-            const doubleClicked = _.isEqual(event.type, 'dblclick');
-            const panned = _.isEqual(event.type, 'mousedown') && _.isEqual(event.ctrlKey, false) && _.isEqual(event.metaKey, false); // pan 동작 시 ctrl이나 meta를 누르지 않았다면 이벤트 종료
-            const zoomedWithCtrl = _.isEqual(event.type, 'wheel') && (_.isEqual(event.ctrlKey, true) || _.isEqual(event.metaKey, true)); // ctrl이나 meta를 누르고 wheel 동작 시 이벤트 종료
-            if (event.altKey && event.ctrlKey) return false;
-            if (doubleClicked || panned || zoomedWithCtrl) return false;
-            return true;
+            if (event.buttons === 2 && event.altKey) return true; // pan
+            if (event.buttons === 0) return true; // zoom
+            return false;
           })
           .on('zoom', throttleedThing)
           .on('end', () => {
@@ -127,8 +124,8 @@ const TimelineEditor = () => {
         const draggBehavior = d3
           .drag()
           .filter((event) => {
-            if (!event.altKey || !event.ctrlKey) return false;
-            return true;
+            if (event.buttons === 1 && event.altKey) return true; // stretch & squash
+            return false;
           })
           .on('drag', throttleedThing)
           .on('end', () => {

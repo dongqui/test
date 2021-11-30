@@ -84,7 +84,7 @@ class BoneKeyframeRepository implements Repository {
         const trackIndex = findElementIndex(boneTrackList, trackNumber, 'trackNumber');
         keyframes.forEach(({ time }) => {
           const timeIndex = findElementIndex(boneTrackList[trackIndex].keyframes, time, 'time');
-          draft[trackIndex].keyframes[timeIndex].isDeleted = true;
+          draft[trackIndex].keyframes[timeIndex].isSelected = false;
         });
       });
       deletedBoneTimes.forEach((selectedKeyframe) => {
@@ -93,6 +93,7 @@ class BoneKeyframeRepository implements Repository {
         keyframes.forEach(({ time }) => {
           const timeIndex = findElementIndex(boneTrackList[trackIndex].keyframes, time, 'time');
           draft[trackIndex].keyframes[timeIndex].isDeleted = true;
+          draft[trackIndex].keyframes[timeIndex].isSelected = false;
         });
       });
     });

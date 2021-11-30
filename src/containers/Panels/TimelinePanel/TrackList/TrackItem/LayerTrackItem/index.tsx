@@ -23,7 +23,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
   const trackItemRef = useRef<HTMLLIElement>(null);
   const boneTrackList = useSelector((state) => state.trackList.boneTrackList);
 
-  const { onContextMenuOpen } = useContextMenu();
+  const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
   const { onModalOpen, onModalClose } = useBaseModal();
 
   // 컨텍스트 메뉴 리스트
@@ -66,6 +66,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
   // 트랙 클릭
   const handleTrackBodyClick = useCallback(
     (event: React.MouseEvent<Element>) => {
+      onContextMenuClose();
       const { nodeName } = event.target as Element;
       if (nodeName === 'DIV') {
         const payload: trackListActions.ClickLayerTrackBody = { trackId, eventType: 'leftClick', trackType: 'layer' };
@@ -73,7 +74,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
         dispatch(trackListActions.changeSelectedTargets());
       }
     },
-    [dispatch, trackId],
+    [dispatch, onContextMenuClose, trackId],
   );
 
   // 키프레임 컨텍스트 메뉴 설정
@@ -98,7 +99,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
       <div className={cx('track-body', { selected: isSelected, muted: isMuted })}>
         <CaretButton isPointedDownCaret={isPointedDownCaret} trackId={trackId} trackType={trackType} />
         <IconWrapper className={cx('layer-icon')} icon={SvgPath.Layer} />
-        <span className={cx('track-name')}>{trackName}</span>
+        <div className={cx('track-name')}>{trackName}</div>
         <MuteButton trackName={trackName} isMuted={isMuted} trackId={trackId} />
       </div>
       <ul>{isSelected && isPointedDownCaret && boneTrackList.map((boneTrack) => <BoneTrackItem key={boneTrack.trackName} {...boneTrack} />)}</ul>
