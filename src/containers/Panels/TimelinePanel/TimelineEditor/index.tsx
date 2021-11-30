@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
 
+import * as keyframesActions from 'actions/keyframes';
 import { D3ScaleLinear, D3ZoomDatum } from 'types/TP/d3';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
 import { DragBox } from 'components/DragBox';
@@ -19,12 +21,26 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const TimelineEditor = () => {
+  const dispatch = useDispatch();
   const timelineEditorRef = useRef<SVGSVGElement>(null);
   const leftTimeIndex = useRef(0);
   const zoomLevel = useRef(100);
 
   // 드래그 박스 dragEnd 이벤트 발생
-  const handleDragEnd = useCallback((list: NodeListOf<Element>) => {}, []);
+  const handleDragEnd = useCallback(
+    (keyframes: NodeListOf<Element>) => {
+      if (keyframes.length) {
+        const selectedKeyframes: keyframesActions.SelectKeyframesByDragBox[] = [];
+        keyframes.forEach((keyframe) => {
+          const trackNumber = parseInt(keyframe.getAttribute('data-tracknumber') as string, 10);
+          const time = parseInt(keyframe.getAttribute('data-time') as string, 10);
+          selectedKeyframes.push({ trackNumber, time });
+        });
+        dispatch(keyframesActions.selectKeyframesByDragBox(selectedKeyframes));
+      }
+    },
+    [dispatch],
+  );
 
   // timeline editor zoom/pan 이벤트 적용
   useEffect(() => {
