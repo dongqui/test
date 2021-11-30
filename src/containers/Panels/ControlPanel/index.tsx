@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useState } from 'react';
+import { FunctionComponent, memo, useMemo, useState } from 'react';
 import AnimationTab from './AnimationTab/AnimationTab';
 import RetargetTab from './RetargetTab/RetargetTab';
 import classNames from 'classnames/bind';
@@ -7,22 +7,30 @@ import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
+type ControlPanelMode = 'Animation' | 'Retargeting';
+
 const ControlPanel: FunctionComponent = () => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
 
-  const [activeMode, setActiveMode] = useState<string>('Animation');
+  const [currentMode, setCurrentMode] = useState<ControlPanelMode>('Animation');
+  const isPanelActive = useMemo(() => _visualizedAssetIds.length !== 0, [_visualizedAssetIds.length]);
 
   return (
     <div className={cx('wrapper')}>
-      <div className={cx('panel-mode')}>
-        <button className={cx({ active: activeMode === 'Animation' })} onClick={() => setActiveMode('Animation')}>
+      <div className={cx('mode-select')}>
+        <button className={cx({ active: currentMode === 'Animation' })} onClick={() => setCurrentMode('Animation')}>
           Animation
         </button>
-        <button className={cx({ active: activeMode === 'Retargeting' })} onClick={() => setActiveMode('Retargeting')}>
+        <button className={cx({ active: currentMode === 'Retargeting' })} onClick={() => setCurrentMode('Retargeting')}>
           Retargeting
         </button>
       </div>
-      {activeMode === 'Animation' ? <AnimationTab isAllActive={_visualizedAssetIds.length !== 0} /> : <RetargetTab isAllActive={_visualizedAssetIds.length !== 0} />}
+      {/* prettier-ignore */}
+      <div className={cx('tab-wrapper')}>
+        {currentMode === 'Animation' 
+          ? <AnimationTab isAllActive={isPanelActive} />
+          : <RetargetTab isAllActive={isPanelActive} />}
+      </div>
     </div>
   );
 };
