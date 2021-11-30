@@ -39,6 +39,7 @@ interface Props {
   extension: string;
   onSetDragTarget: (id: string, type: LP.Node['type'], parentId: string) => void;
   dragTarget?: { id: string; type: LP.Node['type']; parentId: string };
+  onCopy: () => void;
 }
 
 const ListNode: FunctionComponent<Props> = ({
@@ -57,6 +58,7 @@ const ListNode: FunctionComponent<Props> = ({
   selectedId,
   onSetDragTarget,
   dragTarget,
+  onCopy,
 }) => {
   const dispatch = useDispatch();
 
@@ -214,18 +216,7 @@ const ListNode: FunctionComponent<Props> = ({
             },
             {
               label: 'Copy',
-              onClick: () => {
-                const finded = find(lpNode, { id });
-                const list = lpNode.filter((node) => selectedId.includes(node.id));
-
-                if (finded) {
-                  dispatch(
-                    lpNodeActions.changeClipboard({
-                      data: list,
-                    }),
-                  );
-                }
-              },
+              onClick: onCopy,
               children: [],
             },
           ],
@@ -272,16 +263,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Copy',
-                onClick: () => {
-                  const finded = find(lpNode, { id });
-                  if (finded) {
-                    dispatch(
-                      lpNodeActions.changeClipboard({
-                        data: [finded],
-                      }),
-                    );
-                  }
-                },
+                onClick: onCopy,
                 children: [],
               },
               {
@@ -487,16 +469,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Copy',
-                onClick: () => {
-                  const finded = find(lpNode, { id });
-                  if (finded) {
-                    dispatch(
-                      lpNodeActions.changeClipboard({
-                        data: [finded],
-                      }),
-                    );
-                  }
-                },
+                onClick: onCopy,
                 children: [],
               },
               {
@@ -828,9 +801,10 @@ const ListNode: FunctionComponent<Props> = ({
     selectedId.length,
     selectedId,
     onSelect,
+    onCopy,
   ]);
 
-  const classes = cx('wrapper', { selected: isSelected });
+  const classes = cx('outer', { selected: isSelected });
 
   useEffect(() => {
     const currentRef = wrapperRef && wrapperRef.current;
@@ -882,6 +856,7 @@ const ListNode: FunctionComponent<Props> = ({
               assetId={node.assetId}
               onSetDragTarget={onSetDragTarget}
               dragTarget={dragTarget}
+              onCopy={onCopy}
             />
           );
         }
@@ -905,11 +880,12 @@ const ListNode: FunctionComponent<Props> = ({
             assetId={paramId.assetId}
             onSetDragTarget={onSetDragTarget}
             dragTarget={dragTarget}
+            onCopy={onCopy}
           />
         );
       }
     },
-    [dragTarget, filePath, id, lpNode, name, onReject, onSelect, onSetDragTarget, parentId, selectableId, selectedId],
+    [dragTarget, filePath, onCopy, id, lpNode, name, onReject, onSelect, onSetDragTarget, parentId, selectableId, selectedId],
   );
 
   const handleBlur = useCallback(

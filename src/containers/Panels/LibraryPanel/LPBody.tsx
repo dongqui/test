@@ -354,12 +354,29 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     [lpNode],
   );
 
+  const handleCopy = useCallback(() => {
+    const list = lpNode.filter((node) => selectedId.includes(node.id));
+
+    dispatch(
+      lpNodeActions.changeClipboard({
+        data: list,
+      }),
+    );
+  }, [dispatch, lpNode, selectedId]);
+
   const handlers = {
+    LP_COPY: handleCopy,
     LP_PASTE: handlePaste,
+    LP_ALL_SELECT: (event?: KeyboardEvent) => {
+      if (event) {
+        event.preventDefault();
+        handleSelectAll();
+      }
+    },
   };
 
   return (
-    <HotKeys className={cx('wrapper')} handlers={handlers}>
+    <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
       <div className={cx('inner')} ref={wrapperRef}>
         {rootPathNode.map((node, i) => (
           <div className={cx('node-row')} ref={rowNodeRef[i]} key={node.id}>
@@ -372,6 +389,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
               onSetDragTarget={handleSetDragTarget}
               dragTarget={dragTarget}
               childrens={node.children}
+              onCopy={handleCopy}
               {...node}
             />
           </div>
