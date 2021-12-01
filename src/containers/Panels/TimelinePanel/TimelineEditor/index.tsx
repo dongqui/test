@@ -183,6 +183,33 @@ const TimelineEditor = () => {
     }
   }, []);
 
+  // 키프레임 삭제/복사/붙이기 단축키
+  useEffect(() => {
+    const currentRef = timelineEditorRef.current;
+    const keydownListener = (event: KeyboardEvent) => {
+      if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || (event.altKey && (event.ctrlKey || event.metaKey) && event.key === ('d' || 'D'))) {
+        dispatch(keyframesActions.enterKeyframeDeleteKey());
+      } else if ((event.metaKey || event.ctrlKey) && event.key === ('c' || 'C')) {
+        dispatch(keyframesActions.copyKeyframes());
+      } else if ((event.metaKey || event.ctrlKey) && event.key === ('v' || 'V')) {
+        dispatch(keyframesActions.enterPasteKey());
+      }
+    };
+    const focusListener = () => {
+      document.addEventListener('keydown', keydownListener);
+    };
+    const blurListener = () => {
+      document.removeEventListener('keydown', keydownListener);
+    };
+    currentRef?.addEventListener('focus', focusListener);
+    currentRef?.addEventListener('blur', blurListener);
+    return () => {
+      currentRef?.removeEventListener('focus', focusListener);
+      currentRef?.removeEventListener('blur', blurListener);
+      document.removeEventListener('keydown', keydownListener);
+    };
+  }, [dispatch]);
+
   return (
     <div className={cx('timeline-editor')}>
       <svg ref={timelineEditorRef}>
