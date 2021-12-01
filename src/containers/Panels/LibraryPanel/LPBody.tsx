@@ -12,6 +12,7 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
 import produce from 'immer';
 import ListNode from './ListView/ListNode';
 import classNames from 'classnames/bind';
@@ -441,12 +442,36 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         nodes: afterNodes,
       }),
     );
-  }, [dispatch, lpNode, selectedId]);
+
+    if (selectedAssetId.length > 0) {
+      selectedAssetId.forEach((assetId) => {
+        const targetAsset = assetList.find((asset) => asset.id === assetId);
+        const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+        const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+
+        // delete 대상이 render된 scene에서 대상의 요소들 remove
+        if (targetAsset) {
+          screenList
+            .map((screen) => screen.scene)
+            .forEach((scene) => {
+              removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+            });
+        }
+
+        // assetList에서 제외
+        dispatch(plaskProjectActions.removeAsset({ assetId }));
+        // animationData 삭제
+        dispatch(animationDataActions.removeAsset({ assetId }));
+        // 선택 대상에서 제외
+        dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+      });
+    }
+  }, [assetList, dispatch, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
 
   const handlers = {
     LP_COPY: handleCopy,
     LP_PASTE: handlePaste,
-    // LP_DELETE:
+    LP_DELETE: handleDelete,
     LP_ALL_SELECT: (event?: KeyboardEvent) => {
       if (event) {
         event.preventDefault();

@@ -2,6 +2,7 @@ import { max, find, remove, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import { HotKeys } from 'react-hotkeys';
 import * as BABYLON from '@babylonjs/core';
 import produce from 'immer';
 import { v4 as uuid } from 'uuid';
@@ -171,6 +172,10 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, []);
 
+  const handleEdit = useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
   const depth = (filePath.match(/\\/g) || []).length;
 
   const [isEditing, setIsEditing] = useState(false);
@@ -246,9 +251,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Edit name',
-                onClick: () => {
-                  setIsEditing(true);
-                },
+                onClick: handleEdit,
                 children: [],
               },
               {
@@ -453,9 +456,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Edit name',
-                onClick: () => {
-                  setIsEditing(true);
-                },
+                onClick: handleEdit,
                 children: [],
               },
               {
@@ -728,9 +729,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Edit name',
-                onClick: () => {
-                  setIsEditing(true);
-                },
+                onClick: handleEdit,
                 children: [],
               },
               {
@@ -794,9 +793,10 @@ const ListNode: FunctionComponent<Props> = ({
     onSelect,
     onCopy,
     onDelete,
+    handleEdit,
   ]);
 
-  const classes = cx('wrapper', { selected: isSelected });
+  const classes = cx('outer', { selected: isSelected });
 
   useEffect(() => {
     const currentRef = wrapperRef && wrapperRef.current;
@@ -1349,42 +1349,48 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, [showsChildren]);
 
-  return (
-    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} ref={outerRef}>
-      <div className={cx('inner')}>
-        {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
-        <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
-          <div style={{ paddingLeft: '7px' }} />
-          {type !== 'Motion' && (
-            <div className={cx('arrow-wrapper')} ref={arrowRef}>
-              <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} />
-            </div>
-          )}
-          <div className={cx('info')}>
-            <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
-            {isEditing ? (
-              <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} defaultValue={fileName} autoFocus />
-            ) : (
-              <div className={cx('name')}>{name}</div>
-            )}
-          </div>
-        </div>
-        {/* children area */}
-        {showsChildren && (
-          <Fragment>
-            <div>
-              {childrens.map((children) => {
-                if (typeof children === 'string') {
-                  return <div key={children}>{renderChildren(children)}</div>;
-                }
+  const handlers = {
+    LP_EDIT_NAME: handleEdit,
+  };
 
-                return <div key={children.id}>{renderChildren(children)}</div>;
-              })}
+  return (
+    <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
+      <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} ref={outerRef}>
+        <div className={cx('inner')}>
+          {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
+          <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
+            <div style={{ paddingLeft: '7px' }} />
+            {type !== 'Motion' && (
+              <div className={cx('arrow-wrapper')} ref={arrowRef}>
+                <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} />
+              </div>
+            )}
+            <div className={cx('info')}>
+              <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
+              {isEditing ? (
+                <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} defaultValue={fileName} autoFocus />
+              ) : (
+                <div className={cx('name')}>{name}</div>
+              )}
             </div>
-          </Fragment>
-        )}
+          </div>
+          {/* children area */}
+          {showsChildren && (
+            <Fragment>
+              <div>
+                {childrens.map((children) => {
+                  if (typeof children === 'string') {
+                    return <div key={children}>{renderChildren(children)}</div>;
+                  }
+
+                  return <div key={children.id}>{renderChildren(children)}</div>;
+                })}
+              </div>
+            </Fragment>
+          )}
+        </div>
       </div>
-    </div>
+    </HotKeys>
   );
 };
 

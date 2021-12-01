@@ -9,10 +9,10 @@ import { HotKeys } from 'react-hotkeys';
 const HotkeyOrder: FunctionComponent = ({ children }) => {
   const keyMap = useMemo(() => {
     return {
-      LP_COPY: 'ctrl+c',
-      LP_PASTE: 'ctrl+v',
+      LP_COPY: ['ctrl+c', 'command+c'],
+      LP_PASTE: ['ctrl+v', 'command+v'],
       LP_EDIT_NAME: 'f2',
-      LP_DELETE: ['ctrl+a+d', 'delete'],
+      LP_DELETE: ['delete', 'command+backspace'],
       LP_ALL_SELECT: 'ctrl+a',
     };
   }, []);
