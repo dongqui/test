@@ -351,14 +351,20 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const handleDragEnd = useCallback(
     (list: NodeListOf<HTMLElement>) => {
       const nextIds: string[] = [];
+      const nextAssetIds: string[] = [];
 
       list.forEach((item) => {
         if (item.dataset.id) {
           nextIds.push(item.dataset.id);
         }
+
+        if (item.dataset.assetid) {
+          nextIds.push(item.dataset.assetid);
+        }
       });
 
       let resultSelectedId: string[] = [];
+      let resultSelectedAssetId: string[] = [];
 
       nextIds.forEach((current) => {
         const selectedNode = find(lpNode, { id: current });
@@ -386,6 +392,33 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       });
 
       setSelectedId(resultSelectedId);
+
+      nextAssetIds.forEach((current) => {
+        const selectedNode = find(lpNode, { id: current });
+
+        const isCurrentIncludes = resultSelectedAssetId.includes(current);
+
+        if (selectedNode && !isCurrentIncludes) {
+          const isIncludes = nextIds.includes(selectedNode.parentId);
+          // if (!isIncludes && !nextIds.includes(current)) {
+          if (!isIncludes) {
+            resultSelectedAssetId.push(current);
+          }
+
+          if (isIncludes) {
+            const nextSelecterdAssetId = produce(nextIds, (draft) => {
+              const index = draft.indexOf(current);
+              if (index > -1) {
+                draft.splice(index, 1);
+              }
+            });
+
+            resultSelectedAssetId = [...nextSelecterdAssetId];
+          }
+        }
+      });
+
+      setSelectedAssetId(resultSelectedAssetId);
     },
     [lpNode],
   );
