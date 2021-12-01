@@ -17,7 +17,6 @@ class KeyframeDragBox implements DragBox {
     const layerKeyframeMap = new Map<number, Set<number>>();
     const boneKeyframeMap = new Map<number, Set<number>>();
     const propertyKeyframeMap = new Map<number, Set<number>>();
-    console.log('keyframes', keyframes);
 
     keyframes.forEach((keyframe) => {
       const { time, trackNumber } = keyframe;
@@ -57,7 +56,7 @@ class KeyframeDragBox implements DragBox {
           const currentValue = propertyKeyframeMap.get(propertyNumber);
           if (!currentValue) propertyKeyframeMap.set(propertyNumber, new Set());
           selectedBoneKeyframes.forEach((boneKeyframe) => {
-            currentValue?.add(boneKeyframe);
+            propertyKeyframeMap.get(propertyNumber)?.add(boneKeyframe);
           });
         }
       });
@@ -107,9 +106,6 @@ class KeyframeDragBox implements DragBox {
 
   selectKeyframeByDragBox = (payload: SelectKeyframesByDragBox[]): Partial<KeyframesState> => {
     const [layerKeyframeMap, boneKeyframeMap, propertyKeyframeMap] = this.classifyAllKeyframes(payload);
-    console.log(layerKeyframeMap);
-    console.log(boneKeyframeMap);
-    console.log(propertyKeyframeMap);
     return {
       selectedLayerKeyframes: this.selectLayerKeyframes(layerKeyframeMap),
       selectedBoneKeyframes: this.selectBoneKeyframes(boneKeyframeMap),
