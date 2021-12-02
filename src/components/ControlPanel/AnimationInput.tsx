@@ -46,6 +46,8 @@ const AnimationInput: FunctionComponent<Props> = ({ className, text, defaultValu
         tabIndex={isUndefined(activeStatus) || activeStatus === true ? 0 : -1}
         ref={inputRef}
       />
+      {/* activeStatus에 붙연놓은 input 비활성화 관련 div (placeholder의 역할) */}
+      {!activeStatus && <div className={cx('input-inactive-overlay')}>Inactive</div>}
     </div>
   );
 };
