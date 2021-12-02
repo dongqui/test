@@ -13,7 +13,7 @@ const HotkeyOrder: FunctionComponent = ({ children }) => {
       LP_PASTE: ['ctrl+v', 'command+v'],
       LP_EDIT_NAME: 'f2',
       LP_DELETE: ['delete', 'command+backspace'],
-      LP_ALL_SELECT: 'ctrl+a',
+      LP_ALL_SELECT: ['ctrl+a', 'command+a'],
     };
   }, []);
 
