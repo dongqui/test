@@ -1,5 +1,6 @@
-import { Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import * as BABYLON from '@babylonjs/core';
+import { isNull } from 'lodash';
 import AnimationInputWrapper from './AnimationInputWrapper/AnimationInputWrapper';
 import AnimationFKWrapper from './AnimationFKWrapper/AnimationFKWrapper';
 import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPanel';
@@ -15,35 +16,29 @@ interface Props {
 }
 
 const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
-  // const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
-  // const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
+  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
+  const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
 
-  // const [controlTarget, setControlTarget] = useState<BABYLON.TransformNode | BABYLON.Mesh | null>(null);
-  //
-  // useEffect(() => {
-  //   if (_selectedTargets.length === 0) {
-  //     // 선택되지 않은 경우
-  //     if (isAllActive) {
-  //       // visualize cancel에 의해서 선택해제된 경우
-  //       setControlTarget(null);
-  //     } else {
-  //       // asset은 visualize 되어 있으나 선택대상이 없는 경우
-  //       setControlTarget(_selectableObjects.find((object) => object.name.toLowerCase().includes('armature')) ?? null);
-  //     }
-  //   } else if (_selectedTargets.length === 1) {
-  //     // 단일대상 선택된 경우
-  //     setControlTarget(_selectedTargets[0]);
-  //   } else {
-  //     // 다중대상 선택된 경우
-  //     setControlTarget(null);
-  //   }
-  // }, [_selectableObjects, _selectedTargets, isAllActive]);
+  const [controlTarget, setControlTarget] = useState<BABYLON.TransformNode | BABYLON.Mesh | null>(null);
+
+  useEffect(() => {
+    if (_selectedTargets.length === 0) {
+      // 선택되지 않은 경우
+      setControlTarget(null);
+    } else if (_selectedTargets.length === 1) {
+      // 단일대상 선택된 경우
+      setControlTarget(_selectedTargets[0]);
+    } else {
+      // 다중대상 선택된 경우
+      setControlTarget(null);
+    }
+  }, [_selectableObjects, _selectedTargets, isAllActive]);
 
   // section spread status
   const [isTransformSectionSpread, setIsTransformSectionSpread] = useState<boolean>(true);
   const [isControllerSectionSpread, setIsControllerSectionSpread] = useState<boolean>(true);
   const [isFilterSectionSpread, setIsFilterSectionSpread] = useState<boolean>(true);
-  // const [spreadVisibility, setSpreadVisibility] = useState<boolean>(true);
+  // const [isVisibilitySectionSpread, setIsVisibilitySectionSpread] = useState<boolean>(true);
 
   // transform section
   const [currentRotationType, setCurrentRotationType] = useState<PlaskRotationType>('euler');
@@ -59,29 +54,41 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const positionInputData = [
     {
       text: 'X',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('position x');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 0,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            controlTarget.position.x = parseFloat(event.target.value);
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.position.x : 0), [controlTarget]),
       decimalDigit: 4,
     },
     {
       text: 'Y',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('position y');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 0,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            controlTarget.position.y = parseFloat(event.target.value);
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.position.y : 0), [controlTarget]),
       decimalDigit: 4,
     },
     {
       text: 'Z',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('position z');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 0,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            controlTarget.position.z = parseFloat(event.target.value);
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.position.z : 0), [controlTarget]),
       decimalDigit: 4,
     },
   ];
@@ -89,29 +96,71 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const eulerInputData = [
     {
       text: 'X',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('euler x');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 0,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            const prevE = controlTarget.rotationQuaternion!.clone().normalize().toEulerAngles();
+            const e = new BABYLON.Vector3(parseFloat(event.target.value), prevE.y, prevE.z);
+            const q = e.toQuaternion();
+            controlTarget.rotationQuaternion = q;
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => {
+        if (controlTarget) {
+          const q = controlTarget.rotationQuaternion!.clone();
+          return q.normalize().toEulerAngles().x;
+        } else {
+          return 0;
+        }
+      }, [controlTarget]),
       decimalDigit: 4,
     },
     {
       text: 'Y',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('euler y');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 0,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            const prevE = controlTarget.rotationQuaternion!.clone().normalize().toEulerAngles();
+            const e = new BABYLON.Vector3(prevE.x, parseFloat(event.target.value), prevE.z);
+            const q = e.toQuaternion();
+            controlTarget.rotationQuaternion = q;
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => {
+        if (controlTarget) {
+          const q = controlTarget.rotationQuaternion!.clone();
+          return q.normalize().toEulerAngles().y;
+        } else {
+          return 0;
+        }
+      }, [controlTarget]),
       decimalDigit: 4,
     },
     {
       text: 'Z',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('euler z');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 0,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            const prevE = controlTarget.rotationQuaternion!.clone().normalize().toEulerAngles();
+            const e = new BABYLON.Vector3(prevE.x, prevE.y, parseFloat(event.target.value));
+            const q = e.toQuaternion();
+            controlTarget.rotationQuaternion = q;
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => {
+        if (controlTarget) {
+          const q = controlTarget.rotationQuaternion!.clone();
+          return q.normalize().toEulerAngles().z;
+        } else {
+          return 0;
+        }
+      }, [controlTarget]),
       decimalDigit: 4,
     },
   ];
@@ -119,38 +168,54 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const quaternionInputData = [
     {
       text: 'W',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('quaternion w');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 1,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            controlTarget.rotationQuaternion!.w = parseFloat(event.target.value);
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.w : 0), [controlTarget]),
       decimalDigit: 4,
     },
     {
       text: 'X',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('quaternion x');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 0,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            controlTarget.rotationQuaternion!.x = parseFloat(event.target.value);
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.x : 0), [controlTarget]),
       decimalDigit: 4,
     },
     {
       text: 'Y',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('quaternion y');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 0,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            controlTarget.rotationQuaternion!.y = parseFloat(event.target.value);
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.y : 0), [controlTarget]),
       decimalDigit: 4,
     },
     {
       text: 'Z',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('quaternion z');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 0,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            controlTarget.rotationQuaternion!.z = parseFloat(event.target.value);
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.z : 0), [controlTarget]),
       decimalDigit: 4,
     },
   ];
@@ -158,29 +223,41 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const scaleInputData = [
     {
       text: 'X',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('scale x');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 1,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            controlTarget.scaling.x = parseFloat(event.target.value);
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
     },
     {
       text: 'Y',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('scale y');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 1,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            controlTarget.scaling.y = parseFloat(event.target.value);
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
     },
     {
       text: 'Z',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        console.log('scale z');
-        console.log(parseFloat(event.target.value));
-      },
-      defaultValue: 1,
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlTarget) {
+            controlTarget.scaling.z = parseFloat(event.target.value);
+          }
+        },
+        [controlTarget],
+      ),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
     },
   ];
@@ -225,17 +302,17 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   return (
     <Fragment>
       <section className={cx('transform-section')}>
-        <AnimationTitleToggle text="Transform" isSpread={isTransformSectionSpread} setIsSpread={setIsTransformSectionSpread} activeStatus={isAllActive} />
+        <AnimationTitleToggle text="Transform" isSpread={isTransformSectionSpread} setIsSpread={setIsTransformSectionSpread} activeStatus={isAllActive && !isNull(controlTarget)} />
         <div className={cx('container', { active: isTransformSectionSpread })}>
-          <AnimationInputWrapper inputTitle="Position" inputInfo={positionInputData} activeStatus={isAllActive} />
+          <AnimationInputWrapper inputTitle="Position" inputInfo={positionInputData} activeStatus={isAllActive && !isNull(controlTarget)} />
           {currentRotationType === 'euler' ? (
-            <AnimationInputWrapper inputTitle="Euler" inputInfo={eulerInputData} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive} />
+            <AnimationInputWrapper inputTitle="Euler" inputInfo={eulerInputData} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive && !isNull(controlTarget)} />
           ) : (
             // prettier-ignore
-            <AnimationInputWrapper inputTitle="Quaternion" inputInfo={quaternionInputData} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive} />
+            <AnimationInputWrapper inputTitle="Quaternion" inputInfo={quaternionInputData} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive && !isNull(controlTarget)} />
           )}
-          <AnimationInputWrapper inputTitle="Scale" inputInfo={scaleInputData} activeStatus={isAllActive} />
-          {!isAllActive && <div className={cx('inactive-overlay')}></div>}
+          <AnimationInputWrapper inputTitle="Scale" inputInfo={scaleInputData} activeStatus={isAllActive && !isNull(controlTarget)} />
+          {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
         </div>
       </section>
       <section className={cx('fk-controller-section')}>
@@ -287,8 +364,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
        * Visibility Section is not included on Plask v1.0
        */}
       {/* <section className={cx('visibility-section')}>
-        <AnimationTitleToggle text="Visibility" isSpread={spreadVisibility} setIsSpread={setSpreadVisibility} activeStatus={isAllActive} />
-        <div className={cx('container', { active: spreadVisibility })}>
+        <AnimationTitleToggle text="Visibility" isSpread={isVisibilitySectionSpread} setIsSpread={setIsVisibilitySectionSpread} activeStatus={isAllActive} />
+        <div className={cx('container', { active: isVisibilitySectionSpread })}>
           <AnimationButton buttonInfo={buttonInfo} activeStatus={isAllActive}></AnimationButton>
           {!isAllActive && <div className={cx('inactive-overlay')}></div>}
         </div>

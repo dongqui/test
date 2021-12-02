@@ -9,7 +9,7 @@ const cx = classNames.bind(styles);
 
 export type InputInfo = {
   text: string;
-  defaultValue: number;
+  defaultValue?: number;
   decimalDigit?: number;
   handleBlur: (event: FocusEvent<HTMLInputElement>) => void;
 };
