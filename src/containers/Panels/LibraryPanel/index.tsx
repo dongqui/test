@@ -7,7 +7,7 @@ import '@babylonjs/loaders/glTF';
 import { clone, isUndefined } from 'lodash';
 import { convertFBXtoGLB } from 'api';
 import { getFileExtension, getRandomStringKey } from 'utils/common';
-import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
+import { createAnimationIngredient } from 'utils/RP';
 import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { v4 as uuid } from 'uuid';
 import * as BABYLON from '@babylonjs/core';
@@ -23,6 +23,7 @@ import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { createEmptyRetargetMap } from 'utils/LP/Retarget';
 
 const cx = classNames.bind(styles);
 
@@ -107,6 +108,8 @@ const LibraryPanel: FunctionComponent = () => {
         // transformNode id를 unique한 id로 생성
         transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
       });
+
+      console.log(skeletons[0].serialize().bones);
 
       const animationIngredientIds: string[] = [];
       const animationIngredients: AnimationIngredient[] = [];
