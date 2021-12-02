@@ -1,12 +1,18 @@
+import * as BABYLON from '@babylonjs/core';
 import { find, remove, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, useEffect, useState, useCallback, useMemo, useRef, createRef, RefObject } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import { HotKeys } from 'react-hotkeys';
 import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { DragBox } from 'components/DragBox';
 import { v4 as uuid } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
+import * as animationDataActions from 'actions/animationDataAction';
+import * as selectingDataActions from 'actions/selectingDataAction';
+import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
 import produce from 'immer';
 import ListNode from './ListView/ListNode';
 import classNames from 'classnames/bind';
@@ -23,6 +29,10 @@ interface Props {
 const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const dispatch = useDispatch();
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
+
+  const screenList = useSelector((state) => state.plaskProject.screenList);
+  const assetList = useSelector((state) => state.plaskProject.assetList);
+  const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [rowNodeRef, setRowNodeRef] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -179,9 +189,10 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   );
 
   const [selectedId, setSelectedId] = useState<string[]>([]);
+  const [selectedAssetId, setSelectedAssetId] = useState<string[]>([]);
 
   const handleSelect = useCallback(
-    (id: string, multiple?: boolean) => {
+    (id: string, assetId?: string, multiple?: boolean) => {
       if (multiple) {
         const nextSelectedIds = produce(selectedId, (draft) => {
           if (!draft.includes(id)) {
@@ -189,12 +200,15 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
           }
         });
 
-        // if (childrens && childrens.length > 0) {
-        //   const nextIds = nextSelectedIds.filter((currentId) => !childrens.includes(currentId));
-        //   setSelectedId(nextIds);
+        if (assetId) {
+          const nextSelectedAssetId = produce(selectedAssetId, (draft) => {
+            if (!draft.includes(id)) {
+              draft.push(id);
+            }
+          });
 
-        //   return;
-        // }
+          setSelectedAssetId(nextSelectedAssetId);
+        }
 
         setSelectedId(nextSelectedIds);
       }
@@ -203,24 +217,24 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         setSelectedId([id]);
       }
     },
-    [selectedId],
+    [selectedAssetId, selectedId],
   );
 
-  const handleReject = useCallback(
-    (id: string) => {
-      if (selectedId.includes(id)) {
-        const nextSelectedIds = produce(selectedId, (draft) => {
-          const index = draft.indexOf(id);
-          if (index > -1) {
-            draft.splice(index, 1);
-          }
-        });
+  // const handleReject = useCallback(
+  //   (id: string) => {
+  //     if (selectedId.includes(id)) {
+  //       const nextSelectedIds = produce(selectedId, (draft) => {
+  //         const index = draft.indexOf(id);
+  //         if (index > -1) {
+  //           draft.splice(index, 1);
+  //         }
+  //       });
 
-        setSelectedId(nextSelectedIds);
-      }
-    },
-    [selectedId],
-  );
+  //       setSelectedId(nextSelectedIds);
+  //     }
+  //   },
+  //   [selectedId],
+  // );
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -281,14 +295,20 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const handleDragMove = useCallback(
     (list: NodeListOf<HTMLElement>) => {
       const nextIds: string[] = [];
+      const nextAssetIds: string[] = [];
 
       list.forEach((item) => {
         if (item.dataset.id) {
           nextIds.push(item.dataset.id);
         }
+
+        if (item.dataset.assetid) {
+          nextAssetIds.push(item.dataset.assetid);
+        }
       });
 
       let resultSelectedId: string[] = [];
+      let resultSelectedAssetId: string[] = [];
 
       nextIds.forEach((current) => {
         const selectedNode = find(lpNode, { id: current });
@@ -307,6 +327,24 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       });
 
       setSelectedId(resultSelectedId);
+
+      nextAssetIds.forEach((current) => {
+        const selectedNode = find(lpNode, { assetId: current });
+
+        if (selectedNode) {
+          if (selectedNode.children.length > 0) {
+            const tempAssetIds = nextAssetIds.filter((currentId) => !selectedNode.children.includes(currentId));
+            resultSelectedAssetId = tempAssetIds;
+            return;
+          }
+
+          if (selectedNode.children.length === 0) {
+            resultSelectedAssetId.push(current);
+          }
+        }
+      });
+
+      setSelectedAssetId(resultSelectedAssetId);
     },
     [lpNode],
   );
@@ -314,14 +352,20 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const handleDragEnd = useCallback(
     (list: NodeListOf<HTMLElement>) => {
       const nextIds: string[] = [];
+      const nextAssetIds: string[] = [];
 
       list.forEach((item) => {
         if (item.dataset.id) {
           nextIds.push(item.dataset.id);
         }
+
+        if (item.dataset.assetid) {
+          nextIds.push(item.dataset.assetid);
+        }
       });
 
       let resultSelectedId: string[] = [];
+      let resultSelectedAssetId: string[] = [];
 
       nextIds.forEach((current) => {
         const selectedNode = find(lpNode, { id: current });
@@ -349,29 +393,161 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       });
 
       setSelectedId(resultSelectedId);
+
+      nextAssetIds.forEach((current) => {
+        const selectedNode = find(lpNode, { id: current });
+
+        const isCurrentIncludes = resultSelectedAssetId.includes(current);
+
+        if (selectedNode && !isCurrentIncludes) {
+          const isIncludes = nextIds.includes(selectedNode.parentId);
+          // if (!isIncludes && !nextIds.includes(current)) {
+          if (!isIncludes) {
+            resultSelectedAssetId.push(current);
+          }
+
+          if (isIncludes) {
+            const nextSelecterdAssetId = produce(nextIds, (draft) => {
+              const index = draft.indexOf(current);
+              if (index > -1) {
+                draft.splice(index, 1);
+              }
+            });
+
+            resultSelectedAssetId = [...nextSelecterdAssetId];
+          }
+        }
+      });
+
+      setSelectedAssetId(resultSelectedAssetId);
     },
     [lpNode],
   );
 
+  const handleCopy = useCallback(() => {
+    const list = lpNode.filter((node) => selectedId.includes(node.id));
+
+    dispatch(
+      lpNodeActions.changeClipboard({
+        data: list,
+      }),
+    );
+  }, [dispatch, lpNode, selectedId]);
+
+  const handleDelete = useCallback(() => {
+    const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+
+    dispatch(
+      lpNodeActions.changeNode({
+        nodes: afterNodes,
+      }),
+    );
+
+    if (selectedAssetId.length > 0) {
+      selectedAssetId.forEach((assetId) => {
+        const targetAsset = assetList.find((asset) => asset.id === assetId);
+        const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+        const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+
+        // delete 대상이 render된 scene에서 대상의 요소들 remove
+        if (targetAsset) {
+          screenList
+            .map((screen) => screen.scene)
+            .forEach((scene) => {
+              removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+            });
+        }
+
+        // assetList에서 제외
+        dispatch(plaskProjectActions.removeAsset({ assetId }));
+        // animationData 삭제
+        dispatch(animationDataActions.removeAsset({ assetId }));
+        // 선택 대상에서 제외
+        dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+      });
+    }
+  }, [assetList, dispatch, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
+
+  const handlers = {
+    LP_COPY: handleCopy,
+    LP_PASTE: handlePaste,
+    LP_DELETE: handleDelete,
+    LP_ALL_SELECT: (event?: KeyboardEvent) => {
+      if (event) {
+        event.preventDefault();
+        handleSelectAll();
+      }
+    },
+  };
+
+  //
+  // const cloneLPNode = cloneDeep(lpNode);
+  // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
+
+  // dispatch(
+  //   lpNodeActions.changeNode({
+  //     nodes: afterNodes,
+  //   }),
+  // );
+
+  // //
+
+  // const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+
+  // dispatch(
+  //   lpNodeActions.changeNode({
+  //     nodes: afterNodes,
+  //   }),
+  // );
+
+  // ////
+
+  // if (assetId) {
+  //   const targetAsset = assetList.find((asset) => asset.id === assetId);
+  //   const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+  //   const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+
+  //   // delete 대상이 render된 scene에서 대상의 요소들 remove
+  //   if (targetAsset) {
+  //     screenList
+  //       .map((screen) => screen.scene)
+  //       .forEach((scene) => {
+  //         removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+  //       });
+  //   }
+
+  //   // assetList에서 제외
+  //   dispatch(plaskProjectActions.removeAsset({ assetId }));
+  //   // animationData 삭제
+  //   dispatch(animationDataActions.removeAsset({ assetId }));
+  //   // 선택 대상에서 제외
+  //   dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+  // }
+
+  //
+
   return (
-    <div className={cx('wrapper')} ref={wrapperRef}>
-      {rootPathNode.map((node, i) => (
-        <div className={cx('node-row')} ref={rowNodeRef[i]} key={node.id}>
-          <ListNode
-            selectableId="node-selectable"
-            isSelected={selectedId.includes(node.id)}
-            onSelect={handleSelect}
-            onReject={handleReject}
-            selectedId={selectedId}
-            onSetDragTarget={handleSetDragTarget}
-            dragTarget={dragTarget}
-            childrens={node.children}
-            {...node}
-          />
-        </div>
-      ))}
-      <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId="node-selectable" selectedId="node-selected" />
-    </div>
+    <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
+      <div className={cx('inner')} ref={wrapperRef}>
+        {rootPathNode.map((node, i) => (
+          <div className={cx('node-row')} ref={rowNodeRef[i]} key={node.id}>
+            <ListNode
+              selectableId="node-selectable"
+              isSelected={selectedId.includes(node.id)}
+              onSelect={handleSelect}
+              selectedId={selectedId}
+              onSetDragTarget={handleSetDragTarget}
+              dragTarget={dragTarget}
+              childrens={node.children}
+              onCopy={handleCopy}
+              onDelete={handleDelete}
+              {...node}
+            />
+          </div>
+        ))}
+        <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId="node-selectable" selectedId="node-selected" />
+      </div>
+    </HotKeys>
   );
 };
 

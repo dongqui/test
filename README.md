@@ -1,8 +1,6 @@
-# Shoot 💫
+# PLASK 💫
 
-plask shoot
-
-https://shoot.plask.ai/
+plask
 
 ### Installation ⚙️
 
