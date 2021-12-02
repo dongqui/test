@@ -23,9 +23,10 @@ interface Props {
   fkInfo: InputInfo[];
   className?: string;
   activeStatus?: boolean;
+  inactiveMessage?: string;
 }
 
-const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activeStatus }) => {
+const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activeStatus, inactiveMessage }) => {
   const [isPaletteOpen, setIsPaletteOpen] = useState<boolean>(false);
   const [currentColor, setCurrentColor] = useState<PaletteColor>('yellow');
 
@@ -41,7 +42,7 @@ const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activ
   return (
     <Fragment>
       <div className={cx(classes)}>
-        <AnimationInputWrapper inputTitle="View" inputInfo={fkInfo} activeStatus={activeStatus}>
+        <AnimationInputWrapper inputTitle="View" inputInfo={fkInfo} activeStatus={activeStatus} inactiveMessage={inactiveMessage}>
           <div className={cx('color-pick-dropdown')} onClick={() => setIsPaletteOpen(!isPaletteOpen)}>
             <div className={cx('color-palette')} style={{ backgroundColor: !activeStatus ? '#4F4F4F' : PALETTE_COLORS[currentColor] }}></div>
             <IconWrapper className={cx('arrow-down-icon', { disable: !activeStatus })} icon={SvgPath.EmptyDownArrow} />

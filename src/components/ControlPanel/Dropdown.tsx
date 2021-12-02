@@ -5,17 +5,20 @@ import styles from './Dropdown.module.scss';
 
 const cx = classNames.bind(styles);
 
+const DEFAULT_INACTIVE_MESSAGE = 'Default Inactive Message';
+
 interface Props {
   className?: string;
   options: Array<{ text: string; handleSelect: Dispatch<SetStateAction<string>> }>;
   currentValue?: string;
   activeStatus?: boolean;
+  inactiveMessage?: string;
 }
 
-const Dropdown: FunctionComponent<Props> = ({ className, options, currentValue, activeStatus }) => {
+const Dropdown: FunctionComponent<Props> = ({ className, options, currentValue, activeStatus, inactiveMessage }) => {
   const [activeDropdown, setActiveDropdown] = useState<boolean>(false);
 
-  const classes = cx('dropdown-wrapper', className, { able: activeStatus === undefined ? true : activeStatus });
+  const classes = cx('dropdown-wrapper', className, { able: activeStatus ?? true });
 
   return (
     <Fragment>
@@ -44,7 +47,7 @@ const Dropdown: FunctionComponent<Props> = ({ className, options, currentValue, 
           </div>
         )}
         {/* 드랍다운 버튼 자체의 비활성화를 위한 overlay (내부 텍스트 변경 시 표시되는 텍스트 변경 가능) */}
-        {!activeStatus && <div className={cx('dropdown-inactive-overlay')}>This Dropdown is not active</div>}
+        {!activeStatus && <div className={cx('dropdown-inactive-overlay')}>{inactiveMessage ?? DEFAULT_INACTIVE_MESSAGE}</div>}
       </div>
       {activeDropdown && <div className={cx('dropdown-overlay')} onClick={() => setActiveDropdown(false)}></div>}
     </Fragment>

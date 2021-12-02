@@ -9,7 +9,7 @@ const cx = classNames.bind(styles);
 
 export type InputInfo = {
   text: string;
-  defaultValue: number;
+  defaultValue?: number;
   decimalDigit?: number;
   handleBlur: (event: FocusEvent<HTMLInputElement>) => void;
 };
@@ -24,6 +24,7 @@ interface Props {
   inputTitle?: string;
   inputInfo?: InputInfo[];
   activeStatus?: boolean;
+  inactiveMessage?: string;
   dropdownList?: DropdownList[];
 }
 
@@ -34,7 +35,7 @@ interface Props {
  * @param children - input 요소들 이후에 추가할 element
  * @returns input 요소로 이루어진 목록과 해당 목록을 대표하는 title이 포함된 JSX 요소
  */
-const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle, inputInfo, activeStatus, dropdownList, children }) => {
+const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle, inputInfo, activeStatus, inactiveMessage, dropdownList, children }) => {
   const [activeDropdown, setActiveDropdown] = useState<boolean>(false);
 
   const classes = cx('wrapper', className, { able: activeStatus ?? true });
@@ -48,6 +49,7 @@ const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle
             <AnimationInput
               key={`${inputTitle}${idx}`}
               activeStatus={activeStatus}
+              inactiveMessage={inactiveMessage}
               text={info.text}
               defaultValue={info.defaultValue}
               decimalDigit={info.decimalDigit}

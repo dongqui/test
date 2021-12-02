@@ -5,16 +5,19 @@ import styles from './AnimationInput.module.scss';
 
 const cx = classNames.bind(styles);
 
+const DEFAULT_INACTIVE_MESSAGE = '';
+
 interface Props {
   className?: string;
   text?: string;
   defaultValue?: number;
   activeStatus?: boolean;
+  inactiveMessage?: string;
   decimalDigit?: number;
   handleBlur?: (event: FocusEvent<HTMLInputElement>) => void;
 }
 
-const AnimationInput: FunctionComponent<Props> = ({ className, text, defaultValue, activeStatus, decimalDigit, handleBlur }) => {
+const AnimationInput: FunctionComponent<Props> = ({ className, text, defaultValue, activeStatus, inactiveMessage, decimalDigit, handleBlur }) => {
   const [currentValue, setCurrentValue] = useState<number>(defaultValue ?? 0);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -24,6 +27,12 @@ const AnimationInput: FunctionComponent<Props> = ({ className, text, defaultValu
       event.target.blur();
     }
   }, []);
+
+  useEffect(() => {
+    const decimalFixedValue = Number.parseFloat(defaultValue + '').toFixed(decimalDigit ?? 1);
+
+    inputRef.current!.value = decimalFixedValue;
+  }, [decimalDigit, defaultValue]);
 
   useEffect(() => {
     const decimalFixedValue = Number.parseFloat(currentValue + '').toFixed(decimalDigit ?? 1);
@@ -47,7 +56,7 @@ const AnimationInput: FunctionComponent<Props> = ({ className, text, defaultValu
         ref={inputRef}
       />
       {/* activeStatus에 붙연놓은 input 비활성화 관련 div (placeholder의 역할) */}
-      {!activeStatus && <div className={cx('input-inactive-overlay')}>Inactive</div>}
+      {!activeStatus && <div className={cx('input-inactive-overlay')}>{inactiveMessage ?? DEFAULT_INACTIVE_MESSAGE}</div>}
     </div>
   );
 };
