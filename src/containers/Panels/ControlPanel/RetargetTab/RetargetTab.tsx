@@ -1,15 +1,16 @@
-import { FunctionComponent, useState, memo, Fragment, useEffect, useMemo } from 'react';
+import { FunctionComponent, useState, memo, Fragment, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import * as BABYLON from '@babylonjs/core';
 import { isNull } from 'lodash';
 import { useSelector } from 'reducers';
-import { AnimationRangeInput, AnimationTitleToggle, DropdownWrapper } from 'components/ControlPanel';
+import { AnimationRangeInput, AnimationTitleToggle, DropdownWrapper, RetargetMapIndicator } from 'components/ControlPanel';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { RetargetSourceBoneType } from 'types/common';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import { checkIsTargetMesh } from 'utils/RP';
 import classNames from 'classnames/bind';
 import styles from './RetargetTab.module.scss';
+import { FilledButton } from 'components/Button';
 
 const cx = classNames.bind(styles);
 
@@ -36,6 +37,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [mappedBones, setMappedBones] = useState<string[]>([]);
   // mapping complete badge 상태
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
+  const canAssign = useMemo(() => currentSourceBoneName && currentTargetTransformNode, [currentSourceBoneName, currentTargetTransformNode]);
 
   // map 완료된 bone set하는 로직
   useEffect(() => {
@@ -111,10 +113,14 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }));
   }, [_selectableObjects, dispatch]);
 
+  const handleMappingAssign = useCallback(() => {}, []);
+
   return (
     <Fragment>
       <section className={cx('mapping-section')}>
         <AnimationTitleToggle text="Mapping" isSpread={isMappingSectionSpread} setIsSpread={setIsMappingSectionSpread} activeStatus={isAllActive} />
+        {/* mapping indicator / isMapped의 상태값으로 완료 / 미완료 상태 전환 가능 */}
+        {isAllActive && <RetargetMapIndicator isMapped={mappingCompleted} />}
         <div className={cx('container', 'mapping-icon', { active: isMappingSectionSpread })}>
           <div className={cx('skeleton-wrapper')}>
             <IconWrapper icon={SvgPath.Body} className={cx('skeleton')} />
@@ -133,6 +139,13 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
           {/* prettier-ignore */}
           <DropdownWrapper className={cx('mapping-dropdown')} text="Target" currentValue={currentTargetTransformNode?.name} options={targetTransformNodeOptions} activeStatus={isAllActive}
           />
+          <div className={cx('inner-container')}>
+            {/* assign 버튼 / canAssign 상태를 바꾸면 on/off 가능 */}
+            <FilledButton className={cx('mapping-assign-button', { active: canAssign })} onClick={handleMappingAssign}>
+              Assign
+            </FilledButton>
+            {!canAssign && <div className={cx('inactive-overlay')}></div>}
+          </div>
           <AnimationRangeInput text="Hip space" step={0.01} currentMax={10} currentValue={hipSpace} setCurrentValue={setHipSpace} decimalDigit={1} activeStatus={isAllActive} />
           {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')}></div>}
         </div>
