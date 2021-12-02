@@ -4,6 +4,8 @@ import styles from './AnimationRangeInput.module.scss';
 
 const cx = classNames.bind(styles);
 
+const DEFAULT_INACTIVE_MESSAGE = '';
+
 interface Props {
   text: string;
   currentValue: number;
@@ -11,11 +13,12 @@ interface Props {
   step?: number;
   currentMax?: number;
   activeStatus?: boolean;
+  inactiveMessage?: string;
   decimalDigit?: number;
   className?: string;
 }
 
-const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, currentMax, currentValue, setCurrentValue, activeStatus, decimalDigit }) => {
+const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, currentMax, currentValue, setCurrentValue, activeStatus, inactiveMessage, decimalDigit }) => {
   const [progressBar, setProgressBar] = useState<number>(100);
 
   const rangeRef = useRef<HTMLInputElement>(null);
@@ -150,8 +153,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
           tabIndex={activeStatus ? 0 : -1}
           defaultValue={currentMax}
         />
-        {/* input overlay를 비활성화 표시하는 div / 현재 activeStatus 상태로 해당 div 활성화 여부 결정 */}
-        {!activeStatus && <div className={cx('input-inactive-overlay')}>Inactive</div>}
+        {!activeStatus && <div className={cx('input-inactive-overlay')}>{inactiveMessage ?? DEFAULT_INACTIVE_MESSAGE}</div>}
       </div>
     </div>
   );

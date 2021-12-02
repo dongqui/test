@@ -62,10 +62,6 @@
   display: none;
   position: relative;
 
-  :nth-child(2) {
-    margin-bottom: 6px;
-  }
-
   &.active {
     display: block;
 
@@ -81,7 +77,8 @@
 
     & > .mapping-assign-button {
       width: 100%;
-      margin-bottom: 18px;
+      margin-top: 9px;
+      margin-bottom: 9px;
       background-color: #1d364e;
       color: #4f4f4f;
       font-size: 11px;
