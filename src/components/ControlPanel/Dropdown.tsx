@@ -3,17 +3,16 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
 import styles from './Dropdown.module.scss';
 
+const cx = classNames.bind(styles);
+
 interface Props {
   className?: string;
-  options: string[];
-  currentOption: string;
-  setCurrentOption: Dispatch<SetStateAction<string>>;
+  options: Array<{ text: string; handleSelect: Dispatch<SetStateAction<string>> }>;
+  currentValue?: string;
   activeStatus?: boolean;
 }
 
-const cx = classNames.bind(styles);
-
-const Dropdown: FunctionComponent<Props> = ({ className, options, currentOption, setCurrentOption, activeStatus }) => {
+const Dropdown: FunctionComponent<Props> = ({ className, options, currentValue, activeStatus }) => {
   const [activeDropdown, setActiveDropdown] = useState<boolean>(false);
 
   const classes = cx('dropdown-wrapper', className, { able: activeStatus === undefined ? true : activeStatus });
@@ -22,7 +21,7 @@ const Dropdown: FunctionComponent<Props> = ({ className, options, currentOption,
     <Fragment>
       <div className={cx(classes)}>
         <div className={cx('dropdown-button')} onClick={() => setActiveDropdown(!activeDropdown)}>
-          <div className={cx('dropdown-text')}>{currentOption}</div>
+          <div className={cx('dropdown-text')}>{currentValue ?? 'Select Option'}</div>
           <IconWrapper className={cx('arrow-down-icon')} icon={SvgPath.EmptyDownArrow} />
         </div>
         {activeDropdown && (
@@ -32,12 +31,12 @@ const Dropdown: FunctionComponent<Props> = ({ className, options, currentOption,
                 <li
                   key={idx}
                   onClick={() => {
-                    setCurrentOption(option);
+                    option.handleSelect(option.text);
                     setActiveDropdown(false);
                   }}
                 >
                   <div className={cx('dropdown-option', 'inner')}>
-                    <div className={cx('option-text', 'list')}>{option}</div>
+                    <div className={cx('option-text', 'list')}>{option.text}</div>
                   </div>
                 </li>
               ))}

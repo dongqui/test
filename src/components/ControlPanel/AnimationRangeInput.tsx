@@ -111,7 +111,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
     if (rangeRef) {
       rangeRef.current!.value = currentMax + '';
       // console.log((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
-      console.log('currentMax: ', currentMax);
+      // console.log('currentMax: ', currentMax);
     }
   }, [currentMax]);
 

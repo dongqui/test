@@ -203,7 +203,7 @@ const ControlPanel: FunctionComponent = () => {
           //   // retargetMap이 완성되지 않은 경우에는 생성하지 않음
           //   // retargetMap 생성 로직 완료 후에는 주석 해제해야 함
           //   Object.keys(targetRetargetMap.value).length !==
-          //   Object.values(targetRetargetMap.value).filter((v) => v.targetBoneId).length
+          //   Object.values(targetRetargetMap.value).filter((v) => v.targetTransformNodeId).length
           // ) {
           //   return;
           // }
