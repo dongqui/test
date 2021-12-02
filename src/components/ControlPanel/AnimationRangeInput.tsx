@@ -150,6 +150,8 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
           tabIndex={activeStatus ? 0 : -1}
           defaultValue={currentMax}
         />
+        {/* input overlay를 비활성화 표시하는 div / 현재 activeStatus 상태로 해당 div 활성화 여부 결정 */}
+        {!activeStatus && <div className={cx('input-inactive-overlay')}>Inactive</div>}
       </div>
     </div>
   );
