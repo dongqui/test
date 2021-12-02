@@ -218,7 +218,7 @@ const TimelineEditor = () => {
           <TimelineEditorMode />
         </g>
         <TopRuler />
-        <Scrubber />
+        <Scrubber timelineEditorRef={timelineEditorRef} />
       </svg>
       <DragBox areaRef={timelineEditorRef} onDragEnd={handleDragEnd} selectableId="selectable" selectedId="keyframe-selected" />
     </div>
