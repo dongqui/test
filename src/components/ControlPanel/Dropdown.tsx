@@ -43,6 +43,8 @@ const Dropdown: FunctionComponent<Props> = ({ className, options, currentValue, 
             </ul>
           </div>
         )}
+        {/* 드랍다운 버튼 자체의 비활성화를 위한 overlay (내부 텍스트 변경 시 표시되는 텍스트 변경 가능) */}
+        {!activeStatus && <div className={cx('dropdown-inactive-overlay')}>This Dropdown is not active</div>}
       </div>
       {activeDropdown && <div className={cx('dropdown-overlay')} onClick={() => setActiveDropdown(false)}></div>}
     </Fragment>

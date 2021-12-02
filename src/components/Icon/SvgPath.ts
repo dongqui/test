@@ -50,6 +50,8 @@ import VideoRecord from './svg/VideoRecord.svg';
 import Spinner from './svg/Spinner.svg';
 import Body from './svg/Body.svg';
 import NoCamera from './svg/NoCamera.svg';
+import CheckThin from './svg/Check-thin.svg';
+import Warning from './svg/Warning.svg';
 
 type Icon =
   | 'Close'
@@ -99,7 +101,9 @@ type Icon =
   | 'NoCamera'
   | 'ArrowOpen'
   | 'ArrowClose'
-  | 'Body';
+  | 'Body'
+  | 'CheckThin'
+  | 'Warning';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -154,6 +158,8 @@ const images: Images = {
   ArrowOpen,
   ArrowClose,
   Body,
+  CheckThin,
+  Warning,
 };
 
 export default images;
