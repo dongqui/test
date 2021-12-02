@@ -1,17 +1,11 @@
-
-@import 'styles/libraries/_mixins';
-@import 'styles/libraries/_functions';
-
 .wrapper {
-  position: absolute;
-  display: inline-block;
-  border-radius: 8px;
-  padding: 8px;
-  // background-color: var(--gray600);
-  background-color: #ecedee;
   z-index: 999;
-}
-
-.menu {
-  @include reset-list-style();
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px;
+  background-color: #202122;
+  color: #fff;
+  font-size: 11px;
+  min-width: 144px;
+  position: fixed;
 }
