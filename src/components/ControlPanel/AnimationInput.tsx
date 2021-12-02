@@ -26,6 +26,12 @@ const AnimationInput: FunctionComponent<Props> = ({ className, text, defaultValu
   }, []);
 
   useEffect(() => {
+    const decimalFixedValue = Number.parseFloat(defaultValue + '').toFixed(decimalDigit ?? 1);
+
+    inputRef.current!.value = decimalFixedValue;
+  }, [decimalDigit, defaultValue]);
+
+  useEffect(() => {
     const decimalFixedValue = Number.parseFloat(currentValue + '').toFixed(decimalDigit ?? 1);
 
     inputRef.current!.value = decimalFixedValue;
