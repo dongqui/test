@@ -113,13 +113,23 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }));
   }, [_selectableObjects, dispatch]);
 
-  const handleMappingAssign = useCallback(() => {}, []);
+  const handleAssignButtonClick = useCallback(() => {
+    // animationData의 retargetMaps에서 assetId가 currentAssetId와 같은 retargetMap 찾은 후
+    // 해당 retargetMap의 values 중 sourceBoneName이 currentSourceBoneName인 값의 targetTarnsformNodeId를 currentTargetTransformNode의 id로 업데이트
+    if (currentSourceBoneName && currentTargetTransformNode) {
+      const currentAssetId = currentTargetTransformNode.id.split('//')[0];
+      console.log('currentAssetId: ', currentAssetId);
+      console.log('currentSourceBoneName: ', currentSourceBoneName);
+      console.log('currentTransformNodeId: ', currentTargetTransformNode.id);
+    } else {
+      console.log('Cannot Assign');
+    }
+  }, [currentSourceBoneName, currentTargetTransformNode]);
 
   return (
     <Fragment>
       <section className={cx('mapping-section')}>
         <AnimationTitleToggle text="Mapping" isSpread={isMappingSectionSpread} setIsSpread={setIsMappingSectionSpread} activeStatus={isAllActive} />
-        {/* mapping indicator / isMapped의 상태값으로 완료 / 미완료 상태 전환 가능 */}
         {isAllActive && <RetargetMapIndicator isMapped={mappingCompleted} />}
         <div className={cx('container', 'mapping-icon', { active: isMappingSectionSpread })}>
           <div className={cx('skeleton-wrapper')}>
@@ -140,8 +150,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
           <DropdownWrapper className={cx('mapping-dropdown')} text="Target" currentValue={currentTargetTransformNode?.name} options={targetTransformNodeOptions} activeStatus={isAllActive}
           />
           <div className={cx('inner-container')}>
-            {/* assign 버튼 / canAssign 상태를 바꾸면 on/off 가능 */}
-            <FilledButton className={cx('mapping-assign-button', { active: canAssign })} onClick={handleMappingAssign}>
+            <FilledButton className={cx('mapping-assign-button', { active: canAssign })} onClick={handleAssignButtonClick}>
               Assign
             </FilledButton>
             {!canAssign && <div className={cx('inactive-overlay')}></div>}
