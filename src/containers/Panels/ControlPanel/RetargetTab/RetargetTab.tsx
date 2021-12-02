@@ -34,6 +34,8 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [hipSpace, setHipSpace] = useState<number>(10);
   // mappedBones에 속하는 bone은 파란색 배경색을 입힘
   const [mappedBones, setMappedBones] = useState<string[]>([]);
+  // mapping complete badge 상태
+  const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
 
   // map 완료된 bone set하는 로직
   useEffect(() => {
