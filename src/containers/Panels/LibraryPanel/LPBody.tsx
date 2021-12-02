@@ -35,12 +35,12 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [rowNodeRef, setRowNodeRef] = useState<RefObject<HTMLDivElement>[]>([]);
+  const [nodeRef, setNodeRef] = useState<RefObject<HTMLDivElement>[]>([]);
 
   const { onContextMenuOpen } = useContextMenu();
 
   useEffect(() => {
-    setRowNodeRef(Array.from({ length: lpNode.length }).map(() => createRef()));
+    setNodeRef(Array.from({ length: lpNode.length }).map(() => createRef()));
   }, [lpNode.length]);
 
   const handleDepthChange = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
@@ -245,7 +245,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       }
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
-      const isOutsideRowNode = !rowNodeRef.map((nodeRef) => nodeRef.current?.contains(e.target as Node)).some((isNodeContains) => isNodeContains);
+      const isOutsideRowNode = !nodeRef.map((currentRef) => currentRef.current?.contains(e.target as Node)).some((isNodeContains) => isNodeContains);
 
       const isBodyClick = isContains && isOutsideRowNode;
 
@@ -261,10 +261,12 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     };
 
     const handleResetSelect = (e: MouseEvent) => {
-      const isContains = wrapperRef.current?.contains(e.target as Node);
-      const isOutsideRowNode = !rowNodeRef.map((nodeRef) => nodeRef.current?.contains(e.target as Node)).some((isNodeContains) => isNodeContains);
+      const eventTarget = e.target as Node;
 
-      const isBodyClick = isContains && isOutsideRowNode;
+      const isContains = wrapperRef.current?.contains(eventTarget);
+      const isOutsideNode = !nodeRef.map((currentRef) => currentRef.current?.contains(eventTarget)).some((isNodeContains) => isNodeContains);
+
+      const isBodyClick = isContains && isOutsideNode;
 
       if (isBodyClick) {
         setSelectedId([]);
@@ -282,7 +284,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [contextMenuList, dispatch, isPreventContextmenu, onContextMenuOpen, rowNodeRef]);
+  }, [contextMenuList, dispatch, isPreventContextmenu, nodeRef, onContextMenuOpen]);
 
   const rootPathNode = lpNode.filter((node) => node.parentId === '__root__');
 
@@ -374,7 +376,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
         if (selectedNode && !isCurrentIncludes) {
           const isIncludes = nextIds.includes(selectedNode.parentId);
-          // if (!isIncludes && !nextIds.includes(current)) {
           if (!isIncludes) {
             resultSelectedId.push(current);
           }
@@ -401,7 +402,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
         if (selectedNode && !isCurrentIncludes) {
           const isIncludes = nextIds.includes(selectedNode.parentId);
-          // if (!isIncludes && !nextIds.includes(current)) {
           if (!isIncludes) {
             resultSelectedAssetId.push(current);
           }
@@ -480,57 +480,11 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     },
   };
 
-  //
-  // const cloneLPNode = cloneDeep(lpNode);
-  // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
-
-  // dispatch(
-  //   lpNodeActions.changeNode({
-  //     nodes: afterNodes,
-  //   }),
-  // );
-
-  // //
-
-  // const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
-
-  // dispatch(
-  //   lpNodeActions.changeNode({
-  //     nodes: afterNodes,
-  //   }),
-  // );
-
-  // ////
-
-  // if (assetId) {
-  //   const targetAsset = assetList.find((asset) => asset.id === assetId);
-  //   const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
-  //   const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
-
-  //   // delete 대상이 render된 scene에서 대상의 요소들 remove
-  //   if (targetAsset) {
-  //     screenList
-  //       .map((screen) => screen.scene)
-  //       .forEach((scene) => {
-  //         removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
-  //       });
-  //   }
-
-  //   // assetList에서 제외
-  //   dispatch(plaskProjectActions.removeAsset({ assetId }));
-  //   // animationData 삭제
-  //   dispatch(animationDataActions.removeAsset({ assetId }));
-  //   // 선택 대상에서 제외
-  //   dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
-  // }
-
-  //
-
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
       <div className={cx('inner')} ref={wrapperRef}>
         {rootPathNode.map((node, i) => (
-          <div className={cx('node-row')} ref={rowNodeRef[i]} key={node.id}>
+          <div className={cx('node-row')} ref={nodeRef[i]} key={node.id}>
             <ListNode
               selectableId="node-selectable"
               isSelected={selectedId.includes(node.id)}
