@@ -113,7 +113,7 @@ export type PlaskRetargetMap = {
   values: RetargetMapValue[];
 };
 
-type RetargetMapValue = {
+export type RetargetMapValue = {
   sourceBoneName: RetargetSourceBoneType;
   targetTransformNodeId: Nullable<string>;
 };
