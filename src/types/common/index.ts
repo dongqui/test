@@ -117,13 +117,3 @@ export type RetargetMapValue = {
   sourceBoneName: RetargetSourceBoneType;
   targetTransformNodeId: Nullable<string>;
 };
-
-export interface SerializedBone {
-  id: string;
-  linkedTransformNodeId: string;
-  parentBoneIndex: number;
-  name: string;
-  index: number;
-  rest: Float32Array;
-  matrix: BABYLON.Matrix;
-}

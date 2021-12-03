@@ -1,15 +1,10 @@
 import * as BABYLON from '@babylonjs/core';
-import { PlaskRetargetMap, RetargetMapValue, RetargetSourceBoneType, SerializedBone } from 'types/common';
+import { cloneDeep } from 'lodash';
+import { PlaskRetargetMap, RetargetSourceBoneType } from 'types/common';
 import createEmptyRetargetMap from './createEmptyRetargetMap';
 
-const DEFAULT_HIP_SPACE = 106;
 const DEFAULT_TIME_OUT = 3000;
 const MAX_ITERATE_COUNT = 20; // 잘못된 bone 구조의 model에 의해 while문을 빠져나오지 못하는 경우를 막기 위한 최대 반복 횟수
-
-const KEY_PAIR_BONES = {
-  hips: { pairBone: 'UpLeg', middleBone: 'spine' },
-  spine2: { pairBone: 'Shoulder', middleBone: 'neck' },
-};
 
 const SOURCE_BONES = {
   hips: { key: 0, searchKeywords: ['hips', 'pelvis'] },
@@ -38,8 +33,8 @@ const SOURCE_BONES = {
   rightHandIndex1: { key: 23, searchKeywords: ['handindex'] },
 };
 
-const doMap = (bones: BABYLON.Bone[]) => {
-  const innerRetargetMap: { [boneName in RetargetSourceBoneType]?: BABYLON.Bone } = {};
+const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
+  const retargetMap: { [boneName in RetargetSourceBoneType]?: BABYLON.Bone } = {};
 
   // hips, spine2 찾기
   // children 3개 이상 가진 bone들을 candidate bone으로 보고 검사
@@ -60,7 +55,7 @@ const doMap = (bones: BABYLON.Bone[]) => {
     });
 
     if (legCounts >= 2) {
-      innerRetargetMap.hips = candidateBone;
+      retargetMap.hips = candidateBone;
     }
 
     let armCounts = 0;
@@ -74,7 +69,7 @@ const doMap = (bones: BABYLON.Bone[]) => {
 
     if (armCounts >= 2) {
       // spine2 결정
-      innerRetargetMap.spine2 = candidateBone;
+      retargetMap.spine2 = candidateBone;
     }
   });
 
@@ -83,7 +78,7 @@ const doMap = (bones: BABYLON.Bone[]) => {
     ['hips', 'spine', 'UpLeg'], // 하체
     ['spine2', 'neck', 'Shoulder'], // 상체
   ].forEach(([keyBoneName, middleBoneName, pairBoneName]) => {
-    const keyBone = innerRetargetMap[keyBoneName as RetargetSourceBoneType];
+    const keyBone = retargetMap[keyBoneName as RetargetSourceBoneType];
 
     if (keyBone) {
       // keyBone을 parent로 가지는 bone들을 childrenBones로 지정하고, 각각을 리타게팅 맵에 추가
@@ -92,11 +87,11 @@ const doMap = (bones: BABYLON.Bone[]) => {
 
       childrenBones.forEach((childBone) => {
         if (childBone.name.toLowerCase().includes('left')) {
-          innerRetargetMap[`left${pairBoneName}` as RetargetSourceBoneType] = childBone;
+          retargetMap[`left${pairBoneName}` as RetargetSourceBoneType] = childBone;
         } else if (childBone.name.toLowerCase().includes('right')) {
-          innerRetargetMap[`right${pairBoneName}` as RetargetSourceBoneType] = childBone;
+          retargetMap[`right${pairBoneName}` as RetargetSourceBoneType] = childBone;
         } else {
-          innerRetargetMap[middleBoneName as RetargetSourceBoneType] = childBone;
+          retargetMap[middleBoneName as RetargetSourceBoneType] = childBone;
         }
       });
     }
@@ -105,7 +100,7 @@ const doMap = (bones: BABYLON.Bone[]) => {
     ['left', 'right'].forEach((direction) => {
       // leg mapping
       const legChain = [];
-      let prevLegBone = innerRetargetMap[`${direction}UpLeg` as RetargetSourceBoneType];
+      let prevLegBone = retargetMap[`${direction}UpLeg` as RetargetSourceBoneType];
       let legIterateCount = 0;
       while (legIterateCount < MAX_ITERATE_COUNT && prevLegBone) {
         prevLegBone = prevLegBone.children[0];
@@ -114,13 +109,13 @@ const doMap = (bones: BABYLON.Bone[]) => {
         }
         legIterateCount += 1;
       }
-      innerRetargetMap[`${direction}Leg` as RetargetSourceBoneType] = legChain[0];
-      innerRetargetMap[`${direction}Foot` as RetargetSourceBoneType] = legChain[1];
-      innerRetargetMap[`${direction}ToeBase` as RetargetSourceBoneType] = legChain[2];
+      retargetMap[`${direction}Leg` as RetargetSourceBoneType] = legChain[0];
+      retargetMap[`${direction}Foot` as RetargetSourceBoneType] = legChain[1];
+      retargetMap[`${direction}ToeBase` as RetargetSourceBoneType] = legChain[2];
 
       // arm mapping
       const armChain = [];
-      let prevArmBone = innerRetargetMap[`${direction}Shoulder` as RetargetSourceBoneType];
+      let prevArmBone = retargetMap[`${direction}Shoulder` as RetargetSourceBoneType];
       let armIterateCount = 0;
       while (armIterateCount < MAX_ITERATE_COUNT && prevArmBone) {
         prevArmBone = prevArmBone.children[0];
@@ -129,21 +124,21 @@ const doMap = (bones: BABYLON.Bone[]) => {
         }
         armIterateCount += 1;
       }
-      innerRetargetMap[`${direction}Arm` as RetargetSourceBoneType] = armChain[0];
-      innerRetargetMap[`${direction}ForeArm` as RetargetSourceBoneType] = armChain[1];
-      innerRetargetMap[`${direction}Hand` as RetargetSourceBoneType] = armChain[2];
+      retargetMap[`${direction}Arm` as RetargetSourceBoneType] = armChain[0];
+      retargetMap[`${direction}ForeArm` as RetargetSourceBoneType] = armChain[1];
+      retargetMap[`${direction}Hand` as RetargetSourceBoneType] = armChain[2];
       if (armChain[2]) {
         const handBone = armChain[2];
         const fingerBones = handBone.children;
         const indexFingerBone = fingerBones.find((bone) => bone.name.toLowerCase().includes('index'));
-        innerRetargetMap[`${direction}HandIndex1` as RetargetSourceBoneType] = indexFingerBone;
+        retargetMap[`${direction}HandIndex1` as RetargetSourceBoneType] = indexFingerBone;
       }
     });
 
     // spine1 mapping
     const spineChain = [];
-    const spineStartBone = innerRetargetMap['spine'];
-    const spineEndBone = innerRetargetMap['spine2'];
+    const spineStartBone = retargetMap['spine'];
+    const spineEndBone = retargetMap['spine2'];
 
     if (spineStartBone && spineEndBone) {
       let prevSpineBone: BABYLON.Bone | undefined = spineStartBone;
@@ -155,23 +150,36 @@ const doMap = (bones: BABYLON.Bone[]) => {
         }
         spineIterateCount += 1;
       }
-      innerRetargetMap['spine1'] = spineChain[Math.round((spineChain.length - 1) / 2)];
+      retargetMap['spine1'] = spineChain[Math.round((spineChain.length - 1) / 2)];
     }
 
     // head mapping
-    const neckBone = innerRetargetMap['neck'];
+    const neckBone = retargetMap['neck'];
     if (neckBone) {
-      innerRetargetMap['head'] = neckBone.children[0];
+      retargetMap['head'] = neckBone.children[0];
     }
   });
 
-  console.log('innerRetargetMap: ', innerRetargetMap);
+  return retargetMap;
 };
 
 const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?: number): Promise<PlaskRetargetMap> => {
   const retargetMap = createEmptyRetargetMap(assetId);
 
-  doMap(bones);
+  // innerRetargetMap을 사용해서 retargetMap.values를 업데이트
+  const innerRetargetMap = getInnerRetargetMap(bones);
+  const newValues = cloneDeep(retargetMap.values);
+  newValues.forEach((value) => {
+    const { sourceBoneName } = value;
+    const targetBone = innerRetargetMap[sourceBoneName];
+    if (targetBone) {
+      const targetTransformNode = targetBone.getTransformNode();
+      if (targetTransformNode) {
+        value.targetTransformNodeId = targetTransformNode.id;
+      }
+    }
+  });
+  retargetMap.values = newValues;
 
   return new Promise((resolve, reject) => {
     // auto retarget에 성공하면 생성한 retargetMap을 반환
@@ -179,7 +187,7 @@ const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?:
 
     // timeout을 넘어서면 실패를 반환
     setTimeout(() => {
-      reject('Auto retargeting has failed');
+      reject('Timeout: Auto retargeting has failed');
     }, timeout ?? DEFAULT_TIME_OUT);
   });
 };
