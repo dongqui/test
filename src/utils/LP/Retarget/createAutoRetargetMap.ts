@@ -1,3 +1,4 @@
+import * as BABYLON from '@babylonjs/core';
 import { PlaskRetargetMap, RetargetMapValue, RetargetSourceBoneType, SerializedBone } from 'types/common';
 import createEmptyRetargetMap from './createEmptyRetargetMap';
 
@@ -37,73 +38,43 @@ const SOURCE_BONES = {
   rightHandIndex1: { key: 23, searchKeywords: ['handindex'] },
 };
 
-const doMap = (bones: SerializedBone[]) => {
-  const innerRetargetMap: { [boneName in RetargetSourceBoneType]?: SerializedBone } = {};
-
-  const parentBoneIndices: number[] = [];
-  const keyTargetIndices: number[] = [];
-
-  // 각 Bone들의 parentBoneIndex를 parentBoneIndex 배열에 담기
-  bones.forEach((bone) => {
-    // bone serialize시 실제 index와 index 속성의 값이 일치하지 않음
-    parentBoneIndices.push(bone.parentBoneIndex);
-  });
-
-  // parentBoneIndex 안에 속한 element의 count를 나타내는 객체를 생성
-  const counts: { [n in number]: number } = {};
-  parentBoneIndices.forEach((parentIndex) => {
-    if (counts[parentIndex]) {
-      counts[parentIndex] = counts[parentIndex] + 1;
-    } else {
-      counts[parentIndex] = 1;
-    }
-  });
-
-  // counts 객체의 key 중 value, 즉 count가 2를 초과하는 key들을 keyTargetIndices에 담기
-  Object.entries(counts).forEach(([parentIndex, count]) => {
-    if (count > 2) {
-      keyTargetIndices.push(parseInt(parentIndex));
-    }
-  });
+const doMap = (bones: BABYLON.Bone[]) => {
+  const innerRetargetMap: { [boneName in RetargetSourceBoneType]?: BABYLON.Bone } = {};
 
   // hips, spine2 찾기
-  // keyTargetIndex에 해당하는 bone들을 candidate bone들로 보고 검사
-  keyTargetIndices.forEach((keyTargetIndex) => {
-    // 실제 bone의 index는 1씩 작음
-    const candidateBone = bones.find((bone) => bone.index === keyTargetIndex - 1);
+  // children 3개 이상 가진 bone들을 candidate bone으로 보고 검사
+  const candidateBones = bones.filter((bone) => bone.children.length > 2);
 
-    if (candidateBone) {
-      // candidate Bone의 childrenBones 중 leg 혹은 arm의 searchKeyword를 포함하는 이름을 가진 child 개수를 확인하고
-      // 2개 이상이라면 각각 spine2, hips로 결정
-      const childrenBones = bones.filter((bone) => bone.parentBoneIndex === candidateBone.index + 1);
+  candidateBones.forEach((candidateBone) => {
+    // candidate Bone의 childrenBones 중 leg 혹은 arm의 searchKeyword를 포함하는 이름을 가진 child 개수를 확인하고
+    // 2개 이상이라면 각각 spine2, hips로 결정
+    const childrenBones = candidateBone.children;
 
-      let legCounts = 0;
-      childrenBones.forEach((childBone) => {
-        SOURCE_BONES.leftUpLeg.searchKeywords.forEach((keyword) => {
-          if (childBone.name.toLowerCase().includes(keyword)) {
-            legCounts += 1;
-          }
-        });
+    let legCounts = 0;
+    childrenBones.forEach((childBone) => {
+      SOURCE_BONES.leftUpLeg.searchKeywords.forEach((keyword) => {
+        if (childBone.name.toLowerCase().includes(keyword)) {
+          legCounts += 1;
+        }
       });
+    });
 
-      if (legCounts >= 2) {
-        // hips 결정
-        innerRetargetMap.hips = candidateBone;
-      }
+    if (legCounts >= 2) {
+      innerRetargetMap.hips = candidateBone;
+    }
 
-      let armCounts = 0;
-      childrenBones.forEach((childBone) => {
-        SOURCE_BONES.leftShoulder.searchKeywords.forEach((keyword) => {
-          if (childBone.name.toLowerCase().includes(keyword)) {
-            armCounts += 1;
-          }
-        });
+    let armCounts = 0;
+    childrenBones.forEach((childBone) => {
+      SOURCE_BONES.leftShoulder.searchKeywords.forEach((keyword) => {
+        if (childBone.name.toLowerCase().includes(keyword)) {
+          armCounts += 1;
+        }
       });
+    });
 
-      if (armCounts >= 2) {
-        // spine2 결정
-        innerRetargetMap.spine2 = candidateBone;
-      }
+    if (armCounts >= 2) {
+      // spine2 결정
+      innerRetargetMap.spine2 = candidateBone;
     }
   });
 
@@ -117,7 +88,7 @@ const doMap = (bones: SerializedBone[]) => {
     if (keyBone) {
       // keyBone을 parent로 가지는 bone들을 childrenBones로 지정하고, 각각을 리타게팅 맵에 추가
       // 실제 bone의 index는 1씩 작음
-      const childrenBones = bones.filter((bone) => bone.parentBoneIndex === keyBone.index + 1);
+      const childrenBones = keyBone.children;
 
       childrenBones.forEach((childBone) => {
         if (childBone.name.toLowerCase().includes('left')) {
@@ -137,7 +108,7 @@ const doMap = (bones: SerializedBone[]) => {
       let prevLegBone = innerRetargetMap[`${direction}UpLeg` as RetargetSourceBoneType];
       let legIterateCount = 0;
       while (legIterateCount < MAX_ITERATE_COUNT && prevLegBone) {
-        prevLegBone = bones.find((bone) => bone.parentBoneIndex === prevLegBone!.index + 1);
+        prevLegBone = prevLegBone.children[0];
         if (prevLegBone) {
           legChain.push(prevLegBone);
         }
@@ -152,7 +123,7 @@ const doMap = (bones: SerializedBone[]) => {
       let prevArmBone = innerRetargetMap[`${direction}Shoulder` as RetargetSourceBoneType];
       let armIterateCount = 0;
       while (armIterateCount < MAX_ITERATE_COUNT && prevArmBone) {
-        prevArmBone = bones.find((bone) => bone.parentBoneIndex === prevArmBone!.index + 1);
+        prevArmBone = prevArmBone.children[0];
         if (prevArmBone) {
           armChain.push(prevArmBone);
         }
@@ -163,7 +134,7 @@ const doMap = (bones: SerializedBone[]) => {
       innerRetargetMap[`${direction}Hand` as RetargetSourceBoneType] = armChain[2];
       if (armChain[2]) {
         const handBone = armChain[2];
-        const fingerBones = bones.filter((bone) => bone.parentBoneIndex === handBone.index + 1);
+        const fingerBones = handBone.children;
         const indexFingerBone = fingerBones.find((bone) => bone.name.toLowerCase().includes('index'));
         innerRetargetMap[`${direction}HandIndex1` as RetargetSourceBoneType] = indexFingerBone;
       }
@@ -175,10 +146,10 @@ const doMap = (bones: SerializedBone[]) => {
     const spineEndBone = innerRetargetMap['spine2'];
 
     if (spineStartBone && spineEndBone) {
-      let prevSpineBone: SerializedBone | undefined = spineStartBone;
+      let prevSpineBone: BABYLON.Bone | undefined = spineStartBone;
       let spineIterateCount = 0;
       while (spineIterateCount < MAX_ITERATE_COUNT && prevSpineBone && prevSpineBone !== spineEndBone) {
-        prevSpineBone = bones.find((bone) => bone.parentBoneIndex === prevSpineBone!.index + 1 && bone.name.toLowerCase().includes('spine'));
+        prevSpineBone = prevSpineBone.children.find((child) => child.name.toLowerCase().includes('spine'));
         if (prevSpineBone && prevSpineBone !== spineEndBone) {
           spineChain.push(prevSpineBone);
         }
@@ -190,17 +161,17 @@ const doMap = (bones: SerializedBone[]) => {
     // head mapping
     const neckBone = innerRetargetMap['neck'];
     if (neckBone) {
-      innerRetargetMap['head'] = bones.find((bone) => bone.parentBoneIndex === neckBone.index + 1);
+      innerRetargetMap['head'] = neckBone.children[0];
     }
   });
 
   console.log('innerRetargetMap: ', innerRetargetMap);
 };
 
-const createAutoRetargetMap = (assetId: string, serializeBones: SerializedBone[], timeout?: number): Promise<PlaskRetargetMap> => {
+const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?: number): Promise<PlaskRetargetMap> => {
   const retargetMap = createEmptyRetargetMap(assetId);
 
-  doMap(serializeBones);
+  doMap(bones);
 
   return new Promise((resolve, reject) => {
     // auto retarget에 성공하면 생성한 retargetMap을 반환

@@ -130,7 +130,7 @@ const LibraryPanel: FunctionComponent = () => {
       // 모델에 대한 빈 retargetMap을 생성
       // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
       const retargetMap = createEmptyRetargetMap(assetId);
-      createAutoRetargetMap(assetId, skeletons[0].serialize().bones, 1000);
+      createAutoRetargetMap(assetId, skeletons[0].bones, 3000);
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
