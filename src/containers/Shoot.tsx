@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { debounce } from 'lodash';
 import { FunctionComponent, Fragment, useEffect, useState, useRef, useCallback, useMemo, SyntheticEvent } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import { UpperBar } from 'containers/UpperBar';
@@ -16,6 +16,7 @@ import MiddleBar from './MiddleBar/Shoot';
 import DummyControlPanel from './Panels/DummyControlPanel';
 import DummyTimelinePanel from './Panels/DummyTimelinePanel';
 
+import HotKeyOrder from './HotKeyOrder';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
 
@@ -155,8 +156,8 @@ const Shoot: FunctionComponent = () => {
       }
     };
 
-    const handleMouseUp = _.debounce((e: MouseEvent) => {
-      if (isResizingCP.current && isTargetingCP.current) {
+    const handleMouseUp = debounce((e: MouseEvent) => {
+      if (isResizingCP && isTargetingCP.current) {
         const isHide = windowWidth - e.clientX <= 140;
 
         if (isHide) {
@@ -265,39 +266,40 @@ const Shoot: FunctionComponent = () => {
   };
 
   return (
-    <Fragment>
-      <Box id="UP" {...boxProps.up}>
-        <UpperBar sceneName="Please enter a scene name" />
-      </Box>
-      <Box id="US" className={cx('upper-section')} {...boxProps.us}>
-        <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
-          <BaseModalProvider>
-            <ContextMenuProvider>
-              <LibraryPanel />
-            </ContextMenuProvider>
-          </BaseModalProvider>
+    <HotKeyOrder>
+      <Fragment>
+        <Box id="UP" {...boxProps.up}>
+          <UpperBar sceneName="Please enter a scene name" />
         </Box>
-        <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
-          <RenderingPanel />
+        <Box id="US" className={cx('upper-section')} {...boxProps.us}>
+          <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
+            <BaseModalProvider>
+              <ContextMenuProvider>
+                <LibraryPanel />
+              </ContextMenuProvider>
+            </BaseModalProvider>
+          </Box>
+          <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
+            <RenderingPanel />
+          </Box>
+          <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
+            <ControlPanel />
+          </Box>
         </Box>
-        <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-          {/* <DummyControlPanel /> */}
-          <ControlPanel />
+        <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
+          <Box id="MB" {...boxProps.mb}>
+            <MiddleBar />
+          </Box>
+          <Box id="TP" {...boxProps.tp}>
+            <BaseModalProvider>
+              <ContextMenuProvider>
+                <TimelinePanel />
+              </ContextMenuProvider>
+            </BaseModalProvider>
+          </Box>
         </Box>
-      </Box>
-      <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
-        <Box id="MB" {...boxProps.mb}>
-          <MiddleBar />
-        </Box>
-        <Box id="TP" {...boxProps.tp}>
-          <BaseModalProvider>
-            <ContextMenuProvider>
-              <TimelinePanel />
-            </ContextMenuProvider>
-          </BaseModalProvider>
-        </Box>
-      </Box>
-    </Fragment>
+      </Fragment>
+    </HotKeyOrder>
   );
 };
 

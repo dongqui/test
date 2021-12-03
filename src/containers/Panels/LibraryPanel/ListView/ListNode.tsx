@@ -2,6 +2,7 @@ import { max, find, remove, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import { HotKeys } from 'react-hotkeys';
 import * as BABYLON from '@babylonjs/core';
 import produce from 'immer';
 import { v4 as uuid } from 'uuid';
@@ -31,14 +32,15 @@ interface Props {
   name: string;
   fileUrl?: string | File;
   filePath: string;
-  onSelect?: (id: string, multiple?: boolean) => void;
-  onReject: (id: string) => void;
+  onSelect?: (id: string, assetId?: string, multiple?: boolean) => void;
   selectedId: string[];
   isSelected?: boolean;
   childrens: any[];
   extension: string;
   onSetDragTarget: (id: string, type: LP.Node['type'], parentId: string) => void;
   dragTarget?: { id: string; type: LP.Node['type']; parentId: string };
+  onCopy: () => void;
+  onDelete: () => void;
 }
 
 const ListNode: FunctionComponent<Props> = ({
@@ -50,13 +52,14 @@ const ListNode: FunctionComponent<Props> = ({
   assetId,
   parentId,
   onSelect,
-  onReject,
   isSelected,
   childrens,
   extension,
   selectedId,
   onSetDragTarget,
   dragTarget,
+  onCopy,
+  onDelete,
 }) => {
   const dispatch = useDispatch();
 
@@ -93,12 +96,10 @@ const ListNode: FunctionComponent<Props> = ({
         const currentRefId = currentRef.id;
 
         if (currentRefId === 'node-selected' && currentRefId !== currentSelectableId) {
-          // onSelect && onSelect(id, childrens, true);
           setCurrentSelectableId(currentRefId);
         }
 
         if (currentRefId === 'node-selectable' && currentRefId !== currentSelectableId) {
-          // onReject(id);
           setCurrentSelectableId(currentRefId);
         }
       }
@@ -129,7 +130,7 @@ const ListNode: FunctionComponent<Props> = ({
         currentRef.removeEventListener('mouseleave', handleHover);
       }
     };
-  }, [childrens, currentSelectableId, id, isHover, name, onReject, onSelect, parentId]);
+  }, [currentSelectableId]);
 
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
@@ -164,21 +165,15 @@ const ListNode: FunctionComponent<Props> = ({
     if (changeNode) {
       changeNode.parentId = parentNode.id;
       changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
-      // const cloneChangeNode = cloneDeep(changeNode);
-
-      // cloneChangeNode.id = uuid();
-      // cloneChangeNode.parentId = parentNode.id;
-      // cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
-
-      // // remove(parentNode.children, (child) => child === childID);
-      // parentNode.children.push(cloneChangeNode.id);
-
-      // node.push(cloneChangeNode);
 
       if (changeNode.children.length > 0) {
         changeNode.children.map((child) => depthChangeKey(node, child, changeNode));
       }
     }
+  }, []);
+
+  const handleEdit = useCallback(() => {
+    setIsEditing(true);
   }, []);
 
   const depth = (filePath.match(/\\/g) || []).length;
@@ -202,30 +197,20 @@ const ListNode: FunctionComponent<Props> = ({
             {
               label: 'Delete',
               onClick: () => {
-                const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+                onDelete();
+                // const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
 
-                dispatch(
-                  lpNodeActions.changeNode({
-                    nodes: afterNodes,
-                  }),
-                );
+                // dispatch(
+                //   lpNodeActions.changeNode({
+                //     nodes: afterNodes,
+                //   }),
+                // );
               },
               children: [],
             },
             {
               label: 'Copy',
-              onClick: () => {
-                const finded = find(lpNode, { id });
-                const list = lpNode.filter((node) => selectedId.includes(node.id));
-
-                if (finded) {
-                  dispatch(
-                    lpNodeActions.changeClipboard({
-                      data: list,
-                    }),
-                  );
-                }
-              },
+              onClick: onCopy,
               children: [],
             },
           ],
@@ -235,7 +220,7 @@ const ListNode: FunctionComponent<Props> = ({
       }
 
       if (isContains) {
-        onSelect && onSelect(id);
+        onSelect && onSelect(id, assetId);
 
         dispatch(
           lpNodeActions.changeCurrentPath({
@@ -252,36 +237,26 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Delete',
                 onClick: () => {
-                  const cloneLPNode = cloneDeep(lpNode);
-                  const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
+                  onDelete();
+                  // const cloneLPNode = cloneDeep(lpNode);
+                  // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
 
-                  dispatch(
-                    lpNodeActions.changeNode({
-                      nodes: afterNodes,
-                    }),
-                  );
+                  // dispatch(
+                  //   lpNodeActions.changeNode({
+                  //     nodes: afterNodes,
+                  //   }),
+                  // );
                 },
                 children: [],
               },
               {
                 label: 'Edit name',
-                onClick: () => {
-                  setIsEditing(true);
-                },
+                onClick: handleEdit,
                 children: [],
               },
               {
                 label: 'Copy',
-                onClick: () => {
-                  const finded = find(lpNode, { id });
-                  if (finded) {
-                    dispatch(
-                      lpNodeActions.changeClipboard({
-                        data: [finded],
-                      }),
-                    );
-                  }
-                },
+                onClick: onCopy,
                 children: [],
               },
               {
@@ -445,58 +420,48 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Delete',
                 onClick: () => {
-                  const cloneLPNode = cloneDeep(lpNode);
-                  const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
+                  onDelete();
+                  // const cloneLPNode = cloneDeep(lpNode);
+                  // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
 
-                  dispatch(
-                    lpNodeActions.changeNode({
-                      nodes: afterNodes,
-                    }),
-                  );
+                  // dispatch(
+                  //   lpNodeActions.changeNode({
+                  //     nodes: afterNodes,
+                  //   }),
+                  // );
 
-                  if (assetId) {
-                    const targetAsset = assetList.find((asset) => asset.id === assetId);
-                    const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
-                    const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+                  // if (assetId) {
+                  //   const targetAsset = assetList.find((asset) => asset.id === assetId);
+                  //   const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+                  //   const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
 
-                    // delete 대상이 render된 scene에서 대상의 요소들 remove
-                    if (targetAsset) {
-                      screenList
-                        .map((screen) => screen.scene)
-                        .forEach((scene) => {
-                          removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
-                        });
-                    }
+                  //   // delete 대상이 render된 scene에서 대상의 요소들 remove
+                  //   if (targetAsset) {
+                  //     screenList
+                  //       .map((screen) => screen.scene)
+                  //       .forEach((scene) => {
+                  //         removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+                  //       });
+                  //   }
 
-                    // assetList에서 제외
-                    dispatch(plaskProjectActions.removeAsset({ assetId }));
-                    // animationData 삭제
-                    dispatch(animationDataActions.removeAsset({ assetId }));
-                    // 선택 대상에서 제외
-                    dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
-                  }
+                  //   // assetList에서 제외
+                  //   dispatch(plaskProjectActions.removeAsset({ assetId }));
+                  //   // animationData 삭제
+                  //   dispatch(animationDataActions.removeAsset({ assetId }));
+                  //   // 선택 대상에서 제외
+                  //   dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                  // }
                 },
                 children: [],
               },
               {
                 label: 'Edit name',
-                onClick: () => {
-                  setIsEditing(true);
-                },
+                onClick: handleEdit,
                 children: [],
               },
               {
                 label: 'Copy',
-                onClick: () => {
-                  const finded = find(lpNode, { id });
-                  if (finded) {
-                    dispatch(
-                      lpNodeActions.changeClipboard({
-                        data: [finded],
-                      }),
-                    );
-                  }
-                },
+                onClick: onCopy,
                 children: [],
               },
               {
@@ -764,9 +729,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Edit name',
-                onClick: () => {
-                  setIsEditing(true);
-                },
+                onClick: handleEdit,
                 children: [],
               },
               {
@@ -828,9 +791,12 @@ const ListNode: FunctionComponent<Props> = ({
     selectedId.length,
     selectedId,
     onSelect,
+    onCopy,
+    onDelete,
+    handleEdit,
   ]);
 
-  const classes = cx('wrapper', { selected: isSelected });
+  const classes = cx('outer', { selected: isSelected });
 
   useEffect(() => {
     const currentRef = wrapperRef && wrapperRef.current;
@@ -840,7 +806,7 @@ const ListNode: FunctionComponent<Props> = ({
         e.stopPropagation();
         onContextMenuClose();
 
-        onSelect && onSelect(id);
+        onSelect && onSelect(id, assetId);
 
         dispatch(
           lpNodeActions.changeCurrentPath({
@@ -856,7 +822,7 @@ const ListNode: FunctionComponent<Props> = ({
         currentRef.removeEventListener('click', handleSelect);
       };
     }
-  }, [dispatch, filePath, id, name, onContextMenuClose, onSelect]);
+  }, [assetId, dispatch, filePath, id, name, onContextMenuClose, onSelect]);
 
   const renderChildren = useCallback(
     (paramId: any) => {
@@ -864,6 +830,8 @@ const ListNode: FunctionComponent<Props> = ({
         const node = find(lpNode, { id: paramId });
 
         if (node) {
+          //
+          //
           return (
             <ListNode
               selectableId={selectableId}
@@ -875,13 +843,14 @@ const ListNode: FunctionComponent<Props> = ({
               filePath={node.filePath}
               extension={node.extension}
               onSelect={onSelect}
-              onReject={onReject}
               selectedId={selectedId}
               isSelected={selectedId.includes(node.id)}
               childrens={node.children}
               assetId={node.assetId}
               onSetDragTarget={onSetDragTarget}
               dragTarget={dragTarget}
+              onCopy={onCopy}
+              onDelete={onDelete}
             />
           );
         }
@@ -898,18 +867,19 @@ const ListNode: FunctionComponent<Props> = ({
             filePath={filePath + `\\${name}`}
             extension={paramId.extension}
             onSelect={onSelect}
-            onReject={onReject}
             selectedId={selectedId}
             isSelected={selectedId.includes(id) && paramId.current}
             childrens={[]}
             assetId={paramId.assetId}
             onSetDragTarget={onSetDragTarget}
             dragTarget={dragTarget}
+            onCopy={onCopy}
+            onDelete={onDelete}
           />
         );
       }
     },
-    [dragTarget, filePath, id, lpNode, name, onReject, onSelect, onSetDragTarget, parentId, selectableId, selectedId],
+    [lpNode, selectableId, onSelect, selectedId, onSetDragTarget, dragTarget, onCopy, parentId, filePath, name, id, onDelete],
   );
 
   const handleBlur = useCallback(
@@ -1090,9 +1060,9 @@ const ListNode: FunctionComponent<Props> = ({
       // 드래그 시작시 선택 및 스타일 적용
       onSetDragTarget(id, type, parentId);
 
-      onSelect && onSelect(id);
+      onSelect && onSelect(id, assetId);
     },
-    [id, onSelect, onSetDragTarget, parentId, type],
+    [assetId, id, onSelect, onSetDragTarget, parentId, type],
   );
 
   const handleDrop = useCallback(
@@ -1379,42 +1349,48 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, [showsChildren]);
 
-  return (
-    <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} ref={outerRef}>
-      <div className={cx('inner')}>
-        {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
-        <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id}>
-          <div style={{ paddingLeft: '7px' }} />
-          {type !== 'Motion' && (
-            <div className={cx('arrow-wrapper')} ref={arrowRef}>
-              <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} />
-            </div>
-          )}
-          <div className={cx('info')}>
-            <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
-            {isEditing ? (
-              <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} defaultValue={fileName} autoFocus />
-            ) : (
-              <div className={cx('name')}>{name}</div>
-            )}
-          </div>
-        </div>
-        {/* children area */}
-        {showsChildren && (
-          <Fragment>
-            <div>
-              {childrens.map((children) => {
-                if (typeof children === 'string') {
-                  return <div key={children}>{renderChildren(children)}</div>;
-                }
+  const handlers = {
+    LP_EDIT_NAME: handleEdit,
+  };
 
-                return <div key={children.id}>{renderChildren(children)}</div>;
-              })}
+  return (
+    <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
+      <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} ref={outerRef}>
+        <div className={cx('inner')}>
+          {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
+          <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
+            <div style={{ paddingLeft: '7px' }} />
+            {type !== 'Motion' && (
+              <div className={cx('arrow-wrapper')} ref={arrowRef}>
+                <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} />
+              </div>
+            )}
+            <div className={cx('info')}>
+              <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
+              {isEditing ? (
+                <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} defaultValue={fileName} autoFocus />
+              ) : (
+                <div className={cx('name')}>{name}</div>
+              )}
             </div>
-          </Fragment>
-        )}
+          </div>
+          {/* children area */}
+          {showsChildren && (
+            <Fragment>
+              <div>
+                {childrens.map((children) => {
+                  if (typeof children === 'string') {
+                    return <div key={children}>{renderChildren(children)}</div>;
+                  }
+
+                  return <div key={children.id}>{renderChildren(children)}</div>;
+                })}
+              </div>
+            </Fragment>
+          )}
+        </div>
       </div>
-    </div>
+    </HotKeys>
   );
 };
 

@@ -4,11 +4,11 @@ import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import produce from 'immer';
 import '@babylonjs/loaders/glTF';
-import { clone, isUndefined } from 'lodash';
 import { convertFBXtoGLB } from 'api';
 import { getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient } from 'utils/RP';
-import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
+import { checkCreateDuplicates } from 'utils/LP/FileSystem';
+import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
 import { v4 as uuid } from 'uuid';
 import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -23,7 +23,6 @@ import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
 
 const cx = classNames.bind(styles);
 
