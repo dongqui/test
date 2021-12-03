@@ -19,11 +19,12 @@ const TransformTrackComponent: FunctionComponent<Props> = (props) => {
 
   return (
     <g className={cx('track')} transform={`translate(0, ${translateY})`}>
-      <rect className={cx({ selected: isSelected })} height="24" width="150000" transform="translate(-5000 0)" />
+      <rect className={cx({ selected: isSelected })} height="24" width="200000" transform="translate(-5000 0)" />
       {keyframes.map(
         (keyframe) =>
           !keyframe.isDeleted && <Keyframe key={`${keyframe.time}_${keyframe.isSelected}`} trackId={trackId} trackType="property" trackNumber={trackNumber} {...keyframe} />,
       )}
+      <line x1="-5000" y1="24" x2="150000" y2="24" strokeWidth="1" />
     </g>
   );
 };
