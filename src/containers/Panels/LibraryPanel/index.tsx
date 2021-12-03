@@ -23,7 +23,7 @@ import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { createEmptyRetargetMap } from 'utils/LP/Retarget';
+import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
 
 const cx = classNames.bind(styles);
 
@@ -109,8 +109,6 @@ const LibraryPanel: FunctionComponent = () => {
         transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
       });
 
-      console.log(skeletons[0].serialize().bones);
-
       const animationIngredientIds: string[] = [];
       const animationIngredients: AnimationIngredient[] = [];
 
@@ -132,6 +130,7 @@ const LibraryPanel: FunctionComponent = () => {
       // 모델에 대한 빈 retargetMap을 생성
       // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
       const retargetMap = createEmptyRetargetMap(assetId);
+      createAutoRetargetMap(assetId, skeletons[0].serialize().bones, 1000);
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 

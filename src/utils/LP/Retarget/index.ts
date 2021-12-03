@@ -1,4 +1,4 @@
-export { default as createRetargetMap } from './createRetargetMap';
+export { default as createAutoRetargetMap } from './createAutoRetargetMap';
 export { default as createEmptyRetargetMap } from './createEmptyRetargetMap';
 
 // dummy
