@@ -526,6 +526,10 @@ const ListNode: FunctionComponent<Props> = ({
                           // joints 생성 및 scene들에 추가
                           bones.forEach((bone) => {
                             if (!bone.name.toLowerCase().includes('scene')) {
+                              // @TODO
+                              if (bone.name === '__root__') {
+                                return;
+                              }
                               const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
                               joint.id = `${assetId}//${bone.name}//joint`;
                               joint.renderingGroupId = 2;
@@ -574,10 +578,16 @@ const ListNode: FunctionComponent<Props> = ({
                           // dragBox 선택 대상에 추가
                           dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
 
-                          scene들에 skeletonViewer 추가
-                          const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
-                          skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
-                          scene.addMesh(skeletonViewer.mesh);
+                          // scene들에 skeletonViewer 추가
+                          if (skeleton) {
+                            const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
+
+                            // @TODO
+                            // scene.removeMesh(skeletonViewer.mesh);
+
+                            skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
+                            scene.addMesh(skeletonViewer.mesh);
+                          }
 
                           // scene들에 애니메이션 적용을 위한 transformNode 추가
                           transformNodes.forEach((transformNode) => {
@@ -707,20 +717,31 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'Export > glb',
                 onClick: () => {
                   const baseScene = _screenList[0].scene;
+                  const skeletonViewerMesh = _screenList[0].scene.getMeshByID(`${assetId}//skeletonViewer`);
 
-                  // console.log(baseScene); shouldExportNode options
+                  if (skeletonViewerMesh) {
+                    _screenList[0].scene.removeMesh(skeletonViewerMesh);
+                    const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
+                    if (skeletonViewerChildMesh) {
+                      skeletonViewerChildMesh.dispose();
+                    }
+                  }
 
-                  GLTF2Export.GLBAsync(baseScene, name, {  }).then((glb) => {
-                    console.log(glb.glTFFiles);
+                  const options = {
+                    shouldExportNode: (node: BABYLON.Node) => {
+                      return !node.name.includes('joint') && !node.name.includes('ground') && !node.name.includes('scene') && !node.id.includes('joint');
+                    },
+                  };
 
-                    const file = new File([glb.glTFFiles[name]], 'export.glb');
-                    const path = URL.createObjectURL(file);
+                  GLTF2Export.GLBAsync(baseScene, name, options).then((glb) => {
+                    // const file = new File([glb.glTFFiles[name]], 'export.glb');
+                    // const path = URL.createObjectURL(file);
 
-                    const link = document.createElement('a');
-                    link.href = path;
-                    link.download = name;
-                    link.click();
-                    // glb.downloadFiles();
+                    // const link = document.createElement('a');
+                    // link.href = path;
+                    // link.download = name;
+                    // link.click();
+                    glb.downloadFiles();
                   });
                 },
                 children: [],

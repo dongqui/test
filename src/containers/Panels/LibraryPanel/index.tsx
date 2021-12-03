@@ -98,10 +98,12 @@ const LibraryPanel: FunctionComponent = () => {
         mesh.isPickable = false;
       });
 
-      skeletons[0].bones.forEach((bone) => {
-        // bone id를 unique한 id로 생성
-        bone.id = `${assetId}//${bone.name}//bone`;
-      });
+      if (skeletons && skeletons.length > 0) {
+        skeletons[0].bones.forEach((bone) => {
+          // bone id를 unique한 id로 생성
+          bone.id = `${assetId}//${bone.name}//bone`;
+        });
+      }
 
       transformNodes.forEach((transformNode) => {
         // transformNode id를 unique한 id로 생성
