@@ -1,4 +1,4 @@
-@mixin common-panel {
+@mixin common-section {
   display: flex;
   height: auto;
   border-bottom: 1px solid #4f4f4f;
@@ -6,13 +6,8 @@
   margin: 0 12px;
 }
 
-.panel-wrap {
-  overflow-y: auto;
-  height: 100%;
-}
-
-.panel-transform {
-  @include common-panel;
+.transform-section {
+  @include common-section;
   flex-direction: column;
 }
 
@@ -53,22 +48,22 @@
   }
 }
 
-.panel-visibility {
-  @include common-panel;
+.visibility-section {
+  @include common-section;
   flex-direction: column;
 }
 
-.panel-fk-controller {
-  @include common-panel;
+.fk-controller-section {
+  @include common-section;
   flex-direction: column;
 }
 
-.panel-filter {
-  @include common-panel;
+.filter-section {
+  @include common-section;
   flex-direction: column;
 }
 
-.toggle-overlay {
+.inactive-overlay {
   position: absolute;
   top: 0;
   left: 0;

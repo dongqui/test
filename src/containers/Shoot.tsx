@@ -4,6 +4,7 @@ import { ResizeCallbackData } from 'react-resizable';
 import { UpperBar } from 'containers/UpperBar';
 import LibraryPanel from 'containers/Panels/LibraryPanel';
 import RenderingPanel from './Panels/RenderingPanel';
+import ControlPanel from './Panels/ControlPanel';
 import TimelinePanel from './Panels/TimelinePanel';
 import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
@@ -11,7 +12,10 @@ import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
-import ControlPanel from './Panels/ControlPanel';
+
+import DummyControlPanel from './Panels/DummyControlPanel';
+import DummyTimelinePanel from './Panels/DummyTimelinePanel';
+
 import HotKeyOrder from './HotKeyOrder';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
@@ -61,7 +65,6 @@ const Shoot: FunctionComponent = () => {
   });
 
   const isResizingCP = useRef<boolean>(false);
-
   const isTargetingCP = useRef<boolean>(false);
 
   const showCPWidth = useRef<number>(panelWidth.control);
@@ -148,7 +151,7 @@ const Shoot: FunctionComponent = () => {
      * 추가로 숨김 처리가 8px로 줄이는 것이기 때문에 CP 내부적으로 children에 대한 보이지 않게 처리가 필요
      */
     const handleMouseDown = (e: MouseEvent) => {
-      if (isResizingCP && (e.target as Element).classList.contains('react-resizable-handle')) {
+      if (isResizingCP.current && (e.target as Element).classList.contains('react-resizable-handle')) {
         isTargetingCP.current = true;
       }
     };
@@ -174,7 +177,7 @@ const Shoot: FunctionComponent = () => {
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [windowWidth, isResizingCP, panelWidth.library, isTargetingCP]);
+  }, [panelWidth.library, windowWidth]);
 
   useEffect(() => {
     const prevWindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;

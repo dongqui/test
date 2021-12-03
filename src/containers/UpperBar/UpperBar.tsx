@@ -4,9 +4,9 @@ import { FilledButton, SegmentButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { changeMode } from 'actions/modeSelection';
 import { RootState, useSelector } from 'reducers';
+import { BaseModal } from 'components/Modal';
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
-import { BaseModal } from 'components/Modal';
 
 const cx = classNames.bind(styles);
 

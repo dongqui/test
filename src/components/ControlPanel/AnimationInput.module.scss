@@ -1,4 +1,5 @@
 .wrapper {
+  position: relative;
   display: flex;
   align-items: center;
   height: 24px;
@@ -61,4 +62,24 @@
       }
     }
   }
+}
+
+.input-inactive-overlay {
+  position: absolute;
+  vertical-align: middle;
+  box-sizing: border-box;
+  padding: 5.5px 0 5.5px 4px;
+  font-size: 11px;
+  line-height: 13px;
+  top: 0;
+  left: 16px;
+  width: 70%;
+  height: 100%;
+  color: #7a7a7b;
+  background-color: #353739;
+  border-radius: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: not-allowed;
 }

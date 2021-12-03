@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Fragment, useState, useCallback, useRef, useEffect, FunctionComponent } from 'react';
+import { FunctionComponent, Fragment, useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
@@ -15,9 +15,9 @@ import axios, { Canceler } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
+import { BaseModal } from 'components/Modal';
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
-import { BaseModal } from 'components/Modal';
 
 const cx = classNames.bind(styles);
 

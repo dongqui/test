@@ -6,15 +6,16 @@ import produce from 'immer';
 import '@babylonjs/loaders/glTF';
 import { convertFBXtoGLB } from 'api';
 import { getFileExtension, getRandomStringKey } from 'utils/common';
-import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
+import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
+import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
 import { v4 as uuid } from 'uuid';
 import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import { AnimationIngredient, PlaskAsset } from 'types/common';
+import { AnimationIngredient, PlaskAsset, PlaskRetargetMap } from 'types/common';
 import Box from 'components/Layout/Box';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
@@ -125,9 +126,16 @@ const LibraryPanel: FunctionComponent = () => {
         animationIngredients.push(animationIngredient);
       });
 
-      // 모델에 대한 빈 retargetMap을 생성
-      // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
-      const retargetMap = createEmptyRetargetMap(assetId);
+      // 모델에 대한 retargetMap을 생성
+      let retargetMap: PlaskRetargetMap;
+      try {
+        // autoRetargetMap 생성 및 적용
+        retargetMap = await createAutoRetargetMap(assetId, skeletons[0].bones, 3000);
+      } catch (error) {
+        // 실패 시 빈 retargetMap을 생성 및 적용
+        retargetMap = createEmptyRetargetMap(assetId);
+        console.error(error);
+      }
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
