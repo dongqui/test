@@ -13,7 +13,7 @@ import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { getFileExtension, getRandomStringKey } from 'utils/common';
 import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
-import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
+import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
@@ -633,15 +633,10 @@ const ListNode: FunctionComponent<Props> = ({
                   if (assetId) {
                     const cloneLPNode = cloneDeep(lpNode);
 
-                    const layerName = 'Base Layer';
-                    // base layer의 id 및 name
-                    const layers: PlaskLayer[] = [{ id: `baseLayer//${getRandomStringKey()}`, name: layerName }];
-
-                    const tracks: PlaskTrack[] = [];
                     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
                     if (visualizedAssetIds.includes(assetId)) {
-                      // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서
-                      const targets = selectableObjects.filter((object) => object.id.split('//')[0] === assetId);
+                      // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서 추가 + armature transformNode는 제외
+                      targets = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature'));
                     } else {
                       // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
                       targets = animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
@@ -662,27 +657,20 @@ const ListNode: FunctionComponent<Props> = ({
 
                     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
 
-                    const nextIngredient: AnimationIngredient = {
-                      id: getRandomStringKey(),
-                      name: nodeName,
-                      assetId: assetId,
-                      current: false,
-                      layers,
-                      tracks,
-                    };
+                    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, false);
 
                     const afterNodes = produce(cloneLPNode, (draft) => {
                       const target = find(draft, { assetId: assetId });
 
                       if (target) {
-                        target.children.push(nextIngredient.id);
+                        target.children.push(nextAnimationIngredient.id);
                       }
 
                       const motion: LP.Node = {
-                        id: nextIngredient.id,
-                        parentId: nextIngredient.assetId,
-                        name: nextIngredient.name,
-                        filePath: lpCurrentPath + `\\${nextIngredient.name}`,
+                        id: nextAnimationIngredient.id,
+                        parentId: nextAnimationIngredient.assetId,
+                        name: nextAnimationIngredient.name,
+                        filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
                         children: [],
                         extension: '',
                         type: 'Motion',
@@ -699,14 +687,14 @@ const ListNode: FunctionComponent<Props> = ({
 
                     dispatch(
                       animationDataActions.addAnimationIngredient({
-                        animationIngredient: nextIngredient,
+                        animationIngredient: nextAnimationIngredient,
                       }),
                     );
 
                     dispatch(
                       plaskProjectActions.addMotion({
                         assetId: assetId,
-                        motionId: nextIngredient.id,
+                        motionId: nextAnimationIngredient.id,
                       }),
                     );
                   }
