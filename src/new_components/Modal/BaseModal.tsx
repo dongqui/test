@@ -34,7 +34,7 @@ interface Props {
   confirmColor?: string;
 }
 
-const BaseModal: FunctionComponent<Props> = ({ className, isOpen, title, message, confirmText, onConfirm, cancelText, onCancel, confirmColor }) => {
+const BaseModal: FunctionComponent<Props> = ({ children, className, isOpen, title, message, confirmText, onConfirm, cancelText, onCancel, confirmColor }) => {
   const portalRef = useRef(document.getElementById('portal_modal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +88,7 @@ const BaseModal: FunctionComponent<Props> = ({ className, isOpen, title, message
               </div>
             </div>
             <Overlay onClose={handleOutsideClose} />
+            {children}
           </div>
         </Fragment>
       )}
