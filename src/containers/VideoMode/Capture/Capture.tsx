@@ -15,7 +15,7 @@ import axios, { Canceler } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import { BaseModal } from 'components/Modal';
+import { BaseModal } from 'new_components/Modal';
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
 
