@@ -424,7 +424,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </Fragment>
       )}
       {readyExtract && (
-        <BaseModal className={cx('extract-modal', 'extract-name-modal')}>
+        <BaseModal className={cx('extract-modal', 'extract-name-modal')} isOpen={readyExtract}>
           <p className={cx('extract-name-paragraph')}>Enter the name of the motion to extract.</p>
           <input
             type="text"
@@ -458,7 +458,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </BaseModal>
       )}
       {turnStandbyPhase && (
-        <BaseModal className={cx('extract-modal', 'extract-delete')}>
+        <BaseModal className={cx('extract-modal', 'extract-delete')} isOpen={turnStandbyPhase}>
           <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
           <p className={cx('extract-name-paragraph')}>
             Your video will be <strong>deleted</strong> to take a new video.
@@ -479,7 +479,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </BaseModal>
       )}
       {onExtract && (
-        <BaseModal className={cx('extract-modal', 'loading-modal')}>
+        <BaseModal className={cx('extract-modal', 'loading-modal')} isOpen={onExtract}>
           <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
           <h4 className={cx('modal-heading', 'loading')}>Motions Extracting</h4>
           <p className={cx('extract-name-paragraph', 'loading')}>
