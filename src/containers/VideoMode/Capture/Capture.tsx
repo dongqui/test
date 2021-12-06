@@ -424,7 +424,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </Fragment>
       )}
       {readyExtract && (
-        <BaseModal className={cx('extract-modal', 'extract-name-modal')}>
+        <BaseModal>
           <p className={cx('extract-name-paragraph')}>Enter the name of the motion to extract.</p>
           <input
             type="text"
@@ -458,7 +458,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </BaseModal>
       )}
       {turnStandbyPhase && (
-        <BaseModal className={cx('extract-modal', 'extract-delete')}>
+        <BaseModal>
           <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
           <p className={cx('extract-name-paragraph')}>
             Your video will be <strong>deleted</strong> to take a new video.
@@ -479,23 +479,25 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </BaseModal>
       )}
       {onExtract && (
-        <BaseModal className={cx('extract-modal', 'loading-modal')}>
-          <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
-          <h4 className={cx('modal-heading', 'loading')}>Motions Extracting</h4>
-          <p className={cx('extract-name-paragraph', 'loading')}>
-            It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}
-          </p>
-          <FilledButton
-            text="Cancel"
-            className={cx('extract-button', 'cancel')}
-            onClick={() => {
-              setOnExtract(false);
-              cancelTokenSource.current && cancelTokenSource.current();
-            }}
-          ></FilledButton>
+        <BaseModal>
+          <div className={cx('loading-modal')}>
+            <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
+            <h4 className={cx('modal-heading', 'loading')}>Motions Extracting</h4>
+            <p className={cx('extract-name-paragraph', 'loading')}>
+              It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}
+            </p>
+            <FilledButton
+              text="Cancel"
+              className={cx('extract-button', 'cancel')}
+              onClick={() => {
+                setOnExtract(false);
+                cancelTokenSource.current && cancelTokenSource.current();
+              }}
+            ></FilledButton>
+          </div>
         </BaseModal>
       )}
-      {/* <BaseModal className={cx('extract-modal', 'loading-modal')}>
+      {/* <BaseModal>
         <h4 className={cx('modal-heading')}>Extract Failed</h4>
         <p className={cx('extract-name-paragraph')}>
           Motion extraction <strong>failed</strong>. please try again.
