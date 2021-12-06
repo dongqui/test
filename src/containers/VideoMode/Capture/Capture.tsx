@@ -22,10 +22,11 @@ import styles from './Capture.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
+  className?: string;
   browserType: string;
 }
 
-export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
+export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) => {
   const dispatch = useDispatch();
 
   const lpNode = useSelector((state) => state.lpNode.node);
@@ -321,7 +322,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   ];
 
   return (
-    <Fragment>
+    <div className={className}>
       <Box id="UP" {...boxProps.up}>
         <UpperBar
           sceneName="Please enter a scene name"
@@ -508,6 +509,6 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           onClick={() => setTurnStandbyPhase(false)}
         ></FilledButton>
       </BaseModal> */}
-    </Fragment>
+    </div>
   );
 };

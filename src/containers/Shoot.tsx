@@ -22,7 +22,11 @@ import styles from './Shoot.module.scss';
 
 const cx = classNames.bind(styles);
 
-const Shoot: FunctionComponent = () => {
+interface Props {
+  className?: string;
+}
+
+const Shoot: FunctionComponent<Props> = ({ className }) => {
   // Panel, Bar의 width, height 값. 없는 경우 100%
   const constants = useMemo(
     () => ({
@@ -266,7 +270,7 @@ const Shoot: FunctionComponent = () => {
   };
 
   return (
-    <HotKeyOrder>
+    <HotKeyOrder className={className}>
       <Fragment>
         <Box id="UP" {...boxProps.up}>
           <UpperBar sceneName="Please enter a scene name" />

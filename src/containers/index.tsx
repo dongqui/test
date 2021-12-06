@@ -4,6 +4,10 @@ import { RootState } from 'reducers';
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
 import { VideoMode } from 'containers/VideoMode';
 import Shoot from './Shoot';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
 
 export type Procedure = 'service' | 'token' | 'success' | 'denied';
 
@@ -14,15 +18,17 @@ interface Props {
 const Index: FunctionComponent<Props> = ({ browserType }) => {
   const { mode } = useSelector((state: RootState) => state.modeSelection);
 
+  const classes = cx('wrapper', {
+    visible: mode === 'animationMode',
+    hidden: mode === 'videoMode',
+  });
+
   return (
     <main>
-      {mode === 'animationMode' ? (
-        <ResizeProvider>
-          <Shoot />
-        </ResizeProvider>
-      ) : (
-        <VideoMode browserType={browserType} />
-      )}
+      <ResizeProvider>
+        <Shoot className={classes} />
+      </ResizeProvider>
+      {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={browserType} />}
     </main>
   );
 };
