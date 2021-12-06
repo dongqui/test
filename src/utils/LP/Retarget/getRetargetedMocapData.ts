@@ -17,18 +17,36 @@ const getRetargetedMocapData = (
   // cloneDeep을 사용해서 tracks를 newTracks로 갈음하려고 했으나, 시간비용이 너무 커서 tracks에 추가해주는 방식으로 사용
   const { tracks } = emptyAnimationIngredient;
 
-  tracks.forEach((track) => {
-    // track의 transformNode를 target으로 가지는 sourceBone의 이름을 retargetMap에서 찾음
-    const sourceBoneName = retargetMap.values.find((value) => value.targetTransformNodeId === track.targetId)?.sourceBoneName;
-    if (sourceBoneName) {
-      const mocapDatum = mocapData.find((datum) => datum.boneName === sourceBoneName && datum.property === track.property);
-      // mocapData 중 해당 sourceBoneName 및 property를 대상으로 하는 datum을 찾음
-      if (mocapDatum) {
-        const { transformKeys } = mocapDatum;
-        transformKeys.forEach((key) => {
-          const { frame, value } = key;
-          track.transformKeys.push({ frame, value: track.property === 'rotationQuaternion' ? BABYLON.Quaternion.FromArray(value) : BABYLON.Vector3.FromArray(value) });
-        });
+  // tracks가 아닌 mocapData를 iterate하는 방식으로 변경
+  mocapData.forEach((mocapDatum) => {
+    const { boneName, property, transformKeys } = mocapDatum;
+    const targetTransformNodeId = retargetMap.values.find((value) => value.sourceBoneName === boneName)?.targetTransformNodeId;
+
+    if (targetTransformNodeId) {
+      if (property === 'rotationQuaternion') {
+        // rotation 트랙과 rotationQuaternion 트랙 모두에 transformKeys 추가
+        const targetRotationTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotation');
+        const targetRotationQuaternionTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotationQuaternion');
+
+        if (targetRotationTrack && targetRotationQuaternionTrack) {
+          transformKeys.forEach((transformKey) => {
+            const { frame, value } = transformKey;
+            const q = BABYLON.Quaternion.FromArray(value);
+            const e = q.clone().normalize().toEulerAngles();
+            targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
+            targetRotationTrack.transformKeys.push({ frame, value: e });
+          });
+        }
+      } else {
+        // 해당하는 트랙에 trasnformKeys 추가
+        const targetTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === property);
+
+        if (targetTrack) {
+          transformKeys.forEach((transformKey) => {
+            const { frame, value } = transformKey;
+            targetTrack.transformKeys.push({ frame, value: BABYLON.Vector3.FromArray(value) });
+          });
+        }
       }
     }
   });

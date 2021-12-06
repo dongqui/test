@@ -194,8 +194,6 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       timeout,
     })
       .then((response) => {
-        console.log('response: ', response);
-
         const newMotionNode: LP.Node = {
           id: uuidv4(),
           parentId: '__root__',
@@ -204,7 +202,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           children: [],
           extension: '',
           type: 'Motion',
-          motionData: response.data,
+          mocapData: response.data.result,
         };
 
         const nextNodes = produce(lpNode, (draft) => {
