@@ -4,7 +4,7 @@ import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import produce from 'immer';
 import '@babylonjs/loaders/glTF';
-import { convertFBXtoGLB } from 'api';
+import { convertModel } from 'api';
 import { filterAnimatableTransformNodes, getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
@@ -53,7 +53,7 @@ const LibraryPanel: FunctionComponent = () => {
         onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
         if (file instanceof File) {
-          const fileUrl = await convertFBXtoGLB(file)
+          const fileUrl = await convertModel(file, 'glb')
             .then((response) => {
               onModalClose();
               return response;
