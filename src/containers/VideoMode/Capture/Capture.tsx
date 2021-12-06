@@ -185,7 +185,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
 
     const result = await axios({
       method: 'POST',
-      url: 'https://shootapi.myplask.com:6500/mocap-upload-api',
+      url: 'https://shootapi.myplask.com:6500/mocap-upload-api-common',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
       cancelToken: new axios.CancelToken((cancel) => {
@@ -194,6 +194,8 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
       timeout,
     })
       .then((response) => {
+        console.log('response: ', response);
+
         const newMotionNode: LP.Node = {
           id: uuidv4(),
           parentId: '__root__',

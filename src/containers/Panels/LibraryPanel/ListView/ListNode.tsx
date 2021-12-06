@@ -1103,6 +1103,7 @@ const ListNode: FunctionComponent<Props> = ({
       const dragNode = find(lpNode, { id: dragTarget?.id });
       const cloneDragNode = cloneDeep(dragNode);
 
+      // model node로 이동
       if (type === 'Model') {
         if (dragTarget?.type === 'Motion' && dragNode?.motionData) {
           /**
@@ -1113,6 +1114,10 @@ const ListNode: FunctionComponent<Props> = ({
           const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
           const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
 
+          console.log('dragNode', dragNode);
+          console.log('dropNode', dropNode);
+
+          // 이름이 같은 모션이 이미 있는 경우
           if (dropNode && isAlreadyExist && cloneDragNode) {
             const confirmed = await getConfirm({
               title: 'Warning',

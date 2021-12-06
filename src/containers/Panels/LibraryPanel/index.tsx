@@ -8,7 +8,7 @@ import { convertFBXtoGLB } from 'api';
 import { filterAnimatableTransformNodes, getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
-import { createAutoRetargetMap, createEmptyRetargetMap, retargetMocapData } from 'utils/LP/Retarget';
+import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
 import { v4 as uuid } from 'uuid';
 import * as TEXT from 'constants/Text';
 import * as BABYLON from '@babylonjs/core';
@@ -146,10 +146,6 @@ const LibraryPanel: FunctionComponent = () => {
         retargetMap = createEmptyRetargetMap(assetId);
         console.error(error);
       }
-
-      const dummyMocapData = await fetch('dummyMocapData.json').then((res) => res.json());
-
-      retargetMocapData(assetId, retargetMap, dummyMocapData.data);
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
