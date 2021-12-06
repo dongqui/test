@@ -124,7 +124,7 @@ const UpperBar: FunctionComponent<Props> = ({
         )}
       </div>
       {deleteModal && (
-        <BaseModal className={cx('extract-modal', 'extract-delete')} isOpen={deleteModal}>
+        <BaseModal isOpen={deleteModal}>
           <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
           <p className={cx('extract-name-paragraph')}>
             Your video will be <strong>deleted</strong> to take a new video.
