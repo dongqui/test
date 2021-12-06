@@ -1177,7 +1177,7 @@ const ListNode: FunctionComponent<Props> = ({
           /**
            * @TODO 리타겟 및 하위로 모션 추가
            */
-          const dropNode = find(lpNode, { parentId: id });
+          const dropNode = find(lpNode, { id });
           const childrenList = lpNode.filter((node) => node.parentId === id);
           const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
           const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
