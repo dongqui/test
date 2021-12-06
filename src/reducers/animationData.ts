@@ -61,6 +61,21 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
         animationIngredients: action.payload.animationIngredients,
       });
     }
+    case 'animationDataAction/CHANGE_CURRENT_ANIMATION_INGREDIENT': {
+      return Object.assign({}, state, {
+        animationIngredients: state.animationIngredients.map((animationIngredient) => {
+          if (animationIngredient.assetId === action.payload.assetId) {
+            if (animationIngredient.id === action.payload.animationIngredientId) {
+              return { ...animationIngredient, current: true };
+            } else {
+              return { ...animationIngredient, current: false };
+            }
+          } else {
+            return animationIngredient;
+          }
+        }),
+      });
+    }
     case 'animationDataAction/REMOVE_ANIMATION_INGREDIENT': {
       return Object.assign({}, state, {
         animationIngredients: state.animationIngredients.filter((anim) => anim.id !== action.payload.animationIngredientId),
