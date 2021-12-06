@@ -2,11 +2,13 @@ import { max, find, remove, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import { convertModel } from 'api';
 import { HotKeys } from 'react-hotkeys';
 import * as BABYLON from '@babylonjs/core';
 import { GLTF2Export } from '@babylonjs/serializers';
 import produce from 'immer';
 import { v4 as uuid } from 'uuid';
+import * as TEXT from 'constants/Text';
 import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
@@ -748,7 +750,61 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Export > fbx',
-                onClick: () => {},
+                onClick: () => {
+                  const baseScene = _screenList[0].scene;
+                  const skeletonViewerMesh = _screenList[0].scene.getMeshByID(`${assetId}//skeletonViewer`);
+
+                  if (skeletonViewerMesh) {
+                    _screenList[0].scene.removeMesh(skeletonViewerMesh);
+                    const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
+                    if (skeletonViewerChildMesh) {
+                      skeletonViewerChildMesh.dispose();
+                    }
+                  }
+
+                  const options = {
+                    shouldExportNode: (node: BABYLON.Node) => {
+                      return !node.name.includes('joint') && !node.name.includes('ground') && !node.name.includes('scene') && !node.id.includes('joint');
+                    },
+                  };
+
+                  GLTF2Export.GLBAsync(baseScene, name, options).then(async (glb) => {
+                    const file = new File([glb.glTFFiles[name]], name);
+                    file.path = name;
+                    // const path = URL.createObjectURL(file);
+
+                    // const link = document.createElement('a');
+                    // link.href = path;
+                    // link.download = name;
+                    // link.click();
+                    // glb.downloadFiles();
+
+                    onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
+
+                    const fileUrl = await convertModel(file, 'fbx')
+                      .then((response) => {
+                        // const path = URL.createObjectURL(response);
+                        const link = document.createElement('a');
+                        link.href = response;
+                        link.download = name;
+                        link.click();
+
+                        onModalClose();
+                        return response;
+                      })
+                      .catch(async () => {
+                        onModalOpen({
+                          title: 'Warning',
+                          message: 'An error occured while exporting the model. If the problem recurs, please send us a message on our website.',
+                          confirmText: 'Contact',
+                          onConfirm: () => {
+                            // location.href = 'mailto:contact@plask.ai';
+                            onModalClose();
+                          },
+                        });
+                      });
+                  });
+                },
                 children: [],
               },
             ],
@@ -833,6 +889,7 @@ const ListNode: FunctionComponent<Props> = ({
     onCopy,
     onDelete,
     handleEdit,
+    onModalClose,
   ]);
 
   const classes = cx('outer', { selected: isSelected });
