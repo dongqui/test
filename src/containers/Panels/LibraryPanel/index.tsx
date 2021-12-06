@@ -180,7 +180,9 @@ const LibraryPanel: FunctionComponent = () => {
         const newMotionNodes = animationIngredients.map((ingredient) => {
           const motion: LP.Node = {
             id: ingredient.id,
-            parentId: ingredient.assetId,
+            // parentId: ingredient.assetId,
+            parentId: newModelNode.id,
+            assetId: ingredient.assetId,
             filePath: '\\root' + `\\${nodeName}`,
             name: ingredient.name,
             extension: '',
@@ -296,7 +298,6 @@ const LibraryPanel: FunctionComponent = () => {
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
-  const [isDefaultModelLoaded, setIsDefaultModelLoaded] = useState(false);
   const [isSceneReady, setIsSceneReady] = useState(false);
 
   useEffect(() => {
@@ -308,18 +309,19 @@ const LibraryPanel: FunctionComponent = () => {
         setIsSceneReady(true);
       });
     }
-  }, [_screenList, isDefaultModelLoaded, isSceneReady, onNodeChange]);
+  }, [_screenList, isSceneReady, onNodeChange]);
 
   useEffect(() => {
     if (isSceneReady) {
-      if (!isDefaultModelLoaded) {
-        const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
+      const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
 
+      const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
+
+      if (!isAlreadyExist) {
         onNodeChange(defaultModels);
-        setIsDefaultModelLoaded(true);
       }
     }
-  }, [isDefaultModelLoaded, isSceneReady, onNodeChange]);
+  }, [_lpNode, isSceneReady, onNodeChange]);
 
   const handleSearch = useCallback(
     (text: string) => {
