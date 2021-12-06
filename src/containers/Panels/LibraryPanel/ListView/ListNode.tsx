@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { HotKeys } from 'react-hotkeys';
 import * as BABYLON from '@babylonjs/core';
+import { GLTF2Export } from '@babylonjs/serializers';
 import produce from 'immer';
 import { v4 as uuid } from 'uuid';
 import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
@@ -63,7 +64,7 @@ const ListNode: FunctionComponent<Props> = ({
 }) => {
   const dispatch = useDispatch();
 
-  const screenList = useSelector((state) => state.plaskProject.screenList);
+  const _screenList = useSelector((state) => state.plaskProject.screenList);
   const assetList = useSelector((state) => state.plaskProject.assetList);
   const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
@@ -437,7 +438,7 @@ const ListNode: FunctionComponent<Props> = ({
 
                   //   // delete 대상이 render된 scene에서 대상의 요소들 remove
                   //   if (targetAsset) {
-                  //     screenList
+                  //     _screenList
                   //       .map((screen) => screen.scene)
                   //       .forEach((scene) => {
                   //         removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
@@ -481,7 +482,7 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (prevAsset) {
-                      screenList
+                      _screenList
                         .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, prevAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
@@ -502,7 +503,7 @@ const ListNode: FunctionComponent<Props> = ({
                       const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
 
                       // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
-                      screenList.forEach((PlaskScreen) => {
+                      _screenList.forEach((PlaskScreen) => {
                         const { id: sceneId, scene } = PlaskScreen;
 
                         if (scene.isReady()) {
@@ -525,6 +526,10 @@ const ListNode: FunctionComponent<Props> = ({
                           // joints 생성 및 scene들에 추가
                           bones.forEach((bone) => {
                             if (!bone.name.toLowerCase().includes('scene')) {
+                              // @TODO
+                              if (bone.name === '__root__') {
+                                return;
+                              }
                               const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
                               joint.id = `${assetId}//${bone.name}//joint`;
                               joint.renderingGroupId = 2;
@@ -574,9 +579,15 @@ const ListNode: FunctionComponent<Props> = ({
                           dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
 
                           // scene들에 skeletonViewer 추가
-                          const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
-                          skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
-                          scene.addMesh(skeletonViewer.mesh);
+                          if (skeleton) {
+                            const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
+
+                            // @TODO
+                            // scene.removeMesh(skeletonViewer.mesh);
+
+                            skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
+                            scene.addMesh(skeletonViewer.mesh);
+                          }
 
                           // scene들에 애니메이션 적용을 위한 transformNode 추가
                           transformNodes.forEach((transformNode) => {
@@ -601,7 +612,7 @@ const ListNode: FunctionComponent<Props> = ({
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (targetAsset) {
-                      screenList
+                      _screenList
                         .map((screen) => screen.scene)
                         .forEach((scene) => {
                           removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
@@ -704,7 +715,35 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Export > glb',
-                onClick: () => {},
+                onClick: () => {
+                  const baseScene = _screenList[0].scene;
+                  const skeletonViewerMesh = _screenList[0].scene.getMeshByID(`${assetId}//skeletonViewer`);
+
+                  if (skeletonViewerMesh) {
+                    _screenList[0].scene.removeMesh(skeletonViewerMesh);
+                    const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
+                    if (skeletonViewerChildMesh) {
+                      skeletonViewerChildMesh.dispose();
+                    }
+                  }
+
+                  const options = {
+                    shouldExportNode: (node: BABYLON.Node) => {
+                      return !node.name.includes('joint') && !node.name.includes('ground') && !node.name.includes('scene') && !node.id.includes('joint');
+                    },
+                  };
+
+                  GLTF2Export.GLBAsync(baseScene, name, options).then((glb) => {
+                    // const file = new File([glb.glTFFiles[name]], 'export.glb');
+                    // const path = URL.createObjectURL(file);
+
+                    // const link = document.createElement('a');
+                    // link.href = path;
+                    // link.download = name;
+                    // link.click();
+                    glb.downloadFiles();
+                  });
+                },
                 children: [],
               },
               {
@@ -787,7 +826,7 @@ const ListNode: FunctionComponent<Props> = ({
     type,
     visualizedAssetIds,
     assetList,
-    screenList,
+    _screenList,
     selectedId.length,
     selectedId,
     onSelect,

@@ -1,4 +1,3 @@
-import { FunctionComponent } from 'react';
 import ChangeModes from './ChangeModes';
 import Loop from './Loop';
 import TransportControls from './TransportControls';
@@ -7,9 +6,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {}
-
-const MiddleBarBody: FunctionComponent<Props> = () => {
+const MiddleBarBody = () => {
   return (
     <div className={cx('body')}>
       <Loop />

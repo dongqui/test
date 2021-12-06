@@ -4,6 +4,7 @@ import { TrackIdentifier } from 'types/TP';
 export type KeyframesAction =
   | ReturnType<typeof initializeKeyframes>
   | ReturnType<typeof selectKeyframes>
+  | ReturnType<typeof selectKeyframesByDragBox>
   | ReturnType<typeof addKeyframes>
   | ReturnType<typeof copyKeyframes>
   | ReturnType<typeof createKeyframes>
@@ -46,11 +47,21 @@ export const enterPasteKey = () => ({
 // 키프레임 선택
 export interface SelectKeyframes extends TrackIdentifier {
   time: number;
-  selectType: 'left' | 'multiple' | 'vertical' | 'horizontal' | 'dragBox' | 'unselectAll';
+  selectType: 'left' | 'multiple' | 'vertical' | 'horizontal' | 'unselectAll';
 }
 export const selectKeyframes = (params: SelectKeyframes) => ({
   type: 'keyframes/SELECT_KEYFRAMES' as const,
   payload: { ...params },
+});
+
+// 드래그 박스로 키프레임 선택
+export interface SelectKeyframesByDragBox {
+  trackNumber: number;
+  time: number;
+}
+export const selectKeyframesByDragBox = (params: SelectKeyframesByDragBox[]) => ({
+  type: 'keyframes/SELECT_KEYFRAMES_BY_DRAG_BOX' as const,
+  payload: params,
 });
 
 // 키프레임 추가

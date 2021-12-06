@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, FunctionComponent, RefObject } from 'react';
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -14,7 +14,12 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const Scrubber = () => {
+interface Props {
+  timelineEditorRef: RefObject<SVGSVGElement>;
+}
+
+const Scrubber: FunctionComponent<Props> = (props) => {
+  const { timelineEditorRef } = props;
   const dispatch = useDispatch();
 
   const currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
@@ -37,19 +42,20 @@ const Scrubber = () => {
 
   // value값 변경
   const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
+    const { value } = event.target;
+    if (!value.includes('e' || 'E')) setInputValue(event.target.value);
   }, []);
 
   // start, end input에 Enter key 입력 동작
-  const handleInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
-    switch (event.key) {
-      case 'Enter':
+  const handleInputKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (isNaN(parseInt(event.key, 10))) {
+        timelineEditorRef.current?.focus();
         event.currentTarget.blur();
-        break;
-      default:
-        break;
-    }
-  }, []);
+      }
+    },
+    [timelineEditorRef],
+  );
 
   // blur 이벤트 적용
   const handleInputBlur = useCallback(

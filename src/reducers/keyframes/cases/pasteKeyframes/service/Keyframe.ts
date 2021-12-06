@@ -1,4 +1,4 @@
-import { TimeEditorTrack, ClusteredKeyframe, TrasnformKey } from 'types/TP/keyframe';
+import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP/keyframe';
 import { Paste } from 'actions/keyframes';
 import { KeyframesState } from 'reducers/keyframes';
 import {
@@ -11,7 +11,7 @@ import {
   SelectedBoneKeyframes,
   SelectedPropertyKeyframes,
 } from 'reducers/keyframes/types';
-import { getBinarySearch, getBoneTrackIndex } from 'utils/TP';
+import { getBoneTrackIndex } from 'utils/TP';
 
 import { Service } from './index';
 import { Repository } from '../repository';
@@ -21,30 +21,31 @@ class DragDropKeyframesService implements Service {
   private readonly payload: Paste;
   private readonly layerRepository: Repository;
   private readonly boneRepository: Repository;
-  private readonly transformRepository: Repository;
+  private readonly propertyRepository: Repository;
 
-  constructor(state: KeyframesState, payload: Paste, layerRepository: Repository, boneRepository: Repository, transformRepository: Repository) {
+  constructor(state: KeyframesState, payload: Paste, layerRepository: Repository, boneRepository: Repository, propertyRepository: Repository) {
     this.state = state;
     this.payload = payload;
     this.layerRepository = layerRepository;
     this.boneRepository = boneRepository;
-    this.transformRepository = transformRepository;
+    this.propertyRepository = propertyRepository;
   }
 
-  private setUniqueTimes = (currentTimes: number[], transformKeys: TrasnformKey[]) => {
-    const uniqueTimes: number[] = [];
-    transformKeys.forEach(({ time }) => {
-      const index = getBinarySearch({ collection: currentTimes, index: time });
-      if (index === -1) uniqueTimes.push(time);
+  private getSmallestKeyframeTime = () => {
+    const { copiedPropertyKeyframes } = this.state;
+    let smallestTime = Infinity;
+    copiedPropertyKeyframes.forEach((copied) => {
+      const time = copied.keyframes[0].time;
+      if (time < smallestTime) smallestTime = time;
     });
-    return uniqueTimes;
+    return smallestTime;
   };
 
   // 새로운 frame에 추가 된 property keyframe 탐색
   private findSelectedChildrenToLayer = (scrubberTime: number) => {
     const { copiedPropertyKeyframes } = this.state;
     const pastedKeyframes = new Set<number>();
-    const timeDiff = scrubberTime - copiedPropertyKeyframes[0].keyframes[0].time;
+    const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
     copiedPropertyKeyframes.forEach((group) => {
       group.keyframes.forEach((keyframe) => {
         pastedKeyframes.add(keyframe.time + timeDiff);
@@ -57,19 +58,17 @@ class DragDropKeyframesService implements Service {
   private findSelectedChildrenToBone = (scrubberTime: number) => {
     const { copiedPropertyKeyframes } = this.state;
     const selectedChildren = new Map<number, number[]>();
-    const timeDiff = scrubberTime - copiedPropertyKeyframes[0].keyframes[0].time;
+    const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
     copiedPropertyKeyframes.forEach((group) => {
       const { trackNumber, keyframes } = group;
       const boneNumber = getBoneTrackIndex(trackNumber);
-      const currentTimes = selectedChildren.get(boneNumber);
-      if (currentTimes) {
-        const uniqueTimes = this.setUniqueTimes(currentTimes, keyframes);
-        const newTimes = [...currentTimes, ...uniqueTimes].sort((a, b) => a - b);
-        selectedChildren.set(boneNumber, newTimes);
-      } else {
-        const newTimes = keyframes.map((keyframe) => keyframe.time + timeDiff);
-        selectedChildren.set(boneNumber, newTimes);
-      }
+      const currentKeyframeTimes = selectedChildren.get(boneNumber);
+      const set = new Set<number>(currentKeyframeTimes);
+      keyframes.forEach((keyframe) => set.add(keyframe.time + timeDiff));
+      selectedChildren.set(
+        boneNumber,
+        [...set].sort((a, b) => a - b),
+      );
     });
     return selectedChildren;
   };
@@ -120,7 +119,7 @@ class DragDropKeyframesService implements Service {
 
   // property 트랙 리스트 업데이트
   private updatePropertyTrackList = (): PropertyKeyframes => {
-    const { updateTimeEditorTrack } = this.transformRepository;
+    const { updateTimeEditorTrack } = this.propertyRepository;
     const propertyTrackList = updateTimeEditorTrack(this.payload.currentTimeIndex);
     return {
       propertyTrackList: propertyTrackList as TimeEditorTrack[],
@@ -129,7 +128,7 @@ class DragDropKeyframesService implements Service {
 
   // 선택 된 property keyframes 리스트 업데이트
   private updateSelectedPropertyKeyframes = (): SelectedPropertyKeyframes => {
-    const { updateSelectedKeyframes } = this.transformRepository;
+    const { updateSelectedKeyframes } = this.propertyRepository;
     const selectedPropertyKeyframes = updateSelectedKeyframes(this.payload.currentTimeIndex);
     return {
       selectedPropertyKeyframes: selectedPropertyKeyframes as ClusteredKeyframe[],

@@ -188,7 +188,16 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
   }, [contextMenuList, onContextMenuOpen]);
 
   return (
-    <path className={cx('keyframe', { clicked: isSelected })} id="selectable" d={keyframeAttr.d} transform={keyframeAttr.transform} onClick={clickKeyframe} ref={keyframeRef} />
+    <path
+      className={cx('keyframe', { clicked: isSelected })}
+      id="selectable"
+      d={keyframeAttr.d}
+      transform={keyframeAttr.transform}
+      onClick={clickKeyframe}
+      ref={keyframeRef}
+      data-tracknumber={trackNumber}
+      data-time={time}
+    />
   );
 };
 

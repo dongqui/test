@@ -22,6 +22,17 @@ class LayerKeyframeRepository implements Repository {
     return isExisted;
   };
 
+  // 이전에 선택 된 layer keyframe에 선택 효과 제거
+  private deselectLayerKeyframes = (draft: Draft<TimeEditorTrack>) => {
+    const { selectedLayerKeyframes } = this.state;
+    selectedLayerKeyframes.forEach(({ keyframes }) => {
+      keyframes.forEach((keyframe) => {
+        const keyframeIndex = findElementIndex(draft.keyframes, keyframe.time, 'time');
+        draft.keyframes[keyframeIndex].isSelected = false;
+      });
+    });
+  };
+
   // 하위 property keyframe이 모두 삭제 될 경우, layer keyframe 삭제
   private deleteLayerKeyframes = (draft: Draft<TimeEditorTrack>, updatedPropertyTrackList: TimeEditorTrack[], selectedTimes: number[]) => {
     const { propertyTrackList } = this.state;
@@ -70,6 +81,7 @@ class LayerKeyframeRepository implements Repository {
   // layer 트랙 업데이트
   updateTimeEditorTrack = (timeDiff: number, updatedPropertyTrackList: TimeEditorTrack[], selectedTimes: number[]): TimeEditorTrack => {
     return produce(this.state.layerTrack, (draft) => {
+      this.deselectLayerKeyframes(draft);
       this.deleteLayerKeyframes(draft, updatedPropertyTrackList, selectedTimes);
       this.addLayerKeyframes(draft, selectedTimes, timeDiff);
       this.selectLayerKeyframes(draft, timeDiff);

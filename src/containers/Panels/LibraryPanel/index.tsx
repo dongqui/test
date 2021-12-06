@@ -6,15 +6,17 @@ import produce from 'immer';
 import '@babylonjs/loaders/glTF';
 import { convertFBXtoGLB } from 'api';
 import { getFileExtension, getRandomStringKey } from 'utils/common';
-import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
+import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
+import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
 import { v4 as uuid } from 'uuid';
+import * as TEXT from 'constants/Text';
 import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import { AnimationIngredient, PlaskAsset } from 'types/common';
+import { AnimationIngredient, PlaskAsset, PlaskRetargetMap } from 'types/common';
 import Box from 'components/Layout/Box';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
@@ -59,7 +61,7 @@ const LibraryPanel: FunctionComponent = () => {
             .catch(async () => {
               onModalOpen({
                 title: 'Warning',
-                message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
+                message: TEXT.WARNING_07,
                 confirmText: 'Contact',
                 onConfirm: () => {
                   // location.href = 'mailto:contact@plask.ai';
@@ -97,10 +99,12 @@ const LibraryPanel: FunctionComponent = () => {
         mesh.isPickable = false;
       });
 
-      skeletons[0].bones.forEach((bone) => {
-        // bone id를 unique한 id로 생성
-        bone.id = `${assetId}//${bone.name}//bone`;
-      });
+      if (skeletons && skeletons.length > 0) {
+        skeletons[0].bones.forEach((bone) => {
+          // bone id를 unique한 id로 생성
+          bone.id = `${assetId}//${bone.name}//bone`;
+        });
+      }
 
       transformNodes.forEach((transformNode) => {
         // transformNode id를 unique한 id로 생성
@@ -125,9 +129,16 @@ const LibraryPanel: FunctionComponent = () => {
         animationIngredients.push(animationIngredient);
       });
 
-      // 모델에 대한 빈 retargetMap을 생성
-      // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
-      const retargetMap = createEmptyRetargetMap(assetId);
+      // 모델에 대한 retargetMap을 생성
+      let retargetMap: PlaskRetargetMap;
+      try {
+        // autoRetargetMap 생성 및 적용
+        retargetMap = await createAutoRetargetMap(assetId, skeletons[0].bones, 3000);
+      } catch (error) {
+        // 실패 시 빈 retargetMap을 생성 및 적용
+        retargetMap = createEmptyRetargetMap(assetId);
+        console.error(error);
+      }
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
@@ -241,7 +252,7 @@ const LibraryPanel: FunctionComponent = () => {
       if (isError) {
         onModalOpen({
           title: 'Warning',
-          message: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
+          message: TEXT.WARNING_02,
           confirmText: 'Close',
           onConfirm: () => onModalClose(),
         });
@@ -250,7 +261,7 @@ const LibraryPanel: FunctionComponent = () => {
       }
 
       if (isInvalidFormat) {
-        onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
+        onModalOpen({ title: 'Warning', message: TEXT.WARNING_03, confirmText: 'Close' });
 
         return;
       }
@@ -265,7 +276,7 @@ const LibraryPanel: FunctionComponent = () => {
 
         onModalOpen({
           title: 'Extract',
-          message: '모션을 추출하시겠습니까?',
+          message: TEXT.CONFIRM_01,
           confirmText: '확인',
           cancelText: '취소',
           onConfirm: () => {

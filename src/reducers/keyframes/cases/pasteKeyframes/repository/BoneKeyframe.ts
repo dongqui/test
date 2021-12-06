@@ -25,7 +25,7 @@ class BoneKeyframeRepository implements Repository {
 
   // bone track list 업데이트
   updateTimeEditorTrack = (scrubberTime: number, selectedChildren: Map<number, number[]>): TimeEditorTrack[] => {
-    const { boneTrackList, copiedBoneKeyframes, copiedPropertyKeyframes } = this.state;
+    const { boneTrackList, copiedBoneKeyframes } = this.state;
     const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
     return produce(boneTrackList, (draft) => {
       selectedChildren.forEach((times, boneNumber) => {
@@ -53,28 +53,16 @@ class BoneKeyframeRepository implements Repository {
 
   // 선택 된 bone keyframes 업데이트
   updateSelectedKeyframes = (scrubberTime: number, selectedChildren: Map<number, number[]>): ClusteredKeyframe[] => {
-    const { selectedBoneKeyframes, boneTrackList, copiedBoneKeyframes, copiedPropertyKeyframes } = this.state;
+    const { selectedBoneKeyframes, copiedBoneKeyframes } = this.state;
     const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
     return produce(selectedBoneKeyframes, (draft) => {
-      selectedChildren.forEach((times, boneNumber) => {
-        let trackIndex = findElementIndex(draft, boneNumber, 'trackNumber');
-        if (trackIndex === -1) {
-          const boneIndex = findElementIndex(boneTrackList, boneNumber, 'trackNumber');
-          const boneTrack = boneTrackList[boneIndex];
-          draft.push({ keyframes: [], trackType: 'bone', trackNumber: boneTrack.trackNumber, trackId: boneTrack.trackId });
-          draft.sort((a, b) => a.trackNumber - b.trackNumber);
-          trackIndex = findElementIndex(draft, boneNumber, 'trackNumber');
-        }
-        times.forEach((time) => {
-          const keyframeIndex = findElementIndex(draft[trackIndex].keyframes, time, 'time');
-          if (keyframeIndex === -1) {
-            draft[trackIndex].keyframes.push({ time });
-            draft[trackIndex].keyframes.sort((a, b) => a.time - b.time);
-          }
-        });
-      });
       copiedBoneKeyframes.forEach((copied) => {
-        const trackIndex = findElementIndex(draft, copied.trackNumber, 'trackNumber');
+        let trackIndex = findElementIndex(draft, copied.trackNumber, 'trackNumber');
+        if (trackIndex === -1) {
+          draft.push({ keyframes: [], trackType: 'bone', trackNumber: copied.trackNumber, trackId: copied.trackId });
+          draft.sort((a, b) => a.trackNumber - b.trackNumber);
+          trackIndex = findElementIndex(draft, copied.trackNumber, 'trackNumber');
+        }
         copied.keyframes.forEach((keyframe) => {
           const nextTime = timeDiff + keyframe.time;
           const keyframeIndex = findElementIndex(draft[trackIndex].keyframes, nextTime, 'time');

@@ -4,6 +4,8 @@ import styles from './AnimationRangeInput.module.scss';
 
 const cx = classNames.bind(styles);
 
+const DEFAULT_INACTIVE_MESSAGE = '';
+
 interface Props {
   text: string;
   currentValue: number;
@@ -11,11 +13,12 @@ interface Props {
   step?: number;
   currentMax?: number;
   activeStatus?: boolean;
+  inactiveMessage?: string;
   decimalDigit?: number;
   className?: string;
 }
 
-const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, currentMax, currentValue, setCurrentValue, activeStatus, decimalDigit }) => {
+const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, currentMax, currentValue, setCurrentValue, activeStatus, inactiveMessage, decimalDigit }) => {
   const [progressBar, setProgressBar] = useState<number>(100);
 
   const rangeRef = useRef<HTMLInputElement>(null);
@@ -111,7 +114,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
     if (rangeRef) {
       rangeRef.current!.value = currentMax + '';
       // console.log((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
-      console.log('currentMax: ', currentMax);
+      // console.log('currentMax: ', currentMax);
     }
   }, [currentMax]);
 
@@ -150,6 +153,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
           tabIndex={activeStatus ? 0 : -1}
           defaultValue={currentMax}
         />
+        {!activeStatus && <div className={cx('input-inactive-overlay')}>{inactiveMessage ?? DEFAULT_INACTIVE_MESSAGE}</div>}
       </div>
     </div>
   );

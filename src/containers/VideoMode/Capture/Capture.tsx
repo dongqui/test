@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Fragment, useState, useCallback, useRef, useEffect, FunctionComponent } from 'react';
+import { FunctionComponent, Fragment, useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
@@ -15,9 +15,9 @@ import axios, { Canceler } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
+import { BaseModal } from 'new_components/Modal';
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
-import { BaseModal } from 'components/Modal';
 
 const cx = classNames.bind(styles);
 
@@ -424,7 +424,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </Fragment>
       )}
       {readyExtract && (
-        <BaseModal>
+        <BaseModal isOpen={readyExtract}>
           <p className={cx('extract-name-paragraph')}>Enter the name of the motion to extract.</p>
           <input
             type="text"
@@ -458,7 +458,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </BaseModal>
       )}
       {turnStandbyPhase && (
-        <BaseModal>
+        <BaseModal isOpen={turnStandbyPhase}>
           <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
           <p className={cx('extract-name-paragraph')}>
             Your video will be <strong>deleted</strong> to take a new video.
@@ -479,7 +479,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </BaseModal>
       )}
       {onExtract && (
-        <BaseModal>
+        <BaseModal isOpen={onExtract}>
           <div className={cx('loading-modal')}>
             <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
             <h4 className={cx('modal-heading', 'loading')}>Motions Extracting</h4>

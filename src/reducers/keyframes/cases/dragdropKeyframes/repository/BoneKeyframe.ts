@@ -1,6 +1,6 @@
 import produce, { Draft } from 'immer';
 
-import { TimeEditorTrack, ClusteredKeyframe, TrasnformKey } from 'types/TP/keyframe';
+import { TimeEditorTrack, ClusteredKeyframe } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
 import { findElementIndex } from 'utils/TP';
 
@@ -20,6 +20,18 @@ class BoneKeyframeRepository implements Repository {
     if (keyframeIndex === -1) return;
     const isExisted = !updatedPropertyTrackList[trackIndex].keyframes[keyframeIndex].isDeleted;
     return isExisted;
+  };
+
+  // 이전에 선택 된 bone keyframe에 선택 효과 제거
+  private deselectBoneKeyframes = (draft: Draft<TimeEditorTrack>[]) => {
+    const { selectedBoneKeyframes } = this.state;
+    selectedBoneKeyframes.forEach(({ keyframes, trackNumber }) => {
+      const trackIdnex = findElementIndex(draft, trackNumber, 'trackNumber');
+      keyframes.forEach((keyframe) => {
+        const keyframeIndex = findElementIndex(draft[trackIdnex].keyframes, keyframe.time, 'time');
+        draft[trackIdnex].keyframes[keyframeIndex].isSelected = false;
+      });
+    });
   };
 
   // 하위 property keyframe이 모두 삭제 될 경우, bone keyframe 삭제
@@ -75,6 +87,7 @@ class BoneKeyframeRepository implements Repository {
   // bone 트랙 리스트 업데이트
   updateTimeEditorTrack = (timeDiff: number, updatedPropertyTrackList: TimeEditorTrack[], selectedTimes: Map<number, number[]>): TimeEditorTrack[] => {
     return produce(this.state.boneTrackList, (draft) => {
+      this.deselectBoneKeyframes(draft);
       this.deleteBoneKeyframes(draft, updatedPropertyTrackList, selectedTimes);
       this.addBoneKeyframes(draft, selectedTimes, timeDiff);
       this.selectBoneKeyframes(draft, timeDiff);

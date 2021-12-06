@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import { useEffect, useRef } from 'react';
 import MiddleBarBody from './MiddleBarBody';
 import MiddleBarHeader from './MiddleBarHeader';
 import classNames from 'classnames/bind';
@@ -6,11 +6,25 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {}
+const MiddleBar = () => {
+  const middleBarRef = useRef<HTMLDivElement>(null);
 
-const MiddleBar: FunctionComponent<Props> = () => {
+  useEffect(() => {
+    const currentRef = middleBarRef.current;
+    if (currentRef) {
+      const handleScroll = (e: WheelEvent) => {
+        e.preventDefault();
+        currentRef.scrollTo({ left: currentRef.scrollLeft + e.deltaY });
+      };
+      currentRef.addEventListener('wheel', handleScroll);
+      return () => {
+        currentRef.removeEventListener('wheel', handleScroll);
+      };
+    }
+  }, []);
+
   return (
-    <div className={cx('middle-bar')}>
+    <div className={cx('middle-bar')} ref={middleBarRef}>
       <MiddleBarHeader />
       <MiddleBarBody />
     </div>
