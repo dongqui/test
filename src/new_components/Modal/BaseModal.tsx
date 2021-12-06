@@ -72,23 +72,25 @@ const BaseModal: FunctionComponent<Props> = ({ children, className, isOpen, titl
         <Fragment>
           <div className={wrapperClasses} ref={modalRef}>
             <div className={cx('inner')} tabIndex={0}>
-              <div className={cx('title')}>{title}</div>
-              <div className={contentClasses}>{message && <Html content={message} />}</div>
-              <div className={cx('buttons')}>
-                {cancelText && (
-                  <button className={cx('button', 'cancel')} onClick={handleCancel}>
-                    {cancelText}
-                  </button>
-                )}
-                {confirmText && (
-                  <button className={classes} onClick={handleConfirm}>
-                    {confirmText}
-                  </button>
-                )}
-              </div>
+              {title && <div className={cx('title')}>{title}</div>}
+              {message && <div className={contentClasses}>{message && <Html content={message} />}</div>}
+              {children}
+              {(confirmText || cancelText) && (
+                <div className={cx('buttons')}>
+                  {cancelText && (
+                    <button className={cx('button', 'cancel')} onClick={handleCancel}>
+                      {cancelText}
+                    </button>
+                  )}
+                  {confirmText && (
+                    <button className={classes} onClick={handleConfirm}>
+                      {confirmText}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
             <Overlay onClose={handleOutsideClose} />
-            {children}
           </div>
         </Fragment>
       )}
