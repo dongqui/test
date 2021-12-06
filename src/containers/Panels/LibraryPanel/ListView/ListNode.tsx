@@ -1,4 +1,4 @@
-import { max, find, remove, cloneDeep } from 'lodash';
+import { max, find, filter, remove, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
@@ -834,7 +834,20 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization',
-                onClick: () => {},
+                onClick: () => {
+                  const parentModel = find(lpNode, { id: parentId });
+
+                  if (parentModel) {
+                    const motions = filter(animationIngredients, { assetId: parentModel.assetId });
+
+                    if (motions) {
+                      const selectedMotion = find(motions, { id });
+                      if (selectedMotion) {
+                        console.log(selectedMotion);
+                      }
+                    }
+                  }
+                },
                 children: [],
               },
               {
@@ -890,6 +903,8 @@ const ListNode: FunctionComponent<Props> = ({
     onDelete,
     handleEdit,
     onModalClose,
+    animationIngredients,
+    parentId,
   ]);
 
   const classes = cx('outer', { selected: isSelected });
@@ -975,7 +990,7 @@ const ListNode: FunctionComponent<Props> = ({
         );
       }
     },
-    [lpNode, selectableId, onSelect, selectedId, onSetDragTarget, dragTarget, onCopy, parentId, filePath, name, id, onDelete],
+    [lpNode, selectableId, onSelect, selectedId, onSetDragTarget, dragTarget, onCopy, onDelete, parentId, filePath, name, id],
   );
 
   const handleBlur = useCallback(
