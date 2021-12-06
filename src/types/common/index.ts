@@ -125,7 +125,7 @@ export type PlaskMocapData = Array<{
   boneName: RetargetSourceBoneType;
   property: PlaskProperty;
   fps: number;
-  transformKey: Array<{
+  transformKeys: Array<{
     frame: number;
     time: number;
     value: ArrayOfThreeNumbers | ArrayOfFourNumbers;
