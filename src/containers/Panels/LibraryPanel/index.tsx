@@ -180,7 +180,9 @@ const LibraryPanel: FunctionComponent = () => {
         const newMotionNodes = animationIngredients.map((ingredient) => {
           const motion: LP.Node = {
             id: ingredient.id,
-            parentId: ingredient.assetId,
+            // parentId: ingredient.assetId,
+            parentId: newModelNode.id,
+            assetId: ingredient.assetId,
             filePath: '\\root' + `\\${nodeName}`,
             name: ingredient.name,
             extension: '',
