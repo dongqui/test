@@ -8,6 +8,7 @@ export type AnimationDataAction =
   | ReturnType<typeof editAnimationIngredient>
   | ReturnType<typeof editAnimationIngredients>
   | ReturnType<typeof removeAnimationIngredient>
+  | ReturnType<typeof toggleLayerMuteness>
   | ReturnType<typeof editRetargetMap>;
 
 // transformNodes 관련
@@ -18,6 +19,7 @@ const ADD_ANIMATION_INGREDIENT = 'animationDataAction/ADD_ANIMATION_INGREDIENT' 
 const EDIT_ANIMATION_INGREDIENT = 'animationDataAction/EDIT_ANIMATION_INGREDIENT' as const;
 const EDIT_ANIMATION_INGREDIENTS = 'animationDataAction/EDIT_ANIMATION_INGREDIENTS' as const;
 const REMOVE_ANIMATION_INGREDIENT = 'animationDataAction/REMOVE_ANIMATION_INGREDIENT' as const;
+const TOGGLE_LAYER_MUTENESS = 'animationDataAction/TOGGLE_LAYER_MUTENESS' as const;
 // retargetMap 관련
 const EDIT_RETARGET_MAP = 'animationDataAction/EDIT_RETARGET_MAP' as const;
 
@@ -45,6 +47,11 @@ interface EditAnimationIngredients {
 
 interface RemoveAnimationIngredient {
   animationIngredientId: string;
+}
+
+interface ToggleLayerMuteness {
+  animationIngredientId: string;
+  layerId: string;
 }
 
 interface EditRetargetMap {
@@ -120,6 +127,19 @@ export const editAnimationIngredients = (params: EditAnimationIngredients) => ({
  */
 export const removeAnimationIngredient = (params: RemoveAnimationIngredient) => ({
   type: REMOVE_ANIMATION_INGREDIENT,
+  payload: {
+    ...params,
+  },
+});
+
+/**
+ * 특정 layer를 렌더링되는 애니메이션에서 제외합니다.
+ *
+ * @param animationIngredientId - 해당 layer가 속한 animationIngredient의 id
+ * @param layerId - 대상 layer의 id
+ */
+export const toggleLayerMuteness = (params: ToggleLayerMuteness) => ({
+  type: TOGGLE_LAYER_MUTENESS,
   payload: {
     ...params,
   },

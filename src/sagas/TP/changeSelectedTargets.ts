@@ -36,6 +36,7 @@ function* filterPlaskTracks(visualizedAnimationIngredient: AnimationIngredient) 
   const selectedTargets = getSelectedTargets(yield select());
   const selectedLayer = getSelectedLayer(yield select());
   const filteredTracks: PlaskTrack[] = [];
+
   for (let index = 0; index < selectedTargets.length; index += 1) {
     const { id, name } = selectedTargets[index];
     if (name !== 'Armature') {
@@ -49,6 +50,7 @@ function* filterPlaskTracks(visualizedAnimationIngredient: AnimationIngredient) 
       }
     }
   }
+
   return filteredTracks;
 }
 
