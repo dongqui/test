@@ -26,8 +26,8 @@ const useAnimation = () => {
   const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
 
   // useEffect(() => {
-  //   console.log('animationIngredients: ', animationIngredients);
-  // }, [animationIngredients]);
+  //   console.log('_animationIngredients: ', _animationIngredients);
+  // }, [_animationIngredients]);
 
   // 애니메이션 생성
   useEffect(() => {
