@@ -648,7 +648,8 @@ const ListNode: FunctionComponent<Props> = ({
 
                     const currentPathNodeName = lpNode
                       .filter((node) => {
-                        if (node.parentId === assetId) {
+                        // if (node.parentId === assetId) {
+                        if (node.parentId === id) {
                           if (node.name.includes('empty motion')) {
                             return true;
                           }
@@ -672,9 +673,11 @@ const ListNode: FunctionComponent<Props> = ({
 
                       const motion: LP.Node = {
                         id: nextAnimationIngredient.id,
-                        parentId: nextAnimationIngredient.assetId,
+                        // parentId: nextAnimationIngredient.assetId,
+                        parentId: id,
                         name: nextAnimationIngredient.name,
-                        filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
+                        // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
+                        filePath: lpCurrentPath,
                         children: [],
                         extension: '',
                         type: 'Motion',
