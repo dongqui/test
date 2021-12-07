@@ -7,44 +7,44 @@ export type PlaskProjectAction =
   | ReturnType<typeof renderAsset>
   | ReturnType<typeof unrenderAsset>
   | ReturnType<typeof removeAsset>
-  | ReturnType<typeof addMotion>;
+  | ReturnType<typeof addAnimationIngredient>;
 
-export const ADD_SCREEN = 'plaskProject/ADD_SCREEN' as const;
-export const REMOVE_SCREEN = 'plaskProject/REMOVE_SCREEN' as const;
-export const ADD_ASSET = 'plaskProject/ADD_ASSET' as const;
-export const RENDER_ASSET = 'plaskProject/RENDER_ASSET' as const;
-export const UNRENDER_ASSET = 'plaskProject/UNRENDER_ASSET' as const;
-export const REMOVE_ASSET = 'plaskProject/REMOVE_ASSET' as const;
-export const ADD_MOTION = 'plaskProject/ADD_MOTION' as const;
+const ADD_SCREEN = 'plaskProject/ADD_SCREEN' as const;
+const REMOVE_SCREEN = 'plaskProject/REMOVE_SCREEN' as const;
+const ADD_ASSET = 'plaskProject/ADD_ASSET' as const;
+const RENDER_ASSET = 'plaskProject/RENDER_ASSET' as const;
+const UNRENDER_ASSET = 'plaskProject/UNRENDER_ASSET' as const;
+const REMOVE_ASSET = 'plaskProject/REMOVE_ASSET' as const;
+const ADD_ANIMATION_INGREDIENT = 'plaskProject/ADD_ANIMATION_INGREDIENT' as const;
 
-export interface AddScreen {
+interface AddScreen {
   screen: PlaskScreen;
 }
 
-export interface RemoveScreen {
+interface RemoveScreen {
   screenId: string;
 }
 
-export interface AddAsset {
+interface AddAsset {
   asset: PlaskAsset;
 }
 
-export interface RenderAsset {
+interface RenderAsset {
   assetId: string;
 }
 
-export interface UnrenderAsset {
+interface UnrenderAsset {
   // 단일 모델일 때는 unrender가 아니라 reset의 기능이기 때문에, 삭제할 asset의 id가 필요없음
   // assetId: string;
 }
 
-export interface RemoveAsset {
+interface RemoveAsset {
   assetId: string;
 }
 
-export interface AddMotion {
+interface AddAnimationIngredient {
   assetId: string;
-  motionId: string;
+  animationIngredientId: string;
 }
 
 /**
@@ -123,10 +123,10 @@ export const removeAsset = (params: RemoveAsset) => ({
  * 전달받은 id에 해당하는 asset에 추가한 빈 모션의 id를 하위로 할당한다.
  *
  * @param assetId - 추가한 모션의 id를 할당할 asset의 id
- * @param motionId - 새로 생성한 빈 모션의 id
+ * @param animationIngredientId - 새로 생성한 빈 모션의 id
  */
-export const addMotion = (params: AddMotion) => ({
-  type: ADD_MOTION,
+export const addAnimationIngredient = (params: AddAnimationIngredient) => ({
+  type: ADD_ANIMATION_INGREDIENT,
   payload: {
     ...params,
   },

@@ -694,9 +694,9 @@ const ListNode: FunctionComponent<Props> = ({
                     );
 
                     dispatch(
-                      plaskProjectActions.addMotion({
+                      plaskProjectActions.addAnimationIngredient({
                         assetId: assetId,
-                        motionId: nextAnimationIngredient.id,
+                        animationIngredientId: nextAnimationIngredient.id,
                       }),
                     );
                   }
@@ -824,6 +824,7 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'Visualization',
                 onClick: () => {
                   const parentModel = find(lpNode, { id: parentId });
+                  console.log('parentModa: ', parentModel);
 
                   if (parentModel) {
                     const motions = filter(_animationIngredients, { assetId: parentModel.assetId });
@@ -1248,6 +1249,12 @@ const ListNode: FunctionComponent<Props> = ({
                       animationIngredient: mocapAnimationIngredient,
                     }),
                   );
+                  dispatch(
+                    plaskProjectActions.addAnimationIngredient({
+                      assetId: dropNode.assetId!,
+                      animationIngredientId: mocapAnimationIngredient.id,
+                    }),
+                  );
 
                   return;
                 } catch (error) {
@@ -1316,6 +1323,12 @@ const ListNode: FunctionComponent<Props> = ({
               dispatch(
                 animationDataActions.addAnimationIngredient({
                   animationIngredient: mocapAnimationIngredient,
+                }),
+              );
+              dispatch(
+                plaskProjectActions.addAnimationIngredient({
+                  assetId: dropNode.assetId!,
+                  animationIngredientId: mocapAnimationIngredient.id,
                 }),
               );
             } catch (error) {
