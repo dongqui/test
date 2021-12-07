@@ -183,6 +183,135 @@ const ListNode: FunctionComponent<Props> = ({
 
   const [isEditing, setIsEditing] = useState(false);
 
+  const handleVisualization = useCallback(() => {
+    // 기존 asset visualize cancel -> multi-model 시에는 기존 asset도 유지
+    if (_visualizedAssetIds.length > 0 && _visualizedAssetIds[0] !== assetId) {
+      const prevAssetId = _visualizedAssetIds[0];
+      const prevAsset = _assetList.find((asset) => asset.id === prevAssetId);
+      const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(prevAssetId) && !checkIsTargetMesh(object));
+      const targetControllers = _selectableObjects.filter((object) => object.id.includes(prevAssetId) && checkIsTargetMesh(object));
+
+      // delete 대상이 render된 scene에서 대상의 요소들 remove
+      if (prevAsset) {
+        _screenList
+          .map((screen) => screen.scene)
+          .forEach((scene) => {
+            removeAssetFromScene(scene, prevAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+          });
+      }
+
+      // visualizedAssetList에서 제외
+      // dispatch(plaskProjectActions.unrenderAsset({ assetId: prevAssetId })); // single-model 환경에서는 불필요
+      // 선택 대상에서 제외
+      dispatch(selectingDataActions.unrenderAsset({ assetId: prevAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+    }
+
+    // 새로운 asset visualize
+    if (assetId && !_visualizedAssetIds.includes(assetId)) {
+      const targetAsset = _assetList.find((asset) => asset.id === assetId);
+
+      if (targetAsset) {
+        const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
+
+        // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
+        _screenList.forEach((PlaskScreen) => {
+          const { id: sceneId, scene } = PlaskScreen;
+
+          if (scene.isReady()) {
+            // scene들에 mesh 추가
+            meshes.forEach((mesh) => {
+              mesh.renderingGroupId = 1;
+              scene.addMesh(mesh);
+            });
+
+            // scene들에 geometry 추가
+            geometries.forEach((geometry) => {
+              scene.addGeometry(geometry);
+            });
+
+            // scene들에 skeleton 추가
+            scene.addSkeleton(skeleton);
+
+            const jointTransformNodes: BABYLON.TransformNode[] = [];
+
+            // joints 생성 및 scene들에 추가
+            bones.forEach((bone) => {
+              if (!bone.name.toLowerCase().includes('scene')) {
+                // @TODO
+                if (bone.name === '__root__') {
+                  return;
+                }
+                const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
+                joint.id = `${assetId}//${bone.name}//joint`;
+                joint.renderingGroupId = 2;
+                joint.attachToBone(bone, meshes[0]);
+
+                const targetTransformNode = bone.getTransformNode();
+                if (targetTransformNode) {
+                  jointTransformNodes.push(targetTransformNode);
+                }
+
+                // joint마다 actionManager 설정
+                joint.actionManager = new BABYLON.ActionManager(scene);
+                joint.actionManager.registerAction(
+                  // joint 클릭으로 bone 선택하기 위한 액션
+                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
+                    const targetTransformNode = bone.getTransformNode();
+                    if (targetTransformNode) {
+                      const sourceEvent: PointerEvent = event.sourceEvent;
+                      if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+                        dispatch(
+                          selectingDataActions.ctrlKeySingleSelect({
+                            target: targetTransformNode,
+                          }),
+                        );
+                      } else {
+                        dispatch(
+                          selectingDataActions.defaultSingleSelect({
+                            target: targetTransformNode,
+                          }),
+                        );
+                      }
+                    }
+                  }),
+                );
+                // joint hover 시 커서 모양 변경
+                joint.actionManager.registerAction(
+                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+                    scene.hoverCursor = 'pointer';
+                  }),
+                );
+              }
+            });
+
+            // visualizedAssetIds에 추가
+            dispatch(plaskProjectActions.renderAsset({ assetId }));
+            // dragBox 선택 대상에 추가
+            dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
+
+            // scene들에 skeletonViewer 추가
+            if (skeleton) {
+              const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
+
+              // @TODO
+              // scene.removeMesh(skeletonViewer.mesh);
+
+              skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
+              scene.addMesh(skeletonViewer.mesh);
+            }
+
+            // scene들에 애니메이션 적용을 위한 transformNode 추가
+            transformNodes.forEach((transformNode) => {
+              scene.addTransformNode(transformNode);
+              // quaternionRotation 애니메이션을 적용하기 위한 코드
+              transformNode.rotate(BABYLON.Axis.X, 0);
+            });
+          }
+        });
+      }
+    }
+  }, [_assetList, _screenList, _selectableObjects, _visualizedAssetIds, assetId, dispatch]);
+
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -474,134 +603,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization',
-                onClick: () => {
-                  // 기존 asset visualize cancel -> multi-model 시에는 기존 asset도 유지
-                  if (_visualizedAssetIds.length > 0 && _visualizedAssetIds[0] !== assetId) {
-                    const prevAssetId = _visualizedAssetIds[0];
-                    const prevAsset = _assetList.find((asset) => asset.id === prevAssetId);
-                    const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(prevAssetId) && !checkIsTargetMesh(object));
-                    const targetControllers = _selectableObjects.filter((object) => object.id.includes(prevAssetId) && checkIsTargetMesh(object));
-
-                    // delete 대상이 render된 scene에서 대상의 요소들 remove
-                    if (prevAsset) {
-                      _screenList
-                        .map((screen) => screen.scene)
-                        .forEach((scene) => {
-                          removeAssetFromScene(scene, prevAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
-                        });
-                    }
-
-                    // visualizedAssetList에서 제외
-                    // dispatch(plaskProjectActions.unrenderAsset({ assetId: prevAssetId })); // single-model 환경에서는 불필요
-                    // 선택 대상에서 제외
-                    dispatch(selectingDataActions.unrenderAsset({ assetId: prevAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
-                  }
-
-                  // 새로운 asset visualize
-                  if (assetId && !_visualizedAssetIds.includes(assetId)) {
-                    const targetAsset = _assetList.find((asset) => asset.id === assetId);
-
-                    if (targetAsset) {
-                      const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
-
-                      // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
-                      _screenList.forEach((PlaskScreen) => {
-                        const { id: sceneId, scene } = PlaskScreen;
-
-                        if (scene.isReady()) {
-                          // scene들에 mesh 추가
-                          meshes.forEach((mesh) => {
-                            mesh.renderingGroupId = 1;
-                            scene.addMesh(mesh);
-                          });
-
-                          // scene들에 geometry 추가
-                          geometries.forEach((geometry) => {
-                            scene.addGeometry(geometry);
-                          });
-
-                          // scene들에 skeleton 추가
-                          scene.addSkeleton(skeleton);
-
-                          const jointTransformNodes: BABYLON.TransformNode[] = [];
-
-                          // joints 생성 및 scene들에 추가
-                          bones.forEach((bone) => {
-                            if (!bone.name.toLowerCase().includes('scene')) {
-                              // @TODO
-                              if (bone.name === '__root__') {
-                                return;
-                              }
-                              const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
-                              joint.id = `${assetId}//${bone.name}//joint`;
-                              joint.renderingGroupId = 2;
-                              joint.attachToBone(bone, meshes[0]);
-
-                              const targetTransformNode = bone.getTransformNode();
-                              if (targetTransformNode) {
-                                jointTransformNodes.push(targetTransformNode);
-                              }
-
-                              // joint마다 actionManager 설정
-                              joint.actionManager = new BABYLON.ActionManager(scene);
-                              joint.actionManager.registerAction(
-                                // joint 클릭으로 bone 선택하기 위한 액션
-                                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
-                                  const targetTransformNode = bone.getTransformNode();
-                                  if (targetTransformNode) {
-                                    const sourceEvent: PointerEvent = event.sourceEvent;
-                                    if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                                      dispatch(
-                                        selectingDataActions.ctrlKeySingleSelect({
-                                          target: targetTransformNode,
-                                        }),
-                                      );
-                                    } else {
-                                      dispatch(
-                                        selectingDataActions.defaultSingleSelect({
-                                          target: targetTransformNode,
-                                        }),
-                                      );
-                                    }
-                                  }
-                                }),
-                              );
-                              // joint hover 시 커서 모양 변경
-                              joint.actionManager.registerAction(
-                                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
-                                  scene.hoverCursor = 'pointer';
-                                }),
-                              );
-                            }
-                          });
-
-                          // visualizedAssetIds에 추가
-                          dispatch(plaskProjectActions.renderAsset({ assetId }));
-                          // dragBox 선택 대상에 추가
-                          dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
-
-                          // scene들에 skeletonViewer 추가
-                          if (skeleton) {
-                            const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
-
-                            // @TODO
-                            // scene.removeMesh(skeletonViewer.mesh);
-
-                            skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
-                            scene.addMesh(skeletonViewer.mesh);
-                          }
-
-                          // scene들에 애니메이션 적용을 위한 transformNode 추가
-                          transformNodes.forEach((transformNode) => {
-                            scene.addTransformNode(transformNode);
-                            // quaternionRotation 애니메이션을 적용하기 위한 코드
-                            transformNode.rotate(BABYLON.Axis.X, 0);
-                          });
-                        }
-                      });
-                    }
-                  }
-                },
+                onClick: handleVisualization,
                 children: [],
               },
               {
@@ -897,6 +899,7 @@ const ListNode: FunctionComponent<Props> = ({
     onSelect,
     selectedId,
     type,
+    handleVisualization,
   ]);
 
   const classes = cx('outer', { selected: isSelected });
@@ -1250,9 +1253,7 @@ const ListNode: FunctionComponent<Props> = ({
                   );
 
                   return;
-                } catch (error) {
-                  console.error(error);
-                }
+                } catch (error) {}
               }
             }
           }
@@ -1318,9 +1319,7 @@ const ListNode: FunctionComponent<Props> = ({
                   animationIngredient: mocapAnimationIngredient,
                 }),
               );
-            } catch (error) {
-              console.error(error);
-            }
+            } catch (error) {}
           }
         }
       }
@@ -1517,9 +1516,25 @@ const ListNode: FunctionComponent<Props> = ({
     LP_EDIT_NAME: handleEdit,
   };
 
+  const handleDragEnd = useCallback(
+    (e: DragEvent) => {
+      const dropZone = document.getElementById('RP');
+
+      if (dropZone) {
+        const dropPointElement = document.elementFromPoint(e.clientX, e.clientY);
+        const isRPContains = dropZone.contains(dropPointElement);
+
+        if (isRPContains) {
+          handleVisualization();
+        }
+      }
+    },
+    [handleVisualization],
+  );
+
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
-      <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} ref={outerRef}>
+      <div className={classes} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
         <div className={cx('inner')}>
           {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
           <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
