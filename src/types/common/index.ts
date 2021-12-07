@@ -117,3 +117,17 @@ export type RetargetMapValue = {
   sourceBoneName: RetargetSourceBoneType;
   targetTransformNodeId: Nullable<string>;
 };
+
+type ArrayOfThreeNumbers = [number, number, number];
+type ArrayOfFourNumbers = [number, number, number, number];
+
+export type PlaskMocapData = Array<{
+  boneName: RetargetSourceBoneType;
+  property: PlaskProperty;
+  fps: number;
+  transformKeys: Array<{
+    frame: number;
+    time: number;
+    value: ArrayOfThreeNumbers | ArrayOfFourNumbers;
+  }>;
+}>;

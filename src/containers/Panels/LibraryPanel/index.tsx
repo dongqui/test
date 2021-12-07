@@ -5,7 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import produce from 'immer';
 import '@babylonjs/loaders/glTF';
 import { convertModel } from 'api';
-import { getFileExtension, getRandomStringKey } from 'utils/common';
+import { filterAnimatableTransformNodes, getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
@@ -123,7 +123,14 @@ const LibraryPanel: FunctionComponent = () => {
          * 모델이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
          * 첫 번째 animationGroup을 current로 사용 (idx === 0)
          */
-        const animationIngredient = createAnimationIngredient(assetId, animationGroup, false, idx === 0);
+        const animationIngredient = createAnimationIngredient(
+          assetId,
+          animationGroup.name,
+          animationGroup.targetedAnimations,
+          filterAnimatableTransformNodes(transformNodes),
+          false,
+          idx === 0,
+        );
 
         animationIngredientIds.push(animationIngredient.id);
         animationIngredients.push(animationIngredient);
@@ -199,9 +206,7 @@ const LibraryPanel: FunctionComponent = () => {
       dispatch(plaskProjectActions.addAsset({ asset: newAsset }));
       dispatch(
         animationDataActions.addAsset({
-          transformNodes: transformNodes.filter(
-            (t) => !t.name.toLowerCase().includes('camera') && !t.name.toLowerCase().includes('scene') && !t.name.toLowerCase().includes('armature'),
-          ),
+          transformNodes: filterAnimatableTransformNodes(transformNodes),
           animationIngredients,
           retargetMap,
         }),
