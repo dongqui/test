@@ -4,8 +4,8 @@ import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import produce from 'immer';
 import '@babylonjs/loaders/glTF';
-import { convertFBXtoGLB } from 'api';
-import { getFileExtension, getRandomStringKey } from 'utils/common';
+import { convertModel } from 'api';
+import { filterAnimatableTransformNodes, getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
@@ -53,7 +53,7 @@ const LibraryPanel: FunctionComponent = () => {
         onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
         if (file instanceof File) {
-          const fileUrl = await convertFBXtoGLB(file)
+          const fileUrl = await convertModel(file, 'glb')
             .then((response) => {
               onModalClose();
               return response;
@@ -123,7 +123,14 @@ const LibraryPanel: FunctionComponent = () => {
          * 모델이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
          * 첫 번째 animationGroup을 current로 사용 (idx === 0)
          */
-        const animationIngredient = createAnimationIngredient(assetId, animationGroup, false, idx === 0);
+        const animationIngredient = createAnimationIngredient(
+          assetId,
+          animationGroup.name,
+          animationGroup.targetedAnimations,
+          filterAnimatableTransformNodes(transformNodes),
+          false,
+          idx === 0,
+        );
 
         animationIngredientIds.push(animationIngredient.id);
         animationIngredients.push(animationIngredient);
@@ -180,7 +187,9 @@ const LibraryPanel: FunctionComponent = () => {
         const newMotionNodes = animationIngredients.map((ingredient) => {
           const motion: LP.Node = {
             id: ingredient.id,
-            parentId: ingredient.assetId,
+            // parentId: ingredient.assetId,
+            parentId: newModelNode.id,
+            assetId: ingredient.assetId,
             filePath: '\\root' + `\\${nodeName}`,
             name: ingredient.name,
             extension: '',
@@ -197,9 +206,7 @@ const LibraryPanel: FunctionComponent = () => {
       dispatch(plaskProjectActions.addAsset({ asset: newAsset }));
       dispatch(
         animationDataActions.addAsset({
-          transformNodes: transformNodes.filter(
-            (t) => !t.name.toLowerCase().includes('camera') && !t.name.toLowerCase().includes('scene') && !t.name.toLowerCase().includes('armature'),
-          ),
+          transformNodes: filterAnimatableTransformNodes(transformNodes),
           animationIngredients,
           retargetMap,
         }),
@@ -296,7 +303,6 @@ const LibraryPanel: FunctionComponent = () => {
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
-  const [isDefaultModelLoaded, setIsDefaultModelLoaded] = useState(false);
   const [isSceneReady, setIsSceneReady] = useState(false);
 
   useEffect(() => {
@@ -308,18 +314,19 @@ const LibraryPanel: FunctionComponent = () => {
         setIsSceneReady(true);
       });
     }
-  }, [_screenList, isDefaultModelLoaded, isSceneReady, onNodeChange]);
+  }, [_screenList, isSceneReady, onNodeChange]);
 
   useEffect(() => {
     if (isSceneReady) {
-      if (!isDefaultModelLoaded) {
-        const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
+      const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
 
+      const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
+
+      if (!isAlreadyExist) {
         onNodeChange(defaultModels);
-        setIsDefaultModelLoaded(true);
       }
     }
-  }, [isDefaultModelLoaded, isSceneReady, onNodeChange]);
+  }, [_lpNode, isSceneReady, onNodeChange]);
 
   const handleSearch = useCallback(
     (text: string) => {

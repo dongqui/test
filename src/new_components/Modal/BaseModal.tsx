@@ -22,10 +22,11 @@ const focusableList = [
 ];
 
 interface Props {
+  className?: string;
   onOutsideClose?: () => void;
-  isOpen: boolean;
-  title: string;
-  message: string;
+  isOpen?: boolean;
+  title?: string;
+  message?: string;
   confirmText?: string;
   cancelText?: string;
   onConfirm?: () => void;
@@ -33,7 +34,7 @@ interface Props {
   confirmColor?: string;
 }
 
-const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message, confirmText, onConfirm, cancelText, onCancel, confirmColor }) => {
+const BaseModal: FunctionComponent<Props> = ({ children, className, isOpen, title, message, confirmText, onConfirm, cancelText, onCancel, confirmColor }) => {
   const portalRef = useRef(document.getElementById('portal_modal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -61,30 +62,33 @@ const BaseModal: FunctionComponent<Props> = ({ children, isOpen, title, message,
     onModalClose();
   }, [onCancel, onModalClose]);
 
+  const wrapperClasses = cx('wrapper', className);
+
   const classes = cx('button', 'confirm', confirmColor);
 
   return (
     <BasePortal container={portalRef}>
       {isOpen && (
         <Fragment>
-          <div className={cx('wrapper')} ref={modalRef}>
+          <div className={wrapperClasses} ref={modalRef}>
             <div className={cx('inner')} tabIndex={0}>
-              <div className={cx('title')}>{title}</div>
-              <div className={contentClasses}>
-                <Html content={message} />
-              </div>
-              <div className={cx('buttons')}>
-                {cancelText && (
-                  <button className={cx('button', 'cancel')} onClick={handleCancel}>
-                    {cancelText}
-                  </button>
-                )}
-                {confirmText && (
-                  <button className={classes} onClick={handleConfirm}>
-                    {confirmText}
-                  </button>
-                )}
-              </div>
+              {title && <div className={cx('title')}>{title}</div>}
+              {message && <div className={contentClasses}>{message && <Html content={message} />}</div>}
+              {children}
+              {(confirmText || cancelText) && (
+                <div className={cx('buttons')}>
+                  {cancelText && (
+                    <button className={cx('button', 'cancel')} onClick={handleCancel}>
+                      {cancelText}
+                    </button>
+                  )}
+                  {confirmText && (
+                    <button className={classes} onClick={handleConfirm}>
+                      {confirmText}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
             <Overlay onClose={handleOutsideClose} />
           </div>

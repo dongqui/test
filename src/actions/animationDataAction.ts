@@ -7,6 +7,7 @@ export type AnimationDataAction =
   | ReturnType<typeof addAnimationIngredient>
   | ReturnType<typeof editAnimationIngredient>
   | ReturnType<typeof editAnimationIngredients>
+  | ReturnType<typeof changeCurrentAnimationIngredient>
   | ReturnType<typeof removeAnimationIngredient>
   | ReturnType<typeof toggleLayerMuteness>
   | ReturnType<typeof editRetargetMap>;
@@ -20,6 +21,7 @@ const EDIT_ANIMATION_INGREDIENT = 'animationDataAction/EDIT_ANIMATION_INGREDIENT
 const EDIT_ANIMATION_INGREDIENTS = 'animationDataAction/EDIT_ANIMATION_INGREDIENTS' as const;
 const REMOVE_ANIMATION_INGREDIENT = 'animationDataAction/REMOVE_ANIMATION_INGREDIENT' as const;
 const TOGGLE_LAYER_MUTENESS = 'animationDataAction/TOGGLE_LAYER_MUTENESS' as const;
+const CHANGE_CURRENT_ANIMATION_INGREDIENT = 'animationDataAction/CHANGE_CURRENT_ANIMATION_INGREDIENT' as const;
 // retargetMap 관련
 const EDIT_RETARGET_MAP = 'animationDataAction/EDIT_RETARGET_MAP' as const;
 
@@ -43,6 +45,11 @@ interface EditAnimationIngredient {
 
 interface EditAnimationIngredients {
   animationIngredients: AnimationIngredient[];
+}
+
+interface ChangeCurrentAnimationIngredient {
+  assetId: string;
+  animationIngredientId: string;
 }
 
 interface RemoveAnimationIngredient {
@@ -115,6 +122,13 @@ export const editAnimationIngredient = (params: EditAnimationIngredient) => ({
  */
 export const editAnimationIngredients = (params: EditAnimationIngredients) => ({
   type: EDIT_ANIMATION_INGREDIENTS,
+  payload: {
+    ...params,
+  },
+});
+
+export const changeCurrentAnimationIngredient = (params: ChangeCurrentAnimationIngredient) => ({
+  type: CHANGE_CURRENT_ANIMATION_INGREDIENT,
   payload: {
     ...params,
   },

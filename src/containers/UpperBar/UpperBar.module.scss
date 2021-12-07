@@ -68,7 +68,7 @@
     padding: 0 8px;
     color: #fff;
     cursor: pointer;
-    
+
     &:hover {
       background-color: #4f4f4f;
     }
@@ -94,7 +94,7 @@
     flex-direction: column;
     top: 30px;
     right: 14px;
-    border: 1px solid #4F4F4F;
+    border: 1px solid #4f4f4f;
     border-radius: 8px;
     padding: 0;
     z-index: 1;
@@ -107,12 +107,12 @@
       margin-bottom: 5.5px;
       margin-left: 12px;
     }
-    
+
     & > .device-select-dropdown {
       position: relative;
       display: flex;
       align-items: center;
-      color: #D3D3D3;
+      color: #d3d3d3;
       list-style: none;
       overflow: hidden;
       white-space: nowrap;
@@ -128,9 +128,9 @@
       & > .device-label {
         margin-left: 23px;
       }
-      
+
       &:hover {
-        background-color: #0F88FF;
+        background-color: #0f88ff;
       }
 
       &:last-child {
@@ -140,16 +140,15 @@
       & > .device-select-check {
         position: absolute;
         top: 2px;
+
         & > svg {
           width: 15px;
           height: 15px;
         }
-      } 
+      }
     }
-
-    
   }
-  
+
   & > .share-button {
     min-width: 0;
     font-size: 11px;
@@ -188,19 +187,6 @@
   background-color: rgb(48, 48, 48);
 }
 
-.extract-modal {
-  & > div {
-    &:nth-of-type(1) {
-      display: flex;
-      justify-content: center;
-      background-color: #202122;
-      width: 256px;
-      height: 186px;
-      border: 1px solid #4F4F4F;
-    }
-  }
-}
-
 .modal-heading {
   font-size: 12px;
   line-height: 15px;
@@ -211,6 +197,7 @@
   display: flex;
   justify-content: space-around;
   width: 232px;
+
   & > .extract-button {
     display: flex;
     align-items: center;
@@ -218,10 +205,11 @@
     width: 114px;
     height: 24px;
     color: #fff;
+
     &.cancel {
       border: 1px solid rgba(255, 255, 255, 0.2);
       background-color: transparent;
-      color: #D3D3D3;
+      color: #d3d3d3;
     }
   }
 }
@@ -231,10 +219,11 @@
   font-size: 11px;
   font-weight: 400;
   line-height: 13px;
-  color: #BDBDBD;
+  color: #bdbdbd;
   margin-bottom: 28px;
   margin: 0 auto 28px auto;
+
   & > strong {
-    color: #FD6756
+    color: #fd6756;
   }
 }
