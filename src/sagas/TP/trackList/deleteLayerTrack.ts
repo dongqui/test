@@ -2,9 +2,14 @@ import { put, select, takeLatest } from 'redux-saga/effects';
 
 import { RootState } from 'reducers';
 import * as trackListActions from 'actions/trackList';
+import * as animationDataActions from 'actions/animationDataAction';
 
 function getAnimationIngredientId(state: RootState) {
   return state.trackList.animationIngredientId;
+}
+
+function getAnimationIngredients(state: RootState) {
+  return state.animationData.animationIngredients;
 }
 
 function* worker({ payload }: ReturnType<typeof trackListActions.clickDeleteLayerTrackButton>) {
@@ -13,7 +18,20 @@ function* worker({ payload }: ReturnType<typeof trackListActions.clickDeleteLaye
 
   // RP Delete Track 액션 호출 시 인자값 : { animationIngredientId, ...payload }
   // 여기서부터 RP Delete Track 액션 호출
-  // yield put(RP액션.deleteLayerTrack({ animationIngredientId, ...newLayerTrack }))
+  const animationIngredients = getAnimationIngredients(yield select());
+  const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === animationIngredientId);
+  if (targetAnimationIngredient) {
+    // track들 삭제한 후 animationIngredient 업데이트
+    yield put(
+      animationDataActions.editAnimationIngredient({
+        animationIngredient: {
+          ...targetAnimationIngredient,
+          layers: targetAnimationIngredient.layers.filter((layer) => layer.id !== payload.id),
+          tracks: targetAnimationIngredient.tracks.filter((track) => track.layerId !== payload.id),
+        },
+      }),
+    );
+  }
 }
 
 function* watchDeleteLayerTrack() {

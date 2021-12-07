@@ -5,7 +5,6 @@ import { PlaskLayer, PlaskTrack } from 'types/common';
 import { LayerTrack } from 'types/TP/track';
 import * as trackListActions from 'actions/trackList';
 import * as animationDataActions from 'actions/animationDataAction';
-
 import { getRandomStringKey } from 'utils/common';
 import { createPlaskTrack } from 'utils/RP';
 
@@ -64,6 +63,7 @@ function* worker() {
     baseLayerTracks.forEach((track) => {
       newTracks.push(createPlaskTrack(track.name, newLayerTrack.id, track.target, track.property, [], track.isMocapAnimation));
     });
+    // 빈 track들을 추가한 후 animationIngredient 업데이트
     yield put(
       animationDataActions.editAnimationIngredient({
         animationIngredient: {
