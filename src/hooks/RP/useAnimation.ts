@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as BABYLON from '@babylonjs/core';
-import * as trackListActions from 'actions/trackList';
 import { useSelector } from 'reducers';
 import { filterQuaternion, filterVector } from 'utils/RP';
 
@@ -33,13 +32,6 @@ const useAnimation = () => {
     const visualizedAnimationIngredients = _animationIngredients.filter(
       (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
-
-    // 최초 모델 visualize/모델 변경 시, 트랙 리스트 생성 함수 호출
-    if (visualizedAnimationIngredients.length) {
-      dispatch(trackListActions.initializeTrackList({ list: visualizedAnimationIngredients[0].layers, animationIngredientId: visualizedAnimationIngredients[0].id }));
-    } else {
-      dispatch(trackListActions.initializeTrackList({ list: [], animationIngredientId: '', clearAnimation: true }));
-    }
 
     const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
 
