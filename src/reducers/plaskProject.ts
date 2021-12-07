@@ -47,14 +47,15 @@ export const plaskProject = (state = defaultState, action: PlaskProjectAction) =
         visualizedAssetIds: state.visualizedAssetIds.filter((id) => id !== action.payload.assetId),
       });
     }
-    case 'plaskProject/ADD_MOTION': {
-      const nextAssetList = produce(state.assetList, (draft) => {
-        const target = draft.filter((asset) => asset.id === action.payload.assetId)[0];
-        target.animationIngredientIds.push(action.payload.motionId);
-      });
-
+    case 'plaskProject/ADD_ANIMATION_INGREDIENT': {
       return Object.assign({}, state, {
-        assetList: nextAssetList,
+        assetList: state.assetList.map((asset) => {
+          if (asset.id === action.payload.assetId) {
+            return { ...asset, animationIngredientIds: [...asset.animationIngredientIds, action.payload.animationIngredientId] };
+          } else {
+            return asset;
+          }
+        }),
       });
     }
     default: {
