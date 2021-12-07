@@ -6,6 +6,8 @@ export type ScreenXY = { x: number; y: number };
 
 export type PlaskView = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
+export type PlaskRotationType = 'euler' | 'quaternion';
+
 export interface PlaskProject {
   id: string;
   name: string;
@@ -111,7 +113,21 @@ export type PlaskRetargetMap = {
   values: RetargetMapValue[];
 };
 
-type RetargetMapValue = {
+export type RetargetMapValue = {
   sourceBoneName: RetargetSourceBoneType;
-  targetBoneId: Nullable<string>;
+  targetTransformNodeId: Nullable<string>;
 };
+
+type ArrayOfThreeNumbers = [number, number, number];
+type ArrayOfFourNumbers = [number, number, number, number];
+
+export type PlaskMocapData = Array<{
+  boneName: RetargetSourceBoneType;
+  property: PlaskProperty;
+  fps: number;
+  transformKeys: Array<{
+    frame: number;
+    time: number;
+    value: ArrayOfThreeNumbers | ArrayOfFourNumbers;
+  }>;
+}>;

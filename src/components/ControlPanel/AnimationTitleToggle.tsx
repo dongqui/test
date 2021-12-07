@@ -8,47 +8,47 @@ const cx = classnames.bind(styles);
 
 interface Props {
   text: string;
-  spreadRef: boolean;
-  toggleRef?: boolean;
+  isSpread: boolean;
+  isPowerOn?: boolean;
   className?: string;
-  addSwitch?: boolean;
+  withSwitch?: boolean;
   checked?: boolean;
   activeStatus: boolean;
-  setSpreadRef: Dispatch<SetStateAction<boolean>>;
-  setToggleRef?: Dispatch<SetStateAction<boolean>>;
+  setIsSpread: Dispatch<SetStateAction<boolean>>;
+  setIsPowerOn?: Dispatch<SetStateAction<boolean>>;
 }
 
-const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, addSwitch, toggleRef, setToggleRef, spreadRef, setSpreadRef, activeStatus }) => {
+const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withSwitch, isPowerOn, setIsPowerOn, isSpread, setIsSpread, activeStatus }) => {
   // 해당 section의 단순 펼침/접음 적용 (비활성화 X)
   const handleSpread = useCallback(() => {
-    if (spreadRef) {
-      setSpreadRef(false);
+    if (isSpread) {
+      setIsSpread(false);
     } else {
-      setSpreadRef(true);
+      setIsSpread(true);
     }
-  }, [spreadRef, setSpreadRef]);
+  }, [isSpread, setIsSpread]);
 
   // 해당 section의 비활성화
-  const handleToggle = useCallback(() => {
-    if (toggleRef) {
-      setToggleRef && setToggleRef(false);
+  const handleTogglePower = useCallback(() => {
+    if (isPowerOn) {
+      setIsPowerOn && setIsPowerOn(false);
     } else {
-      setToggleRef && setToggleRef(true);
+      setIsPowerOn && setIsPowerOn(true);
     }
-  }, [toggleRef, setToggleRef]);
+  }, [isPowerOn, setIsPowerOn]);
 
-  const classes = cx('wrapper', className, { able: activeStatus === undefined ? true : activeStatus });
+  const classes = cx('wrapper', className, { able: activeStatus });
 
   return (
     <div className={cx(classes)}>
       <button className={cx('toggle')} onClick={handleSpread}>
-        <IconWrapper className={cx('arrowdown-icon', { active: spreadRef })} icon={SvgPath.EmptyDownArrow} /> {text}
+        <IconWrapper className={cx('arrowdown-icon', { active: isSpread })} icon={SvgPath.EmptyDownArrow} /> {text}
       </button>
-      {addSwitch && toggleRef !== undefined && (
+      {withSwitch && isPowerOn !== undefined && (
         <Switch
           className={cx('toggle-switch')}
-          onChange={handleToggle}
-          checked={activeStatus && toggleRef}
+          onChange={handleTogglePower}
+          checked={activeStatus && isPowerOn}
           onColor="#0F88FF"
           checkedIcon={false}
           uncheckedIcon={false}

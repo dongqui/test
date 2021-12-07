@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Fragment, useState, useCallback, useRef, useEffect, FunctionComponent } from 'react';
+import { FunctionComponent, Fragment, useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
@@ -15,17 +15,18 @@ import axios, { Canceler } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
+import { BaseModal } from 'new_components/Modal';
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
-import { BaseModal } from 'components/Modal';
 
 const cx = classNames.bind(styles);
 
 interface Props {
+  className?: string;
   browserType: string;
 }
 
-export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
+export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) => {
   const dispatch = useDispatch();
 
   const lpNode = useSelector((state) => state.lpNode.node);
@@ -185,7 +186,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
 
     const result = await axios({
       method: 'POST',
-      url: 'https://shootapi.myplask.com:6500/mocap-upload-api',
+      url: 'https://shootapi.myplask.com:6500/mocap-upload-api-common',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
       cancelToken: new axios.CancelToken((cancel) => {
@@ -202,7 +203,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           children: [],
           extension: '',
           type: 'Motion',
-          motionData: response.data,
+          mocapData: response.data.result,
         };
 
         const nextNodes = produce(lpNode, (draft) => {
@@ -321,7 +322,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   ];
 
   return (
-    <Fragment>
+    <div className={className}>
       <Box id="UP" {...boxProps.up}>
         <UpperBar
           sceneName="Please enter a scene name"
@@ -424,7 +425,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </Fragment>
       )}
       {readyExtract && (
-        <BaseModal className={cx('extract-modal', 'extract-name-modal')}>
+        <BaseModal isOpen={readyExtract}>
           <p className={cx('extract-name-paragraph')}>Enter the name of the motion to extract.</p>
           <input
             type="text"
@@ -458,7 +459,7 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </BaseModal>
       )}
       {turnStandbyPhase && (
-        <BaseModal className={cx('extract-modal', 'extract-delete')}>
+        <BaseModal isOpen={turnStandbyPhase}>
           <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
           <p className={cx('extract-name-paragraph')}>
             Your video will be <strong>deleted</strong> to take a new video.
@@ -479,23 +480,25 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
         </BaseModal>
       )}
       {onExtract && (
-        <BaseModal className={cx('extract-modal', 'loading-modal')}>
-          <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
-          <h4 className={cx('modal-heading', 'loading')}>Motions Extracting</h4>
-          <p className={cx('extract-name-paragraph', 'loading')}>
-            It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}
-          </p>
-          <FilledButton
-            text="Cancel"
-            className={cx('extract-button', 'cancel')}
-            onClick={() => {
-              setOnExtract(false);
-              cancelTokenSource.current && cancelTokenSource.current();
-            }}
-          ></FilledButton>
+        <BaseModal isOpen={onExtract}>
+          <div className={cx('loading-modal')}>
+            <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
+            <h4 className={cx('modal-heading', 'loading')}>Motions Extracting</h4>
+            <p className={cx('extract-name-paragraph', 'loading')}>
+              It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}
+            </p>
+            <FilledButton
+              text="Cancel"
+              className={cx('extract-button', 'cancel')}
+              onClick={() => {
+                setOnExtract(false);
+                cancelTokenSource.current && cancelTokenSource.current();
+              }}
+            ></FilledButton>
+          </div>
         </BaseModal>
       )}
-      {/* <BaseModal className={cx('extract-modal', 'loading-modal')}>
+      {/* <BaseModal>
         <h4 className={cx('modal-heading')}>Extract Failed</h4>
         <p className={cx('extract-name-paragraph')}>
           Motion extraction <strong>failed</strong>. please try again.
@@ -506,6 +509,6 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
           onClick={() => setTurnStandbyPhase(false)}
         ></FilledButton>
       </BaseModal> */}
-    </Fragment>
+    </div>
   );
 };

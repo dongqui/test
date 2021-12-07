@@ -41,7 +41,8 @@ export const keyframes = (state = initialState, action: KeyframesAction) => {
     case 'keyframes/INITIALIZE_KEYFRAMES': {
       return initializeKeyframes(state, action.payload);
     }
-    case 'keyframes/SELECT_KEYFRAMES': {
+    case 'keyframes/SELECT_KEYFRAMES':
+    case 'keyframes/SELECT_KEYFRAMES_BY_DRAG_BOX': {
       Observer.clearAllKeyframes();
       return selectKeyframes(state, action.payload);
     }

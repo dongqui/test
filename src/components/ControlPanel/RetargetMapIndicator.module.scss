@@ -1,0 +1,32 @@
+.map-indicator {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 12px;
+  right: 0;
+  padding: 2px 8px;
+  border-radius: 50px;
+  background-color: #732a2a;
+  color: #f44;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 11px;
+
+  &.mapped {
+    background-color: #1d364e;
+    color: #0f88ff;
+  }
+
+  & > .indicate-icon {
+    display: flex;
+    width: 16px;
+    height: 100%;
+    margin-right: 4px;
+
+    & > svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}

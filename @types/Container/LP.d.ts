@@ -1,3 +1,5 @@
+import { PlaskMocapData } from 'types/common';
+
 export = LP;
 export as namespace LP;
 
@@ -15,14 +17,7 @@ declare namespace LP {
     filePath: string;
     children: any[];
     extension: string;
-    motionData?: {
-      id: string;
-      result: {
-        name: string;
-        times: number[];
-        values: number[];
-      }[];
-    };
+    mocapData?: PlaskMocapData;
   }
 }
 

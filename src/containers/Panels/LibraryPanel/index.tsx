@@ -4,17 +4,19 @@ import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import produce from 'immer';
 import '@babylonjs/loaders/glTF';
-import { convertFBXtoGLB } from 'api';
-import { getFileExtension, getRandomStringKey } from 'utils/common';
-import { createAnimationIngredient, createEmptyRetargetMap } from 'utils/RP';
+import { convertModel } from 'api';
+import { filterAnimatableTransformNodes, getFileExtension, getRandomStringKey } from 'utils/common';
+import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
+import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
 import { v4 as uuid } from 'uuid';
+import * as TEXT from 'constants/Text';
 import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import { AnimationIngredient, PlaskAsset } from 'types/common';
+import { AnimationIngredient, PlaskAsset, PlaskRetargetMap } from 'types/common';
 import Box from 'components/Layout/Box';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
@@ -51,7 +53,7 @@ const LibraryPanel: FunctionComponent = () => {
         onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
 
         if (file instanceof File) {
-          const fileUrl = await convertFBXtoGLB(file)
+          const fileUrl = await convertModel(file, 'glb')
             .then((response) => {
               onModalClose();
               return response;
@@ -59,7 +61,7 @@ const LibraryPanel: FunctionComponent = () => {
             .catch(async () => {
               onModalOpen({
                 title: 'Warning',
-                message: '파일 변환 중 예기치 못한 에러가 발생했습니다.<br />계속하여 발생하는 경우 contact@plask.ai로 문의주세요.',
+                message: TEXT.WARNING_07,
                 confirmText: 'Contact',
                 onConfirm: () => {
                   // location.href = 'mailto:contact@plask.ai';
@@ -97,10 +99,12 @@ const LibraryPanel: FunctionComponent = () => {
         mesh.isPickable = false;
       });
 
-      skeletons[0].bones.forEach((bone) => {
-        // bone id를 unique한 id로 생성
-        bone.id = `${assetId}//${bone.name}//bone`;
-      });
+      if (skeletons && skeletons.length > 0) {
+        skeletons[0].bones.forEach((bone) => {
+          // bone id를 unique한 id로 생성
+          bone.id = `${assetId}//${bone.name}//bone`;
+        });
+      }
 
       transformNodes.forEach((transformNode) => {
         // transformNode id를 unique한 id로 생성
@@ -119,15 +123,29 @@ const LibraryPanel: FunctionComponent = () => {
          * 모델이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
          * 첫 번째 animationGroup을 current로 사용 (idx === 0)
          */
-        const animationIngredient = createAnimationIngredient(assetId, animationGroup, false, idx === 0);
+        const animationIngredient = createAnimationIngredient(
+          assetId,
+          animationGroup.name,
+          animationGroup.targetedAnimations,
+          filterAnimatableTransformNodes(transformNodes),
+          false,
+          idx === 0,
+        );
 
         animationIngredientIds.push(animationIngredient.id);
         animationIngredients.push(animationIngredient);
       });
 
-      // 모델에 대한 빈 retargetMap을 생성
-      // 자동 retargetMap 구현 후에는 createEmptyRetargetMap 대신 api를 연결한 createAutoRetargetMap을 호출
-      const retargetMap = createEmptyRetargetMap(assetId);
+      // 모델에 대한 retargetMap을 생성
+      let retargetMap: PlaskRetargetMap;
+      try {
+        // autoRetargetMap 생성 및 적용
+        retargetMap = await createAutoRetargetMap(assetId, skeletons[0].bones, 3000);
+      } catch (error) {
+        // 실패 시 빈 retargetMap을 생성 및 적용
+        retargetMap = createEmptyRetargetMap(assetId);
+        console.error(error);
+      }
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
@@ -169,7 +187,9 @@ const LibraryPanel: FunctionComponent = () => {
         const newMotionNodes = animationIngredients.map((ingredient) => {
           const motion: LP.Node = {
             id: ingredient.id,
-            parentId: ingredient.assetId,
+            // parentId: ingredient.assetId,
+            parentId: newModelNode.id,
+            assetId: ingredient.assetId,
             filePath: '\\root' + `\\${nodeName}`,
             name: ingredient.name,
             extension: '',
@@ -186,9 +206,7 @@ const LibraryPanel: FunctionComponent = () => {
       dispatch(plaskProjectActions.addAsset({ asset: newAsset }));
       dispatch(
         animationDataActions.addAsset({
-          transformNodes: transformNodes.filter(
-            (t) => !t.name.toLowerCase().includes('camera') && !t.name.toLowerCase().includes('scene') && !t.name.toLowerCase().includes('armature'),
-          ),
+          transformNodes: filterAnimatableTransformNodes(transformNodes),
           animationIngredients,
           retargetMap,
         }),
@@ -241,7 +259,7 @@ const LibraryPanel: FunctionComponent = () => {
       if (isError) {
         onModalOpen({
           title: 'Warning',
-          message: '영상 파일을 동시에 2개 이상 가져올 수 없습니다.',
+          message: TEXT.WARNING_02,
           confirmText: 'Close',
           onConfirm: () => onModalClose(),
         });
@@ -250,7 +268,7 @@ const LibraryPanel: FunctionComponent = () => {
       }
 
       if (isInvalidFormat) {
-        onModalOpen({ title: 'Warning', message: 'Unsupported file format', confirmText: 'Close' });
+        onModalOpen({ title: 'Warning', message: TEXT.WARNING_03, confirmText: 'Close' });
 
         return;
       }
@@ -265,7 +283,7 @@ const LibraryPanel: FunctionComponent = () => {
 
         onModalOpen({
           title: 'Extract',
-          message: '모션을 추출하시겠습니까?',
+          message: TEXT.CONFIRM_01,
           confirmText: '확인',
           cancelText: '취소',
           onConfirm: () => {
@@ -285,7 +303,6 @@ const LibraryPanel: FunctionComponent = () => {
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
-  const [isDefaultModelLoaded, setIsDefaultModelLoaded] = useState(false);
   const [isSceneReady, setIsSceneReady] = useState(false);
 
   useEffect(() => {
@@ -297,18 +314,19 @@ const LibraryPanel: FunctionComponent = () => {
         setIsSceneReady(true);
       });
     }
-  }, [_screenList, isDefaultModelLoaded, isSceneReady, onNodeChange]);
+  }, [_screenList, isSceneReady, onNodeChange]);
 
   useEffect(() => {
     if (isSceneReady) {
-      if (!isDefaultModelLoaded) {
-        const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
+      const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
 
+      const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
+
+      if (!isAlreadyExist) {
         onNodeChange(defaultModels);
-        setIsDefaultModelLoaded(true);
       }
     }
-  }, [isDefaultModelLoaded, isSceneReady, onNodeChange]);
+  }, [_lpNode, isSceneReady, onNodeChange]);
 
   const handleSearch = useCallback(
     (text: string) => {
