@@ -828,10 +828,15 @@ const ListNode: FunctionComponent<Props> = ({
                   if (parentModel) {
                     const motions = filter(_animationIngredients, { assetId: parentModel.assetId });
 
-                    if (motions) {
+                    if (motions && parentModel.assetId) {
                       const selectedMotion = find(motions, { id });
                       if (selectedMotion) {
-                        console.log(selectedMotion);
+                        dispatch(
+                          animationDataActions.changeCurrentAnimationIngredient({
+                            assetId: parentModel.assetId,
+                            animationIngredientId: selectedMotion.id,
+                          }),
+                        );
                       }
                     }
                   }
