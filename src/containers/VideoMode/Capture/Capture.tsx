@@ -274,12 +274,14 @@ export const VideoMode: FunctionComponent<Props> = ({ browserType }) => {
   );
 
   useEffect(() => {
-    window.addEventListener('keydown', handleHotkeys);
+    if (!turnStandbyPhase && !readyExtract && !onExtract) {
+      window.addEventListener('keydown', handleHotkeys);
+    }
 
     return () => {
       window.removeEventListener('keydown', handleHotkeys);
     };
-  }, [start, end]);
+  }, [start, end, turnStandbyPhase, readyExtract, onExtract]);
 
   // LP에서 비디오를 넘기지 않고 바로 VM으로 전환하는 경우
   useEffect(() => {
