@@ -434,8 +434,30 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     );
   }, [dispatch, lpNode, selectedId]);
 
+  const deleteChild = useCallback((node: LP.Node[], ids: string[]) => {
+    let memory: LP.Node[] = [];
+
+    const afterNodes = node.filter((current) => !ids.includes(current.id));
+
+    if (ids.length > 0) {
+      ids.forEach((currentId) => {
+        const searchedNode = find(node, { id: currentId });
+
+        if (searchedNode) {
+          searchedNode.children.forEach((child) => {
+            const currentNodes = afterNodes.filter((current) => !searchedNode.children.includes(current.id));
+
+            memory = currentNodes.concat(deleteChild(currentNodes, [child]));
+          });
+        }
+      });
+    }
+
+    return memory;
+  }, []);
+
   const handleDelete = useCallback(() => {
-    const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+    const afterNodes = deleteChild(lpNode, selectedId);
 
     dispatch(
       lpNodeActions.changeNode({
@@ -466,7 +488,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
       });
     }
-  }, [assetList, dispatch, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
+  }, [assetList, deleteChild, dispatch, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
 
   const handlers = {
     LP_COPY: handleCopy,
