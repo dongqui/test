@@ -19,6 +19,9 @@ interface Props {
 }
 
 const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, currentMax, currentValue, setCurrentValue, activeStatus, inactiveMessage, decimalDigit }) => {
+  const [isValueChange, setIsValueChange] = useState<boolean>(false);
+  const [isFocus, setIsFocus] = useState<boolean>(false);
+
   const [progressBar, setProgressBar] = useState<number>(100);
 
   const rangeRef = useRef<HTMLInputElement>(null);
@@ -26,6 +29,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
 
   const handleRangeInput = useCallback(
     (e) => {
+      setIsValueChange(true);
       inputRef.current!.value = e.target.value;
       setCurrentValue(+e.target.value);
       setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
@@ -34,6 +38,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
   );
 
   const handleSelectText = useCallback(() => {
+    setIsFocus(true);
     inputRef.current!.select();
   }, []);
 
@@ -43,10 +48,8 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
     return (Math.pow(10, digit - 1) * multiNum).toString();
   }, []);
 
-  // slider의 max 값을 구하기 위한 로직
-  const handleMaxLimit = useCallback(
-    (e) => {
-      const num = e.target.value;
+  const maxLimitLogic = useCallback(
+    (num: number) => {
       const numToStrArray = (num + '').split('');
 
       if (+numToStrArray[0] > 5 && num > 10) {
@@ -63,8 +66,9 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
 
         if (num > +getNewMax) {
           return;
-        } else if (compareNum === num) {
-          rangeRef.current!.max = num;
+        } else if (compareNum === num + '') {
+          console.log('active');
+          rangeRef.current!.max = num + '';
         } else {
           rangeRef.current!.max = getNewMax;
         }
@@ -86,9 +90,27 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
         rangeRef.current!.max = 1 + '';
       }
 
+      rangeRef.current!.value = num + '';
       setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
     },
     [handleDigit],
+  );
+
+  // slider의 max 값을 구하기 위한 로직
+  const handleMaxLimit = useCallback(
+    (e) => {
+      const num = e.target.value;
+      maxLimitLogic(num);
+      setIsValueChange(false);
+    },
+    [maxLimitLogic],
+  );
+
+  const handleMaxLimitCurrentValue = useCallback(
+    (currentValue: number) => {
+      maxLimitLogic(currentValue);
+    },
+    [maxLimitLogic],
   );
 
   const handleSetCurrentValue = useCallback(
@@ -111,18 +133,25 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
   );
 
   useEffect(() => {
-    if (rangeRef) {
-      rangeRef.current!.value = currentMax + '';
-      // console.log((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
-      // console.log('currentMax: ', currentMax);
+    // if (rangeRef) {
+    //   rangeRef.current!.value = currentMax + '';
+    // }
+    if (rangeRef && (currentValue || currentValue === 0)) {
+      if (!isValueChange) {
+        console.log(currentValue);
+        rangeRef.current!.value = currentValue + '';
+        handleMaxLimitCurrentValue(currentValue);
+      }
     }
-  }, [currentMax]);
+  }, [currentMax, currentValue, handleMaxLimitCurrentValue, isValueChange]);
 
   useEffect(() => {
-    const decimalFixedValue = Number.parseFloat(currentValue + '').toFixed(decimalDigit ? decimalDigit : 1);
+    if (!isFocus) {
+      const decimalFixedValue = Number.parseFloat(currentValue + '').toFixed(decimalDigit ? decimalDigit : 1);
 
-    inputRef.current!.value = decimalFixedValue;
-  }, [currentValue, decimalDigit]);
+      inputRef.current!.value = decimalFixedValue;
+    }
+  }, [currentValue, decimalDigit, isFocus]);
 
   const classes = cx('wrapper', className, { able: activeStatus === undefined ? true : activeStatus });
 
@@ -148,7 +177,10 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
           placeholder="0.0"
           onFocus={handleSelectText}
           onKeyUp={handleKeyboard}
-          onBlur={handleSetCurrentValue}
+          onBlur={(e) => {
+            handleSetCurrentValue(e);
+            setIsFocus(false);
+          }}
           ref={inputRef}
           tabIndex={activeStatus ? 0 : -1}
           defaultValue={currentMax}
