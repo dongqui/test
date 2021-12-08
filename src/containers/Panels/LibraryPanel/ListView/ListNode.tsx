@@ -354,9 +354,11 @@ const ListNode: FunctionComponent<Props> = ({
       if (isContains) {
         onSelect && onSelect(id, assetId);
 
+        const currentPath = filePath + `\\${name}`;
+
         dispatch(
           lpNodeActions.changeCurrentPath({
-            currentPath: filePath + `\\${name}`,
+            currentPath: currentPath,
             id: id,
           }),
         );
@@ -388,7 +390,15 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Copy',
-                onClick: onCopy,
+                onClick: () => {
+                  const list = lpNode.filter((node) => id.includes(node.id));
+
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: list,
+                    }),
+                  );
+                },
                 children: [],
               },
               {
@@ -593,7 +603,15 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Copy',
-                onClick: onCopy,
+                onClick: () => {
+                  const list = lpNode.filter((node) => id.includes(node.id));
+
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: list,
+                    }),
+                  );
+                },
                 children: [],
               },
               {
