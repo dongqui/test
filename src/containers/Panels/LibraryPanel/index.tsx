@@ -118,7 +118,6 @@ const LibraryPanel: FunctionComponent = () => {
         // 모델 로드 시 animation 재생을 방지
         animationGroup.pause();
 
-        //
         /**
          * 모델이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
          * 첫 번째 animationGroup을 current로 사용 (idx === 0)
@@ -137,7 +136,7 @@ const LibraryPanel: FunctionComponent = () => {
       });
 
       // autoRetargetMap 생성 및 적용
-      const retargetMap = await createAutoRetargetMap(assetId, skeletons[0].bones, 3000)
+      const retargetMap = await createAutoRetargetMap(assetId, skeletons[0]?.bones, 3000)
         .then((response) => response)
         .catch(() => {
           // 실패 시 빈 retargetMap을 생성 및 적
@@ -291,8 +290,8 @@ const LibraryPanel: FunctionComponent = () => {
         // 자동리타겟팅에 실패한 파일 리스트
         const failedFiles = response.trim().split(', ');
 
-        if (failedFiles.length > 0) {
-          const message = TEXT.WARNING_01.replace(/%s/, response.replace(/,\s*$/, ''));
+        if (response && failedFiles.length > 0) {
+          const message = TEXT.WARNING_01.replace(/%s/, response.replace(/,\s*$/, '') + '.');
 
           onModalOpen({
             title: 'Warning',
