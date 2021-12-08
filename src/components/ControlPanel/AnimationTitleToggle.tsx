@@ -37,7 +37,7 @@ const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withS
     }
   }, [isPowerOn, setIsPowerOn]);
 
-  const classes = cx('wrapper', className, { able: activeStatus === undefined ? true : activeStatus });
+  const classes = cx('wrapper', className, { able: activeStatus });
 
   return (
     <div className={cx(classes)}>

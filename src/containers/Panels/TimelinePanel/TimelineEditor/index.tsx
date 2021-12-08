@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
 
+import * as keyframesActions from 'actions/keyframes';
 import { D3ScaleLinear, D3ZoomDatum } from 'types/TP/d3';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
 import { DragBox } from 'components/DragBox';
@@ -19,12 +21,26 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const TimelineEditor = () => {
+  const dispatch = useDispatch();
   const timelineEditorRef = useRef<SVGSVGElement>(null);
   const leftTimeIndex = useRef(0);
   const zoomLevel = useRef(100);
 
   // 드래그 박스 dragEnd 이벤트 발생
-  const handleDragEnd = useCallback((list: NodeListOf<Element>) => {}, []);
+  const handleDragEnd = useCallback(
+    (keyframes: NodeListOf<Element>) => {
+      if (keyframes.length) {
+        const selectedKeyframes: keyframesActions.SelectKeyframesByDragBox[] = [];
+        keyframes.forEach((keyframe) => {
+          const trackNumber = parseInt(keyframe.getAttribute('data-tracknumber') as string, 10);
+          const time = parseInt(keyframe.getAttribute('data-time') as string, 10);
+          selectedKeyframes.push({ trackNumber, time });
+        });
+        dispatch(keyframesActions.selectKeyframesByDragBox(selectedKeyframes));
+      }
+    },
+    [dispatch],
+  );
 
   // timeline editor zoom/pan 이벤트 적용
   useEffect(() => {
@@ -167,6 +183,33 @@ const TimelineEditor = () => {
     }
   }, []);
 
+  // 키프레임 삭제/복사/붙이기 단축키
+  useEffect(() => {
+    const currentRef = timelineEditorRef.current;
+    const keydownListener = (event: KeyboardEvent) => {
+      if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || (event.altKey && (event.ctrlKey || event.metaKey) && event.key === ('d' || 'D'))) {
+        dispatch(keyframesActions.enterKeyframeDeleteKey());
+      } else if ((event.metaKey || event.ctrlKey) && event.key === ('c' || 'C')) {
+        dispatch(keyframesActions.copyKeyframes());
+      } else if ((event.metaKey || event.ctrlKey) && event.key === ('v' || 'V')) {
+        dispatch(keyframesActions.enterPasteKey());
+      }
+    };
+    const focusListener = () => {
+      document.addEventListener('keydown', keydownListener);
+    };
+    const blurListener = () => {
+      document.removeEventListener('keydown', keydownListener);
+    };
+    currentRef?.addEventListener('focus', focusListener);
+    currentRef?.addEventListener('blur', blurListener);
+    return () => {
+      currentRef?.removeEventListener('focus', focusListener);
+      currentRef?.removeEventListener('blur', blurListener);
+      document.removeEventListener('keydown', keydownListener);
+    };
+  }, [dispatch]);
+
   return (
     <div className={cx('timeline-editor')}>
       <svg ref={timelineEditorRef}>
@@ -175,7 +218,7 @@ const TimelineEditor = () => {
           <TimelineEditorMode />
         </g>
         <TopRuler />
-        <Scrubber />
+        <Scrubber timelineEditorRef={timelineEditorRef} />
       </svg>
       <DragBox areaRef={timelineEditorRef} onDragEnd={handleDragEnd} selectableId="selectable" selectedId="keyframe-selected" />
     </div>

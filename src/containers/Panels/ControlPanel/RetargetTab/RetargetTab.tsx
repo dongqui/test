@@ -35,9 +35,10 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [hipSpace, setHipSpace] = useState<number>(10);
   // mappedBones에 속하는 bone은 파란색 배경색을 입힘
   const [mappedBones, setMappedBones] = useState<string[]>([]);
-  // 전체 mapping 완료 상태 체크 / mapping indicator 상태 변경
-  const [isMapped, setIsMapped] = useState<boolean>(false);
-  const [canAssign, setCanAssign] = useState<boolean>(false);
+  // mapping complete badge 상태
+  const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
+  const canAssign = useMemo(() => currentSourceBoneName && currentTargetTransformNode, [currentSourceBoneName, currentTargetTransformNode]);
+  const multipleBoneSelected = useMemo(() => _selectedTargets.filter((target) => !checkIsTargetMesh(target)).length > 1, [_selectedTargets]);
 
   // map 완료된 bone set하는 로직
   useEffect(() => {
@@ -113,14 +114,24 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }));
   }, [_selectableObjects, dispatch]);
 
-  const handleMappingAssign = useCallback(() => {}, []);
+  const handleAssignButtonClick = useCallback(() => {
+    // animationData의 retargetMaps에서 assetId가 currentAssetId와 같은 retargetMap 찾은 후
+    // 해당 retargetMap의 values 중 sourceBoneName이 currentSourceBoneName인 값의 targetTarnsformNodeId를 currentTargetTransformNode의 id로 업데이트
+    if (currentSourceBoneName && currentTargetTransformNode) {
+      const currentAssetId = currentTargetTransformNode.id.split('//')[0];
+      console.log('currentAssetId: ', currentAssetId);
+      console.log('currentSourceBoneName: ', currentSourceBoneName);
+      console.log('currentTransformNodeId: ', currentTargetTransformNode.id);
+    } else {
+      console.log('Cannot Assign');
+    }
+  }, [currentSourceBoneName, currentTargetTransformNode]);
 
   return (
     <Fragment>
       <section className={cx('mapping-section')}>
         <AnimationTitleToggle text="Mapping" isSpread={isMappingSectionSpread} setIsSpread={setIsMappingSectionSpread} activeStatus={isAllActive} />
-        {/* mapping indicator / isMapped의 상태값으로 완료 / 미완료 상태 전환 가능 */}
-        {isAllActive && <RetargetMapIndicator isMapped={isMapped} />}
+        {isAllActive && <RetargetMapIndicator isMapped={mappingCompleted} />}
         <div className={cx('container', 'mapping-icon', { active: isMappingSectionSpread })}>
           <div className={cx('skeleton-wrapper')}>
             <IconWrapper icon={SvgPath.Body} className={cx('skeleton')} />
@@ -135,13 +146,17 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
           {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')}></div>}
         </div>
         <div className={cx('container', { active: isMappingSectionSpread })}>
-          <DropdownWrapper className={cx('mapping-dropdown')} text="Source" currentValue={currentSourceBoneName} options={sourceBoneOptions} activeStatus={isAllActive} />
-          {/* prettier-ignore */}
-          <DropdownWrapper className={cx('mapping-dropdown')} text="Target" currentValue={currentTargetTransformNode?.name} options={targetTransformNodeOptions} activeStatus={isAllActive}
+          <DropdownWrapper className={cx('mapping-dropdown')} title="Source" currentValue={currentSourceBoneName} options={sourceBoneOptions} activeStatus={isAllActive} />
+          <DropdownWrapper
+            className={cx('mapping-dropdown')}
+            title="Target"
+            currentValue={currentTargetTransformNode?.name}
+            options={targetTransformNodeOptions}
+            activeStatus={isAllActive && !multipleBoneSelected}
+            inactiveMessage={multipleBoneSelected ? 'Multiple Bones Selected' : undefined}
           />
           <div className={cx('inner-container')}>
-            {/* assign 버튼 / canAssign 상태를 바꾸면 on/off 가능 */}
-            <FilledButton className={cx('mapping-assign-button', { active: canAssign })} onClick={handleMappingAssign}>
+            <FilledButton className={cx('mapping-assign-button', { active: canAssign })} onClick={handleAssignButtonClick}>
               Assign
             </FilledButton>
             {!canAssign && <div className={cx('inactive-overlay')}></div>}
