@@ -2,6 +2,7 @@ import { FunctionComponent, Fragment, useState, FocusEvent } from 'react';
 import { upperFirst } from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { AnimationInput } from 'components/ControlPanel';
+import * as BABYLON from '@babylonjs/core';
 import classNames from 'classnames/bind';
 import styles from './AnimationInputWrapper.module.scss';
 
@@ -9,6 +10,7 @@ const cx = classNames.bind(styles);
 
 export type InputInfo = {
   text: string;
+  currentValue?: number;
   defaultValue?: number;
   decimalDigit?: number;
   handleBlur: (event: FocusEvent<HTMLInputElement>) => void;
@@ -49,6 +51,7 @@ const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle
             <AnimationInput
               key={`${inputTitle}${idx}`}
               activeStatus={activeStatus}
+              currentValue={info.currentValue}
               inactiveMessage={inactiveMessage}
               text={info.text}
               defaultValue={info.defaultValue}
