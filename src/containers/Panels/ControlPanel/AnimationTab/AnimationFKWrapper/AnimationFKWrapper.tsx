@@ -1,15 +1,14 @@
-import { FunctionComponent, useState, Fragment, useEffect } from 'react';
+import { Dispatch, SetStateAction, FunctionComponent, useState, Fragment, useEffect } from 'react';
 import { InputInfo } from '../AnimationInputWrapper';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import AnimationInputWrapper from '../AnimationInputWrapper/AnimationInputWrapper';
 import classnames from 'classnames/bind';
 import styles from './AnimationFKWrapper.module.scss';
+import { PlaskPaletteColor } from 'types/common';
 
 const cx = classnames.bind(styles);
 
-type PaletteColor = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink';
-
-const PALETTE_COLORS: { [color in PaletteColor]: string } = {
+const PALETTE_COLORS: { [color in PlaskPaletteColor]: string } = {
   red: '#FF6969',
   orange: '#FC9B51',
   yellow: '#FFDB56',
@@ -24,11 +23,12 @@ interface Props {
   className?: string;
   activeStatus?: boolean;
   inactiveMessage?: string;
+  currentColor: PlaskPaletteColor;
+  setCurrentColor: Dispatch<SetStateAction<PlaskPaletteColor>>;
 }
 
-const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activeStatus, inactiveMessage }) => {
+const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activeStatus, inactiveMessage, currentColor, setCurrentColor }) => {
   const [isPaletteOpen, setIsPaletteOpen] = useState<boolean>(false);
-  const [currentColor, setCurrentColor] = useState<PaletteColor>('yellow');
 
   const classes = cx('wrapper', className);
 
@@ -50,17 +50,17 @@ const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activ
           {isPaletteOpen && (
             <div className={cx('color-list-container')}>
               <ul className={cx('color-list')}>
-                {Object.entries(PALETTE_COLORS).map(([name, value], idx) => (
+                {Object.entries(PALETTE_COLORS).map(([name], idx) => (
                   <li
                     key={idx}
                     onClick={() => {
-                      setCurrentColor(name as PaletteColor);
+                      setCurrentColor(name as PlaskPaletteColor);
                       setIsPaletteOpen(false);
                     }}
                   >
                     <div className={cx('color-pick-dropdown', 'inner')}>
                       {currentColor === name ? <IconWrapper className={cx('check-icon')} icon={SvgPath.Check} /> : <span className={cx('empty-space')}></span>}
-                      <div className={cx('color-palette', 'color-item')} style={{ backgroundColor: value }}></div> {/* inline style에서 className으로 대체 가능할지? */}
+                      <div className={cx('color-palette', 'color-item', name)}></div>
                     </div>
                   </li>
                 ))}
