@@ -40,10 +40,10 @@ function* filterPlaskTracks(visualizedAnimationIngredient: AnimationIngredient) 
     const { id, name } = selectedTargets[index];
     if (name !== 'Armature') {
       const tracks = visualizedAnimationIngredient.tracks;
-      const trackIndex = tracks.findIndex((track) => track.targetId === id);
-      for (let propertyIndex = trackIndex; propertyIndex < trackIndex + 4; propertyIndex += 1) {
+      const trackIndex = tracks.findIndex((track) => track.targetId === id && track.layerId === selectedLayer);
+      for (let propertyIndex = trackIndex; propertyIndex <= trackIndex + 3; propertyIndex += 1) {
         const propertyTrack = tracks[propertyIndex];
-        if (propertyTrack.property !== 'rotationQuaternion' && propertyTrack.layerId === selectedLayer) {
+        if (propertyTrack.property !== 'rotationQuaternion') {
           filteredTracks.push(propertyTrack);
         }
       }
