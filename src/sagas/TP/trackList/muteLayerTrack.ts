@@ -1,8 +1,7 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
-
-import { RootState } from 'reducers';
 import * as trackListActions from 'actions/trackList';
 import * as animationDataActions from 'actions/animationDataAction';
+import { RootState } from 'reducers';
 
 function getAnimationIngredientId(state: RootState) {
   return state.trackList.animationIngredientId;

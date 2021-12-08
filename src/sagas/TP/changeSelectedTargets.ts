@@ -1,9 +1,8 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
-
-import { RootState } from 'reducers';
-import { AnimationIngredient, PlaskTrack } from 'types/common';
 import * as trackListActions from 'actions/trackList';
 import * as keyframesActions from 'actions/keyframes';
+import { RootState } from 'reducers';
+import { AnimationIngredient, PlaskTrack } from 'types/common';
 
 function getAnimationIngredients(state: RootState) {
   return state.animationData.animationIngredients;

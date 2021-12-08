@@ -1,10 +1,9 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
-
-import { RootState } from 'reducers';
 import { PlaskLayer, PlaskTrack } from 'types/common';
 import { LayerTrack } from 'types/TP/track';
 import * as trackListActions from 'actions/trackList';
 import * as animationDataActions from 'actions/animationDataAction';
+import { RootState } from 'reducers';
 import { getRandomStringKey } from 'utils/common';
 import { createPlaskTrack } from 'utils/RP';
 
