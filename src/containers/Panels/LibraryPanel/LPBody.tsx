@@ -437,7 +437,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const deleteChild = useCallback((node: LP.Node[], ids: string[]) => {
     let memory: LP.Node[] = [];
 
-    const afterNodes = node.filter((current) => !ids.includes(current.id));
+    let afterNodes = node.filter((current) => !ids.includes(current.id));
 
     if (ids.length > 0) {
       ids.forEach((currentId) => {
@@ -445,15 +445,18 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
         if (searchedNode) {
           searchedNode.children.forEach((child) => {
-            const currentNodes = afterNodes.filter((current) => !searchedNode.children.includes(current.id));
+            afterNodes = afterNodes.filter((current) => !searchedNode.children.includes(current.id));
 
-            memory = currentNodes.concat(deleteChild(currentNodes, [child]));
+            memory = deleteChild(afterNodes, [child]);
           });
         }
-      });
-    }
 
-    return memory;
+        memory = afterNodes;
+      });
+      return memory;
+    } else {
+      return node;
+    }
   }, []);
 
   const handleDelete = useCallback(() => {
