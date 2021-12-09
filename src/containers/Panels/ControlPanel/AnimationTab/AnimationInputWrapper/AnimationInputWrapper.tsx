@@ -2,11 +2,18 @@ import { FunctionComponent, Fragment, useState, FocusEvent } from 'react';
 import { upperFirst } from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { AnimationInput } from 'components/ControlPanel';
-import { PlaskInputInfo } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './AnimationInputWrapper.module.scss';
 
 const cx = classNames.bind(styles);
+
+export type InputInfo = {
+  text: string;
+  currentValue?: number;
+  defaultValue?: number;
+  decimalDigit?: number;
+  handleBlur: (event: FocusEvent<HTMLInputElement>) => void;
+};
 
 type DropdownList = {
   text: string;
@@ -16,7 +23,7 @@ type DropdownList = {
 interface Props {
   className?: string;
   inputTitle?: string;
-  inputInfo?: PlaskInputInfo[];
+  inputInfo?: InputInfo[];
   activeStatus?: boolean;
   inactiveMessage?: string;
   dropdownList?: DropdownList[];
@@ -30,6 +37,7 @@ interface Props {
  * @returns input 요소로 이루어진 목록과 해당 목록을 대표하는 title이 포함된 JSX 요소
  */
 const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle, inputInfo, activeStatus, inactiveMessage, dropdownList, children }) => {
+  // dropdown을 펼치거나 접을 수 있는 상태값
   const [isActiveDropdown, setIsActiveDropdown] = useState<boolean>(false);
 
   const classes = cx('wrapper', className, { able: activeStatus ?? true });

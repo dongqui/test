@@ -1,7 +1,8 @@
 import { Dispatch, SetStateAction, FunctionComponent, useState, Fragment, useEffect } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import AnimationInputWrapper from '../AnimationInputWrapper/AnimationInputWrapper';
-import { PlaskInputInfo, PlaskPaletteColor } from 'types/common';
+import { InputInfo } from '../AnimationInputWrapper';
+import { PlaskPaletteColor } from 'types/common';
 import classnames from 'classnames/bind';
 import styles from './AnimationFKWrapper.module.scss';
 
@@ -18,7 +19,7 @@ const PALETTE_COLORS: { [color in PlaskPaletteColor]: string } = {
 };
 
 interface Props {
-  fkInfo: PlaskInputInfo[];
+  fkInfo: InputInfo[];
   className?: string;
   activeStatus?: boolean;
   inactiveMessage?: string;
@@ -27,6 +28,7 @@ interface Props {
 }
 
 const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activeStatus, inactiveMessage, currentColor, setCurrentColor }) => {
+  // 색상 선택 dropdown을 펼치거나 접을 수 있는 상태값
   const [isPaletteOpen, setIsPaletteOpen] = useState<boolean>(false);
 
   const classes = cx('wrapper', className);
