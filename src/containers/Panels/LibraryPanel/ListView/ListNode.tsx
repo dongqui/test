@@ -1075,6 +1075,10 @@ const ListNode: FunctionComponent<Props> = ({
             //   parent.children.push(newNode.id);
             // }
 
+            if (newNode.children.length > 0) {
+              newNode.children.map((child) => depthChangeKey(draft, child, newNode));
+            }
+
             draft[targetIndex] = newNode;
 
             setIsEditing(false);
@@ -1098,7 +1102,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
         });
     },
-    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   const handleKeydown = useCallback(
@@ -1149,6 +1153,10 @@ const ListNode: FunctionComponent<Props> = ({
               //   parent.children.push(newNode.id);
               // }
 
+              if (newNode.children.length > 0) {
+                newNode.children.map((child) => depthChangeKey(draft, child, newNode));
+              }
+
               draft[targetIndex] = newNode;
 
               setIsEditing(false);
@@ -1173,7 +1181,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
       }
     },
-    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
