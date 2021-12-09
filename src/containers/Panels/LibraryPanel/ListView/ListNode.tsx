@@ -849,7 +849,6 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'Visualization',
                 onClick: () => {
                   const parentModel = find(lpNode, { id: parentId });
-                  console.log('parentModa: ', parentModel);
 
                   if (parentModel) {
                     const motions = filter(_animationIngredients, { assetId: parentModel.assetId });
@@ -866,12 +865,34 @@ const ListNode: FunctionComponent<Props> = ({
                       }
                     }
                   }
+
+                  handleVisualization();
                 },
                 children: [],
               },
               {
                 label: 'Visualization cancel',
-                onClick: () => {},
+                onClick: () => {
+                  if (assetId && _visualizedAssetIds.includes(assetId)) {
+                    const targetAsset = _assetList.find((asset) => asset.id === assetId);
+                    const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+                    const targetControllers = _selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+
+                    // delete 대상이 render된 scene에서 대상의 요소들 remove
+                    if (targetAsset) {
+                      _screenList
+                        .map((screen) => screen.scene)
+                        .forEach((scene) => {
+                          removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+                        });
+                    }
+
+                    // visualizedAssetList에서 제외
+                    dispatch(plaskProjectActions.unrenderAsset({}));
+                    // 선택 대상에서 제외
+                    dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                  }
+                },
                 children: [],
               },
               {
@@ -1355,9 +1376,7 @@ const ListNode: FunctionComponent<Props> = ({
                   animationIngredientId: mocapAnimationIngredient.id,
                 }),
               );
-            } catch (error) {
-              console.error(error);
-            }
+            } catch (error) {}
           }
         }
       }
