@@ -35,6 +35,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const testRef = useRef<HTMLDivElement>(null);
+  const thumbnailWrapRef = useRef<HTMLDivElement>(null);
   let cancelTokenSource = useRef<Canceler>();
 
   const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
@@ -58,6 +59,8 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   const [start, setStart] = useState<number>(0);
   const [end, setEnd] = useState<number>(0);
   const [timer, setTimer] = useState<number>(5);
+  const [isIndicatorClicked, setIsIndicatorClicked] = useState<boolean>(false);
+  const [prevX, setPrevX] = useState<number>(0);
 
   const {
     mediaStreamInitialize,
@@ -274,6 +277,35 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
     [start, end, videoRef.current?.currentTime],
   );
 
+  const handleMouseMove = useCallback(
+    (e, parentNodeWidth) => {
+      // e.preventDefault();
+      if (isIndicatorClicked) {
+        setIndicatorPosition(indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100);
+        if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100 < start) {
+          videoRef.current!.currentTime = start;
+        } else if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100 > end) {
+          videoRef.current!.currentTime = end;
+        } else {
+          videoRef.current!.currentTime = ((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100;
+          console.log(videoRef.current!.currentTime);
+        }
+      }
+    },
+    [prevX, isIndicatorClicked],
+  );
+
+  const handleMouseUp = useCallback((e) => {
+    // e.preventDefault();
+    setIsIndicatorClicked(false);
+  }, []);
+
+  const handleMouseDown = useCallback((e) => {
+    // e.preventDefault();
+    setIsIndicatorClicked(true);
+    setPrevX(e.clientX);
+  }, []);
+
   useEffect(() => {
     if (!turnStandbyPhase && !readyExtract && !onExtract) {
       window.addEventListener('keydown', handleHotkeys);
@@ -406,7 +438,12 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       {recordState && (
         <Fragment>
           <VMRuler start={0} end={duration} />
-          <div className={cx('thumbnail-wrap')}>
+          <div
+            className={cx('thumbnail-wrap')}
+            onMouseUp={handleMouseUp}
+            onMouseMove={(e) => handleMouseMove(e, thumbnailWrapRef.current!.getBoundingClientRect().width - 32)}
+            ref={thumbnailWrapRef}
+          >
             <CropSlider
               start={0}
               end={100}
@@ -414,12 +451,19 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               currentVideoTime={currentVideoTime}
               handleTimeline={handleTimeline}
               videoRef={videoRef}
+              thumbnailWrapRef={thumbnailWrapRef}
               indicatorPosition={indicatorPosition}
+              isIndicatorClicked={isIndicatorClicked}
+              handleMouseDown={handleMouseDown}
+              handleMouseUp={handleMouseUp}
+              handleMouseMove={handleMouseMove}
               onChange={handleSlider}
             >
               <div className={cx('thumbnail')}>
                 {thumbnailList &&
-                  thumbnailList.map((image, idx) => <Image key={idx} src={image} alt="timeline thumbanil" className={cx('thumbnail-image')} width={100} height={80} />)}
+                  thumbnailList.map((image, idx) => (
+                    <Image key={idx} src={image} alt="timeline thumbanil" className={cx('thumbnail-image', 'no-select')} width={100} height={80} />
+                  ))}
                 {/* <canvas ref={frameRef} /> */}
               </div>
             </CropSlider>
