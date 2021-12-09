@@ -832,7 +832,27 @@ const ListNode: FunctionComponent<Props> = ({
             menu: [
               {
                 label: 'Delete',
-                onClick: () => {},
+                onClick: () => {
+                  const targetMotion = find(lpNode, { id });
+
+                  if (targetMotion) {
+                    const nextNodes = lpNode.filter((node) => node.id !== id);
+
+                    const resultNodes = produce(nextNodes, (draft) => {
+                      const parentModel = find(draft, { id: parentId });
+
+                      if (parentModel) {
+                        parentModel.children = parentModel.children.filter((currentId) => currentId !== id);
+                      }
+                    });
+
+                    dispatch(
+                      lpNodeActions.changeNode({
+                        nodes: resultNodes,
+                      }),
+                    );
+                  }
+                },
                 children: [],
               },
               {
