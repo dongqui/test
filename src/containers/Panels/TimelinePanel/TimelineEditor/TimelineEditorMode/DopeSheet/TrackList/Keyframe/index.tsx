@@ -72,7 +72,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
     (event: React.MouseEvent<Element>) => {
       dispatch(
         keyframeActions.selectKeyframes({
-          selectType: event.ctrlKey ? 'multiple' : 'left',
+          selectType: event.ctrlKey || event.metaKey ? 'multiple' : 'left',
           trackId,
           trackType,
           trackNumber,

@@ -1,7 +1,7 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
-
-import { RootState } from 'reducers';
 import * as trackListActions from 'actions/trackList';
+import * as animationDataActions from 'actions/animationDataAction';
+import { RootState } from 'reducers';
 
 function getAnimationIngredientId(state: RootState) {
   return state.trackList.animationIngredientId;
@@ -13,7 +13,7 @@ function* worker({ payload }: ReturnType<typeof trackListActions.clickLayerTrack
 
   // RP Mute Track 액션 호출 시 인자값 : { animationIngredientId, ...payload }
   // 여기서부터 RP Mute Track 액션 호출
-  // yield put(RP액션.muteLayerTrack({ animationIngredientId, ...newLayerTrack }))
+  yield put(animationDataActions.toggleLayerMuteness({ animationIngredientId, layerId: payload.id }));
 }
 
 function* watchMuteLayerTrack() {

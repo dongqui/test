@@ -236,11 +236,13 @@ const ListNode: FunctionComponent<Props> = ({
 
             // joints 생성 및 scene들에 추가
             bones.forEach((bone) => {
-              if (!bone.name.toLowerCase().includes('scene')) {
+              if (
+                !bone.name.toLowerCase().includes('scene') &&
+                !bone.name.toLowerCase().includes('camera') &&
+                !bone.name.toLowerCase().includes('light') &&
                 // @TODO
-                if (bone.name === '__root__') {
-                  return;
-                }
+                !bone.name.toLowerCase().includes('__root__') // return -> 조건문으로 변경
+              ) {
                 const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
                 joint.id = `${assetId}//${bone.name}//joint`;
                 joint.renderingGroupId = 2;
@@ -312,6 +314,77 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, [_assetList, _screenList, _selectableObjects, _visualizedAssetIds, assetId, dispatch]);
 
+  const deleteChild = useCallback((node: LP.Node[], ids: string[]) => {
+    let memory: LP.Node[] = [];
+
+    let afterNodes = node.filter((current) => !ids.includes(current.id));
+
+    if (ids.length > 0) {
+      ids.forEach((currentId) => {
+        const searchedNode = find(node, { id: currentId });
+
+        if (searchedNode) {
+          searchedNode.children.forEach((child) => {
+            afterNodes = afterNodes.filter((current) => !searchedNode.children.includes(current.id));
+
+            memory = deleteChild(afterNodes, [child]);
+          });
+        }
+
+        memory = afterNodes;
+      });
+      return memory;
+    } else {
+      return node;
+    }
+  }, []);
+
+  const handleDelete = useCallback(
+    async (selectId: string, selectAssetId?: string) => {
+      const confirmed = await getConfirm({
+        title: 'Confirm',
+        message: 'Are you sure you want to delete the file?',
+        confirmText: '확인',
+        cancelText: '취소',
+      });
+
+      if (!confirmed) {
+        return;
+      }
+
+      const afterNodes = deleteChild(lpNode, [selectId]);
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: afterNodes,
+        }),
+      );
+
+      if (selectAssetId) {
+        const targetAsset = _assetList.find((asset) => asset.id === selectAssetId);
+        const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(selectAssetId) && !checkIsTargetMesh(object));
+        const targetControllers = _selectableObjects.filter((object) => object.id.includes(selectAssetId) && checkIsTargetMesh(object));
+
+        // delete 대상이 render된 scene에서 대상의 요소들 remove
+        if (targetAsset) {
+          _screenList
+            .map((screen) => screen.scene)
+            .forEach((scene) => {
+              removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+            });
+        }
+
+        // assetList에서 제외
+        dispatch(plaskProjectActions.removeAsset({ assetId: selectAssetId }));
+        // animationData 삭제
+        dispatch(animationDataActions.removeAsset({ assetId: selectAssetId }));
+        // 선택 대상에서 제외
+        dispatch(selectingDataActions.unrenderAsset({ assetId: selectAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+      }
+    },
+    [getConfirm, deleteChild, lpNode, dispatch, _assetList, _selectableObjects, _screenList],
+  );
+
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -354,9 +427,11 @@ const ListNode: FunctionComponent<Props> = ({
       if (isContains) {
         onSelect && onSelect(id, assetId);
 
+        const currentPath = filePath + `\\${name}`;
+
         dispatch(
           lpNodeActions.changeCurrentPath({
-            currentPath: filePath + `\\${name}`,
+            currentPath: currentPath,
             id: id,
           }),
         );
@@ -369,7 +444,7 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Delete',
                 onClick: () => {
-                  onDelete();
+                  handleDelete(id);
                   // const cloneLPNode = cloneDeep(lpNode);
                   // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
 
@@ -388,7 +463,15 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Copy',
-                onClick: onCopy,
+                onClick: () => {
+                  const list = lpNode.filter((node) => id.includes(node.id));
+
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: list,
+                    }),
+                  );
+                },
                 children: [],
               },
               {
@@ -552,7 +635,7 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Delete',
                 onClick: () => {
-                  onDelete();
+                  handleDelete(id, assetId);
                   // const cloneLPNode = cloneDeep(lpNode);
                   // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
 
@@ -593,7 +676,15 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Copy',
-                onClick: onCopy,
+                onClick: () => {
+                  const list = lpNode.filter((node) => id.includes(node.id));
+
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: list,
+                    }),
+                  );
+                },
                 children: [],
               },
               {
@@ -699,9 +790,9 @@ const ListNode: FunctionComponent<Props> = ({
                     );
 
                     dispatch(
-                      plaskProjectActions.addMotion({
+                      plaskProjectActions.addAnimationIngredient({
                         assetId: assetId,
-                        motionId: nextAnimationIngredient.id,
+                        animationIngredientId: nextAnimationIngredient.id,
                       }),
                     );
                   }
@@ -812,7 +903,27 @@ const ListNode: FunctionComponent<Props> = ({
             menu: [
               {
                 label: 'Delete',
-                onClick: () => {},
+                onClick: () => {
+                  const targetMotion = find(lpNode, { id });
+
+                  if (targetMotion) {
+                    const nextNodes = lpNode.filter((node) => node.id !== id);
+
+                    const resultNodes = produce(nextNodes, (draft) => {
+                      const parentModel = find(draft, { id: parentId });
+
+                      if (parentModel) {
+                        parentModel.children = parentModel.children.filter((currentId) => currentId !== id);
+                      }
+                    });
+
+                    dispatch(
+                      lpNodeActions.changeNode({
+                        nodes: resultNodes,
+                      }),
+                    );
+                  }
+                },
                 children: [],
               },
               {
@@ -845,12 +956,34 @@ const ListNode: FunctionComponent<Props> = ({
                       }
                     }
                   }
+
+                  handleVisualization();
                 },
                 children: [],
               },
               {
                 label: 'Visualization cancel',
-                onClick: () => {},
+                onClick: () => {
+                  if (assetId && _visualizedAssetIds.includes(assetId)) {
+                    const targetAsset = _assetList.find((asset) => asset.id === assetId);
+                    const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+                    const targetControllers = _selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+
+                    // delete 대상이 render된 scene에서 대상의 요소들 remove
+                    if (targetAsset) {
+                      _screenList
+                        .map((screen) => screen.scene)
+                        .forEach((scene) => {
+                          removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+                        });
+                    }
+
+                    // visualizedAssetList에서 제외
+                    dispatch(plaskProjectActions.unrenderAsset({}));
+                    // 선택 대상에서 제외
+                    dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                  }
+                },
                 children: [],
               },
               {
@@ -903,6 +1036,7 @@ const ListNode: FunctionComponent<Props> = ({
     selectedId,
     type,
     handleVisualization,
+    handleDelete,
   ]);
 
   const classes = cx('outer', { selected: isSelected });
@@ -1021,6 +1155,7 @@ const ListNode: FunctionComponent<Props> = ({
               id: id,
               // filePath: lpCurrentPath + `\\${name}`,
               // filePath: filePath + `\\${name}`, //@todo
+              assetId: assetId,
               filePath: filePath,
               parentId: parentId,
               name: type === 'Model' ? `${name}.${extension}` : name,
@@ -1032,6 +1167,10 @@ const ListNode: FunctionComponent<Props> = ({
             // if (parent) {
             //   parent.children.push(newNode.id);
             // }
+
+            if (newNode.children.length > 0) {
+              newNode.children.map((child) => depthChangeKey(draft, child, newNode));
+            }
 
             draft[targetIndex] = newNode;
 
@@ -1056,7 +1195,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
         });
     },
-    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [assetId, childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   const handleKeydown = useCallback(
@@ -1093,6 +1232,7 @@ const ListNode: FunctionComponent<Props> = ({
 
               const newNode: LP.Node = {
                 id: id,
+                assetId: assetId,
                 // filePath: lpCurrentPath + `\\${name}`,
                 // filePath: filePath + `\\${name}`, //@todo
                 filePath: filePath,
@@ -1106,6 +1246,10 @@ const ListNode: FunctionComponent<Props> = ({
               // if (parent) {
               //   parent.children.push(newNode.id);
               // }
+
+              if (newNode.children.length > 0) {
+                newNode.children.map((child) => depthChangeKey(draft, child, newNode));
+              }
 
               draft[targetIndex] = newNode;
 
@@ -1131,7 +1275,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
       }
     },
-    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [assetId, childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -1254,6 +1398,12 @@ const ListNode: FunctionComponent<Props> = ({
                       animationIngredient: mocapAnimationIngredient,
                     }),
                   );
+                  dispatch(
+                    plaskProjectActions.addAnimationIngredient({
+                      assetId: dropNode.assetId!,
+                      animationIngredientId: mocapAnimationIngredient.id,
+                    }),
+                  );
 
                   return;
                 } catch (error) {}
@@ -1320,6 +1470,12 @@ const ListNode: FunctionComponent<Props> = ({
               dispatch(
                 animationDataActions.addAnimationIngredient({
                   animationIngredient: mocapAnimationIngredient,
+                }),
+              );
+              dispatch(
+                plaskProjectActions.addAnimationIngredient({
+                  assetId: dropNode.assetId!,
+                  animationIngredientId: mocapAnimationIngredient.id,
                 }),
               );
             } catch (error) {}

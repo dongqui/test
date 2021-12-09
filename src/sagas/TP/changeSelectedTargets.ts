@@ -1,9 +1,8 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
-
-import { RootState } from 'reducers';
-import { AnimationIngredient, PlaskTrack } from 'types/common';
 import * as trackListActions from 'actions/trackList';
 import * as keyframesActions from 'actions/keyframes';
+import { RootState } from 'reducers';
+import { AnimationIngredient, PlaskTrack } from 'types/common';
 
 function getAnimationIngredients(state: RootState) {
   return state.animationData.animationIngredients;
@@ -36,19 +35,21 @@ function* filterPlaskTracks(visualizedAnimationIngredient: AnimationIngredient) 
   const selectedTargets = getSelectedTargets(yield select());
   const selectedLayer = getSelectedLayer(yield select());
   const filteredTracks: PlaskTrack[] = [];
+
   for (let index = 0; index < selectedTargets.length; index += 1) {
     const { id, name } = selectedTargets[index];
     if (name !== 'Armature') {
       const tracks = visualizedAnimationIngredient.tracks;
-      const trackIndex = tracks.findIndex((track) => track.targetId === id);
-      for (let propertyIndex = trackIndex; propertyIndex < trackIndex + 4; propertyIndex += 1) {
+      const trackIndex = tracks.findIndex((track) => track.targetId === id && track.layerId === selectedLayer);
+      for (let propertyIndex = trackIndex; propertyIndex <= trackIndex + 3; propertyIndex += 1) {
         const propertyTrack = tracks[propertyIndex];
-        if (propertyTrack.property !== 'rotationQuaternion' && propertyTrack.layerId === selectedLayer) {
+        if (propertyTrack.property !== 'rotationQuaternion') {
           filteredTracks.push(propertyTrack);
         }
       }
     }
   }
+
   return filteredTracks;
 }
 

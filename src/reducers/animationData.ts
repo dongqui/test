@@ -81,6 +81,20 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
         animationIngredients: state.animationIngredients.filter((anim) => anim.id !== action.payload.animationIngredientId),
       });
     }
+    case 'animationDataAction/TOGGLE_LAYER_MUTENESS': {
+      return Object.assign({}, state, {
+        animationIngredients: state.animationIngredients.map((animaitonIngredient) => {
+          if (animaitonIngredient.id === action.payload.animationIngredientId) {
+            return {
+              ...animaitonIngredient,
+              tracks: animaitonIngredient.tracks.map((track) => (track.layerId === action.payload.layerId ? { ...track, isIncluded: !track.isIncluded } : track)),
+            };
+          } else {
+            return animaitonIngredient;
+          }
+        }),
+      });
+    }
     case 'animationDataAction/EDIT_RETARGET_MAP': {
       return Object.assign({}, state, {
         retargetMaps: state.retargetMaps.map((retargetMap) => (retargetMap.id === action.payload.retargetMap.id ? action.payload.retargetMap : retargetMap)),
