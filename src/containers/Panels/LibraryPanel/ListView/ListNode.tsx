@@ -1,4 +1,4 @@
-import { max, find, remove, cloneDeep } from 'lodash';
+import { max, find, filter, remove, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
@@ -8,14 +8,13 @@ import * as BABYLON from '@babylonjs/core';
 import { GLTF2Export } from '@babylonjs/serializers';
 import produce from 'immer';
 import { v4 as uuid } from 'uuid';
-import * as TEXT from 'constants/Text';
-import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { getFileExtension, getRandomStringKey } from 'utils/common';
+import { filterAnimatableTransformNodes } from 'utils/common';
 import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
-import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
+import { getRetargetedMocapData } from 'utils/LP/Retarget';
+import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
@@ -67,11 +66,12 @@ const ListNode: FunctionComponent<Props> = ({
   const dispatch = useDispatch();
 
   const _screenList = useSelector((state) => state.plaskProject.screenList);
-  const assetList = useSelector((state) => state.plaskProject.assetList);
-  const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
-  const visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
-  const animationIngredients = useSelector((state) => state.animationData.animationIngredients);
-  const animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
+  const _assetList = useSelector((state) => state.plaskProject.assetList);
+  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+  const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
+  const _animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
 
   const lpNode = useSelector((state) => state.lpNode.node);
   const lpClipboard = useSelector((state) => state.lpNode.clipboard);
@@ -182,6 +182,135 @@ const ListNode: FunctionComponent<Props> = ({
   const depth = (filePath.match(/\\/g) || []).length;
 
   const [isEditing, setIsEditing] = useState(false);
+
+  const handleVisualization = useCallback(() => {
+    // 기존 asset visualize cancel -> multi-model 시에는 기존 asset도 유지
+    if (_visualizedAssetIds.length > 0 && _visualizedAssetIds[0] !== assetId) {
+      const prevAssetId = _visualizedAssetIds[0];
+      const prevAsset = _assetList.find((asset) => asset.id === prevAssetId);
+      const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(prevAssetId) && !checkIsTargetMesh(object));
+      const targetControllers = _selectableObjects.filter((object) => object.id.includes(prevAssetId) && checkIsTargetMesh(object));
+
+      // delete 대상이 render된 scene에서 대상의 요소들 remove
+      if (prevAsset) {
+        _screenList
+          .map((screen) => screen.scene)
+          .forEach((scene) => {
+            removeAssetFromScene(scene, prevAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+          });
+      }
+
+      // visualizedAssetList에서 제외
+      // dispatch(plaskProjectActions.unrenderAsset({ assetId: prevAssetId })); // single-model 환경에서는 불필요
+      // 선택 대상에서 제외
+      dispatch(selectingDataActions.unrenderAsset({ assetId: prevAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+    }
+
+    // 새로운 asset visualize
+    if (assetId && !_visualizedAssetIds.includes(assetId)) {
+      const targetAsset = _assetList.find((asset) => asset.id === assetId);
+
+      if (targetAsset) {
+        const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
+
+        // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
+        _screenList.forEach((PlaskScreen) => {
+          const { id: sceneId, scene } = PlaskScreen;
+
+          if (scene.isReady()) {
+            // scene들에 mesh 추가
+            meshes.forEach((mesh) => {
+              mesh.renderingGroupId = 1;
+              scene.addMesh(mesh);
+            });
+
+            // scene들에 geometry 추가
+            geometries.forEach((geometry) => {
+              scene.addGeometry(geometry);
+            });
+
+            // scene들에 skeleton 추가
+            scene.addSkeleton(skeleton);
+
+            const jointTransformNodes: BABYLON.TransformNode[] = [];
+
+            // joints 생성 및 scene들에 추가
+            bones.forEach((bone) => {
+              if (!bone.name.toLowerCase().includes('scene')) {
+                // @TODO
+                if (bone.name === '__root__') {
+                  return;
+                }
+                const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
+                joint.id = `${assetId}//${bone.name}//joint`;
+                joint.renderingGroupId = 2;
+                joint.attachToBone(bone, meshes[0]);
+
+                const targetTransformNode = bone.getTransformNode();
+                if (targetTransformNode) {
+                  jointTransformNodes.push(targetTransformNode);
+                }
+
+                // joint마다 actionManager 설정
+                joint.actionManager = new BABYLON.ActionManager(scene);
+                joint.actionManager.registerAction(
+                  // joint 클릭으로 bone 선택하기 위한 액션
+                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
+                    const targetTransformNode = bone.getTransformNode();
+                    if (targetTransformNode) {
+                      const sourceEvent: PointerEvent = event.sourceEvent;
+                      if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+                        dispatch(
+                          selectingDataActions.ctrlKeySingleSelect({
+                            target: targetTransformNode,
+                          }),
+                        );
+                      } else {
+                        dispatch(
+                          selectingDataActions.defaultSingleSelect({
+                            target: targetTransformNode,
+                          }),
+                        );
+                      }
+                    }
+                  }),
+                );
+                // joint hover 시 커서 모양 변경
+                joint.actionManager.registerAction(
+                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+                    scene.hoverCursor = 'pointer';
+                  }),
+                );
+              }
+            });
+
+            // visualizedAssetIds에 추가
+            dispatch(plaskProjectActions.renderAsset({ assetId }));
+            // dragBox 선택 대상에 추가
+            dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
+
+            // scene들에 skeletonViewer 추가
+            if (skeleton) {
+              const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
+
+              // @TODO
+              // scene.removeMesh(skeletonViewer.mesh);
+
+              skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
+              scene.addMesh(skeletonViewer.mesh);
+            }
+
+            // scene들에 애니메이션 적용을 위한 transformNode 추가
+            transformNodes.forEach((transformNode) => {
+              scene.addTransformNode(transformNode);
+              // quaternionRotation 애니메이션을 적용하기 위한 코드
+              transformNode.rotate(BABYLON.Axis.X, 0);
+            });
+          }
+        });
+      }
+    }
+  }, [_assetList, _screenList, _selectableObjects, _visualizedAssetIds, assetId, dispatch]);
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -474,143 +603,16 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization',
-                onClick: () => {
-                  // 기존 asset visualize cancel -> multi-model 시에는 기존 asset도 유지
-                  if (visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== assetId) {
-                    const prevAssetId = visualizedAssetIds[0];
-                    const prevAsset = assetList.find((asset) => asset.id === prevAssetId);
-                    const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(prevAssetId) && !checkIsTargetMesh(object));
-                    const targetControllers = selectableObjects.filter((object) => object.id.includes(prevAssetId) && checkIsTargetMesh(object));
-
-                    // delete 대상이 render된 scene에서 대상의 요소들 remove
-                    if (prevAsset) {
-                      _screenList
-                        .map((screen) => screen.scene)
-                        .forEach((scene) => {
-                          removeAssetFromScene(scene, prevAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
-                        });
-                    }
-
-                    // visualizedAssetList에서 제외
-                    // dispatch(plaskProjectActions.unrenderAsset({ assetId: prevAssetId })); // single-model 환경에서는 불필요
-                    // 선택 대상에서 제외
-                    dispatch(selectingDataActions.unrenderAsset({ assetId: prevAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
-                  }
-
-                  // 새로운 asset visualize
-                  if (assetId && !visualizedAssetIds.includes(assetId)) {
-                    const targetAsset = assetList.find((asset) => asset.id === assetId);
-
-                    if (targetAsset) {
-                      const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
-
-                      // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
-                      _screenList.forEach((PlaskScreen) => {
-                        const { id: sceneId, scene } = PlaskScreen;
-
-                        if (scene.isReady()) {
-                          // scene들에 mesh 추가
-                          meshes.forEach((mesh) => {
-                            mesh.renderingGroupId = 1;
-                            scene.addMesh(mesh);
-                          });
-
-                          // scene들에 geometry 추가
-                          geometries.forEach((geometry) => {
-                            scene.addGeometry(geometry);
-                          });
-
-                          // scene들에 skeleton 추가
-                          scene.addSkeleton(skeleton);
-
-                          const jointTransformNodes: BABYLON.TransformNode[] = [];
-
-                          // joints 생성 및 scene들에 추가
-                          bones.forEach((bone) => {
-                            if (!bone.name.toLowerCase().includes('scene')) {
-                              // @TODO
-                              if (bone.name === '__root__') {
-                                return;
-                              }
-                              const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
-                              joint.id = `${assetId}//${bone.name}//joint`;
-                              joint.renderingGroupId = 2;
-                              joint.attachToBone(bone, meshes[0]);
-
-                              const targetTransformNode = bone.getTransformNode();
-                              if (targetTransformNode) {
-                                jointTransformNodes.push(targetTransformNode);
-                              }
-
-                              // joint마다 actionManager 설정
-                              joint.actionManager = new BABYLON.ActionManager(scene);
-                              joint.actionManager.registerAction(
-                                // joint 클릭으로 bone 선택하기 위한 액션
-                                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
-                                  const targetTransformNode = bone.getTransformNode();
-                                  if (targetTransformNode) {
-                                    const sourceEvent: PointerEvent = event.sourceEvent;
-                                    if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                                      dispatch(
-                                        selectingDataActions.ctrlKeySingleSelect({
-                                          target: targetTransformNode,
-                                        }),
-                                      );
-                                    } else {
-                                      dispatch(
-                                        selectingDataActions.defaultSingleSelect({
-                                          target: targetTransformNode,
-                                        }),
-                                      );
-                                    }
-                                  }
-                                }),
-                              );
-                              // joint hover 시 커서 모양 변경
-                              joint.actionManager.registerAction(
-                                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
-                                  scene.hoverCursor = 'pointer';
-                                }),
-                              );
-                            }
-                          });
-
-                          // visualizedAssetIds에 추가
-                          dispatch(plaskProjectActions.renderAsset({ assetId }));
-                          // dragBox 선택 대상에 추가
-                          dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
-
-                          // scene들에 skeletonViewer 추가
-                          if (skeleton) {
-                            const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
-
-                            // @TODO
-                            // scene.removeMesh(skeletonViewer.mesh);
-
-                            skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
-                            scene.addMesh(skeletonViewer.mesh);
-                          }
-
-                          // scene들에 애니메이션 적용을 위한 transformNode 추가
-                          transformNodes.forEach((transformNode) => {
-                            scene.addTransformNode(transformNode);
-                            // quaternionRotation 애니메이션을 적용하기 위한 코드
-                            transformNode.rotate(BABYLON.Axis.X, 0);
-                          });
-                        }
-                      });
-                    }
-                  }
-                },
+                onClick: handleVisualization,
                 children: [],
               },
               {
                 label: 'Visualization cancel',
                 onClick: () => {
-                  if (assetId && visualizedAssetIds.includes(assetId)) {
-                    const targetAsset = assetList.find((asset) => asset.id === assetId);
-                    const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
-                    const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+                  if (assetId && _visualizedAssetIds.includes(assetId)) {
+                    const targetAsset = _assetList.find((asset) => asset.id === assetId);
+                    const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+                    const targetControllers = _selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
 
                     // delete 대상이 render된 scene에서 대상의 요소들 remove
                     if (targetAsset) {
@@ -635,23 +637,19 @@ const ListNode: FunctionComponent<Props> = ({
                   if (assetId) {
                     const cloneLPNode = cloneDeep(lpNode);
 
-                    const layerName = 'Base Layer';
-                    // base layer의 id 및 name
-                    const layers: PlaskLayer[] = [{ id: `baseLayer//${getRandomStringKey()}`, name: layerName }];
-
-                    const tracks: PlaskTrack[] = [];
                     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
-                    if (visualizedAssetIds.includes(assetId)) {
-                      // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서
-                      const targets = selectableObjects.filter((object) => object.id.split('//')[0] === assetId);
+                    if (_visualizedAssetIds.includes(assetId)) {
+                      // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서 추가 + armature transformNode는 제외
+                      targets = _selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature'));
                     } else {
                       // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
-                      targets = animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
+                      targets = _animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
                     }
 
                     const currentPathNodeName = lpNode
                       .filter((node) => {
-                        if (node.parentId === assetId) {
+                        // if (node.parentId === assetId) {
+                        if (node.parentId === id) {
                           if (node.name.includes('empty motion')) {
                             return true;
                           }
@@ -664,27 +662,22 @@ const ListNode: FunctionComponent<Props> = ({
 
                     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
 
-                    const nextIngredient: AnimationIngredient = {
-                      id: getRandomStringKey(),
-                      name: nodeName,
-                      assetId: assetId,
-                      current: false,
-                      layers,
-                      tracks,
-                    };
+                    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, false);
 
                     const afterNodes = produce(cloneLPNode, (draft) => {
                       const target = find(draft, { assetId: assetId });
 
                       if (target) {
-                        target.children.push(nextIngredient.id);
+                        target.children.push(nextAnimationIngredient.id);
                       }
 
                       const motion: LP.Node = {
-                        id: nextIngredient.id,
-                        parentId: nextIngredient.assetId,
-                        name: nextIngredient.name,
-                        filePath: lpCurrentPath + `\\${nextIngredient.name}`,
+                        id: nextAnimationIngredient.id,
+                        // parentId: nextAnimationIngredient.assetId,
+                        parentId: id,
+                        name: nextAnimationIngredient.name,
+                        // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
+                        filePath: lpCurrentPath,
                         children: [],
                         extension: '',
                         type: 'Motion',
@@ -701,14 +694,14 @@ const ListNode: FunctionComponent<Props> = ({
 
                     dispatch(
                       animationDataActions.addAnimationIngredient({
-                        animationIngredient: nextIngredient,
+                        animationIngredient: nextAnimationIngredient,
                       }),
                     );
 
                     dispatch(
                       plaskProjectActions.addMotion({
                         assetId: assetId,
-                        motionId: nextIngredient.id,
+                        motionId: nextAnimationIngredient.id,
                       }),
                     );
                   }
@@ -834,7 +827,25 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization',
-                onClick: () => {},
+                onClick: () => {
+                  const parentModel = find(lpNode, { id: parentId });
+
+                  if (parentModel) {
+                    const motions = filter(_animationIngredients, { assetId: parentModel.assetId });
+
+                    if (motions && parentModel.assetId) {
+                      const selectedMotion = find(motions, { id });
+                      if (selectedMotion) {
+                        dispatch(
+                          animationDataActions.changeCurrentAnimationIngredient({
+                            assetId: parentModel.assetId,
+                            animationIngredientId: selectedMotion.id,
+                          }),
+                        );
+                      }
+                    }
+                  }
+                },
                 children: [],
               },
               {
@@ -863,33 +874,35 @@ const ListNode: FunctionComponent<Props> = ({
       };
     }
   }, [
-    animationTransformNodes,
+    _animationTransformNodes,
+    _assetList,
+    _screenList,
+    _selectableObjects,
+    _visualizedAssetIds,
     assetId,
     depth,
-    depthCheck,
     depthChangeKey,
+    depthCheck,
     dispatch,
     extension,
     filePath,
+    handleEdit,
     id,
     lpClipboard,
     lpCurrentPath,
     lpNode,
     name,
     onContextMenuOpen,
-    onModalOpen,
-    selectableObjects,
-    type,
-    visualizedAssetIds,
-    assetList,
-    _screenList,
-    selectedId.length,
-    selectedId,
-    onSelect,
     onCopy,
     onDelete,
-    handleEdit,
     onModalClose,
+    _animationIngredients,
+    parentId,
+    onModalOpen,
+    onSelect,
+    selectedId,
+    type,
+    handleVisualization,
   ]);
 
   const classes = cx('outer', { selected: isSelected });
@@ -975,7 +988,7 @@ const ListNode: FunctionComponent<Props> = ({
         );
       }
     },
-    [lpNode, selectableId, onSelect, selectedId, onSetDragTarget, dragTarget, onCopy, parentId, filePath, name, id, onDelete],
+    [lpNode, selectableId, onSelect, selectedId, onSetDragTarget, dragTarget, onCopy, onDelete, parentId, filePath, name, id],
   );
 
   const handleBlur = useCallback(
@@ -1172,8 +1185,9 @@ const ListNode: FunctionComponent<Props> = ({
       const dragNode = find(lpNode, { id: dragTarget?.id });
       const cloneDragNode = cloneDeep(dragNode);
 
+      // model node로 이동
       if (type === 'Model') {
-        if (dragTarget?.type === 'Motion' && dragNode?.motionData) {
+        if (dragTarget?.type === 'Motion' && dragNode?.mocapData) {
           /**
            * @TODO 리타겟 및 하위로 모션 추가
            */
@@ -1182,7 +1196,12 @@ const ListNode: FunctionComponent<Props> = ({
           const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
           const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
 
-          if (dropNode && isAlreadyExist && cloneDragNode) {
+          // dropNode(model)과 dragNode(motion)을 사용해서 animationIngredient를 생성
+          const targetAsset = _assetList.find((asset) => asset.id === dropNode?.assetId);
+          const targetRetargetMap = _retargetMaps.find((retargetMap) => retargetMap.assetId === dropNode?.assetId);
+
+          // 이름이 같은 모션이 이미 있는 경우
+          if (dropNode && isAlreadyExist) {
             const confirmed = await getConfirm({
               title: 'Warning',
               message: '해당 모델에 동일한 이름의 모션이 있습니다. 덮어쓰시겠습니까?',
@@ -1191,17 +1210,96 @@ const ListNode: FunctionComponent<Props> = ({
             });
 
             if (confirmed) {
-              // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
-              const filterNodes = lpNode.filter((node) => node.id !== duplicatedTarget[0].id);
+              if (cloneDragNode && dropNode && targetAsset && targetRetargetMap) {
+                try {
+                  const mocapAnimationIngredient = await getRetargetedMocapData(
+                    dropNode.assetId!,
+                    dragNode.name,
+                    targetRetargetMap,
+                    filterAnimatableTransformNodes(targetAsset.transformNodes),
+                    dragNode.mocapData,
+                    3000,
+                  );
 
-              const nextNodes = produce(filterNodes, (draft) => {
+                  // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
+                  const filterNodes = lpNode.filter((node) => node.id !== duplicatedTarget[0].id);
+
+                  const nextNodes = produce(filterNodes, (draft) => {
+                    const targetNode = find(draft, { id });
+
+                    if (targetNode) {
+                      cloneDragNode.id = mocapAnimationIngredient.id;
+                      cloneDragNode.parentId = id;
+                      // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
+                      cloneDragNode.filePath = filePath + `\\${name}`;
+
+                      targetNode.children.push(cloneDragNode.id);
+
+                      // @TODO 하위 노드도 추가
+                      draft.push(cloneDragNode);
+
+                      if (cloneDragNode.children.length > 0) {
+                        cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                      }
+                    }
+                  });
+
+                  dispatch(
+                    lpNodeActions.changeNode({
+                      nodes: nextNodes,
+                    }),
+                  );
+                  dispatch(
+                    animationDataActions.addAnimationIngredient({
+                      animationIngredient: mocapAnimationIngredient,
+                    }),
+                  );
+
+                  return;
+                } catch (error) {}
+              }
+            }
+          }
+
+          // @TODO 없으면 비활성 처리 필요
+          if (cloneDragNode && dropNode && targetAsset && targetRetargetMap) {
+            try {
+              const mocapAnimationIngredient = await getRetargetedMocapData(
+                dropNode.assetId!,
+                dragNode.name,
+                targetRetargetMap,
+                filterAnimatableTransformNodes(targetAsset.transformNodes),
+                dragNode.mocapData,
+                3000,
+              );
+
+              const currentPathNodeName = lpNode
+                .filter((node) => {
+                  if (node.parentId === id) {
+                    const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
+                    const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
+                    if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+                      return true;
+                    }
+                    return false;
+                  }
+                })
+                .map((filteredNode) => filteredNode.name);
+
+              const nodeName = beforeMove({
+                name: cloneDragNode.name,
+                comparisonNames: currentPathNodeName,
+              });
+
+              const nextNodes = produce(lpNode, (draft) => {
                 const targetNode = find(draft, { id });
 
                 if (targetNode) {
-                  cloneDragNode.id = uuid();
+                  cloneDragNode.id = mocapAnimationIngredient.id;
                   cloneDragNode.parentId = id;
-                  // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
+                  // cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
                   cloneDragNode.filePath = filePath + `\\${name}`;
+                  cloneDragNode.name = nodeName;
 
                   targetNode.children.push(cloneDragNode.id);
 
@@ -1219,63 +1317,18 @@ const ListNode: FunctionComponent<Props> = ({
                   nodes: nextNodes,
                 }),
               );
-
-              return;
-            }
-          }
-
-          // @TODO 없으면 비활성 처리 필요
-          if (cloneDragNode) {
-            const currentPathNodeName = lpNode
-              .filter((node) => {
-                if (node.parentId === id) {
-                  const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
-                  const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
-                  if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
-                    return true;
-                  }
-                  return false;
-                }
-              })
-              .map((filteredNode) => filteredNode.name);
-
-            const nodeName = beforeMove({
-              name: cloneDragNode.name,
-              comparisonNames: currentPathNodeName,
-            });
-
-            const nextNodes = produce(lpNode, (draft) => {
-              const targetNode = find(draft, { id });
-
-              if (targetNode) {
-                cloneDragNode.id = uuid();
-                cloneDragNode.parentId = id;
-                // cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
-                cloneDragNode.filePath = filePath + `\\${name}`;
-                cloneDragNode.name = nodeName;
-
-                targetNode.children.push(cloneDragNode.id);
-
-                // @TODO 하위 노드도 추가
-                draft.push(cloneDragNode);
-
-                if (cloneDragNode.children.length > 0) {
-                  cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
-                }
-              }
-            });
-
-            dispatch(
-              lpNodeActions.changeNode({
-                nodes: nextNodes,
-              }),
-            );
+              dispatch(
+                animationDataActions.addAnimationIngredient({
+                  animationIngredient: mocapAnimationIngredient,
+                }),
+              );
+            } catch (error) {}
           }
         }
       }
 
       if (type === 'Folder') {
-        if (dragTarget?.type === 'Motion' && !dragNode?.motionData) {
+        if (dragTarget?.type === 'Motion' && !dragNode?.mocapData) {
           return;
         }
 
@@ -1403,7 +1456,24 @@ const ListNode: FunctionComponent<Props> = ({
         }
       }
     },
-    [depthChangeKey, depthCheck, dispatch, dragTarget, filePath, getConfirm, id, lpNode, name, onModalOpen, parentId, type],
+    [
+      _assetList,
+      _retargetMaps,
+      depthChangeKey,
+      depthCheck,
+      dispatch,
+      dragTarget?.id,
+      dragTarget?.parentId,
+      dragTarget?.type,
+      filePath,
+      getConfirm,
+      id,
+      lpNode,
+      name,
+      onModalOpen,
+      parentId,
+      type,
+    ],
   );
 
   /**
@@ -1449,9 +1519,25 @@ const ListNode: FunctionComponent<Props> = ({
     LP_EDIT_NAME: handleEdit,
   };
 
+  const handleDragEnd = useCallback(
+    (e: DragEvent) => {
+      const dropZone = document.getElementById('RP');
+
+      if (dropZone) {
+        const dropPointElement = document.elementFromPoint(e.clientX, e.clientY);
+        const isRPContains = dropZone.contains(dropPointElement);
+
+        if (isRPContains) {
+          handleVisualization();
+        }
+      }
+    },
+    [handleVisualization],
+  );
+
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
-      <div className={classes} draggable onDragStart={handleDragStart} onDrop={handleDrop} ref={outerRef}>
+      <div className={classes} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
         <div className={cx('inner')}>
           {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
           <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>

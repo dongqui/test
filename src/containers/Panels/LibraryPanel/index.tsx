@@ -5,7 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import produce from 'immer';
 import '@babylonjs/loaders/glTF';
 import { convertModel } from 'api';
-import { getFileExtension, getRandomStringKey } from 'utils/common';
+import { filterAnimatableTransformNodes, getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
@@ -40,7 +40,7 @@ const LibraryPanel: FunctionComponent = () => {
   const { onModalOpen, onModalClose } = useBaseModal();
 
   const handleFileLoad = useCallback(
-    async (file: File | string) => {
+    async (file: File | string, failedNames: string) => {
       const baseScene = _screenList[0].scene;
       let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
 
@@ -123,22 +123,38 @@ const LibraryPanel: FunctionComponent = () => {
          * 모델이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
          * 첫 번째 animationGroup을 current로 사용 (idx === 0)
          */
-        const animationIngredient = createAnimationIngredient(assetId, animationGroup, false, idx === 0);
+        const animationIngredient = createAnimationIngredient(
+          assetId,
+          animationGroup.name,
+          animationGroup.targetedAnimations,
+          filterAnimatableTransformNodes(transformNodes),
+          false,
+          idx === 0,
+        );
 
         animationIngredientIds.push(animationIngredient.id);
         animationIngredients.push(animationIngredient);
       });
 
-      // 모델에 대한 retargetMap을 생성
-      let retargetMap: PlaskRetargetMap;
-      try {
-        // autoRetargetMap 생성 및 적용
-        retargetMap = await createAutoRetargetMap(assetId, skeletons[0].bones, 3000);
-      } catch (error) {
-        // 실패 시 빈 retargetMap을 생성 및 적용
-        retargetMap = createEmptyRetargetMap(assetId);
-        console.error(error);
-      }
+      // autoRetargetMap 생성 및 적용
+      const retargetMap = await createAutoRetargetMap(assetId, skeletons[0].bones, 3000)
+        .then((response) => response)
+        .catch(() => {
+          // 실패 시 빈 retargetMap을 생성 및 적
+          const name = typeof file === 'string' ? file : file.name;
+          const isOver = failedNames.trim().split(', ').length >= 3;
+
+          if (!isOver) {
+            const nextNames = failedNames.concat(name, ', ');
+            failedNames = nextNames;
+          }
+
+          if (isOver) {
+            failedNames = failedNames.replace(/,\s*$/, '').concat('...');
+          }
+
+          return createEmptyRetargetMap(assetId);
+        });
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
@@ -180,7 +196,9 @@ const LibraryPanel: FunctionComponent = () => {
         const newMotionNodes = animationIngredients.map((ingredient) => {
           const motion: LP.Node = {
             id: ingredient.id,
-            parentId: ingredient.assetId,
+            // parentId: ingredient.assetId,
+            parentId: newModelNode.id,
+            assetId: ingredient.assetId,
             filePath: '\\root' + `\\${nodeName}`,
             name: ingredient.name,
             extension: '',
@@ -197,15 +215,13 @@ const LibraryPanel: FunctionComponent = () => {
       dispatch(plaskProjectActions.addAsset({ asset: newAsset }));
       dispatch(
         animationDataActions.addAsset({
-          transformNodes: transformNodes.filter(
-            (t) => !t.name.toLowerCase().includes('camera') && !t.name.toLowerCase().includes('scene') && !t.name.toLowerCase().includes('armature'),
-          ),
+          transformNodes: filterAnimatableTransformNodes(transformNodes),
           animationIngredients,
           retargetMap,
         }),
       );
 
-      return nextNodes;
+      return { nextNodes, failedNames };
     },
     [_lpNode, _screenList, dispatch, onModalClose, onModalOpen],
   );
@@ -214,10 +230,13 @@ const LibraryPanel: FunctionComponent = () => {
     async (files: File[] | string[]) => {
       const nextLoadedNodes: LP.Node[] = [];
 
+      let resultFailedNames = '';
+
       for (const current of files) {
-        await handleFileLoad(current).then((res) => {
+        await handleFileLoad(current, resultFailedNames).then((res) => {
           if (res) {
-            nextLoadedNodes.push(...res);
+            nextLoadedNodes.push(...res.nextNodes);
+            resultFailedNames = res.failedNames;
           }
         });
       }
@@ -231,6 +250,8 @@ const LibraryPanel: FunctionComponent = () => {
           nodes: nextNodes,
         }),
       );
+
+      return resultFailedNames;
     },
     [_lpNode, dispatch, handleFileLoad],
   );
@@ -266,7 +287,23 @@ const LibraryPanel: FunctionComponent = () => {
         return;
       }
 
-      onNodeChange(removedVideoFiles);
+      await onNodeChange(removedVideoFiles).then((response) => {
+        // 자동리타겟팅에 실패한 파일 리스트
+        const failedFiles = response.trim().split(', ');
+
+        if (failedFiles.length > 0) {
+          const message = TEXT.WARNING_01.replace(/%s/, response.replace(/,\s*$/, ''));
+
+          onModalOpen({
+            title: 'Warning',
+            message: message,
+            confirmText: 'Close',
+            onConfirm: () => {
+              onModalClose();
+            },
+          });
+        }
+      });
 
       if (videos.length > 0) {
         /**
@@ -296,7 +333,6 @@ const LibraryPanel: FunctionComponent = () => {
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
-  const [isDefaultModelLoaded, setIsDefaultModelLoaded] = useState(false);
   const [isSceneReady, setIsSceneReady] = useState(false);
 
   useEffect(() => {
@@ -308,18 +344,19 @@ const LibraryPanel: FunctionComponent = () => {
         setIsSceneReady(true);
       });
     }
-  }, [_screenList, isDefaultModelLoaded, isSceneReady, onNodeChange]);
+  }, [_screenList, isSceneReady, onNodeChange]);
 
   useEffect(() => {
     if (isSceneReady) {
-      if (!isDefaultModelLoaded) {
-        const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
+      const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
 
+      const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
+
+      if (!isAlreadyExist) {
         onNodeChange(defaultModels);
-        setIsDefaultModelLoaded(true);
       }
     }
-  }, [isDefaultModelLoaded, isSceneReady, onNodeChange]);
+  }, [_lpNode, isSceneReady, onNodeChange]);
 
   const handleSearch = useCallback(
     (text: string) => {
