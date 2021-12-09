@@ -1063,6 +1063,7 @@ const ListNode: FunctionComponent<Props> = ({
               id: id,
               // filePath: lpCurrentPath + `\\${name}`,
               // filePath: filePath + `\\${name}`, //@todo
+              assetId: assetId,
               filePath: filePath,
               parentId: parentId,
               name: type === 'Model' ? `${name}.${extension}` : name,
@@ -1102,7 +1103,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
         });
     },
-    [childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [assetId, childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   const handleKeydown = useCallback(
@@ -1139,6 +1140,7 @@ const ListNode: FunctionComponent<Props> = ({
 
               const newNode: LP.Node = {
                 id: id,
+                assetId: assetId,
                 // filePath: lpCurrentPath + `\\${name}`,
                 // filePath: filePath + `\\${name}`, //@todo
                 filePath: filePath,
@@ -1181,7 +1183,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
       }
     },
-    [childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [assetId, childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
