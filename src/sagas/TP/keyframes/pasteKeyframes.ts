@@ -6,7 +6,7 @@ import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as keyframesAction from 'actions/keyframes';
 import { PlaskTrack } from 'types/common';
-import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
+import { UpdatedPropertyKeyframes, ClusteredKeyframe } from 'types/TP/keyframe';
 import { RootState } from 'reducers';
 import { getValueInsertedTransformKeys } from 'utils/RP';
 
@@ -24,11 +24,23 @@ function getAnimationIngredients(state: RootState) {
   return state.animationData.animationIngredients;
 }
 
+// 복사 된 property keyframes 중, frame이 가장 작은 값 찾기
+function findSmallestTime(copiedPropertyKeyframes: ClusteredKeyframe[]) {
+  let smallestFrame = Infinity;
+
+  copiedPropertyKeyframes.forEach((group) => {
+    const firstFrame = group.keyframes[0].time;
+    if (firstFrame < smallestFrame) smallestFrame = firstFrame;
+  });
+  return smallestFrame;
+}
+
 function* worker() {
-  const currentTimeIndex = getCurrentTimeIndex(yield select());
+  const scrubberTime = getCurrentTimeIndex(yield select());
   const copiedPropertyKeyframes = getCopiedPropertyKeyframes(yield select());
-  const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, copiedPropertyKeyframes, currentTimeIndex);
-  yield put(keyframesAction.paste({ currentTimeIndex }));
+  const smallestFrame = findSmallestTime(copiedPropertyKeyframes);
+  const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, copiedPropertyKeyframes, scrubberTime - smallestFrame);
+  yield put(keyframesAction.paste({ currentTimeIndex: scrubberTime }));
 
   // 이후부터 RP쪽 액션 호출
   const { animationIngredientId: targetAnimationIngredientId, layerId: targetLayerId, transformKeys: targetTransformKeys } = updatedPropertyKeyframes;
