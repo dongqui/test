@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import * as BABYLON from '@babylonjs/core';
-import * as trackListActions from 'actions/trackList';
 import { useSelector } from 'reducers';
 import { filterQuaternion, filterVector } from 'utils/RP';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
+import { ScaleLinear, TimeIndex } from 'utils/TP';
 
 const useAnimation = () => {
   const dispatch = useDispatch();
@@ -25,21 +26,14 @@ const useAnimation = () => {
   const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
 
   // useEffect(() => {
-  //   console.log('animationIngredients: ', animationIngredients);
-  // }, [animationIngredients]);
+  //   console.log('_animationIngredients: ', _animationIngredients);
+  // }, [_animationIngredients]);
 
   // 애니메이션 생성
   useEffect(() => {
     const visualizedAnimationIngredients = _animationIngredients.filter(
       (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
-
-    // 최초 모델 visualize/모델 변경 시, 트랙 리스트 생성 함수 호출
-    if (visualizedAnimationIngredients.length) {
-      dispatch(trackListActions.initializeTrackList({ list: visualizedAnimationIngredients[0].layers, animationIngredientId: visualizedAnimationIngredients[0].id }));
-    } else {
-      dispatch(trackListActions.initializeTrackList({ list: [], animationIngredientId: '', clearAnimation: true }));
-    }
 
     const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
 
@@ -149,7 +143,53 @@ const useAnimation = () => {
         }
       }
     });
-  }, [_currentTimeIndex, _endTimeIndex, _playDirection, _playSpeed, _playState, _screenList, _startTimeIndex, currentAnimationGroup]);
+  }, [_currentTimeIndex, _endTimeIndex, _playDirection, _playSpeed, _playState, _screenList, _startTimeIndex, currentAnimationGroup, dispatch]);
+
+  const scrubberLoopId = useRef(0);
+  useEffect(() => {
+    const scrubber = document.getElementById('scrubber');
+    const scrubberInput = scrubber?.querySelector('input');
+
+    if (scrubber && scrubberInput && currentAnimationGroup) {
+      window.cancelAnimationFrame(scrubberLoopId.current);
+
+      const dispatchCurrentTime = (frame: number) => {
+        const nextFrame = Math.floor(frame);
+        dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: nextFrame }));
+      };
+
+      const translateScrubber = (frame: number) => {
+        const scaleX = ScaleLinear.getScaleX();
+        const nextFrame = Math.floor(frame);
+        if (scaleX) {
+          scrubber.setAttribute('transform', `translate(${scaleX(nextFrame)}, 0)`);
+          scrubberInput.value = `${nextFrame}`;
+        }
+      };
+
+      const loopScrubber = () => {
+        translateScrubber(currentAnimationGroup.animatables[0].masterFrame);
+        scrubberLoopId.current = window.requestAnimationFrame(loopScrubber);
+      };
+
+      switch (_playState) {
+        case 'play': {
+          scrubberLoopId.current = window.requestAnimationFrame(loopScrubber);
+          break;
+        }
+        case 'pause': {
+          dispatchCurrentTime(currentAnimationGroup.animatables[0].masterFrame);
+          break;
+        }
+        case 'stop': {
+          const startTime = TimeIndex.getStartTimeIndex();
+          translateScrubber(startTime);
+          dispatchCurrentTime(startTime);
+          break;
+        }
+      }
+    }
+  }, [_playState, currentAnimationGroup, dispatch]);
 };
 
 export default useAnimation;

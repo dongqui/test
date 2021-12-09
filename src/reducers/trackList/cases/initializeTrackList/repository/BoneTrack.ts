@@ -6,7 +6,7 @@ class BoneTrackRepository implements Repository {
   // targetId를 통해 bone name 구하기
   private setBoneName = (targetId: string) => {
     const splited = targetId.split('//');
-    let boneName = splited[1].split(':')[1];
+    let boneName = splited[1];
     if (splited[2] === 'controller') boneName += '_controller';
     return boneName;
   };
