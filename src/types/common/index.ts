@@ -1,3 +1,4 @@
+import { FocusEvent } from 'react';
 import * as BABYLON from '@babylonjs/core';
 
 export type Nullable<T> = T | null;
@@ -9,6 +10,14 @@ export type PlaskView = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 export type PlaskRotationType = 'euler' | 'quaternion';
 
 export type PlaskPaletteColor = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink';
+
+export type PlaskInputInfo = {
+  text: string;
+  currentValue?: number;
+  defaultValue?: number;
+  decimalDigit?: number;
+  handleBlur: (event: FocusEvent<HTMLInputElement>) => void;
+};
 export interface PlaskProject {
   id: string;
   name: string;
