@@ -6,6 +6,7 @@ import { useSelector } from 'reducers';
 import { HotKeys } from 'react-hotkeys';
 import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { DragBox } from 'components/DragBox';
 import { v4 as uuid } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -38,6 +39,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const [nodeRef, setNodeRef] = useState<RefObject<HTMLDivElement>[]>([]);
 
   const { onContextMenuOpen } = useContextMenu();
+  const { getConfirm } = useBaseModal();
 
   useEffect(() => {
     setNodeRef(Array.from({ length: lpNode.length }).map(() => createRef()));
@@ -459,7 +461,18 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     }
   }, []);
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback(async () => {
+    const confirmed = await getConfirm({
+      title: 'Confirm',
+      message: 'Are you sure you want to delete the file?',
+      confirmText: '확인',
+      cancelText: '취소',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
     const afterNodes = deleteChild(lpNode, selectedId);
 
     dispatch(
@@ -491,7 +504,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
       });
     }
-  }, [assetList, deleteChild, dispatch, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
+  }, [assetList, deleteChild, dispatch, getConfirm, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
 
   const handlers = {
     LP_COPY: handleCopy,
