@@ -1,10 +1,9 @@
 import { Dispatch, SetStateAction, FunctionComponent, useState, Fragment, useEffect } from 'react';
-import { InputInfo } from '../AnimationInputWrapper';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import AnimationInputWrapper from '../AnimationInputWrapper/AnimationInputWrapper';
+import { PlaskInputInfo, PlaskPaletteColor } from 'types/common';
 import classnames from 'classnames/bind';
 import styles from './AnimationFKWrapper.module.scss';
-import { PlaskPaletteColor } from 'types/common';
 
 const cx = classnames.bind(styles);
 
@@ -19,7 +18,7 @@ const PALETTE_COLORS: { [color in PlaskPaletteColor]: string } = {
 };
 
 interface Props {
-  fkInfo: InputInfo[];
+  fkInfo: PlaskInputInfo[];
   className?: string;
   activeStatus?: boolean;
   inactiveMessage?: string;

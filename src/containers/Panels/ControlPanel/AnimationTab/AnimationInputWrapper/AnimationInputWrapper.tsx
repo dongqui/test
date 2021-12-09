@@ -2,19 +2,11 @@ import { FunctionComponent, Fragment, useState, FocusEvent } from 'react';
 import { upperFirst } from 'lodash';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { AnimationInput } from 'components/ControlPanel';
-import * as BABYLON from '@babylonjs/core';
+import { PlaskInputInfo } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './AnimationInputWrapper.module.scss';
 
 const cx = classNames.bind(styles);
-
-export type InputInfo = {
-  text: string;
-  currentValue?: number;
-  defaultValue?: number;
-  decimalDigit?: number;
-  handleBlur: (event: FocusEvent<HTMLInputElement>) => void;
-};
 
 type DropdownList = {
   text: string;
@@ -24,7 +16,7 @@ type DropdownList = {
 interface Props {
   className?: string;
   inputTitle?: string;
-  inputInfo?: InputInfo[];
+  inputInfo?: PlaskInputInfo[];
   activeStatus?: boolean;
   inactiveMessage?: string;
   dropdownList?: DropdownList[];
@@ -38,7 +30,7 @@ interface Props {
  * @returns input 요소로 이루어진 목록과 해당 목록을 대표하는 title이 포함된 JSX 요소
  */
 const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle, inputInfo, activeStatus, inactiveMessage, dropdownList, children }) => {
-  const [activeDropdown, setActiveDropdown] = useState<boolean>(false);
+  const [isActiveDropdown, setIsActiveDropdown] = useState<boolean>(false);
 
   const classes = cx('wrapper', className, { able: activeStatus ?? true });
 
@@ -63,10 +55,10 @@ const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle
       </div>
       {dropdownList && (
         <Fragment>
-          <div className={cx('dropdown-button', { active: activeStatus })} onClick={() => setActiveDropdown(!activeDropdown)}>
+          <div className={cx('dropdown-button', { active: activeStatus })} onClick={() => setIsActiveDropdown(!isActiveDropdown)}>
             <IconWrapper className={cx('arrowdown-icon')} icon={SvgPath.EmptyDownArrow} />
           </div>
-          {activeDropdown && (
+          {isActiveDropdown && (
             <ul className={cx('dropdown-menu')}>
               {dropdownList.map((dropdownItem, idx) => (
                 <li
@@ -74,7 +66,7 @@ const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle
                   className={cx('dropdown-item')}
                   onClick={() => {
                     dropdownItem.handleSelect(dropdownItem.text);
-                    setActiveDropdown(false);
+                    setIsActiveDropdown(false);
                   }}
                 >
                   <p>{upperFirst(dropdownItem.text)}</p>

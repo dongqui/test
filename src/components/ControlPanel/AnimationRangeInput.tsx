@@ -19,8 +19,9 @@ interface Props {
 }
 
 const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, currentMax, currentValue, setCurrentValue, activeStatus, inactiveMessage, decimalDigit }) => {
-  const [isValueChange, setIsValueChange] = useState<boolean>(false);
-  const [isFocus, setIsFocus] = useState<boolean>(false);
+  // range input 혹은 text input의 값이 변경되었는지 확인하는 트리거
+  const [isValueChanged, setIsValueChanged] = useState<boolean>(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
 
   const [progressBar, setProgressBar] = useState<number>(100);
 
@@ -29,7 +30,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
 
   const handleRangeInput = useCallback(
     (e) => {
-      setIsValueChange(true);
+      setIsValueChanged(true);
       inputRef.current!.value = e.target.value;
       setCurrentValue(+e.target.value);
       setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
@@ -38,22 +39,22 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
   );
 
   const handleSelectText = useCallback(() => {
-    setIsFocus(true);
+    setIsFocused(true);
     inputRef.current!.select();
   }, []);
 
-  const handleDigit = useCallback((baseNum: number, multiNum: number) => {
+  const setDigit = useCallback((baseNum: number, multiNum: number) => {
     const digit = (Math.floor(baseNum) + '').length;
 
     return (Math.pow(10, digit - 1) * multiNum).toString();
   }, []);
 
-  const maxLimitLogic = useCallback(
+  const getMaxLimitLogic = useCallback(
     (num: number) => {
       const numToStrArray = (num + '').split('');
 
       if (+numToStrArray[0] > 5 && num > 10) {
-        const getNewMax = handleDigit(num, 10);
+        const getNewMax = setDigit(num, 10);
 
         if (num > +getNewMax) {
           return;
@@ -61,22 +62,21 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
           rangeRef.current!.max = getNewMax;
         }
       } else if (+numToStrArray[0] === 1 && num > 10) {
-        const getNewMax = handleDigit(num, 2);
-        const compareNum = handleDigit(num, 1);
+        const getNewMax = setDigit(num, 2);
+        const compareNum = setDigit(num, 1);
 
         if (num > +getNewMax) {
           return;
         } else if (compareNum === num + '') {
-          console.log('active');
           rangeRef.current!.max = num + '';
         } else {
           rangeRef.current!.max = getNewMax;
         }
       } else if (+numToStrArray[0] > 2 && +numToStrArray[0] <= 5 && num > 10) {
-        const getNewMax = handleDigit(num, 5);
+        const getNewMax = setDigit(num, 5);
 
         if (num > +getNewMax) {
-          rangeRef.current!.max = handleDigit(num, 10);
+          rangeRef.current!.max = setDigit(num, 10);
         } else {
           rangeRef.current!.max = getNewMax;
         }
@@ -93,24 +93,24 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
       rangeRef.current!.value = num + '';
       setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
     },
-    [handleDigit],
+    [setDigit],
   );
 
   // slider의 max 값을 구하기 위한 로직
   const handleMaxLimit = useCallback(
     (e) => {
       const num = e.target.value;
-      maxLimitLogic(num);
-      setIsValueChange(false);
+      getMaxLimitLogic(num);
+      setIsValueChanged(false);
     },
-    [maxLimitLogic],
+    [getMaxLimitLogic],
   );
 
-  const handleMaxLimitCurrentValue = useCallback(
+  const setMaxLimitCurrentValue = useCallback(
     (currentValue: number) => {
-      maxLimitLogic(currentValue);
+      getMaxLimitLogic(currentValue);
     },
-    [maxLimitLogic],
+    [getMaxLimitLogic],
   );
 
   const handleSetCurrentValue = useCallback(
@@ -133,25 +133,21 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
   );
 
   useEffect(() => {
-    // if (rangeRef) {
-    //   rangeRef.current!.value = currentMax + '';
-    // }
     if (rangeRef && (currentValue || currentValue === 0)) {
-      if (!isValueChange) {
-        console.log(currentValue);
+      if (!isValueChanged) {
         rangeRef.current!.value = currentValue + '';
-        handleMaxLimitCurrentValue(currentValue);
+        setMaxLimitCurrentValue(currentValue);
       }
     }
-  }, [currentMax, currentValue, handleMaxLimitCurrentValue, isValueChange]);
+  }, [currentMax, currentValue, setMaxLimitCurrentValue, isValueChanged]);
 
   useEffect(() => {
-    if (!isFocus) {
+    if (!isFocused) {
       const decimalFixedValue = Number.parseFloat(currentValue + '').toFixed(decimalDigit ? decimalDigit : 1);
 
       inputRef.current!.value = decimalFixedValue;
     }
-  }, [currentValue, decimalDigit, isFocus]);
+  }, [currentValue, decimalDigit, isFocused]);
 
   const classes = cx('wrapper', className, { able: activeStatus === undefined ? true : activeStatus });
 
@@ -179,7 +175,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
           onKeyUp={handleKeyboard}
           onBlur={(e) => {
             handleSetCurrentValue(e);
-            setIsFocus(false);
+            setIsFocused(false);
           }}
           ref={inputRef}
           tabIndex={activeStatus ? 0 : -1}

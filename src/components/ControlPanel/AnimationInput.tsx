@@ -10,7 +10,7 @@ const DEFAULT_INACTIVE_MESSAGE = '';
 interface Props {
   className?: string;
   currentValue?: number;
-  text?: string;
+  text: string;
   defaultValue?: number;
   activeStatus?: boolean;
   inactiveMessage?: string;
@@ -19,8 +19,8 @@ interface Props {
 }
 
 const AnimationInput: FunctionComponent<Props> = ({ className, currentValue, text, defaultValue, activeStatus, inactiveMessage, decimalDigit, handleBlur }) => {
-  // const [currentValue, setCurrentValue] = useState<number>(defaultValue ?? 0);
-  const [isValueChange, setIsValueChange] = useState<boolean>(false);
+  // input의 값이 바뀌었는지 체크하기 위한 boolean 값, input이 focus 되면 기본적으로 값을 바꾸기 위해 접근한 것으로 간주
+  const [isValueChanged, setIsValueChanged] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,45 +30,35 @@ const AnimationInput: FunctionComponent<Props> = ({ className, currentValue, tex
     }
   }, []);
 
-  // const handleDecimal = useCallback(
-  //   (num: string) => {
-  //     const decimalFixedValue = Number.parseFloat(num + '').toFixed(decimalDigit ?? 1);
-  //   },
-  //   [decimalDigit],
-  // );
-
   useEffect(() => {
-    if (!isValueChange) {
+    if (!isValueChanged) {
       const decimalFixedValue = Number.parseFloat(defaultValue + '').toFixed(decimalDigit ?? 1);
 
-      console.log('active1');
       inputRef.current!.value = decimalFixedValue;
     }
-  }, [decimalDigit, defaultValue, isValueChange]);
+  }, [decimalDigit, defaultValue, isValueChanged]);
 
   useEffect(() => {
-    if (currentValue && !isValueChange) {
+    if (currentValue && !isValueChanged) {
       const decimalFixedValue = Number.parseFloat(currentValue + '').toFixed(decimalDigit ?? 1);
 
-      console.log('active2');
       inputRef.current!.value = decimalFixedValue;
     }
-  }, [currentValue, decimalDigit, isValueChange]);
+  }, [currentValue, decimalDigit, isValueChanged]);
 
   const classes = cx('wrapper', className, { able: activeStatus ?? true });
 
   return (
     <div className={cx(classes)}>
-      {text && <p>{text}</p>}
+      <p>{text}</p>
       <input
         type="number"
         onKeyUp={handleKeyUp}
-        onFocus={() => setIsValueChange(true)}
+        onFocus={() => setIsValueChanged(true)}
         onBlur={(event) => {
-          // setCurrentValue(parseFloat(event.target.value));
-          if (isValueChange) {
+          if (isValueChanged) {
             handleBlur && handleBlur(event);
-            setIsValueChange(false);
+            setIsValueChanged(false);
           }
         }}
         tabIndex={isUndefined(activeStatus) || activeStatus === true ? 0 : -1}
