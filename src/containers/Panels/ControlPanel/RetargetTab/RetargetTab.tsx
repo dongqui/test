@@ -38,7 +38,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [mappedBones, setMappedBones] = useState<string[]>([]);
   // mapping complete badge 상태
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
-  const canAssign = useMemo(() => currentSourceBoneName && currentTargetTransformNode, [currentSourceBoneName, currentTargetTransformNode]);
+  const [canAssign, setCanAssign] = useState(false);
   const multipleBoneSelected = useMemo(() => _selectedTargets.filter((target) => !checkIsTargetMesh(target)).length > 1, [_selectedTargets]);
 
   // map 완료된 bone set하는 로직
@@ -55,10 +55,16 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [_retargetMaps, _visualizedAssetIds]);
 
-  // model 변경/clear 시 source/target dropdown 리셋
+  // currentSourceBoneName, currentTargetTransformNode 모두 있을 경우 Assign 버튼 활성화
+  useEffect(() => {
+    if (currentSourceBoneName && currentTargetTransformNode) setCanAssign(true);
+  }, [currentSourceBoneName, currentTargetTransformNode]);
+
+  // model 변경 or clear 시 dropdown 리샛, assign 버튼 비활성화
   useEffect(() => {
     setCurrentSourceBoneName(undefined);
     setCurrentTargetTransformNode(undefined);
+    setCanAssign(false);
   }, [_visualizedAssetIds]);
 
   // rp 선택에 의한 targetTransformNode 변경
@@ -128,9 +134,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     if (currentSourceBoneName && currentTargetTransformNode) {
       const currentAssetId = currentTargetTransformNode.id.split('//')[0];
       dispatch(animationDataActions.assignBoneMapping({ assetId: currentAssetId, sourceBoneName: currentSourceBoneName, targetTransformNodeId: currentTargetTransformNode.id }));
-      dispatch(selectingDataActions.resetSelectedTargets());
-      setCurrentSourceBoneName(undefined);
-      setCurrentTargetTransformNode(undefined);
+      setCanAssign(false);
     }
   }, [currentSourceBoneName, currentTargetTransformNode, dispatch]);
 
@@ -145,8 +149,14 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
           </div>
           <div className={cx('bones-wrapper')}>
             {sourceBoneList.map((bone, idx) => (
-              <div key={idx} id={bone.name} style={{ left: bone.left, top: bone.top }} onClick={() => setCurrentSourceBoneName(bone.name as RetargetSourceBoneType)}>
-                <div className={cx('bone', { mapped: mappedBones.includes(bone.name), selected: bone.name === currentSourceBoneName })}></div>
+              <div
+                key={idx}
+                className={cx({ selected: bone.name === currentSourceBoneName })}
+                id={bone.name}
+                style={{ left: bone.left, top: bone.top }}
+                onClick={() => setCurrentSourceBoneName(bone.name as RetargetSourceBoneType)}
+              >
+                <div className={cx('bone', { mapped: mappedBones.includes(bone.name) })}></div>
               </div>
             ))}
           </div>
