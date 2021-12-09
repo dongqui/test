@@ -7,6 +7,7 @@ import { AnimationRangeInput, AnimationTitleToggle, DropdownWrapper, RetargetMap
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { RetargetSourceBoneType } from 'types/common';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import * as animationDataActions from 'actions/animationDataAction';
 import { checkIsTargetMesh } from 'utils/RP';
 import classNames from 'classnames/bind';
 import styles from './RetargetTab.module.scss';
@@ -32,7 +33,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [currentSourceBoneName, setCurrentSourceBoneName] = useState<RetargetSourceBoneType>();
   const [currentTargetTransformNode, setCurrentTargetTransformNode] = useState<BABYLON.TransformNode>();
   // hipsSpace 조절하면 retargetMap의 hipSpace update
-  const [hipSpace, setHipSpace] = useState<number>(10);
+  const [hipSpace, setHipSpace] = useState<number>(106);
   // mappedBones에 속하는 bone은 파란색 배경색을 입힘
   const [mappedBones, setMappedBones] = useState<string[]>([]);
   // mapping complete badge 상태
@@ -53,6 +54,12 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
       console.log('mappedSourceBoneNames: ', mappedSourceBoneNames);
     }
   }, [_retargetMaps, _visualizedAssetIds]);
+
+  // model 변경/clear 시 source/target dropdown 리셋
+  useEffect(() => {
+    setCurrentSourceBoneName(undefined);
+    setCurrentTargetTransformNode(undefined);
+  }, [_visualizedAssetIds]);
 
   // rp 선택에 의한 targetTransformNode 변경
   useEffect(() => {
@@ -114,18 +121,18 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }));
   }, [_selectableObjects, dispatch]);
 
+  // assign 버튼 클릭
   const handleAssignButtonClick = useCallback(() => {
     // animationData의 retargetMaps에서 assetId가 currentAssetId와 같은 retargetMap 찾은 후
     // 해당 retargetMap의 values 중 sourceBoneName이 currentSourceBoneName인 값의 targetTarnsformNodeId를 currentTargetTransformNode의 id로 업데이트
     if (currentSourceBoneName && currentTargetTransformNode) {
       const currentAssetId = currentTargetTransformNode.id.split('//')[0];
-      console.log('currentAssetId: ', currentAssetId);
-      console.log('currentSourceBoneName: ', currentSourceBoneName);
-      console.log('currentTransformNodeId: ', currentTargetTransformNode.id);
-    } else {
-      console.log('Cannot Assign');
+      dispatch(animationDataActions.assignBoneMapping({ assetId: currentAssetId, sourceBoneName: currentSourceBoneName, targetTransformNodeId: currentTargetTransformNode.id }));
+      dispatch(selectingDataActions.resetSelectedTargets());
+      setCurrentSourceBoneName(undefined);
+      setCurrentTargetTransformNode(undefined);
     }
-  }, [currentSourceBoneName, currentTargetTransformNode]);
+  }, [currentSourceBoneName, currentTargetTransformNode, dispatch]);
 
   return (
     <Fragment>

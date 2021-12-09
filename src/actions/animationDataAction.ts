@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { AnimationIngredient, PlaskRetargetMap } from 'types/common';
+import { AnimationIngredient, PlaskRetargetMap, RetargetSourceBoneType } from 'types/common';
 
 export type AnimationDataAction =
   | ReturnType<typeof addAsset>
@@ -9,7 +9,8 @@ export type AnimationDataAction =
   | ReturnType<typeof editAnimationIngredients>
   | ReturnType<typeof changeCurrentAnimationIngredient>
   | ReturnType<typeof removeAnimationIngredient>
-  | ReturnType<typeof editRetargetMap>;
+  | ReturnType<typeof assignBoneMapping>
+  | ReturnType<typeof changeHipSpace>;
 
 // transformNodes 관련
 const ADD_ASSET = 'animationDataAction/ADD_ASSET' as const;
@@ -21,7 +22,8 @@ const EDIT_ANIMATION_INGREDIENTS = 'animationDataAction/EDIT_ANIMATION_INGREDIEN
 const REMOVE_ANIMATION_INGREDIENT = 'animationDataAction/REMOVE_ANIMATION_INGREDIENT' as const;
 const CHANGE_CURRENT_ANIMATION_INGREDIENT = 'animationDataAction/CHANGE_CURRENT_ANIMATION_INGREDIENT' as const;
 // retargetMap 관련
-const EDIT_RETARGET_MAP = 'animationDataAction/EDIT_RETARGET_MAP' as const;
+const ASSIGN_BONE_MAPPING = 'animationDataAction/ASSIGN_BONE_MAPPING' as const;
+const CHANGE_HIP_SPACE = 'animationDataAction/CHANGE_HIP_SPACE' as const;
 
 interface AddAsset {
   transformNodes: BABYLON.TransformNode[];
@@ -54,8 +56,15 @@ interface RemoveAnimationIngredient {
   animationIngredientId: string;
 }
 
-interface EditRetargetMap {
-  retargetMap: PlaskRetargetMap;
+interface AssignBoneMapping {
+  assetId: string;
+  sourceBoneName: RetargetSourceBoneType;
+  targetTransformNodeId: string;
+}
+
+interface ChangeHipSpace {
+  assetId: string;
+  hipSpaece: number;
 }
 
 /**
@@ -140,12 +149,20 @@ export const removeAnimationIngredient = (params: RemoveAnimationIngredient) => 
 });
 
 /**
- * retargetMap을 수정합니다. 자동/수동 리타게팅 시 호출합니다.
- *
- * @param retargetMap - 수정할 대상이 되는 retargetMap
+ * 수동 리타겟팅에서 source와 target을 mapping합니다.
  */
-export const editRetargetMap = (params: EditRetargetMap) => ({
-  type: EDIT_RETARGET_MAP,
+export const assignBoneMapping = (params: AssignBoneMapping) => ({
+  type: ASSIGN_BONE_MAPPING,
+  payload: {
+    ...params,
+  },
+});
+
+/**
+ * 수동 리타겟팅에서 hip space value를 변경합니다.
+ */
+export const changeHipSpace = (params: ChangeHipSpace) => ({
+  type: CHANGE_HIP_SPACE,
   payload: {
     ...params,
   },

@@ -81,9 +81,35 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
         animationIngredients: state.animationIngredients.filter((anim) => anim.id !== action.payload.animationIngredientId),
       });
     }
-    case 'animationDataAction/EDIT_RETARGET_MAP': {
+    case 'animationDataAction/ASSIGN_BONE_MAPPING': {
       return Object.assign({}, state, {
-        retargetMaps: state.retargetMaps.map((retargetMap) => (retargetMap.id === action.payload.retargetMap.id ? action.payload.retargetMap : retargetMap)),
+        retargetMaps: state.retargetMaps.map((retargetMap) => {
+          if (retargetMap.assetId === action.payload.assetId) {
+            return {
+              ...retargetMap,
+              values: retargetMap.values.map((retargetMapValue) => {
+                if (retargetMapValue.sourceBoneName === action.payload.sourceBoneName) {
+                  return { ...retargetMapValue, targetTransformNodeId: action.payload.targetTransformNodeId };
+                } else {
+                  return retargetMapValue;
+                }
+              }),
+            };
+          } else {
+            return retargetMap;
+          }
+        }),
+      });
+    }
+    case 'animationDataAction/CHANGE_HIP_SPACE': {
+      return Object.assign({}, state, {
+        retargetMaps: state.retargetMaps.map((retargetMap) => {
+          if (retargetMap.assetId === action.payload.assetId) {
+            return { ...retargetMap, hipSpace: action.payload.hipSpaece };
+          } else {
+            return retargetMap;
+          }
+        }),
       });
     }
     default: {
