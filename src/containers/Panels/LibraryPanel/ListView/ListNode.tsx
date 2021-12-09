@@ -832,7 +832,27 @@ const ListNode: FunctionComponent<Props> = ({
             menu: [
               {
                 label: 'Delete',
-                onClick: () => {},
+                onClick: () => {
+                  const targetMotion = find(lpNode, { id });
+
+                  if (targetMotion) {
+                    const nextNodes = lpNode.filter((node) => node.id !== id);
+
+                    const resultNodes = produce(nextNodes, (draft) => {
+                      const parentModel = find(draft, { id: parentId });
+
+                      if (parentModel) {
+                        parentModel.children = parentModel.children.filter((currentId) => currentId !== id);
+                      }
+                    });
+
+                    dispatch(
+                      lpNodeActions.changeNode({
+                        nodes: resultNodes,
+                      }),
+                    );
+                  }
+                },
                 children: [],
               },
               {
@@ -1063,6 +1083,7 @@ const ListNode: FunctionComponent<Props> = ({
               id: id,
               // filePath: lpCurrentPath + `\\${name}`,
               // filePath: filePath + `\\${name}`, //@todo
+              assetId: assetId,
               filePath: filePath,
               parentId: parentId,
               name: type === 'Model' ? `${name}.${extension}` : name,
@@ -1074,6 +1095,10 @@ const ListNode: FunctionComponent<Props> = ({
             // if (parent) {
             //   parent.children.push(newNode.id);
             // }
+
+            if (newNode.children.length > 0) {
+              newNode.children.map((child) => depthChangeKey(draft, child, newNode));
+            }
 
             draft[targetIndex] = newNode;
 
@@ -1098,7 +1123,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
         });
     },
-    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [assetId, childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   const handleKeydown = useCallback(
@@ -1135,6 +1160,7 @@ const ListNode: FunctionComponent<Props> = ({
 
               const newNode: LP.Node = {
                 id: id,
+                assetId: assetId,
                 // filePath: lpCurrentPath + `\\${name}`,
                 // filePath: filePath + `\\${name}`, //@todo
                 filePath: filePath,
@@ -1148,6 +1174,10 @@ const ListNode: FunctionComponent<Props> = ({
               // if (parent) {
               //   parent.children.push(newNode.id);
               // }
+
+              if (newNode.children.length > 0) {
+                newNode.children.map((child) => depthChangeKey(draft, child, newNode));
+              }
 
               draft[targetIndex] = newNode;
 
@@ -1173,7 +1203,7 @@ const ListNode: FunctionComponent<Props> = ({
           });
       }
     },
-    [childrens, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
+    [assetId, childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
   // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
