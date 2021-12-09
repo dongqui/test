@@ -55,13 +55,11 @@ function* worker(params: ReturnType<typeof keyframesAction.enterKeyframeDragDrop
     if (targetAnimationIngredient) {
       const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
         let targetTrack: WritableDraft<PlaskTrack> | undefined;
-        let prevTrackId: string;
         targetTransformKeys.forEach((targetTransformKey) => {
           const { from, to, trackId, value } = targetTransformKey;
           // 첫 track이거나 track 변경시 targetTrack 변경
-          if (isUndefined(prevTrackId) || (prevTrackId && prevTrackId !== trackId)) {
-            targetTrack = draft.tracks.find((track) => track.id === trackId);
-            prevTrackId = trackId; // prevTrackId 업데이트
+          if (isUndefined(targetTrack) || (targetTrack && targetTrack.id !== trackId)) {
+            targetTrack = draft.tracks.find((track) => track.id === trackId); // targetTrack 업데이트
           }
           if (targetTrack) {
             // to key에 value 추가
