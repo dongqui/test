@@ -1553,12 +1553,24 @@ const ListNode: FunctionComponent<Props> = ({
     [handleVisualization],
   );
 
+  const handleContextMenu = useCallback(() => {
+    onSelect && onSelect(id, assetId);
+  }, [assetId, id, onSelect]);
+
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
       <div className={classes} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
         <div className={cx('inner')}>
           {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
-          <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
+          <div
+            className={wrapperClasses}
+            ref={wrapperRef}
+            onContextMenu={handleContextMenu}
+            style={{ paddingLeft: `${16 * (depth - 1)}px` }}
+            id={selectableId}
+            data-id={id}
+            data-assetid={assetId}
+          >
             <div style={{ paddingLeft: '7px' }} />
             {type !== 'Motion' && (
               <div className={cx('arrow-wrapper')} ref={arrowRef}>
