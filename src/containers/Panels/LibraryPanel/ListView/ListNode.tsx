@@ -356,9 +356,11 @@ const ListNode: FunctionComponent<Props> = ({
       if (isContains) {
         onSelect && onSelect(id, assetId);
 
+        const currentPath = filePath + `\\${name}`;
+
         dispatch(
           lpNodeActions.changeCurrentPath({
-            currentPath: filePath + `\\${name}`,
+            currentPath: currentPath,
             id: id,
           }),
         );
@@ -390,7 +392,15 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Copy',
-                onClick: onCopy,
+                onClick: () => {
+                  const list = lpNode.filter((node) => id.includes(node.id));
+
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: list,
+                    }),
+                  );
+                },
                 children: [],
               },
               {
@@ -595,7 +605,15 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Copy',
-                onClick: onCopy,
+                onClick: () => {
+                  const list = lpNode.filter((node) => id.includes(node.id));
+
+                  dispatch(
+                    lpNodeActions.changeClipboard({
+                      data: list,
+                    }),
+                  );
+                },
                 children: [],
               },
               {
@@ -831,7 +849,6 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'Visualization',
                 onClick: () => {
                   const parentModel = find(lpNode, { id: parentId });
-                  console.log('parentModa: ', parentModel);
 
                   if (parentModel) {
                     const motions = filter(_animationIngredients, { assetId: parentModel.assetId });
@@ -848,12 +865,34 @@ const ListNode: FunctionComponent<Props> = ({
                       }
                     }
                   }
+
+                  handleVisualization();
                 },
                 children: [],
               },
               {
                 label: 'Visualization cancel',
-                onClick: () => {},
+                onClick: () => {
+                  if (assetId && _visualizedAssetIds.includes(assetId)) {
+                    const targetAsset = _assetList.find((asset) => asset.id === assetId);
+                    const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+                    const targetControllers = _selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+
+                    // delete 대상이 render된 scene에서 대상의 요소들 remove
+                    if (targetAsset) {
+                      _screenList
+                        .map((screen) => screen.scene)
+                        .forEach((scene) => {
+                          removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+                        });
+                    }
+
+                    // visualizedAssetList에서 제외
+                    dispatch(plaskProjectActions.unrenderAsset({}));
+                    // 선택 대상에서 제외
+                    dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                  }
+                },
                 children: [],
               },
               {
@@ -1337,9 +1376,7 @@ const ListNode: FunctionComponent<Props> = ({
                   animationIngredientId: mocapAnimationIngredient.id,
                 }),
               );
-            } catch (error) {
-              console.error(error);
-            }
+            } catch (error) {}
           }
         }
       }
@@ -1552,12 +1589,24 @@ const ListNode: FunctionComponent<Props> = ({
     [handleVisualization],
   );
 
+  const handleContextMenu = useCallback(() => {
+    onSelect && onSelect(id, assetId);
+  }, [assetId, id, onSelect]);
+
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
       <div className={classes} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
         <div className={cx('inner')}>
           {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
-          <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
+          <div
+            className={wrapperClasses}
+            ref={wrapperRef}
+            onContextMenu={handleContextMenu}
+            style={{ paddingLeft: `${16 * (depth - 1)}px` }}
+            id={selectableId}
+            data-id={id}
+            data-assetid={assetId}
+          >
             <div style={{ paddingLeft: '7px' }} />
             {type !== 'Motion' && (
               <div className={cx('arrow-wrapper')} ref={arrowRef}>

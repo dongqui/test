@@ -179,19 +179,21 @@ const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?:
   const retargetMap = createEmptyRetargetMap(assetId);
 
   // innerRetargetMap을 사용해서 retargetMap.values를 업데이트
-  const innerRetargetMap = getInnerRetargetMap(bones);
-  const newValues = cloneDeep(retargetMap.values);
-  newValues.forEach((value) => {
-    const { sourceBoneName } = value;
-    const targetBone = innerRetargetMap[sourceBoneName];
-    if (targetBone) {
-      const targetTransformNode = targetBone.getTransformNode();
-      if (targetTransformNode) {
-        value.targetTransformNodeId = targetTransformNode.id;
+  if (bones && bones.length > 0) {
+    const innerRetargetMap = getInnerRetargetMap(bones);
+    const newValues = cloneDeep(retargetMap.values);
+    newValues.forEach((value) => {
+      const { sourceBoneName } = value;
+      const targetBone = innerRetargetMap[sourceBoneName];
+      if (targetBone) {
+        const targetTransformNode = targetBone.getTransformNode();
+        if (targetTransformNode) {
+          value.targetTransformNodeId = targetTransformNode.id;
+        }
       }
-    }
-  });
-  retargetMap.values = newValues;
+    });
+    retargetMap.values = newValues;
+  }
 
   return new Promise((resolve, reject) => {
     // auto retarget에 성공하면 생성한 retargetMap을 반환
