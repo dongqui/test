@@ -1,7 +1,10 @@
 import { call, put, select, takeLatest } from 'redux-saga/effects';
 import produce from 'immer';
+import { WritableDraft } from 'immer/dist/internal';
+import { isUndefined } from 'lodash';
 import * as keyframesAction from 'actions/keyframes';
 import * as animationDataActions from 'actions/animationDataAction';
+import { PlaskTrack } from 'types/common';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
 import { RootState } from 'reducers';
 import setUpdatedPropertyKeyframes from './setUpdatedPropertyKeyframes';
@@ -26,17 +29,25 @@ function* worker() {
   const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === targetAnimationIngredientId);
   if (targetAnimationIngredient) {
     const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
+      let targetTrack: WritableDraft<PlaskTrack> | undefined;
+      let prevTrackId: string;
       targetTransformKeys.forEach((targetTransformKey) => {
-        const targetTrack = draft.tracks.find((track) => track.id === targetTransformKey.trackId);
+        const { from, to, trackId, value } = targetTransformKey;
+        // 첫 track이거나 track 변경시 targetTrack 변경
+        if (isUndefined(prevTrackId) || (prevTrackId && prevTrackId !== trackId)) {
+          targetTrack = draft.tracks.find((track) => track.id === trackId);
+          prevTrackId = trackId; // prevTrackId 업데이트
+        }
         if (targetTrack) {
-          // delete의 경우 from === to
+          // from key 삭제
           targetTrack.transformKeys = targetTrack.transformKeys.filter((transformKey) => transformKey.frame !== targetTransformKey.from);
 
           // rotation track의 경우 rotationQuaternion track도 함께 변경해줘야 함
           if (targetTrack.property === 'rotation') {
+            // peerTrack find 로직도 targetTrack과 비슷하게 변경가능할 듯
             const peerTrack = draft.tracks.find((track) => track.id === targetTransformKey.trackId.replace('//rotation', '//rotationQuaternion'));
             if (peerTrack) {
-              peerTrack.transformKeys = peerTrack.transformKeys.filter((transformKey) => transformKey.frame !== targetTransformKey.from);
+              peerTrack.transformKeys = peerTrack.transformKeys.filter((transformKey) => transformKey.frame !== from);
             }
           }
         }
