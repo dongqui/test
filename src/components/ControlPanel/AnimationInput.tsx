@@ -30,6 +30,8 @@ const AnimationInput: FunctionComponent<Props> = ({ className, currentValue, tex
     }
   }, []);
 
+  // 부모로부터 defaultValue만 전달받을 경우 해당 value에 decimalDigit의 숫자만큼의 소수점 자리수를 추가하는 로직
+  // decimalDigit이 없다면 소수점 1자리로 고정
   useEffect(() => {
     if (!isValueChanged) {
       const decimalFixedValue = Number.parseFloat(defaultValue + '').toFixed(decimalDigit ?? 1);
@@ -38,6 +40,8 @@ const AnimationInput: FunctionComponent<Props> = ({ className, currentValue, tex
     }
   }, [decimalDigit, defaultValue, isValueChanged]);
 
+  // 부모로부터 currentValue를 전달받을 경우 해당 value에 decimalDigit의 숫자만큼의 소수점 자리수를 추가하는 로직
+  // decimalDigit이 없다면 소수점 1자리로 고정
   useEffect(() => {
     if (currentValue && !isValueChanged) {
       const decimalFixedValue = Number.parseFloat(currentValue + '').toFixed(decimalDigit ?? 1);
