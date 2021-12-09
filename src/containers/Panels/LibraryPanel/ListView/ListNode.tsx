@@ -340,7 +340,18 @@ const ListNode: FunctionComponent<Props> = ({
   }, []);
 
   const handleDelete = useCallback(
-    (selectId: string, selectAssetId?: string) => {
+    async (selectId: string, selectAssetId?: string) => {
+      const confirmed = await getConfirm({
+        title: 'Confirm',
+        message: 'Are you sure you want to delete the file?',
+        confirmText: '확인',
+        cancelText: '취소',
+      });
+
+      if (!confirmed) {
+        return;
+      }
+
       const afterNodes = deleteChild(lpNode, [selectId]);
 
       dispatch(
@@ -371,7 +382,7 @@ const ListNode: FunctionComponent<Props> = ({
         dispatch(selectingDataActions.unrenderAsset({ assetId: selectAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
       }
     },
-    [deleteChild, lpNode, dispatch, _assetList, _selectableObjects, _screenList],
+    [getConfirm, deleteChild, lpNode, dispatch, _assetList, _selectableObjects, _screenList],
   );
 
   useEffect(() => {
