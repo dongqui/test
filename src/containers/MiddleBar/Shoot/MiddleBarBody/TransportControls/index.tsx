@@ -21,6 +21,7 @@ const TransportControls = () => {
   useEffect(() => {
     const keydownListener = (event: KeyboardEvent) => {
       if (event.key === ' ') {
+        console.log('space bar 토글 containers/MiddleBar/Shoot/TransportControls/index.tsx');
         if (playState === 'play') {
           dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'pause' }));
         } else if (playState === 'pause' || playState === 'stop') {
