@@ -33,6 +33,11 @@ const SOURCE_BONES = {
   rightHandIndex1: { key: 23, searchKeywords: ['handindex'] },
 };
 
+/**
+ * 기존 mapping api의 결과물과 같은 구조(sourceBone과 targetBone의 연결)의 데이터를 만들어냅니다
+ *
+ * @param bones - targetBone으로 사용될 bone들
+ */
 const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
   const retargetMap: { [boneName in RetargetSourceBoneType]?: BABYLON.Bone } = {};
 
@@ -163,6 +168,13 @@ const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
   return retargetMap;
 };
 
+/**
+ * model(asset)에 대한 자동 리타겟맵 생성합니다.
+ *
+ * @param assetId - 대상 model asset의 id
+ * @param bones - 대상 model의 bone들
+ * @param timeout - 실패 기준이 되는 제한시간
+ */
 const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?: number): Promise<PlaskRetargetMap> => {
   const retargetMap = createEmptyRetargetMap(assetId);
 

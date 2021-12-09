@@ -1,10 +1,11 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
-import { v4 as uuidv4 } from 'uuid';
-
-import { RootState } from 'reducers';
-import { PlaskLayer } from 'types/common';
+import { PlaskLayer, PlaskTrack } from 'types/common';
 import { LayerTrack } from 'types/TP/track';
 import * as trackListActions from 'actions/trackList';
+import * as animationDataActions from 'actions/animationDataAction';
+import { RootState } from 'reducers';
+import { getRandomStringKey } from 'utils/common';
+import { createPlaskTrack } from 'utils/RP';
 
 function getAnimationIngredientId(state: RootState) {
   return state.trackList.animationIngredientId;
@@ -12,6 +13,10 @@ function getAnimationIngredientId(state: RootState) {
 
 function getLayerTrackList(state: RootState) {
   return state.trackList.layerTrackList;
+}
+
+function getAnimationIngredients(state: RootState) {
+  return state.animationData.animationIngredients;
 }
 
 function filterLayerTrackNumbers(layerTrackList: LayerTrack[]) {
@@ -35,7 +40,7 @@ function findNewLayerTrackNumber(layerNumbers: number[]) {
 }
 
 function createNewLayerTrack(newLayerTrackNumber: number) {
-  const newLayerTrack: PlaskLayer = { id: uuidv4(), name: `Layer ${newLayerTrackNumber}` };
+  const newLayerTrack: PlaskLayer = { id: getRandomStringKey(), name: `Layer ${newLayerTrackNumber}` };
   return newLayerTrack;
 }
 
@@ -49,7 +54,25 @@ function* worker() {
 
   // RP New Layer Track 액션 호출 시 인자값 : { animationIngredientId, ...newLayerTrack }
   // 여기서부터 RP New Layer Track 액션 호출
-  // yield put(RP액션.addNewLayerTrack({ animationIngredientId, ...newLayerTrack }))
+  const animationIngredients = getAnimationIngredients(yield select());
+  const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === animationIngredientId);
+  if (targetAnimationIngredient) {
+    const newTracks: PlaskTrack[] = [];
+    const baseLayerTracks = targetAnimationIngredient.tracks.filter((track) => track.layerId.split('//')[0] === 'baseLayer');
+    baseLayerTracks.forEach((track) => {
+      newTracks.push(createPlaskTrack(track.name, newLayerTrack.id, track.target, track.property, [], track.isMocapAnimation));
+    });
+    // 빈 track들을 추가한 후 animationIngredient 업데이트
+    yield put(
+      animationDataActions.editAnimationIngredient({
+        animationIngredient: {
+          ...targetAnimationIngredient,
+          layers: [...targetAnimationIngredient.layers, newLayerTrack],
+          tracks: [...targetAnimationIngredient.tracks, ...newTracks],
+        },
+      }),
+    );
+  }
 }
 
 function* watchAddNewLayerTrack() {

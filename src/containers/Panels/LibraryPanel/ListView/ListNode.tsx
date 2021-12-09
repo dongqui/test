@@ -527,11 +527,13 @@ const ListNode: FunctionComponent<Props> = ({
 
                           // joints 생성 및 scene들에 추가
                           bones.forEach((bone) => {
-                            if (!bone.name.toLowerCase().includes('scene')) {
+                            if (
+                              !bone.name.toLowerCase().includes('scene') &&
+                              !bone.name.toLowerCase().includes('camera') &&
+                              !bone.name.toLowerCase().includes('light') &&
                               // @TODO
-                              if (bone.name === '__root__') {
-                                return;
-                              }
+                              !bone.name.toLowerCase().includes('__root__') // return -> 조건문으로 변경
+                            ) {
                               const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
                               joint.id = `${assetId}//${bone.name}//joint`;
                               joint.renderingGroupId = 2;

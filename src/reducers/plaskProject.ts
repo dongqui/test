@@ -1,4 +1,3 @@
-import produce from 'immer';
 import { PlaskProjectAction } from 'actions/plaskProjectAction';
 import { PlaskProject } from 'types/common';
 import { getRandomStringKey } from 'utils/common';

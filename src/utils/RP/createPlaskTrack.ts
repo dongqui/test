@@ -29,7 +29,7 @@ const createPlaskTrack = (name: string, layerId: string, target: any, property: 
   }
 
   return {
-    id: `${target.id}//${property}`,
+    id: `${layerId}//${target.id}//${property}`,
     targetId: target.id,
     layerId,
     name,
