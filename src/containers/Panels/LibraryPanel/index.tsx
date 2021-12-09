@@ -40,7 +40,7 @@ const LibraryPanel: FunctionComponent = () => {
   const { onModalOpen, onModalClose } = useBaseModal();
 
   const handleFileLoad = useCallback(
-    async (file: File | string) => {
+    async (file: File | string, failedNames: string) => {
       const baseScene = _screenList[0].scene;
       let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
 
@@ -136,16 +136,25 @@ const LibraryPanel: FunctionComponent = () => {
         animationIngredients.push(animationIngredient);
       });
 
-      // 모델에 대한 retargetMap을 생성
-      let retargetMap: PlaskRetargetMap;
-      try {
-        // autoRetargetMap 생성 및 적용
-        retargetMap = await createAutoRetargetMap(assetId, skeletons[0].bones, 3000);
-      } catch (error) {
-        // 실패 시 빈 retargetMap을 생성 및 적용
-        retargetMap = createEmptyRetargetMap(assetId);
-        console.error(error);
-      }
+      // autoRetargetMap 생성 및 적용
+      const retargetMap = await createAutoRetargetMap(assetId, skeletons[0].bones, 3000)
+        .then((response) => response)
+        .catch(() => {
+          // 실패 시 빈 retargetMap을 생성 및 적
+          const name = typeof file === 'string' ? file : file.name;
+          const isOver = failedNames.trim().split(', ').length >= 3;
+
+          if (!isOver) {
+            const nextNames = failedNames.concat(name, ', ');
+            failedNames = nextNames;
+          }
+
+          if (isOver) {
+            failedNames = failedNames.replace(/,\s*$/, '').concat('...');
+          }
+
+          return createEmptyRetargetMap(assetId);
+        });
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
@@ -212,7 +221,7 @@ const LibraryPanel: FunctionComponent = () => {
         }),
       );
 
-      return nextNodes;
+      return { nextNodes, failedNames };
     },
     [_lpNode, _screenList, dispatch, onModalClose, onModalOpen],
   );
@@ -221,10 +230,13 @@ const LibraryPanel: FunctionComponent = () => {
     async (files: File[] | string[]) => {
       const nextLoadedNodes: LP.Node[] = [];
 
+      let resultFailedNames = '';
+
       for (const current of files) {
-        await handleFileLoad(current).then((res) => {
+        await handleFileLoad(current, resultFailedNames).then((res) => {
           if (res) {
-            nextLoadedNodes.push(...res);
+            nextLoadedNodes.push(...res.nextNodes);
+            resultFailedNames = res.failedNames;
           }
         });
       }
@@ -238,6 +250,8 @@ const LibraryPanel: FunctionComponent = () => {
           nodes: nextNodes,
         }),
       );
+
+      return resultFailedNames;
     },
     [_lpNode, dispatch, handleFileLoad],
   );
@@ -273,7 +287,23 @@ const LibraryPanel: FunctionComponent = () => {
         return;
       }
 
-      onNodeChange(removedVideoFiles);
+      await onNodeChange(removedVideoFiles).then((response) => {
+        // 자동리타겟팅에 실패한 파일 리스트
+        const failedFiles = response.trim().split(', ');
+
+        if (failedFiles.length > 0) {
+          const message = TEXT.WARNING_01.replace(/%s/, response.replace(/,\s*$/, ''));
+
+          onModalOpen({
+            title: 'Warning',
+            message: message,
+            confirmText: 'Close',
+            onConfirm: () => {
+              onModalClose();
+            },
+          });
+        }
+      });
 
       if (videos.length > 0) {
         /**
