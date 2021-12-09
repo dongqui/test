@@ -314,6 +314,66 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, [_assetList, _screenList, _selectableObjects, _visualizedAssetIds, assetId, dispatch]);
 
+  const deleteChild = useCallback((node: LP.Node[], ids: string[]) => {
+    let memory: LP.Node[] = [];
+
+    let afterNodes = node.filter((current) => !ids.includes(current.id));
+
+    if (ids.length > 0) {
+      ids.forEach((currentId) => {
+        const searchedNode = find(node, { id: currentId });
+
+        if (searchedNode) {
+          searchedNode.children.forEach((child) => {
+            afterNodes = afterNodes.filter((current) => !searchedNode.children.includes(current.id));
+
+            memory = deleteChild(afterNodes, [child]);
+          });
+        }
+
+        memory = afterNodes;
+      });
+      return memory;
+    } else {
+      return node;
+    }
+  }, []);
+
+  const handleDelete = useCallback(
+    (selectId: string, selectAssetId?: string) => {
+      const afterNodes = deleteChild(lpNode, [selectId]);
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: afterNodes,
+        }),
+      );
+
+      if (selectAssetId) {
+        const targetAsset = _assetList.find((asset) => asset.id === selectAssetId);
+        const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(selectAssetId) && !checkIsTargetMesh(object));
+        const targetControllers = _selectableObjects.filter((object) => object.id.includes(selectAssetId) && checkIsTargetMesh(object));
+
+        // delete 대상이 render된 scene에서 대상의 요소들 remove
+        if (targetAsset) {
+          _screenList
+            .map((screen) => screen.scene)
+            .forEach((scene) => {
+              removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+            });
+        }
+
+        // assetList에서 제외
+        dispatch(plaskProjectActions.removeAsset({ assetId: selectAssetId }));
+        // animationData 삭제
+        dispatch(animationDataActions.removeAsset({ assetId: selectAssetId }));
+        // 선택 대상에서 제외
+        dispatch(selectingDataActions.unrenderAsset({ assetId: selectAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+      }
+    },
+    [deleteChild, lpNode, dispatch, _assetList, _selectableObjects, _screenList],
+  );
+
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -373,7 +433,7 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Delete',
                 onClick: () => {
-                  onDelete();
+                  handleDelete(id);
                   // const cloneLPNode = cloneDeep(lpNode);
                   // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
 
@@ -564,7 +624,7 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Delete',
                 onClick: () => {
-                  onDelete();
+                  handleDelete(id, assetId);
                   // const cloneLPNode = cloneDeep(lpNode);
                   // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
 
@@ -965,6 +1025,7 @@ const ListNode: FunctionComponent<Props> = ({
     selectedId,
     type,
     handleVisualization,
+    handleDelete,
   ]);
 
   const classes = cx('outer', { selected: isSelected });
@@ -1619,24 +1680,12 @@ const ListNode: FunctionComponent<Props> = ({
     [handleVisualization],
   );
 
-  const handleContextMenu = useCallback(() => {
-    onSelect && onSelect(id, assetId);
-  }, [assetId, id, onSelect]);
-
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
       <div className={classes} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
         <div className={cx('inner')}>
           {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
-          <div
-            className={wrapperClasses}
-            ref={wrapperRef}
-            onContextMenu={handleContextMenu}
-            style={{ paddingLeft: `${16 * (depth - 1)}px` }}
-            id={selectableId}
-            data-id={id}
-            data-assetid={assetId}
-          >
+          <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
             <div style={{ paddingLeft: '7px' }} />
             {type !== 'Motion' && (
               <div className={cx('arrow-wrapper')} ref={arrowRef}>
