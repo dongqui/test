@@ -57,6 +57,17 @@ export const plaskProject = (state = defaultState, action: PlaskProjectAction) =
         }),
       });
     }
+    case 'plaskProject/ADD_ANIMATION_INGREDIENTS': {
+      return Object.assign({}, state, {
+        assetList: state.assetList.map((asset) => {
+          if (asset.id === action.payload.assetId) {
+            return { ...asset, animationIngredientIds: [...asset.animationIngredientIds, ...action.payload.animationIngredientIds] };
+          } else {
+            return asset;
+          }
+        }),
+      });
+    }
     default: {
       return state;
     }
