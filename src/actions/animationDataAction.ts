@@ -22,46 +22,14 @@ const EDIT_ANIMATION_INGREDIENTS = 'animationDataAction/EDIT_ANIMATION_INGREDIEN
 const REMOVE_ANIMATION_INGREDIENT = 'animationDataAction/REMOVE_ANIMATION_INGREDIENT' as const;
 const TOGGLE_LAYER_MUTENESS = 'animationDataAction/TOGGLE_LAYER_MUTENESS' as const;
 const CHANGE_CURRENT_ANIMATION_INGREDIENT = 'animationDataAction/CHANGE_CURRENT_ANIMATION_INGREDIENT' as const;
+export const EDIT_KEYFRAMES = 'animationDataAction/EDIT_KEYFRAMES' as const;
+
 // retargetMap 관련
 const EDIT_RETARGET_MAP = 'animationDataAction/EDIT_RETARGET_MAP' as const;
 
 interface AddAsset {
   transformNodes: BABYLON.TransformNode[];
   animationIngredients: AnimationIngredient[];
-  retargetMap: PlaskRetargetMap;
-}
-
-interface RemoveAsset {
-  assetId: string;
-}
-
-interface AddAnimationIngredient {
-  animationIngredient: AnimationIngredient;
-}
-
-interface EditAnimationIngredient {
-  animationIngredient: AnimationIngredient;
-}
-
-interface EditAnimationIngredients {
-  animationIngredients: AnimationIngredient[];
-}
-
-interface ChangeCurrentAnimationIngredient {
-  assetId: string;
-  animationIngredientId: string;
-}
-
-interface RemoveAnimationIngredient {
-  animationIngredientId: string;
-}
-
-interface ToggleLayerMuteness {
-  animationIngredientId: string;
-  layerId: string;
-}
-
-interface EditRetargetMap {
   retargetMap: PlaskRetargetMap;
 }
 
@@ -79,6 +47,10 @@ export const addAsset = (params: AddAsset) => ({
   },
 });
 
+interface RemoveAsset {
+  assetId: string;
+}
+
 /**
  * asset을 제거함에 따르는 애니메이션 데이터를 삭제합니다. asset을 LP에서 제거하는 경우에 호출합니다.
  *
@@ -90,6 +62,10 @@ export const removeAsset = (params: RemoveAsset) => ({
     ...params,
   },
 });
+
+interface AddAnimationIngredient {
+  animationIngredient: AnimationIngredient;
+}
 
 /**
  * 하나의 animationIngredeint를 추가합니다. 1) 빈 모션 생성 2) Mocap 시에 호출합니다.
@@ -103,6 +79,10 @@ export const addAnimationIngredient = (params: AddAnimationIngredient) => ({
   },
 });
 
+interface EditAnimationIngredient {
+  animationIngredient: AnimationIngredient;
+}
+
 /**
  * 특정 animationIngredient의 데이터를 수정합니다.
  *
@@ -114,6 +94,10 @@ export const editAnimationIngredient = (params: EditAnimationIngredient) => ({
     ...params,
   },
 });
+
+interface EditAnimationIngredients {
+  animationIngredients: AnimationIngredient[];
+}
 
 /**
  * 전체 animationIngredients 데이터를 수정합니다.
@@ -127,12 +111,27 @@ export const editAnimationIngredients = (params: EditAnimationIngredients) => ({
   },
 });
 
+interface ChangeCurrentAnimationIngredient {
+  assetId: string;
+  animationIngredientId: string;
+}
+
+/**
+ * asset의 현재 애니메이션을 결정하는 animationIngredient를 변경합니다.
+ *
+ * @param assetId - 대상 animationIngredient가 속한 asset의 id
+ * @param animationIngredientId - 대상 animationIngredient
+ */
 export const changeCurrentAnimationIngredient = (params: ChangeCurrentAnimationIngredient) => ({
   type: CHANGE_CURRENT_ANIMATION_INGREDIENT,
   payload: {
     ...params,
   },
 });
+
+interface RemoveAnimationIngredient {
+  animationIngredientId: string;
+}
 
 /**
  * 특정 animationIngredient를 삭제합니다.
@@ -146,6 +145,11 @@ export const removeAnimationIngredient = (params: RemoveAnimationIngredient) => 
   },
 });
 
+interface ToggleLayerMuteness {
+  animationIngredientId: string;
+  layerId: string;
+}
+
 /**
  * 특정 layer를 렌더링되는 애니메이션에서 제외합니다.
  *
@@ -158,6 +162,24 @@ export const toggleLayerMuteness = (params: ToggleLayerMuteness) => ({
     ...params,
   },
 });
+
+interface EditKeyframes {}
+
+/**
+ * edit keyframe saga를 동작시킵니다.
+ *
+ * @param params
+ */
+export const editKeyframes = (params: EditKeyframes) => ({
+  type: EDIT_KEYFRAMES,
+  payload: {
+    ...params,
+  },
+});
+
+interface EditRetargetMap {
+  retargetMap: PlaskRetargetMap;
+}
 
 /**
  * retargetMap을 수정합니다. 자동/수동 리타게팅 시 호출합니다.
