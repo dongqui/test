@@ -12,7 +12,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { filterAnimatableTransformNodes } from 'utils/common';
-import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
+import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove, checkPasteDuplicates } from 'utils/LP/FileSystem';
 import { getRetargetedMocapData } from 'utils/LP/Retarget';
 import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
@@ -20,6 +20,7 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import { AnimationIngredient } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
@@ -171,6 +172,29 @@ const ListNode: FunctionComponent<Props> = ({
 
       if (changeNode.children.length > 0) {
         changeNode.children.map((child) => depthChangeKey(node, child, changeNode));
+      }
+    }
+  }, []);
+
+  const depthAddKey = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
+    const changeNode = find(node, { id: childId });
+
+    if (changeNode) {
+      const cloneChangeNode = cloneDeep(changeNode);
+      cloneChangeNode.id = uuid();
+      cloneChangeNode.parentId = parentNode.id;
+      cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+
+      const index = parentNode.children.indexOf(childId);
+
+      if (index > -1) {
+        parentNode.children.splice(index, 1);
+        parentNode.children.push(cloneChangeNode.id);
+        node.push(cloneChangeNode);
+      }
+
+      if (changeNode.children.length > 0) {
+        changeNode.children.map((child) => depthAddKey(node, child, cloneChangeNode));
       }
     }
   }, []);
@@ -765,6 +789,7 @@ const ListNode: FunctionComponent<Props> = ({
                       const motion: LP.Node = {
                         id: nextAnimationIngredient.id,
                         // parentId: nextAnimationIngredient.assetId,
+                        assetId: assetId,
                         parentId: id,
                         name: nextAnimationIngredient.name,
                         // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
@@ -932,8 +957,75 @@ const ListNode: FunctionComponent<Props> = ({
                 children: [],
               },
               {
-                label: 'Copy',
-                onClick: () => {},
+                label: 'Duplicate',
+                onClick: () => {
+                  let tempMotion: LP.Node | undefined;
+                  let tempAnimationIngredient: AnimationIngredient | undefined;
+                  const parentModel = find(lpNode, { id: parentId });
+
+                  const nextNodes = produce(lpNode, (draft) => {
+                    const draftParentModel = find(draft, { id: parentId });
+
+                    if (draftParentModel) {
+                      const motions = filter(_animationIngredients, { assetId: draftParentModel.assetId });
+
+                      if (motions && draftParentModel.assetId) {
+                        const selectedMotion = find(motions, { id });
+
+                        if (selectedMotion) {
+                          const currentPathNodeNames = lpNode.filter((node) => node.parentId === parentId && node.name.includes(name)).map((filteredNode) => filteredNode.name);
+
+                          const check = checkPasteDuplicates(name, currentPathNodeNames);
+
+                          const nodeName = check === '0' ? name : `${name} (${check})`;
+
+                          const animationIngredient: AnimationIngredient = {
+                            ...selectedMotion,
+                            id: uuid(),
+                          };
+
+                          const motion: LP.Node = {
+                            id: uuid(),
+                            assetId: draftParentModel.assetId,
+                            parentId: draftParentModel.id,
+                            name: nodeName,
+                            filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
+                            children: [],
+                            extension: '',
+                            type: 'Motion',
+                          };
+
+                          tempAnimationIngredient = animationIngredient;
+                          tempMotion = motion;
+
+                          draftParentModel.children.push(motion.id);
+                          draft.push(motion);
+                        }
+                      }
+                    }
+                  });
+
+                  dispatch(
+                    lpNodeActions.changeNode({
+                      nodes: nextNodes,
+                    }),
+                  );
+
+                  if (parentModel && parentModel.assetId && tempMotion && tempAnimationIngredient) {
+                    dispatch(
+                      plaskProjectActions.addAnimationIngredient({
+                        assetId: parentModel.assetId,
+                        animationIngredientId: tempMotion.id,
+                      }),
+                    );
+
+                    dispatch(
+                      animationDataActions.addAnimationIngredient({
+                        animationIngredient: tempAnimationIngredient,
+                      }),
+                    );
+                  }
+                },
                 children: [],
               },
               {
@@ -1007,6 +1099,7 @@ const ListNode: FunctionComponent<Props> = ({
       };
     }
   }, [
+    _animationIngredients,
     _animationTransformNodes,
     _assetList,
     _screenList,
@@ -1019,7 +1112,9 @@ const ListNode: FunctionComponent<Props> = ({
     dispatch,
     extension,
     filePath,
+    handleDelete,
     handleEdit,
+    handleVisualization,
     id,
     lpClipboard,
     lpCurrentPath,
@@ -1029,14 +1124,11 @@ const ListNode: FunctionComponent<Props> = ({
     onCopy,
     onDelete,
     onModalClose,
-    _animationIngredients,
-    parentId,
     onModalOpen,
     onSelect,
+    parentId,
     selectedId,
     type,
-    handleVisualization,
-    handleDelete,
   ]);
 
   const classes = cx('outer', { selected: isSelected });
