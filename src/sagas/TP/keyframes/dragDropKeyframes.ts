@@ -4,7 +4,7 @@ import produce from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
 import { isUndefined, reverse } from 'lodash';
 import * as animationDataActions from 'actions/animationDataAction';
-import * as keyframesAction from 'actions/keyframes';
+import * as keyframesActions from 'actions/keyframes';
 import { PlaskTrack } from 'types/common';
 import { UpdatedPropertyKeyframes, UpdatedTransformKey } from 'types/TP/keyframe';
 import { RootState } from 'reducers';
@@ -21,12 +21,12 @@ function getAnimationIngredients(state: RootState) {
 }
 
 // 키프레임 드래그 드랍 입력 비즈니스 로직
-function* worker(params: ReturnType<typeof keyframesAction.enterKeyframeDragDropKey>) {
+function* worker(params: ReturnType<typeof keyframesActions.enterKeyframeDragDropKey>) {
   const { timeDiff } = params.payload;
   if (timeDiff) {
     const selectedPropertyKeyframes = getSelectedPropertyKeyframes(yield select());
     const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, selectedPropertyKeyframes, timeDiff);
-    yield put(keyframesAction.dragDropKeyframes({ timeDiff: timeDiff }));
+    yield put(keyframesActions.dragDropKeyframes({ timeDiff: timeDiff }));
 
     // 이후부터 RP쪽 액션 호출 부분
     // from 역순으로 재정렬
@@ -91,7 +91,7 @@ function* worker(params: ReturnType<typeof keyframesAction.enterKeyframeDragDrop
 
 // 키프레임 드래그 드랍 입력 감지
 function* watchDragDropKeyframes() {
-  yield takeLatest(keyframesAction.ENTER_KEYFRAME_DRAG_DROP_KEY, worker);
+  yield takeLatest(keyframesActions.ENTER_KEYFRAME_DRAG_DROP_KEY, worker);
 }
 
 export default watchDragDropKeyframes;
