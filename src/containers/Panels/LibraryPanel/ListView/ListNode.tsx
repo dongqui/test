@@ -163,18 +163,39 @@ const ListNode: FunctionComponent<Props> = ({
     [lpNode],
   );
 
-  const depthChangeKey = useCallback((node: LP.Node[], childID: string, parentNode: LP.Node) => {
-    const changeNode = find(node, { id: childID });
-
-    if (changeNode) {
-      changeNode.parentId = parentNode.id;
-      changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
-
-      if (changeNode.children.length > 0) {
-        changeNode.children.map((child) => depthChangeKey(node, child, changeNode));
-      }
-    }
+  const saveChildrensKey = useCallback((before: string[], key: string) => {
+    const result = before.concat(key);
+    return result;
   }, []);
+
+  const depthChangeKey = useCallback(
+    (node: LP.Node[], childID: string, parentNode: LP.Node) => {
+      const changeNode = find(node, { id: childID });
+      let memory: string[] = [];
+
+      if (changeNode) {
+        const cloneChangeNode = cloneDeep(changeNode);
+
+        cloneChangeNode.id = uuid();
+        cloneChangeNode.parentId = parentNode.id;
+        cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+
+        parentNode.children.push(cloneChangeNode.id);
+
+        node.push(cloneChangeNode);
+
+        if (cloneChangeNode.children.length > 0) {
+          cloneChangeNode.children.map((child) => {
+            memory = saveChildrensKey(memory, child);
+            depthChangeKey(node, child, cloneChangeNode);
+          });
+        }
+
+        cloneChangeNode.children = cloneChangeNode.children.filter((key) => !memory.includes(key));
+      }
+    },
+    [saveChildrensKey],
+  );
 
   const depthAddKey = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
     const changeNode = find(node, { id: childId });
@@ -527,6 +548,8 @@ const ListNode: FunctionComponent<Props> = ({
                   let nextLPNodes = cloneDeep(lpNode);
 
                   lpClipboard.forEach((value) => {
+                    let memory: string[] = [];
+
                     const copyNode = value;
                     const cloneCopyNode = cloneDeep(copyNode);
 
@@ -579,9 +602,14 @@ const ListNode: FunctionComponent<Props> = ({
                           draft.push(cloneCopyNode);
 
                           if (cloneCopyNode.children.length > 0) {
-                            cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
+                            cloneCopyNode.children.map((child) => {
+                              memory = saveChildrensKey(memory, child);
+                              depthChangeKey(draft, child, cloneCopyNode);
+                            });
                           }
                         }
+
+                        cloneCopyNode.children = cloneCopyNode.children.filter((key) => !memory.includes(key));
                       });
 
                       nextLPNodes = nextNodes;
@@ -1127,6 +1155,7 @@ const ListNode: FunctionComponent<Props> = ({
     onModalOpen,
     onSelect,
     parentId,
+    saveChildrensKey,
     selectedId,
     type,
   ]);
