@@ -1796,17 +1796,15 @@ const ListNode: FunctionComponent<Props> = ({
             </div>
           </div>
           {showsChildren && (
-            <Fragment>
-              <div>
-                {childrens.map((children) => {
-                  if (typeof children === 'string') {
-                    return <div key={children}>{renderChildren(children)}</div>;
-                  }
+            <div className="ListNode_children">
+              {childrens.map((children) => {
+                if (typeof children === 'string') {
+                  return <Fragment key={children}>{renderChildren(children)}</Fragment>;
+                }
 
-                  return <div key={children.id}>{renderChildren(children)}</div>;
-                })}
-              </div>
-            </Fragment>
+                return <div key={children.id}>{renderChildren(children)}</div>;
+              })}
+            </div>
           )}
         </div>
       </div>
