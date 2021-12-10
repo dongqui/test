@@ -180,9 +180,9 @@ const ListNode: FunctionComponent<Props> = ({
         cloneChangeNode.parentId = parentNode.id;
         cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
 
-        parentNode.children.push(cloneChangeNode.id);
+        parentNode.children = parentNode.children.concat(cloneChangeNode.id);
 
-        node.push(cloneChangeNode);
+        node = node.concat(cloneChangeNode);
 
         if (cloneChangeNode.children.length > 0) {
           cloneChangeNode.children.map((child) => {
@@ -1262,7 +1262,7 @@ const ListNode: FunctionComponent<Props> = ({
         })
         .map((filteredNode) => filteredNode.name);
 
-      const nodeName = await beforeRename({
+      await beforeRename({
         name: text,
         comparison: currentPathNodeName,
       })
@@ -1271,7 +1271,6 @@ const ListNode: FunctionComponent<Props> = ({
             const parent = find(draft, { id: parentId });
             // @todo 생성하지않고 교체하기
             const targetIndex = draft.findIndex((element) => element.id === id);
-
             const newNode: LP.Node = {
               id: id,
               // filePath: lpCurrentPath + `\\${name}`,
@@ -1284,20 +1283,15 @@ const ListNode: FunctionComponent<Props> = ({
               extension: extension,
               children: childrens,
             };
-
             // if (parent) {
             //   parent.children.push(newNode.id);
             // }
-
             if (newNode.children.length > 0) {
-              newNode.children.map((child) => depthChangeKey(draft, child, newNode));
+              newNode.children.forEach((child) => depthChangeKey(draft, child, newNode));
             }
-
             draft[targetIndex] = newNode;
-
             setIsEditing(false);
           });
-
           dispatch(
             lpNodeActions.changeNode({
               nodes: nextNodes,
