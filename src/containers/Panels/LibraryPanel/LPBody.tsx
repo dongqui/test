@@ -45,27 +45,41 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     setNodeRef(Array.from({ length: lpNode.length }).map(() => createRef()));
   }, [lpNode.length]);
 
-  const handleDepthChange = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
-    const changeNode = find(node, { id: childId });
-
-    if (changeNode) {
-      const cloneChangeNode = cloneDeep(changeNode);
-
-      cloneChangeNode.id = uuid();
-      cloneChangeNode.parentId = parentNode.id;
-      cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
-
-      remove(parentNode.children, (child) => child === childId);
-
-      parentNode.children.push(cloneChangeNode.id);
-
-      node.push(cloneChangeNode);
-
-      if (cloneChangeNode.children.length > 0) {
-        cloneChangeNode.children.map((child) => handleDepthChange(node, child, cloneChangeNode));
-      }
-    }
+  const saveChildrensKey = useCallback((before: string[], key: string) => {
+    const result = before.concat(key);
+    return result;
   }, []);
+
+  const handleDepthChange = useCallback(
+    (node: LP.Node[], childId: string, parentNode: LP.Node) => {
+      const changeNode = find(node, { id: childId });
+      let memory: string[] = [];
+
+      if (changeNode) {
+        const cloneChangeNode = cloneDeep(changeNode);
+
+        cloneChangeNode.id = uuid();
+        cloneChangeNode.parentId = parentNode.id;
+        cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+
+        // remove(parentNode.children, (child) => child === childId);
+
+        parentNode.children.push(cloneChangeNode.id);
+
+        node.push(cloneChangeNode);
+
+        if (cloneChangeNode.children.length > 0) {
+          cloneChangeNode.children.map((child) => {
+            memory = saveChildrensKey(memory, child);
+            handleDepthChange(node, child, cloneChangeNode);
+          });
+        }
+
+        cloneChangeNode.children = cloneChangeNode.children.filter((key) => !memory.includes(key));
+      }
+    },
+    [saveChildrensKey],
+  );
 
   const handlePaste = useCallback(() => {
     let nextLPNodes = cloneDeep(lpNode);
@@ -79,6 +93,8 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       const compareTargetName = cloneCopyNode.type === 'Model' ? fileName : cloneCopyNode.name;
 
       if (cloneCopyNode) {
+        let memory: string[] = [];
+
         const currentPathNodeName = lpNode
           .filter((node) => {
             if (node.parentId === '__root__') {
@@ -114,8 +130,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
           draft.push(cloneCopyNode);
 
           if (cloneCopyNode.children.length > 0) {
-            cloneCopyNode.children.map((child) => handleDepthChange(draft, child, cloneCopyNode));
+            cloneCopyNode.children.map((child) => {
+              memory = saveChildrensKey(memory, child);
+              handleDepthChange(draft, child, cloneCopyNode);
+            });
           }
+
+          cloneCopyNode.children = cloneCopyNode.children.filter((key) => !memory.includes(key));
         });
 
         nextLPNodes = nextNodes;
@@ -127,7 +148,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         nodes: nextLPNodes,
       }),
     );
-  }, [_lpClipboard, dispatch, handleDepthChange, lpNode]);
+  }, [_lpClipboard, dispatch, handleDepthChange, lpNode, saveChildrensKey]);
 
   const handleCreateDirectory = useCallback(() => {
     const currentPathNodeNames = lpNode.filter((node) => node.parentId === '__root__' && node.name.includes('Untitled')).map((filteredNode) => filteredNode.name);
