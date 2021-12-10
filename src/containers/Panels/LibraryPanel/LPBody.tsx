@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { find, remove, cloneDeep } from 'lodash';
+import { find, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, useEffect, useState, useCallback, useMemo, useRef, createRef, RefObject } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
@@ -242,22 +242,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     },
     [selectedAssetId, selectedId],
   );
-
-  // const handleReject = useCallback(
-  //   (id: string) => {
-  //     if (selectedId.includes(id)) {
-  //       const nextSelectedIds = produce(selectedId, (draft) => {
-  //         const index = draft.indexOf(id);
-  //         if (index > -1) {
-  //           draft.splice(index, 1);
-  //         }
-  //       });
-
-  //       setSelectedId(nextSelectedIds);
-  //     }
-  //   },
-  //   [selectedId],
-  // );
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {

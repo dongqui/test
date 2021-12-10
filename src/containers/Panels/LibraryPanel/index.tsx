@@ -270,7 +270,7 @@ const LibraryPanel: FunctionComponent = () => {
           title: 'Warning',
           message: TEXT.WARNING_02,
           confirmText: 'Close',
-          onConfirm: () => onModalClose(),
+          onConfirm: onModalClose,
         });
 
         return;
@@ -293,17 +293,12 @@ const LibraryPanel: FunctionComponent = () => {
             title: 'Warning',
             message: message,
             confirmText: 'Close',
-            onConfirm: () => {
-              onModalClose();
-            },
+            onConfirm: onModalClose,
           });
         }
       });
 
       if (videos.length > 0) {
-        /**
-         * @TODO 이후 사용하지 않는 경우 remove url 필요
-         */
         const videoBlobURL = URL.createObjectURL(videos[0]);
 
         onModalOpen({
