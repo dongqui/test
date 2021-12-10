@@ -5,6 +5,7 @@ export type AnimationDataAction =
   | ReturnType<typeof addAsset>
   | ReturnType<typeof removeAsset>
   | ReturnType<typeof addAnimationIngredient>
+  | ReturnType<typeof addAnimationIngredients>
   | ReturnType<typeof editAnimationIngredient>
   | ReturnType<typeof editAnimationIngredients>
   | ReturnType<typeof changeCurrentAnimationIngredient>
@@ -17,12 +18,13 @@ const ADD_ASSET = 'animationDataAction/ADD_ASSET' as const;
 const REMOVE_ASSET = 'animationDataAction/REMOVE_ASSET' as const;
 // animationIngredient 관련
 const ADD_ANIMATION_INGREDIENT = 'animationDataAction/ADD_ANIMATION_INGREDIENT' as const;
+const ADD_ANIMATION_INGREDIENTS = 'animationDataAction/ADD_ANIMATION_INGREDIENTS' as const;
 const EDIT_ANIMATION_INGREDIENT = 'animationDataAction/EDIT_ANIMATION_INGREDIENT' as const;
 const EDIT_ANIMATION_INGREDIENTS = 'animationDataAction/EDIT_ANIMATION_INGREDIENTS' as const;
 const REMOVE_ANIMATION_INGREDIENT = 'animationDataAction/REMOVE_ANIMATION_INGREDIENT' as const;
 const TOGGLE_LAYER_MUTENESS = 'animationDataAction/TOGGLE_LAYER_MUTENESS' as const;
 const CHANGE_CURRENT_ANIMATION_INGREDIENT = 'animationDataAction/CHANGE_CURRENT_ANIMATION_INGREDIENT' as const;
-export const EDIT_KEYFRAMES = 'animationDataAction/EDIT_KEYFRAMES' as const;
+export const EDIT_KEYFRAMES = 'animationDataAction/EDIT_KEYFRAMES' as const; // saga내 사용을 위해 export
 
 // retargetMap 관련
 const EDIT_RETARGET_MAP = 'animationDataAction/EDIT_RETARGET_MAP' as const;
@@ -68,12 +70,28 @@ interface AddAnimationIngredient {
 }
 
 /**
- * 하나의 animationIngredeint를 추가합니다. 1) 빈 모션 생성 2) Mocap 시에 호출합니다.
+ * 하나의 animationIngredient를 추가합니다. 1) 빈 모션 생성 2) Mocap 시에 호출합니다.
  *
- * @param assetId - 빈 모션을 추가할 대상이되는 asset의 id
+ * @param animationIngredient - 추가할 animationIngredient
  */
 export const addAnimationIngredient = (params: AddAnimationIngredient) => ({
   type: ADD_ANIMATION_INGREDIENT,
+  payload: {
+    ...params,
+  },
+});
+
+interface AddAnimationIngredients {
+  animationIngredients: AnimationIngredient[];
+}
+
+/**
+ * 여러개의 animationIngredeint를 추가합니다. model 복제 시 사용합니다.
+ *
+ * @param animationIngredients - 추가할 animationIngredients
+ */
+export const addAnimationIngredients = (params: AddAnimationIngredients) => ({
+  type: ADD_ANIMATION_INGREDIENTS,
   payload: {
     ...params,
   },
