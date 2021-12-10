@@ -56,6 +56,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   const [basicExtractName, setBasicExtractName] = useState<string>('Exported motion');
   const [turnStandbyPhase, setTurnStandbyPhase] = useState<boolean>(false);
   const [onExtract, setOnExtract] = useState<boolean>(false);
+  const [isExtractFailed, setIsExtractFailed] = useState<boolean>(false);
   const [start, setStart] = useState<number>(0);
   const [end, setEnd] = useState<number>(0);
   const [timer, setTimer] = useState<number>(5);
@@ -222,6 +223,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       })
       .catch((err) => {
         setReadyExtract(false);
+        setIsExtractFailed(true);
         throw err;
       });
     // return {
@@ -288,7 +290,6 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           videoRef.current!.currentTime = end;
         } else {
           videoRef.current!.currentTime = ((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100;
-          console.log(videoRef.current!.currentTime);
         }
       }
     },
@@ -544,17 +545,17 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           </div>
         </BaseModal>
       )}
-      {/* <BaseModal>
-        <h4 className={cx('modal-heading')}>Extract Failed</h4>
-        <p className={cx('extract-name-paragraph')}>
-          Motion extraction <strong>failed</strong>. please try again.
-        </p>
-        <FilledButton
-          text="Cancel"
-          className={cx('extract-button', 'cancel')}
-          onClick={() => setTurnStandbyPhase(false)}
-        ></FilledButton>
-      </BaseModal> */}
+      {isExtractFailed && (
+        <BaseModal isOpen={isExtractFailed}>
+          <div className={cx('failed-modal')}>
+            <h4 className={cx('modal-heading')}>Extract Failed</h4>
+            <p className={cx('extract-name-paragraph')}>
+              Motion extraction <strong>failed</strong>. please try again.
+            </p>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)}></FilledButton>
+          </div>
+        </BaseModal>
+      )}
     </div>
   );
 };
