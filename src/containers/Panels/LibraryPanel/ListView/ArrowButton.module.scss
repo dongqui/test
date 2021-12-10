@@ -1,0 +1,15 @@
+.icon {
+  position: relative;
+  display: flex;
+  width: 16px;
+  height: 24px;
+
+  & > svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: auto;
+    color: #fff;
+  }
+}
