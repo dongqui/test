@@ -17,7 +17,7 @@ const HotkeyOrder: FunctionComponent<Props> = ({ className, children }) => {
   }, []);
 
   return (
-    <HotKeys className={className} keyMap={keyMap}>
+    <HotKeys className={className} keyMap={keyMap} allowChanges>
       {children}
     </HotKeys>
   );
