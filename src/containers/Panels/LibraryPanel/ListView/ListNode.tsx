@@ -21,6 +21,7 @@ import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import { AnimationIngredient } from 'types/common';
+import ArrowButton from './ArrowButton';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
@@ -1393,36 +1394,8 @@ const ListNode: FunctionComponent<Props> = ({
     [assetId, childrens, depthChangeKey, dispatch, extension, filePath, id, lpNode, name, onModalClose, onModalOpen, parentId, type],
   );
 
-  // const [nodeRefs, setNodeRefs] = useState<RefObject<HTMLDivElement>[]>([]);
-
-  // useEffect(() => {
-  //   setNodeRefs(Array.from({ length: childrens.length }).map(() => createRef()));
-  // }, [childrens.length]);
-
-  //  redner 용 임시 함수
-  // const dummyArrowClick = useCallback(
-  //   (event: MouseEvent) => {
-  //     const targetAsset = assetList[0];
-  //     // assetId를 사용해서 node를 생성하신 후, 위의 코드를 아래의 코드로 변경하면 됩니다.
-  //     // const targetAsset = assetList.find((asset) => asset.id === assetId;
-  //     // render/unrender 기능 구현을 임의로 click/altClick으로 구분해두었습니다.
-  //     if (event.altKey) {
-  //       if (targetAsset && visualizedAssetIds.includes(targetAsset.id)) {
-  //         dispatch(plaskProjectActions.unrenderAsset({ assetId: targetAsset.id }));
-  //       }
-  //     } else {
-  //       // 이미 render된 asset이 아닌 경우에만
-  //       if (targetAsset && !visualizedAssetIds.includes(targetAsset.id)) {
-  //         dispatch(plaskProjectActions.renderAsset({ assetId: targetAsset.id }));
-  //       }
-  //     }
-  //   },
-  //   [assetList, dispatch, visualizedAssetIds],
-  // );
-
   const handleDragStart = useCallback(
     (e: DragEvent) => {
-      // e.preventDefault();
       e.stopPropagation();
 
       // 드래그 시작시 선택 및 스타일 적용
@@ -1810,14 +1783,9 @@ const ListNode: FunctionComponent<Props> = ({
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
       <div className={classes} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
         <div className={cx('inner')}>
-          {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
           <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
             <div style={{ paddingLeft: '7px' }} />
-            {type !== 'Motion' && (
-              <div className={cx('arrow-wrapper')} ref={arrowRef}>
-                <IconWrapper icon={showsChildren ? SvgPath.ArrowOpen : SvgPath.ArrowClose} className={cx('icon-arrow')} />
-              </div>
-            )}
+            {type !== 'Motion' && <ArrowButton ref={arrowRef} isOpen={showsChildren} />}
             <div className={cx('info')}>
               <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
               {isEditing ? (
@@ -1827,7 +1795,6 @@ const ListNode: FunctionComponent<Props> = ({
               )}
             </div>
           </div>
-          {/* children area */}
           {showsChildren && (
             <Fragment>
               <div>
