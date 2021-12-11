@@ -6,6 +6,7 @@
   display: flex;
   align-items: center;
   user-select: none;
+  // draggable 요소에 opacity 0.999가 외부 배경색을 제거하는 역할
   opacity: 0.999;
 
   &.selected {
@@ -46,31 +47,16 @@
   }
 }
 
-.icon-type {
+.contents {
   position: relative;
   display: flex;
-  width: 16px;
-  height: 24px;
-
-  & > svg {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    height: 14px;
-    margin: auto;
-    color: #fff;
-  }
+  align-items: stretch;
+  width: 80%;
 }
 
-.info {
+.column {
   display: flex;
-  align-items: center;
-}
-
-.name {
-  display: flex;
-  font-size: 11px;
-  color: #fff;
-  padding-left: 8px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: 7px;
 }

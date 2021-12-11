@@ -20,8 +20,9 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import { AnimationIngredient } from 'types/common';
 import ArrowButton from './ArrowButton';
+import NodeIcon from './NodeIcon';
+import NodeName from './NodeName';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
@@ -87,7 +88,6 @@ const ListNode: FunctionComponent<Props> = ({
   const renameRef = useRef<HTMLInputElement>(null);
 
   const [isHover, setIsHover] = useState(false);
-  const wrapperClasses = cx('inner-row', { hovered: isHover });
 
   const [currentSelectableId, setCurrentSelectableId] = useState('');
 
@@ -1161,8 +1161,6 @@ const ListNode: FunctionComponent<Props> = ({
     type,
   ]);
 
-  const classes = cx('outer', { selected: isSelected });
-
   useEffect(() => {
     const currentRef = wrapperRef && wrapperRef.current;
 
@@ -1728,6 +1726,8 @@ const ListNode: FunctionComponent<Props> = ({
 
   useEffect(() => {
     const currentRef = outerRef.current;
+
+    // draggable과 DragBox가 동시에 발생하는 것을 방지
     if (currentRef) {
       const handleMouseDown = (e: MouseEvent) => {
         e.stopPropagation();
@@ -1779,20 +1779,19 @@ const ListNode: FunctionComponent<Props> = ({
     [handleVisualization],
   );
 
+  const classes = cx('outer', { selected: isSelected });
+  const wrapperClasses = cx('inner-row', { hovered: isHover });
+
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
       <div className={classes} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
         <div className={cx('inner')}>
           <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
-            <div style={{ paddingLeft: '7px' }} />
-            {type !== 'Motion' && <ArrowButton ref={arrowRef} isOpen={showsChildren} />}
-            <div className={cx('info')}>
-              <IconWrapper icon={SvgPath[type]} className={cx('icon-type')} />
-              {isEditing ? (
-                <input placeholder={name} type="text" onBlur={handleBlur} ref={renameRef} onKeyDown={handleKeydown} defaultValue={fileName} autoFocus />
-              ) : (
-                <div className={cx('name')}>{name}</div>
-              )}
+            <div className={cx('column')} />
+            <ArrowButton ref={arrowRef} isOpen={showsChildren} hidden={type === 'Motion'} />
+            <div className={cx('contents')}>
+              <NodeIcon icon={type} />
+              <NodeName innerRef={renameRef} isRenaming={isEditing} name={name} onBlur={handleBlur} onKeyDown={handleKeydown} defaultValue={fileName} />
             </div>
           </div>
           {showsChildren && (
