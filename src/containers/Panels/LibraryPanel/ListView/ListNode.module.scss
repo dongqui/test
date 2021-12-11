@@ -18,9 +18,13 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+
+  &.visualized {
+    background-color: var(--blue200);
+  }
 }
 
-.inner-row {
+.row {
   display: flex;
   align-items: stretch;
   width: 100%;
