@@ -1,4 +1,4 @@
-import { memo, forwardRef } from 'react';
+import { Fragment, memo, forwardRef } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
 import styles from './ArrowButton.module.scss';
@@ -7,15 +7,21 @@ const cx = classNames.bind(styles);
 
 interface Props {
   isOpen?: boolean;
+  hidden?: boolean;
 }
 
-const ArrowButton = forwardRef<HTMLDivElement, Props>(({ isOpen }, ref) => {
+const ArrowButton = forwardRef<HTMLDivElement, Props>(({ isOpen, hidden }, ref) => {
   const icon = isOpen ? SvgPath.ArrowOpen : SvgPath.ArrowClose;
+  const shows = !hidden;
 
   return (
-    <div className="ArrowButton_wrapper" ref={ref}>
-      <IconWrapper icon={icon} className={cx('icon')} />
-    </div>
+    <Fragment>
+      {shows && (
+        <div className={cx('wrapper')} ref={ref}>
+          <IconWrapper icon={icon} className={cx('icon')} />
+        </div>
+      )}
+    </Fragment>
   );
 });
 
