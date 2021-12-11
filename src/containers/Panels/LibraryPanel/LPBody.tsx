@@ -83,7 +83,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
   const handlePaste = useCallback(() => {
     let nextLPNodes = cloneDeep(lpNode);
-    console.log('??LP_PASTE');
 
     _lpClipboard.forEach((value) => {
       const cloneCopyNode = cloneDeep(value);
