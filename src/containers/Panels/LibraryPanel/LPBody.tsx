@@ -30,10 +30,9 @@ interface Props {
 const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const dispatch = useDispatch();
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
-
-  const screenList = useSelector((state) => state.plaskProject.screenList);
-  const assetList = useSelector((state) => state.plaskProject.assetList);
-  const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
+  const _screenList = useSelector((state) => state.plaskProject.screenList);
+  const _assetList = useSelector((state) => state.plaskProject.assetList);
+  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [nodeRef, setNodeRef] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -488,13 +487,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
     if (selectedAssetId.length > 0) {
       selectedAssetId.forEach((assetId) => {
-        const targetAsset = assetList.find((asset) => asset.id === assetId);
-        const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
-        const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+        const targetAsset = _assetList.find((asset) => asset.id === assetId);
+        const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+        const targetControllers = _selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
 
         // delete 대상이 render된 scene에서 대상의 요소들 remove
         if (targetAsset) {
-          screenList
+          _screenList
             .map((screen) => screen.scene)
             .forEach((scene) => {
               removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
@@ -509,7 +508,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
       });
     }
-  }, [assetList, deleteChild, dispatch, getConfirm, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
+  }, [_assetList, _screenList, _selectableObjects, deleteChild, dispatch, getConfirm, lpNode, selectedAssetId, selectedId]);
 
   const handlers = {
     LP_COPY: handleCopy,
