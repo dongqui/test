@@ -78,7 +78,7 @@ const ListNode: FunctionComponent<Props> = ({
   const _lpNode = useSelector((state) => state.lpNode.node);
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
-  const [showsChildren, setShowsChildren] = useState(false);
+  const [showsChildrens, setShowsChildrens] = useState(false);
 
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
 
@@ -124,24 +124,22 @@ const ListNode: FunctionComponent<Props> = ({
       let memory: string[] = [];
 
       if (changeNode) {
-        const cloneChangeNode = cloneDeep(changeNode);
+        changeNode.id = uuid();
+        changeNode.parentId = parentNode.id;
+        changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
 
-        cloneChangeNode.id = uuid();
-        cloneChangeNode.parentId = parentNode.id;
-        cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+        parentNode.children = parentNode.children.concat(changeNode.id);
 
-        parentNode.children = parentNode.children.concat(cloneChangeNode.id);
+        node = node.concat(changeNode);
 
-        node = node.concat(cloneChangeNode);
-
-        if (cloneChangeNode.children.length > 0) {
-          cloneChangeNode.children.map((child) => {
+        if (changeNode.children.length > 0) {
+          changeNode.children.map((child) => {
             memory = saveChildrensKey(memory, child);
-            depthChangeKey(node, child, cloneChangeNode);
+            depthChangeKey(node, child, changeNode);
           });
         }
 
-        cloneChangeNode.children = cloneChangeNode.children.filter((key) => !memory.includes(key));
+        changeNode.children = changeNode.children.filter((key) => !memory.includes(key));
       }
     },
     [saveChildrensKey],
@@ -548,18 +546,18 @@ const ListNode: FunctionComponent<Props> = ({
 
                           targetNode.children.push(cloneCopyNode.id);
 
-                          // @TODO 하위 노드도 추가
-                          draft.push(cloneCopyNode);
-
                           if (cloneCopyNode.children.length > 0) {
                             cloneCopyNode.children.map((child) => {
                               memory = saveChildrensKey(memory, child);
                               depthChangeKey(draft, child, cloneCopyNode);
                             });
                           }
-                        }
 
-                        cloneCopyNode.children = cloneCopyNode.children.filter((key) => !memory.includes(key));
+                          cloneCopyNode.children = cloneCopyNode.children.filter((key) => !memory.includes(key));
+
+                          // @TODO 하위 노드도 추가
+                          draft.push(cloneCopyNode);
+                        }
                       });
 
                       nextLPNodes = nextNodes;
@@ -1548,12 +1546,12 @@ const ListNode: FunctionComponent<Props> = ({
 
               targetNode.children.push(cloneDragNode.id);
 
-              // @TODO 하위 노드도 추가
-              draft.push(cloneDragNode);
-
               if (cloneDragNode.children.length > 0) {
                 cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
               }
+
+              // @TODO 하위 노드도 추가
+              draft.push(cloneDragNode);
             }
           });
 
@@ -1629,15 +1627,17 @@ const ListNode: FunctionComponent<Props> = ({
   );
 
   const handleArrowClick = useCallback(() => {
-    setShowsChildren(!showsChildren);
-  }, [showsChildren]);
+    setShowsChildrens(!showsChildrens);
+  }, [showsChildrens]);
 
   const [isHover, setIsHover] = useState(false);
 
-  const classes = cx('outer', { selected: isSelected });
-  const wrapperClasses = cx('inner-row', { hovered: isHover });
+  // 모델이며, 비주얼라이즈 되어있으며, 오픈되어있지 않는 경우
+  const isVisualized = assetId && _visualizedAssetIds.includes(assetId);
 
-  console.log(childrens);
+  const classes = cx('outer', { selected: isSelected });
+  const innerClasses = cx('inner', { visualized: isVisualized });
+  const wrapperClasses = cx('row', { hovered: isHover });
 
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
@@ -1645,13 +1645,14 @@ const ListNode: FunctionComponent<Props> = ({
         <div className={cx('inner')}>
           <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
             <div className={cx('column')} />
-            <ArrowButton isOpen={showsChildren} hidden={type === 'Motion'} onClick={handleArrowClick} />
+            <ArrowButton isOpen={showsChildrens} hidden={type === 'Motion'} onClick={handleArrowClick} />
             <div className={cx('contents')}>
               <NodeIcon icon={type} />
+              <div className={cx('column')} />
               <NodeName innerRef={renameRef} isRenaming={isEditing} name={name} onBlur={handleBlur} onKeyDown={handleKeydown} defaultValue={fileName} />
             </div>
           </div>
-          {showsChildren && (
+          {showsChildrens && (
             <div className="ListNode_children">
               {childrens.map((id) => (
                 <Fragment key={id}>{renderChildren(id)}</Fragment>
