@@ -7,7 +7,7 @@
   align-items: center;
   user-select: none;
   // draggable 요소에 opacity 0.999가 외부 배경색을 제거하는 역할
-  opacity: 0.999;
+  // opacity: 0.999;
 
   &.selected {
     background-color: var(--gray400);
