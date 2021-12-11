@@ -16,6 +16,7 @@ interface Props {
   depth: number;
   isEditing?: boolean;
   wrapperRef: RefObject<HTMLDivElement>;
+  textRef: RefObject<HTMLDivElement>;
   renameRef: RefObject<HTMLInputElement>;
   onClick: () => void;
   onBlur: (event: FocusEvent<HTMLInputElement>) => void;
@@ -23,7 +24,7 @@ interface Props {
   defaultValue: string;
 }
 
-const ListCurrent: FunctionComponent<Props> = ({ id, assetId, type, name, depth, isEditing, wrapperRef, renameRef, onClick, onBlur, onKeyDown, defaultValue }) => {
+const ListCurrent: FunctionComponent<Props> = ({ id, assetId, type, name, depth, isEditing, wrapperRef, textRef, renameRef, onClick, onBlur, onKeyDown, defaultValue }) => {
   const arrowRef = useRef<HTMLDivElement>(null);
 
   const [isHover, setIsHover] = useState(false);
@@ -55,7 +56,7 @@ const ListCurrent: FunctionComponent<Props> = ({ id, assetId, type, name, depth,
       <div className={cx('contents')}>
         <NodeIcon icon={type} />
         <div className={cx('column')} />
-        <NodeName innerRef={renameRef} isEditing={isEditing} name={name} onBlur={onBlur} onKeyDown={onKeyDown} defaultValue={defaultValue} />
+        <NodeName inputRef={renameRef} textRef={textRef} isEditing={isEditing} name={name} onBlur={onBlur} onKeyDown={onKeyDown} defaultValue={defaultValue} />
       </div>
     </div>
   );
