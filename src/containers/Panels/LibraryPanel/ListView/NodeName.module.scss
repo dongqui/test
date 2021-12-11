@@ -1,0 +1,30 @@
+@import 'styles/libraries/_mixins';
+
+.column {
+  display: flex;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 7px;
+}
+
+.input {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--blue300);
+  padding-left: 7px;
+  font-size: 11px;
+  color: #fff;
+}
+
+.name {
+  position: absolute;
+  width: calc(100% - 23px);
+  left: 23px;
+  height: 24px;
+  line-height: 24px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  color: #fff;
+}
