@@ -1546,26 +1546,7 @@ const ListNode: FunctionComponent<Props> = ({
   const splitName = name.split('.');
   const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
-  useEffect(() => {
-    const currentRef = outerRef.current;
-
-    // draggable과 DragBox가 동시에 발생하는 것을 방지
-    if (currentRef) {
-      const handleMouseDown = (e: MouseEvent) => {
-        e.stopPropagation();
-      };
-
-      currentRef.addEventListener('mousedown', handleMouseDown);
-
-      return () => {
-        currentRef.removeEventListener('mousedown', handleMouseDown);
-      };
-    }
-  }, []);
-
-  const handlers = {
-    LP_EDIT_NAME: handleEdit,
-  };
+  const isSelected = selectedId.includes(id);
 
   const handleDragEnd = useCallback(
     (e: DragEvent) => {
@@ -1591,9 +1572,40 @@ const ListNode: FunctionComponent<Props> = ({
 
   // 모델이며, 비주얼라이즈 되어있으며, 오픈되어있지 않는 경우
   const isVisualized = assetId && _visualizedAssetIds.includes(assetId);
+  const textRef = useRef<HTMLDivElement>(null);
 
-  const classes = cx('outer', { selected: selectedId.includes(id) });
+  const classes = cx('outer', { selected: isSelected });
   const innerClasses = cx('inner', { visualized: isVisualized });
+
+  useEffect(() => {
+    const currentRef = outerRef && outerRef.current;
+
+    if (currentRef) {
+      const handleMouseDown = (e: MouseEvent) => {
+        const isTextAreaContains = textRef && textRef.current?.contains(e.target as Node);
+
+        if (!isTextAreaContains) {
+          // 노드의 실질적인 이름 영역을 드래그하지 않은 경우에는 onDragStart 이벤트가 발생하지 않게 처리
+          // 결과적으로 DragBox가 발생
+          e.preventDefault();
+        } else {
+          // 노드의 실질적인 이름 영역을 드래그한 경우에는 onDragStart 이벤트가 발생하게 처리
+          // 결과적으로 DragBox가 발생하지 않음
+          e.stopPropagation();
+        }
+      };
+
+      currentRef.addEventListener('mousedown', handleMouseDown);
+
+      return () => {
+        currentRef.removeEventListener('mousedown', handleMouseDown);
+      };
+    }
+  }, [wrapperRef]);
+
+  const handlers = {
+    LP_EDIT_NAME: handleEdit,
+  };
 
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
@@ -1607,6 +1619,7 @@ const ListNode: FunctionComponent<Props> = ({
             depth={depth}
             isEditing={isEditing}
             wrapperRef={wrapperRef}
+            textRef={textRef}
             renameRef={renameRef}
             onClick={handleArrowClick}
             onBlur={handleBlur}
