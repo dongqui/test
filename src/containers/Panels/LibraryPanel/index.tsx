@@ -182,7 +182,7 @@ const LibraryPanel: FunctionComponent = () => {
           extension,
           type: 'Model',
           assetId: newAsset.id,
-          children: animationIngredientIds,
+          childrens: animationIngredientIds,
         };
 
         draft.push(newModelNode);
@@ -198,7 +198,7 @@ const LibraryPanel: FunctionComponent = () => {
             name: ingredient.name,
             extension: '',
             type: 'Motion',
-            children: [],
+            childrens: [],
           };
 
           return motion;

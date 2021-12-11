@@ -19,7 +19,9 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import { PlaskMocapData } from 'types/common';
 import ListCurrent from './ListCurrent';
+import ListChildren from './ListChildren';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
@@ -33,11 +35,12 @@ interface Props {
   name: string;
   fileUrl?: string | File;
   filePath: string;
+  childrens: string[];
+  extension: string;
+  mocapData?: PlaskMocapData;
   onSelect?: (id: string, assetId?: string, multiple?: boolean) => void;
   selectedId: string[];
   isSelected?: boolean;
-  childrens: string[];
-  extension: string;
   onSetDragTarget: (id: string, type: LP.Node['type'], parentId: string) => void;
   dragTarget?: { id: string; type: LP.Node['type']; parentId: string };
   onCopy: () => void;
@@ -91,12 +94,12 @@ const ListNode: FunctionComponent<Props> = ({
         if (element) {
           const maxValue = maximum + 1;
 
-          if (element.children.length > 0) {
-            depthCheck(element.children, maxValue, original);
+          if (element.childrens.length > 0) {
+            depthCheck(element.childrens, maxValue, original);
           }
 
           // @TODO 6depth일때 무조건 return시켜서 빠르게 종료시켜야함
-          if (element.children.length === 0) {
+          if (element.childrens.length === 0) {
             original.push(maxValue);
           }
         }
@@ -122,18 +125,18 @@ const ListNode: FunctionComponent<Props> = ({
         changeNode.parentId = parentNode.id;
         changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
 
-        parentNode.children = parentNode.children.concat(changeNode.id);
+        parentNode.childrens = parentNode.childrens.concat(changeNode.id);
 
         node = node.concat(changeNode);
 
-        if (changeNode.children.length > 0) {
-          changeNode.children.map((child) => {
+        if (changeNode.childrens.length > 0) {
+          changeNode.childrens.map((child) => {
             memory = saveChildrensKey(memory, child);
             depthChangeKey(node, child, changeNode);
           });
         }
 
-        changeNode.children = changeNode.children.filter((key) => !memory.includes(key));
+        changeNode.childrens = changeNode.childrens.filter((key) => !memory.includes(key));
       }
     },
     [saveChildrensKey],
@@ -148,16 +151,16 @@ const ListNode: FunctionComponent<Props> = ({
       cloneChangeNode.parentId = parentNode.id;
       cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
 
-      const index = parentNode.children.indexOf(childId);
+      const index = parentNode.childrens.indexOf(childId);
 
       if (index > -1) {
-        parentNode.children.splice(index, 1);
-        parentNode.children.push(cloneChangeNode.id);
+        parentNode.childrens.splice(index, 1);
+        parentNode.childrens.push(cloneChangeNode.id);
         node.push(cloneChangeNode);
       }
 
-      if (changeNode.children.length > 0) {
-        changeNode.children.map((child) => depthAddKey(node, child, cloneChangeNode));
+      if (changeNode.childrens.length > 0) {
+        changeNode.childrens.map((child) => depthAddKey(node, child, cloneChangeNode));
       }
     }
   }, []);
@@ -311,8 +314,8 @@ const ListNode: FunctionComponent<Props> = ({
         const searchedNode = find(node, { id: currentId });
 
         if (searchedNode) {
-          searchedNode.children.forEach((child) => {
-            afterNodes = afterNodes.filter((current) => !searchedNode.children.includes(current.id));
+          searchedNode.childrens.forEach((child) => {
+            afterNodes = afterNodes.filter((current) => !searchedNode.childrens.includes(current.id));
 
             memory = deleteChild(afterNodes, [child]);
           });
@@ -459,7 +462,7 @@ const ListNode: FunctionComponent<Props> = ({
                   let isMaxDepth = false;
 
                   _lpClipboard.forEach((value) => {
-                    const max = depthCheck(value.children, 0, []) || 0;
+                    const max = depthCheck(value.childrens, 0, []) || 0;
 
                     const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
@@ -530,16 +533,16 @@ const ListNode: FunctionComponent<Props> = ({
                           cloneCopyNode.filePath = filePath + `\\${name}`;
                           cloneCopyNode.name = resultNodeName;
 
-                          targetNode.children.push(cloneCopyNode.id);
+                          targetNode.childrens.push(cloneCopyNode.id);
 
-                          if (cloneCopyNode.children.length > 0) {
-                            cloneCopyNode.children.map((child) => {
+                          if (cloneCopyNode.childrens.length > 0) {
+                            cloneCopyNode.childrens.map((child) => {
                               memory = saveChildrensKey(memory, child);
                               depthAddKey(draft, child, cloneCopyNode);
                             });
                           }
 
-                          cloneCopyNode.children = cloneCopyNode.children.filter((key) => !memory.includes(key));
+                          cloneCopyNode.childrens = cloneCopyNode.childrens.filter((key) => !memory.includes(key));
 
                           // @TODO 하위 노드도 추가
                           draft.push(cloneCopyNode);
@@ -589,10 +592,10 @@ const ListNode: FunctionComponent<Props> = ({
                         extension: extension,
                         type: 'Folder',
                         hideNode: true,
-                        children: [],
+                        childrens: [],
                       } as LP.Node;
 
-                      parent.children.push(newNode.id);
+                      parent.childrens.push(newNode.id);
 
                       draft.push(newNode);
                     }
@@ -711,7 +714,7 @@ const ListNode: FunctionComponent<Props> = ({
                       const target = find(draft, { assetId: assetId });
 
                       if (target) {
-                        target.children.push(nextAnimationIngredient.id);
+                        target.childrens.push(nextAnimationIngredient.id);
                       }
 
                       const motion: LP.Node = {
@@ -722,7 +725,7 @@ const ListNode: FunctionComponent<Props> = ({
                         name: nextAnimationIngredient.name,
                         // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
                         filePath: lpCurrentPath,
-                        children: [],
+                        childrens: [],
                         extension: '',
                         type: 'Motion',
                       };
@@ -857,7 +860,7 @@ const ListNode: FunctionComponent<Props> = ({
                       const parentModel = find(draft, { id: parentId });
 
                       if (parentModel) {
-                        parentModel.children = parentModel.children.filter((currentId) => currentId !== id);
+                        parentModel.childrens = parentModel.childrens.filter((currentId) => currentId !== id);
                       }
                     });
 
@@ -1070,10 +1073,10 @@ const ListNode: FunctionComponent<Props> = ({
         );
       };
 
-      currentRef.addEventListener('mouseup', handleSelect);
+      currentRef.addEventListener('click', handleSelect);
 
       return () => {
-        currentRef.removeEventListener('mouseup', handleSelect);
+        currentRef.removeEventListener('click', handleSelect);
       };
     }
   }, [assetId, dispatch, filePath, id, name, onContextMenuClose, onSelect]);
@@ -1085,22 +1088,14 @@ const ListNode: FunctionComponent<Props> = ({
       if (node) {
         return (
           <ListNode
-            id={node.id}
-            parentId={node.parentId}
-            type={node.type}
-            name={node.name}
-            fileUrl={node.fileUrl}
-            filePath={node.filePath}
-            extension={node.extension}
             onSelect={onSelect}
             selectedId={selectedId}
             isSelected={selectedId.includes(node.id)}
-            childrens={node.children}
-            assetId={node.assetId}
             onSetDragTarget={onSetDragTarget}
             dragTarget={dragTarget}
             onCopy={onCopy}
             onDelete={onDelete}
+            {...node}
           />
         );
       }
@@ -1141,11 +1136,11 @@ const ListNode: FunctionComponent<Props> = ({
               name: type === 'Model' ? `${name}.${extension}` : name,
               type: type,
               extension: extension,
-              children: childrens,
+              childrens: childrens,
             };
 
-            if (newNode.children.length > 0) {
-              newNode.children.forEach((child) => depthChangeKey(draft, child, newNode));
+            if (newNode.childrens.length > 0) {
+              newNode.childrens.forEach((child) => depthChangeKey(draft, child, newNode));
             }
 
             draft[targetIndex] = newNode;
@@ -1211,11 +1206,11 @@ const ListNode: FunctionComponent<Props> = ({
                 name: type === 'Model' ? `${name}.${extension}` : name,
                 type: type,
                 extension: extension,
-                children: childrens,
+                childrens: childrens,
               };
 
-              if (newNode.children.length > 0) {
-                newNode.children.map((child) => depthChangeKey(draft, child, newNode));
+              if (newNode.childrens.length > 0) {
+                newNode.childrens.map((child) => depthChangeKey(draft, child, newNode));
               }
 
               draft[targetIndex] = newNode;
@@ -1316,13 +1311,13 @@ const ListNode: FunctionComponent<Props> = ({
                       // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
                       cloneDragNode.filePath = filePath + `\\${name}`;
 
-                      targetNode.children.push(cloneDragNode.id);
+                      targetNode.childrens.push(cloneDragNode.id);
 
                       // @TODO 하위 노드도 추가
                       draft.push(cloneDragNode);
 
-                      if (cloneDragNode.children.length > 0) {
-                        cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                      if (cloneDragNode.childrens.length > 0) {
+                        cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
                       }
                     }
                   });
@@ -1390,13 +1385,13 @@ const ListNode: FunctionComponent<Props> = ({
                   cloneDragNode.filePath = filePath + `\\${name}`;
                   cloneDragNode.name = nodeName;
 
-                  targetNode.children.push(cloneDragNode.id);
+                  targetNode.childrens.push(cloneDragNode.id);
 
                   // @TODO 하위 노드도 추가
                   draft.push(cloneDragNode);
 
-                  if (cloneDragNode.children.length > 0) {
-                    cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                  if (cloneDragNode.childrens.length > 0) {
+                    cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
                   }
                 }
               });
@@ -1433,7 +1428,7 @@ const ListNode: FunctionComponent<Props> = ({
         const cloneDragNode = cloneDeep(dragNode);
 
         if (cloneDragNode) {
-          const max = depthCheck(cloneDragNode.children, 0, []) || 0;
+          const max = depthCheck(cloneDragNode.childrens, 0, []) || 0;
 
           const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
@@ -1475,17 +1470,17 @@ const ListNode: FunctionComponent<Props> = ({
                 cloneDragNode.parentId = id;
                 cloneDragNode.filePath = filePath + `\\${name}`;
 
-                const nextChildren = targetNode.children.filter((current) => current !== duplicatedTarget[0].id);
+                const nextChildren = targetNode.childrens.filter((current) => current !== duplicatedTarget[0].id);
 
                 nextChildren.push(clondDragNodeId);
 
-                targetNode.children = nextChildren;
+                targetNode.childrens = nextChildren;
 
                 // @TODO 하위 노드도 추가
                 draft.push(cloneDragNode);
 
-                if (cloneDragNode.children.length > 0) {
-                  cloneDragNode.children.map((child) => depthChangeKey(filterNodes, child, cloneDragNode));
+                if (cloneDragNode.childrens.length > 0) {
+                  cloneDragNode.childrens.map((child) => depthChangeKey(filterNodes, child, cloneDragNode));
                 }
               }
             });
@@ -1530,10 +1525,10 @@ const ListNode: FunctionComponent<Props> = ({
               cloneDragNode.filePath = filePath + `\\${name}`;
               cloneDragNode.name = nodeName;
 
-              targetNode.children.push(cloneDragNode.id);
+              targetNode.childrens.push(cloneDragNode.id);
 
-              if (cloneDragNode.children.length > 0) {
-                cloneDragNode.children.map((child) => depthChangeKey(draft, child, cloneDragNode));
+              if (cloneDragNode.childrens.length > 0) {
+                cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
               }
 
               // @TODO 하위 노드도 추가
@@ -1648,6 +1643,7 @@ const ListNode: FunctionComponent<Props> = ({
                 <Fragment key={id}>{renderChildren(id)}</Fragment>
               ))}
             </div>
+            // <ListChildren items={childrens} />
           )}
         </div>
       </div>

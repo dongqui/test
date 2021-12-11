@@ -64,18 +64,18 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
         // remove(parentNode.children, (child) => child === childId);
 
-        parentNode.children.push(cloneChangeNode.id);
+        parentNode.childrens.push(cloneChangeNode.id);
 
         node.push(cloneChangeNode);
 
-        if (cloneChangeNode.children.length > 0) {
-          cloneChangeNode.children.map((child) => {
+        if (cloneChangeNode.childrens.length > 0) {
+          cloneChangeNode.childrens.map((child) => {
             memory = saveChildrensKey(memory, child);
             handleDepthChange(node, child, cloneChangeNode);
           });
         }
 
-        cloneChangeNode.children = cloneChangeNode.children.filter((key) => !memory.includes(key));
+        cloneChangeNode.childrens = cloneChangeNode.childrens.filter((key) => !memory.includes(key));
       }
     },
     [saveChildrensKey],
@@ -83,6 +83,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
   const handlePaste = useCallback(() => {
     let nextLPNodes = cloneDeep(lpNode);
+    console.log('??LP_PASTE');
 
     _lpClipboard.forEach((value) => {
       const cloneCopyNode = cloneDeep(value);
@@ -129,19 +130,21 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
           draft.push(cloneCopyNode);
 
-          if (cloneCopyNode.children.length > 0) {
-            cloneCopyNode.children.map((child) => {
+          if (cloneCopyNode.childrens.length > 0) {
+            cloneCopyNode.childrens.map((child) => {
               memory = saveChildrensKey(memory, child);
               handleDepthChange(draft, child, cloneCopyNode);
             });
           }
 
-          cloneCopyNode.children = cloneCopyNode.children.filter((key) => !memory.includes(key));
+          cloneCopyNode.childrens = cloneCopyNode.childrens.filter((key) => !memory.includes(key));
         });
 
         nextLPNodes = nextNodes;
       }
     });
+
+    console.log(nextLPNodes);
 
     dispatch(
       lpNodeActions.changeNode({
@@ -165,7 +168,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         name: nodeName,
         extension: '',
         type: 'Folder',
-        children: [],
+        childrens: [],
       } as LP.Node;
 
       draft.push(newNode);
@@ -323,13 +326,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         const selectedNode = find(lpNode, { id: current });
 
         if (selectedNode) {
-          if (selectedNode.children.length > 0) {
-            const tempIds = nextIds.filter((currentId) => !selectedNode.children.includes(currentId));
+          if (selectedNode.childrens.length > 0) {
+            const tempIds = nextIds.filter((currentId) => !selectedNode.childrens.includes(currentId));
             resultSelectedId = tempIds;
             return;
           }
 
-          if (selectedNode.children.length === 0) {
+          if (selectedNode.childrens.length === 0) {
             resultSelectedId.push(current);
           }
         }
@@ -341,13 +344,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         const selectedNode = find(lpNode, { assetId: current });
 
         if (selectedNode) {
-          if (selectedNode.children.length > 0) {
-            const tempAssetIds = nextAssetIds.filter((currentId) => !selectedNode.children.includes(currentId));
+          if (selectedNode.childrens.length > 0) {
+            const tempAssetIds = nextAssetIds.filter((currentId) => !selectedNode.childrens.includes(currentId));
             resultSelectedAssetId = tempAssetIds;
             return;
           }
 
-          if (selectedNode.children.length === 0) {
+          if (selectedNode.childrens.length === 0) {
             resultSelectedAssetId.push(current);
           }
         }
@@ -451,8 +454,8 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         const searchedNode = find(node, { id: currentId });
 
         if (searchedNode) {
-          searchedNode.children.forEach((child) => {
-            afterNodes = afterNodes.filter((current) => !searchedNode.children.includes(current.id));
+          searchedNode.childrens.forEach((child) => {
+            afterNodes = afterNodes.filter((current) => !searchedNode.childrens.includes(current.id));
 
             memory = deleteChild(afterNodes, [child]);
           });
@@ -534,7 +537,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
               selectedId={selectedId}
               onSetDragTarget={handleSetDragTarget}
               dragTarget={dragTarget}
-              childrens={node.children}
               onCopy={handleCopy}
               onDelete={handleDelete}
               {...node}
