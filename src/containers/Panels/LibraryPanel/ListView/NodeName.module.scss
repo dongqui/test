@@ -1,12 +1,5 @@
 @import 'styles/libraries/_mixins';
 
-.column {
-  display: flex;
-  flex-grow: 0;
-  flex-shrink: 0;
-  width: 7px;
-}
-
 .input {
   display: flex;
   align-items: center;

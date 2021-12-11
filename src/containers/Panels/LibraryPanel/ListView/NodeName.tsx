@@ -26,7 +26,6 @@ const NodeName: FunctionComponent<Props> = ({ innerRef, isRenaming, name, defaul
   if (isRenaming) {
     return (
       <Fragment>
-        <div className={cx('column')} />
         <BaseInput className={cx('input')} ref={innerRef} placeholder={name} type="text" onBlur={onBlur} onKeyDown={onKeyDown} defaultValue={defaultValue} autoFocus />
       </Fragment>
     );
@@ -34,7 +33,6 @@ const NodeName: FunctionComponent<Props> = ({ innerRef, isRenaming, name, defaul
 
   return (
     <Fragment>
-      <div className={cx('column')} />
       <div className={cx('name')}>{name}</div>
     </Fragment>
   );
