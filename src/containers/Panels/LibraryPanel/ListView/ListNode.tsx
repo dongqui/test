@@ -119,8 +119,8 @@ const ListNode: FunctionComponent<Props> = ({
   }, []);
 
   const depthChangeKey = useCallback(
-    (node: LP.Node[], childID: string, parentNode: LP.Node) => {
-      const changeNode = find(node, { id: childID });
+    (node: LP.Node[], childId: string, parentNode: LP.Node) => {
+      const changeNode = find(node, { id: childId });
       let memory: string[] = [];
 
       if (changeNode) {
@@ -438,14 +438,6 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'Delete',
                 onClick: () => {
                   handleDelete(id);
-                  // const cloneLPNode = cloneDeep(lpNode);
-                  // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
-
-                  // dispatch(
-                  //   lpNodeActions.changeNode({
-                  //     nodes: afterNodes,
-                  //   }),
-                  // );
                 },
                 children: [],
               },
@@ -541,7 +533,7 @@ const ListNode: FunctionComponent<Props> = ({
                         if (targetNode) {
                           cloneCopyNode.id = uuid();
                           cloneCopyNode.parentId = id;
-                          cloneCopyNode.filePath = filePath + `\\${resultNodeName}`;
+                          cloneCopyNode.filePath = filePath + `\\${name}`;
                           cloneCopyNode.name = resultNodeName;
 
                           targetNode.children.push(cloneCopyNode.id);
@@ -549,7 +541,7 @@ const ListNode: FunctionComponent<Props> = ({
                           if (cloneCopyNode.children.length > 0) {
                             cloneCopyNode.children.map((child) => {
                               memory = saveChildrensKey(memory, child);
-                              depthChangeKey(draft, child, cloneCopyNode);
+                              depthAddKey(draft, child, cloneCopyNode);
                             });
                           }
 
@@ -1063,6 +1055,7 @@ const ListNode: FunctionComponent<Props> = ({
     saveChildrensKey,
     selectedId,
     type,
+    depthAddKey,
   ]);
 
   useEffect(() => {
