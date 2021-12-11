@@ -6,7 +6,7 @@ import styles from './NodeIcon.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
-  icon: LP.Node['type'];
+  icon: LP.NodeType;
 }
 
 const NodeIcon: FunctionComponent<Props> = ({ icon }) => {

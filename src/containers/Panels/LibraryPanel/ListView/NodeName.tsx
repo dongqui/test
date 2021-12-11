@@ -7,23 +7,23 @@ const cx = classNames.bind(styles);
 
 interface Props {
   innerRef: RefObject<HTMLInputElement>;
-  isRenaming: boolean;
+  isEditing?: boolean;
   name: string;
   onBlur: (event: FocusEvent<HTMLInputElement>) => void;
   onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
   defaultValue: string;
 }
 
-const NodeName: FunctionComponent<Props> = ({ innerRef, isRenaming, name, defaultValue, onBlur, onKeyDown }) => {
+const NodeName: FunctionComponent<Props> = ({ innerRef, isEditing, name, defaultValue, onBlur, onKeyDown }) => {
   useEffect(() => {
-    if (isRenaming) {
+    if (isEditing) {
       if (innerRef && innerRef.current) {
         innerRef.current.select();
       }
     }
-  }, [innerRef, isRenaming]);
+  }, [innerRef, isEditing]);
 
-  if (isRenaming) {
+  if (isEditing) {
     return (
       <Fragment>
         <BaseInput className={cx('input')} ref={innerRef} placeholder={name} type="text" onBlur={onBlur} onKeyDown={onKeyDown} defaultValue={defaultValue} autoFocus />

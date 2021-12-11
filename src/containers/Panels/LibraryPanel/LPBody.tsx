@@ -9,6 +9,7 @@ import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { DragBox } from 'components/DragBox';
 import { v4 as uuid } from 'uuid';
+import * as LPCONSTANTS from 'constants/LibraryPanel';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -528,7 +529,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         {rootPathNode.map((node, i) => (
           <div className={cx('node-row')} ref={nodeRef[i]} key={node.id}>
             <ListNode
-              selectableId="node-selectable"
               isSelected={selectedId.includes(node.id)}
               onSelect={handleSelect}
               selectedId={selectedId}
@@ -541,7 +541,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
             />
           </div>
         ))}
-        <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId="node-selectable" selectedId="node-selected" />
+        <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} />
       </div>
     </HotKeys>
   );

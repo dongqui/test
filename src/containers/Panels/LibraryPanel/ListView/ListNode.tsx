@@ -19,16 +19,13 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import ArrowButton from './ArrowButton';
-import NodeIcon from './NodeIcon';
-import NodeName from './NodeName';
+import ListCurrent from './ListCurrent';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
 const cx = classNames.bind(styles);
 
 interface Props {
-  selectableId: string;
   id: string;
   assetId?: string;
   parentId: string;
@@ -48,7 +45,6 @@ interface Props {
 }
 
 const ListNode: FunctionComponent<Props> = ({
-  selectableId,
   type,
   name,
   filePath,
@@ -77,8 +73,6 @@ const ListNode: FunctionComponent<Props> = ({
 
   const _lpNode = useSelector((state) => state.lpNode.node);
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
-
-  const [showsChildrens, setShowsChildrens] = useState(false);
 
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
 
@@ -1091,7 +1085,6 @@ const ListNode: FunctionComponent<Props> = ({
       if (node) {
         return (
           <ListNode
-            selectableId={selectableId}
             id={node.id}
             parentId={node.parentId}
             type={node.type}
@@ -1112,7 +1105,7 @@ const ListNode: FunctionComponent<Props> = ({
         );
       }
     },
-    [_lpNode, dragTarget, onCopy, onDelete, onSelect, onSetDragTarget, selectableId, selectedId],
+    [_lpNode, dragTarget, onCopy, onDelete, onSelect, onSetDragTarget, selectedId],
   );
 
   const handleBlur = useCallback(
@@ -1619,32 +1612,36 @@ const ListNode: FunctionComponent<Props> = ({
     [handleVisualization],
   );
 
+  const [showsChildrens, setShowsChildrens] = useState(false);
+
   const handleArrowClick = useCallback(() => {
     setShowsChildrens(!showsChildrens);
   }, [showsChildrens]);
-
-  const [isHover, setIsHover] = useState(false);
 
   // 모델이며, 비주얼라이즈 되어있으며, 오픈되어있지 않는 경우
   const isVisualized = assetId && _visualizedAssetIds.includes(assetId);
 
   const classes = cx('outer', { selected: isSelected });
   const innerClasses = cx('inner', { visualized: isVisualized });
-  const wrapperClasses = cx('row', { hovered: isHover });
 
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
       <div className={classes} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
         <div className={cx('inner')}>
-          <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
-            <div className={cx('column')} />
-            <ArrowButton isOpen={showsChildrens} hidden={type === 'Motion'} onClick={handleArrowClick} />
-            <div className={cx('contents')}>
-              <NodeIcon icon={type} />
-              <div className={cx('column')} />
-              <NodeName innerRef={renameRef} isRenaming={isEditing} name={name} onBlur={handleBlur} onKeyDown={handleKeydown} defaultValue={fileName} />
-            </div>
-          </div>
+          <ListCurrent
+            id={id}
+            assetId={assetId}
+            type={type}
+            name={name}
+            depth={depth}
+            isEditing={isEditing}
+            wrapperRef={wrapperRef}
+            renameRef={renameRef}
+            onClick={handleArrowClick}
+            onBlur={handleBlur}
+            onKeyDown={handleKeydown}
+            defaultValue={fileName}
+          />
           {showsChildrens && (
             <div className="ListNode_children">
               {childrens.map((id) => (
