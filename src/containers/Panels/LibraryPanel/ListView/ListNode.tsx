@@ -40,9 +40,8 @@ interface Props {
   mocapData?: PlaskMocapData;
   onSelect?: (id: string, assetId?: string, multiple?: boolean) => void;
   selectedId: string[];
-  isSelected?: boolean;
-  onSetDragTarget: (id: string, type: LP.Node['type'], parentId: string) => void;
-  dragTarget?: { id: string; type: LP.Node['type']; parentId: string };
+  onSetDragTarget: (id: string, type: LP.NodeType, parentId: string) => void;
+  dragTarget?: { id: string; type: LP.NodeType; parentId: string };
   onCopy: () => void;
   onDelete: () => void;
 }
@@ -55,7 +54,6 @@ const ListNode: FunctionComponent<Props> = ({
   assetId,
   parentId,
   onSelect,
-  isSelected,
   childrens,
   extension,
   selectedId,
@@ -1081,28 +1079,6 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, [assetId, dispatch, filePath, id, name, onContextMenuClose, onSelect]);
 
-  const renderChildren = useCallback(
-    (paramId: any) => {
-      const node = find(_lpNode, { id: paramId });
-
-      if (node) {
-        return (
-          <ListNode
-            onSelect={onSelect}
-            selectedId={selectedId}
-            isSelected={selectedId.includes(node.id)}
-            onSetDragTarget={onSetDragTarget}
-            dragTarget={dragTarget}
-            onCopy={onCopy}
-            onDelete={onDelete}
-            {...node}
-          />
-        );
-      }
-    },
-    [_lpNode, dragTarget, onCopy, onDelete, onSelect, onSetDragTarget, selectedId],
-  );
-
   const handleBlur = useCallback(
     async (event: FocusEvent<HTMLInputElement>) => {
       const text = event.currentTarget.value || name;
@@ -1616,7 +1592,7 @@ const ListNode: FunctionComponent<Props> = ({
   // 모델이며, 비주얼라이즈 되어있으며, 오픈되어있지 않는 경우
   const isVisualized = assetId && _visualizedAssetIds.includes(assetId);
 
-  const classes = cx('outer', { selected: isSelected });
+  const classes = cx('outer', { selected: selectedId.includes(id) });
   const innerClasses = cx('inner', { visualized: isVisualized });
 
   return (
@@ -1638,12 +1614,15 @@ const ListNode: FunctionComponent<Props> = ({
             defaultValue={fileName}
           />
           {showsChildrens && (
-            <div className="ListNode_children">
-              {childrens.map((id) => (
-                <Fragment key={id}>{renderChildren(id)}</Fragment>
-              ))}
-            </div>
-            // <ListChildren items={childrens} />
+            <ListChildren
+              items={childrens}
+              onSelect={onSelect}
+              selectedId={selectedId}
+              onSetDragTarget={onSetDragTarget}
+              dragTarget={dragTarget}
+              onCopy={onCopy}
+              onDelete={onDelete}
+            />
           )}
         </div>
       </div>

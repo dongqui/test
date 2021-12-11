@@ -143,8 +143,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       }
     });
 
-    console.log(nextLPNodes);
-
     dispatch(
       lpNodeActions.changeNode({
         nodes: nextLPNodes,
@@ -531,7 +529,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         {rootPathNode.map((node, i) => (
           <div className={cx('node-row')} ref={nodeRef[i]} key={node.id}>
             <ListNode
-              isSelected={selectedId.includes(node.id)}
               onSelect={handleSelect}
               selectedId={selectedId}
               onSetDragTarget={handleSetDragTarget}
