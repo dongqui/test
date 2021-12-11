@@ -8,10 +8,9 @@ const cx = classNames.bind(styles);
 interface Props {
   isOpen?: boolean;
   hidden?: boolean;
-  onClick: () => void;
 }
 
-const ArrowButton = forwardRef<HTMLDivElement, Props>(({ isOpen, hidden, onClick }, ref) => {
+const ArrowButton = forwardRef<HTMLDivElement, Props>(({ isOpen, hidden }, ref) => {
   const icon = isOpen ? SvgPath.ArrowOpen : SvgPath.ArrowClose;
   const shows = !hidden;
 
@@ -19,7 +18,7 @@ const ArrowButton = forwardRef<HTMLDivElement, Props>(({ isOpen, hidden, onClick
     <Fragment>
       {shows && (
         <div className={cx('wrapper')} ref={ref}>
-          <IconWrapper className={cx('icon')} icon={icon} onClick={onClick} />
+          <IconWrapper className={cx('icon')} icon={icon} />
         </div>
       )}
     </Fragment>
