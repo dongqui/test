@@ -1570,12 +1570,44 @@ const ListNode: FunctionComponent<Props> = ({
     setShowsChildrens(!showsChildrens);
   }, [showsChildrens]);
 
-  // 모델이며, 비주얼라이즈 되어있으며, 오픈되어있지 않는 경우
-  const isVisualized = assetId && _visualizedAssetIds.includes(assetId);
+  /**
+   * @TODO 아래의 코드는 clicked, visualized 스타일을 자식 노드를 포함하여 정의, 코드 개선이 필요
+   */
+  const currentVisualizedNode = _lpNode.find((node) => node.assetId && _visualizedAssetIds.includes(node.assetId) && node.type === 'Model');
+
+  const currentVisualizedNodePath = (currentVisualizedNode?.filePath + `\\${currentVisualizedNode?.name}`).split('\\').filter((text) => !!text);
+  const currentNodePath = (filePath + `\\${name}`).split('\\').filter((text) => !!text);
+
+  let hasCurrentVisualizedNode = false;
+  currentNodePath.forEach((path, i) => {
+    if (path === currentVisualizedNodePath[i]) {
+      hasCurrentVisualizedNode = true;
+    } else {
+      hasCurrentVisualizedNode = false;
+    }
+  });
+
+  if (currentVisualizedNode) {
+  }
+  const currentVisualizedMotion = _animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current);
+
+  const isOpenVisualized = showsChildrens && hasCurrentVisualizedNode;
+
+  const isCloseVisualized =
+    type === 'Motion'
+      ? assetId && currentVisualizedMotion[0]?.assetId === assetId && currentVisualizedMotion[0]?.name === name
+      : type === 'Model'
+      ? !showsChildrens && assetId && _visualizedAssetIds.includes(assetId)
+      : !showsChildrens && hasCurrentVisualizedNode;
+  // style code END
+
   const textRef = useRef<HTMLDivElement>(null);
 
-  const classes = cx('outer', { selected: isSelected });
-  const innerClasses = cx('inner', { visualized: isVisualized });
+  const classes = cx('inner', {
+    'open-visualized': isOpenVisualized,
+    'close-visualized': isCloseVisualized,
+    selected: isSelected,
+  });
 
   useEffect(() => {
     const currentRef = outerRef && outerRef.current;
@@ -1609,8 +1641,8 @@ const ListNode: FunctionComponent<Props> = ({
 
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
-      <div className={classes} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
-        <div className={cx('inner')}>
+      <div className={cx('outer')} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
+        <div className={classes} id="inner">
           <ListCurrent
             id={id}
             assetId={assetId}
