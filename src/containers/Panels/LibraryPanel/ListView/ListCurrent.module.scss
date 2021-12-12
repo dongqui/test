@@ -1,10 +1,12 @@
 .wrapper {
   display: flex;
   align-items: stretch;
-  width: calc(100% - 12px);
+  // width: calc(100% - 12px);
+  width: 100%;
   border: 1px solid transparent;
+  padding-right: 7px;
 
-  &.hovered {
+  &:hover {
     border: 1px solid #0f88ff;
   }
 }
