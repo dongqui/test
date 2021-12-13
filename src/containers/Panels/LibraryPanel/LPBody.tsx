@@ -6,6 +6,7 @@ import { useSelector } from 'reducers';
 import { HotKeys } from 'react-hotkeys';
 import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { DragBox } from 'components/DragBox';
 import { v4 as uuid } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -38,32 +39,47 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const [nodeRef, setNodeRef] = useState<RefObject<HTMLDivElement>[]>([]);
 
   const { onContextMenuOpen } = useContextMenu();
+  const { getConfirm } = useBaseModal();
 
   useEffect(() => {
     setNodeRef(Array.from({ length: lpNode.length }).map(() => createRef()));
   }, [lpNode.length]);
 
-  const handleDepthChange = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
-    const changeNode = find(node, { id: childId });
-
-    if (changeNode) {
-      const cloneChangeNode = cloneDeep(changeNode);
-
-      cloneChangeNode.id = uuid();
-      cloneChangeNode.parentId = parentNode.id;
-      cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
-
-      remove(parentNode.children, (child) => child === childId);
-
-      parentNode.children.push(cloneChangeNode.id);
-
-      node.push(cloneChangeNode);
-
-      if (cloneChangeNode.children.length > 0) {
-        cloneChangeNode.children.map((child) => handleDepthChange(node, child, cloneChangeNode));
-      }
-    }
+  const saveChildrensKey = useCallback((before: string[], key: string) => {
+    const result = before.concat(key);
+    return result;
   }, []);
+
+  const handleDepthChange = useCallback(
+    (node: LP.Node[], childId: string, parentNode: LP.Node) => {
+      const changeNode = find(node, { id: childId });
+      let memory: string[] = [];
+
+      if (changeNode) {
+        const cloneChangeNode = cloneDeep(changeNode);
+
+        cloneChangeNode.id = uuid();
+        cloneChangeNode.parentId = parentNode.id;
+        cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+
+        // remove(parentNode.children, (child) => child === childId);
+
+        parentNode.children.push(cloneChangeNode.id);
+
+        node.push(cloneChangeNode);
+
+        if (cloneChangeNode.children.length > 0) {
+          cloneChangeNode.children.map((child) => {
+            memory = saveChildrensKey(memory, child);
+            handleDepthChange(node, child, cloneChangeNode);
+          });
+        }
+
+        cloneChangeNode.children = cloneChangeNode.children.filter((key) => !memory.includes(key));
+      }
+    },
+    [saveChildrensKey],
+  );
 
   const handlePaste = useCallback(() => {
     let nextLPNodes = cloneDeep(lpNode);
@@ -77,6 +93,8 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       const compareTargetName = cloneCopyNode.type === 'Model' ? fileName : cloneCopyNode.name;
 
       if (cloneCopyNode) {
+        let memory: string[] = [];
+
         const currentPathNodeName = lpNode
           .filter((node) => {
             if (node.parentId === '__root__') {
@@ -112,8 +130,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
           draft.push(cloneCopyNode);
 
           if (cloneCopyNode.children.length > 0) {
-            cloneCopyNode.children.map((child) => handleDepthChange(draft, child, cloneCopyNode));
+            cloneCopyNode.children.map((child) => {
+              memory = saveChildrensKey(memory, child);
+              handleDepthChange(draft, child, cloneCopyNode);
+            });
           }
+
+          cloneCopyNode.children = cloneCopyNode.children.filter((key) => !memory.includes(key));
         });
 
         nextLPNodes = nextNodes;
@@ -125,7 +148,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         nodes: nextLPNodes,
       }),
     );
-  }, [_lpClipboard, dispatch, handleDepthChange, lpNode]);
+  }, [_lpClipboard, dispatch, handleDepthChange, lpNode, saveChildrensKey]);
 
   const handleCreateDirectory = useCallback(() => {
     const currentPathNodeNames = lpNode.filter((node) => node.parentId === '__root__' && node.name.includes('Untitled')).map((filteredNode) => filteredNode.name);
@@ -434,8 +457,44 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     );
   }, [dispatch, lpNode, selectedId]);
 
-  const handleDelete = useCallback(() => {
-    const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+  const deleteChild = useCallback((node: LP.Node[], ids: string[]) => {
+    let memory: LP.Node[] = [];
+
+    let afterNodes = node.filter((current) => !ids.includes(current.id));
+
+    if (ids.length > 0) {
+      ids.forEach((currentId) => {
+        const searchedNode = find(node, { id: currentId });
+
+        if (searchedNode) {
+          searchedNode.children.forEach((child) => {
+            afterNodes = afterNodes.filter((current) => !searchedNode.children.includes(current.id));
+
+            memory = deleteChild(afterNodes, [child]);
+          });
+        }
+
+        memory = afterNodes;
+      });
+      return memory;
+    } else {
+      return node;
+    }
+  }, []);
+
+  const handleDelete = useCallback(async () => {
+    const confirmed = await getConfirm({
+      title: 'Confirm',
+      message: 'Are you sure you want to delete the file?',
+      confirmText: '확인',
+      cancelText: '취소',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    const afterNodes = deleteChild(lpNode, selectedId);
 
     dispatch(
       lpNodeActions.changeNode({
@@ -466,7 +525,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
       });
     }
-  }, [assetList, dispatch, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
+  }, [assetList, deleteChild, dispatch, getConfirm, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
 
   const handlers = {
     LP_COPY: handleCopy,

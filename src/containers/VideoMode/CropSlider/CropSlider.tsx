@@ -11,18 +11,39 @@ interface Props {
   duration: number;
   currentVideoTime: number;
   indicatorPosition: number;
+  isIndicatorClicked: boolean;
   handleTimeline: (e: any) => void;
+  handleMouseDown: (e: any) => void;
+  handleMouseUp: (e: any) => void;
+  handleMouseMove: (e: any, parentNodeWidth: number) => void;
   videoRef: RefObject<HTMLVideoElement>;
+  thumbnailWrapRef: RefObject<HTMLDivElement>;
   onChange: Function;
   children: ReactNode;
 }
 
-export const CropSlider: FunctionComponent<Props> = ({ start, end, duration, currentVideoTime, indicatorPosition, handleTimeline, videoRef, onChange, children }) => {
+export const CropSlider: FunctionComponent<Props> = ({
+  start,
+  end,
+  duration,
+  currentVideoTime,
+  indicatorPosition,
+  isIndicatorClicked,
+  handleTimeline,
+  handleMouseDown,
+  handleMouseMove,
+  handleMouseUp,
+  videoRef,
+  thumbnailWrapRef,
+  onChange,
+  children,
+}) => {
   const [startValue, setStartValue] = useState(start);
   const [endValue, setEndValue] = useState(end);
 
   const cropRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLInputElement>(null);
+  const indicatorRef = useRef<HTMLSpanElement>(null);
   const startRef = useRef(start);
   const endRef = useRef(end);
 
@@ -75,6 +96,10 @@ export const CropSlider: FunctionComponent<Props> = ({ start, end, duration, cur
     onChange({ start: startValue, end: endValue });
   }, [startValue, endValue, onChange]);
 
+  useEffect(() => {
+    indicatorRef.current!.style.left = indicatorPosition + '%';
+  }, [indicatorPosition]);
+
   return (
     <Fragment>
       <input id="left" type="range" min={start} max={end} step={0.001} value={startValue} onChange={handleSlider} className={cx('thumb', 'thumb-left')} />
@@ -82,11 +107,21 @@ export const CropSlider: FunctionComponent<Props> = ({ start, end, duration, cur
       <div className={cx('slider')}>
         <div className={cx('slider-track')}></div>
         <div ref={cropRef} className={cx('slider-range')}></div>
-        <span className={cx('slider-time-indicator')} style={{ marginLeft: indicatorPosition + '%' }}>
+        <span
+          className={cx('slider-time-indicator', 'no-select')}
+          onMouseDown={handleMouseDown}
+          onMouseMove={(e) => {
+            if (isIndicatorClicked) {
+              handleMouseMove(e, thumbnailWrapRef.current!.getBoundingClientRect().width);
+            }
+          }}
+          onMouseUp={handleMouseUp}
+          ref={indicatorRef}
+        >
           {Math.round(currentVideoTime * 10) / 10}
         </span>
         <input
-          className={cx('slider-time')}
+          className={cx('slider-time', 'no-select')}
           id="scrubber"
           type="range"
           min="0"

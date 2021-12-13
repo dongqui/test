@@ -51,6 +51,12 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
         });
       }
     }
+    case 'animationDataAction/ADD_ANIMATION_INGREDIENTS': {
+      // 단일 추가와는 달리 current에 대한 핸들링 해주지 않음 -> action 호출 시 인자로 넘겨주는 animationIngredients들의 current를 그대로 사용
+      return Object.assign({}, state, {
+        animationIngredients: [...state.animationIngredients, ...action.payload.animationIngredients],
+      });
+    }
     case 'animationDataAction/EDIT_ANIMATION_INGREDIENT': {
       return Object.assign({}, state, {
         animationIngredients: state.animationIngredients.map((anim) => (anim.id === action.payload.animationIngredient.id ? action.payload.animationIngredient : anim)),
@@ -79,6 +85,20 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
     case 'animationDataAction/REMOVE_ANIMATION_INGREDIENT': {
       return Object.assign({}, state, {
         animationIngredients: state.animationIngredients.filter((anim) => anim.id !== action.payload.animationIngredientId),
+      });
+    }
+    case 'animationDataAction/TOGGLE_LAYER_MUTENESS': {
+      return Object.assign({}, state, {
+        animationIngredients: state.animationIngredients.map((animaitonIngredient) => {
+          if (animaitonIngredient.id === action.payload.animationIngredientId) {
+            return {
+              ...animaitonIngredient,
+              tracks: animaitonIngredient.tracks.map((track) => (track.layerId === action.payload.layerId ? { ...track, isIncluded: !track.isIncluded } : track)),
+            };
+          } else {
+            return animaitonIngredient;
+          }
+        }),
       });
     }
     case 'animationDataAction/ASSIGN_BONE_MAPPING': {
