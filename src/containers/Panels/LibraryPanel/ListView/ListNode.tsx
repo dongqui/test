@@ -15,7 +15,9 @@ import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove, checkPast
 import { getRetargetedMocapData } from 'utils/LP/Retarget';
 import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
+import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as cpActions from 'actions/CP/cpModeSelection';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
@@ -1323,6 +1325,11 @@ const ListNode: FunctionComponent<Props> = ({
 
           // @TODO 없으면 비활성 처리 필요
           if (cloneDragNode && dropNode && targetAsset && targetRetargetMap) {
+            onModalOpen({
+              title: 'Waiting',
+              message: TEXT.WAITING_03,
+            });
+
             try {
               const mocapAnimationIngredient = await getRetargetedMocapData(
                 dropNode.assetId!,
@@ -1388,7 +1395,28 @@ const ListNode: FunctionComponent<Props> = ({
                   animationIngredientId: mocapAnimationIngredient.id,
                 }),
               );
+
+              onModalClose();
             } catch (error) {}
+          } else {
+            const confirmed = await getConfirm({
+              title: 'Confirm',
+              message: TEXT.CONFIRM_04,
+              confirmText: '확인',
+              cancelText: '취소',
+            });
+
+            if (confirmed) {
+              handleVisualization();
+
+              dispatch(
+                cpActions.changeMode({
+                  mode: 'Retargeting',
+                }),
+              );
+            }
+
+            onModalClose();
           }
         }
       }
@@ -1532,8 +1560,10 @@ const ListNode: FunctionComponent<Props> = ({
       dragTarget?.type,
       filePath,
       getConfirm,
+      handleVisualization,
       id,
       name,
+      onModalClose,
       onModalOpen,
       parentId,
       type,
