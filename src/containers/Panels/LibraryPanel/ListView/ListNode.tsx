@@ -529,40 +529,39 @@ const ListNode: FunctionComponent<Props> = ({
                       // asset
                       let nextAssetId = '';
 
-                      if (copyNode.type === 'Model') {
-                        const findAsset = find(_assetList, { id: copyNode.assetId });
-                        const findIngredients = filter(_animationIngredients, { assetId: copyNode.assetId });
+                      // if (copyNode.type === 'Model') {
+                      //   const findAsset = find(_assetList, { id: copyNode.assetId });
+                      //   const findIngredients = filter(_animationIngredients, { assetId: copyNode.assetId });
 
-                        if (findAsset) {
-                          const cloneFindAsset = cloneDeep(findAsset);
-                          cloneFindAsset.id = uuid();
-                          cloneFindAsset.name = resultNodeName;
+                      //   if (findAsset) {
+                      //     const cloneFindAsset = cloneDeep(findAsset);
+                      //     cloneFindAsset.id = uuid();
+                      //     cloneFindAsset.name = resultNodeName;
 
-                          const cloneFindIngredients = cloneDeep(findIngredients);
-                          cloneFindIngredients.forEach((ingredient) => {
-                            ingredient.id = uuid();
-                            ingredient.assetId = cloneFindAsset.id;
-                          });
+                      //     const cloneFindIngredients = cloneDeep(findIngredients);
+                      //     cloneFindIngredients.forEach((ingredient) => {
+                      //       ingredient.id = uuid();
+                      //       ingredient.assetId = cloneFindAsset.id;
+                      //     });
 
-                          cloneFindAsset.animationIngredientIds = cloneFindIngredients.map((ingredient) => ingredient.id);
-                          const test = cloneFindIngredients.map((ingredient) => ingredient.id);
-                          console.log(test);
+                      //     const ingredientIds = cloneFindIngredients.map((ingredient) => ingredient.id);
+                      //     cloneFindAsset.animationIngredientIds = ingredientIds;
 
-                          nextAssetId = cloneFindAsset.id;
+                      //     nextAssetId = cloneFindAsset.id;
 
-                          dispatch(
-                            plaskProjectActions.addAsset({
-                              asset: cloneFindAsset,
-                            }),
-                          );
+                      //     dispatch(
+                      //       plaskProjectActions.addAsset({
+                      //         asset: cloneFindAsset,
+                      //       }),
+                      //     );
 
-                          dispatch(
-                            animationDataActions.addAnimationIngredients({
-                              animationIngredients: cloneFindIngredients,
-                            }),
-                          );
-                        }
-                      }
+                      //     dispatch(
+                      //       animationDataActions.addAnimationIngredients({
+                      //         animationIngredients: cloneFindIngredients,
+                      //       }),
+                      //     );
+                      //   }
+                      // }
 
                       // node
                       const nextNodes = produce(_lpNode, (draft) => {
@@ -575,7 +574,7 @@ const ListNode: FunctionComponent<Props> = ({
                           cloneCopyNode.name = resultNodeName;
 
                           if (cloneCopyNode.type === 'Model') {
-                            cloneCopyNode.assetId = nextAssetId;
+                            // cloneCopyNode.assetId = nextAssetId;
                           }
 
                           targetNode.childrens.push(cloneCopyNode.id);
