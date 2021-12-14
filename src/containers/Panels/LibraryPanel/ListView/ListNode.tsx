@@ -151,6 +151,10 @@ const ListNode: FunctionComponent<Props> = ({
       cloneChangeNode.parentId = parentNode.id;
       cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
 
+      if (cloneChangeNode.type === 'Motion') {
+        cloneChangeNode.assetId = parentNode.assetId;
+      }
+
       const index = parentNode.childrens.indexOf(childId);
 
       if (index > -1) {
@@ -482,8 +486,6 @@ const ListNode: FunctionComponent<Props> = ({
                     return;
                   }
 
-                  let nextLPNodes = cloneDeep(_lpNode);
-
                   _lpClipboard.forEach((value) => {
                     let memory: string[] = [];
 
@@ -524,7 +526,46 @@ const ListNode: FunctionComponent<Props> = ({
                               .join('.')}.${splitName[1]}`
                           : nodeName;
 
-                      const nextNodes = produce(nextLPNodes, (draft) => {
+                      // asset
+                      let nextAssetId = '';
+
+                      if (copyNode.type === 'Model') {
+                        const findAsset = find(_assetList, { id: copyNode.assetId });
+                        const findIngredients = filter(_animationIngredients, { assetId: copyNode.assetId });
+
+                        if (findAsset) {
+                          const cloneFindAsset = cloneDeep(findAsset);
+                          cloneFindAsset.id = uuid();
+                          cloneFindAsset.name = resultNodeName;
+
+                          const cloneFindIngredients = cloneDeep(findIngredients);
+                          cloneFindIngredients.forEach((ingredient) => {
+                            ingredient.id = uuid();
+                            ingredient.assetId = cloneFindAsset.id;
+                          });
+
+                          cloneFindAsset.animationIngredientIds = cloneFindIngredients.map((ingredient) => ingredient.id);
+                          const test = cloneFindIngredients.map((ingredient) => ingredient.id);
+                          console.log(test);
+
+                          nextAssetId = cloneFindAsset.id;
+
+                          dispatch(
+                            plaskProjectActions.addAsset({
+                              asset: cloneFindAsset,
+                            }),
+                          );
+
+                          dispatch(
+                            animationDataActions.addAnimationIngredients({
+                              animationIngredients: cloneFindIngredients,
+                            }),
+                          );
+                        }
+                      }
+
+                      // node
+                      const nextNodes = produce(_lpNode, (draft) => {
                         const targetNode = find(draft, { id });
 
                         if (targetNode) {
@@ -532,6 +573,10 @@ const ListNode: FunctionComponent<Props> = ({
                           cloneCopyNode.parentId = id;
                           cloneCopyNode.filePath = filePath + `\\${name}`;
                           cloneCopyNode.name = resultNodeName;
+
+                          if (cloneCopyNode.type === 'Model') {
+                            cloneCopyNode.assetId = nextAssetId;
+                          }
 
                           targetNode.childrens.push(cloneCopyNode.id);
 
@@ -549,15 +594,13 @@ const ListNode: FunctionComponent<Props> = ({
                         }
                       });
 
-                      nextLPNodes = nextNodes;
+                      dispatch(
+                        lpNodeActions.changeNode({
+                          nodes: nextNodes,
+                        }),
+                      );
                     }
                   });
-
-                  dispatch(
-                    lpNodeActions.changeNode({
-                      nodes: nextLPNodes,
-                    }),
-                  );
                 },
                 children: [],
               },
@@ -1285,6 +1328,7 @@ const ListNode: FunctionComponent<Props> = ({
 
                     if (targetNode) {
                       cloneDragNode.id = mocapAnimationIngredient.id;
+                      cloneDragNode.assetId = mocapAnimationIngredient.assetId;
                       cloneDragNode.parentId = id;
                       // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
                       cloneDragNode.filePath = filePath + `\\${name}`;
@@ -1340,6 +1384,8 @@ const ListNode: FunctionComponent<Props> = ({
                 3000,
               );
 
+              console.log(mocapAnimationIngredient);
+
               const currentPathNodeName = _lpNode
                 .filter((node) => {
                   if (node.parentId === id) {
@@ -1362,6 +1408,7 @@ const ListNode: FunctionComponent<Props> = ({
                 const targetNode = find(draft, { id });
 
                 if (targetNode) {
+                  cloneDragNode.assetId = mocapAnimationIngredient.assetId;
                   cloneDragNode.id = mocapAnimationIngredient.id;
                   cloneDragNode.parentId = id;
                   // cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
