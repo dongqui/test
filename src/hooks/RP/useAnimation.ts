@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import * as BABYLON from '@babylonjs/core';
 import { useSelector } from 'reducers';
-import { filterQuaternion, filterVector } from 'utils/RP';
+import { filterQuaternion, filterVector, getTotalTransformKeys, getUnionFrames } from 'utils/RP';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
 
@@ -35,54 +35,103 @@ const useAnimation = () => {
       (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
 
-    const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
+    const newAnimationGroup = new BABYLON.AnimationGroup(visualizedAnimationIngredients.length === 1 ? visualizedAnimationIngredients[0].name : 'totalAnimationGroup');
 
     visualizedAnimationIngredients.forEach((animationIngredient) => {
       // layer 고려가 들어가야 함
-      // 각 layer의 transformNodes 합해주는 연산 필요
+      // 각 layer의 transformKeys 합해주는 연산 필요
       const { id, name, assetId, tracks, layers } = animationIngredient;
+
+      const transformKeysListForTargetId: {
+        [id in string]: {
+          target: BABYLON.Mesh | BABYLON.TransformNode;
+          positionTransformKeysList: Array<BABYLON.IAnimationKey[]>;
+          rotationQuaternionTransformKeysList: Array<BABYLON.IAnimationKey[]>;
+          scalingTransformKeysList: Array<BABYLON.IAnimationKey[]>;
+        };
+      } = {};
+
       tracks.forEach((track) => {
         // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
         if (track.transformKeys.length > 0) {
           if (track.property !== 'rotation') {
             // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
             if (track.isIncluded) {
-              if (track.property === 'position' || track.property === 'scaling') {
-                const newAnimation = new BABYLON.Animation(
-                  track.name,
-                  `${track.property}`,
-                  _fps,
-                  BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                  BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                );
-                if (track.useFilter) {
-                  // filter function 적용
-                  newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+              if (track.property === 'position') {
+                if (transformKeysListForTargetId[track.targetId]) {
+                  transformKeysListForTargetId[track.targetId].positionTransformKeysList.push(
+                    track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
+                  );
                 } else {
-                  newAnimation.setKeys(track.transformKeys);
+                  transformKeysListForTargetId[track.targetId] = {
+                    target: track.target,
+                    positionTransformKeysList: [track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
+                    rotationQuaternionTransformKeysList: [],
+                    scalingTransformKeysList: [],
+                  };
                 }
-                track.target.animations.push(newAnimation);
-                newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
               } else if (track.property === 'rotationQuaternion') {
-                const newAnimation = new BABYLON.Animation(
-                  track.name,
-                  `${track.property}`,
-                  _fps,
-                  BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                  BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                );
-                if (track.useFilter) {
-                  // filter function 적용
-                  newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                if (transformKeysListForTargetId[track.targetId]) {
+                  transformKeysListForTargetId[track.targetId].rotationQuaternionTransformKeysList.push(
+                    track.useFilter ? filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
+                  );
                 } else {
-                  newAnimation.setKeys(track.transformKeys);
+                  transformKeysListForTargetId[track.targetId] = {
+                    target: track.target,
+                    positionTransformKeysList: [],
+                    rotationQuaternionTransformKeysList: [track.useFilter ? filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
+                    scalingTransformKeysList: [],
+                  };
                 }
-                track.target.animations.push(newAnimation);
-                newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
+              } else if (track.property === 'scaling') {
+                if (transformKeysListForTargetId[track.targetId]) {
+                  transformKeysListForTargetId[track.targetId].scalingTransformKeysList.push(
+                    track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
+                  );
+                } else {
+                  transformKeysListForTargetId[track.targetId] = {
+                    target: track.target,
+                    positionTransformKeysList: [],
+                    rotationQuaternionTransformKeysList: [],
+                    scalingTransformKeysList: [track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
+                  };
+                }
               }
             }
           }
         }
+      });
+
+      ////////////////////////////////////////////////
+      // const newAnimation = new BABYLON.Animation(
+      //   track.name,
+      //   `${track.property}`,
+      //   _fps,
+      //   BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+      //   BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+      // );
+      // track.target.animations.push(newAnimation);
+      // newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
+
+      ////////////////////////////////////////////////
+      // const newAnimation = new BABYLON.Animation(
+      //   track.name,
+      //   `${track.property}`,
+      //   _fps,
+      //   BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+      //   BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+      // );
+      // track.target.animations.push(newAnimation);
+      // newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
+
+      Object.entries(transformKeysListForTargetId).forEach(([targetId, { target, positionTransformKeysList, rotationQuaternionTransformKeysList, scalingTransformKeysList }]) => {
+        const positionTotalTransformKeys = getTotalTransformKeys(positionTransformKeysList);
+        const rotationQuaternionTotalTransformKeys = getTotalTransformKeys(rotationQuaternionTransformKeysList);
+        const scalingTotalTransformKeys = getTotalTransformKeys(scalingTransformKeysList);
+
+        // const newPositionAnimation = new BABYLON.Animation()
+        // const newRotationQuaternionAnimation = new BABYLON.Animation()
+        // const newScalingAnimation = new BABYLON.Animation()
       });
     });
     newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
