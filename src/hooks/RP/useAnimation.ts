@@ -102,38 +102,44 @@ const useAnimation = () => {
         }
       });
 
-      ////////////////////////////////////////////////
-      // const newAnimation = new BABYLON.Animation(
-      //   track.name,
-      //   `${track.property}`,
-      //   _fps,
-      //   BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-      //   BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-      // );
-      // track.target.animations.push(newAnimation);
-      // newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
-
-      ////////////////////////////////////////////////
-      // const newAnimation = new BABYLON.Animation(
-      //   track.name,
-      //   `${track.property}`,
-      //   _fps,
-      //   BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-      //   BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-      // );
-      // track.target.animations.push(newAnimation);
-      // newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
-
       Object.entries(transformKeysListForTargetId).forEach(([targetId, { target, positionTransformKeysList, rotationQuaternionTransformKeysList, scalingTransformKeysList }]) => {
-        const positionTotalTransformKeys = getTotalTransformKeys(positionTransformKeysList);
-        const rotationQuaternionTotalTransformKeys = getTotalTransformKeys(rotationQuaternionTransformKeysList);
-        const scalingTotalTransformKeys = getTotalTransformKeys(scalingTransformKeysList);
+        const positionTotalTransformKeys = getTotalTransformKeys(positionTransformKeysList, false);
+        const rotationQuaternionTotalTransformKeys = getTotalTransformKeys(rotationQuaternionTransformKeysList, true);
+        const scalingTotalTransformKeys = getTotalTransformKeys(scalingTransformKeysList, false);
 
-        // const newPositionAnimation = new BABYLON.Animation()
-        // const newRotationQuaternionAnimation = new BABYLON.Animation()
-        // const newScalingAnimation = new BABYLON.Animation()
+        const newPositionAnimation = new BABYLON.Animation(
+          `${target.name}|position`,
+          'position',
+          _fps,
+          BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+          BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+        );
+        newPositionAnimation.setKeys(positionTotalTransformKeys);
+
+        const newRotationQuaternionAnimation = new BABYLON.Animation(
+          `${target.name}|rotationQuaternion`,
+          'rotationQuaternion',
+          _fps,
+          BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+          BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+        );
+        newRotationQuaternionAnimation.setKeys(rotationQuaternionTotalTransformKeys);
+
+        const newScalingAnimation = new BABYLON.Animation(
+          `${target.name}|scaling`,
+          'scaling',
+          _fps,
+          BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+          BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+        );
+        newScalingAnimation.setKeys(scalingTotalTransformKeys);
+
+        newAnimationGroup.addTargetedAnimation(newPositionAnimation, target);
+        newAnimationGroup.addTargetedAnimation(newRotationQuaternionAnimation, target);
+        newAnimationGroup.addTargetedAnimation(newScalingAnimation, target);
       });
     });
+
     newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
     setCurrentAnimationGroup(newAnimationGroup);
   }, [_animationIngredients, _endTimeIndex, _fps, _startTimeIndex, _visualizedAssetIds, dispatch]);
