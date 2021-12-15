@@ -8,7 +8,7 @@ import { convertModel } from 'api';
 import { filterAnimatableTransformNodes, getFileExtension, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
-import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
+import { createAutoRetargetMap, createBvhMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
 import { v4 as uuid } from 'uuid';
 import * as TEXT from 'constants/Text';
 import * as BABYLON from '@babylonjs/core';
@@ -150,6 +150,10 @@ const LibraryPanel: FunctionComponent = () => {
 
           return createEmptyRetargetMap(assetId);
         });
+
+      // 임시로 호출 코드 넣어놨습니다. 실제로는 bvh export 시에 asset의 bones, retargetMap을 가지고 호출하시면 됩니답.
+      const bvhMap = await createBvhMap(skeletons[0].bones, retargetMap, 3000);
+      console.log('bvhMap: ', bvhMap);
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
