@@ -16,9 +16,21 @@ interface Props {
   inactiveMessage?: string;
   decimalDigit?: number;
   className?: string;
+  onChangeEnd?: (inputValue: number) => void;
 }
 
-const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, currentMax, currentValue, setCurrentValue, activeStatus, inactiveMessage, decimalDigit }) => {
+const AnimationRangeInput: FunctionComponent<Props> = ({
+  className,
+  text,
+  step,
+  currentMax,
+  currentValue,
+  setCurrentValue,
+  activeStatus,
+  inactiveMessage,
+  decimalDigit,
+  onChangeEnd,
+}) => {
   // range input 혹은 text input의 값이 변경되었는지 확인하는 상태값
   const [isValueChanged, setIsValueChanged] = useState<boolean>(false);
   // text input이 focus 되었는지 확인하는 상태값
@@ -107,11 +119,12 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
   // range input이 change 될 때에 range input의 최대값을 변경하는 함수
   const setRangeMaxLimit = useCallback(
     (e) => {
-      const num = e.target.value;
+      const num = parseInt(e.target.value, 10);
       handleMaxLimitLogic(num);
       setIsValueChanged(false);
+      if (onChangeEnd) onChangeEnd(num);
     },
-    [handleMaxLimitLogic],
+    [handleMaxLimitLogic, onChangeEnd],
   );
 
   // 부모 요소에서 currentValue를 전달받았을 경우, range input의 최대값을 변경하는 함수
@@ -133,15 +146,11 @@ const AnimationRangeInput: FunctionComponent<Props> = ({ className, text, step, 
   );
 
   // 'Enter'키를 누를 경우 text input의 blur와 동일한 이벤트가 발생하도록 하는 함수
-  const handleKeyboard = useCallback(
-    (e) => {
-      if (e.key === 'Enter') {
-        handleSetCurrentValue(e);
-        inputRef.current!.blur();
-      }
-    },
-    [handleSetCurrentValue],
-  );
+  const handleKeyboard = useCallback((e) => {
+    if (e.key === 'Enter') {
+      inputRef.current!.blur();
+    }
+  }, []);
 
   // input을 통한 value 변경이 아닌, model을 직접 움직여 값이 변경되는 경우 range input의 동기화를 위한 코드
   // range input이 이중으로 변환되는 것을 막기 위해 isValueChanged를 트리거로 사용
