@@ -72,9 +72,16 @@ function* worker() {
                 );
                 otherLayerPeerTracks.forEach((otherLayerPeerTrack) => {
                   const targetTransformKey = otherLayerPeerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
-                  newRotationQuaternion = newRotationQuaternion.subtract(
-                    targetTransformKey ? targetTransformKey.value : getInterpolatedQuaternion(otherLayerPeerTrack.transformKeys, _currentFrameIndex),
-                  );
+                  newRotationQuaternion = newRotationQuaternion
+                    .clone()
+                    .toEulerAngles()
+                    .subtract(
+                      targetTransformKey
+                        ? targetTransformKey.value.toEulerAngles()
+                        : getInterpolatedQuaternion(otherLayerPeerTrack.transformKeys, _currentFrameIndex).toEulerAngles(),
+                    )
+                    .normalize()
+                    .toQuaternion();
                 });
                 peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, _currentFrameIndex, newRotationQuaternion);
               }
