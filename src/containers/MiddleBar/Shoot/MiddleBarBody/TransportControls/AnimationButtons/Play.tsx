@@ -1,21 +1,20 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { IconWrapper, SvgPath } from 'components/Icon';
+
+import { useSelector } from 'reducers';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import { PlayDirection } from 'types/RP';
 
 const Play = () => {
   const dispatch = useDispatch();
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
 
   const handlePlay = useCallback(() => {
-    // ToDo. visualized 된 데이터가 있는 경우에만 play 버튼이 동작되도록 조건절을 추가해야 됨
-    dispatch(
-      animatingControlsActions.clickPlayStateButton({
-        playState: 'play',
-        playDirection: PlayDirection.forward,
-      }),
-    );
-  }, [dispatch]);
+    if (_visualizedAssetIds.length !== 0) {
+      dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'play', playDirection: PlayDirection.forward }));
+    }
+  }, [_visualizedAssetIds.length, dispatch]);
 
   return <IconWrapper onClick={handlePlay} icon={SvgPath.PlayArrow} hasFrame={false} />;
 };

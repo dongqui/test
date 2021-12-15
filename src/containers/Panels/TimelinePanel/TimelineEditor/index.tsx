@@ -5,6 +5,7 @@ import _ from 'lodash';
 
 import * as keyframesActions from 'actions/keyframes';
 import { D3ScaleLinear, D3ZoomDatum } from 'types/TP/d3';
+import { useSelector } from 'reducers';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
 import { DragBox } from 'components/DragBox';
 
@@ -22,6 +23,7 @@ const cx = classNames.bind(styles);
 
 const TimelineEditor = () => {
   const dispatch = useDispatch();
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const timelineEditorRef = useRef<SVGSVGElement>(null);
   const leftTimeIndex = useRef(0);
   const zoomLevel = useRef(100);
@@ -48,7 +50,6 @@ const TimelineEditor = () => {
       const loopRange = timelineEditorRef.current.getElementById('range') as SVGRectElement;
       const topRuler = timelineEditorRef.current.getElementById('top-ruler') as SVGGElement;
       const topGrid = timelineEditorRef.current.getElementById('top-grid') as SVGGElement;
-      const scrubber = timelineEditorRef.current.getElementById('scrubber') as SVGGElement;
       const editorBody = timelineEditorRef.current.getElementById('editor-body') as SVGGElement;
       const topRulerD3 = d3.select(topRuler);
       const topGridD3 = d3.select(topGrid);
@@ -69,9 +70,12 @@ const TimelineEditor = () => {
       };
 
       const translateScrubber = (scaleX: D3ScaleLinear) => {
-        const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
-        const translateX = scaleX(currentTimeIndex); // currentTimeIndex을 useRef에다가 재할당
-        scrubber.setAttribute('transform', `translate(${translateX + 5}, 0)`);
+        const scrubber = timelineEditorRef.current?.getElementById('scrubber');
+        if (scrubber) {
+          const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
+          const translateX = scaleX(currentTimeIndex); // currentTimeIndex을 useRef에다가 재할당
+          scrubber.setAttribute('transform', `translate(${translateX + 5}, 0)`);
+        }
       };
 
       const translateKeyframes = (scaleX: D3ScaleLinear, zoomTransform: d3.ZoomTransform) => {
@@ -218,7 +222,7 @@ const TimelineEditor = () => {
           <TimelineEditorMode />
         </g>
         <TopRuler />
-        <Scrubber timelineEditorRef={timelineEditorRef} />
+        {_visualizedAssetIds.length && <Scrubber timelineEditorRef={timelineEditorRef} />}
       </svg>
       <DragBox areaRef={timelineEditorRef} onDragEnd={handleDragEnd} selectableId="selectable" selectedId="keyframe-selected" />
     </div>
