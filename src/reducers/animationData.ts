@@ -1,5 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { AnimationDataAction } from 'actions/animationDataAction';
+import { RETARGET_TARGET_BONE_NONE } from 'utils/const';
 import { AnimationIngredient, PlaskRetargetMap } from 'types/common';
 
 type State = {
@@ -102,14 +103,20 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
       });
     }
     case 'animationDataAction/ASSIGN_BONE_MAPPING': {
+      const { assetId, targetTransformNodeId, sourceBoneName } = action.payload;
       return Object.assign({}, state, {
         retargetMaps: state.retargetMaps.map((retargetMap) => {
-          if (retargetMap.assetId === action.payload.assetId) {
+          if (retargetMap.assetId === assetId) {
             return {
               ...retargetMap,
               values: retargetMap.values.map((retargetMapValue) => {
-                if (retargetMapValue.sourceBoneName === action.payload.sourceBoneName) {
-                  return { ...retargetMapValue, targetTransformNodeId: action.payload.targetTransformNodeId };
+                // 이전에 mapping 된 source bone과 assign 해제
+                if (retargetMapValue.targetTransformNodeId === targetTransformNodeId && targetTransformNodeId !== RETARGET_TARGET_BONE_NONE) {
+                  return { ...retargetMapValue, targetTransformNodeId: null };
+                }
+                // 새로운 source bone과 assign
+                else if (retargetMapValue.sourceBoneName === sourceBoneName) {
+                  return { ...retargetMapValue, targetTransformNodeId: targetTransformNodeId };
                 } else {
                   return retargetMapValue;
                 }
