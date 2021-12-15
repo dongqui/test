@@ -71,6 +71,7 @@ function* worker() {
                   (track) => track.targetId === peerTrack.targetId && track.property === 'rotationQuaternion' && track.layerId !== peerTrack.layerId,
                 );
                 otherLayerPeerTracks.forEach((otherLayerPeerTrack) => {
+                  // quaternion 연산은 직접 하지 않고 euler 변환 후 재변환
                   const targetTransformKey = otherLayerPeerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
                   newRotationQuaternion = newRotationQuaternion
                     .clone()
