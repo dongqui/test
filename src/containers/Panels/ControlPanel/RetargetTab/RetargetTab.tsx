@@ -172,7 +172,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     return [noneMenu, ...transformNodeMenu];
   }, [dispatch, visualizedTransformNodes]);
 
-  // source target - bone target 매핑 액션 호출
+  // source target - bone target 매핑 전달
   const dispatchBoneMapping = useCallback(() => {
     if (currentSourceBoneName && currentTargetTransformNode && visualizedRetargetMap) {
       isSelectedTargetBoneOption.current = false;
@@ -210,6 +210,16 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
       }
     }
   }, [currentSourceBoneName, currentTargetTransformNode, checkAlreadyMappedTargetBone, onModalOpen, onModalClose, dispatchBoneMapping]);
+
+  // 조절 된 hip space값 전달
+  const dispatchChangedHipSpace = useCallback(
+    (hipSpaece: number) => {
+      if (visualizedRetargetMap) {
+        dispatch(animationDataActions.changeHipSpace({ assetId: visualizedRetargetMap.assetId, hipSpaece }));
+      }
+    },
+    [visualizedRetargetMap, dispatch],
+  );
 
   return (
     <Fragment>
@@ -251,7 +261,16 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
             </FilledButton>
             {!canAssign && <div className={cx('inactive-overlay')}></div>}
           </div>
-          <AnimationRangeInput text="Hip space" step={0.01} currentMax={10} currentValue={hipSpace} setCurrentValue={setHipSpace} decimalDigit={1} activeStatus={isAllActive} />
+          <AnimationRangeInput
+            text="Hip space"
+            step={0.01}
+            currentMax={10}
+            currentValue={hipSpace}
+            setCurrentValue={setHipSpace}
+            decimalDigit={1}
+            activeStatus={isAllActive}
+            onChangeEnd={dispatchChangedHipSpace}
+          />
           {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')}></div>}
         </div>
       </section>
