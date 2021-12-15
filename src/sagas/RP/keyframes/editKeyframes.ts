@@ -65,7 +65,7 @@ function* worker() {
             }
             case 'rotation': {
               const { rotationQuaternion } = targetTrack.target;
-              const rotation = rotationQuaternion!.clone().normalize().toEulerAngles(); // quaternion 회전을 사용하기 때문에 단순 target.rotation 해면 (0, 0, 0)
+              const rotation = rotationQuaternion!.clone().toEulerAngles(); // quaternion 회전을 사용하기 때문에 단순 target.rotation 해면 (0, 0, 0)
               let newRotation = rotation.clone();
               const otherLayerTracks = draft.tracks.filter(
                 (track) => track.targetId === targetTrack.targetId && track.property === 'rotation' && track.layerId !== targetTrack.layerId,
@@ -100,7 +100,6 @@ function* worker() {
                         ? targetTransformKey.value.toEulerAngles()
                         : getInterpolatedQuaternion(otherLayerPeerTrack.transformKeys, _currentFrameIndex).toEulerAngles(),
                     )
-                    .normalize()
                     .toQuaternion();
                 });
                 peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, _currentFrameIndex, newRotationQuaternion);

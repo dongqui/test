@@ -7,12 +7,12 @@ import { findIndex, findLastIndex } from 'lodash';
  *
  * @param transformKeys - 선형 보간할 transformKeys
  * @param targetFrames - 기준 frames
- * @param isQuaternion - 트랙이 quaternion인지 여부. value가 Vector3인지 Quaternion인지 구분하기 위함.
+ * @param isQuaternionTrack - 트랙이 quaternion인지 여부. value가 Vector3인지 Quaternion인지 구분하기 위함.
  */
-const getLinearInterpolatedTransformKeys = (transformKeys: BABYLON.IAnimationKey[], targetFrames: number[], isQuaternion: boolean): BABYLON.IAnimationKey[] => {
+const getLinearInterpolatedTransformKeys = (transformKeys: BABYLON.IAnimationKey[], targetFrames: number[], isQuaternionTrack: boolean): BABYLON.IAnimationKey[] => {
   if (transformKeys.length === 0) {
     // layer간 transformKeys를 합하는 연산에서 결과에 영향을 주지 않도록
-    return targetFrames.map((targetFrame) => ({ frame: targetFrame, value: isQuaternion ? BABYLON.Quaternion.Identity() : BABYLON.Vector3.Zero() }));
+    return targetFrames.map((targetFrame) => ({ frame: targetFrame, value: isQuaternionTrack ? BABYLON.Quaternion.Identity() : BABYLON.Vector3.Zero() }));
   } else {
     const newTransformKeys: BABYLON.IAnimationKey[] = [];
 
@@ -27,12 +27,12 @@ const getLinearInterpolatedTransformKeys = (transformKeys: BABYLON.IAnimationKey
           const prevTimeIndex = findLastIndex(transformKeys, (key) => key.frame < targetFrame);
           const nextTimeIndex = findIndex(transformKeys, (key) => key.frame > targetFrame);
           const deltaTime = transformKeys[nextTimeIndex].frame - transformKeys[prevTimeIndex].frame;
-          const deltaValue = isQuaternion
-            ? transformKeys[nextTimeIndex].value.toEulerValues.subtract(transformKeys[prevTimeIndex].value.toEulerValues).toQuaternion.normalize()
+          const deltaValue = isQuaternionTrack
+            ? transformKeys[nextTimeIndex].value.toEulerAngles().subtract(transformKeys[prevTimeIndex].value.toEulerAngles()).toQuaternion()
             : transformKeys[nextTimeIndex].value.subtract(transformKeys[prevTimeIndex].value);
           const multiplier = (targetFrame - transformKeys[prevTimeIndex].frame) / deltaTime;
-          const newValue = isQuaternion
-            ? transformKeys[prevTimeIndex].value.toEulerValues.add(deltaValue.toEulerValues().multiplyByFloats(multiplier, multiplier, multiplier)).toQuaternion.normalize()
+          const newValue = isQuaternionTrack
+            ? transformKeys[prevTimeIndex].value.toEulerAngles().add(deltaValue.toEulerAngles().multiplyByFloats(multiplier, multiplier, multiplier)).toQuaternion()
             : transformKeys[prevTimeIndex].value.add(deltaValue.multiplyByFloats(multiplier, multiplier, multiplier));
           newTransformKeys.push({ frame: targetFrame, value: newValue });
         }

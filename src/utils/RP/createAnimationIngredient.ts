@@ -48,7 +48,7 @@ const createAnimationIngredient = (
 
       const eulerTransformKeys: BABYLON.IAnimationKey[] = quaternionTransformKeys.map((transformKey) => {
         const q: BABYLON.Quaternion = transformKey.value;
-        const e = q.normalize().toEulerAngles();
+        const e = q.toEulerAngles();
         return { frame: transformKey.frame, value: e };
       });
 
