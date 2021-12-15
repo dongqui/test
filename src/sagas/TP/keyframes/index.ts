@@ -4,6 +4,6 @@ import deleteKeyframes from './deleteKeyframes';
 import dragDropKeyframes from './dragDropKeyframes';
 import pasteKeyframes from './pasteKeyframes';
 
-export default function* KeyframesSaga() {
+export default function* keyframesSaga() {
   yield all([deleteKeyframes(), dragDropKeyframes(), pasteKeyframes()]);
 }

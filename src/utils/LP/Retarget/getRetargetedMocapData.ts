@@ -42,7 +42,7 @@ const getRetargetedMocapData = (
           transformKeys.forEach((transformKey) => {
             const { frame, value } = transformKey;
             const q = BABYLON.Quaternion.FromArray(value);
-            const e = q.clone().normalize().toEulerAngles();
+            const e = q.clone().toEulerAngles();
             targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
             targetRotationTrack.transformKeys.push({ frame, value: e });
           });

@@ -19,5 +19,9 @@ export { default as getInterpolatedQuaternion } from './getInterpolatedQuaternio
 export { default as getInterpolatedVector } from './getInterpolatedVector';
 export { default as getValueInsertedTransformKeys } from './getValueInsertedTransformKeys';
 
+export { default as getUnionFrames } from './getUnionFrames';
+export { default as getLinearInterpolatedTransformKeys } from './getLinearInterpolatedTransformKeys';
+export { default as getTotalTransformKeys } from './getTotalTransformKeys';
+
 // 일회성
 export { default as createDummyAnimation } from './createDummyAnimation';

@@ -2,7 +2,7 @@ import { call, put, select, takeLatest } from 'redux-saga/effects';
 import produce from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
 import { isUndefined } from 'lodash';
-import * as keyframesAction from 'actions/keyframes';
+import * as keyframesActions from 'actions/keyframes';
 import * as animationDataActions from 'actions/animationDataAction';
 import { PlaskTrack } from 'types/common';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
@@ -21,7 +21,7 @@ function getAnimationIngredients(state: RootState) {
 function* worker() {
   const selectedPropertyKeyframes = getSelectedPropertyKeyframes(yield select());
   const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, selectedPropertyKeyframes, 0);
-  yield put(keyframesAction.deleteKeyframes());
+  yield put(keyframesActions.deleteKeyframes());
 
   // 이후부터 RP쪽 액션 호출 부분
   const { animationIngredientId: targetAnimationIngredientId, layerId: targetLayerId, transformKeys: targetTransformKeys } = updatedPropertyKeyframes;
@@ -57,7 +57,7 @@ function* worker() {
 
 // 키프레임 드래그 드랍 입력 감지
 function* watchDeleteframes() {
-  yield takeLatest(keyframesAction.ENTER_KEYFRAME_DELETE_KEY, worker);
+  yield takeLatest(keyframesActions.ENTER_KEYFRAME_DELETE_KEY, worker);
 }
 
 export default watchDeleteframes;

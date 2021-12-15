@@ -7,7 +7,8 @@ export type PlaskProjectAction =
   | ReturnType<typeof renderAsset>
   | ReturnType<typeof unrenderAsset>
   | ReturnType<typeof removeAsset>
-  | ReturnType<typeof addAnimationIngredient>;
+  | ReturnType<typeof addAnimationIngredient>
+  | ReturnType<typeof addAnimationIngredients>;
 
 const ADD_SCREEN = 'plaskProject/ADD_SCREEN' as const;
 const REMOVE_SCREEN = 'plaskProject/REMOVE_SCREEN' as const;
@@ -16,6 +17,7 @@ const RENDER_ASSET = 'plaskProject/RENDER_ASSET' as const;
 const UNRENDER_ASSET = 'plaskProject/UNRENDER_ASSET' as const;
 const REMOVE_ASSET = 'plaskProject/REMOVE_ASSET' as const;
 const ADD_ANIMATION_INGREDIENT = 'plaskProject/ADD_ANIMATION_INGREDIENT' as const;
+const ADD_ANIMATION_INGREDIENTS = 'plaskProject/ADD_ANIMATION_INGREDIENTS' as const;
 
 interface AddScreen {
   screen: PlaskScreen;
@@ -45,6 +47,11 @@ interface RemoveAsset {
 interface AddAnimationIngredient {
   assetId: string;
   animationIngredientId: string;
+}
+
+interface AddAnimationIngredients {
+  assetId: string;
+  animationIngredientIds: string[];
 }
 
 /**
@@ -120,13 +127,26 @@ export const removeAsset = (params: RemoveAsset) => ({
 });
 
 /**
- * 전달받은 id에 해당하는 asset에 추가한 빈 모션의 id를 하위로 할당한다.
+ * 전달받은 id에 해당하는 asset의 animationIngredientIds에 전달받은 animationIngredient의 id를 추가합니다.
  *
  * @param assetId - 추가한 모션의 id를 할당할 asset의 id
- * @param animationIngredientId - 새로 생성한 빈 모션의 id
+ * @param animationIngredientId - 추가할 모션의 id
  */
 export const addAnimationIngredient = (params: AddAnimationIngredient) => ({
   type: ADD_ANIMATION_INGREDIENT,
+  payload: {
+    ...params,
+  },
+});
+
+/**
+ * 전달받은 id에 해당하는 asset의 animationIngredientIds에 전달받은 animationIngredient들의 id들을 추가합니다.
+ *
+ * @param assetId - 추가한 모션의 id를 할당할 asset의 id
+ * @param animationIngredientIds - 새로 생성한 빈 모션들의 id들
+ */
+export const addAnimationIngredients = (params: AddAnimationIngredients) => ({
+  type: ADD_ANIMATION_INGREDIENTS,
   payload: {
     ...params,
   },
