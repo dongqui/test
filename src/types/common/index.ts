@@ -133,3 +133,31 @@ export type PlaskMocapData = Array<{
     value: ArrayOfThreeNumbers | ArrayOfFourNumbers;
   }>;
 }>;
+
+export type BvhBoneType =
+  | 'Hips'
+  | 'Chest'
+  | 'Chest2'
+  | 'Chest3'
+  | 'Neck'
+  | 'Head'
+  | 'LeftCollar'
+  | 'LeftUpArm'
+  | 'LeftLowArm'
+  | 'LeftHand'
+  | 'RightCollar'
+  | 'RightUpArm'
+  | 'RightLowArm'
+  | 'RightHand'
+  | 'LeftUpLeg'
+  | 'LeftLowLeg'
+  | 'LeftFoot'
+  | 'LeftToe'
+  | 'RightUpLeg'
+  | 'RightLowLeg'
+  | 'RightFoot'
+  | 'RightToe';
+
+export type PlaskBvhMap = {
+  [bone in BvhBoneType]: Nullable<string>;
+};
