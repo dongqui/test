@@ -3,6 +3,7 @@ import produce from 'immer';
 import * as animationDataActions from 'actions/animationDataAction';
 import { RootState } from 'reducers';
 import { getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
+import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
 
 function getSelectedLayer(state: RootState) {
   return state.trackList.selectedLayer;
@@ -31,6 +32,12 @@ function* worker() {
     const targetTrackIds = _propertyTrackList.map((track) => track.trackId);
 
     if (targetAnimationIngredient) {
+      const updatedPropertyKeyframes: UpdatedPropertyKeyframes = {
+        animationIngredientId: targetAnimationIngredient.id,
+        layerId: _selectedLayer,
+        transformKeys: [],
+      };
+
       const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
         const targetTracks = draft.tracks.filter((track) => targetTrackIds.includes(track.id));
 
@@ -48,6 +55,12 @@ function* worker() {
                 newPosition = newPosition.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex));
               });
               targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, _currentFrameIndex, newPosition);
+
+              updatedPropertyKeyframes.transformKeys.push({
+                trackId: targetTrack.id,
+                to: _currentFrameIndex,
+                value: newPosition,
+              });
               break;
             }
             case 'rotation': {
@@ -62,6 +75,12 @@ function* worker() {
                 newRotation = newRotation.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex));
               });
               targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, _currentFrameIndex, newRotation);
+
+              updatedPropertyKeyframes.transformKeys.push({
+                trackId: targetTrack.id,
+                to: _currentFrameIndex,
+                value: newRotation,
+              });
 
               // TP에서는 rotationQuaternion 트랙을 사용하지 않기 때문에 대응하는 트랙을 별도로 찾아서 함께 변경
               const peerTrack = draft.tracks.find((track) => track.id === targetTrack.id.replace('//rotation', '//rotationQuaternion'));
@@ -100,6 +119,11 @@ function* worker() {
               });
               targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, _currentFrameIndex, newScaling);
 
+              updatedPropertyKeyframes.transformKeys.push({
+                trackId: targetTrack.id,
+                to: _currentFrameIndex,
+                value: newScaling,
+              });
               break;
             }
             default: {
@@ -116,6 +140,7 @@ function* worker() {
       );
 
       // TP saga 붙이는 곳(찰찰)
+      console.log('updatedPropertyKeyframes: ', updatedPropertyKeyframes);
     }
   }
 }
