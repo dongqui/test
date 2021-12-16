@@ -11,6 +11,7 @@ import { v4 as uuid } from 'uuid';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { filterAnimatableTransformNodes } from 'utils/common';
+import { filterQuaternion, filterVector } from 'utils/RP';
 import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove, checkPasteDuplicates } from 'utils/LP/FileSystem';
 import { getRetargetedMocapData } from 'utils/LP/Retarget';
 import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
@@ -66,6 +67,7 @@ const ListNode: FunctionComponent<Props> = ({
 }) => {
   const dispatch = useDispatch();
 
+  const _fps = useSelector((state) => state.plaskProject.fps);
   const _screenList = useSelector((state) => state.plaskProject.screenList);
   const _assetList = useSelector((state) => state.plaskProject.assetList);
   const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
@@ -803,6 +805,62 @@ const ListNode: FunctionComponent<Props> = ({
                   const baseScene = _screenList[0].scene;
                   const skeletonViewerMesh = _screenList[0].scene.getMeshByID(`${assetId}//skeletonViewer`);
 
+                  _screenList.forEach(({ scene }) => {
+                    scene.animationGroups.forEach((animationGroup) => {
+                      scene.removeAnimationGroup(animationGroup);
+                    });
+                  });
+
+                  const currentModelAnimationIngredients = filter(_animationIngredients, { assetId: assetId });
+
+                  currentModelAnimationIngredients.forEach((animationIngredient) => {
+                    const { name, tracks } = animationIngredient;
+                    const animationGroup = new BABYLON.AnimationGroup(name);
+                    tracks.forEach((track) => {
+                      // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
+                      if (track.transformKeys.length > 0) {
+                        if (track.property !== 'rotation') {
+                          // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
+                          if (track.isIncluded) {
+                            if (track.property === 'position' || track.property === 'scaling') {
+                              const newAnimation = new BABYLON.Animation(
+                                track.name,
+                                `${track.property}`,
+                                _fps,
+                                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+                              );
+                              if (track.useFilter) {
+                                // filter function 적용
+                                newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                              } else {
+                                newAnimation.setKeys(track.transformKeys);
+                              }
+                              track.target.animations.push(newAnimation);
+                              animationGroup.addTargetedAnimation(newAnimation, track.target);
+                            } else if (track.property === 'rotationQuaternion') {
+                              const newAnimation = new BABYLON.Animation(
+                                track.name,
+                                `${track.property}`,
+                                _fps,
+                                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+                              );
+                              if (track.useFilter) {
+                                // filter function 적용
+                                newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                              } else {
+                                newAnimation.setKeys(track.transformKeys);
+                              }
+                              track.target.animations.push(newAnimation);
+                              animationGroup.addTargetedAnimation(newAnimation, track.target);
+                            }
+                          }
+                        }
+                      }
+                    });
+                  });
+
                   if (skeletonViewerMesh) {
                     _screenList[0].scene.removeMesh(skeletonViewerMesh);
                     const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
@@ -835,6 +893,62 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: () => {
                   const baseScene = _screenList[0].scene;
                   const skeletonViewerMesh = _screenList[0].scene.getMeshByID(`${assetId}//skeletonViewer`);
+
+                  _screenList.forEach(({ scene }) => {
+                    scene.animationGroups.forEach((animationGroup) => {
+                      scene.removeAnimationGroup(animationGroup);
+                    });
+                  });
+
+                  const currentModelAnimationIngredients = filter(_animationIngredients, { assetId: assetId });
+
+                  currentModelAnimationIngredients.forEach((animationIngredient) => {
+                    const { name, tracks } = animationIngredient;
+                    const animationGroup = new BABYLON.AnimationGroup(name);
+                    tracks.forEach((track) => {
+                      // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
+                      if (track.transformKeys.length > 0) {
+                        if (track.property !== 'rotation') {
+                          // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
+                          if (track.isIncluded) {
+                            if (track.property === 'position' || track.property === 'scaling') {
+                              const newAnimation = new BABYLON.Animation(
+                                track.name,
+                                `${track.property}`,
+                                _fps,
+                                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+                              );
+                              if (track.useFilter) {
+                                // filter function 적용
+                                newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                              } else {
+                                newAnimation.setKeys(track.transformKeys);
+                              }
+                              track.target.animations.push(newAnimation);
+                              animationGroup.addTargetedAnimation(newAnimation, track.target);
+                            } else if (track.property === 'rotationQuaternion') {
+                              const newAnimation = new BABYLON.Animation(
+                                track.name,
+                                `${track.property}`,
+                                _fps,
+                                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+                              );
+                              if (track.useFilter) {
+                                // filter function 적용
+                                newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                              } else {
+                                newAnimation.setKeys(track.transformKeys);
+                              }
+                              track.target.animations.push(newAnimation);
+                              animationGroup.addTargetedAnimation(newAnimation, track.target);
+                            }
+                          }
+                        }
+                      }
+                    });
+                  });
 
                   if (skeletonViewerMesh) {
                     _screenList[0].scene.removeMesh(skeletonViewerMesh);
@@ -1066,13 +1180,15 @@ const ListNode: FunctionComponent<Props> = ({
     _animationIngredients,
     _animationTransformNodes,
     _assetList,
+    _fps,
+    _lpClipboard,
     _lpNode,
     _screenList,
     _selectableObjects,
     _visualizedAssetIds,
     assetId,
     depth,
-    depthChangeKey,
+    depthAddKey,
     depthCheck,
     dispatch,
     extension,
@@ -1081,7 +1197,6 @@ const ListNode: FunctionComponent<Props> = ({
     handleEdit,
     handleVisualization,
     id,
-    _lpClipboard,
     lpCurrentPath,
     name,
     onContextMenuOpen,
@@ -1094,7 +1209,6 @@ const ListNode: FunctionComponent<Props> = ({
     saveChildrensKey,
     selectedId,
     type,
-    depthAddKey,
   ]);
 
   useEffect(() => {
@@ -1382,8 +1496,6 @@ const ListNode: FunctionComponent<Props> = ({
                 dragNode.mocapData,
                 3000,
               );
-
-              console.log(mocapAnimationIngredient);
 
               const currentPathNodeName = _lpNode
                 .filter((node) => {
