@@ -13,12 +13,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {
-  timelineEditorRef: RefObject<SVGSVGElement>;
-}
-
-const Scrubber: FunctionComponent<Props> = (props) => {
-  const { timelineEditorRef } = props;
+const Scrubber = () => {
   const dispatch = useDispatch();
 
   const currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
@@ -39,19 +34,15 @@ const Scrubber: FunctionComponent<Props> = (props) => {
   // value값 변경
   const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    if (!value.includes('e' || 'E')) setInputValue(event.target.value);
+    setInputValue(value);
   }, []);
 
   // start, end input에 Enter key 입력 동작
-  const handleInputKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (isNaN(parseInt(event.key, 10))) {
-        timelineEditorRef.current?.focus();
-        event.currentTarget.blur();
-      }
-    },
-    [timelineEditorRef],
-  );
+  const handleInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Backspace' && event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && isNaN(parseInt(event.key, 10))) {
+      event.currentTarget.blur();
+    }
+  }, []);
 
   // blur 이벤트 적용
   const handleInputBlur = useCallback(
@@ -128,8 +119,9 @@ const Scrubber: FunctionComponent<Props> = (props) => {
 
   return (
     <g id="scrubber" className={cx('scrubber')} ref={scrubberRef}>
-      <line x1="15" y1="12" x2="15" y2="2000" />
-      <foreignObject width="32" height="12">
+      <line x1="23" y1="12" x2="23" y2="2000" />
+      <path d="M9.27203 0H9.18118C8.51416 0 7.88043 0.291572 7.44634 0.798191L2.55008 6.51248C1.81664 7.36845 1.81664 8.63155 2.55008 9.48752L7.44634 15.2018C7.88043 15.7084 8.51416 16 9.18118 16H34.8188C35.4858 16 36.1196 15.7084 36.5537 15.2018L41.4499 9.48752C42.1834 8.63155 42.1834 7.36845 41.4499 6.51248L36.5537 0.798191C36.1196 0.291572 35.4858 0 34.8188 0H34.728H9.27203Z" />
+      <foreignObject width="28" height="14">
         <BaseInput arrow={false} maxLength={4} onBlur={handleInputBlur} onChange={handleInputChange} onKeyDown={handleInputKeyDown} type="number" value={inputValue} />
       </foreignObject>
     </g>
