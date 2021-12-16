@@ -103,7 +103,7 @@ const useAnimation = () => {
       newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
       setCurrentAnimationGroup(newAnimationGroup);
     }
-  }, [_animationIngredients, _endTimeIndex, _fps, _screenList, _startTimeIndex, _visualizedAssetIds, dispatch]);
+  }, [_animationIngredients, _endTimeIndex, _fps, _screenList, _startTimeIndex, _visualizedAssetIds]);
 
   // 애니메이션 재생 조작
   useEffect(() => {
