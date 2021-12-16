@@ -1,19 +1,21 @@
-import { useCallback } from 'react';
+import { FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
+import * as modeSelectionActions from 'actions/modeSelection';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { detectSafari } from 'utils/common';
-import * as modeSelectionActions from 'actions/modeSelection';
-
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const Record = () => {
+interface Props {}
+
+const Record: FunctionComponent<Props> = () => {
   const dispatch = useDispatch();
 
   const handleRecord = useCallback(() => {
     if (detectSafari()) return;
+
     dispatch(modeSelectionActions.changeMode({ mode: 'videoMode' }));
   }, [dispatch]);
 
