@@ -34,8 +34,9 @@ class KeyframeDragBox implements DragBox {
         boneTrackList.forEach((boneTrack) => {
           const currentValue = boneKeyframeMap.get(boneTrack.trackNumber);
           if (!currentValue) boneKeyframeMap.set(boneTrack.trackNumber, new Set());
-          selectedLayerKeyframe.forEach((layerKeyframe) => {
-            boneKeyframeMap.get(boneTrack.trackNumber)?.add(layerKeyframe);
+          selectedLayerKeyframe.forEach((layerFrame) => {
+            const boneKeyframeIndex = findElementIndex(boneTrack.keyframes, layerFrame, 'time');
+            if (boneKeyframeIndex !== -1) boneKeyframeMap.get(boneTrack.trackNumber)?.add(layerFrame);
           });
         });
       });
@@ -43,8 +44,9 @@ class KeyframeDragBox implements DragBox {
         propertyTrackList.forEach((propertyTrack) => {
           const currentValue = propertyKeyframeMap.get(propertyTrack.trackNumber);
           if (!currentValue) propertyKeyframeMap.set(propertyTrack.trackNumber, new Set());
-          selectedLayerKeyframes.forEach((layerKeyframe) => {
-            boneKeyframeMap.get(propertyTrack.trackNumber)?.add(layerKeyframe);
+          selectedLayerKeyframes.forEach((layerFrame) => {
+            const propertyKeyframeIndex = findElementIndex(propertyTrack.keyframes, layerFrame, 'time');
+            if (propertyKeyframeIndex !== -1) boneKeyframeMap.get(propertyTrack.trackNumber)?.add(layerFrame);
           });
         });
       });
@@ -53,10 +55,13 @@ class KeyframeDragBox implements DragBox {
     if (boneKeyframeMap.size) {
       boneKeyframeMap.forEach((selectedBoneKeyframes, boneNumber) => {
         for (let propertyNumber = boneNumber + 1; propertyNumber <= boneNumber + 3; propertyNumber++) {
+          const proertyTrackIndex = findElementIndex(propertyTrackList, propertyNumber, 'trackNumber');
+          const propertyTrack = propertyTrackList[proertyTrackIndex];
           const currentValue = propertyKeyframeMap.get(propertyNumber);
           if (!currentValue) propertyKeyframeMap.set(propertyNumber, new Set());
-          selectedBoneKeyframes.forEach((boneKeyframe) => {
-            propertyKeyframeMap.get(propertyNumber)?.add(boneKeyframe);
+          selectedBoneKeyframes.forEach((boneFrame) => {
+            const propertyKeyframeIndex = findElementIndex(propertyTrack.keyframes, boneFrame, 'time');
+            if (propertyKeyframeIndex !== -1) propertyKeyframeMap.get(propertyNumber)?.add(boneFrame);
           });
         }
       });
