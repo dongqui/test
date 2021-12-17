@@ -4,7 +4,7 @@ import { isNull } from 'lodash';
 import AnimationInputWrapper from './AnimationInputWrapper';
 import AnimationFKWrapper from './AnimationFKWrapper';
 import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPanel';
-import { PlaskPaletteColor, PlaskRotationType } from 'types/common';
+import { Nullable, PlaskPaletteColor, PlaskRotationType, PlaskTrack } from 'types/common';
 import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -18,8 +18,12 @@ interface Props {
 const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
+  const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // selectedLayerId에 해당
 
-  const [controlTarget, setControlTarget] = useState<BABYLON.TransformNode | BABYLON.Mesh | null>(null);
+  const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+
+  const [controlTarget, setControlTarget] = useState<Nullable<BABYLON.TransformNode | BABYLON.Mesh>>(null);
+  const [controlTrack, setControlTrack] = useState<Nullable<PlaskTrack>>(null);
 
   useEffect(() => {
     if (_selectedTargets.length === 0) {
@@ -32,7 +36,22 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       // 다중대상 선택된 경우
       setControlTarget(null);
     }
-  }, [_selectableObjects, _selectedTargets, isAllActive]);
+  }, [_selectableObjects, _selectedTargets]);
+
+  useEffect(() => {
+    if (_selectedTargets.length === 0) {
+      setControlTrack(null);
+    } else if (_selectedTargets.length === 1) {
+      const targetAssetId = _selectedTargets[0].id.split('//')[0];
+      const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAssetId);
+      const targetTrack = targetAnimationIngredient?.tracks.find((track) => track.targetId === _selectedTargets[0].id && track.layerId === _seletedLayer);
+      if (targetTrack) {
+        setControlTrack(targetTrack);
+      }
+    } else {
+      setControlTrack(null);
+    }
+  }, [_animationIngredients, _selectedTargets, _seletedLayer]);
 
   // position value를 관리하는 useState
   const [positionX, setPositionX] = useState<number>(0);
@@ -105,6 +124,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [isFilterOn, setIsFilterOn] = useState<boolean>(false);
   const [fcValue, setFcValue] = useState<number>(10);
   const [betaValue, setBetaValue] = useState<number>(1);
+
+  useEffect(() => {
+    if (controlTrack) {
+      setIsFilterOn(controlTrack.useFilter);
+    }
+  }, [controlTrack]);
 
   const positionInputData = [
     {
