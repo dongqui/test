@@ -36,7 +36,9 @@ class KeyframeDragBox implements DragBox {
           if (!currentValue) boneKeyframeMap.set(boneTrack.trackNumber, new Set());
           selectedLayerKeyframe.forEach((layerFrame) => {
             const boneKeyframeIndex = findElementIndex(boneTrack.keyframes, layerFrame, 'time');
-            if (boneKeyframeIndex !== -1) boneKeyframeMap.get(boneTrack.trackNumber)?.add(layerFrame);
+            if (boneKeyframeIndex !== -1 && !boneTrack.keyframes[boneKeyframeIndex].isDeleted) {
+              propertyKeyframeMap.get(boneTrack.trackNumber)?.add(layerFrame);
+            }
           });
         });
       });
@@ -46,7 +48,9 @@ class KeyframeDragBox implements DragBox {
           if (!currentValue) propertyKeyframeMap.set(propertyTrack.trackNumber, new Set());
           selectedLayerKeyframes.forEach((layerFrame) => {
             const propertyKeyframeIndex = findElementIndex(propertyTrack.keyframes, layerFrame, 'time');
-            if (propertyKeyframeIndex !== -1) boneKeyframeMap.get(propertyTrack.trackNumber)?.add(layerFrame);
+            if (propertyKeyframeIndex !== -1 && !propertyTrack.keyframes[propertyKeyframeIndex].isDeleted) {
+              propertyKeyframeMap.get(propertyTrack.trackNumber)?.add(layerFrame);
+            }
           });
         });
       });
@@ -61,7 +65,9 @@ class KeyframeDragBox implements DragBox {
           if (!currentValue) propertyKeyframeMap.set(propertyNumber, new Set());
           selectedBoneKeyframes.forEach((boneFrame) => {
             const propertyKeyframeIndex = findElementIndex(propertyTrack.keyframes, boneFrame, 'time');
-            if (propertyKeyframeIndex !== -1) propertyKeyframeMap.get(propertyNumber)?.add(boneFrame);
+            if (propertyKeyframeIndex !== -1 && !propertyTrack.keyframes[propertyKeyframeIndex].isDeleted) {
+              propertyKeyframeMap.get(propertyNumber)?.add(boneFrame);
+            }
           });
         }
       });
