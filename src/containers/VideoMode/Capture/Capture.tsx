@@ -204,7 +204,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           parentId: '__root__',
           name: fileName,
           filePath: '\\root',
-          children: [],
+          childrens: [],
           extension: '',
           type: 'Motion',
           mocapData: response.data.result,
