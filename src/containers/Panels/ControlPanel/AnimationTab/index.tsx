@@ -45,7 +45,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [eulerZ, setEulerZ] = useState<number>(0);
 
   // quarternion value를 관리하는 useState
-  const [quarternionW, setQuarternionW] = useState<number>(0);
+  const [quarternionW, setQuarternionW] = useState<number>(1);
   const [quarternionX, setQuarternionX] = useState<number>(0);
   const [quarternionY, setQuarternionY] = useState<number>(0);
   const [quarternionZ, setQuarternionZ] = useState<number>(0);
@@ -54,6 +54,35 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [scaleX, setScaleX] = useState<number>(0);
   const [scaleY, setScaleY] = useState<number>(0);
   const [scaleZ, setScaleZ] = useState<number>(0);
+
+  useEffect(() => {
+    if (controlTarget) {
+      const matrixUpdateObservable = controlTarget.onAfterWorldMatrixUpdateObservable.add((target) => {
+        const { position, rotationQuaternion, scaling } = target;
+        setPositionX(position.x);
+        setPositionY(position.y);
+        setPositionZ(position.z);
+
+        const e = rotationQuaternion!.clone().toEulerAngles();
+        setEulerX(e.x);
+        setEulerY(e.y);
+        setEulerZ(e.z);
+
+        setQuarternionW(rotationQuaternion!.w);
+        setQuarternionX(rotationQuaternion!.x);
+        setQuarternionY(rotationQuaternion!.y);
+        setQuarternionZ(rotationQuaternion!.z);
+
+        setScaleX(scaling.x);
+        setScaleY(scaling.y);
+        setScaleZ(scaling.z);
+      });
+
+      return () => {
+        controlTarget.onAfterWorldMatrixUpdateObservable.remove(matrixUpdateObservable);
+      };
+    }
+  });
 
   // FK Controller value를 관리하는 useState
   const [viewX, setViewX] = useState<number>(0);
@@ -131,7 +160,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
           if (controlTarget) {
-            const prevE = controlTarget.rotationQuaternion!.clone().normalize().toEulerAngles();
+            const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
             const e = new BABYLON.Vector3(parseFloat(event.target.value), prevE.y, prevE.z);
             const q = e.toQuaternion();
 
@@ -144,7 +173,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       defaultValue: useMemo(() => {
         if (controlTarget) {
           const q = controlTarget.rotationQuaternion!.clone();
-          return q.normalize().toEulerAngles().x;
+          return q.toEulerAngles().x;
         } else {
           return 0;
         }
@@ -157,7 +186,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
           if (controlTarget) {
-            const prevE = controlTarget.rotationQuaternion!.clone().normalize().toEulerAngles();
+            const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
             const e = new BABYLON.Vector3(prevE.x, parseFloat(event.target.value), prevE.z);
             const q = e.toQuaternion();
 
@@ -170,7 +199,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       defaultValue: useMemo(() => {
         if (controlTarget) {
           const q = controlTarget.rotationQuaternion!.clone();
-          return q.normalize().toEulerAngles().y;
+          return q.toEulerAngles().y;
         } else {
           return 0;
         }
@@ -183,7 +212,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
           if (controlTarget) {
-            const prevE = controlTarget.rotationQuaternion!.clone().normalize().toEulerAngles();
+            const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
             const e = new BABYLON.Vector3(prevE.x, prevE.y, parseFloat(event.target.value));
             const q = e.toQuaternion();
 
@@ -196,7 +225,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       defaultValue: useMemo(() => {
         if (controlTarget) {
           const q = controlTarget.rotationQuaternion!.clone();
-          return q.normalize().toEulerAngles().z;
+          return q.toEulerAngles().z;
         } else {
           return 0;
         }
@@ -218,7 +247,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         },
         [controlTarget],
       ),
-      defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.w : 0), [controlTarget]),
+      defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.w : 1), [controlTarget]),
       decimalDigit: 4,
       currentValue: quarternionW,
     },
@@ -357,23 +386,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   //   { text: 'Mesh', handleBlur: () => {} },
   //   { text: 'Controller', handleBlur: () => {} },
   // ];
-
-  useEffect(() => {
-    const handleTest = (e: KeyboardEvent) => {
-      if (e.key === '.') {
-        setPositionX(3);
-        setEulerX(3);
-        setScaleX(3);
-      } else if (e.key === ',') {
-        setQuarternionX(5);
-      }
-    };
-
-    window.addEventListener('keyup', handleTest);
-    // return () => {
-    //   window.removeEventListener('keyup', handleTest);
-    // };
-  }, []);
 
   return (
     <Fragment>
