@@ -212,7 +212,7 @@ const TimelineEditor = () => {
 
   return (
     <div className={cx('timeline-editor')}>
-      <svg ref={timelineEditorRef}>
+      <svg id="timeline-editor-svg" ref={timelineEditorRef}>
         <GridLine />
         <g className={cx('editor-body')} id="editor-body">
           <TimelineEditorMode />
