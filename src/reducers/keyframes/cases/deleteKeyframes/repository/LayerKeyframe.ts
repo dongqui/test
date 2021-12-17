@@ -24,15 +24,16 @@ class LayerKeyframeRepository implements Repository {
   };
 
   // 삭제시킬 layer keyframes의 times 계산
-  private findDeletedLayerTimes = (propertyKeyframes: TimeEditorTrack[]) => {
+  private findDeletedLayerKeyframes = (propertyKeyframes: TimeEditorTrack[]) => {
     const times: number[] = [];
     const selectedPropertyTimes = this.findSelectedPropertyTimes();
     selectedPropertyTimes.forEach((time) => {
       let deletedCount = 0;
       propertyKeyframes.forEach(({ keyframes }) => {
-        const timeIndex = findElementIndex(keyframes, time, 'time');
-        const isDeleted = keyframes[timeIndex].isDeleted;
-        if (isDeleted) deletedCount += 1;
+        const keyframeIndex = findElementIndex(keyframes, time, 'time');
+        if (keyframeIndex === -1 || keyframes[keyframeIndex].isDeleted) {
+          deletedCount += 1;
+        }
       });
       if (deletedCount === propertyKeyframes.length) times.push(time);
     });
@@ -42,18 +43,18 @@ class LayerKeyframeRepository implements Repository {
   // 선택 된 keyframes에 isDeleted 상태값 변경
   private deleteLayerKeyframes = (propertyKeyframes: TimeEditorTrack[]) => {
     const { layerTrack, selectedLayerKeyframes } = this.state;
-    const deletedLayerTimes = this.findDeletedLayerTimes(propertyKeyframes);
+    const deletedLayerKeyframes = this.findDeletedLayerKeyframes(propertyKeyframes);
     return produce(layerTrack, (draft) => {
       selectedLayerKeyframes.forEach(({ keyframes }) => {
         keyframes.forEach((keyframe) => {
-          const timeIndex = findElementIndex(layerTrack.keyframes, keyframe.time, 'time');
-          draft.keyframes[timeIndex].isSelected = false;
+          const keyframeIndex = findElementIndex(layerTrack.keyframes, keyframe.time, 'time');
+          draft.keyframes[keyframeIndex].isSelected = false;
         });
       });
-      deletedLayerTimes.forEach((time) => {
-        const timeIndex = findElementIndex(layerTrack.keyframes, time, 'time');
-        draft.keyframes[timeIndex].isDeleted = true;
-        draft.keyframes[timeIndex].isSelected = false;
+      deletedLayerKeyframes.forEach((time) => {
+        const keyframeIndex = findElementIndex(layerTrack.keyframes, time, 'time');
+        draft.keyframes[keyframeIndex].isDeleted = true;
+        draft.keyframes[keyframeIndex].isSelected = false;
       });
     });
   };
