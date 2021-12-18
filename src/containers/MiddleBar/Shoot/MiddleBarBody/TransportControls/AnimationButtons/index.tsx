@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { useRef, Fragment } from 'react';
 import { useSelector } from 'reducers';
 import { PlayDirection } from 'types/RP';
 import Pause from './Pause';
@@ -14,6 +14,7 @@ const cx = classNames.bind(styles);
 const Buttons = () => {
   const playState = useSelector((state) => state.animatingControls.playState);
   const playDirection = useSelector((state) => state.animatingControls.playDirection);
+  const requestAnimationFrameId = useRef(0);
 
   const ButtonState = () => {
     const isPlaying = playState === 'play';
@@ -21,23 +22,23 @@ const Buttons = () => {
       if (playDirection === PlayDirection.forward) {
         return (
           <Fragment>
-            <Rewind />
-            <Pause />
+            <Rewind requestAnimationFrameId={requestAnimationFrameId} />
+            <Pause requestAnimationFrameId={requestAnimationFrameId} />
           </Fragment>
         );
       } else {
         return (
           <Fragment>
-            <Pause />
-            <Play />
+            <Pause requestAnimationFrameId={requestAnimationFrameId} />
+            <Play requestAnimationFrameId={requestAnimationFrameId} />
           </Fragment>
         );
       }
     } else {
       return (
         <Fragment>
-          <Rewind />
-          <Play />
+          <Rewind requestAnimationFrameId={requestAnimationFrameId} />
+          <Play requestAnimationFrameId={requestAnimationFrameId} />
         </Fragment>
       );
     }
@@ -47,7 +48,7 @@ const Buttons = () => {
     <div className={cx('animation-buttons')}>
       <Record />
       <ButtonState />
-      <Stop />
+      <Stop requestAnimationFrameId={requestAnimationFrameId} />
     </div>
   );
 };
