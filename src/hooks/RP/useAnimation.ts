@@ -8,6 +8,7 @@ import * as animatingControlsActions from 'actions/animatingControlsAction';
 const useAnimation = () => {
   const dispatch = useDispatch();
 
+  const _screenList = useSelector((state) => state.plaskProject.screenList);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _fps = useSelector((state) => state.plaskProject.fps);
 
@@ -16,16 +17,17 @@ const useAnimation = () => {
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
 
+  // 키프레임 수정이 정상적으로 적용되는지 확인하는 코드
   // useEffect(() => {
   //   console.log('_animationIngredients: ', _animationIngredients);
   // }, [_animationIngredients]);
 
-  // const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
+  // scene에 animationGroup이 누적되어 추가되는지 확인하는 코드
   // useEffect(() => {
-  //   if (_currentAnimationGroup) {
-  //     console.log('_currentAnimationGroup: ', _currentAnimationGroup);
-  //   }
-  // }, [_currentAnimationGroup]);
+  //   _screenList.forEach(({ scene }) => {
+  //     console.log('scene.animationGroups: ', scene.animationGroups);
+  //   });
+  // }, [_screenList, currentAnimationGroup]);
 
   // 애니메이션 생성
   useEffect(() => {
@@ -34,6 +36,12 @@ const useAnimation = () => {
     );
 
     if (visualizedAnimationIngredients.length > 0) {
+      _screenList.forEach(({ scene }) => {
+        scene.animationGroups.forEach((animationGroup) => {
+          scene.removeAnimationGroup(animationGroup);
+        });
+      });
+
       const newAnimationGroup = new BABYLON.AnimationGroup(visualizedAnimationIngredients.length === 1 ? visualizedAnimationIngredients[0].name : 'totalAnimationGroup');
 
       visualizedAnimationIngredients.forEach((animationIngredient) => {
@@ -142,38 +150,7 @@ const useAnimation = () => {
       newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
       dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
     }
-  }, [_animationIngredients, _endTimeIndex, _fps, _startTimeIndex, _visualizedAssetIds, dispatch]);
-
-  //   const scrubberLoopId = useRef(0);
-  //   useEffect(() => {
-  //     const scrubber = document.getElementById('scrubber');
-  //     const scrubberInput = scrubber?.querySelector('input');
-
-  //     if (scrubber && scrubberInput && _currentAnimationGroup?.animatables[0]) {
-  //       window.cancelAnimationFrame(scrubberLoopId.current);
-
-  //       const translateScrubber = (frame: number) => {
-  //         const scaleX = ScaleLinear.getScaleX();
-  //         const nextFrame = Math.floor(frame);
-  //         if (scaleX) {
-  //           scrubber.setAttribute('transform', `translate(${scaleX(nextFrame)}, 0)`);
-  //           scrubberInput.value = `${nextFrame}`;
-  //         }
-  //       };
-
-  //       const loopScrubber = () => {
-  //         translateScrubber(_currentAnimationGroup.animatables[0].masterFrame);
-  //         scrubberLoopId.current = window.requestAnimationFrame(loopScrubber);
-  //       };
-
-  //       switch (_playState) {
-  //         case 'play': {
-  //           scrubberLoopId.current = window.requestAnimationFrame(loopScrubber);
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   }, [_playState, _currentAnimationGroup, dispatch]);
+  }, [_animationIngredients, _endTimeIndex, _fps, _screenList, _startTimeIndex, _visualizedAssetIds, dispatch]);
 };
 
 export default useAnimation;
