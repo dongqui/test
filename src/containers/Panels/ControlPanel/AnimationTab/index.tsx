@@ -91,18 +91,25 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   // controller section을 위한 control controller 선택
   // 선택 대상이 transformNode인 경우 연결된 controller를 선택
-  // useEffect(() => {
-  //   if (_selectedTargets.length === 0) {
-  //     // 선택되지 않은 경우
-  //     setControlTarget(null);
-  //   } else if (_selectedTargets.length === 1) {
-  //     // 단일대상 선택된 경우
-  //     setControlTarget(_selectedTargets[0]);
-  //   } else {
-  //     // 다중대상 선택된 경우
-  //     setControlTarget(null);
-  //   }
-  // }, [_selectedTargets]);
+  useEffect(() => {
+    if (_selectedTargets.length === 0) {
+      // 선택되지 않은 경우
+      setControlTarget(null);
+    } else if (_selectedTargets.length === 1) {
+      // 단일대상 선택된 경우, 대상이 컨트롤러거나 연결된 컨트롤러가 있다면 control controller로 선택
+      if (checkIsTargetMesh(_selectedTargets[0])) {
+        setControlTarget(_selectedTargets[0]);
+      } else {
+        const connectedController = _selectableObjects.find((object) => object.id === _selectedTargets[0].id.replace('transformNode', 'controller'));
+        if (connectedController) {
+          setControlController(connectedController as BABYLON.Mesh);
+        }
+      }
+    } else {
+      // 다중대상 선택된 경우
+      setControlTarget(null);
+    }
+  }, [_selectableObjects, _selectedTargets]);
 
   // filter section을 위한 control track 선택
   useEffect(() => {
@@ -151,17 +158,17 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   });
 
   // 선택 대상에 따라 controller toggle 변경
-  // useEffect(() => {
-  //   if (selectedAssetIds.length === 1) {
-  //     if (_selectableObjects.find((object) => object.id.includes(selectedAssetIds[0]) && checkIsTargetMesh(object))) {
-  //       setIsControllerOn(true);
-  //     } else {
-  //       setIsControllerOn(false);
-  //     }
-  //   } else {
-  //     setIsControllerOn(false);
-  //   }
-  // }, [_selectableObjects, selectedAssetIds]);
+  useEffect(() => {
+    if (selectedAssetIds.length === 1) {
+      if (_selectableObjects.find((object) => object.id.includes(selectedAssetIds[0]) && checkIsTargetMesh(object))) {
+        setIsControllerOn(true);
+      } else {
+        setIsControllerOn(false);
+      }
+    } else {
+      setIsControllerOn(false);
+    }
+  }, [_selectableObjects, selectedAssetIds]);
 
   // 선택 대상에 따라 controller properties 변경
   // useEffect(() => {
