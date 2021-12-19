@@ -29,7 +29,7 @@ const Stop: FunctionComponent<Props> = (props) => {
     scrubberInput.value = `${_startTimeIndex}`;
   }, [_startTimeIndex]);
 
-  const handleStop = useCallback(() => {
+  const handleStopButtonClick = useCallback(() => {
     if (_playState !== 'stop') {
       if (_currentAnimationGroup && _currentAnimationGroup.isStarted) {
         _currentAnimationGroup.goToFrame(_startTimeIndex).stop();
@@ -40,7 +40,7 @@ const Stop: FunctionComponent<Props> = (props) => {
     }
   }, [_currentAnimationGroup, _playState, _startTimeIndex, requestAnimationFrameId, dispatch, translateScrubber]);
 
-  return <IconWrapper onClick={handleStop} icon={SvgPath.Stop} hasFrame={false} />;
+  return <IconWrapper onClick={handleStopButtonClick} icon={SvgPath.Stop} hasFrame={false} />;
 };
 
 export default Stop;
