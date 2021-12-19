@@ -24,6 +24,7 @@ const Buttons = () => {
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
+  const _currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
 
   const requestAnimationFrameId = useRef(1);
 
@@ -75,14 +76,14 @@ const Buttons = () => {
         _currentAnimationGroup.speedRatio = _playSpeed;
       } else if (_currentAnimationGroup.isStarted) {
         _currentAnimationGroup.speedRatio = _playSpeed;
-        _currentAnimationGroup.play();
+        _currentAnimationGroup.play().goToFrame(_currentTimeIndex);
       } else {
-        _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex);
+        _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).goToFrame(_currentTimeIndex - _startTimeIndex);
       }
       window.cancelAnimationFrame(requestAnimationFrameId.current);
       dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'play', playDirection: PlayDirection.forward }));
     }
-  }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
+  }, [_currentAnimationGroup, _currentTimeIndex, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
 
   // 애니메이션 뒤로 재생 제어
   const editAnimationRewind = useCallback(() => {
@@ -91,14 +92,14 @@ const Buttons = () => {
         _currentAnimationGroup.speedRatio = -1 * _playSpeed;
       } else if (_currentAnimationGroup.isStarted) {
         _currentAnimationGroup.speedRatio = -1 * _playSpeed;
-        _currentAnimationGroup.play();
+        _currentAnimationGroup.play().goToFrame(_currentTimeIndex);
       } else {
-        _currentAnimationGroup.start(true, -1 * _playSpeed, _startTimeIndex, _endTimeIndex);
+        _currentAnimationGroup.start(true, -1 * _playSpeed, _startTimeIndex, _endTimeIndex).goToFrame(_currentTimeIndex - _startTimeIndex);
       }
       window.cancelAnimationFrame(requestAnimationFrameId.current);
       dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'play', playDirection: PlayDirection.backward }));
     }
-  }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
+  }, [_currentAnimationGroup, _currentTimeIndex, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
 
   // 애니메이션 일시정지 제어
   const editAnimationPause = useCallback(() => {

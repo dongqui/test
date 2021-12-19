@@ -13,6 +13,7 @@ interface Props {
 
 const StartInput: FunctionComponent<Props> = (props) => {
   const { startTimeIndex, endTimeIndex, currentTimeIndex, keyDown } = props;
+
   const dispatch = useDispatch();
 
   // start input에 debounce 적용
