@@ -89,10 +89,10 @@ const UpperBar: FunctionComponent<Props> = ({
   return (
     <div className={cx('wrap')}>
       <div className={cx('left-upper')}>
-        <div className={cx('void')} />
+        {/* <div className={cx('void')} />
         <div className={cx('left-upper-inner')}>
           <span className={cx('scene-name')}>{sceneName}</span>
-        </div>
+        </div> */}
       </div>
       <div className={cx('middle-upper')}></div>
       <div className={cx('right-upper')}>

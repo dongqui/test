@@ -3,7 +3,7 @@ import { cloneDeep } from 'lodash';
 import { PlaskRetargetMap, RetargetSourceBoneType } from 'types/common';
 import createEmptyRetargetMap from './createEmptyRetargetMap';
 
-const DEFAULT_TIME_OUT = 3000;
+const DEFAULT_TIMEOUT = 3000;
 const MAX_ITERATE_COUNT = 20; // 잘못된 bone 구조의 model에 의해 while문을 빠져나오지 못하는 경우를 막기 위한 최대 반복 횟수
 
 const SOURCE_BONES = {
@@ -202,7 +202,7 @@ const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?:
     // timeout을 넘어서면 실패를 반환
     setTimeout(() => {
       reject('Timeout: Auto retargeting has failed');
-    }, timeout ?? DEFAULT_TIME_OUT);
+    }, timeout ?? DEFAULT_TIMEOUT);
   });
 };
 

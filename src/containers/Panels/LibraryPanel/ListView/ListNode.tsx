@@ -12,7 +12,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { filterAnimatableTransformNodes } from 'utils/common';
-import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
+import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove, checkPasteDuplicates } from 'utils/LP/FileSystem';
 import { getRetargetedMocapData } from 'utils/LP/Retarget';
 import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
@@ -20,6 +20,7 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import { AnimationIngredient } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 
@@ -162,15 +163,59 @@ const ListNode: FunctionComponent<Props> = ({
     [lpNode],
   );
 
-  const depthChangeKey = useCallback((node: LP.Node[], childID: string, parentNode: LP.Node) => {
-    const changeNode = find(node, { id: childID });
+  const saveChildrensKey = useCallback((before: string[], key: string) => {
+    const result = before.concat(key);
+    return result;
+  }, []);
+
+  const depthChangeKey = useCallback(
+    (node: LP.Node[], childID: string, parentNode: LP.Node) => {
+      const changeNode = find(node, { id: childID });
+      let memory: string[] = [];
+
+      if (changeNode) {
+        const cloneChangeNode = cloneDeep(changeNode);
+
+        cloneChangeNode.id = uuid();
+        cloneChangeNode.parentId = parentNode.id;
+        cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+
+        parentNode.children = parentNode.children.concat(cloneChangeNode.id);
+
+        node = node.concat(cloneChangeNode);
+
+        if (cloneChangeNode.children.length > 0) {
+          cloneChangeNode.children.map((child) => {
+            memory = saveChildrensKey(memory, child);
+            depthChangeKey(node, child, cloneChangeNode);
+          });
+        }
+
+        cloneChangeNode.children = cloneChangeNode.children.filter((key) => !memory.includes(key));
+      }
+    },
+    [saveChildrensKey],
+  );
+
+  const depthAddKey = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
+    const changeNode = find(node, { id: childId });
 
     if (changeNode) {
-      changeNode.parentId = parentNode.id;
-      changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+      const cloneChangeNode = cloneDeep(changeNode);
+      cloneChangeNode.id = uuid();
+      cloneChangeNode.parentId = parentNode.id;
+      cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+
+      const index = parentNode.children.indexOf(childId);
+
+      if (index > -1) {
+        parentNode.children.splice(index, 1);
+        parentNode.children.push(cloneChangeNode.id);
+        node.push(cloneChangeNode);
+      }
 
       if (changeNode.children.length > 0) {
-        changeNode.children.map((child) => depthChangeKey(node, child, changeNode));
+        changeNode.children.map((child) => depthAddKey(node, child, cloneChangeNode));
       }
     }
   }, []);
@@ -314,6 +359,77 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, [_assetList, _screenList, _selectableObjects, _visualizedAssetIds, assetId, dispatch]);
 
+  const deleteChild = useCallback((node: LP.Node[], ids: string[]) => {
+    let memory: LP.Node[] = [];
+
+    let afterNodes = node.filter((current) => !ids.includes(current.id));
+
+    if (ids.length > 0) {
+      ids.forEach((currentId) => {
+        const searchedNode = find(node, { id: currentId });
+
+        if (searchedNode) {
+          searchedNode.children.forEach((child) => {
+            afterNodes = afterNodes.filter((current) => !searchedNode.children.includes(current.id));
+
+            memory = deleteChild(afterNodes, [child]);
+          });
+        }
+
+        memory = afterNodes;
+      });
+      return memory;
+    } else {
+      return node;
+    }
+  }, []);
+
+  const handleDelete = useCallback(
+    async (selectId: string, selectAssetId?: string) => {
+      const confirmed = await getConfirm({
+        title: 'Confirm',
+        message: 'Are you sure you want to delete the file?',
+        confirmText: '확인',
+        cancelText: '취소',
+      });
+
+      if (!confirmed) {
+        return;
+      }
+
+      const afterNodes = deleteChild(lpNode, [selectId]);
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: afterNodes,
+        }),
+      );
+
+      if (selectAssetId) {
+        const targetAsset = _assetList.find((asset) => asset.id === selectAssetId);
+        const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(selectAssetId) && !checkIsTargetMesh(object));
+        const targetControllers = _selectableObjects.filter((object) => object.id.includes(selectAssetId) && checkIsTargetMesh(object));
+
+        // delete 대상이 render된 scene에서 대상의 요소들 remove
+        if (targetAsset) {
+          _screenList
+            .map((screen) => screen.scene)
+            .forEach((scene) => {
+              removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+            });
+        }
+
+        // assetList에서 제외
+        dispatch(plaskProjectActions.removeAsset({ assetId: selectAssetId }));
+        // animationData 삭제
+        dispatch(animationDataActions.removeAsset({ assetId: selectAssetId }));
+        // 선택 대상에서 제외
+        dispatch(selectingDataActions.unrenderAsset({ assetId: selectAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+      }
+    },
+    [getConfirm, deleteChild, lpNode, dispatch, _assetList, _selectableObjects, _screenList],
+  );
+
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -373,7 +489,7 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Delete',
                 onClick: () => {
-                  onDelete();
+                  handleDelete(id);
                   // const cloneLPNode = cloneDeep(lpNode);
                   // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
 
@@ -432,6 +548,8 @@ const ListNode: FunctionComponent<Props> = ({
                   let nextLPNodes = cloneDeep(lpNode);
 
                   lpClipboard.forEach((value) => {
+                    let memory: string[] = [];
+
                     const copyNode = value;
                     const cloneCopyNode = cloneDeep(copyNode);
 
@@ -484,9 +602,14 @@ const ListNode: FunctionComponent<Props> = ({
                           draft.push(cloneCopyNode);
 
                           if (cloneCopyNode.children.length > 0) {
-                            cloneCopyNode.children.map((child) => depthChangeKey(draft, child, cloneCopyNode));
+                            cloneCopyNode.children.map((child) => {
+                              memory = saveChildrensKey(memory, child);
+                              depthChangeKey(draft, child, cloneCopyNode);
+                            });
                           }
                         }
+
+                        cloneCopyNode.children = cloneCopyNode.children.filter((key) => !memory.includes(key));
                       });
 
                       nextLPNodes = nextNodes;
@@ -564,7 +687,7 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Delete',
                 onClick: () => {
-                  onDelete();
+                  handleDelete(id, assetId);
                   // const cloneLPNode = cloneDeep(lpNode);
                   // const afterNodes = remove(cloneLPNode, (node) => node.id !== id);
 
@@ -694,6 +817,7 @@ const ListNode: FunctionComponent<Props> = ({
                       const motion: LP.Node = {
                         id: nextAnimationIngredient.id,
                         // parentId: nextAnimationIngredient.assetId,
+                        assetId: assetId,
                         parentId: id,
                         name: nextAnimationIngredient.name,
                         // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
@@ -860,11 +984,78 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: handleEdit,
                 children: [],
               },
-              {
-                label: 'Copy',
-                onClick: () => {},
-                children: [],
-              },
+              // {
+              //   label: 'Duplicate',
+              //   onClick: () => {
+              //     let tempMotion: LP.Node | undefined;
+              //     let tempAnimationIngredient: AnimationIngredient | undefined;
+              //     const parentModel = find(lpNode, { id: parentId });
+
+              //     const nextNodes = produce(lpNode, (draft) => {
+              //       const draftParentModel = find(draft, { id: parentId });
+
+              //       if (draftParentModel) {
+              //         const motions = filter(_animationIngredients, { assetId: draftParentModel.assetId });
+
+              //         if (motions && draftParentModel.assetId) {
+              //           const selectedMotion = find(motions, { id });
+
+              //           if (selectedMotion) {
+              //             const currentPathNodeNames = lpNode.filter((node) => node.parentId === parentId && node.name.includes(name)).map((filteredNode) => filteredNode.name);
+
+              //             const check = checkPasteDuplicates(name, currentPathNodeNames);
+
+              //             const nodeName = check === '0' ? name : `${name} (${check})`;
+
+              //             const animationIngredient: AnimationIngredient = {
+              //               ...selectedMotion,
+              //               id: uuid(),
+              //             };
+
+              //             const motion: LP.Node = {
+              //               id: uuid(),
+              //               assetId: draftParentModel.assetId,
+              //               parentId: draftParentModel.id,
+              //               name: nodeName,
+              //               filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
+              //               children: [],
+              //               extension: '',
+              //               type: 'Motion',
+              //             };
+
+              //             tempAnimationIngredient = animationIngredient;
+              //             tempMotion = motion;
+
+              //             draftParentModel.children.push(motion.id);
+              //             draft.push(motion);
+              //           }
+              //         }
+              //       }
+              //     });
+
+              //     dispatch(
+              //       lpNodeActions.changeNode({
+              //         nodes: nextNodes,
+              //       }),
+              //     );
+
+              //     if (parentModel && parentModel.assetId && tempMotion && tempAnimationIngredient) {
+              //       dispatch(
+              //         plaskProjectActions.addAnimationIngredient({
+              //           assetId: parentModel.assetId,
+              //           animationIngredientId: tempMotion.id,
+              //         }),
+              //       );
+
+              //       dispatch(
+              //         animationDataActions.addAnimationIngredient({
+              //           animationIngredient: tempAnimationIngredient,
+              //         }),
+              //       );
+              //     }
+              //   },
+              //   children: [],
+              // },
               {
                 label: 'Visualization',
                 onClick: () => {
@@ -936,6 +1127,7 @@ const ListNode: FunctionComponent<Props> = ({
       };
     }
   }, [
+    _animationIngredients,
     _animationTransformNodes,
     _assetList,
     _screenList,
@@ -948,7 +1140,9 @@ const ListNode: FunctionComponent<Props> = ({
     dispatch,
     extension,
     filePath,
+    handleDelete,
     handleEdit,
+    handleVisualization,
     id,
     lpClipboard,
     lpCurrentPath,
@@ -958,13 +1152,12 @@ const ListNode: FunctionComponent<Props> = ({
     onCopy,
     onDelete,
     onModalClose,
-    _animationIngredients,
-    parentId,
     onModalOpen,
     onSelect,
+    parentId,
+    saveChildrensKey,
     selectedId,
     type,
-    handleVisualization,
   ]);
 
   const classes = cx('outer', { selected: isSelected });
@@ -1069,7 +1262,7 @@ const ListNode: FunctionComponent<Props> = ({
         })
         .map((filteredNode) => filteredNode.name);
 
-      const nodeName = await beforeRename({
+      await beforeRename({
         name: text,
         comparison: currentPathNodeName,
       })
@@ -1078,7 +1271,6 @@ const ListNode: FunctionComponent<Props> = ({
             const parent = find(draft, { id: parentId });
             // @todo 생성하지않고 교체하기
             const targetIndex = draft.findIndex((element) => element.id === id);
-
             const newNode: LP.Node = {
               id: id,
               // filePath: lpCurrentPath + `\\${name}`,
@@ -1091,20 +1283,15 @@ const ListNode: FunctionComponent<Props> = ({
               extension: extension,
               children: childrens,
             };
-
             // if (parent) {
             //   parent.children.push(newNode.id);
             // }
-
             if (newNode.children.length > 0) {
-              newNode.children.map((child) => depthChangeKey(draft, child, newNode));
+              newNode.children.forEach((child) => depthChangeKey(draft, child, newNode));
             }
-
             draft[targetIndex] = newNode;
-
             setIsEditing(false);
           });
-
           dispatch(
             lpNodeActions.changeNode({
               nodes: nextNodes,
@@ -1619,24 +1806,12 @@ const ListNode: FunctionComponent<Props> = ({
     [handleVisualization],
   );
 
-  const handleContextMenu = useCallback(() => {
-    onSelect && onSelect(id, assetId);
-  }, [assetId, id, onSelect]);
-
   return (
     <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
       <div className={classes} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
         <div className={cx('inner')}>
           {/* <div className={wrapperClasses} ref={wrapperRef} onContextMenu={handleSelect} style={{ paddingLeft: `${16 * (depth - 1)}px` }}> */}
-          <div
-            className={wrapperClasses}
-            ref={wrapperRef}
-            onContextMenu={handleContextMenu}
-            style={{ paddingLeft: `${16 * (depth - 1)}px` }}
-            id={selectableId}
-            data-id={id}
-            data-assetid={assetId}
-          >
+          <div className={wrapperClasses} ref={wrapperRef} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={selectableId} data-id={id} data-assetid={assetId}>
             <div style={{ paddingLeft: '7px' }} />
             {type !== 'Motion' && (
               <div className={cx('arrow-wrapper')} ref={arrowRef}>
