@@ -1,6 +1,7 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
 import produce from 'immer';
 import * as animationDataActions from 'actions/animationDataAction';
+import * as keyframesActions from 'actions/keyframes';
 import { RootState } from 'reducers';
 import { getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
@@ -139,7 +140,7 @@ function* worker() {
       );
 
       // TP saga 붙이는 곳(찰찰)
-      console.log('updatedPropertyKeyframes: ', updatedPropertyKeyframes);
+      yield put(keyframesActions.addKeyframes(updatedPropertyKeyframes));
     }
   }
 }
