@@ -14,21 +14,12 @@ interface Props {
   withSwitch?: boolean;
   checked?: boolean;
   activeStatus: boolean;
-  setIsSpread: Dispatch<SetStateAction<boolean>>;
   handleToggle?: any;
   canToggle?: boolean;
+  handleSpread: () => void;
 }
 
-const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withSwitch, isPowerOn, isSpread, setIsSpread, handleToggle, canToggle, activeStatus }) => {
-  // 해당 section의 단순 펼침/접음 적용 (비활성화 X)
-  const handleSpread = useCallback(() => {
-    if (isSpread) {
-      setIsSpread(false);
-    } else {
-      setIsSpread(true);
-    }
-  }, [isSpread, setIsSpread]);
-
+const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withSwitch, isPowerOn, isSpread, handleToggle, canToggle, activeStatus, handleSpread }) => {
   // 해당 section의 비활성화
   const handleTogglePower = useCallback(() => {
     canToggle && handleToggle && handleToggle();
