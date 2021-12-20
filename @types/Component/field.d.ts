@@ -22,6 +22,17 @@ declare namespace Field {
     }[];
   };
 
+  type DropdownProps = {
+    list: {
+      value: string;
+      label: string;
+    }[];
+    initialValue: {
+      value: string;
+      label: string;
+    };
+  };
+
   type BaseComponentProps = ControllerRenderProps;
 
   type RenderProps<T extends {}> = ControllerRenderProps & {
