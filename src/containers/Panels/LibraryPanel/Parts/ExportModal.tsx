@@ -99,25 +99,29 @@ const ExportModal: FunctionComponent<Props> = ({ motions, onConfirm, onCancel, o
               <div className={cx('field')}>
                 <div className={cx('row')}>
                   <div className={cx('field-label')}>Motion:</div>
-                  <BaseField<Field.DropdownProps>
-                    render={(field) => <Dropdown {...field} />}
-                    control={props.control}
-                    name="motion"
-                    list={motionList}
-                    initialValue={initialMotionValue}
-                    required
-                  />
+                  <div className={cx('field-value')}>
+                    <BaseField<Field.DropdownProps>
+                      render={(field) => <Dropdown {...field} />}
+                      control={props.control}
+                      name="motion"
+                      list={motionList}
+                      initialValue={initialMotionValue}
+                      required
+                    />
+                  </div>
                 </div>
                 <div className={cx('row')}>
                   <div className={cx('field-label')}>Format:</div>
-                  <BaseField<Field.DropdownProps>
-                    render={(field) => <Dropdown {...field} />}
-                    control={props.control}
-                    name="format"
-                    list={formatList}
-                    initialValue={formatList[0]}
-                    required
-                  />
+                  <div className={cx('field-value')}>
+                    <BaseField<Field.DropdownProps>
+                      render={(field) => <Dropdown {...field} />}
+                      control={props.control}
+                      name="format"
+                      list={formatList}
+                      initialValue={formatList[0]}
+                      required
+                    />
+                  </div>
                 </div>
               </div>
               <div className={cx('buttons')}>
