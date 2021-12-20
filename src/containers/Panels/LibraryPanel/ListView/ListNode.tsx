@@ -10,9 +10,10 @@ import produce from 'immer';
 import { v4 as uuid } from 'uuid';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
 import { filterAnimatableTransformNodes } from 'utils/common';
 import { filterQuaternion, filterVector } from 'utils/RP';
-import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove, checkPasteDuplicates } from 'utils/LP/FileSystem';
+import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { getRetargetedMocapData } from 'utils/LP/Retarget';
 import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
@@ -22,7 +23,7 @@ import * as cpActions from 'actions/CP/cpModeSelection';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import { PlaskMocapData } from 'types/common';
+import { AnimationIngredient, PlaskMocapData } from 'types/common';
 import ListCurrent from './ListCurrent';
 import ListChildren from './ListChildren';
 import classNames from 'classnames/bind';
@@ -380,6 +381,9 @@ const ListNode: FunctionComponent<Props> = ({
     },
     [_assetList, _lpNode, _screenList, _selectableObjects, deleteChild, dispatch, getConfirm],
   );
+
+  const [currentMotions, setCurrentMotions] = useState<AnimationIngredient[]>([]);
+  const [isOpenExportModal, setIsOpenExportModal] = useState(false);
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -796,6 +800,18 @@ const ListNode: FunctionComponent<Props> = ({
                       }),
                     );
                   }
+                },
+                children: [],
+              },
+              {
+                label: 'Export',
+                onClick: () => {
+                  const motions = _animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
+
+                  const baseScene = _screenList[0].scene;
+
+                  setCurrentMotions(motions);
+                  setIsOpenExportModal(true);
                 },
                 children: [],
               },
@@ -1827,39 +1843,52 @@ const ListNode: FunctionComponent<Props> = ({
     LP_EDIT_NAME: handleEdit,
   };
 
+  const handleExportConfirm = useCallback((data: any) => {
+    console.log('handleExportConfirm');
+    console.log(data);
+    setIsOpenExportModal(false);
+  }, []);
+
+  const handleExportCancel = useCallback(() => {
+    setIsOpenExportModal(false);
+  }, []);
+
   return (
-    <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
-      <div className={cx('outer')} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
-        <div className={classes} id="inner">
-          <ListCurrent
-            id={id}
-            assetId={assetId}
-            type={type}
-            name={name}
-            depth={depth}
-            isEditing={isEditing}
-            wrapperRef={wrapperRef}
-            textRef={textRef}
-            renameRef={renameRef}
-            onClick={handleArrowClick}
-            onBlur={handleBlur}
-            onKeyDown={handleKeydown}
-            defaultValue={fileName}
-          />
-          {showsChildrens && (
-            <ListChildren
-              items={childrens}
-              onSelect={onSelect}
-              selectedId={selectedId}
-              onSetDragTarget={onSetDragTarget}
-              dragTarget={dragTarget}
-              onCopy={onCopy}
-              onDelete={onDelete}
+    <Fragment>
+      <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
+        <div className={cx('outer')} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
+          <div className={classes} id="inner">
+            <ListCurrent
+              id={id}
+              assetId={assetId}
+              type={type}
+              name={name}
+              depth={depth}
+              isEditing={isEditing}
+              wrapperRef={wrapperRef}
+              textRef={textRef}
+              renameRef={renameRef}
+              onClick={handleArrowClick}
+              onBlur={handleBlur}
+              onKeyDown={handleKeydown}
+              defaultValue={fileName}
             />
-          )}
+            {showsChildrens && (
+              <ListChildren
+                items={childrens}
+                onSelect={onSelect}
+                selectedId={selectedId}
+                onSetDragTarget={onSetDragTarget}
+                dragTarget={dragTarget}
+                onCopy={onCopy}
+                onDelete={onDelete}
+              />
+            )}
+          </div>
         </div>
-      </div>
-    </HotKeys>
+      </HotKeys>
+      {isOpenExportModal && <ExportModal motions={currentMotions} onCancel={handleExportCancel} onConfirm={handleExportConfirm} onOutsideClose={handleExportCancel} />}
+    </Fragment>
   );
 };
 
