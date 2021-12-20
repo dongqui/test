@@ -36,7 +36,7 @@ const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChan
   return (
     <Fragment>
       <div className={cx('wrapper')} ref={ref} onClick={handleToggle}>
-        {initialValue.label}
+        <div className={cx('inner')}>{initialValue.label}</div>
       </div>
       {isOpen && (
         <div>

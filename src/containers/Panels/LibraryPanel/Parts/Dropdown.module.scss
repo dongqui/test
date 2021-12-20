@@ -2,5 +2,23 @@
 @import 'styles/libraries/_mixins';
 
 .wrapper {
+  // width: 140px;
+  background-color: var(--gray300);
+  color: var(--gray700);
+  height: 24px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  padding: 5.5px 8px;
+  border-radius: 6px;
+}
 
+.inner {
+  overflow-x: hidden;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
