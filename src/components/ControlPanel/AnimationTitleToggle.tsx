@@ -15,10 +15,11 @@ interface Props {
   checked?: boolean;
   activeStatus: boolean;
   setIsSpread: Dispatch<SetStateAction<boolean>>;
-  setIsPowerOn?: Dispatch<SetStateAction<boolean>>;
+  handleToggle?: any;
+  canToggle?: boolean;
 }
 
-const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withSwitch, isPowerOn, setIsPowerOn, isSpread, setIsSpread, activeStatus }) => {
+const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withSwitch, isPowerOn, isSpread, setIsSpread, handleToggle, canToggle, activeStatus }) => {
   // 해당 section의 단순 펼침/접음 적용 (비활성화 X)
   const handleSpread = useCallback(() => {
     if (isSpread) {
@@ -30,12 +31,8 @@ const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withS
 
   // 해당 section의 비활성화
   const handleTogglePower = useCallback(() => {
-    if (isPowerOn) {
-      setIsPowerOn && setIsPowerOn(false);
-    } else {
-      setIsPowerOn && setIsPowerOn(true);
-    }
-  }, [isPowerOn, setIsPowerOn]);
+    canToggle && handleToggle && handleToggle();
+  }, [canToggle, handleToggle]);
 
   const classes = cx('wrapper', className, { able: activeStatus });
 
@@ -46,7 +43,7 @@ const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withS
       </button>
       {withSwitch && isPowerOn !== undefined && (
         <Switch
-          className={cx('toggle-switch')}
+          className={cx('toggle-switch', { inactive: !canToggle })}
           onChange={handleTogglePower}
           checked={activeStatus && isPowerOn}
           onColor="#0F88FF"

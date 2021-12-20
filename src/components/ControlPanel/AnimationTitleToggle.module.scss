@@ -38,3 +38,13 @@
     }
   }
 }
+
+.toggle-switch {
+  &.inactive {
+    cursor: not-allowed !important;
+
+    & > div {
+      cursor: not-allowed !important;
+    }
+  }
+}
