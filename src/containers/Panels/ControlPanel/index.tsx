@@ -1,6 +1,6 @@
 import { FunctionComponent, memo, useMemo, useState } from 'react';
-import AnimationTab from './AnimationTab/AnimationTab';
-import RetargetTab from './RetargetTab/RetargetTab';
+import AnimationTab from './AnimationTab';
+import RetargetTab from './RetargetTab';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { useSelector } from 'reducers';

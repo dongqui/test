@@ -10,9 +10,11 @@ export type AnimationDataAction =
   | ReturnType<typeof editAnimationIngredients>
   | ReturnType<typeof changeCurrentAnimationIngredient>
   | ReturnType<typeof removeAnimationIngredient>
+  | ReturnType<typeof toggleLayerMuteness>
+  | ReturnType<typeof turnFilterOn>
+  | ReturnType<typeof turnFilterOff>
   | ReturnType<typeof assignBoneMapping>
-  | ReturnType<typeof changeHipSpace>
-  | ReturnType<typeof toggleLayerMuteness>;
+  | ReturnType<typeof changeHipSpace>;
 
 // transformNodes 관련
 const ADD_ASSET = 'animationDataAction/ADD_ASSET' as const;
@@ -26,6 +28,8 @@ const REMOVE_ANIMATION_INGREDIENT = 'animationDataAction/REMOVE_ANIMATION_INGRED
 const TOGGLE_LAYER_MUTENESS = 'animationDataAction/TOGGLE_LAYER_MUTENESS' as const;
 const CHANGE_CURRENT_ANIMATION_INGREDIENT = 'animationDataAction/CHANGE_CURRENT_ANIMATION_INGREDIENT' as const;
 export const EDIT_KEYFRAMES = 'animationDataAction/EDIT_KEYFRAMES' as const; // saga내 사용을 위해 export
+const TURN_FILTER_ON = 'animationDataAction/TURN_FILTER_ON' as const;
+const TURN_FILTER_OFF = 'animationDataAction/TURN_FILTER_OFF' as const;
 
 // retargetMap 관련
 const ASSIGN_BONE_MAPPING = 'animationDataAction/ASSIGN_BONE_MAPPING' as const;
@@ -197,9 +201,37 @@ export const editKeyframes = (params: EditKeyframes) => ({
   },
 });
 
-interface EditRetargetMap {
-  retargetMap: PlaskRetargetMap;
+interface TurnFilterOn {
+  animationIngredientId: string;
 }
+
+/**
+ * animationIngredient에 filter를 적용합니다.
+ *
+ * @param animationIngredeint - 대상 animationIngredient의 id
+ */
+export const turnFilterOn = (params: TurnFilterOn) => ({
+  type: TURN_FILTER_ON,
+  payload: {
+    ...params,
+  },
+});
+
+interface TurnFilterOff {
+  animationIngredientId: string;
+}
+
+/**
+ * animationIngredient의 filter 적용을 해제합니다.
+ *
+ * @param animationIngredeint - 대상 animationIngredient의 id
+ */
+export const turnFilterOff = (params: TurnFilterOff) => ({
+  type: TURN_FILTER_OFF,
+  payload: {
+    ...params,
+  },
+});
 
 interface AssignBoneMapping {
   assetId: string;
