@@ -1,4 +1,4 @@
-import { Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import * as BABYLON from '@babylonjs/core';
 import { isNull, uniq } from 'lodash';
 import { useDispatch } from 'react-redux';
@@ -204,17 +204,43 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [controlTrack]);
 
-  const handleControllerToggle = useCallback(() => {
-    // if (isControllerOn) {
-    //   setIsControllerOn(false);
-    //   // 컨트롤러 제거
-    // } else {
-    //   setIsControllerOn(true);
-    //   // 컨트롤러 생성
-    // }
-    // }, [isControllerOn]);
-  }, []);
+  // Transform section을 펼치거나 접을 수 있는 콜백
+  const handleSpreadTransform = useCallback(() => {
+    if (isTransformSectionSpread) {
+      setIsTransformSectionSpread(false);
+    } else {
+      setIsTransformSectionSpread(true);
+    }
+  }, [isTransformSectionSpread]);
 
+  // Controller section읅 펼치거나 접을 수 있는 콜백
+  const handleSpreadController = useCallback(() => {
+    if (isControllerSectionSpread) {
+      setIsControllerSectionSpread(false);
+    } else {
+      setIsControllerSectionSpread(true);
+    }
+  }, [isControllerSectionSpread]);
+
+  // Filter section읅 펼치거나 접을 수 있는 콜백
+  const handleSpreadFilter = useCallback(() => {
+    if (isFilterSectionSpread) {
+      setIsFilterSectionSpread(false);
+    } else {
+      setIsFilterSectionSpread(true);
+    }
+  }, [isFilterSectionSpread]);
+
+  // Controller의 활성화 / 비활성화
+  const handleControllerToggle = useCallback(() => {
+    if (isControllerOn) {
+      setIsControllerOn(false);
+    } else {
+      setIsControllerOn(true);
+    }
+  }, [isControllerOn]);
+
+  // Filter의 활성화 비활성화
   const handleFilterToggle = useCallback(() => {
     if (isFilterOn) {
       if (selectedAssetIds.length === 1) {
@@ -503,8 +529,38 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   ];
 
   const filterRangeData = [
-    { text: 'Fcmin', step: 0.01, currentMax: 10, currentValue: fcValue, setCurrentValue: setFcValue, decimalDigit: 2 },
-    { text: 'Beta', step: 0.001, currentMax: 1, currentValue: betaValue, setCurrentValue: setBetaValue, decimalDigit: 3 },
+    {
+      text: 'Fcmin',
+      step: 0.01,
+      currentMax: 10,
+      currentValue: fcValue,
+      setCurrentValue: setFcValue,
+      decimalDigit: 2,
+      handleChange: (event: ChangeEvent<HTMLInputElement>) => {
+        setFcValue(parseFloat(event.target.value));
+        console.log('fcValue: ');
+        console.log(parseFloat(event.target.value));
+      },
+      onChangeEnd: (inputValue: number) => {
+        // dispatch를 mouse up, on blur에만 동작하기 위해서는 이 곳에 추가
+      },
+    },
+    {
+      text: 'Beta',
+      step: 0.001,
+      currentMax: 1,
+      currentValue: betaValue,
+      setCurrentValue: setBetaValue,
+      decimalDigit: 3,
+      handleChange: (event: ChangeEvent<HTMLInputElement>) => {
+        setBetaValue(parseFloat(event.target.value));
+        console.log('betaValue: ');
+        console.log(parseFloat(event.target.value));
+      },
+      onChangeEnd: (inputValue: number) => {
+        // dispatch를 mouse up, on blur에만 동작하기 위해서는 이 곳에 추가
+      },
+    },
   ];
 
   const rotationTypeDropdownData: Array<{ text: PlaskRotationType; handleSelect: Dispatch<SetStateAction<PlaskRotationType>> }> = [
@@ -521,7 +577,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   return (
     <Fragment>
       <section className={cx('transform-section')}>
-        <AnimationTitleToggle text="Transform" isSpread={isTransformSectionSpread} setIsSpread={setIsTransformSectionSpread} activeStatus={isAllActive && !isNull(controlTarget)} />
+        <AnimationTitleToggle text="Transform" isSpread={isTransformSectionSpread} handleSpread={handleSpreadTransform} activeStatus={isAllActive && !isNull(controlTarget)} />
         <div className={cx('container', { active: isTransformSectionSpread })}>
           <AnimationInputWrapper inputTitle="Position" inputInfo={positionInputData} activeStatus={isAllActive && !isNull(controlTarget)} />
           {currentRotationType === 'euler' ? (
@@ -538,7 +594,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         <AnimationTitleToggle
           text="FK Controller"
           isSpread={isControllerSectionSpread}
-          setIsSpread={setIsControllerSectionSpread}
+          handleSpread={handleSpreadController}
           isPowerOn={isControllerOn}
           handleToggle={handleControllerToggle}
           withSwitch={true}
@@ -560,7 +616,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         <AnimationTitleToggle
           text="Filter"
           isSpread={isFilterSectionSpread}
-          setIsSpread={setIsFilterSectionSpread}
+          handleSpread={handleSpreadFilter}
           isPowerOn={isFilterOn}
           handleToggle={handleFilterToggle}
           withSwitch={true}
@@ -576,9 +632,9 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
               step={info.step}
               currentMax={info.currentMax}
               currentValue={info.currentValue}
-              setCurrentValue={info.setCurrentValue}
               decimalDigit={info.decimalDigit}
               activeStatus={isAllActive && isFilterOn && !isNull(controlTrack)}
+              handleChange={info.handleChange}
             />
           ))}
           {(!isAllActive || !isFilterOn) && <div className={cx('inactive-overlay')}></div>}
