@@ -99,7 +99,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
           if (controlTarget) {
-            const prevE = controlTarget.rotationQuaternion!.clone().normalize().toEulerAngles();
+            const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
             const e = new BABYLON.Vector3(parseFloat(event.target.value), prevE.y, prevE.z);
             const q = e.toQuaternion();
             controlTarget.rotationQuaternion = q;
@@ -110,7 +110,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       defaultValue: useMemo(() => {
         if (controlTarget) {
           const q = controlTarget.rotationQuaternion!.clone();
-          return q.normalize().toEulerAngles().x;
+          return q.toEulerAngles().x;
         } else {
           return 0;
         }
@@ -122,7 +122,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
           if (controlTarget) {
-            const prevE = controlTarget.rotationQuaternion!.clone().normalize().toEulerAngles();
+            const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
             const e = new BABYLON.Vector3(prevE.x, parseFloat(event.target.value), prevE.z);
             const q = e.toQuaternion();
             controlTarget.rotationQuaternion = q;
@@ -133,7 +133,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       defaultValue: useMemo(() => {
         if (controlTarget) {
           const q = controlTarget.rotationQuaternion!.clone();
-          return q.normalize().toEulerAngles().y;
+          return q.toEulerAngles().y;
         } else {
           return 0;
         }
@@ -145,7 +145,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
           if (controlTarget) {
-            const prevE = controlTarget.rotationQuaternion!.clone().normalize().toEulerAngles();
+            const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
             const e = new BABYLON.Vector3(prevE.x, prevE.y, parseFloat(event.target.value));
             const q = e.toQuaternion();
             controlTarget.rotationQuaternion = q;
@@ -156,7 +156,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       defaultValue: useMemo(() => {
         if (controlTarget) {
           const q = controlTarget.rotationQuaternion!.clone();
-          return q.normalize().toEulerAngles().z;
+          return q.toEulerAngles().z;
         } else {
           return 0;
         }
