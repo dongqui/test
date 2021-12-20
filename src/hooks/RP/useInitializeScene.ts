@@ -174,7 +174,7 @@ const useInitializeScene = (params: Params) => {
       const { scene } = targetScreen;
       let startPointerPosition: Nullable<ScreenXY> = null;
 
-      const dragBox = document.querySelector('#_dragBox') as HTMLDivElement;
+      const dragBox = document.querySelector('#rpDragBox') as HTMLDivElement;
       const dragBoxDefaultStyle = 'background-color: gray; position: absolute; opacity: 0.3; pointer-events: none;';
       dragBox.setAttribute('style', dragBoxDefaultStyle);
 
