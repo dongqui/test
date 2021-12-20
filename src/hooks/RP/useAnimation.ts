@@ -25,9 +25,17 @@ const useAnimation = () => {
 
   const [currentAnimationGroup, setCurrentAnimationGroup] = useState<BABYLON.AnimationGroup>();
 
+  // 키프레임 수정이 정상적으로 적용되는지 확인하는 코드
   // useEffect(() => {
   //   console.log('_animationIngredients: ', _animationIngredients);
   // }, [_animationIngredients]);
+
+  // scene에 animationGroup이 누적되어 추가되는지 확인하는 코드
+  // useEffect(() => {
+  //   _screenList.forEach(({ scene }) => {
+  //     console.log('scene.animationGroups: ', scene.animationGroups);
+  //   });
+  // }, [_screenList, currentAnimationGroup]);
 
   // 애니메이션 생성
   useEffect(() => {
@@ -35,59 +43,67 @@ const useAnimation = () => {
       (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
 
-    const newAnimationGroup = new BABYLON.AnimationGroup('totalAnimationGroup');
+    if (visualizedAnimationIngredients.length > 0) {
+      _screenList.forEach(({ scene }) => {
+        scene.animationGroups.forEach((animationGroup) => {
+          scene.removeAnimationGroup(animationGroup);
+        });
+      });
 
-    visualizedAnimationIngredients.forEach((animationIngredient) => {
-      // layer 고려가 들어가야 함
-      // 각 layer의 transformNodes 합해주는 연산 필요
-      const { id, name, assetId, tracks, layers } = animationIngredient;
-      tracks.forEach((track) => {
-        // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
-        if (track.transformKeys.length > 0) {
-          if (track.property !== 'rotation') {
-            // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
-            if (track.isIncluded) {
-              if (track.property === 'position' || track.property === 'scaling') {
-                const newAnimation = new BABYLON.Animation(
-                  track.name,
-                  `${track.property}`,
-                  _fps,
-                  BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                  BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                );
-                if (track.useFilter) {
-                  // filter function 적용
-                  newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
-                } else {
-                  newAnimation.setKeys(track.transformKeys);
+      const newAnimationGroup = new BABYLON.AnimationGroup(visualizedAnimationIngredients.length === 1 ? visualizedAnimationIngredients[0].name : 'totalAnimationGroup');
+
+      visualizedAnimationIngredients.forEach((animationIngredient) => {
+        // layer 고려가 들어가야 함
+        // 각 layer의 transformNodes 합해주는 연산 필요
+        const { id, name, assetId, tracks, layers } = animationIngredient;
+        tracks.forEach((track) => {
+          // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
+          if (track.transformKeys.length > 0) {
+            if (track.property !== 'rotation') {
+              // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
+              if (track.isIncluded) {
+                if (track.property === 'position' || track.property === 'scaling') {
+                  const newAnimation = new BABYLON.Animation(
+                    track.name,
+                    `${track.property}`,
+                    _fps,
+                    BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                    BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+                  );
+                  if (track.useFilter) {
+                    // filter function 적용
+                    newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                  } else {
+                    newAnimation.setKeys(track.transformKeys);
+                  }
+                  track.target.animations.push(newAnimation);
+                  newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
+                } else if (track.property === 'rotationQuaternion') {
+                  const newAnimation = new BABYLON.Animation(
+                    track.name,
+                    `${track.property}`,
+                    _fps,
+                    BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                    BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+                  );
+                  if (track.useFilter) {
+                    // filter function 적용
+                    newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                  } else {
+                    newAnimation.setKeys(track.transformKeys);
+                  }
+                  track.target.animations.push(newAnimation);
+                  newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
                 }
-                track.target.animations.push(newAnimation);
-                newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
-              } else if (track.property === 'rotationQuaternion') {
-                const newAnimation = new BABYLON.Animation(
-                  track.name,
-                  `${track.property}`,
-                  _fps,
-                  BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                  BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                );
-                if (track.useFilter) {
-                  // filter function 적용
-                  newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
-                } else {
-                  newAnimation.setKeys(track.transformKeys);
-                }
-                track.target.animations.push(newAnimation);
-                newAnimationGroup.addTargetedAnimation(newAnimation, track.target);
               }
             }
           }
-        }
+        });
       });
-    });
-    newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
-    setCurrentAnimationGroup(newAnimationGroup);
-  }, [_animationIngredients, _endTimeIndex, _fps, _startTimeIndex, _visualizedAssetIds, dispatch]);
+      newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
+      setCurrentAnimationGroup(newAnimationGroup);
+    }
+  }, [_animationIngredients, _endTimeIndex, _fps, _screenList, _startTimeIndex, _visualizedAssetIds]);
 
   // 애니메이션 재생 조작
   useEffect(() => {
