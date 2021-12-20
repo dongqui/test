@@ -122,7 +122,7 @@ export default abstract class PlaskBaseCameraPointersInput implements ICameraInp
         }
       } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
         this.onDoubleTap(evt.pointerType);
-      } else if (p.type === PointerEventTypes.POINTERUP && srcElement && this._altKey) {
+      } else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
         try {
           srcElement.releasePointerCapture(evt.pointerId);
         } catch (e) {
