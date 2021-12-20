@@ -12,14 +12,14 @@ const cx = classNames.bind(styles);
 
 const AutoKey = () => {
   const dispatch = useDispatch();
-  const autokey = useSelector((state) => state.animatingControls.autokey);
+  const isAutokeyOn = useSelector((state) => state.animatingControls.isAutokeyOn);
 
   // auto key 버튼 클릭
   const handleAutoKeyButton = useCallback(() => {
     dispatch(animatingControlsActions.clickAutoKeyButton());
   }, [dispatch]);
 
-  return <TextButton text="Autokey" className={cx({ active: autokey })} onClick={handleAutoKeyButton} />;
+  return <TextButton text="Autokey" className={cx({ active: isAutokeyOn })} onClick={handleAutoKeyButton} />;
 };
 
 export default AutoKey;
