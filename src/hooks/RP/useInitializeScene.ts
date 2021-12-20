@@ -422,6 +422,20 @@ const useInitializeScene = (params: Params) => {
                 }
               }
               break;
+            case 'a':
+            case 'A':
+            case 'ㅁ':
+              if (event.ctrlKey || event.metaKey) {
+                dispatch(selectingDataActions.selectAllSelectableObjects());
+              }
+              break;
+            case 'd':
+            case 'D':
+            case 'ㅇ':
+              if (event.ctrlKey || event.metaKey) {
+                dispatch(selectingDataActions.resetSelectedTargets());
+              }
+              break;
             default: {
               break;
             }
@@ -473,7 +487,7 @@ const useInitializeScene = (params: Params) => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [multiKeyController, prevCameraPositions, screenList]);
+  }, [dispatch, multiKeyController, prevCameraPositions, screenList]);
 };
 
 export default useInitializeScene;
