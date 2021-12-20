@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { find, remove, cloneDeep } from 'lodash';
+import { find, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, useEffect, useState, useCallback, useMemo, useRef, createRef, RefObject } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
@@ -9,6 +9,7 @@ import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { DragBox } from 'components/DragBox';
 import { v4 as uuid } from 'uuid';
+import * as LPCONSTANTS from 'constants/LibraryPanel';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -30,10 +31,9 @@ interface Props {
 const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const dispatch = useDispatch();
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
-
-  const screenList = useSelector((state) => state.plaskProject.screenList);
-  const assetList = useSelector((state) => state.plaskProject.assetList);
-  const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
+  const _screenList = useSelector((state) => state.plaskProject.screenList);
+  const _assetList = useSelector((state) => state.plaskProject.assetList);
+  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [nodeRef, setNodeRef] = useState<RefObject<HTMLDivElement>[]>([]);
@@ -64,18 +64,18 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
         // remove(parentNode.children, (child) => child === childId);
 
-        parentNode.children.push(cloneChangeNode.id);
+        parentNode.childrens.push(cloneChangeNode.id);
 
         node.push(cloneChangeNode);
 
-        if (cloneChangeNode.children.length > 0) {
-          cloneChangeNode.children.map((child) => {
+        if (cloneChangeNode.childrens.length > 0) {
+          cloneChangeNode.childrens.map((child) => {
             memory = saveChildrensKey(memory, child);
             handleDepthChange(node, child, cloneChangeNode);
           });
         }
 
-        cloneChangeNode.children = cloneChangeNode.children.filter((key) => !memory.includes(key));
+        cloneChangeNode.childrens = cloneChangeNode.childrens.filter((key) => !memory.includes(key));
       }
     },
     [saveChildrensKey],
@@ -129,14 +129,14 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
           draft.push(cloneCopyNode);
 
-          if (cloneCopyNode.children.length > 0) {
-            cloneCopyNode.children.map((child) => {
+          if (cloneCopyNode.childrens.length > 0) {
+            cloneCopyNode.childrens.map((child) => {
               memory = saveChildrensKey(memory, child);
               handleDepthChange(draft, child, cloneCopyNode);
             });
           }
 
-          cloneCopyNode.children = cloneCopyNode.children.filter((key) => !memory.includes(key));
+          cloneCopyNode.childrens = cloneCopyNode.childrens.filter((key) => !memory.includes(key));
         });
 
         nextLPNodes = nextNodes;
@@ -165,7 +165,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         name: nodeName,
         extension: '',
         type: 'Folder',
-        children: [],
+        childrens: [],
       } as LP.Node;
 
       draft.push(newNode);
@@ -242,22 +242,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     },
     [selectedAssetId, selectedId],
   );
-
-  // const handleReject = useCallback(
-  //   (id: string) => {
-  //     if (selectedId.includes(id)) {
-  //       const nextSelectedIds = produce(selectedId, (draft) => {
-  //         const index = draft.indexOf(id);
-  //         if (index > -1) {
-  //           draft.splice(index, 1);
-  //         }
-  //       });
-
-  //       setSelectedId(nextSelectedIds);
-  //     }
-  //   },
-  //   [selectedId],
-  // );
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -339,13 +323,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         const selectedNode = find(lpNode, { id: current });
 
         if (selectedNode) {
-          if (selectedNode.children.length > 0) {
-            const tempIds = nextIds.filter((currentId) => !selectedNode.children.includes(currentId));
+          if (selectedNode.childrens.length > 0) {
+            const tempIds = nextIds.filter((currentId) => !selectedNode.childrens.includes(currentId));
             resultSelectedId = tempIds;
             return;
           }
 
-          if (selectedNode.children.length === 0) {
+          if (selectedNode.childrens.length === 0) {
             resultSelectedId.push(current);
           }
         }
@@ -357,13 +341,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         const selectedNode = find(lpNode, { assetId: current });
 
         if (selectedNode) {
-          if (selectedNode.children.length > 0) {
-            const tempAssetIds = nextAssetIds.filter((currentId) => !selectedNode.children.includes(currentId));
+          if (selectedNode.childrens.length > 0) {
+            const tempAssetIds = nextAssetIds.filter((currentId) => !selectedNode.childrens.includes(currentId));
             resultSelectedAssetId = tempAssetIds;
             return;
           }
 
-          if (selectedNode.children.length === 0) {
+          if (selectedNode.childrens.length === 0) {
             resultSelectedAssetId.push(current);
           }
         }
@@ -467,8 +451,8 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         const searchedNode = find(node, { id: currentId });
 
         if (searchedNode) {
-          searchedNode.children.forEach((child) => {
-            afterNodes = afterNodes.filter((current) => !searchedNode.children.includes(current.id));
+          searchedNode.childrens.forEach((child) => {
+            afterNodes = afterNodes.filter((current) => !searchedNode.childrens.includes(current.id));
 
             memory = deleteChild(afterNodes, [child]);
           });
@@ -504,13 +488,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
     if (selectedAssetId.length > 0) {
       selectedAssetId.forEach((assetId) => {
-        const targetAsset = assetList.find((asset) => asset.id === assetId);
-        const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
-        const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+        const targetAsset = _assetList.find((asset) => asset.id === assetId);
+        const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+        const targetControllers = _selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
 
         // delete 대상이 render된 scene에서 대상의 요소들 remove
         if (targetAsset) {
-          screenList
+          _screenList
             .map((screen) => screen.scene)
             .forEach((scene) => {
               removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
@@ -525,7 +509,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
       });
     }
-  }, [assetList, deleteChild, dispatch, getConfirm, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
+  }, [_assetList, _screenList, _selectableObjects, deleteChild, dispatch, getConfirm, lpNode, selectedAssetId, selectedId]);
 
   const handlers = {
     LP_COPY: handleCopy,
@@ -545,20 +529,17 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         {rootPathNode.map((node, i) => (
           <div className={cx('node-row')} ref={nodeRef[i]} key={node.id}>
             <ListNode
-              selectableId="node-selectable"
-              isSelected={selectedId.includes(node.id)}
               onSelect={handleSelect}
               selectedId={selectedId}
               onSetDragTarget={handleSetDragTarget}
               dragTarget={dragTarget}
-              childrens={node.children}
               onCopy={handleCopy}
               onDelete={handleDelete}
               {...node}
             />
           </div>
         ))}
-        <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId="node-selectable" selectedId="node-selected" />
+        <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} />
       </div>
     </HotKeys>
   );

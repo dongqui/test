@@ -153,7 +153,7 @@ const LibraryPanel: FunctionComponent = () => {
 
       // 임시로 호출 코드 넣어놨습니다. 실제로는 bvh export 시에 asset의 bones, retargetMap을 가지고 호출하시면 됩니답.
       const bvhMap = await createBvhMap(skeletons[0].bones, retargetMap, 3000);
-      console.log('bvhMap: ', bvhMap);
+      // console.log('bvhMap: ', bvhMap);
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
@@ -186,7 +186,7 @@ const LibraryPanel: FunctionComponent = () => {
           extension,
           type: 'Model',
           assetId: newAsset.id,
-          children: animationIngredientIds,
+          childrens: animationIngredientIds,
         };
 
         draft.push(newModelNode);
@@ -202,7 +202,7 @@ const LibraryPanel: FunctionComponent = () => {
             name: ingredient.name,
             extension: '',
             type: 'Motion',
-            children: [],
+            childrens: [],
           };
 
           return motion;
@@ -274,7 +274,7 @@ const LibraryPanel: FunctionComponent = () => {
           title: 'Warning',
           message: TEXT.WARNING_02,
           confirmText: 'Close',
-          onConfirm: () => onModalClose(),
+          onConfirm: onModalClose,
         });
 
         return;
@@ -297,17 +297,12 @@ const LibraryPanel: FunctionComponent = () => {
             title: 'Warning',
             message: message,
             confirmText: 'Close',
-            onConfirm: () => {
-              onModalClose();
-            },
+            onConfirm: onModalClose,
           });
         }
       });
 
       if (videos.length > 0) {
-        /**
-         * @TODO 이후 사용하지 않는 경우 remove url 필요
-         */
         const videoBlobURL = URL.createObjectURL(videos[0]);
 
         onModalOpen({

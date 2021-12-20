@@ -187,18 +187,12 @@ export const toggleLayerMuteness = (params: ToggleLayerMuteness) => ({
   },
 });
 
-interface EditKeyframes {}
-
 /**
  * edit keyframe saga를 동작시킵니다.
  *
- * @param params
  */
-export const editKeyframes = (params: EditKeyframes) => ({
+export const editKeyframes = () => ({
   type: EDIT_KEYFRAMES,
-  payload: {
-    ...params,
-  },
 });
 
 interface TurnFilterOn {

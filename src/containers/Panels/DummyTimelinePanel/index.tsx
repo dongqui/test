@@ -84,7 +84,7 @@ const TimelinePanel: FunctionComponent = () => {
         // track들 돌면서 다른 layer에 같은 track있는지 확인
         targetLayerTracks.forEach((track) => {
           const { position, rotationQuaternion, scaling } = track.target;
-          const rotation = rotationQuaternion!.normalize().toEulerAngles(); // quaternion 회전 사용하기 때문에 직접 구해줘야 함
+          const rotation = rotationQuaternion!.toEulerAngles(); // quaternion 회전 사용하기 때문에 직접 구해줘야 함
 
           const newPosition = position.clone();
           const newRotationQuaternion = rotationQuaternion!.clone();
