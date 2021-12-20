@@ -1,5 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { AnimationDataAction } from 'actions/animationDataAction';
+import { RETARGET_TARGET_BONE_NONE } from 'utils/const';
 import { AnimationIngredient, PlaskRetargetMap } from 'types/common';
 
 type State = {
@@ -101,9 +102,59 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
         }),
       });
     }
-    case 'animationDataAction/EDIT_RETARGET_MAP': {
+    case 'animationDataAction/TURN_FILTER_ON': {
       return Object.assign({}, state, {
-        retargetMaps: state.retargetMaps.map((retargetMap) => (retargetMap.id === action.payload.retargetMap.id ? action.payload.retargetMap : retargetMap)),
+        animationIngredients: state.animationIngredients.map((animationIngredient) => {
+          return animationIngredient.id === action.payload.animationIngredientId
+            ? { ...animationIngredient, tracks: animationIngredient.tracks.map((track) => ({ ...track, useFilter: true })) }
+            : animationIngredient;
+        }),
+      });
+    }
+    case 'animationDataAction/TURN_FILTER_OFF': {
+      return Object.assign({}, state, {
+        animationIngredients: state.animationIngredients.map((animationIngredient) => {
+          return animationIngredient.id === action.payload.animationIngredientId
+            ? { ...animationIngredient, tracks: animationIngredient.tracks.map((track) => ({ ...track, useFilter: false })) }
+            : animationIngredient;
+        }),
+      });
+    }
+    case 'animationDataAction/ASSIGN_BONE_MAPPING': {
+      const { assetId, targetTransformNodeId, sourceBoneName } = action.payload;
+      return Object.assign({}, state, {
+        retargetMaps: state.retargetMaps.map((retargetMap) => {
+          if (retargetMap.assetId === assetId) {
+            return {
+              ...retargetMap,
+              values: retargetMap.values.map((retargetMapValue) => {
+                // 이전에 mapping 된 source bone과 assign 해제
+                if (retargetMapValue.targetTransformNodeId === targetTransformNodeId && targetTransformNodeId !== RETARGET_TARGET_BONE_NONE) {
+                  return { ...retargetMapValue, targetTransformNodeId: null };
+                }
+                // 새로운 source bone과 assign
+                else if (retargetMapValue.sourceBoneName === sourceBoneName) {
+                  return { ...retargetMapValue, targetTransformNodeId: targetTransformNodeId };
+                } else {
+                  return retargetMapValue;
+                }
+              }),
+            };
+          } else {
+            return retargetMap;
+          }
+        }),
+      });
+    }
+    case 'animationDataAction/CHANGE_HIP_SPACE': {
+      return Object.assign({}, state, {
+        retargetMaps: state.retargetMaps.map((retargetMap) => {
+          if (retargetMap.assetId === action.payload.assetId) {
+            return { ...retargetMap, hipSpace: action.payload.hipSpaece };
+          } else {
+            return retargetMap;
+          }
+        }),
       });
     }
     default: {

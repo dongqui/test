@@ -9,7 +9,8 @@ const DEFAULT_INACTIVE_MESSAGE = '';
 
 interface Props {
   className?: string;
-  text?: string;
+  currentValue?: number;
+  text: string;
   defaultValue?: number;
   activeStatus?: boolean;
   inactiveMessage?: string;
@@ -17,8 +18,9 @@ interface Props {
   handleBlur?: (event: FocusEvent<HTMLInputElement>) => void;
 }
 
-const AnimationInput: FunctionComponent<Props> = ({ className, text, defaultValue, activeStatus, inactiveMessage, decimalDigit, handleBlur }) => {
-  const [currentValue, setCurrentValue] = useState<number>(defaultValue ?? 0);
+const AnimationInput: FunctionComponent<Props> = ({ className, currentValue, text, defaultValue, activeStatus, inactiveMessage, decimalDigit, handleBlur }) => {
+  // input의 값이 바뀌었는지 체크하기 위한 boolean 값, input이 focus 되면 기본적으로 값을 바꾸기 위해 접근한 것으로 간주
+  const [isValueChanged, setIsValueChanged] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -28,29 +30,40 @@ const AnimationInput: FunctionComponent<Props> = ({ className, text, defaultValu
     }
   }, []);
 
+  // 부모로부터 defaultValue만 전달받을 경우 해당 value에 decimalDigit의 숫자만큼의 소수점 자리수를 추가하는 로직
+  // decimalDigit이 없다면 소수점 1자리로 고정
   useEffect(() => {
-    const decimalFixedValue = Number.parseFloat(defaultValue + '').toFixed(decimalDigit ?? 1);
+    if (!isValueChanged) {
+      const decimalFixedValue = Number.parseFloat(defaultValue + '').toFixed(decimalDigit ?? 1);
 
-    inputRef.current!.value = decimalFixedValue;
-  }, [decimalDigit, defaultValue]);
+      inputRef.current!.value = decimalFixedValue;
+    }
+  }, [decimalDigit, defaultValue, isValueChanged]);
 
+  // 부모로부터 currentValue를 전달받을 경우 해당 value에 decimalDigit의 숫자만큼의 소수점 자리수를 추가하는 로직
+  // decimalDigit이 없다면 소수점 1자리로 고정
   useEffect(() => {
-    const decimalFixedValue = Number.parseFloat(currentValue + '').toFixed(decimalDigit ?? 1);
+    if (currentValue && !isValueChanged) {
+      const decimalFixedValue = Number.parseFloat(currentValue + '').toFixed(decimalDigit ?? 1);
 
-    inputRef.current!.value = decimalFixedValue;
-  }, [currentValue, decimalDigit]);
+      inputRef.current!.value = decimalFixedValue;
+    }
+  }, [currentValue, decimalDigit, isValueChanged]);
 
   const classes = cx('wrapper', className, { able: activeStatus ?? true });
 
   return (
     <div className={cx(classes)}>
-      {text && <p>{text}</p>}
+      <p>{text}</p>
       <input
         type="number"
         onKeyUp={handleKeyUp}
+        onFocus={() => setIsValueChanged(true)}
         onBlur={(event) => {
-          setCurrentValue(parseFloat(event.target.value));
-          handleBlur && handleBlur(event);
+          if (isValueChanged) {
+            handleBlur && handleBlur(event);
+            setIsValueChanged(false);
+          }
         }}
         tabIndex={isUndefined(activeStatus) || activeStatus === true ? 0 : -1}
         ref={inputRef}
