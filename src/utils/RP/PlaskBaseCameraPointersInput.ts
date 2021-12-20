@@ -88,7 +88,7 @@ export default abstract class PlaskBaseCameraPointersInput implements ICameraInp
         this.onTouch(null, offsetX, offsetY);
         this.pointA = null;
         this.pointB = null;
-      } else if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
+      } else if (p.type === PointerEventTypes.POINTERDOWN && srcElement && this._altKey) {
         try {
           srcElement.setPointerCapture(evt.pointerId);
         } catch (e) {
@@ -122,7 +122,7 @@ export default abstract class PlaskBaseCameraPointersInput implements ICameraInp
         }
       } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
         this.onDoubleTap(evt.pointerType);
-      } else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
+      } else if (p.type === PointerEventTypes.POINTERUP && srcElement && this._altKey) {
         try {
           srcElement.releasePointerCapture(evt.pointerId);
         } catch (e) {

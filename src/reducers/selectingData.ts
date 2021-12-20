@@ -68,6 +68,11 @@ export const selectingData = (state = defaultState, action: SelectingDataAction)
         selectedTargets: xorBy(state.selectedTargets, action.payload.targets, 'id'),
       });
     }
+    case 'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS': {
+      return Object.assign({}, state, {
+        selectedTargets: state.selectableObjects,
+      });
+    }
     case 'selectingDataAction/RESET_SELECTED_TARGETS': {
       return Object.assign({}, state, {
         selectedTargets: [],
