@@ -1,3 +1,4 @@
+export { default as forceAnimationButtonsClick } from './forceAnimationButtonsClick';
 export { default as getNumberFromPx } from './getNumberFromPx';
 export { default as roundToFourth } from './roundToFourth';
 export { default as getFileExtension } from './getFileExtension';
