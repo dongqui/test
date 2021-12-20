@@ -7,6 +7,9 @@ import { checkIsObjectIn, createCamera, createDirectionalLight, createGrounds, c
 import { useSelector } from 'reducers';
 import { Nullable, ScreenXY, PlaskView } from 'types/common';
 
+const DEFAULT_CAMERA_POSITION = new BABYLON.Vector3(0, 6, 10);
+const DEFAULT_CAMERA_TARGET = BABYLON.Vector3.Zero();
+
 interface Params {
   renderingCanvas: RefObject<HTMLCanvasElement>;
 }
@@ -45,6 +48,9 @@ const useInitializeScene = (params: Params) => {
       p: { pressed: false },
       P: { pressed: false },
       ㅔ: { pressed: false },
+      h: { pressed: false },
+      H: { pressed: false },
+      ㅗ: { pressed: false },
     }),
     [],
   );
@@ -113,7 +119,7 @@ const useInitializeScene = (params: Params) => {
         } else if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
           const event = pointerInfo.event as PointerEvent;
           // camera rotate 시 perspective 모드로 전환
-          if (event.button === 1 && !event.altKey && innerScene.activeCamera && innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
+          if (event.button === 0 && event.altKey && innerScene.activeCamera && innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
             innerScene.activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
 
             if (prevCameraPositions[renderingCanvas.current!.id]) {
@@ -178,6 +184,7 @@ const useInitializeScene = (params: Params) => {
           case BABYLON.PointerEventTypes.POINTERDOWN: {
             if (
               pointerInfo?.event.button === 0 && // check if it it left click
+              !pointerInfo.event.altKey && // camera rotate 시에는 발생하지 않음
               !pointerInfo.pickInfo!.hit // pickInfo always exist with pointer event
             ) {
               // set start point of the dragBox
@@ -333,6 +340,7 @@ const useInitializeScene = (params: Params) => {
                 distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
                 activeCamera.setPosition(new BABYLON.Vector3(distance + 10, target.y, target.z));
               }
+
               break;
             case 'f':
             case 'F':
@@ -395,6 +403,25 @@ const useInitializeScene = (params: Params) => {
                 });
               }
               break;
+            case 'h':
+            case 'H':
+            case 'ㅗ': // h (camera reset)
+              if (multiKeyController[event.key]) {
+                multiKeyController[event.key].pressed = true;
+              }
+              if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
+                if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
+                  const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+                  activeCamera.orthoTop = 2;
+                  activeCamera.orthoBottom = -2;
+                  activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
+                  activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
+                } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+                  activeCamera.setPosition(DEFAULT_CAMERA_POSITION);
+                  activeCamera.setTarget(DEFAULT_CAMERA_TARGET);
+                }
+              }
+              break;
             default: {
               break;
             }
@@ -426,6 +453,9 @@ const useInitializeScene = (params: Params) => {
         case 'p':
         case 'P':
         case 'ㅔ':
+        case 'h':
+        case 'H':
+        case 'ㅗ':
           if (multiKeyController[event.key]) {
             multiKeyController[event.key].pressed = false;
           }
