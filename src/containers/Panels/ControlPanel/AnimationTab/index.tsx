@@ -1,6 +1,6 @@
 import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import * as BABYLON from '@babylonjs/core';
-import { isNull, uniq } from 'lodash';
+import { isNull, isUndefined, uniq } from 'lodash';
 import { useDispatch } from 'react-redux';
 import AnimationInputWrapper from './AnimationInputWrapper';
 import AnimationFKWrapper from './AnimationFKWrapper';
@@ -19,6 +19,7 @@ interface Props {
 }
 
 const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // selectedLayerId에 해당
@@ -26,7 +27,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   const dispatch = useDispatch();
 
-  const selectedAssetIds = useMemo(() => uniq(_selectedTargets.map((target) => target.id.split('//')[0])), [_selectedTargets]);
+  // 다중모델 설계 내에서 단일모델 상황을 가정하기 위함 (추후 다중모델 설계 자체를 단일모델 설계로 변경할 계획)
+  const selectedAssetId = useMemo(() => _visualizedAssetIds[0], [_visualizedAssetIds]);
 
   const [controlTarget, setControlTarget] = useState<Nullable<BABYLON.TransformNode | BABYLON.Mesh>>(null);
   const [controlController, setControlController] = useState<Nullable<BABYLON.Mesh>>(null);
@@ -159,8 +161,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   // 선택 대상에 따라 controller toggle 변경
   useEffect(() => {
-    if (selectedAssetIds.length === 1) {
-      if (_selectableObjects.find((object) => object.id.includes(selectedAssetIds[0]) && checkIsTargetMesh(object))) {
+    if (selectedAssetId) {
+      if (_selectableObjects.find((object) => object.id.includes(selectedAssetId) && checkIsTargetMesh(object))) {
         setIsControllerOn(true);
       } else {
         setIsControllerOn(false);
@@ -168,7 +170,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     } else {
       setIsControllerOn(false);
     }
-  }, [_selectableObjects, selectedAssetIds]);
+  }, [_selectableObjects, selectedAssetId]);
 
   // 선택 대상에 따라 controller properties 변경
   // useEffect(() => {
@@ -181,8 +183,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   // 선택 대상에 따라 filter toggle 변경
   useEffect(() => {
-    if (selectedAssetIds.length === 1) {
-      const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetIds[0] && animationIngredient.current);
+    if (selectedAssetId) {
+      const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
       if (targetAnimationIngredient) {
         setIsFilterOn(targetAnimationIngredient.tracks[0].useFilter);
       } else {
@@ -191,7 +193,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     } else {
       setIsFilterOn(false);
     }
-  }, [_animationIngredients, selectedAssetIds]);
+  }, [_animationIngredients, selectedAssetId]);
 
   // 선택 대상에 따라 filter parameters 변경
   useEffect(() => {
@@ -243,25 +245,25 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   // Filter의 활성화 비활성화
   const handleFilterToggle = useCallback(() => {
     if (isFilterOn) {
-      if (selectedAssetIds.length === 1) {
+      if (selectedAssetId) {
         setIsFilterOn(false);
         // useFilter to false
-        const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetIds[0]);
+        const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId);
         if (targetAnimationIngredient) {
           dispatch(animationDataActions.turnFilterOff({ animationIngredientId: targetAnimationIngredient.id }));
         }
       }
     } else {
-      if (selectedAssetIds.length === 1) {
+      if (selectedAssetId) {
         setIsFilterOn(true);
         // useFilter to true
-        const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetIds[0]);
+        const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId);
         if (targetAnimationIngredient) {
           dispatch(animationDataActions.turnFilterOn({ animationIngredientId: targetAnimationIngredient.id }));
         }
       }
     }
-  }, [_animationIngredients, dispatch, isFilterOn, selectedAssetIds]);
+  }, [_animationIngredients, dispatch, isFilterOn, selectedAssetId]);
 
   const positionInputData = [
     {
@@ -608,7 +610,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           withSwitch={true}
           checked={isControllerOn}
           activeStatus={isAllActive && isControllerOn}
-          canToggle={selectedAssetIds.length === 1}
+          canToggle={!isUndefined(selectedAssetId)}
         />
         <div className={cx('container', { active: isControllerSectionSpread })}>
           <AnimationFKWrapper
@@ -630,7 +632,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           withSwitch={true}
           checked={isFilterOn}
           activeStatus={isAllActive && isFilterOn}
-          canToggle={selectedAssetIds.length === 1}
+          canToggle={!isUndefined(selectedAssetId)}
         />
         <div className={cx('container', { active: isFilterSectionSpread })}>
           {filterRangeData.map((info, idx) => (
