@@ -54,9 +54,9 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [scaleZ, setScaleZ] = useState<number>(0);
 
   // FK Controller value를 관리하는 useState
-  const [contollerX, setControllerX] = useState<number>(0);
-  const [contollerY, setControllerY] = useState<number>(0);
-  const [contollerColor, setControllerColor] = useState<PlaskPaletteColor>('yellow');
+  const [controllerX, setControllerX] = useState<number>(0);
+  const [controllerZ, setControllerZ] = useState<number>(0);
+  const [controllerColor, setControllerColor] = useState<PlaskPaletteColor>('yellow');
 
   // section spread status
   const [isTransformSectionSpread, setIsTransformSectionSpread] = useState<boolean>(true);
@@ -174,7 +174,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   // useEffect(() => {
   //   if (controlController) {
   //     // setControllerX(controlController)
-  //     // setControllerY(contollerColor)
+  //     // setControllerY(controllerColor)
   //     // setControllerColor(controlController)
   //   }
   // }, [controlController]);
@@ -503,28 +503,36 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     },
   ];
 
-  const fkViewInputData = [
+  const fkControllerInputData = [
     {
       text: 'X',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        setControllerX(parseFloat(event.target.value));
-        console.log('fkView x');
-        console.log(parseFloat(event.target.value));
-      },
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlController) {
+            setControllerX(parseFloat(event.target.value));
+            controlController.scaling.x = parseFloat(event.target.value);
+          }
+        },
+        [controlController],
+      ),
       defaultValue: 1,
       decimalDigit: 2,
-      currentValue: contollerX,
+      currentValue: controllerX,
     },
     {
-      text: 'Y',
-      handleBlur: (event: FocusEvent<HTMLInputElement>) => {
-        setControllerY(parseFloat(event.target.value));
-        console.log('fkView y');
-        console.log(parseFloat(event.target.value));
-      },
+      text: 'Z',
+      handleBlur: useCallback(
+        (event: FocusEvent<HTMLInputElement>) => {
+          if (controlController) {
+            setControllerZ(parseFloat(event.target.value));
+            controlController.scaling.z = parseFloat(event.target.value);
+          }
+        },
+        [controlController],
+      ),
       defaultValue: 1,
       decimalDigit: 2,
-      currentValue: contollerY,
+      currentValue: controllerZ,
     },
   ];
 
@@ -604,9 +612,9 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         />
         <div className={cx('container', { active: isControllerSectionSpread })}>
           <AnimationFKWrapper
-            fkInfo={fkViewInputData}
+            fkInfo={fkControllerInputData}
             activeStatus={isAllActive && isControllerOn && !isNull(controlController)}
-            currentColor={contollerColor}
+            currentColor={controllerColor}
             setCurrentColor={setControllerColor}
           />
           {(!isAllActive || !isControllerOn) && <div className={cx('inactive-overlay')}></div>}
