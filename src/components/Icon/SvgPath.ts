@@ -11,6 +11,7 @@ import CameraReset from './svg/CameraReset.svg';
 // import Motion from './svg/Motion.svg';
 import FilledArrow from './svg/FilledArrow.svg';
 import ChevronLeft from './svg/ChevronLeft.svg';
+import ChevronRight from './svg/ChevronRight.svg';
 import BreadcrumbMore from './svg/BreadcrumbMore.svg';
 import Layer from './svg/Layer.svg';
 import Camera from './svg/Camera.svg';
@@ -66,6 +67,7 @@ type Icon =
   | 'CameraReset'
   | 'FilledArrow'
   | 'ChevronLeft'
+  | 'ChevronRight'
   | 'BreadcrumbMore'
   | 'Layer'
   | 'Camera'
@@ -122,6 +124,7 @@ const images: Images = {
   CameraReset,
   FilledArrow,
   ChevronLeft,
+  ChevronRight,
   BreadcrumbMore,
   Layer,
   Camera,
