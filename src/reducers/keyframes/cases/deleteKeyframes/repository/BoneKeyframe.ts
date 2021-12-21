@@ -44,9 +44,13 @@ class BoneKeyframeRepository implements Repository {
     for (let property = trackNumber + 1; property <= trackNumber + 3; property++) {
       const trackIndex = findElementIndex(trackList, property, 'trackNumber');
       const { keyframes } = trackList[trackIndex];
-      const timeIndex = findElementIndex(keyframes, time, 'time');
-      const isDeleted = trackList[trackIndex].keyframes[timeIndex].isDeleted;
-      if (isDeleted) deletedCount += 1;
+      const keyframeIndex = findElementIndex(keyframes, time, 'time');
+      if (keyframeIndex === -1) {
+        deletedCount += 1;
+      } else {
+        const isDeleted = trackList[trackIndex].keyframes[keyframeIndex].isDeleted;
+        if (isDeleted) deletedCount += 1;
+      }
     }
     return deletedCount === 3;
   };
@@ -83,17 +87,17 @@ class BoneKeyframeRepository implements Repository {
         const { trackNumber, keyframes } = selectedKeyframe;
         const trackIndex = findElementIndex(boneTrackList, trackNumber, 'trackNumber');
         keyframes.forEach(({ time }) => {
-          const timeIndex = findElementIndex(boneTrackList[trackIndex].keyframes, time, 'time');
-          draft[trackIndex].keyframes[timeIndex].isSelected = false;
+          const keyframeIndex = findElementIndex(boneTrackList[trackIndex].keyframes, time, 'time');
+          draft[trackIndex].keyframes[keyframeIndex].isSelected = false;
         });
       });
       deletedBoneTimes.forEach((selectedKeyframe) => {
         const { trackNumber, keyframes } = selectedKeyframe;
         const trackIndex = findElementIndex(boneTrackList, trackNumber, 'trackNumber');
         keyframes.forEach(({ time }) => {
-          const timeIndex = findElementIndex(boneTrackList[trackIndex].keyframes, time, 'time');
-          draft[trackIndex].keyframes[timeIndex].isDeleted = true;
-          draft[trackIndex].keyframes[timeIndex].isSelected = false;
+          const keyframeIndex = findElementIndex(boneTrackList[trackIndex].keyframes, time, 'time');
+          draft[trackIndex].keyframes[keyframeIndex].isDeleted = true;
+          draft[trackIndex].keyframes[keyframeIndex].isSelected = false;
         });
       });
     });

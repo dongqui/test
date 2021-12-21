@@ -1,27 +1,46 @@
-import { useCallback } from 'react';
+import { FunctionComponent, MutableRefObject, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { useSelector } from 'reducers';
-import { IconWrapper, SvgPath } from 'components/Icon';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
+import { IconWrapper, SvgPath } from 'components/Icon';
+import { useSelector } from 'reducers';
+import { ScaleLinear } from 'utils/TP';
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
-const Stop = () => {
+const cx = classNames.bind(styles);
+
+interface Props {
+  requestAnimationFrameId: MutableRefObject<number>;
+}
+
+const Stop: FunctionComponent<Props> = (props) => {
+  const { requestAnimationFrameId } = props;
+  const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
+  const _playState = useSelector((state) => state.animatingControls.playState);
+  const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
+
   const dispatch = useDispatch();
-  const playState = useSelector((state) => state.animatingControls.playState);
-  const startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
 
-  const handleStop = useCallback(() => {
-    // ToDo. visualized 된 데이터가 있는 경우에만 stop 버튼이 동작되도록 조건절을 추가해야 됨
-    if (playState !== 'stop') {
-      dispatch(
-        animatingControlsActions.clickPlayStateButton({
-          playState: 'stop',
-          currentTimeIndex: startTimeIndex,
-        }),
-      );
+  const translateScrubber = useCallback(() => {
+    const scrubber = document.getElementById('scrubber')!;
+    const scrubberInput = scrubber?.querySelector('input')!;
+    const scaleX = ScaleLinear.getScaleX();
+    scrubber.setAttribute('transform', `translate(${scaleX(_startTimeIndex)}, 0)`);
+    scrubberInput.value = `${_startTimeIndex}`;
+  }, [_startTimeIndex]);
+
+  const handleStopButtonClick = useCallback(() => {
+    if (_playState !== 'stop') {
+      if (_currentAnimationGroup && _currentAnimationGroup.isStarted) {
+        _currentAnimationGroup.goToFrame(_startTimeIndex).stop();
+      }
+      translateScrubber();
+      dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'stop', currentTimeIndex: _startTimeIndex }));
+      window.cancelAnimationFrame(requestAnimationFrameId.current);
     }
-  }, [dispatch, playState, startTimeIndex]);
+  }, [_currentAnimationGroup, _playState, _startTimeIndex, requestAnimationFrameId, dispatch, translateScrubber]);
 
-  return <IconWrapper onClick={handleStop} icon={SvgPath.Stop} hasFrame={false} />;
+  return <IconWrapper onClick={handleStopButtonClick} icon={SvgPath.Stop} hasFrame={false} />;
 };
 
 export default Stop;

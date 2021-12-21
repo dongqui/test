@@ -1,5 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { AnimationDataAction } from 'actions/animationDataAction';
+import { RETARGET_TARGET_BONE_NONE } from 'utils/const';
 import { AnimationIngredient, PlaskRetargetMap } from 'types/common';
 
 type State = {
@@ -51,6 +52,12 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
         });
       }
     }
+    case 'animationDataAction/ADD_ANIMATION_INGREDIENTS': {
+      // 단일 추가와는 달리 current에 대한 핸들링 해주지 않음 -> action 호출 시 인자로 넘겨주는 animationIngredients들의 current를 그대로 사용
+      return Object.assign({}, state, {
+        animationIngredients: [...state.animationIngredients, ...action.payload.animationIngredients],
+      });
+    }
     case 'animationDataAction/EDIT_ANIMATION_INGREDIENT': {
       return Object.assign({}, state, {
         animationIngredients: state.animationIngredients.map((anim) => (anim.id === action.payload.animationIngredient.id ? action.payload.animationIngredient : anim)),
@@ -81,9 +88,73 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
         animationIngredients: state.animationIngredients.filter((anim) => anim.id !== action.payload.animationIngredientId),
       });
     }
-    case 'animationDataAction/EDIT_RETARGET_MAP': {
+    case 'animationDataAction/TOGGLE_LAYER_MUTENESS': {
       return Object.assign({}, state, {
-        retargetMaps: state.retargetMaps.map((retargetMap) => (retargetMap.id === action.payload.retargetMap.id ? action.payload.retargetMap : retargetMap)),
+        animationIngredients: state.animationIngredients.map((animaitonIngredient) => {
+          if (animaitonIngredient.id === action.payload.animationIngredientId) {
+            return {
+              ...animaitonIngredient,
+              tracks: animaitonIngredient.tracks.map((track) => (track.layerId === action.payload.layerId ? { ...track, isIncluded: !track.isIncluded } : track)),
+            };
+          } else {
+            return animaitonIngredient;
+          }
+        }),
+      });
+    }
+    case 'animationDataAction/TURN_FILTER_ON': {
+      return Object.assign({}, state, {
+        animationIngredients: state.animationIngredients.map((animationIngredient) => {
+          return animationIngredient.id === action.payload.animationIngredientId
+            ? { ...animationIngredient, tracks: animationIngredient.tracks.map((track) => ({ ...track, useFilter: true })) }
+            : animationIngredient;
+        }),
+      });
+    }
+    case 'animationDataAction/TURN_FILTER_OFF': {
+      return Object.assign({}, state, {
+        animationIngredients: state.animationIngredients.map((animationIngredient) => {
+          return animationIngredient.id === action.payload.animationIngredientId
+            ? { ...animationIngredient, tracks: animationIngredient.tracks.map((track) => ({ ...track, useFilter: false })) }
+            : animationIngredient;
+        }),
+      });
+    }
+    case 'animationDataAction/ASSIGN_BONE_MAPPING': {
+      const { assetId, targetTransformNodeId, sourceBoneName } = action.payload;
+      return Object.assign({}, state, {
+        retargetMaps: state.retargetMaps.map((retargetMap) => {
+          if (retargetMap.assetId === assetId) {
+            return {
+              ...retargetMap,
+              values: retargetMap.values.map((retargetMapValue) => {
+                // 이전에 mapping 된 source bone과 assign 해제
+                if (retargetMapValue.targetTransformNodeId === targetTransformNodeId && targetTransformNodeId !== RETARGET_TARGET_BONE_NONE) {
+                  return { ...retargetMapValue, targetTransformNodeId: null };
+                }
+                // 새로운 source bone과 assign
+                else if (retargetMapValue.sourceBoneName === sourceBoneName) {
+                  return { ...retargetMapValue, targetTransformNodeId: targetTransformNodeId };
+                } else {
+                  return retargetMapValue;
+                }
+              }),
+            };
+          } else {
+            return retargetMap;
+          }
+        }),
+      });
+    }
+    case 'animationDataAction/CHANGE_HIP_SPACE': {
+      return Object.assign({}, state, {
+        retargetMaps: state.retargetMaps.map((retargetMap) => {
+          if (retargetMap.assetId === action.payload.assetId) {
+            return { ...retargetMap, hipSpace: action.payload.hipSpaece };
+          } else {
+            return retargetMap;
+          }
+        }),
       });
     }
     default: {

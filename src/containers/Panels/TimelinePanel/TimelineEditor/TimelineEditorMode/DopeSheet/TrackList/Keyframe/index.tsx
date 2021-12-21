@@ -41,12 +41,14 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
       {
         label: 'Select All Row',
         onClick: () => {
+          document.getElementById('timeline-editor-svg')?.focus();
           dispatch(keyframeActions.selectKeyframes({ selectType: 'horizontal', trackId, trackNumber, trackType, time }));
         },
       },
       {
         label: 'Select All Column',
         onClick: () => {
+          document.getElementById('timeline-editor-svg')?.focus();
           dispatch(keyframeActions.selectKeyframes({ selectType: 'vertical', trackId, trackNumber, trackType, time }));
         },
       },
@@ -54,6 +56,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
         label: 'Unselect All',
         separator: true,
         onClick: () => {
+          document.getElementById('timeline-editor-svg')?.focus();
           dispatch(keyframeActions.selectKeyframes({ selectType: 'unselectAll', trackId, trackNumber, trackType, time }));
         },
       },
@@ -72,7 +75,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
     (event: React.MouseEvent<Element>) => {
       dispatch(
         keyframeActions.selectKeyframes({
-          selectType: event.ctrlKey ? 'multiple' : 'left',
+          selectType: event.ctrlKey || event.metaKey ? 'multiple' : 'left',
           trackId,
           trackType,
           trackNumber,

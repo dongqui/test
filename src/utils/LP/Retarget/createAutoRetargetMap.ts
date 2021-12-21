@@ -3,7 +3,7 @@ import { cloneDeep } from 'lodash';
 import { PlaskRetargetMap, RetargetSourceBoneType } from 'types/common';
 import createEmptyRetargetMap from './createEmptyRetargetMap';
 
-const DEFAULT_TIME_OUT = 3000;
+const DEFAULT_TIMEOUT = 3000;
 const MAX_ITERATE_COUNT = 20; // 잘못된 bone 구조의 model에 의해 while문을 빠져나오지 못하는 경우를 막기 위한 최대 반복 횟수
 
 const SOURCE_BONES = {
@@ -33,6 +33,11 @@ const SOURCE_BONES = {
   rightHandIndex1: { key: 23, searchKeywords: ['handindex'] },
 };
 
+/**
+ * 기존 mapping api의 결과물과 같은 구조(sourceBone과 targetBone의 연결)의 데이터를 만들어냅니다
+ *
+ * @param bones - targetBone으로 사용될 bone들
+ */
 const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
   const retargetMap: { [boneName in RetargetSourceBoneType]?: BABYLON.Bone } = {};
 
@@ -163,23 +168,32 @@ const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
   return retargetMap;
 };
 
+/**
+ * model(asset)에 대한 자동 리타겟맵 생성합니다.
+ *
+ * @param assetId - 대상 model asset의 id
+ * @param bones - 대상 model의 bone들
+ * @param timeout - 실패 기준이 되는 제한시간
+ */
 const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?: number): Promise<PlaskRetargetMap> => {
   const retargetMap = createEmptyRetargetMap(assetId);
 
   // innerRetargetMap을 사용해서 retargetMap.values를 업데이트
-  const innerRetargetMap = getInnerRetargetMap(bones);
-  const newValues = cloneDeep(retargetMap.values);
-  newValues.forEach((value) => {
-    const { sourceBoneName } = value;
-    const targetBone = innerRetargetMap[sourceBoneName];
-    if (targetBone) {
-      const targetTransformNode = targetBone.getTransformNode();
-      if (targetTransformNode) {
-        value.targetTransformNodeId = targetTransformNode.id;
+  if (bones && bones.length > 0) {
+    const innerRetargetMap = getInnerRetargetMap(bones);
+    const newValues = cloneDeep(retargetMap.values);
+    newValues.forEach((value) => {
+      const { sourceBoneName } = value;
+      const targetBone = innerRetargetMap[sourceBoneName];
+      if (targetBone) {
+        const targetTransformNode = targetBone.getTransformNode();
+        if (targetTransformNode) {
+          value.targetTransformNodeId = targetTransformNode.id;
+        }
       }
-    }
-  });
-  retargetMap.values = newValues;
+    });
+    retargetMap.values = newValues;
+  }
 
   return new Promise((resolve, reject) => {
     // auto retarget에 성공하면 생성한 retargetMap을 반환
@@ -188,7 +202,7 @@ const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?:
     // timeout을 넘어서면 실패를 반환
     setTimeout(() => {
       reject('Timeout: Auto retargeting has failed');
-    }, timeout ?? DEFAULT_TIME_OUT);
+    }, timeout ?? DEFAULT_TIMEOUT);
   });
 };
 

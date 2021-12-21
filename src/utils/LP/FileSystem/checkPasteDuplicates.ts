@@ -113,40 +113,14 @@ const checkPasteDuplicates = (name: string, nameArray: string[], hasExtension?: 
         return false;
       })
       .map((node) => {
-        // const matches = node.match(/\(/g);
-
-        // let value = 0;
-
-        // // 번호가 없는 경우
-        // if (matches === null) {
-        //   value = 0;
-        // }
-
-        // if (matches !== null && matches.length > 1) {
-        //   const startIndex = node.lastIndexOf('(') + 1;
-        //   const endIndex = node.lastIndexOf(')');
-
-        //   value = Number(node.substring(startIndex, endIndex));
-        // }
-
-        // if (matches !== null && matches.length === 1) {
-        //   const isLastIndex = node.lastIndexOf(')') + 1 === node.length;
-
-        //   if (isLastIndex) {
-        //     const startIndex = node.lastIndexOf('(') + 1;
-        //     const endIndex = node.lastIndexOf(')');
-
-        //     value = Number(node.substring(startIndex, endIndex));
-        //   }
-        // }
-
         const splitName = node.split('.');
         const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
         const extractedNumber = fileName.match(/ \(\d+\)$/g);
 
         if (!isNull(extractedNumber)) {
-          const number = (fileName.match(/\d/g) as unknown) as string;
+          // const number = extractedNumber[0].match(/[^0-9]/g);
+          const number = extractedNumber[0].replace(/[^0-9]/g, '');
 
           return Number(number);
         } else {

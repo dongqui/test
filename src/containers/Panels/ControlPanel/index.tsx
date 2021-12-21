@@ -1,33 +1,44 @@
-import { FunctionComponent, memo, useMemo, useState } from 'react';
-import AnimationTab from './AnimationTab/AnimationTab';
-import RetargetTab from './RetargetTab/RetargetTab';
+import { FunctionComponent, memo, useCallback, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
+import AnimationTab from './AnimationTab';
+import RetargetTab from './RetargetTab';
+import * as cpActions from 'actions/CP/cpModeSelection';
+import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 
 type ControlPanelMode = 'Animation' | 'Retargeting';
 
 const ControlPanel: FunctionComponent = () => {
-  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const dispatch = useDispatch();
 
-  const [currentMode, setCurrentMode] = useState<ControlPanelMode>('Animation');
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const _cpMode = useSelector((state) => state.cpModeSelection.mode);
+
   const isPanelActive = useMemo(() => _visualizedAssetIds.length !== 0, [_visualizedAssetIds.length]);
+
+  const handleModeChange = useCallback(
+    (mode: ControlPanelMode) => {
+      dispatch(cpActions.changeMode({ mode }));
+    },
+    [dispatch],
+  );
 
   return (
     <div className={cx('wrapper')}>
       <div className={cx('mode-select')}>
-        <button className={cx({ active: currentMode === 'Animation' })} onClick={() => setCurrentMode('Animation')}>
+        <button className={cx({ active: _cpMode === 'Animation' })} onClick={() => handleModeChange('Animation')}>
           Animation
         </button>
-        <button className={cx({ active: currentMode === 'Retargeting' })} onClick={() => setCurrentMode('Retargeting')}>
+        <button className={cx({ active: _cpMode === 'Retargeting' })} onClick={() => handleModeChange('Retargeting')}>
           Retargeting
         </button>
       </div>
       {/* prettier-ignore */}
       <div className={cx('tab-wrapper')}>
-        {currentMode === 'Animation' 
+        {_cpMode === 'Animation' 
           ? <AnimationTab isAllActive={isPanelActive} />
           : <RetargetTab isAllActive={isPanelActive} />}
       </div>

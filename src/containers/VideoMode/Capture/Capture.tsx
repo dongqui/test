@@ -35,6 +35,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const testRef = useRef<HTMLDivElement>(null);
+  const thumbnailWrapRef = useRef<HTMLDivElement>(null);
   let cancelTokenSource = useRef<Canceler>();
 
   const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
@@ -55,9 +56,12 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   const [basicExtractName, setBasicExtractName] = useState<string>('Exported motion');
   const [turnStandbyPhase, setTurnStandbyPhase] = useState<boolean>(false);
   const [onExtract, setOnExtract] = useState<boolean>(false);
+  const [isExtractFailed, setIsExtractFailed] = useState<boolean>(false);
   const [start, setStart] = useState<number>(0);
   const [end, setEnd] = useState<number>(0);
   const [timer, setTimer] = useState<number>(5);
+  const [isIndicatorClicked, setIsIndicatorClicked] = useState<boolean>(false);
+  const [prevX, setPrevX] = useState<number>(0);
 
   const {
     mediaStreamInitialize,
@@ -200,7 +204,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           parentId: '__root__',
           name: fileName,
           filePath: '\\root',
-          children: [],
+          childrens: [],
           extension: '',
           type: 'Motion',
           mocapData: response.data.result,
@@ -219,6 +223,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       })
       .catch((err) => {
         setReadyExtract(false);
+        setIsExtractFailed(true);
         throw err;
       });
     // return {
@@ -274,13 +279,43 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
     [start, end, videoRef.current?.currentTime],
   );
 
+  const handleMouseMove = useCallback(
+    (e, parentNodeWidth) => {
+      // e.preventDefault();
+      if (isIndicatorClicked) {
+        setIndicatorPosition(indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100);
+        if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100 < start) {
+          videoRef.current!.currentTime = start;
+        } else if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100 > end) {
+          videoRef.current!.currentTime = end;
+        } else {
+          videoRef.current!.currentTime = ((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100;
+        }
+      }
+    },
+    [prevX, isIndicatorClicked],
+  );
+
+  const handleMouseUp = useCallback((e) => {
+    // e.preventDefault();
+    setIsIndicatorClicked(false);
+  }, []);
+
+  const handleMouseDown = useCallback((e) => {
+    // e.preventDefault();
+    setIsIndicatorClicked(true);
+    setPrevX(e.clientX);
+  }, []);
+
   useEffect(() => {
-    window.addEventListener('keydown', handleHotkeys);
+    if (!turnStandbyPhase && !readyExtract && !onExtract) {
+      window.addEventListener('keydown', handleHotkeys);
+    }
 
     return () => {
       window.removeEventListener('keydown', handleHotkeys);
     };
-  }, [start, end]);
+  }, [start, end, turnStandbyPhase, readyExtract, onExtract]);
 
   // LP에서 비디오를 넘기지 않고 바로 VM으로 전환하는 경우
   useEffect(() => {
@@ -404,7 +439,12 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       {recordState && (
         <Fragment>
           <VMRuler start={0} end={duration} />
-          <div className={cx('thumbnail-wrap')}>
+          <div
+            className={cx('thumbnail-wrap')}
+            onMouseUp={handleMouseUp}
+            onMouseMove={(e) => handleMouseMove(e, thumbnailWrapRef.current!.getBoundingClientRect().width - 32)}
+            ref={thumbnailWrapRef}
+          >
             <CropSlider
               start={0}
               end={100}
@@ -412,12 +452,19 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               currentVideoTime={currentVideoTime}
               handleTimeline={handleTimeline}
               videoRef={videoRef}
+              thumbnailWrapRef={thumbnailWrapRef}
               indicatorPosition={indicatorPosition}
+              isIndicatorClicked={isIndicatorClicked}
+              handleMouseDown={handleMouseDown}
+              handleMouseUp={handleMouseUp}
+              handleMouseMove={handleMouseMove}
               onChange={handleSlider}
             >
               <div className={cx('thumbnail')}>
                 {thumbnailList &&
-                  thumbnailList.map((image, idx) => <Image key={idx} src={image} alt="timeline thumbanil" className={cx('thumbnail-image')} width={100} height={80} />)}
+                  thumbnailList.map((image, idx) => (
+                    <Image key={idx} src={image} alt="timeline thumbanil" className={cx('thumbnail-image', 'no-select')} width={100} height={80} />
+                  ))}
                 {/* <canvas ref={frameRef} /> */}
               </div>
             </CropSlider>
@@ -498,17 +545,17 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           </div>
         </BaseModal>
       )}
-      {/* <BaseModal>
-        <h4 className={cx('modal-heading')}>Extract Failed</h4>
-        <p className={cx('extract-name-paragraph')}>
-          Motion extraction <strong>failed</strong>. please try again.
-        </p>
-        <FilledButton
-          text="Cancel"
-          className={cx('extract-button', 'cancel')}
-          onClick={() => setTurnStandbyPhase(false)}
-        ></FilledButton>
-      </BaseModal> */}
+      {isExtractFailed && (
+        <BaseModal isOpen={isExtractFailed}>
+          <div className={cx('failed-modal')}>
+            <h4 className={cx('modal-heading')}>Extract Failed</h4>
+            <p className={cx('extract-name-paragraph')}>
+              Motion extraction <strong>failed</strong>. please try again.
+            </p>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)}></FilledButton>
+          </div>
+        </BaseModal>
+      )}
     </div>
   );
 };

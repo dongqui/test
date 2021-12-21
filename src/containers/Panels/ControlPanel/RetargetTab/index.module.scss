@@ -32,15 +32,27 @@
   & > div {
     margin-top: -5px;
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     z-index: 2;
     cursor: pointer;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+
+    &:hover {
+      border: 1.5px solid #d3d3d3;
+    }
+
+    &.selected {
+      border: 1.5px solid #0f88ff;
+    }
 
     & > .bone {
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       clip-path: circle(45%);
       background-color: #7a7a7b;
       z-index: 2;
@@ -49,10 +61,6 @@
 
       &.mapped {
         background-color: #0f88ff;
-      }
-
-      &.selected {
-        background-color: white; // 효과 및 색상 변경 필요
       }
     }
   }

@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux';
 import { TypedUseSelectorHook, useSelector as useReduxSelector } from 'react-redux';
 import { lpNode } from './LP/lpNode';
+import { cpModeSelection } from './CP/cpModeSelection';
 import { plaskProject } from './plaskProject';
 import { selectingData } from './selectingData';
 import { animationData } from './animationData';
@@ -13,6 +14,7 @@ export type RootState = ReturnType<typeof rootReducer>;
 
 const rootReducer = combineReducers({
   lpNode,
+  cpModeSelection,
   plaskProject,
   selectingData,
   animationData,

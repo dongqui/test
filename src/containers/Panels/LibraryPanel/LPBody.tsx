@@ -1,13 +1,15 @@
 import * as BABYLON from '@babylonjs/core';
-import { find, remove, cloneDeep } from 'lodash';
+import { find, cloneDeep } from 'lodash';
 import { FunctionComponent, memo, useEffect, useState, useCallback, useMemo, useRef, createRef, RefObject } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { HotKeys } from 'react-hotkeys';
 import { beforePaste, checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { DragBox } from 'components/DragBox';
 import { v4 as uuid } from 'uuid';
+import * as LPCONSTANTS from 'constants/LibraryPanel';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -29,41 +31,55 @@ interface Props {
 const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const dispatch = useDispatch();
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
-
-  const screenList = useSelector((state) => state.plaskProject.screenList);
-  const assetList = useSelector((state) => state.plaskProject.assetList);
-  const selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
+  const _screenList = useSelector((state) => state.plaskProject.screenList);
+  const _assetList = useSelector((state) => state.plaskProject.assetList);
+  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [nodeRef, setNodeRef] = useState<RefObject<HTMLDivElement>[]>([]);
 
   const { onContextMenuOpen } = useContextMenu();
+  const { getConfirm } = useBaseModal();
 
   useEffect(() => {
     setNodeRef(Array.from({ length: lpNode.length }).map(() => createRef()));
   }, [lpNode.length]);
 
-  const handleDepthChange = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
-    const changeNode = find(node, { id: childId });
-
-    if (changeNode) {
-      const cloneChangeNode = cloneDeep(changeNode);
-
-      cloneChangeNode.id = uuid();
-      cloneChangeNode.parentId = parentNode.id;
-      cloneChangeNode.filePath = parentNode.filePath + `\\${cloneChangeNode.name}`;
-
-      remove(parentNode.children, (child) => child === childId);
-
-      parentNode.children.push(cloneChangeNode.id);
-
-      node.push(cloneChangeNode);
-
-      if (cloneChangeNode.children.length > 0) {
-        cloneChangeNode.children.map((child) => handleDepthChange(node, child, cloneChangeNode));
-      }
-    }
+  const saveChildrensKey = useCallback((before: string[], key: string) => {
+    const result = before.concat(key);
+    return result;
   }, []);
+
+  const handleDepthChange = useCallback(
+    (node: LP.Node[], childId: string, parentNode: LP.Node) => {
+      const changeNode = find(node, { id: childId });
+      let memory: string[] = [];
+
+      if (changeNode) {
+        const cloneChangeNode = cloneDeep(changeNode);
+
+        cloneChangeNode.id = uuid();
+        cloneChangeNode.parentId = parentNode.id;
+        cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
+
+        // remove(parentNode.children, (child) => child === childId);
+
+        parentNode.childrens.push(cloneChangeNode.id);
+
+        node.push(cloneChangeNode);
+
+        if (cloneChangeNode.childrens.length > 0) {
+          cloneChangeNode.childrens.map((child) => {
+            memory = saveChildrensKey(memory, child);
+            handleDepthChange(node, child, cloneChangeNode);
+          });
+        }
+
+        cloneChangeNode.childrens = cloneChangeNode.childrens.filter((key) => !memory.includes(key));
+      }
+    },
+    [saveChildrensKey],
+  );
 
   const handlePaste = useCallback(() => {
     let nextLPNodes = cloneDeep(lpNode);
@@ -77,6 +93,8 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       const compareTargetName = cloneCopyNode.type === 'Model' ? fileName : cloneCopyNode.name;
 
       if (cloneCopyNode) {
+        let memory: string[] = [];
+
         const currentPathNodeName = lpNode
           .filter((node) => {
             if (node.parentId === '__root__') {
@@ -111,9 +129,14 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
           draft.push(cloneCopyNode);
 
-          if (cloneCopyNode.children.length > 0) {
-            cloneCopyNode.children.map((child) => handleDepthChange(draft, child, cloneCopyNode));
+          if (cloneCopyNode.childrens.length > 0) {
+            cloneCopyNode.childrens.map((child) => {
+              memory = saveChildrensKey(memory, child);
+              handleDepthChange(draft, child, cloneCopyNode);
+            });
           }
+
+          cloneCopyNode.childrens = cloneCopyNode.childrens.filter((key) => !memory.includes(key));
         });
 
         nextLPNodes = nextNodes;
@@ -125,7 +148,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         nodes: nextLPNodes,
       }),
     );
-  }, [_lpClipboard, dispatch, handleDepthChange, lpNode]);
+  }, [_lpClipboard, dispatch, handleDepthChange, lpNode, saveChildrensKey]);
 
   const handleCreateDirectory = useCallback(() => {
     const currentPathNodeNames = lpNode.filter((node) => node.parentId === '__root__' && node.name.includes('Untitled')).map((filteredNode) => filteredNode.name);
@@ -142,7 +165,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         name: nodeName,
         extension: '',
         type: 'Folder',
-        children: [],
+        childrens: [],
       } as LP.Node;
 
       draft.push(newNode);
@@ -219,22 +242,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     },
     [selectedAssetId, selectedId],
   );
-
-  // const handleReject = useCallback(
-  //   (id: string) => {
-  //     if (selectedId.includes(id)) {
-  //       const nextSelectedIds = produce(selectedId, (draft) => {
-  //         const index = draft.indexOf(id);
-  //         if (index > -1) {
-  //           draft.splice(index, 1);
-  //         }
-  //       });
-
-  //       setSelectedId(nextSelectedIds);
-  //     }
-  //   },
-  //   [selectedId],
-  // );
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -316,13 +323,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         const selectedNode = find(lpNode, { id: current });
 
         if (selectedNode) {
-          if (selectedNode.children.length > 0) {
-            const tempIds = nextIds.filter((currentId) => !selectedNode.children.includes(currentId));
+          if (selectedNode.childrens.length > 0) {
+            const tempIds = nextIds.filter((currentId) => !selectedNode.childrens.includes(currentId));
             resultSelectedId = tempIds;
             return;
           }
 
-          if (selectedNode.children.length === 0) {
+          if (selectedNode.childrens.length === 0) {
             resultSelectedId.push(current);
           }
         }
@@ -334,13 +341,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         const selectedNode = find(lpNode, { assetId: current });
 
         if (selectedNode) {
-          if (selectedNode.children.length > 0) {
-            const tempAssetIds = nextAssetIds.filter((currentId) => !selectedNode.children.includes(currentId));
+          if (selectedNode.childrens.length > 0) {
+            const tempAssetIds = nextAssetIds.filter((currentId) => !selectedNode.childrens.includes(currentId));
             resultSelectedAssetId = tempAssetIds;
             return;
           }
 
-          if (selectedNode.children.length === 0) {
+          if (selectedNode.childrens.length === 0) {
             resultSelectedAssetId.push(current);
           }
         }
@@ -434,8 +441,44 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     );
   }, [dispatch, lpNode, selectedId]);
 
-  const handleDelete = useCallback(() => {
-    const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+  const deleteChild = useCallback((node: LP.Node[], ids: string[]) => {
+    let memory: LP.Node[] = [];
+
+    let afterNodes = node.filter((current) => !ids.includes(current.id));
+
+    if (ids.length > 0) {
+      ids.forEach((currentId) => {
+        const searchedNode = find(node, { id: currentId });
+
+        if (searchedNode) {
+          searchedNode.childrens.forEach((child) => {
+            afterNodes = afterNodes.filter((current) => !searchedNode.childrens.includes(current.id));
+
+            memory = deleteChild(afterNodes, [child]);
+          });
+        }
+
+        memory = afterNodes;
+      });
+      return memory;
+    } else {
+      return node;
+    }
+  }, []);
+
+  const handleDelete = useCallback(async () => {
+    const confirmed = await getConfirm({
+      title: 'Confirm',
+      message: 'Are you sure you want to delete the file?',
+      confirmText: '확인',
+      cancelText: '취소',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    const afterNodes = deleteChild(lpNode, selectedId);
 
     dispatch(
       lpNodeActions.changeNode({
@@ -445,13 +488,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
     if (selectedAssetId.length > 0) {
       selectedAssetId.forEach((assetId) => {
-        const targetAsset = assetList.find((asset) => asset.id === assetId);
-        const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
-        const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+        const targetAsset = _assetList.find((asset) => asset.id === assetId);
+        const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+        const targetControllers = _selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
 
         // delete 대상이 render된 scene에서 대상의 요소들 remove
         if (targetAsset) {
-          screenList
+          _screenList
             .map((screen) => screen.scene)
             .forEach((scene) => {
               removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
@@ -466,7 +509,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
       });
     }
-  }, [assetList, dispatch, lpNode, screenList, selectableObjects, selectedAssetId, selectedId]);
+  }, [_assetList, _screenList, _selectableObjects, deleteChild, dispatch, getConfirm, lpNode, selectedAssetId, selectedId]);
 
   const handlers = {
     LP_COPY: handleCopy,
@@ -486,20 +529,17 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         {rootPathNode.map((node, i) => (
           <div className={cx('node-row')} ref={nodeRef[i]} key={node.id}>
             <ListNode
-              selectableId="node-selectable"
-              isSelected={selectedId.includes(node.id)}
               onSelect={handleSelect}
               selectedId={selectedId}
               onSetDragTarget={handleSetDragTarget}
               dragTarget={dragTarget}
-              childrens={node.children}
               onCopy={handleCopy}
               onDelete={handleDelete}
               {...node}
             />
           </div>
         ))}
-        <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId="node-selectable" selectedId="node-selected" />
+        <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} />
       </div>
     </HotKeys>
   );

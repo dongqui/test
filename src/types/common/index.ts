@@ -1,3 +1,4 @@
+import { FocusEvent } from 'react';
 import * as BABYLON from '@babylonjs/core';
 
 export type Nullable<T> = T | null;
@@ -8,6 +9,7 @@ export type PlaskView = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
 export type PlaskRotationType = 'euler' | 'quaternion';
 
+export type PlaskPaletteColor = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink';
 export interface PlaskProject {
   id: string;
   name: string;
@@ -131,3 +133,31 @@ export type PlaskMocapData = Array<{
     value: ArrayOfThreeNumbers | ArrayOfFourNumbers;
   }>;
 }>;
+
+export type BvhBoneType =
+  | 'Hips'
+  | 'Chest'
+  | 'Chest2'
+  | 'Chest3'
+  | 'Neck'
+  | 'Head'
+  | 'LeftCollar'
+  | 'LeftUpArm'
+  | 'LeftLowArm'
+  | 'LeftHand'
+  | 'RightCollar'
+  | 'RightUpArm'
+  | 'RightLowArm'
+  | 'RightHand'
+  | 'LeftUpLeg'
+  | 'LeftLowLeg'
+  | 'LeftFoot'
+  | 'LeftToe'
+  | 'RightUpLeg'
+  | 'RightLowLeg'
+  | 'RightFoot'
+  | 'RightToe';
+
+export type PlaskBvhMap = {
+  [bone in BvhBoneType]: Nullable<string>;
+};

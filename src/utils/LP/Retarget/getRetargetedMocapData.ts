@@ -4,6 +4,16 @@ import { createAnimationIngredient } from 'utils/RP';
 
 const DEFAULT_TIMEOUT = 3000;
 
+/**
+ * mocap 결과물과 model을 결합해 대상 model에 결속된 animationIngredient를 생성합니다.
+ *
+ * @param assetId - 대상 model(asset)의 id
+ * @param animationIngredientName - 생성할 animationIngredient의 이름
+ * @param retargetMap - source와 target을 연결한 데이터
+ * @param animatableTransformNodes - model의 transformNode들 중 animation에 사용가능한 대상들
+ * @param mocapData - mocap 결과물
+ * @param timeout -
+ */
 const getRetargetedMocapData = (
   assetId: string,
   animationIngredientName: string,
@@ -32,7 +42,7 @@ const getRetargetedMocapData = (
           transformKeys.forEach((transformKey) => {
             const { frame, value } = transformKey;
             const q = BABYLON.Quaternion.FromArray(value);
-            const e = q.clone().normalize().toEulerAngles();
+            const e = q.clone().toEulerAngles();
             targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
             targetRotationTrack.transformKeys.push({ frame, value: e });
           });
