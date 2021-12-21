@@ -1,5 +1,6 @@
-import { filter } from 'lodash';
+import { find, filter } from 'lodash';
 import { FunctionComponent, memo, MutableRefObject, useCallback, useRef } from 'react';
+import { useSelector } from 'reducers';
 import { BasePortal } from 'components/Modal';
 import { Overlay } from 'components/Overlay';
 import { BaseForm, BaseField } from 'components/Form';
@@ -65,7 +66,12 @@ const ExportModal: FunctionComponent<Props> = ({ motions, onConfirm, onCancel, o
     })),
   );
 
+  const _assetList = useSelector((state) => state.plaskProject.assetList);
+  const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
+
   const initialMotion = filter(motions, { current: true });
+  const currentAsset = find(_assetList, { id: initialMotion[0].assetId });
+
   const initialMotionValue = initialMotion.map((motion) => ({
     value: motion.id,
     label: motion.name,
@@ -74,20 +80,35 @@ const ExportModal: FunctionComponent<Props> = ({ motions, onConfirm, onCancel, o
     label: 'None',
   };
 
-  const formatList = [
-    {
-      value: 'fbx',
-      label: 'fbx',
-    },
-    {
-      value: 'glb',
-      label: 'glb',
-    },
-    {
-      value: 'bvh',
-      label: 'bvh',
-    },
-  ];
+  const retargetMap = currentAsset && find(_retargetMaps, { assetId: currentAsset.id });
+  const isErrorRetargetMap = retargetMap && retargetMap.values.some((value) => !value.targetTransformNodeId);
+
+  const formatList =
+    !retargetMap || !isErrorRetargetMap
+      ? [
+          {
+            value: 'fbx',
+            label: 'fbx',
+          },
+          {
+            value: 'glb',
+            label: 'glb',
+          },
+          {
+            value: 'bvh',
+            label: 'bvh',
+          },
+        ]
+      : [
+          {
+            value: 'fbx',
+            label: 'fbx',
+          },
+          {
+            value: 'glb',
+            label: 'glb',
+          },
+        ];
 
   return (
     <BasePortal container={portalRef}>
