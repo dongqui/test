@@ -243,12 +243,13 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   }, [isControllerOn]);
 
   // Filter의 활성화 비활성화
+  // Filter 활성화 depth, animationIngredient -> layer 로 변경해야함
   const handleFilterToggle = useCallback(() => {
     if (isFilterOn) {
       if (selectedAssetId) {
         setIsFilterOn(false);
         // useFilter to false
-        const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId);
+        const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
         if (targetAnimationIngredient) {
           dispatch(animationDataActions.turnFilterOff({ animationIngredientId: targetAnimationIngredient.id }));
         }
@@ -257,7 +258,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       if (selectedAssetId) {
         setIsFilterOn(true);
         // useFilter to true
-        const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId);
+        const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
         if (targetAnimationIngredient) {
           dispatch(animationDataActions.turnFilterOn({ animationIngredientId: targetAnimationIngredient.id }));
         }
@@ -548,12 +549,17 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       decimalDigit: 2,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
         setFcValue(parseFloat(event.target.value));
-        console.log('fcValue: ');
-        console.log(parseFloat(event.target.value));
       },
-      onChangeEnd: (inputValue: number) => {
-        // dispatch를 mouse up, on blur에만 동작하기 위해서는 이 곳에 추가
-      },
+      onChangeEnd: useCallback(
+        (inputValue: number) => {
+          if (controlTrack) {
+            // dispatch를 mouse up, on blur에만 동작하기 위해서는 이 곳에 추가
+            dispatch(animationDataActions.changeTrackFilterMinCutoff({ trackId: controlTrack.id, value: inputValue }));
+            // feature/RP 에 있는 force- 유틸함수 호출해야 함
+          }
+        },
+        [controlTrack, dispatch],
+      ),
     },
     {
       text: 'Beta',
@@ -564,12 +570,17 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       decimalDigit: 3,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
         setBetaValue(parseFloat(event.target.value));
-        console.log('betaValue: ');
-        console.log(parseFloat(event.target.value));
       },
-      onChangeEnd: (inputValue: number) => {
-        // dispatch를 mouse up, on blur에만 동작하기 위해서는 이 곳에 추가
-      },
+      onChangeEnd: useCallback(
+        (inputValue: number) => {
+          if (controlTrack) {
+            // dispatch를 mouse up, on blur에만 동작하기 위해서는 이 곳에 추가
+            dispatch(animationDataActions.changeTrackFilterBeta({ trackId: controlTrack.id, value: inputValue }));
+            // feature/RP 에 있는 force- 유틸함수 호출해야 함
+          }
+        },
+        [controlTrack, dispatch],
+      ),
     },
   ];
 
@@ -619,7 +630,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             currentColor={controllerColor}
             setCurrentColor={setControllerColor}
           />
-          {(!isAllActive || !isControllerOn) && <div className={cx('inactive-overlay')}></div>}
+          {(!isAllActive || !isControllerOn || isNull(controlController)) && <div className={cx('inactive-overlay')}></div>}
         </div>
       </section>
       <section className={cx('filter-section')}>
@@ -645,9 +656,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
               decimalDigit={info.decimalDigit}
               activeStatus={isAllActive && isFilterOn && !isNull(controlTrack)}
               handleChange={info.handleChange}
+              onChangeEnd={info.onChangeEnd}
             />
           ))}
-          {(!isAllActive || !isFilterOn) && <div className={cx('inactive-overlay')}></div>}
+          {(!isAllActive || !isFilterOn || isNull(controlTrack)) && <div className={cx('inactive-overlay')}></div>}
         </div>
       </section>
       {/**

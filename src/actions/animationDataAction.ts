@@ -13,6 +13,8 @@ export type AnimationDataAction =
   | ReturnType<typeof toggleLayerMuteness>
   | ReturnType<typeof turnFilterOn>
   | ReturnType<typeof turnFilterOff>
+  | ReturnType<typeof changeTrackFilterBeta>
+  | ReturnType<typeof changeTrackFilterMinCutoff>
   | ReturnType<typeof assignBoneMapping>
   | ReturnType<typeof changeHipSpace>;
 
@@ -30,6 +32,8 @@ const CHANGE_CURRENT_ANIMATION_INGREDIENT = 'animationDataAction/CHANGE_CURRENT_
 export const EDIT_KEYFRAMES = 'animationDataAction/EDIT_KEYFRAMES' as const; // saga내 사용을 위해 export
 const TURN_FILTER_ON = 'animationDataAction/TURN_FILTER_ON' as const;
 const TURN_FILTER_OFF = 'animationDataAction/TURN_FILTER_OFF' as const;
+const CHANGE_TRACK_FILTER_BETA = 'animationDataAction/CHANGE_TRACK_FILTER_BETA' as const;
+const CHANGE_TRACK_FILTER_MIN_CUTOFF = 'animationDataAction/CHANGE_TRACK_FILTER_MIN_CUTOFF' as const;
 
 // retargetMap 관련
 const ASSIGN_BONE_MAPPING = 'animationDataAction/ASSIGN_BONE_MAPPING' as const;
@@ -222,6 +226,30 @@ interface TurnFilterOff {
  */
 export const turnFilterOff = (params: TurnFilterOff) => ({
   type: TURN_FILTER_OFF,
+  payload: {
+    ...params,
+  },
+});
+
+interface ChangeTrackFilterBeta {
+  trackId: string;
+  value: number;
+}
+
+export const changeTrackFilterBeta = (params: ChangeTrackFilterBeta) => ({
+  type: CHANGE_TRACK_FILTER_BETA,
+  payload: {
+    ...params,
+  },
+});
+
+interface ChangeTrackFilterMinCutoff {
+  trackId: string;
+  value: number;
+}
+
+export const changeTrackFilterMinCutoff = (params: ChangeTrackFilterMinCutoff) => ({
+  type: CHANGE_TRACK_FILTER_MIN_CUTOFF,
   payload: {
     ...params,
   },
