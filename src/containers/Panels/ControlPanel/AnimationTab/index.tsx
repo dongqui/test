@@ -5,30 +5,48 @@ import { useDispatch } from 'react-redux';
 import AnimationInputWrapper from './AnimationInputWrapper';
 import AnimationFKWrapper from './AnimationFKWrapper';
 import * as animationDataActions from 'actions/animationDataAction';
+import * as selectingDataActions from 'actions/selectingDataAction';
 import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPanel';
-import { Nullable, PlaskPaletteColor, PlaskRotationType, PlaskTrack } from 'types/common';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { AnimationIngredient, Nullable, PlaskPaletteColor, PlaskRotationType, PlaskTrack } from 'types/common';
 import { useSelector } from 'reducers';
+import { forceAnimationButtonsClick } from 'utils/common';
 import { checkIsTargetMesh } from 'utils/RP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { forceAnimationButtonsClick } from 'utils/common';
 
 const cx = classNames.bind(styles);
+
+const PALETTE_COLORS: { [color in PlaskPaletteColor]: string } = {
+  red: '#FF6969',
+  orange: '#FC9B51',
+  yellow: '#FFDB56',
+  green: '#4FD675',
+  blue: '#61E4ED',
+  purple: '#D687F4',
+  pink: '#FF8CC9',
+};
+const DEFAULT_CONTROLLER_COLOR = 'yellow';
 
 interface Props {
   isAllActive: boolean;
 }
 
 const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
+  const _screenList = useSelector((state) => state.plaskProject.screenList);
+  const _assetList = useSelector((state) => state.plaskProject.assetList);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // selectedLayerId에 해당
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+  const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _playDirection = useSelector((state) => state.animatingControls.playDirection);
 
   const dispatch = useDispatch();
+
+  const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
   // 다중모델 설계 내에서 단일모델 상황을 가정하기 위함 (추후 다중모델 설계 자체를 단일모델 설계로 변경할 계획)
   const selectedAssetId = useMemo(() => _visualizedAssetIds[0], [_visualizedAssetIds]);
@@ -99,20 +117,22 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   useEffect(() => {
     if (_selectedTargets.length === 0) {
       // 선택되지 않은 경우
-      setControlTarget(null);
+      setControlController(null);
     } else if (_selectedTargets.length === 1) {
       // 단일대상 선택된 경우, 대상이 컨트롤러거나 연결된 컨트롤러가 있다면 control controller로 선택
       if (checkIsTargetMesh(_selectedTargets[0])) {
-        setControlTarget(_selectedTargets[0]);
+        setControlController(_selectedTargets[0]);
       } else {
         const connectedController = _selectableObjects.find((object) => object.id === _selectedTargets[0].id.replace('transformNode', 'controller'));
         if (connectedController) {
           setControlController(connectedController as BABYLON.Mesh);
+        } else {
+          setControlController(null);
         }
       }
     } else {
       // 다중대상 선택된 경우
-      setControlTarget(null);
+      setControlController(null);
     }
   }, [_selectableObjects, _selectedTargets]);
 
@@ -176,13 +196,14 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   }, [_selectableObjects, selectedAssetId]);
 
   // 선택 대상에 따라 controller properties 변경
-  // useEffect(() => {
-  //   if (controlController) {
-  //     // setControllerX(controlController)
-  //     // setControllerY(controllerColor)
-  //     // setControllerColor(controlController)
-  //   }
-  // }, [controlController]);
+  useEffect(() => {
+    if (controlController) {
+      setControllerX(controlController.scaling.x);
+      setControllerZ(controlController.scaling.z);
+      // @ts-ignore
+      setControllerColor(controlController.material.emissiveColor.toHexString() as PlaskPaletteColor);
+    }
+  }, [controlController]);
 
   // 선택 대상에 따라 filter toggle 변경
   useEffect(() => {
@@ -237,19 +258,149 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [isFilterSectionSpread]);
 
-  // Controller의 활성화 / 비활성화
-  const handleControllerToggle = useCallback(() => {
-    if (isControllerOn) {
-      setIsControllerOn(false);
-    } else {
-      setIsControllerOn(true);
+  // Controller의 생성 / 삭제
+  const handleControllerToggle = useCallback(async () => {
+    if (selectedAssetId) {
+      if (isControllerOn) {
+        setIsControllerOn(false);
+        // 삭제
+      } else {
+        setIsControllerOn(true);
+        // 생성
+        const targetAsset = _assetList.find((asset) => asset.id === selectedAssetId)!;
+        const targetRetargetMap = _retargetMaps.find((retargetMap) => retargetMap.assetId === selectedAssetId);
+        const targetTransformNodeIds = targetRetargetMap?.values.map((value) => value.targetTransformNodeId);
+        // retargetMap이 없거나 완성되지 않은 경우
+        if (!targetTransformNodeIds || targetTransformNodeIds.find((targetTransformNodeId) => isNull(targetTransformNodeId))) {
+          const confirmedToMove = await getConfirm({
+            title: 'Confirm',
+            message: 'Invalid retarget information. Will you finish mapping, first?',
+            confirmText: 'Confirm',
+            cancelText: 'Cancel',
+          });
+          if (confirmedToMove) {
+            // CP -> retarget tab으로 전환
+          }
+          return;
+        }
+
+        // 애니메이션 옮길지 말지
+        const confirmedToCopy = await getConfirm({
+          title: 'Confirm',
+          message: `Do you want to copy existing keyframes from bones to controllers?`,
+          confirmText: 'Confirm',
+          cancelText: 'Cancel',
+        });
+
+        _screenList.forEach((screen) => {
+          const controllers: BABYLON.Mesh[] = [];
+          const controllerMaterial = new BABYLON.StandardMaterial('controllerMaterial', screen.scene);
+          controllerMaterial.emissiveColor = BABYLON.Color3.FromHexString(PALETTE_COLORS[DEFAULT_CONTROLLER_COLOR]);
+          controllerMaterial.disableLighting = true;
+
+          // 컨트롤러 생성
+          targetAsset.bones.forEach((bone, idx) => {
+            const connectedTransformNode = bone.getTransformNode();
+            if (connectedTransformNode && targetTransformNodeIds.includes(connectedTransformNode.id)) {
+              const controller = BABYLON.MeshBuilder.CreateTorus(
+                `${bone.name}_controller`,
+                {
+                  diameter: 40,
+                  thickness: 0.2,
+                  tessellation: 64,
+                },
+                screen.scene,
+              );
+              controller.renderingGroupId = 3;
+              controller.id = `${targetAsset.id}//${bone.name}//controller`;
+              controller.material = controllerMaterial;
+
+              if (controllers.length === 0) {
+                // controller들의 scale을 모델에 맞추기 위해, Armature bone을 hips controller의 parent로 설정
+                controller.setParent(bone.getParent());
+              }
+
+              // controller actionManager 생성 및 pick, hover action 등록
+              controller.actionManager = new BABYLON.ActionManager(screen.scene);
+              controller.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event) => {
+                  dispatch(selectingDataActions.defaultSingleSelect({ target: controller }));
+                }),
+              );
+
+              controller.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, (event) => {
+                  screen.scene.hoverCursor = 'pointer';
+                }),
+              );
+
+              controllers.push(controller);
+            }
+          });
+
+          // 컨트롤러 간 계층구조 생성
+          controllers.forEach((controller, idx) => {
+            const targetBone = targetAsset.bones.find((bone) => bone.id === controller.id.replace('controller', 'bone'));
+            if (targetBone && targetBone.children.length > 0) {
+              targetBone.children.forEach((childBone) => {
+                const childController = controllers.find((ctrl) => ctrl.id === childBone.id.replace('bone', 'controller'));
+                if (childController) {
+                  childController.setParent(controller);
+                }
+              });
+            }
+            if (targetBone) {
+              targetBone.computeWorldMatrix(true);
+              controller.scaling = new BABYLON.Vector3(1, 1, 1);
+              controller.position = targetBone.position;
+            }
+          });
+
+          // controller들 또한 dragBox로 선택 가능하도록
+          dispatch(selectingDataActions.addSelectableObjects({ objects: controllers }));
+
+          // controller의 애니메이션 추가
+          const currentAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAsset.id && animationIngredient.current);
+          if (currentAnimationIngredient) {
+            const { tracks, layers } = currentAnimationIngredient;
+
+            const newTracks: PlaskTrack[] = [];
+
+            controllers.forEach((controller) => {
+              // rotationQuaternion으로 회전법 바꾸는 처리
+              controller.rotate(BABYLON.Axis.X, 0);
+
+              // 대응하는 transformNode의 애니메이션을 사용해 controller의 애니메이션 생성 및 animationIngredient에 추가
+              layers.forEach((layer) => {
+                const transformNodeTracks = tracks.filter((track) => track.targetId === controller.id.replace('controller', 'transformNode') && track.layerId === layer.id);
+                transformNodeTracks.forEach((transformNodeTrack) => {
+                  const newTrack: PlaskTrack = {
+                    ...transformNodeTrack,
+                    id: `${layer.id}//${controller.id}//${transformNodeTrack.property}`,
+                    targetId: controller.id,
+                    target: controller,
+                    name: `${transformNodeTrack.name}|controller`,
+                    // confirmedToCopy 여부에 따라 controller에 animation keyframes 복사 혹은 빈 transformKeys
+                    transformKeys: confirmedToCopy ? [...transformNodeTrack.transformKeys] : [],
+                  };
+                  newTracks.push(newTrack);
+                });
+              });
+
+              const newAnimationIngredient: AnimationIngredient = { ...currentAnimationIngredient, tracks: [...tracks, ...newTracks] };
+
+              dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+            });
+          }
+        });
+      }
     }
-  }, [isControllerOn]);
+  }, [_animationIngredients, _assetList, _retargetMaps, _screenList, dispatch, getConfirm, isControllerOn, selectedAssetId]);
 
   // Filter의 활성화 비활성화
   const handleFilterToggle = useCallback(() => {
-    if (isFilterOn) {
-      if (selectedAssetId) {
+    if (selectedAssetId) {
+      if (isFilterOn) {
         setIsFilterOn(false);
         // useFilter to false
         const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
@@ -257,9 +408,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           dispatch(animationDataActions.turnFilterOff({ animationIngredientId: targetAnimationIngredient.id, layerId: _seletedLayer }));
           forceAnimationButtonsClick(_playState, _playDirection);
         }
-      }
-    } else {
-      if (selectedAssetId) {
+      } else {
         setIsFilterOn(true);
         // useFilter to true
         const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
