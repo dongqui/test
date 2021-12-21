@@ -11,6 +11,7 @@ import { useSelector } from 'reducers';
 import { checkIsTargetMesh } from 'utils/RP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { forceAnimationButtonsClick } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
@@ -24,6 +25,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // selectedLayerId에 해당
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+  const _playState = useSelector((state) => state.animatingControls.playState);
+  const _playDirection = useSelector((state) => state.animatingControls.playDirection);
 
   const dispatch = useDispatch();
 
@@ -252,6 +255,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
         if (targetAnimationIngredient) {
           dispatch(animationDataActions.turnFilterOff({ animationIngredientId: targetAnimationIngredient.id }));
+          forceAnimationButtonsClick(_playState, _playDirection);
         }
       }
     } else {
@@ -261,10 +265,11 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
         if (targetAnimationIngredient) {
           dispatch(animationDataActions.turnFilterOn({ animationIngredientId: targetAnimationIngredient.id }));
+          forceAnimationButtonsClick(_playState, _playDirection);
         }
       }
     }
-  }, [_animationIngredients, dispatch, isFilterOn, selectedAssetId]);
+  }, [_animationIngredients, _playDirection, _playState, dispatch, isFilterOn, selectedAssetId]);
 
   const positionInputData = [
     {
@@ -553,12 +558,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       onChangeEnd: useCallback(
         (inputValue: number) => {
           if (controlTrack) {
-            // dispatch를 mouse up, on blur에만 동작하기 위해서는 이 곳에 추가
             dispatch(animationDataActions.changeTrackFilterMinCutoff({ trackId: controlTrack.id, value: inputValue }));
-            // feature/RP 에 있는 force- 유틸함수 호출해야 함
+            // 새로운 animationGroup을 사용하기 위해, 일시정지 후 재생
+            forceAnimationButtonsClick(_playState, _playDirection);
           }
         },
-        [controlTrack, dispatch],
+        [_playDirection, _playState, controlTrack, dispatch],
       ),
     },
     {
@@ -574,12 +579,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       onChangeEnd: useCallback(
         (inputValue: number) => {
           if (controlTrack) {
-            // dispatch를 mouse up, on blur에만 동작하기 위해서는 이 곳에 추가
             dispatch(animationDataActions.changeTrackFilterBeta({ trackId: controlTrack.id, value: inputValue }));
-            // feature/RP 에 있는 force- 유틸함수 호출해야 함
+            // 새로운 animationGroup을 사용하기 위해, 일시정지 후 재생
+            forceAnimationButtonsClick(_playState, _playDirection);
           }
         },
-        [controlTrack, dispatch],
+        [_playDirection, _playState, controlTrack, dispatch],
       ),
     },
   ];
