@@ -189,14 +189,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     if (selectedAssetId) {
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
       if (targetAnimationIngredient) {
-        setIsFilterOn(targetAnimationIngredient.tracks[0].useFilter);
+        const selectedLayerFirstTrack = targetAnimationIngredient.tracks.find((track) => track.layerId === _seletedLayer);
+        setIsFilterOn(selectedLayerFirstTrack ? selectedLayerFirstTrack.useFilter : false);
       } else {
         setIsFilterOn(false);
       }
     } else {
       setIsFilterOn(false);
     }
-  }, [_animationIngredients, selectedAssetId]);
+  }, [_animationIngredients, _seletedLayer, selectedAssetId]);
 
   // 선택 대상에 따라 filter parameters 변경
   useEffect(() => {
@@ -246,7 +247,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   }, [isControllerOn]);
 
   // Filter의 활성화 비활성화
-  // Filter 활성화 depth, animationIngredient -> layer 로 변경해야함
   const handleFilterToggle = useCallback(() => {
     if (isFilterOn) {
       if (selectedAssetId) {
@@ -254,7 +254,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         // useFilter to false
         const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
         if (targetAnimationIngredient) {
-          dispatch(animationDataActions.turnFilterOff({ animationIngredientId: targetAnimationIngredient.id }));
+          dispatch(animationDataActions.turnFilterOff({ animationIngredientId: targetAnimationIngredient.id, layerId: _seletedLayer }));
           forceAnimationButtonsClick(_playState, _playDirection);
         }
       }
@@ -264,12 +264,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         // useFilter to true
         const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
         if (targetAnimationIngredient) {
-          dispatch(animationDataActions.turnFilterOn({ animationIngredientId: targetAnimationIngredient.id }));
+          dispatch(animationDataActions.turnFilterOn({ animationIngredientId: targetAnimationIngredient.id, layerId: _seletedLayer }));
           forceAnimationButtonsClick(_playState, _playDirection);
         }
       }
     }
-  }, [_animationIngredients, _playDirection, _playState, dispatch, isFilterOn, selectedAssetId]);
+  }, [_animationIngredients, _playDirection, _playState, _seletedLayer, dispatch, isFilterOn, selectedAssetId]);
 
   const positionInputData = [
     {

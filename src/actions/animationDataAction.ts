@@ -201,6 +201,7 @@ export const editKeyframes = () => ({
 
 interface TurnFilterOn {
   animationIngredientId: string;
+  layerId: string;
 }
 
 /**
@@ -217,6 +218,7 @@ export const turnFilterOn = (params: TurnFilterOn) => ({
 
 interface TurnFilterOff {
   animationIngredientId: string;
+  layerId: string;
 }
 
 /**

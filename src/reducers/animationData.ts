@@ -106,7 +106,7 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
       return Object.assign({}, state, {
         animationIngredients: state.animationIngredients.map((animationIngredient) => {
           return animationIngredient.id === action.payload.animationIngredientId
-            ? { ...animationIngredient, tracks: animationIngredient.tracks.map((track) => ({ ...track, useFilter: true })) }
+            ? { ...animationIngredient, tracks: animationIngredient.tracks.map((track) => (track.layerId === action.payload.layerId ? { ...track, useFilter: true } : track)) }
             : animationIngredient;
         }),
       });
@@ -115,7 +115,7 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
       return Object.assign({}, state, {
         animationIngredients: state.animationIngredients.map((animationIngredient) => {
           return animationIngredient.id === action.payload.animationIngredientId
-            ? { ...animationIngredient, tracks: animationIngredient.tracks.map((track) => ({ ...track, useFilter: false })) }
+            ? { ...animationIngredient, tracks: animationIngredient.tracks.map((track) => (track.layerId === action.payload.layerId ? { ...track, useFilter: false } : track)) }
             : animationIngredient;
         }),
       });
