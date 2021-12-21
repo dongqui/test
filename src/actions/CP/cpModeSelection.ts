@@ -1,11 +1,11 @@
-export type ModeSelectionAction = ReturnType<typeof changeMode>;
-export interface ChangeMode {
+export type CpModeSwitchAction = ReturnType<typeof switchMode>;
+export interface SwitchCpMode {
   mode: 'Animation' | 'Retargeting';
 }
 
-export const CHANGE_MODE = 'modeSelection/CHANGE_MODE' as const;
+export const SWITCH_CP_MODE = 'modeSelection/SWITCH_CP_MODE' as const;
 
-export const changeMode = (params: ChangeMode) => ({
-  type: CHANGE_MODE,
+export const switchMode = (params: SwitchCpMode) => ({
+  type: SWITCH_CP_MODE,
   payload: params,
 });

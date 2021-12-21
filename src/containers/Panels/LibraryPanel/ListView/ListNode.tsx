@@ -1395,7 +1395,7 @@ const ListNode: FunctionComponent<Props> = ({
               handleVisualization();
 
               dispatch(
-                cpActions.changeMode({
+                cpActions.switchMode({
                   mode: 'Retargeting',
                 }),
               );

@@ -21,7 +21,7 @@ const ControlPanel: FunctionComponent = () => {
 
   const handleModeChange = useCallback(
     (mode: ControlPanelMode) => {
-      dispatch(cpActions.changeMode({ mode }));
+      dispatch(cpActions.switchMode({ mode }));
     },
     [dispatch],
   );
