@@ -128,7 +128,7 @@ const ExportModal: FunctionComponent<Props> = ({ motions, onConfirm, onCancel, o
                 <button className={cx('button', 'cancel')} onClick={handleCancel}>
                   Cancel
                 </button>
-                <button className={cx('button', 'confirm')} type="submit">
+                <button className={cx('button', 'positive')} type="submit">
                   Export
                 </button>
               </div>
