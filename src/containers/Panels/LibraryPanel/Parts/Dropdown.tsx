@@ -1,4 +1,5 @@
-import { Fragment, memo, forwardRef, useState, useCallback } from 'react';
+import { Fragment, memo, forwardRef, useState, useCallback, useRef } from 'react';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import classnames from 'classnames/bind';
 import styles from './Dropdown.module.scss';
 import { useEffect } from 'react';
@@ -18,8 +19,27 @@ interface Props {
 }
 
 const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChange }, ref) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
   const [isOpen, setIsOpen] = useState(false);
   const [value, setValue] = useState(initialValue.value);
+
+  useEffect(() => {
+    const handleOutSideClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      const isContains = wrapperRef.current?.contains(target);
+
+      if (!isContains && isOpen) {
+        handleToggle();
+      }
+    };
+
+    window.addEventListener('click', handleOutSideClick);
+
+    return () => {
+      window.removeEventListener('click', handleOutSideClick);
+    };
+  });
 
   useEffect(() => {
     onChange(value);
@@ -34,20 +54,23 @@ const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChan
   }, []);
 
   return (
-    <Fragment>
-      <div className={cx('wrapper')} ref={ref} onClick={handleToggle}>
-        <div className={cx('inner')}>{initialValue.label}</div>
+    <div className={cx('wrapper')}>
+      <div className={cx('header')} ref={ref} onClick={handleToggle}>
+        <button className={cx('button')} type="button" onClick={handleToggle}>
+          <div className={cx('text')}>{initialValue.label}</div>
+          <IconWrapper className={cx('arrow')} icon={SvgPath.EmptyDownArrow} hasFrame={false} />
+        </button>
       </div>
       {isOpen && (
-        <div>
+        <ul className={cx('list')}>
           {list.map((item, i) => (
-            <div key={item.value} onClick={() => handleChange(item.value)}>
-              {item.label}
-            </div>
+            <li className={cx('item')} key={item.value} onClick={() => handleChange(item.value)}>
+              <div className={cx('item-text')}>{item.label}</div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
-    </Fragment>
+    </div>
   );
 });
 
