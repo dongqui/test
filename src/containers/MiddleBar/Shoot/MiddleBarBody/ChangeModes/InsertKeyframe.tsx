@@ -8,7 +8,7 @@ const InsertKeyframe = () => {
   const dispatch = useDispatch();
 
   const handleClickButton = useCallback(() => {
-    dispatch(animationDataActions.editKeyframes({}));
+    dispatch(animationDataActions.editKeyframes());
   }, [dispatch]);
 
   return <IconWrapper icon={SvgPath.InsertKeyframe} hasFrame={false} onClick={handleClickButton} />;

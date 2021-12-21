@@ -287,7 +287,9 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
             <RenderingPanel />
           </Box>
           <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-            <ControlPanel />
+            <BaseModalProvider>
+              <ControlPanel />
+            </BaseModalProvider>
           </Box>
         </Box>
         <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>

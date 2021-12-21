@@ -1,11 +1,11 @@
-import { FunctionComponent, memo, useCallback, useMemo, useState } from 'react';
+import { FunctionComponent, memo, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
+import AnimationTab from './AnimationTab';
+import RetargetTab from './RetargetTab';
 import * as cpActions from 'actions/CP/cpModeSelection';
-import AnimationTab from './AnimationTab/AnimationTab';
-import RetargetTab from './RetargetTab/RetargetTab';
+import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { useSelector } from 'reducers';
 
 const cx = classNames.bind(styles);
 

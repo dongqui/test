@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { AnimationIngredient, PlaskRetargetMap } from 'types/common';
+import { AnimationIngredient, PlaskRetargetMap, RetargetSourceBoneType } from 'types/common';
 
 export type AnimationDataAction =
   | ReturnType<typeof addAsset>
@@ -11,7 +11,10 @@ export type AnimationDataAction =
   | ReturnType<typeof changeCurrentAnimationIngredient>
   | ReturnType<typeof removeAnimationIngredient>
   | ReturnType<typeof toggleLayerMuteness>
-  | ReturnType<typeof editRetargetMap>;
+  | ReturnType<typeof turnFilterOn>
+  | ReturnType<typeof turnFilterOff>
+  | ReturnType<typeof assignBoneMapping>
+  | ReturnType<typeof changeHipSpace>;
 
 // transformNodes 관련
 const ADD_ASSET = 'animationDataAction/ADD_ASSET' as const;
@@ -25,9 +28,12 @@ const REMOVE_ANIMATION_INGREDIENT = 'animationDataAction/REMOVE_ANIMATION_INGRED
 const TOGGLE_LAYER_MUTENESS = 'animationDataAction/TOGGLE_LAYER_MUTENESS' as const;
 const CHANGE_CURRENT_ANIMATION_INGREDIENT = 'animationDataAction/CHANGE_CURRENT_ANIMATION_INGREDIENT' as const;
 export const EDIT_KEYFRAMES = 'animationDataAction/EDIT_KEYFRAMES' as const; // saga내 사용을 위해 export
+const TURN_FILTER_ON = 'animationDataAction/TURN_FILTER_ON' as const;
+const TURN_FILTER_OFF = 'animationDataAction/TURN_FILTER_OFF' as const;
 
 // retargetMap 관련
-const EDIT_RETARGET_MAP = 'animationDataAction/EDIT_RETARGET_MAP' as const;
+const ASSIGN_BONE_MAPPING = 'animationDataAction/ASSIGN_BONE_MAPPING' as const;
+const CHANGE_HIP_SPACE = 'animationDataAction/CHANGE_HIP_SPACE' as const;
 
 interface AddAsset {
   transformNodes: BABYLON.TransformNode[];
@@ -181,31 +187,75 @@ export const toggleLayerMuteness = (params: ToggleLayerMuteness) => ({
   },
 });
 
-interface EditKeyframes {}
-
 /**
  * edit keyframe saga를 동작시킵니다.
  *
- * @param params
  */
-export const editKeyframes = (params: EditKeyframes) => ({
+export const editKeyframes = () => ({
   type: EDIT_KEYFRAMES,
+});
+
+interface TurnFilterOn {
+  animationIngredientId: string;
+}
+
+/**
+ * animationIngredient에 filter를 적용합니다.
+ *
+ * @param animationIngredeint - 대상 animationIngredient의 id
+ */
+export const turnFilterOn = (params: TurnFilterOn) => ({
+  type: TURN_FILTER_ON,
   payload: {
     ...params,
   },
 });
 
-interface EditRetargetMap {
-  retargetMap: PlaskRetargetMap;
+interface TurnFilterOff {
+  animationIngredientId: string;
 }
 
 /**
- * retargetMap을 수정합니다. 자동/수동 리타게팅 시 호출합니다.
+ * animationIngredient의 filter 적용을 해제합니다.
  *
- * @param retargetMap - 수정할 대상이 되는 retargetMap
+ * @param animationIngredeint - 대상 animationIngredient의 id
  */
-export const editRetargetMap = (params: EditRetargetMap) => ({
-  type: EDIT_RETARGET_MAP,
+export const turnFilterOff = (params: TurnFilterOff) => ({
+  type: TURN_FILTER_OFF,
+  payload: {
+    ...params,
+  },
+});
+
+interface AssignBoneMapping {
+  assetId: string;
+
+  sourceBoneName: RetargetSourceBoneType;
+
+  targetTransformNodeId: string;
+}
+
+/**
+ * 수동 리타겟팅에서 source와 target을 mapping합니다.
+ */
+export const assignBoneMapping = (params: AssignBoneMapping) => ({
+  type: ASSIGN_BONE_MAPPING,
+  payload: {
+    ...params,
+  },
+});
+
+interface ChangeHipSpace {
+  assetId: string;
+
+  hipSpaece: number;
+}
+
+/**
+ * 수동 리타겟팅에서 hip space value를 변경합니다.
+ */
+export const changeHipSpace = (params: ChangeHipSpace) => ({
+  type: CHANGE_HIP_SPACE,
   payload: {
     ...params,
   },
