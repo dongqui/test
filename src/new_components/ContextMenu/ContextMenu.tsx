@@ -1,6 +1,7 @@
 import _ from 'lodash';
-import { FunctionComponent, memo, ReactNode, useEffect, useState, useCallback, useRef, useContext, useLayoutEffect, createContext, Fragment } from 'react';
+import { FunctionComponent, memo, ReactNode, useEffect, useMemo, useState, useCallback, useRef, useContext, useLayoutEffect, createContext, Fragment } from 'react';
 import { BasePortal } from 'components/Modal';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import classnames from 'classnames/bind';
 import styles from './ContextMenu.module.scss';
 
@@ -96,12 +97,33 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
     };
   }, [onContextMenuClose]);
 
+  const initializeSubMenuVisible = useMemo(
+    () =>
+      Array(menu.length)
+        .fill(0)
+        .map(() => false),
+    [menu.length],
+  );
+  const [subMenuVisibleController, setSubMenuVisibleController] = useState<boolean[]>(initializeSubMenuVisible);
+
+  // context menu item 위에서 마우스 이동
+  const handleMouseMoveOnItem = useCallback(
+    (item: ContextMenu.MenuItem, index: number) => {
+      setSubMenuVisibleController(() => {
+        const nextState = [...initializeSubMenuVisible];
+        if (item.children?.length) nextState[index] = true;
+        return nextState;
+      });
+    },
+    [initializeSubMenuVisible],
+  );
+
   return (
     <BasePortal container={portalRef}>
       <div className={cx('wrapper')} ref={wrapperRef} style={{ top: position.top, left: position.left }}>
         {menu &&
           menu.map((item, i) => {
-            const classes = cx('inner', item.visibility, { disabled: item.disabled });
+            const classes = cx('inner', item.visibility, { disabled: item.disabled }, { 'has-children': !!item.children });
 
             const handleMenuClick = () => {
               if (!item.disabled && item.onClick) {
@@ -112,10 +134,23 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
 
             return (
               <Fragment key={i}>
-                <div className={classes}>
-                  <div className={cx('item', { disabled: item.disabled })} onClick={handleMenuClick}>
+                <div className={classes} onMouseMove={() => handleMouseMoveOnItem(item, i)}>
+                  <div
+                    className={cx('item', { disabled: item.disabled }, { 'has-children': !!item.children?.length }, { 'focus-children': subMenuVisibleController[i] })}
+                    onClick={handleMenuClick}
+                  >
                     {item.label}
+                    {!!item.children?.length && <IconWrapper icon={SvgPath.ChevronRight} />}
                   </div>
+                  {!!item.children?.length && subMenuVisibleController[i] && (
+                    <div className={cx('sub-menu')}>
+                      {item.children.map((subItem) => (
+                        <div key={subItem.label} className={cx('sub-item')}>
+                          {subItem.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 {item.separator && <div className={cx('separator')} />}
               </Fragment>
