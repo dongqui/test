@@ -1,4 +1,3 @@
-import { FocusEvent } from 'react';
 import * as BABYLON from '@babylonjs/core';
 
 export type Nullable<T> = T | null;

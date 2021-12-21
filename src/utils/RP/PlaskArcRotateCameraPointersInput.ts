@@ -31,7 +31,7 @@ export default class PlaskArcRotateCameraPointersInput extends PlaskBaseCameraPo
   /**
    * Defines the buttons associated with the input to handle camera move.
    */
-  public buttons = [1];
+  public buttons = [0, 2];
 
   /**
    * Defines the pointer angular sensibility  along the X axis or how fast is
