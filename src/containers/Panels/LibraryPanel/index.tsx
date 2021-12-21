@@ -152,7 +152,7 @@ const LibraryPanel: FunctionComponent = () => {
         });
 
       // 임시로 호출 코드 넣어놨습니다. 실제로는 bvh export 시에 asset의 bones, retargetMap을 가지고 호출하시면 됩니답.
-      const bvhMap = await createBvhMap(skeletons[0].bones, retargetMap, 3000);
+      // const bvhMap = await createBvhMap(skeletons[0].bones, retargetMap, 3000);
       // console.log('bvhMap: ', bvhMap);
 
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
