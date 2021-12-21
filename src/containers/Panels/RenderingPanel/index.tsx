@@ -21,6 +21,7 @@ import {
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 
 const cx = classNames.bind(styles);
 
@@ -54,6 +55,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
 
   const dispatch = useDispatch();
+
+  const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   const renderingCanvas1 = useRef<HTMLCanvasElement>(null);
 
@@ -287,10 +290,71 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     }
   }, [_screenList, _selectableObjects, dispatch]);
 
+  const contextMenuList = useMemo(
+    () => [
+      {
+        label: 'Select all',
+      },
+      {
+        label: 'Unselect all',
+        separator: true,
+      },
+      {
+        label: 'Transform',
+        separator: true,
+        children: [
+          {
+            label: 'Position',
+          },
+          {
+            label: 'Rotation',
+          },
+          {
+            label: 'Scale',
+          },
+        ],
+      },
+      {
+        label: 'Camera reset',
+      },
+      {
+        label: 'View',
+        separator: true,
+        children: [
+          {
+            label: 'Perspective',
+          },
+          {
+            label: 'Front',
+          },
+          {
+            label: 'Back',
+          },
+          {
+            label: 'Top',
+          },
+          {
+            label: 'Bottom',
+          },
+          {
+            label: 'Right',
+          },
+          {
+            label: 'Left',
+          },
+        ],
+      },
+      {
+        label: 'Insert keyframe',
+      },
+    ],
+    [],
+  );
+
   /**
    * contextMenu 사용
    */
-  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+  // const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   useEffect(() => {
     const targetScreen = _screenList.find((screen) => screen.canvasId === renderingCanvas1.current?.id); // 단일 캔버스 상황
 
@@ -302,8 +366,9 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         if (pointerInfo.event.button === 2 && !pointerInfo.event.altKey) {
           switch (pointerInfo.type) {
             case BABYLON.PointerEventTypes.POINTERDOWN: {
-              setIsContextMenuOpen((prev) => !prev); // 임시로 토글로 넣어놓았읍니다
-              console.log('pointer x, y: ', scene.pointerX, scene.pointerY); // 컨텍스트 생성 위치에 사용하면 됩니다
+              // setIsContextMenuOpen((prev) => !prev); // 임시로 토글로 넣어놓았읍니다
+              onContextMenuClose();
+              onContextMenuOpen({ top: scene.pointerY, left: scene.pointerX, menu: contextMenuList });
               break;
             }
           }
@@ -314,10 +379,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         scene.onPointerObservable.remove(contextMenuObserver);
       };
     }
-  }, [_screenList]);
-  useEffect(() => {
-    console.log('isContextMenuOpen: ', isContextMenuOpen);
-  }, [isContextMenuOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_screenList, contextMenuList]);
 
   /**
    * camera navigation, viewport 전환 관련 단축키 설정
