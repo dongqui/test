@@ -288,6 +288,38 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   }, [_screenList, _selectableObjects, dispatch]);
 
   /**
+   * contextMenu 사용
+   */
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+  useEffect(() => {
+    const targetScreen = _screenList.find((screen) => screen.canvasId === renderingCanvas1.current?.id); // 단일 캔버스 상황
+
+    if (targetScreen) {
+      const { scene } = targetScreen;
+
+      const contextMenuObserver = scene.onPointerObservable.add((pointerInfo, eventState) => {
+        // camera panning 시에는 발생하지 않도록하기 위함
+        if (pointerInfo.event.button === 2 && !pointerInfo.event.altKey) {
+          switch (pointerInfo.type) {
+            case BABYLON.PointerEventTypes.POINTERDOWN: {
+              setIsContextMenuOpen((prev) => !prev); // 임시로 토글로 넣어놓았읍니다
+              console.log('pointer x, y: ', scene.pointerX, scene.pointerY); // 컨텍스트 생성 위치에 사용하면 됩니다
+              break;
+            }
+          }
+        }
+      });
+
+      return () => {
+        scene.onPointerObservable.remove(contextMenuObserver);
+      };
+    }
+  }, [_screenList]);
+  useEffect(() => {
+    console.log('isContextMenuOpen: ', isContextMenuOpen);
+  }, [isContextMenuOpen]);
+
+  /**
    * camera navigation, viewport 전환 관련 단축키 설정
    */
   useEffect(() => {
