@@ -1,12 +1,12 @@
-import { ChangeMode, ModeSelectionAction } from 'actions/CP/cpModeSelection';
+import { SwitchCpMode, CpModeSwitchAction } from 'actions/CP/cpModeSelection';
 
-const defaultState: ChangeMode = {
+const defaultState: SwitchCpMode = {
   mode: 'Animation',
 };
 
-export const cpModeSelection = (state = defaultState, action: ModeSelectionAction) => {
+export const cpModeSelection = (state = defaultState, action: CpModeSwitchAction) => {
   switch (action.type) {
-    case 'modeSelection/CHANGE_MODE': {
+    case 'modeSelection/SWITCH_CP_MODE': {
       return Object.assign({}, state, action.payload);
     }
     default: {
