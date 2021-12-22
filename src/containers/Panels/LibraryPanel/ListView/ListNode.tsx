@@ -776,7 +776,7 @@ const ListNode: FunctionComponent<Props> = ({
               {
                 label: 'Visualization',
                 onClick: () => {
-                  const isEmptyMotion = _visualizedAssetIds.length === 0;
+                  const isEmptyMotion = childrens.length === 0;
 
                   if (isEmptyMotion) {
                     addEmptyMotion();
@@ -1024,6 +1024,7 @@ const ListNode: FunctionComponent<Props> = ({
     _visualizedAssetIds,
     addEmptyMotion,
     assetId,
+    childrens.length,
     currentVisualizedNode?.id,
     depth,
     depthAddKey,
