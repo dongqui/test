@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { useSelector } from 'reducers';
 import { PrefixInput } from 'components/Input';
-import { forcePauseAndPlayClick } from 'utils/common';
+import { forceClickAnimationPauseAndPlay } from 'utils/common';
 
 interface Props {
   startTimeIndex: number;
@@ -40,7 +40,7 @@ const EndInput: FunctionComponent<Props> = (props) => {
         dispatch(animatingControlsActions.blurEndInput(payload));
       }
       handleEndInputChange.cancel();
-      forcePauseAndPlayClick(_playState, _playDirection);
+      forceClickAnimationPauseAndPlay(_playState, _playDirection);
     },
     [_playDirection, _playState, currentTimeIndex, dispatch, endTimeIndex, handleEndInputChange, startTimeIndex],
   );

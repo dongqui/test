@@ -19,7 +19,7 @@ const Record: FunctionComponent<Props> = () => {
     dispatch(modeSelectionActions.changeMode({ mode: 'videoMode' }));
   }, [dispatch]);
 
-  return <IconWrapper className={cx('record')} hasFrame={false} icon={SvgPath.Record} onClick={handleRecordButtonClick} />;
+  return <IconWrapper id="recordButton" className={cx('record')} hasFrame={false} icon={SvgPath.Record} onClick={handleRecordButtonClick} />;
 };
 
 export default Record;

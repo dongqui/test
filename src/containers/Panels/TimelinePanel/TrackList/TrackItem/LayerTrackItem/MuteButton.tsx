@@ -5,7 +5,7 @@ import { LayerTrack } from 'types/TP/track';
 import { useSelector } from 'reducers';
 import * as trackListActions from 'actions/trackList';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { forcePauseAndPlayClick } from 'utils/common';
+import { forceClickAnimationPauseAndPlay } from 'utils/common';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -23,7 +23,7 @@ const MuteButton: FunctionComponent<Props> = (props) => {
 
   const handleMuteButtonClick = useCallback(() => {
     dispatch(trackListActions.clickLayerTrackMuteButton({ id: trackId, name: trackName }));
-    forcePauseAndPlayClick(_playState, _playDirection);
+    forceClickAnimationPauseAndPlay(_playState, _playDirection);
   }, [_playDirection, _playState, trackId, trackName, dispatch]);
 
   return <IconWrapper className={cx('mute-icon')} icon={isMuted ? SvgPath.EyeClose : SvgPath.EyeOpen} onClick={handleMuteButtonClick} />;

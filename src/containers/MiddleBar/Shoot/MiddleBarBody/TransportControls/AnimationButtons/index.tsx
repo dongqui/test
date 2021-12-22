@@ -149,23 +149,23 @@ const Buttons = () => {
       if (_playDirection === PlayDirection.forward) {
         return (
           <Fragment>
-            <IconWrapper id="rewind" onClick={handleRewindButtonClick} icon={SvgPath.RewindArrow} hasFrame={false} />
-            <IconWrapper id="pause" className={cx('pause')} onClick={() => editAnimationPause()} icon={SvgPath.Pause} hasFrame={false} />
+            <IconWrapper id="animationRewindButton" onClick={handleRewindButtonClick} icon={SvgPath.RewindArrow} hasFrame={false} />
+            <IconWrapper id="animationPauseButton" className={cx('pause')} onClick={() => editAnimationPause()} icon={SvgPath.Pause} hasFrame={false} />
           </Fragment>
         );
       } else {
         return (
           <Fragment>
-            <IconWrapper id="pause" className={cx('pause')} onClick={() => editAnimationPause()} icon={SvgPath.Pause} hasFrame={false} />
-            <IconWrapper id="play" onClick={handlePlayButtonClick} icon={SvgPath.PlayArrow} hasFrame={false} />
+            <IconWrapper id="animationPauseButton" className={cx('pause')} onClick={() => editAnimationPause()} icon={SvgPath.Pause} hasFrame={false} />
+            <IconWrapper id="animationPlayButton" onClick={handlePlayButtonClick} icon={SvgPath.PlayArrow} hasFrame={false} />
           </Fragment>
         );
       }
     } else {
       return (
         <Fragment>
-          <IconWrapper id="rewind" onClick={handleRewindButtonClick} icon={SvgPath.RewindArrow} hasFrame={false} />
-          <IconWrapper id="play" onClick={handlePlayButtonClick} icon={SvgPath.PlayArrow} hasFrame={false} />
+          <IconWrapper id="animationRewindButton" onClick={handleRewindButtonClick} icon={SvgPath.RewindArrow} hasFrame={false} />
+          <IconWrapper id="animationPlayButton" onClick={handlePlayButtonClick} icon={SvgPath.PlayArrow} hasFrame={false} />
         </Fragment>
       );
     }
