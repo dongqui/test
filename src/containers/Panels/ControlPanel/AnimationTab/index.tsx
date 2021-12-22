@@ -1,6 +1,6 @@
 import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import * as BABYLON from '@babylonjs/core';
-import { isNull, isUndefined, uniq } from 'lodash';
+import { isNull, isUndefined } from 'lodash';
 import { useDispatch } from 'react-redux';
 import AnimationInputWrapper from './AnimationInputWrapper';
 import AnimationFKWrapper from './AnimationFKWrapper';
@@ -8,16 +8,16 @@ import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPanel';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { AnimationIngredient, Nullable, PlaskPaletteColor, PlaskRotationType, PlaskTrack } from 'types/common';
+import { AnimationIngredient, Nullable, PlaskPaletteColor, PlaskPaletteColorName, PlaskRotationType, PlaskTrack } from 'types/common';
 import { useSelector } from 'reducers';
-import { forceAnimationButtonsClick } from 'utils/common';
+import { forceClickAnimationPauseAndPlay, forceClickAnimationPlayAndStop } from 'utils/common';
 import { checkIsTargetMesh } from 'utils/RP';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const PALETTE_COLORS: { [color in PlaskPaletteColor]: string } = {
+const PALETTE_COLORS: { [color in PlaskPaletteColorName]: string } = {
   red: '#FF6969',
   orange: '#FC9B51',
   yellow: '#FFDB56',
@@ -79,7 +79,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   // FK Controller value를 관리하는 useState
   const [controllerX, setControllerX] = useState<number>(0);
   const [controllerZ, setControllerZ] = useState<number>(0);
-  const [controllerColor, setControllerColor] = useState<PlaskPaletteColor>('yellow');
+  const [controllerColor, setControllerColor] = useState<PlaskPaletteColor>(PALETTE_COLORS[DEFAULT_CONTROLLER_COLOR] as PlaskPaletteColor);
 
   // section spread status
   const [isTransformSectionSpread, setIsTransformSectionSpread] = useState<boolean>(true);
@@ -313,7 +313,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
               );
               controller.renderingGroupId = 3;
               controller.id = `${targetAsset.id}//${bone.name}//controller`;
-              controller.material = controllerMaterial;
+              controller.material = controllerMaterial.clone('controllerMaterial');
 
               if (controllers.length === 0) {
                 // controller들의 scale을 모델에 맞추기 위해, Armature bone을 hips controller의 parent로 설정
@@ -386,16 +386,21 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
                   newTracks.push(newTrack);
                 });
               });
-
-              const newAnimationIngredient: AnimationIngredient = { ...currentAnimationIngredient, tracks: [...tracks, ...newTracks] };
-
-              dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
             });
+
+            if (_playState === 'play') {
+              forceClickAnimationPauseAndPlay(_playState, _playDirection);
+            } else {
+              forceClickAnimationPlayAndStop();
+            }
+
+            const newAnimationIngredient: AnimationIngredient = { ...currentAnimationIngredient, tracks: [...tracks, ...newTracks] };
+            dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
           }
         });
       }
     }
-  }, [_animationIngredients, _assetList, _retargetMaps, _screenList, dispatch, getConfirm, isControllerOn, selectedAssetId]);
+  }, [_animationIngredients, _assetList, _playDirection, _playState, _retargetMaps, _screenList, dispatch, getConfirm, isControllerOn, selectedAssetId]);
 
   // Filter의 활성화 비활성화
   const handleFilterToggle = useCallback(() => {
@@ -406,7 +411,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
         if (targetAnimationIngredient) {
           dispatch(animationDataActions.turnFilterOff({ animationIngredientId: targetAnimationIngredient.id, layerId: _seletedLayer }));
-          forceAnimationButtonsClick(_playState, _playDirection);
+          forceClickAnimationPauseAndPlay(_playState, _playDirection);
         }
       } else {
         setIsFilterOn(true);
@@ -414,7 +419,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
         if (targetAnimationIngredient) {
           dispatch(animationDataActions.turnFilterOn({ animationIngredientId: targetAnimationIngredient.id, layerId: _seletedLayer }));
-          forceAnimationButtonsClick(_playState, _playDirection);
+          forceClickAnimationPauseAndPlay(_playState, _playDirection);
         }
       }
     }
@@ -709,7 +714,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTrack) {
             dispatch(animationDataActions.changeTrackFilterMinCutoff({ trackId: controlTrack.id, value: inputValue }));
             // 새로운 animationGroup을 사용하기 위해, 일시정지 후 재생
-            forceAnimationButtonsClick(_playState, _playDirection);
+            forceClickAnimationPauseAndPlay(_playState, _playDirection);
           }
         },
         [_playDirection, _playState, controlTrack, dispatch],
@@ -730,7 +735,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTrack) {
             dispatch(animationDataActions.changeTrackFilterBeta({ trackId: controlTrack.id, value: inputValue }));
             // 새로운 animationGroup을 사용하기 위해, 일시정지 후 재생
-            forceAnimationButtonsClick(_playState, _playDirection);
+            forceClickAnimationPauseAndPlay(_playState, _playDirection);
           }
         },
         [_playDirection, _playState, controlTrack, dispatch],
@@ -748,6 +753,17 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   //   { text: 'Mesh', handleBlur: () => {} },
   //   { text: 'Controller', handleBlur: () => {} },
   // ];
+
+  const handleSelectColor = useCallback(
+    (color: PlaskPaletteColor) => {
+      if (controlController) {
+        setControllerColor(color);
+        // @ts-ignore
+        controlController.material.emissiveColor = BABYLON.Color3.FromHexString(color);
+      }
+    },
+    [controlController],
+  );
 
   return (
     <Fragment>
@@ -782,7 +798,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             fkInfo={fkControllerInputData}
             activeStatus={isAllActive && isControllerOn && !isNull(controlController)}
             currentColor={controllerColor}
-            setCurrentColor={setControllerColor}
+            handleSelectColor={handleSelectColor}
           />
           {(!isAllActive || !isControllerOn || isNull(controlController)) && <div className={cx('inactive-overlay')}></div>}
         </div>
