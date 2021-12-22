@@ -339,6 +339,80 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, []);
 
+  const addEmptyMotion = useCallback(() => {
+    if (assetId) {
+      const cloneLPNode = cloneDeep(_lpNode);
+
+      let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
+      if (_visualizedAssetIds.includes(assetId)) {
+        // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서 추가 + armature transformNode는 제외
+        targets = _selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature'));
+      } else {
+        // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
+        targets = _animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
+      }
+
+      const currentPathNodeName = _lpNode
+        .filter((node) => {
+          if (node.parentId === id) {
+            if (node.name.includes('empty motion')) {
+              return true;
+            }
+            return false;
+          }
+        })
+        .map((filteredNode) => filteredNode.name);
+
+      const check = checkCreateDuplicates('empty motion', currentPathNodeName);
+
+      const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
+
+      const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, false);
+
+      const afterNodes = produce(cloneLPNode, (draft) => {
+        const target = find(draft, { assetId: assetId });
+
+        if (target) {
+          target.childrens.push(nextAnimationIngredient.id);
+        }
+
+        const motion: LP.Node = {
+          id: nextAnimationIngredient.id,
+          // parentId: nextAnimationIngredient.assetId,
+          assetId: assetId,
+          parentId: id,
+          name: nextAnimationIngredient.name,
+          // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
+          filePath: lpCurrentPath,
+          childrens: [],
+          extension: '',
+          type: 'Motion',
+        };
+
+        draft.push(motion);
+      });
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: afterNodes,
+        }),
+      );
+
+      dispatch(
+        animationDataActions.addAnimationIngredient({
+          animationIngredient: nextAnimationIngredient,
+        }),
+      );
+
+      dispatch(
+        plaskProjectActions.addAnimationIngredient({
+          assetId: assetId,
+          animationIngredientId: nextAnimationIngredient.id,
+        }),
+      );
+    }
+  }, [_animationTransformNodes, _lpNode, _selectableObjects, _visualizedAssetIds, assetId, dispatch, id, lpCurrentPath]);
+
   const handleDelete = useCallback(
     async (selectId: string, selectAssetId?: string) => {
       const confirmed = await getConfirm({
@@ -701,7 +775,15 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization',
-                onClick: handleVisualization,
+                onClick: () => {
+                  const isEmptyMotion = _visualizedAssetIds.length === 0;
+
+                  if (isEmptyMotion) {
+                    addEmptyMotion();
+                  }
+
+                  handleVisualization();
+                },
                 children: [],
               },
               {
@@ -731,79 +813,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Add empty motion',
-                onClick: () => {
-                  if (assetId) {
-                    const cloneLPNode = cloneDeep(_lpNode);
-
-                    let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
-                    if (_visualizedAssetIds.includes(assetId)) {
-                      // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서 추가 + armature transformNode는 제외
-                      targets = _selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature'));
-                    } else {
-                      // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
-                      targets = _animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
-                    }
-
-                    const currentPathNodeName = _lpNode
-                      .filter((node) => {
-                        if (node.parentId === id) {
-                          if (node.name.includes('empty motion')) {
-                            return true;
-                          }
-                          return false;
-                        }
-                      })
-                      .map((filteredNode) => filteredNode.name);
-
-                    const check = checkCreateDuplicates('empty motion', currentPathNodeName);
-
-                    const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
-
-                    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, false);
-
-                    const afterNodes = produce(cloneLPNode, (draft) => {
-                      const target = find(draft, { assetId: assetId });
-
-                      if (target) {
-                        target.childrens.push(nextAnimationIngredient.id);
-                      }
-
-                      const motion: LP.Node = {
-                        id: nextAnimationIngredient.id,
-                        // parentId: nextAnimationIngredient.assetId,
-                        assetId: assetId,
-                        parentId: id,
-                        name: nextAnimationIngredient.name,
-                        // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
-                        filePath: lpCurrentPath,
-                        childrens: [],
-                        extension: '',
-                        type: 'Motion',
-                      };
-
-                      draft.push(motion);
-                    });
-
-                    dispatch(
-                      lpNodeActions.changeNode({
-                        nodes: afterNodes,
-                      }),
-                    );
-
-                    dispatch(
-                      animationDataActions.addAnimationIngredient({
-                        animationIngredient: nextAnimationIngredient,
-                      }),
-                    );
-
-                    dispatch(
-                      plaskProjectActions.addAnimationIngredient({
-                        assetId: assetId,
-                        animationIngredientId: nextAnimationIngredient.id,
-                      }),
-                    );
-                  }
-                },
+                onClick: addEmptyMotion,
                 children: [],
               },
               {
@@ -1006,13 +1016,13 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, [
     _animationIngredients,
-    _animationTransformNodes,
     _assetList,
     _lpClipboard,
     _lpNode,
     _screenList,
     _selectableObjects,
     _visualizedAssetIds,
+    addEmptyMotion,
     assetId,
     currentVisualizedNode?.id,
     depth,
@@ -1025,7 +1035,6 @@ const ListNode: FunctionComponent<Props> = ({
     handleEdit,
     handleVisualization,
     id,
-    lpCurrentPath,
     name,
     onContextMenuOpen,
     onCopy,
