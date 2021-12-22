@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { useSelector } from 'reducers';
 import { PrefixInput } from 'components/Input';
-import { forceAnimationButtonsClick } from 'utils/common';
+import { forcePauseAndPlayClick } from 'utils/common';
 
 interface Props {
   startTimeIndex: number;
@@ -48,7 +48,7 @@ const StartInput: FunctionComponent<Props> = (props) => {
         dispatch(animatingControlsActions.blurStartInput(payload));
       }
       handleStartInputChange.cancel(); // 현재 change event에 걸린 debounce 취소
-      forceAnimationButtonsClick(_playState, _playDirection);
+      forcePauseAndPlayClick(_playState, _playDirection);
     },
     [_playDirection, _playState, currentTimeIndex, dispatch, endTimeIndex, handleStartInputChange, startTimeIndex],
   );

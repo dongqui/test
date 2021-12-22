@@ -9,7 +9,7 @@ import { PlayDirection, PlayState } from 'types/RP';
  * @param _playDirection 현재 애니메이션의 진행 방향
  * @returns void
  */
-function forceAnimationButtonsClick(_playState: PlayState, _playDirection: PlayDirection) {
+function forcePauseAndPlayClick(_playState: PlayState, _playDirection: PlayDirection) {
   if (_playState === 'play') {
     document.getElementById('pause')!.click();
     setTimeout(() => {
@@ -18,4 +18,4 @@ function forceAnimationButtonsClick(_playState: PlayState, _playDirection: PlayD
   }
 }
 
-export default forceAnimationButtonsClick;
+export default forcePauseAndPlayClick;
