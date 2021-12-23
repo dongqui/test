@@ -1,6 +1,7 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
 import produce from 'immer';
 import * as animationDataActions from 'actions/animationDataAction';
+import * as keyframesActions from 'actions/keyframes';
 import { RootState } from 'reducers';
 import { getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
@@ -65,7 +66,7 @@ function* worker() {
             }
             case 'rotation': {
               const { rotationQuaternion } = targetTrack.target;
-              const rotation = rotationQuaternion!.clone().normalize().toEulerAngles(); // quaternion 회전을 사용하기 때문에 단순 target.rotation 해면 (0, 0, 0)
+              const rotation = rotationQuaternion!.clone().toEulerAngles(); // quaternion 회전을 사용하기 때문에 단순 target.rotation 해면 (0, 0, 0)
               let newRotation = rotation.clone();
               const otherLayerTracks = draft.tracks.filter(
                 (track) => track.targetId === targetTrack.targetId && track.property === 'rotation' && track.layerId !== targetTrack.layerId,
@@ -100,7 +101,6 @@ function* worker() {
                         ? targetTransformKey.value.toEulerAngles()
                         : getInterpolatedQuaternion(otherLayerPeerTrack.transformKeys, _currentFrameIndex).toEulerAngles(),
                     )
-                    .normalize()
                     .toQuaternion();
                 });
                 peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, _currentFrameIndex, newRotationQuaternion);
@@ -140,7 +140,7 @@ function* worker() {
       );
 
       // TP saga 붙이는 곳(찰찰)
-      console.log('updatedPropertyKeyframes: ', updatedPropertyKeyframes);
+      yield put(keyframesActions.addKeyframes(updatedPropertyKeyframes));
     }
   }
 }

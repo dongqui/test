@@ -37,7 +37,7 @@ const createDummyAnimation = async (asset: PlaskAsset): Promise<AnimationIngredi
     });
     hipsRotationTransformKeys.push({
       frame: f,
-      value: q.normalize().toEulerAngles(),
+      value: q.toEulerAngles(),
     });
   });
 

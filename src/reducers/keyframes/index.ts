@@ -3,6 +3,7 @@ import { KeyframesAction } from 'actions/keyframes';
 import { Observer } from 'utils/TP';
 
 import initializeKeyframes from './cases/initializeKeyframes';
+import addKeyframes from './cases/addKeyframes';
 import deleteKeyframes from './cases/deleteKeyframes';
 import dragdropKeyframes from './cases/dragdropKeyframes';
 import selectKeyframes from './cases/selectKeyframes';
@@ -45,6 +46,9 @@ export const keyframes = (state = initialState, action: KeyframesAction) => {
     case 'keyframes/SELECT_KEYFRAMES_BY_DRAG_BOX': {
       Observer.clearAllKeyframes();
       return selectKeyframes(state, action.payload);
+    }
+    case 'keyframes/ADD_KEYFRAMES': {
+      return addKeyframes(state, action.payload);
     }
     case 'keyframes/DELETE_KEYFRAMES': {
       Observer.clearAllKeyframes();

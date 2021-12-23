@@ -1,5 +1,6 @@
 import { PlaskTrack } from 'types/common';
 import { TrackIdentifier } from 'types/TP';
+import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
 
 export type KeyframesAction =
   | ReturnType<typeof initializeKeyframes>
@@ -65,7 +66,7 @@ export const selectKeyframesByDragBox = (params: SelectKeyframesByDragBox[]) => 
 });
 
 // 키프레임 추가
-export const addKeyframes = (params: any) => ({
+export const addKeyframes = (params: UpdatedPropertyKeyframes) => ({
   type: 'keyframes/ADD_KEYFRAMES' as const,
   payload: {
     ...params,

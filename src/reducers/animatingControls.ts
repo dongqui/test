@@ -1,9 +1,11 @@
-import { isUndefined } from 'lodash';
+import * as BABYLON from '@babylonjs/core';
 import { AnimatingControlsAction } from 'actions/animatingControlsAction';
 import { TimeIndex } from 'utils/TP';
 import { PlayDirection, PlayState } from 'types/RP';
+import { Nullable } from 'types/common';
 
 interface AnimatingContolsState {
+  currentAnimationGroup: Nullable<BABYLON.AnimationGroup>;
   playState: PlayState;
   playDirection: PlayDirection;
   playSpeed: number;
@@ -14,6 +16,7 @@ interface AnimatingContolsState {
 }
 
 const defaultState: AnimatingContolsState = {
+  currentAnimationGroup: null,
   playState: 'stop',
   playDirection: PlayDirection.forward,
   playSpeed: 1,
@@ -25,6 +28,11 @@ const defaultState: AnimatingContolsState = {
 
 export const animatingControls = (state = defaultState, action: AnimatingControlsAction) => {
   switch (action.type) {
+    case 'animatingControls/SET_CURRENT_ANIMATION_GROUP': {
+      return Object.assign({}, state, {
+        currentAnimationGroup: action.payload.animationGroup,
+      });
+    }
     case 'animatingControls/BLUR_START_INPUT': {
       TimeIndex.setStartTimeIndex(action.payload.startTimeIndex);
       TimeIndex.setCurrentTimeIndex(action.payload.currentTimeIndex);

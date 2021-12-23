@@ -1,12 +1,26 @@
+import * as BABYLON from '@babylonjs/core';
 import { PlayDirection, PlayState } from 'types/RP';
 
 export type AnimatingControlsAction =
+  | ReturnType<typeof setCurrentAnimationGroup>
   | ReturnType<typeof blurStartInput>
   | ReturnType<typeof blurEndInput>
   | ReturnType<typeof moveScrubber>
   | ReturnType<typeof clickPlayStateButton>
   | ReturnType<typeof selectFasterDropdown>
   | ReturnType<typeof clickAutoKeyButton>;
+
+interface SetCurrentAnimationGroup {
+  animationGroup: BABYLON.AnimationGroup;
+}
+
+export const SET_CURRENT_ANIMATION_GROUP = 'animatingControls/SET_CURRENT_ANIMATION_GROUP' as const;
+export const setCurrentAnimationGroup = (params: SetCurrentAnimationGroup) => ({
+  type: SET_CURRENT_ANIMATION_GROUP,
+  payload: {
+    ...params,
+  },
+});
 
 // start input blur 이벤트
 interface BlurStartInput {

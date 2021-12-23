@@ -10,9 +10,11 @@ import produce from 'immer';
 import { v4 as uuid } from 'uuid';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
+import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
 import { filterAnimatableTransformNodes } from 'utils/common';
 import { filterQuaternion, filterVector } from 'utils/RP';
-import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove, checkPasteDuplicates } from 'utils/LP/FileSystem';
+import { createBvhMap } from 'utils/LP/Retarget';
+import { beforePaste, checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { getRetargetedMocapData } from 'utils/LP/Retarget';
 import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
@@ -22,7 +24,7 @@ import * as cpActions from 'actions/CP/cpModeSelection';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import { PlaskMocapData } from 'types/common';
+import { AnimationIngredient, PlaskMocapData } from 'types/common';
 import ListCurrent from './ListCurrent';
 import ListChildren from './ListChildren';
 import classNames from 'classnames/bind';
@@ -174,6 +176,8 @@ const ListNode: FunctionComponent<Props> = ({
   const handleEdit = useCallback(() => {
     setIsEditing(true);
   }, []);
+
+  const currentVisualizedNode = _lpNode.find((node) => node.assetId && _visualizedAssetIds.includes(node.assetId) && node.type === 'Model');
 
   const depth = (filePath.match(/\\/g) || []).length;
 
@@ -335,6 +339,80 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, []);
 
+  const addEmptyMotion = useCallback(() => {
+    if (assetId) {
+      const cloneLPNode = cloneDeep(_lpNode);
+
+      let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
+      if (_visualizedAssetIds.includes(assetId)) {
+        // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서 추가 + armature transformNode는 제외
+        targets = _selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature'));
+      } else {
+        // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
+        targets = _animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
+      }
+
+      const currentPathNodeName = _lpNode
+        .filter((node) => {
+          if (node.parentId === id) {
+            if (node.name.includes('empty motion')) {
+              return true;
+            }
+            return false;
+          }
+        })
+        .map((filteredNode) => filteredNode.name);
+
+      const check = checkCreateDuplicates('empty motion', currentPathNodeName);
+
+      const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
+
+      const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, false);
+
+      const afterNodes = produce(cloneLPNode, (draft) => {
+        const target = find(draft, { assetId: assetId });
+
+        if (target) {
+          target.childrens.push(nextAnimationIngredient.id);
+        }
+
+        const motion: LP.Node = {
+          id: nextAnimationIngredient.id,
+          // parentId: nextAnimationIngredient.assetId,
+          assetId: assetId,
+          parentId: id,
+          name: nextAnimationIngredient.name,
+          // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
+          filePath: lpCurrentPath,
+          childrens: [],
+          extension: '',
+          type: 'Motion',
+        };
+
+        draft.push(motion);
+      });
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: afterNodes,
+        }),
+      );
+
+      dispatch(
+        animationDataActions.addAnimationIngredient({
+          animationIngredient: nextAnimationIngredient,
+        }),
+      );
+
+      dispatch(
+        plaskProjectActions.addAnimationIngredient({
+          assetId: assetId,
+          animationIngredientId: nextAnimationIngredient.id,
+        }),
+      );
+    }
+  }, [_animationTransformNodes, _lpNode, _selectableObjects, _visualizedAssetIds, assetId, dispatch, id, lpCurrentPath]);
+
   const handleDelete = useCallback(
     async (selectId: string, selectAssetId?: string) => {
       const confirmed = await getConfirm({
@@ -380,6 +458,9 @@ const ListNode: FunctionComponent<Props> = ({
     },
     [_assetList, _lpNode, _screenList, _selectableObjects, deleteChild, dispatch, getConfirm],
   );
+
+  const [currentMotions, setCurrentMotions] = useState<AnimationIngredient[]>([]);
+  const [isOpenExportModal, setIsOpenExportModal] = useState(false);
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -694,7 +775,15 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization',
-                onClick: handleVisualization,
+                onClick: () => {
+                  const isEmptyMotion = childrens.length === 0;
+
+                  if (isEmptyMotion) {
+                    addEmptyMotion();
+                  }
+
+                  handleVisualization();
+                },
                 children: [],
               },
               {
@@ -724,273 +813,17 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Add empty motion',
-                onClick: () => {
-                  if (assetId) {
-                    const cloneLPNode = cloneDeep(_lpNode);
-
-                    let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
-                    if (_visualizedAssetIds.includes(assetId)) {
-                      // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서 추가 + armature transformNode는 제외
-                      targets = _selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature'));
-                    } else {
-                      // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
-                      targets = _animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
-                    }
-
-                    const currentPathNodeName = _lpNode
-                      .filter((node) => {
-                        if (node.parentId === id) {
-                          if (node.name.includes('empty motion')) {
-                            return true;
-                          }
-                          return false;
-                        }
-                      })
-                      .map((filteredNode) => filteredNode.name);
-
-                    const check = checkCreateDuplicates('empty motion', currentPathNodeName);
-
-                    const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
-
-                    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, false);
-
-                    const afterNodes = produce(cloneLPNode, (draft) => {
-                      const target = find(draft, { assetId: assetId });
-
-                      if (target) {
-                        target.childrens.push(nextAnimationIngredient.id);
-                      }
-
-                      const motion: LP.Node = {
-                        id: nextAnimationIngredient.id,
-                        // parentId: nextAnimationIngredient.assetId,
-                        assetId: assetId,
-                        parentId: id,
-                        name: nextAnimationIngredient.name,
-                        // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
-                        filePath: lpCurrentPath,
-                        childrens: [],
-                        extension: '',
-                        type: 'Motion',
-                      };
-
-                      draft.push(motion);
-                    });
-
-                    dispatch(
-                      lpNodeActions.changeNode({
-                        nodes: afterNodes,
-                      }),
-                    );
-
-                    dispatch(
-                      animationDataActions.addAnimationIngredient({
-                        animationIngredient: nextAnimationIngredient,
-                      }),
-                    );
-
-                    dispatch(
-                      plaskProjectActions.addAnimationIngredient({
-                        assetId: assetId,
-                        animationIngredientId: nextAnimationIngredient.id,
-                      }),
-                    );
-                  }
-                },
+                onClick: addEmptyMotion,
                 children: [],
               },
               {
-                label: 'Export > glb',
+                label: 'Export',
+                disabled: currentVisualizedNode?.id !== id,
                 onClick: () => {
-                  const baseScene = _screenList[0].scene;
-                  const skeletonViewerMesh = _screenList[0].scene.getMeshByID(`${assetId}//skeletonViewer`);
+                  const motions = _animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
 
-                  _screenList.forEach(({ scene }) => {
-                    scene.animationGroups.forEach((animationGroup) => {
-                      scene.removeAnimationGroup(animationGroup);
-                    });
-                  });
-
-                  const currentModelAnimationIngredients = filter(_animationIngredients, { assetId: assetId });
-
-                  currentModelAnimationIngredients.forEach((animationIngredient) => {
-                    const { name, tracks } = animationIngredient;
-                    const animationGroup = new BABYLON.AnimationGroup(name);
-                    tracks.forEach((track) => {
-                      // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
-                      if (track.transformKeys.length > 0) {
-                        if (track.property !== 'rotation') {
-                          // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
-                          if (track.isIncluded) {
-                            if (track.property === 'position' || track.property === 'scaling') {
-                              const newAnimation = new BABYLON.Animation(
-                                track.name,
-                                `${track.property}`,
-                                _fps,
-                                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                              );
-                              if (track.useFilter) {
-                                // filter function 적용
-                                newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
-                              } else {
-                                newAnimation.setKeys(track.transformKeys);
-                              }
-                              track.target.animations.push(newAnimation);
-                              animationGroup.addTargetedAnimation(newAnimation, track.target);
-                            } else if (track.property === 'rotationQuaternion') {
-                              const newAnimation = new BABYLON.Animation(
-                                track.name,
-                                `${track.property}`,
-                                _fps,
-                                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                              );
-                              if (track.useFilter) {
-                                // filter function 적용
-                                newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
-                              } else {
-                                newAnimation.setKeys(track.transformKeys);
-                              }
-                              track.target.animations.push(newAnimation);
-                              animationGroup.addTargetedAnimation(newAnimation, track.target);
-                            }
-                          }
-                        }
-                      }
-                    });
-                  });
-
-                  if (skeletonViewerMesh) {
-                    _screenList[0].scene.removeMesh(skeletonViewerMesh);
-                    const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
-                    if (skeletonViewerChildMesh) {
-                      skeletonViewerChildMesh.dispose();
-                    }
-                  }
-
-                  const options = {
-                    shouldExportNode: (node: BABYLON.Node) => {
-                      return !node.name.includes('joint') && !node.name.includes('ground') && !node.name.includes('scene') && !node.id.includes('joint');
-                    },
-                  };
-
-                  GLTF2Export.GLBAsync(baseScene, name, options).then((glb) => {
-                    // const file = new File([glb.glTFFiles[name]], 'export.glb');
-                    // const path = URL.createObjectURL(file);
-
-                    // const link = document.createElement('a');
-                    // link.href = path;
-                    // link.download = name;
-                    // link.click();
-                    glb.downloadFiles();
-                  });
-                },
-                children: [],
-              },
-              {
-                label: 'Export > fbx',
-                onClick: () => {
-                  const baseScene = _screenList[0].scene;
-                  const skeletonViewerMesh = _screenList[0].scene.getMeshByID(`${assetId}//skeletonViewer`);
-
-                  _screenList.forEach(({ scene }) => {
-                    scene.animationGroups.forEach((animationGroup) => {
-                      scene.removeAnimationGroup(animationGroup);
-                    });
-                  });
-
-                  const currentModelAnimationIngredients = filter(_animationIngredients, { assetId: assetId });
-
-                  currentModelAnimationIngredients.forEach((animationIngredient) => {
-                    const { name, tracks } = animationIngredient;
-                    const animationGroup = new BABYLON.AnimationGroup(name);
-                    tracks.forEach((track) => {
-                      // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
-                      if (track.transformKeys.length > 0) {
-                        if (track.property !== 'rotation') {
-                          // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
-                          if (track.isIncluded) {
-                            if (track.property === 'position' || track.property === 'scaling') {
-                              const newAnimation = new BABYLON.Animation(
-                                track.name,
-                                `${track.property}`,
-                                _fps,
-                                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                              );
-                              if (track.useFilter) {
-                                // filter function 적용
-                                newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
-                              } else {
-                                newAnimation.setKeys(track.transformKeys);
-                              }
-                              track.target.animations.push(newAnimation);
-                              animationGroup.addTargetedAnimation(newAnimation, track.target);
-                            } else if (track.property === 'rotationQuaternion') {
-                              const newAnimation = new BABYLON.Animation(
-                                track.name,
-                                `${track.property}`,
-                                _fps,
-                                BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                              );
-                              if (track.useFilter) {
-                                // filter function 적용
-                                newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
-                              } else {
-                                newAnimation.setKeys(track.transformKeys);
-                              }
-                              track.target.animations.push(newAnimation);
-                              animationGroup.addTargetedAnimation(newAnimation, track.target);
-                            }
-                          }
-                        }
-                      }
-                    });
-                  });
-
-                  if (skeletonViewerMesh) {
-                    _screenList[0].scene.removeMesh(skeletonViewerMesh);
-                    const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
-                    if (skeletonViewerChildMesh) {
-                      skeletonViewerChildMesh.dispose();
-                    }
-                  }
-
-                  const options = {
-                    shouldExportNode: (node: BABYLON.Node) => {
-                      return !node.name.includes('joint') && !node.name.includes('ground') && !node.name.includes('scene') && !node.id.includes('joint');
-                    },
-                  };
-
-                  GLTF2Export.GLBAsync(baseScene, name, options).then(async (glb) => {
-                    const file = new File([glb.glTFFiles[name]], name);
-                    file.path = name;
-
-                    onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
-
-                    const fileUrl = await convertModel(file, 'fbx')
-                      .then((response) => {
-                        const link = document.createElement('a');
-                        link.href = response;
-                        link.download = name;
-                        link.click();
-
-                        onModalClose();
-                        return response;
-                      })
-                      .catch(async () => {
-                        onModalOpen({
-                          title: 'Warning',
-                          message: 'An error occured while exporting the model. If the problem recurs, please send us a message on our website.',
-                          confirmText: 'Contact',
-                          onConfirm: () => {
-                            onModalClose();
-                          },
-                        });
-                      });
-                  });
+                  setCurrentMotions(motions);
+                  setIsOpenExportModal(true);
                 },
                 children: [],
               },
@@ -1158,7 +991,12 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Export',
-                onClick: () => {},
+                onClick: () => {
+                  const motions = _animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
+
+                  setCurrentMotions(motions);
+                  setIsOpenExportModal(true);
+                },
                 children: [],
               },
             ],
@@ -1178,15 +1016,16 @@ const ListNode: FunctionComponent<Props> = ({
     }
   }, [
     _animationIngredients,
-    _animationTransformNodes,
     _assetList,
-    _fps,
     _lpClipboard,
     _lpNode,
     _screenList,
     _selectableObjects,
     _visualizedAssetIds,
+    addEmptyMotion,
     assetId,
+    childrens.length,
+    currentVisualizedNode?.id,
     depth,
     depthAddKey,
     depthCheck,
@@ -1197,12 +1036,10 @@ const ListNode: FunctionComponent<Props> = ({
     handleEdit,
     handleVisualization,
     id,
-    lpCurrentPath,
     name,
     onContextMenuOpen,
     onCopy,
     onDelete,
-    onModalClose,
     onModalOpen,
     onSelect,
     parentId,
@@ -1568,7 +1405,7 @@ const ListNode: FunctionComponent<Props> = ({
               handleVisualization();
 
               dispatch(
-                cpActions.changeMode({
+                cpActions.switchMode({
                   mode: 'Retargeting',
                 }),
               );
@@ -1761,7 +1598,6 @@ const ListNode: FunctionComponent<Props> = ({
   /**
    * @TODO 아래의 코드는 clicked, visualized 스타일을 자식 노드를 포함하여 정의, 코드 개선이 필요
    */
-  const currentVisualizedNode = _lpNode.find((node) => node.assetId && _visualizedAssetIds.includes(node.assetId) && node.type === 'Model');
 
   const currentVisualizedNodePath = (currentVisualizedNode?.filePath + `\\${currentVisualizedNode?.name}`).split('\\').filter((text) => !!text);
   const currentNodePath = (filePath + `\\${name}`).split('\\').filter((text) => !!text);
@@ -1827,39 +1663,207 @@ const ListNode: FunctionComponent<Props> = ({
     LP_EDIT_NAME: handleEdit,
   };
 
+  const handleExportConfirm = useCallback(
+    (data: { motion: string; format: 'fbx' | 'glb' | 'bvh' }) => {
+      const { motion, format } = data;
+
+      const baseScene = _screenList[0].scene;
+      const skeletonViewerMesh = _screenList[0].scene.getMeshByID(`${assetId}//skeletonViewer`);
+
+      _screenList.forEach(({ scene }) => {
+        scene.animationGroups.forEach((animationGroup) => {
+          scene.removeAnimationGroup(animationGroup);
+        });
+      });
+
+      if (baseScene.animationGroups.length === 0) {
+        if (motion !== 'none') {
+          const currentModelAnimationIngredients = filter(_animationIngredients, { assetId: assetId });
+
+          const ingredients = motion === 'all' ? currentModelAnimationIngredients : filter(currentModelAnimationIngredients, { id: motion });
+
+          ingredients.forEach((animationIngredient) => {
+            const { name, tracks } = animationIngredient;
+            const animationGroup = new BABYLON.AnimationGroup(name);
+            tracks.forEach((track) => {
+              // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
+              if (track.transformKeys.length > 0) {
+                if (track.property !== 'rotation') {
+                  // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
+                  if (track.isIncluded) {
+                    if (track.property === 'position' || track.property === 'scaling') {
+                      const newAnimation = new BABYLON.Animation(
+                        track.name,
+                        `${track.property}`,
+                        _fps,
+                        BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                        BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+                      );
+                      if (track.useFilter) {
+                        // filter function 적용
+                        newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                      } else {
+                        newAnimation.setKeys(track.transformKeys);
+                      }
+                      track.target.animations.push(newAnimation);
+                      animationGroup.addTargetedAnimation(newAnimation, track.target);
+                    } else if (track.property === 'rotationQuaternion') {
+                      const newAnimation = new BABYLON.Animation(
+                        track.name,
+                        `${track.property}`,
+                        _fps,
+                        BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                        BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+                      );
+                      if (track.useFilter) {
+                        // filter function 적용
+                        newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
+                      } else {
+                        newAnimation.setKeys(track.transformKeys);
+                      }
+                      track.target.animations.push(newAnimation);
+                      animationGroup.addTargetedAnimation(newAnimation, track.target);
+                    }
+                  }
+                }
+              }
+            });
+          });
+        }
+
+        if (skeletonViewerMesh) {
+          _screenList[0].scene.removeMesh(skeletonViewerMesh);
+          const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
+          if (skeletonViewerChildMesh) {
+            skeletonViewerChildMesh.dispose();
+          }
+        }
+
+        const options = {
+          shouldExportNode: (node: BABYLON.Node) => {
+            return !node.name.includes('joint') && !node.name.includes('ground') && !node.name.includes('scene') && !node.id.includes('joint');
+          },
+        };
+
+        GLTF2Export.GLBAsync(baseScene, name, options).then(async (glb) => {
+          if (format === 'glb') {
+            glb.downloadFiles();
+          }
+
+          if (format === 'fbx') {
+            const file = new File([glb.glTFFiles[name]], name);
+            file.path = name;
+
+            onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
+
+            await convertModel(file, 'fbx')
+              .then((response) => {
+                const link = document.createElement('a');
+                link.href = response;
+                link.download = name;
+                link.click();
+
+                onModalClose();
+                return response;
+              })
+              .catch(async () => {
+                onModalOpen({
+                  title: 'Warning',
+                  message: 'An error occured while exporting the model. If the problem recurs, please send us a message on our website.',
+                  confirmText: 'Contact',
+                  onConfirm: () => {
+                    onModalClose();
+                  },
+                });
+              });
+          }
+
+          if (format === 'bvh') {
+            const asset = find(_assetList, { id: assetId });
+
+            if (asset) {
+              const { retargetMapId, bones } = asset;
+              const retargetMap = find(_retargetMaps, { id: retargetMapId });
+
+              if (retargetMap) {
+                const bvhMap = await createBvhMap(bones, retargetMap, 3000);
+
+                const file = new File([glb.glTFFiles[name]], name);
+                file.path = name;
+
+                onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
+
+                await convertModel(file, 'bvh', bvhMap)
+                  .then((response) => {
+                    const link = document.createElement('a');
+                    link.href = response;
+                    link.download = name;
+                    link.click();
+
+                    onModalClose();
+                    return response;
+                  })
+                  .catch(async () => {
+                    onModalOpen({
+                      title: 'Warning',
+                      message: 'An error occured while exporting the model. If the problem recurs, please send us a message on our website.',
+                      confirmText: 'Contact',
+                      onConfirm: () => {
+                        onModalClose();
+                      },
+                    });
+                  });
+              }
+            }
+          }
+
+          setIsOpenExportModal(false);
+        });
+      }
+    },
+    [_animationIngredients, _assetList, _fps, _retargetMaps, _screenList, assetId, name, onModalClose, onModalOpen],
+  );
+
+  const handleExportCancel = useCallback(() => {
+    setIsOpenExportModal(false);
+  }, []);
+
   return (
-    <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
-      <div className={cx('outer')} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
-        <div className={classes} id="inner">
-          <ListCurrent
-            id={id}
-            assetId={assetId}
-            type={type}
-            name={name}
-            depth={depth}
-            isEditing={isEditing}
-            wrapperRef={wrapperRef}
-            textRef={textRef}
-            renameRef={renameRef}
-            onClick={handleArrowClick}
-            onBlur={handleBlur}
-            onKeyDown={handleKeydown}
-            defaultValue={fileName}
-          />
-          {showsChildrens && (
-            <ListChildren
-              items={childrens}
-              onSelect={onSelect}
-              selectedId={selectedId}
-              onSetDragTarget={onSetDragTarget}
-              dragTarget={dragTarget}
-              onCopy={onCopy}
-              onDelete={onDelete}
+    <Fragment>
+      <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
+        <div className={cx('outer')} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
+          <div className={classes} id="inner">
+            <ListCurrent
+              id={id}
+              assetId={assetId}
+              type={type}
+              name={name}
+              depth={depth}
+              isEditing={isEditing}
+              wrapperRef={wrapperRef}
+              textRef={textRef}
+              renameRef={renameRef}
+              onClick={handleArrowClick}
+              onBlur={handleBlur}
+              onKeyDown={handleKeydown}
+              defaultValue={fileName}
             />
-          )}
+            {showsChildrens && (
+              <ListChildren
+                items={childrens}
+                onSelect={onSelect}
+                selectedId={selectedId}
+                onSetDragTarget={onSetDragTarget}
+                dragTarget={dragTarget}
+                onCopy={onCopy}
+                onDelete={onDelete}
+              />
+            )}
+          </div>
         </div>
-      </div>
-    </HotKeys>
+      </HotKeys>
+      {isOpenExportModal && <ExportModal motions={currentMotions} onCancel={handleExportCancel} onConfirm={handleExportConfirm} onOutsideClose={handleExportCancel} />}
+    </Fragment>
   );
 };
 

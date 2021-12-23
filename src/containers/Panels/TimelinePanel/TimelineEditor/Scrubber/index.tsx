@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
 
+import { PlayDirection } from 'types/RP';
 import { useSelector } from 'reducers';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { BaseInput } from 'components/Input';
@@ -16,8 +17,12 @@ const cx = classNames.bind(styles);
 const Scrubber = () => {
   const dispatch = useDispatch();
 
-  const currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
-  const playDirection = useSelector((state) => state.animatingControls.playDirection);
+  const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
+  const _currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
+  const _playSpeed = useSelector((state) => state.animatingControls.playSpeed);
+  const _playDirection = useSelector((state) => state.animatingControls.playDirection);
+  const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
+  const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
 
   const [inputValue, setInputValue] = useState<number | string>(0);
 
@@ -54,11 +59,18 @@ const Scrubber = () => {
       if (isNaN(nextValue) || nextValue < startTimeIndex || endTimeIndex < nextValue) {
         setInputValue(currentTimeIndex);
       } else {
-        console.log('scrubber now 입력, containers/Panels/TimelinePanel/TimelineEditor/Scrubber/index.tsx');
+        if (_currentAnimationGroup) {
+          if (_currentAnimationGroup.isStarted) {
+            _currentAnimationGroup.goToFrame(nextValue);
+          } else {
+            _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(nextValue);
+          }
+        }
+
         dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: nextValue }));
       }
     },
-    [dispatch],
+    [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch],
   );
 
   // currentTimeIndex 변경 시, now value와 scrubber 위치 변경
@@ -66,10 +78,11 @@ const Scrubber = () => {
     const scaleX = ScaleLinear.getScaleX();
     const scrubber = scrubberRef.current;
     if (scrubber && scaleX) {
-      scrubber.setAttribute('transform', `translate(${scaleX(currentTimeIndex)}, 0)`);
-      setInputValue(currentTimeIndex || '0');
+      const digitedNextFrame = _playDirection === PlayDirection.forward ? Math.floor(_currentTimeIndex) : Math.ceil(_currentTimeIndex);
+      scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame)}, 0)`);
+      setInputValue(digitedNextFrame || '0');
     }
-  }, [currentTimeIndex, playDirection]);
+  }, [_currentTimeIndex, _playDirection]);
 
   // 드래그 이벤트 적용
   useEffect(() => {
@@ -80,7 +93,15 @@ const Scrubber = () => {
         const subValue = 15; // now input 가로 절반 길이
         const cursorTimeIndex = _.floor(scaleX.invert(event.x - subValue));
         const clampedTimeIndex = clampTimeIndex(cursorTimeIndex);
-        console.log('scrubber 드래그, containers/Panels/TimelinePanel/TimelineEditor/Scrubber/index.tsx');
+
+        if (_currentAnimationGroup) {
+          if (_currentAnimationGroup.isStarted) {
+            _currentAnimationGroup.goToFrame(clampedTimeIndex);
+          } else {
+            _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
+          }
+        }
+
         dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
       }, 75);
       const dragBehavior = d3
@@ -94,7 +115,7 @@ const Scrubber = () => {
     const scrubber = d3.select(scrubberRef.current);
     const dragBehavior = setDragBehavior();
     scrubber.call(dragBehavior as any);
-  }, [dispatch]);
+  }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
 
   // a/s 키 입력 시, scrubber 이동
   useEffect(() => {
@@ -103,19 +124,33 @@ const Scrubber = () => {
         const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
         const clampedTimeIndex = clampTimeIndex(currentTimeIndex - 1);
         dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
-        console.log('scrubber A 키 입력, containers/Panels/TimelinePanel/TimelineEditor/Scrubber/index.tsx');
+
+        if (_currentAnimationGroup) {
+          if (_currentAnimationGroup.isStarted) {
+            _currentAnimationGroup.goToFrame(clampedTimeIndex);
+          } else {
+            _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
+          }
+        }
       } else if (event.key === ('s' || 'S')) {
         const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
         const clampedTimeIndex = clampTimeIndex(currentTimeIndex + 1);
         dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
-        console.log('scrubber S 키 입력, containers/Panels/TimelinePanel/TimelineEditor/Scrubber/index.tsx');
+
+        if (_currentAnimationGroup) {
+          if (_currentAnimationGroup.isStarted) {
+            _currentAnimationGroup.goToFrame(clampedTimeIndex);
+          } else {
+            _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
+          }
+        }
       }
     };
     document.addEventListener('keydown', keydownListener);
     return () => {
       document.removeEventListener('keydown', keydownListener);
     };
-  }, [dispatch]);
+  }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
 
   return (
     <g id="scrubber" className={cx('scrubber')} ref={scrubberRef}>
