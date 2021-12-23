@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 import PlaskArcRotateCameraPointersInput from './PlaskArcRotateCameraPointersInput';
 
-const defaultPosition = new BABYLON.Vector3(0, 6, 10);
+const DEFAULT_CAMERA_POSITION_ARRAY = [0, 6, 10];
 
 /**
  * 축을 중심으로 회전하는 카메라를 커스텀 컨트롤을 적용한 상태로 생성합니다.
@@ -11,7 +11,7 @@ const defaultPosition = new BABYLON.Vector3(0, 6, 10);
  */
 const createCamera = (scene: BABYLON.Scene, initialPosition?: BABYLON.Vector3) => {
   const arcRotateCamera = new BABYLON.ArcRotateCamera('arcRotateCamera', 0, 6, 10, BABYLON.Vector3.Zero(), scene);
-  arcRotateCamera.setPosition((initialPosition = defaultPosition));
+  arcRotateCamera.setPosition((initialPosition = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY)));
   arcRotateCamera.attachControl(scene.getEngine().getRenderingCanvas(), false);
   arcRotateCamera.allowUpsideDown = false;
   arcRotateCamera.minZ = 0.1;
@@ -29,7 +29,7 @@ const createCamera = (scene: BABYLON.Scene, initialPosition?: BABYLON.Vector3) =
   arcRotateCamera.inputs.remove(arcRotateCamera.inputs.attached.pointers);
   // 커스텀한 카메라 컨트롤을 적용
   arcRotateCamera.inputs.add(new PlaskArcRotateCameraPointersInput());
-  arcRotateCamera._panningMouseButton = 1;
+  // arcRotateCamera._panningMouseButton = 2; // panningMouseButton 기본이 2라서 주석 처리
 
   return arcRotateCamera;
 };

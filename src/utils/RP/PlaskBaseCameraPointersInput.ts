@@ -88,7 +88,7 @@ export default abstract class PlaskBaseCameraPointersInput implements ICameraInp
         this.onTouch(null, offsetX, offsetY);
         this.pointA = null;
         this.pointB = null;
-      } else if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
+      } else if (p.type === PointerEventTypes.POINTERDOWN && srcElement && this._altKey) {
         try {
           srcElement.setPointerCapture(evt.pointerId);
         } catch (e) {

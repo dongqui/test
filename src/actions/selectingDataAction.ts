@@ -9,6 +9,7 @@ export type SelectingDataAction =
   | ReturnType<typeof defaultMultiSelect>
   | ReturnType<typeof ctrlKeySingleSelect>
   | ReturnType<typeof ctrlKeyMultiSelect>
+  | ReturnType<typeof selectAllSelectableObjects>
   | ReturnType<typeof resetSelectedTargets>;
 
 const ADD_SELECTABLE_OBJECTS = 'selectingDataAction/ADD_SELECTABLE_OBJECTS' as const;
@@ -22,6 +23,7 @@ const DEFAULT_MULTI_SELECT = 'selectingDataAction/DEFAULT_MULTI_SELECT' as const
 const CTRL_KEY_SINGLE_SELECT = 'selectingDataAction/CTRL_KEY_SINGLE_SELECT' as const;
 const CTRL_KEY_MULTI_SELECT = 'selectingDataAction/CTRL_KEY_MULTI_SELECT' as const;
 
+const SELECT_ALL_SELECTABLE_OBJECTS = 'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS' as const;
 const RESET_SELECTED_TARGETS = 'selectingDataAction/RESET_SELECTED_TARGETS' as const;
 
 interface AddSelectableObjects {
@@ -160,6 +162,13 @@ export const ctrlKeyMultiSelect = (params: CtrlKeyMultiSelect) => ({
   payload: {
     ...params,
   },
+});
+
+/**
+ * 모든 선택 가능한 대상을 선택합니다.
+ */
+export const selectAllSelectableObjects = () => ({
+  type: SELECT_ALL_SELECTABLE_OBJECTS,
 });
 
 /**
