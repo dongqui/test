@@ -118,26 +118,28 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
     [initializeSubMenuVisible],
   );
 
+  const handleMenuClick = useCallback(
+    (item: ContextMenu.MenuItem) => {
+      if (!item.disabled && item.onClick) {
+        item.onClick();
+        onContextMenuClose();
+      }
+    },
+    [onContextMenuClose],
+  );
+
   return (
     <BasePortal container={portalRef}>
       <div className={cx('wrapper')} ref={wrapperRef} style={{ top: position.top, left: position.left }}>
         {menu &&
           menu.map((item, i) => {
             const classes = cx('inner', item.visibility, { disabled: item.disabled }, { 'has-children': !!item.children });
-
-            const handleMenuClick = () => {
-              if (!item.disabled && item.onClick) {
-                item.onClick();
-                onContextMenuClose();
-              }
-            };
-
             return (
               <Fragment key={i}>
                 <div className={classes} onMouseMove={() => handleMouseMoveOnItem(item, i)}>
                   <div
                     className={cx('item', { disabled: item.disabled }, { 'has-children': !!item.children?.length }, { 'focus-children': subMenuVisibleController[i] })}
-                    onClick={handleMenuClick}
+                    onClick={() => handleMenuClick(item)}
                   >
                     {item.label}
                     {!!item.children?.length && <IconWrapper icon={SvgPath.ChevronRight} />}
@@ -145,7 +147,7 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
                   {!!item.children?.length && subMenuVisibleController[i] && (
                     <div className={cx('sub-menu')}>
                       {item.children.map((subItem) => (
-                        <div key={subItem.label} className={cx('sub-item')}>
+                        <div key={subItem.label} className={cx('sub-item')} onClick={() => handleMenuClick(subItem)}>
                           {subItem.label}
                         </div>
                       ))}
