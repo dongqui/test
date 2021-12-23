@@ -5,6 +5,7 @@ import * as animatingControlsActions from 'actions/animatingControlsAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as trackListActions from 'actions/trackList';
+import * as animationDataActions from 'actions/animationDataAction';
 import { useSelector } from 'reducers';
 import { Nullable, ScreenXY, PlaskView } from 'types/common';
 import {
@@ -21,6 +22,7 @@ import {
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 
 const cx = classNames.bind(styles);
 
@@ -54,6 +56,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
 
   const dispatch = useDispatch();
+
+  const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   const renderingCanvas1 = useRef<HTMLCanvasElement>(null);
 
@@ -286,38 +290,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       };
     }
   }, [_screenList, _selectableObjects, dispatch]);
-
-  /**
-   * contextMenu 사용
-   */
-  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-  useEffect(() => {
-    const targetScreen = _screenList.find((screen) => screen.canvasId === renderingCanvas1.current?.id); // 단일 캔버스 상황
-
-    if (targetScreen) {
-      const { scene } = targetScreen;
-
-      const contextMenuObserver = scene.onPointerObservable.add((pointerInfo, eventState) => {
-        // camera panning 시에는 발생하지 않도록하기 위함
-        if (pointerInfo.event.button === 2 && !pointerInfo.event.altKey) {
-          switch (pointerInfo.type) {
-            case BABYLON.PointerEventTypes.POINTERDOWN: {
-              setIsContextMenuOpen((prev) => !prev); // 임시로 토글로 넣어놓았읍니다
-              console.log('pointer x, y: ', scene.pointerX, scene.pointerY); // 컨텍스트 생성 위치에 사용하면 됩니다
-              break;
-            }
-          }
-        }
-      });
-
-      return () => {
-        scene.onPointerObservable.remove(contextMenuObserver);
-      };
-    }
-  }, [_screenList]);
-  useEffect(() => {
-    console.log('isContextMenuOpen: ', isContextMenuOpen);
-  }, [isContextMenuOpen]);
 
   /**
    * camera navigation, viewport 전환 관련 단축키 설정
@@ -1297,6 +1269,395 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
     }
   }, [_animationIngredients, _endTimeIndex, _fps, _screenList, _startTimeIndex, _visualizedAssetIds, dispatch]);
+
+  const contextMenuList = useMemo(
+    () => [
+      {
+        label: 'Select all',
+        onClick: () => {
+          dispatch(selectingDataActions.selectAllSelectableObjects());
+        },
+      },
+      {
+        label: 'Unselect all',
+        onClick: () => {
+          dispatch(selectingDataActions.resetSelectedTargets());
+        },
+        separator: true,
+      },
+      {
+        label: 'Transform',
+        separator: true,
+        children: [
+          {
+            label: 'Position',
+            onClick: () => {
+              if (gizmoManager) {
+                setCurrentGizmoMode('position');
+                gizmoManager.positionGizmoEnabled = true;
+                gizmoManager.rotationGizmoEnabled = false;
+                gizmoManager.scaleGizmoEnabled = false;
+              }
+            },
+          },
+          {
+            label: 'Rotation',
+            onClick: () => {
+              if (gizmoManager) {
+                setCurrentGizmoMode('rotation');
+                gizmoManager.positionGizmoEnabled = false;
+                gizmoManager.rotationGizmoEnabled = true;
+                gizmoManager.scaleGizmoEnabled = false;
+              }
+            },
+          },
+          {
+            label: 'Scale',
+            onClick: () => {
+              if (gizmoManager) {
+                setCurrentGizmoMode('scale');
+                gizmoManager.positionGizmoEnabled = false;
+                gizmoManager.rotationGizmoEnabled = false;
+                gizmoManager.scaleGizmoEnabled = true;
+              }
+            },
+          },
+        ],
+      },
+      {
+        label: 'Camera reset',
+        onClick: () => {
+          document.getElementById('renderingCanvas1')?.focus();
+          const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+          if (focusedCanvas) {
+            const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
+            const focusedScene = focusedPlaskScreen?.scene;
+            if (focusedScene && focusedScene.activeCamera) {
+              const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
+              if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
+                activeCamera.orthoTop = 2;
+                activeCamera.orthoBottom = -2;
+                activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
+                activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
+              } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+                activeCamera.setPosition(DEFAULT_CAMERA_POSITION);
+                activeCamera.setTarget(DEFAULT_CAMERA_TARGET);
+              }
+            }
+          }
+        },
+      },
+      {
+        label: 'View',
+        separator: true,
+        children: [
+          {
+            label: 'Perspective',
+            onClick: () => {
+              document.getElementById('renderingCanvas1')?.focus();
+              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+              if (focusedCanvas) {
+                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
+                const focusedScene = focusedPlaskScreen?.scene;
+                if (focusedScene && focusedScene.activeCamera) {
+                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
+                  if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
+                    const prevCameraPosition = prevCameraPositions[focusedCanvas.id];
+                    if (prevCameraPosition) {
+                      activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
+                      activeCamera.setPosition(prevCameraPosition);
+                    }
+
+                    const grounds = focusedScene.getMeshesByTags('ground');
+                    grounds.forEach((ground) => {
+                      if (ground.id === 'top') {
+                        ground.isVisible = true;
+                      } else {
+                        ground.isVisible = false;
+                      }
+                    });
+                  }
+                }
+              }
+            },
+          },
+          {
+            label: 'Front',
+            onClick: () => {
+              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
+                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+                camera.orthoTop = 2;
+                camera.orthoBottom = -2;
+                camera.orthoLeft = -2 * (canvas.width / canvas.height);
+                camera.orthoRight = 2 * (canvas.width / canvas.height);
+
+                const grounds = scene.getMeshesByTags('ground');
+                grounds.forEach((ground) => {
+                  if (ground.id === view) {
+                    ground.isVisible = true;
+                  } else {
+                    ground.isVisible = false;
+                  }
+                });
+              };
+              document.getElementById('renderingCanvas1')?.focus();
+              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+              if (focusedCanvas) {
+                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
+                const focusedScene = focusedPlaskScreen?.scene;
+                if (focusedScene && focusedScene.activeCamera) {
+                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
+                  const { position, target } = activeCamera;
+                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'front');
+
+                  if (!prevCameraPositions[focusedCanvas.id]) {
+                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                  }
+
+                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
+                  activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, distance + 10));
+                }
+              }
+            },
+          },
+          {
+            label: 'Back',
+            onClick: () => {
+              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
+                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+                camera.orthoTop = 2;
+                camera.orthoBottom = -2;
+                camera.orthoLeft = -2 * (canvas.width / canvas.height);
+                camera.orthoRight = 2 * (canvas.width / canvas.height);
+
+                const grounds = scene.getMeshesByTags('ground');
+                grounds.forEach((ground) => {
+                  if (ground.id === view) {
+                    ground.isVisible = true;
+                  } else {
+                    ground.isVisible = false;
+                  }
+                });
+              };
+              document.getElementById('renderingCanvas1')?.focus();
+              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+              if (focusedCanvas) {
+                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
+                const focusedScene = focusedPlaskScreen?.scene;
+                if (focusedScene && focusedScene.activeCamera) {
+                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
+                  const { position, target } = activeCamera;
+                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
+
+                  if (!prevCameraPositions[focusedCanvas.id]) {
+                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                  }
+
+                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
+                  activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
+                }
+              }
+            },
+          },
+          {
+            label: 'Top',
+            onClick: () => {
+              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
+                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+                camera.orthoTop = 2;
+                camera.orthoBottom = -2;
+                camera.orthoLeft = -2 * (canvas.width / canvas.height);
+                camera.orthoRight = 2 * (canvas.width / canvas.height);
+
+                const grounds = scene.getMeshesByTags('ground');
+                grounds.forEach((ground) => {
+                  if (ground.id === view) {
+                    ground.isVisible = true;
+                  } else {
+                    ground.isVisible = false;
+                  }
+                });
+              };
+              document.getElementById('renderingCanvas1')?.focus();
+              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+              if (focusedCanvas) {
+                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
+                const focusedScene = focusedPlaskScreen?.scene;
+                if (focusedScene && focusedScene.activeCamera) {
+                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
+                  const { position, target } = activeCamera;
+                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'top');
+
+                  if (!prevCameraPositions[focusedCanvas.id]) {
+                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                  }
+
+                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
+                  activeCamera.setPosition(new BABYLON.Vector3(target.x, distance + 10, target.z));
+                }
+              }
+            },
+          },
+          {
+            label: 'Bottom',
+            onClick: () => {
+              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
+                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+                camera.orthoTop = 2;
+                camera.orthoBottom = -2;
+                camera.orthoLeft = -2 * (canvas.width / canvas.height);
+                camera.orthoRight = 2 * (canvas.width / canvas.height);
+
+                const grounds = scene.getMeshesByTags('ground');
+                grounds.forEach((ground) => {
+                  if (ground.id === view) {
+                    ground.isVisible = true;
+                  } else {
+                    ground.isVisible = false;
+                  }
+                });
+              };
+              document.getElementById('renderingCanvas1')?.focus();
+              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+              if (focusedCanvas) {
+                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
+                const focusedScene = focusedPlaskScreen?.scene;
+                if (focusedScene && focusedScene.activeCamera) {
+                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
+                  const { position, target } = activeCamera;
+                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'bottom');
+
+                  if (!prevCameraPositions[focusedCanvas.id]) {
+                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                  }
+
+                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
+                  activeCamera.setPosition(new BABYLON.Vector3(target.x, -(distance + 10), target.z));
+                }
+              }
+            },
+          },
+          {
+            label: 'Right',
+            onClick: () => {
+              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
+                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+                camera.orthoTop = 2;
+                camera.orthoBottom = -2;
+                camera.orthoLeft = -2 * (canvas.width / canvas.height);
+                camera.orthoRight = 2 * (canvas.width / canvas.height);
+
+                const grounds = scene.getMeshesByTags('ground');
+                grounds.forEach((ground) => {
+                  if (ground.id === view) {
+                    ground.isVisible = true;
+                  } else {
+                    ground.isVisible = false;
+                  }
+                });
+              };
+              document.getElementById('renderingCanvas1')?.focus();
+              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+              if (focusedCanvas) {
+                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
+                const focusedScene = focusedPlaskScreen?.scene;
+                if (focusedScene && focusedScene.activeCamera) {
+                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
+                  const { position, target } = activeCamera;
+                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'right');
+
+                  if (!prevCameraPositions[focusedCanvas.id]) {
+                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                  }
+
+                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
+                  activeCamera.setPosition(new BABYLON.Vector3(distance + 10, target.y, target.z));
+                }
+              }
+            },
+          },
+          {
+            label: 'Left',
+            onClick: () => {
+              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
+                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+                camera.orthoTop = 2;
+                camera.orthoBottom = -2;
+                camera.orthoLeft = -2 * (canvas.width / canvas.height);
+                camera.orthoRight = 2 * (canvas.width / canvas.height);
+
+                const grounds = scene.getMeshesByTags('ground');
+                grounds.forEach((ground) => {
+                  if (ground.id === view) {
+                    ground.isVisible = true;
+                  } else {
+                    ground.isVisible = false;
+                  }
+                });
+              };
+              document.getElementById('renderingCanvas1')?.focus();
+              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+              if (focusedCanvas) {
+                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
+                const focusedScene = focusedPlaskScreen?.scene;
+                if (focusedScene && focusedScene.activeCamera) {
+                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
+                  const { position, target } = activeCamera;
+
+                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'left');
+
+                  if (!prevCameraPositions[focusedCanvas.id]) {
+                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                  }
+
+                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
+                  activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), target.y, target.z));
+                }
+              }
+            },
+          },
+        ],
+      },
+      {
+        label: 'Insert keyframe',
+        onClick: () => {
+          dispatch(animationDataActions.editKeyframes());
+        },
+      },
+    ],
+    [_screenList, dispatch, gizmoManager, prevCameraPositions],
+  );
+
+  /**
+   * contextMenu 사용
+   */
+  // const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+  useEffect(() => {
+    const targetScreen = _screenList.find((screen) => screen.canvasId === renderingCanvas1.current?.id); // 단일 캔버스 상황
+
+    if (targetScreen) {
+      const { scene } = targetScreen;
+
+      const contextMenuObserver = scene.onPointerObservable.add((pointerInfo, eventState) => {
+        // camera panning 시에는 발생하지 않도록하기 위함
+        if (pointerInfo.event.button === 2 && !pointerInfo.event.altKey) {
+          switch (pointerInfo.type) {
+            case BABYLON.PointerEventTypes.POINTERDOWN: {
+              // setIsContextMenuOpen((prev) => !prev); // 임시로 토글로 넣어놓았읍니다
+              onContextMenuClose();
+              onContextMenuOpen({ top: scene.pointerY, left: scene.pointerX, menu: contextMenuList });
+              break;
+            }
+          }
+        }
+      });
+
+      return () => {
+        scene.onPointerObservable.remove(contextMenuObserver);
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_screenList, contextMenuList]);
 
   return (
     <div className={cx('wrapper')}>
