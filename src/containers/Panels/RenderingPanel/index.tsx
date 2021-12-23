@@ -1,6 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 import { FunctionComponent, useRef, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
@@ -22,15 +23,14 @@ import {
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 
 const cx = classNames.bind(styles);
 
 /**
  * consts
  */
-const DEFAULT_CAMERA_POSITION = new BABYLON.Vector3(0, 6, 10);
-const DEFAULT_CAMERA_TARGET = BABYLON.Vector3.Zero();
+const DEFAULT_CAMERA_POSITION_ARRAY = [0, 6, 10];
+const DEFAULT_CAMERA_TARGET_ARRAY = [0, 0, 0];
 
 /**
  * types and interfaces
@@ -466,8 +466,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                   activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
                   activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
                 } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-                  activeCamera.setPosition(DEFAULT_CAMERA_POSITION);
-                  activeCamera.setTarget(DEFAULT_CAMERA_TARGET);
+                  activeCamera.setPosition(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY));
+                  activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
                 }
               }
               break;
@@ -1340,8 +1340,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
                 activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
               } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-                activeCamera.setPosition(DEFAULT_CAMERA_POSITION);
-                activeCamera.setTarget(DEFAULT_CAMERA_TARGET);
+                activeCamera.setPosition(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY));
+                activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
               }
             }
           }

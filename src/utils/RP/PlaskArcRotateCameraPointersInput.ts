@@ -206,7 +206,7 @@ export default class PlaskArcRotateCameraPointersInput extends PlaskBaseCameraPo
    * press.
    */
   protected onButtonDown(evt: IPointerEvent): void {
-    // pan only without altKey
+    // pan only with altKey
     this._isPanClick = evt.button === this.camera._panningMouseButton && this._altKey;
   }
 

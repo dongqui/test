@@ -14,7 +14,7 @@ import { getRandomStringKey } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
-const DEFAULT_CONTROLLER_COLOR = BABYLON.Color3.FromHexString('#FFE480');
+const DEFAULT_CONTROLLER_COLOR_HEX_STRING = '#FFE480';
 
 const ControlPanel: FunctionComponent = () => {
   const screenList = useSelector((state) => state.plaskProject.screenList);
@@ -213,7 +213,7 @@ const ControlPanel: FunctionComponent = () => {
           // prettier-ignore
           const targetBoneIndices = [1, 56, 61, 2, 57, 62, 3, 58, 63, 4, 59, 64, 5, 8, 32, 6, 9, 33, 10, 34, 11, 35, 16, 40]; // retargetMap의 values 대신 사용
           const controllerMaterial = new BABYLON.StandardMaterial('controllerMaterial', targetScreen.scene);
-          controllerMaterial.emissiveColor = DEFAULT_CONTROLLER_COLOR;
+          controllerMaterial.emissiveColor = BABYLON.Color3.FromHexString(DEFAULT_CONTROLLER_COLOR_HEX_STRING);
           controllerMaterial.disableLighting = true;
 
           bones.forEach((bone, idx) => {
