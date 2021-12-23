@@ -7,8 +7,8 @@ import { checkIsObjectIn, createCamera, createDirectionalLight, createGrounds, c
 import { useSelector } from 'reducers';
 import { Nullable, ScreenXY, PlaskView } from 'types/common';
 
-const DEFAULT_CAMERA_POSITION = new BABYLON.Vector3(0, 6, 10);
-const DEFAULT_CAMERA_TARGET = BABYLON.Vector3.Zero();
+const DEFAULT_CAMERA_POSITION_ARRAY = [0, 6, 10];
+const DEFAULT_CAMERA_TARGET_ARRAY = [0, 0, 0];
 
 interface Params {
   renderingCanvas: RefObject<HTMLCanvasElement>;
@@ -417,8 +417,8 @@ const useInitializeScene = (params: Params) => {
                   activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
                   activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
                 } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-                  activeCamera.setPosition(DEFAULT_CAMERA_POSITION);
-                  activeCamera.setTarget(DEFAULT_CAMERA_TARGET);
+                  activeCamera.setPosition(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY));
+                  activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
                 }
               }
               break;
