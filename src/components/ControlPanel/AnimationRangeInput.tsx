@@ -108,10 +108,12 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
   // range input이 change 될 때에 range input의 최대값을 변경하는 함수
   const setRangeMaxLimit = useCallback(
     (e) => {
-      const num = parseInt(e.target.value, 10);
+      const num = parseFloat(e.target.value);
       handleMaxLimitLogic(num);
       setIsValueChanged(false);
-      if (onChangeEnd) onChangeEnd(num);
+      if (onChangeEnd) {
+        onChangeEnd(num);
+      }
     },
     [handleMaxLimitLogic, onChangeEnd],
   );

@@ -1,8 +1,11 @@
 import { useCallback, FunctionComponent } from 'react';
 import { debounce } from 'lodash';
 import { useDispatch } from 'react-redux';
+
 import * as animatingControlsActions from 'actions/animatingControlsAction';
+import { useSelector } from 'reducers';
 import { PrefixInput } from 'components/Input';
+import { forceClickAnimationPauseAndPlay } from 'utils/common';
 
 interface Props {
   startTimeIndex: number;
@@ -14,6 +17,9 @@ interface Props {
 const EndInput: FunctionComponent<Props> = (props) => {
   const { startTimeIndex, endTimeIndex, currentTimeIndex, keyDown } = props;
   const dispatch = useDispatch();
+
+  const _playDirection = useSelector((state) => state.animatingControls.playDirection);
+  const _playState = useSelector((state) => state.animatingControls.playState);
 
   // end input에 debounce 적용
   const handleEndInputChange = debounce((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,8 +40,9 @@ const EndInput: FunctionComponent<Props> = (props) => {
         dispatch(animatingControlsActions.blurEndInput(payload));
       }
       handleEndInputChange.cancel();
+      forceClickAnimationPauseAndPlay(_playState, _playDirection);
     },
-    [currentTimeIndex, dispatch, endTimeIndex, handleEndInputChange, startTimeIndex],
+    [_playDirection, _playState, currentTimeIndex, dispatch, endTimeIndex, handleEndInputChange, startTimeIndex],
   );
 
   return (
