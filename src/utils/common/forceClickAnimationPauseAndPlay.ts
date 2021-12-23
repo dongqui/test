@@ -7,15 +7,17 @@ import { PlayDirection, PlayState } from 'types/RP';
  *
  * @param _playState 현재 애니메이션의 재생 상태
  * @param _playDirection 현재 애니메이션의 진행 방향
+ * @param timeout 일시정지 후 재생을 클릭할 타임아웃
+ *
  * @returns void
  */
-function forceAnimationButtonsClick(_playState: PlayState, _playDirection: PlayDirection) {
+function forceClickAnimationPauseAndPlay(_playState: PlayState, _playDirection: PlayDirection, timeout?: number) {
   if (_playState === 'play') {
-    document.getElementById('pause')!.click();
+    document.getElementById('animationPauseButton')!.click();
     setTimeout(() => {
-      document.getElementById(_playDirection === PlayDirection.forward ? 'play' : 'rewind')?.click();
-    }, 0);
+      document.getElementById(_playDirection === PlayDirection.forward ? 'animationPlayButton' : 'animationRewindButton')?.click();
+    }, timeout ?? 0);
   }
 }
 
-export default forceAnimationButtonsClick;
+export default forceClickAnimationPauseAndPlay;

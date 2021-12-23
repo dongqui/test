@@ -8,7 +8,10 @@ export type PlaskView = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back';
 
 export type PlaskRotationType = 'euler' | 'quaternion';
 
-export type PlaskPaletteColor = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink';
+export type PlaskPaletteColorName = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink';
+
+export type PlaskPaletteColor = '#FF6969' | '#FC9B51' | '#FFDB56' | '#4FD675' | '#61E4ED' | '#D687F4' | '#FF8CC9';
+
 export interface PlaskProject {
   id: string;
   name: string;
