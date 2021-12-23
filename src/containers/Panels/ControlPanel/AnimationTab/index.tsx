@@ -143,10 +143,9 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     } else if (_selectedTargets.length === 1) {
       const targetAssetId = _selectedTargets[0].id.split('//')[0];
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAssetId);
-      const targetTrack = targetAnimationIngredient?.tracks.find((track) => track.targetId === _selectedTargets[0].id && track.layerId === _seletedLayer);
-      if (targetTrack) {
-        setControlTrack(targetTrack);
-      }
+      const targetTrack = targetAnimationIngredient?.tracks.find((track) => track.targetId === _selectedTargets[0].id && track.layerId === _seletedLayer)!;
+
+      setControlTrack(targetTrack);
     } else {
       setControlTrack(null);
     }
@@ -262,11 +261,46 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const handleControllerToggle = useCallback(async () => {
     if (selectedAssetId) {
       if (isControllerOn) {
-        setIsControllerOn(false);
-        // 삭제
+        const confirmedToDelete = await getConfirm({
+          title: 'Confirm',
+          message: 'Are you sure you want to delete controllers?',
+          confirmText: 'Confirm',
+          cancelText: 'Cancel',
+        });
+        if (confirmedToDelete) {
+          // switch off
+          setIsControllerOn(false);
+
+          // 컨트롤러 삭제
+          const targetControllers = _selectableObjects.filter((object) => object.id.includes(selectedAssetId) && checkIsTargetMesh(object));
+          targetControllers.forEach((targetController) => {
+            targetController.dispose();
+          });
+
+          // dragBox 선택 대상에서 제외
+          dispatch(selectingDataActions.removeSelectableControllers({ assetId: selectedAssetId }));
+
+          // 컨트롤러 애니메이션 제거
+          const currentAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
+          if (currentAnimationIngredient) {
+            const newAnimationIngredient: AnimationIngredient = {
+              ...currentAnimationIngredient,
+              tracks: currentAnimationIngredient.tracks.filter((track) => !track.targetId.includes('//controller')),
+            };
+
+            if (_playState === 'play') {
+              forceClickAnimationPauseAndPlay(_playState, _playDirection);
+            } else {
+              forceClickAnimationPlayAndStop();
+            }
+
+            dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+          }
+        }
       } else {
+        // switch on
         setIsControllerOn(true);
-        // 생성
+
         const targetAsset = _assetList.find((asset) => asset.id === selectedAssetId)!;
         const targetRetargetMap = _retargetMaps.find((retargetMap) => retargetMap.assetId === selectedAssetId);
         const targetTransformNodeIds = targetRetargetMap?.values.map((value) => value.targetTransformNodeId);
@@ -400,7 +434,19 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         });
       }
     }
-  }, [_animationIngredients, _assetList, _playDirection, _playState, _retargetMaps, _screenList, dispatch, getConfirm, isControllerOn, selectedAssetId]);
+  }, [_animationIngredients, _assetList, _playDirection, _playState, _retargetMaps, _screenList, _selectableObjects, dispatch, getConfirm, isControllerOn, selectedAssetId]);
+
+  // Controller 색 변경
+  const handleSelectColor = useCallback(
+    (color: PlaskPaletteColor) => {
+      if (controlController) {
+        setControllerColor(color);
+        // @ts-ignore
+        controlController.material.emissiveColor = BABYLON.Color3.FromHexString(color);
+      }
+    },
+    [controlController],
+  );
 
   // Filter의 활성화 비활성화
   const handleFilterToggle = useCallback(() => {
@@ -753,17 +799,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   //   { text: 'Mesh', handleBlur: () => {} },
   //   { text: 'Controller', handleBlur: () => {} },
   // ];
-
-  const handleSelectColor = useCallback(
-    (color: PlaskPaletteColor) => {
-      if (controlController) {
-        setControllerColor(color);
-        // @ts-ignore
-        controlController.material.emissiveColor = BABYLON.Color3.FromHexString(color);
-      }
-    },
-    [controlController],
-  );
 
   return (
     <Fragment>
