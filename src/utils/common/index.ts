@@ -1,3 +1,5 @@
+export { default as forceClickAnimationPauseAndPlay } from './forceClickAnimationPauseAndPlay';
+export { default as forceClickAnimationPlayAndStop } from './forceClickAnimationPlayAndStop';
 export { default as getNumberFromPx } from './getNumberFromPx';
 export { default as roundToFourth } from './roundToFourth';
 export { default as getFileExtension } from './getFileExtension';

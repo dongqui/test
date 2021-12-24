@@ -1,4 +1,4 @@
-import { FunctionComponent, Dispatch, SetStateAction, useRef, useCallback, useEffect, useState } from 'react';
+import { FunctionComponent, Dispatch, SetStateAction, useRef, useCallback, useEffect, useState, ChangeEvent } from 'react';
 import classNames from 'classnames/bind';
 import styles from './AnimationRangeInput.module.scss';
 
@@ -9,7 +9,6 @@ const DEFAULT_INACTIVE_MESSAGE = '';
 interface Props {
   text: string;
   currentValue: number;
-  setCurrentValue: Dispatch<SetStateAction<number>>;
   step?: number;
   currentMax?: number;
   activeStatus?: boolean;
@@ -17,6 +16,7 @@ interface Props {
   decimalDigit?: number;
   className?: string;
   onChangeEnd?: (inputValue: number) => void;
+  handleChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const AnimationRangeInput: FunctionComponent<Props> = ({
@@ -25,11 +25,11 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
   step,
   currentMax,
   currentValue,
-  setCurrentValue,
   activeStatus,
   inactiveMessage,
   decimalDigit,
   onChangeEnd,
+  handleChange,
 }) => {
   // range input 혹은 text input의 값이 변경되었는지 확인하는 상태값
   const [isValueChanged, setIsValueChanged] = useState<boolean>(false);
@@ -40,17 +40,6 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
 
   const rangeRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // range input의 value에 맞추어 text input의 value를 변경하는 함수
-  const handleRangeInput = useCallback(
-    (e) => {
-      setIsValueChanged(true);
-      inputRef.current!.value = e.target.value;
-      setCurrentValue(+e.target.value);
-      setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
-    },
-    [setCurrentValue],
-  );
 
   // text input을 focus하면 text 전체를 선택하는 함수 (한 번에 해당 input의 모든 값을 변경하기 위함)
   const handleSelectText = useCallback(() => {
@@ -119,10 +108,12 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
   // range input이 change 될 때에 range input의 최대값을 변경하는 함수
   const setRangeMaxLimit = useCallback(
     (e) => {
-      const num = parseInt(e.target.value, 10);
+      const num = parseFloat(e.target.value);
       handleMaxLimitLogic(num);
       setIsValueChanged(false);
-      if (onChangeEnd) onChangeEnd(num);
+      if (onChangeEnd) {
+        onChangeEnd(num);
+      }
     },
     [handleMaxLimitLogic, onChangeEnd],
   );
@@ -133,16 +124,6 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
       handleMaxLimitLogic(currentValue);
     },
     [handleMaxLimitLogic],
-  );
-
-  // text input이 blur 될 때에 상태를 변경하기 위한 함수
-  const handleSetCurrentValue = useCallback(
-    (e) => {
-      setCurrentValue(+e.target.value);
-      setRangeMaxLimit(e);
-      rangeRef.current!.value = e.target.value;
-    },
-    [setCurrentValue, setRangeMaxLimit],
   );
 
   // 'Enter'키를 누를 경우 text input의 blur와 동일한 이벤트가 발생하도록 하는 함수
@@ -185,7 +166,12 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
           placeholder="0.0"
           min={0}
           max={currentMax}
-          onChange={handleRangeInput}
+          onChange={(e) => {
+            setIsValueChanged(true);
+            inputRef.current!.value = e.target.value;
+            handleChange(e);
+            setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
+          }}
           onMouseUp={setRangeMaxLimit}
           ref={rangeRef}
           tabIndex={activeStatus ? 0 : -1}
@@ -199,7 +185,10 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
           onFocus={handleSelectText}
           onKeyUp={handleKeyboard}
           onBlur={(e) => {
-            handleSetCurrentValue(e);
+            setRangeMaxLimit(e);
+            rangeRef.current!.value = e.target.value;
+            handleChange(e);
+            setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
             setIsFocused(false);
           }}
           ref={inputRef}

@@ -1,6 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
 import { PlaskProperty, PlaskTrack } from 'types/common';
-import { roundToFourth } from 'utils/common';
 import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNION_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_MIN_CUTOFF } from 'utils/const';
 
 /**
@@ -35,10 +34,7 @@ const createPlaskTrack = (name: string, layerId: string, target: any, property: 
     name,
     property,
     target, // 이후 targetAnimation을 생성을 위해 참조를 유지합니다.
-    transformKeys: transformKeys.map((transformKey) => ({
-      frame: roundToFourth(transformKey.frame),
-      value: transformKey.value,
-    })),
+    transformKeys,
     interpolationType: 'linear',
     isMocapAnimation,
     useFilter: isMocapAnimation ? true : false, // mocap 결과물의 경우에만 기본으로 filter를 적용합니다.

@@ -42,7 +42,7 @@ const Stop: FunctionComponent<Props> = (props) => {
     }
   }, [_currentAnimationGroup, _playState, _startTimeIndex, requestAnimationFrameId, dispatch, translateScrubber]);
 
-  return <IconWrapper onClick={handleStopButtonClick} icon={SvgPath.Stop} hasFrame={false} />;
+  return <IconWrapper id="animationStopButton" onClick={handleStopButtonClick} icon={SvgPath.Stop} hasFrame={false} />;
 };
 
 export default Stop;

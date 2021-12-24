@@ -1,14 +1,14 @@
-import { Dispatch, SetStateAction, FunctionComponent, useState, Fragment, useEffect } from 'react';
+import { FunctionComponent, useState, Fragment, useEffect } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import AnimationInputWrapper from '../AnimationInputWrapper';
 import { InputInfo } from '../AnimationInputWrapper';
-import { PlaskPaletteColor } from 'types/common';
+import { PlaskPaletteColor, PlaskPaletteColorName } from 'types/common';
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classnames.bind(styles);
 
-const PALETTE_COLORS: { [color in PlaskPaletteColor]: string } = {
+const PALETTE_COLORS: { [color in PlaskPaletteColorName]: string } = {
   red: '#FF6969',
   orange: '#FC9B51',
   yellow: '#FFDB56',
@@ -24,10 +24,10 @@ interface Props {
   activeStatus?: boolean;
   inactiveMessage?: string;
   currentColor: PlaskPaletteColor;
-  setCurrentColor: Dispatch<SetStateAction<PlaskPaletteColor>>;
+  handleSelectColor: any;
 }
 
-const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activeStatus, inactiveMessage, currentColor, setCurrentColor }) => {
+const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activeStatus, inactiveMessage, currentColor, handleSelectColor }) => {
   // 색상 선택 dropdown을 펼치거나 접을 수 있는 상태값
   const [isPaletteOpen, setIsPaletteOpen] = useState<boolean>(false);
 
@@ -45,7 +45,7 @@ const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activ
       <div className={cx(classes)}>
         <AnimationInputWrapper inputTitle="View" inputInfo={fkInfo} activeStatus={activeStatus} inactiveMessage={inactiveMessage}>
           <div className={cx('color-pick-dropdown')} onClick={() => setIsPaletteOpen(!isPaletteOpen)}>
-            <div className={cx('color-palette')} style={{ backgroundColor: !activeStatus ? '#4F4F4F' : PALETTE_COLORS[currentColor] }}></div>
+            <div className={cx('color-palette')} style={{ backgroundColor: !activeStatus ? '#4F4F4F' : currentColor }}></div>
             <IconWrapper className={cx('arrow-down-icon', { disable: !activeStatus })} icon={SvgPath.EmptyDownArrow} />
           </div>
           {isPaletteOpen && (
@@ -55,7 +55,7 @@ const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activ
                   <li
                     key={idx}
                     onClick={() => {
-                      setCurrentColor(name as PlaskPaletteColor);
+                      handleSelectColor(PALETTE_COLORS[name as PlaskPaletteColorName] as PlaskPaletteColor);
                       setIsPaletteOpen(false);
                     }}
                   >
