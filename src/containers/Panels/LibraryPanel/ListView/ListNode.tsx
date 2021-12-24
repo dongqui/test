@@ -177,7 +177,7 @@ const ListNode: FunctionComponent<Props> = ({
     setIsEditing(true);
   }, []);
 
-  const currentVisualizedNode = _lpNode.find((node) => node.assetId && _visualizedAssetIds.includes(node.assetId) && node.type === 'Model');
+  const currentVisualizedNode = _lpNode.find((node) => node.assetId && _visualizedAssetIds.includes(node.assetId));
 
   const depth = (filePath.match(/\\/g) || []).length;
 
@@ -991,6 +991,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Export',
+                disabled: currentVisualizedNode?.id !== parentId,
                 onClick: () => {
                   const motions = _animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
 
