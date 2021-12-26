@@ -588,11 +588,11 @@ const ListNode: FunctionComponent<Props> = ({
                 },
                 children: [],
               },
-              {
-                label: 'Copy',
-                onClick: onCopy,
-                children: [],
-              },
+              // {
+              //   label: 'Copy',
+              //   onClick: onCopy,
+              //   children: [],
+              // },
             ],
           });
         }
@@ -629,162 +629,125 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: handleEdit,
                 children: [],
               },
-              {
-                label: 'Copy',
-                onClick: () => {
-                  const list = _lpNode.filter((node) => id.includes(node.id));
+              // {
+              //   label: 'Copy',
+              //   onClick: () => {
+              //     const list = _lpNode.filter((node) => id.includes(node.id));
 
-                  dispatch(
-                    lpNodeActions.changeClipboard({
-                      data: list,
-                    }),
-                  );
-                },
-                children: [],
-              },
-              {
-                label: 'Paste',
-                onClick: () => {
-                  let isMaxDepth = false;
+              //     dispatch(
+              //       lpNodeActions.changeClipboard({
+              //         data: list,
+              //       }),
+              //     );
+              //   },
+              //   children: [],
+              // },
+              // {
+              //   label: 'Paste',
+              //   onClick: () => {
+              //     let isMaxDepth = false;
 
-                  _lpClipboard.forEach((value) => {
-                    const max = depthCheck(value.childrens, 0, []) || 0;
+              //     _lpClipboard.forEach((value) => {
+              //       const max = depthCheck(value.childrens, 0, []) || 0;
 
-                    const currentPathDepth = (filePath.match(/\\/g) || []).length;
+              //       const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
-                    if (currentPathDepth + max >= 6) {
-                      onModalOpen({
-                        title: 'Warning',
-                        message: '디렉토리를 복사할 수 없습니다. 계층 초과',
-                        confirmText: '확인',
-                      });
+              //       if (currentPathDepth + max >= 6) {
+              //         onModalOpen({
+              //           title: 'Warning',
+              //           message: '디렉토리를 복사할 수 없습니다. 계층 초과',
+              //           confirmText: '확인',
+              //         });
 
-                      isMaxDepth = true;
-                      return false;
-                    }
-                  });
+              //         isMaxDepth = true;
+              //         return false;
+              //       }
+              //     });
 
-                  if (isMaxDepth) {
-                    return;
-                  }
+              //     if (isMaxDepth) {
+              //       return;
+              //     }
 
-                  _lpClipboard.forEach((value) => {
-                    let memory: string[] = [];
+              //     _lpClipboard.forEach((value) => {
+              //       let memory: string[] = [];
 
-                    const copyNode = value;
-                    const cloneCopyNode = cloneDeep(copyNode);
+              //       const copyNode = value;
+              //       const cloneCopyNode = cloneDeep(copyNode);
 
-                    const splitName = cloneCopyNode.name.split('.');
-                    const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
+              //       const splitName = cloneCopyNode.name.split('.');
+              //       const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
-                    const compareTargetName = cloneCopyNode.type === 'Model' ? fileName : cloneCopyNode.name;
+              //       const compareTargetName = cloneCopyNode.type === 'Model' ? fileName : cloneCopyNode.name;
 
-                    // @TODO 없으면 비활성 처리 필요
-                    if (cloneCopyNode) {
-                      const currentPathNodeName = _lpNode
-                        .filter((node) => {
-                          if (node.parentId === id) {
-                            const condition =
-                              cloneCopyNode.type === 'Model' ? node.name.includes(compareTargetName) && node.name.includes(splitName[1]) : node.name.includes(compareTargetName);
-                            if (condition) {
-                              return true;
-                            }
-                            return false;
-                          }
-                        })
-                        .map((filteredNode) => filteredNode.name);
+              //       // @TODO 없으면 비활성 처리 필요
+              //       if (cloneCopyNode) {
+              //         const currentPathNodeName = _lpNode
+              //           .filter((node) => {
+              //             if (node.parentId === id) {
+              //               const condition =
+              //                 cloneCopyNode.type === 'Model' ? node.name.includes(compareTargetName) && node.name.includes(splitName[1]) : node.name.includes(compareTargetName);
+              //               if (condition) {
+              //                 return true;
+              //               }
+              //               return false;
+              //             }
+              //           })
+              //           .map((filteredNode) => filteredNode.name);
 
-                      const nodeName = beforePaste({
-                        name: compareTargetName,
-                        comparisonNames: currentPathNodeName,
-                        hasExtension: cloneCopyNode.type === 'Model',
-                      });
+              //         const nodeName = beforePaste({
+              //           name: compareTargetName,
+              //           comparisonNames: currentPathNodeName,
+              //           hasExtension: cloneCopyNode.type === 'Model',
+              //         });
 
-                      const resultNodeName =
-                        cloneCopyNode.type === 'Model'
-                          ? `${nodeName
-                              .split('.')
-                              .slice(0, splitName.length - 1)
-                              .join('.')}.${splitName[1]}`
-                          : nodeName;
+              //         const resultNodeName =
+              //           cloneCopyNode.type === 'Model'
+              //             ? `${nodeName
+              //                 .split('.')
+              //                 .slice(0, splitName.length - 1)
+              //                 .join('.')}.${splitName[1]}`
+              //             : nodeName;
 
-                      // asset
-                      let nextAssetId = '';
+              //         // node
+              //         const nextNodes = produce(_lpNode, (draft) => {
+              //           const targetNode = find(draft, { id });
 
-                      // if (copyNode.type === 'Model') {
-                      //   const findAsset = find(_assetList, { id: copyNode.assetId });
-                      //   const findIngredients = filter(_animationIngredients, { assetId: copyNode.assetId });
+              //           if (targetNode) {
+              //             cloneCopyNode.id = uuid();
+              //             cloneCopyNode.parentId = id;
+              //             cloneCopyNode.filePath = filePath + `\\${name}`;
+              //             cloneCopyNode.name = resultNodeName;
 
-                      //   if (findAsset) {
-                      //     const cloneFindAsset = cloneDeep(findAsset);
-                      //     cloneFindAsset.id = uuid();
-                      //     cloneFindAsset.name = resultNodeName;
+              //             if (cloneCopyNode.type === 'Model') {
+              //               // cloneCopyNode.assetId = nextAssetId;
+              //             }
 
-                      //     const cloneFindIngredients = cloneDeep(findIngredients);
-                      //     cloneFindIngredients.forEach((ingredient) => {
-                      //       ingredient.id = uuid();
-                      //       ingredient.assetId = cloneFindAsset.id;
-                      //     });
+              //             targetNode.childrens.push(cloneCopyNode.id);
 
-                      //     const ingredientIds = cloneFindIngredients.map((ingredient) => ingredient.id);
-                      //     cloneFindAsset.animationIngredientIds = ingredientIds;
+              //             if (cloneCopyNode.childrens.length > 0) {
+              //               cloneCopyNode.childrens.map((child) => {
+              //                 memory = saveChildrensKey(memory, child);
+              //                 depthAddKey(draft, child, cloneCopyNode);
+              //               });
+              //             }
 
-                      //     nextAssetId = cloneFindAsset.id;
+              //             cloneCopyNode.childrens = cloneCopyNode.childrens.filter((key) => !memory.includes(key));
 
-                      //     dispatch(
-                      //       plaskProjectActions.addAsset({
-                      //         asset: cloneFindAsset,
-                      //       }),
-                      //     );
+              //             // @TODO 하위 노드도 추가
+              //             draft.push(cloneCopyNode);
+              //           }
+              //         });
 
-                      //     dispatch(
-                      //       animationDataActions.addAnimationIngredients({
-                      //         animationIngredients: cloneFindIngredients,
-                      //       }),
-                      //     );
-                      //   }
-                      // }
-
-                      // node
-                      const nextNodes = produce(_lpNode, (draft) => {
-                        const targetNode = find(draft, { id });
-
-                        if (targetNode) {
-                          cloneCopyNode.id = uuid();
-                          cloneCopyNode.parentId = id;
-                          cloneCopyNode.filePath = filePath + `\\${name}`;
-                          cloneCopyNode.name = resultNodeName;
-
-                          if (cloneCopyNode.type === 'Model') {
-                            // cloneCopyNode.assetId = nextAssetId;
-                          }
-
-                          targetNode.childrens.push(cloneCopyNode.id);
-
-                          if (cloneCopyNode.childrens.length > 0) {
-                            cloneCopyNode.childrens.map((child) => {
-                              memory = saveChildrensKey(memory, child);
-                              depthAddKey(draft, child, cloneCopyNode);
-                            });
-                          }
-
-                          cloneCopyNode.childrens = cloneCopyNode.childrens.filter((key) => !memory.includes(key));
-
-                          // @TODO 하위 노드도 추가
-                          draft.push(cloneCopyNode);
-                        }
-                      });
-
-                      dispatch(
-                        lpNodeActions.changeNode({
-                          nodes: nextNodes,
-                        }),
-                      );
-                    }
-                  });
-                },
-                children: [],
-              },
+              //         dispatch(
+              //           lpNodeActions.changeNode({
+              //             nodes: nextNodes,
+              //           }),
+              //         );
+              //       }
+              //     });
+              //   },
+              //   children: [],
+              // },
               {
                 label: 'New directory',
                 visibility: depth === 6 ? 'invisible' : 'visible',
@@ -854,24 +817,24 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: handleEdit,
                 children: [],
               },
-              {
-                label: 'Copy',
-                onClick: () => {
-                  const list = _lpNode.filter((node) => id.includes(node.id));
+              // {
+              //   label: 'Copy',
+              //   onClick: () => {
+              //     const list = _lpNode.filter((node) => id.includes(node.id));
 
-                  dispatch(
-                    lpNodeActions.changeClipboard({
-                      data: list,
-                    }),
-                  );
-                },
-                children: [],
-              },
-              {
-                label: 'Paste',
-                onClick: () => {},
-                children: [],
-              },
+              //     dispatch(
+              //       lpNodeActions.changeClipboard({
+              //         data: list,
+              //       }),
+              //     );
+              //   },
+              //   children: [],
+              // },
+              // {
+              //   label: 'Paste',
+              //   onClick: () => {},
+              //   children: [],
+              // },
               {
                 label: 'Visualization',
                 onClick: () => {
