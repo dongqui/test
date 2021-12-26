@@ -2,6 +2,7 @@ import { FunctionComponent } from 'react';
 import Close from './svg/Close.svg';
 import EyeClose from './svg/EyeClose.svg';
 import EyeOpen from './svg/EyeOpen.svg';
+import EyeOpenWhite from './svg/EyeOpenWhite.svg';
 import LockClose from './svg/LockClose.svg';
 import LockOpen from './svg/LockOpen.svg';
 import Plus from './svg/Plus.svg';
@@ -61,6 +62,7 @@ type Icon =
   | 'Search'
   | 'EyeClose'
   | 'EyeOpen'
+  | 'EyeOpenWhite'
   | 'LockClose'
   | 'LockOpen'
   | 'ListView'
@@ -120,6 +122,7 @@ const images: Images = {
   Search,
   EyeClose,
   EyeOpen,
+  EyeOpenWhite,
   LockClose,
   LockOpen,
   ListView,
