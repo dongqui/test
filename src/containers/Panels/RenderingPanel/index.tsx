@@ -21,7 +21,7 @@ import {
   filterVector,
   getTotalTransformKeys,
 } from 'utils/RP';
-import ScreenVisibilityMenu from './ScreenVisibilityMenu';
+import ScreenVisibility from './ScreenVisibility';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -1723,7 +1723,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     <div className={cx('wrapper')}>
       <div id="rpDragBox" ref={rpDragBox}></div>
       <canvas className={cx('rendering-canvas')} ref={renderingCanvas1} id="renderingCanvas1" />
-      <ScreenVisibilityMenu itemList={screenVisibilityItemList} />
+      <ScreenVisibility itemList={screenVisibilityItemList} />
     </div>
   );
 };

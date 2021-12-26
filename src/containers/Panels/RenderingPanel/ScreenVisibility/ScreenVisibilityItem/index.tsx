@@ -18,9 +18,9 @@ const ScreenVisibilityItem: FunctionComponent<Props> = ({ value, onSelect, check
   );
 
   return (
-    <li tabIndex={0} className={cx('wrapper', active)} onClick={handleClick} role="menuitem">
-      {checked ? <IconWrapper className={cx('prefix')} icon={SvgPath.Check} /> : <span className={cx('prefix')} />}
-      <span>{value}</span>
+    <li tabIndex={0} className={cx('wrapper', { inactive: !active })} onClick={handleClick} role="menuitem">
+      {checked ? <IconWrapper className={cx('prefix')} icon={SvgPath.CheckThin} /> : <span className={cx('prefix')} />}
+      <span className={cx('value')}>{value}</span>
     </li>
   );
 };

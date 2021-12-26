@@ -12,21 +12,17 @@ interface Props {
   itemList: ScreenVisivilityItem[];
 }
 
-const ScreenVisibilityMenu: FunctionComponent<Props> = ({ itemList }) => {
+const ScreenVisibility: FunctionComponent<Props> = ({ itemList }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggleButtonClick = () => {
     setIsOpen((prev) => !prev);
   };
 
-  const buttonClasses = cx('toggle-button', {
-    open: isOpen,
-  });
-
   return (
     <div className={cx('wrapper')}>
-      <div className={cx('header')}>
-        <button type="button" className={buttonClasses} onClick={handleToggleButtonClick}>
+      <div className={cx('header', { open: isOpen })}>
+        <button type="button" className={cx('toggle-button')} onClick={handleToggleButtonClick}>
           <IconWrapper icon={SvgPath.EyeOpen} />
           <IconWrapper className={cx('arrow')} icon={isOpen ? SvgPath.ChevronUp : SvgPath.ChevronDown} />
         </button>
@@ -45,4 +41,4 @@ const ScreenVisibilityMenu: FunctionComponent<Props> = ({ itemList }) => {
   );
 };
 
-export default memo(ScreenVisibilityMenu);
+export default memo(ScreenVisibility);
