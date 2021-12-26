@@ -1,0 +1,24 @@
+@import 'styles/libraries/_mixins';
+@import 'styles/libraries/_functions';
+
+.wrapper {
+  position: absolute;
+  top: 16px;
+  right: calc(256px + 16px);
+
+  .header {
+    .toggle-button {
+      @include reset-button-style();
+    }
+  }
+
+  .body {
+    .description {
+      width: 100%;
+    }
+
+    .menu {
+      width: 100%;
+    }
+  }
+}

@@ -12,6 +12,8 @@ import CameraReset from './svg/CameraReset.svg';
 import FilledArrow from './svg/FilledArrow.svg';
 import ChevronLeft from './svg/ChevronLeft.svg';
 import ChevronRight from './svg/ChevronRight.svg';
+import ChevronUp from './svg/ChevronUp.svg';
+import ChevronDown from './svg/ChevronDown.svg';
 import BreadcrumbMore from './svg/BreadcrumbMore.svg';
 import Layer from './svg/Layer.svg';
 import Camera from './svg/Camera.svg';
@@ -68,6 +70,8 @@ type Icon =
   | 'FilledArrow'
   | 'ChevronLeft'
   | 'ChevronRight'
+  | 'ChevronUp'
+  | 'ChevronDown'
   | 'BreadcrumbMore'
   | 'Layer'
   | 'Camera'
@@ -125,6 +129,8 @@ const images: Images = {
   FilledArrow,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   BreadcrumbMore,
   Layer,
   Camera,

@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { FunctionComponent, useRef, useEffect, useMemo, useState } from 'react';
+import { FunctionComponent, useRef, useEffect, useMemo, useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
@@ -9,6 +9,7 @@ import * as trackListActions from 'actions/trackList';
 import * as animationDataActions from 'actions/animationDataAction';
 import { useSelector } from 'reducers';
 import { Nullable, ScreenXY, PlaskView } from 'types/common';
+import { ScreenVisivilityItem } from 'types/RP';
 import {
   checkIsObjectIn,
   checkIsTargetMesh,
@@ -20,6 +21,7 @@ import {
   filterVector,
   getTotalTransformKeys,
 } from 'utils/RP';
+import ScreenVisibilityMenu from './ScreenVisibilityMenu';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -1270,6 +1272,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     }
   }, [_animationIngredients, _endTimeIndex, _fps, _screenList, _startTimeIndex, _visualizedAssetIds, dispatch]);
 
+  /******************************************************************************
+   * RP 내 하위 컨테이너들에 대한 내용
+   * contextMenu, dropDown
+   *****************************************************************************/
+
+  /**
+   * contextMenu 사용
+   */
   const contextMenuList = useMemo(
     () => [
       {
@@ -1628,10 +1638,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     [_screenList, dispatch, gizmoManager, prevCameraPositions],
   );
 
-  /**
-   * contextMenu 사용
-   */
-  // const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   useEffect(() => {
     const targetScreen = _screenList.find((screen) => screen.canvasId === renderingCanvas1.current?.id); // 단일 캔버스 상황
 
@@ -1659,10 +1665,65 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [_screenList, contextMenuList]);
 
+  /**
+   * screenVisibilityMenu
+   */
+  const screenVisibilityItemList: ScreenVisivilityItem[] = [
+    {
+      value: 'Bone',
+      onSelect: useCallback(() => {
+        console.log('Bone visibility');
+      }, []),
+      checked: useMemo(() => true, []),
+      active: useMemo(() => true, []),
+    },
+    {
+      value: 'Mesh',
+      onSelect: useCallback(() => {
+        console.log('Mesh visibility');
+      }, []),
+      checked: useMemo(() => true, []),
+      active: useMemo(() => true, []),
+    },
+    {
+      value: 'Controller',
+      onSelect: useCallback(() => {
+        console.log('Controller visibility');
+      }, []),
+      checked: useMemo(() => true, []),
+      active: useMemo(() => true, []),
+    },
+    {
+      value: 'Grid',
+      onSelect: useCallback(() => {
+        console.log('Grid visibility');
+      }, []),
+      checked: useMemo(() => false, []),
+      active: useMemo(() => true, []),
+    },
+    {
+      value: 'Shadow',
+      onSelect: useCallback(() => {
+        console.log('Shadow visibility');
+      }, []),
+      checked: useMemo(() => true, []),
+      active: useMemo(() => false, []),
+    },
+    {
+      value: 'Gizmo',
+      onSelect: useCallback(() => {
+        console.log('Gizmo visibility');
+      }, []),
+      checked: useMemo(() => false, []),
+      active: useMemo(() => false, []),
+    },
+  ];
+
   return (
     <div className={cx('wrapper')}>
       <div id="rpDragBox" ref={rpDragBox}></div>
       <canvas className={cx('rendering-canvas')} ref={renderingCanvas1} id="renderingCanvas1" />
+      <ScreenVisibilityMenu itemList={screenVisibilityItemList} />
     </div>
   );
 };
