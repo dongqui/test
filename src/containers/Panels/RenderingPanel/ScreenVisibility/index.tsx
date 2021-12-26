@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useState } from 'react';
+import { FunctionComponent, memo, useEffect, useRef, useState } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { ScreenVisivilityItem } from 'types/RP';
 import ScreenVisibilityItem from './ScreenVisibilityItem';
@@ -14,13 +14,29 @@ interface Props {
 
 const ScreenVisibility: FunctionComponent<Props> = ({ itemList }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const handleToggleButtonClick = () => {
     setIsOpen((prev) => !prev);
   };
 
+  useEffect(() => {
+    const handleOutSideClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (!wrapperRef.current?.contains(target)) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('click', handleOutSideClick);
+
+    return () => {
+      window.removeEventListener('click', handleOutSideClick);
+    };
+  }, []);
+
   return (
-    <div className={cx('wrapper')}>
+    <div className={cx('wrapper')} ref={wrapperRef}>
       <div className={cx('header', { open: isOpen })}>
         <button type="button" className={cx('toggle-button')} onClick={handleToggleButtonClick}>
           <IconWrapper icon={SvgPath.EyeOpenWhite} />
