@@ -1144,17 +1144,33 @@ const ListNode: FunctionComponent<Props> = ({
     async (event: FocusEvent<HTMLInputElement>) => {
       const text = event.currentTarget.value || name;
 
-      const currentPathNodeName = _lpNode
-        .filter((node) => {
-          if (node.parentId === parentId) {
-            // 수정하는 자신은 제외
-            if (node.name.includes(text) && node.name !== name) {
-              return true;
+      let currentPathNodeName: string[] = [];
+
+      if (type === 'Model') {
+        currentPathNodeName = _lpNode
+          .filter((node) => {
+            if (node.parentId === parentId) {
+              const nodeName = node.name.toLowerCase();
+              if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase() && node.type === 'Model') {
+                return true;
+              }
+              return false;
             }
-            return false;
-          }
-        })
-        .map((filteredNode) => filteredNode.name);
+          })
+          .map((filteredNode) => filteredNode.name.substring(0, filteredNode.name.lastIndexOf('.')));
+      } else {
+        currentPathNodeName = _lpNode
+          .filter((node) => {
+            if (node.parentId === parentId) {
+              const nodeName = node.name.toLowerCase();
+              if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase()) {
+                return true;
+              }
+              return false;
+            }
+          })
+          .map((filteredNode) => filteredNode.name);
+      }
 
       await beforeRename({
         name: text,
@@ -1214,18 +1230,35 @@ const ListNode: FunctionComponent<Props> = ({
       if (event.code === 'Enter') {
         const text = event.currentTarget.value || name;
 
-        const currentPathNodeName = _lpNode
-          .filter((node) => {
-            if (node.parentId === parentId) {
-              if (node.name.includes(text) && node.name !== name) {
-                return true;
-              }
-              return false;
-            }
-          })
-          .map((filteredNode) => filteredNode.name);
+        let currentPathNodeName: string[] = [];
 
-        const nodeName = await beforeRename({
+        if (type === 'Model') {
+          currentPathNodeName = _lpNode
+            .filter((node) => {
+              if (node.parentId === parentId) {
+                const nodeName = node.name.toLowerCase();
+                if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase() && node.type === 'Model') {
+                  return true;
+                }
+                return false;
+              }
+            })
+            .map((filteredNode) => filteredNode.name.substring(0, filteredNode.name.lastIndexOf('.')));
+        } else {
+          currentPathNodeName = _lpNode
+            .filter((node) => {
+              if (node.parentId === parentId) {
+                const nodeName = node.name.toLowerCase();
+                if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase()) {
+                  return true;
+                }
+                return false;
+              }
+            })
+            .map((filteredNode) => filteredNode.name);
+        }
+
+        await beforeRename({
           name: text,
           comparison: currentPathNodeName,
         })
