@@ -76,8 +76,8 @@ const TimelineEditor = () => {
         const scrubber = timelineEditorRef.current?.getElementById('scrubber');
         if (scrubber) {
           const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
-          const translateX = scaleX(currentTimeIndex); // currentTimeIndex을 useRef에다가 재할당
-          scrubber.setAttribute('transform', `translate(${translateX + 5}, 0)`);
+          const translateX = scaleX(currentTimeIndex);
+          scrubber.setAttribute('transform', `translate(${translateX - 3}, 0)`);
         }
       };
 

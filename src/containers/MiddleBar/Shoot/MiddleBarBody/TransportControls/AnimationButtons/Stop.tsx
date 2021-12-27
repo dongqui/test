@@ -25,7 +25,7 @@ const Stop: FunctionComponent<Props> = (props) => {
     const scrubberInput = scrubber?.querySelector('input');
     const scaleX = ScaleLinear.getScaleX();
     if (scrubber && scrubberInput) {
-      scrubber.setAttribute('transform', `translate(${scaleX(_startTimeIndex)}, 0)`);
+      scrubber.setAttribute('transform', `translate(${scaleX(_startTimeIndex) - 3}, 0)`);
       scrubberInput.value = `${_startTimeIndex}`;
     }
   }, [_startTimeIndex]);

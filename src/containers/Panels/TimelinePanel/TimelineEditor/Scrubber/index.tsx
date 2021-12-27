@@ -88,7 +88,7 @@ const Scrubber = () => {
     const scrubber = scrubberRef.current;
     if (scrubber && scaleX) {
       const digitedNextFrame = _playDirection === PlayDirection.forward ? Math.floor(_currentTimeIndex) : Math.ceil(_currentTimeIndex);
-      scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame)}, 0)`);
+      scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame) - 3}, 0)`);
       setInputValue(digitedNextFrame || '0');
     }
   }, [_currentTimeIndex, _playDirection]);

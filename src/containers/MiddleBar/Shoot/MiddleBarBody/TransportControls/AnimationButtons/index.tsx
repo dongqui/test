@@ -53,7 +53,8 @@ const Buttons = () => {
       if (scrubber && scrubberInput && _currentAnimationGroup) {
         const nextFrame = _currentAnimationGroup.animatables.length !== 0 ? _currentAnimationGroup.animatables[0].masterFrame : clampNextFrame(playDirection);
         const digitedNextFrame = playDirection === PlayDirection.forward ? Math.floor(nextFrame) : Math.ceil(nextFrame);
-        scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame)}, 0)`);
+        // scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame)}, 0)`);
+        scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame) - 3}, 0)`);
         scrubberInput.value = `${digitedNextFrame}`;
         TimeIndex.setCurrentTimeIndex(nextFrame);
       }
