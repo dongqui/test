@@ -23,7 +23,10 @@ const cx = classNames.bind(styles);
 
 const TimelineEditor = () => {
   const dispatch = useDispatch();
+
+  const _playState = useSelector((state) => state.animatingControls.playState);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+
   const timelineEditorRef = useRef<SVGSVGElement>(null);
   const leftTimeIndex = useRef(0);
   const zoomLevel = useRef(100);
@@ -189,30 +192,37 @@ const TimelineEditor = () => {
 
   // 키프레임 삭제/복사/붙이기 단축키
   useEffect(() => {
-    const currentRef = timelineEditorRef.current;
-    const keydownListener = (event: KeyboardEvent) => {
-      if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || (event.altKey && (event.ctrlKey || event.metaKey) && event.key === ('d' || 'D'))) {
-        dispatch(keyframesActions.enterKeyframeDeleteKey());
-      } else if ((event.metaKey || event.ctrlKey) && event.key === ('c' || 'C')) {
-        dispatch(keyframesActions.copyKeyframes());
-      } else if ((event.metaKey || event.ctrlKey) && event.key === ('v' || 'V')) {
-        dispatch(keyframesActions.enterPasteKey());
-      }
-    };
-    const focusListener = () => {
-      document.addEventListener('keydown', keydownListener);
-    };
-    const blurListener = () => {
-      document.removeEventListener('keydown', keydownListener);
-    };
-    currentRef?.addEventListener('focus', focusListener);
-    currentRef?.addEventListener('blur', blurListener);
-    return () => {
-      currentRef?.removeEventListener('focus', focusListener);
-      currentRef?.removeEventListener('blur', blurListener);
-      document.removeEventListener('keydown', keydownListener);
-    };
-  }, [dispatch]);
+    if (_playState !== 'play') {
+      const currentRef = timelineEditorRef.current;
+
+      const keydownListener = (event: KeyboardEvent) => {
+        if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || (event.altKey && (event.ctrlKey || event.metaKey) && event.key === ('d' || 'D' || 'ㅇ'))) {
+          dispatch(keyframesActions.enterKeyframeDeleteKey());
+        } else if ((event.metaKey || event.ctrlKey) && event.key === ('c' || 'C' || 'ㅊ')) {
+          dispatch(keyframesActions.copyKeyframes());
+        } else if ((event.metaKey || event.ctrlKey) && event.key === ('v' || 'V' || 'ㅍ')) {
+          dispatch(keyframesActions.enterPasteKey());
+        }
+      };
+
+      const focusListener = () => {
+        document.addEventListener('keydown', keydownListener);
+      };
+
+      const blurListener = () => {
+        document.removeEventListener('keydown', keydownListener);
+      };
+
+      currentRef?.addEventListener('focus', focusListener);
+      currentRef?.addEventListener('blur', blurListener);
+
+      return () => {
+        currentRef?.removeEventListener('focus', focusListener);
+        currentRef?.removeEventListener('blur', blurListener);
+        document.removeEventListener('keydown', keydownListener);
+      };
+    }
+  }, [_playState, dispatch]);
 
   return (
     <div className={cx('timeline-editor')}>
