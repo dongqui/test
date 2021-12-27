@@ -8,11 +8,11 @@ interface Props {
 const HotkeyOrder: FunctionComponent<Props> = ({ className, children }) => {
   const keyMap = useMemo(() => {
     return {
-      LP_COPY: ['ctrl+c', 'command+c'],
-      LP_PASTE: ['ctrl+v', 'command+v'],
+      // LP_COPY: ['ctrl+c', 'command+c'],
+      // LP_PASTE: ['ctrl+v', 'command+v'],
       LP_EDIT_NAME: 'f2',
       LP_DELETE: ['del', 'command+backspace'],
-      LP_ALL_SELECT: ['ctrl+a', 'command+a'],
+      // LP_ALL_SELECT: ['ctrl+a', 'command+a'],
     };
   }, []);
 
