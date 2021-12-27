@@ -27,7 +27,7 @@ const Buttons = () => {
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
   const _currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
 
-  const requestAnimationFrameId = useRef(1);
+  const requestAnimationFrameId = useRef(0);
 
   const playSpeedRef = useRef(PlayDirection.forward);
   useEffect(() => {
