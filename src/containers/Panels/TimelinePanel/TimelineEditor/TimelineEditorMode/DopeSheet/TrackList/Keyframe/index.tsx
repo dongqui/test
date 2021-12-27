@@ -8,7 +8,7 @@ import { TrackIdentifier, TrackNumber } from 'types/TP';
 import { ClusteredKeyframe, Keyframe } from 'types/TP/keyframe';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import * as keyframeActions from 'actions/keyframes';
-import { findElementIndex, Observer, ScaleLinear } from 'utils/TP';
+import { findElementIndex, Observer, ScaleLinear, TimeIndex } from 'utils/TP';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -21,6 +21,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
   const { trackNumber, trackId, trackType, time, isSelected } = props;
   const dispatch = useDispatch();
   const keyframeRef = useRef<SVGPathElement>(null);
+
   const selectedLayerKeyframes = useSelector((state) => state.keyframes.selectedLayerKeyframes);
   const selectedBoneKeyframes = useSelector((state) => state.keyframes.selectedBoneKeyframes);
   const selectedPropertyKeyframes = useSelector((state) => state.keyframes.selectedPropertyKeyframes);
@@ -63,51 +64,51 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
       {
         label: 'Delete Keyframe',
         onClick: () => {
+          document.getElementById('timeline-editor-svg')?.focus();
           dispatch(keyframeActions.enterKeyframeDeleteKey());
         },
+        disabled: !isSelected || TimeIndex.getPlayState() === 'play',
       },
     ],
-    [dispatch, time, trackId, trackNumber, trackType],
+    [dispatch, isSelected, time, trackId, trackNumber, trackType],
   );
 
   // 키프레임 클릭
   const clickKeyframe = useCallback(
     (event: React.MouseEvent<Element>) => {
-      dispatch(
-        keyframeActions.selectKeyframes({
-          selectType: event.ctrlKey || event.metaKey ? 'multiple' : 'left',
-          trackId,
-          trackType,
-          trackNumber,
-          time,
-        }),
-      );
+      dispatch(keyframeActions.selectKeyframes({ selectType: event.ctrlKey || event.metaKey ? 'multiple' : 'left', trackId, trackType, trackNumber, time }));
     },
     [dispatch, time, trackId, trackNumber, trackType],
   );
 
   // 드래그 시작 이벤트 제어
   const handleDragStart = useCallback(() => {
-    document.body.style.cursor = 'pointer';
+    if (TimeIndex.getPlayState() !== 'play') {
+      document.body.style.cursor = 'pointer';
+    }
   }, []);
 
   // 드래그 진행 이벤트 제어
   const handleDragging = useCallback((event: any) => {
-    const scaleX = ScaleLinear.getKeyframeX();
-    const cursorTime = Math.round(scaleX.invert(event.x as number));
-    const originTime = Math.round(scaleX.invert(event.subject.x as number));
-    const gapX = scaleX(cursorTime - originTime + 1);
-    Observer.notifyKeyframes(gapX);
+    if (TimeIndex.getPlayState() !== 'play') {
+      const scaleX = ScaleLinear.getKeyframeX();
+      const cursorTime = Math.round(scaleX.invert(event.x as number));
+      const originTime = Math.round(scaleX.invert(event.subject.x as number));
+      const gapX = scaleX(cursorTime - originTime + 1);
+      Observer.notifyKeyframes(gapX);
+    }
   }, []);
 
   // 드래그 종료 이벤트 제어
   const handleDragEnd = useCallback(
     (event: any) => {
-      const scaleX = ScaleLinear.getKeyframeX();
-      const originTime = Math.round(scaleX.invert(event.subject.x as number));
-      const currentTime = Math.round(scaleX.invert(event.x as number));
-      dispatch(keyframeActions.enterKeyframeDragDropKey({ timeDiff: currentTime - originTime }));
-      document.body.style.cursor = 'default';
+      if (TimeIndex.getPlayState() !== 'play') {
+        const scaleX = ScaleLinear.getKeyframeX();
+        const originTime = Math.round(scaleX.invert(event.subject.x as number));
+        const currentTime = Math.round(scaleX.invert(event.x as number));
+        dispatch(keyframeActions.enterKeyframeDragDropKey({ timeDiff: currentTime - originTime }));
+        document.body.style.cursor = 'default';
+      }
     },
     [dispatch],
   );
@@ -180,7 +181,10 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
     const handleContextMenu = (event: MouseEvent) => {
       event.preventDefault();
       const isContains = keyframeRef.current?.contains(event.target as Node);
-      if (isContains) onContextMenuOpen({ top: event.clientY, left: event.clientX, menu: contextMenuList });
+      if (isContains) {
+        onContextMenuOpen({ top: event.clientY, left: event.clientX, menu: contextMenuList });
+        dispatch(keyframeActions.selectKeyframes({ selectType: 'left', trackId, trackType, trackNumber, time }));
+      }
     };
     if (currentRef) {
       currentRef.addEventListener('contextmenu', handleContextMenu);
@@ -188,7 +192,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [contextMenuList, onContextMenuOpen]);
+  }, [contextMenuList, time, trackId, trackNumber, trackType, dispatch, onContextMenuOpen]);
 
   return (
     <path

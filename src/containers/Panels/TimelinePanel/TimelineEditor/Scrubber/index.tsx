@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, FunctionComponent, RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -14,12 +14,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {
-  timelineEditorRef: RefObject<SVGSVGElement>;
-}
-
-const Scrubber: FunctionComponent<Props> = (props) => {
-  const { timelineEditorRef } = props;
+const Scrubber = () => {
   const dispatch = useDispatch();
 
   const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
@@ -30,6 +25,8 @@ const Scrubber: FunctionComponent<Props> = (props) => {
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
 
   const [inputValue, setInputValue] = useState<number | string>(0);
+  const [disableScrubber, setDisableScrubber] = useState(false);
+  const [focusScrubber, setFocusScrubber] = useState(false);
 
   const scrubberRef = useRef<SVGGElement>(null);
 
@@ -44,19 +41,22 @@ const Scrubber: FunctionComponent<Props> = (props) => {
   // value값 변경
   const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    if (!value.includes('e' || 'E')) setInputValue(event.target.value);
+    setInputValue(value);
   }, []);
 
-  // start, end input에 Enter key 입력 동작
-  const handleInputKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (isNaN(parseInt(event.key, 10))) {
-        timelineEditorRef.current?.focus();
-        event.currentTarget.blur();
-      }
-    },
-    [timelineEditorRef],
-  );
+  // 조건에 맞지 않은 문자열을 입력할 경우 blur
+  const handleInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Backspace' && event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && isNaN(parseInt(event.key, 10))) {
+      event.currentTarget.blur();
+      document.getElementById('timeline-editor-svg')?.focus();
+    }
+  }, []);
+
+  // scrubber input 클릭
+  const handleInputClick = useCallback(() => {
+    setFocusScrubber(true);
+    setDisableScrubber(false);
+  }, []);
 
   // blur 이벤트 적용
   const handleInputBlur = useCallback(
@@ -75,9 +75,9 @@ const Scrubber: FunctionComponent<Props> = (props) => {
             _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(nextValue);
           }
         }
-
         dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: nextValue }));
       }
+      setFocusScrubber(false);
     },
     [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch],
   );
@@ -88,7 +88,7 @@ const Scrubber: FunctionComponent<Props> = (props) => {
     const scrubber = scrubberRef.current;
     if (scrubber && scaleX) {
       const digitedNextFrame = _playDirection === PlayDirection.forward ? Math.floor(_currentTimeIndex) : Math.ceil(_currentTimeIndex);
-      scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame)}, 0)`);
+      scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame) - 3}, 0)`);
       setInputValue(digitedNextFrame || '0');
     }
   }, [_currentTimeIndex, _playDirection]);
@@ -110,17 +110,26 @@ const Scrubber: FunctionComponent<Props> = (props) => {
             _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
           }
         }
-
+        setDisableScrubber(true);
         dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
       }, 75);
+
       const dragBehavior = d3
         .drag()
+        .on('start', () => {
+          setFocusScrubber(false);
+        })
         .on('drag', throttledThing)
-        .on('end', () => {
+        .on('end', (event) => {
           throttledThing.cancel();
+          setDisableScrubber(false);
+          if (event.subject.x !== event.x && event.subject.y !== event.y) {
+            document.getElementById('timeline-editor-svg')?.focus();
+          }
         });
       return dragBehavior;
     };
+
     const scrubber = d3.select(scrubberRef.current);
     const dragBehavior = setDragBehavior();
     scrubber.call(dragBehavior as any);
@@ -129,7 +138,7 @@ const Scrubber: FunctionComponent<Props> = (props) => {
   // a/s 키 입력 시, scrubber 이동
   useEffect(() => {
     const keydownListener = (event: KeyboardEvent) => {
-      if (event.key === ('a' || 'A')) {
+      if (event.key === ('a' || 'A' || 'ㅁ')) {
         const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
         const clampedTimeIndex = clampTimeIndex(currentTimeIndex - 1);
         dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
@@ -141,7 +150,7 @@ const Scrubber: FunctionComponent<Props> = (props) => {
             _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
           }
         }
-      } else if (event.key === ('s' || 'S')) {
+      } else if (event.key === ('s' || 'S' || 'ㄴ')) {
         const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
         const clampedTimeIndex = clampTimeIndex(currentTimeIndex + 1);
         dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
@@ -163,9 +172,22 @@ const Scrubber: FunctionComponent<Props> = (props) => {
 
   return (
     <g id="scrubber" className={cx('scrubber')} ref={scrubberRef}>
-      <line x1="15" y1="12" x2="15" y2="2000" />
-      <foreignObject width="32" height="12">
-        <BaseInput arrow={false} maxLength={4} onBlur={handleInputBlur} onChange={handleInputChange} onKeyDown={handleInputKeyDown} type="number" value={inputValue} />
+      <line x1="23" y1="12" x2="23" y2="2000" />
+      <path d="M9.27203 0H9.18118C8.51416 0 7.88043 0.291572 7.44634 0.798191L2.55008 6.51248C1.81664 7.36845 1.81664 8.63155 2.55008 9.48752L7.44634 15.2018C7.88043 15.7084 8.51416 16 9.18118 16H34.8188C35.4858 16 36.1196 15.7084 36.5537 15.2018L41.4499 9.48752C42.1834 8.63155 42.1834 7.36845 41.4499 6.51248L36.5537 0.798191C36.1196 0.291572 35.4858 0 34.8188 0H34.728H9.27203Z" />
+      <foreignObject width="28" height="14">
+        <BaseInput
+          className={cx({ focused: focusScrubber })}
+          arrow={false}
+          maxLength={4}
+          onClick={handleInputClick}
+          onBlur={handleInputBlur}
+          onChange={handleInputChange}
+          onKeyDown={handleInputKeyDown}
+          onWheel={(e) => e.preventDefault()}
+          type="number"
+          value={inputValue}
+          disabled={disableScrubber}
+        />
       </foreignObject>
     </g>
   );
