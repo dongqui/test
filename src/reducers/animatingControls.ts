@@ -59,6 +59,7 @@ export const animatingControls = (state = defaultState, action: AnimatingControl
       if (typeof action.payload.currentTimeIndex === 'number') {
         TimeIndex.setCurrentTimeIndex(action.payload.currentTimeIndex);
       }
+      TimeIndex.setPlayState(action.payload.playState);
       return Object.assign({}, state, action.payload);
     }
     case 'animatingControls/SELECT_FASTER_DROPDOWN': {

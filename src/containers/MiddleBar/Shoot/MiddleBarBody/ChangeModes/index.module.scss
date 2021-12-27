@@ -12,6 +12,7 @@
     color: white;
     border-radius: 6px;
     font-size: 11px;
+    transition: 0s;
 
     &:not(:first-child) {
       margin-left: 8px;
@@ -24,5 +25,15 @@
 
   button:active {
     color: white;
+  }
+
+  .disabled {
+    color: #4f4f4f;
+    background: #353739 !important;
+    pointer-events: none;
+
+    path {
+      stroke: #4f4f4f;
+    }
   }
 }

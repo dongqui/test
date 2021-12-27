@@ -11,7 +11,7 @@ import { v4 as uuid } from 'uuid';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
-import { filterAnimatableTransformNodes } from 'utils/common';
+import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop } from 'utils/common';
 import { filterQuaternion, filterVector } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import { beforePaste, checkCreateDuplicates, checkPasteDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
@@ -179,6 +179,7 @@ const ListNode: FunctionComponent<Props> = ({
   }, []);
 
   const currentVisualizedNode = _lpNode.find((node) => node.assetId && _visualizedAssetIds.includes(node.assetId));
+  const currentVisualizedMotion = _animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current);
 
   const depth = (filePath.match(/\\/g) || []).length;
 
@@ -380,26 +381,29 @@ const ListNode: FunctionComponent<Props> = ({
       const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, false);
 
       const afterNodes = produce(cloneLPNode, (draft) => {
+        const parentModel = find(draft, { id });
+
         const target = find(draft, { assetId: assetId });
 
-        if (target) {
-          target.childrens.push(nextAnimationIngredient.id);
+        if (parentModel) {
+          parentModel.childrens.push(nextAnimationIngredient.id);
         }
 
-        const motion: LP.Node = {
-          id: nextAnimationIngredient.id,
-          // parentId: nextAnimationIngredient.assetId,
-          assetId: assetId,
-          parentId: id,
-          name: nextAnimationIngredient.name,
-          // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
-          filePath: lpCurrentPath,
-          childrens: [],
-          extension: '',
-          type: 'Motion',
-        };
+        if (parentModel) {
+          const motion: LP.Node = {
+            id: nextAnimationIngredient.id,
+            // parentId: nextAnimationIngredient.assetId,
+            assetId: assetId,
+            parentId: id,
+            name: nextAnimationIngredient.name,
+            filePath: parentModel.filePath + `\\${parentModel.name}`,
+            childrens: [],
+            extension: '',
+            type: 'Motion',
+          };
 
-        draft.push(motion);
+          draft.push(motion);
+        }
       });
 
       dispatch(
@@ -421,7 +425,7 @@ const ListNode: FunctionComponent<Props> = ({
         }),
       );
     }
-  }, [_animationTransformNodes, _lpNode, _selectableObjects, _visualizedAssetIds, assetId, dispatch, id, lpCurrentPath]);
+  }, [_animationTransformNodes, _lpNode, _selectableObjects, _visualizedAssetIds, assetId, dispatch, id]);
 
   const handleDelete = useCallback(
     async (selectId: string, selectAssetId?: string) => {
@@ -598,11 +602,11 @@ const ListNode: FunctionComponent<Props> = ({
                 },
                 children: [],
               },
-              {
-                label: 'Copy',
-                onClick: onCopy,
-                children: [],
-              },
+              // {
+              //   label: 'Copy',
+              //   onClick: onCopy,
+              //   children: [],
+              // },
             ],
           });
         }
@@ -639,162 +643,125 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: handleEdit,
                 children: [],
               },
-              {
-                label: 'Copy',
-                onClick: () => {
-                  const list = _lpNode.filter((node) => id.includes(node.id));
+              // {
+              //   label: 'Copy',
+              //   onClick: () => {
+              //     const list = _lpNode.filter((node) => id.includes(node.id));
 
-                  dispatch(
-                    lpNodeActions.changeClipboard({
-                      data: list,
-                    }),
-                  );
-                },
-                children: [],
-              },
-              {
-                label: 'Paste',
-                onClick: () => {
-                  let isMaxDepth = false;
+              //     dispatch(
+              //       lpNodeActions.changeClipboard({
+              //         data: list,
+              //       }),
+              //     );
+              //   },
+              //   children: [],
+              // },
+              // {
+              //   label: 'Paste',
+              //   onClick: () => {
+              //     let isMaxDepth = false;
 
-                  _lpClipboard.forEach((value) => {
-                    const max = depthCheck(value.childrens, 0, []) || 0;
+              //     _lpClipboard.forEach((value) => {
+              //       const max = depthCheck(value.childrens, 0, []) || 0;
 
-                    const currentPathDepth = (filePath.match(/\\/g) || []).length;
+              //       const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
-                    if (currentPathDepth + max >= 6) {
-                      onModalOpen({
-                        title: 'Warning',
-                        message: '디렉토리를 복사할 수 없습니다. 계층 초과',
-                        confirmText: '확인',
-                      });
+              //       if (currentPathDepth + max >= 6) {
+              //         onModalOpen({
+              //           title: 'Warning',
+              //           message: '디렉토리를 복사할 수 없습니다. 계층 초과',
+              //           confirmText: '확인',
+              //         });
 
-                      isMaxDepth = true;
-                      return false;
-                    }
-                  });
+              //         isMaxDepth = true;
+              //         return false;
+              //       }
+              //     });
 
-                  if (isMaxDepth) {
-                    return;
-                  }
+              //     if (isMaxDepth) {
+              //       return;
+              //     }
 
-                  _lpClipboard.forEach((value) => {
-                    let memory: string[] = [];
+              //     _lpClipboard.forEach((value) => {
+              //       let memory: string[] = [];
 
-                    const copyNode = value;
-                    const cloneCopyNode = cloneDeep(copyNode);
+              //       const copyNode = value;
+              //       const cloneCopyNode = cloneDeep(copyNode);
 
-                    const splitName = cloneCopyNode.name.split('.');
-                    const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
+              //       const splitName = cloneCopyNode.name.split('.');
+              //       const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
-                    const compareTargetName = cloneCopyNode.type === 'Model' ? fileName : cloneCopyNode.name;
+              //       const compareTargetName = cloneCopyNode.type === 'Model' ? fileName : cloneCopyNode.name;
 
-                    // @TODO 없으면 비활성 처리 필요
-                    if (cloneCopyNode) {
-                      const currentPathNodeName = _lpNode
-                        .filter((node) => {
-                          if (node.parentId === id) {
-                            const condition =
-                              cloneCopyNode.type === 'Model' ? node.name.includes(compareTargetName) && node.name.includes(splitName[1]) : node.name.includes(compareTargetName);
-                            if (condition) {
-                              return true;
-                            }
-                            return false;
-                          }
-                        })
-                        .map((filteredNode) => filteredNode.name);
+              //       // @TODO 없으면 비활성 처리 필요
+              //       if (cloneCopyNode) {
+              //         const currentPathNodeName = _lpNode
+              //           .filter((node) => {
+              //             if (node.parentId === id) {
+              //               const condition =
+              //                 cloneCopyNode.type === 'Model' ? node.name.includes(compareTargetName) && node.name.includes(splitName[1]) : node.name.includes(compareTargetName);
+              //               if (condition) {
+              //                 return true;
+              //               }
+              //               return false;
+              //             }
+              //           })
+              //           .map((filteredNode) => filteredNode.name);
 
-                      const nodeName = beforePaste({
-                        name: compareTargetName,
-                        comparisonNames: currentPathNodeName,
-                        hasExtension: cloneCopyNode.type === 'Model',
-                      });
+              //         const nodeName = beforePaste({
+              //           name: compareTargetName,
+              //           comparisonNames: currentPathNodeName,
+              //           hasExtension: cloneCopyNode.type === 'Model',
+              //         });
 
-                      const resultNodeName =
-                        cloneCopyNode.type === 'Model'
-                          ? `${nodeName
-                              .split('.')
-                              .slice(0, splitName.length - 1)
-                              .join('.')}.${splitName[1]}`
-                          : nodeName;
+              //         const resultNodeName =
+              //           cloneCopyNode.type === 'Model'
+              //             ? `${nodeName
+              //                 .split('.')
+              //                 .slice(0, splitName.length - 1)
+              //                 .join('.')}.${splitName[1]}`
+              //             : nodeName;
 
-                      // asset
-                      let nextAssetId = '';
+              //         // node
+              //         const nextNodes = produce(_lpNode, (draft) => {
+              //           const targetNode = find(draft, { id });
 
-                      // if (copyNode.type === 'Model') {
-                      //   const findAsset = find(_assetList, { id: copyNode.assetId });
-                      //   const findIngredients = filter(_animationIngredients, { assetId: copyNode.assetId });
+              //           if (targetNode) {
+              //             cloneCopyNode.id = uuid();
+              //             cloneCopyNode.parentId = id;
+              //             cloneCopyNode.filePath = filePath + `\\${name}`;
+              //             cloneCopyNode.name = resultNodeName;
 
-                      //   if (findAsset) {
-                      //     const cloneFindAsset = cloneDeep(findAsset);
-                      //     cloneFindAsset.id = uuid();
-                      //     cloneFindAsset.name = resultNodeName;
+              //             if (cloneCopyNode.type === 'Model') {
+              //               // cloneCopyNode.assetId = nextAssetId;
+              //             }
 
-                      //     const cloneFindIngredients = cloneDeep(findIngredients);
-                      //     cloneFindIngredients.forEach((ingredient) => {
-                      //       ingredient.id = uuid();
-                      //       ingredient.assetId = cloneFindAsset.id;
-                      //     });
+              //             targetNode.childrens.push(cloneCopyNode.id);
 
-                      //     const ingredientIds = cloneFindIngredients.map((ingredient) => ingredient.id);
-                      //     cloneFindAsset.animationIngredientIds = ingredientIds;
+              //             if (cloneCopyNode.childrens.length > 0) {
+              //               cloneCopyNode.childrens.map((child) => {
+              //                 memory = saveChildrensKey(memory, child);
+              //                 depthAddKey(draft, child, cloneCopyNode);
+              //               });
+              //             }
 
-                      //     nextAssetId = cloneFindAsset.id;
+              //             cloneCopyNode.childrens = cloneCopyNode.childrens.filter((key) => !memory.includes(key));
 
-                      //     dispatch(
-                      //       plaskProjectActions.addAsset({
-                      //         asset: cloneFindAsset,
-                      //       }),
-                      //     );
+              //             // @TODO 하위 노드도 추가
+              //             draft.push(cloneCopyNode);
+              //           }
+              //         });
 
-                      //     dispatch(
-                      //       animationDataActions.addAnimationIngredients({
-                      //         animationIngredients: cloneFindIngredients,
-                      //       }),
-                      //     );
-                      //   }
-                      // }
-
-                      // node
-                      const nextNodes = produce(_lpNode, (draft) => {
-                        const targetNode = find(draft, { id });
-
-                        if (targetNode) {
-                          cloneCopyNode.id = uuid();
-                          cloneCopyNode.parentId = id;
-                          cloneCopyNode.filePath = filePath + `\\${name}`;
-                          cloneCopyNode.name = resultNodeName;
-
-                          if (cloneCopyNode.type === 'Model') {
-                            // cloneCopyNode.assetId = nextAssetId;
-                          }
-
-                          targetNode.childrens.push(cloneCopyNode.id);
-
-                          if (cloneCopyNode.childrens.length > 0) {
-                            cloneCopyNode.childrens.map((child) => {
-                              memory = saveChildrensKey(memory, child);
-                              depthAddKey(draft, child, cloneCopyNode);
-                            });
-                          }
-
-                          cloneCopyNode.childrens = cloneCopyNode.childrens.filter((key) => !memory.includes(key));
-
-                          // @TODO 하위 노드도 추가
-                          draft.push(cloneCopyNode);
-                        }
-                      });
-
-                      dispatch(
-                        lpNodeActions.changeNode({
-                          nodes: nextNodes,
-                        }),
-                      );
-                    }
-                  });
-                },
-                children: [],
-              },
+              //         dispatch(
+              //           lpNodeActions.changeNode({
+              //             nodes: nextNodes,
+              //           }),
+              //         );
+              //       }
+              //     });
+              //   },
+              //   children: [],
+              // },
               {
                 label: 'New directory',
                 visibility: depth === 6 ? 'invisible' : 'visible',
@@ -864,26 +831,27 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: handleEdit,
                 children: [],
               },
-              {
-                label: 'Copy',
-                onClick: () => {
-                  const list = _lpNode.filter((node) => id.includes(node.id));
+              // {
+              //   label: 'Copy',
+              //   onClick: () => {
+              //     const list = _lpNode.filter((node) => id.includes(node.id));
 
-                  dispatch(
-                    lpNodeActions.changeClipboard({
-                      data: list,
-                    }),
-                  );
-                },
-                children: [],
-              },
-              {
-                label: 'Paste',
-                onClick: () => {},
-                children: [],
-              },
+              //     dispatch(
+              //       lpNodeActions.changeClipboard({
+              //         data: list,
+              //       }),
+              //     );
+              //   },
+              //   children: [],
+              // },
+              // {
+              //   label: 'Paste',
+              //   onClick: () => {},
+              //   children: [],
+              // },
               {
                 label: 'Visualization',
+                disabled: currentVisualizedNode?.id === id,
                 onClick: () => {
                   const isEmptyMotion = childrens.length === 0;
 
@@ -897,6 +865,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization cancel',
+                disabled: currentVisualizedNode?.id !== id,
                 onClick: () => {
                   if (assetId && _visualizedAssetIds.includes(assetId)) {
                     const targetAsset = _assetList.find((asset) => asset.id === assetId);
@@ -961,6 +930,24 @@ const ListNode: FunctionComponent<Props> = ({
                         parentModel.childrens = parentModel.childrens.filter((currentId) => currentId !== id);
                       }
                     });
+
+                    const asset = find(_assetList, { id: assetId });
+                    const targetAnimationIngredient = find(_animationIngredients, { id: targetMotion.id });
+
+                    if (asset && targetAnimationIngredient && assetId) {
+                      dispatch(
+                        animationDataActions.removeAnimationIngredient({
+                          animationIngredientId: targetAnimationIngredient.id,
+                        }),
+                      );
+
+                      dispatch(
+                        plaskProjectActions.removeAnimationIngredient({
+                          assetId: assetId,
+                          animationIngredientId: targetAnimationIngredient.id,
+                        }),
+                      );
+                    }
 
                     dispatch(
                       lpNodeActions.changeNode({
@@ -1052,6 +1039,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization',
+                disabled: currentVisualizedMotion[0]?.id === id,
                 onClick: () => {
                   const parentModel = find(_lpNode, { id: parentId });
 
@@ -1073,11 +1061,13 @@ const ListNode: FunctionComponent<Props> = ({
                   }
 
                   handleVisualization();
+                  forceClickAnimationPlayAndStop();
                 },
                 children: [],
               },
               {
                 label: 'Visualization cancel',
+                disabled: currentVisualizedMotion[0]?.id !== id,
                 onClick: () => {
                   if (assetId && _visualizedAssetIds.includes(assetId)) {
                     const targetAsset = _assetList.find((asset) => asset.id === assetId);
@@ -1130,7 +1120,6 @@ const ListNode: FunctionComponent<Props> = ({
   }, [
     _animationIngredients,
     _assetList,
-    _lpClipboard,
     _lpNode,
     _screenList,
     _selectableObjects,
@@ -1138,10 +1127,9 @@ const ListNode: FunctionComponent<Props> = ({
     addEmptyMotion,
     assetId,
     childrens.length,
+    currentVisualizedMotion,
     currentVisualizedNode?.id,
     depth,
-    depthAddKey,
-    depthCheck,
     dispatch,
     extension,
     filePath,
@@ -1153,10 +1141,8 @@ const ListNode: FunctionComponent<Props> = ({
     onContextMenuOpen,
     onCopy,
     onDelete,
-    onModalOpen,
     onSelect,
     parentId,
-    saveChildrensKey,
     selectedId,
     type,
   ]);
@@ -1191,17 +1177,33 @@ const ListNode: FunctionComponent<Props> = ({
     async (event: FocusEvent<HTMLInputElement>) => {
       const text = event.currentTarget.value || name;
 
-      const currentPathNodeName = _lpNode
-        .filter((node) => {
-          if (node.parentId === parentId) {
-            // 수정하는 자신은 제외
-            if (node.name.includes(text) && node.name !== name) {
-              return true;
+      let currentPathNodeName: string[] = [];
+
+      if (type === 'Model') {
+        currentPathNodeName = _lpNode
+          .filter((node) => {
+            if (node.parentId === parentId) {
+              const nodeName = node.name.toLowerCase();
+              if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase() && node.type === 'Model') {
+                return true;
+              }
+              return false;
             }
-            return false;
-          }
-        })
-        .map((filteredNode) => filteredNode.name);
+          })
+          .map((filteredNode) => filteredNode.name.substring(0, filteredNode.name.lastIndexOf('.')));
+      } else {
+        currentPathNodeName = _lpNode
+          .filter((node) => {
+            if (node.parentId === parentId) {
+              const nodeName = node.name.toLowerCase();
+              if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase()) {
+                return true;
+              }
+              return false;
+            }
+          })
+          .map((filteredNode) => filteredNode.name);
+      }
 
       await beforeRename({
         name: text,
@@ -1261,18 +1263,35 @@ const ListNode: FunctionComponent<Props> = ({
       if (event.code === 'Enter') {
         const text = event.currentTarget.value || name;
 
-        const currentPathNodeName = _lpNode
-          .filter((node) => {
-            if (node.parentId === parentId) {
-              if (node.name.includes(text) && node.name !== name) {
-                return true;
-              }
-              return false;
-            }
-          })
-          .map((filteredNode) => filteredNode.name);
+        let currentPathNodeName: string[] = [];
 
-        const nodeName = await beforeRename({
+        if (type === 'Model') {
+          currentPathNodeName = _lpNode
+            .filter((node) => {
+              if (node.parentId === parentId) {
+                const nodeName = node.name.toLowerCase();
+                if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase() && node.type === 'Model') {
+                  return true;
+                }
+                return false;
+              }
+            })
+            .map((filteredNode) => filteredNode.name.substring(0, filteredNode.name.lastIndexOf('.')));
+        } else {
+          currentPathNodeName = _lpNode
+            .filter((node) => {
+              if (node.parentId === parentId) {
+                const nodeName = node.name.toLowerCase();
+                if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase()) {
+                  return true;
+                }
+                return false;
+              }
+            })
+            .map((filteredNode) => filteredNode.name);
+        }
+
+        await beforeRename({
           name: text,
           comparison: currentPathNodeName,
         })
@@ -1362,6 +1381,12 @@ const ListNode: FunctionComponent<Props> = ({
           const targetAsset = _assetList.find((asset) => asset.id === dropNode?.assetId);
           const targetRetargetMap = _retargetMaps.find((retargetMap) => retargetMap.assetId === dropNode?.assetId);
 
+          const isErrorRetargetMap = targetRetargetMap && targetRetargetMap.values.some((value) => !value.targetTransformNodeId);
+
+          if (isErrorRetargetMap) {
+            return;
+          }
+
           // 이름이 같은 모션이 이미 있는 경우
           if (dropNode && isAlreadyExist) {
             const confirmed = await getConfirm({
@@ -1423,6 +1448,17 @@ const ListNode: FunctionComponent<Props> = ({
                       animationIngredientId: mocapAnimationIngredient.id,
                     }),
                   );
+
+                  if (dropNode.assetId) {
+                    dispatch(
+                      animationDataActions.changeCurrentAnimationIngredient({
+                        assetId: dropNode.assetId,
+                        animationIngredientId: mocapAnimationIngredient.id,
+                      }),
+                    );
+
+                    handleVisualization();
+                  }
 
                   return;
                 } catch (error) {}
@@ -1503,6 +1539,17 @@ const ListNode: FunctionComponent<Props> = ({
                   animationIngredientId: mocapAnimationIngredient.id,
                 }),
               );
+
+              if (dropNode.assetId) {
+                dispatch(
+                  animationDataActions.changeCurrentAnimationIngredient({
+                    assetId: dropNode.assetId,
+                    animationIngredientId: mocapAnimationIngredient.id,
+                  }),
+                );
+
+                handleVisualization();
+              }
 
               onModalClose();
             } catch (error) {}
@@ -1695,11 +1742,31 @@ const ListNode: FunctionComponent<Props> = ({
         const isRPContains = dropZone.contains(dropPointElement);
 
         if (isRPContains) {
+          const parentModel = find(_lpNode, { id: parentId });
+
+          if (parentModel) {
+            const motions = filter(_animationIngredients, { assetId: parentModel.assetId });
+
+            if (motions && parentModel.assetId) {
+              const selectedMotion = find(motions, { id });
+
+              if (selectedMotion) {
+                dispatch(
+                  animationDataActions.changeCurrentAnimationIngredient({
+                    assetId: parentModel.assetId,
+                    animationIngredientId: selectedMotion.id,
+                  }),
+                );
+              }
+            }
+          }
+
           handleVisualization();
+          forceClickAnimationPlayAndStop();
         }
       }
     },
-    [handleVisualization],
+    [_animationIngredients, _lpNode, dispatch, handleVisualization, id, parentId],
   );
 
   const [showsChildrens, setShowsChildrens] = useState(false);
@@ -1726,7 +1793,6 @@ const ListNode: FunctionComponent<Props> = ({
 
   if (currentVisualizedNode) {
   }
-  const currentVisualizedMotion = _animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current);
 
   const isOpenVisualized = showsChildrens && hasCurrentVisualizedNode;
 
