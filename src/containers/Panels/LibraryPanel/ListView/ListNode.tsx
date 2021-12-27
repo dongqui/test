@@ -1420,6 +1420,17 @@ const ListNode: FunctionComponent<Props> = ({
                     }),
                   );
 
+                  if (dropNode.assetId) {
+                    dispatch(
+                      animationDataActions.changeCurrentAnimationIngredient({
+                        assetId: dropNode.assetId,
+                        animationIngredientId: mocapAnimationIngredient.id,
+                      }),
+                    );
+
+                    handleVisualization();
+                  }
+
                   return;
                 } catch (error) {}
               }
@@ -1499,6 +1510,17 @@ const ListNode: FunctionComponent<Props> = ({
                   animationIngredientId: mocapAnimationIngredient.id,
                 }),
               );
+
+              if (dropNode.assetId) {
+                dispatch(
+                  animationDataActions.changeCurrentAnimationIngredient({
+                    assetId: dropNode.assetId,
+                    animationIngredientId: mocapAnimationIngredient.id,
+                  }),
+                );
+
+                handleVisualization();
+              }
 
               onModalClose();
             } catch (error) {}
