@@ -515,12 +515,12 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     // LP_COPY: handleCopy,
     // LP_PASTE: handlePaste,
     LP_DELETE: handleDelete,
-    LP_ALL_SELECT: (event?: KeyboardEvent) => {
-      if (event) {
-        event.preventDefault();
-        handleSelectAll();
-      }
-    },
+    // LP_ALL_SELECT: (event?: KeyboardEvent) => {
+    //   if (event) {
+    //     event.preventDefault();
+    //     handleSelectAll();
+    //   }
+    // },
   };
 
   return (
@@ -539,7 +539,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
             />
           </div>
         ))}
-        <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} />
+        {/* <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} /> */}
       </div>
     </HotKeys>
   );
