@@ -18,6 +18,7 @@ const cx = classNames.bind(styles);
 const Buttons = () => {
   const dispatch = useDispatch();
 
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
   const _playDirection = useSelector((state) => state.animatingControls.playDirection);
   const _playSpeed = useSelector((state) => state.animatingControls.playSpeed);
@@ -52,7 +53,8 @@ const Buttons = () => {
       if (scrubber && scrubberInput && _currentAnimationGroup) {
         const nextFrame = _currentAnimationGroup.animatables.length !== 0 ? _currentAnimationGroup.animatables[0].masterFrame : clampNextFrame(playDirection);
         const digitedNextFrame = playDirection === PlayDirection.forward ? Math.floor(nextFrame) : Math.ceil(nextFrame);
-        scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame)}, 0)`);
+        // scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame)}, 0)`);
+        scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame) - 3}, 0)`);
         scrubberInput.value = `${digitedNextFrame}`;
         TimeIndex.setCurrentTimeIndex(nextFrame);
       }
@@ -115,15 +117,26 @@ const Buttons = () => {
 
   // play 버튼 클릭
   const handlePlayButtonClick = useCallback(() => {
-    editAnimationPlay();
-    requestAnimationFrameId.current = window.requestAnimationFrame(() => loopAnimation(PlayDirection.forward));
-  }, [editAnimationPlay, loopAnimation]);
+    if (_visualizedAssetIds.length !== 0) {
+      editAnimationPlay();
+      requestAnimationFrameId.current = window.requestAnimationFrame(() => loopAnimation(PlayDirection.forward));
+    }
+  }, [_visualizedAssetIds.length, editAnimationPlay, loopAnimation]);
 
   // rewind 버튼 클릭
   const handleRewindButtonClick = useCallback(() => {
-    editAnimationRewind();
-    requestAnimationFrameId.current = window.requestAnimationFrame(() => loopAnimation(PlayDirection.backward));
-  }, [editAnimationRewind, loopAnimation]);
+    if (_visualizedAssetIds.length !== 0) {
+      editAnimationRewind();
+      requestAnimationFrameId.current = window.requestAnimationFrame(() => loopAnimation(PlayDirection.backward));
+    }
+  }, [_visualizedAssetIds.length, editAnimationRewind, loopAnimation]);
+
+  // pause 버튼 클릭
+  const handlePauseButtonClick = useCallback(() => {
+    if (_visualizedAssetIds.length !== 0) {
+      editAnimationPause();
+    }
+  }, [_visualizedAssetIds.length, editAnimationPause]);
 
   // space bar 입력 시, 재생/정시 toggle
   useEffect(() => {
@@ -150,13 +163,13 @@ const Buttons = () => {
         return (
           <Fragment>
             <IconWrapper id="animationRewindButton" onClick={handleRewindButtonClick} icon={SvgPath.RewindArrow} hasFrame={false} />
-            <IconWrapper id="animationPauseButton" className={cx('pause')} onClick={() => editAnimationPause()} icon={SvgPath.Pause} hasFrame={false} />
+            <IconWrapper id="animationPauseButton" className={cx('pause')} onClick={handlePauseButtonClick} icon={SvgPath.Pause} hasFrame={false} />
           </Fragment>
         );
       } else {
         return (
           <Fragment>
-            <IconWrapper id="animationPauseButton" className={cx('pause')} onClick={() => editAnimationPause()} icon={SvgPath.Pause} hasFrame={false} />
+            <IconWrapper id="animationPauseButton" className={cx('pause')} onClick={handlePauseButtonClick} icon={SvgPath.Pause} hasFrame={false} />
             <IconWrapper id="animationPlayButton" onClick={handlePlayButtonClick} icon={SvgPath.PlayArrow} hasFrame={false} />
           </Fragment>
         );
