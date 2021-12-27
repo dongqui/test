@@ -116,15 +116,26 @@ const Buttons = () => {
 
   // play 버튼 클릭
   const handlePlayButtonClick = useCallback(() => {
-    editAnimationPlay();
-    requestAnimationFrameId.current = window.requestAnimationFrame(() => loopAnimation(PlayDirection.forward));
-  }, [editAnimationPlay, loopAnimation]);
+    if (_visualizedAssetIds.length !== 0) {
+      editAnimationPlay();
+      requestAnimationFrameId.current = window.requestAnimationFrame(() => loopAnimation(PlayDirection.forward));
+    }
+  }, [_visualizedAssetIds.length, editAnimationPlay, loopAnimation]);
 
   // rewind 버튼 클릭
   const handleRewindButtonClick = useCallback(() => {
-    editAnimationRewind();
-    requestAnimationFrameId.current = window.requestAnimationFrame(() => loopAnimation(PlayDirection.backward));
-  }, [editAnimationRewind, loopAnimation]);
+    if (_visualizedAssetIds.length !== 0) {
+      editAnimationRewind();
+      requestAnimationFrameId.current = window.requestAnimationFrame(() => loopAnimation(PlayDirection.backward));
+    }
+  }, [_visualizedAssetIds.length, editAnimationRewind, loopAnimation]);
+
+  // pause 버튼 클릭
+  const handlePauseButtonClick = useCallback(() => {
+    if (_visualizedAssetIds.length !== 0) {
+      editAnimationPause();
+    }
+  }, [_visualizedAssetIds.length, editAnimationPause]);
 
   // space bar 입력 시, 재생/정시 toggle
   useEffect(() => {
@@ -151,13 +162,13 @@ const Buttons = () => {
         return (
           <Fragment>
             <IconWrapper id="animationRewindButton" onClick={handleRewindButtonClick} icon={SvgPath.RewindArrow} hasFrame={false} />
-            <IconWrapper id="animationPauseButton" className={cx('pause')} onClick={() => editAnimationPause()} icon={SvgPath.Pause} hasFrame={false} />
+            <IconWrapper id="animationPauseButton" className={cx('pause')} onClick={handlePauseButtonClick} icon={SvgPath.Pause} hasFrame={false} />
           </Fragment>
         );
       } else {
         return (
           <Fragment>
-            <IconWrapper id="animationPauseButton" className={cx('pause')} onClick={() => editAnimationPause()} icon={SvgPath.Pause} hasFrame={false} />
+            <IconWrapper id="animationPauseButton" className={cx('pause')} onClick={handlePauseButtonClick} icon={SvgPath.Pause} hasFrame={false} />
             <IconWrapper id="animationPlayButton" onClick={handlePlayButtonClick} icon={SvgPath.PlayArrow} hasFrame={false} />
           </Fragment>
         );
@@ -171,11 +182,6 @@ const Buttons = () => {
       );
     }
   };
-
-  // 재생 도중에 model이 변경되거나 clear 될 경우, button 상태를 stop으로 전환
-  useEffect(() => {
-    dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'stop', currentTimeIndex: _startTimeIndex }));
-  }, [_startTimeIndex, _visualizedAssetIds, dispatch]);
 
   return (
     <div className={cx('animation-buttons')}>
