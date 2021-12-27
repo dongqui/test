@@ -43,6 +43,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _playDirection = useSelector((state) => state.animatingControls.playDirection);
+  const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
 
   const dispatch = useDispatch();
 
@@ -374,6 +375,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
           // 컨트롤러 간 계층구조 생성
           controllers.forEach((controller, idx) => {
+            const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => (visibilityOption.screenId = screen.id));
+            if (targetVisibilityOption) {
+              controller.isVisible = targetVisibilityOption.isControllerVisible;
+            }
             const targetBone = targetAsset.bones.find((bone) => bone.id === controller.id.replace('controller', 'bone'));
             if (targetBone && targetBone.children.length > 0) {
               targetBone.children.forEach((childBone) => {
@@ -434,7 +439,20 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         });
       }
     }
-  }, [_animationIngredients, _assetList, _playDirection, _playState, _retargetMaps, _screenList, _selectableObjects, dispatch, getConfirm, isControllerOn, selectedAssetId]);
+  }, [
+    _animationIngredients,
+    _assetList,
+    _playDirection,
+    _playState,
+    _retargetMaps,
+    _screenList,
+    _selectableObjects,
+    _visibilityOptions,
+    dispatch,
+    getConfirm,
+    isControllerOn,
+    selectedAssetId,
+  ]);
 
   // Controller 색 변경
   const handleSelectColor = useCallback(

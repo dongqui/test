@@ -26,7 +26,7 @@ const createGround = (scene: BABYLON.Scene, useTexture: boolean, width: number, 
   );
   ground.renderingGroupId = 0;
   ground.isPickable = false;
-  ground.id = view;
+  ground.id = `groud//${view}`;
   BABYLON.Tags.EnableFor(ground);
   //@ts-ignore
   ground.addTags('ground');
