@@ -178,6 +178,7 @@ const ListNode: FunctionComponent<Props> = ({
   }, []);
 
   const currentVisualizedNode = _lpNode.find((node) => node.assetId && _visualizedAssetIds.includes(node.assetId));
+  const currentVisualizedMotion = _animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current);
 
   const depth = (filePath.match(/\\/g) || []).length;
 
@@ -840,6 +841,7 @@ const ListNode: FunctionComponent<Props> = ({
               // },
               {
                 label: 'Visualization',
+                disabled: currentVisualizedNode?.id === id,
                 onClick: () => {
                   const isEmptyMotion = childrens.length === 0;
 
@@ -853,6 +855,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization cancel',
+                disabled: currentVisualizedNode?.id !== id,
                 onClick: () => {
                   if (assetId && _visualizedAssetIds.includes(assetId)) {
                     const targetAsset = _assetList.find((asset) => asset.id === assetId);
@@ -1026,6 +1029,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization',
+                disabled: currentVisualizedMotion[0]?.id === id,
                 onClick: () => {
                   const parentModel = find(_lpNode, { id: parentId });
 
@@ -1053,6 +1057,7 @@ const ListNode: FunctionComponent<Props> = ({
               },
               {
                 label: 'Visualization cancel',
+                disabled: currentVisualizedMotion[0]?.id !== id,
                 onClick: () => {
                   if (assetId && _visualizedAssetIds.includes(assetId)) {
                     const targetAsset = _assetList.find((asset) => asset.id === assetId);
@@ -1105,7 +1110,6 @@ const ListNode: FunctionComponent<Props> = ({
   }, [
     _animationIngredients,
     _assetList,
-    _lpClipboard,
     _lpNode,
     _screenList,
     _selectableObjects,
@@ -1113,10 +1117,9 @@ const ListNode: FunctionComponent<Props> = ({
     addEmptyMotion,
     assetId,
     childrens.length,
+    currentVisualizedMotion,
     currentVisualizedNode?.id,
     depth,
-    depthAddKey,
-    depthCheck,
     dispatch,
     extension,
     filePath,
@@ -1128,10 +1131,8 @@ const ListNode: FunctionComponent<Props> = ({
     onContextMenuOpen,
     onCopy,
     onDelete,
-    onModalOpen,
     onSelect,
     parentId,
-    saveChildrensKey,
     selectedId,
     type,
   ]);
@@ -1782,7 +1783,6 @@ const ListNode: FunctionComponent<Props> = ({
 
   if (currentVisualizedNode) {
   }
-  const currentVisualizedMotion = _animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current);
 
   const isOpenVisualized = showsChildrens && hasCurrentVisualizedNode;
 
