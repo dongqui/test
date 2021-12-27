@@ -8,7 +8,8 @@ export type PlaskProjectAction =
   | ReturnType<typeof unrenderAsset>
   | ReturnType<typeof removeAsset>
   | ReturnType<typeof addAnimationIngredient>
-  | ReturnType<typeof addAnimationIngredients>;
+  | ReturnType<typeof addAnimationIngredients>
+  | ReturnType<typeof removeAnimationIngredient>;
 
 const ADD_SCREEN = 'plaskProject/ADD_SCREEN' as const;
 const REMOVE_SCREEN = 'plaskProject/REMOVE_SCREEN' as const;
@@ -18,6 +19,7 @@ const UNRENDER_ASSET = 'plaskProject/UNRENDER_ASSET' as const;
 const REMOVE_ASSET = 'plaskProject/REMOVE_ASSET' as const;
 const ADD_ANIMATION_INGREDIENT = 'plaskProject/ADD_ANIMATION_INGREDIENT' as const;
 const ADD_ANIMATION_INGREDIENTS = 'plaskProject/ADD_ANIMATION_INGREDIENTS' as const;
+const REMOVE_ANIMATION_INGREDIENT = 'plaskProject/REMOVE_ANIMATION_INGREDIENT' as const;
 
 interface AddScreen {
   screen: PlaskScreen;
@@ -52,6 +54,11 @@ interface AddAnimationIngredient {
 interface AddAnimationIngredients {
   assetId: string;
   animationIngredientIds: string[];
+}
+
+interface RemoveAnimationIngredient {
+  assetId: string;
+  animationIngredientId: string;
 }
 
 /**
@@ -147,6 +154,19 @@ export const addAnimationIngredient = (params: AddAnimationIngredient) => ({
  */
 export const addAnimationIngredients = (params: AddAnimationIngredients) => ({
   type: ADD_ANIMATION_INGREDIENTS,
+  payload: {
+    ...params,
+  },
+});
+
+/**
+ * 전달받은 id에 해당하는 asset의 animationIngredientIds에 전달받은 animationIngredient의 id를 제거합니다.
+ *
+ * @param assetId - 모션의 id를 제거할 asset의 id
+ * @param animationIngredientId - 제거할 모션의 id
+ */
+export const removeAnimationIngredient = (params: RemoveAnimationIngredient) => ({
+  type: REMOVE_ANIMATION_INGREDIENT,
   payload: {
     ...params,
   },

@@ -26,6 +26,7 @@ declare namespace Field {
     list: {
       value: string;
       label: string;
+      disaled?: boolean;
     }[];
     initialValue: {
       value: string;
@@ -36,6 +37,7 @@ declare namespace Field {
   type BaseComponentProps = ControllerRenderProps;
 
   type RenderProps<T extends {}> = ControllerRenderProps & {
+    value: string;
     error?: FieldError;
   } & Omit<BaseFieldProps, keyof FormProps & keyof BaseProps>;
 
@@ -48,6 +50,7 @@ declare namespace Field {
     name: string;
     required?: boolean;
     defaultValue?: string;
+    value: string;
   };
 
   type BaseFieldProps<T> = FormProps & BaseProps & T;
