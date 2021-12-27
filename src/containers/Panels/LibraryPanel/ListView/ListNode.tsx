@@ -918,6 +918,24 @@ const ListNode: FunctionComponent<Props> = ({
                       }
                     });
 
+                    const asset = find(_assetList, { id: assetId });
+                    const targetAnimationIngredient = find(_animationIngredients, { id: targetMotion.id });
+
+                    if (asset && targetAnimationIngredient && assetId) {
+                      dispatch(
+                        animationDataActions.removeAnimationIngredient({
+                          animationIngredientId: targetAnimationIngredient.id,
+                        }),
+                      );
+
+                      dispatch(
+                        plaskProjectActions.removeAnimationIngredient({
+                          assetId: assetId,
+                          animationIngredientId: targetAnimationIngredient.id,
+                        }),
+                      );
+                    }
+
                     dispatch(
                       lpNodeActions.changeNode({
                         nodes: resultNodes,
