@@ -1259,9 +1259,15 @@ const RenderingPanel: FunctionComponent<Props> = () => {
           );
           newScalingAnimation.setKeys(scalingTotalTransformKeys);
 
-          newAnimationGroup.addTargetedAnimation(newPositionAnimation, target);
-          newAnimationGroup.addTargetedAnimation(newRotationQuaternionAnimation, target);
-          newAnimationGroup.addTargetedAnimation(newScalingAnimation, target);
+          if (newPositionAnimation.getKeys().length > 0) {
+            newAnimationGroup.addTargetedAnimation(newPositionAnimation, target);
+          }
+          if (newRotationQuaternionAnimation.getKeys().length > 0) {
+            newAnimationGroup.addTargetedAnimation(newRotationQuaternionAnimation, target);
+          }
+          if (newScalingAnimation.getKeys().length > 0) {
+            newAnimationGroup.addTargetedAnimation(newScalingAnimation, target);
+          }
         });
       });
 
