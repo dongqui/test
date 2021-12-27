@@ -1713,11 +1713,31 @@ const ListNode: FunctionComponent<Props> = ({
         const isRPContains = dropZone.contains(dropPointElement);
 
         if (isRPContains) {
+          const parentModel = find(_lpNode, { id: parentId });
+
+          if (parentModel) {
+            const motions = filter(_animationIngredients, { assetId: parentModel.assetId });
+
+            if (motions && parentModel.assetId) {
+              const selectedMotion = find(motions, { id });
+
+              if (selectedMotion) {
+                dispatch(
+                  animationDataActions.changeCurrentAnimationIngredient({
+                    assetId: parentModel.assetId,
+                    animationIngredientId: selectedMotion.id,
+                  }),
+                );
+              }
+            }
+          }
+
           handleVisualization();
+          forceClickAnimationPlayAndStop();
         }
       }
     },
-    [handleVisualization],
+    [_animationIngredients, _lpNode, dispatch, handleVisualization, id, parentId],
   );
 
   const [showsChildrens, setShowsChildrens] = useState(false);
