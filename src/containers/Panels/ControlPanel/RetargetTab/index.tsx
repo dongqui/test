@@ -1,4 +1,4 @@
-import { FunctionComponent, useState, memo, Fragment, useEffect, useMemo, useCallback, useRef } from 'react';
+import { FunctionComponent, useState, memo, Fragment, useEffect, useMemo, useCallback, useRef, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { isNull } from 'lodash';
 import { useSelector } from 'reducers';
@@ -221,10 +221,22 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     [visualizedRetargetMap, dispatch],
   );
 
+  const handleSpreadMapping = useCallback(() => {
+    if (isMappingSectionSpread) {
+      setIsMappingSectionSpread(false);
+    } else {
+      setIsMappingSectionSpread(true);
+    }
+  }, [isMappingSectionSpread]);
+
+  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setHipSpace(parseFloat(event.target.value));
+  }, []);
+
   return (
     <Fragment>
       <section className={cx('mapping-section')}>
-        <AnimationTitleToggle text="Mapping" isSpread={isMappingSectionSpread} setIsSpread={setIsMappingSectionSpread} activeStatus={isAllActive} />
+        <AnimationTitleToggle text="Mapping" isSpread={isMappingSectionSpread} handleSpread={handleSpreadMapping} activeStatus={isAllActive} />
         {isAllActive && <RetargetMapIndicator isMapped={mappingCompleted} />}
         <div className={cx('container', 'mapping-icon', { active: isMappingSectionSpread })}>
           <div className={cx('skeleton-wrapper')}>
@@ -266,10 +278,10 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
             step={0.01}
             currentMax={10}
             currentValue={hipSpace}
-            setCurrentValue={setHipSpace}
             decimalDigit={1}
             activeStatus={isAllActive}
             onChangeEnd={dispatchChangedHipSpace}
+            handleChange={handleChange}
           />
           {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')}></div>}
         </div>

@@ -68,6 +68,17 @@ export const plaskProject = (state = defaultState, action: PlaskProjectAction) =
         }),
       });
     }
+    case 'plaskProject/REMOVE_ANIMATION_INGREDIENT': {
+      return Object.assign({}, state, {
+        assetList: state.assetList.map((asset) => {
+          if (asset.id === action.payload.assetId) {
+            return { ...asset, animationIngredientIds: asset.animationIngredientIds.filter((id) => id !== action.payload.animationIngredientId) };
+          } else {
+            return asset;
+          }
+        }),
+      });
+    }
     default: {
       return state;
     }

@@ -1,7 +1,10 @@
+import { PlayState } from 'types/RP';
+
 class TimeIndex {
   private static startTimeIndex = 0;
   private static endTimeIndex = 100;
   private static currentTimeIndex = 0;
+  private static playState: PlayState = 'stop';
 
   static setStartTimeIndex(startTimeIndex: number) {
     TimeIndex.startTimeIndex = startTimeIndex;
@@ -15,6 +18,10 @@ class TimeIndex {
     TimeIndex.currentTimeIndex = currentTimeIndex;
   }
 
+  static setPlayState(playState: PlayState) {
+    TimeIndex.playState = playState;
+  }
+
   static getStartTimeIndex() {
     return TimeIndex.startTimeIndex;
   }
@@ -25,6 +32,10 @@ class TimeIndex {
 
   static getCurrentTimeIndex() {
     return TimeIndex.currentTimeIndex;
+  }
+
+  static getPlayState() {
+    return TimeIndex.playState;
   }
 }
 

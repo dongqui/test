@@ -1,8 +1,10 @@
 import { FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
+
 import * as modeSelectionActions from 'actions/modeSelection';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { detectSafari } from 'utils/common';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -19,7 +21,7 @@ const Record: FunctionComponent<Props> = () => {
     dispatch(modeSelectionActions.changeMode({ mode: 'videoMode' }));
   }, [dispatch]);
 
-  return <IconWrapper className={cx('record')} hasFrame={false} icon={SvgPath.Record} onClick={handleRecordButtonClick} />;
+  return <IconWrapper id="recordButton" className={cx('record')} hasFrame={false} icon={SvgPath.Record} onClick={handleRecordButtonClick} />;
 };
 
 export default Record;

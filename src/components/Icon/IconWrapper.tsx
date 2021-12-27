@@ -12,13 +12,14 @@ interface Props {
   onClick?: (e?: any) => void;
   tabState?: boolean;
   innerRef?: RefObject<HTMLSpanElement>;
+  id?: string;
 }
 
 const defaultProps: Partial<Props> = {
   hasFrame: false,
 };
 
-const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, innerRef, className, tabState, onClick }) => {
+const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, innerRef, className, tabState, onClick, id }) => {
   const Component = icon;
 
   const isClickable = !!onClick;
@@ -40,14 +41,14 @@ const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, innerRef, class
 
   if (isClickable) {
     return (
-      <span className={classes} ref={innerRef} onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={tabState ? -1 : 0}>
+      <span className={classes} id={id} ref={innerRef} onClick={onClick} onKeyDown={handleKeyDown} role="button" tabIndex={tabState ? -1 : 0}>
         <Component />
       </span>
     );
   }
 
   return (
-    <span className={classes} ref={innerRef}>
+    <span className={classes} id={id} ref={innerRef}>
       <Component />
     </span>
   );

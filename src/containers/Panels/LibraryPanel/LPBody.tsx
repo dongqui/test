@@ -191,10 +191,10 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
 
   const contextMenuList = useMemo(
     () => [
-      {
-        label: 'Paste',
-        onClick: handlePaste,
-      },
+      // {
+      //   label: 'Paste',
+      //   onClick: handlePaste,
+      // },
       {
         label: 'New Directory',
         onClick: handleCreateDirectory,
@@ -208,7 +208,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         onClick: handleUnSelectAll,
       },
     ],
-    [handlePaste, handleCreateDirectory, handleSelectAll, handleUnSelectAll],
+    [handleCreateDirectory, handleSelectAll, handleUnSelectAll],
   );
 
   const [selectedId, setSelectedId] = useState<string[]>([]);
@@ -512,15 +512,15 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   }, [_assetList, _screenList, _selectableObjects, deleteChild, dispatch, getConfirm, lpNode, selectedAssetId, selectedId]);
 
   const handlers = {
-    LP_COPY: handleCopy,
-    LP_PASTE: handlePaste,
+    // LP_COPY: handleCopy,
+    // LP_PASTE: handlePaste,
     LP_DELETE: handleDelete,
-    LP_ALL_SELECT: (event?: KeyboardEvent) => {
-      if (event) {
-        event.preventDefault();
-        handleSelectAll();
-      }
-    },
+    // LP_ALL_SELECT: (event?: KeyboardEvent) => {
+    //   if (event) {
+    //     event.preventDefault();
+    //     handleSelectAll();
+    //   }
+    // },
   };
 
   return (
@@ -539,7 +539,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
             />
           </div>
         ))}
-        <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} />
+        {/* <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} /> */}
       </div>
     </HotKeys>
   );

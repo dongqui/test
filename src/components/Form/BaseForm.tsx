@@ -1,8 +1,9 @@
 import { FunctionComponent, ReactElement, useEffect, useState, useCallback } from 'react';
-import { useForm, Control, FieldValues } from 'react-hook-form';
+import { useForm, Control, FieldValues, UseFormSetValue } from 'react-hook-form';
 
 interface ChildrenProps {
   control: Control<FieldValues>;
+  setFormValue: UseFormSetValue<Record<string, any>>;
 }
 
 interface Props {
@@ -34,10 +35,15 @@ const BaseForm: FunctionComponent<Props> = ({ defaultValues, onSubmit, children 
   );
 
   const renderFormInner = useCallback(() => {
-    const props = { control };
+    const baseProps = { control };
+
+    const props = {
+      ...baseProps,
+      setFormValue: setValue,
+    };
 
     return children(props);
-  }, [children, control]);
+  }, [children, control, setValue]);
 
   return <form onSubmit={handleSubmit(handleFormSubmit)}>{renderFormInner()}</form>;
 };
