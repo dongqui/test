@@ -1352,6 +1352,12 @@ const ListNode: FunctionComponent<Props> = ({
           const targetAsset = _assetList.find((asset) => asset.id === dropNode?.assetId);
           const targetRetargetMap = _retargetMaps.find((retargetMap) => retargetMap.assetId === dropNode?.assetId);
 
+          const isErrorRetargetMap = targetRetargetMap && targetRetargetMap.values.some((value) => !value.targetTransformNodeId);
+
+          if (isErrorRetargetMap) {
+            return;
+          }
+
           // 이름이 같은 모션이 이미 있는 경우
           if (dropNode && isAlreadyExist) {
             const confirmed = await getConfirm({
