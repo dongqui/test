@@ -11,7 +11,7 @@ import { v4 as uuid } from 'uuid';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
-import { filterAnimatableTransformNodes } from 'utils/common';
+import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop } from 'utils/common';
 import { filterQuaternion, filterVector } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import { beforePaste, checkCreateDuplicates, checkPasteDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
@@ -1029,6 +1029,7 @@ const ListNode: FunctionComponent<Props> = ({
                   }
 
                   handleVisualization();
+                  forceClickAnimationPlayAndStop();
                 },
                 children: [],
               },
