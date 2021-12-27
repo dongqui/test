@@ -370,26 +370,29 @@ const ListNode: FunctionComponent<Props> = ({
       const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, false);
 
       const afterNodes = produce(cloneLPNode, (draft) => {
+        const parentModel = find(draft, { id });
+
         const target = find(draft, { assetId: assetId });
 
-        if (target) {
-          target.childrens.push(nextAnimationIngredient.id);
+        if (parentModel) {
+          parentModel.childrens.push(nextAnimationIngredient.id);
         }
 
-        const motion: LP.Node = {
-          id: nextAnimationIngredient.id,
-          // parentId: nextAnimationIngredient.assetId,
-          assetId: assetId,
-          parentId: id,
-          name: nextAnimationIngredient.name,
-          // filePath: lpCurrentPath + `\\${nextAnimationIngredient.name}`,
-          filePath: lpCurrentPath,
-          childrens: [],
-          extension: '',
-          type: 'Motion',
-        };
+        if (parentModel) {
+          const motion: LP.Node = {
+            id: nextAnimationIngredient.id,
+            // parentId: nextAnimationIngredient.assetId,
+            assetId: assetId,
+            parentId: id,
+            name: nextAnimationIngredient.name,
+            filePath: parentModel.filePath + `\\${parentModel.name}`,
+            childrens: [],
+            extension: '',
+            type: 'Motion',
+          };
 
-        draft.push(motion);
+          draft.push(motion);
+        }
       });
 
       dispatch(
@@ -411,7 +414,7 @@ const ListNode: FunctionComponent<Props> = ({
         }),
       );
     }
-  }, [_animationTransformNodes, _lpNode, _selectableObjects, _visualizedAssetIds, assetId, dispatch, id, lpCurrentPath]);
+  }, [_animationTransformNodes, _lpNode, _selectableObjects, _visualizedAssetIds, assetId, dispatch, id]);
 
   const handleDelete = useCallback(
     async (selectId: string, selectAssetId?: string) => {
