@@ -77,6 +77,7 @@ const ListNode: FunctionComponent<Props> = ({
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
+  const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
 
   const _lpNode = useSelector((state) => state.lpNode.node);
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
@@ -215,14 +216,19 @@ const ListNode: FunctionComponent<Props> = ({
         const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
 
         // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
-        _screenList.forEach((PlaskScreen) => {
-          const { id: sceneId, scene } = PlaskScreen;
+        _screenList.forEach((screen) => {
+          const { id: screenId, scene } = screen;
+          const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === screenId);
 
           if (scene.isReady()) {
             // scene들에 mesh 추가
             meshes.forEach((mesh) => {
               mesh.renderingGroupId = 1;
               scene.addMesh(mesh);
+
+              if (targetVisibilityOption) {
+                mesh.isVisible = targetVisibilityOption.isMeshVisible;
+              }
             });
 
             // scene들에 geometry 추가
@@ -248,6 +254,10 @@ const ListNode: FunctionComponent<Props> = ({
                 joint.id = `${assetId}//${bone.name}//joint`;
                 joint.renderingGroupId = 2;
                 joint.attachToBone(bone, meshes[0]);
+
+                if (targetVisibilityOption) {
+                  joint.isVisible = targetVisibilityOption.isBoneVisible;
+                }
 
                 const targetTransformNode = bone.getTransformNode();
                 if (targetTransformNode) {
@@ -293,15 +303,15 @@ const ListNode: FunctionComponent<Props> = ({
             dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
 
             // scene들에 skeletonViewer 추가
-            if (skeleton) {
-              const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
+            // if (skeleton) {
+            //   const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
 
-              // @TODO
-              // scene.removeMesh(skeletonViewer.mesh);
+            //   // @TODO
+            //   // scene.removeMesh(skeletonViewer.mesh);
 
-              skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
-              scene.addMesh(skeletonViewer.mesh);
-            }
+            //   skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
+            //   scene.addMesh(skeletonViewer.mesh);
+            // }
 
             // scene들에 애니메이션 적용을 위한 transformNode 추가
             transformNodes.forEach((transformNode) => {
@@ -313,7 +323,7 @@ const ListNode: FunctionComponent<Props> = ({
         });
       }
     }
-  }, [_assetList, _screenList, _selectableObjects, _visualizedAssetIds, assetId, dispatch]);
+  }, [_assetList, _screenList, _selectableObjects, _visibilityOptions, _visualizedAssetIds, assetId, dispatch]);
 
   const deleteChild = useCallback((node: LP.Node[], ids: string[]) => {
     let memory: LP.Node[] = [];
