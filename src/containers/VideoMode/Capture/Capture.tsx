@@ -379,7 +379,13 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       </Box>
       <div className={cx('video-wrap')}>
         <canvas className={cx('thumbnail-canvas')} ref={canvasRef}></canvas>
-        <video ref={videoRef} className={cx('video')} {...videoOptions} onTimeUpdate={handleCurrentTime} onEnded={handleVideoEnd}>
+        <video
+          ref={videoRef}
+          className={cx('video', { mirror: videoRef.current && !videoRef.current!.src })}
+          {...videoOptions}
+          onTimeUpdate={handleCurrentTime}
+          onEnded={handleVideoEnd}
+        >
           {/* <source id="mp4" src="http://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4" /> */}
         </video>
         {standbyState && (

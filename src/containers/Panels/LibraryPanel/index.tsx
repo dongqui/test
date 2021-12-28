@@ -61,7 +61,7 @@ const LibraryPanel: FunctionComponent = () => {
               onModalOpen({
                 title: 'Warning',
                 message: TEXT.WARNING_07,
-                confirmText: 'Contact',
+                confirmText: 'Close',
                 onConfirm: onModalClose,
               });
             });
@@ -308,8 +308,8 @@ const LibraryPanel: FunctionComponent = () => {
         onModalOpen({
           title: 'Extract',
           message: TEXT.CONFIRM_01,
-          confirmText: '확인',
-          cancelText: '취소',
+          confirmText: 'Confirm',
+          cancelText: 'Cancel',
           onConfirm: () => {
             dispatch(
               modeSelectActions.changeMode({

@@ -1,5 +1,5 @@
 import { max, find, filter, remove, cloneDeep } from 'lodash';
-import { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent, FocusEvent } from 'react';
+import React, { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, DragEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { convertModel } from 'api';
@@ -77,6 +77,7 @@ const ListNode: FunctionComponent<Props> = ({
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
+  const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
 
   const _lpNode = useSelector((state) => state.lpNode.node);
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
@@ -215,14 +216,19 @@ const ListNode: FunctionComponent<Props> = ({
         const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
 
         // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
-        _screenList.forEach((PlaskScreen) => {
-          const { id: sceneId, scene } = PlaskScreen;
+        _screenList.forEach((screen) => {
+          const { id: screenId, scene } = screen;
+          const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === screenId);
 
           if (scene.isReady()) {
             // scene들에 mesh 추가
             meshes.forEach((mesh) => {
               mesh.renderingGroupId = 1;
               scene.addMesh(mesh);
+
+              if (targetVisibilityOption) {
+                mesh.isVisible = targetVisibilityOption.isMeshVisible;
+              }
             });
 
             // scene들에 geometry 추가
@@ -248,6 +254,10 @@ const ListNode: FunctionComponent<Props> = ({
                 joint.id = `${assetId}//${bone.name}//joint`;
                 joint.renderingGroupId = 2;
                 joint.attachToBone(bone, meshes[0]);
+
+                if (targetVisibilityOption) {
+                  joint.isVisible = targetVisibilityOption.isBoneVisible;
+                }
 
                 const targetTransformNode = bone.getTransformNode();
                 if (targetTransformNode) {
@@ -293,15 +303,15 @@ const ListNode: FunctionComponent<Props> = ({
             dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
 
             // scene들에 skeletonViewer 추가
-            if (skeleton) {
-              const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
+            // if (skeleton) {
+            //   const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
 
-              // @TODO
-              // scene.removeMesh(skeletonViewer.mesh);
+            //   // @TODO
+            //   // scene.removeMesh(skeletonViewer.mesh);
 
-              skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
-              scene.addMesh(skeletonViewer.mesh);
-            }
+            //   skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
+            //   scene.addMesh(skeletonViewer.mesh);
+            // }
 
             // scene들에 애니메이션 적용을 위한 transformNode 추가
             transformNodes.forEach((transformNode) => {
@@ -313,7 +323,7 @@ const ListNode: FunctionComponent<Props> = ({
         });
       }
     }
-  }, [_assetList, _screenList, _selectableObjects, _visualizedAssetIds, assetId, dispatch]);
+  }, [_assetList, _screenList, _selectableObjects, _visibilityOptions, _visualizedAssetIds, assetId, dispatch]);
 
   const deleteChild = useCallback((node: LP.Node[], ids: string[]) => {
     let memory: LP.Node[] = [];
@@ -422,8 +432,8 @@ const ListNode: FunctionComponent<Props> = ({
       const confirmed = await getConfirm({
         title: 'Confirm',
         message: 'Are you sure you want to delete the file?',
-        confirmText: '확인',
-        cancelText: '취소',
+        confirmText: 'Confirm',
+        cancelText: 'Cancel',
       });
 
       if (!confirmed) {
@@ -1231,7 +1241,7 @@ const ListNode: FunctionComponent<Props> = ({
         .catch(() => {
           onModalOpen({
             title: 'Warning',
-            message: `${text.trim()} 이름이 이미 사용 중입니다. <br />다른 이름을 선택하십시오.`,
+            message: TEXT.DUPLICATE_01,
             confirmText: 'Close',
             onConfirm: () => {
               onModalClose();
@@ -1244,7 +1254,7 @@ const ListNode: FunctionComponent<Props> = ({
   );
 
   const handleKeydown = useCallback(
-    async (event: KeyboardEvent<HTMLInputElement>) => {
+    async (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.code === 'Escape') {
         setIsEditing(false);
         return;
@@ -1320,7 +1330,7 @@ const ListNode: FunctionComponent<Props> = ({
           .catch(() => {
             onModalOpen({
               title: 'Warning',
-              message: `${text.trim()} 이름이 이미 사용 중입니다. <br />다른 이름을 선택하십시오.`,
+              message: TEXT.DUPLICATE_01,
               confirmText: 'Close',
               onConfirm: () => {
                 onModalClose();
@@ -1547,8 +1557,8 @@ const ListNode: FunctionComponent<Props> = ({
             const confirmed = await getConfirm({
               title: 'Confirm',
               message: TEXT.CONFIRM_04,
-              confirmText: '확인',
-              cancelText: '취소',
+              confirmText: 'Confirm',
+              cancelText: 'Cancel',
             });
 
             if (confirmed) {
@@ -1802,31 +1812,52 @@ const ListNode: FunctionComponent<Props> = ({
     selected: isSelected,
   });
 
+  const keydownRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const currentRef = outerRef && outerRef.current;
+    const keydownCurrentRef = keydownRef && keydownRef.current;
 
-    if (currentRef) {
+    if (currentRef && keydownCurrentRef) {
       const handleMouseDown = (e: MouseEvent) => {
         const isTextAreaContains = textRef && textRef.current?.contains(e.target as Node);
 
         if (!isTextAreaContains) {
           // 노드의 실질적인 이름 영역을 드래그하지 않은 경우에는 onDragStart 이벤트가 발생하지 않게 처리
           // 결과적으로 DragBox가 발생
-          e.preventDefault();
+          // e.preventDefault();
         } else {
           // 노드의 실질적인 이름 영역을 드래그한 경우에는 onDragStart 이벤트가 발생하게 처리
           // 결과적으로 DragBox가 발생하지 않음
-          e.stopPropagation();
+          // e.stopPropagation();
+        }
+      };
+
+      const handleKeydown = (e: KeyboardEvent) => {
+        switch (e.key) {
+          case 'F2': {
+            handleEdit();
+            break;
+          }
+          case 'Delete': {
+            onDelete();
+            break;
+          }
+          default: {
+            break;
+          }
         }
       };
 
       currentRef.addEventListener('mousedown', handleMouseDown);
+      keydownCurrentRef.addEventListener('keydown', handleKeydown);
 
       return () => {
         currentRef.removeEventListener('mousedown', handleMouseDown);
+        keydownCurrentRef.removeEventListener('keydown', handleKeydown);
       };
     }
-  }, [wrapperRef]);
+  }, [handleEdit, onDelete]);
 
   const handlers = {
     LP_EDIT_NAME: handleEdit,
@@ -1920,7 +1951,8 @@ const ListNode: FunctionComponent<Props> = ({
           }
 
           if (format === 'fbx') {
-            const file = new File([glb.glTFFiles[name]], name);
+            const fileName = Object.keys(glb.glTFFiles);
+            const file = new File([glb.glTFFiles[fileName[0]]], name);
             file.path = name;
 
             onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
@@ -1957,7 +1989,8 @@ const ListNode: FunctionComponent<Props> = ({
               if (retargetMap) {
                 const bvhMap = await createBvhMap(bones, retargetMap, 3000);
 
-                const file = new File([glb.glTFFiles[name]], name);
+                const fileName = Object.keys(glb.glTFFiles);
+                const file = new File([glb.glTFFiles[fileName[0]]], name);
                 file.path = name;
 
                 onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
@@ -1999,7 +2032,8 @@ const ListNode: FunctionComponent<Props> = ({
 
   return (
     <Fragment>
-      <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
+      {/* <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges></HotKeys> */}
+      <div className={cx('wrapper')} ref={keydownRef} tabIndex={0}>
         <div className={cx('outer')} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
           <div className={classes} id="inner">
             <ListCurrent
@@ -2030,7 +2064,7 @@ const ListNode: FunctionComponent<Props> = ({
             )}
           </div>
         </div>
-      </HotKeys>
+      </div>
       {isOpenExportModal && <ExportModal motions={currentMotions} onCancel={handleExportCancel} onConfirm={handleExportConfirm} onOutsideClose={handleExportCancel} />}
     </Fragment>
   );

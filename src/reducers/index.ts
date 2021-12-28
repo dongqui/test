@@ -5,6 +5,7 @@ import { cpModeSelection } from './CP/cpModeSelection';
 import { plaskProject } from './plaskProject';
 import { selectingData } from './selectingData';
 import { animationData } from './animationData';
+import { screenData } from './screenData';
 import { animatingControls } from './animatingControls';
 import { modeSelection } from './modeSelection';
 import { keyframes } from './keyframes';
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   plaskProject,
   selectingData,
   animationData,
+  screenData,
   animatingControls,
   modeSelection,
   keyframes,
