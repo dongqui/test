@@ -2,6 +2,7 @@ import { FunctionComponent } from 'react';
 import Close from './svg/Close.svg';
 import EyeClose from './svg/EyeClose.svg';
 import EyeOpen from './svg/EyeOpen.svg';
+import EyeOpenWhite from './svg/EyeOpenWhite.svg';
 import LockClose from './svg/LockClose.svg';
 import LockOpen from './svg/LockOpen.svg';
 import Plus from './svg/Plus.svg';
@@ -12,6 +13,8 @@ import CameraReset from './svg/CameraReset.svg';
 import FilledArrow from './svg/FilledArrow.svg';
 import ChevronLeft from './svg/ChevronLeft.svg';
 import ChevronRight from './svg/ChevronRight.svg';
+import ChevronUp from './svg/ChevronUp.svg';
+import ChevronDown from './svg/ChevronDown.svg';
 import BreadcrumbMore from './svg/BreadcrumbMore.svg';
 import Layer from './svg/Layer.svg';
 import Camera from './svg/Camera.svg';
@@ -59,6 +62,7 @@ type Icon =
   | 'Search'
   | 'EyeClose'
   | 'EyeOpen'
+  | 'EyeOpenWhite'
   | 'LockClose'
   | 'LockOpen'
   | 'ListView'
@@ -68,6 +72,8 @@ type Icon =
   | 'FilledArrow'
   | 'ChevronLeft'
   | 'ChevronRight'
+  | 'ChevronUp'
+  | 'ChevronDown'
   | 'BreadcrumbMore'
   | 'Layer'
   | 'Camera'
@@ -116,6 +122,7 @@ const images: Images = {
   Search,
   EyeClose,
   EyeOpen,
+  EyeOpenWhite,
   LockClose,
   LockOpen,
   ListView,
@@ -125,6 +132,8 @@ const images: Images = {
   FilledArrow,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   BreadcrumbMore,
   Layer,
   Camera,

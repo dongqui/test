@@ -1,0 +1,31 @@
+@import 'styles/libraries/_mixins';
+@import 'styles/libraries/_functions';
+
+.wrapper {
+  @include reset-list-style();
+  display: flex;
+  align-items: center;
+  margin: 0;
+  height: 24px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+
+  &.inactive {
+    color: #4f4f4f;
+    cursor: not-allowed;
+  }
+
+  &:hover {
+    background-color: #0f88ff;
+  }
+
+  .prefix {
+    width: 16px;
+    margin: 0 8px;
+  }
+
+  // .value {
+
+  // }
+}
