@@ -84,9 +84,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       f: { pressed: false },
       F: { pressed: false },
       ㄹ: { pressed: false },
-      h: { pressed: false },
-      H: { pressed: false },
-      ㅗ: { pressed: false },
     }),
     [],
   );
@@ -452,21 +449,17 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             case 'h':
             case 'H':
             case 'ㅗ': // h (camera reset)
-              if (multiKeyController[event.key]) {
-                multiKeyController[event.key].pressed = true;
+              if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
+                const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+                activeCamera.orthoTop = 2;
+                activeCamera.orthoBottom = -2;
+                activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
+                activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
+              } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
+                activeCamera.setPosition(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY));
+                activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
               }
-              if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-                  const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-                  activeCamera.orthoTop = 2;
-                  activeCamera.orthoBottom = -2;
-                  activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
-                  activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
-                } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-                  activeCamera.setPosition(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY));
-                  activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
-                }
-              }
+
               break;
             case 'a':
             case 'A':
@@ -503,9 +496,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         case 'f':
         case 'F':
         case 'ㄹ':
-        case 'h':
-        case 'H':
-        case 'ㅗ':
           if (multiKeyController[event.key]) {
             multiKeyController[event.key].pressed = false;
           }
