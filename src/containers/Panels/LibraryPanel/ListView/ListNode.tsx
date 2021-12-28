@@ -1,5 +1,5 @@
 import { max, find, filter, remove, cloneDeep } from 'lodash';
-import { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, KeyboardEvent, DragEvent, FocusEvent } from 'react';
+import React, { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, DragEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { convertModel } from 'api';
@@ -422,8 +422,8 @@ const ListNode: FunctionComponent<Props> = ({
       const confirmed = await getConfirm({
         title: 'Confirm',
         message: 'Are you sure you want to delete the file?',
-        confirmText: '확인',
-        cancelText: '취소',
+        confirmText: 'Confirm',
+        cancelText: 'Cancel',
       });
 
       if (!confirmed) {
@@ -1231,7 +1231,7 @@ const ListNode: FunctionComponent<Props> = ({
         .catch(() => {
           onModalOpen({
             title: 'Warning',
-            message: `${text.trim()} 이름이 이미 사용 중입니다. <br />다른 이름을 선택하십시오.`,
+            message: TEXT.DUPLICATE_01,
             confirmText: 'Close',
             onConfirm: () => {
               onModalClose();
@@ -1244,7 +1244,7 @@ const ListNode: FunctionComponent<Props> = ({
   );
 
   const handleKeydown = useCallback(
-    async (event: KeyboardEvent<HTMLInputElement>) => {
+    async (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.code === 'Escape') {
         setIsEditing(false);
         return;
@@ -1320,7 +1320,7 @@ const ListNode: FunctionComponent<Props> = ({
           .catch(() => {
             onModalOpen({
               title: 'Warning',
-              message: `${text.trim()} 이름이 이미 사용 중입니다. <br />다른 이름을 선택하십시오.`,
+              message: TEXT.DUPLICATE_01,
               confirmText: 'Close',
               onConfirm: () => {
                 onModalClose();
@@ -1547,8 +1547,8 @@ const ListNode: FunctionComponent<Props> = ({
             const confirmed = await getConfirm({
               title: 'Confirm',
               message: TEXT.CONFIRM_04,
-              confirmText: '확인',
-              cancelText: '취소',
+              confirmText: 'Confirm',
+              cancelText: 'Cancel',
             });
 
             if (confirmed) {
@@ -1802,31 +1802,52 @@ const ListNode: FunctionComponent<Props> = ({
     selected: isSelected,
   });
 
+  const keydownRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const currentRef = outerRef && outerRef.current;
+    const keydownCurrentRef = keydownRef && keydownRef.current;
 
-    if (currentRef) {
+    if (currentRef && keydownCurrentRef) {
       const handleMouseDown = (e: MouseEvent) => {
         const isTextAreaContains = textRef && textRef.current?.contains(e.target as Node);
 
         if (!isTextAreaContains) {
           // 노드의 실질적인 이름 영역을 드래그하지 않은 경우에는 onDragStart 이벤트가 발생하지 않게 처리
           // 결과적으로 DragBox가 발생
-          e.preventDefault();
+          // e.preventDefault();
         } else {
           // 노드의 실질적인 이름 영역을 드래그한 경우에는 onDragStart 이벤트가 발생하게 처리
           // 결과적으로 DragBox가 발생하지 않음
-          e.stopPropagation();
+          // e.stopPropagation();
+        }
+      };
+
+      const handleKeydown = (e: KeyboardEvent) => {
+        switch (e.key) {
+          case 'F2': {
+            handleEdit();
+            break;
+          }
+          case 'Delete': {
+            onDelete();
+            break;
+          }
+          default: {
+            break;
+          }
         }
       };
 
       currentRef.addEventListener('mousedown', handleMouseDown);
+      keydownCurrentRef.addEventListener('keydown', handleKeydown);
 
       return () => {
         currentRef.removeEventListener('mousedown', handleMouseDown);
+        keydownCurrentRef.removeEventListener('keydown', handleKeydown);
       };
     }
-  }, [wrapperRef]);
+  }, [handleEdit, onDelete]);
 
   const handlers = {
     LP_EDIT_NAME: handleEdit,
@@ -2001,7 +2022,8 @@ const ListNode: FunctionComponent<Props> = ({
 
   return (
     <Fragment>
-      <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
+      {/* <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges></HotKeys> */}
+      <div className={cx('wrapper')} ref={keydownRef} tabIndex={0}>
         <div className={cx('outer')} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
           <div className={classes} id="inner">
             <ListCurrent
@@ -2032,7 +2054,7 @@ const ListNode: FunctionComponent<Props> = ({
             )}
           </div>
         </div>
-      </HotKeys>
+      </div>
       {isOpenExportModal && <ExportModal motions={currentMotions} onCancel={handleExportCancel} onConfirm={handleExportConfirm} onOutsideClose={handleExportCancel} />}
     </Fragment>
   );

@@ -270,40 +270,39 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
   };
 
   return (
-    <HotKeyOrder className={className}>
-      <ContextMenuProvider>
-        <Fragment>
-          <Box id="UP" {...boxProps.up}>
-            <UpperBar sceneName="Please enter a scene name" />
+    // <HotKeyOrder className={className}>
+    <ContextMenuProvider>
+      <Fragment>
+        <Box id="UP" {...boxProps.up}>
+          <UpperBar sceneName="Please enter a scene name" />
+        </Box>
+        <Box id="US" className={cx('upper-section')} {...boxProps.us}>
+          <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
+            <BaseModalProvider>
+              <LibraryPanel />
+            </BaseModalProvider>
           </Box>
-          <Box id="US" className={cx('upper-section')} {...boxProps.us}>
-            <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
-              <BaseModalProvider>
-                <LibraryPanel />
-              </BaseModalProvider>
-            </Box>
-            <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
-              <RenderingPanel />
-            </Box>
-            <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-              <BaseModalProvider>
-                <ControlPanel />
-              </BaseModalProvider>
-            </Box>
+          <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
+            <RenderingPanel />
           </Box>
-          <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
-            <Box id="MB" {...boxProps.mb}>
-              <MiddleBar />
-            </Box>
-            <Box id="TP" {...boxProps.tp}>
-              <BaseModalProvider>
-                <TimelinePanel />
-              </BaseModalProvider>
-            </Box>
+          <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
+            <BaseModalProvider>
+              <ControlPanel />
+            </BaseModalProvider>
           </Box>
-        </Fragment>
-      </ContextMenuProvider>
-    </HotKeyOrder>
+        </Box>
+        <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
+          <Box id="MB" {...boxProps.mb}>
+            <MiddleBar />
+          </Box>
+          <Box id="TP" {...boxProps.tp}>
+            <BaseModalProvider>
+              <TimelinePanel />
+            </BaseModalProvider>
+          </Box>
+        </Box>
+      </Fragment>
+    </ContextMenuProvider>
   );
 };
 
