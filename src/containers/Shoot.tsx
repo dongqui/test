@@ -267,7 +267,8 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
   };
 
   return (
-    <HotKeyOrder className={className}>
+    // <HotKeyOrder className={className}>
+    <div className={className}>
       <ContextMenuProvider>
         <Fragment>
           <Box id="UP" {...boxProps.up}>
@@ -300,7 +301,7 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
           </Box>
         </Fragment>
       </ContextMenuProvider>
-    </HotKeyOrder>
+    </div>
   );
 };
 
