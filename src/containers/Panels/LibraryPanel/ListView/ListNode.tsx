@@ -1433,6 +1433,29 @@ const ListNode: FunctionComponent<Props> = ({
 
       // model node로 이동
       if (type === 'Model') {
+        if (dragTarget?.type === 'Motion' && !dragNode?.mocapData) {
+          // 리타겟팅이 완료되지 않은 모델에 추출한 모션을 import
+          const confirmed = await getConfirm({
+            title: 'Confirm',
+            message: TEXT.CONFIRM_04,
+            confirmText: 'Confirm',
+            cancelText: 'Cancel',
+            confirmColor: 'positive',
+          });
+
+          if (confirmed) {
+            handleVisualization();
+
+            dispatch(
+              cpActions.switchMode({
+                mode: 'Retargeting',
+              }),
+            );
+          }
+
+          return;
+        }
+
         if (dragTarget?.type === 'Motion' && dragNode?.mocapData) {
           /**
            * @TODO 리타겟 및 하위로 모션 추가
@@ -1645,6 +1668,7 @@ const ListNode: FunctionComponent<Props> = ({
               message: TEXT.CONFIRM_04,
               confirmText: 'Confirm',
               cancelText: 'Cancel',
+              confirmColor: 'positive',
             });
 
             if (confirmed) {
