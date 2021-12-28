@@ -317,6 +317,7 @@ const LibraryPanel: FunctionComponent = () => {
           message: TEXT.CONFIRM_01,
           confirmText: 'Confirm',
           cancelText: 'Cancel',
+          confirmColor: 'positive',
           onConfirm: () => {
             dispatch(
               modeSelectActions.changeMode({

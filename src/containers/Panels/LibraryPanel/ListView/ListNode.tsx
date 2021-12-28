@@ -1454,82 +1454,101 @@ const ListNode: FunctionComponent<Props> = ({
 
           // 이름이 같은 모션이 이미 있는 경우
           if (dropNode && isAlreadyExist) {
-            const message = TEXT.CONFIRM_05.replace(/%s/, dragNode.name);
+            // const message = TEXT.CONFIRM_05.replace(/%s/, dragNode.name);
 
-            const confirmed = await getConfirm({
-              title: 'Warning',
-              message: message,
-              confirmText: 'Yes',
-              cancelText: 'No',
-            });
+            // const confirmed = await getConfirm({
+            //   title: 'Warning',
+            //   message: message,
+            //   confirmText: 'Yes',
+            //   cancelText: 'No',
+            // });
 
-            if (confirmed) {
-              if (cloneDragNode && dropNode && targetAsset && targetRetargetMap) {
-                try {
-                  const mocapAnimationIngredient = await getRetargetedMocapData(
-                    dropNode.assetId!,
-                    dragNode.name,
-                    targetRetargetMap,
-                    filterAnimatableTransformNodes(targetAsset.transformNodes),
-                    dragNode.mocapData,
-                    3000,
-                  );
+            if (cloneDragNode && dropNode && targetAsset && targetRetargetMap) {
+              const currentPathNodeName = _lpNode
+                .filter((node) => {
+                  if (node.parentId === id) {
+                    const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
+                    const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
 
-                  // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
-                  const filterNodes = _lpNode.filter((node) => node.id !== duplicatedTarget[0].id);
-
-                  const nextNodes = produce(filterNodes, (draft) => {
-                    const targetNode = find(draft, { id });
-
-                    if (targetNode) {
-                      cloneDragNode.id = mocapAnimationIngredient.id;
-                      cloneDragNode.assetId = mocapAnimationIngredient.assetId;
-                      cloneDragNode.parentId = id;
-                      // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
-                      cloneDragNode.filePath = filePath + `\\${name}`;
-
-                      targetNode.childrens.push(cloneDragNode.id);
-
-                      // @TODO 하위 노드도 추가
-                      draft.push(cloneDragNode);
-
-                      if (cloneDragNode.childrens.length > 0) {
-                        cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
-                      }
+                    // if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+                    if (tempName === node.name || node.name.includes(`${tempName} `)) {
+                      return true;
                     }
-                  });
+                    return false;
+                  }
+                })
+                .map((filteredNode) => filteredNode.name);
 
+              const nodeName = beforeMove({
+                name: cloneDragNode.name,
+                comparisonNames: currentPathNodeName,
+              });
+
+              try {
+                const mocapAnimationIngredient = await getRetargetedMocapData(
+                  dropNode.assetId!,
+                  dragNode.name,
+                  targetRetargetMap,
+                  filterAnimatableTransformNodes(targetAsset.transformNodes),
+                  dragNode.mocapData,
+                  3000,
+                );
+
+                // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
+                // const filterNodes = _lpNode.filter((node) => node.id !== duplicatedTarget[0].id);
+
+                const nextNodes = produce(_lpNode, (draft) => {
+                  const targetNode = find(draft, { id });
+
+                  if (targetNode) {
+                    cloneDragNode.id = mocapAnimationIngredient.id;
+                    cloneDragNode.assetId = mocapAnimationIngredient.assetId;
+                    cloneDragNode.name = nodeName;
+                    cloneDragNode.parentId = id;
+                    // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
+                    cloneDragNode.filePath = filePath + `\\${name}`;
+
+                    targetNode.childrens.push(cloneDragNode.id);
+
+                    // @TODO 하위 노드도 추가
+                    draft.push(cloneDragNode);
+
+                    if (cloneDragNode.childrens.length > 0) {
+                      cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                    }
+                  }
+                });
+
+                dispatch(
+                  lpNodeActions.changeNode({
+                    nodes: nextNodes,
+                  }),
+                );
+                dispatch(
+                  animationDataActions.addAnimationIngredient({
+                    animationIngredient: mocapAnimationIngredient,
+                  }),
+                );
+                dispatch(
+                  plaskProjectActions.addAnimationIngredient({
+                    assetId: dropNode.assetId!,
+                    animationIngredientId: mocapAnimationIngredient.id,
+                  }),
+                );
+
+                if (dropNode.assetId) {
                   dispatch(
-                    lpNodeActions.changeNode({
-                      nodes: nextNodes,
-                    }),
-                  );
-                  dispatch(
-                    animationDataActions.addAnimationIngredient({
-                      animationIngredient: mocapAnimationIngredient,
-                    }),
-                  );
-                  dispatch(
-                    plaskProjectActions.addAnimationIngredient({
-                      assetId: dropNode.assetId!,
+                    animationDataActions.changeCurrentAnimationIngredient({
+                      assetId: dropNode.assetId,
                       animationIngredientId: mocapAnimationIngredient.id,
                     }),
                   );
 
-                  if (dropNode.assetId) {
-                    dispatch(
-                      animationDataActions.changeCurrentAnimationIngredient({
-                        assetId: dropNode.assetId,
-                        animationIngredientId: mocapAnimationIngredient.id,
-                      }),
-                    );
+                  handleVisualization();
+                }
 
-                    handleVisualization();
-                  }
-
-                  return;
-                } catch (error) {}
-              }
+                return;
+              } catch (error) {}
             }
           }
 
