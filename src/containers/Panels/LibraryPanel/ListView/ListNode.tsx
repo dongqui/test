@@ -476,6 +476,31 @@ const ListNode: FunctionComponent<Props> = ({
   const [currentMotions, setCurrentMotions] = useState<AnimationIngredient[]>([]);
   const [isOpenExportModal, setIsOpenExportModal] = useState(false);
 
+  const [isVisualizeCompleted, setIsVisualizeCompleted] = useState(false);
+
+  useEffect(() => {
+    if (isVisualizeCompleted && assetId) {
+      const currentVisualizedAsset = find(_assetList, { id: assetId });
+
+      if (currentVisualizedAsset) {
+        const animationIngredients = filter(_animationIngredients, { assetId: currentVisualizedAsset.id });
+
+        const hasCurrentMotion = animationIngredients.some((ingredient) => ingredient.current);
+
+        if (!hasCurrentMotion) {
+          dispatch(
+            animationDataActions.changeCurrentAnimationIngredient({
+              assetId: assetId,
+              animationIngredientId: animationIngredients[0].id,
+            }),
+          );
+
+          handleVisualization();
+        }
+      }
+    }
+  }, [_animationIngredients, _assetList, assetId, dispatch, handleVisualization, isVisualizeCompleted]);
+
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -857,9 +882,10 @@ const ListNode: FunctionComponent<Props> = ({
 
                   if (isEmptyMotion) {
                     addEmptyMotion();
+                    setIsVisualizeCompleted(true);
+                  } else {
+                    handleVisualization();
                   }
-
-                  handleVisualization();
                 },
                 children: [],
               },
