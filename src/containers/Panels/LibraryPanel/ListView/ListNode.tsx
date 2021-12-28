@@ -2016,15 +2016,19 @@ const ListNode: FunctionComponent<Props> = ({
           },
         };
 
-        GLTF2Export.GLBAsync(baseScene, name, options).then(async (glb) => {
+        const parentAsset = find(_lpNode, { id: parentId });
+
+        const resultName = type === 'Model' ? name : (parentAsset && parentAsset.name) || name;
+
+        GLTF2Export.GLBAsync(baseScene, resultName, options).then(async (glb) => {
           if (format === 'glb') {
             glb.downloadFiles();
           }
 
           if (format === 'fbx') {
             const fileName = Object.keys(glb.glTFFiles);
-            const file = new File([glb.glTFFiles[fileName[0]]], name);
-            file.path = name;
+            const file = new File([glb.glTFFiles[fileName[0]]], resultName);
+            file.path = resultName;
 
             onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
 
@@ -2032,7 +2036,7 @@ const ListNode: FunctionComponent<Props> = ({
               .then((response) => {
                 const link = document.createElement('a');
                 link.href = response;
-                link.download = name;
+                link.download = resultName;
                 link.click();
 
                 onModalClose();
@@ -2061,8 +2065,8 @@ const ListNode: FunctionComponent<Props> = ({
                 const bvhMap = await createBvhMap(bones, retargetMap, 3000);
 
                 const fileName = Object.keys(glb.glTFFiles);
-                const file = new File([glb.glTFFiles[fileName[0]]], name);
-                file.path = name;
+                const file = new File([glb.glTFFiles[fileName[0]]], resultName);
+                file.path = resultName;
 
                 onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
 
@@ -2070,7 +2074,7 @@ const ListNode: FunctionComponent<Props> = ({
                   .then((response) => {
                     const link = document.createElement('a');
                     link.href = response;
-                    link.download = name;
+                    link.download = resultName;
                     link.click();
 
                     onModalClose();
@@ -2106,7 +2110,22 @@ const ListNode: FunctionComponent<Props> = ({
         });
       }
     },
-    [_animationIngredients, _assetList, _fps, _retargetMaps, _screenList, _visibilityOptions, _visualizedAssetIds, assetId, name, onModalClose, onModalOpen],
+    [
+      _animationIngredients,
+      _assetList,
+      _fps,
+      _lpNode,
+      _retargetMaps,
+      _screenList,
+      _visibilityOptions,
+      _visualizedAssetIds,
+      assetId,
+      name,
+      onModalClose,
+      onModalOpen,
+      parentId,
+      type,
+    ],
   );
 
   const handleExportCancel = useCallback(() => {
