@@ -199,16 +199,16 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         label: 'New Directory',
         onClick: handleCreateDirectory,
       },
-      {
-        label: 'Select all',
-        onClick: handleSelectAll,
-      },
-      {
-        label: 'Unselect all',
-        onClick: handleUnSelectAll,
-      },
+      // {
+      //   label: 'Select all',
+      //   onClick: handleSelectAll,
+      // },
+      // {
+      //   label: 'Unselect all',
+      //   onClick: handleUnSelectAll,
+      // },
     ],
-    [handleCreateDirectory, handleSelectAll, handleUnSelectAll],
+    [handleCreateDirectory],
   );
 
   const [selectedId, setSelectedId] = useState<string[]>([]);
@@ -470,8 +470,8 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     const confirmed = await getConfirm({
       title: 'Confirm',
       message: 'Are you sure you want to delete the file?',
-      confirmText: '확인',
-      cancelText: '취소',
+      confirmText: 'Confirm',
+      cancelText: 'Cancel',
     });
 
     if (!confirmed) {
@@ -524,24 +524,23 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   };
 
   return (
-    <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
-      <div className={cx('inner')} ref={wrapperRef}>
-        {rootPathNode.map((node, i) => (
-          <div className={cx('node-row')} ref={nodeRef[i]} key={node.id}>
-            <ListNode
-              onSelect={handleSelect}
-              selectedId={selectedId}
-              onSetDragTarget={handleSetDragTarget}
-              dragTarget={dragTarget}
-              onCopy={handleCopy}
-              onDelete={handleDelete}
-              {...node}
-            />
-          </div>
-        ))}
-        {/* <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} /> */}
-      </div>
-    </HotKeys>
+    // <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
+    <div className={cx('inner')} ref={wrapperRef}>
+      {rootPathNode.map((node, i) => (
+        <div className={cx('node-row')} ref={nodeRef[i]} key={node.id}>
+          <ListNode
+            onSelect={handleSelect}
+            selectedId={selectedId}
+            onSetDragTarget={handleSetDragTarget}
+            dragTarget={dragTarget}
+            onCopy={handleCopy}
+            onDelete={handleDelete}
+            {...node}
+          />
+        </div>
+      ))}
+      {/* <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} /> */}
+    </div>
   );
 };
 
