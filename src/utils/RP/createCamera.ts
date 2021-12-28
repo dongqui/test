@@ -17,7 +17,7 @@ const createCamera = (scene: BABYLON.Scene, initialPosition?: BABYLON.Vector3) =
   arcRotateCamera.minZ = 0.1;
   arcRotateCamera.inertia = 0.5;
   arcRotateCamera.wheelPrecision = 50;
-  arcRotateCamera.wheelDeltaPercentage = 0.01;
+  arcRotateCamera.wheelDeltaPercentage = 0.05;
   arcRotateCamera.lowerRadiusLimit = 0.1;
   arcRotateCamera.upperRadiusLimit = 20;
   arcRotateCamera.pinchPrecision = 50;
