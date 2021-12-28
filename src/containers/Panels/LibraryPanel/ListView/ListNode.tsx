@@ -925,7 +925,7 @@ const ListNode: FunctionComponent<Props> = ({
                     }
 
                     // visualizedAssetList에서 제외
-                    dispatch(plaskProjectActions.unrenderAsset({}));
+                    dispatch(plaskProjectActions.unrenderAsset({ assetId }));
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
                   }
@@ -1682,42 +1682,73 @@ const ListNode: FunctionComponent<Props> = ({
             message: message,
             confirmText: 'Yes',
             cancelText: 'No',
+            confirmColor: 'positive',
           });
 
           if (confirmed) {
-            // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
-            const filterNodes = cloneLPNode.filter((node) => node.id !== duplicatedTarget[0].id);
+            // handleDelete(id, assetId);
+            const targetNode = childrenList.find((children) => children.name === dragNode?.name);
+            const targetAssetId = targetNode?.assetId;
 
-            const nextNodes = produce(filterNodes, (draft) => {
-              const targetNode = find(filterNodes, { id });
+            if (targetAssetId) {
+              const afterNodes = deleteChild(_lpNode, [targetNode.id]);
 
-              const clondDragNodeId = uuid();
+              {
+                const targetAsset = _assetList.find((asset) => asset.id === targetAssetId);
+                const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(targetAssetId) && !checkIsTargetMesh(object));
+                const targetControllers = _selectableObjects.filter((object) => object.id.includes(targetAssetId) && checkIsTargetMesh(object));
 
-              if (targetNode) {
-                cloneDragNode.id = clondDragNodeId;
-                cloneDragNode.parentId = id;
-                cloneDragNode.filePath = filePath + `\\${name}`;
-
-                const nextChildren = targetNode.childrens.filter((current) => current !== duplicatedTarget[0].id);
-
-                nextChildren.push(clondDragNodeId);
-
-                targetNode.childrens = nextChildren;
-
-                // @TODO 하위 노드도 추가
-                draft.push(cloneDragNode);
-
-                if (cloneDragNode.childrens.length > 0) {
-                  cloneDragNode.childrens.map((child) => depthChangeKey(filterNodes, child, cloneDragNode));
+                // delete 대상이 render된 scene에서 대상의 요소들 remove
+                if (targetAsset) {
+                  _screenList
+                    .map((screen) => screen.scene)
+                    .forEach((scene) => {
+                      removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+                    });
                 }
-              }
-            });
 
-            dispatch(
-              lpNodeActions.changeNode({
-                nodes: nextNodes,
-              }),
-            );
+                // assetList에서 제외
+                dispatch(plaskProjectActions.removeAsset({ assetId: targetAssetId }));
+                // animationData 삭제
+                dispatch(animationDataActions.removeAsset({ assetId: targetAssetId }));
+                // 선택 대상에서 제외
+                dispatch(selectingDataActions.unrenderAsset({ assetId: targetAssetId }));
+              }
+
+              // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
+              const filterNodes = cloneLPNode.filter((node) => node.id !== duplicatedTarget[0].id);
+
+              const nextNodes = produce(filterNodes, (draft) => {
+                const targetNode = find(filterNodes, { id });
+
+                const clondDragNodeId = uuid();
+
+                if (targetNode) {
+                  cloneDragNode.id = clondDragNodeId;
+                  cloneDragNode.parentId = id;
+                  cloneDragNode.filePath = filePath + `\\${name}`;
+
+                  const nextChildren = targetNode.childrens.filter((current) => current !== duplicatedTarget[0].id);
+
+                  nextChildren.push(clondDragNodeId);
+
+                  targetNode.childrens = nextChildren;
+
+                  // @TODO 하위 노드도 추가
+                  draft.push(cloneDragNode);
+
+                  if (cloneDragNode.childrens.length > 0) {
+                    cloneDragNode.childrens.map((child) => depthChangeKey(filterNodes, child, cloneDragNode));
+                  }
+                }
+              });
+
+              dispatch(
+                lpNodeActions.changeNode({
+                  nodes: nextNodes,
+                }),
+              );
+            }
 
             return;
           }
@@ -1776,6 +1807,9 @@ const ListNode: FunctionComponent<Props> = ({
       _assetList,
       _lpNode,
       _retargetMaps,
+      _screenList,
+      _selectableObjects,
+      deleteChild,
       depthChangeKey,
       depthCheck,
       dispatch,
