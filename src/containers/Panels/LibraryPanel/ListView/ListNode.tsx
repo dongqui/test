@@ -2021,11 +2021,23 @@ const ListNode: FunctionComponent<Props> = ({
             }
           }
 
+          const targetScreen = _screenList[0];
+          const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
+          if (targetScreen && visualizedAsset) {
+            const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === targetScreen.id);
+            const { skeleton, meshes } = visualizedAsset;
+            const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], targetScreen.scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
+            skeletonViewer.mesh.id = `${visualizedAsset.id}//skeletonViewer`;
+            if (targetVisibilityOption) {
+              skeletonViewer.isEnabled = targetVisibilityOption.isBoneVisible;
+            }
+          }
+
           setIsOpenExportModal(false);
         });
       }
     },
-    [_animationIngredients, _assetList, _fps, _retargetMaps, _screenList, assetId, name, onModalClose, onModalOpen],
+    [_animationIngredients, _assetList, _fps, _retargetMaps, _screenList, _visibilityOptions, _visualizedAssetIds, assetId, name, onModalClose, onModalOpen],
   );
 
   const handleExportCancel = useCallback(() => {
