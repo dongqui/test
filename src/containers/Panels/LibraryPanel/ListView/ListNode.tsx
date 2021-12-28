@@ -884,6 +884,23 @@ const ListNode: FunctionComponent<Props> = ({
                     addEmptyMotion();
                     setIsVisualizeCompleted(true);
                   } else {
+                    const currentAsset = find(_assetList, { id: assetId });
+
+                    if (currentAsset) {
+                      const animationIngredients = filter(_animationIngredients, { assetId: currentAsset.id });
+
+                      const hasCurrentMotion = animationIngredients.some((ingredient) => ingredient.current);
+
+                      if (!hasCurrentMotion && assetId) {
+                        dispatch(
+                          animationDataActions.changeCurrentAnimationIngredient({
+                            assetId: assetId,
+                            animationIngredientId: animationIngredients[0].id,
+                          }),
+                        );
+                      }
+                    }
+
                     handleVisualization();
                   }
                 },
