@@ -1389,11 +1389,13 @@ const ListNode: FunctionComponent<Props> = ({
 
           // 이름이 같은 모션이 이미 있는 경우
           if (dropNode && isAlreadyExist) {
+            const message = TEXT.CONFIRM_05.replace(/%s/, dragNode.name);
+
             const confirmed = await getConfirm({
               title: 'Warning',
-              message: '해당 모델에 동일한 이름의 모션이 있습니다. 덮어쓰시겠습니까?',
-              confirmText: '확인',
-              cancelText: '취소',
+              message: message,
+              confirmText: 'Yes',
+              cancelText: 'No',
             });
 
             if (confirmed) {
@@ -1607,12 +1609,14 @@ const ListNode: FunctionComponent<Props> = ({
         const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
         const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
 
-        if (dropNode && isAlreadyExist && cloneDragNode) {
+        if (dropNode && isAlreadyExist && cloneDragNode && dragNode) {
+          const message = TEXT.CONFIRM_05.replace(/%s/, dragNode.name);
+
           const confirmed = await getConfirm({
             title: 'Warning',
-            message: '해당 디렉토리에 동일한 이름의 파일이 있습니다. 덮어쓰시겠습니까?',
-            confirmText: '덮어쓰기',
-            cancelText: '무시하기',
+            message: message,
+            confirmText: 'Yes',
+            cancelText: 'No',
           });
 
           if (confirmed) {
