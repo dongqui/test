@@ -210,8 +210,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     if (selectedAssetId) {
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
       if (targetAnimationIngredient) {
-        const selectedLayerFirstTrack = targetAnimationIngredient.tracks.find((track) => track.layerId === _seletedLayer);
-        setIsFilterOn(selectedLayerFirstTrack ? selectedLayerFirstTrack.useFilter : false);
+        const hasFilteredTrack = Boolean(targetAnimationIngredient.tracks.find((track) => track.layerId === _seletedLayer && track.useFilter));
+        if (hasFilteredTrack) {
+          setIsFilterOn(true);
+        } else {
+          setIsFilterOn(false);
+        }
       } else {
         setIsFilterOn(false);
       }
