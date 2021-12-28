@@ -472,6 +472,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
       message: 'Are you sure you want to delete the file?',
       confirmText: 'Confirm',
       cancelText: 'Cancel',
+      confirmColor: 'positive',
     });
 
     if (!confirmed) {
