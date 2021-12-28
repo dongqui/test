@@ -1824,6 +1824,8 @@ const ListNode: FunctionComponent<Props> = ({
       };
 
       const handleKeydown = (e: KeyboardEvent) => {
+        e.stopPropagation();
+
         switch (e.key) {
           case 'F2': {
             handleEdit();
