@@ -84,9 +84,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       f: { pressed: false },
       F: { pressed: false },
       ㄹ: { pressed: false },
-      p: { pressed: false },
-      P: { pressed: false },
-      ㅔ: { pressed: false },
       h: { pressed: false },
       H: { pressed: false },
       ㅗ: { pressed: false },
@@ -435,14 +432,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             case 'p':
             case 'P':
             case 'ㅔ': // p (perspective)
-              if (multiKeyController[event.key]) {
-                multiKeyController[event.key].pressed = true;
-              }
-              if (
-                (multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) &&
-                multiKeyController[event.key].pressed &&
-                activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA
-              ) {
+              if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
                 const prevCameraPosition = prevCameraPositions[focusedCanvas.id];
                 if (prevCameraPosition) {
                   activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
@@ -485,13 +475,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 dispatch(selectingDataActions.selectAllSelectableObjects());
               }
               break;
-            case 'd':
-            case 'D':
-            case 'ㅇ':
-              if (event.ctrlKey || event.metaKey) {
-                dispatch(selectingDataActions.resetSelectedTargets());
-              }
-              break;
             default: {
               break;
             }
@@ -520,9 +503,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         case 'f':
         case 'F':
         case 'ㄹ':
-        case 'p':
-        case 'P':
-        case 'ㅔ':
         case 'h':
         case 'H':
         case 'ㅗ':
