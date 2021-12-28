@@ -1902,33 +1902,35 @@ const ListNode: FunctionComponent<Props> = ({
         }
       };
 
-      const handleKeydown = (e: KeyboardEvent) => {
-        e.stopPropagation();
+      if (!isEditing) {
+        const handleKeydown = (e: KeyboardEvent) => {
+          e.stopPropagation();
 
-        switch (e.key) {
-          case 'F2': {
-            handleEdit();
-            break;
+          switch (e.key) {
+            case 'F2': {
+              handleEdit();
+              break;
+            }
+            case 'Delete': {
+              onDelete();
+              break;
+            }
+            default: {
+              break;
+            }
           }
-          case 'Delete': {
-            onDelete();
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-      };
+        };
 
-      currentRef.addEventListener('mousedown', handleMouseDown);
-      keydownCurrentRef.addEventListener('keydown', handleKeydown);
+        currentRef.addEventListener('mousedown', handleMouseDown);
+        keydownCurrentRef.addEventListener('keydown', handleKeydown);
 
-      return () => {
-        currentRef.removeEventListener('mousedown', handleMouseDown);
-        keydownCurrentRef.removeEventListener('keydown', handleKeydown);
-      };
+        return () => {
+          currentRef.removeEventListener('mousedown', handleMouseDown);
+          keydownCurrentRef.removeEventListener('keydown', handleKeydown);
+        };
+      }
     }
-  }, [handleEdit, onDelete]);
+  }, [handleEdit, isEditing, onDelete]);
 
   const handlers = {
     LP_EDIT_NAME: handleEdit,
