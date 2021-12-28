@@ -13,9 +13,6 @@ import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
 
-import DummyControlPanel from './Panels/DummyControlPanel';
-import DummyTimelinePanel from './Panels/DummyTimelinePanel';
-
 import HotKeyOrder from './HotKeyOrder';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
