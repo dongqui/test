@@ -1920,7 +1920,8 @@ const ListNode: FunctionComponent<Props> = ({
           }
 
           if (format === 'fbx') {
-            const file = new File([glb.glTFFiles[name]], name);
+            const fileName = Object.keys(glb.glTFFiles);
+            const file = new File([glb.glTFFiles[fileName[0]]], name);
             file.path = name;
 
             onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
@@ -1957,7 +1958,8 @@ const ListNode: FunctionComponent<Props> = ({
               if (retargetMap) {
                 const bvhMap = await createBvhMap(bones, retargetMap, 3000);
 
-                const file = new File([glb.glTFFiles[name]], name);
+                const fileName = Object.keys(glb.glTFFiles);
+                const file = new File([glb.glTFFiles[fileName[0]]], name);
                 file.path = name;
 
                 onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
