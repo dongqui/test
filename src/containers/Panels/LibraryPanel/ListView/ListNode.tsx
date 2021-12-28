@@ -1433,6 +1433,29 @@ const ListNode: FunctionComponent<Props> = ({
 
       // model node로 이동
       if (type === 'Model') {
+        if (dragTarget?.type === 'Motion' && !dragNode?.mocapData) {
+          // 리타겟팅이 완료되지 않은 모델에 추출한 모션을 import
+          const confirmed = await getConfirm({
+            title: 'Confirm',
+            message: TEXT.CONFIRM_04,
+            confirmText: 'Confirm',
+            cancelText: 'Cancel',
+            confirmColor: 'positive',
+          });
+
+          if (confirmed) {
+            handleVisualization();
+
+            dispatch(
+              cpActions.switchMode({
+                mode: 'Retargeting',
+              }),
+            );
+          }
+
+          return;
+        }
+
         if (dragTarget?.type === 'Motion' && dragNode?.mocapData) {
           /**
            * @TODO 리타겟 및 하위로 모션 추가
@@ -1454,82 +1477,101 @@ const ListNode: FunctionComponent<Props> = ({
 
           // 이름이 같은 모션이 이미 있는 경우
           if (dropNode && isAlreadyExist) {
-            const message = TEXT.CONFIRM_05.replace(/%s/, dragNode.name);
+            // const message = TEXT.CONFIRM_05.replace(/%s/, dragNode.name);
 
-            const confirmed = await getConfirm({
-              title: 'Warning',
-              message: message,
-              confirmText: 'Yes',
-              cancelText: 'No',
-            });
+            // const confirmed = await getConfirm({
+            //   title: 'Warning',
+            //   message: message,
+            //   confirmText: 'Yes',
+            //   cancelText: 'No',
+            // });
 
-            if (confirmed) {
-              if (cloneDragNode && dropNode && targetAsset && targetRetargetMap) {
-                try {
-                  const mocapAnimationIngredient = await getRetargetedMocapData(
-                    dropNode.assetId!,
-                    dragNode.name,
-                    targetRetargetMap,
-                    filterAnimatableTransformNodes(targetAsset.transformNodes),
-                    dragNode.mocapData,
-                    3000,
-                  );
+            if (cloneDragNode && dropNode && targetAsset && targetRetargetMap) {
+              const currentPathNodeName = _lpNode
+                .filter((node) => {
+                  if (node.parentId === id) {
+                    const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
+                    const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
 
-                  // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
-                  const filterNodes = _lpNode.filter((node) => node.id !== duplicatedTarget[0].id);
-
-                  const nextNodes = produce(filterNodes, (draft) => {
-                    const targetNode = find(draft, { id });
-
-                    if (targetNode) {
-                      cloneDragNode.id = mocapAnimationIngredient.id;
-                      cloneDragNode.assetId = mocapAnimationIngredient.assetId;
-                      cloneDragNode.parentId = id;
-                      // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
-                      cloneDragNode.filePath = filePath + `\\${name}`;
-
-                      targetNode.childrens.push(cloneDragNode.id);
-
-                      // @TODO 하위 노드도 추가
-                      draft.push(cloneDragNode);
-
-                      if (cloneDragNode.childrens.length > 0) {
-                        cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
-                      }
+                    // if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+                    if (tempName === node.name || node.name.includes(`${tempName} `)) {
+                      return true;
                     }
-                  });
+                    return false;
+                  }
+                })
+                .map((filteredNode) => filteredNode.name);
 
+              const nodeName = beforeMove({
+                name: cloneDragNode.name,
+                comparisonNames: currentPathNodeName,
+              });
+
+              try {
+                const mocapAnimationIngredient = await getRetargetedMocapData(
+                  dropNode.assetId!,
+                  dragNode.name,
+                  targetRetargetMap,
+                  filterAnimatableTransformNodes(targetAsset.transformNodes),
+                  dragNode.mocapData,
+                  3000,
+                );
+
+                // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
+                // const filterNodes = _lpNode.filter((node) => node.id !== duplicatedTarget[0].id);
+
+                const nextNodes = produce(_lpNode, (draft) => {
+                  const targetNode = find(draft, { id });
+
+                  if (targetNode) {
+                    cloneDragNode.id = mocapAnimationIngredient.id;
+                    cloneDragNode.assetId = mocapAnimationIngredient.assetId;
+                    cloneDragNode.name = nodeName;
+                    cloneDragNode.parentId = id;
+                    // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
+                    cloneDragNode.filePath = filePath + `\\${name}`;
+
+                    targetNode.childrens.push(cloneDragNode.id);
+
+                    // @TODO 하위 노드도 추가
+                    draft.push(cloneDragNode);
+
+                    if (cloneDragNode.childrens.length > 0) {
+                      cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
+                    }
+                  }
+                });
+
+                dispatch(
+                  lpNodeActions.changeNode({
+                    nodes: nextNodes,
+                  }),
+                );
+                dispatch(
+                  animationDataActions.addAnimationIngredient({
+                    animationIngredient: mocapAnimationIngredient,
+                  }),
+                );
+                dispatch(
+                  plaskProjectActions.addAnimationIngredient({
+                    assetId: dropNode.assetId!,
+                    animationIngredientId: mocapAnimationIngredient.id,
+                  }),
+                );
+
+                if (dropNode.assetId) {
                   dispatch(
-                    lpNodeActions.changeNode({
-                      nodes: nextNodes,
-                    }),
-                  );
-                  dispatch(
-                    animationDataActions.addAnimationIngredient({
-                      animationIngredient: mocapAnimationIngredient,
-                    }),
-                  );
-                  dispatch(
-                    plaskProjectActions.addAnimationIngredient({
-                      assetId: dropNode.assetId!,
+                    animationDataActions.changeCurrentAnimationIngredient({
+                      assetId: dropNode.assetId,
                       animationIngredientId: mocapAnimationIngredient.id,
                     }),
                   );
 
-                  if (dropNode.assetId) {
-                    dispatch(
-                      animationDataActions.changeCurrentAnimationIngredient({
-                        assetId: dropNode.assetId,
-                        animationIngredientId: mocapAnimationIngredient.id,
-                      }),
-                    );
+                  handleVisualization();
+                }
 
-                    handleVisualization();
-                  }
-
-                  return;
-                } catch (error) {}
-              }
+                return;
+              } catch (error) {}
             }
           }
 
@@ -1626,6 +1668,7 @@ const ListNode: FunctionComponent<Props> = ({
               message: TEXT.CONFIRM_04,
               confirmText: 'Confirm',
               cancelText: 'Cancel',
+              confirmColor: 'positive',
             });
 
             if (confirmed) {
@@ -1674,85 +1717,85 @@ const ListNode: FunctionComponent<Props> = ({
         const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
         const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
 
-        if (dropNode && isAlreadyExist && cloneDragNode && dragNode) {
-          const message = TEXT.CONFIRM_05.replace(/%s/, dragNode.name);
+        // if (dropNode && isAlreadyExist && cloneDragNode && dragNode) {
+        //   const message = TEXT.CONFIRM_05.replace(/%s/, dragNode.name);
 
-          const confirmed = await getConfirm({
-            title: 'Warning',
-            message: message,
-            confirmText: 'Yes',
-            cancelText: 'No',
-            confirmColor: 'positive',
-          });
+        //   const confirmed = await getConfirm({
+        //     title: 'Warning',
+        //     message: message,
+        //     confirmText: 'Yes',
+        //     cancelText: 'No',
+        //     confirmColor: 'positive',
+        //   });
 
-          if (confirmed) {
-            // handleDelete(id, assetId);
-            const targetNode = childrenList.find((children) => children.name === dragNode?.name);
-            const targetAssetId = targetNode?.assetId;
+        //   if (confirmed) {
+        //     // handleDelete(id, assetId);
+        //     const targetNode = childrenList.find((children) => children.name === dragNode?.name);
+        //     const targetAssetId = targetNode?.assetId;
 
-            if (targetNode && targetAssetId) {
-              const afterNodes = deleteChild(_lpNode, [targetNode.id]);
+        //     if (targetNode && targetAssetId) {
+        //       const afterNodes = deleteChild(_lpNode, [targetNode.id]);
 
-              {
-                const targetAsset = _assetList.find((asset) => asset.id === targetAssetId);
-                const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(targetAssetId) && !checkIsTargetMesh(object));
-                const targetControllers = _selectableObjects.filter((object) => object.id.includes(targetAssetId) && checkIsTargetMesh(object));
+        //       {
+        //         const targetAsset = _assetList.find((asset) => asset.id === targetAssetId);
+        //         const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(targetAssetId) && !checkIsTargetMesh(object));
+        //         const targetControllers = _selectableObjects.filter((object) => object.id.includes(targetAssetId) && checkIsTargetMesh(object));
 
-                // delete 대상이 render된 scene에서 대상의 요소들 remove
-                if (targetAsset) {
-                  _screenList
-                    .map((screen) => screen.scene)
-                    .forEach((scene) => {
-                      removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
-                    });
-                }
+        //         // delete 대상이 render된 scene에서 대상의 요소들 remove
+        //         if (targetAsset) {
+        //           _screenList
+        //             .map((screen) => screen.scene)
+        //             .forEach((scene) => {
+        //               removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+        //             });
+        //         }
 
-                // assetList에서 제외
-                dispatch(plaskProjectActions.removeAsset({ assetId: targetAssetId }));
-                // animationData 삭제
-                dispatch(animationDataActions.removeAsset({ assetId: targetAssetId }));
-                // 선택 대상에서 제외
-                dispatch(selectingDataActions.unrenderAsset({ assetId: targetAssetId }));
-              }
+        //         // assetList에서 제외
+        //         dispatch(plaskProjectActions.removeAsset({ assetId: targetAssetId }));
+        //         // animationData 삭제
+        //         dispatch(animationDataActions.removeAsset({ assetId: targetAssetId }));
+        //         // 선택 대상에서 제외
+        //         dispatch(selectingDataActions.unrenderAsset({ assetId: targetAssetId }));
+        //       }
 
-              // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
-              const filterNodes = cloneLPNode.filter((node) => node.id !== duplicatedTarget[0].id);
+        //       // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
+        //       const filterNodes = cloneLPNode.filter((node) => node.id !== duplicatedTarget[0].id);
 
-              const nextNodes = produce(filterNodes, (draft) => {
-                const targetNode = find(filterNodes, { id });
+        //       const nextNodes = produce(filterNodes, (draft) => {
+        //         const targetNode = find(filterNodes, { id });
 
-                const clondDragNodeId = uuid();
+        //         const clondDragNodeId = uuid();
 
-                if (targetNode) {
-                  cloneDragNode.id = clondDragNodeId;
-                  cloneDragNode.parentId = id;
-                  cloneDragNode.filePath = filePath + `\\${name}`;
+        //         if (targetNode) {
+        //           cloneDragNode.id = clondDragNodeId;
+        //           cloneDragNode.parentId = id;
+        //           cloneDragNode.filePath = filePath + `\\${name}`;
 
-                  const nextChildren = targetNode.childrens.filter((current) => current !== duplicatedTarget[0].id);
+        //           const nextChildren = targetNode.childrens.filter((current) => current !== duplicatedTarget[0].id);
 
-                  nextChildren.push(clondDragNodeId);
+        //           nextChildren.push(clondDragNodeId);
 
-                  targetNode.childrens = nextChildren;
+        //           targetNode.childrens = nextChildren;
 
-                  // @TODO 하위 노드도 추가
-                  draft.push(cloneDragNode);
+        //           // @TODO 하위 노드도 추가
+        //           draft.push(cloneDragNode);
 
-                  if (cloneDragNode.childrens.length > 0) {
-                    cloneDragNode.childrens.map((child) => depthChangeKey(filterNodes, child, cloneDragNode));
-                  }
-                }
-              });
+        //           if (cloneDragNode.childrens.length > 0) {
+        //             cloneDragNode.childrens.map((child) => depthChangeKey(filterNodes, child, cloneDragNode));
+        //           }
+        //         }
+        //       });
 
-              dispatch(
-                lpNodeActions.changeNode({
-                  nodes: nextNodes,
-                }),
-              );
-            }
+        //       dispatch(
+        //         lpNodeActions.changeNode({
+        //           nodes: nextNodes,
+        //         }),
+        //       );
+        //     }
 
-            return;
-          }
-        }
+        //     return;
+        //   }
+        // }
 
         // @TODO 없으면 비활성 처리 필요
         if (cloneDragNode) {
@@ -1807,9 +1850,6 @@ const ListNode: FunctionComponent<Props> = ({
       _assetList,
       _lpNode,
       _retargetMaps,
-      _screenList,
-      _selectableObjects,
-      deleteChild,
       depthChangeKey,
       depthCheck,
       dispatch,
