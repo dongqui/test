@@ -960,6 +960,28 @@ const ListNode: FunctionComponent<Props> = ({
                     const asset = find(_assetList, { id: assetId });
                     const targetAnimationIngredient = find(_animationIngredients, { id: targetMotion.id });
 
+                    if (targetAnimationIngredient?.current) {
+                      if (assetId && _visualizedAssetIds.includes(assetId)) {
+                        const targetAsset = _assetList.find((asset) => asset.id === assetId);
+                        const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+                        const targetControllers = _selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+
+                        // delete 대상이 render된 scene에서 대상의 요소들 remove
+                        if (targetAsset) {
+                          _screenList
+                            .map((screen) => screen.scene)
+                            .forEach((scene) => {
+                              removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+                            });
+                        }
+
+                        // visualizedAssetList에서 제외
+                        dispatch(plaskProjectActions.unrenderAsset({}));
+                        // 선택 대상에서 제외
+                        dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                      }
+                    }
+
                     if (asset && targetAnimationIngredient && assetId) {
                       dispatch(
                         animationDataActions.removeAnimationIngredient({
