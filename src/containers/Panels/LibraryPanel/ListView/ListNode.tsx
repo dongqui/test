@@ -1690,7 +1690,7 @@ const ListNode: FunctionComponent<Props> = ({
             const targetNode = childrenList.find((children) => children.name === dragNode?.name);
             const targetAssetId = targetNode?.assetId;
 
-            if (targetAssetId) {
+            if (targetNode && targetAssetId) {
               const afterNodes = deleteChild(_lpNode, [targetNode.id]);
 
               {
