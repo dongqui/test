@@ -12,7 +12,7 @@ import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
 import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop } from 'utils/common';
-import { filterQuaternion, filterVector } from 'utils/RP';
+import { duplicateAnimationIngredient, filterQuaternion, filterVector } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import { beforePaste, checkCreateDuplicates, checkPasteDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { getRetargetedMocapData } from 'utils/LP/Retarget';
@@ -1041,12 +1041,7 @@ const ListNode: FunctionComponent<Props> = ({
 
                           const nodeName = check === '0' ? name : `${name} (${check})`;
 
-                          const animationIngredient: AnimationIngredient = {
-                            ...selectedMotion,
-                            current: false,
-                            name: nodeName,
-                            id: uuid(),
-                          };
+                          const animationIngredient = duplicateAnimationIngredient(selectedMotion);
 
                           const motion: LP.Node = {
                             id: animationIngredient.id,
