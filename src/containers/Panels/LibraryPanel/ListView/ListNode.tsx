@@ -303,17 +303,6 @@ const ListNode: FunctionComponent<Props> = ({
             // dragBox 선택 대상에 추가
             dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
 
-            // scene들에 skeletonViewer 추가
-            // if (skeleton) {
-            //   const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
-
-            //   // @TODO
-            //   // scene.removeMesh(skeletonViewer.mesh);
-
-            //   skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
-            //   scene.addMesh(skeletonViewer.mesh);
-            // }
-
             // scene들에 애니메이션 적용을 위한 transformNode 추가
             transformNodes.forEach((transformNode) => {
               scene.addTransformNode(transformNode);
