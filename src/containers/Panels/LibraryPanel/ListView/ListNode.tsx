@@ -12,12 +12,11 @@ import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
 import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop } from 'utils/common';
-import { filterQuaternion, filterVector } from 'utils/RP';
+import { createAnimationGroupFromIngredient, duplicateAnimationIngredient } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import { beforePaste, checkCreateDuplicates, checkPasteDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { getRetargetedMocapData } from 'utils/LP/Retarget';
 import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
-import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as cpActions from 'actions/CP/cpModeSelection';
@@ -1041,12 +1040,7 @@ const ListNode: FunctionComponent<Props> = ({
 
                           const nodeName = check === '0' ? name : `${name} (${check})`;
 
-                          const animationIngredient: AnimationIngredient = {
-                            ...selectedMotion,
-                            current: false,
-                            name: nodeName,
-                            id: uuid(),
-                          };
+                          const animationIngredient = duplicateAnimationIngredient(selectedMotion);
 
                           const motion: LP.Node = {
                             id: animationIngredient.id,
@@ -2012,51 +2006,7 @@ const ListNode: FunctionComponent<Props> = ({
           const ingredients = motion === 'all' ? currentModelAnimationIngredients : filter(currentModelAnimationIngredients, { id: motion });
 
           ingredients.forEach((animationIngredient) => {
-            const { name, tracks } = animationIngredient;
-            const animationGroup = new BABYLON.AnimationGroup(name);
-            tracks.forEach((track) => {
-              // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
-              if (track.transformKeys.length > 0) {
-                if (track.property !== 'rotation') {
-                  // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
-                  if (track.isIncluded) {
-                    if (track.property === 'position' || track.property === 'scaling') {
-                      const newAnimation = new BABYLON.Animation(
-                        track.name,
-                        `${track.property}`,
-                        _fps,
-                        BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                        BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                      );
-                      if (track.useFilter) {
-                        // filter function 적용
-                        newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
-                      } else {
-                        newAnimation.setKeys(track.transformKeys);
-                      }
-                      track.target.animations.push(newAnimation);
-                      animationGroup.addTargetedAnimation(newAnimation, track.target);
-                    } else if (track.property === 'rotationQuaternion') {
-                      const newAnimation = new BABYLON.Animation(
-                        track.name,
-                        `${track.property}`,
-                        _fps,
-                        BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                        BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                      );
-                      if (track.useFilter) {
-                        // filter function 적용
-                        newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
-                      } else {
-                        newAnimation.setKeys(track.transformKeys);
-                      }
-                      track.target.animations.push(newAnimation);
-                      animationGroup.addTargetedAnimation(newAnimation, track.target);
-                    }
-                  }
-                }
-              }
-            });
+            const animationGroup = createAnimationGroupFromIngredient(animationIngredient, _fps, true);
           });
         }
 
