@@ -1040,7 +1040,7 @@ const ListNode: FunctionComponent<Props> = ({
 
                           const nodeName = check === '0' ? name : `${name} (${check})`;
 
-                          const animationIngredient = duplicateAnimationIngredient(selectedMotion);
+                          const animationIngredient = duplicateAnimationIngredient(selectedMotion, nodeName);
 
                           const motion: LP.Node = {
                             id: animationIngredient.id,
