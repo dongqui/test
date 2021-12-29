@@ -498,10 +498,10 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                   id: uuidv4(),
                   fileName: basicExtractName,
                   type: browserType === 'safari' ? 'mp4' : 'webm',
-                  start: 0,
+                  start: start,
                   end: end,
-                  startTime: 0,
-                  endTime: duration,
+                  startTime: start,
+                  endTime: end,
                   url: videoRef.current!.src,
                   timeout: videoRef.current!.duration * 30 * 1000,
                   duration: videoRef.current!.duration,
@@ -562,6 +562,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           </div>
         </BaseModal>
       )}
+      {cameraDropdownState && <div className={cx('dropdown-overlay')} onClick={() => setCameraDropdownState(false)} />}
     </div>
   );
 };
