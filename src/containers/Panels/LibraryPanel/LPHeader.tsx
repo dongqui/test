@@ -14,6 +14,7 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
     (e: ChangeEvent<HTMLInputElement>) => {
       if (e.target.files !== null) {
         const files = Array.from(e.target.files);
+        e.target.value = '';
 
         onLoad(files);
       }
