@@ -1292,6 +1292,7 @@ const ListNode: FunctionComponent<Props> = ({
             title: 'Warning',
             message: TEXT.DUPLICATE_01,
             confirmText: 'Close',
+            confirmColor: 'cancel',
             onConfirm: () => {
               onModalClose();
               renameRef.current?.focus();
@@ -2051,7 +2052,7 @@ const ListNode: FunctionComponent<Props> = ({
                 onModalOpen({
                   title: 'Warning',
                   message: 'An error occured while exporting the model. If the problem recurs, please send us a message on our website.',
-                  confirmText: 'Contact',
+                  confirmText: 'Close',
                   onConfirm: () => {
                     onModalClose();
                   },
@@ -2089,7 +2090,8 @@ const ListNode: FunctionComponent<Props> = ({
                     onModalOpen({
                       title: 'Warning',
                       message: 'An error occured while exporting the model. If the problem recurs, please send us a message on our website.',
-                      confirmText: 'Contact',
+                      confirmText: 'Close',
+                      confirmColor: 'cancel',
                       onConfirm: () => {
                         onModalClose();
                       },
