@@ -60,6 +60,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
+  const _playState = useSelector((state) => state.animatingControls.playState);
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
   const _plaskSkeletonViewers = useSelector((state) => state.screenData.plaskSkeletonViewers);
 
@@ -1533,12 +1534,15 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       },
       {
         label: 'Insert keyframe',
+        disabled: _visualizedAssetIds.length === 0 || _playState === 'play',
         onClick: () => {
-          dispatch(animationDataActions.editKeyframes());
+          if (!(_visualizedAssetIds.length === 0 || _playState === 'play')) {
+            dispatch(animationDataActions.editKeyframes());
+          }
         },
       },
     ],
-    [_screenList, dispatch, gizmoManager, prevCameraPositions],
+    [_playState, _screenList, _visualizedAssetIds.length, dispatch, gizmoManager, prevCameraPositions],
   );
 
   useEffect(() => {
