@@ -15,6 +15,7 @@ import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import {
   checkIsObjectIn,
   checkIsTargetMesh,
+  createAnimationGroupFromIngredient,
   createCamera,
   createDirectionalLight,
   createGrounds,
@@ -1153,123 +1154,15 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
 
-    if (visualizedAnimationIngredients.length > 0) {
+    if (visualizedAnimationIngredients.length === 1) {
       _screenList.forEach(({ scene }) => {
         scene.animationGroups.forEach((animationGroup) => {
           scene.removeAnimationGroup(animationGroup);
         });
       });
 
-      const newAnimationGroup = new BABYLON.AnimationGroup(visualizedAnimationIngredients.length === 1 ? visualizedAnimationIngredients[0].name : 'totalAnimationGroup');
-
-      visualizedAnimationIngredients.forEach((animationIngredient) => {
-        // layer 고려가 들어가야 함
-        // 각 layer의 transformKeys 합해주는 연산 필요
-        const { id, name, assetId, tracks, layers } = animationIngredient;
-
-        const transformKeysListForTargetId: {
-          [id in string]: {
-            target: BABYLON.Mesh | BABYLON.TransformNode;
-            positionTransformKeysList: Array<BABYLON.IAnimationKey[]>;
-            rotationQuaternionTransformKeysList: Array<BABYLON.IAnimationKey[]>;
-            scalingTransformKeysList: Array<BABYLON.IAnimationKey[]>;
-          };
-        } = {};
-
-        tracks.forEach((track) => {
-          // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
-          if (track.transformKeys.length > 0) {
-            if (track.property !== 'rotation') {
-              // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
-              if (track.isIncluded) {
-                if (track.property === 'position') {
-                  if (transformKeysListForTargetId[track.targetId]) {
-                    transformKeysListForTargetId[track.targetId].positionTransformKeysList.push(
-                      track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
-                    );
-                  } else {
-                    transformKeysListForTargetId[track.targetId] = {
-                      target: track.target,
-                      positionTransformKeysList: [track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
-                      rotationQuaternionTransformKeysList: [],
-                      scalingTransformKeysList: [],
-                    };
-                  }
-                } else if (track.property === 'rotationQuaternion') {
-                  if (transformKeysListForTargetId[track.targetId]) {
-                    transformKeysListForTargetId[track.targetId].rotationQuaternionTransformKeysList.push(
-                      track.useFilter ? filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
-                    );
-                  } else {
-                    transformKeysListForTargetId[track.targetId] = {
-                      target: track.target,
-                      positionTransformKeysList: [],
-                      rotationQuaternionTransformKeysList: [track.useFilter ? filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
-                      scalingTransformKeysList: [],
-                    };
-                  }
-                } else if (track.property === 'scaling') {
-                  if (transformKeysListForTargetId[track.targetId]) {
-                    transformKeysListForTargetId[track.targetId].scalingTransformKeysList.push(
-                      track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
-                    );
-                  } else {
-                    transformKeysListForTargetId[track.targetId] = {
-                      target: track.target,
-                      positionTransformKeysList: [],
-                      rotationQuaternionTransformKeysList: [],
-                      scalingTransformKeysList: [track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
-                    };
-                  }
-                }
-              }
-            }
-          }
-        });
-
-        Object.entries(transformKeysListForTargetId).forEach(([targetId, { target, positionTransformKeysList, rotationQuaternionTransformKeysList, scalingTransformKeysList }]) => {
-          const positionTotalTransformKeys = getTotalTransformKeys(positionTransformKeysList, false);
-          const rotationQuaternionTotalTransformKeys = getTotalTransformKeys(rotationQuaternionTransformKeysList, true);
-          const scalingTotalTransformKeys = getTotalTransformKeys(scalingTransformKeysList, false);
-
-          const newPositionAnimation = new BABYLON.Animation(
-            `${target.name}|position`,
-            'position',
-            _fps,
-            BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-          );
-          newPositionAnimation.setKeys(positionTotalTransformKeys);
-
-          const newRotationQuaternionAnimation = new BABYLON.Animation(
-            `${target.name}|rotationQuaternion`,
-            'rotationQuaternion',
-            _fps,
-            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-          );
-          newRotationQuaternionAnimation.setKeys(rotationQuaternionTotalTransformKeys);
-
-          const newScalingAnimation = new BABYLON.Animation(
-            `${target.name}|scaling`,
-            'scaling',
-            _fps,
-            BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-          );
-          newScalingAnimation.setKeys(scalingTotalTransformKeys);
-
-          if (newPositionAnimation.getKeys().length > 0) {
-            newAnimationGroup.addTargetedAnimation(newPositionAnimation, target);
-          }
-          if (newRotationQuaternionAnimation.getKeys().length > 0) {
-            newAnimationGroup.addTargetedAnimation(newRotationQuaternionAnimation, target);
-          }
-          if (newScalingAnimation.getKeys().length > 0) {
-            newAnimationGroup.addTargetedAnimation(newScalingAnimation, target);
-          }
-        });
-      });
+      // useFilter 실제로는 false로 주고, 재생시에만 true이도록 변경해야 함
+      const newAnimationGroup = createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], _fps, true);
 
       newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
       dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
