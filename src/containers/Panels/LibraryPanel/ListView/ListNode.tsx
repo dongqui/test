@@ -510,134 +510,134 @@ const ListNode: FunctionComponent<Props> = ({
 
       const isContainsSelectedArea = selectedId.includes(id);
 
-      if (isContainsSelectedArea && selectedId.length > 1) {
-        if (type === 'Motion') {
-          onContextMenuOpen({
-            top: e.clientY,
-            left: e.clientX,
-            menu: [
-              {
-                label: 'Delete',
-                onClick: () => {
-                  onDelete();
-                },
-                children: [],
-              },
-              {
-                label: 'Copy',
-                onClick: onCopy,
-                children: [],
-              },
-              {
-                label: 'Duplicate',
-                onClick: () => {
-                  const selectedNodes = _lpNode.filter((node) => selectedId.includes(node.id));
-                  const selectedMotions = selectedNodes.filter((node) => node.type === 'Motion');
+      // if (isContainsSelectedArea && selectedId.length > 1) {
+      //   if (type === 'Motion') {
+      //     onContextMenuOpen({
+      //       top: e.clientY,
+      //       left: e.clientX,
+      //       menu: [
+      //         {
+      //           label: 'Delete',
+      //           onClick: () => {
+      //             onDelete();
+      //           },
+      //           children: [],
+      //         },
+      //         {
+      //           label: 'Copy',
+      //           onClick: onCopy,
+      //           children: [],
+      //         },
+      //         {
+      //           label: 'Duplicate',
+      //           onClick: () => {
+      //             const selectedNodes = _lpNode.filter((node) => selectedId.includes(node.id));
+      //             const selectedMotions = selectedNodes.filter((node) => node.type === 'Motion');
 
-                  const nextAddAnimationIngredients: AnimationIngredient[] = [];
-                  const parentModel = find(_lpNode, { id: selectedMotions[0].parentId });
+      //             const nextAddAnimationIngredients: AnimationIngredient[] = [];
+      //             const parentModel = find(_lpNode, { id: selectedMotions[0].parentId });
 
-                  const nextNodes = produce(_lpNode, (draft) => {
-                    selectedMotions.map((selectedMotion) => {
-                      const draftParentModel = find(draft, { id: selectedMotion.parentId });
+      //             const nextNodes = produce(_lpNode, (draft) => {
+      //               selectedMotions.map((selectedMotion) => {
+      //                 const draftParentModel = find(draft, { id: selectedMotion.parentId });
 
-                      if (draftParentModel) {
-                        const motions = filter(_animationIngredients, { assetId: draftParentModel.assetId });
+      //                 if (draftParentModel) {
+      //                   const motions = filter(_animationIngredients, { assetId: draftParentModel.assetId });
 
-                        if (motions && draftParentModel.assetId) {
-                          const selectedAnimationIngredient = find(motions, { id: selectedMotion.id });
+      //                   if (motions && draftParentModel.assetId) {
+      //                     const selectedAnimationIngredient = find(motions, { id: selectedMotion.id });
 
-                          if (selectedAnimationIngredient) {
-                            const currentPathNodeNames = _lpNode
-                              .filter((node) => node.parentId === selectedMotion.parentId && node.name.includes(selectedMotion.name))
-                              .map((filteredNode) => filteredNode.name);
+      //                     if (selectedAnimationIngredient) {
+      //                       const currentPathNodeNames = _lpNode
+      //                         .filter((node) => node.parentId === selectedMotion.parentId && node.name.includes(selectedMotion.name))
+      //                         .map((filteredNode) => filteredNode.name);
 
-                            const check = checkPasteDuplicates(selectedMotion.name, currentPathNodeNames);
+      //                       const check = checkPasteDuplicates(selectedMotion.name, currentPathNodeNames);
 
-                            const nodeName = check === '0' ? selectedMotion.name : `${selectedMotion.name} (${check})`;
+      //                       const nodeName = check === '0' ? selectedMotion.name : `${selectedMotion.name} (${check})`;
 
-                            const animationIngredient: AnimationIngredient = {
-                              ...selectedAnimationIngredient,
-                              current: false,
-                              name: nodeName,
-                              id: uuid(),
-                            };
+      //                       const animationIngredient: AnimationIngredient = {
+      //                         ...selectedAnimationIngredient,
+      //                         current: false,
+      //                         name: nodeName,
+      //                         id: uuid(),
+      //                       };
 
-                            const motion: LP.Node = {
-                              id: animationIngredient.id,
-                              assetId: draftParentModel.assetId,
-                              parentId: draftParentModel.id,
-                              name: nodeName,
-                              filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
-                              childrens: [],
-                              extension: '',
-                              type: 'Motion',
-                            };
+      //                       const motion: LP.Node = {
+      //                         id: animationIngredient.id,
+      //                         assetId: draftParentModel.assetId,
+      //                         parentId: draftParentModel.id,
+      //                         name: nodeName,
+      //                         filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
+      //                         childrens: [],
+      //                         extension: '',
+      //                         type: 'Motion',
+      //                       };
 
-                            draftParentModel.childrens.push(motion.id);
-                            draft.push(motion);
-                            nextAddAnimationIngredients.push(animationIngredient);
-                          }
-                        }
-                      }
-                    });
-                  });
+      //                       draftParentModel.childrens.push(motion.id);
+      //                       draft.push(motion);
+      //                       nextAddAnimationIngredients.push(animationIngredient);
+      //                     }
+      //                   }
+      //                 }
+      //               });
+      //             });
 
-                  dispatch(
-                    lpNodeActions.changeNode({
-                      nodes: nextNodes,
-                    }),
-                  );
+      //             dispatch(
+      //               lpNodeActions.changeNode({
+      //                 nodes: nextNodes,
+      //               }),
+      //             );
 
-                  if (parentModel) {
-                    dispatch(
-                      plaskProjectActions.addAnimationIngredients({
-                        assetId: parentModel.assetId!,
-                        animationIngredientIds: nextAddAnimationIngredients.map((motion) => motion.id),
-                      }),
-                    );
+      //             if (parentModel) {
+      //               dispatch(
+      //                 plaskProjectActions.addAnimationIngredients({
+      //                   assetId: parentModel.assetId!,
+      //                   animationIngredientIds: nextAddAnimationIngredients.map((motion) => motion.id),
+      //                 }),
+      //               );
 
-                    dispatch(
-                      animationDataActions.addAnimationIngredients({
-                        animationIngredients: nextAddAnimationIngredients,
-                      }),
-                    );
-                  }
-                },
-                children: [],
-              },
-            ],
-          });
-        } else {
-          onContextMenuOpen({
-            top: e.clientY,
-            left: e.clientX,
-            menu: [
-              {
-                label: 'Delete',
-                onClick: () => {
-                  onDelete();
-                  // const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+      //               dispatch(
+      //                 animationDataActions.addAnimationIngredients({
+      //                   animationIngredients: nextAddAnimationIngredients,
+      //                 }),
+      //               );
+      //             }
+      //           },
+      //           children: [],
+      //         },
+      //       ],
+      //     });
+      //   } else {
+      //     onContextMenuOpen({
+      //       top: e.clientY,
+      //       left: e.clientX,
+      //       menu: [
+      //         {
+      //           label: 'Delete',
+      //           onClick: () => {
+      //             onDelete();
+      //             // const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
 
-                  // dispatch(
-                  //   lpNodeActions.changeNode({
-                  //     nodes: afterNodes,
-                  //   }),
-                  // );
-                },
-                children: [],
-              },
-              // {
-              //   label: 'Copy',
-              //   onClick: onCopy,
-              //   children: [],
-              // },
-            ],
-          });
-        }
+      //             // dispatch(
+      //             //   lpNodeActions.changeNode({
+      //             //     nodes: afterNodes,
+      //             //   }),
+      //             // );
+      //           },
+      //           children: [],
+      //         },
+      //         // {
+      //         //   label: 'Copy',
+      //         //   onClick: onCopy,
+      //         //   children: [],
+      //         // },
+      //       ],
+      //     });
+      //   }
 
-        return;
-      }
+      //   return;
+      // }
 
       if (isContains) {
         onSelect && onSelect(id, assetId);
@@ -1980,18 +1980,10 @@ const ListNode: FunctionComponent<Props> = ({
         const handleKeydown = (e: KeyboardEvent) => {
           e.stopPropagation();
 
-          switch (e.key) {
-            case 'F2': {
-              handleEdit();
-              break;
-            }
-            case 'Delete': {
-              onDelete();
-              break;
-            }
-            default: {
-              break;
-            }
+          if (e.key === 'F2') {
+            handleEdit();
+          } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Delete')) {
+            onDelete();
           }
         };
 
