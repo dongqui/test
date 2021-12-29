@@ -37,7 +37,8 @@ const createPlaskTrack = (name: string, layerId: string, target: any, property: 
     transformKeys,
     interpolationType: 'linear',
     isMocapAnimation,
-    useFilter: isMocapAnimation ? true : false, // mocap 결과물의 경우에만 기본으로 filter를 적용합니다.
+    useFilter: false, // mocap 결과물의 경우에도 false 사용하도록 기획 변경
+    // useFilter: isMocapAnimation ? true : false, // mocap 결과물의 경우에만 기본으로 filter를 적용합니다.
     filterBeta,
     filterMinCutoff,
     isIncluded: true,

@@ -12,7 +12,7 @@ const ChangeModes = () => {
     <div className={cx('change-modes')}>
       <SimpleMode />
       <InsertKeyframe />
-      <AutoKey />
+      {/* <AutoKey /> */}
     </div>
   );
 };
