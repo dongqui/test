@@ -867,6 +867,12 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'Visualization',
                 disabled: currentVisualizedNode?.id === id,
                 onClick: () => {
+                  _screenList.forEach(({ scene }) => {
+                    scene.animationGroups.forEach((animationGroup) => {
+                      scene.removeAnimationGroup(animationGroup);
+                    });
+                  });
+
                   const isEmptyMotion = childrens.length === 0;
 
                   if (isEmptyMotion) {
@@ -1111,6 +1117,12 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'Visualization',
                 disabled: currentVisualizedMotion[0]?.id === id,
                 onClick: () => {
+                  _screenList.forEach(({ scene }) => {
+                    scene.animationGroups.forEach((animationGroup) => {
+                      scene.removeAnimationGroup(animationGroup);
+                    });
+                  });
+
                   const parentModel = find(_lpNode, { id: parentId });
 
                   if (parentModel) {
