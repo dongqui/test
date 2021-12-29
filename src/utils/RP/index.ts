@@ -5,6 +5,7 @@ export { default as createDirectionalLight } from './createDirectionalLight';
 export { default as createAnimationIngredient } from './createAnimationIngredient';
 export { default as createPlaskTrack } from './createPlaskTrack';
 export { default as duplicateAnimationIngredient } from './duplicateAnimationIngredient';
+export { default as createAnimationGroupFromIngredient } from './createAnimationGroupFromIngredient';
 
 export { default as checkIsObjectIn } from './checkIsObjectIn';
 export { default as checkIsControllerIn } from './checkIsControllerIn';
