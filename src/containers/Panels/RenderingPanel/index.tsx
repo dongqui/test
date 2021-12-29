@@ -1680,40 +1680,40 @@ const RenderingPanel: FunctionComponent<Props> = () => {
           checked: targetVisibilityOption ? targetVisibilityOption.isMeshVisible : true,
           active: targetVisibilityOption && !targetVisibilityOption.isBoneVisible ? false : true,
         },
-        {
-          value: 'Controller',
-          onSelect: () => {
-            if (targetVisibilityOption) {
-              if (targetVisibilityOption.isControllerVisible) {
-                const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-                if (visualizedAsset) {
-                  const controllers = _selectableObjects.filter((object) => object.id.includes(visualizedAsset.id) && checkIsTargetMesh(object)) as BABYLON.Mesh[];
-                  controllers.forEach((controller) => {
-                    if (controller.getScene().uid === targetScreen.id) {
-                      controller.isVisible = false;
-                    }
-                  });
-                }
+        // {
+        //   value: 'Controller',
+        //   onSelect: () => {
+        //     if (targetVisibilityOption) {
+        //       if (targetVisibilityOption.isControllerVisible) {
+        //         const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
+        //         if (visualizedAsset) {
+        //           const controllers = _selectableObjects.filter((object) => object.id.includes(visualizedAsset.id) && checkIsTargetMesh(object)) as BABYLON.Mesh[];
+        //           controllers.forEach((controller) => {
+        //             if (controller.getScene().uid === targetScreen.id) {
+        //               controller.isVisible = false;
+        //             }
+        //           });
+        //         }
 
-                dispatch(screenDataActions.setControllerVisibility({ screenId: targetScreen.id, value: false }));
-              } else {
-                const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-                if (visualizedAsset) {
-                  const controllers = _selectableObjects.filter((object) => object.id.includes(visualizedAsset.id) && checkIsTargetMesh(object)) as BABYLON.Mesh[];
-                  controllers.forEach((controller) => {
-                    if (controller.getScene().uid === targetScreen.id) {
-                      controller.isVisible = true;
-                    }
-                  });
-                }
+        //         dispatch(screenDataActions.setControllerVisibility({ screenId: targetScreen.id, value: false }));
+        //       } else {
+        //         const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
+        //         if (visualizedAsset) {
+        //           const controllers = _selectableObjects.filter((object) => object.id.includes(visualizedAsset.id) && checkIsTargetMesh(object)) as BABYLON.Mesh[];
+        //           controllers.forEach((controller) => {
+        //             if (controller.getScene().uid === targetScreen.id) {
+        //               controller.isVisible = true;
+        //             }
+        //           });
+        //         }
 
-                dispatch(screenDataActions.setControllerVisibility({ screenId: targetScreen.id, value: true }));
-              }
-            }
-          },
-          checked: targetVisibilityOption ? targetVisibilityOption.isControllerVisible : true,
-          active: true,
-        },
+        //         dispatch(screenDataActions.setControllerVisibility({ screenId: targetScreen.id, value: true }));
+        //       }
+        //     }
+        //   },
+        //   checked: targetVisibilityOption ? targetVisibilityOption.isControllerVisible : true,
+        //   active: true,
+        // },
         {
           value: 'Gizmo',
           onSelect: () => {
