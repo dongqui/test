@@ -417,15 +417,21 @@ const RenderingPanel: FunctionComponent<Props> = () => {
               if (multiKeyController[event.key]) {
                 multiKeyController[event.key].pressed = true;
               }
-              if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
+              if (multiKeyController[event.key].pressed) {
+                // v를 누르고 k
+                if (multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) {
+                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
 
-                if (!prevCameraPositions[focusedCanvas.id]) {
-                  prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                  if (!prevCameraPositions[focusedCanvas.id]) {
+                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                  }
+
+                  distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
+                  activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
+                } else {
+                  // k
+                  dispatch(animationDataActions.editKeyframes());
                 }
-
-                distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
-                activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
               }
               break;
             case 'p':
