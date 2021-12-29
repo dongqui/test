@@ -22,7 +22,14 @@ const InsertKeyframe = () => {
     }
   }, [_playState, _visualizedAssetIds.length, dispatch]);
 
-  return <IconWrapper className={cx({ disabled: _playState === 'play' })} icon={SvgPath.InsertKeyframe} hasFrame={false} onClick={handleClickButton} />;
+  return (
+    <IconWrapper
+      className={cx({ disabled: _visualizedAssetIds.length === 0 || _playState === 'play' })}
+      icon={SvgPath.InsertKeyframe}
+      hasFrame={false}
+      onClick={handleClickButton}
+    />
+  );
 };
 
 export default InsertKeyframe;

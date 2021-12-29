@@ -13,6 +13,7 @@ const cx = classNames.bind(styles);
 const AutoKey = () => {
   const dispatch = useDispatch();
 
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _isAutokeyOn = useSelector((state) => state.animatingControls.isAutokeyOn);
 
@@ -23,7 +24,7 @@ const AutoKey = () => {
     }
   }, [_playState, dispatch]);
 
-  return <TextButton text="Autokey" className={cx({ active: _isAutokeyOn, disabled: _playState === 'play' })} onClick={handleAutoKeyButton} />;
+  return <TextButton text="Autokey" className={cx({ active: _isAutokeyOn, disabled: _visualizedAssetIds.length === 0 || _playState === 'play' })} onClick={handleAutoKeyButton} />;
 };
 
 export default AutoKey;

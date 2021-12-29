@@ -43,10 +43,13 @@ const Stop: FunctionComponent<Props> = (props) => {
 
   // 재생 도중에 model이 변경되거나 clear 될 경우, button 상태를 stop으로 전환
   useEffect(() => {
+    if (_currentAnimationGroup && _currentAnimationGroup.isStarted) {
+      _currentAnimationGroup.goToFrame(TimeIndex.getStartTimeIndex()).stop();
+    }
     translateScrubber();
     dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'stop', currentTimeIndex: TimeIndex.getStartTimeIndex() }));
     window.cancelAnimationFrame(requestAnimationFrameId.current);
-  }, [_visualizedAssetIds, requestAnimationFrameId, dispatch, translateScrubber]);
+  }, [_visualizedAssetIds, _currentAnimationGroup, requestAnimationFrameId, dispatch, translateScrubber]);
 
   return <IconWrapper id="animationStopButton" onClick={handleStopButtonClick} icon={SvgPath.Stop} hasFrame={false} />;
 };
