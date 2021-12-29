@@ -493,20 +493,22 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             <FilledButton
               text="Ok"
               className={cx('extract-button')}
-              onClick={() =>
+              onClick={() => {
+                console.log(start);
+                console.log(end);
                 handleExtractMotion({
                   id: uuidv4(),
                   fileName: basicExtractName,
                   type: browserType === 'safari' ? 'mp4' : 'webm',
-                  start: 0,
+                  start: start,
                   end: end,
-                  startTime: 0,
-                  endTime: duration,
+                  startTime: start,
+                  endTime: end,
                   url: videoRef.current!.src,
                   timeout: videoRef.current!.duration * 30 * 1000,
                   duration: videoRef.current!.duration,
-                })
-              }
+                });
+              }}
             ></FilledButton>
           </div>
         </BaseModal>
