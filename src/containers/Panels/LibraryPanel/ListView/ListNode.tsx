@@ -1980,18 +1980,10 @@ const ListNode: FunctionComponent<Props> = ({
         const handleKeydown = (e: KeyboardEvent) => {
           e.stopPropagation();
 
-          switch (e.key) {
-            case 'F2': {
-              handleEdit();
-              break;
-            }
-            case 'Delete': {
-              onDelete();
-              break;
-            }
-            default: {
-              break;
-            }
+          if (e.key === 'F2') {
+            handleEdit();
+          } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Delete')) {
+            onDelete();
           }
         };
 
