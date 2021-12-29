@@ -60,7 +60,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-left: 8px;
+    margin-right: 8px;
     width: 69px;
     height: 24px;
     font-size: 11px;
@@ -69,6 +69,7 @@
     padding: 0 8px;
     color: #fff;
     cursor: pointer;
+    order: -1;
 
     &:hover {
       background-color: #4f4f4f;
@@ -137,16 +138,16 @@
       &:last-child {
         margin-bottom: 5.5px;
       }
+    }
+  }
 
-      & > .device-select-check {
-        position: absolute;
-        top: 2px;
+  .device-select-check {
+    position: absolute;
+    top: 2px;
 
-        & > svg {
-          width: 15px;
-          height: 15px;
-        }
-      }
+    & > svg {
+      width: 15px;
+      height: 15px;
     }
   }
 
@@ -221,7 +222,6 @@
   font-weight: 400;
   line-height: 13px;
   color: #bdbdbd;
-  margin-bottom: 28px;
   margin: 0 auto 28px auto;
 
   & > strong {

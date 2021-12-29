@@ -15,6 +15,7 @@ import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import {
   checkIsObjectIn,
   checkIsTargetMesh,
+  createAnimationGroupFromIngredient,
   createCamera,
   createDirectionalLight,
   createGrounds,
@@ -60,6 +61,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
+  const _plaskSkeletonViewers = useSelector((state) => state.screenData.plaskSkeletonViewers);
 
   const dispatch = useDispatch();
 
@@ -415,15 +417,21 @@ const RenderingPanel: FunctionComponent<Props> = () => {
               if (multiKeyController[event.key]) {
                 multiKeyController[event.key].pressed = true;
               }
-              if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
+              if (multiKeyController[event.key].pressed) {
+                // v를 누르고 k
+                if (multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) {
+                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
 
-                if (!prevCameraPositions[focusedCanvas.id]) {
-                  prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                  if (!prevCameraPositions[focusedCanvas.id]) {
+                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                  }
+
+                  distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
+                  activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
+                } else {
+                  // k
+                  dispatch(animationDataActions.editKeyframes());
                 }
-
-                distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
-                activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
               }
               break;
             case 'p':
@@ -1152,123 +1160,15 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
 
-    if (visualizedAnimationIngredients.length > 0) {
+    if (visualizedAnimationIngredients.length === 1) {
       _screenList.forEach(({ scene }) => {
         scene.animationGroups.forEach((animationGroup) => {
           scene.removeAnimationGroup(animationGroup);
         });
       });
 
-      const newAnimationGroup = new BABYLON.AnimationGroup(visualizedAnimationIngredients.length === 1 ? visualizedAnimationIngredients[0].name : 'totalAnimationGroup');
-
-      visualizedAnimationIngredients.forEach((animationIngredient) => {
-        // layer 고려가 들어가야 함
-        // 각 layer의 transformKeys 합해주는 연산 필요
-        const { id, name, assetId, tracks, layers } = animationIngredient;
-
-        const transformKeysListForTargetId: {
-          [id in string]: {
-            target: BABYLON.Mesh | BABYLON.TransformNode;
-            positionTransformKeysList: Array<BABYLON.IAnimationKey[]>;
-            rotationQuaternionTransformKeysList: Array<BABYLON.IAnimationKey[]>;
-            scalingTransformKeysList: Array<BABYLON.IAnimationKey[]>;
-          };
-        } = {};
-
-        tracks.forEach((track) => {
-          // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
-          if (track.transformKeys.length > 0) {
-            if (track.property !== 'rotation') {
-              // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
-              if (track.isIncluded) {
-                if (track.property === 'position') {
-                  if (transformKeysListForTargetId[track.targetId]) {
-                    transformKeysListForTargetId[track.targetId].positionTransformKeysList.push(
-                      track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
-                    );
-                  } else {
-                    transformKeysListForTargetId[track.targetId] = {
-                      target: track.target,
-                      positionTransformKeysList: [track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
-                      rotationQuaternionTransformKeysList: [],
-                      scalingTransformKeysList: [],
-                    };
-                  }
-                } else if (track.property === 'rotationQuaternion') {
-                  if (transformKeysListForTargetId[track.targetId]) {
-                    transformKeysListForTargetId[track.targetId].rotationQuaternionTransformKeysList.push(
-                      track.useFilter ? filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
-                    );
-                  } else {
-                    transformKeysListForTargetId[track.targetId] = {
-                      target: track.target,
-                      positionTransformKeysList: [],
-                      rotationQuaternionTransformKeysList: [track.useFilter ? filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
-                      scalingTransformKeysList: [],
-                    };
-                  }
-                } else if (track.property === 'scaling') {
-                  if (transformKeysListForTargetId[track.targetId]) {
-                    transformKeysListForTargetId[track.targetId].scalingTransformKeysList.push(
-                      track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
-                    );
-                  } else {
-                    transformKeysListForTargetId[track.targetId] = {
-                      target: track.target,
-                      positionTransformKeysList: [],
-                      rotationQuaternionTransformKeysList: [],
-                      scalingTransformKeysList: [track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
-                    };
-                  }
-                }
-              }
-            }
-          }
-        });
-
-        Object.entries(transformKeysListForTargetId).forEach(([targetId, { target, positionTransformKeysList, rotationQuaternionTransformKeysList, scalingTransformKeysList }]) => {
-          const positionTotalTransformKeys = getTotalTransformKeys(positionTransformKeysList, false);
-          const rotationQuaternionTotalTransformKeys = getTotalTransformKeys(rotationQuaternionTransformKeysList, true);
-          const scalingTotalTransformKeys = getTotalTransformKeys(scalingTransformKeysList, false);
-
-          const newPositionAnimation = new BABYLON.Animation(
-            `${target.name}|position`,
-            'position',
-            _fps,
-            BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-          );
-          newPositionAnimation.setKeys(positionTotalTransformKeys);
-
-          const newRotationQuaternionAnimation = new BABYLON.Animation(
-            `${target.name}|rotationQuaternion`,
-            'rotationQuaternion',
-            _fps,
-            BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-          );
-          newRotationQuaternionAnimation.setKeys(rotationQuaternionTotalTransformKeys);
-
-          const newScalingAnimation = new BABYLON.Animation(
-            `${target.name}|scaling`,
-            'scaling',
-            _fps,
-            BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-          );
-          newScalingAnimation.setKeys(scalingTotalTransformKeys);
-
-          if (newPositionAnimation.getKeys().length > 0) {
-            newAnimationGroup.addTargetedAnimation(newPositionAnimation, target);
-          }
-          if (newRotationQuaternionAnimation.getKeys().length > 0) {
-            newAnimationGroup.addTargetedAnimation(newRotationQuaternionAnimation, target);
-          }
-          if (newScalingAnimation.getKeys().length > 0) {
-            newAnimationGroup.addTargetedAnimation(newScalingAnimation, target);
-          }
-        });
-      });
+      // useFilter 실제로는 false로 주고, 재생시에만 true이도록 변경해야 함
+      const newAnimationGroup = createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], _fps, true);
 
       newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
       dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
@@ -1671,7 +1571,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   /**
    * screenVisibilityMenu
    */
-  const [skeletonViewer, setSkeletonViewer] = useState<BABYLON.SkeletonViewer | null>(null);
   // skeletonViewer는 단순 debug용이기 때문에 visualizedAsset이 변화될 때마다 생성하도록 변경
   useEffect(() => {
     const targetScreen = _screenList[0];
@@ -1684,18 +1583,21 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       if (targetVisibilityOption) {
         skeletonViewer.isEnabled = targetVisibilityOption.isBoneVisible;
       }
+      dispatch(screenDataActions.addSkeletonViewer({ screenId: targetScreen.id, skeletonViewer: skeletonViewer }));
 
       return () => {
         skeletonViewer.dispose();
-        setSkeletonViewer(null);
+        dispatch(screenDataActions.removeSkeletonViewer({ screenId: targetScreen.id }));
+        // setSkeletonViewer(null);
       };
     }
-  }, [_assetList, _screenList, _visibilityOptions, _visualizedAssetIds]);
+  }, [_assetList, _screenList, _visibilityOptions, _visualizedAssetIds, dispatch]);
 
   const screenVisibilityItemList: ScreenVisivilityItem[] = useMemo(() => {
     const targetScreen = _screenList[0];
     if (targetScreen) {
       const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === targetScreen.id);
+      const targetSkeletonViewer = _plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === targetScreen.id)?.skeletonViewer;
 
       return [
         {
@@ -1715,8 +1617,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                     }
                   });
                   // skeletonView
-                  if (skeletonViewer) {
-                    skeletonViewer.isEnabled = false;
+                  if (targetSkeletonViewer) {
+                    targetSkeletonViewer.isEnabled = false;
                   }
                 }
 
@@ -1734,8 +1636,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                     }
                   });
                   // skeletonView
-                  if (skeletonViewer) {
-                    skeletonViewer.isEnabled = true;
+                  if (targetSkeletonViewer) {
+                    targetSkeletonViewer.isEnabled = true;
                   }
                 }
 
@@ -1830,7 +1732,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     } else {
       return [];
     }
-  }, [_assetList, _screenList, _selectableObjects, _visibilityOptions, _visualizedAssetIds, dispatch, skeletonViewer]);
+  }, [_assetList, _plaskSkeletonViewers, _screenList, _selectableObjects, _visibilityOptions, _visualizedAssetIds, dispatch]);
 
   return (
     <div className={cx('wrapper')}>

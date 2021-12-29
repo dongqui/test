@@ -1,3 +1,5 @@
+import * as BABYLON from '@babylonjs/core';
+
 export type ScreenDataAction =
   | ReturnType<typeof addScreen>
   | ReturnType<typeof removeScreen>
@@ -6,7 +8,9 @@ export type ScreenDataAction =
   | ReturnType<typeof setControllerVisibility>
   | ReturnType<typeof setGridVisibility>
   | ReturnType<typeof setShadowVisibility>
-  | ReturnType<typeof setGizmoVisibility>;
+  | ReturnType<typeof setGizmoVisibility>
+  | ReturnType<typeof addSkeletonViewer>
+  | ReturnType<typeof removeSkeletonViewer>;
 
 const ADD_SCREEN = 'screenDataAction/ADD_SCREEN' as const;
 const REMOVE_SCREEN = 'screenDataAction/REMOVE_SCREEN' as const;
@@ -16,6 +20,8 @@ const SET_CONTROLLER_VISIBILITY = 'screenDataAction/SET_CONTROLLER_VISIBILITY' a
 const SET_GRID_VISIBILITY = 'screenDataAction/SET_GRID_VISIBILITY' as const;
 const SET_SHADOW_VISIBILITY = 'screenDataAction/SET_SHADOW_VISIBILITY' as const;
 const SET_GIZMO_VISIBILITY = 'screenDataAction/SET_GIZMO_VISIBILITY' as const;
+const ADD_SKELETON_VIEWER = 'screenDataAction/ADD_SKELETON_VIEWER' as const;
+const REMOVE_SKELETON_VIEWER = 'screenDataAction/REMOVE_SKELETON_VIEWER' as const;
 
 interface AddScreen {
   screenId: string;
@@ -106,6 +112,29 @@ interface SetGizmoVisibility {
 
 export const setGizmoVisibility = (params: SetGizmoVisibility) => ({
   type: SET_GIZMO_VISIBILITY,
+  payload: {
+    ...params,
+  },
+});
+
+interface AddSkeletonViewer {
+  screenId: string;
+  skeletonViewer: BABYLON.SkeletonViewer;
+}
+
+export const addSkeletonViewer = (params: AddSkeletonViewer) => ({
+  type: ADD_SKELETON_VIEWER,
+  payload: {
+    ...params,
+  },
+});
+
+interface RemoveSkeletonViewer {
+  screenId: string;
+}
+
+export const removeSkeletonViewer = (params: RemoveSkeletonViewer) => ({
+  type: REMOVE_SKELETON_VIEWER,
   payload: {
     ...params,
   },
