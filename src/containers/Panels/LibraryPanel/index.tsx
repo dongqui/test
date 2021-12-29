@@ -304,6 +304,7 @@ const LibraryPanel: FunctionComponent = () => {
             title: 'Warning',
             message: message,
             confirmText: 'Close',
+            confirmColor: 'cancel',
             onConfirm: onModalClose,
           });
         }
