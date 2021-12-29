@@ -78,6 +78,7 @@ const ListNode: FunctionComponent<Props> = ({
   const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
+  const _plaskSkeletonViewers = useSelector((state) => state.screenData.plaskSkeletonViewers);
 
   const _lpNode = useSelector((state) => state.lpNode.node);
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
@@ -1869,8 +1870,8 @@ const ListNode: FunctionComponent<Props> = ({
     (data: { motion: string; format: 'fbx' | 'glb' | 'bvh' }) => {
       const { motion, format } = data;
 
-      const baseScene = _screenList[0].scene;
-      const skeletonViewerMesh = _screenList[0].scene.getMeshByID(`${assetId}//skeletonViewer`);
+      const baseScreen = _screenList[0];
+      const baseScene = baseScreen.scene;
 
       _screenList.forEach(({ scene }) => {
         scene.animationGroups.forEach((animationGroup) => {
@@ -1933,12 +1934,9 @@ const ListNode: FunctionComponent<Props> = ({
           });
         }
 
-        if (skeletonViewerMesh) {
-          _screenList[0].scene.removeMesh(skeletonViewerMesh);
-          const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
-          if (skeletonViewerChildMesh) {
-            skeletonViewerChildMesh.dispose();
-          }
+        const targetSkeletonViewer = _plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === baseScreen.id);
+        if (targetSkeletonViewer) {
+          targetSkeletonViewer.skeletonViewer.isEnabled = false;
         }
 
         const options = {
@@ -2021,23 +2019,16 @@ const ListNode: FunctionComponent<Props> = ({
             }
           }
 
-          const targetScreen = _screenList[0];
-          const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-          if (targetScreen && visualizedAsset) {
-            const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === targetScreen.id);
-            const { skeleton, meshes } = visualizedAsset;
-            const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], targetScreen.scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
-            skeletonViewer.mesh.id = `${visualizedAsset.id}//skeletonViewer`;
-            if (targetVisibilityOption) {
-              skeletonViewer.isEnabled = targetVisibilityOption.isBoneVisible;
-            }
+          if (targetSkeletonViewer) {
+            const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === baseScreen.id);
+            targetSkeletonViewer.skeletonViewer.isEnabled = targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true;
           }
 
           setIsOpenExportModal(false);
         });
       }
     },
-    [_animationIngredients, _assetList, _fps, _retargetMaps, _screenList, _visibilityOptions, _visualizedAssetIds, assetId, name, onModalClose, onModalOpen],
+    [_animationIngredients, _assetList, _fps, _plaskSkeletonViewers, _retargetMaps, _screenList, _visibilityOptions, assetId, name, onModalClose, onModalOpen],
   );
 
   const handleExportCancel = useCallback(() => {

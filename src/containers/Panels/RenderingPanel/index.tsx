@@ -60,6 +60,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
+  const _plaskSkeletonViewers = useSelector((state) => state.screenData.plaskSkeletonViewers);
 
   const dispatch = useDispatch();
 
@@ -1671,7 +1672,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   /**
    * screenVisibilityMenu
    */
-  const [skeletonViewer, setSkeletonViewer] = useState<BABYLON.SkeletonViewer | null>(null);
   // skeletonViewer는 단순 debug용이기 때문에 visualizedAsset이 변화될 때마다 생성하도록 변경
   useEffect(() => {
     const targetScreen = _screenList[0];
@@ -1684,18 +1684,21 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       if (targetVisibilityOption) {
         skeletonViewer.isEnabled = targetVisibilityOption.isBoneVisible;
       }
+      dispatch(screenDataActions.addSkeletonViewer({ screenId: targetScreen.id, skeletonViewer: skeletonViewer }));
 
       return () => {
         skeletonViewer.dispose();
-        setSkeletonViewer(null);
+        dispatch(screenDataActions.removeSkeletonViewer({ screenId: targetScreen.id }));
+        // setSkeletonViewer(null);
       };
     }
-  }, [_assetList, _screenList, _visibilityOptions, _visualizedAssetIds]);
+  }, [_assetList, _screenList, _visibilityOptions, _visualizedAssetIds, dispatch]);
 
   const screenVisibilityItemList: ScreenVisivilityItem[] = useMemo(() => {
     const targetScreen = _screenList[0];
     if (targetScreen) {
       const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === targetScreen.id);
+      const targetSkeletonViewer = _plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === targetScreen.id)?.skeletonViewer;
 
       return [
         {
@@ -1715,8 +1718,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                     }
                   });
                   // skeletonView
-                  if (skeletonViewer) {
-                    skeletonViewer.isEnabled = false;
+                  if (targetSkeletonViewer) {
+                    targetSkeletonViewer.isEnabled = false;
                   }
                 }
 
@@ -1734,8 +1737,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                     }
                   });
                   // skeletonView
-                  if (skeletonViewer) {
-                    skeletonViewer.isEnabled = true;
+                  if (targetSkeletonViewer) {
+                    targetSkeletonViewer.isEnabled = true;
                   }
                 }
 
@@ -1830,7 +1833,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     } else {
       return [];
     }
-  }, [_assetList, _screenList, _selectableObjects, _visibilityOptions, _visualizedAssetIds, dispatch, skeletonViewer]);
+  }, [_assetList, _plaskSkeletonViewers, _screenList, _selectableObjects, _visibilityOptions, _visualizedAssetIds, dispatch]);
 
   return (
     <div className={cx('wrapper')}>
