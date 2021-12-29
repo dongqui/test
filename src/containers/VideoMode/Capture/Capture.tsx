@@ -562,6 +562,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           </div>
         </BaseModal>
       )}
+      {cameraDropdownState && <div className={cx('dropdown-overlay')} onClick={() => setCameraDropdownState(false)} />}
     </div>
   );
 };
