@@ -493,9 +493,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             <FilledButton
               text="Ok"
               className={cx('extract-button')}
-              onClick={() => {
-                console.log(start);
-                console.log(end);
+              onClick={() =>
                 handleExtractMotion({
                   id: uuidv4(),
                   fileName: basicExtractName,
@@ -507,8 +505,8 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                   url: videoRef.current!.src,
                   timeout: videoRef.current!.duration * 30 * 1000,
                   duration: videoRef.current!.duration,
-                });
-              }}
+                })
+              }
             ></FilledButton>
           </div>
         </BaseModal>
