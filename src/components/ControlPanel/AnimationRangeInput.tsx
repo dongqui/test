@@ -83,11 +83,14 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
         } else {
           rangeRef.current!.max = getNewMax;
         }
-      } else if (+numToStrArray[0] > 2 && +numToStrArray[0] <= 5 && num > 10) {
+      } else if (+numToStrArray[0] >= 2 && +numToStrArray[0] <= 5 && num > 10) {
         const getNewMax = getRangeMaxNumber(num, 5);
+        const compareNum = getRangeMaxNumber(num, 2);
 
         if (num > +getNewMax) {
           rangeRef.current!.max = getRangeMaxNumber(num, 10);
+        } else if (compareNum === num + '') {
+          rangeRef.current!.max = num + '';
         } else {
           rangeRef.current!.max = getNewMax;
         }
