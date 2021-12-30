@@ -838,7 +838,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
         </div>
       </section>
-      <section className={cx('fk-controller-section')}>
+      {/* <section className={cx('fk-controller-section')}>
         <AnimationTitleToggle
           text="FK Controller"
           isSpread={isControllerSectionSpread}
@@ -859,7 +859,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           />
           {(!isAllActive || !isControllerOn || isNull(controlController)) && <div className={cx('inactive-overlay')}></div>}
         </div>
-      </section>
+      </section> */}
       <section className={cx('filter-section')}>
         <AnimationTitleToggle
           text="Filter"

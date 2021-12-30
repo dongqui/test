@@ -282,6 +282,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
             activeStatus={isAllActive}
             onChangeEnd={dispatchChangedHipSpace}
             handleChange={handleChange}
+            limitMax={1000}
           />
           {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')}></div>}
         </div>
