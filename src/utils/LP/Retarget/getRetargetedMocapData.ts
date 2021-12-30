@@ -26,6 +26,7 @@ const getRetargetedMocapData = (
 
   // cloneDeep을 사용해서 tracks를 newTracks로 갈음하려고 했으나, 시간비용이 너무 커서 tracks에 추가해주는 방식으로 사용
   const { tracks } = emptyAnimationIngredient;
+  const { hipSpace } = retargetMap;
 
   // tracks가 아닌 mocapData를 iterate하는 방식으로 변경
   mocapData.forEach((mocapDatum) => {
@@ -47,7 +48,17 @@ const getRetargetedMocapData = (
             targetRotationTrack.transformKeys.push({ frame, value: e });
           });
         }
-      } else {
+      } else if (property === 'position') {
+        // 해당하는 트랙에 trasnformKeys 추가
+        const targetTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === property);
+
+        if (targetTrack) {
+          transformKeys.forEach((transformKey) => {
+            const { frame, value } = transformKey;
+            targetTrack.transformKeys.push({ frame, value: BABYLON.Vector3.FromArray(value.map((v) => (v * hipSpace) / 106)) });
+          });
+        }
+      } else if (property === 'scaling') {
         // 해당하는 트랙에 trasnformKeys 추가
         const targetTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === property);
 
