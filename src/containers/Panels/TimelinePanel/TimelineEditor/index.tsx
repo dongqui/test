@@ -127,6 +127,7 @@ const TimelineEditor = () => {
             [width, 0],
           ]) // scale 적용 범위 지정
           .filter((event: WheelEvent) => {
+            if (event.type === 'dblclick') return false;
             if (event.buttons === 2 && event.altKey) return true; // pan
             if (event.buttons === 0) return true; // zoom
             return false;
