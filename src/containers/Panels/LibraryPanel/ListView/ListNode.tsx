@@ -869,6 +869,7 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: () => {
                   _screenList.forEach(({ scene }) => {
                     scene.animationGroups.forEach((animationGroup) => {
+                      animationGroup.stop();
                       scene.removeAnimationGroup(animationGroup);
                     });
                   });
@@ -897,6 +898,7 @@ const ListNode: FunctionComponent<Props> = ({
                     }
 
                     handleVisualization();
+                    forceClickAnimationPlayAndStop(50); // initial pose 취하도록 변경해야 함
                   }
                 },
                 children: [],
@@ -1119,6 +1121,7 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: () => {
                   _screenList.forEach(({ scene }) => {
                     scene.animationGroups.forEach((animationGroup) => {
+                      animationGroup.stop();
                       scene.removeAnimationGroup(animationGroup);
                     });
                   });
@@ -1143,7 +1146,7 @@ const ListNode: FunctionComponent<Props> = ({
                   }
 
                   handleVisualization();
-                  forceClickAnimationPlayAndStop();
+                  forceClickAnimationPlayAndStop(50); // initial pose 취하도록 변경해야 함
                 },
                 children: [],
               },
@@ -1923,7 +1926,7 @@ const ListNode: FunctionComponent<Props> = ({
           }
 
           handleVisualization();
-          forceClickAnimationPlayAndStop();
+          forceClickAnimationPlayAndStop(50); // initial pose 취하도록 변경해야 함
         }
       }
     },
@@ -2029,6 +2032,7 @@ const ListNode: FunctionComponent<Props> = ({
 
       _screenList.forEach(({ scene }) => {
         scene.animationGroups.forEach((animationGroup) => {
+          animationGroup.stop();
           scene.removeAnimationGroup(animationGroup);
         });
       });
