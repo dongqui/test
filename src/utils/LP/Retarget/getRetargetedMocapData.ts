@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { AnimationIngredient, PlaskMocapData, PlaskRetargetMap } from 'types/common';
+import { AnimationIngredient, ArrayOfFourNumbers, PlaskMocapData, PlaskRetargetMap } from 'types/common';
 import { createAnimationIngredient } from 'utils/RP';
 
 const DEFAULT_TIMEOUT = 3000;
@@ -36,17 +36,43 @@ const getRetargetedMocapData = (
     if (targetTransformNodeId) {
       if (property === 'rotationQuaternion') {
         // rotation 트랙과 rotationQuaternion 트랙 모두에 transformKeys 추가
-        const targetRotationTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotation');
-        const targetRotationQuaternionTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotationQuaternion');
+        if (boneName === 'hips') {
+          // hips인 경운 __root__의 rotationQuaternion이 (0, 1, 0, 0) 임을 역연산해서 값을 넣어줘야 함
+          const targetRotationTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotation');
+          const targetRotationQuaternionTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotationQuaternion');
 
-        if (targetRotationTrack && targetRotationQuaternionTrack) {
-          transformKeys.forEach((transformKey) => {
-            const { frame, value } = transformKey;
-            const q = BABYLON.Quaternion.FromArray(value);
-            const e = q.clone().toEulerAngles();
-            targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
-            targetRotationTrack.transformKeys.push({ frame, value: e });
-          });
+          if (targetRotationTrack && targetRotationQuaternionTrack) {
+            transformKeys.forEach((transformKey) => {
+              const { frame, value } = transformKey;
+
+              const [w, x, y, z] = value as ArrayOfFourNumbers;
+              const newValue = [
+                0.7071067811865475 * w - 0.7071067811865475 * z,
+                0.7071067811865475 * x + 0.7071067811865475 * y,
+                0.7071067811865475 * y - 0.7071067811865475 * x,
+                0.7071067811865475 * z + 0.7071067811865475 * w,
+              ];
+
+              const q = BABYLON.Quaternion.FromArray(newValue);
+              const e = q.toEulerAngles();
+
+              targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
+              targetRotationTrack.transformKeys.push({ frame, value: e });
+            });
+          }
+        } else {
+          const targetRotationTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotation');
+          const targetRotationQuaternionTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotationQuaternion');
+
+          if (targetRotationTrack && targetRotationQuaternionTrack) {
+            transformKeys.forEach((transformKey) => {
+              const { frame, value } = transformKey;
+              const q = BABYLON.Quaternion.FromArray(value);
+              const e = q.clone().toEulerAngles();
+              targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
+              targetRotationTrack.transformKeys.push({ frame, value: e });
+            });
+          }
         }
       } else if (property === 'position') {
         // 해당하는 트랙에 trasnformKeys 추가
@@ -55,7 +81,8 @@ const getRetargetedMocapData = (
         if (targetTrack) {
           transformKeys.forEach((transformKey) => {
             const { frame, value } = transformKey;
-            targetTrack.transformKeys.push({ frame, value: BABYLON.Vector3.FromArray(value.map((v) => (v * hipSpace) / 106)) });
+            const newValue = value.map((v, idx) => (idx === 2 ? ((v * 100 - 106) * hipSpace) / 106 : (v * 100 * hipSpace) / 106));
+            targetTrack.transformKeys.push({ frame, value: BABYLON.Vector3.FromArray(newValue) }); // Armature가 1/100 되어있기 때문에, 모든 값에 100배를 더해 줌
           });
         }
       } else if (property === 'scaling') {

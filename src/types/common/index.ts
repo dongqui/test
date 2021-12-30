@@ -131,7 +131,7 @@ export type RetargetMapValue = {
 };
 
 type ArrayOfThreeNumbers = [number, number, number];
-type ArrayOfFourNumbers = [number, number, number, number];
+export type ArrayOfFourNumbers = [number, number, number, number];
 
 export type PlaskMocapData = Array<{
   boneName: RetargetSourceBoneType;
