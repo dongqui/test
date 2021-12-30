@@ -29,11 +29,19 @@ export interface PlaskScreen {
   hasGroundTexture: boolean;
 }
 
+export type PlaskPose = {
+  target: BABYLON.TransformNode;
+  position: BABYLON.Vector3;
+  rotationQuaternion: BABYLON.Quaternion;
+  scaling: BABYLON.Vector3;
+};
+
 export interface PlaskAsset {
   id: string;
   name: string;
   extension: string;
   meshes: BABYLON.AbstractMesh[];
+  initialPoses: PlaskPose[];
   geometries: BABYLON.Geometry[];
   skeleton: BABYLON.Skeleton;
   bones: BABYLON.Bone[];
@@ -123,7 +131,7 @@ export type RetargetMapValue = {
 };
 
 type ArrayOfThreeNumbers = [number, number, number];
-type ArrayOfFourNumbers = [number, number, number, number];
+export type ArrayOfFourNumbers = [number, number, number, number];
 
 export type PlaskMocapData = Array<{
   boneName: RetargetSourceBoneType;

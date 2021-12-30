@@ -15,7 +15,7 @@ const convertModel = async (file: File, extension: 'glb' | 'fbx' | 'bvh', map?: 
 
     const response = await requestApi({
       method: 'POST',
-      base: 'https://dev.plask.ai/api',
+      base: process.env.NEXT_PUBLIC_BACKEND_URL,
       url: '/converter/model',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },

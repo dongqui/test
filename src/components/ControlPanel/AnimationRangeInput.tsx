@@ -15,6 +15,7 @@ interface Props {
   inactiveMessage?: string;
   decimalDigit?: number;
   className?: string;
+  limitMax?: number;
   onChangeEnd?: (inputValue: number) => void;
   handleChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
@@ -28,6 +29,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
   activeStatus,
   inactiveMessage,
   decimalDigit,
+  limitMax,
   onChangeEnd,
   handleChange,
 }) => {
@@ -81,11 +83,14 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
         } else {
           rangeRef.current!.max = getNewMax;
         }
-      } else if (+numToStrArray[0] > 2 && +numToStrArray[0] <= 5 && num > 10) {
+      } else if (+numToStrArray[0] >= 2 && +numToStrArray[0] <= 5 && num > 10) {
         const getNewMax = getRangeMaxNumber(num, 5);
+        const compareNum = getRangeMaxNumber(num, 2);
 
         if (num > +getNewMax) {
           rangeRef.current!.max = getRangeMaxNumber(num, 10);
+        } else if (compareNum === num + '') {
+          rangeRef.current!.max = num + '';
         } else {
           rangeRef.current!.max = getNewMax;
         }
@@ -109,13 +114,31 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
   const setRangeMaxLimit = useCallback(
     (e) => {
       const num = parseFloat(e.target.value);
+
+      if (limitMax) {
+        if (num < limitMax) {
+          handleMaxLimitLogic(num);
+          setIsValueChanged(false);
+          if (onChangeEnd) {
+            onChangeEnd(num);
+          }
+        } else if (num >= limitMax) {
+          handleMaxLimitLogic(limitMax);
+          setIsValueChanged(false);
+          if (onChangeEnd) {
+            onChangeEnd(limitMax);
+          }
+        }
+        return;
+      }
+
       handleMaxLimitLogic(num);
       setIsValueChanged(false);
       if (onChangeEnd) {
         onChangeEnd(num);
       }
     },
-    [handleMaxLimitLogic, onChangeEnd],
+    [handleMaxLimitLogic, onChangeEnd, limitMax],
   );
 
   // 부모 요소에서 currentValue를 전달받았을 경우, range input의 최대값을 변경하는 함수
@@ -185,6 +208,15 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
           onFocus={handleSelectText}
           onKeyUp={handleKeyboard}
           onBlur={(e) => {
+            if (limitMax && parseFloat(e.target.value) > limitMax) {
+              setRangeMaxLimit(e);
+              rangeRef.current!.value = limitMax.toString();
+              inputRef.current!.value = limitMax.toString();
+              handleChange(e);
+              setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
+              setIsFocused(false);
+              return;
+            }
             setRangeMaxLimit(e);
             rangeRef.current!.value = e.target.value;
             handleChange(e);

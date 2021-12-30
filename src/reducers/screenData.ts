@@ -1,3 +1,4 @@
+import * as BABYLON from '@babylonjs/core';
 import { ScreenDataAction } from 'actions/screenDataAction';
 
 interface VisibilityOption {
@@ -10,12 +11,19 @@ interface VisibilityOption {
   isGizmoVisible: boolean;
 }
 
+interface PlaskSkeletonViewer {
+  screenId: string;
+  skeletonViewer: BABYLON.SkeletonViewer;
+}
+
 type State = {
   visibilityOptions: VisibilityOption[];
+  plaskSkeletonViewers: PlaskSkeletonViewer[];
 };
 
 const defaultState: State = {
   visibilityOptions: [],
+  plaskSkeletonViewers: [],
 };
 
 export const screenData = (state = defaultState, action: ScreenDataAction) => {
@@ -81,6 +89,16 @@ export const screenData = (state = defaultState, action: ScreenDataAction) => {
         visibilityOptions: state.visibilityOptions.map((visibilityOption) =>
           visibilityOption.screenId === action.payload.screenId ? { ...visibilityOption, isGizmoVisible: action.payload.value } : visibilityOption,
         ),
+      });
+    }
+    case 'screenDataAction/ADD_SKELETON_VIEWER': {
+      return Object.assign({}, state, {
+        plaskSkeletonViewers: [...state.plaskSkeletonViewers, { screenId: action.payload.screenId, skeletonViewer: action.payload.skeletonViewer }],
+      });
+    }
+    case 'screenDataAction/REMOVE_SKELETON_VIEWER': {
+      return Object.assign({}, state, {
+        plaskSkeletonViewers: state.plaskSkeletonViewers.filter((plaskSkeletonViewer) => plaskSkeletonViewer.screenId !== action.payload.screenId),
       });
     }
     default: {

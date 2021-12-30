@@ -16,7 +16,7 @@ import * as animationDataActions from 'actions/animationDataAction';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import { AnimationIngredient, PlaskAsset, PlaskRetargetMap } from 'types/common';
+import { AnimationIngredient, PlaskAsset, PlaskPose } from 'types/common';
 import Box from 'components/Layout/Box';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
@@ -168,11 +168,19 @@ const LibraryPanel: FunctionComponent = () => {
 
       const nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
 
+      const initialPoses: PlaskPose[] = filterAnimatableTransformNodes(transformNodes).map((transformNode) => ({
+        target: transformNode,
+        position: transformNode.position.clone(),
+        rotationQuaternion: transformNode.rotationQuaternion ? transformNode.rotationQuaternion.clone() : transformNode.rotation.clone().toQuaternion(),
+        scaling: transformNode.scaling.clone(),
+      }));
+
       const newAsset: PlaskAsset = {
         id: assetId,
         name: nodeName,
         extension,
         meshes,
+        initialPoses,
         geometries,
         skeleton: skeletons[0] ?? null,
         bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
@@ -304,6 +312,7 @@ const LibraryPanel: FunctionComponent = () => {
             title: 'Warning',
             message: message,
             confirmText: 'Close',
+            confirmColor: 'cancel',
             onConfirm: onModalClose,
           });
         }

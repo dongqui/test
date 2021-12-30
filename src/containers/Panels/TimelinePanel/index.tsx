@@ -14,26 +14,25 @@ const cx = classNames.bind(styles);
 
 const TimelinePanel = () => {
   const dispatch = useDispatch();
-  const currentVisualizedAssetId = useRef('');
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+
+  const currentVisualizedAssetId = useRef('');
 
   useEffect(() => {
     // viewport에 model이 있는 경우
     if (_visualizedAssetIds.length) {
-      // viewport에 모델이 변경 된 경우
-      if (_visualizedAssetIds[0] !== currentVisualizedAssetId.current) {
-        const visualizedAnimationIngredients = _animationIngredients.filter(
-          (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
-        );
+      const visualizedAnimationIngredients = _animationIngredients.filter(
+        (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
+      );
+      if (visualizedAnimationIngredients.length !== 0 && currentVisualizedAssetId.current !== visualizedAnimationIngredients[0].id) {
         dispatch(trackListActions.initializeTrackList({ list: visualizedAnimationIngredients[0].layers, animationIngredientId: visualizedAnimationIngredients[0].id }));
-        currentVisualizedAssetId.current = _visualizedAssetIds[0];
+        currentVisualizedAssetId.current = visualizedAnimationIngredients[0].id;
       }
     }
     // viewport에 model이 없는 경우
     else {
       dispatch(trackListActions.initializeTrackList({ list: [], animationIngredientId: '', clearAnimation: true }));
-      currentVisualizedAssetId.current = '';
     }
   }, [_animationIngredients, _visualizedAssetIds, dispatch]);
 

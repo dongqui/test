@@ -12,12 +12,11 @@ import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
 import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop } from 'utils/common';
-import { filterQuaternion, filterVector } from 'utils/RP';
+import { createAnimationGroupFromIngredient, duplicateAnimationIngredient, goToSpecificPoses } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import { beforePaste, checkCreateDuplicates, checkPasteDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { getRetargetedMocapData } from 'utils/LP/Retarget';
 import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
-import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as cpActions from 'actions/CP/cpModeSelection';
@@ -78,6 +77,7 @@ const ListNode: FunctionComponent<Props> = ({
   const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _animationTransformNodes = useSelector((state) => state.animationData.animationTransformNodes);
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
+  const _plaskSkeletonViewers = useSelector((state) => state.screenData.plaskSkeletonViewers);
 
   const _lpNode = useSelector((state) => state.lpNode.node);
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
@@ -302,17 +302,6 @@ const ListNode: FunctionComponent<Props> = ({
             // dragBox 선택 대상에 추가
             dispatch(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
 
-            // scene들에 skeletonViewer 추가
-            // if (skeleton) {
-            //   const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], scene, false, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
-
-            //   // @TODO
-            //   // scene.removeMesh(skeletonViewer.mesh);
-
-            //   skeletonViewer.mesh.id = `${assetId}//skeletonViewer`;
-            //   scene.addMesh(skeletonViewer.mesh);
-            // }
-
             // scene들에 애니메이션 적용을 위한 transformNode 추가
             transformNodes.forEach((transformNode) => {
               scene.addTransformNode(transformNode);
@@ -510,134 +499,134 @@ const ListNode: FunctionComponent<Props> = ({
 
       const isContainsSelectedArea = selectedId.includes(id);
 
-      if (isContainsSelectedArea && selectedId.length > 1) {
-        if (type === 'Motion') {
-          onContextMenuOpen({
-            top: e.clientY,
-            left: e.clientX,
-            menu: [
-              {
-                label: 'Delete',
-                onClick: () => {
-                  onDelete();
-                },
-                children: [],
-              },
-              {
-                label: 'Copy',
-                onClick: onCopy,
-                children: [],
-              },
-              {
-                label: 'Duplicate',
-                onClick: () => {
-                  const selectedNodes = _lpNode.filter((node) => selectedId.includes(node.id));
-                  const selectedMotions = selectedNodes.filter((node) => node.type === 'Motion');
+      // if (isContainsSelectedArea && selectedId.length > 1) {
+      //   if (type === 'Motion') {
+      //     onContextMenuOpen({
+      //       top: e.clientY,
+      //       left: e.clientX,
+      //       menu: [
+      //         {
+      //           label: 'Delete',
+      //           onClick: () => {
+      //             onDelete();
+      //           },
+      //           children: [],
+      //         },
+      //         {
+      //           label: 'Copy',
+      //           onClick: onCopy,
+      //           children: [],
+      //         },
+      //         {
+      //           label: 'Duplicate',
+      //           onClick: () => {
+      //             const selectedNodes = _lpNode.filter((node) => selectedId.includes(node.id));
+      //             const selectedMotions = selectedNodes.filter((node) => node.type === 'Motion');
 
-                  const nextAddAnimationIngredients: AnimationIngredient[] = [];
-                  const parentModel = find(_lpNode, { id: selectedMotions[0].parentId });
+      //             const nextAddAnimationIngredients: AnimationIngredient[] = [];
+      //             const parentModel = find(_lpNode, { id: selectedMotions[0].parentId });
 
-                  const nextNodes = produce(_lpNode, (draft) => {
-                    selectedMotions.map((selectedMotion) => {
-                      const draftParentModel = find(draft, { id: selectedMotion.parentId });
+      //             const nextNodes = produce(_lpNode, (draft) => {
+      //               selectedMotions.map((selectedMotion) => {
+      //                 const draftParentModel = find(draft, { id: selectedMotion.parentId });
 
-                      if (draftParentModel) {
-                        const motions = filter(_animationIngredients, { assetId: draftParentModel.assetId });
+      //                 if (draftParentModel) {
+      //                   const motions = filter(_animationIngredients, { assetId: draftParentModel.assetId });
 
-                        if (motions && draftParentModel.assetId) {
-                          const selectedAnimationIngredient = find(motions, { id: selectedMotion.id });
+      //                   if (motions && draftParentModel.assetId) {
+      //                     const selectedAnimationIngredient = find(motions, { id: selectedMotion.id });
 
-                          if (selectedAnimationIngredient) {
-                            const currentPathNodeNames = _lpNode
-                              .filter((node) => node.parentId === selectedMotion.parentId && node.name.includes(selectedMotion.name))
-                              .map((filteredNode) => filteredNode.name);
+      //                     if (selectedAnimationIngredient) {
+      //                       const currentPathNodeNames = _lpNode
+      //                         .filter((node) => node.parentId === selectedMotion.parentId && node.name.includes(selectedMotion.name))
+      //                         .map((filteredNode) => filteredNode.name);
 
-                            const check = checkPasteDuplicates(selectedMotion.name, currentPathNodeNames);
+      //                       const check = checkPasteDuplicates(selectedMotion.name, currentPathNodeNames);
 
-                            const nodeName = check === '0' ? selectedMotion.name : `${selectedMotion.name} (${check})`;
+      //                       const nodeName = check === '0' ? selectedMotion.name : `${selectedMotion.name} (${check})`;
 
-                            const animationIngredient: AnimationIngredient = {
-                              ...selectedAnimationIngredient,
-                              current: false,
-                              name: nodeName,
-                              id: uuid(),
-                            };
+      //                       const animationIngredient: AnimationIngredient = {
+      //                         ...selectedAnimationIngredient,
+      //                         current: false,
+      //                         name: nodeName,
+      //                         id: uuid(),
+      //                       };
 
-                            const motion: LP.Node = {
-                              id: animationIngredient.id,
-                              assetId: draftParentModel.assetId,
-                              parentId: draftParentModel.id,
-                              name: nodeName,
-                              filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
-                              childrens: [],
-                              extension: '',
-                              type: 'Motion',
-                            };
+      //                       const motion: LP.Node = {
+      //                         id: animationIngredient.id,
+      //                         assetId: draftParentModel.assetId,
+      //                         parentId: draftParentModel.id,
+      //                         name: nodeName,
+      //                         filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
+      //                         childrens: [],
+      //                         extension: '',
+      //                         type: 'Motion',
+      //                       };
 
-                            draftParentModel.childrens.push(motion.id);
-                            draft.push(motion);
-                            nextAddAnimationIngredients.push(animationIngredient);
-                          }
-                        }
-                      }
-                    });
-                  });
+      //                       draftParentModel.childrens.push(motion.id);
+      //                       draft.push(motion);
+      //                       nextAddAnimationIngredients.push(animationIngredient);
+      //                     }
+      //                   }
+      //                 }
+      //               });
+      //             });
 
-                  dispatch(
-                    lpNodeActions.changeNode({
-                      nodes: nextNodes,
-                    }),
-                  );
+      //             dispatch(
+      //               lpNodeActions.changeNode({
+      //                 nodes: nextNodes,
+      //               }),
+      //             );
 
-                  if (parentModel) {
-                    dispatch(
-                      plaskProjectActions.addAnimationIngredients({
-                        assetId: parentModel.assetId!,
-                        animationIngredientIds: nextAddAnimationIngredients.map((motion) => motion.id),
-                      }),
-                    );
+      //             if (parentModel) {
+      //               dispatch(
+      //                 plaskProjectActions.addAnimationIngredients({
+      //                   assetId: parentModel.assetId!,
+      //                   animationIngredientIds: nextAddAnimationIngredients.map((motion) => motion.id),
+      //                 }),
+      //               );
 
-                    dispatch(
-                      animationDataActions.addAnimationIngredients({
-                        animationIngredients: nextAddAnimationIngredients,
-                      }),
-                    );
-                  }
-                },
-                children: [],
-              },
-            ],
-          });
-        } else {
-          onContextMenuOpen({
-            top: e.clientY,
-            left: e.clientX,
-            menu: [
-              {
-                label: 'Delete',
-                onClick: () => {
-                  onDelete();
-                  // const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
+      //               dispatch(
+      //                 animationDataActions.addAnimationIngredients({
+      //                   animationIngredients: nextAddAnimationIngredients,
+      //                 }),
+      //               );
+      //             }
+      //           },
+      //           children: [],
+      //         },
+      //       ],
+      //     });
+      //   } else {
+      //     onContextMenuOpen({
+      //       top: e.clientY,
+      //       left: e.clientX,
+      //       menu: [
+      //         {
+      //           label: 'Delete',
+      //           onClick: () => {
+      //             onDelete();
+      //             // const afterNodes = lpNode.filter((node) => !selectedId.includes(node.id));
 
-                  // dispatch(
-                  //   lpNodeActions.changeNode({
-                  //     nodes: afterNodes,
-                  //   }),
-                  // );
-                },
-                children: [],
-              },
-              // {
-              //   label: 'Copy',
-              //   onClick: onCopy,
-              //   children: [],
-              // },
-            ],
-          });
-        }
+      //             // dispatch(
+      //             //   lpNodeActions.changeNode({
+      //             //     nodes: afterNodes,
+      //             //   }),
+      //             // );
+      //           },
+      //           children: [],
+      //         },
+      //         // {
+      //         //   label: 'Copy',
+      //         //   onClick: onCopy,
+      //         //   children: [],
+      //         // },
+      //       ],
+      //     });
+      //   }
 
-        return;
-      }
+      //   return;
+      // }
 
       if (isContains) {
         onSelect && onSelect(id, assetId);
@@ -878,6 +867,13 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'Visualization',
                 disabled: currentVisualizedNode?.id === id,
                 onClick: () => {
+                  _screenList.forEach(({ scene }) => {
+                    scene.animationGroups.forEach((animationGroup) => {
+                      animationGroup.stop();
+                      scene.removeAnimationGroup(animationGroup);
+                    });
+                  });
+
                   const isEmptyMotion = childrens.length === 0;
 
                   if (isEmptyMotion) {
@@ -899,9 +895,12 @@ const ListNode: FunctionComponent<Props> = ({
                           }),
                         );
                       }
+
+                      goToSpecificPoses(currentAsset.initialPoses);
                     }
 
                     handleVisualization();
+                    forceClickAnimationPlayAndStop(50);
                   }
                 },
                 children: [],
@@ -954,6 +953,27 @@ const ListNode: FunctionComponent<Props> = ({
 
         if (type === 'Motion') {
           // @TODO 추출된 모션의 경우에는 다른 컨텍스트메뉴가 필요 (parentId가 root인 경우)
+          if (parentId === '__root__') {
+            onContextMenuOpen({
+              top: e.clientY,
+              left: e.clientX,
+              menu: [
+                {
+                  label: 'Delete',
+                  onClick: onDelete,
+                  children: [],
+                },
+                {
+                  label: 'Edit name',
+                  onClick: handleEdit,
+                  children: [],
+                },
+              ],
+            });
+
+            return;
+          }
+
           onContextMenuOpen({
             top: e.clientY,
             left: e.clientX,
@@ -1051,12 +1071,7 @@ const ListNode: FunctionComponent<Props> = ({
 
                           const nodeName = check === '0' ? name : `${name} (${check})`;
 
-                          const animationIngredient: AnimationIngredient = {
-                            ...selectedMotion,
-                            current: false,
-                            name: nodeName,
-                            id: uuid(),
-                          };
+                          const animationIngredient = duplicateAnimationIngredient(selectedMotion, nodeName);
 
                           const motion: LP.Node = {
                             id: animationIngredient.id,
@@ -1106,6 +1121,13 @@ const ListNode: FunctionComponent<Props> = ({
                 label: 'Visualization',
                 disabled: currentVisualizedMotion[0]?.id === id,
                 onClick: () => {
+                  _screenList.forEach(({ scene }) => {
+                    scene.animationGroups.forEach((animationGroup) => {
+                      animationGroup.stop();
+                      scene.removeAnimationGroup(animationGroup);
+                    });
+                  });
+
                   const parentModel = find(_lpNode, { id: parentId });
 
                   if (parentModel) {
@@ -1115,6 +1137,11 @@ const ListNode: FunctionComponent<Props> = ({
                       const selectedMotion = find(motions, { id });
 
                       if (selectedMotion) {
+                        const currentAsset = _assetList.find((asset) => asset.id === parentModel.assetId);
+                        if (currentAsset) {
+                          goToSpecificPoses(currentAsset.initialPoses);
+                        }
+
                         dispatch(
                           animationDataActions.changeCurrentAnimationIngredient({
                             assetId: parentModel.assetId,
@@ -1126,7 +1153,7 @@ const ListNode: FunctionComponent<Props> = ({
                   }
 
                   handleVisualization();
-                  forceClickAnimationPlayAndStop();
+                  forceClickAnimationPlayAndStop(50);
                 },
                 children: [],
               },
@@ -1308,6 +1335,7 @@ const ListNode: FunctionComponent<Props> = ({
             title: 'Warning',
             message: TEXT.DUPLICATE_01,
             confirmText: 'Close',
+            confirmColor: 'cancel',
             onConfirm: () => {
               onModalClose();
               renameRef.current?.focus();
@@ -1894,6 +1922,11 @@ const ListNode: FunctionComponent<Props> = ({
               const selectedMotion = find(motions, { id });
 
               if (selectedMotion) {
+                const currentAsset = _assetList.find((asset) => asset.id === parentModel.assetId);
+                if (currentAsset) {
+                  goToSpecificPoses(currentAsset.initialPoses);
+                }
+
                 dispatch(
                   animationDataActions.changeCurrentAnimationIngredient({
                     assetId: parentModel.assetId,
@@ -1905,11 +1938,11 @@ const ListNode: FunctionComponent<Props> = ({
           }
 
           handleVisualization();
-          forceClickAnimationPlayAndStop();
+          forceClickAnimationPlayAndStop(50);
         }
       }
     },
-    [_animationIngredients, _lpNode, dispatch, handleVisualization, id, parentId],
+    [_animationIngredients, _assetList, _lpNode, dispatch, handleVisualization, id, parentId],
   );
 
   const [showsChildrens, setShowsChildrens] = useState(false);
@@ -1980,18 +2013,10 @@ const ListNode: FunctionComponent<Props> = ({
         const handleKeydown = (e: KeyboardEvent) => {
           e.stopPropagation();
 
-          switch (e.key) {
-            case 'F2': {
-              handleEdit();
-              break;
-            }
-            case 'Delete': {
-              onDelete();
-              break;
-            }
-            default: {
-              break;
-            }
+          if (e.key === 'F2') {
+            handleEdit();
+          } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Delete')) {
+            onDelete();
           }
         };
 
@@ -2014,11 +2039,12 @@ const ListNode: FunctionComponent<Props> = ({
     (data: { motion: string; format: 'fbx' | 'glb' | 'bvh' }) => {
       const { motion, format } = data;
 
-      const baseScene = _screenList[0].scene;
-      const skeletonViewerMesh = _screenList[0].scene.getMeshByID(`${assetId}//skeletonViewer`);
+      const baseScreen = _screenList[0];
+      const baseScene = baseScreen.scene;
 
       _screenList.forEach(({ scene }) => {
         scene.animationGroups.forEach((animationGroup) => {
+          animationGroup.stop();
           scene.removeAnimationGroup(animationGroup);
         });
       });
@@ -2030,60 +2056,13 @@ const ListNode: FunctionComponent<Props> = ({
           const ingredients = motion === 'all' ? currentModelAnimationIngredients : filter(currentModelAnimationIngredients, { id: motion });
 
           ingredients.forEach((animationIngredient) => {
-            const { name, tracks } = animationIngredient;
-            const animationGroup = new BABYLON.AnimationGroup(name);
-            tracks.forEach((track) => {
-              // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
-              if (track.transformKeys.length > 0) {
-                if (track.property !== 'rotation') {
-                  // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
-                  if (track.isIncluded) {
-                    if (track.property === 'position' || track.property === 'scaling') {
-                      const newAnimation = new BABYLON.Animation(
-                        track.name,
-                        `${track.property}`,
-                        _fps,
-                        BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                        BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                      );
-                      if (track.useFilter) {
-                        // filter function 적용
-                        newAnimation.setKeys(filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta));
-                      } else {
-                        newAnimation.setKeys(track.transformKeys);
-                      }
-                      track.target.animations.push(newAnimation);
-                      animationGroup.addTargetedAnimation(newAnimation, track.target);
-                    } else if (track.property === 'rotationQuaternion') {
-                      const newAnimation = new BABYLON.Animation(
-                        track.name,
-                        `${track.property}`,
-                        _fps,
-                        BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-                        BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-                      );
-                      if (track.useFilter) {
-                        // filter function 적용
-                        newAnimation.setKeys(filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta));
-                      } else {
-                        newAnimation.setKeys(track.transformKeys);
-                      }
-                      track.target.animations.push(newAnimation);
-                      animationGroup.addTargetedAnimation(newAnimation, track.target);
-                    }
-                  }
-                }
-              }
-            });
+            const animationGroup = createAnimationGroupFromIngredient(animationIngredient, _fps, true);
           });
         }
 
-        if (skeletonViewerMesh) {
-          _screenList[0].scene.removeMesh(skeletonViewerMesh);
-          const skeletonViewerChildMesh = skeletonViewerMesh.getChildMeshes().find((m) => m.id === 'skeletonViewer_merged');
-          if (skeletonViewerChildMesh) {
-            skeletonViewerChildMesh.dispose();
-          }
+        const targetSkeletonViewer = _plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === baseScreen.id);
+        if (targetSkeletonViewer) {
+          targetSkeletonViewer.skeletonViewer.isEnabled = false;
         }
 
         const options = {
@@ -2122,7 +2101,7 @@ const ListNode: FunctionComponent<Props> = ({
                 onModalOpen({
                   title: 'Warning',
                   message: 'An error occured while exporting the model. If the problem recurs, please send us a message on our website.',
-                  confirmText: 'Contact',
+                  confirmText: 'Close',
                   onConfirm: () => {
                     onModalClose();
                   },
@@ -2160,7 +2139,8 @@ const ListNode: FunctionComponent<Props> = ({
                     onModalOpen({
                       title: 'Warning',
                       message: 'An error occured while exporting the model. If the problem recurs, please send us a message on our website.',
-                      confirmText: 'Contact',
+                      confirmText: 'Close',
+                      confirmColor: 'cancel',
                       onConfirm: () => {
                         onModalClose();
                       },
@@ -2170,16 +2150,9 @@ const ListNode: FunctionComponent<Props> = ({
             }
           }
 
-          const targetScreen = _screenList[0];
-          const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-          if (targetScreen && visualizedAsset) {
-            const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === targetScreen.id);
-            const { skeleton, meshes } = visualizedAsset;
-            const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], targetScreen.scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
-            skeletonViewer.mesh.id = `${visualizedAsset.id}//skeletonViewer`;
-            if (targetVisibilityOption) {
-              skeletonViewer.isEnabled = targetVisibilityOption.isBoneVisible;
-            }
+          if (targetSkeletonViewer) {
+            const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === baseScreen.id);
+            targetSkeletonViewer.skeletonViewer.isEnabled = targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true;
           }
 
           setIsOpenExportModal(false);
@@ -2190,17 +2163,17 @@ const ListNode: FunctionComponent<Props> = ({
       _animationIngredients,
       _assetList,
       _fps,
-      _lpNode,
+      _plaskSkeletonViewers,
       _retargetMaps,
       _screenList,
       _visibilityOptions,
-      _visualizedAssetIds,
+      _lpNode,
       assetId,
       name,
-      onModalClose,
-      onModalOpen,
       parentId,
       type,
+      onModalClose,
+      onModalOpen,
     ],
   );
 
