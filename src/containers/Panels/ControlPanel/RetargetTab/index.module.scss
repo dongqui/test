@@ -14,6 +14,7 @@
 
 .skeleton-wrapper {
   position: absolute;
+  margin-left: 3px;
 
   .skeleton {
     & > svg {
@@ -31,6 +32,7 @@
 
   & > div {
     margin-top: -5px;
+    margin-left: -1.5px;
     position: absolute;
     width: 14px;
     height: 14px;
