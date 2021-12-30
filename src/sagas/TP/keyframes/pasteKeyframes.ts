@@ -38,39 +38,43 @@ function findSmallestTime(copiedPropertyKeyframes: ClusteredKeyframe[]) {
 function* worker() {
   const scrubberTime = getCurrentTimeIndex(yield select());
   const copiedPropertyKeyframes = getCopiedPropertyKeyframes(yield select());
-  const smallestFrame = findSmallestTime(copiedPropertyKeyframes);
-  const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, copiedPropertyKeyframes, scrubberTime - smallestFrame);
-  yield put(keyframesAction.paste({ currentTimeIndex: scrubberTime }));
 
-  // 이후부터 RP쪽 액션 호출
-  const { animationIngredientId: targetAnimationIngredientId, layerId: targetLayerId, transformKeys: targetTransformKeys } = updatedPropertyKeyframes;
-  const animationIngredients = getAnimationIngredients(yield select());
-  const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === targetAnimationIngredientId);
-  if (targetAnimationIngredient) {
-    const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
-      let targetTrack: WritableDraft<PlaskTrack> | undefined;
-      targetTransformKeys.forEach((targetTransformKey) => {
-        const { from, to, trackId, value } = targetTransformKey;
-        // 첫 track이거나 track 변경시 targetTrack
-        if (isUndefined(targetTrack) || (targetTrack && targetTrack.id !== trackId)) {
-          targetTrack = draft.tracks.find((track) => track.id === trackId); // targetTrack 업데이트
-        }
-        if (targetTrack) {
-          // to key에 value 추가
-          targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, to, new BABYLON.Vector3(value.x, value.y, value.z));
+  if (copiedPropertyKeyframes.length !== 0) {
+    const smallestFrame = findSmallestTime(copiedPropertyKeyframes);
+    const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, copiedPropertyKeyframes, scrubberTime - smallestFrame);
 
-          // rotation track의 경우 rotationQuaternion track도 함께 변경
-          if (targetTrack.property === 'rotation') {
-            const peerTrack = draft.tracks.find((track) => track.id === trackId.replace('//rotation', '//rotationQuaternion'));
-            if (peerTrack) {
-              // to key에 value 추가
-              peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, to, new BABYLON.Vector3(value.x, value.y, value.z).toQuaternion());
+    yield put(keyframesAction.paste({ currentTimeIndex: scrubberTime }));
+
+    // 이후부터 RP쪽 액션 호출
+    const { animationIngredientId: targetAnimationIngredientId, layerId: targetLayerId, transformKeys: targetTransformKeys } = updatedPropertyKeyframes;
+    const animationIngredients = getAnimationIngredients(yield select());
+    const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === targetAnimationIngredientId);
+    if (targetAnimationIngredient) {
+      const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
+        let targetTrack: WritableDraft<PlaskTrack> | undefined;
+        targetTransformKeys.forEach((targetTransformKey) => {
+          const { from, to, trackId, value } = targetTransformKey;
+          // 첫 track이거나 track 변경시 targetTrack
+          if (isUndefined(targetTrack) || (targetTrack && targetTrack.id !== trackId)) {
+            targetTrack = draft.tracks.find((track) => track.id === trackId); // targetTrack 업데이트
+          }
+          if (targetTrack) {
+            // to key에 value 추가
+            targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, to, new BABYLON.Vector3(value.x, value.y, value.z));
+
+            // rotation track의 경우 rotationQuaternion track도 함께 변경
+            if (targetTrack.property === 'rotation') {
+              const peerTrack = draft.tracks.find((track) => track.id === trackId.replace('//rotation', '//rotationQuaternion'));
+              if (peerTrack) {
+                // to key에 value 추가
+                peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, to, new BABYLON.Vector3(value.x, value.y, value.z).toQuaternion());
+              }
             }
           }
-        }
+        });
       });
-    });
-    yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+      yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+    }
   }
 }
 

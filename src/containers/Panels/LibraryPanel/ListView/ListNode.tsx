@@ -12,7 +12,7 @@ import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
 import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop } from 'utils/common';
-import { createAnimationGroupFromIngredient, duplicateAnimationIngredient } from 'utils/RP';
+import { createAnimationGroupFromIngredient, duplicateAnimationIngredient, goToSpecificPoses } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import { beforePaste, checkCreateDuplicates, checkPasteDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { getRetargetedMocapData } from 'utils/LP/Retarget';
@@ -869,6 +869,7 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: () => {
                   _screenList.forEach(({ scene }) => {
                     scene.animationGroups.forEach((animationGroup) => {
+                      animationGroup.stop();
                       scene.removeAnimationGroup(animationGroup);
                     });
                   });
@@ -894,9 +895,12 @@ const ListNode: FunctionComponent<Props> = ({
                           }),
                         );
                       }
+
+                      goToSpecificPoses(currentAsset.initialPoses);
                     }
 
                     handleVisualization();
+                    forceClickAnimationPlayAndStop(50);
                   }
                 },
                 children: [],
@@ -1119,6 +1123,7 @@ const ListNode: FunctionComponent<Props> = ({
                 onClick: () => {
                   _screenList.forEach(({ scene }) => {
                     scene.animationGroups.forEach((animationGroup) => {
+                      animationGroup.stop();
                       scene.removeAnimationGroup(animationGroup);
                     });
                   });
@@ -1132,6 +1137,11 @@ const ListNode: FunctionComponent<Props> = ({
                       const selectedMotion = find(motions, { id });
 
                       if (selectedMotion) {
+                        const currentAsset = _assetList.find((asset) => asset.id === parentModel.assetId);
+                        if (currentAsset) {
+                          goToSpecificPoses(currentAsset.initialPoses);
+                        }
+
                         dispatch(
                           animationDataActions.changeCurrentAnimationIngredient({
                             assetId: parentModel.assetId,
@@ -1143,7 +1153,7 @@ const ListNode: FunctionComponent<Props> = ({
                   }
 
                   handleVisualization();
-                  forceClickAnimationPlayAndStop();
+                  forceClickAnimationPlayAndStop(50);
                 },
                 children: [],
               },
@@ -1912,6 +1922,11 @@ const ListNode: FunctionComponent<Props> = ({
               const selectedMotion = find(motions, { id });
 
               if (selectedMotion) {
+                const currentAsset = _assetList.find((asset) => asset.id === parentModel.assetId);
+                if (currentAsset) {
+                  goToSpecificPoses(currentAsset.initialPoses);
+                }
+
                 dispatch(
                   animationDataActions.changeCurrentAnimationIngredient({
                     assetId: parentModel.assetId,
@@ -1923,11 +1938,11 @@ const ListNode: FunctionComponent<Props> = ({
           }
 
           handleVisualization();
-          forceClickAnimationPlayAndStop();
+          forceClickAnimationPlayAndStop(50);
         }
       }
     },
-    [_animationIngredients, _lpNode, dispatch, handleVisualization, id, parentId],
+    [_animationIngredients, _assetList, _lpNode, dispatch, handleVisualization, id, parentId],
   );
 
   const [showsChildrens, setShowsChildrens] = useState(false);
@@ -2029,6 +2044,7 @@ const ListNode: FunctionComponent<Props> = ({
 
       _screenList.forEach(({ scene }) => {
         scene.animationGroups.forEach((animationGroup) => {
+          animationGroup.stop();
           scene.removeAnimationGroup(animationGroup);
         });
       });

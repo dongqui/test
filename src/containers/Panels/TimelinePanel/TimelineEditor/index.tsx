@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -30,6 +30,18 @@ const TimelineEditor = () => {
   const timelineEditorRef = useRef<SVGSVGElement>(null);
   const leftTimeIndex = useRef(0);
   const zoomLevel = useRef(100);
+
+  const multiKeyController = useMemo(
+    () => ({
+      a: { pressed: false },
+      A: { pressed: false },
+      ㅁ: { pressed: false },
+      d: { pressed: false },
+      D: { pressed: false },
+      ㅇ: { pressed: false },
+    }),
+    [],
+  );
 
   // 드래그 박스 dragEnd 이벤트 발생
   const handleDragEnd = useCallback(
@@ -190,13 +202,33 @@ const TimelineEditor = () => {
     }
   }, []);
 
-  // 키프레임 삭제/복사/붙이기 단축키
+  // // 키프레임 삭제/복사/붙이기 단축키
   useEffect(() => {
     if (_playState !== 'play') {
       const currentRef = timelineEditorRef.current;
 
+      const togglePressedKey = (event: KeyboardEvent, pressed: boolean) => {
+        event.preventDefault();
+        switch (event.key) {
+          case 'a':
+          case 'A':
+          case 'ㅁ':
+          case 'd':
+          case 'D':
+          case 'ㅇ': {
+            if (multiKeyController[event.key]) multiKeyController[event.key].pressed = pressed;
+            break;
+          }
+        }
+      };
+
       const keydownListener = (event: KeyboardEvent) => {
-        if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || (event.altKey && (event.ctrlKey || event.metaKey) && event.key === ('d' || 'D' || 'ㅇ'))) {
+        togglePressedKey(event, true);
+
+        const isPressedA = multiKeyController.a.pressed || multiKeyController.A.pressed || multiKeyController.ㅁ.pressed;
+        const isPressedD = multiKeyController.d.pressed || multiKeyController.D.pressed || multiKeyController.ㅇ.pressed;
+
+        if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || ((event.ctrlKey || event.metaKey) && isPressedA && isPressedD)) {
           dispatch(keyframesActions.enterKeyframeDeleteKey());
         } else if ((event.metaKey || event.ctrlKey) && event.key === ('c' || 'C' || 'ㅊ')) {
           dispatch(keyframesActions.copyKeyframes());
@@ -205,12 +237,18 @@ const TimelineEditor = () => {
         }
       };
 
+      const keyUpListener = (event: KeyboardEvent) => {
+        togglePressedKey(event, false);
+      };
+
       const focusListener = () => {
         document.addEventListener('keydown', keydownListener);
+        document.addEventListener('keyup', keyUpListener);
       };
 
       const blurListener = () => {
         document.removeEventListener('keydown', keydownListener);
+        document.removeEventListener('keyup', keyUpListener);
       };
 
       currentRef?.addEventListener('focus', focusListener);
@@ -220,9 +258,10 @@ const TimelineEditor = () => {
         currentRef?.removeEventListener('focus', focusListener);
         currentRef?.removeEventListener('blur', blurListener);
         document.removeEventListener('keydown', keydownListener);
+        document.removeEventListener('keyup', keyUpListener);
       };
     }
-  }, [_playState, dispatch]);
+  }, [_playState, dispatch, multiKeyController]);
 
   return (
     <div className={cx('timeline-editor')}>
