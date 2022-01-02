@@ -14,7 +14,7 @@ const DEFAULT_TIMEOUT = 3000;
  * @param mocapData - mocap 결과물
  * @param timeout -
  */
-const getRetargetedMocapData = (
+const createAnimationIngredientFromMocapData = (
   assetId: string,
   animationIngredientName: string,
   retargetMap: PlaskRetargetMap,
@@ -99,6 +99,8 @@ const getRetargetedMocapData = (
     }
   });
 
+  // const boneDirection = bone.getDirection(bone.rotation.clone(), bone.getTransformNode());
+
   return new Promise((resolve, reject) => {
     resolve(emptyAnimationIngredient);
 
@@ -108,4 +110,4 @@ const getRetargetedMocapData = (
   });
 };
 
-export default getRetargetedMocapData;
+export default createAnimationIngredientFromMocapData;
