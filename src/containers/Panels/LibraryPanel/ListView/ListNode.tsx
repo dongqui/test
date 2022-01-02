@@ -2000,7 +2000,7 @@ const ListNode: FunctionComponent<Props> = ({
 
           if (e.key === 'F2') {
             handleEdit();
-          } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Delete')) {
+          } else if (e.key === 'Backspace' || (e.metaKey && e.key === 'Backspace')) {
             onDelete();
           }
         };
