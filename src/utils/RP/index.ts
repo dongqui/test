@@ -13,6 +13,7 @@ export { default as checkIsVectorIn } from './checkIsVectorIn';
 export { default as checkIsTargetMesh } from './checkIsTargetMesh';
 
 export { default as removeAssetFromScene } from './removeAssetFromScene';
+export { default as goToSpecificPoses } from './goToSpecificPoses';
 
 export { default as filterVector } from './filterVector';
 export { default as filterQuaternion } from './filterQuaternion';
