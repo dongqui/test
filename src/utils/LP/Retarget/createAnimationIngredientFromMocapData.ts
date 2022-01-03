@@ -10,6 +10,7 @@ const DEFAULT_TIMEOUT = 3000;
  * @param assetId - 대상 model(asset)의 id
  * @param animationIngredientName - 생성할 animationIngredient의 이름
  * @param retargetMap - source와 target을 연결한 데이터
+ * @param bones - 대상 model의 bones
  * @param animatableTransformNodes - model의 transformNode들 중 animation에 사용가능한 대상들
  * @param mocapData - mocap 결과물
  * @param timeout -
@@ -18,6 +19,7 @@ const createAnimationIngredientFromMocapData = (
   assetId: string,
   animationIngredientName: string,
   retargetMap: PlaskRetargetMap,
+  bones: BABYLON.Bone[],
   animatableTransformNodes: BABYLON.TransformNode[],
   mocapData: PlaskMocapData,
   timeout?: number,
