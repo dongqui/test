@@ -8,6 +8,7 @@ const checkPasteDuplicates = (name: string, nameArray: string[]) => {
 
   if (nameArray.length === 1) {
     const currentNode = nameArray[0];
+    const parenthesisLength = name.match(/ \(\d+\)/g);
 
     const isCopied = currentNode.match(/copy/g);
 
@@ -51,14 +52,24 @@ const checkPasteDuplicates = (name: string, nameArray: string[]) => {
       }
 
       // 번호가 있는 경우
-      if (matches !== null) {
-        const startIndex = currentNode.lastIndexOf('(') + 1;
-        const endIndex = currentNode.lastIndexOf(')');
-
-        const number = currentNode.substring(startIndex, endIndex);
-
-        return number;
+      if (parenthesisLength !== null) {
+        const extractedNumber = currentNode.match(/ \(\d+\)/g);
+        if (extractedNumber !== null) {
+          if (extractedNumber.length === parenthesisLength.length || extractedNumber.length === parenthesisLength.length + 1) {
+            return '2';
+          }
+        }
       }
+
+      // 번호가 있는 경우
+      // if (matches !== null) {
+      //   const startIndex = currentNode.lastIndexOf('(') + 1;
+      //   const endIndex = currentNode.lastIndexOf(')');
+
+      //   const number = currentNode.substring(startIndex, endIndex);
+
+      //   return number;
+      // }
     }
   }
 
