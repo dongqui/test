@@ -177,8 +177,8 @@ const Scrubber: FunctionComponent<Props> = (props) => {
       const scrubberMoveKeys = ['a', 'A', 'ㅁ', 's', 'S', 'ㄴ'];
       const isOnlyPressed = onlyKeyController.current.size === 1 && scrubberMoveKeys.some((key) => onlyKeyController.current.has(key));
       if (isOnlyPressed) {
-        const isPressedAKey = event.key === ('a' || 'A' || 'ㅁ');
-        const isPressedSKey = event.key === ('s' || 'S' || 'ㄴ');
+        const isPressedAKey = event.key === 'a' || event.key === 'A' || event.key === 'ㅁ';
+        const isPressedSKey = event.key === 's' || event.key === 'S' || event.key === 'ㄴ';
         if (isPressedAKey) {
           pressAKey();
         } else if (isPressedSKey) {
