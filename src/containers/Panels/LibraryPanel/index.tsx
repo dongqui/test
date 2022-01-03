@@ -353,7 +353,7 @@ const LibraryPanel: FunctionComponent = () => {
 
   useEffect(() => {
     if (isSceneReady) {
-      const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
+      const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb', 'Mannequin.glb'];
 
       const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
 
