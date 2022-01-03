@@ -1,7 +1,7 @@
 import { isNull } from 'lodash';
 import getNodeNumber from './getNodeNumber';
 
-const checkPasteDuplicates = (name: string, nameArray: string[], hasExtension?: boolean) => {
+const checkPasteDuplicates = (name: string, nameArray: string[]) => {
   if (nameArray.length === 0) {
     return '0';
   }
@@ -66,6 +66,8 @@ const checkPasteDuplicates = (name: string, nameArray: string[], hasExtension?: 
     const isCreate = !name.includes('copy');
 
     if (isCreate) {
+      const parenthesisLength = name.match(/ \(\d+\)/g);
+
       const filter = nameArray
         .filter((currentNode) => {
           const isCopied = currentNode.match(/copy/g);
@@ -74,26 +76,60 @@ const checkPasteDuplicates = (name: string, nameArray: string[], hasExtension?: 
             return false;
           }
 
+          // 이미 번호가 있는 경우
+          if (parenthesisLength !== null) {
+            const extractedNumber = currentNode.match(/ \(\d+\)/g);
+
+            if (extractedNumber !== null) {
+              if (extractedNumber.length === parenthesisLength.length || extractedNumber.length === parenthesisLength.length + 1) {
+                return true;
+              }
+            }
+            return false;
+          }
+
+          if (parenthesisLength === null) {
+            const extractedNumber = currentNode.match(/ \(\d+\)/g);
+
+            if (extractedNumber !== null) {
+              if (extractedNumber.length === 1) {
+                return true;
+              }
+
+              return false;
+            }
+
+            if (extractedNumber === null) {
+              return true;
+            }
+
+            return false;
+          }
+
           return true;
         })
         .map((node) => {
-          const matches = node.match(/\(/g);
+          const extractedNumber = node.match(/ \(\d+\)/g);
 
-          let value = 0;
+          if (!isNull(extractedNumber)) {
+            const number = (node.match(/(\((?:\d){1,}\))$/g) as string[])[0].replace(/[{()}]/g, '');
 
-          // 번호가 없는 경우
-          if (matches === null) {
-            value = 0;
+            if (parenthesisLength !== null) {
+              if (extractedNumber.length > parenthesisLength.length) {
+                return Number(number);
+              } else {
+                return 0;
+              }
+            } else {
+              if (extractedNumber.length === 1) {
+                return Number(number);
+              } else {
+                return 0;
+              }
+            }
+          } else {
+            return 0;
           }
-
-          if (matches !== null) {
-            const startIndex = node.lastIndexOf('(') + 1;
-            const endIndex = node.lastIndexOf(')');
-
-            value = Number(node.substring(startIndex, endIndex));
-          }
-
-          return value;
         });
 
       if (filter.length > 0) {
