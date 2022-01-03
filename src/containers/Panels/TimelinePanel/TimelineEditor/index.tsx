@@ -229,8 +229,8 @@ const TimelineEditor = () => {
 
         const isPressedAKey = multiKeyController.a.pressed || multiKeyController.A.pressed || multiKeyController.ㅁ.pressed;
         const isPressedDKey = multiKeyController.d.pressed || multiKeyController.D.pressed || multiKeyController.ㅇ.pressed;
-        const isPressedCKey = event.key === 'a' || event.key === 'A' || event.key === 'ㅁ';
-        const isPressedVKey = event.key === 's' || event.key === 'S' || event.key === 'ㄴ';
+        const isPressedCKey = event.key === 'c' || event.key === 'C' || event.key === 'ㅊ';
+        const isPressedVKey = event.key === 'v' || event.key === 'V' || event.key === 'ㅍ';
 
         if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || ((event.ctrlKey || event.metaKey) && isPressedAKey && isPressedDKey)) {
           dispatch(keyframesActions.enterKeyframeDeleteKey());
