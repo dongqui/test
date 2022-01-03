@@ -1461,7 +1461,11 @@ const ListNode: FunctionComponent<Props> = ({
 
       // model node로 이동
       if (type === 'Model') {
-        if (dragTarget?.type === 'Motion' && !dragNode?.mocapData) {
+        const retargetMap = find(_retargetMaps, { assetId });
+
+        const isRetargetError = retargetMap?.values.some((value) => !value.targetTransformNodeId);
+
+        if (dragTarget?.type === 'Motion' && isRetargetError && dragNode?.mocapData) {
           // 리타겟팅이 완료되지 않은 모델에 추출한 모션을 import
           const confirmed = await getConfirm({
             title: 'Confirm',
@@ -1538,7 +1542,7 @@ const ListNode: FunctionComponent<Props> = ({
               try {
                 const mocapAnimationIngredient = await getRetargetedMocapData(
                   dropNode.assetId!,
-                  dragNode.name,
+                  nodeName,
                   targetRetargetMap,
                   filterAnimatableTransformNodes(targetAsset.transformNodes),
                   dragNode.mocapData,
@@ -1561,8 +1565,12 @@ const ListNode: FunctionComponent<Props> = ({
 
                     targetNode.childrens.push(cloneDragNode.id);
 
+                    const { mocapData, ...restObject } = cloneDragNode;
+
                     // @TODO 하위 노드도 추가
-                    draft.push(cloneDragNode);
+                    draft.push({
+                      ...restObject,
+                    });
 
                     if (cloneDragNode.childrens.length > 0) {
                       cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
@@ -1651,8 +1659,12 @@ const ListNode: FunctionComponent<Props> = ({
 
                   targetNode.childrens.push(cloneDragNode.id);
 
+                  const { mocapData, ...restObject } = cloneDragNode;
+
                   // @TODO 하위 노드도 추가
-                  draft.push(cloneDragNode);
+                  draft.push({
+                    ...restObject,
+                  });
 
                   if (cloneDragNode.childrens.length > 0) {
                     cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
@@ -1878,6 +1890,7 @@ const ListNode: FunctionComponent<Props> = ({
       _assetList,
       _lpNode,
       _retargetMaps,
+      assetId,
       depthChangeKey,
       depthCheck,
       dispatch,
@@ -2015,7 +2028,7 @@ const ListNode: FunctionComponent<Props> = ({
 
           if (e.key === 'F2') {
             handleEdit();
-          } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Delete')) {
+          } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
             onDelete();
           }
         };
