@@ -227,14 +227,16 @@ const TimelineEditor = () => {
       const keydownListener = (event: KeyboardEvent) => {
         togglePressedKey(event, true);
 
-        const isPressedA = multiKeyController.a.pressed || multiKeyController.A.pressed || multiKeyController.ㅁ.pressed;
-        const isPressedD = multiKeyController.d.pressed || multiKeyController.D.pressed || multiKeyController.ㅇ.pressed;
+        const isPressedAKey = multiKeyController.a.pressed || multiKeyController.A.pressed || multiKeyController.ㅁ.pressed;
+        const isPressedDKey = multiKeyController.d.pressed || multiKeyController.D.pressed || multiKeyController.ㅇ.pressed;
+        const isPressedCKey = event.key === 'c' || event.key === 'C' || event.key === 'ㅊ';
+        const isPressedVKey = event.key === 'v' || event.key === 'V' || event.key === 'ㅍ';
 
-        if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || ((event.ctrlKey || event.metaKey) && isPressedA && isPressedD)) {
+        if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || ((event.ctrlKey || event.metaKey) && isPressedAKey && isPressedDKey)) {
           dispatch(keyframesActions.enterKeyframeDeleteKey());
-        } else if ((event.metaKey || event.ctrlKey) && event.key === ('c' || 'C' || 'ㅊ')) {
+        } else if ((event.metaKey || event.ctrlKey) && isPressedCKey) {
           dispatch(keyframesActions.copyKeyframes());
-        } else if ((event.metaKey || event.ctrlKey) && event.key === ('v' || 'V' || 'ㅍ')) {
+        } else if ((event.metaKey || event.ctrlKey) && isPressedVKey) {
           dispatch(keyframesActions.enterPasteKey());
         }
       };
