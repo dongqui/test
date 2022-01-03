@@ -34,8 +34,6 @@ const Scrubber: FunctionComponent<Props> = (props) => {
   const [focusScrubber, setFocusScrubber] = useState(false);
 
   const scrubberRef = useRef<SVGGElement>(null);
-  const onlyKeyController = useRef(new Set<string>());
-  const keyupPressedKeys = useRef<string[]>([]);
 
   const clampTimeIndex = (timeIndex: number) => {
     const startTimeIndex = TimeIndex.getStartTimeIndex();
@@ -173,32 +171,15 @@ const Scrubber: FunctionComponent<Props> = (props) => {
   // scrubber 키 입력 이벤트
   const keydownListener = useCallback(
     (event: KeyboardEvent) => {
-      onlyKeyController.current.add(event.key);
-      const scrubberMoveKeys = ['a', 'A', 'ㅁ', 's', 'S', 'ㄴ'];
-      const isOnlyPressed = onlyKeyController.current.size === 1 && scrubberMoveKeys.some((key) => onlyKeyController.current.has(key));
-      if (isOnlyPressed) {
-        const isPressedAKey = event.key === 'a' || event.key === 'A' || event.key === 'ㅁ';
-        const isPressedSKey = event.key === 's' || event.key === 'S' || event.key === 'ㄴ';
-        if (isPressedAKey) {
-          pressAKey();
-        } else if (isPressedSKey) {
-          pressSKey();
-        }
+      const isPressedAKey = event.key === 'a' || event.key === 'A' || event.key === 'ㅁ';
+      const isPressedSKey = event.key === 's' || event.key === 'S' || event.key === 'ㄴ';
+      if (isPressedAKey) {
+        pressAKey();
+      } else if (isPressedSKey) {
+        pressSKey();
       }
     },
-    [onlyKeyController, pressAKey, pressSKey],
-  );
-
-  // scrubber 키 입력 종료 이벤트
-  const keyupListener = useCallback(
-    (event: KeyboardEvent) => {
-      keyupPressedKeys.current.push(event.key);
-      if (keyupPressedKeys.current.length === onlyKeyController.current.size) {
-        onlyKeyController.current.clear();
-        keyupPressedKeys.current.length = 0;
-      }
-    },
-    [keyupPressedKeys, onlyKeyController],
+    [pressAKey, pressSKey],
   );
 
   // 부모 컴포넌트 focus 시, focus에 keydown 이벤트 등록
@@ -206,13 +187,11 @@ const Scrubber: FunctionComponent<Props> = (props) => {
     const currentRef = scrubberRef.current;
     if (isFocusedTimelineEditor && currentRef) {
       document.addEventListener('keydown', keydownListener);
-      document.addEventListener('keyup', keyupListener);
     }
     return () => {
       document.removeEventListener('keydown', keydownListener);
-      document.removeEventListener('keyup', keyupListener);
     };
-  }, [isFocusedTimelineEditor, keydownListener, keyupListener]);
+  }, [isFocusedTimelineEditor, keydownListener]);
 
   return (
     <g id="scrubber" className={cx('scrubber')} ref={scrubberRef}>
