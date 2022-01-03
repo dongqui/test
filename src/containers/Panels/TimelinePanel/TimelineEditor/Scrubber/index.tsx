@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -14,7 +14,12 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const Scrubber = () => {
+interface Props {
+  isFocusedTimelineEditor: boolean;
+}
+
+const Scrubber: FunctionComponent<Props> = (props) => {
+  const { isFocusedTimelineEditor } = props;
   const dispatch = useDispatch();
 
   const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
@@ -29,6 +34,8 @@ const Scrubber = () => {
   const [focusScrubber, setFocusScrubber] = useState(false);
 
   const scrubberRef = useRef<SVGGElement>(null);
+  const onlyKeyController = useRef(new Set<string>());
+  const keyupPressedKeys = useRef<string[]>([]);
 
   const clampTimeIndex = (timeIndex: number) => {
     const startTimeIndex = TimeIndex.getStartTimeIndex();
@@ -135,40 +142,77 @@ const Scrubber = () => {
     scrubber.call(dragBehavior as any);
   }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
 
-  // a/s 키 입력 시, scrubber 이동
-  useEffect(() => {
-    const keydownListener = (event: KeyboardEvent) => {
-      if (event.key === ('a' || 'A' || 'ㅁ')) {
-        const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
-        const clampedTimeIndex = clampTimeIndex(currentTimeIndex - 1);
-        dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
+  // A 키 입력 시, 오른쪽으로 scrubber 1frame 이동
+  const pressAKey = useCallback(() => {
+    const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
+    const clampedTimeIndex = clampTimeIndex(currentTimeIndex - 1);
+    dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
+    if (_currentAnimationGroup) {
+      if (_currentAnimationGroup.isStarted) {
+        _currentAnimationGroup.goToFrame(clampedTimeIndex);
+      } else {
+        _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
+      }
+    }
+  }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
 
-        if (_currentAnimationGroup) {
-          if (_currentAnimationGroup.isStarted) {
-            _currentAnimationGroup.goToFrame(clampedTimeIndex);
-          } else {
-            _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
-          }
-        }
-      } else if (event.key === ('s' || 'S' || 'ㄴ')) {
-        const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
-        const clampedTimeIndex = clampTimeIndex(currentTimeIndex + 1);
-        dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
+  // S 키 입력 시, 왼쪽으로 scrubber 1frame 이동
+  const pressSKey = useCallback(() => {
+    const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
+    const clampedTimeIndex = clampTimeIndex(currentTimeIndex + 1);
+    dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
+    if (_currentAnimationGroup) {
+      if (_currentAnimationGroup.isStarted) {
+        _currentAnimationGroup.goToFrame(clampedTimeIndex);
+      } else {
+        _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
+      }
+    }
+  }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
 
-        if (_currentAnimationGroup) {
-          if (_currentAnimationGroup.isStarted) {
-            _currentAnimationGroup.goToFrame(clampedTimeIndex);
-          } else {
-            _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
-          }
+  // scrubber 키 입력 이벤트
+  const keydownListener = useCallback(
+    (event: KeyboardEvent) => {
+      onlyKeyController.current.add(event.key);
+      const scrubberMoveKeys = ['a', 'A', 'ㅁ', 's', 'S', 'ㄴ'];
+      const isOnlyPressed = onlyKeyController.current.size === 1 && scrubberMoveKeys.some((key) => onlyKeyController.current.has(key));
+      if (isOnlyPressed) {
+        const isPressedAKey = event.key === ('a' || 'A' || 'ㅁ');
+        const isPressedSKey = event.key === ('s' || 'S' || 'ㄴ');
+        if (isPressedAKey) {
+          pressAKey();
+        } else if (isPressedSKey) {
+          pressSKey();
         }
       }
-    };
-    document.addEventListener('keydown', keydownListener);
+    },
+    [onlyKeyController, pressAKey, pressSKey],
+  );
+
+  // scrubber 키 입력 종료 이벤트
+  const keyupListener = useCallback(
+    (event: KeyboardEvent) => {
+      keyupPressedKeys.current.push(event.key);
+      if (keyupPressedKeys.current.length === onlyKeyController.current.size) {
+        onlyKeyController.current.clear();
+        keyupPressedKeys.current.length = 0;
+      }
+    },
+    [keyupPressedKeys, onlyKeyController],
+  );
+
+  // 부모 컴포넌트 focus 시, focus에 keydown 이벤트 등록
+  useEffect(() => {
+    const currentRef = scrubberRef.current;
+    if (isFocusedTimelineEditor && currentRef) {
+      document.addEventListener('keydown', keydownListener);
+      document.addEventListener('keyup', keyupListener);
+    }
     return () => {
       document.removeEventListener('keydown', keydownListener);
+      document.removeEventListener('keyup', keyupListener);
     };
-  }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
+  }, [isFocusedTimelineEditor, keydownListener, keyupListener]);
 
   return (
     <g id="scrubber" className={cx('scrubber')} ref={scrubberRef}>

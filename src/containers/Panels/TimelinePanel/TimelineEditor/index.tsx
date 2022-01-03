@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -26,6 +26,7 @@ const TimelineEditor = () => {
 
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const [isFocused, setIsFocused] = useState(false);
 
   const timelineEditorRef = useRef<SVGSVGElement>(null);
   const leftTimeIndex = useRef(0);
@@ -245,11 +246,13 @@ const TimelineEditor = () => {
       const focusListener = () => {
         document.addEventListener('keydown', keydownListener);
         document.addEventListener('keyup', keyUpListener);
+        setIsFocused(true);
       };
 
       const blurListener = () => {
         document.removeEventListener('keydown', keydownListener);
         document.removeEventListener('keyup', keyUpListener);
+        setIsFocused(false);
       };
 
       currentRef?.addEventListener('focus', focusListener);
@@ -272,7 +275,7 @@ const TimelineEditor = () => {
           <TimelineEditorMode />
         </g>
         <TopRuler />
-        {_visualizedAssetIds.length && <Scrubber />}
+        {_visualizedAssetIds.length && <Scrubber isFocusedTimelineEditor={isFocused} />}
       </svg>
       <DragBox areaRef={timelineEditorRef} onDragEnd={handleDragEnd} selectableId="selectable" selectedId="keyframe-selected" />
     </div>
