@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { AnimationIngredient, ArrayOfFourNumbers, PlaskMocapData, PlaskRetargetMap } from 'types/common';
+import { AnimationIngredient, PlaskMocapData, PlaskPose, PlaskRetargetMap } from 'types/common';
 import { createAnimationIngredient } from 'utils/RP';
 
 const DEFAULT_TIMEOUT = 3000;
@@ -10,7 +10,7 @@ const DEFAULT_TIMEOUT = 3000;
  * @param assetId - 대상 model(asset)의 id
  * @param animationIngredientName - 생성할 animationIngredient의 이름
  * @param retargetMap - source와 target을 연결한 데이터
- * @param bones - 대상 model의 bones
+ * @param initialPoses - 대상 model의 transformNode들의 초기 포즈
  * @param animatableTransformNodes - model의 transformNode들 중 animation에 사용가능한 대상들
  * @param mocapData - mocap 결과물
  * @param timeout -
@@ -19,7 +19,7 @@ const createAnimationIngredientFromMocapData = (
   assetId: string,
   animationIngredientName: string,
   retargetMap: PlaskRetargetMap,
-  bones: BABYLON.Bone[],
+  initialPoses: PlaskPose[],
   animatableTransformNodes: BABYLON.TransformNode[],
   mocapData: PlaskMocapData,
   timeout?: number,
@@ -38,21 +38,25 @@ const createAnimationIngredientFromMocapData = (
     if (targetTransformNodeId) {
       if (property === 'rotationQuaternion') {
         // rotation 트랙과 rotationQuaternion 트랙 모두에 transformKeys 추가
-        if (boneName === 'hips') {
-          // hips인 경운 __root__의 rotationQuaternion이 (0, 1, 0, 0) 임을 역연산해서 값을 넣어줘야 함
-          const targetRotationTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotation');
-          const targetRotationQuaternionTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotationQuaternion');
+        const targetRotationTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotation');
+        const targetRotationQuaternionTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotationQuaternion');
+        const targetInitialPose = initialPoses.find((initialPose) => initialPose.target.id === targetTransformNodeId)!;
 
+        if (boneName === 'hips') {
           if (targetRotationTrack && targetRotationQuaternionTrack) {
             transformKeys.forEach((transformKey) => {
               const { frame, value } = transformKey;
 
-              const [w, x, y, z] = value as ArrayOfFourNumbers;
+              const targetQ = BABYLON.Quaternion.FromArray(value);
+              const recursiveRotationQuaternion = targetInitialPose.recursiveRotationQuaternion!.clone();
+
+              const { x, y, z, w } = targetQ.multiply(BABYLON.Quaternion.Inverse(recursiveRotationQuaternion));
+
               const newValue = [
-                0.7071067811865475 * w - 0.7071067811865475 * z,
-                0.7071067811865475 * x + 0.7071067811865475 * y,
-                0.7071067811865475 * y - 0.7071067811865475 * x,
-                0.7071067811865475 * z + 0.7071067811865475 * w,
+                0.7071067811865475 * x - 0.7071067811865475 * w,
+                0.7071067811865475 * y + 0.7071067811865475 * z,
+                0.7071067811865475 * z - 0.7071067811865475 * y,
+                0.7071067811865475 * w + 0.7071067811865475 * x,
               ];
 
               const q = BABYLON.Quaternion.FromArray(newValue);
@@ -63,14 +67,16 @@ const createAnimationIngredientFromMocapData = (
             });
           }
         } else {
-          const targetRotationTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotation');
-          const targetRotationQuaternionTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotationQuaternion');
-
           if (targetRotationTrack && targetRotationQuaternionTrack) {
             transformKeys.forEach((transformKey) => {
               const { frame, value } = transformKey;
-              const q = BABYLON.Quaternion.FromArray(value);
-              const e = q.clone().toEulerAngles();
+
+              const targetQ = BABYLON.Quaternion.FromArray(value);
+              const recursiveRotationQuaternion = targetInitialPose.recursiveRotationQuaternion!.clone();
+
+              const q = targetQ.multiply(BABYLON.Quaternion.Inverse(recursiveRotationQuaternion));
+              const e = q.toEulerAngles();
+
               targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
               targetRotationTrack.transformKeys.push({ frame, value: e });
             });
