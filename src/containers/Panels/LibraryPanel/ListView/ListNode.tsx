@@ -1528,7 +1528,7 @@ const ListNode: FunctionComponent<Props> = ({
               try {
                 const mocapAnimationIngredient = await getRetargetedMocapData(
                   dropNode.assetId!,
-                  dragNode.name,
+                  nodeName,
                   targetRetargetMap,
                   filterAnimatableTransformNodes(targetAsset.transformNodes),
                   dragNode.mocapData,
