@@ -927,6 +927,7 @@ const ListNode: FunctionComponent<Props> = ({
                     dispatch(plaskProjectActions.unrenderAsset({ assetId }));
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                    forceClickAnimationPlayAndStop(50);
                   }
                 },
                 children: [],
@@ -1179,6 +1180,7 @@ const ListNode: FunctionComponent<Props> = ({
                     dispatch(plaskProjectActions.unrenderAsset({}));
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                    forceClickAnimationPlayAndStop(50);
                   }
                 },
                 children: [],
