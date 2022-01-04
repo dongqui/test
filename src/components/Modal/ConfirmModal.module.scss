@@ -1,9 +1,6 @@
-.inner {
-  display: flex;
-  text-align: center;
-  justify-content: center;
-}
+@import "./common.scss";
 
-.button-cancel {
-  margin-right: 8px;
+.buttons {
+  display: flex;
+  gap: 6px;
 }

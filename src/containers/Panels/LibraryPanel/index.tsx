@@ -1,405 +1,408 @@
-import { FunctionComponent, memo, useCallback, useState, useRef, useEffect } from 'react';
-import { useDropzone } from 'react-dropzone';
-import useLPControl from 'hooks/LP/useLPControl';
-import { v4 as uuidv4 } from 'uuid';
-import useContextMenu from 'hooks/common/useContextMenu';
-import { DEFAULT_MODELS, INITIAL_RECORDING_DATA } from 'utils/const';
-import { LPModeType } from 'types';
-import * as api from 'utils/common/api';
-import { fnDeleteFileByKeys } from 'utils/LP/fnDeleteFile';
-import fnGetAnimationData from 'utils/LP/fnGetAnimationData';
-import { FileType, LPItemListOldType, LPItemOldType, ROOT_FOLDER_NAME } from 'types/LP';
-import _ from 'lodash';
-import { IconView } from './IconTree/IconView';
-import { ListView } from './ListTree/ListView';
-import Breadcrumb from './Breadcrumb';
-import { Headline } from 'components/Typography';
-import { BaseModal, AlertModal } from 'components/Modal';
-import { useConfirmModal } from 'components/Modal/ConfirmModal';
-import { fnGetBaseLayerWithBoneNames, fnGetBaseLayerWithTracks } from 'utils/TP/editingUtils';
-import { FORMAT_TYPES, ENABLE_VIDEO_FORMATS, PAGE_NAMES, ENABLE_FILE_FORMATS } from 'types';
-import Explorer from './Explorer/index';
+import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import { useDropzone } from 'react-dropzone';
+import produce from 'immer';
+import '@babylonjs/loaders/glTF';
+import { convertModel } from 'api';
+import { filterAnimatableTransformNodes, getFileExtension, getRandomStringKey } from 'utils/common';
+import { createAnimationIngredient } from 'utils/RP';
+import { checkCreateDuplicates } from 'utils/LP/FileSystem';
+import { createAutoRetargetMap, createBvhMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
+import { v4 as uuid } from 'uuid';
+import * as TEXT from 'constants/Text';
+import * as BABYLON from '@babylonjs/core';
+import * as animationDataActions from 'actions/animationDataAction';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
+import * as modeSelectActions from 'actions/modeSelection';
+import { AnimationIngredient, PlaskAsset, PlaskPose } from 'types/common';
+import Box from 'components/Layout/Box';
+import { useBaseModal } from 'new_components/Modal/BaseModal';
+import LPHeader from './LPHeader';
+import LPControlbar from './LPControlbar';
+import LPBody from './LPBody';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import * as lpDataActions from 'actions/lpData';
-import { useDispatch } from 'react-redux';
-import * as lpModeActions from 'actions/lpMode';
-import * as lpSearchwordActtions from 'actions/lpSearchword';
-import * as pageInfoActions from 'actions/pageInfo';
-import * as recordingDataActions from 'actions/recordingData';
-import * as cutImagesActions from 'actions/cutImages';
-import fnGetFileName from 'utils/LP/fnGetFileName';
-import { fnQuaternionToEulerTrack } from 'utils/common';
 
 const cx = classNames.bind(styles);
 
-export interface PagesType {
-  key: string;
-  name: string;
-  type: FileType;
-}
-
-const LibraryPanelComponent: FunctionComponent = () => {
-  const lpData = useSelector((state) => state.lpDataOld);
-  const pages = useSelector((state) => state.lpPageOld);
-  const lpmode = useSelector((state) => state.lpMode.mode);
-  const { retargetInfo } = useSelector((state) => state.retargetData);
-
+const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
+  const _lpNode = useSelector((state) => state.lpNode.node);
+  const _screenList = useSelector((state) => state.plaskProject.screenList);
 
-  const [originalLpmode, setOriginalLpmode] = useState<LPModeType | undefined>(undefined);
-  const [isOutsideClose, setIsOutsideClose] = useState(false);
-  const onChangeSearchText = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      dispatch(lpSearchwordActtions.setSearchword({ word: e.target.value }));
-      if (_.isEqual(lpmode, LPModeType.iconview)) {
-        dispatch(lpModeActions.setLPMode({ mode: 'listView' }));
-        setOriginalLpmode(LPModeType.iconview);
-      }
-      if (_.isEmpty(e.target.value) && _.isEqual(originalLpmode, LPModeType.iconview)) {
-        dispatch(lpModeActions.setLPMode({ mode: 'iconView' }));
-        setOriginalLpmode(undefined);
-      }
-    },
-    [dispatch, lpmode, originalLpmode],
-  );
-  const searchWord = useSelector((state) => state.lpSearchword.word);
-  const contextmenuInfo = useSelector((state) => state.contextmenuInfo);
-  const panelWrapperRef = useRef<HTMLDivElement>(null);
-  const [showsModal, setShowsModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
-  const {
-    onClick,
-    onContextMenu,
-    onDragStart,
-    onDragEnd,
-    onDrop,
-    shortcutData,
-    filteredData,
-  } = useLPControl({
-    contextmenuInfo,
-    mainData: lpData,
-    pages,
-    searchWord,
-    lpmode,
-    showsModal,
-    setShowsModal,
-    modalMessage,
-    setModalMessage,
-    retargetInfo,
-  });
+  const [view, setView] = useState<LP.View>('List');
+  const [searchText, setSearchText] = useState('');
+  const [searchResultNode, setSearchResultNode] = useState(_lpNode);
 
-  const { getConfirm } = useConfirmModal();
+  const { onModalOpen, onModalClose } = useBaseModal();
 
-  const handleDrop = async (acceptedFiles: File[]) => {
-    setShowsModal(true);
-    setModalMessage('Importing the file.<br />This can take up to 3 minutes');
-    if (_.isEmpty(acceptedFiles)) {
-      setModalMessage('File not found.');
-      setIsOutsideClose(true);
-      return false;
-    }
-    if (
-      _.gt(
-        _.size(
-          _.filter(acceptedFiles, (acceptedFile) =>
-            _.includes(
-              ENABLE_VIDEO_FORMATS,
-              _.last(_.split(acceptedFile.name, '.'))?.toLowerCase(),
-            ),
-          ),
-        ),
-        1,
-      )
-    ) {
-      setModalMessage('NOT allowed to import multiple files at once.');
-      setIsOutsideClose(true);
-      return false;
-    }
-    let newLpData = _.clone(lpData);
-    // 비디오포맷은 마지막으로 재정렬
-    const sortedAcceptedFiles = _.concat(
-      _.filter(
-        acceptedFiles,
-        (file) => !_.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))?.toLowerCase()),
-      ),
-      _.filter(acceptedFiles, (file) =>
-        _.includes(ENABLE_VIDEO_FORMATS, _.last(_.split(file.name, '.'))?.toLowerCase()),
-      ),
-    );
-    for (const file of sortedAcceptedFiles) {
-      const extension = _.last(_.split(file.name, '.'));
-      if (!_.includes(ENABLE_FILE_FORMATS, extension?.toLowerCase())) {
-        setModalMessage('Unsupported file format.');
-        setIsOutsideClose(true);
-        return false;
-      }
-      if (extension && extension.toLowerCase() === 'json') {
-        const fileReader = new FileReader();
-        fileReader.onload = (event) => {
-          try {
-            let result: any = event.target?.result;
-            result = JSON.parse(result);
-            if (result.key !== 'plask') {
-              setIsOutsideClose(true);
-              setShowsModal(true);
-              setModalMessage('Unsupported data format.');
-              return;
-            }
-            const data = result.data;
-            const key = uuidv4();
-            const name = fnGetFileName({ key: '', lpData, name: file.name });
-            const newData: LPItemListOldType = [
-              {
-                key,
-                type: 'Motion',
-                name,
-                parentKey: ROOT_FOLDER_NAME,
-                baseLayer: _.map(data, (track) => {
-                  if (track.name.includes('quaternion')) {
-                    return fnQuaternionToEulerTrack({ quaternionTrack: track });
-                  } else {
-                    return track;
-                  }
-                }),
-                layers: [],
-                isExportedMotion: true,
-              },
-            ];
-            dispatch(lpDataActions.addItemListOld({ itemList: newData }));
-          } catch (error) {
-            setIsOutsideClose(true);
-            setShowsModal(true);
-            setModalMessage(error);
+  const handleFileLoad = useCallback(
+    async (file: File | string, failedNames: string) => {
+      const baseScene = _screenList[0].scene;
+      let loadedAssetContainer: BABYLON.AssetContainer | undefined = undefined;
+
+      const targetName = file instanceof File ? file.name : file;
+
+      const extension = getFileExtension(targetName).toLowerCase();
+      const fileName = targetName.split('.').slice(0, -1).join('.');
+
+      if (extension === 'fbx') {
+        onModalOpen({ title: 'Importing the file', message: 'This can take up to 3 minutes' });
+
+        if (file instanceof File) {
+          const fileUrl = await convertModel(file, 'glb')
+            .then((response) => {
+              onModalClose();
+              return response;
+            })
+            .catch(async () => {
+              onModalOpen({
+                title: 'Warning',
+                message: TEXT.WARNING_07,
+                confirmText: 'Close',
+                onConfirm: onModalClose,
+              });
+            });
+
+          if (fileUrl) {
+            loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
           }
+        }
+      }
+
+      if (extension === 'glb') {
+        if (file instanceof File) {
+          loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', (file as unknown) as string, baseScene);
+        }
+
+        if (typeof file === 'string') {
+          loadedAssetContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(`/models/${file}`, '', baseScene);
+        }
+      }
+
+      if (!loadedAssetContainer) {
+        return;
+      }
+
+      const { meshes, geometries, skeletons, transformNodes, animationGroups } = loadedAssetContainer;
+
+      const assetId = getRandomStringKey();
+
+      meshes.forEach((mesh) => {
+        // joint 클릭을 위해 mesh 클릭을 불가능하게 처리
+        mesh.isPickable = false;
+      });
+
+      if (skeletons && skeletons.length > 0) {
+        skeletons[0].bones.forEach((bone) => {
+          // bone id를 unique한 id로 생성
+          bone.id = `${assetId}//${bone.name}//bone`;
+        });
+      }
+
+      transformNodes.forEach((transformNode) => {
+        // transformNode id를 unique한 id로 생성
+        transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
+      });
+
+      const animationIngredientIds: string[] = [];
+      const animationIngredients: AnimationIngredient[] = [];
+
+      animationGroups.forEach((animationGroup, idx) => {
+        // 모델 로드 시 animation 재생을 방지
+        animationGroup.pause();
+
+        /**
+         * 모델이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
+         * 첫 번째 animationGroup을 current로 사용 (idx === 0)
+         */
+        const animationIngredient = createAnimationIngredient(
+          assetId,
+          animationGroup.name,
+          animationGroup.targetedAnimations,
+          filterAnimatableTransformNodes(transformNodes),
+          false,
+          idx === 0,
+        );
+
+        animationIngredientIds.push(animationIngredient.id);
+        animationIngredients.push(animationIngredient);
+      });
+
+      // autoRetargetMap 생성 및 적용
+      const retargetMap = await createAutoRetargetMap(assetId, skeletons[0]?.bones, 3000)
+        .then((response) => response)
+        .catch(() => {
+          // 실패 시 빈 retargetMap을 생성 및 적
+          const name = typeof file === 'string' ? file : file.name;
+          const isOver = failedNames.trim().split(', ').length >= 3;
+
+          if (!isOver) {
+            const nextNames = failedNames.concat(name, ', ');
+            failedNames = nextNames;
+          }
+
+          if (isOver) {
+            failedNames = failedNames.replace(/,\s*$/, '').concat('...');
+          }
+
+          return createEmptyRetargetMap(assetId);
+        });
+
+      const isRetargetError = retargetMap.values.some((value) => !value.targetTransformNodeId);
+
+      if (isRetargetError) {
+        const name = typeof file === 'string' ? file : file.name;
+        const nextNames = failedNames.concat(name, ', ');
+        failedNames = nextNames;
+      }
+
+      // 임시로 호출 코드 넣어놨습니다. 실제로는 bvh export 시에 asset의 bones, retargetMap을 가지고 호출하시면 됩니답.
+      // const bvhMap = await createBvhMap(skeletons[0].bones, retargetMap, 3000);
+
+      const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
+
+      const check = checkCreateDuplicates(`${fileName}`, currentPathNodeNames);
+
+      const nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
+
+      const initialPoses: PlaskPose[] = filterAnimatableTransformNodes(transformNodes).map((transformNode) => ({
+        target: transformNode,
+        position: transformNode.position.clone(),
+        rotationQuaternion: transformNode.rotationQuaternion ? transformNode.rotationQuaternion.clone() : transformNode.rotation.clone().toQuaternion(),
+        scaling: transformNode.scaling.clone(),
+      }));
+
+      const newAsset: PlaskAsset = {
+        id: assetId,
+        name: nodeName,
+        extension,
+        meshes,
+        initialPoses,
+        geometries,
+        skeleton: skeletons[0] ?? null,
+        bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
+        transformNodes,
+        animationIngredientIds,
+        retargetMapId: retargetMap.id,
+      };
+
+      const nodes: LP.Node[] = [];
+
+      const nextNodes = produce(nodes, (draft) => {
+        // 로드한 모델을 통해 LP 모델 노드 생성
+        const newModelNode: LP.Node = {
+          id: uuid(),
+          parentId: '__root__',
+          filePath: '\\root',
+          name: nodeName,
+          extension,
+          type: 'Model',
+          assetId: newAsset.id,
+          childrens: animationIngredientIds,
         };
-        fileReader.readAsText(file);
-        continue;
-      }
-      let overlappedFile: LPItemOldType | undefined;
-      if (_.isEqual(lpmode, LPModeType.iconview)) {
-        overlappedFile = _.find(
-          lpData,
-          (item) =>
-            _.isEqual(item.name, file?.name) && _.isEqual(item.parentKey, _.last(pages)?.key),
-        );
-      }
-      if (_.isEqual(lpmode, LPModeType.listview)) {
-        overlappedFile = _.find(
-          lpData,
-          (item) => _.isEqual(item.name, file?.name) && _.isEqual(item.parentKey, ROOT_FOLDER_NAME),
-        );
-      }
-      if (!_.isEmpty(overlappedFile)) {
-        const confirmed = await getConfirm({
-          title: `You already have a file with ${overlappedFile?.name} in the same folder. Do you want to replace it?`,
-        });
 
-        if (confirmed) {
-          newLpData = _.filter(newLpData, (item) => !_.isEqual(item?.key, overlappedFile?.key));
-          newLpData = fnDeleteFileByKeys({
-            lpData: newLpData,
-            keys: [overlappedFile?.key ?? ''],
-            dispatch,
-          });
-        } else {
-          continue;
-        }
-      }
+        draft.push(newModelNode);
 
-      let url = URL.createObjectURL(file);
-      if (_.isEqual(extension?.toLowerCase(), FORMAT_TYPES.fbx)) {
-        // fbx 파일 업로드 및 변환
-        const { url: convertedUrl, error } = await api.setConvertFbxToGlb({
-          file,
-          type: FORMAT_TYPES.glb,
-        });
-        if (error) {
-          setModalMessage('Failed to upload the file.');
-          setIsOutsideClose(true);
-          return false;
-        }
-        url = convertedUrl;
-      }
-
-      if (_.includes(ENABLE_VIDEO_FORMATS, extension?.toLowerCase())) {
-        setShowsModal(false);
-        const confirmed = await getConfirm({
-          title: 'Export motion from the video?',
-        });
-
-        if (confirmed) {
-          dispatch(lpDataActions.setItemListOld({ itemList: newLpData }));
-          dispatch(recordingDataActions.setRecordingData(INITIAL_RECORDING_DATA));
-          dispatch(cutImagesActions.setCutImages({ urls: [] }));
-          dispatch(pageInfoActions.setPageInfo({ page: 'extract', videoUrl: url, extension }));
-        } else {
-          continue;
-        }
-      }
-
-      const { animations, bones = [], error } = await fnGetAnimationData({ url });
-      if (error) {
-        setModalMessage('Failed to export the animation data from the file.');
-        setIsOutsideClose(true);
-        return false;
-      }
-      const motions: LPItemListOldType = [];
-      const key = uuidv4();
-      _.forEach(animations, (clip, index) => {
-        if (bones) {
-          motions.push({
-            key: clip?.uuid,
-            name: clip?.name,
-            baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
-            layers: [],
+        // 로드한 모델의 모션을 통해 LP 모션 노드 생성
+        const newMotionNodes = animationIngredients.map((ingredient) => {
+          const motion: LP.Node = {
+            id: ingredient.id,
+            // parentId: ingredient.assetId,
+            parentId: newModelNode.id,
+            assetId: ingredient.assetId,
+            filePath: '\\root' + `\\${nodeName}`,
+            name: ingredient.name,
+            extension: '',
             type: 'Motion',
-            parentKey: key,
-            boneNames: _.map(bones, (bone) => bone.name),
+            childrens: [],
+          };
+
+          return motion;
+        });
+
+        draft.push(...newMotionNodes);
+      });
+
+      dispatch(plaskProjectActions.addAsset({ asset: newAsset }));
+      dispatch(
+        animationDataActions.addAsset({
+          transformNodes: filterAnimatableTransformNodes(transformNodes),
+          animationIngredients,
+          retargetMap,
+        }),
+      );
+
+      return { nextNodes, failedNames };
+    },
+    [_lpNode, _screenList, dispatch, onModalClose, onModalOpen],
+  );
+
+  const onNodeChange = useCallback(
+    async (files: File[] | string[]) => {
+      const nextLoadedNodes: LP.Node[] = [];
+
+      let resultFailedNames = '';
+
+      for (const current of files) {
+        await handleFileLoad(current, resultFailedNames).then((res) => {
+          if (res) {
+            nextLoadedNodes.push(...res.nextNodes);
+            resultFailedNames = res.failedNames;
+          }
+        });
+      }
+
+      const nextNodes = produce(_lpNode, (draft) => {
+        draft.push(...nextLoadedNodes);
+      });
+
+      dispatch(
+        lpNodeActions.changeNode({
+          nodes: nextNodes,
+        }),
+      );
+
+      return resultFailedNames;
+    },
+    [_lpNode, dispatch, handleFileLoad],
+  );
+
+  const handleDrop = useCallback(
+    async (files: File[]) => {
+      const videos = files.filter((file) => file.type.includes('video'));
+      const removedVideoFiles = files.filter((file) => !file.type.includes('video'));
+
+      const isInvalidFormat = removedVideoFiles.some((file) => {
+        const extension = getFileExtension(file.name).toLowerCase();
+        const isModelFormat = extension === 'glb' || extension === 'fbx';
+
+        return !isModelFormat;
+      });
+
+      const isError = videos.length > 1;
+
+      if (isError) {
+        onModalOpen({
+          title: 'Warning',
+          message: TEXT.WARNING_02,
+          confirmText: 'Close',
+          onConfirm: onModalClose,
+        });
+
+        return;
+      }
+
+      if (isInvalidFormat) {
+        onModalOpen({ title: 'Warning', message: TEXT.WARNING_03, confirmText: 'Close' });
+
+        return;
+      }
+
+      await onNodeChange(removedVideoFiles).then((response) => {
+        // 자동리타겟팅에 실패한 파일 리스트
+        const failedFiles = response.trim().split(', ');
+
+        if (response && failedFiles.length > 0) {
+          const message = TEXT.WARNING_01.replace(/%s/, response.replace(/,\s*$/, '') + '.');
+
+          onModalOpen({
+            title: 'Warning',
+            message: message,
+            confirmText: 'Close',
+            confirmColor: 'cancel',
+            onConfirm: onModalClose,
           });
         }
       });
-      let newData: LPItemListOldType = [
-        {
-          key,
-          type: 'File',
-          name: file.name,
-          url,
-          parentKey: _.isEqual(lpmode, LPModeType.iconview) ? _.last(pages)?.key : ROOT_FOLDER_NAME,
-          baseLayer: fnGetBaseLayerWithBoneNames({
-            boneNames: _.map(bones, (bone) => bone.name),
-          }),
-          layers: [],
-          boneNames: _.map(bones, (bone) => bone.name),
-        },
-      ];
-      newData = _.concat(newData, motions);
-      dispatch(lpDataActions.addItemListOld({ itemList: newData }));
-    }
-    setShowsModal(false);
-  };
-  const handleDefaultModel = useCallback(async () => {
-    let newLpData: LPItemListOldType = [];
-    if (!_.isEmpty(lpData)) {
-      return;
-    }
-    setShowsModal(true);
-    setModalMessage('Importing the file.<br />This can take up to 3 minutes');
-    for (const model of DEFAULT_MODELS) {
-      const isExists = _.some(lpData, { key: model?.key });
-      if (isExists) {
-        continue;
-      }
-      try {
-        const { animations, bones = [], error } = await fnGetAnimationData({
-          url: model?.url ?? '',
-        });
-        if (error) {
-          // setModalMessage('Failed to export the animation data from the file.');
-          setShowsModal(false);
-          return false;
-        }
-        const motions: LPItemListOldType = [];
-        const key = uuidv4();
-        _.forEach(animations, (clip, index) => {
-          if (bones) {
-            motions.push({
-              key: clip?.uuid,
-              name: clip?.name,
-              baseLayer: fnGetBaseLayerWithTracks({ bones, tracks: clip.tracks }),
-              layers: [],
-              type: 'Motion',
-              parentKey: key,
-              boneNames: _.map(bones, (bone) => bone.name),
-            });
-          }
-        });
-        let newData: LPItemListOldType = [
-          {
-            key,
-            type: 'File',
-            name: model?.name,
-            url: model?.url,
-            parentKey: _.isEqual(lpmode, LPModeType.iconview)
-              ? _.last(pages)?.key
-              : ROOT_FOLDER_NAME,
-            baseLayer: fnGetBaseLayerWithBoneNames({
-              boneNames: _.map(bones, (bone) => bone.name),
-            }),
-            layers: [],
-            boneNames: _.map(bones, (bone) => bone.name),
+
+      if (videos.length > 0) {
+        const videoBlobURL = URL.createObjectURL(videos[0]);
+
+        onModalOpen({
+          title: 'Extract',
+          message: TEXT.CONFIRM_01,
+          confirmText: 'Confirm',
+          cancelText: 'Cancel',
+          confirmColor: 'positive',
+          onConfirm: () => {
+            dispatch(
+              modeSelectActions.changeMode({
+                mode: 'videoMode',
+                videoURL: videoBlobURL,
+              }),
+            );
           },
-        ];
-        newData = _.concat(newData, motions);
-        newLpData = _.concat(newLpData, newData);
-      } catch (error) {
-        console.log('error', error);
+          onCancel: () => onModalClose(),
+        });
       }
-      dispatch(lpDataActions.setItemListOld({ itemList: newLpData }));
-    }
-    setShowsModal(false);
-  }, [dispatch, lpData, lpmode, pages]);
+    },
+    [dispatch, onModalClose, onModalOpen, onNodeChange],
+  );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
 
-  const handleModalClose = useCallback(() => {
-    setIsOutsideClose(false);
-    setShowsModal(false);
-  }, []);
-
-  useContextMenu({ targetRef: panelWrapperRef, event: onContextMenu });
-
-  const isIconView = lpmode === 'iconView';
-
-  const iconViewProps = {
-    onClick,
-    onContextMenu,
-    onDragStart,
-    onDragEnd,
-    onDrop,
-    shortcutData,
-    filteredData,
-  };
-
-  const listViewProps = {
-    onClick,
-    onContextMenu,
-    onDragStart,
-    onDragEnd,
-    onDrop,
-    shortcutData,
-  };
+  const [isSceneReady, setIsSceneReady] = useState(false);
 
   useEffect(() => {
-    handleDefaultModel();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const isSceneExist = _screenList.length > 0 && _screenList[0].scene;
+    if (isSceneExist) {
+      const scene = _screenList[0].scene;
+
+      scene.executeWhenReady(() => {
+        setIsSceneReady(true);
+      });
+    }
+  }, [_screenList, isSceneReady, onNodeChange]);
+
+  const [isDefaultModelLoaded, setIsDefaultModelLoaded] = useState(false);
+
+  useEffect(() => {
+    if (isSceneReady) {
+      const defaultModels = ['Knight.glb', 'Zombie.glb', 'Vanguard.glb', 'Mannequin.glb'];
+
+      const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
+
+      if (!isAlreadyExist && !isDefaultModelLoaded) {
+        onNodeChange(defaultModels);
+        setIsDefaultModelLoaded(true);
+      }
+    }
+  }, [_lpNode, isDefaultModelLoaded, isSceneReady, onNodeChange]);
+
+  const handleSearch = useCallback(
+    (text: string) => {
+      setSearchText(text);
+
+      if (text.length > 0) {
+        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
+
+        setSearchResultNode(searchResult);
+      }
+    },
+    [_lpNode],
+  );
+
+  const nodes = searchText.length > 0 ? searchResultNode : _lpNode;
+  const isPreventContextmenu = !!searchText;
 
   return (
-    <div className={cx('hidden-wrapper')} ref={panelWrapperRef}>
-      <div className={cx('wrapper')} {...getRootProps()}>
-        <div className={cx('inner')}>
-          <div className={cx('header')}>
-            <Headline className={cx('title')} level="5" align="left" margin>
-              Library
-            </Headline>
-            <Explorer onChange={onChangeSearchText} />
-          </div>
-          {isIconView && (
-            <div className={cx('breadcrumb')}>
-              <Breadcrumb />
-            </div>
-          )}
-          <div className={cx('content')}>
-            {isIconView ? <IconView {...iconViewProps} /> : <ListView {...listViewProps} />}
-          </div>
-        </div>
+    <div className={cx('wrapper')} {...getRootProps()}>
+      <div className={cx('inner')}>
+        <Box id="LP-Header" noResize>
+          <LPHeader onLoad={handleDrop} />
+        </Box>
+        <Box id="LP-Controlbar" noResize>
+          <LPControlbar onSearch={handleSearch} />
+        </Box>
+        <Box id="LP-Body" className={cx('lp-body')} noResize>
+          <LPBody view={view} lpNode={nodes} isPreventContextmenu={isPreventContextmenu} />
+        </Box>
       </div>
-      {showsModal && (
-        <BaseModal title={modalMessage} onClose={handleModalClose} hasCloseIcon={isOutsideClose} />
-      )}
     </div>
   );
 };
-export const LibraryPanel = memo(LibraryPanelComponent);
+
+export default memo(LibraryPanel);

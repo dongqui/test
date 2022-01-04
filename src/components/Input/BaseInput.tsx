@@ -1,4 +1,4 @@
-import { memo, useCallback, FocusEvent, KeyboardEvent, ChangeEvent, forwardRef } from 'react';
+import { memo, useMemo, useCallback, useRef, FocusEvent, KeyboardEvent, ChangeEvent, forwardRef } from 'react';
 import MaskedInput from 'react-input-mask';
 import classNames from 'classnames/bind';
 import styles from './BaseInput.module.scss';
@@ -31,27 +31,11 @@ const defaultProps: Partial<Props> = {
 
 const BaseInput = forwardRef<HTMLInputElement, Props>(
   (
-    {
-      type,
-      className,
-      mask,
-      maskChar,
-      disabled,
-      invalid,
-      arrow,
-      fullSize,
-      autoComplete,
-      spellCheck,
-      readOnly,
-      isChild,
-      theme,
-      onBlur,
-      onChange,
-      onKeyUp,
-      ...rest
-    },
+    { type, className, mask, maskChar, disabled, invalid, arrow, fullSize, autoComplete, spellCheck, readOnly, isChild, theme, onBlur, onChange, onKeyUp, onKeyDown, ...rest },
     ref,
   ) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+
     const classes = cx('input', className, theme, {
       arrow,
       invalid,
@@ -82,25 +66,27 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
       [onKeyUp],
     );
 
+    const handleKeyDown = useCallback(
+      (e: KeyboardEvent<HTMLInputElement>) => {
+        onKeyDown && onKeyDown(e);
+      },
+      [onKeyDown],
+    );
+
+    const handlers = useMemo(() => {
+      return {
+        onBlur: handleBlur,
+        onChange: handleChange,
+        onKeyUp: handleKeyUp,
+        onKeyDown: handleKeyDown,
+      };
+    }, [handleBlur, handleChange, handleKeyDown, handleKeyUp]);
+
     if (mask) {
       return (
-        <MaskedInput
-          className={classes}
-          mask={mask}
-          maskChar={maskChar}
-          readOnly={readOnly}
-          alwaysShowMask
-          {...rest}
-        >
+        <MaskedInput className={classes} mask={mask} maskChar={maskChar} readOnly={readOnly} alwaysShowMask {...rest}>
           {(inputProps: unknown) => (
-            <input
-              type={type}
-              ref={ref}
-              autoComplete={autoComplete ? 'on' : 'off'}
-              spellCheck={spellCheck ? 'true' : 'false'}
-              readOnly={readOnly}
-              {...inputProps}
-            />
+            <input type={type} ref={ref} autoComplete={autoComplete ? 'on' : 'off'} spellCheck={spellCheck ? 'true' : 'false'} readOnly={readOnly} {...handlers} {...inputProps} />
           )}
         </MaskedInput>
       );
@@ -115,9 +101,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
         autoComplete={autoComplete ? 'on' : 'off'}
         spellCheck={spellCheck ? 'true' : 'false'}
         readOnly={readOnly}
-        onBlur={handleBlur}
-        onChange={handleChange}
-        onKeyUp={handleKeyUp}
+        {...handlers}
         {...rest}
       />
     );

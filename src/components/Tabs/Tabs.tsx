@@ -11,8 +11,6 @@ interface Props {
 }
 
 const Tabs: FunctionComponent<Props> = ({ children }) => {
-  const { tabIndex } = useSelector((state) => state.cpData);
-
   return (
     <>
       <div className={cx('tabs-wrap')}>
@@ -20,7 +18,7 @@ const Tabs: FunctionComponent<Props> = ({ children }) => {
           <TabTitle key={idx} tabID={idx} title={item.props.title} disabled={item.props.disabled} />
         ))}
       </div>
-      <div>{children[tabIndex]}</div>
+      <div>{children}</div>
     </>
   );
 };

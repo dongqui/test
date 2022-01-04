@@ -1,6 +1,7 @@
 import { all } from 'redux-saga/effects';
-import { watchMode } from './mode';
+import TP from './TP';
+import RPSaga from './RP';
 
 export default function* rootSaga() {
-  yield all([watchMode()]);
+  yield all([TP(), RPSaga()]);
 }

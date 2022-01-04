@@ -1,4 +1,4 @@
-@import 'styles/libraries/_colors';
+
 @import 'styles/libraries/_mixins';
 
 .segment-group {
@@ -18,8 +18,8 @@
 
 .icon {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   color: #7a7a7a;
 
@@ -32,17 +32,21 @@
   }
 
   &:hover {
-    background-color: $gray400;
-    color: $gray600;
+    background-color: var(--gray400);
+    color: var(--gray600);
   }
 
   &:active {
-    background-color: $primaryColor;
+    background-color: #0f88ff;
     color: #fff;
   }
 
   &.selected {
-    background-color: $primaryColor;
+    background-color: #0f88ff;
     color: #fff;
+  }
+
+  &:focus {
+    border: none;
   }
 }

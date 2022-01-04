@@ -1,0 +1,39 @@
+.change-modes {
+  display: flex;
+
+  button,
+  span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 100%;
+    background: #353739;
+    color: white;
+    border-radius: 6px;
+    font-size: 11px;
+    transition: 0s;
+
+    &:not(:first-child) {
+      margin-left: 8px;
+    }
+
+    &.active {
+      background: #0f88ff;
+    }
+  }
+
+  button:active {
+    color: white;
+  }
+
+  .disabled {
+    color: #4f4f4f;
+    background: #353739 !important;
+    pointer-events: none;
+
+    path {
+      stroke: #4f4f4f;
+    }
+  }
+}

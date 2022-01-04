@@ -4,9 +4,9 @@
     "display": "standalone",
     "scope": "/",
     "start_url": "/",
-    "app_name": "shoot",
-    "short_name": "shoot",
-    "description": "shoot",
+    "app_name": "plask",
+    "short_name": "plask",
+    "description": "plask",
     "icons": [
         {
             "src": "/icon-192x192.png",

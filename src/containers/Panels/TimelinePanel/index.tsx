@@ -1,102 +1,46 @@
-import React, {
-  memo,
-  useEffect,
-  useRef,
-  FunctionComponent,
-  MutableRefObject,
-  RefObject,
-} from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import _ from 'lodash';
-import MiddleBar from 'containers/MiddleBar';
+
 import { useSelector } from 'reducers';
-import { fnSetInitialTrackList } from 'utils/TP/trackUtils';
-import { d3ScaleLinear } from 'types/TP';
-import * as timelineActions from 'actions/timeline';
-import { CurrentVisualizedData } from 'actions/currentVisualizedData';
+import * as trackListActions from 'actions/trackList';
+
 import TrackList from './TrackList';
-import TimeEditor from './TimeEditor';
+import TimelineEditor from './TimelineEditor';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {
-  currentTimeRef: RefObject<HTMLInputElement>;
-  currentTimeIndexRef: RefObject<HTMLInputElement>;
-  currentPlayBarTime: MutableRefObject<number>;
-  dopeSheetScale: React.MutableRefObject<d3ScaleLinear | null>;
-}
-
-const TimelinePanel: FunctionComponent<Props> = (props) => {
-  const { currentTimeRef, currentTimeIndexRef, currentPlayBarTime, dopeSheetScale } = props;
+const TimelinePanel = () => {
   const dispatch = useDispatch();
-  const prevModelKey = useRef('');
-  const isStoredTrackListData = useRef(false);
-  const currentVisualizedData = useSelector<CurrentVisualizedData>(
-    (state) => state.currentVisualizedData,
-  );
+  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+
+  const currentVisualizedAssetId = useRef('');
 
   useEffect(() => {
-    const isClearedModel = prevModelKey.current && !currentVisualizedData;
-    if (isClearedModel) {
-      dispatch(timelineActions.clearAll());
-      isStoredTrackListData.current = false;
-      prevModelKey.current = '';
-    } else if (currentVisualizedData) {
-      const { baseLayer, layers, key } = currentVisualizedData;
-      const isChangedModel = isStoredTrackListData.current && prevModelKey.current !== key;
-      const isInitialVisualized = !isStoredTrackListData.current;
-      if (isChangedModel) {
-        const [trackList, lastBoneOfLayers] = fnSetInitialTrackList({
-          baseLayer,
-          layers,
-          visualizedDataKey: key,
-        });
-        dispatch(timelineActions.setTrackList({ trackList, lastBoneOfLayers }));
-        prevModelKey.current = key;
-      } else if (isInitialVisualized) {
-        const [trackList, lastBoneOfLayers] = fnSetInitialTrackList({
-          baseLayer,
-          layers,
-          visualizedDataKey: key,
-        });
-        dispatch(timelineActions.setTrackList({ trackList, lastBoneOfLayers }));
-        prevModelKey.current = key;
-        isStoredTrackListData.current = true;
+    // viewport에 model이 있는 경우
+    if (_visualizedAssetIds.length) {
+      const visualizedAnimationIngredients = _animationIngredients.filter(
+        (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
+      );
+      if (visualizedAnimationIngredients.length !== 0 && currentVisualizedAssetId.current !== visualizedAnimationIngredients[0].id) {
+        dispatch(trackListActions.initializeTrackList({ list: visualizedAnimationIngredients[0].layers, animationIngredientId: visualizedAnimationIngredients[0].id }));
+        currentVisualizedAssetId.current = visualizedAnimationIngredients[0].id;
       }
     }
-  }, [currentVisualizedData, dispatch]);
-
-  // dope sheet에 커서를 올리고 wheel을 굴릴 때 TP 스크롤 방지
-  const timelineWrapperRef = useRef<HTMLDivElement>(null);
-  const trackListRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const handleWheelTimelineWrapper = (event: WheelEvent) => {
-      if (!trackListRef.current?.contains(event.target as Node)) {
-        event.preventDefault();
-      }
-    };
-    timelineWrapperRef.current?.addEventListener('wheel', handleWheelTimelineWrapper);
-  }, []);
+    // viewport에 model이 없는 경우
+    else {
+      dispatch(trackListActions.initializeTrackList({ list: [], animationIngredientId: '', clearAnimation: true }));
+      currentVisualizedAssetId.current = '';
+    }
+  }, [_animationIngredients, _visualizedAssetIds, dispatch]);
 
   return (
-    <div className={cx('panel')}>
-      <MiddleBar
-        currentTimeRef={currentTimeRef}
-        currentTimeIndexRef={currentTimeIndexRef}
-        currentPlayBarTime={currentPlayBarTime}
-        dopeSheetScale={dopeSheetScale}
-      />
-      <div id="timeline-wrapper" className={cx('wrapper')} ref={timelineWrapperRef}>
-        <TrackList trackListRef={trackListRef} />
-        <TimeEditor
-          currentTimeRef={currentTimeRef}
-          currentTimeIndexRef={currentTimeIndexRef}
-          currentPlayBarTime={currentPlayBarTime}
-          dopeSheetScale={dopeSheetScale}
-        />
-      </div>
+    <div className={cx('timeline-panel')}>
+      <TrackList />
+      <TimelineEditor />
     </div>
   );
 };

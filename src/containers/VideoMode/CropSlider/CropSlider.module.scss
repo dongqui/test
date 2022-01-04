@@ -1,0 +1,133 @@
+.slider {
+  position: relative;
+  width: 100%;
+}
+
+.slider-track,
+.slider-range {
+  position: absolute;
+  border-radius: 8px;
+}
+
+.slider-track {
+  width: 50%;
+  height: 100%;
+  z-index: 1;
+}
+
+.slider-range {
+  height: 100%;
+  box-shadow: inset 0 0 0 2px #fb8226;
+  z-index: 2;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 100vw;
+    height: 100%;
+    left: -100vw;
+    background-color: rgba(18, 19, 19, 0.2);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 100vw;
+    height: 100%;
+    right: -100vw;
+    background-color: rgba(18, 19, 19, 0.2);
+  }
+}
+
+.slider-time-indicator {
+  position: absolute;
+  top: -14px;
+  width: 32px;
+  height: 14px;
+  font-size: 9px;
+  line-height: 12px;
+  font-weight: 500;
+  border-radius: 2px;
+  text-align: center;
+  z-index: 2;
+  transform: translate(-50%);
+  background-color: #fff;
+}
+
+.thumb,
+.thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.thumb {
+  position: absolute;
+  width: 100%;
+  height: 0;
+  outline: none;
+  pointer-events: none;
+}
+
+.thumb-left {
+  position: absolute;
+  left: 0;
+  cursor: col-resize;
+  z-index: 3;
+}
+
+.thumb-right {
+  position: absolute;
+  right: 0;
+  cursor: col-resize;
+  z-index: 4;
+}
+
+.thumb::-webkit-slider-thumb {
+  position: relative;
+  width: 32px;
+  height: 132px;
+  border: none;
+  margin-top: 128px;
+  pointer-events: all;
+}
+
+.slider-time {
+  position: absolute;
+  top: 0;
+  left: 0;
+  appearance: none;
+  background-color: transparent;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+
+  :focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    background-color: transparent;
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    margin: 0;
+    width: 1px;
+    height: 100%;
+    cursor: col-resize;
+    background-color: #fff;
+  }
+}
+
+.no-select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

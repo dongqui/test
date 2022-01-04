@@ -1,4 +1,3 @@
-@import 'styles/libraries/_colors';
 
 .dark {
   background: none;
@@ -20,19 +19,19 @@
   }
 
   &.invalid {
-    color: $pastel-red;
+    color: var(--vivid-red);
   }
 }
 
 .light {
   background: none;
-  caret-color: $gray200;
-  color: $gray200;
+  caret-color: var(--gray200);
+  color: var(--gray200);
 
   &:-webkit-autofill,
   &:-webkit-autofill:hover,
   &:-webkit-autofill:focus {
-    box-shadow: 0 0 0 1000px $gray200 inset;
+    box-shadow: 0 0 0 1000px var(--gray200)inset;
   }
 
   &.disabled {
@@ -44,7 +43,7 @@
   }
 
   &.invalid {
-    color: $pastel-red;
+    color: var(--vivid-red);
   }
 }
 
@@ -56,9 +55,9 @@
   transition: background-color 0.25s, color 0.25s, border-color 0.25s;
   border: 1px solid transparent;
 
-  &:focus-within {
-    border: 1px solid $primaryColor;
-  }
+  // &:focus-within {
+  //   border: 1px solid  #0f88ff;
+  // }
 
   &:-webkit-autofill,
   &:-webkit-autofill:hover,
@@ -70,7 +69,7 @@
   &::placeholder {
     text-align: left;
     opacity: 1;
-    color: $gray500 !important;
+    color: var(--gray500) !important;
     transition: color 0.3s;
   }
 

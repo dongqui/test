@@ -1,0 +1,41 @@
+.wrapper {
+  border-radius: 6px;
+  padding: 6px 12px;
+  position: relative;
+  cursor: pointer;
+
+  &:not(.disabled) {
+    &:hover {
+      background-color: #0f88ff;
+
+      > .submenu {
+        opacity: 1;
+        transition: opacity 0.275s;
+      }
+    }
+  }
+
+  .trigger {
+    width: 100%;
+    display: flex;
+  }
+
+  .submenu {
+    opacity: 0;
+    position: absolute;
+    top: -4px;
+    z-index: 999;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 4px;
+    background-color: #202122;
+    color: #fff;
+    font-size: 11px;
+    min-width: 144px;
+  }
+}
+
+.arrow {
+  margin-left: auto;
+  font-size: 12px;
+}

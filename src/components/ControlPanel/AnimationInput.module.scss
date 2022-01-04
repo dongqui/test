@@ -1,0 +1,85 @@
+.wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 24px;
+  margin-right: 4px;
+  color: #7a7a7b;
+  background-color: #353739;
+  border-radius: 6px;
+
+  & > p {
+    margin-left: 8px;
+    font-size: 11px;
+    line-height: 13px;
+    color: #4f4f4f;
+  }
+
+  & > input {
+    margin-left: 4px;
+    font-size: 11px;
+    line-height: 13px;
+    width: 70%;
+    border: none;
+    background-color: transparent;
+    color: #4f4f4f;
+
+    &::placeholder {
+      color: #4f4f4f;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    // chrome, safari 등 대응
+    &::-webkit-inner-spin-button {
+      appearance: none;
+      margin: 0;
+    }
+
+    &::-webkit-outer-spin-button {
+      appearance: none;
+      margin: 0;
+    }
+
+    // Firefox 대응
+    &[type=number] {
+      appearance: none;
+    }
+  }
+
+  &.able {
+    & > p {
+      color: #7a7a7b;
+    }
+
+    & > input {
+      color: #fff;
+
+      &::placeholder {
+        color: #fff;
+      }
+    }
+  }
+}
+
+.input-inactive-overlay {
+  position: absolute;
+  vertical-align: middle;
+  box-sizing: border-box;
+  padding: 5.5px 0 5.5px 4px;
+  font-size: 11px;
+  line-height: 13px;
+  top: 0;
+  left: 16px;
+  width: 70%;
+  height: 100%;
+  color: #7a7a7b;
+  background-color: #353739;
+  border-radius: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: not-allowed;
+}

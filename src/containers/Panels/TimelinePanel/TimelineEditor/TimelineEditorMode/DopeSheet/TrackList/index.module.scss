@@ -1,0 +1,14 @@
+.track {
+  rect {
+    fill: transparent;
+  }
+
+  rect.selected {
+    fill: #353739;
+    opacity: 0.5;
+  }
+
+  line {
+    stroke: #202122;
+  }
+}

@@ -17,35 +17,23 @@ interface BaseProps {
   theme?: 'dark' | 'light';
 }
 
-export type Props = BaseProps &
-  Omit<Input.BaseInputProps, 'suffix' | 'autoComplete' | 'spellCheck'>;
+export type Props = BaseProps & Omit<Input.BaseInputProps, 'suffix' | 'autoComplete' | 'spellCheck'>;
 
 const defaultProps: Partial<Props> = {
   theme: 'dark',
 };
 
-const SuffixInput = forwardRef<HTMLInputElement, Props>(
-  ({ suffix, arrow, color, className, theme, disabled, ...rest }, ref) => {
-    const classes = cx('input-wrapper', className, theme, { disabled });
-    const suffixClasses = cx('suffix', color);
+const SuffixInput = forwardRef<HTMLInputElement, Props>(({ suffix, arrow, color, className, theme, disabled, ...rest }, ref) => {
+  const classes = cx('input-wrapper', className, theme, { disabled });
+  const suffixClasses = cx('suffix', color);
 
-    return (
-      <div className={classes}>
-        <BaseInput
-          className={cx('input')}
-          type="number"
-          ref={ref}
-          arrow={arrow}
-          theme={theme}
-          disabled={disabled}
-          isChild
-          {...rest}
-        />
-        <span className={suffixClasses}>{suffix}</span>
-      </div>
-    );
-  },
-);
+  return (
+    <div className={classes}>
+      <BaseInput className={cx('input')} type="number" ref={ref} arrow={arrow} theme={theme} disabled={disabled} isChild {...rest} />
+      <span className={suffixClasses}>{suffix}</span>
+    </div>
+  );
+});
 
 SuffixInput.defaultProps = defaultProps;
 

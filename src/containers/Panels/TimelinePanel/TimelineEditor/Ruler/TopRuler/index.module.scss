@@ -1,0 +1,25 @@
+.background {
+  width: 100vw;
+  height: 16px;
+  fill: #292a2b;
+}
+
+.range {
+  height: 16px;
+  fill: #4f4f4f;
+}
+
+.top-ruler {
+  transform: translate(20px, 20px);
+
+  path,
+  line {
+    display: none;
+  }
+
+  text {
+    font-size: 11px;
+    fill: #7a7a7b;
+    user-select: none;
+  }
+}

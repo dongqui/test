@@ -1,7 +1,6 @@
 import { Reducer } from 'redux';
 import _ from 'lodash';
 import * as withUndoableActions from 'actions/withUndoable';
-import * as boneTransformActions from 'actions/boneTransform';
 
 interface State {
   past: Reducer[];
@@ -14,10 +13,7 @@ interface InitialAction {
   payload: undefined;
 }
 
-type Action =
-  | InitialAction
-  | withUndoableActions.WithUndoableAction
-  | boneTransformActions.BoneTransformAction;
+type Action = InitialAction | withUndoableActions.WithUndoableAction;
 
 /**
  * reducer를 감싸는 고차함수로, 대상 reducer의 history 관리가 가능하도록 만들어줍니다.

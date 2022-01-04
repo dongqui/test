@@ -1,8 +1,6 @@
-# Shoot 💫
+# PLASK 💫
 
-plask shoot
-
-https://shoot.plask.ai/
+plask
 
 ### Installation ⚙️
 
@@ -39,5 +37,4 @@ npx yarn dev
 "pack-app": "일렉트론 빌드 후 데스크탑 앱 생성",
 "dist": "Next.js 정적 빌드 후 일렉트론 데스크탑 앱 생성",
 "clean": "필요없는 dist 파일 삭제",
-"type-check": "타입스크립트 타입 체크",
 ```

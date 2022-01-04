@@ -1,9 +1,13 @@
-@import 'styles/libraries/_colors';
 
 .x-axis-svg {
-  border-bottom: 2px solid $gray300;
+  border-bottom: 2px solid var(--gray300);
 }
 
 .circle-group {
-  border-bottom: 2px solid $gray300;
+  border-bottom: 2px solid var(--gray300);
 }
+
+// // drag box로 키프레임 선택 시 부여되는 id
+// #keyframe-selected {
+//   stroke: white;
+// }

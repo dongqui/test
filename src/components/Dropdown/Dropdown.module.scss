@@ -1,5 +1,5 @@
 @import 'styles/libraries/_mixins';
-@import 'styles/libraries/_colors';
+
 @import 'styles/libraries/_functions';
 
 .wrapper {
@@ -19,7 +19,7 @@
   align-items: center;
   justify-content: space-around;
   padding: 4px 8px;
-  background-color: #303030;
+  // background-color: #303030;
   color: #fff;
   min-width: 72px;
   max-height: 10rem;
@@ -58,11 +58,10 @@
   padding: 6px;
   max-height: 10rem;
   border-radius: 6px;
-  border: 1px solid $gray300;
+  border: 1px solid var(--gray300);
   overflow: hidden;
   z-index: 999;
   letter-spacing: 1px;
-
   overflow-y: scroll;
 
   &::-webkit-scrollbar {

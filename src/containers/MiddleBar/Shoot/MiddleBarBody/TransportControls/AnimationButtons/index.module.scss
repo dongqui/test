@@ -1,0 +1,29 @@
+.animation-buttons {
+  display: flex;
+  height: 100%;
+  border-radius: 6px;
+  background: #353739;
+
+  span {
+    height: 100%;
+    width: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &.record {
+      svg {
+        color: #909091;
+      }
+    }
+
+    &.pause {
+      border-radius: 6px;
+      background-color: #0f88ff;
+    }
+
+    svg {
+      color: white;
+    }
+  }
+}
