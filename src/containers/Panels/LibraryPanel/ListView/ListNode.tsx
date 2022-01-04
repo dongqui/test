@@ -2032,25 +2032,25 @@ const ListNode: FunctionComponent<Props> = ({
         }
       };
 
-      if (!isEditing) {
-        const handleKeydown = (e: KeyboardEvent) => {
-          if (e.key === 'F2') {
-            e.stopPropagation();
-            handleEdit();
-          } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
-            e.stopPropagation();
+      const handleKeydown = (e: KeyboardEvent) => {
+        if (e.key === 'F2') {
+          e.stopPropagation();
+          handleEdit();
+        } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
+          e.stopPropagation();
+          if (!isEditing) {
             onDelete();
           }
-        };
+        }
+      };
 
-        currentRef.addEventListener('mousedown', handleMouseDown);
-        keydownCurrentRef.addEventListener('keydown', handleKeydown);
+      currentRef.addEventListener('mousedown', handleMouseDown);
+      keydownCurrentRef.addEventListener('keydown', handleKeydown);
 
-        return () => {
-          currentRef.removeEventListener('mousedown', handleMouseDown);
-          keydownCurrentRef.removeEventListener('keydown', handleKeydown);
-        };
-      }
+      return () => {
+        currentRef.removeEventListener('mousedown', handleMouseDown);
+        keydownCurrentRef.removeEventListener('keydown', handleKeydown);
+      };
     }
   }, [handleEdit, isEditing, onDelete]);
 
