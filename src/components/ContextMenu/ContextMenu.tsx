@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, Fragment, FunctionComponent, useState, useLayoutEffect } from 'react';
 import eventManager from './eventManager';
-import { getMousePosition } from 'utils/common';
+import { getMousePosition, cloneItemsWithProps } from 'utils/common';
 import classnames from 'classnames/bind';
 import styles from './ContextMenu.module.scss';
 
@@ -14,6 +14,7 @@ interface Props {
 export const ContextMenu: FunctionComponent<Props> = ({ contextMenuId, children }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isOpen, setIsOpen] = useState(false);
+  const [propsFromTrigger, setPropsFromTrigger] = useState<any>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,13 +63,12 @@ export const ContextMenu: FunctionComponent<Props> = ({ contextMenuId, children 
     setIsOpen(false);
   }
 
-  function show({ event }: { event: React.MouseEvent<HTMLInputElement> }) {
+  function show({ event, props }: { event: React.MouseEvent<HTMLInputElement>; props: any }) {
     event.stopPropagation();
 
-    setTimeout(() => {
-      setPosition(getMousePosition(event));
-      setIsOpen(true);
-    }, 0);
+    setPosition(getMousePosition(event));
+    setIsOpen(true);
+    setPropsFromTrigger(props);
   }
 
   const menuStyle = {
@@ -80,7 +80,7 @@ export const ContextMenu: FunctionComponent<Props> = ({ contextMenuId, children 
     <Fragment>
       {isOpen && (
         <div className={cx('wrapper')} ref={nodeRef} style={menuStyle}>
-          {children}
+          {cloneItemsWithProps(children, propsFromTrigger)}
         </div>
       )}
     </Fragment>

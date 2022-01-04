@@ -9,3 +9,4 @@ export { default as getMousePosition } from './getMousePosition';
 export { default as filterAnimatableTransformNodes } from './filterAnimatableTransformNodes';
 export { default as convertToDegree } from './convertToDegree';
 export { default as convertToRadian } from './convertToRadian';
+export { default as cloneItemsWithProps } from './cloneItemsWithProps';

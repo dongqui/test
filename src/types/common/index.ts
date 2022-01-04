@@ -172,3 +172,7 @@ export type BvhBoneType =
 export type PlaskBvhMap = {
   [bone in BvhBoneType]: Nullable<string>;
 };
+
+export type ContextMenuClickItemHandlerProps = any;
+
+export type ContextMenuClickItemHandler = (event: React.MouseEvent<HTMLElement>, props: any) => void;
