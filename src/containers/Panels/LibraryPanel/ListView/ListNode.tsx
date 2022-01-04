@@ -1919,6 +1919,7 @@ const ListNode: FunctionComponent<Props> = ({
 
   const handleDragEnd = useCallback(
     (e: DragEvent) => {
+      e.stopPropagation();
       const dropZone = document.getElementById('RP');
 
       if (dropZone) {
@@ -1947,10 +1948,19 @@ const ListNode: FunctionComponent<Props> = ({
                   }),
                 );
               }
-
-              handleVisualization();
-              forceClickAnimationPlayAndStop(50);
             }
+
+            handleVisualization();
+            forceClickAnimationPlayAndStop(50);
+
+            return;
+          }
+
+          const currentModel = find(_lpNode, { id });
+
+          if (currentModel && currentModel.type === 'Model') {
+            handleVisualization();
+            forceClickAnimationPlayAndStop(50);
           }
         }
       }
