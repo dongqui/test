@@ -1947,11 +1947,11 @@ const ListNode: FunctionComponent<Props> = ({
                   }),
                 );
               }
+
+              handleVisualization();
+              forceClickAnimationPlayAndStop(50);
             }
           }
-
-          handleVisualization();
-          forceClickAnimationPlayAndStop(50);
         }
       }
     },
