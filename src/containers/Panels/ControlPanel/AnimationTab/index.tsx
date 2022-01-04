@@ -548,7 +548,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         (event: FocusEvent<HTMLInputElement>) => {
           if (controlTarget) {
             const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
-            const e = new BABYLON.Vector3(convertToRadian(parseFloat(event.target.value)), prevE.y, prevE.z);
+            const e = prevE.clone();
+            e.x = convertToRadian(parseFloat(event.target.value));
             const q = e.toQuaternion();
 
             setEulerX(parseFloat(event.target.value));
@@ -574,7 +575,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         (event: FocusEvent<HTMLInputElement>) => {
           if (controlTarget) {
             const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
-            const e = new BABYLON.Vector3(prevE.x, convertToRadian(parseFloat(event.target.value)), prevE.z);
+            const e = prevE.clone();
+            e.y = convertToRadian(parseFloat(event.target.value));
             const q = e.toQuaternion();
 
             setEulerY(parseFloat(event.target.value));
@@ -600,7 +602,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         (event: FocusEvent<HTMLInputElement>) => {
           if (controlTarget) {
             const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
-            const e = new BABYLON.Vector3(prevE.x, prevE.y, convertToRadian(parseFloat(event.target.value)));
+            const e = prevE.clone();
+            e.z = convertToRadian(parseFloat(event.target.value));
             const q = e.toQuaternion();
 
             setEulerZ(parseFloat(event.target.value));
