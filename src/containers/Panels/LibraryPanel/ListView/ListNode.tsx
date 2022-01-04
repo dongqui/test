@@ -476,7 +476,7 @@ const ListNode: FunctionComponent<Props> = ({
 
         const hasCurrentMotion = animationIngredients.some((ingredient) => ingredient.current);
 
-        if (!hasCurrentMotion) {
+        if (!hasCurrentMotion && animationIngredients.length > 0) {
           dispatch(
             animationDataActions.changeCurrentAnimationIngredient({
               assetId: assetId,
@@ -1961,13 +1961,20 @@ const ListNode: FunctionComponent<Props> = ({
           const currentModel = find(_lpNode, { id });
 
           if (currentModel && currentModel.type === 'Model') {
-            handleVisualization();
-            forceClickAnimationPlayAndStop(50);
+            const isEmptyMotion = childrens.length === 0;
+
+            if (isEmptyMotion) {
+              addEmptyMotion();
+              setIsVisualizeCompleted(true);
+            } else {
+              handleVisualization();
+              forceClickAnimationPlayAndStop(50);
+            }
           }
         }
       }
     },
-    [_animationIngredients, _assetList, _lpNode, dispatch, handleVisualization, id, parentId],
+    [_animationIngredients, _assetList, _lpNode, addEmptyMotion, childrens.length, dispatch, handleVisualization, id, parentId],
   );
 
   const [showsChildrens, setShowsChildrens] = useState(false);
