@@ -2034,11 +2034,11 @@ const ListNode: FunctionComponent<Props> = ({
 
       if (!isEditing) {
         const handleKeydown = (e: KeyboardEvent) => {
-          e.stopPropagation();
-
           if (e.key === 'F2') {
+            e.stopPropagation();
             handleEdit();
           } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
+            e.stopPropagation();
             onDelete();
           }
         };
