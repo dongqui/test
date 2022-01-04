@@ -927,6 +927,7 @@ const ListNode: FunctionComponent<Props> = ({
                     dispatch(plaskProjectActions.unrenderAsset({ assetId }));
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                    forceClickAnimationPlayAndStop(50);
                   }
                 },
                 children: [],
@@ -1179,6 +1180,7 @@ const ListNode: FunctionComponent<Props> = ({
                     dispatch(plaskProjectActions.unrenderAsset({}));
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                    forceClickAnimationPlayAndStop(50);
                   }
                 },
                 children: [],
@@ -1461,7 +1463,11 @@ const ListNode: FunctionComponent<Props> = ({
 
       // model node로 이동
       if (type === 'Model') {
-        if (dragTarget?.type === 'Motion' && !dragNode?.mocapData) {
+        const retargetMap = find(_retargetMaps, { assetId });
+
+        const isRetargetError = retargetMap?.values.some((value) => !value.targetTransformNodeId);
+
+        if (dragTarget?.type === 'Motion' && isRetargetError && dragNode?.mocapData) {
           // 리타겟팅이 완료되지 않은 모델에 추출한 모션을 import
           const confirmed = await getConfirm({
             title: 'Confirm',
@@ -1538,7 +1544,7 @@ const ListNode: FunctionComponent<Props> = ({
               try {
                 const mocapAnimationIngredient = await createAnimationIngredientFromMocapData(
                   dropNode.assetId!,
-                  dragNode.name,
+                  nodeName,
                   targetRetargetMap,
                   targetAsset.initialPoses,
                   filterAnimatableTransformNodes(targetAsset.transformNodes),
@@ -1562,8 +1568,12 @@ const ListNode: FunctionComponent<Props> = ({
 
                     targetNode.childrens.push(cloneDragNode.id);
 
+                    const { mocapData, ...restObject } = cloneDragNode;
+
                     // @TODO 하위 노드도 추가
-                    draft.push(cloneDragNode);
+                    draft.push({
+                      ...restObject,
+                    });
 
                     if (cloneDragNode.childrens.length > 0) {
                       cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
@@ -1653,8 +1663,12 @@ const ListNode: FunctionComponent<Props> = ({
 
                   targetNode.childrens.push(cloneDragNode.id);
 
+                  const { mocapData, ...restObject } = cloneDragNode;
+
                   // @TODO 하위 노드도 추가
-                  draft.push(cloneDragNode);
+                  draft.push({
+                    ...restObject,
+                  });
 
                   if (cloneDragNode.childrens.length > 0) {
                     cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
@@ -1880,6 +1894,7 @@ const ListNode: FunctionComponent<Props> = ({
       _assetList,
       _lpNode,
       _retargetMaps,
+      assetId,
       depthChangeKey,
       depthCheck,
       dispatch,
@@ -1908,6 +1923,7 @@ const ListNode: FunctionComponent<Props> = ({
 
   const handleDragEnd = useCallback(
     (e: DragEvent) => {
+      e.stopPropagation();
       const dropZone = document.getElementById('RP');
 
       if (dropZone) {
@@ -1937,10 +1953,19 @@ const ListNode: FunctionComponent<Props> = ({
                 );
               }
             }
+
+            handleVisualization();
+            forceClickAnimationPlayAndStop(50);
+
+            return;
           }
 
-          handleVisualization();
-          forceClickAnimationPlayAndStop(50);
+          const currentModel = find(_lpNode, { id });
+
+          if (currentModel && currentModel.type === 'Model') {
+            handleVisualization();
+            forceClickAnimationPlayAndStop(50);
+          }
         }
       }
     },
@@ -2011,25 +2036,25 @@ const ListNode: FunctionComponent<Props> = ({
         }
       };
 
-      if (!isEditing) {
-        const handleKeydown = (e: KeyboardEvent) => {
+      const handleKeydown = (e: KeyboardEvent) => {
+        if (e.key === 'F2') {
           e.stopPropagation();
-
-          if (e.key === 'F2') {
-            handleEdit();
-          } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Delete')) {
+          handleEdit();
+        } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
+          e.stopPropagation();
+          if (!isEditing) {
             onDelete();
           }
-        };
+        }
+      };
 
-        currentRef.addEventListener('mousedown', handleMouseDown);
-        keydownCurrentRef.addEventListener('keydown', handleKeydown);
+      currentRef.addEventListener('mousedown', handleMouseDown);
+      keydownCurrentRef.addEventListener('keydown', handleKeydown);
 
-        return () => {
-          currentRef.removeEventListener('mousedown', handleMouseDown);
-          keydownCurrentRef.removeEventListener('keydown', handleKeydown);
-        };
-      }
+      return () => {
+        currentRef.removeEventListener('mousedown', handleMouseDown);
+        keydownCurrentRef.removeEventListener('keydown', handleKeydown);
+      };
     }
   }, [handleEdit, isEditing, onDelete]);
 

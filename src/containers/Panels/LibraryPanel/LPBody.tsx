@@ -110,7 +110,6 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
         const nodeName = beforePaste({
           name: compareTargetName,
           comparisonNames: currentPathNodeName,
-          hasExtension: cloneCopyNode.type === 'Model',
         });
 
         const resultNodeName =
