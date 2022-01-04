@@ -48,8 +48,10 @@ const createAnimationIngredientFromMocapData = (
 
             const targetQ = BABYLON.Quaternion.FromArray(value);
             const initialLocalQ = targetInitialPose.rotationQuaternion.clone();
+            const recurrentQ = targetInitialPose.recurrentRotationQuaternion!.clone();
+            const inversedRecurrentQ = BABYLON.Quaternion.Inverse(recurrentQ.clone());
 
-            const q = initialLocalQ.multiply(targetQ);
+            const q = initialLocalQ.multiply(inversedRecurrentQ).multiply(targetQ).multiply(recurrentQ);
             const e = q.toEulerAngles();
 
             targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
@@ -80,8 +82,6 @@ const createAnimationIngredientFromMocapData = (
       }
     }
   });
-
-  // const boneDirection = bone.getDirection(bone.rotation.clone(), bone.getTransformNode());
 
   return new Promise((resolve, reject) => {
     resolve(emptyAnimationIngredient);

@@ -165,12 +165,17 @@ const LibraryPanel: FunctionComponent = () => {
 
       const nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
 
-      const initialPoses: PlaskPose[] = filterAnimatableTransformNodes(transformNodes).map((transformNode) => ({
-        target: transformNode,
-        position: transformNode.position.clone(),
-        rotationQuaternion: transformNode.rotationQuaternion ? transformNode.rotationQuaternion.clone() : transformNode.rotation.clone().toQuaternion(),
-        scaling: transformNode.scaling.clone(),
-      }));
+      const initialPoses: PlaskPose[] = filterAnimatableTransformNodes(transformNodes).map((transformNode) => {
+        const bone = skeletons[0].bones.find((bone) => bone.id === transformNode.id.replace('//transformNode', '//bone'))!;
+
+        return {
+          target: transformNode,
+          position: transformNode.position.clone(),
+          rotationQuaternion: transformNode.rotationQuaternion ? transformNode.rotationQuaternion.clone() : transformNode.rotation.clone().toQuaternion(),
+          recurrentRotationQuaternion: bone ? getRecurrentRotationQuaternion(bone) : null,
+          scaling: transformNode.scaling.clone(),
+        };
+      });
 
       const newAsset: PlaskAsset = {
         id: assetId,
