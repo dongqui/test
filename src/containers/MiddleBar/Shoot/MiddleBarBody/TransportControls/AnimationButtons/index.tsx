@@ -53,7 +53,6 @@ const Buttons = () => {
       if (scrubber && scrubberInput && _currentAnimationGroup) {
         const nextFrame = _currentAnimationGroup.animatables.length !== 0 ? _currentAnimationGroup.animatables[0].masterFrame : clampNextFrame(playDirection);
         const digitedNextFrame = playDirection === PlayDirection.forward ? Math.floor(nextFrame) : Math.ceil(nextFrame);
-        // scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame)}, 0)`);
         scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame) - 3}, 0)`);
         scrubberInput.value = `${digitedNextFrame}`;
         TimeIndex.setCurrentTimeIndex(nextFrame);
@@ -141,7 +140,7 @@ const Buttons = () => {
   // space bar 입력 시, 재생/정시 toggle
   useEffect(() => {
     const keydownListener = (event: KeyboardEvent) => {
-      if (event.key === ' ') {
+      if (event.key === ' ' && _visualizedAssetIds.length !== 0) {
         if (_playState === 'play') {
           editAnimationPause();
         } else if (_playState === 'pause' || _playState === 'stop') {
@@ -155,7 +154,7 @@ const Buttons = () => {
     return () => {
       document.removeEventListener('keydown', keydownListener);
     };
-  }, [_playDirection, _playState, dispatch, editAnimationPause, editAnimationPlay, editAnimationRewind, loopAnimation]);
+  }, [_playDirection, _playState, _visualizedAssetIds, dispatch, editAnimationPause, editAnimationPlay, editAnimationRewind, loopAnimation]);
 
   const ButtonState = () => {
     if (_playState === 'play') {

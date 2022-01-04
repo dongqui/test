@@ -33,6 +33,7 @@ const TimelinePanel = () => {
     // viewport에 model이 없는 경우
     else {
       dispatch(trackListActions.initializeTrackList({ list: [], animationIngredientId: '', clearAnimation: true }));
+      currentVisualizedAssetId.current = '';
     }
   }, [_animationIngredients, _visualizedAssetIds, dispatch]);
 
