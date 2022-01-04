@@ -83,6 +83,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     setCurrentSourceBoneName(undefined);
     setCurrentTargetTransformNode(undefined);
     setCanAssign(false);
+    setHipSpace(106);
   }, [_visualizedAssetIds]);
 
   // rp 선택에 의한 targetTransformNode 변경
