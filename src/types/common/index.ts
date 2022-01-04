@@ -33,7 +33,6 @@ export type PlaskPose = {
   target: BABYLON.TransformNode;
   position: BABYLON.Vector3;
   rotationQuaternion: BABYLON.Quaternion;
-  recursiveRotationQuaternion: BABYLON.Quaternion | null;
   scaling: BABYLON.Vector3;
 };
 

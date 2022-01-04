@@ -42,45 +42,19 @@ const createAnimationIngredientFromMocapData = (
         const targetRotationQuaternionTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotationQuaternion');
         const targetInitialPose = initialPoses.find((initialPose) => initialPose.target.id === targetTransformNodeId)!;
 
-        if (boneName === 'hips') {
-          if (targetRotationTrack && targetRotationQuaternionTrack) {
-            transformKeys.forEach((transformKey) => {
-              const { frame, value } = transformKey;
+        if (targetRotationTrack && targetRotationQuaternionTrack) {
+          transformKeys.forEach((transformKey) => {
+            const { frame, value } = transformKey;
 
-              const targetQ = BABYLON.Quaternion.FromArray(value);
-              const recursiveRotationQuaternion = targetInitialPose.recursiveRotationQuaternion!.clone();
+            const targetQ = BABYLON.Quaternion.FromArray(value);
+            const initialLocalQ = targetInitialPose.rotationQuaternion.clone();
 
-              const { x, y, z, w } = targetQ.multiply(BABYLON.Quaternion.Inverse(recursiveRotationQuaternion));
+            const q = initialLocalQ.multiply(targetQ);
+            const e = q.toEulerAngles();
 
-              const newValue = [
-                0.7071067811865475 * x - 0.7071067811865475 * w,
-                0.7071067811865475 * y + 0.7071067811865475 * z,
-                0.7071067811865475 * z - 0.7071067811865475 * y,
-                0.7071067811865475 * w + 0.7071067811865475 * x,
-              ];
-
-              const q = BABYLON.Quaternion.FromArray(newValue);
-              const e = q.toEulerAngles();
-
-              targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
-              targetRotationTrack.transformKeys.push({ frame, value: e });
-            });
-          }
-        } else {
-          if (targetRotationTrack && targetRotationQuaternionTrack) {
-            transformKeys.forEach((transformKey) => {
-              const { frame, value } = transformKey;
-
-              const targetQ = BABYLON.Quaternion.FromArray(value);
-              const recursiveRotationQuaternion = targetInitialPose.recursiveRotationQuaternion!.clone();
-
-              const q = targetQ.multiply(BABYLON.Quaternion.Inverse(recursiveRotationQuaternion));
-              const e = q.toEulerAngles();
-
-              targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
-              targetRotationTrack.transformKeys.push({ frame, value: e });
-            });
-          }
+            targetRotationQuaternionTrack.transformKeys.push({ frame, value: q });
+            targetRotationTrack.transformKeys.push({ frame, value: e });
+          });
         }
       } else if (property === 'position') {
         // 해당하는 트랙에 trasnformKeys 추가
