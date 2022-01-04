@@ -927,6 +927,7 @@ const ListNode: FunctionComponent<Props> = ({
                     dispatch(plaskProjectActions.unrenderAsset({ assetId }));
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                    forceClickAnimationPlayAndStop(50);
                   }
                 },
                 children: [],
@@ -1179,6 +1180,7 @@ const ListNode: FunctionComponent<Props> = ({
                     dispatch(plaskProjectActions.unrenderAsset({}));
                     // 선택 대상에서 제외
                     dispatch(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+                    forceClickAnimationPlayAndStop(50);
                   }
                 },
                 children: [],
@@ -1919,6 +1921,7 @@ const ListNode: FunctionComponent<Props> = ({
 
   const handleDragEnd = useCallback(
     (e: DragEvent) => {
+      e.stopPropagation();
       const dropZone = document.getElementById('RP');
 
       if (dropZone) {
@@ -1948,10 +1951,19 @@ const ListNode: FunctionComponent<Props> = ({
                 );
               }
             }
+
+            handleVisualization();
+            forceClickAnimationPlayAndStop(50);
+
+            return;
           }
 
-          handleVisualization();
-          forceClickAnimationPlayAndStop(50);
+          const currentModel = find(_lpNode, { id });
+
+          if (currentModel && currentModel.type === 'Model') {
+            handleVisualization();
+            forceClickAnimationPlayAndStop(50);
+          }
         }
       }
     },
@@ -2022,25 +2034,25 @@ const ListNode: FunctionComponent<Props> = ({
         }
       };
 
-      if (!isEditing) {
-        const handleKeydown = (e: KeyboardEvent) => {
+      const handleKeydown = (e: KeyboardEvent) => {
+        if (e.key === 'F2') {
           e.stopPropagation();
-
-          if (e.key === 'F2') {
-            handleEdit();
-          } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
+          handleEdit();
+        } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
+          e.stopPropagation();
+          if (!isEditing) {
             onDelete();
           }
-        };
+        }
+      };
 
-        currentRef.addEventListener('mousedown', handleMouseDown);
-        keydownCurrentRef.addEventListener('keydown', handleKeydown);
+      currentRef.addEventListener('mousedown', handleMouseDown);
+      keydownCurrentRef.addEventListener('keydown', handleKeydown);
 
-        return () => {
-          currentRef.removeEventListener('mousedown', handleMouseDown);
-          keydownCurrentRef.removeEventListener('keydown', handleKeydown);
-        };
-      }
+      return () => {
+        currentRef.removeEventListener('mousedown', handleMouseDown);
+        keydownCurrentRef.removeEventListener('keydown', handleKeydown);
+      };
     }
   }, [handleEdit, isEditing, onDelete]);
 

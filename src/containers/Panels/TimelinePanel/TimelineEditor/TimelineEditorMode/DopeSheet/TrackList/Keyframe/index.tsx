@@ -183,7 +183,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
       const isContains = keyframeRef.current?.contains(event.target as Node);
       if (isContains) {
         onContextMenuOpen({ top: event.clientY, left: event.clientX, menu: contextMenuList });
-        dispatch(keyframeActions.selectKeyframes({ selectType: 'left', trackId, trackType, trackNumber, time }));
+        if (!isSelected) dispatch(keyframeActions.selectKeyframes({ selectType: 'left', trackId, trackType, trackNumber, time }));
       }
     };
     if (currentRef) {
@@ -192,7 +192,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [contextMenuList, time, trackId, trackNumber, trackType, dispatch, onContextMenuOpen]);
+  }, [contextMenuList, isSelected, time, trackId, trackNumber, trackType, dispatch, onContextMenuOpen]);
 
   return (
     <path

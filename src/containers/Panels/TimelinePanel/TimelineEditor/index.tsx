@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -26,6 +26,7 @@ const TimelineEditor = () => {
 
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const [isFocused, setIsFocused] = useState(false);
 
   const timelineEditorRef = useRef<SVGSVGElement>(null);
   const leftTimeIndex = useRef(0);
@@ -127,6 +128,7 @@ const TimelineEditor = () => {
             [width, 0],
           ]) // scale 적용 범위 지정
           .filter((event: WheelEvent) => {
+            if (event.type === 'dblclick') return false;
             if (event.buttons === 2 && event.altKey) return true; // pan
             if (event.buttons === 0) return true; // zoom
             return false;
@@ -225,14 +227,16 @@ const TimelineEditor = () => {
       const keydownListener = (event: KeyboardEvent) => {
         togglePressedKey(event, true);
 
-        const isPressedA = multiKeyController.a.pressed || multiKeyController.A.pressed || multiKeyController.ㅁ.pressed;
-        const isPressedD = multiKeyController.d.pressed || multiKeyController.D.pressed || multiKeyController.ㅇ.pressed;
+        const isPressedAKey = multiKeyController.a.pressed || multiKeyController.A.pressed || multiKeyController.ㅁ.pressed;
+        const isPressedDKey = multiKeyController.d.pressed || multiKeyController.D.pressed || multiKeyController.ㅇ.pressed;
+        const isPressedCKey = event.key === 'c' || event.key === 'C' || event.key === 'ㅊ';
+        const isPressedVKey = event.key === 'v' || event.key === 'V' || event.key === 'ㅍ';
 
-        if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || ((event.ctrlKey || event.metaKey) && isPressedA && isPressedD)) {
+        if (event.key === 'Delete' || (event.metaKey && event.key === 'Backspace') || ((event.ctrlKey || event.metaKey) && isPressedAKey && isPressedDKey)) {
           dispatch(keyframesActions.enterKeyframeDeleteKey());
-        } else if ((event.metaKey || event.ctrlKey) && event.key === ('c' || 'C' || 'ㅊ')) {
+        } else if ((event.metaKey || event.ctrlKey) && isPressedCKey) {
           dispatch(keyframesActions.copyKeyframes());
-        } else if ((event.metaKey || event.ctrlKey) && event.key === ('v' || 'V' || 'ㅍ')) {
+        } else if ((event.metaKey || event.ctrlKey) && isPressedVKey) {
           dispatch(keyframesActions.enterPasteKey());
         }
       };
@@ -244,11 +248,13 @@ const TimelineEditor = () => {
       const focusListener = () => {
         document.addEventListener('keydown', keydownListener);
         document.addEventListener('keyup', keyUpListener);
+        setIsFocused(true);
       };
 
       const blurListener = () => {
         document.removeEventListener('keydown', keydownListener);
         document.removeEventListener('keyup', keyUpListener);
+        setIsFocused(false);
       };
 
       currentRef?.addEventListener('focus', focusListener);
@@ -271,7 +277,7 @@ const TimelineEditor = () => {
           <TimelineEditorMode />
         </g>
         <TopRuler />
-        {_visualizedAssetIds.length && <Scrubber />}
+        {_visualizedAssetIds.length && <Scrubber isFocusedTimelineEditor={isFocused} />}
       </svg>
       <DragBox areaRef={timelineEditorRef} onDragEnd={handleDragEnd} selectableId="selectable" selectedId="keyframe-selected" />
     </div>
