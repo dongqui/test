@@ -1,4 +1,4 @@
-import { FunctionComponent, Fragment, memo, RefObject, FocusEvent, KeyboardEvent, useEffect } from 'react';
+import { FunctionComponent, Fragment, memo, RefObject, FocusEvent, KeyboardEvent, ChangeEvent, useEffect, useCallback, useState } from 'react';
 import { BaseInput } from 'components/Input';
 import classNames from 'classnames/bind';
 import styles from './NodeName.module.scss';
@@ -24,10 +24,32 @@ const NodeName: FunctionComponent<Props> = ({ inputRef, textRef, isEditing, name
     }
   }, [inputRef, isEditing]);
 
+  const [value, setValue] = useState(defaultValue);
+
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      let currentValue = event.target.value;
+
+      if (currentValue.length === 1) {
+        currentValue = currentValue.replace(/[0-9]/gi, '');
+      }
+
+      const first = currentValue.charAt(0);
+
+      if (first.match(/[0-9]/g)) {
+        setValue(value);
+      } else {
+        currentValue = currentValue.replace(/[^A-Za-z0-9_-]/gi, '');
+        setValue(currentValue);
+      }
+    },
+    [value],
+  );
+
   if (isEditing) {
     return (
       <Fragment>
-        <BaseInput className={cx('input')} ref={inputRef} placeholder={name} type="text" onBlur={onBlur} onKeyDown={onKeyDown} defaultValue={defaultValue} autoFocus />
+        <BaseInput className={cx('input')} ref={inputRef} placeholder={name} value={value} type="text" onBlur={onBlur} onKeyDown={onKeyDown} onChange={handleChange} autoFocus />
       </Fragment>
     );
   }

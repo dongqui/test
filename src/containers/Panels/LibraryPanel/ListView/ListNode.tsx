@@ -1921,6 +1921,7 @@ const ListNode: FunctionComponent<Props> = ({
 
   const handleDragEnd = useCallback(
     (e: DragEvent) => {
+      e.stopPropagation();
       const dropZone = document.getElementById('RP');
 
       if (dropZone) {
@@ -1949,10 +1950,19 @@ const ListNode: FunctionComponent<Props> = ({
                   }),
                 );
               }
-
-              handleVisualization();
-              forceClickAnimationPlayAndStop(50);
             }
+
+            handleVisualization();
+            forceClickAnimationPlayAndStop(50);
+
+            return;
+          }
+
+          const currentModel = find(_lpNode, { id });
+
+          if (currentModel && currentModel.type === 'Model') {
+            handleVisualization();
+            forceClickAnimationPlayAndStop(50);
           }
         }
       }
@@ -2024,25 +2034,25 @@ const ListNode: FunctionComponent<Props> = ({
         }
       };
 
-      if (!isEditing) {
-        const handleKeydown = (e: KeyboardEvent) => {
+      const handleKeydown = (e: KeyboardEvent) => {
+        if (e.key === 'F2') {
           e.stopPropagation();
-
-          if (e.key === 'F2') {
-            handleEdit();
-          } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
+          handleEdit();
+        } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
+          e.stopPropagation();
+          if (!isEditing) {
             onDelete();
           }
-        };
+        }
+      };
 
-        currentRef.addEventListener('mousedown', handleMouseDown);
-        keydownCurrentRef.addEventListener('keydown', handleKeydown);
+      currentRef.addEventListener('mousedown', handleMouseDown);
+      keydownCurrentRef.addEventListener('keydown', handleKeydown);
 
-        return () => {
-          currentRef.removeEventListener('mousedown', handleMouseDown);
-          keydownCurrentRef.removeEventListener('keydown', handleKeydown);
-        };
-      }
+      return () => {
+        currentRef.removeEventListener('mousedown', handleMouseDown);
+        keydownCurrentRef.removeEventListener('keydown', handleKeydown);
+      };
     }
   }, [handleEdit, isEditing, onDelete]);
 
