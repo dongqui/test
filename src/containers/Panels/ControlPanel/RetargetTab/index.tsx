@@ -258,14 +258,21 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
           {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')}></div>}
         </div>
         <div className={cx('container', { active: isMappingSectionSpread })}>
-          <DropdownWrapper className={cx('mapping-dropdown')} title="Source" currentValue={currentSourceBoneName} options={sourceBoneOptions} activeStatus={isAllActive} />
+          <DropdownWrapper
+            className={cx('mapping-dropdown')}
+            title="Source"
+            currentValue={currentSourceBoneName}
+            options={sourceBoneOptions}
+            activeStatus={isAllActive}
+            inactiveMessage="Select Option"
+          />
           <DropdownWrapper
             className={cx('mapping-dropdown')}
             title="Target"
             currentValue={currentTargetTransformNode?.name}
             options={targetTransformNodeOptions}
             activeStatus={isAllActive && !multipleBoneSelected}
-            inactiveMessage={multipleBoneSelected ? 'Multiple Bones Selected' : undefined}
+            inactiveMessage={multipleBoneSelected ? 'Multiple Bones Selected' : 'Select Option'}
           />
           <div className={cx('inner-container')}>
             <FilledButton className={cx('mapping-assign-button', { active: canAssign })} onClick={handleAssignButtonClick}>
