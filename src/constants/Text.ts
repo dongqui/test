@@ -1,6 +1,6 @@
 export const WAITING_03: string = 'Importing Motion...';
 
-export const WARNING_01: string = 'Auto retargeting failed: %s <br />After mapping is completed in the Retarget tap in the right panel, more functions are available.';
+export const WARNING_01: string = "Auto retargeting failed: %s <br />More functions will be available after mapping is completed in the Control Panel's Retarget tab.";
 export const WARNING_02: string = 'Upload one file at a time.';
 export const WARNING_03: string = 'Unsupported file format.';
 export const WARNING_07: string = 'Import failed: Should the problem recur, let us know via the chat window on our website.';
