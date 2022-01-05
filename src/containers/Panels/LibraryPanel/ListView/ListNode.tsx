@@ -15,7 +15,7 @@ import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop } from '
 import { createAnimationGroupFromIngredient, duplicateAnimationIngredient, goToSpecificPoses } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import { beforePaste, checkCreateDuplicates, checkPasteDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
-import { getRetargetedMocapData } from 'utils/LP/Retarget';
+import { createAnimationIngredientFromMocapData } from 'utils/LP/Retarget';
 import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
 import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -1542,10 +1542,11 @@ const ListNode: FunctionComponent<Props> = ({
               });
 
               try {
-                const mocapAnimationIngredient = await getRetargetedMocapData(
+                const mocapAnimationIngredient = await createAnimationIngredientFromMocapData(
                   dropNode.assetId!,
                   nodeName,
                   targetRetargetMap,
+                  targetAsset.initialPoses,
                   filterAnimatableTransformNodes(targetAsset.transformNodes),
                   dragNode.mocapData,
                   3000,
@@ -1621,10 +1622,11 @@ const ListNode: FunctionComponent<Props> = ({
             });
 
             try {
-              const mocapAnimationIngredient = await getRetargetedMocapData(
+              const mocapAnimationIngredient = await createAnimationIngredientFromMocapData(
                 dropNode.assetId!,
                 dragNode.name,
                 targetRetargetMap,
+                targetAsset.initialPoses,
                 filterAnimatableTransformNodes(targetAsset.transformNodes),
                 dragNode.mocapData,
                 3000,
@@ -1746,7 +1748,7 @@ const ListNode: FunctionComponent<Props> = ({
           if (currentPathDepth + max >= 6) {
             onModalOpen({
               title: 'Warning',
-              message: '해당 디렉토리에 이동할 수 없습니다. 계층 초과',
+              message: 'A directory cannot exceed 6 layers.',
               confirmText: '확인',
             });
             return;
