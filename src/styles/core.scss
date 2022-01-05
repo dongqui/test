@@ -70,3 +70,7 @@ main {
 div[tabindex="-1"]:focus {
   outline: 0;
 }
+
+*:not(input textarea) {
+  user-select: auto;
+}
