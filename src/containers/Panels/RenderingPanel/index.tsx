@@ -1598,15 +1598,15 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       },
       {
         label: 'Insert keyframe',
-        disabled: _visualizedAssetIds.length === 0 || _playState === 'play',
+        disabled: _selectedTargets.length === 0 || _playState === 'play',
         onClick: () => {
-          if (!(_visualizedAssetIds.length === 0 || _playState === 'play')) {
+          if (!(_selectedTargets.length === 0 || _playState === 'play')) {
             dispatch(animationDataActions.editKeyframes());
           }
         },
       },
     ],
-    [_playState, _screenList, _visualizedAssetIds.length, dispatch, gizmoManager, prevCameraPositions],
+    [_playState, _screenList, _selectedTargets.length, dispatch, gizmoManager, prevCameraPositions],
   );
 
   useEffect(() => {
