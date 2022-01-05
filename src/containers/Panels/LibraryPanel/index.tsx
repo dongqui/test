@@ -91,7 +91,7 @@ const LibraryPanel: FunctionComponent = () => {
       if (!skeletons || (skeletons && skeletons.length === 0) || (skeletons && skeletons[0].bones.length === 0) || !meshes || (meshes && meshes.length === 0)) {
         onModalOpen({
           title: 'Warning',
-          message: "The asset doesn't contain skinned mesh or Bone",
+          message: 'Import failed: Should the problem recur, let us know via the chat window on our website.',
           confirmText: 'Close',
           onConfirm: onModalClose,
           confirmColor: 'negative',
