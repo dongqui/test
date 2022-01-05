@@ -1749,7 +1749,8 @@ const ListNode: FunctionComponent<Props> = ({
             onModalOpen({
               title: 'Warning',
               message: 'A directory cannot exceed 6 layers.',
-              confirmText: '확인',
+              confirmText: 'Close',
+              confirmColor: 'negative',
             });
             return;
           }
