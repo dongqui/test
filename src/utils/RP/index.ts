@@ -6,6 +6,7 @@ export { default as createAnimationIngredient } from './createAnimationIngredien
 export { default as createPlaskTrack } from './createPlaskTrack';
 export { default as duplicateAnimationIngredient } from './duplicateAnimationIngredient';
 export { default as createAnimationGroupFromIngredient } from './createAnimationGroupFromIngredient';
+export { default as getRecurrentRotationQuaternion } from './getRecurrentRotationQuaternion';
 
 export { default as checkIsObjectIn } from './checkIsObjectIn';
 export { default as checkIsControllerIn } from './checkIsControllerIn';
