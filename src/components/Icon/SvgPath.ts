@@ -56,6 +56,8 @@ import Body from './svg/Body.svg';
 import NoCamera from './svg/NoCamera.svg';
 import CheckThin from './svg/Check-thin.svg';
 import Warning from './svg/Warning.svg';
+import Logo from './New_svg/Logo.svg';
+import Support from './New_svg/Support.svg';
 
 type Icon =
   | 'Close'
@@ -111,7 +113,9 @@ type Icon =
   | 'ArrowClose'
   | 'Body'
   | 'CheckThin'
-  | 'Warning';
+  | 'Warning'
+  | 'Logo'
+  | 'Support';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -172,6 +176,8 @@ const images: Images = {
   Body,
   CheckThin,
   Warning,
+  Logo,
+  Support,
 };
 
 export default images;
