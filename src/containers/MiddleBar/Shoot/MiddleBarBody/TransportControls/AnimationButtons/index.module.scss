@@ -5,11 +5,15 @@
   background: #353739;
 
   span {
-    height: 100%;
-    width: 26px;
+    width: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
 
     &.record {
       svg {
@@ -20,10 +24,6 @@
     &.pause {
       border-radius: 6px;
       background-color: #0f88ff;
-    }
-
-    svg {
-      color: white;
     }
   }
 }
