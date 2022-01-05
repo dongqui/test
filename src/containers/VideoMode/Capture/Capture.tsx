@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { FunctionComponent, Fragment, useState, useCallback, useRef, useEffect } from 'react';
+import { FunctionComponent, Fragment, useState, useCallback, useRef, useEffect, ChangeEvent } from 'react';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import produce from 'immer';
@@ -53,7 +53,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   const [recordOverTwice, setRecordOverTwice] = useState<boolean>(false);
   const [cameraDropdownState, setCameraDropdownState] = useState<boolean>(false);
   const [readyExtract, setReadyExtract] = useState<boolean>(false);
-  const [basicExtractName, setBasicExtractName] = useState<string>('Exported motion');
+  const [basicExtractName, setBasicExtractName] = useState<string>('');
   const [turnStandbyPhase, setTurnStandbyPhase] = useState<boolean>(false);
   const [onExtract, setOnExtract] = useState<boolean>(false);
   const [isExtractFailed, setIsExtractFailed] = useState<boolean>(false);
@@ -222,9 +222,10 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         return response;
       })
       .catch((err) => {
-        setReadyExtract(false);
+        // setReadyExtract(false);
+        setOnExtract(false);
         setIsExtractFailed(true);
-        throw err;
+        // throw err;
       });
     // return {
     //   result,
@@ -305,6 +306,23 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
     // e.preventDefault();
     setIsIndicatorClicked(true);
     setPrevX(e.clientX);
+  }, []);
+
+  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    let currentValue = event.target.value;
+
+    if (currentValue.length === 1) {
+      currentValue = currentValue.replace(/[0-9]/gi, '');
+    }
+
+    const first = currentValue.charAt(0);
+
+    if (first.match(/[0-9]/g)) {
+      setBasicExtractName(currentValue);
+    } else {
+      currentValue = currentValue.replace(/[^A-Za-z0-9]/gi, '');
+      setBasicExtractName(currentValue);
+    }
   }, []);
 
   useEffect(() => {
@@ -480,14 +498,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       {readyExtract && (
         <BaseModal isOpen={readyExtract}>
           <p className={cx('extract-name-paragraph')}>Enter the name of the motion to extract.</p>
-          <input
-            type="text"
-            className={cx('extract-name-input')}
-            placeholder="Exported motion"
-            onChange={(e) => {
-              setBasicExtractName(e.target.value);
-            }}
-          />
+          <input type="text" className={cx('extract-name-input')} placeholder="Exported motion" onChange={(e) => handleChange(e)} value={basicExtractName} />
           <div className={cx('extract-name-wrapper')}>
             <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setReadyExtract(false)}></FilledButton>
             <FilledButton
@@ -496,7 +507,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               onClick={() =>
                 handleExtractMotion({
                   id: uuidv4(),
-                  fileName: basicExtractName,
+                  fileName: basicExtractName === '' ? 'Exported motion' : basicExtractName,
                   type: browserType === 'safari' ? 'mp4' : 'webm',
                   start: start,
                   end: end,

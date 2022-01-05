@@ -26,7 +26,9 @@ const checkMoveDuplicates = (name: string, nameArray: string[]) => {
     const extractedNumber = current.match(/ \(\d+\)$/g);
 
     if (!_.isNull(extractedNumber)) {
-      const number = (current.match(/\d/g) as unknown) as string;
+      // const number = (current.match(/\d/g) as unknown) as string;
+      const number = (current.match(/(\((?:\d){1,}\))$/g) as string[])[0].replace(/[{()}]/g, '');
+
       return Number(number);
     } else {
       return 0;
