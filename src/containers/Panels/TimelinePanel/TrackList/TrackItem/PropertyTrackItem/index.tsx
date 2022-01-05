@@ -53,7 +53,7 @@ const PropertyTrackItem: FunctionComponent<PropertyTrack> = (props) => {
       onContextMenuClose();
       const { nodeName } = event.target as Element;
       if (nodeName === 'DIV') {
-        const eventType = event.ctrlKey ? 'multipleClick' : 'leftClick';
+        const eventType = event.ctrlKey || event.metaKey ? 'multipleClick' : 'leftClick';
         const payload: ClickPropertyTrackBody = { trackNumber, eventType, trackType: 'property' };
         dispatch(clickTrackBody(payload));
       }

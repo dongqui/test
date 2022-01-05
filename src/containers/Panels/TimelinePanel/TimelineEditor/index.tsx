@@ -8,6 +8,7 @@ import { D3ScaleLinear, D3ZoomDatum } from 'types/TP/d3';
 import { useSelector } from 'reducers';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
 import { DragBox } from 'components/DragBox';
+import { detectSafari } from 'utils/common';
 
 import { TopRuler } from './Ruler';
 import { createTopGridLine } from './GridLine/createGridLineElements';
@@ -257,6 +258,8 @@ const TimelineEditor = () => {
         setIsFocused(false);
       };
 
+      const isSafari = detectSafari();
+      if (isSafari) focusListener();
       currentRef?.addEventListener('focus', focusListener);
       currentRef?.addEventListener('blur', blurListener);
 

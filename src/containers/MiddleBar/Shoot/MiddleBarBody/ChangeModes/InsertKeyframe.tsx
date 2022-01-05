@@ -13,22 +13,17 @@ const cx = classNames.bind(styles);
 const InsertKeyframe = () => {
   const dispatch = useDispatch();
 
-  const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
+  const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const _playState = useSelector((state) => state.animatingControls.playState);
 
   const handleClickButton = useCallback(() => {
-    if (_visualizedAssetIds.length !== 0 && _playState !== 'play') {
+    if (_selectedTargets.length !== 0 && _playState !== 'play') {
       dispatch(animationDataActions.editKeyframes());
     }
-  }, [_playState, _visualizedAssetIds.length, dispatch]);
+  }, [_playState, _selectedTargets.length, dispatch]);
 
   return (
-    <IconWrapper
-      className={cx({ disabled: _visualizedAssetIds.length === 0 || _playState === 'play' })}
-      icon={SvgPath.InsertKeyframe}
-      hasFrame={false}
-      onClick={handleClickButton}
-    />
+    <IconWrapper className={cx({ disabled: _selectedTargets.length === 0 || _playState === 'play' })} icon={SvgPath.InsertKeyframe} hasFrame={false} onClick={handleClickButton} />
   );
 };
 

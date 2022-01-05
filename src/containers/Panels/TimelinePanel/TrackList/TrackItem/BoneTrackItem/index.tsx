@@ -59,7 +59,7 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
       onContextMenuClose();
       const { nodeName } = event.target as Element;
       if (nodeName === 'DIV') {
-        const eventType = event.ctrlKey ? 'multipleClick' : 'leftClick';
+        const eventType = event.ctrlKey || event.metaKey ? 'multipleClick' : 'leftClick';
         const payload: ClickBoneTrackBody = { trackNumber, eventType, trackType: 'bone' };
         dispatch(clickTrackBody(payload));
       }
