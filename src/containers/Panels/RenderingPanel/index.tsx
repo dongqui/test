@@ -429,9 +429,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
                   distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
                   activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
-                } else {
-                  // k
-                  dispatch(animationDataActions.editKeyframes());
                 }
               }
               break;
@@ -523,6 +520,75 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       document.removeEventListener('keyup', handleKeyUp);
     };
   }, [_screenList, dispatch, multiKeyController, prevCameraPositions]);
+
+  /**
+   * edit keyframe 단축키
+   */
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+
+      switch (event.key) {
+        case 'v':
+        case 'V':
+        case 'ㅍ': // v (viewport)
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = true;
+          }
+          break;
+        case 'k':
+        case 'K':
+        case 'ㅏ': // insert
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = true;
+          }
+          if (multiKeyController[event.key].pressed) {
+            // v를 누르지 않고 k
+            if (!multiKeyController.v.pressed && !multiKeyController.V.pressed && !multiKeyController.ㅍ.pressed) {
+              dispatch(animationDataActions.editKeyframes());
+            }
+          }
+          break;
+        default: {
+          break;
+        }
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+
+      switch (event.key) {
+        case 'v':
+        case 'V':
+        case 'ㅍ':
+        case 'k':
+        case 'K':
+        case 'ㅏ':
+          if (multiKeyController[event.key]) {
+            multiKeyController[event.key].pressed = false;
+          }
+          break;
+        default: {
+          break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [dispatch, multiKeyController]);
 
   /******************************************************************************
    * 기존 useGizmoControl의 내용
