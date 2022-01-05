@@ -458,6 +458,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           </div>
           {recordState && <FilledButton className={cx('extract-button')} text="Extract Motion" onClick={() => setReadyExtract(true)} />}
           {!recordState && <FilledButton className={cx('extract-button', 'disabled')} text="Extract Motion" />}
+          {!deviceList.length && <div className={cx('disable-overlay')} />}
         </div>
       </Box>
       {recordState && (
