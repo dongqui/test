@@ -468,7 +468,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
   const handleDelete = useCallback(async () => {
     const confirmed = await getConfirm({
       title: 'Confirm',
-      message: 'Are you sure you want to delete the file?',
+      message: 'Are you sure? All files in the directory will be deleted.',
       confirmText: 'Confirm',
       cancelText: 'Cancel',
       confirmColor: 'negative',
