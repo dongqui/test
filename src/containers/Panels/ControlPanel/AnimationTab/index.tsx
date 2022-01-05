@@ -180,7 +180,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         controlTarget.onAfterWorldMatrixUpdateObservable.remove(matrixUpdateObservable);
       };
     }
-  });
+  }, [controlTarget]);
 
   // 선택 대상에 따라 controller toggle 변경
   useEffect(() => {
@@ -498,6 +498,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'X',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             setPositionX(parseFloat(event.target.value));
             controlTarget.position.x = parseFloat(event.target.value);
@@ -513,6 +517,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'Y',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             setPositionY(parseFloat(event.target.value));
             controlTarget.position.y = parseFloat(event.target.value);
@@ -528,6 +536,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'Z',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             setPositionZ(parseFloat(event.target.value));
             controlTarget.position.z = parseFloat(event.target.value);
@@ -546,6 +558,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'X',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
             const e = prevE.clone();
@@ -573,6 +589,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'Y',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
             const e = prevE.clone();
@@ -600,6 +620,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'Z',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             const prevE = controlTarget.rotationQuaternion!.clone().toEulerAngles();
             const e = prevE.clone();
@@ -630,6 +654,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'W',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             setQuarternionW(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.w = parseFloat(event.target.value);
@@ -645,6 +673,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'X',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             setQuarternionX(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.x = parseFloat(event.target.value);
@@ -660,6 +692,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'Y',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             setQuarternionY(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.y = parseFloat(event.target.value);
@@ -675,6 +711,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'Z',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             setQuarternionZ(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.z = parseFloat(event.target.value);
@@ -693,6 +733,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'X',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             setScaleX(parseFloat(event.target.value));
             controlTarget.scaling.x = parseFloat(event.target.value);
@@ -708,6 +752,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'Y',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             setScaleY(parseFloat(event.target.value));
             controlTarget.scaling.y = parseFloat(event.target.value);
@@ -723,6 +771,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'Z',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlTarget) {
             setScaleZ(parseFloat(event.target.value));
             controlTarget.scaling.z = parseFloat(event.target.value);
@@ -741,6 +793,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'X',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlController) {
             setControllerX(parseFloat(event.target.value));
             controlController.scaling.x = parseFloat(event.target.value);
@@ -756,6 +812,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       text: 'Z',
       handleBlur: useCallback(
         (event: FocusEvent<HTMLInputElement>) => {
+          if (isNaN(parseFloat(event.target.value))) {
+            return;
+          }
+
           if (controlController) {
             setControllerZ(parseFloat(event.target.value));
             controlController.scaling.z = parseFloat(event.target.value);
