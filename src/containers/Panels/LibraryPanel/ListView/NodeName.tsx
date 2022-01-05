@@ -39,7 +39,7 @@ const NodeName: FunctionComponent<Props> = ({ inputRef, textRef, isEditing, name
       if (first.match(/[0-9]/g)) {
         setValue(value);
       } else {
-        currentValue = currentValue.replace(/[^A-Za-z0-9_-]/gi, '');
+        currentValue = currentValue.replace(/[^A-Za-z0-9_-\s\(\)]/gi, '');
         setValue(currentValue);
       }
     },
