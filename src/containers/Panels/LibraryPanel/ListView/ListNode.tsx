@@ -982,7 +982,19 @@ const ListNode: FunctionComponent<Props> = ({
             menu: [
               {
                 label: 'Delete',
-                onClick: () => {
+                onClick: async () => {
+                  const confirmed = await getConfirm({
+                    title: 'Confirm',
+                    message: 'Are you sure you want to delete the file?',
+                    confirmText: 'Confirm',
+                    cancelText: 'Cancel',
+                    confirmColor: 'negative',
+                  });
+
+                  if (!confirmed) {
+                    return;
+                  }
+
                   const targetMotion = find(_lpNode, { id });
 
                   if (targetMotion) {
@@ -1228,13 +1240,13 @@ const ListNode: FunctionComponent<Props> = ({
     dispatch,
     extension,
     filePath,
+    getConfirm,
     handleDelete,
     handleEdit,
     handleVisualization,
     id,
     name,
     onContextMenuOpen,
-    onCopy,
     onDelete,
     onSelect,
     parentId,
