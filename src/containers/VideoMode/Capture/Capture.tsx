@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { FunctionComponent, Fragment, useState, useCallback, useRef, useEffect, ChangeEvent } from 'react';
 import { useSelector } from 'reducers';
@@ -568,7 +569,8 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Extract Failed</h4>
             <p className={cx('extract-name-paragraph')}>
-              Motion extraction <strong>failed</strong>. please try again.
+              Motion export<strong>failed</strong>.<br />
+              The uploaded video doesn't meet the motion capture requirement
             </p>
             <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)}></FilledButton>
           </div>
