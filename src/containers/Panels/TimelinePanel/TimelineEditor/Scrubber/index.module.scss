@@ -7,26 +7,30 @@
     stroke: #0f88ff;
   }
 
-  foreignobject {
+  .input-wrapper {
     transform: translateX(8px);
-  }
 
-  input {
-    width: 100%;
-    height: 100%;
-    background-color: transparent;
-    transform: translateY(-4px);
-    text-align: center;
-    border-radius: 4px;
-    font-size: 10px;
-    transition: 0s;
-
-    &.focused {
-      background-color: #353739;
+    div {
+      position: fixed;
     }
 
-    &:disabled {
-      color: white !important;
+    input {
+      width: 100%;
+      height: 100%;
+      background-color: transparent;
+      transform: translateY(-4px);
+      text-align: center;
+      border-radius: 4px;
+      font-size: 10px;
+      transition: 0s;
+
+      &.focused {
+        background-color: #353739;
+      }
+
+      &:disabled {
+        color: white !important;
+      }
     }
   }
 }

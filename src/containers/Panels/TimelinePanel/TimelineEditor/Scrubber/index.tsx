@@ -197,20 +197,22 @@ const Scrubber: FunctionComponent<Props> = (props) => {
     <g id="scrubber" className={cx('scrubber')} ref={scrubberRef}>
       <line x1="23" y1="12" x2="23" y2="2000" />
       <path d="M9.27203 0H9.18118C8.51416 0 7.88043 0.291572 7.44634 0.798191L2.55008 6.51248C1.81664 7.36845 1.81664 8.63155 2.55008 9.48752L7.44634 15.2018C7.88043 15.7084 8.51416 16 9.18118 16H34.8188C35.4858 16 36.1196 15.7084 36.5537 15.2018L41.4499 9.48752C42.1834 8.63155 42.1834 7.36845 41.4499 6.51248L36.5537 0.798191C36.1196 0.291572 35.4858 0 34.8188 0H34.728H9.27203Z" />
-      <foreignObject width="28" height="14">
-        <BaseInput
-          className={cx({ focused: focusScrubber })}
-          arrow={false}
-          maxLength={4}
-          onClick={handleInputClick}
-          onBlur={handleInputBlur}
-          onChange={handleInputChange}
-          onKeyDown={handleInputKeyDown}
-          onWheel={(e) => e.preventDefault()}
-          type="number"
-          value={inputValue}
-          disabled={disableScrubber}
-        />
+      <foreignObject className={cx('input-wrapper')} width="28" height="14">
+        <div>
+          <BaseInput
+            className={cx({ focused: focusScrubber })}
+            arrow={false}
+            maxLength={4}
+            onClick={handleInputClick}
+            onBlur={handleInputBlur}
+            onChange={handleInputChange}
+            onKeyDown={handleInputKeyDown}
+            onWheel={(e) => e.preventDefault()}
+            type="number"
+            value={inputValue}
+            disabled={disableScrubber}
+          />
+        </div>
       </foreignObject>
     </g>
   );
