@@ -1,4 +1,5 @@
 import { FunctionComponent, useCallback, useState, Dispatch, RefObject, SetStateAction } from 'react';
+import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { FilledButton, SegmentButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -93,6 +94,16 @@ const UpperBar: FunctionComponent<Props> = ({
         <div className={cx('left-upper-inner')}>
           <span className={cx('scene-name')}>{sceneName}</span>
         </div> */}
+        <Link href="https://plask.ai">
+          <a target="_blank" className={cx('icon-logo-wrapper')}>
+            <IconWrapper className={cx('icon-logo')} icon={SvgPath.Logo} />
+          </a>
+        </Link>
+        <Link href="mailto:support@plask.ai">
+          <a className={cx('icon-support-wrapper')}>
+            <IconWrapper className={cx('icon-support')} icon={SvgPath.Support} />
+          </a>
+        </Link>
       </div>
       <div className={cx('middle-upper')}></div>
       <div className={cx('right-upper')}>
