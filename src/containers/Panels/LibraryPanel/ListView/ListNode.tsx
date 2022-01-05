@@ -1748,7 +1748,7 @@ const ListNode: FunctionComponent<Props> = ({
           if (currentPathDepth + max >= 6) {
             onModalOpen({
               title: 'Warning',
-              message: '해당 디렉토리에 이동할 수 없습니다. 계층 초과',
+              message: 'A directory cannot exceed 6 layers.',
               confirmText: '확인',
             });
             return;
