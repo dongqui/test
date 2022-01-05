@@ -6,7 +6,7 @@ import produce from 'immer';
 import '@babylonjs/loaders/glTF';
 import { convertModel } from 'api';
 import { filterAnimatableTransformNodes, getFileExtension, getRandomStringKey } from 'utils/common';
-import { createAnimationIngredient } from 'utils/RP';
+import { createAnimationIngredient, getRecurrentRotationQuaternion } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createAutoRetargetMap, createBvhMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
 import { v4 as uuid } from 'uuid';
@@ -171,21 +171,23 @@ const LibraryPanel: FunctionComponent = () => {
         failedNames = nextNames;
       }
 
-      // 임시로 호출 코드 넣어놨습니다. 실제로는 bvh export 시에 asset의 bones, retargetMap을 가지고 호출하시면 됩니답.
-      // const bvhMap = await createBvhMap(skeletons[0].bones, retargetMap, 3000);
-
       const currentPathNodeNames = _lpNode.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
       const check = checkCreateDuplicates(`${fileName}`, currentPathNodeNames);
 
       const nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
 
-      const initialPoses: PlaskPose[] = filterAnimatableTransformNodes(transformNodes).map((transformNode) => ({
-        target: transformNode,
-        position: transformNode.position.clone(),
-        rotationQuaternion: transformNode.rotationQuaternion ? transformNode.rotationQuaternion.clone() : transformNode.rotation.clone().toQuaternion(),
-        scaling: transformNode.scaling.clone(),
-      }));
+      const initialPoses: PlaskPose[] = filterAnimatableTransformNodes(transformNodes).map((transformNode) => {
+        const bone = skeletons[0].bones.find((bone) => bone.id === transformNode.id.replace('//transformNode', '//bone'))!;
+
+        return {
+          target: transformNode,
+          position: transformNode.position.clone(),
+          rotationQuaternion: transformNode.rotationQuaternion ? transformNode.rotationQuaternion.clone() : transformNode.rotation.clone().toQuaternion(),
+          recurrentRotationQuaternion: bone ? getRecurrentRotationQuaternion(bone) : null,
+          scaling: transformNode.scaling.clone(),
+        };
+      });
 
       const newAsset: PlaskAsset = {
         id: assetId,
