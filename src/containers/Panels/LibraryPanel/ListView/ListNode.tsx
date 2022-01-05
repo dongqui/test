@@ -423,6 +423,7 @@ const ListNode: FunctionComponent<Props> = ({
         message: 'Are you sure you want to delete the file?',
         confirmText: 'Confirm',
         cancelText: 'Cancel',
+        confirmColor: 'negative',
       });
 
       if (!confirmed) {
@@ -2120,7 +2121,7 @@ const ListNode: FunctionComponent<Props> = ({
             const file = new File([glb.glTFFiles[fileName[0]]], resultName);
             file.path = resultName;
 
-            onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
+            onModalOpen({ title: 'Exporting file', message: 'This can take up to 3 minutes' });
 
             await convertModel(file, 'fbx')
               .then((response) => {
@@ -2158,7 +2159,7 @@ const ListNode: FunctionComponent<Props> = ({
                 const file = new File([glb.glTFFiles[fileName[0]]], resultName);
                 file.path = resultName;
 
-                onModalOpen({ title: 'Exporting file.', message: 'This can take up to 3 minutes' });
+                onModalOpen({ title: 'Exporting file', message: 'This can take up to 3 minutes' });
 
                 await convertModel(file, 'bvh', bvhMap)
                   .then((response) => {
