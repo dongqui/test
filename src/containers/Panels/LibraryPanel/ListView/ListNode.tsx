@@ -11,7 +11,7 @@ import { v4 as uuid } from 'uuid';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
-import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop } from 'utils/common';
+import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop, getFileExtension } from 'utils/common';
 import { createAnimationGroupFromIngredient, duplicateAnimationIngredient, goToSpecificPoses } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import { beforePaste, checkCreateDuplicates, checkPasteDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
@@ -1857,23 +1857,38 @@ const ListNode: FunctionComponent<Props> = ({
 
         // @TODO 없으면 비활성 처리 필요
         if (cloneDragNode) {
-          const currentPathNodeName = _lpNode
-            .filter((node) => {
-              if (node.parentId === id) {
-                const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
-                const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
-                if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
-                  return true;
-                }
-                return false;
-              }
-            })
-            .map((filteredNode) => filteredNode.name);
+          let nodeName = cloneDragNode.name;
 
-          const nodeName = beforeMove({
-            name: cloneDragNode.name,
-            comparisonNames: currentPathNodeName,
-          });
+          if (dragTarget?.type === 'Folder') {
+            const currentPathNodeName = _lpNode
+              .filter((node) => {
+                if (node.parentId === id) {
+                  const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
+                  const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
+                  if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+                    return true;
+                  }
+                  return false;
+                }
+              })
+              .map((filteredNode) => filteredNode.name);
+
+            nodeName = beforeMove({
+              name: cloneDragNode.name,
+              comparisonNames: currentPathNodeName,
+            });
+          }
+
+          if (dragTarget?.type === 'Model') {
+            const extension = getFileExtension(cloneDragNode.name).toLowerCase();
+            const fileName = cloneDragNode.name.split('.').slice(0, -1).join('.');
+
+            const currentPathNodeName = _lpNode.filter((node) => node.parentId === id && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
+
+            const check = checkCreateDuplicates(`${fileName}`, currentPathNodeName);
+
+            nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
+          }
 
           const nextNodes = produce(cloneLPNode, (draft) => {
             const targetNode = find(draft, { id });
