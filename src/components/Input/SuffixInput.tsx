@@ -36,5 +36,6 @@ const SuffixInput = forwardRef<HTMLInputElement, Props>(({ suffix, arrow, color,
 });
 
 SuffixInput.defaultProps = defaultProps;
+SuffixInput.displayName = 'SuffixInput';
 
 export default SuffixInput;
