@@ -1,11 +1,7 @@
 import { ContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { ContextMenuClickItemHandler } from 'types/common';
 
-interface Props {
-  handleDelete: () => void;
-  handleEdit: () => void;
-}
-const ModelContextMenu = ({ handleDelete, handleEdit }: Props) => {
+const ModelContextMenu = () => {
   const handleClickItem: ContextMenuClickItemHandler = (event, propsFromTrigger) => {
     switch (event.currentTarget.id) {
       case 'delete':

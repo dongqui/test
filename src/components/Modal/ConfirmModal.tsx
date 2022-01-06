@@ -10,21 +10,21 @@ const cx = classnames.bind(styles);
 interface Props {
   title: string;
   message: string;
-  confirmText: string;
-  cancelText: string;
+  confirmText?: string;
+  cancelText?: string;
   onConfirm: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
   onClose: () => void;
 }
 
-const ConfirmModal: FunctionComponent<Props> = ({ onClose, title, message, confirmText, cancelText, onConfirm, onCancel }) => {
+const ConfirmModal: FunctionComponent<Props> = ({ onClose, title, message, confirmText = 'Confirm', cancelText = 'Cancel', onConfirm, onCancel }) => {
   const onClickConfirm = () => {
     onConfirm();
     onClose();
   };
 
   const onClickCancel = () => {
-    onCancel();
+    onCancel && onCancel();
     onClose();
   };
 

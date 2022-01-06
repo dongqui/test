@@ -1,12 +1,34 @@
 import { ContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { ContextMenuClickItemHandler } from 'types/common';
+import { useModal } from 'components/Modal/Modal';
+import { useDispatch } from 'react-redux';
+import { deleteNode } from 'actions/LP/lpNodeAction';
 
-interface Props {
-  handleDelete: () => void;
-  handleEdit: () => void;
-}
-const FolderContextMenu = ({ handleDelete, handleEdit }: Props) => {
-  const handleClickItem: ContextMenuClickItemHandler = (event, props) => {};
+const FolderContextMenu = () => {
+  const dispatch = useDispatch();
+  const { onModalOpen } = useModal();
+  const handleClickItem: ContextMenuClickItemHandler = (event, props) => {
+    switch (event.currentTarget.id) {
+      case 'delete':
+        onModalOpen('ConfirmModal', {
+          title: 'Delete Folder',
+          message: 'Are you sure? All files in the directory will be deleted.',
+          onConfirm: () => {
+            dispatch(deleteNode);
+          },
+          onCancel: () => {},
+        });
+        break;
+      case 'edit-name':
+        break;
+      case 'copy':
+        break;
+      case 'paste':
+        break;
+      case 'new-directory':
+        break;
+    }
+  };
 
   return (
     <ContextMenu contextMenuId="FolderContextMenu">

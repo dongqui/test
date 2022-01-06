@@ -1,21 +1,23 @@
 import eventManager from './eventManager';
 
+type contextMenuId = 'FolderContextMenu' | 'ModelContextMenu' | 'MotionContextMenu';
+
 interface ShowParams {
-  contextMenuId: string;
+  contextMenuId: contextMenuId;
   event: MouseEvent;
   props?: any;
 }
 
 function useContextMenu() {
   return {
-    show({ contextMenuId, event, props }: ShowParams) {
+    showContextMenu({ contextMenuId, event, props }: ShowParams) {
       eventManager.emit('hideAll');
       eventManager.emit(contextMenuId, {
         event,
         props,
       });
     },
-    hideAll() {
+    hideAllContextMenu() {
       eventManager.emit('hideAll');
     },
   };

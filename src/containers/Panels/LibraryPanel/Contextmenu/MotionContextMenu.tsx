@@ -1,12 +1,7 @@
 import { ContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { ContextMenuClickItemHandler } from 'types/common';
 
-interface Props {
-  handleDelete: () => void;
-  handleEdit: () => void;
-}
-
-const MotionContextMenu = ({ handleDelete, handleEdit }: Props) => {
+const MotionContextMenu = () => {
   const handleClickItem: ContextMenuClickItemHandler = () => {};
   return (
     <ContextMenu contextMenuId="MotionContextMenu">
