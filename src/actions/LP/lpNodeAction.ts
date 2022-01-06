@@ -2,12 +2,18 @@ interface State {
   nodes: LP.Node[];
 }
 
-export type LPNodeAction = ReturnType<typeof changeNode> | ReturnType<typeof visualize> | ReturnType<typeof changeCurrentPath> | ReturnType<typeof changeClipboard>;
+export type LPNodeAction =
+  | ReturnType<typeof changeNode>
+  | ReturnType<typeof visualize>
+  | ReturnType<typeof changeCurrentPath>
+  | ReturnType<typeof changeClipboard>
+  | ReturnType<typeof deleteNode>;
 
 export const CHANGE_NODE = 'mode/CHANGE_NODE' as const;
 export const VISUALIZE = 'mode/VISUALIZE' as const;
 export const CHANGE_CURRENT_PATH = 'mode/CHANGE_CURRENT_PATH' as const;
 export const CHANGE_CLIPBOARD = 'mode/CHANGE_CLIPBOARD' as const;
+export const DELETE_NODE = 'mode/DELETE_NODE' as const;
 
 interface ChangeNodeParams {
   nodes: LP.Node[];
@@ -23,6 +29,11 @@ interface ChangeCurrentPathParams {
 
 interface ChangeClipboardParams {
   data: LP.Node[];
+}
+
+interface DeleteNodeParams {
+  selectId: string;
+  selectAssetId?: string;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
@@ -46,6 +57,13 @@ export const changeCurrentPath = (params: ChangeCurrentPathParams) => ({
 
 export const changeClipboard = (params: ChangeClipboardParams) => ({
   type: CHANGE_CLIPBOARD,
+  payload: {
+    ...params,
+  },
+});
+
+export const deleteNode = (params: DeleteNodeParams) => ({
+  type: DELETE_NODE,
   payload: {
     ...params,
   },
