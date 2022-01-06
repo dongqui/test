@@ -63,6 +63,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   const [timer, setTimer] = useState<number>(5);
   const [isIndicatorClicked, setIsIndicatorClicked] = useState<boolean>(false);
   const [prevX, setPrevX] = useState<number>(0);
+  const [isTimeout, setIsTimeout] = useState<boolean>(false);
 
   const {
     mediaStreamInitialize,
@@ -174,7 +175,12 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
    * @param endTime - 영상 전체의 종료 시간
    * @param duration - 영상의 길이 (metaData에서 자체적으로 frame 값을 추출 할 수 없을 경우 대비)
    */
-  const handleExtractMotion = useCallback(async ({ id, start, end, startTime, endTime, url, type, fileName, timeout, duration }) => {
+  const handleExtractMotion = useCallback(async ({ id, start, end, startTime, endTime, url, type, fileName, duration }) => {
+    if (end - start > 300) {
+      setIsTimeout(true);
+      return;
+    }
+
     setReadyExtract(false);
     setOnExtract(true);
     const formData = new FormData();
@@ -197,7 +203,6 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       cancelToken: new axios.CancelToken((cancel) => {
         cancelTokenSource.current = cancel;
       }),
-      timeout,
     })
       .then((response) => {
         const newMotionNode: LP.Node = {
@@ -516,7 +521,6 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                   startTime: start,
                   endTime: end,
                   url: videoRef.current!.src,
-                  timeout: videoRef.current!.duration * 30 * 1000,
                   duration: videoRef.current!.duration,
                 })
               }
@@ -569,10 +573,19 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Extract Failed</h4>
             <p className={cx('extract-name-paragraph')}>
-              Motion export<strong>failed</strong>.<br />
+              Motion export<strong> failed</strong>.<br />
               The uploaded video doesn't meet the motion capture requirement
             </p>
             <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)}></FilledButton>
+          </div>
+        </BaseModal>
+      )}
+      {isTimeout && (
+        <BaseModal isOpen={isTimeout}>
+          <div className={cx('failed-modal')}>
+            <h4 className={cx('modal-heading')}>Caution</h4>
+            <p className={cx('extract-name-paragraph')}>In this free version, you can only extract videos for less than 5 minutes long.</p>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsTimeout(false)}></FilledButton>
           </div>
         </BaseModal>
       )}
