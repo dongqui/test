@@ -7,14 +7,14 @@ import { deleteNode } from 'actions/LP/lpNodeAction';
 const FolderContextMenu = () => {
   const dispatch = useDispatch();
   const { onModalOpen } = useModal();
-  const handleClickItem: ContextMenuClickItemHandler = (event, props) => {
+  const handleClickItem: ContextMenuClickItemHandler = (event, propsFromTrigger) => {
     switch (event.currentTarget.id) {
       case 'delete':
         onModalOpen('ConfirmModal', {
           title: 'Delete Folder',
           message: 'Are you sure? All files in the directory will be deleted.',
           onConfirm: () => {
-            dispatch(deleteNode);
+            dispatch(deleteNode({ selectId: propsFromTrigger.selectId }));
           },
           onCancel: () => {},
         });

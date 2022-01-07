@@ -80,7 +80,7 @@ export const ContextMenu: FunctionComponent<Props> = ({ contextMenuId, children 
     <Fragment>
       {isOpen && (
         <div className={cx('wrapper')} ref={nodeRef} style={menuStyle}>
-          {cloneItemsWithProps(children, propsFromTrigger)}
+          {cloneItemsWithProps(children, { propsFromTrigger })}
         </div>
       )}
     </Fragment>

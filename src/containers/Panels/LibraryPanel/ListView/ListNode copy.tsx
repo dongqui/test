@@ -440,7 +440,13 @@ const ListNode: FunctionComponent<Props> = ({
         );
 
         if (type === 'Folder') {
-          showContextMenu({ contextMenuId: 'FolderContextMenu', event: e });
+          showContextMenu({
+            contextMenuId: 'FolderContextMenu',
+            event: e,
+            props: {
+              selectId: id,
+            },
+          });
         } else if (type === 'Model') {
           showContextMenu({ contextMenuId: 'ModelContextMenu', event: e });
         } else if (type === 'Motion') {

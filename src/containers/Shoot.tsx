@@ -8,11 +8,11 @@ import ControlPanel from './Panels/ControlPanel';
 import TimelinePanel from './Panels/TimelinePanel';
 import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
+import { ModalContextProvider } from 'components/Modal/Modal';
 import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
-
 import HotKeyOrder from './HotKeyOrder';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
@@ -270,36 +270,38 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
     // <HotKeyOrder className={className}>
     <div className={className}>
       <ContextMenuProvider>
-        <Fragment>
-          <Box id="UP" {...boxProps.up}>
-            <UpperBar sceneName="Please enter a scene name" />
-          </Box>
-          <Box id="US" className={cx('upper-section')} {...boxProps.us}>
-            <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
-              <BaseModalProvider>
-                <LibraryPanel />
-              </BaseModalProvider>
+        <ModalContextProvider>
+          <Fragment>
+            <Box id="UP" {...boxProps.up}>
+              <UpperBar sceneName="Please enter a scene name" />
             </Box>
-            <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
-              <RenderingPanel />
+            <Box id="US" className={cx('upper-section')} {...boxProps.us}>
+              <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
+                <BaseModalProvider>
+                  <LibraryPanel />
+                </BaseModalProvider>
+              </Box>
+              <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
+                <RenderingPanel />
+              </Box>
+              <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
+                <BaseModalProvider>
+                  <ControlPanel />
+                </BaseModalProvider>
+              </Box>
             </Box>
-            <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-              <BaseModalProvider>
-                <ControlPanel />
-              </BaseModalProvider>
+            <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
+              <Box id="MB" {...boxProps.mb}>
+                <MiddleBar />
+              </Box>
+              <Box id="TP" {...boxProps.tp}>
+                <BaseModalProvider>
+                  <TimelinePanel />
+                </BaseModalProvider>
+              </Box>
             </Box>
-          </Box>
-          <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
-            <Box id="MB" {...boxProps.mb}>
-              <MiddleBar />
-            </Box>
-            <Box id="TP" {...boxProps.tp}>
-              <BaseModalProvider>
-                <TimelinePanel />
-              </BaseModalProvider>
-            </Box>
-          </Box>
-        </Fragment>
+          </Fragment>
+        </ModalContextProvider>
       </ContextMenuProvider>
     </div>
   );
