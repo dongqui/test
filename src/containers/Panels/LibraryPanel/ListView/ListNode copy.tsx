@@ -445,6 +445,8 @@ const ListNode: FunctionComponent<Props> = ({
             event: e,
             props: {
               selectId: id,
+              filePath,
+              extension,
             },
           });
         } else if (type === 'Model') {

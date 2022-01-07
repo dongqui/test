@@ -7,14 +7,17 @@ export type LPNodeAction =
   | ReturnType<typeof visualize>
   | ReturnType<typeof changeCurrentPath>
   | ReturnType<typeof changeClipboard>
-  | ReturnType<typeof deleteNode>;
+  | ReturnType<typeof deleteNode>
+  | ReturnType<typeof changeNode>
+  | ReturnType<typeof addDirectory>;
 
-export const CHANGE_NODE = 'mode/CHANGE_NODE' as const;
-export const VISUALIZE = 'mode/VISUALIZE' as const;
-export const CHANGE_CURRENT_PATH = 'mode/CHANGE_CURRENT_PATH' as const;
-export const CHANGE_CLIPBOARD = 'mode/CHANGE_CLIPBOARD' as const;
-export const DELETE_NODE = 'mode/DELETE_NODE' as const;
-
+export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
+export const VISUALIZE = 'node/VISUALIZE' as const;
+export const CHANGE_CURRENT_PATH = 'node/CHANGE_CURRENT_PATH' as const;
+export const CHANGE_CLIPBOARD = 'node/CHANGE_CLIPBOARD' as const;
+export const DELETE_NODE = 'node/DELETE_NODE' as const;
+export const COPY_NODE = 'node/COPY_NODE' as const;
+export const ADD_DIRECTORY = 'node/ADD_DIRECTORY' as const;
 interface ChangeNodeParams {
   nodes: LP.Node[];
 }
@@ -32,8 +35,14 @@ interface ChangeClipboardParams {
 }
 
 interface DeleteNodeParams {
-  selectId: string;
+  nodeId: string;
   selectAssetId?: string;
+}
+
+interface AddDirectoryParams {
+  nodeId: string;
+  filePath: string;
+  extension: string;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
@@ -64,6 +73,20 @@ export const changeClipboard = (params: ChangeClipboardParams) => ({
 
 export const deleteNode = (params: DeleteNodeParams) => ({
   type: DELETE_NODE,
+  payload: {
+    ...params,
+  },
+});
+
+export const copyNode = (nodeId: string) => ({
+  type: DELETE_NODE,
+  payload: {
+    id: nodeId,
+  },
+});
+
+export const addDirectory = (params: AddDirectoryParams) => ({
+  type: ADD_DIRECTORY,
   payload: {
     ...params,
   },

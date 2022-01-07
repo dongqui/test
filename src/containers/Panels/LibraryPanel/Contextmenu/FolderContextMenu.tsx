@@ -2,7 +2,7 @@ import { ContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { ContextMenuClickItemHandler } from 'types/common';
 import { useModal } from 'components/Modal/Modal';
 import { useDispatch } from 'react-redux';
-import { deleteNode } from 'actions/LP/lpNodeAction';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
 
 const FolderContextMenu = () => {
   const dispatch = useDispatch();
@@ -14,18 +14,27 @@ const FolderContextMenu = () => {
           title: 'Delete Folder',
           message: 'Are you sure? All files in the directory will be deleted.',
           onConfirm: () => {
-            dispatch(deleteNode({ selectId: propsFromTrigger.selectId }));
+            dispatch(lpNodeActions.deleteNode({ nodeId: propsFromTrigger.selectId }));
           },
           onCancel: () => {},
         });
         break;
       case 'edit-name':
+        // TODO
         break;
       case 'copy':
+        dispatch(lpNodeActions.copyNode(propsFromTrigger.selectId));
         break;
       case 'paste':
         break;
       case 'new-directory':
+        dispatch(
+          lpNodeActions.addDirectory({
+            nodeId: propsFromTrigger.selectId,
+            extension: propsFromTrigger.extenstion,
+            filePath: propsFromTrigger.filePath,
+          }),
+        );
         break;
     }
   };
@@ -38,12 +47,12 @@ const FolderContextMenu = () => {
       <ContextMenuItem id="edit-name" onClick={handleClickItem}>
         Edit name
       </ContextMenuItem>
-      <ContextMenuItem id="copy" onClick={handleClickItem}>
+      {/* <ContextMenuItem id="copy" onClick={handleClickItem}>
         Copy
       </ContextMenuItem>
       <ContextMenuItem id="paste" onClick={handleClickItem}>
         Paste
-      </ContextMenuItem>
+      </ContextMenuItem> */}
       <ContextMenuItem id="new-directory" onClick={handleClickItem}>
         New directory
       </ContextMenuItem>

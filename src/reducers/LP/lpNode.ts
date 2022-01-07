@@ -19,23 +19,23 @@ const defaultState: State = {
 
 export const lpNode = (state = defaultState, action: LPNodeAction) => {
   switch (action.type) {
-    case 'mode/CHANGE_NODE': {
+    case 'node/CHANGE_NODE': {
       return Object.assign({}, state, {
         node: action.payload.nodes,
       });
     }
-    case 'mode/VISUALIZE': {
+    case 'node/VISUALIZE': {
       return Object.assign({}, state, {
         visualizedfileUrl: action.payload,
       });
     }
-    case 'mode/CHANGE_CURRENT_PATH': {
+    case 'node/CHANGE_CURRENT_PATH': {
       return Object.assign({}, state, {
         currentPath: action.payload.currentPath,
         currentPathId: action.payload.id,
       });
     }
-    case 'mode/CHANGE_CLIPBOARD': {
+    case 'node/CHANGE_CLIPBOARD': {
       return Object.assign({}, state, {
         clipboard: action.payload.data,
       });
