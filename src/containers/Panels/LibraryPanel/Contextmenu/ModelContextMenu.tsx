@@ -1,24 +1,48 @@
 import { ContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { ContextMenuClickItemHandler } from 'types/common';
+import { useDispatch } from 'react-redux';
+import { useModal } from 'components/Modal/Modal';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
 
 const ModelContextMenu = () => {
+  const { onModalOpen } = useModal();
+  const dispatch = useDispatch();
   const handleClickItem: ContextMenuClickItemHandler = (event, propsFromTrigger) => {
     switch (event.currentTarget.id) {
       case 'delete':
+        onModalOpen('ConfirmModal', {
+          title: 'Delete Model',
+          // TODO: 모델에 맞는 모달 메세지
+          message: 'Are you sure? All files in the directory will be deleted.',
+          onConfirm: () => {
+            dispatch(lpNodeActions.deleteNode({ nodeId: propsFromTrigger.selectId }));
+          },
+          onCancel: () => {},
+        });
         break;
       case 'edit-name':
+        // TODO
         break;
       case 'copy':
         break;
       case 'paste':
         break;
       case 'visualization':
+        dispatch(lpNodeActions.visualizeNode(propsFromTrigger.assetId));
         break;
       case 'visualization-cancel':
+        dispatch(lpNodeActions.cancelVisulization(propsFromTrigger.assetId));
         break;
       case 'add-empty-motion':
+        dispatch(
+          lpNodeActions.addEmptyMotion({
+            nodeId: propsFromTrigger.selectId,
+            assetId: propsFromTrigger.assetId,
+          }),
+        );
         break;
       case 'export':
+        // TODO
         break;
     }
   };
@@ -31,12 +55,12 @@ const ModelContextMenu = () => {
       <ContextMenuItem id="edit-name" onClick={handleClickItem}>
         Edit name
       </ContextMenuItem>
-      <ContextMenuItem id="copy" onClick={handleClickItem}>
+      {/* <ContextMenuItem id="copy" onClick={handleClickItem}>
         Copy
       </ContextMenuItem>
       <ContextMenuItem id="paste" onClick={handleClickItem}>
         Paste
-      </ContextMenuItem>
+      </ContextMenuItem> */}
       <ContextMenuItem id="visualization" onClick={handleClickItem}>
         Visualization
       </ContextMenuItem>

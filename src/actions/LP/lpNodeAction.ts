@@ -9,7 +9,9 @@ export type LPNodeAction =
   | ReturnType<typeof changeClipboard>
   | ReturnType<typeof deleteNode>
   | ReturnType<typeof changeNode>
-  | ReturnType<typeof addDirectory>;
+  | ReturnType<typeof addDirectory>
+  | ReturnType<typeof visualizeNode>
+  | ReturnType<typeof addEmptyMotion>;
 
 export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
 export const VISUALIZE = 'node/VISUALIZE' as const;
@@ -18,6 +20,9 @@ export const CHANGE_CLIPBOARD = 'node/CHANGE_CLIPBOARD' as const;
 export const DELETE_NODE = 'node/DELETE_NODE' as const;
 export const COPY_NODE = 'node/COPY_NODE' as const;
 export const ADD_DIRECTORY = 'node/ADD_DIRECTORY' as const;
+export const VISUALIZE_NODE = 'node/VISUALIZE_NODE' as const;
+export const CANCEL_VISUALIZATION = 'node/CANCEL_VISUALIZATION' as const;
+export const ADD_EMPTY_MOTION = 'node/ADD_EMPTY_MOTION' as const;
 interface ChangeNodeParams {
   nodes: LP.Node[];
 }
@@ -38,7 +43,10 @@ interface DeleteNodeParams {
   nodeId: string;
   selectAssetId?: string;
 }
-
+interface AddEmptyMotionParams {
+  nodeId: string;
+  assetId: string;
+}
 interface AddDirectoryParams {
   nodeId: string;
   filePath: string;
@@ -87,6 +95,27 @@ export const copyNode = (nodeId: string) => ({
 
 export const addDirectory = (params: AddDirectoryParams) => ({
   type: ADD_DIRECTORY,
+  payload: {
+    ...params,
+  },
+});
+
+export const visualizeNode = (assetId: string) => ({
+  type: VISUALIZE_NODE,
+  payload: {
+    assetId,
+  },
+});
+
+export const cancelVisulization = (assetId: string) => ({
+  type: CANCEL_VISUALIZATION,
+  payload: {
+    assetId,
+  },
+});
+
+export const addEmptyMotion = (params: AddEmptyMotionParams) => ({
+  type: ADD_EMPTY_MOTION,
   payload: {
     ...params,
   },
