@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { Fragment, useEffect } from 'react';
 import NextApp, { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { NextComponentType } from 'next';
