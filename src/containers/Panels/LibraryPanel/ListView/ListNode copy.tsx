@@ -247,7 +247,15 @@ const ListNode: FunctionComponent<Props> = ({
             },
           });
         } else if (type === 'Motion') {
-          showContextMenu({ contextMenuId: 'MotionContextMenu', event: e });
+          showContextMenu({
+            contextMenuId: 'MotionContextMenu',
+            event: e,
+            props: {
+              selectId: id,
+              parentId,
+              nodeName: name,
+            },
+          });
         }
       }
     };

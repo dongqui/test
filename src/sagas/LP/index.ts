@@ -1,8 +1,9 @@
-import { find, cloneDeep } from 'lodash';
+import { duplicateMotion } from './../../actions/LP/lpNodeAction';
+import { find, cloneDeep, filter } from 'lodash';
 import { select, put, takeLatest, all } from 'redux-saga/effects';
 import { RootState } from 'reducers';
-import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene } from 'utils/RP';
-import { checkCreateDuplicates } from 'utils/LP/FileSystem';
+import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient } from 'utils/RP';
+import { checkCreateDuplicates, checkPasteDuplicates } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -10,6 +11,7 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 import * as BABYLON from '@babylonjs/core';
 import { v4 as uuid } from 'uuid';
 import produce from 'immer';
+import { AnimationIngredient } from 'types/common';
 
 const deleteChild = (node: LP.Node[], ids: string[]) => {
   let memory: LP.Node[] = [];
@@ -355,6 +357,77 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
   }
 }
 
+function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicateMotion>) {
+  const { animationData, lpNode }: RootState = yield select();
+  const { animationIngredients } = animationData;
+  const { parentId, nodeName, nodeId } = action.payload;
+
+  let tempMotion: LP.Node | undefined;
+  let tempAnimationIngredient: AnimationIngredient | undefined;
+
+  const parentModel = find(lpNode.node, { id: parentId });
+
+  const nextNodes = produce(lpNode.node, (draft) => {
+    const draftParentModel = find(draft, { id: parentId });
+
+    if (draftParentModel) {
+      const motions = filter(animationIngredients, { assetId: draftParentModel.assetId });
+
+      if (motions && draftParentModel.assetId) {
+        const selectedMotion = find(motions, { id: nodeId });
+
+        if (selectedMotion) {
+          const currentPathNodeNames = lpNode.node.filter((node) => node.parentId === parentId && node.name.includes(nodeName)).map((filteredNode) => filteredNode.name);
+
+          const check = checkPasteDuplicates(nodeName, currentPathNodeNames);
+
+          const _nodeName = check === '0' ? nodeName : `${nodeName} (${check})`;
+
+          const animationIngredient = duplicateAnimationIngredient(selectedMotion, nodeName);
+
+          const motion: LP.Node = {
+            id: animationIngredient.id,
+            assetId: draftParentModel.assetId,
+            parentId: draftParentModel.id,
+            name: _nodeName,
+            filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
+            childrens: [],
+            extension: '',
+            type: 'Motion',
+          };
+
+          tempAnimationIngredient = animationIngredient;
+          tempMotion = motion;
+
+          draftParentModel.childrens.push(motion.id);
+          draft.push(motion);
+        }
+      }
+    }
+  });
+
+  yield put(
+    lpNodeActions.changeNode({
+      nodes: nextNodes,
+    }),
+  );
+
+  if (parentModel && parentModel.assetId && tempMotion && tempAnimationIngredient) {
+    yield put(
+      plaskProjectActions.addAnimationIngredient({
+        assetId: parentModel.assetId,
+        animationIngredientId: tempMotion.id,
+      }),
+    );
+
+    yield put(
+      animationDataActions.addAnimationIngredient({
+        animationIngredient: tempAnimationIngredient,
+      }),
+    );
+  }
+}
+
 function* watchDeleteNode() {
   yield takeLatest(lpNodeActions.DELETE_NODE, handleDelete);
 }
@@ -379,6 +452,10 @@ function* watchAddEmptyMotion() {
   yield takeLatest(lpNodeActions.ADD_EMPTY_MOTION, handleAddEmptyMotion);
 }
 
+function* watchDuplicateMotion() {
+  yield takeLatest(lpNodeActions.DUPLICATE_MOTION, handleDuplicateMotion);
+}
+
 export default function* LPSaga() {
-  yield all([watchDeleteNode(), watchCopyNode(), watchAddDirectory(), watchVisualize(), watchCancelVisualization(), watchAddEmptyMotion()]);
+  yield all([watchDeleteNode(), watchCopyNode(), watchAddDirectory(), watchVisualize(), watchCancelVisualization(), watchAddEmptyMotion(), watchDuplicateMotion()]);
 }

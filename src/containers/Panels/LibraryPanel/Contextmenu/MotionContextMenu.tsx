@@ -1,8 +1,49 @@
 import { ContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { ContextMenuClickItemHandler } from 'types/common';
+import { useModal } from 'components/Modal/Modal';
+import { useDispatch } from 'react-redux';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
 
 const MotionContextMenu = () => {
-  const handleClickItem: ContextMenuClickItemHandler = () => {};
+  const dispatch = useDispatch();
+  const { onModalOpen } = useModal();
+  const handleClickItem: ContextMenuClickItemHandler = (event, propsFromTrigger) => {
+    switch (event.currentTarget.id) {
+      case 'delete':
+        onModalOpen('ConfirmModal', {
+          title: 'Delete Folder',
+          // TODO: MOTION 삭제 메세지
+          message: 'Are you sure? All files in the directory will be deleted.',
+          onConfirm: () => {
+            dispatch(lpNodeActions.deleteNode({ nodeId: propsFromTrigger.selectId }));
+          },
+          onCancel: () => {},
+        });
+        break;
+      case 'edit-name':
+        // TODO
+        break;
+      case 'Duplicate':
+        dispatch(
+          lpNodeActions.duplicateMotion({
+            nodeId: propsFromTrigger.selectId,
+            parentId: propsFromTrigger.parentId,
+            nodeName: propsFromTrigger.nodeName,
+          }),
+        );
+        break;
+      // case 'copy':
+      //   break;
+      // case 'paste':
+      //   break;
+      case 'visualization':
+        break;
+      case 'visualization-cancel':
+        break;
+      case 'export':
+        break;
+    }
+  };
   return (
     <ContextMenu contextMenuId="MotionContextMenu">
       <ContextMenuItem id="delete" onClick={handleClickItem}>
@@ -11,20 +52,20 @@ const MotionContextMenu = () => {
       <ContextMenuItem id="edit-name" onClick={handleClickItem}>
         Edit name
       </ContextMenuItem>
-      <ContextMenuItem id="copy" onClick={handleClickItem}>
+      <ContextMenuItem id="duplicate" onClick={handleClickItem}>
+        Duplicate
+      </ContextMenuItem>
+      {/* <ContextMenuItem id="copy" onClick={handleClickItem}>
         Copy
       </ContextMenuItem>
       <ContextMenuItem id="paste" onClick={handleClickItem}>
         Paste
-      </ContextMenuItem>
+      </ContextMenuItem> */}
       <ContextMenuItem id="visualization" onClick={handleClickItem}>
         Visualization
       </ContextMenuItem>
       <ContextMenuItem id="visualization-cancel" onClick={handleClickItem}>
         Visualization cancel
-      </ContextMenuItem>
-      <ContextMenuItem id="add-empty-motion" onClick={handleClickItem}>
-        Add empty motion
       </ContextMenuItem>
       <ContextMenuItem id="export" onClick={handleClickItem}>
         Export
