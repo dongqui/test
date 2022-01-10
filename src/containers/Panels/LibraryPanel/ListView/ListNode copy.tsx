@@ -79,8 +79,6 @@ const ListNode: FunctionComponent<Props> = ({
   const _lpNode = useSelector((state) => state.lpNode.node);
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
-  const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);
-
   const outerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
@@ -220,12 +218,12 @@ const ListNode: FunctionComponent<Props> = ({
 
         const currentPath = filePath + `\\${name}`;
 
-        dispatch(
-          lpNodeActions.changeCurrentPath({
-            currentPath: currentPath,
-            id: id,
-          }),
-        );
+        // dispatch(
+        //   lpNodeActions.changeCurrentPath({
+        //     currentPath: currentPath,
+        //     id: id,
+        //   }),
+        // );
 
         if (type === 'Folder') {
           showContextMenu({

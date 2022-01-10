@@ -4,7 +4,7 @@ type contextMenuId = 'FolderContextMenu' | 'ModelContextMenu' | 'MotionContextMe
 
 interface ShowParams {
   contextMenuId: contextMenuId;
-  event: MouseEvent;
+  event: MouseEvent | React.MouseEvent;
   props?: any;
 }
 
