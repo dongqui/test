@@ -1,9 +1,10 @@
-import { duplicateMotion } from './../../actions/LP/lpNodeAction';
+import { visualizeMotion } from './../../actions/LP/lpNodeAction';
 import { find, cloneDeep, filter } from 'lodash';
 import { select, put, takeLatest, all } from 'redux-saga/effects';
 import { RootState } from 'reducers';
-import { checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient } from 'utils/RP';
+import { goToSpecificPoses, checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates, checkPasteDuplicates } from 'utils/LP/FileSystem';
+import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -428,34 +429,56 @@ function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicat
   }
 }
 
-function* watchDeleteNode() {
-  yield takeLatest(lpNodeActions.DELETE_NODE, handleDelete);
-}
+function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualizeMotion>) {
+  const { plaskProject, animationData, lpNode }: RootState = yield select();
+  const { animationIngredients } = animationData;
+  const { screenList, assetList } = plaskProject;
+  const { assetId, nodeId, parentId } = action.payload;
 
-function* watchCopyNode() {
-  yield takeLatest(lpNodeActions.COPY_NODE, handelCopy);
-}
+  screenList.forEach(({ scene }) => {
+    scene.animationGroups.forEach((animationGroup) => {
+      animationGroup.stop();
+      scene.removeAnimationGroup(animationGroup);
+    });
+  });
 
-function* watchAddDirectory() {
-  yield takeLatest(lpNodeActions.ADD_DIRECTORY, handleAddDirectory);
-}
+  const parentModel = find(lpNode.node, { id: parentId });
+  // TODO 선언적으로 수정
+  if (parentModel) {
+    const motions = filter(animationIngredients, { assetId: parentModel.assetId });
 
-function* watchVisualize() {
-  yield takeLatest(lpNodeActions.VISUALIZE_NODE, handleVisualize);
-}
+    if (motions && parentModel.assetId) {
+      const selectedMotion = find(motions, { id: nodeId });
 
-function* watchCancelVisualization() {
-  yield takeLatest(lpNodeActions.CANCEL_VISUALIZATION, handleCancelVisulization);
-}
+      if (selectedMotion) {
+        const currentAsset = assetList.find((asset) => asset.id === parentModel.assetId);
+        if (currentAsset) {
+          goToSpecificPoses(currentAsset.initialPoses);
+        }
 
-function* watchAddEmptyMotion() {
-  yield takeLatest(lpNodeActions.ADD_EMPTY_MOTION, handleAddEmptyMotion);
-}
+        yield put(
+          animationDataActions.changeCurrentAnimationIngredient({
+            assetId: parentModel.assetId,
+            animationIngredientId: selectedMotion.id,
+          }),
+        );
+      }
+    }
+  }
 
-function* watchDuplicateMotion() {
-  yield takeLatest(lpNodeActions.DUPLICATE_MOTION, handleDuplicateMotion);
+  yield put(lpNodeActions.visualizeNode(assetId));
+  forceClickAnimationPlayAndStop(50);
 }
 
 export default function* LPSaga() {
-  yield all([watchDeleteNode(), watchCopyNode(), watchAddDirectory(), watchVisualize(), watchCancelVisualization(), watchAddEmptyMotion(), watchDuplicateMotion()]);
+  yield all([
+    takeLatest(lpNodeActions.DELETE_NODE, handleDelete),
+    takeLatest(lpNodeActions.COPY_NODE, handelCopy),
+    takeLatest(lpNodeActions.ADD_DIRECTORY, handleAddDirectory),
+    takeLatest(lpNodeActions.VISUALIZE_NODE, handleVisualize),
+    takeLatest(lpNodeActions.CANCEL_VISUALIZATION, handleCancelVisulization),
+    takeLatest(lpNodeActions.ADD_EMPTY_MOTION, handleAddEmptyMotion),
+    takeLatest(lpNodeActions.DUPLICATE_MOTION, handleDuplicateMotion),
+    takeLatest(lpNodeActions.VISUALIZE_MOTION, handleVisualizeMotion),
+  ]);
 }

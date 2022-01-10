@@ -37,10 +37,19 @@ const MotionContextMenu = () => {
       // case 'paste':
       //   break;
       case 'visualization':
+        dispatch(
+          lpNodeActions.visualizeMotion({
+            nodeId: propsFromTrigger.selectId,
+            parentId: propsFromTrigger.parentId,
+            assetId: propsFromTrigger.assetId,
+          }),
+        );
         break;
       case 'visualization-cancel':
+        dispatch(lpNodeActions.cancelVisulization(propsFromTrigger.assetId));
         break;
       case 'export':
+        // TODO
         break;
     }
   };
