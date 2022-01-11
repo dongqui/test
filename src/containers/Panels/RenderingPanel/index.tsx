@@ -202,6 +202,17 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
       const handleEngineResize = () => {
         engine.resize();
+
+        if (innerScene.activeCamera && innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA && renderingCanvas1.current) {
+          const canvas = renderingCanvas1.current;
+
+          const orthoFactor = innerScene.activeCamera!.orthoTop as number;
+
+          innerScene.activeCamera!.orthoTop = orthoFactor;
+          innerScene.activeCamera!.orthoBottom = -orthoFactor;
+          innerScene.activeCamera!.orthoLeft = -orthoFactor * (canvas.width / canvas.height);
+          innerScene.activeCamera!.orthoRight = orthoFactor * (canvas.width / canvas.height);
+        }
       };
 
       const resizeMutationObserver = new MutationObserver(handleEngineResize);
