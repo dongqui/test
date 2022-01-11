@@ -11,9 +11,9 @@ import { v4 as uuid } from 'uuid';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
 import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop, getFileExtension } from 'utils/common';
-import { createAnimationGroupFromIngredient, duplicateAnimationIngredient, goToSpecificPoses } from 'utils/RP';
+import { createAnimationGroupFromIngredient, goToSpecificPoses } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
-import { beforePaste, checkCreateDuplicates, checkPasteDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
+import { checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
 import { createAnimationIngredientFromMocapData } from 'utils/LP/Retarget';
 import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -21,11 +21,11 @@ import * as cpActions from 'actions/CP/cpModeSelection';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import { AnimationIngredient, PlaskMocapData } from 'types/common';
-import ListCurrent from './ListCurrent';
-import ListChildren from './ListChildren';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
 import { useContextMenu } from 'components/Contextmenu';
+import ModelNode from '../Nodes/ModelNode';
+import FolderNode from '../Nodes/FolderNode';
 
 const cx = classNames.bind(styles);
 
@@ -40,12 +40,6 @@ interface Props {
   childrens: string[];
   extension: string;
   mocapData?: PlaskMocapData;
-  onSelect?: (id: string, assetId?: string, multiple?: boolean) => void;
-  selectedId: string[];
-  onSetDragTarget: (id: string, type: LP.NodeType, parentId: string) => void;
-  dragTarget?: { id: string; type: LP.NodeType; parentId: string };
-  onCopy: () => void;
-  onDelete: () => void;
 }
 
 const ListNode: FunctionComponent<Props> = ({
@@ -55,14 +49,8 @@ const ListNode: FunctionComponent<Props> = ({
   id,
   assetId,
   parentId,
-  onSelect,
   childrens,
   extension,
-  selectedId,
-  onSetDragTarget,
-  dragTarget,
-  onCopy,
-  onDelete,
 }) => {
   const dispatch = useDispatch();
 
@@ -211,13 +199,8 @@ const ListNode: FunctionComponent<Props> = ({
       e.stopPropagation();
 
       const isContains = wrapperRef.current?.contains(e.target as Node);
-
-      const isContainsSelectedArea = selectedId.includes(id);
       if (isContains) {
-        onSelect && onSelect(id, assetId);
-
         const currentPath = filePath + `\\${name}`;
-
         // dispatch(
         //   lpNodeActions.changeCurrentPath({
         //     currentPath: currentPath,
@@ -287,10 +270,7 @@ const ListNode: FunctionComponent<Props> = ({
     id,
     name,
     showContextMenu,
-    onDelete,
-    onSelect,
     parentId,
-    selectedId,
     type,
   ]);
 
@@ -301,9 +281,6 @@ const ListNode: FunctionComponent<Props> = ({
       const handleSelect = (e: MouseEvent) => {
         e.stopPropagation();
         hideAllContextMenu();
-
-        onSelect && onSelect(id, assetId);
-
         dispatch(
           lpNodeActions.changeCurrentPath({
             currentPath: filePath + `\\${name}`,
@@ -318,7 +295,7 @@ const ListNode: FunctionComponent<Props> = ({
         currentRef.removeEventListener('click', handleSelect);
       };
     }
-  }, [assetId, dispatch, filePath, id, name, hideAllContextMenu, onSelect]);
+  }, [assetId, dispatch, filePath, id, name, hideAllContextMenu]);
 
   const handleBlur = useCallback(
     async (event: FocusEvent<HTMLInputElement>) => {
@@ -494,483 +471,9 @@ const ListNode: FunctionComponent<Props> = ({
   const handleDragStart = useCallback(
     (e: DragEvent) => {
       e.stopPropagation();
-
       // 드래그 시작시 선택 및 스타일 적용
-      onSetDragTarget(id, type, parentId);
-
-      onSelect && onSelect(id, assetId);
     },
-    [assetId, id, onSelect, onSetDragTarget, parentId, type],
-  );
-
-  const handleDrop = useCallback(
-    async (e: DragEvent) => {
-      e.stopPropagation();
-
-      if (id === dragTarget?.id || (parentId === '__root__' && id === dragTarget?.parentId)) {
-        return;
-      }
-
-      const dragNode = find(_lpNode, { id: dragTarget?.id });
-      const cloneDragNode = cloneDeep(dragNode);
-
-      // model node로 이동
-      if (type === 'Model') {
-        const retargetMap = find(_retargetMaps, { assetId });
-
-        const isRetargetError = retargetMap?.values.some((value) => !value.targetTransformNodeId);
-
-        if (dragTarget?.type === 'Motion' && isRetargetError && dragNode?.mocapData) {
-          // 리타겟팅이 완료되지 않은 모델에 추출한 모션을 import
-          const confirmed = await getConfirm({
-            title: 'Confirm',
-            message: TEXT.CONFIRM_04,
-            confirmText: 'Confirm',
-            cancelText: 'Cancel',
-            confirmColor: 'positive',
-          });
-
-          if (confirmed) {
-            dispatch(
-              cpActions.switchMode({
-                mode: 'Retargeting',
-              }),
-            );
-          }
-
-          return;
-        }
-
-        if (dragTarget?.type === 'Motion' && dragNode?.mocapData) {
-          /**
-           * @TODO 리타겟 및 하위로 모션 추가
-           */
-          const dropNode = find(_lpNode, { id });
-          const childrenList = _lpNode.filter((node) => node.parentId === id);
-          const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
-          const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
-
-          // dropNode(model)과 dragNode(motion)을 사용해서 animationIngredient를 생성
-          const targetAsset = _assetList.find((asset) => asset.id === dropNode?.assetId);
-          const targetRetargetMap = _retargetMaps.find((retargetMap) => retargetMap.assetId === dropNode?.assetId);
-
-          const isErrorRetargetMap = targetRetargetMap && targetRetargetMap.values.some((value) => !value.targetTransformNodeId);
-
-          if (isErrorRetargetMap) {
-            return;
-          }
-
-          // 이름이 같은 모션이 이미 있는 경우
-          if (dropNode && isAlreadyExist) {
-            // const message = TEXT.CONFIRM_05.replace(/%s/, dragNode.name);
-
-            // const confirmed = await getConfirm({
-            //   title: 'Warning',
-            //   message: message,
-            //   confirmText: 'Yes',
-            //   cancelText: 'No',
-            // });
-
-            if (cloneDragNode && dropNode && targetAsset && targetRetargetMap) {
-              const currentPathNodeName = _lpNode
-                .filter((node) => {
-                  if (node.parentId === id) {
-                    const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
-                    const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
-
-                    // if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
-                    if (tempName === node.name || node.name.includes(`${tempName} `)) {
-                      return true;
-                    }
-                    return false;
-                  }
-                })
-                .map((filteredNode) => filteredNode.name);
-
-              const nodeName = beforeMove({
-                name: cloneDragNode.name,
-                comparisonNames: currentPathNodeName,
-              });
-
-              try {
-                const mocapAnimationIngredient = await createAnimationIngredientFromMocapData(
-                  dropNode.assetId!,
-                  nodeName,
-                  targetRetargetMap,
-                  targetAsset.initialPoses,
-                  filterAnimatableTransformNodes(targetAsset.transformNodes),
-                  dragNode.mocapData,
-                  3000,
-                );
-
-                // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
-                // const filterNodes = _lpNode.filter((node) => node.id !== duplicatedTarget[0].id);
-
-                const nextNodes = produce(_lpNode, (draft) => {
-                  const targetNode = find(draft, { id });
-
-                  if (targetNode) {
-                    cloneDragNode.id = mocapAnimationIngredient.id;
-                    cloneDragNode.assetId = mocapAnimationIngredient.assetId;
-                    cloneDragNode.name = nodeName;
-                    cloneDragNode.parentId = id;
-                    // cloneDragNode.filePath = filePath + `\\${name}` + `\\${cloneDragNode.name}`;
-                    cloneDragNode.filePath = filePath + `\\${name}`;
-
-                    targetNode.childrens.push(cloneDragNode.id);
-
-                    const { mocapData, ...restObject } = cloneDragNode;
-
-                    // @TODO 하위 노드도 추가
-                    draft.push({
-                      ...restObject,
-                    });
-
-                    if (cloneDragNode.childrens.length > 0) {
-                      cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
-                    }
-                  }
-                });
-
-                dispatch(
-                  lpNodeActions.changeNode({
-                    nodes: nextNodes,
-                  }),
-                );
-                dispatch(
-                  animationDataActions.addAnimationIngredient({
-                    animationIngredient: mocapAnimationIngredient,
-                  }),
-                );
-                dispatch(
-                  plaskProjectActions.addAnimationIngredient({
-                    assetId: dropNode.assetId!,
-                    animationIngredientId: mocapAnimationIngredient.id,
-                  }),
-                );
-
-                if (dropNode.assetId) {
-                  dispatch(
-                    animationDataActions.changeCurrentAnimationIngredient({
-                      assetId: dropNode.assetId,
-                      animationIngredientId: mocapAnimationIngredient.id,
-                    }),
-                  );
-                }
-
-                return;
-              } catch (error) {}
-            }
-          }
-
-          // @TODO 없으면 비활성 처리 필요
-          if (cloneDragNode && dropNode && targetAsset && targetRetargetMap) {
-            onModalOpen({
-              title: 'Waiting',
-              message: TEXT.WAITING_03,
-            });
-
-            try {
-              const mocapAnimationIngredient = await createAnimationIngredientFromMocapData(
-                dropNode.assetId!,
-                dragNode.name,
-                targetRetargetMap,
-                targetAsset.initialPoses,
-                filterAnimatableTransformNodes(targetAsset.transformNodes),
-                dragNode.mocapData,
-                3000,
-              );
-
-              const currentPathNodeName = _lpNode
-                .filter((node) => {
-                  if (node.parentId === id) {
-                    const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
-                    const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
-                    if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
-                      return true;
-                    }
-                    return false;
-                  }
-                })
-                .map((filteredNode) => filteredNode.name);
-
-              const nodeName = beforeMove({
-                name: cloneDragNode.name,
-                comparisonNames: currentPathNodeName,
-              });
-
-              const nextNodes = produce(_lpNode, (draft) => {
-                const targetNode = find(draft, { id });
-
-                if (targetNode) {
-                  cloneDragNode.assetId = mocapAnimationIngredient.assetId;
-                  cloneDragNode.id = mocapAnimationIngredient.id;
-                  cloneDragNode.parentId = id;
-                  // cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
-                  cloneDragNode.filePath = filePath + `\\${name}`;
-                  cloneDragNode.name = nodeName;
-
-                  targetNode.childrens.push(cloneDragNode.id);
-
-                  const { mocapData, ...restObject } = cloneDragNode;
-
-                  // @TODO 하위 노드도 추가
-                  draft.push({
-                    ...restObject,
-                  });
-
-                  if (cloneDragNode.childrens.length > 0) {
-                    cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
-                  }
-                }
-              });
-
-              dispatch(
-                lpNodeActions.changeNode({
-                  nodes: nextNodes,
-                }),
-              );
-              dispatch(
-                animationDataActions.addAnimationIngredient({
-                  animationIngredient: mocapAnimationIngredient,
-                }),
-              );
-              dispatch(
-                plaskProjectActions.addAnimationIngredient({
-                  assetId: dropNode.assetId!,
-                  animationIngredientId: mocapAnimationIngredient.id,
-                }),
-              );
-
-              if (dropNode.assetId) {
-                dispatch(
-                  animationDataActions.changeCurrentAnimationIngredient({
-                    assetId: dropNode.assetId,
-                    animationIngredientId: mocapAnimationIngredient.id,
-                  }),
-                );
-              }
-
-              onModalClose();
-            } catch (error) {}
-          } else {
-            const confirmed = await getConfirm({
-              title: 'Confirm',
-              message: TEXT.CONFIRM_04,
-              confirmText: 'Confirm',
-              cancelText: 'Cancel',
-              confirmColor: 'positive',
-            });
-
-            if (confirmed) {
-              dispatch(
-                cpActions.switchMode({
-                  mode: 'Retargeting',
-                }),
-              );
-            }
-
-            onModalClose();
-          }
-        }
-      }
-
-      if (type === 'Folder') {
-        if (dragTarget?.type === 'Motion' && !dragNode?.mocapData) {
-          return;
-        }
-
-        const cloneLPNode = cloneDeep(_lpNode);
-
-        remove(cloneLPNode, (node) => node.id === dragTarget?.id);
-        const cloneDragNode = cloneDeep(dragNode);
-
-        if (cloneDragNode) {
-          const max = depthCheck(cloneDragNode.childrens, 0, []) || 0;
-
-          const currentPathDepth = (filePath.match(/\\/g) || []).length;
-
-          if (currentPathDepth + max >= 6) {
-            onModalOpen({
-              title: 'Warning',
-              message: 'A directory cannot exceed 6 layers.',
-              confirmText: 'Close',
-              confirmColor: 'negative',
-            });
-            return;
-          }
-        }
-
-        // 동일한 이름이 있는지 확인
-        const dropNode = find(_lpNode, { parentId: id });
-        const childrenList = _lpNode.filter((node) => node.parentId === id);
-        const isAlreadyExist = childrenList.some((children) => children.name === dragNode?.name);
-        const duplicatedTarget = childrenList.filter((children) => children.name === dragNode?.name);
-
-        // if (dropNode && isAlreadyExist && cloneDragNode && dragNode) {
-        //   const message = TEXT.CONFIRM_05.replace(/%s/, dragNode.name);
-
-        //   const confirmed = await getConfirm({
-        //     title: 'Warning',
-        //     message: message,
-        //     confirmText: 'Yes',
-        //     cancelText: 'No',
-        //     confirmColor: 'positive',
-        //   });
-
-        //   if (confirmed) {
-        //     // handleDelete(id, assetId);
-        //     const targetNode = childrenList.find((children) => children.name === dragNode?.name);
-        //     const targetAssetId = targetNode?.assetId;
-
-        //     if (targetNode && targetAssetId) {
-        //       const afterNodes = deleteChild(_lpNode, [targetNode.id]);
-
-        //       {
-        //         const targetAsset = _assetList.find((asset) => asset.id === targetAssetId);
-        //         const targetJointTransformNodes = _selectableObjects.filter((object) => object.id.includes(targetAssetId) && !checkIsTargetMesh(object));
-        //         const targetControllers = _selectableObjects.filter((object) => object.id.includes(targetAssetId) && checkIsTargetMesh(object));
-
-        //         // delete 대상이 render된 scene에서 대상의 요소들 remove
-        //         if (targetAsset) {
-        //           _screenList
-        //             .map((screen) => screen.scene)
-        //             .forEach((scene) => {
-        //               removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
-        //             });
-        //         }
-
-        //         // assetList에서 제외
-        //         dispatch(plaskProjectActions.removeAsset({ assetId: targetAssetId }));
-        //         // animationData 삭제
-        //         dispatch(animationDataActions.removeAsset({ assetId: targetAssetId }));
-        //         // 선택 대상에서 제외
-        //         dispatch(selectingDataActions.unrenderAsset({ assetId: targetAssetId }));
-        //       }
-
-        //       // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
-        //       const filterNodes = cloneLPNode.filter((node) => node.id !== duplicatedTarget[0].id);
-
-        //       const nextNodes = produce(filterNodes, (draft) => {
-        //         const targetNode = find(filterNodes, { id });
-
-        //         const clondDragNodeId = uuid();
-
-        //         if (targetNode) {
-        //           cloneDragNode.id = clondDragNodeId;
-        //           cloneDragNode.parentId = id;
-        //           cloneDragNode.filePath = filePath + `\\${name}`;
-
-        //           const nextChildren = targetNode.childrens.filter((current) => current !== duplicatedTarget[0].id);
-
-        //           nextChildren.push(clondDragNodeId);
-
-        //           targetNode.childrens = nextChildren;
-
-        //           // @TODO 하위 노드도 추가
-        //           draft.push(cloneDragNode);
-
-        //           if (cloneDragNode.childrens.length > 0) {
-        //             cloneDragNode.childrens.map((child) => depthChangeKey(filterNodes, child, cloneDragNode));
-        //           }
-        //         }
-        //       });
-
-        //       dispatch(
-        //         lpNodeActions.changeNode({
-        //           nodes: nextNodes,
-        //         }),
-        //       );
-        //     }
-
-        //     return;
-        //   }
-        // }
-
-        // @TODO 없으면 비활성 처리 필요
-        if (cloneDragNode) {
-          let nodeName = cloneDragNode.name;
-
-          if (dragTarget?.type === 'Folder') {
-            const currentPathNodeName = _lpNode
-              .filter((node) => {
-                if (node.parentId === id) {
-                  const isMatch = cloneDragNode.name.match(/ \(\d+\)$/g);
-                  const tempName = cloneDragNode.name.replace(/ \(\d+\)$/g, '');
-                  if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
-                    return true;
-                  }
-                  return false;
-                }
-              })
-              .map((filteredNode) => filteredNode.name);
-
-            nodeName = beforeMove({
-              name: cloneDragNode.name,
-              comparisonNames: currentPathNodeName,
-            });
-          }
-
-          if (dragTarget?.type === 'Model') {
-            const extension = getFileExtension(cloneDragNode.name).toLowerCase();
-            const fileName = cloneDragNode.name.split('.').slice(0, -1).join('.');
-
-            const currentPathNodeName = _lpNode.filter((node) => node.parentId === id && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
-
-            const check = checkCreateDuplicates(`${fileName}`, currentPathNodeName);
-
-            nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
-          }
-
-          const nextNodes = produce(cloneLPNode, (draft) => {
-            const targetNode = find(draft, { id });
-
-            if (targetNode) {
-              cloneDragNode.id = uuid();
-              cloneDragNode.parentId = id;
-              // cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
-              cloneDragNode.filePath = filePath + `\\${name}`;
-              cloneDragNode.name = nodeName;
-
-              targetNode.childrens.push(cloneDragNode.id);
-
-              if (cloneDragNode.childrens.length > 0) {
-                cloneDragNode.childrens.map((child) => depthChangeKey(draft, child, cloneDragNode));
-              }
-
-              // @TODO 하위 노드도 추가
-              draft.push(cloneDragNode);
-            }
-          });
-
-          dispatch(
-            lpNodeActions.changeNode({
-              nodes: nextNodes,
-            }),
-          );
-        }
-      }
-    },
-    [
-      _assetList,
-      _lpNode,
-      _retargetMaps,
-      assetId,
-      depthChangeKey,
-      depthCheck,
-      dispatch,
-      dragTarget?.id,
-      dragTarget?.parentId,
-      dragTarget?.type,
-      filePath,
-      getConfirm,
-      id,
-      name,
-      onModalClose,
-      onModalOpen,
-      parentId,
-      type,
-    ],
+    [assetId, id, parentId, type],
   );
 
   /**
@@ -978,8 +481,6 @@ const ListNode: FunctionComponent<Props> = ({
    */
   const splitName = name.split('.');
   const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
-
-  const isSelected = selectedId.includes(id);
 
   const handleDragEnd = useCallback(
     (e: DragEvent) => {
@@ -1071,13 +572,6 @@ const ListNode: FunctionComponent<Props> = ({
   // style code END
 
   const textRef = useRef<HTMLDivElement>(null);
-
-  const classes = cx('inner', {
-    'open-visualized': isOpenVisualized,
-    'close-visualized': isCloseVisualized,
-    selected: isSelected,
-  });
-
   const keydownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -1106,7 +600,6 @@ const ListNode: FunctionComponent<Props> = ({
         } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
           e.stopPropagation();
           if (!isEditing) {
-            onDelete();
           }
         }
       };
@@ -1119,7 +612,7 @@ const ListNode: FunctionComponent<Props> = ({
         keydownCurrentRef.removeEventListener('keydown', handleKeydown);
       };
     }
-  }, [handleEdit, isEditing, onDelete]);
+  }, [handleEdit, isEditing]);
 
   const handlers = {
     LP_EDIT_NAME: handleEdit,
@@ -1273,39 +766,8 @@ const ListNode: FunctionComponent<Props> = ({
 
   return (
     <Fragment>
-      {/* <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges></HotKeys> */}
-      <div className={cx('wrapper')} ref={keydownRef} tabIndex={0}>
-        <div className={cx('outer')} draggable onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} ref={outerRef}>
-          <div className={classes} id="inner">
-            <ListCurrent
-              id={id}
-              assetId={assetId}
-              type={type}
-              name={name}
-              depth={depth}
-              isEditing={isEditing}
-              wrapperRef={wrapperRef}
-              textRef={textRef}
-              renameRef={renameRef}
-              onClick={handleArrowClick}
-              onBlur={handleBlur}
-              onKeyDown={handleKeydown}
-              defaultValue={fileName}
-            />
-            {showsChildrens && (
-              <ListChildren
-                items={childrens}
-                onSelect={onSelect}
-                selectedId={selectedId}
-                onSetDragTarget={onSetDragTarget}
-                dragTarget={dragTarget}
-                onCopy={onCopy}
-                onDelete={onDelete}
-              />
-            )}
-          </div>
-        </div>
-      </div>
+      {type === 'Model' && <ModelNode nodeId={id} assetId={assetId} nodeName={name} depth={depth} />}
+      {type === 'Folder' && <FolderNode nodeId={id} nodeName={name} depth={depth} extension={extension} filePath={filePath} childrenNodeIds={childrens} />}
       {isOpenExportModal && <ExportModal motions={currentMotions} onCancel={handleExportCancel} onConfirm={handleExportConfirm} onOutsideClose={handleExportCancel} />}
     </Fragment>
   );

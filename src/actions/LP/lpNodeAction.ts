@@ -7,7 +7,8 @@ export type LPNodeAction =
   | ReturnType<typeof changeNode>
   | ReturnType<typeof addDirectory>
   | ReturnType<typeof visualizeNode>
-  | ReturnType<typeof addEmptyMotion>;
+  | ReturnType<typeof addEmptyMotion>
+  | ReturnType<typeof selectNode>;
 
 export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
 export const VISUALIZE = 'node/VISUALIZE' as const;
@@ -21,6 +22,7 @@ export const CANCEL_VISUALIZATION = 'node/CANCEL_VISUALIZATION' as const;
 export const ADD_EMPTY_MOTION = 'node/ADD_EMPTY_MOTION' as const;
 export const DUPLICATE_MOTION = 'node/DUPLICATE_MOTION' as const;
 export const VISUALIZE_MOTION = 'node/VISUALIZE_MOTION' as const;
+export const SELECT_NODE = 'node/SELECT_NODE' as const;
 interface ChangeNodeParams {
   nodes: LP.Node[];
 }
@@ -60,6 +62,11 @@ interface VisualizeMotionParams {
   parentId: string;
   assetId: string;
   nodeId: string;
+}
+
+interface selectNodeParams {
+  nodeId: string;
+  assetId?: string;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
@@ -139,6 +146,13 @@ export const duplicateMotion = (params: DuplicateMotionParams) => ({
 
 export const visualizeMotion = (params: VisualizeMotionParams) => ({
   type: VISUALIZE_MOTION,
+  payload: {
+    ...params,
+  },
+});
+
+export const selectNode = (params: selectNodeParams) => ({
+  type: SELECT_NODE,
   payload: {
     ...params,
   },

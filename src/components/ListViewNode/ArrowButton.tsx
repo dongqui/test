@@ -8,22 +8,23 @@ const cx = classNames.bind(styles);
 interface Props {
   isOpen?: boolean;
   hidden?: boolean;
+  handleClickArrowButton?: React.MouseEventHandler<HTMLDivElement>;
 }
 
-const ArrowButton = forwardRef<HTMLDivElement, Props>(({ isOpen, hidden }, ref) => {
+const ArrowButton = ({ isOpen, hidden, handleClickArrowButton }: Props) => {
   const icon = isOpen ? SvgPath.ArrowOpen : SvgPath.ArrowClose;
   const shows = !hidden;
 
   return (
     <Fragment>
       {shows && (
-        <div className={cx('wrapper')} ref={ref}>
+        <div className={cx('wrapper')} onClick={handleClickArrowButton}>
           <IconWrapper className={cx('icon')} icon={icon} />
         </div>
       )}
     </Fragment>
   );
-});
+};
 
 ArrowButton.displayName = 'ArrowButton';
 

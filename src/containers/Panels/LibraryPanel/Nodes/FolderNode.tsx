@@ -1,16 +1,26 @@
+import { useState, Fragment } from 'react';
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import { useContextMenu } from 'components/Contextmenu';
+import ListChildren from '../ListView/ListChildren copy';
 
 interface Props {
   nodeId: string;
-  filePath: string;
+  nodeName: string;
   extension: string;
+  filePath: string;
+  depth: number;
+  childrenNodeIds: string[];
 }
 
-const FolderNode = ({ nodeId, filePath, extension }: Props) => {
+const FolderNode = ({ nodeId, filePath, extension, depth, nodeName, childrenNodeIds }: Props) => {
+  const dispatch = useDispatch();
   const { showContextMenu } = useContextMenu();
+  const { selectedId } = useSelector((state) => state.lpNode);
+  const [showsChildrens, setShowsChildrens] = useState(false);
+
   const onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     showContextMenu({
       contextMenuId: 'FolderContextMenu',
@@ -22,7 +32,30 @@ const FolderNode = ({ nodeId, filePath, extension }: Props) => {
       },
     });
   };
-  return <ListViewNode depth={2} type="Folder" onContextMenu={onContextMenu} />;
+
+  const handleClickNode = () => {
+    dispatch(lpNodeActions.selectNode({ nodeId }));
+  };
+
+  const handleClickArrowButton = () => {
+    setShowsChildrens(!showsChildrens);
+  };
+
+  return (
+    <Fragment>
+      <ListViewNode
+        depth={depth}
+        type="Folder"
+        onContextMenu={onContextMenu}
+        nodeName={nodeName}
+        isSelected={selectedId === nodeId}
+        handleClickNode={handleClickNode}
+        handleClickArrowButton={handleClickArrowButton}
+        showsChildrens={showsChildrens}
+      />
+      {showsChildrens && <ListChildren items={childrenNodeIds} /> }
+    </Fragment>
+  );
 };
 
 export default FolderNode;

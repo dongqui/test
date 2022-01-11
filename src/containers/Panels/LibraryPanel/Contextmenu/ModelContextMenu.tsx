@@ -17,7 +17,6 @@ const ModelContextMenu = () => {
           onConfirm: () => {
             dispatch(lpNodeActions.deleteNode({ nodeId: propsFromTrigger.selectId }));
           },
-          onCancel: () => {},
         });
         break;
       case 'edit-name':

@@ -78,7 +78,6 @@ function* handelCopy(action: ReturnType<typeof lpNodeActions.copyNode>) {
 }
 
 function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirectory>) {
-  console.log(action);
   const { lpNode }: RootState = yield select();
   const currentPathNodeName = lpNode.node
     .filter((node) => {

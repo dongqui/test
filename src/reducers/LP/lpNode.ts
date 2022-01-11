@@ -7,6 +7,8 @@ interface State {
   currentPath: string;
   currentPathId: string;
   clipboard: LP.Node[];
+  selectedId: string | null;
+  selectedAssetId: string | null;
 }
 
 const defaultState: State = {
@@ -15,6 +17,8 @@ const defaultState: State = {
   currentPath: '\\root',
   currentPathId: '\\root',
   clipboard: [],
+  selectedId: null,
+  selectedAssetId: null,
 };
 
 export const lpNode = (state = defaultState, action: LPNodeAction) => {
@@ -32,12 +36,18 @@ export const lpNode = (state = defaultState, action: LPNodeAction) => {
     case 'node/CHANGE_CURRENT_PATH': {
       return Object.assign({}, state, {
         currentPath: action.payload.currentPath,
-        currentPathId: action.payload.id,
+        cdrrentPathId: action.payload.id,
       });
     }
     case 'node/CHANGE_CLIPBOARD': {
       return Object.assign({}, state, {
         clipboard: action.payload.data,
+      });
+    }
+    case 'node/SELECT_NODE': {
+      return Object.assign({}, state, {
+        selectedId: action.payload.nodeId,
+        selectedAssetId: action.payload.assetId,
       });
     }
     default: {
