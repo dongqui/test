@@ -3,7 +3,6 @@ import { useDispatch } from 'react-redux';
 
 import * as modeSelectionActions from 'actions/modeSelection';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { detectSafari } from 'utils/common';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -16,8 +15,6 @@ const Record: FunctionComponent<Props> = () => {
   const dispatch = useDispatch();
 
   const handleRecordButtonClick = useCallback(() => {
-    if (detectSafari()) return;
-
     dispatch(modeSelectionActions.changeMode({ mode: 'videoMode' }));
   }, [dispatch]);
 
