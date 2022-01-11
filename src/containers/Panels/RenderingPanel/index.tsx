@@ -461,11 +461,41 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 activeCamera.orthoBottom = -2;
                 activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
                 activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
+
+                const grounds = focusedScene.getMeshesByTags('ground');
+                const visibleGround = grounds.find((ground) => ground.isVisible);
+                if (visibleGround) {
+                  const currentView = visibleGround.id.split('//')[1];
+                  const defaultPosition = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY);
+                  const defaultTarget = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY);
+
+                  let distance: number;
+
+                  if (currentView === 'front') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, defaultPosition.z), new BABYLON.Vector3(0, 0, defaultTarget.z));
+                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, defaultTarget.y, distance + 10));
+                  } else if (currentView === 'back') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, defaultPosition.z), new BABYLON.Vector3(0, 0, defaultTarget.z));
+                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, defaultTarget.y, -(distance + 10)));
+                  } else if (currentView === 'top') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, defaultPosition.y, 0), new BABYLON.Vector3(0, defaultTarget.y, 0));
+                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, distance + 10, defaultTarget.z));
+                  } else if (currentView === 'bottom') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, defaultPosition.y, 0), new BABYLON.Vector3(0, defaultTarget.y, 0));
+                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, -(distance + 10), defaultTarget.z));
+                  } else if (currentView === 'left') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(defaultPosition.x, 0, 0), new BABYLON.Vector3(defaultTarget.x, 0, 0));
+                    activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), defaultTarget.y, defaultTarget.z));
+                  } else if (currentView === 'right') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(defaultPosition.x, 0, 0), new BABYLON.Vector3(defaultTarget.x, 0, 0));
+                    activeCamera.setPosition(new BABYLON.Vector3(distance + 10, defaultTarget.y, defaultTarget.z));
+                  }
+                  activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
+                }
               } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
                 activeCamera.setPosition(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY));
                 activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
               }
-
               break;
             case 'a':
             case 'A':
