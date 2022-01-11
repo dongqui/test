@@ -109,5 +109,6 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
 );
 
 BaseInput.defaultProps = defaultProps;
+BaseInput.displayName = 'BaseInput';
 
 export default memo(BaseInput);

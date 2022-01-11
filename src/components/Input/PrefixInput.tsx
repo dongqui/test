@@ -36,5 +36,6 @@ const PrefixInput = forwardRef<HTMLInputElement, Props>(({ prefix, arrow, color,
 });
 
 PrefixInput.defaultProps = defaultProps;
+PrefixInput.displayName = 'PrefixInput';
 
 export default PrefixInput;

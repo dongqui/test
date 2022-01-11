@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import React, { Fragment, FunctionComponent, ReactNode, useState } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
