@@ -447,12 +447,15 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             case 'P':
             case 'ㅔ': // p (perspective)
               if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-                const prevCameraPosition = prevCameraPositions[focusedCanvas.id]!.clone();
-                const prevCameraTarget = prevCameraTargets[focusedCanvas.id]!.clone();
+                const prevCameraPosition = prevCameraPositions[focusedCanvas.id]?.clone();
+                const prevCameraTarget = prevCameraTargets[focusedCanvas.id]?.clone();
                 if (prevCameraPosition && prevCameraTarget) {
                   activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
                   activeCamera.setPosition(prevCameraPosition);
                   activeCamera.setTarget(prevCameraTarget);
+
+                  prevCameraPositions[focusedCanvas.id] = null;
+                  prevCameraTargets[focusedCanvas.id] = null;
                 }
 
                 const grounds = focusedScene.getMeshesByTags('ground');
@@ -1356,10 +1359,42 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             if (focusedScene && focusedScene.activeCamera) {
               const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
               if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
+                const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
                 activeCamera.orthoTop = 2;
                 activeCamera.orthoBottom = -2;
                 activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
                 activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
+
+                const grounds = focusedScene.getMeshesByTags('ground');
+                const visibleGround = grounds.find((ground) => ground.isVisible);
+                if (visibleGround) {
+                  const currentView = visibleGround.id.split('//')[1];
+                  const defaultPosition = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY);
+                  const defaultTarget = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY);
+
+                  let distance: number;
+
+                  if (currentView === 'front') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, defaultPosition.z), new BABYLON.Vector3(0, 0, defaultTarget.z));
+                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, defaultTarget.y, distance + 10));
+                  } else if (currentView === 'back') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, defaultPosition.z), new BABYLON.Vector3(0, 0, defaultTarget.z));
+                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, defaultTarget.y, -(distance + 10)));
+                  } else if (currentView === 'top') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, defaultPosition.y, 0), new BABYLON.Vector3(0, defaultTarget.y, 0));
+                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, distance + 10, defaultTarget.z));
+                  } else if (currentView === 'bottom') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, defaultPosition.y, 0), new BABYLON.Vector3(0, defaultTarget.y, 0));
+                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, -(distance + 10), defaultTarget.z));
+                  } else if (currentView === 'left') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(defaultPosition.x, 0, 0), new BABYLON.Vector3(defaultTarget.x, 0, 0));
+                    activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), defaultTarget.y, defaultTarget.z));
+                  } else if (currentView === 'right') {
+                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(defaultPosition.x, 0, 0), new BABYLON.Vector3(defaultTarget.x, 0, 0));
+                    activeCamera.setPosition(new BABYLON.Vector3(distance + 10, defaultTarget.y, defaultTarget.z));
+                  }
+                  activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
+                }
               } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
                 activeCamera.setPosition(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY));
                 activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
@@ -1383,12 +1418,15 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 if (focusedScene && focusedScene.activeCamera) {
                   const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
                   if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-                    const prevCameraPosition = prevCameraPositions[focusedCanvas.id]!.clone();
-                    const prevCameraTarget = prevCameraTargets[focusedCanvas.id]!.clone();
+                    const prevCameraPosition = prevCameraPositions[focusedCanvas.id]?.clone();
+                    const prevCameraTarget = prevCameraTargets[focusedCanvas.id]?.clone();
                     if (prevCameraPosition && prevCameraTarget) {
                       activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
                       activeCamera.setPosition(prevCameraPosition);
                       activeCamera.setTarget(prevCameraTarget);
+
+                      prevCameraPositions[focusedCanvas.id] = null;
+                      prevCameraTargets[focusedCanvas.id] = null;
                     }
 
                     const grounds = focusedScene.getMeshesByTags('ground');
@@ -1433,8 +1471,9 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                   const { position, target } = activeCamera;
                   switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'front');
 
-                  if (!prevCameraPositions[focusedCanvas.id]) {
+                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
                     prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
                   }
 
                   const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
@@ -1472,8 +1511,9 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                   const { position, target } = activeCamera;
                   switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
 
-                  if (!prevCameraPositions[focusedCanvas.id]) {
+                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
                     prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
                   }
 
                   const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
@@ -1511,8 +1551,9 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                   const { position, target } = activeCamera;
                   switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'top');
 
-                  if (!prevCameraPositions[focusedCanvas.id]) {
+                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
                     prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
                   }
 
                   const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
@@ -1550,8 +1591,9 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                   const { position, target } = activeCamera;
                   switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'bottom');
 
-                  if (!prevCameraPositions[focusedCanvas.id]) {
+                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
                     prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
                   }
 
                   const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
@@ -1589,8 +1631,9 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                   const { position, target } = activeCamera;
                   switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'right');
 
-                  if (!prevCameraPositions[focusedCanvas.id]) {
+                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
                     prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
                   }
 
                   const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
@@ -1629,8 +1672,9 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
                   switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'left');
 
-                  if (!prevCameraPositions[focusedCanvas.id]) {
+                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
                     prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
+                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
                   }
 
                   const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
