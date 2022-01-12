@@ -595,6 +595,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
    *****************************************************************************/
   const [gizmoManager, setGizmoManager] = useState<BABYLON.GizmoManager>();
   const [currentGizmoMode, setCurrentGizmoMode] = useState<GizmoMode>('position');
+  const [currentGizmoCoordinate, setCurrentGizmoCoordinate] = useState<'world' | 'local'>('local');
 
   /**
    * gizmoManager 생성
@@ -1087,7 +1088,24 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     }
   }, [_screenList, _selectedTargets, _visibilityOptions, currentGizmoMode, gizmoManager]);
 
-  // gizmoManager 관련 단축키 설정
+  /**
+   * gizmo coordinate에 따른 gizmoManager 설졍 변경
+   */
+  useEffect(() => {
+    if (gizmoManager) {
+      if (currentGizmoMode === 'position') {
+        gizmoManager.gizmos.positionGizmo!.updateGizmoPositionToMatchAttachedMesh = currentGizmoCoordinate === 'local';
+        gizmoManager.gizmos.positionGizmo!.updateGizmoRotationToMatchAttachedMesh = currentGizmoCoordinate === 'local';
+      } else if (currentGizmoMode === 'rotation') {
+        gizmoManager.gizmos.rotationGizmo!.updateGizmoPositionToMatchAttachedMesh = currentGizmoCoordinate === 'local';
+        gizmoManager.gizmos.rotationGizmo!.updateGizmoRotationToMatchAttachedMesh = currentGizmoCoordinate === 'local';
+      }
+    }
+  }, [currentGizmoCoordinate, currentGizmoMode, gizmoManager]);
+
+  /**
+   * gizmoManager 관련 단축키 설정
+   */
   useEffect(() => {
     if (gizmoManager) {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -1098,6 +1116,12 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         }
 
         switch (event.key) {
+          case 'q':
+          case 'Q':
+          case 'ㅂ': {
+            setCurrentGizmoCoordinate((prev) => (prev === 'world' ? 'local' : 'world'));
+            break;
+          }
           case 'w':
           case 'W':
           case 'ㅈ': {
