@@ -1116,9 +1116,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         }
 
         switch (event.key) {
-          case 'q':
-          case 'Q':
-          case 'ㅂ': {
+          case '`':
+          case '₩': {
             setCurrentGizmoCoordinate((prev) => (prev === 'world' ? 'local' : 'world'));
             break;
           }
