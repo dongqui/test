@@ -30,7 +30,7 @@ interface Props {
 export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) => {
   const dispatch = useDispatch();
 
-  const lpNode = useSelector((state) => state.lpNode.node);
+  const lpNode = useSelector((state) => state.lpNode.nodes);
   const { mode, videoURL } = useSelector((state) => state.modeSelection);
   const cameraListRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);

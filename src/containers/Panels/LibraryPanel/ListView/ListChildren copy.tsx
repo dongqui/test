@@ -8,14 +8,14 @@ interface Props {
 }
 
 const ListChildren: FunctionComponent<Props> = ({ items }) => {
-  const _lpNode = useSelector((state) => state.lpNode.node);
+  const _lpNode = useSelector((state) => state.lpNode.nodes);
 
   const recursiveRender = useCallback(
     (id: string) => {
       const node = find(_lpNode, { id });
 
       if (node) {
-        return <ListNode {...node} />;
+        return <ListNode {...node} node={node} />;
       }
     },
     [_lpNode],
