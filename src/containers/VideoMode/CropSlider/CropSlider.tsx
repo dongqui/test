@@ -120,19 +120,19 @@ export const CropSlider: FunctionComponent<Props> = ({
         >
           {Math.round(currentVideoTime * 10) / 10}
         </span>
-        <input
-          className={cx('slider-time', 'no-select')}
-          id="scrubber"
-          type="range"
-          min="0"
-          max={duration}
-          step="0.01"
-          value={currentVideoTime}
-          onChange={handleTimeline}
-          onKeyDown={handlePreventEvent}
-        />
         {children}
       </div>
+      <input
+        className={cx('slider-time', 'no-select')}
+        id="scrubber"
+        type="range"
+        min="0"
+        max={duration}
+        step="0.01"
+        value={currentVideoTime}
+        onChange={handleTimeline}
+        onKeyDown={handlePreventEvent}
+      />
     </Fragment>
   );
 };
