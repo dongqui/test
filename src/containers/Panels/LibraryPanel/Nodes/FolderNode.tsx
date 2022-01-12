@@ -53,7 +53,7 @@ const FolderNode = ({ nodeId, filePath, extension, depth, nodeName, childrenNode
         handleClickArrowButton={handleClickArrowButton}
         showsChildrens={showsChildrens}
       />
-      {showsChildrens && <ListChildren items={childrenNodeIds} /> }
+      {showsChildrens && <ListChildren items={childrenNodeIds} />}
     </Fragment>
   );
 };

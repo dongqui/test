@@ -1,7 +1,7 @@
 import { find } from 'lodash';
 import { FunctionComponent, Fragment, memo, useCallback } from 'react';
 import { useSelector } from 'reducers';
-import ListNode from './ListNode';
+import ListNode from './ListNode copy';
 
 interface Props {
   items: string[];
@@ -18,7 +18,7 @@ const ListChildren: FunctionComponent<Props> = ({ items }) => {
         return <ListNode {...node} />;
       }
     },
-    [_lpNode, dragTarget, onCopy, onDelete, onSetDragTarget, selectedId],
+    [_lpNode],
   );
 
   return (

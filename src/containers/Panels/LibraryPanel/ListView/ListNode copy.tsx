@@ -42,16 +42,7 @@ interface Props {
   mocapData?: PlaskMocapData;
 }
 
-const ListNode: FunctionComponent<Props> = ({
-  type,
-  name,
-  filePath,
-  id,
-  assetId,
-  parentId,
-  childrens,
-  extension,
-}) => {
+const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId, parentId, childrens, extension }) => {
   const dispatch = useDispatch();
 
   const _fps = useSelector((state) => state.plaskProject.fps);
@@ -468,14 +459,6 @@ const ListNode: FunctionComponent<Props> = ({
     [_lpNode, assetId, childrens, depthChangeKey, dispatch, extension, filePath, id, name, onModalClose, onModalOpen, parentId, type],
   );
 
-  const handleDragStart = useCallback(
-    (e: DragEvent) => {
-      e.stopPropagation();
-      // 드래그 시작시 선택 및 스타일 적용
-    },
-    [assetId, id, parentId, type],
-  );
-
   /**
    * @TODO 파일명에 .(dot)이 여럿인 경우를 위해 다른 방법으로 파일명을 가져오는 방법이 필요하여 임시 대응
    */
@@ -766,7 +749,7 @@ const ListNode: FunctionComponent<Props> = ({
 
   return (
     <Fragment>
-      {type === 'Model' && <ModelNode nodeId={id} assetId={assetId} nodeName={name} depth={depth} />}
+      {type === 'Model' && <ModelNode nodeId={id} assetId={assetId} nodeName={name} depth={depth} childrenNodeIds={childrens} />}
       {type === 'Folder' && <FolderNode nodeId={id} nodeName={name} depth={depth} extension={extension} filePath={filePath} childrenNodeIds={childrens} />}
       {isOpenExportModal && <ExportModal motions={currentMotions} onCancel={handleExportCancel} onConfirm={handleExportConfirm} onOutsideClose={handleExportCancel} />}
     </Fragment>
