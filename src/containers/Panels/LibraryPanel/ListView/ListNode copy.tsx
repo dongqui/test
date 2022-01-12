@@ -128,110 +128,6 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
     }
   }, [_animationIngredients, _assetList, assetId, dispatch, isVisualizeCompleted]);
 
-  useEffect(() => {
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const isContains = wrapperRef.current?.contains(e.target as Node);
-      if (isContains) {
-        const currentPath = filePath + `\\${name}`;
-        // dispatch(
-        //   lpNodeActions.changeCurrentPath({
-        //     currentPath: currentPath,
-        //     id: id,
-        //   }),
-        // );
-
-        if (type === 'Folder') {
-          showContextMenu({
-            contextMenuId: 'FolderContextMenu',
-            event: e,
-            props: {
-              selectId: id,
-              filePath,
-              extension,
-            },
-          });
-        } else if (type === 'Model') {
-          showContextMenu({
-            contextMenuId: 'ModelContextMenu',
-            event: e,
-            props: {
-              selectId: id,
-              assetId,
-            },
-          });
-        } else if (type === 'Motion') {
-          showContextMenu({
-            contextMenuId: 'MotionContextMenu',
-            event: e,
-            props: {
-              selectId: id,
-              parentId,
-              nodeName: name,
-            },
-          });
-        }
-      }
-    };
-
-    const currentRef = wrapperRef.current;
-
-    if (currentRef) {
-      currentRef.addEventListener('contextmenu', handleContextMenu);
-
-      return () => {
-        currentRef.removeEventListener('contextmenu', handleContextMenu);
-      };
-    }
-  }, [
-    _animationIngredients,
-    _assetList,
-    _lpNode,
-    _screenList,
-    _selectableObjects,
-    _visualizedAssetIds,
-    assetId,
-    childrens.length,
-    currentVisualizedMotion,
-    currentVisualizedNode?.id,
-    depth,
-    dispatch,
-    extension,
-    filePath,
-    getConfirm,
-    handleEdit,
-    id,
-    name,
-    showContextMenu,
-    parentId,
-    type,
-  ]);
-
-  useEffect(() => {
-    const currentRef = wrapperRef && wrapperRef.current;
-
-    if (currentRef) {
-      const handleSelect = (e: MouseEvent) => {
-        e.stopPropagation();
-        hideAllContextMenu();
-        dispatch(
-          lpNodeActions.changeCurrentPath({
-            currentPath: filePath + `\\${name}`,
-            id: id,
-          }),
-        );
-      };
-
-      currentRef.addEventListener('click', handleSelect);
-
-      return () => {
-        currentRef.removeEventListener('click', handleSelect);
-      };
-    }
-  }, [assetId, dispatch, filePath, id, name, hideAllContextMenu]);
-
   const handleBlur = useCallback(
     async (event: FocusEvent<HTMLInputElement>) => {
       const text = event.currentTarget.value || name;
@@ -465,10 +361,6 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
   );
 
   const [showsChildrens, setShowsChildrens] = useState(false);
-
-  const handleArrowClick = useCallback(() => {
-    setShowsChildrens(!showsChildrens);
-  }, [showsChildrens]);
 
   /**
    * @TODO 아래의 코드는 clicked, visualized 스타일을 자식 노드를 포함하여 정의, 코드 개선이 필요

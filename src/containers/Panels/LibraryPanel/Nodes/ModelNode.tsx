@@ -1,10 +1,14 @@
 import { useState, Fragment } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+import { find } from 'lodash';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as cpActions from 'actions/CP/cpModeSelection';
 import { useContextMenu } from 'components/Contextmenu';
 import ListChildren from '../ListView/ListChildren copy';
+import { useModal } from 'components/Modal/Modal';
+import { CONFIRM_04 } from 'constants/Text';
 
 interface Props {
   nodeId: string;
@@ -17,9 +21,11 @@ interface Props {
 const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds }: Props) => {
   const dispatch = useDispatch();
   const { showContextMenu } = useContextMenu();
-  const { selectedId } = useSelector((state) => state.lpNode);
+  const { selectedId, nodes, draggedNode } = useSelector((state) => state.lpNode);
+  const { retargetMaps } = useSelector((state) => state.animationData);
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
   const [showsChildrens, setShowsChildrens] = useState(false);
+  const { onModalOpen } = useModal();
 
   const isVisualized = !!(assetId && visualizedAssetIds.includes(assetId));
   // TODO
@@ -45,6 +51,33 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds }: Props)
     setShowsChildrens(!showsChildrens);
   };
 
+  const handleDragStart = () => {
+    const draggedNode = nodes.find((node) => node.id === nodeId);
+    if (draggedNode) {
+      dispatch(lpNodeActions.dragNodeStart(draggedNode));
+    }
+  };
+
+  const isRetargetError = () => {
+    const retargetMap = find(retargetMaps, { assetId });
+    return retargetMap?.values.some((value) => !value.targetTransformNodeId);
+  };
+
+  const handleDrop = () => {
+    if (draggedNode?.type !== 'Motion' || !draggedNode?.mocapData) return;
+    if (isRetargetError()) {
+      onModalOpen('ConfirmModal', {
+        title: 'Confirm',
+        message: CONFIRM_04,
+        onConfirm: () => {
+          dispatch(lpNodeActions.visualizeNode);
+          dispatch(cpActions.switchMode({ mode: 'Retargeting' }));
+        },
+      });
+      return;
+    }
+  };
+
   return (
     <Fragment>
       <ListViewNode
@@ -58,6 +91,7 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds }: Props)
         handleClickNode={handleClickNode}
         handleClickArrowButton={handleClickArrowButton}
         showsChildrens={showsChildrens}
+        handleDragStart={handleDragStart}
       />
 
       {showsChildrens && <ListChildren items={childrenNodeIds} />}

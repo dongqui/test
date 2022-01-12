@@ -52,6 +52,11 @@ export const lpNode = (state = defaultState, action: LPNodeAction) => {
         selectedAssetId: action.payload.assetId,
       });
     }
+    case 'node/DRAG_NODE_START': {
+      return Object.assign({}, state, {
+        draggedNode: action.payload.node,
+      });
+    }
     default: {
       return state;
     }

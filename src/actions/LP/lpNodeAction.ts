@@ -1,15 +1,4 @@
-export type LPNodeAction =
-  | ReturnType<typeof changeNode>
-  | ReturnType<typeof visualize>
-  | ReturnType<typeof changeCurrentPath>
-  | ReturnType<typeof changeClipboard>
-  | ReturnType<typeof deleteNode>
-  | ReturnType<typeof changeNode>
-  | ReturnType<typeof addDirectory>
-  | ReturnType<typeof visualizeNode>
-  | ReturnType<typeof addEmptyMotion>
-  | ReturnType<typeof selectNode>
-  | ReturnType<typeof dropNodeOnFolder>;
+import LP from '../../../@types/Container/LP';
 
 export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
 export const VISUALIZE = 'node/VISUALIZE' as const;
@@ -25,13 +14,12 @@ export const DUPLICATE_MOTION = 'node/DUPLICATE_MOTION' as const;
 export const VISUALIZE_MOTION = 'node/VISUALIZE_MOTION' as const;
 export const SELECT_NODE = 'node/SELECT_NODE' as const;
 export const DROP_NODE_ON_FOLDER = 'node/DROP_NODE_ON_FOLDER' as const;
+export const DRAG_NODE_START = 'node/DRAG_NODE_START' as const;
+export const DROP_MOTION_ON_MODEL = 'node/DROP_MOTION_ON_MODEL' as const;
+
 interface ChangeNodeParams {
   nodes: LP.Node[];
 }
-interface VisualizeParams {
-  fileURL: string;
-}
-
 interface ChangeCurrentPathParams {
   currentPath: string;
   id: string;
@@ -74,6 +62,11 @@ interface selectNodeParams {
 interface dropNodeOnFolderParams {
   filePath: string;
   nodeId: string;
+}
+
+interface dropMotionOnModel {
+  nodeId: string;
+  filePath: string;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
@@ -171,3 +164,32 @@ export const dropNodeOnFolder = (params: dropNodeOnFolderParams) => ({
     ...params,
   },
 });
+
+export const dragNodeStart = (node: LP.Node) => ({
+  type: DRAG_NODE_START,
+  payload: {
+    node,
+  },
+});
+
+export const dropMotionOnModel = (params: dropMotionOnModel) => ({
+  type: DROP_MOTION_ON_MODEL,
+  payload: {
+    ...params,
+  },
+});
+
+export type LPNodeAction =
+  | ReturnType<typeof changeNode>
+  | ReturnType<typeof visualize>
+  | ReturnType<typeof changeCurrentPath>
+  | ReturnType<typeof changeClipboard>
+  | ReturnType<typeof deleteNode>
+  | ReturnType<typeof changeNode>
+  | ReturnType<typeof addDirectory>
+  | ReturnType<typeof visualizeNode>
+  | ReturnType<typeof addEmptyMotion>
+  | ReturnType<typeof selectNode>
+  | ReturnType<typeof dropNodeOnFolder>
+  | ReturnType<typeof dragNodeStart>
+  | ReturnType<typeof dropMotionOnModel>;

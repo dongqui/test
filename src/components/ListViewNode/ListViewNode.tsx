@@ -19,7 +19,8 @@ interface Props {
   handleClickNode: () => void;
   handleClickArrowButton?: React.MouseEventHandler<HTMLDivElement>;
   showsChildrens?: boolean;
-  handleDrop?: () => void;
+  handleDrop?: (e: React.DragEvent<HTMLDivElement>) => void;
+  handleDragStart?: () => void;
 }
 
 const ListViewNode: FunctionComponent<Props> = ({
@@ -34,6 +35,7 @@ const ListViewNode: FunctionComponent<Props> = ({
   handleClickArrowButton,
   showsChildrens = false,
   handleDrop,
+  handleDragStart,
 }) => {
   const classes = cx('inner', {
     'open-visualized': isVisualized,
@@ -42,7 +44,7 @@ const ListViewNode: FunctionComponent<Props> = ({
   });
 
   return (
-    <div className={cx('container')} tabIndex={0} onClick={handleClickNode} draggable onDrop={handleDrop}>
+    <div className={cx('container')} tabIndex={0} onClick={handleClickNode} draggable onDrop={handleDrop} onDrag={handleDragStart}>
       <div className={cx('outer')}>
         <div className={classes} id="inner">
           <div className={cx('wrapper')} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={LPCONSTANTS.DRAG_SELECTABLE} onContextMenu={onContextMenu}>

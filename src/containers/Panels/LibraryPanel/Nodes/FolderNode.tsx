@@ -44,7 +44,8 @@ const FolderNode = ({ nodeId, filePath, extension, depth, nodeName, childrenNode
     setShowsChildrens(!showsChildrens);
   };
 
-  const handleDrop = () => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.stopPropagation();
     if (!draggedNode || (draggedNode?.type === 'Motion' && !draggedNode?.mocapData)) {
       return;
     }
@@ -69,6 +70,13 @@ const FolderNode = ({ nodeId, filePath, extension, depth, nodeName, childrenNode
     );
   };
 
+  const handleDragStart = () => {
+    const draggedNode = nodes.find((node) => node.id === nodeId);
+    if (draggedNode) {
+      dispatch(lpNodeActions.dragNodeStart(draggedNode));
+    }
+  };
+
   return (
     <Fragment>
       <ListViewNode
@@ -80,6 +88,8 @@ const FolderNode = ({ nodeId, filePath, extension, depth, nodeName, childrenNode
         handleClickNode={handleClickNode}
         handleClickArrowButton={handleClickArrowButton}
         showsChildrens={showsChildrens}
+        handleDrop={handleDrop}
+        handleDragStart={handleDragStart}
       />
       {showsChildrens && <ListChildren items={childrenNodeIds} />}
     </Fragment>

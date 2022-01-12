@@ -1,10 +1,11 @@
 import { find, cloneDeep, filter } from 'lodash';
-import { select, put, takeLatest, all } from 'redux-saga/effects';
+import { select, put, takeLatest, all, SagaReturnType, call } from 'redux-saga/effects';
 import { RootState } from 'reducers';
 import { goToSpecificPoses, checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById } from 'utils/LP/FileSystem';
+import { createAnimationIngredientFromMocapData } from 'utils/LP/Retarget';
 import { getFileExtension } from 'utils/common';
-import { forceClickAnimationPlayAndStop } from 'utils/common';
+import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -480,14 +481,15 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
     return;
   }
 
-  let nodeName = draggedNode.name;
+  const draggedNodeClone = cloneDeep(draggedNode);
+  let nodeName = draggedNodeClone.name;
 
-  if (draggedNode?.type === 'Folder') {
+  if (draggedNodeClone?.type === 'Folder') {
     const currentPathNodeName = nodes
       .filter((node) => {
         if (node.parentId === nodeId) {
-          const isMatch = draggedNode.name.match(/ \(\d+\)$/g);
-          const tempName = draggedNode.name.replace(/ \(\d+\)$/g, '');
+          const isMatch = draggedNodeClone.name.match(/ \(\d+\)$/g);
+          const tempName = draggedNodeClone.name.replace(/ \(\d+\)$/g, '');
           if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
             return true;
           }
@@ -497,12 +499,14 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
       .map((filteredNode) => filteredNode.name);
 
     nodeName = beforeMove({
-      name: draggedNode.name,
+      name: draggedNodeClone.name,
       comparisonNames: currentPathNodeName,
     });
-  } else if (draggedNode?.type === 'Model') {
-    const extension = getFileExtension(draggedNode.name).toLowerCase();
-    const fileName = draggedNode.name.split('.').slice(0, -1).join('.');
+  }
+
+  if (draggedNodeClone?.type === 'Model') {
+    const extension = getFileExtension(draggedNodeClone.name).toLowerCase();
+    const fileName = draggedNodeClone.name.split('.').slice(0, -1).join('.');
 
     const currentPathNodeName = nodes.filter((node) => node.parentId === nodeId && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
@@ -512,27 +516,226 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
   }
 
   const nextNodes = produce(nodes, (draft) => {
-    const targetNode = find(draft, { id: nodeId });
+    const drragedNodeIndex = draft.findIndex((node) => node.id === draggedNode.id);
+    drragedNodeIndex !== -1 && draft.splice(drragedNodeIndex, 1);
 
-    if (targetNode) {
-      draggedNode.id = uuid();
-      draggedNode.parentId = nodeId;
-      // cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
-      draggedNode.filePath = filePath + `\\${name}`;
-      draggedNode.name = nodeName;
+    const targetFolder = find(draft, { id: nodeId });
+    if (targetFolder) {
+      draggedNodeClone.id = uuid();
+      draggedNodeClone.parentId = nodeId;
+      // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${nodeName}`;
+      draggedNodeClone.filePath = filePath + `\\${name}`;
+      draggedNodeClone.name = nodeName;
 
-      targetNode.childrens.push(draggedNode.id);
+      targetFolder.childrens.push(draggedNodeClone.id);
 
-      if (draggedNode.childrens.length > 0) {
-        draggedNode.childrens.map((child) => changeNodeDepthById(draft, child, draggedNode));
+      if (draggedNodeClone.childrens.length > 0) {
+        draggedNodeClone.childrens.map((child) => changeNodeDepthById(draft, child, draggedNodeClone));
       }
 
       // @TODO 하위 노드도 추가
-      draft.push(draggedNode);
+      draft.push(draggedNodeClone);
     }
   });
 
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+}
+
+function* handleDropMotionOnModel(action: ReturnType<typeof lpNodeActions.dropMotionOnModel>) {
+  const { lpNode, plaskProject, animationData }: RootState = yield select();
+  const { draggedNode, nodes } = lpNode;
+  const { assetList } = plaskProject;
+  const { retargetMaps } = animationData;
+  const { nodeId, filePath } = action.payload;
+
+  const draggedNodeClone = cloneDeep(draggedNode);
+  /**
+   * @TODO 리타겟 및 하위로 모션 추가
+   */
+  const dropNode = find(nodes, { id: nodeId });
+  const childrenList = nodes.filter((node) => node.parentId === nodeId);
+  const isAlreadyExist = childrenList.some((children) => children.name === draggedNode?.name);
+
+  // dropNode(model)과 dragNode(motion)을 사용해서 animationIngredient를 생성
+  const targetAsset = assetList.find((asset) => asset.id === dropNode?.assetId);
+  const targetRetargetMap = retargetMaps.find((retargetMap) => retargetMap.assetId === dropNode?.assetId);
+
+  const isErrorRetargetMap = targetRetargetMap && targetRetargetMap.values.some((value) => !value.targetTransformNodeId);
+
+  if (isErrorRetargetMap || !draggedNode?.mocapData) {
+    return;
+  }
+
+  // 이름이 같은 모션이 이미 있는 경우
+  if (dropNode && isAlreadyExist) {
+    if (draggedNodeClone && dropNode && targetAsset && targetRetargetMap) {
+      const currentPathNodeName = nodes
+        .filter((node) => {
+          if (node.parentId === nodeId) {
+            const isMatch = draggedNodeClone.name.match(/ \(\d+\)$/g);
+            const tempName = draggedNodeClone.name.replace(/ \(\d+\)$/g, '');
+
+            // if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+            if (tempName === node.name || node.name.includes(`${tempName} `)) {
+              return true;
+            }
+            return false;
+          }
+        })
+        .map((filteredNode) => filteredNode.name);
+
+      const nodeName = beforeMove({
+        name: draggedNodeClone.name,
+        comparisonNames: currentPathNodeName,
+      });
+
+      try {
+        const mocapAnimationIngredient: SagaReturnType<typeof createAnimationIngredientFromMocapData> = yield call(
+          createAnimationIngredientFromMocapData,
+          dropNode.assetId!,
+          nodeName,
+          targetRetargetMap,
+          targetAsset.initialPoses,
+          filterAnimatableTransformNodes(targetAsset.transformNodes),
+          draggedNode?.mocapData,
+          3000,
+        );
+
+        // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
+        // const filterNodes = nodes.filter((node) => node.id !== duplicatedTarget[0].id);
+
+        const nextNodes = produce(nodes, (draft) => {
+          const targetNode = find(draft, { id: nodeId });
+
+          if (targetNode) {
+            draggedNodeClone.id = mocapAnimationIngredient.id;
+            draggedNodeClone.assetId = mocapAnimationIngredient.assetId;
+            draggedNodeClone.name = nodeName;
+            draggedNodeClone.parentId = nodeId;
+            // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${draggedNodeClone.name}`;
+            draggedNodeClone.filePath = filePath + `\\${name}`;
+
+            targetNode.childrens.push(draggedNodeClone.id);
+
+            const { mocapData, ...restObject } = draggedNodeClone;
+
+            // @TODO 하위 노드도 추가
+            draft.push({
+              ...restObject,
+            });
+
+            if (draggedNodeClone.childrens.length > 0) {
+              draggedNodeClone.childrens.map((child) => changeNodeDepthById(draft, child, draggedNodeClone));
+            }
+          }
+        });
+
+        yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+        yield put(animationDataActions.addAnimationIngredient({ animationIngredient: mocapAnimationIngredient }));
+        yield put(plaskProjectActions.addAnimationIngredient({ assetId: dropNode.assetId!, animationIngredientId: mocapAnimationIngredient.id }));
+
+        if (dropNode.assetId) {
+          yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
+
+          handleVisualization();
+        }
+
+        return;
+      } catch (error) {}
+    }
+  }
+
+  // @TODO 없으면 비활성 처리 필요
+  if (draggedNodeClone && dropNode && targetAsset && targetRetargetMap) {
+    onModalOpen({
+      title: 'Waiting',
+      message: TEXT.WAITING_03,
+    });
+
+    try {
+      const mocapAnimationIngredient = await createAnimationIngredientFromMocapData(
+        dropNode.assetId!,
+        dragNode.name,
+        targetRetargetMap,
+        targetAsset.initialPoses,
+        filterAnimatableTransformNodes(targetAsset.transformNodes),
+        dragNode.mocapData,
+        3000,
+      );
+
+      const currentPathNodeName = nodes
+        .filter((node) => {
+          if (node.parentId === id) {
+            const isMatch = draggedNodeClone.name.match(/ \(\d+\)$/g);
+            const tempName = draggedNodeClone.name.replace(/ \(\d+\)$/g, '');
+            if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+              return true;
+            }
+            return false;
+          }
+        })
+        .map((filteredNode) => filteredNode.name);
+
+      const nodeName = beforeMove({
+        name: draggedNodeClone.name,
+        comparisonNames: currentPathNodeName,
+      });
+
+      const nextNodes = produce(nodes, (draft) => {
+        const targetNode = find(draft, { id });
+
+        if (targetNode) {
+          draggedNodeClone.assetId = mocapAnimationIngredient.assetId;
+          draggedNodeClone.id = mocapAnimationIngredient.id;
+          draggedNodeClone.parentId = id;
+          // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${nodeName}`;
+          draggedNodeClone.filePath = filePath + `\\${name}`;
+          draggedNodeClone.name = nodeName;
+
+          targetNode.childrens.push(draggedNodeClone.id);
+
+          const { mocapData, ...restObject } = draggedNodeClone;
+
+          // @TODO 하위 노드도 추가
+          draft.push({
+            ...restObject,
+          });
+
+          if (draggedNodeClone.childrens.length > 0) {
+            draggedNodeClone.childrens.map((child) => depthChangeKey(draft, child, draggedNodeClone));
+          }
+        }
+      });
+
+      yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+      yield put(animationDataActions.addAnimationIngredient({ animationIngredient: mocapAnimationIngredient }));
+      yield put(plaskProjectActions.addAnimationIngredient({ assetId: dropNode.assetId!, animationIngredientId: mocapAnimationIngredient.id }));
+
+      if (dropNode.assetId) {
+        yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
+
+        handleVisualization();
+      }
+
+      onModalClose();
+    } catch (error) {}
+  } else {
+    const confirmed = await getConfirm({
+      title: 'Confirm',
+      message: TEXT.CONFIRM_04,
+      confirmText: 'Confirm',
+      cancelText: 'Cancel',
+      confirmColor: 'positive',
+    });
+
+    if (confirmed) {
+      handleVisualization();
+
+      yield put(cpActions.switchMode({ mode: 'Retargeting' }));
+    }
+
+    onModalClose();
+  }
 }
 
 export default function* LPSaga() {
@@ -545,5 +748,6 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.ADD_EMPTY_MOTION, handleAddEmptyMotion),
     takeLatest(lpNodeActions.DUPLICATE_MOTION, handleDuplicateMotion),
     takeLatest(lpNodeActions.VISUALIZE_MOTION, handleVisualizeMotion),
+    takeLatest(lpNodeActions.DROP_NODE_ON_FOLDER, handleDropNodeOnFolder),
   ]);
 }
