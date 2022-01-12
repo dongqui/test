@@ -5,6 +5,8 @@ import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import { useContextMenu } from 'components/Contextmenu';
 import ListChildren from '../ListView/ListChildren copy';
+import { useModal } from 'components/Modal/Modal';
+import { getNodeMaxDepth } from 'utils/LP/FileSystem';
 
 interface Props {
   nodeId: string;
@@ -18,8 +20,9 @@ interface Props {
 const FolderNode = ({ nodeId, filePath, extension, depth, nodeName, childrenNodeIds }: Props) => {
   const dispatch = useDispatch();
   const { showContextMenu } = useContextMenu();
-  const { selectedId } = useSelector((state) => state.lpNode);
+  const { selectedId, draggedNode, nodes } = useSelector((state) => state.lpNode);
   const [showsChildrens, setShowsChildrens] = useState(false);
+  const { onModalOpen } = useModal();
 
   const onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     showContextMenu({
@@ -39,6 +42,31 @@ const FolderNode = ({ nodeId, filePath, extension, depth, nodeName, childrenNode
 
   const handleClickArrowButton = () => {
     setShowsChildrens(!showsChildrens);
+  };
+
+  const handleDrop = () => {
+    if (!draggedNode || (draggedNode?.type === 'Motion' && !draggedNode?.mocapData)) {
+      return;
+    }
+
+    const maxDepth = getNodeMaxDepth(draggedNode.childrens, 0, [], nodes) || 0;
+    const currentPathDepth = (filePath.match(/\\/g) || []).length;
+
+    if (currentPathDepth + maxDepth >= 6) {
+      onModalOpen('AlertModal', {
+        title: 'Warning',
+        confirmText: 'Close',
+        message: 'A directory cannot exceed 6 layers.',
+      });
+      return;
+    }
+
+    dispatch(
+      lpNodeActions.dropNodeOnFolder({
+        filePath,
+        nodeId,
+      }),
+    );
   };
 
   return (

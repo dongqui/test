@@ -4,3 +4,5 @@ export { default as beforeRename } from './beforeRename';
 export { default as getNodeNumber } from './getNodeNumber';
 export { default as checkCreateDuplicates } from './checkCreateDuplicates';
 export { default as checkPasteDuplicates } from './checkPasteDuplicates';
+export { default as getNodeMaxDepth } from './getNodeMaxDepth';
+export { default as changeNodeDepthById } from './changeNodeDepthById';

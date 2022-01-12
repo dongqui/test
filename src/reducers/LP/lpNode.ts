@@ -1,31 +1,33 @@
 import { LPNodeAction } from 'actions/LP/lpNodeAction';
-import { v4 as uuidv4 } from 'uuid';
+import LP from '../../../@types/Container/LP';
 
 interface State {
-  node: LP.Node[];
+  nodes: LP.Node[];
   visualizedfileUrl: string | File;
   currentPath: string;
   currentPathId: string;
   clipboard: LP.Node[];
   selectedId: string | null;
   selectedAssetId: string | null;
+  draggedNode: LP.Node | null;
 }
 
 const defaultState: State = {
-  node: [],
+  nodes: [],
   visualizedfileUrl: '',
   currentPath: '\\root',
   currentPathId: '\\root',
   clipboard: [],
   selectedId: null,
   selectedAssetId: null,
+  draggedNode: null,
 };
 
 export const lpNode = (state = defaultState, action: LPNodeAction) => {
   switch (action.type) {
     case 'node/CHANGE_NODE': {
       return Object.assign({}, state, {
-        node: action.payload.nodes,
+        nodes: action.payload.nodes,
       });
     }
     case 'node/VISUALIZE': {

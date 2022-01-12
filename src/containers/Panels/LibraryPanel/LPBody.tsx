@@ -529,7 +529,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     <div className={cx('inner')} ref={wrapperRef}>
       {rootPathNode.map((node, i) => (
         <div className={cx('node-row')} ref={nodeRef[i]} key={node.id}>
-          <ListNode {...node} />
+          <ListNode {...node} node={node} />
         </div>
       ))}
       {/* <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} /> */}

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo, RefObject, FocusEvent, KeyboardEvent } from 'react';
+import React, { FunctionComponent, memo } from 'react';
 import * as LPCONSTANTS from 'constants/LibraryPanel';
 import ArrowButton from './ArrowButton';
 import NodeIcon from './NodeIcon';
@@ -19,6 +19,7 @@ interface Props {
   handleClickNode: () => void;
   handleClickArrowButton?: React.MouseEventHandler<HTMLDivElement>;
   showsChildrens?: boolean;
+  handleDrop?: () => void;
 }
 
 const ListViewNode: FunctionComponent<Props> = ({
@@ -32,6 +33,7 @@ const ListViewNode: FunctionComponent<Props> = ({
   handleClickNode,
   handleClickArrowButton,
   showsChildrens = false,
+  handleDrop,
 }) => {
   const classes = cx('inner', {
     'open-visualized': isVisualized,
@@ -40,7 +42,7 @@ const ListViewNode: FunctionComponent<Props> = ({
   });
 
   return (
-    <div className={cx('container')} tabIndex={0} onClick={handleClickNode} draggable>
+    <div className={cx('container')} tabIndex={0} onClick={handleClickNode} draggable onDrop={handleDrop}>
       <div className={cx('outer')}>
         <div className={classes} id="inner">
           <div className={cx('wrapper')} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={LPCONSTANTS.DRAG_SELECTABLE} onContextMenu={onContextMenu}>

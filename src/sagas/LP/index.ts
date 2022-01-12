@@ -1,9 +1,9 @@
-import { visualizeMotion } from './../../actions/LP/lpNodeAction';
 import { find, cloneDeep, filter } from 'lodash';
 import { select, put, takeLatest, all } from 'redux-saga/effects';
 import { RootState } from 'reducers';
 import { goToSpecificPoses, checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient } from 'utils/RP';
-import { checkCreateDuplicates, checkPasteDuplicates } from 'utils/LP/FileSystem';
+import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById } from 'utils/LP/FileSystem';
+import { getFileExtension } from 'utils/common';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
@@ -42,7 +42,7 @@ const deleteChild = (node: LP.Node[], ids: string[]) => {
 function* handleDelete(action: ReturnType<typeof lpNodeActions.deleteNode>) {
   const { nodeId, selectAssetId } = action.payload;
   const { lpNode, plaskProject, selectingData }: RootState = yield select();
-  const afterNodes = deleteChild(lpNode.node, [nodeId]);
+  const afterNodes = deleteChild(lpNode.nodes, [nodeId]);
   yield put(lpNodeActions.changeNode({ nodes: afterNodes }));
 
   if (selectAssetId) {
@@ -72,14 +72,14 @@ function* handelCopy(action: ReturnType<typeof lpNodeActions.copyNode>) {
   const { lpNode }: RootState = yield select();
   yield put(
     lpNodeActions.changeClipboard({
-      data: lpNode.node.filter((node) => action.payload.id.includes(node.id)),
+      data: lpNode.nodes.filter((node) => action.payload.id.includes(node.id)),
     }),
   );
 }
 
 function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirectory>) {
   const { lpNode }: RootState = yield select();
-  const currentPathNodeName = lpNode.node
+  const currentPathNodeName = lpNode.nodes
     .filter((node) => {
       if (node.parentId === action.payload.nodeId) {
         if (node.name.includes('Untitled')) {
@@ -94,7 +94,7 @@ function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirector
 
   const nodeName = check === '0' ? 'Untitled' : `Untitled (${check})`;
 
-  const nextNodes = produce(lpNode.node, (draft) => {
+  const nextNodes = produce(lpNode.nodes, (draft) => {
     const parent = find(draft, { id: action.payload.nodeId });
 
     if (parent) {
@@ -286,7 +286,7 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
   const { assetId, nodeId } = action.payload;
 
   if (assetId) {
-    const cloneLPNode = cloneDeep(lpNode.node);
+    const cloneLPNode = cloneDeep(lpNode.nodes);
 
     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
     if (visualizedAssetIds.includes(assetId)) {
@@ -297,7 +297,7 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
       targets = animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
     }
 
-    const currentPathNodeName = lpNode.node
+    const currentPathNodeName = lpNode.nodes
       .filter((node) => {
         if (node.parentId === nodeId) {
           if (node.name.includes('empty motion')) {
@@ -365,9 +365,9 @@ function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicat
   let tempMotion: LP.Node | undefined;
   let tempAnimationIngredient: AnimationIngredient | undefined;
 
-  const parentModel = find(lpNode.node, { id: parentId });
+  const parentModel = find(lpNode.nodes, { id: parentId });
 
-  const nextNodes = produce(lpNode.node, (draft) => {
+  const nextNodes = produce(lpNode.nodes, (draft) => {
     const draftParentModel = find(draft, { id: parentId });
 
     if (draftParentModel) {
@@ -377,7 +377,7 @@ function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicat
         const selectedMotion = find(motions, { id: nodeId });
 
         if (selectedMotion) {
-          const currentPathNodeNames = lpNode.node.filter((node) => node.parentId === parentId && node.name.includes(nodeName)).map((filteredNode) => filteredNode.name);
+          const currentPathNodeNames = lpNode.nodes.filter((node) => node.parentId === parentId && node.name.includes(nodeName)).map((filteredNode) => filteredNode.name);
 
           const check = checkPasteDuplicates(nodeName, currentPathNodeNames);
 
@@ -441,7 +441,7 @@ function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualiz
     });
   });
 
-  const parentModel = find(lpNode.node, { id: parentId });
+  const parentModel = find(lpNode.nodes, { id: parentId });
   // TODO 선언적으로 수정
   if (parentModel) {
     const motions = filter(animationIngredients, { assetId: parentModel.assetId });
@@ -467,6 +467,72 @@ function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualiz
 
   yield put(lpNodeActions.visualizeNode(assetId));
   forceClickAnimationPlayAndStop(50);
+}
+
+function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNodeOnFolder>) {
+  const { lpNode }: RootState = yield select();
+  const { draggedNode, nodes } = lpNode;
+  const { filePath, nodeId } = action.payload;
+
+  // TODO(?) 동일한 이름이 있는지 확인
+  // @TODO 없으면 비활성 처리 필요
+  if (!draggedNode) {
+    return;
+  }
+
+  let nodeName = draggedNode.name;
+
+  if (draggedNode?.type === 'Folder') {
+    const currentPathNodeName = nodes
+      .filter((node) => {
+        if (node.parentId === nodeId) {
+          const isMatch = draggedNode.name.match(/ \(\d+\)$/g);
+          const tempName = draggedNode.name.replace(/ \(\d+\)$/g, '');
+          if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+            return true;
+          }
+          return false;
+        }
+      })
+      .map((filteredNode) => filteredNode.name);
+
+    nodeName = beforeMove({
+      name: draggedNode.name,
+      comparisonNames: currentPathNodeName,
+    });
+  } else if (draggedNode?.type === 'Model') {
+    const extension = getFileExtension(draggedNode.name).toLowerCase();
+    const fileName = draggedNode.name.split('.').slice(0, -1).join('.');
+
+    const currentPathNodeName = nodes.filter((node) => node.parentId === nodeId && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
+
+    const check = checkCreateDuplicates(`${fileName}`, currentPathNodeName);
+
+    nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
+  }
+
+  const nextNodes = produce(nodes, (draft) => {
+    const targetNode = find(draft, { id: nodeId });
+
+    if (targetNode) {
+      draggedNode.id = uuid();
+      draggedNode.parentId = nodeId;
+      // cloneDragNode.filePath = filePath + `\\${name}` + `\\${nodeName}`;
+      draggedNode.filePath = filePath + `\\${name}`;
+      draggedNode.name = nodeName;
+
+      targetNode.childrens.push(draggedNode.id);
+
+      if (draggedNode.childrens.length > 0) {
+        draggedNode.childrens.map((child) => changeNodeDepthById(draft, child, draggedNode));
+      }
+
+      // @TODO 하위 노드도 추가
+      draft.push(draggedNode);
+    }
+  });
+
+  yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
 }
 
 export default function* LPSaga() {

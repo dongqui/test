@@ -1,4 +1,4 @@
-import { max, find, filter, remove, cloneDeep } from 'lodash';
+import { find, filter, cloneDeep } from 'lodash';
 import React, { FunctionComponent, memo, Fragment, useEffect, useCallback, useState, useRef, DragEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
@@ -10,15 +10,12 @@ import produce from 'immer';
 import { v4 as uuid } from 'uuid';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
-import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop, getFileExtension } from 'utils/common';
+import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { createAnimationGroupFromIngredient, goToSpecificPoses } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
-import { checkCreateDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
-import { createAnimationIngredientFromMocapData } from 'utils/LP/Retarget';
+import { beforeRename } from 'utils/LP/FileSystem';
 import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as cpActions from 'actions/CP/cpModeSelection';
-import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import { AnimationIngredient, PlaskMocapData } from 'types/common';
 import classNames from 'classnames/bind';
@@ -41,6 +38,7 @@ interface Props {
   childrens: string[];
   extension: string;
   mocapData?: PlaskMocapData;
+  node: LP.Node;
 }
 
 const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId, parentId, childrens, extension }) => {
@@ -56,7 +54,7 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
   const _plaskSkeletonViewers = useSelector((state) => state.screenData.plaskSkeletonViewers);
 
-  const _lpNode = useSelector((state) => state.lpNode.node);
+  const _lpNode = useSelector((state) => state.lpNode.nodes);
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
   const outerRef = useRef<HTMLDivElement>(null);
@@ -66,61 +64,6 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
   const { showContextMenu, hideAllContextMenu } = useContextMenu();
-
-  const depthCheck = useCallback(
-    (arr: string[], maximum: number, original: number[]) => {
-      arr.map((el) => {
-        const element = find(_lpNode, { id: el });
-        if (element) {
-          const maxValue = maximum + 1;
-
-          if (element.childrens.length > 0) {
-            depthCheck(element.childrens, maxValue, original);
-          }
-
-          // @TODO 6depth일때 무조건 return시켜서 빠르게 종료시켜야함
-          if (element.childrens.length === 0) {
-            original.push(maxValue);
-          }
-        }
-      });
-
-      return max(original);
-    },
-    [_lpNode],
-  );
-
-  const saveChildrensKey = useCallback((before: string[], key: string) => {
-    const result = before.concat(key);
-    return result;
-  }, []);
-
-  const depthChangeKey = useCallback(
-    (node: LP.Node[], childId: string, parentNode: LP.Node) => {
-      const changeNode = find(node, { id: childId });
-      let memory: string[] = [];
-
-      if (changeNode) {
-        changeNode.id = uuid();
-        changeNode.parentId = parentNode.id;
-        changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
-
-        parentNode.childrens = parentNode.childrens.concat(changeNode.id);
-
-        node = node.concat(changeNode);
-
-        if (changeNode.childrens.length > 0) {
-          changeNode.childrens.map((child) => {
-            memory = saveChildrensKey(memory, child);
-            depthChangeKey(node, child, changeNode);
-          });
-        }
-
-        changeNode.childrens = changeNode.childrens.filter((key) => !memory.includes(key));
-      }
-    },
-    [saveChildrensKey],
-  );
 
   const depthAddKey = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
     const changeNode = find(node, { id: childId });
@@ -342,7 +285,7 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
             };
 
             if (newNode.childrens.length > 0) {
-              newNode.childrens.forEach((child) => depthChangeKey(draft, child, newNode));
+              // newNode.childrens.forEach((child) => depthChangeKey(draft, child, newNode));
             }
 
             draft[targetIndex] = newNode;
@@ -367,7 +310,7 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
           });
         });
     },
-    [_lpNode, assetId, childrens, depthChangeKey, dispatch, extension, filePath, id, name, onModalClose, onModalOpen, parentId, type],
+    [_lpNode, assetId, childrens, dispatch, extension, filePath, id, name, onModalClose, onModalOpen, parentId, type],
   );
 
   const handleKeydown = useCallback(
@@ -430,7 +373,8 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
               };
 
               if (newNode.childrens.length > 0) {
-                newNode.childrens.map((child) => depthChangeKey(draft, child, newNode));
+                // todo 복구
+                // newNode.childrens.map((child) => depthChangeKey(draft, child, newNode));
               }
 
               draft[targetIndex] = newNode;
@@ -457,7 +401,7 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
           });
       }
     },
-    [_lpNode, assetId, childrens, depthChangeKey, dispatch, extension, filePath, id, name, onModalClose, onModalOpen, parentId, type],
+    [_lpNode, assetId, childrens, dispatch, extension, filePath, id, name, onModalClose, onModalOpen, parentId, type],
   );
 
   /**

@@ -8,7 +8,8 @@ export type LPNodeAction =
   | ReturnType<typeof addDirectory>
   | ReturnType<typeof visualizeNode>
   | ReturnType<typeof addEmptyMotion>
-  | ReturnType<typeof selectNode>;
+  | ReturnType<typeof selectNode>
+  | ReturnType<typeof dropNodeOnFolder>;
 
 export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
 export const VISUALIZE = 'node/VISUALIZE' as const;
@@ -23,6 +24,7 @@ export const ADD_EMPTY_MOTION = 'node/ADD_EMPTY_MOTION' as const;
 export const DUPLICATE_MOTION = 'node/DUPLICATE_MOTION' as const;
 export const VISUALIZE_MOTION = 'node/VISUALIZE_MOTION' as const;
 export const SELECT_NODE = 'node/SELECT_NODE' as const;
+export const DROP_NODE_ON_FOLDER = 'node/DROP_NODE_ON_FOLDER' as const;
 interface ChangeNodeParams {
   nodes: LP.Node[];
 }
@@ -67,6 +69,11 @@ interface VisualizeMotionParams {
 interface selectNodeParams {
   nodeId: string;
   assetId?: string;
+}
+
+interface dropNodeOnFolderParams {
+  filePath: string;
+  nodeId: string;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
@@ -153,6 +160,13 @@ export const visualizeMotion = (params: VisualizeMotionParams) => ({
 
 export const selectNode = (params: selectNodeParams) => ({
   type: SELECT_NODE,
+  payload: {
+    ...params,
+  },
+});
+
+export const dropNodeOnFolder = (params: dropNodeOnFolderParams) => ({
+  type: DROP_NODE_ON_FOLDER,
   payload: {
     ...params,
   },

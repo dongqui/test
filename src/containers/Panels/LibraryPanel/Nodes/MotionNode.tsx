@@ -45,7 +45,7 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, parentId }: Props) => {
     <Fragment>
       <ListViewNode
         depth={depth}
-        type="Model"
+        type="Motion"
         onContextMenu={onContextMenu}
         nodeName={nodeName}
         isSelected={selectedId === nodeId}
