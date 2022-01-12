@@ -1116,11 +1116,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         }
 
         switch (event.key) {
-          case '`':
-          case '₩': {
-            setCurrentGizmoCoordinate((prev) => (prev === 'world' ? 'local' : 'world'));
-            break;
-          }
           case 'w':
           case 'W':
           case 'ㅈ': {
@@ -1237,6 +1232,33 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       };
     }
   }, [currentGizmoMode, dispatch, gizmoManager]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // input 입력 중에는 적용되지 않도록 수정
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+
+      switch (event.key) {
+        case '`':
+        case '₩': {
+          setCurrentGizmoCoordinate((prev) => (prev === 'world' ? 'local' : 'world'));
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   /******************************************************************************
    * 기존 useAnimation의 내용
