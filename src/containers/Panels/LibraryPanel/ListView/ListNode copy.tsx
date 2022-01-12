@@ -26,6 +26,7 @@ import styles from './ListNode.module.scss';
 import { useContextMenu } from 'components/Contextmenu';
 import ModelNode from '../Nodes/ModelNode';
 import FolderNode from '../Nodes/FolderNode';
+import MotionNode from '../Nodes/MotionNode';
 
 const cx = classNames.bind(styles);
 
@@ -751,6 +752,7 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
     <Fragment>
       {type === 'Model' && <ModelNode nodeId={id} assetId={assetId} nodeName={name} depth={depth} childrenNodeIds={childrens} />}
       {type === 'Folder' && <FolderNode nodeId={id} nodeName={name} depth={depth} extension={extension} filePath={filePath} childrenNodeIds={childrens} />}
+      {type === 'Motion' && <MotionNode nodeId={id} nodeName={name} depth={depth} parentId={parentId} />}
       {isOpenExportModal && <ExportModal motions={currentMotions} onCancel={handleExportCancel} onConfirm={handleExportConfirm} onOutsideClose={handleExportCancel} />}
     </Fragment>
   );
