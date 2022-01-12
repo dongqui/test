@@ -1271,6 +1271,69 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   /**
    * contextMenu 사용
    */
+
+  const transformChildren = useMemo(
+    () => [
+      {
+        label: 'Position',
+        disabled: currentGizmoMode === 'position',
+        onClick: () => {
+          if (gizmoManager) {
+            setCurrentGizmoMode('position');
+            gizmoManager.positionGizmoEnabled = true;
+            gizmoManager.rotationGizmoEnabled = false;
+            gizmoManager.scaleGizmoEnabled = false;
+          }
+        },
+      },
+      {
+        label: 'Rotation',
+        disabled: currentGizmoMode === 'rotation',
+        onClick: () => {
+          if (gizmoManager) {
+            setCurrentGizmoMode('rotation');
+            gizmoManager.positionGizmoEnabled = false;
+            gizmoManager.rotationGizmoEnabled = true;
+            gizmoManager.scaleGizmoEnabled = false;
+          }
+        },
+      },
+      {
+        label: 'Scale',
+        disabled: currentGizmoMode === 'scale',
+        onClick: () => {
+          if (gizmoManager) {
+            setCurrentGizmoMode('scale');
+            gizmoManager.positionGizmoEnabled = false;
+            gizmoManager.rotationGizmoEnabled = false;
+            gizmoManager.scaleGizmoEnabled = true;
+          }
+        },
+      },
+    ],
+    [currentGizmoMode, gizmoManager],
+  );
+
+  const orientChildren = useMemo(
+    () => [
+      {
+        label: 'World',
+        disabled: currentGizmoCoordinate === 'world',
+        onClick: () => {
+          setCurrentGizmoCoordinate('world');
+        },
+      },
+      {
+        label: 'Local',
+        disabled: currentGizmoCoordinate === 'local',
+        onClick: () => {
+          setCurrentGizmoCoordinate('local');
+        },
+      },
+    ],
+    [currentGizmoCoordinate],
+  );
+
   const contextMenuList = useMemo(
     () => [
       {
@@ -1281,6 +1344,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       },
       {
         label: 'Unselect all',
+        disabled: _selectedTargets.length === 0,
         onClick: () => {
           dispatch(selectingDataActions.resetSelectedTargets());
         },
@@ -1288,42 +1352,12 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       },
       {
         label: 'Transform',
+        children: transformChildren,
+      },
+      {
+        label: 'Orient',
         separator: true,
-        children: [
-          {
-            label: 'Position',
-            onClick: () => {
-              if (gizmoManager) {
-                setCurrentGizmoMode('position');
-                gizmoManager.positionGizmoEnabled = true;
-                gizmoManager.rotationGizmoEnabled = false;
-                gizmoManager.scaleGizmoEnabled = false;
-              }
-            },
-          },
-          {
-            label: 'Rotation',
-            onClick: () => {
-              if (gizmoManager) {
-                setCurrentGizmoMode('rotation');
-                gizmoManager.positionGizmoEnabled = false;
-                gizmoManager.rotationGizmoEnabled = true;
-                gizmoManager.scaleGizmoEnabled = false;
-              }
-            },
-          },
-          {
-            label: 'Scale',
-            onClick: () => {
-              if (gizmoManager) {
-                setCurrentGizmoMode('scale');
-                gizmoManager.positionGizmoEnabled = false;
-                gizmoManager.rotationGizmoEnabled = false;
-                gizmoManager.scaleGizmoEnabled = true;
-              }
-            },
-          },
-        ],
+        children: orientChildren,
       },
       {
         label: 'Camera reset',
@@ -1629,7 +1663,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         },
       },
     ],
-    [_playState, _screenList, _selectedTargets.length, dispatch, gizmoManager, prevCameraPositions],
+    [_playState, _screenList, _selectedTargets.length, dispatch, orientChildren, prevCameraPositions, transformChildren],
   );
 
   useEffect(() => {
@@ -1643,7 +1677,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         if (pointerInfo.event.button === 2 && !pointerInfo.event.altKey) {
           switch (pointerInfo.type) {
             case BABYLON.PointerEventTypes.POINTERDOWN: {
-              // setIsContextMenuOpen((prev) => !prev); // 임시로 토글로 넣어놓았읍니다
               onContextMenuClose();
               onContextMenuOpen({ top: scene.pointerY, left: scene.pointerX, menu: contextMenuList });
               break;
