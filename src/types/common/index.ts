@@ -174,5 +174,3 @@ export type PlaskBvhMap = {
 };
 
 export type ContextMenuClickItemHandlerProps = any;
-
-export type ContextMenuClickItemHandler = (event: React.MouseEvent<HTMLElement>, props: any) => void;

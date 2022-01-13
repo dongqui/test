@@ -439,6 +439,10 @@ function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualiz
   const { screenList, assetList } = plaskProject;
   const { assetId, nodeId, parentId } = action.payload;
 
+  if (!assetId) {
+    return;
+  }
+
   screenList.forEach(({ scene }) => {
     scene.animationGroups.forEach((animationGroup) => {
       animationGroup.stop();

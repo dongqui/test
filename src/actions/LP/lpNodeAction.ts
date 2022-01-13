@@ -50,21 +50,21 @@ interface DuplicateMotionParams {
 
 interface VisualizeMotionParams {
   parentId: string;
-  assetId: string;
+  assetId?: string;
   nodeId: string;
 }
 
-interface selectNodeParams {
+interface SelectNodeParams {
   nodeId: string;
   assetId?: string;
 }
 
-interface dropNodeOnFolderParams {
+interface DropNodeOnFolderParams {
   filePath: string;
   nodeId: string;
 }
 
-interface dropMotionOnModel {
+interface DropMotionOnModelParams {
   nodeId: string;
   filePath: string;
 }
@@ -151,14 +151,14 @@ export const visualizeMotion = (params: VisualizeMotionParams) => ({
   },
 });
 
-export const selectNode = (params: selectNodeParams) => ({
+export const selectNode = (params: SelectNodeParams) => ({
   type: SELECT_NODE,
   payload: {
     ...params,
   },
 });
 
-export const dropNodeOnFolder = (params: dropNodeOnFolderParams) => ({
+export const dropNodeOnFolder = (params: DropNodeOnFolderParams) => ({
   type: DROP_NODE_ON_FOLDER,
   payload: {
     ...params,
@@ -172,7 +172,7 @@ export const dragNodeStart = (node: LP.Node) => ({
   },
 });
 
-export const dropMotionOnModel = (params: dropMotionOnModel) => ({
+export const dropMotionOnModel = (params: DropMotionOnModelParams) => ({
   type: DROP_MOTION_ON_MODEL,
   payload: {
     ...params,

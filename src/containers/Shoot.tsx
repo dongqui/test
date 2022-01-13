@@ -15,7 +15,8 @@ import MiddleBar from './MiddleBar/Shoot';
 import HotKeyOrder from './HotKeyOrder';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
-import Modal from 'components/Modal/Modal';
+import Modal from 'containers/Common/Modal/Modal';
+import ContextMenu from 'containers/Common/ContextMenu/ContextMenu';
 
 const cx = classNames.bind(styles);
 
@@ -300,6 +301,7 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
             </Box>
           </Box>
           <Modal />
+          <ContextMenu />
         </Fragment>
       </ContextMenuProvider>
     </div>

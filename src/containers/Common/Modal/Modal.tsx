@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import * as Modals from 'components/Modal/modals';
+import * as Modals from './modals';
 import * as globalUIActions from 'actions/Common/globalUI';
 export interface Modal {
   name: keyof typeof Modals;
@@ -10,7 +10,7 @@ export interface Modal {
 export interface ModalDefaultProps {
   onClose: () => void;
 }
-export interface OpenModaFn<ReturnType> {
+export interface OpenModalFn<ReturnType> {
   <T extends Modal['name']>(name: T, props: Omit<React.ComponentProps<typeof Modals[T]>, keyof ModalDefaultProps>): ReturnType;
 }
 

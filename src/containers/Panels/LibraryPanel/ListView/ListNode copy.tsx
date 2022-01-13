@@ -20,7 +20,6 @@ import * as animationDataActions from 'actions/animationDataAction';
 import { AnimationIngredient, PlaskMocapData } from 'types/common';
 import classNames from 'classnames/bind';
 import styles from './ListNode.module.scss';
-import { useContextMenu } from 'components/Contextmenu';
 import ModelNode from '../Nodes/ModelNode';
 import FolderNode from '../Nodes/FolderNode';
 import MotionNode from '../Nodes/MotionNode';
@@ -62,8 +61,6 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
   const renameRef = useRef<HTMLInputElement>(null);
 
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
-
-  const { showContextMenu, hideAllContextMenu } = useContextMenu();
 
   const depthAddKey = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
     const changeNode = find(node, { id: childId });

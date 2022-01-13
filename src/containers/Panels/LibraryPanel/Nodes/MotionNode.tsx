@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import { useContextMenu } from 'components/Contextmenu';
+import * as globalUIActions from 'actions/Common/globalUI';
 
 interface Props {
   nodeId: string;
@@ -15,7 +15,6 @@ interface Props {
 
 const ModelNode = ({ nodeId, assetId, nodeName, depth, parentId }: Props) => {
   const dispatch = useDispatch();
-  const { showContextMenu } = useContextMenu();
   const { selectedId, nodes } = useSelector((state) => state.lpNode);
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
 
@@ -25,16 +24,14 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, parentId }: Props) => {
 
   const onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     dispatch(lpNodeActions.selectNode({ nodeId, assetId }));
-    showContextMenu({
-      contextMenuId: 'MotionContextMenu',
-      event: e,
-      props: {
-        selectId: nodeId,
+    dispatch(
+      globalUIActions.openContextMenu('MotionContextMenu', e, {
+        nodeId,
         assetId,
         nodeName,
         parentId,
-      },
-    });
+      }),
+    );
   };
 
   const handleClickNode = () => {

@@ -4,7 +4,7 @@ import { useSelector } from 'reducers';
 import { find } from 'lodash';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import { useContextMenu } from 'components/Contextmenu';
+import * as globalUIActions from 'actions/Common/globalUI';
 import ListChildren from '../ListView/ListChildren copy';
 
 interface Props {
@@ -18,7 +18,6 @@ interface Props {
 
 const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds, filePath }: Props) => {
   const dispatch = useDispatch();
-  const { showContextMenu } = useContextMenu();
   const { selectedId, nodes, draggedNode } = useSelector((state) => state.lpNode);
   const { retargetMaps } = useSelector((state) => state.animationData);
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
@@ -30,14 +29,12 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds, filePath
 
   const onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     dispatch(lpNodeActions.selectNode({ nodeId, assetId }));
-    showContextMenu({
-      contextMenuId: 'ModelContextMenu',
-      event: e,
-      props: {
-        selectId: nodeId,
+    dispatch(
+      globalUIActions.openContextMenu('ModelContextMenu', e, {
+        nodeId,
         assetId,
-      },
-    });
+      }),
+    );
   };
 
   const handleClickNode = () => {

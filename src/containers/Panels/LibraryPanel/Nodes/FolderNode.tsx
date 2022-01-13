@@ -4,7 +4,6 @@ import { useSelector } from 'reducers';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
-import { useContextMenu } from 'components/Contextmenu';
 import ListChildren from '../ListView/ListChildren copy';
 import { getNodeMaxDepth } from 'utils/LP/FileSystem';
 
@@ -19,20 +18,18 @@ interface Props {
 
 const FolderNode = ({ nodeId, filePath, extension, depth, nodeName, childrenNodeIds }: Props) => {
   const dispatch = useDispatch();
-  const { showContextMenu } = useContextMenu();
   const { selectedId, draggedNode, nodes } = useSelector((state) => state.lpNode);
   const [showsChildrens, setShowsChildrens] = useState(false);
 
   const onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-    showContextMenu({
-      contextMenuId: 'FolderContextMenu',
-      event: e,
-      props: {
-        selectId: nodeId,
+    dispatch(lpNodeActions.selectNode({ nodeId }));
+    dispatch(
+      globalUIActions.openContextMenu('FolderContextMenu', e, {
+        nodeId,
         filePath,
         extension,
-      },
-    });
+      }),
+    );
   };
 
   const handleClickNode = () => {

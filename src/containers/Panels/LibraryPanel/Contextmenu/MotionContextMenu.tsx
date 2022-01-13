@@ -1,86 +1,75 @@
-import { ContextMenu, ContextMenuItem } from 'components/Contextmenu';
-import { ContextMenuClickItemHandler } from 'types/common';
+import { BaseContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { useDispatch } from 'react-redux';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
+interface Props {
+  nodeId: string;
+  parentId: string;
+  nodeName: string;
+  assetId?: string;
+}
 
-const MotionContextMenu = () => {
+const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId }: Props) => {
   const dispatch = useDispatch();
-  const handleClickItem: ContextMenuClickItemHandler = (event, propsFromTrigger) => {
-    switch (event.currentTarget.id) {
-      case 'delete':
-        dispatch(
-          globalUIActions.openModal('ConfirmModal', {
-            title: 'Delete Folder',
-            // TODO: MOTION 삭제 메세지
-            message: 'Are you sure? All files in the directory will be deleted.',
-            onConfirm: () => {
-              dispatch(lpNodeActions.deleteNode({ nodeId: propsFromTrigger.selectId }));
-            },
-            onCancel: () => {},
-          }),
-        );
-        break;
-      case 'edit-name':
-        // TODO
-        break;
-      case 'Duplicate':
-        dispatch(
-          lpNodeActions.duplicateMotion({
-            nodeId: propsFromTrigger.selectId,
-            parentId: propsFromTrigger.parentId,
-            nodeName: propsFromTrigger.nodeName,
-          }),
-        );
-        break;
-      // case 'copy':
-      //   break;
-      // case 'paste':
-      //   break;
-      case 'visualization':
-        dispatch(
-          lpNodeActions.visualizeMotion({
-            nodeId: propsFromTrigger.selectId,
-            parentId: propsFromTrigger.parentId,
-            assetId: propsFromTrigger.assetId,
-          }),
-        );
-        break;
-      case 'visualization-cancel':
-        dispatch(lpNodeActions.cancelVisulization(propsFromTrigger.assetId));
-        break;
-      case 'export':
-        // TODO
-        break;
+  const handleDelete = () => {
+    dispatch(
+      globalUIActions.openModal('ConfirmModal', {
+        title: 'Delete Folder',
+        // TODO: MOTION 삭제 메세지
+        message: 'Are you sure? All files in the directory will be deleted.',
+        onConfirm: () => {
+          dispatch(lpNodeActions.deleteNode({ nodeId }));
+        },
+        onCancel: () => {},
+      }),
+    );
+  };
+
+  const handleEditName = () => {};
+
+  const handleDuplicate = () => {
+    dispatch(
+      lpNodeActions.duplicateMotion({
+        nodeId,
+        parentId,
+        nodeName,
+      }),
+    );
+  };
+
+  const handleVisualization = () => {
+    dispatch(
+      lpNodeActions.visualizeMotion({
+        nodeId,
+        parentId,
+        assetId,
+      }),
+    );
+  };
+
+  const handleCancelVisualization = () => {
+    if (assetId) {
+      dispatch(lpNodeActions.cancelVisulization(assetId));
     }
   };
+
+  const handleExport = () => {};
+
   return (
-    <ContextMenu contextMenuId="MotionContextMenu">
-      <ContextMenuItem id="delete" onClick={handleClickItem}>
-        Delete
-      </ContextMenuItem>
-      <ContextMenuItem id="edit-name" onClick={handleClickItem}>
-        Edit name
-      </ContextMenuItem>
-      <ContextMenuItem id="duplicate" onClick={handleClickItem}>
-        Duplicate
-      </ContextMenuItem>
-      {/* <ContextMenuItem id="copy" onClick={handleClickItem}>
-        Copy
-      </ContextMenuItem>
-      <ContextMenuItem id="paste" onClick={handleClickItem}>
-        Paste
-      </ContextMenuItem> */}
-      <ContextMenuItem id="visualization" onClick={handleClickItem}>
-        Visualization
-      </ContextMenuItem>
-      <ContextMenuItem id="visualization-cancel" onClick={handleClickItem}>
-        Visualization cancel
-      </ContextMenuItem>
-      <ContextMenuItem id="export" onClick={handleClickItem}>
-        Export
-      </ContextMenuItem>
-    </ContextMenu>
+    <BaseContextMenu>
+      <ContextMenuItem onClick={handleDelete}>Delete</ContextMenuItem>
+      <ContextMenuItem onClick={handleEditName}>Edit name</ContextMenuItem>
+      {parentId !== '__root__' && (
+        <>
+          <ContextMenuItem onClick={handleDuplicate}>Duplicate</ContextMenuItem>
+          {/* <ContextMenuItem>Copy</ContextMenuItem>
+          <ContextMenuItem>Paste</ContextMenuItem> */}
+          <ContextMenuItem onClick={handleVisualization}>Visualization</ContextMenuItem>
+          <ContextMenuItem onClick={handleCancelVisualization}>Visualization cancel</ContextMenuItem>
+          <ContextMenuItem onClick={handleExport}>Export</ContextMenuItem>
+        </>
+      )}
+    </BaseContextMenu>
   );
 };
 
