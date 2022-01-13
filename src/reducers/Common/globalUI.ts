@@ -1,27 +1,25 @@
-import { OPEN_MODAL } from './../../actions/Common/globalUI';
-import * as Modals from 'components/Modal';
+import { Modal } from 'components/Modal/Modal';
 import * as globalUIActions from 'actions/Common/globalUI';
-
 interface State {
-  openModalName: null | keyof typeof Modals;
-  openModalProps: Record<string, any>;
+  modal: Modal | null;
 }
 
 const defaultState: State = {
-  openModalName: null,
-  openModalProps: {},
+  modal: null,
 };
 
 export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIActions) => {
   switch (action.type) {
     case globalUIActions.OPEN_MODAL:
       return Object.assign(state, {
-        openModalName: action.payload.modalName,
+        modal: {
+          name: action.payload.modalName,
+          props: action.payload.modalProps,
+        },
       });
     case globalUIActions.CLOSE_MODAL:
       return Object.assign(state, {
-        openModalName: null,
-        openModalProps: {},
+        modal: null,
       });
     default:
       return state;

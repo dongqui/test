@@ -4,11 +4,8 @@ import { useSelector } from 'reducers';
 import { find } from 'lodash';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as cpActions from 'actions/CP/cpModeSelection';
 import { useContextMenu } from 'components/Contextmenu';
 import ListChildren from '../ListView/ListChildren copy';
-import { useModal } from 'components/Modal/Modal';
-import { CONFIRM_04 } from 'constants/Text';
 
 interface Props {
   nodeId: string;
@@ -26,7 +23,6 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds, filePath
   const { retargetMaps } = useSelector((state) => state.animationData);
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
   const [showsChildrens, setShowsChildrens] = useState(false);
-  const { onModalOpen } = useModal();
 
   const isVisualized = !!(assetId && visualizedAssetIds.includes(assetId));
   // TODO
@@ -54,7 +50,6 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds, filePath
 
   const handleDragStart = () => {
     const draggedNode = nodes.find((node) => node.id === nodeId);
-    console.log(draggedNode);
     if (draggedNode) {
       dispatch(lpNodeActions.dragNodeStart(draggedNode));
     }
@@ -68,17 +63,17 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds, filePath
   const handleDrop = () => {
     if (draggedNode?.type !== 'Motion' || !draggedNode?.mocapData) return;
     if (isRetargetError()) {
-      onModalOpen('ConfirmModal', {
-        title: 'Confirm',
-        message: CONFIRM_04,
-        onConfirm: () => {
-          if (assetId) {
-            dispatch(lpNodeActions.visualizeNode(assetId));
-            dispatch(cpActions.switchMode({ mode: 'Retargeting' }));
-          }
-        },
-      });
-      return;
+      // onModalOpen('ConfirmModal', {
+      //   title: 'Confirm',
+      //   message: CONFIRM_04,
+      //   onConfirm: () => {
+      //     if (assetId) {
+      //       dispatch(lpNodeActions.visualizeNode(assetId));
+      //       dispatch(cpActions.switchMode({ mode: 'Retargeting' }));
+      //     }
+      //   },
+      // });
+      // return;
     }
     dispatch(
       lpNodeActions.dropMotionOnModel({

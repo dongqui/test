@@ -1,23 +1,24 @@
 import { ContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { ContextMenuClickItemHandler } from 'types/common';
-import { useModal } from 'components/Modal/Modal';
 import { useDispatch } from 'react-redux';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as globalUIActions from 'actions/Common/globalUI';
 
 const FolderContextMenu = () => {
   const dispatch = useDispatch();
-  const { onModalOpen } = useModal();
   const handleClickItem: ContextMenuClickItemHandler = (event, propsFromTrigger) => {
     switch (event.currentTarget.id) {
       case 'delete':
-        onModalOpen('ConfirmModal', {
-          title: 'Delete Folder',
-          message: 'Are you sure? All files in the directory will be deleted.',
-          onConfirm: () => {
-            dispatch(lpNodeActions.deleteNode({ nodeId: propsFromTrigger.selectId }));
-          },
-          onCancel: () => {},
-        });
+        dispatch(
+          globalUIActions.openModal('ConfirmModal', {
+            title: 'Delete Folder',
+            message: 'Are you sure? All files in the directory will be deleted.',
+            onConfirm: () => {
+              dispatch(lpNodeActions.deleteNode({ nodeId: propsFromTrigger.selectId }));
+            },
+            onCancel: () => {},
+          }),
+        );
         break;
       case 'edit-name':
         // TODO

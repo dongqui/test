@@ -438,13 +438,7 @@ function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualiz
   const { animationIngredients } = animationData;
   const { screenList, assetList } = plaskProject;
   const { assetId, nodeId, parentId } = action.payload;
-  yield put(
-    globalUIActions.openModal('AlertModal', {
-      title: 'f',
-      message: 'd',
-      confirmText: 'df',
-    }),
-  );
+
   screenList.forEach(({ scene }) => {
     scene.animationGroups.forEach((animationGroup) => {
       animationGroup.stop();

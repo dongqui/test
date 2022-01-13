@@ -4,7 +4,7 @@ export const OPEN_MODAL = 'globalUI/OPEN_MODAL' as const;
 export const CLOSE_MODAL = 'globalUI/CLOSE_MODAL' as const;
 
 interface OpenModalReturnyType {
-  type: string;
+  type: 'globalUI/OPEN_MODAL';
   payload: {
     modalName: Modal['name'];
     modalProps?: Record<string, any>;
