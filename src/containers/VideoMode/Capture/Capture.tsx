@@ -64,6 +64,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   const [isIndicatorClicked, setIsIndicatorClicked] = useState<boolean>(false);
   const [prevX, setPrevX] = useState<number>(0);
   const [isTimeout, setIsTimeout] = useState<boolean>(false);
+  const [isServerUpdating, setIsServerUpdating] = useState<boolean>(false);
 
   const {
     mediaStreamInitialize,
@@ -462,7 +463,10 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             })}
             {!recordState && <div className={cx('disable-control')}></div>}
           </div>
-          {recordState && <FilledButton className={cx('extract-button')} text="Extract Motion" onClick={() => setReadyExtract(true)} />}
+          {/* api 연동 */}
+          {/* {recordState && <FilledButton className={cx('extract-button')} text="Extract Motion" onClick={() => setReadyExtract(true)} />} */}
+          {/* api 점검중 */}
+          {recordState && <FilledButton className={cx('extract-button')} text="Extract Motion" onClick={() => setIsServerUpdating(true)} />}
           {!recordState && <FilledButton className={cx('extract-button', 'disabled')} text="Extract Motion" />}
           {!deviceList.length && !videoURL && <div className={cx('disable-overlay')} />}
         </div>
@@ -577,6 +581,15 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               The uploaded video doesn't meet the motion capture requirement
             </p>
             <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)}></FilledButton>
+          </div>
+        </BaseModal>
+      )}
+      {isServerUpdating && (
+        <BaseModal isOpen={isServerUpdating}>
+          <div className={cx('failed-modal')}>
+            <h4 className={cx('modal-heading')}>Server update in progress.</h4>
+            <p className={cx('extract-name-paragraph')}>Motion extraction is available after the time below. (2022-01-13, 01:00 AM ~ 04:00 AM, PST)</p>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsServerUpdating(false)}></FilledButton>
           </div>
         </BaseModal>
       )}
