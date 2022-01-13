@@ -1,3 +1,4 @@
+import { visualizeMotion, visualizeNode } from './../../actions/LP/lpNodeAction';
 import { find, cloneDeep, filter } from 'lodash';
 import { select, put, takeLatest, all, SagaReturnType, call } from 'redux-saga/effects';
 import { RootState } from 'reducers';
@@ -14,6 +15,7 @@ import * as BABYLON from '@babylonjs/core';
 import { v4 as uuid } from 'uuid';
 import produce from 'immer';
 import { AnimationIngredient } from 'types/common';
+import { useModal } from 'components/Modal/Modal';
 
 const deleteChild = (node: LP.Node[], ids: string[]) => {
   let memory: LP.Node[] = [];
@@ -636,8 +638,7 @@ function* handleDropMotionOnModel(action: ReturnType<typeof lpNodeActions.dropMo
 
         if (dropNode.assetId) {
           yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
-
-          handleVisualization();
+          yield put(lpNodeActions.visualizeNode(dropNode.assetId));
         }
 
         return;

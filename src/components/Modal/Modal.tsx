@@ -1,21 +1,27 @@
 import * as Modals from 'components/Modal';
-import React, { useState, useCallback, createContext, ReactNode, useContext } from 'react';
-
-interface Modal {
+import React, { useState, useCallback, createContext, ReactNode, useContext, useEffect } from 'react';
+import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import * as globalUIActions from 'actions/Common/globalUI';
+export interface Modal {
   name: keyof typeof Modals;
-  props: Record<string, any>;
+  props?: Record<string, any>;
 }
 
-interface ModalDefaultProps {
+export interface ModalDefaultProps {
   onClose: () => void;
 }
 
-interface ModalRendererProps extends ModalDefaultProps {
+export interface ModalRendererProps extends ModalDefaultProps {
   modal: Modal;
 }
 
-interface ModalContextValue {
-  onModalOpen: <T extends Modal['name']>(name: T, props: Omit<React.ComponentProps<typeof Modals[T]>, keyof ModalDefaultProps>) => void;
+export interface OpenModaFn<ReturnType> {
+  <T extends Modal['name']>(name: T, props: Omit<React.ComponentProps<typeof Modals[T]>, keyof ModalDefaultProps>): ReturnType;
+}
+
+export interface ModalContextValue {
+  onModalOpen: OpenModaFn<void>;
   onModalClose: () => void;
 }
 
@@ -31,14 +37,24 @@ const ModalRenderer = ({ onClose, modal }: ModalRendererProps) => {
 
 export function ModalContextProvider({ children }: { children: ReactNode }) {
   const [modal, setModal] = useState<Modal | null>(null);
+  const { openModalName, openModalProps } = useSelector((state) => state.globalUI);
+  const dispatch = useDispatch();
 
-  const onModalOpen: ModalContextValue['onModalOpen'] = useCallback((name, props) => {
-    setModal({ name, props });
-  }, []);
+  useEffect(() => {
+    if (!openModalName) {
+      setModal(null);
+    } else {
+      setModal({ name: openModalName, props: openModalProps });
+    }
+  }, [openModalName, openModalProps]);
 
-  const onModalClose = useCallback(() => {
-    setModal(null);
-  }, []);
+  const onModalOpen: ModalContextValue['onModalOpen'] = (name, props) => {
+    dispatch(globalUIActions.openModal(name, props));
+  };
+
+  const onModalClose = () => {
+    dispatch(globalUIActions.closeModal());
+  };
 
   return (
     <ModalContext.Provider value={{ onModalOpen, onModalClose }}>
