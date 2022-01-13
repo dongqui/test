@@ -21,7 +21,7 @@ import Box from 'components/Layout/Box';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
-import LPBody from './LPBody';
+import LPBody from './LPBody copy';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 

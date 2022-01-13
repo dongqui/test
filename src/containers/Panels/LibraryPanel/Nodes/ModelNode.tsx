@@ -14,11 +14,12 @@ interface Props {
   nodeId: string;
   assetId?: string;
   nodeName: string;
+  filePath: string;
   depth: number;
   childrenNodeIds: string[];
 }
 
-const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds }: Props) => {
+const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds, filePath }: Props) => {
   const dispatch = useDispatch();
   const { showContextMenu } = useContextMenu();
   const { selectedId, nodes, draggedNode } = useSelector((state) => state.lpNode);
@@ -53,6 +54,7 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds }: Props)
 
   const handleDragStart = () => {
     const draggedNode = nodes.find((node) => node.id === nodeId);
+    console.log(draggedNode);
     if (draggedNode) {
       dispatch(lpNodeActions.dragNodeStart(draggedNode));
     }
@@ -70,12 +72,20 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds }: Props)
         title: 'Confirm',
         message: CONFIRM_04,
         onConfirm: () => {
-          dispatch(lpNodeActions.visualizeNode);
-          dispatch(cpActions.switchMode({ mode: 'Retargeting' }));
+          if (assetId) {
+            dispatch(lpNodeActions.visualizeNode(assetId));
+            dispatch(cpActions.switchMode({ mode: 'Retargeting' }));
+          }
         },
       });
       return;
     }
+    dispatch(
+      lpNodeActions.dropMotionOnModel({
+        nodeId,
+        filePath,
+      }),
+    );
   };
 
   return (
@@ -92,6 +102,7 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds }: Props)
         handleClickArrowButton={handleClickArrowButton}
         showsChildrens={showsChildrens}
         handleDragStart={handleDragStart}
+        handleDrop={handleDrop}
       />
 
       {showsChildrens && <ListChildren items={childrenNodeIds} />}

@@ -1,5 +1,4 @@
-import { visualizeMotion, visualizeNode } from './../../actions/LP/lpNodeAction';
-import { find, cloneDeep, filter } from 'lodash';
+import _, { find, cloneDeep, filter } from 'lodash';
 import { select, put, takeLatest, all, SagaReturnType, call } from 'redux-saga/effects';
 import { RootState } from 'reducers';
 import { goToSpecificPoses, checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient } from 'utils/RP';
@@ -11,11 +10,13 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import * as cpActions from 'actions/CP/cpModeSelection';
+import * as globalUIActions from 'actions/Common/globalUI';
 import * as BABYLON from '@babylonjs/core';
 import { v4 as uuid } from 'uuid';
 import produce from 'immer';
 import { AnimationIngredient } from 'types/common';
-import { useModal } from 'components/Modal/Modal';
+import * as TEXT from 'constants/Text';
 
 const deleteChild = (node: LP.Node[], ids: string[]) => {
   let memory: LP.Node[] = [];
@@ -121,7 +122,7 @@ function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirector
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
 }
 
-function* handleVisualize(action: ReturnType<typeof lpNodeActions.visualizeNode>) {
+function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeNode>) {
   // 기존 asset visualize cancel -> multi-model 시에는 기존 asset도 유지
   const { plaskProject, selectingData, screenData }: RootState = yield select();
   const { visualizedAssetIds, assetList, screenList } = plaskProject;
@@ -149,107 +150,108 @@ function* handleVisualize(action: ReturnType<typeof lpNodeActions.visualizeNode>
     // 선택 대상에서 제외
     yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
   }
-
   // 새로운 asset visualize
-  const targetAsset = assetList.find((asset) => asset.id === assetId);
-  if (!targetAsset || !assetId || visualizedAssetIds.includes(assetId)) {
-    return;
-  }
+  if (assetId && !visualizedAssetIds.includes(assetId)) {
+    const targetAsset = assetList.find((asset) => asset.id === assetId);
 
-  const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
-  // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
-  for (const screen of screenList) {
-    const { id: screenId, scene } = screen;
-    const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === screenId);
+    if (targetAsset) {
+      const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
 
-    if (scene.isReady()) {
-      // scene들에 mesh 추가
-      meshes.forEach((mesh) => {
-        mesh.renderingGroupId = 1;
-        scene.addMesh(mesh);
+      // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
+      for (const screen of screenList) {
+        const { id: screenId, scene } = screen;
+        const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === screenId);
 
-        if (targetVisibilityOption) {
-          mesh.isVisible = targetVisibilityOption.isMeshVisible;
-        }
-      });
+        if (scene.isReady()) {
+          // scene들에 mesh 추가
+          meshes.forEach((mesh) => {
+            mesh.renderingGroupId = 1;
+            scene.addMesh(mesh);
 
-      // scene들에 geometry 추가
-      geometries.forEach((geometry) => {
-        scene.addGeometry(geometry);
-      });
+            if (targetVisibilityOption) {
+              mesh.isVisible = targetVisibilityOption.isMeshVisible;
+            }
+          });
 
-      // scene들에 skeleton 추가
-      scene.addSkeleton(skeleton);
+          // scene들에 geometry 추가
+          geometries.forEach((geometry) => {
+            scene.addGeometry(geometry);
+          });
 
-      const jointTransformNodes: BABYLON.TransformNode[] = [];
+          // scene들에 skeleton 추가
+          scene.addSkeleton(skeleton);
 
-      // joints 생성 및 scene들에 추가
-      for (const bone of bones) {
-        if (
-          !bone.name.toLowerCase().includes('scene') &&
-          !bone.name.toLowerCase().includes('camera') &&
-          !bone.name.toLowerCase().includes('light') &&
-          // @TODO
-          !bone.name.toLowerCase().includes('__root__') // return -> 조건문으로 변경
-        ) {
-          const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
-          joint.id = `${assetId}//${bone.name}//joint`;
-          joint.renderingGroupId = 2;
-          joint.attachToBone(bone, meshes[0]);
+          const jointTransformNodes: BABYLON.TransformNode[] = [];
 
-          if (targetVisibilityOption) {
-            joint.isVisible = targetVisibilityOption.isBoneVisible;
-          }
+          // joints 생성 및 scene들에 추가
+          for (const bone of bones) {
+            if (
+              !bone.name.toLowerCase().includes('scene') &&
+              !bone.name.toLowerCase().includes('camera') &&
+              !bone.name.toLowerCase().includes('light') &&
+              // @TODO
+              !bone.name.toLowerCase().includes('__root__') // return -> 조건문으로 변경
+            ) {
+              const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
+              joint.id = `${assetId}//${bone.name}//joint`;
+              joint.renderingGroupId = 2;
+              joint.attachToBone(bone, meshes[0]);
 
-          const targetTransformNode = bone.getTransformNode();
-          if (targetTransformNode) {
-            jointTransformNodes.push(targetTransformNode);
-          }
+              if (targetVisibilityOption) {
+                joint.isVisible = targetVisibilityOption.isBoneVisible;
+              }
 
-          // joint마다 actionManager 설정
-          joint.actionManager = new BABYLON.ActionManager(scene);
-          joint.actionManager.registerAction(
-            // joint 클릭으로 bone 선택하기 위한 액션
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, function* (event: BABYLON.ActionEvent) {
               const targetTransformNode = bone.getTransformNode();
               if (targetTransformNode) {
-                const sourceEvent: PointerEvent = event.sourceEvent;
-                if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                  yield put(
-                    selectingDataActions.ctrlKeySingleSelect({
-                      target: targetTransformNode,
-                    }),
-                  );
-                } else {
-                  yield put(
-                    selectingDataActions.defaultSingleSelect({
-                      target: targetTransformNode,
-                    }),
-                  );
-                }
+                jointTransformNodes.push(targetTransformNode);
               }
-            }),
-          );
-          // joint hover 시 커서 모양 변경
-          joint.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
-              scene.hoverCursor = 'pointer';
-            }),
-          );
+
+              // joint마다 actionManager 설정
+              joint.actionManager = new BABYLON.ActionManager(scene);
+              joint.actionManager.registerAction(
+                // joint 클릭으로 bone 선택하기 위한 액션
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, function* (event: BABYLON.ActionEvent) {
+                  const targetTransformNode = bone.getTransformNode();
+                  if (targetTransformNode) {
+                    const sourceEvent: PointerEvent = event.sourceEvent;
+                    if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+                      yield put(
+                        selectingDataActions.ctrlKeySingleSelect({
+                          target: targetTransformNode,
+                        }),
+                      );
+                    } else {
+                      yield put(
+                        selectingDataActions.defaultSingleSelect({
+                          target: targetTransformNode,
+                        }),
+                      );
+                    }
+                  }
+                }),
+              );
+              // joint hover 시 커서 모양 변경
+              joint.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+                  scene.hoverCursor = 'pointer';
+                }),
+              );
+            }
+          }
+
+          // visualizedAssetIds에 추가
+          yield put(plaskProjectActions.renderAsset({ assetId }));
+          // dragBox 선택 대상에 추가
+          yield put(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
+
+          // scene들에 애니메이션 적용을 위한 transformNode 추가
+          transformNodes.forEach((transformNode) => {
+            scene.addTransformNode(transformNode);
+            // quaternionRotation 애니메이션을 적용하기 위한 코드
+            transformNode.rotate(BABYLON.Axis.X, 0);
+          });
         }
       }
-
-      // visualizedAssetIds에 추가
-      yield put(plaskProjectActions.renderAsset({ assetId }));
-      // dragBox 선택 대상에 추가
-      yield put(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
-
-      // scene들에 애니메이션 적용을 위한 transformNode 추가
-      transformNodes.forEach((transformNode) => {
-        scene.addTransformNode(transformNode);
-        // quaternionRotation 애니메이션을 적용하기 위한 코드
-        transformNode.rotate(BABYLON.Axis.X, 0);
-      });
     }
   }
 }
@@ -436,7 +438,13 @@ function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualiz
   const { animationIngredients } = animationData;
   const { screenList, assetList } = plaskProject;
   const { assetId, nodeId, parentId } = action.payload;
-
+  yield put(
+    globalUIActions.openModal('AlertModal', {
+      title: 'f',
+      message: 'd',
+      confirmText: 'df',
+    }),
+  );
   screenList.forEach(({ scene }) => {
     scene.animationGroups.forEach((animationGroup) => {
       animationGroup.stop();
@@ -448,10 +456,8 @@ function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualiz
   // TODO 선언적으로 수정
   if (parentModel) {
     const motions = filter(animationIngredients, { assetId: parentModel.assetId });
-
     if (motions && parentModel.assetId) {
       const selectedMotion = find(motions, { id: nodeId });
-
       if (selectedMotion) {
         const currentAsset = assetList.find((asset) => asset.id === parentModel.assetId);
         if (currentAsset) {
@@ -648,25 +654,28 @@ function* handleDropMotionOnModel(action: ReturnType<typeof lpNodeActions.dropMo
 
   // @TODO 없으면 비활성 처리 필요
   if (draggedNodeClone && dropNode && targetAsset && targetRetargetMap) {
-    onModalOpen({
-      title: 'Waiting',
-      message: TEXT.WAITING_03,
-    });
+    yield put(
+      globalUIActions.openModal('LoadingModal', {
+        title: 'Waiting',
+        message: TEXT.WAITING_03,
+      }),
+    );
 
     try {
-      const mocapAnimationIngredient = await createAnimationIngredientFromMocapData(
+      const mocapAnimationIngredient: SagaReturnType<typeof createAnimationIngredientFromMocapData> = yield call(
+        createAnimationIngredientFromMocapData,
         dropNode.assetId!,
-        dragNode.name,
+        draggedNode.name,
         targetRetargetMap,
         targetAsset.initialPoses,
         filterAnimatableTransformNodes(targetAsset.transformNodes),
-        dragNode.mocapData,
+        draggedNode.mocapData,
         3000,
       );
 
       const currentPathNodeName = nodes
         .filter((node) => {
-          if (node.parentId === id) {
+          if (node.parentId === nodeId) {
             const isMatch = draggedNodeClone.name.match(/ \(\d+\)$/g);
             const tempName = draggedNodeClone.name.replace(/ \(\d+\)$/g, '');
             if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
@@ -683,12 +692,12 @@ function* handleDropMotionOnModel(action: ReturnType<typeof lpNodeActions.dropMo
       });
 
       const nextNodes = produce(nodes, (draft) => {
-        const targetNode = find(draft, { id });
+        const targetNode = find(draft, { id: nodeId });
 
         if (targetNode) {
           draggedNodeClone.assetId = mocapAnimationIngredient.assetId;
           draggedNodeClone.id = mocapAnimationIngredient.id;
-          draggedNodeClone.parentId = id;
+          draggedNodeClone.parentId = nodeId;
           // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${nodeName}`;
           draggedNodeClone.filePath = filePath + `\\${name}`;
           draggedNodeClone.name = nodeName;
@@ -703,7 +712,7 @@ function* handleDropMotionOnModel(action: ReturnType<typeof lpNodeActions.dropMo
           });
 
           if (draggedNodeClone.childrens.length > 0) {
-            draggedNodeClone.childrens.map((child) => depthChangeKey(draft, child, draggedNodeClone));
+            draggedNodeClone.childrens.map((child) => changeNodeDepthById(draft, child, draggedNodeClone));
           }
         }
       });
@@ -714,28 +723,29 @@ function* handleDropMotionOnModel(action: ReturnType<typeof lpNodeActions.dropMo
 
       if (dropNode.assetId) {
         yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
-
-        handleVisualization();
+        yield put(lpNodeActions.visualizeNode(dropNode.assetId));
       }
 
-      onModalClose();
+      yield put(globalUIActions.closeModal());
     } catch (error) {}
   } else {
-    const confirmed = await getConfirm({
-      title: 'Confirm',
-      message: TEXT.CONFIRM_04,
-      confirmText: 'Confirm',
-      cancelText: 'Cancel',
-      confirmColor: 'positive',
-    });
-
-    if (confirmed) {
-      handleVisualization();
-
-      yield put(cpActions.switchMode({ mode: 'Retargeting' }));
-    }
-
-    onModalClose();
+    yield put(
+      globalUIActions.openModal('ConfirmModal', {
+        title: 'Confirm',
+        message: TEXT.CONFIRM_04,
+        confirmText: 'Confirm',
+        cancelText: 'Cancel',
+        onConfirm: function* () {
+          if (dropNode?.assetId) {
+            yield put(lpNodeActions.visualizeNode(dropNode.assetId));
+            yield put(cpActions.switchMode({ mode: 'Retargeting' }));
+          }
+        },
+        onCancel: function* () {
+          yield put(globalUIActions.closeModal());
+        },
+      }),
+    );
   }
 }
 
@@ -744,11 +754,12 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.DELETE_NODE, handleDelete),
     takeLatest(lpNodeActions.COPY_NODE, handelCopy),
     takeLatest(lpNodeActions.ADD_DIRECTORY, handleAddDirectory),
-    takeLatest(lpNodeActions.VISUALIZE_NODE, handleVisualize),
+    takeLatest(lpNodeActions.VISUALIZE_NODE, handleVisualizeNode),
     takeLatest(lpNodeActions.CANCEL_VISUALIZATION, handleCancelVisulization),
     takeLatest(lpNodeActions.ADD_EMPTY_MOTION, handleAddEmptyMotion),
     takeLatest(lpNodeActions.DUPLICATE_MOTION, handleDuplicateMotion),
     takeLatest(lpNodeActions.VISUALIZE_MOTION, handleVisualizeMotion),
     takeLatest(lpNodeActions.DROP_NODE_ON_FOLDER, handleDropNodeOnFolder),
+    takeLatest(lpNodeActions.DROP_MOTION_ON_MODEL, handleDropMotionOnModel),
   ]);
 }

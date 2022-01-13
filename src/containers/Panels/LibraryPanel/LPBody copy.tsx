@@ -16,9 +16,10 @@ import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
 import produce from 'immer';
-import ListNode from './ListView/ListNode';
+import ListNode from './ListView/ListNode copy';
 import classNames from 'classnames/bind';
 import styles from './LPBody.module.scss';
+import { FolderContextMenu, ModelContextMenu, MotionContextMenu } from './Contextmenu';
 
 const cx = classNames.bind(styles);
 
@@ -528,18 +529,13 @@ const LPBody: FunctionComponent<Props> = ({ lpNode, isPreventContextmenu }) => {
     <div className={cx('inner')} ref={wrapperRef}>
       {rootPathNode.map((node, i) => (
         <div className={cx('node-row')} ref={nodeRef[i]} key={node.id}>
-          <ListNode
-            onSelect={handleSelect}
-            selectedId={selectedId}
-            onSetDragTarget={handleSetDragTarget}
-            dragTarget={dragTarget}
-            onCopy={handleCopy}
-            onDelete={handleDelete}
-            {...node}
-          />
+          <ListNode {...node} node={node} />
         </div>
       ))}
       {/* <DragBox areaRef={wrapperRef} onDragMove={handleDragMove} onDragEnd={handleDragEnd} selectableId={LPCONSTANTS.DRAG_SELECTABLE} selectedId={LPCONSTANTS.DRAG_SELECTED} /> */}
+      <FolderContextMenu />
+      <ModelContextMenu />
+      <MotionContextMenu />
     </div>
   );
 };

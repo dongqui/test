@@ -16,7 +16,7 @@ interface Props {
 const ModelNode = ({ nodeId, assetId, nodeName, depth, parentId }: Props) => {
   const dispatch = useDispatch();
   const { showContextMenu } = useContextMenu();
-  const { selectedId } = useSelector((state) => state.lpNode);
+  const { selectedId, nodes } = useSelector((state) => state.lpNode);
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
 
   const isVisualized = !!(assetId && visualizedAssetIds.includes(assetId));
@@ -41,6 +41,13 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, parentId }: Props) => {
     dispatch(lpNodeActions.selectNode({ nodeId, assetId }));
   };
 
+  const handleDragStart = () => {
+    const draggedNode = nodes.find((node) => node.id === nodeId);
+    if (draggedNode) {
+      dispatch(lpNodeActions.dragNodeStart(draggedNode));
+    }
+  };
+
   return (
     <Fragment>
       <ListViewNode
@@ -52,6 +59,7 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, parentId }: Props) => {
         isVisualized={isVisualized}
         isCloseVisualized={isCloseVisualized}
         handleClickNode={handleClickNode}
+        handleDragStart={handleDragStart}
       />
     </Fragment>
   );
