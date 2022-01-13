@@ -147,7 +147,7 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
                   {!!item.children?.length && subMenuVisibleController[i] && (
                     <div className={cx('sub-menu')}>
                       {item.children.map((subItem) => (
-                        <div key={subItem.label} className={cx('sub-item')} onClick={() => handleMenuClick(subItem)}>
+                        <div key={subItem.label} className={cx('sub-item', { disabled: subItem.disabled })} onClick={() => handleMenuClick(subItem)}>
                           {subItem.label}
                         </div>
                       ))}
