@@ -1,7 +1,8 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
+import ListChildren from '../ListView/ListChildren copy';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 
 interface Props {
@@ -12,10 +13,11 @@ interface Props {
 }
 
 const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName }: Props) => {
-  const { id, assetId, name, type, filePath } = node;
+  const { id, assetId, name, type, filePath, childrens } = node;
   const dispatch = useDispatch();
   const { selectedId, nodes, editingNodeId } = useSelector((state) => state.lpNode);
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
+  const [showChildren, setShowChildren] = useState(false);
 
   const isVisualized = !!(assetId && visualizedAssetIds.includes(assetId));
   const isCloseVisualized = false;
@@ -37,6 +39,10 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName }: Props
     handleEditName ? handleEditName(newName) : dispatch(lpNodeActions.editNodeName({ newName, nodeId: id }));
   };
 
+  const _handleClickArrowButton = () => {
+    setShowChildren(!showChildren);
+  };
+
   return (
     <Fragment>
       <ListViewNode
@@ -51,8 +57,10 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName }: Props
         handleDragStart={_handleDragStart}
         handleEditName={_handleEditName}
         handleDrop={handleDrop}
+        handleClickArrowButton={_handleClickArrowButton}
         isEditing={isEditing}
       />
+      {showChildren && <ListChildren items={childrens} />}
     </Fragment>
   );
 };
