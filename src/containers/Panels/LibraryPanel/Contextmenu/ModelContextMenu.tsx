@@ -1,5 +1,6 @@
 import { BaseContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 
@@ -10,6 +11,7 @@ interface Props {
 
 const ModelContextMenu = ({ nodeId, assetId }: Props) => {
   const dispatch = useDispatch();
+  const { animationIngredients } = useSelector((state) => state.animationData);
 
   const handleDelete = () => {
     dispatch(
@@ -50,7 +52,16 @@ const ModelContextMenu = ({ nodeId, assetId }: Props) => {
     }
   };
 
-  const handleExport = () => {};
+  const handleExport = () => {
+    const currentMotions = animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
+    dispatch(
+      globalUIActions.openModal('ExportModal', {
+        onConfirm: () => {},
+        onCancel: () => {},
+        motions: currentMotions,
+      }),
+    );
+  };
 
   return (
     <BaseContextMenu>
