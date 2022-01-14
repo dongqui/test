@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
-import { getNodeMaxDepth } from 'utils/LP/FileSystem';
 import BaseNode from './BaseNode';
 
 interface Props {
@@ -27,24 +25,6 @@ const FolderNode = ({ node }: Props) => {
   };
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    if (!draggedNode || (draggedNode?.type === 'Motion' && !draggedNode?.mocapData)) {
-      return;
-    }
-
-    const maxDepth = getNodeMaxDepth(draggedNode.childrens, 0, [], nodes) || 0;
-    const currentPathDepth = (filePath.match(/\\/g) || []).length;
-
-    if (currentPathDepth + maxDepth >= 6) {
-      dispatch(
-        globalUIActions.openModal('AlertModal', {
-          title: 'Warning',
-          confirmText: 'Close',
-          message: 'A directory cannot exceed 6 layers.',
-        }),
-      );
-      return;
-    }
-
     dispatch(
       lpNodeActions.dropNodeOnFolder({
         filePath,

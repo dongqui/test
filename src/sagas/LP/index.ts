@@ -3,7 +3,7 @@ import _, { find, cloneDeep, filter } from 'lodash';
 import { select, put, takeLatest, all, SagaReturnType, call } from 'redux-saga/effects';
 import { RootState } from 'reducers';
 import { goToSpecificPoses, checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient } from 'utils/RP';
-import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById } from 'utils/LP/FileSystem';
+import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth } from 'utils/LP/FileSystem';
 import { createAnimationIngredientFromMocapData } from 'utils/LP/Retarget';
 import { getFileExtension } from 'utils/common';
 import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
@@ -484,7 +484,21 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
 
   // TODO(?) 동일한 이름이 있는지 확인
   // @TODO 없으면 비활성 처리 필요
-  if (!draggedNode) {
+  if (!draggedNode || (draggedNode?.type === 'Motion' && !draggedNode?.mocapData)) {
+    return;
+  }
+
+  const maxDepth = getNodeMaxDepth(draggedNode.childrens, 0, [], nodes) || 0;
+  const currentPathDepth = (filePath.match(/\\/g) || []).length;
+
+  if (currentPathDepth + maxDepth >= 6) {
+    yield put(
+      globalUIActions.openModal('AlertModal', {
+        title: 'Warning',
+        confirmText: 'Close',
+        message: 'A directory cannot exceed 6 layers.',
+      }),
+    );
     return;
   }
 
