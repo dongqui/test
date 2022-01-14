@@ -44,7 +44,6 @@ const ListNode: FunctionComponent<Props> = ({ node }) => {
   const _lpNode = useSelector((state) => state.lpNode.nodes);
 
   const outerRef = useRef<HTMLDivElement>(null);
-  const renameRef = useRef<HTMLInputElement>(null);
 
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
@@ -81,103 +80,6 @@ const ListNode: FunctionComponent<Props> = ({ node }) => {
       }
     }
   }, [_animationIngredients, _assetList, assetId, dispatch, isVisualizeCompleted]);
-
-  const handleKeydown = useCallback(
-    async (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (event.code === 'Escape') {
-        setIsEditing(false);
-        return;
-      }
-
-      if (event.code === 'Enter') {
-        const text = event.currentTarget.value || name;
-
-        let currentPathNodeName: string[] = [];
-
-        if (type === 'Model') {
-          currentPathNodeName = _lpNode
-            .filter((node) => {
-              if (node.parentId === parentId) {
-                const nodeName = node.name.toLowerCase();
-                if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase() && node.type === 'Model') {
-                  return true;
-                }
-                return false;
-              }
-            })
-            .map((filteredNode) => filteredNode.name.substring(0, filteredNode.name.lastIndexOf('.')));
-        } else {
-          currentPathNodeName = _lpNode
-            .filter((node) => {
-              if (node.parentId === parentId) {
-                const nodeName = node.name.toLowerCase();
-                if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase()) {
-                  return true;
-                }
-                return false;
-              }
-            })
-            .map((filteredNode) => filteredNode.name);
-        }
-
-        await beforeRename({
-          name: text,
-          comparison: currentPathNodeName,
-        })
-          .then((name) => {
-            const nextNodes = produce(_lpNode, (draft) => {
-              const parent = find(draft, { id: parentId });
-              // @todo 생성하지않고 교체하기
-              const targetIndex = draft.findIndex((element) => element.id === id);
-
-              const newNode: LP.Node = {
-                id: id,
-                assetId: assetId,
-                filePath: filePath,
-                parentId: parentId,
-                name: type === 'Model' ? `${name}.${extension}` : name,
-                type: type,
-                extension: extension,
-                childrens: childrens,
-              };
-
-              if (newNode.childrens.length > 0) {
-                // todo 복구
-                // newNode.childrens.map((child) => depthChangeKey(draft, child, newNode));
-              }
-
-              draft[targetIndex] = newNode;
-
-              setIsEditing(false);
-            });
-
-            dispatch(
-              lpNodeActions.changeNode({
-                nodes: nextNodes,
-              }),
-            );
-          })
-          .catch(() => {
-            onModalOpen({
-              title: 'Warning',
-              message: TEXT.DUPLICATE_01,
-              confirmText: 'Close',
-              onConfirm: () => {
-                onModalClose();
-                renameRef.current?.focus();
-              },
-            });
-          });
-      }
-    },
-    [_lpNode, assetId, childrens, dispatch, extension, filePath, id, name, onModalClose, onModalOpen, parentId, type],
-  );
-
-  /**
-   * @TODO 파일명에 .(dot)이 여럿인 경우를 위해 다른 방법으로 파일명을 가져오는 방법이 필요하여 임시 대응
-   */
-  const splitName = name.split('.');
-  const fileName = splitName.length > 1 ? splitName.slice(0, splitName.length - 1).join('.') : splitName[0];
 
   const handleDragEnd = useCallback(
     (e: DragEvent) => {
@@ -266,50 +168,6 @@ const ListNode: FunctionComponent<Props> = ({ node }) => {
 
   const textRef = useRef<HTMLDivElement>(null);
   const keydownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const currentRef = outerRef && outerRef.current;
-    const keydownCurrentRef = keydownRef && keydownRef.current;
-
-    if (currentRef && keydownCurrentRef) {
-      const handleMouseDown = (e: MouseEvent) => {
-        const isTextAreaContains = textRef && textRef.current?.contains(e.target as Node);
-
-        if (!isTextAreaContains) {
-          // 노드의 실질적인 이름 영역을 드래그하지 않은 경우에는 onDragStart 이벤트가 발생하지 않게 처리
-          // 결과적으로 DragBox가 발생
-          // e.preventDefault();
-        } else {
-          // 노드의 실질적인 이름 영역을 드래그한 경우에는 onDragStart 이벤트가 발생하게 처리
-          // 결과적으로 DragBox가 발생하지 않음
-          // e.stopPropagation();
-        }
-      };
-
-      const handleKeydown = (e: KeyboardEvent) => {
-        if (e.key === 'F2') {
-          e.stopPropagation();
-          handleEdit();
-        } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
-          e.stopPropagation();
-          if (!isEditing) {
-          }
-        }
-      };
-
-      currentRef.addEventListener('mousedown', handleMouseDown);
-      keydownCurrentRef.addEventListener('keydown', handleKeydown);
-
-      return () => {
-        currentRef.removeEventListener('mousedown', handleMouseDown);
-        keydownCurrentRef.removeEventListener('keydown', handleKeydown);
-      };
-    }
-  }, [handleEdit, isEditing]);
-
-  const handlers = {
-    LP_EDIT_NAME: handleEdit,
-  };
 
   const handleExportConfirm = useCallback(
     (data: { motion: string; format: 'fbx' | 'glb' | 'bvh' }) => {

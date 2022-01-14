@@ -13,7 +13,7 @@ interface Props {
 }
 
 const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName }: Props) => {
-  const { id, assetId, name, type, filePath, childrens } = node;
+  const { id, assetId, name, type, filePath, childrens, extension } = node;
   const dispatch = useDispatch();
   const { selectedId, nodes, editingNodeId } = useSelector((state) => state.lpNode);
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
@@ -43,6 +43,10 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName }: Props
     setShowChildren(!showChildren);
   };
 
+  const _handleCancelEdit = () => {
+    dispatch(lpNodeActions.setEditingNodeId(null));
+  };
+
   return (
     <Fragment>
       <ListViewNode
@@ -58,7 +62,9 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName }: Props
         handleEditName={_handleEditName}
         handleDrop={handleDrop}
         handleClickArrowButton={_handleClickArrowButton}
+        handleCancelEdit={_handleCancelEdit}
         isEditing={isEditing}
+        extension={extension}
       />
       {showChildren && <ListChildren items={childrens} />}
     </Fragment>

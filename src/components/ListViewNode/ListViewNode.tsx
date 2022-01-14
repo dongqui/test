@@ -17,12 +17,14 @@ interface Props {
   isCloseVisualized?: boolean;
   isEditing: boolean;
   showsChildrens?: boolean;
+  extension?: string;
   onContextMenu: React.MouseEventHandler<HTMLDivElement>;
   handleClickNode: React.MouseEventHandler<HTMLDivElement>;
   handleClickArrowButton?: React.MouseEventHandler<HTMLDivElement>;
   handleDrop?: React.DragEventHandler<HTMLDivElement>;
   handleDragStart?: React.DragEventHandler<HTMLDivElement>;
   handleEditName: (newName: string) => void;
+  handleCancelEdit: () => void;
 }
 
 const ListViewNode: FunctionComponent<Props> = ({
@@ -40,6 +42,8 @@ const ListViewNode: FunctionComponent<Props> = ({
   handleDrop,
   handleDragStart,
   handleEditName,
+  handleCancelEdit,
+  extension,
 }) => {
   const classes = cx('inner', {
     'open-visualized': isVisualized,
@@ -57,7 +61,7 @@ const ListViewNode: FunctionComponent<Props> = ({
             <div className={cx('contents')}>
               <NodeIcon icon={type} />
               <div className={cx('column')} />
-              <NodeName isEditing={isEditing} name={nodeName} handleEditName={handleEditName} />
+              <NodeName isEditing={isEditing} name={nodeName} handleEditName={handleEditName} handleCancelEdit={handleCancelEdit} extension={extension} />
             </div>
           </div>
         </div>

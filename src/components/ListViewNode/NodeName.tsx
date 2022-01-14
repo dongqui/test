@@ -8,11 +8,14 @@ const cx = classNames.bind(styles);
 interface Props {
   isEditing?: boolean;
   name?: string;
+  extension?: string;
   handleEditName: (newName: string) => void;
+  handleCancelEdit: () => void;
 }
 
-const NodeName: FunctionComponent<Props> = ({ isEditing, name, handleEditName }) => {
-  const [inputValue, setInputValue] = useState(name || '');
+const NodeName: FunctionComponent<Props> = ({ isEditing, name, handleEditName, handleCancelEdit, extension }) => {
+  const nameWithoutExtension = name?.replace(new RegExp(`.${extension}$`), '');
+  const [inputValue, setInputValue] = useState(nameWithoutExtension || '');
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +43,7 @@ const NodeName: FunctionComponent<Props> = ({ isEditing, name, handleEditName })
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.code === 'Escape') {
-      return;
+      handleCancelEdit();
     } else if (event.code === 'Enter') {
       handleEditName(inputValue);
     }

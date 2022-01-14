@@ -12,7 +12,7 @@ interface Props {
 }
 
 const ModelNode = ({ node }: Props) => {
-  const { id, assetId, filePath } = node;
+  const { id, assetId, filePath, extension } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
   const { retargetMaps } = useSelector((state) => state.animationData);
@@ -58,7 +58,8 @@ const ModelNode = ({ node }: Props) => {
   };
 
   const handleEditName = (newName: string) => {
-    dispatch(lpNodeActions.editNodeName({ newName, nodeId: id }));
+    const nameWithExtension = `${newName}.${extension}`;
+    dispatch(lpNodeActions.editNodeName({ newName: nameWithExtension, nodeId: id }));
   };
 
   return <BaseNode node={node} handleContextMenu={handleContextMenu} handleDrop={handleDrop} handleEditName={handleEditName} />;
