@@ -1,4 +1,4 @@
-import { FunctionComponent, Fragment, memo, FocusEvent, KeyboardEvent, ChangeEvent, useEffect, useCallback, useState } from 'react';
+import React, { FunctionComponent, Fragment, memo, FocusEvent, KeyboardEvent, ChangeEvent, useEffect, useCallback, useState } from 'react';
 import { BaseInput } from 'components/Input';
 import classNames from 'classnames/bind';
 import styles from './NodeName.module.scss';
@@ -8,10 +8,11 @@ const cx = classNames.bind(styles);
 interface Props {
   isEditing?: boolean;
   name?: string;
+  handleEditName: (newName: string) => void;
 }
 
-const NodeName: FunctionComponent<Props> = ({ isEditing, name }) => {
-  const [value, setValue] = useState('');
+const NodeName: FunctionComponent<Props> = ({ isEditing, name, handleEditName }) => {
+  const [inputValue, setInputValue] = useState(name || '');
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -24,19 +25,31 @@ const NodeName: FunctionComponent<Props> = ({ isEditing, name }) => {
       const first = currentValue.charAt(0);
 
       if (first.match(/[0-9]/g)) {
-        setValue(value);
+        setInputValue(inputValue);
       } else {
         currentValue = currentValue.replace(/[^A-Za-z0-9_-\s\(\)]/gi, '');
-        setValue(currentValue);
+        setInputValue(currentValue);
       }
     },
-    [value],
+    [inputValue],
   );
+
+  const onBlur = () => {
+    handleEditName(inputValue);
+  };
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.code === 'Escape') {
+      return;
+    } else if (event.code === 'Enter') {
+      handleEditName(inputValue);
+    }
+  };
 
   if (isEditing) {
     return (
       <Fragment>
-        <BaseInput className={cx('input')} placeholder={name} value={value} type="text" onChange={handleChange} autoFocus />
+        <BaseInput className={cx('input')} placeholder={name} value={inputValue} type="text" onChange={handleChange} onBlur={onBlur} onKeyDown={onKeyDown} autoFocus />
       </Fragment>
     );
   }

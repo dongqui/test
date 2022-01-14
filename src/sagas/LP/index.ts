@@ -1,3 +1,4 @@
+import { editNodeName, setEditingNodeId } from './../../actions/LP/lpNodeAction';
 import _, { find, cloneDeep, filter } from 'lodash';
 import { select, put, takeLatest, all, SagaReturnType, call } from 'redux-saga/effects';
 import { RootState } from 'reducers';
@@ -747,6 +748,42 @@ function* handleDropMotionOnModel(action: ReturnType<typeof lpNodeActions.dropMo
   }
 }
 
+function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeName>) {
+  const { newName, nodeId } = action.payload;
+  const { lpNode }: RootState = yield select();
+  const { nodes } = lpNode;
+
+  const targetNode = nodes.find((node) => node.id === nodeId);
+  if (!targetNode) return;
+
+  const isDuplicatedName = nodes.some((node) => node.type === targetNode.type && node.name === newName);
+  if (isDuplicatedName) {
+    yield put(
+      globalUIActions.openModal('AlertModal', {
+        title: 'Warning',
+        message: TEXT.DUPLICATE_01,
+        confirmText: 'Close',
+        onConfirm: () => {
+          // TODO: focus input?
+        },
+      }),
+    );
+  } else {
+    const nodesWithModifiedNode = nodes.map((node) =>
+      node === targetNode
+        ? {
+            ...node,
+            name: newName,
+          }
+        : node,
+    );
+
+    yield put(lpNodeActions.changeNode({ nodes: nodesWithModifiedNode }));
+  }
+
+  yield put(lpNodeActions.setEditingNodeId(null));
+}
+
 export default function* LPSaga() {
   yield all([
     takeLatest(lpNodeActions.DELETE_NODE, handleDelete),
@@ -759,5 +796,6 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.VISUALIZE_MOTION, handleVisualizeMotion),
     takeLatest(lpNodeActions.DROP_NODE_ON_FOLDER, handleDropNodeOnFolder),
     takeLatest(lpNodeActions.DROP_MOTION_ON_MODEL, handleDropMotionOnModel),
+    takeLatest(lpNodeActions.EDIT_NODE_NAME, handleEditNodeName),
   ]);
 }

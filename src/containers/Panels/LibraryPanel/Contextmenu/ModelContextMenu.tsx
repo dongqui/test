@@ -24,7 +24,10 @@ const ModelContextMenu = ({ nodeId, assetId }: Props) => {
     );
   };
 
-  const handleEditName = () => {};
+  const handleEditName = () => {
+    dispatch(lpNodeActions.setEditingNodeId(nodeId));
+  };
+
   const handleVisualize = () => {
     if (assetId) {
       dispatch(lpNodeActions.visualizeNode(assetId));

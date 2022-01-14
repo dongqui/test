@@ -15,12 +15,14 @@ interface Props {
   isSelected: boolean;
   isVisualized?: boolean;
   isCloseVisualized?: boolean;
-  onContextMenu: (e: React.MouseEvent<HTMLDivElement>) => void;
-  handleClickNode: () => void;
-  handleClickArrowButton?: React.MouseEventHandler<HTMLDivElement>;
+  isEditing: boolean;
   showsChildrens?: boolean;
-  handleDrop?: (e: React.DragEvent<HTMLDivElement>) => void;
-  handleDragStart?: () => void;
+  onContextMenu: React.MouseEventHandler<HTMLDivElement>;
+  handleClickNode: React.MouseEventHandler<HTMLDivElement>;
+  handleClickArrowButton?: React.MouseEventHandler<HTMLDivElement>;
+  handleDrop?: React.DragEventHandler<HTMLDivElement>;
+  handleDragStart?: React.DragEventHandler<HTMLDivElement>;
+  handleEditName: (newName: string) => void;
 }
 
 const ListViewNode: FunctionComponent<Props> = ({
@@ -30,12 +32,14 @@ const ListViewNode: FunctionComponent<Props> = ({
   nodeName,
   isVisualized = false,
   isCloseVisualized = false,
+  isEditing,
   isSelected,
   handleClickNode,
   handleClickArrowButton,
   showsChildrens = false,
   handleDrop,
   handleDragStart,
+  handleEditName,
 }) => {
   const classes = cx('inner', {
     'open-visualized': isVisualized,
@@ -53,7 +57,7 @@ const ListViewNode: FunctionComponent<Props> = ({
             <div className={cx('contents')}>
               <NodeIcon icon={type} />
               <div className={cx('column')} />
-              <NodeName isEditing={false} name={nodeName} />
+              <NodeName isEditing={isEditing} name={nodeName} handleEditName={handleEditName} />
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { setEditingNodeId } from './../../actions/LP/lpNodeAction';
 import { LPNodeAction } from 'actions/LP/lpNodeAction';
 import LP from '../../../@types/Container/LP';
 
@@ -10,6 +11,7 @@ interface State {
   selectedId: string | null;
   selectedAssetId: string | null;
   draggedNode: LP.Node | null;
+  editingNodeId: null | string;
 }
 
 const defaultState: State = {
@@ -21,6 +23,7 @@ const defaultState: State = {
   selectedId: null,
   selectedAssetId: null,
   draggedNode: null,
+  editingNodeId: null,
 };
 
 export const lpNode = (state = defaultState, action: LPNodeAction) => {
@@ -55,6 +58,11 @@ export const lpNode = (state = defaultState, action: LPNodeAction) => {
     case 'node/DRAG_NODE_START': {
       return Object.assign({}, state, {
         draggedNode: action.payload.node,
+      });
+    }
+    case 'node/SET_EDITING_NODE_ID': {
+      return Object.assign({}, state, {
+        editingNodeId: action.payload.nodeId,
       });
     }
     default: {

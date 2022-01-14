@@ -25,7 +25,9 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId }: Props) => {
     );
   };
 
-  const handleEditName = () => {};
+  const handleEditName = () => {
+    dispatch(lpNodeActions.setEditingNodeId(nodeId));
+  };
 
   const handleDuplicate = () => {
     dispatch(

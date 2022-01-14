@@ -1,45 +1,30 @@
-import { useState, Fragment } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
-import ListChildren from '../ListView/ListChildren copy';
 import { getNodeMaxDepth } from 'utils/LP/FileSystem';
+import BaseNode from './BaseNode';
 
 interface Props {
-  nodeId: string;
-  nodeName: string;
-  extension: string;
-  filePath: string;
-  depth: number;
-  childrenNodeIds: string[];
+  node: LP.Node;
 }
 
-const FolderNode = ({ nodeId, filePath, extension, depth, nodeName, childrenNodeIds }: Props) => {
+const FolderNode = ({ node }: Props) => {
+  const { id, filePath, extension } = node;
   const dispatch = useDispatch();
-  const { selectedId, draggedNode, nodes } = useSelector((state) => state.lpNode);
-  const [showsChildrens, setShowsChildrens] = useState(false);
+  const { draggedNode, nodes } = useSelector((state) => state.lpNode);
 
-  const onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-    dispatch(lpNodeActions.selectNode({ nodeId }));
+  const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+    dispatch(lpNodeActions.selectNode({ nodeId: id }));
     dispatch(
       globalUIActions.openContextMenu('FolderContextMenu', e, {
-        nodeId,
+        nodeId: id,
         filePath,
         extension,
       }),
     );
   };
-
-  const handleClickNode = () => {
-    dispatch(lpNodeActions.selectNode({ nodeId }));
-  };
-
-  const handleClickArrowButton = () => {
-    setShowsChildrens(!showsChildrens);
-  };
-
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.stopPropagation();
     if (!draggedNode || (draggedNode?.type === 'Motion' && !draggedNode?.mocapData)) {
@@ -63,35 +48,12 @@ const FolderNode = ({ nodeId, filePath, extension, depth, nodeName, childrenNode
     dispatch(
       lpNodeActions.dropNodeOnFolder({
         filePath,
-        nodeId,
+        nodeId: id,
       }),
     );
   };
 
-  const handleDragStart = () => {
-    const draggedNode = nodes.find((node) => node.id === nodeId);
-    if (draggedNode) {
-      dispatch(lpNodeActions.dragNodeStart(draggedNode));
-    }
-  };
-
-  return (
-    <Fragment>
-      <ListViewNode
-        depth={depth}
-        type="Folder"
-        onContextMenu={onContextMenu}
-        nodeName={nodeName}
-        isSelected={selectedId === nodeId}
-        handleClickNode={handleClickNode}
-        handleClickArrowButton={handleClickArrowButton}
-        showsChildrens={showsChildrens}
-        handleDrop={handleDrop}
-        handleDragStart={handleDragStart}
-      />
-      {showsChildrens && <ListChildren items={childrenNodeIds} />}
-    </Fragment>
-  );
+  return <BaseNode node={node} handleContextMenu={handleContextMenu} handleDrop={handleDrop} />;
 };
 
 export default FolderNode;

@@ -1,65 +1,28 @@
-import { Fragment } from 'react';
 import { useDispatch } from 'react-redux';
-import { useSelector } from 'reducers';
-import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
-
+import BaseNode from './BaseNode';
 interface Props {
-  nodeId: string;
-  assetId?: string;
-  nodeName: string;
-  depth: number;
-  parentId: string;
+  node: LP.Node;
 }
 
-const ModelNode = ({ nodeId, assetId, nodeName, depth, parentId }: Props) => {
+const MotionNode = ({ node }: Props) => {
+  const { id, assetId, name, parentId } = node;
   const dispatch = useDispatch();
-  const { selectedId, nodes } = useSelector((state) => state.lpNode);
-  const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
 
-  const isVisualized = !!(assetId && visualizedAssetIds.includes(assetId));
-  // TODO
-  const isCloseVisualized = false;
-
-  const onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-    dispatch(lpNodeActions.selectNode({ nodeId, assetId }));
+  const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+    dispatch(lpNodeActions.selectNode({ nodeId: id, assetId }));
     dispatch(
       globalUIActions.openContextMenu('MotionContextMenu', e, {
-        nodeId,
+        nodeId: id,
         assetId,
-        nodeName,
+        nodeName: name,
         parentId,
       }),
     );
   };
 
-  const handleClickNode = () => {
-    dispatch(lpNodeActions.selectNode({ nodeId, assetId }));
-  };
-
-  const handleDragStart = () => {
-    const draggedNode = nodes.find((node) => node.id === nodeId);
-    if (draggedNode) {
-      dispatch(lpNodeActions.dragNodeStart(draggedNode));
-    }
-  };
-
-  return (
-    <Fragment>
-      <ListViewNode
-        depth={depth}
-        type="Motion"
-        onContextMenu={onContextMenu}
-        nodeName={nodeName}
-        isSelected={selectedId === nodeId}
-        isVisualized={isVisualized}
-        isCloseVisualized={isCloseVisualized}
-        handleClickNode={handleClickNode}
-        handleDragStart={handleDragStart}
-      />
-    </Fragment>
-  );
+  return <BaseNode node={node} handleContextMenu={handleContextMenu} />;
 };
 
-export default ModelNode;
+export default MotionNode;

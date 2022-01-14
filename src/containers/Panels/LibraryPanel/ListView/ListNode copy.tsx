@@ -27,67 +27,26 @@ import MotionNode from '../Nodes/MotionNode';
 const cx = classNames.bind(styles);
 
 interface Props {
-  id: string;
-  assetId?: string;
-  parentId: string;
-  type: 'Folder' | 'Model' | 'Motion';
-  name: string;
-  fileUrl?: string | File;
-  filePath: string;
-  childrens: string[];
-  extension: string;
-  mocapData?: PlaskMocapData;
   node: LP.Node;
 }
 
-const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId, parentId, childrens, extension }) => {
+const ListNode: FunctionComponent<Props> = ({ node }) => {
   const dispatch = useDispatch();
-
+  const { type, name, filePath, id, assetId, parentId, childrens, extension } = node;
   const _fps = useSelector((state) => state.plaskProject.fps);
   const _screenList = useSelector((state) => state.plaskProject.screenList);
   const _assetList = useSelector((state) => state.plaskProject.assetList);
-  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
   const _plaskSkeletonViewers = useSelector((state) => state.screenData.plaskSkeletonViewers);
-
   const _lpNode = useSelector((state) => state.lpNode.nodes);
-  const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
   const outerRef = useRef<HTMLDivElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
 
   const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
-
-  const depthAddKey = useCallback((node: LP.Node[], childId: string, parentNode: LP.Node) => {
-    const changeNode = find(node, { id: childId });
-
-    if (changeNode) {
-      const cloneChangeNode = cloneDeep(changeNode);
-      cloneChangeNode.id = uuid();
-      cloneChangeNode.parentId = parentNode.id;
-      cloneChangeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
-
-      if (cloneChangeNode.type === 'Motion') {
-        cloneChangeNode.assetId = parentNode.assetId;
-      }
-
-      const index = parentNode.childrens.indexOf(childId);
-
-      if (index > -1) {
-        parentNode.childrens.splice(index, 1);
-        parentNode.childrens.push(cloneChangeNode.id);
-        node.push(cloneChangeNode);
-      }
-
-      if (changeNode.childrens.length > 0) {
-        changeNode.childrens.map((child) => depthAddKey(node, child, cloneChangeNode));
-      }
-    }
-  }, []);
 
   const handleEdit = useCallback(() => {
     setIsEditing(true);
@@ -95,8 +54,6 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
 
   const currentVisualizedNode = _lpNode.find((node) => node.assetId && _visualizedAssetIds.includes(node.assetId));
   const currentVisualizedMotion = _animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current);
-
-  const depth = (filePath.match(/\\/g) || []).length;
 
   const [isEditing, setIsEditing] = useState(false);
   const [currentMotions, setCurrentMotions] = useState<AnimationIngredient[]>([]);
@@ -124,87 +81,6 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
       }
     }
   }, [_animationIngredients, _assetList, assetId, dispatch, isVisualizeCompleted]);
-
-  const handleBlur = useCallback(
-    async (event: FocusEvent<HTMLInputElement>) => {
-      const text = event.currentTarget.value || name;
-
-      let currentPathNodeName: string[] = [];
-
-      if (type === 'Model') {
-        currentPathNodeName = _lpNode
-          .filter((node) => {
-            if (node.parentId === parentId) {
-              const nodeName = node.name.toLowerCase();
-              if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase() && node.type === 'Model') {
-                return true;
-              }
-              return false;
-            }
-          })
-          .map((filteredNode) => filteredNode.name.substring(0, filteredNode.name.lastIndexOf('.')));
-      } else {
-        currentPathNodeName = _lpNode
-          .filter((node) => {
-            if (node.parentId === parentId) {
-              const nodeName = node.name.toLowerCase();
-              if (nodeName.includes(text.toLowerCase()) && nodeName !== name.toLowerCase()) {
-                return true;
-              }
-              return false;
-            }
-          })
-          .map((filteredNode) => filteredNode.name);
-      }
-
-      await beforeRename({
-        name: text,
-        comparison: currentPathNodeName,
-      })
-        .then((name) => {
-          const nextNodes = produce(_lpNode, (draft) => {
-            const parent = find(draft, { id: parentId });
-            // @todo 생성하지않고 교체하기
-            const targetIndex = draft.findIndex((element) => element.id === id);
-            const newNode: LP.Node = {
-              id: id,
-              assetId: assetId,
-              filePath: filePath,
-              parentId: parentId,
-              name: type === 'Model' ? `${name}.${extension}` : name,
-              type: type,
-              extension: extension,
-              childrens: childrens,
-            };
-
-            if (newNode.childrens.length > 0) {
-              // newNode.childrens.forEach((child) => depthChangeKey(draft, child, newNode));
-            }
-
-            draft[targetIndex] = newNode;
-            setIsEditing(false);
-          });
-          dispatch(
-            lpNodeActions.changeNode({
-              nodes: nextNodes,
-            }),
-          );
-        })
-        .catch(() => {
-          onModalOpen({
-            title: 'Warning',
-            message: TEXT.DUPLICATE_01,
-            confirmText: 'Close',
-            confirmColor: 'cancel',
-            onConfirm: () => {
-              onModalClose();
-              renameRef.current?.focus();
-            },
-          });
-        });
-    },
-    [_lpNode, assetId, childrens, dispatch, extension, filePath, id, name, onModalClose, onModalOpen, parentId, type],
-  );
 
   const handleKeydown = useCallback(
     async (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -583,9 +459,9 @@ const ListNode: FunctionComponent<Props> = ({ type, name, filePath, id, assetId,
 
   return (
     <Fragment>
-      {type === 'Model' && <ModelNode nodeId={id} assetId={assetId} nodeName={name} filePath={filePath} depth={depth} childrenNodeIds={childrens} />}
-      {type === 'Folder' && <FolderNode nodeId={id} nodeName={name} depth={depth} extension={extension} filePath={filePath} childrenNodeIds={childrens} />}
-      {type === 'Motion' && <MotionNode nodeId={id} nodeName={name} depth={depth} parentId={parentId} assetId={assetId} />}
+      {type === 'Model' && <ModelNode node={node} />}
+      {type === 'Folder' && <FolderNode node={node} />}
+      {type === 'Motion' && <MotionNode node={node} />}
       {isOpenExportModal && <ExportModal motions={currentMotions} onCancel={handleExportCancel} onConfirm={handleExportConfirm} onOutsideClose={handleExportCancel} />}
     </Fragment>
   );

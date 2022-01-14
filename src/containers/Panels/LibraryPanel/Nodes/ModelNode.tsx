@@ -1,55 +1,30 @@
-import { useState, Fragment } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { find } from 'lodash';
-import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
-import ListChildren from '../ListView/ListChildren copy';
+import * as cpActions from 'actions/CP/cpModeSelection';
+import { CONFIRM_04 } from 'constants/Text';
+import BaseNode from './BaseNode';
 
 interface Props {
-  nodeId: string;
-  assetId?: string;
-  nodeName: string;
-  filePath: string;
-  depth: number;
-  childrenNodeIds: string[];
+  node: LP.Node;
 }
 
-const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds, filePath }: Props) => {
+const ModelNode = ({ node }: Props) => {
+  const { id, assetId, filePath } = node;
   const dispatch = useDispatch();
-  const { selectedId, nodes, draggedNode } = useSelector((state) => state.lpNode);
+  const { draggedNode } = useSelector((state) => state.lpNode);
   const { retargetMaps } = useSelector((state) => state.animationData);
-  const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
-  const [showsChildrens, setShowsChildrens] = useState(false);
 
-  const isVisualized = !!(assetId && visualizedAssetIds.includes(assetId));
-  // TODO
-  const isCloseVisualized = false;
-
-  const onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-    dispatch(lpNodeActions.selectNode({ nodeId, assetId }));
+  const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+    dispatch(lpNodeActions.selectNode({ nodeId: id, assetId }));
     dispatch(
       globalUIActions.openContextMenu('ModelContextMenu', e, {
-        nodeId,
+        nodeId: id,
         assetId,
       }),
     );
-  };
-
-  const handleClickNode = () => {
-    dispatch(lpNodeActions.selectNode({ nodeId, assetId }));
-  };
-
-  const handleClickArrowButton = () => {
-    setShowsChildrens(!showsChildrens);
-  };
-
-  const handleDragStart = () => {
-    const draggedNode = nodes.find((node) => node.id === nodeId);
-    if (draggedNode) {
-      dispatch(lpNodeActions.dragNodeStart(draggedNode));
-    }
   };
 
   const isRetargetError = () => {
@@ -60,46 +35,33 @@ const ModelNode = ({ nodeId, assetId, nodeName, depth, childrenNodeIds, filePath
   const handleDrop = () => {
     if (draggedNode?.type !== 'Motion' || !draggedNode?.mocapData) return;
     if (isRetargetError()) {
-      // onModalOpen('ConfirmModal', {
-      //   title: 'Confirm',
-      //   message: CONFIRM_04,
-      //   onConfirm: () => {
-      //     if (assetId) {
-      //       dispatch(lpNodeActions.visualizeNode(assetId));
-      //       dispatch(cpActions.switchMode({ mode: 'Retargeting' }));
-      //     }
-      //   },
-      // });
-      // return;
+      dispatch(
+        globalUIActions.openModal('ConfirmModal', {
+          title: 'Confirm',
+          message: CONFIRM_04,
+          onConfirm: () => {
+            if (assetId) {
+              dispatch(lpNodeActions.visualizeNode(assetId));
+              dispatch(cpActions.switchMode({ mode: 'Retargeting' }));
+            }
+          },
+        }),
+      );
+    } else {
+      dispatch(
+        lpNodeActions.dropMotionOnModel({
+          nodeId: id,
+          filePath,
+        }),
+      );
     }
-    dispatch(
-      lpNodeActions.dropMotionOnModel({
-        nodeId,
-        filePath,
-      }),
-    );
   };
 
-  return (
-    <Fragment>
-      <ListViewNode
-        depth={depth}
-        type="Model"
-        onContextMenu={onContextMenu}
-        nodeName={nodeName}
-        isSelected={selectedId === nodeId}
-        isVisualized={isVisualized}
-        isCloseVisualized={isCloseVisualized}
-        handleClickNode={handleClickNode}
-        handleClickArrowButton={handleClickArrowButton}
-        showsChildrens={showsChildrens}
-        handleDragStart={handleDragStart}
-        handleDrop={handleDrop}
-      />
+  const handleEditName = (newName: string) => {
+    dispatch(lpNodeActions.editNodeName({ newName, nodeId: id }));
+  };
 
-      {showsChildrens && <ListChildren items={childrenNodeIds} />}
-    </Fragment>
-  );
+  return <BaseNode node={node} handleContextMenu={handleContextMenu} handleDrop={handleDrop} handleEditName={handleEditName} />;
 };
 
 export default ModelNode;

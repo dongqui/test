@@ -25,7 +25,9 @@ const FolderContextMenu = ({ nodeId, extension, filePath }: Props) => {
     );
   };
 
-  const handleEditName = () => {};
+  const handleEditName = () => {
+    dispatch(lpNodeActions.setEditingNodeId(nodeId));
+  };
 
   const handleNewDirectory = () => {
     dispatch(

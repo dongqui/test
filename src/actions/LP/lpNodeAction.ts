@@ -1,5 +1,3 @@
-import LP from '../../../@types/Container/LP';
-
 export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
 export const VISUALIZE = 'node/VISUALIZE' as const;
 export const CHANGE_CURRENT_PATH = 'node/CHANGE_CURRENT_PATH' as const;
@@ -16,6 +14,8 @@ export const SELECT_NODE = 'node/SELECT_NODE' as const;
 export const DROP_NODE_ON_FOLDER = 'node/DROP_NODE_ON_FOLDER' as const;
 export const DRAG_NODE_START = 'node/DRAG_NODE_START' as const;
 export const DROP_MOTION_ON_MODEL = 'node/DROP_MOTION_ON_MODEL' as const;
+export const SET_EDITING_NODE_ID = 'node/SET_EDITING_NODE_ID' as const;
+export const EDIT_NODE_NAME = 'node/EDIT_NODE_NAME' as const;
 
 interface ChangeNodeParams {
   nodes: LP.Node[];
@@ -67,6 +67,11 @@ interface DropNodeOnFolderParams {
 interface DropMotionOnModelParams {
   nodeId: string;
   filePath: string;
+}
+
+interface EditNodeNameParams {
+  nodeId: string;
+  newName: string;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
@@ -179,6 +184,20 @@ export const dropMotionOnModel = (params: DropMotionOnModelParams) => ({
   },
 });
 
+export const setEditingNodeId = (nodeId: string | null) => ({
+  type: SET_EDITING_NODE_ID,
+  payload: {
+    nodeId,
+  },
+});
+
+export const editNodeName = (params: EditNodeNameParams) => ({
+  type: EDIT_NODE_NAME,
+  payload: {
+    ...params,
+  },
+});
+
 export type LPNodeAction =
   | ReturnType<typeof changeNode>
   | ReturnType<typeof visualize>
@@ -192,4 +211,6 @@ export type LPNodeAction =
   | ReturnType<typeof selectNode>
   | ReturnType<typeof dropNodeOnFolder>
   | ReturnType<typeof dragNodeStart>
-  | ReturnType<typeof dropMotionOnModel>;
+  | ReturnType<typeof dropMotionOnModel>
+  | ReturnType<typeof setEditingNodeId>
+  | ReturnType<typeof editNodeName>;
