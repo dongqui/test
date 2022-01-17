@@ -67,6 +67,7 @@ interface DropNodeOnFolderParams {
 interface DropMotionOnModelParams {
   nodeId: string;
   filePath: string;
+  assetId?: string;
 }
 
 interface EditNodeNameParams {

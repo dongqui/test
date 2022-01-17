@@ -27,34 +27,16 @@ const ModelNode = ({ node }: Props) => {
     );
   };
 
-  const isRetargetError = () => {
-    const retargetMap = find(retargetMaps, { assetId });
-    return retargetMap?.values.some((value) => !value.targetTransformNodeId);
-  };
-
   const handleDrop = () => {
     if (draggedNode?.type !== 'Motion' || !draggedNode?.mocapData) return;
-    if (isRetargetError()) {
-      dispatch(
-        globalUIActions.openModal('ConfirmModal', {
-          title: 'Confirm',
-          message: CONFIRM_04,
-          onConfirm: () => {
-            if (assetId) {
-              dispatch(lpNodeActions.visualizeNode(assetId));
-              dispatch(cpActions.switchMode({ mode: 'Retargeting' }));
-            }
-          },
-        }),
-      );
-    } else {
-      dispatch(
-        lpNodeActions.dropMotionOnModel({
-          nodeId: id,
-          filePath,
-        }),
-      );
-    }
+
+    dispatch(
+      lpNodeActions.dropMotionOnModel({
+        nodeId: id,
+        filePath,
+        assetId,
+      }),
+    );
   };
 
   const handleEditName = (newName: string) => {

@@ -567,7 +567,7 @@ function* handleDropMotionOnModel(action: ReturnType<typeof lpNodeActions.dropMo
   const { draggedNode, nodes } = lpNode;
   const { assetList } = plaskProject;
   const { retargetMaps } = animationData;
-  const { nodeId, filePath } = action.payload;
+  const { nodeId, filePath, assetId } = action.payload;
 
   const draggedNodeClone = cloneDeep(draggedNode);
   /**
@@ -584,6 +584,18 @@ function* handleDropMotionOnModel(action: ReturnType<typeof lpNodeActions.dropMo
   const isErrorRetargetMap = targetRetargetMap && targetRetargetMap.values.some((value) => !value.targetTransformNodeId);
 
   if (isErrorRetargetMap || !draggedNode?.mocapData) {
+    yield put(
+      globalUIActions.openModal('ConfirmModal', {
+        title: 'Confirm',
+        message: TEXT.CONFIRM_04,
+        onConfirm: function* () {
+          if (assetId) {
+            yield put(lpNodeActions.visualizeNode(assetId));
+            yield put(cpActions.switchMode({ mode: 'Retargeting' }));
+          }
+        },
+      }),
+    );
     return;
   }
 
