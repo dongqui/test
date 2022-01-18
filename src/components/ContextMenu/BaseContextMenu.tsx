@@ -39,14 +39,12 @@ export const ContextMenu: FunctionComponent<Props> = ({ children }) => {
     }
 
     if (contextMenu) {
-      window.addEventListener('contextmenu', closeContextMenu);
       window.addEventListener('click', closeContextMenu);
     }
 
     initContextMenuPosition();
 
     return () => {
-      window.removeEventListener('contextmenu', closeContextMenu);
       window.removeEventListener('click', closeContextMenu);
     };
   }, [contextMenu, dispatch]);

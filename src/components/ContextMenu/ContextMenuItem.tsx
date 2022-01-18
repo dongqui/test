@@ -10,8 +10,15 @@ interface Props extends Omit<React.HTMLAttributes<HTMLElement>, 'disabled' | 'on
 }
 
 const ContextMenuItem: FunctionComponent<Props> = ({ children, disabled = false, onClick, ...rest }) => {
+  const _onClick = (e: React.MouseEvent) => {
+    if (disabled) {
+      e.preventDefault();
+    } else {
+      onClick(e);
+    }
+  };
   return (
-    <div className={cx('item')} onClick={onClick} aria-disabled={disabled} {...rest}>
+    <div className={cx('item', { disabled })} onClick={_onClick} {...rest}>
       {children}
     </div>
   );

@@ -11,7 +11,8 @@ interface Props {
 
 const ModelContextMenu = ({ nodeId, assetId }: Props) => {
   const dispatch = useDispatch();
-  const { animationIngredients } = useSelector((state) => state.animationData);
+  const { animationData, lpNode, plaskProject } = useSelector((state) => state);
+  const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
 
   const handleDelete = () => {
     dispatch(
@@ -53,7 +54,7 @@ const ModelContextMenu = ({ nodeId, assetId }: Props) => {
   };
 
   const handleExport = () => {
-    const currentMotions = animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
+    const currentMotions = animationData.animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
     dispatch(
       globalUIActions.openModal('ExportModal', {
         onConfirm: () => {},
@@ -73,10 +74,16 @@ const ModelContextMenu = ({ nodeId, assetId }: Props) => {
       <ContextMenuItem onClick={handleClickItem}>
         Paste
       </ContextMenuItem> */}
-      <ContextMenuItem onClick={handleVisualize}>Visualization</ContextMenuItem>
-      <ContextMenuItem onClick={handleCancelVisualization}>Visualization cancel</ContextMenuItem>
+      <ContextMenuItem onClick={handleVisualize} disabled={isCurrentVisualizedNode}>
+        Visualization
+      </ContextMenuItem>
+      <ContextMenuItem onClick={handleCancelVisualization} disabled={!isCurrentVisualizedNode}>
+        Visualization cancel
+      </ContextMenuItem>
       <ContextMenuItem onClick={handleAddEmptyMotion}>Add empty motion</ContextMenuItem>
-      <ContextMenuItem onClick={handleExport}>Export</ContextMenuItem>
+      <ContextMenuItem onClick={handleExport} disabled={!isCurrentVisualizedNode}>
+        Export
+      </ContextMenuItem>
     </BaseContextMenu>
   );
 };

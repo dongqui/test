@@ -1,5 +1,6 @@
 import { BaseContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 interface Props {
@@ -11,6 +12,9 @@ interface Props {
 
 const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId }: Props) => {
   const dispatch = useDispatch();
+  const { lpNode, plaskProject } = useSelector((state) => state);
+  const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
+
   const handleDelete = () => {
     dispatch(
       globalUIActions.openModal('ConfirmModal', {
@@ -39,7 +43,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId }: Props) => {
     );
   };
 
-  const handleVisualization = () => {
+  const handleVisualize = () => {
     dispatch(
       lpNodeActions.visualizeMotion({
         nodeId,
@@ -66,9 +70,15 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId }: Props) => {
           <ContextMenuItem onClick={handleDuplicate}>Duplicate</ContextMenuItem>
           {/* <ContextMenuItem>Copy</ContextMenuItem>
           <ContextMenuItem>Paste</ContextMenuItem> */}
-          <ContextMenuItem onClick={handleVisualization}>Visualization</ContextMenuItem>
-          <ContextMenuItem onClick={handleCancelVisualization}>Visualization cancel</ContextMenuItem>
-          <ContextMenuItem onClick={handleExport}>Export</ContextMenuItem>
+          <ContextMenuItem onClick={handleVisualize} disabled={isCurrentVisualizedNode}>
+            Visualization
+          </ContextMenuItem>
+          <ContextMenuItem onClick={handleCancelVisualization} disabled={!isCurrentVisualizedNode}>
+            Visualization cancel
+          </ContextMenuItem>
+          <ContextMenuItem onClick={handleExport} disabled={!isCurrentVisualizedNode}>
+            Export
+          </ContextMenuItem>
         </>
       )}
     </BaseContextMenu>
