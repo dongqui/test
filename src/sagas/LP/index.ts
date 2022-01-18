@@ -1,10 +1,10 @@
-import { editNodeName, setEditingNodeId } from './../../actions/LP/lpNodeAction';
 import _, { find, cloneDeep, filter } from 'lodash';
 import { select, put, takeLatest, all, SagaReturnType, call } from 'redux-saga/effects';
+import { GLTF2Export, GLTFData } from '@babylonjs/serializers';
 import { RootState } from 'reducers';
-import { goToSpecificPoses, checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient } from 'utils/RP';
+import { goToSpecificPoses, checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient, createAnimationGroupFromIngredient } from 'utils/RP';
 import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth } from 'utils/LP/FileSystem';
-import { createAnimationIngredientFromMocapData } from 'utils/LP/Retarget';
+import { createAnimationIngredientFromMocapData, createBvhMap } from 'utils/LP/Retarget';
 import { getFileExtension } from 'utils/common';
 import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -16,8 +16,9 @@ import * as globalUIActions from 'actions/Common/globalUI';
 import * as BABYLON from '@babylonjs/core';
 import { v4 as uuid } from 'uuid';
 import produce from 'immer';
-import { AnimationIngredient } from 'types/common';
+import { AnimationIngredient, PlaskBvhMap } from 'types/common';
 import * as TEXT from 'constants/Text';
+import { convertModel } from 'api';
 
 const deleteChild = (node: LP.Node[], ids: string[]) => {
   let memory: LP.Node[] = [];
@@ -810,6 +811,121 @@ function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeNam
   yield put(lpNodeActions.setEditingNodeId(null));
 }
 
+function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>) {
+  const { lpNode, plaskProject, animationData, screenData }: RootState = yield select();
+  const { plaskSkeletonViewers, visibilityOptions } = screenData;
+  const { nodes } = lpNode;
+  const { screenList, fps, assetList } = plaskProject;
+  const { animationIngredients, retargetMaps } = animationData;
+  const { parentId, type, assetId, nodeName, motion, format } = action.payload;
+
+  const baseScreen = screenList[0];
+  const baseScene = baseScreen.scene;
+
+  screenList.forEach(({ scene }) => {
+    scene.animationGroups.forEach((animationGroup) => {
+      animationGroup.stop();
+      scene.removeAnimationGroup(animationGroup);
+    });
+  });
+
+  if (baseScene.animationGroups.length === 0) {
+    if (motion !== 'none') {
+      const currentModelAnimationIngredients = filter(animationIngredients, { assetId: assetId });
+
+      const ingredients = motion === 'all' ? currentModelAnimationIngredients : filter(currentModelAnimationIngredients, { id: motion });
+
+      ingredients.forEach((animationIngredient) => {
+        const animationGroup = createAnimationGroupFromIngredient(animationIngredient, fps, true);
+      });
+    }
+
+    const targetSkeletonViewer = plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === baseScreen.id);
+    if (targetSkeletonViewer) {
+      targetSkeletonViewer.skeletonViewer.isEnabled = false;
+    }
+
+    const options = {
+      shouldExportNode: (node: BABYLON.Node) => {
+        return !node.name.includes('joint') && !node.name.includes('ground') && !node.name.includes('scene') && !node.id.includes('joint');
+      },
+    };
+
+    const parentAsset = find(nodes, { id: parentId });
+
+    const resultName = type === 'Model' ? nodeName : parentAsset?.name || nodeName;
+
+    const glb: GLTFData = yield call(GLTF2Export.GLBAsync, baseScene, resultName, options);
+    if (format === 'glb') {
+      glb.downloadFiles();
+    }
+
+    if (format === 'fbx') {
+      const fileName = Object.keys(glb.glTFFiles);
+      const file = new File([glb.glTFFiles[fileName[0]]], resultName);
+      file.path = resultName;
+
+      try {
+        yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
+        const fbxUrl: string = yield call(convertModel, file, 'fbx');
+        const link = document.createElement('a');
+        link.href = fbxUrl;
+        link.download = resultName;
+        link.click();
+        yield put(globalUIActions.closeModal());
+      } catch (e) {
+        yield put(
+          globalUIActions.openModal('AlertModal', {
+            title: 'Warning',
+            message: 'An error occured while exporting the model. If the problem recurs, please send us a message on our website.',
+            confirmText: 'Close',
+          }),
+        );
+      }
+    }
+
+    if (format === 'bvh') {
+      const asset = find(assetList, { id: assetId });
+
+      if (asset) {
+        const { retargetMapId, bones } = asset;
+        const retargetMap = find(retargetMaps, { id: retargetMapId });
+
+        if (retargetMap) {
+          const bvhMap: PlaskBvhMap = yield call(createBvhMap, bones, retargetMap, 3000);
+
+          const fileName = Object.keys(glb.glTFFiles);
+          const file = new File([glb.glTFFiles[fileName[0]]], resultName);
+          file.path = resultName;
+
+          try {
+            yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
+            const bvhUrl: string = yield call(convertModel, file, 'bvh', bvhMap);
+            const link = document.createElement('a');
+            link.href = bvhUrl;
+            link.download = resultName;
+            link.click();
+            yield put(globalUIActions.closeModal());
+          } catch (e) {
+            yield put(
+              globalUIActions.openModal('AlertModal', {
+                title: 'Warning',
+                message: 'An error occured while exporting the model. If the problem recurs, please send us a message on our website.',
+                confirmText: 'Close',
+              }),
+            );
+          }
+        }
+      }
+    }
+
+    if (targetSkeletonViewer) {
+      const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === baseScreen.id);
+      targetSkeletonViewer.skeletonViewer.isEnabled = targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true;
+    }
+  }
+}
+
 export default function* LPSaga() {
   yield all([
     takeLatest(lpNodeActions.DELETE_NODE, handleDelete),
@@ -823,5 +939,6 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.DROP_NODE_ON_FOLDER, handleDropNodeOnFolder),
     takeLatest(lpNodeActions.DROP_MOTION_ON_MODEL, handleDropMotionOnModel),
     takeLatest(lpNodeActions.EDIT_NODE_NAME, handleEditNodeName),
+    takeLatest(lpNodeActions.EXPORT_ASSET, handleExportAsset),
   ]);
 }

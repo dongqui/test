@@ -16,6 +16,7 @@ export const DRAG_NODE_START = 'node/DRAG_NODE_START' as const;
 export const DROP_MOTION_ON_MODEL = 'node/DROP_MOTION_ON_MODEL' as const;
 export const SET_EDITING_NODE_ID = 'node/SET_EDITING_NODE_ID' as const;
 export const EDIT_NODE_NAME = 'node/EDIT_NODE_NAME' as const;
+export const EXPORT_ASSET = 'node/EXPORT' as const;
 
 interface ChangeNodeParams {
   nodes: LP.Node[];
@@ -73,6 +74,15 @@ interface DropMotionOnModelParams {
 interface EditNodeNameParams {
   nodeId: string;
   newName: string;
+}
+
+interface ExportAssetParams {
+  parentId: string;
+  type: string;
+  assetId: string;
+  nodeName: string;
+  motion: string;
+  format: 'fbx' | 'glb' | 'bvh';
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
@@ -199,6 +209,13 @@ export const editNodeName = (params: EditNodeNameParams) => ({
   },
 });
 
+export const exportAsset = (params: ExportAssetParams) => ({
+  type: EXPORT_ASSET,
+  payload: {
+    ...params,
+  },
+});
+
 export type LPNodeAction =
   | ReturnType<typeof changeNode>
   | ReturnType<typeof visualize>
@@ -214,4 +231,5 @@ export type LPNodeAction =
   | ReturnType<typeof dragNodeStart>
   | ReturnType<typeof dropMotionOnModel>
   | ReturnType<typeof setEditingNodeId>
-  | ReturnType<typeof editNodeName>;
+  | ReturnType<typeof editNodeName>
+  | ReturnType<typeof exportAsset>;
