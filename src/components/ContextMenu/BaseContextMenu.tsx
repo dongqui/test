@@ -15,7 +15,7 @@ interface Props {
 export const ContextMenu: FunctionComponent<Props> = ({ children }) => {
   const dispatch = useDispatch();
   const contextMenu = useSelector((state) => state.globalUI.contextMenu);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,12 +50,14 @@ export const ContextMenu: FunctionComponent<Props> = ({ children }) => {
   }, [contextMenu, dispatch]);
 
   const menuStyle = {
-    left: position.x,
-    top: position.y,
+    display: position ? 'block' : 'none',
+    left: position?.x,
+    top: position?.y,
   };
 
   return (
     <Fragment>
+      {}
       <div className={cx('wrapper')} ref={nodeRef} style={menuStyle}>
         {children}
       </div>
