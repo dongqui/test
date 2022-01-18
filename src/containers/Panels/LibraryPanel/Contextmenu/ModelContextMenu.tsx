@@ -7,9 +7,12 @@ import * as globalUIActions from 'actions/Common/globalUI';
 interface Props {
   nodeId: string;
   assetId?: string;
+  parentId: string;
+  type: string;
+  nodeName: string;
 }
 
-const ModelContextMenu = ({ nodeId, assetId }: Props) => {
+const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName }: Props) => {
   const dispatch = useDispatch();
   const { animationData, lpNode, plaskProject } = useSelector((state) => state);
   const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
@@ -54,11 +57,22 @@ const ModelContextMenu = ({ nodeId, assetId }: Props) => {
   };
 
   const handleExport = () => {
+    if (!assetId) return;
+
     const currentMotions = animationData.animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
     dispatch(
       globalUIActions.openModal('ExportModal', {
-        onConfirm: () => {},
-        onCancel: () => {},
+        onConfirm: (data: { motion: string; format: 'fbx' | 'glb' | 'bvh' }) => {
+          dispatch(
+            lpNodeActions.exportAsset({
+              ...data,
+              parentId,
+              nodeName,
+              assetId,
+              type,
+            }),
+          );
+        },
         motions: currentMotions,
       }),
     );

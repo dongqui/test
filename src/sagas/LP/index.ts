@@ -855,7 +855,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
 
     const resultName = type === 'Model' ? nodeName : parentAsset?.name || nodeName;
 
-    const glb: GLTFData = yield call(GLTF2Export.GLBAsync, baseScene, resultName, options);
+    const glb: GLTFData = yield call([GLTF2Export, GLTF2Export.GLBAsync], baseScene, resultName, options);
     if (format === 'glb') {
       glb.downloadFiles();
     }

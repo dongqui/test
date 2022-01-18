@@ -8,11 +8,12 @@ interface Props {
   parentId: string;
   nodeName: string;
   assetId?: string;
+  type: string;
 }
 
-const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId }: Props) => {
+const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props) => {
   const dispatch = useDispatch();
-  const { lpNode, plaskProject } = useSelector((state) => state);
+  const { lpNode, plaskProject, animationData } = useSelector((state) => state);
   const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
 
   const handleDelete = () => {
@@ -59,7 +60,27 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId }: Props) => {
     }
   };
 
-  const handleExport = () => {};
+  const handleExport = () => {
+    if (!assetId) return;
+
+    const currentMotions = animationData.animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
+    dispatch(
+      globalUIActions.openModal('ExportModal', {
+        onConfirm: (data: { motion: string; format: 'fbx' | 'glb' | 'bvh' }) => {
+          dispatch(
+            lpNodeActions.exportAsset({
+              ...data,
+              parentId,
+              nodeName,
+              assetId,
+              type,
+            }),
+          );
+        },
+        motions: currentMotions,
+      }),
+    );
+  };
 
   return (
     <BaseContextMenu>

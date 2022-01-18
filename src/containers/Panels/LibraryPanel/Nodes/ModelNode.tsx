@@ -1,10 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
-import { find } from 'lodash';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
-import * as cpActions from 'actions/CP/cpModeSelection';
-import { CONFIRM_04 } from 'constants/Text';
 import BaseNode from './BaseNode';
 
 interface Props {
@@ -12,7 +9,7 @@ interface Props {
 }
 
 const ModelNode = ({ node }: Props) => {
-  const { id, assetId, filePath, extension } = node;
+  const { id, assetId, filePath, extension, name, parentId, type } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
   const { retargetMaps } = useSelector((state) => state.animationData);
@@ -23,6 +20,9 @@ const ModelNode = ({ node }: Props) => {
       globalUIActions.openContextMenu('ModelContextMenu', e, {
         nodeId: id,
         assetId,
+        nodeName: name,
+        parentId,
+        type,
       }),
     );
   };
