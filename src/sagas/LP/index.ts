@@ -549,7 +549,7 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
 
   // TODO(?) 동일한 이름이 있는지 확인
   // @TODO 없으면 비활성 처리 필요
-  if (!draggedNode || (draggedNode?.type === 'Motion' && !draggedNode?.mocapData)) {
+  if (!draggedNode || nodeId === draggedNode.id || (draggedNode?.type === 'Motion' && !draggedNode?.mocapData)) {
     return;
   }
 
