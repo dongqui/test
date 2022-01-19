@@ -1,8 +1,7 @@
-import { Fragment, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
-import ListChildren from '../ListView/ListChildren copy';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 
 interface Props {
@@ -16,20 +15,54 @@ interface Props {
 const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleDragEnd }: Props) => {
   const { id, assetId, name, type, filePath, childrens, extension } = node;
   const dispatch = useDispatch();
-  const { selectedId, nodes, editingNodeId } = useSelector((state) => state.lpNode);
-  const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
   const [showChildren, setShowChildren] = useState(false);
 
-  const isVisualized = !!(assetId && visualizedAssetIds.includes(assetId));
-  const isCloseVisualized = false;
+  const { selectedId, nodes, editingNodeId } = useSelector((state) => state.lpNode);
+  const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
+  const { animationIngredients } = useSelector((state) => state.animationData);
+
   const isEditing = editingNodeId === id;
   const depth = (filePath.match(/\\/g) || []).length;
 
-  const _handleClickNode = () => {
+  // -- 개선? --
+  const currentVisualizedNode = nodes.find((node) => visualizedAssetIds.includes(node.assetId || ''));
+  const currentVisualizedMotion = animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current);
+
+  const currentVisualizedNodePath = (currentVisualizedNode?.filePath + `\\${currentVisualizedNode?.name}`).split('\\').filter((text) => !!text);
+  const currentNodePath = (filePath + `\\${name}`).split('\\').filter((text) => !!text);
+
+  if (type === 'Model') {
+    console.log(currentVisualizedNode);
+  }
+
+  let hasCurrentVisualizedNode = false;
+  currentNodePath.forEach((path, i) => {
+    if (type === 'Folder') {
+      console.log(path, currentVisualizedNodePath[i]);
+    }
+    if (path === currentVisualizedNodePath[i]) {
+      hasCurrentVisualizedNode = true;
+    } else {
+      hasCurrentVisualizedNode = false;
+    }
+  });
+
+  const isOpenVisualized = showChildren && hasCurrentVisualizedNode;
+
+  const isCloseVisualized = !!(type === 'Motion'
+    ? assetId && currentVisualizedMotion[0]?.assetId === assetId && currentVisualizedMotion[0]?.name === name
+    : type === 'Model'
+    ? !showChildren && assetId && visualizedAssetIds.includes(assetId)
+    : !showChildren && hasCurrentVisualizedNode);
+  // -- 개선? --
+
+  const _handleClickNode = (e: React.MouseEvent) => {
+    e.stopPropagation();
     dispatch(lpNodeActions.selectNode({ nodeId: id, assetId }));
   };
 
-  const _handleDragStart = () => {
+  const _handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
     const draggedNode = nodes.find((node) => node.id === id);
     if (draggedNode) {
       dispatch(lpNodeActions.dragNodeStart(draggedNode));
@@ -40,7 +73,7 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleD
     handleEditName ? handleEditName(newName) : dispatch(lpNodeActions.editNodeName({ newName, nodeId: id }));
   };
 
-  const _handleClickArrowButton = () => {
+  const _handleClickArrowButton = (e: React.MouseEvent) => {
     setShowChildren(!showChildren);
   };
 
@@ -56,7 +89,7 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleD
         onContextMenu={handleContextMenu}
         nodeName={name}
         isSelected={selectedId === id}
-        isVisualized={isVisualized}
+        isOpenVisualized={isOpenVisualized}
         isCloseVisualized={isCloseVisualized}
         handleClickNode={_handleClickNode}
         handleDragStart={_handleDragStart}
@@ -68,9 +101,8 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleD
         isEditing={isEditing}
         extension={extension}
         showChildren={showChildren}
+        childrenNodeIds={childrens}
       />
-
-      {showChildren && <ListChildren items={childrens} />}
     </Fragment>
   );
 };

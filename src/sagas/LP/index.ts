@@ -172,7 +172,7 @@ function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirector
     if (parent) {
       const newNode = {
         id: uuid(),
-        filePath: action.payload.filePath + `\\${name}`,
+        filePath: action.payload.filePath + `\\${nodeName}`,
         parentId: parent.id,
         name: nodeName,
         extension: action.payload.extension,
@@ -610,7 +610,7 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
       draggedNodeClone.id = uuid();
       draggedNodeClone.parentId = nodeId;
       // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${nodeName}`;
-      draggedNodeClone.filePath = filePath + `\\${name}`;
+      draggedNodeClone.filePath = filePath + `\\${targetFolder.name}`;
       draggedNodeClone.name = nodeName;
 
       targetFolder.childrens.push(draggedNodeClone.id);

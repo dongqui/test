@@ -5,6 +5,7 @@ import NodeIcon from './NodeIcon';
 import NodeName from './NodeName';
 import classNames from 'classnames/bind';
 import styles from './ListViewNode.module.scss';
+import ListChildren from 'containers/Panels/LibraryPanel/ListView/ListChildren copy';
 
 const cx = classNames.bind(styles);
 
@@ -13,11 +14,12 @@ interface Props {
   type: LP.NodeType;
   nodeName: string;
   isSelected: boolean;
-  isVisualized?: boolean;
+  isOpenVisualized?: boolean;
   isCloseVisualized?: boolean;
   isEditing: boolean;
   showChildren?: boolean;
   extension?: string;
+  childrenNodeIds: string[];
   onContextMenu: React.MouseEventHandler<HTMLDivElement>;
   handleClickNode: React.MouseEventHandler<HTMLDivElement>;
   handleClickArrowButton?: React.MouseEventHandler<HTMLDivElement>;
@@ -32,8 +34,9 @@ const ListViewNode: FunctionComponent<Props> = ({
   depth,
   type,
   onContextMenu,
+  childrenNodeIds,
   nodeName,
-  isVisualized = false,
+  isOpenVisualized = false,
   isCloseVisualized = false,
   isEditing,
   isSelected,
@@ -48,7 +51,7 @@ const ListViewNode: FunctionComponent<Props> = ({
   extension,
 }) => {
   const classes = cx('inner', {
-    'open-visualized': isVisualized,
+    'open-visualized': isOpenVisualized,
     'close-visualized': isCloseVisualized,
     selected: isSelected,
   });
@@ -66,6 +69,8 @@ const ListViewNode: FunctionComponent<Props> = ({
               <NodeName isEditing={isEditing} name={nodeName} handleEditName={handleEditName} handleCancelEdit={handleCancelEdit} extension={extension} />
             </div>
           </div>
+
+          {showChildren && <ListChildren items={childrenNodeIds} />}
         </div>
       </div>
     </div>
