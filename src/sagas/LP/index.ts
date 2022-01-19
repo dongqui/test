@@ -151,9 +151,11 @@ function* handelCopy(action: ReturnType<typeof lpNodeActions.copyNode>) {
 
 function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirectory>) {
   const { lpNode }: RootState = yield select();
+  const { nodeId, filePath, extension } = action.payload;
+
   const currentPathNodeName = lpNode.nodes
     .filter((node) => {
-      if (node.parentId === action.payload.nodeId) {
+      if (node.parentId === nodeId) {
         if (node.name.includes('Untitled')) {
           return true;
         }
@@ -167,21 +169,32 @@ function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirector
   const nodeName = check === '0' ? 'Untitled' : `Untitled (${check})`;
 
   const nextNodes = produce(lpNode.nodes, (draft) => {
-    const parent = find(draft, { id: action.payload.nodeId });
+    const parent = find(draft, { id: nodeId });
 
     if (parent) {
       const newNode = {
         id: uuid(),
-        filePath: action.payload.filePath + `\\${nodeName}`,
         parentId: parent.id,
+        filePath: filePath + `\\${nodeName}`,
         name: nodeName,
-        extension: action.payload.extension,
+        extension,
         type: 'Folder',
-        hideNode: true,
         childrens: [],
       } as LP.Node;
 
       parent.childrens.push(newNode.id);
+
+      draft.push(newNode);
+    } else {
+      const newNode = {
+        id: uuid(),
+        parentId: '__root__',
+        filePath: '\\root',
+        name: nodeName,
+        extension,
+        type: 'Folder',
+        childrens: [],
+      } as LP.Node;
 
       draft.push(newNode);
     }

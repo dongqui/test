@@ -81,16 +81,22 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleD
     dispatch(lpNodeActions.setEditingNodeId(null));
   };
 
+  const _handleContextMenu = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    handleContextMenu(e);
+  };
+
   return (
     <Fragment>
       <ListViewNode
         depth={depth}
         type={type}
-        onContextMenu={handleContextMenu}
         nodeName={name}
         isSelected={selectedId === id}
         isOpenVisualized={isOpenVisualized}
         isCloseVisualized={isCloseVisualized}
+        handleContextMenu={_handleContextMenu}
         handleClickNode={_handleClickNode}
         handleDragStart={_handleDragStart}
         handleEditName={_handleEditName}

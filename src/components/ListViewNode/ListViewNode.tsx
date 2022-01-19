@@ -20,7 +20,7 @@ interface Props {
   showChildren?: boolean;
   extension?: string;
   childrenNodeIds: string[];
-  onContextMenu: React.MouseEventHandler<HTMLDivElement>;
+  handleContextMenu: React.MouseEventHandler<HTMLDivElement>;
   handleClickNode: React.MouseEventHandler<HTMLDivElement>;
   handleClickArrowButton?: React.MouseEventHandler<HTMLDivElement>;
   handleDrop?: React.DragEventHandler<HTMLDivElement>;
@@ -33,7 +33,7 @@ interface Props {
 const ListViewNode: FunctionComponent<Props> = ({
   depth,
   type,
-  onContextMenu,
+  handleContextMenu,
   childrenNodeIds,
   nodeName,
   isOpenVisualized = false,
@@ -60,7 +60,7 @@ const ListViewNode: FunctionComponent<Props> = ({
     <div className={cx('container')} tabIndex={0} onClick={handleClickNode} draggable onDrop={handleDrop} onDrag={handleDragStart} onDragEnd={handleDragEnd}>
       <div className={cx('outer')}>
         <div className={classes} id="inner">
-          <div className={cx('wrapper')} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={LPCONSTANTS.DRAG_SELECTABLE} onContextMenu={onContextMenu}>
+          <div className={cx('wrapper')} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={LPCONSTANTS.DRAG_SELECTABLE} onContextMenu={handleContextMenu}>
             <div className={cx('column')} />
             <ArrowButton isOpen={showChildren} hidden={type === 'Motion'} handleClickArrowButton={handleClickArrowButton} />
             <div className={cx('contents')}>

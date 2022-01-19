@@ -63,8 +63,8 @@ interface VisualizeMotionParams {
 }
 
 interface SelectNodeParams {
-  nodeId: string;
-  assetId?: string;
+  nodeId: string | null;
+  assetId?: string | null;
 }
 
 interface DropNodeOnFolderParams {

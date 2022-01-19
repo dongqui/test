@@ -2,7 +2,7 @@ import { debounce } from 'lodash';
 import { FunctionComponent, Fragment, useEffect, useState, useRef, useCallback, useMemo, SyntheticEvent } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import { UpperBar } from 'containers/UpperBar';
-import LibraryPanel from 'containers/Panels/LibraryPanel';
+import LibraryPanel from 'containers/Panels/LibraryPanel/index copy';
 import RenderingPanel from './Panels/RenderingPanel';
 import ControlPanel from './Panels/ControlPanel';
 import TimelinePanel from './Panels/TimelinePanel';
