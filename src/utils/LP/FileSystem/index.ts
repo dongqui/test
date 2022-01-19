@@ -6,3 +6,4 @@ export { default as checkCreateDuplicates } from './checkCreateDuplicates';
 export { default as checkPasteDuplicates } from './checkPasteDuplicates';
 export { default as getNodeMaxDepth } from './getNodeMaxDepth';
 export { default as changeNodeDepthById } from './changeNodeDepthById';
+export { default as isDroppedOnRP } from './isDroppedOnRP';

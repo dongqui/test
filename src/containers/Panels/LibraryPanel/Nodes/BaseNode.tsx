@@ -10,9 +10,10 @@ interface Props {
   handleContextMenu: React.MouseEventHandler;
   handleDrop?: React.DragEventHandler;
   handleEditName?: (newName: string) => void;
+  handleDragEnd?: React.DragEventHandler;
 }
 
-const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName }: Props) => {
+const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleDragEnd }: Props) => {
   const { id, assetId, name, type, filePath, childrens, extension } = node;
   const dispatch = useDispatch();
   const { selectedId, nodes, editingNodeId } = useSelector((state) => state.lpNode);
@@ -61,11 +62,14 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName }: Props
         handleDragStart={_handleDragStart}
         handleEditName={_handleEditName}
         handleDrop={handleDrop}
+        handleDragEnd={handleDragEnd}
         handleClickArrowButton={_handleClickArrowButton}
         handleCancelEdit={_handleCancelEdit}
         isEditing={isEditing}
         extension={extension}
+        showChildren={showChildren}
       />
+
       {showChildren && <ListChildren items={childrens} />}
     </Fragment>
   );

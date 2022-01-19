@@ -2,6 +2,7 @@ import { useDispatch } from 'react-redux';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
+import { isDroppedOnRP } from 'utils/LP/FileSystem';
 interface Props {
   node: LP.Node;
 }
@@ -23,7 +24,19 @@ const MotionNode = ({ node }: Props) => {
     );
   };
 
-  return <BaseNode node={node} handleContextMenu={handleContextMenu} />;
+  const handleDragEnd = (e: React.DragEvent) => {
+    if (!assetId || !isDroppedOnRP(e)) return;
+
+    dispatch(
+      lpNodeActions.visualizeMotion({
+        nodeId: id,
+        parentId,
+        assetId,
+      }),
+    );
+  };
+
+  return <BaseNode node={node} handleContextMenu={handleContextMenu} handleDragEnd={handleDragEnd} />;
 };
 
 export default MotionNode;

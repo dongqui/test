@@ -6,13 +6,14 @@ import * as globalUIActions from 'actions/Common/globalUI';
 
 interface Props {
   nodeId: string;
-  assetId?: string;
+  assetId: string;
   parentId: string;
   type: string;
   nodeName: string;
+  childrens: string[];
 }
 
-const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName }: Props) => {
+const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childrens }: Props) => {
   const dispatch = useDispatch();
   const { animationData, lpNode, plaskProject } = useSelector((state) => state);
   const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
@@ -35,10 +36,14 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName }: Props) 
   };
 
   const handleVisualize = () => {
-    if (assetId) {
-      dispatch(lpNodeActions.visualizeNode(assetId));
+    const hasMotions = childrens.length !== 0;
+
+    if (!hasMotions) {
+      dispatch(lpNodeActions.addEmptyMotion({ nodeId, assetId }));
     }
+    dispatch(lpNodeActions.visualizeNode(assetId));
   };
+
   const handleCancelVisualization = () => {
     if (assetId) {
       dispatch(lpNodeActions.cancelVisulization(assetId));
