@@ -17,6 +17,7 @@ export const DROP_MOTION_ON_MODEL = 'node/DROP_MOTION_ON_MODEL' as const;
 export const SET_EDITING_NODE_ID = 'node/SET_EDITING_NODE_ID' as const;
 export const EDIT_NODE_NAME = 'node/EDIT_NODE_NAME' as const;
 export const EXPORT_ASSET = 'node/EXPORT' as const;
+export const DELETE_MOTION = 'node/DELETE_MOTION' as const;
 
 interface ChangeNodeParams {
   nodes: LP.Node[];
@@ -33,6 +34,12 @@ interface ChangeClipboardParams {
 interface DeleteNodeParams {
   nodeId: string;
   selectAssetId?: string;
+}
+
+interface DeleteMotionParams {
+  nodeId: string;
+  assetId?: string;
+  parentId: string;
 }
 interface AddEmptyMotionParams {
   nodeId: string;
@@ -216,6 +223,13 @@ export const exportAsset = (params: ExportAssetParams) => ({
   },
 });
 
+export const deleteMotion = (params: DeleteMotionParams) => ({
+  type: DELETE_MOTION,
+  payload: {
+    ...params,
+  },
+});
+
 export type LPNodeAction =
   | ReturnType<typeof changeNode>
   | ReturnType<typeof visualize>
@@ -232,4 +246,5 @@ export type LPNodeAction =
   | ReturnType<typeof dropMotionOnModel>
   | ReturnType<typeof setEditingNodeId>
   | ReturnType<typeof editNodeName>
-  | ReturnType<typeof exportAsset>;
+  | ReturnType<typeof exportAsset>
+  | ReturnType<typeof deleteMotion>;

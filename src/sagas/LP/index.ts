@@ -48,6 +48,7 @@ const deleteChild = (node: LP.Node[], ids: string[]) => {
 function* handleDelete(action: ReturnType<typeof lpNodeActions.deleteNode>) {
   const { nodeId, selectAssetId } = action.payload;
   const { lpNode, plaskProject, selectingData }: RootState = yield select();
+
   const afterNodes = deleteChild(lpNode.nodes, [nodeId]);
   yield put(lpNodeActions.changeNode({ nodes: afterNodes }));
 
@@ -71,6 +72,71 @@ function* handleDelete(action: ReturnType<typeof lpNodeActions.deleteNode>) {
     yield put(animationDataActions.removeAsset({ assetId: selectAssetId }));
     // 선택 대상에서 제외
     yield put(selectingDataActions.unrenderAsset({ assetId: selectAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+  }
+}
+
+function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotion>) {
+  const { lpNode, plaskProject, animationData, selectingData }: RootState = yield select();
+  const { nodeId, assetId, parentId } = action.payload;
+
+  const targetMotion = find(lpNode.nodes, { id: nodeId });
+
+  if (targetMotion) {
+    const nextNodes = lpNode.nodes.filter((node) => node.id !== nodeId);
+
+    const resultNodes = produce(nextNodes, (draft) => {
+      const parentModel = find(draft, { id: parentId });
+
+      if (parentModel) {
+        parentModel.childrens = parentModel.childrens.filter((currentId) => currentId !== nodeId);
+      }
+    });
+
+    const asset = find(plaskProject.assetList, { id: assetId });
+    const targetAnimationIngredient = find(animationData.animationIngredients, { id: targetMotion.id });
+
+    if (targetAnimationIngredient?.current) {
+      if (assetId && plaskProject.visualizedAssetIds.includes(assetId)) {
+        const targetAsset = plaskProject.assetList.find((asset) => asset.id === assetId);
+        const targetJointTransformNodes = selectingData.selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
+        const targetControllers = selectingData.selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+
+        // delete 대상이 render된 scene에서 대상의 요소들 remove
+        if (targetAsset) {
+          plaskProject.screenList
+            .map((screen) => screen.scene)
+            .forEach((scene) => {
+              removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+            });
+        }
+
+        // visualizedAssetList에서 제외
+        yield put(plaskProjectActions.unrenderAsset({}));
+        // 선택 대상에서 제외
+        yield put(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+      }
+    }
+
+    if (asset && targetAnimationIngredient && assetId) {
+      yield put(
+        animationDataActions.removeAnimationIngredient({
+          animationIngredientId: targetAnimationIngredient.id,
+        }),
+      );
+
+      yield put(
+        plaskProjectActions.removeAnimationIngredient({
+          assetId: assetId,
+          animationIngredientId: targetAnimationIngredient.id,
+        }),
+      );
+    }
+
+    yield put(
+      lpNodeActions.changeNode({
+        nodes: resultNodes,
+      }),
+    );
   }
 }
 
@@ -323,8 +389,6 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
 
     const afterNodes = produce(cloneLPNode, (draft) => {
       const parentModel = find(draft, { id: nodeId });
-      const target = find(draft, { assetId });
-
       if (parentModel) {
         parentModel.childrens.push(nextAnimationIngredient.id);
         const motion: LP.Node = {
@@ -940,5 +1004,6 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.DROP_MOTION_ON_MODEL, handleDropMotionOnModel),
     takeLatest(lpNodeActions.EDIT_NODE_NAME, handleEditNodeName),
     takeLatest(lpNodeActions.EXPORT_ASSET, handleExportAsset),
+    takeLatest(lpNodeActions.DELETE_MOTION, handleDeleteMotion),
   ]);
 }
