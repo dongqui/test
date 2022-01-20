@@ -17,6 +17,8 @@ import { v4 as uuidv4 } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
 import { BaseModal } from 'new_components/Modal';
+import { PlaskMocapData } from 'types/common';
+
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
 
@@ -198,7 +200,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
     const result = await axios({
       method: 'POST',
-      url: 'https://shootapi.myplask.com:443/mocap-upload-api-common',
+      url: 'https://shootapimain.myplask.com:6500/mocap-upload-api-common',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
       cancelToken: new axios.CancelToken((cancel) => {
@@ -206,20 +208,60 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       }),
     })
       .then((response) => {
-        const newMotionNode: LP.Node = {
-          id: uuidv4(),
-          parentId: '__root__',
-          name: fileName,
-          filePath: '\\root',
-          childrens: [],
-          extension: '',
-          type: 'Motion',
-          mocapData: response.data.result,
-        };
+        const mocapCount = response.data.result.length;
 
-        const nextNodes = produce(lpNode, (draft) => {
-          draft.push(newMotionNode);
-        });
+        let nextNodes: LP.Node[];
+
+        if (mocapCount === 1) {
+          const newMotionNode: LP.Node = {
+            id: uuidv4(),
+            parentId: '__root__',
+            name: fileName,
+            filePath: '\\root',
+            childrens: [],
+            extension: '',
+            type: 'Motion',
+            mocapData: response.data.result[0].trackData,
+          };
+
+          nextNodes = produce(lpNode, (draft) => {
+            draft.push(newMotionNode);
+          });
+        } else {
+          const newFolderNode: LP.Node = {
+            id: uuidv4(),
+            parentId: '__root__',
+            filePath: '\\root',
+            name: fileName,
+            extension: '',
+            type: 'Folder',
+            childrens: [],
+          };
+
+          const newMotionNodes: LP.Node[] = [];
+          response.data.result.forEach((item: { motionNumber: number; trackData: PlaskMocapData }) => {
+            const newMotionNode: LP.Node = {
+              id: uuidv4(),
+              parentId: newFolderNode.id,
+              name: `${fileName}_${item.motionNumber}`,
+              filePath: '\\root' + `\\${fileName}`,
+              childrens: [],
+              extension: '',
+              type: 'Motion',
+              mocapData: item.trackData,
+            };
+            newMotionNodes.push(newMotionNode);
+            newFolderNode.childrens.push(newMotionNode.id);
+          });
+
+          nextNodes = produce(lpNode, (draft) => {
+            draft.push(newFolderNode);
+
+            newMotionNodes.forEach((newMotionNode) => {
+              draft.push(newMotionNode);
+            });
+          });
+        }
 
         setReadyExtract(false);
         dispatch(lpNodeActions.changeNode({ nodes: nextNodes }));
