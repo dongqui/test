@@ -954,8 +954,8 @@ const ListNode: FunctionComponent<Props> = ({
         }
 
         if (type === 'Motion') {
-          // @TODO 추출된 모션의 경우에는 다른 컨텍스트메뉴가 필요 (parentId가 root인 경우)
-          if (parentId === '__root__') {
+          // @TODO 추출된 모션의 경우에는 다른 컨텍스트메뉴가 필요 (parentId가 root인 경우 혹은 parent가 Folder인 경우)
+          if (parentId === '__root__' || find(_lpNode, { id: parentId })!.type === 'Folder') {
             onContextMenuOpen({
               top: e.clientY,
               left: e.clientX,
