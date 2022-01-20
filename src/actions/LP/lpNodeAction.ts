@@ -1,3 +1,5 @@
+import LP from '../../../@types/Container/LP';
+
 export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
 export const VISUALIZE = 'node/VISUALIZE' as const;
 export const CHANGE_CURRENT_PATH = 'node/CHANGE_CURRENT_PATH' as const;
@@ -18,6 +20,8 @@ export const SET_EDITING_NODE_ID = 'node/SET_EDITING_NODE_ID' as const;
 export const EDIT_NODE_NAME = 'node/EDIT_NODE_NAME' as const;
 export const EXPORT_ASSET = 'node/EXPORT' as const;
 export const DELETE_MOTION = 'node/DELETE_MOTION' as const;
+export const FILE_UPLOAD = 'node/FILE_UPLOAD' as const;
+export const ADD_NODES = 'node/ADD_NODES' as const;
 
 interface ChangeNodeParams {
   nodes: LP.Node[];
@@ -90,6 +94,10 @@ interface ExportAssetParams {
   nodeName: string;
   motion: string;
   format: 'fbx' | 'glb' | 'bvh';
+}
+
+interface FileUploadParams {
+  file: File | string;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
@@ -230,6 +238,20 @@ export const deleteMotion = (params: DeleteMotionParams) => ({
   },
 });
 
+export const fileUpload = (params: FileUploadParams) => ({
+  type: FILE_UPLOAD,
+  payload: {
+    ...params,
+  },
+});
+
+export const addNodes = (nodes: LP.Node[]) => ({
+  type: ADD_NODES,
+  payload: {
+    nodes,
+  },
+});
+
 export type LPNodeAction =
   | ReturnType<typeof changeNode>
   | ReturnType<typeof visualize>
@@ -247,4 +269,6 @@ export type LPNodeAction =
   | ReturnType<typeof setEditingNodeId>
   | ReturnType<typeof editNodeName>
   | ReturnType<typeof exportAsset>
-  | ReturnType<typeof deleteMotion>;
+  | ReturnType<typeof deleteMotion>
+  | ReturnType<typeof fileUpload>
+  | ReturnType<typeof addNodes>;

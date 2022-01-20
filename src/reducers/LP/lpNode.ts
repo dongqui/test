@@ -65,6 +65,12 @@ export const lpNode = (state = defaultState, action: LPNodeAction) => {
         editingNodeId: action.payload.nodeId,
       });
     }
+    case 'node/ADD_NODES': {
+      return Object.assign({}, state, {
+        nodes: [...state.nodes, ...action.payload.nodes],
+      });
+    }
+
     default: {
       return state;
     }

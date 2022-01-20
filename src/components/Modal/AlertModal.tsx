@@ -13,6 +13,7 @@ interface Props {
   title: string;
   message: string;
   confirmText: string;
+  confirmColor?: string;
 }
 
 const AlertModal: FunctionComponent<Props> = ({ onClose, title, onConfirm, message, confirmText = 'Confirm' }) => {

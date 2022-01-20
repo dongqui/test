@@ -31,15 +31,8 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleD
   const currentVisualizedNodePath = (currentVisualizedNode?.filePath + `\\${currentVisualizedNode?.name}`).split('\\').filter((text) => !!text);
   const currentNodePath = (filePath + `\\${name}`).split('\\').filter((text) => !!text);
 
-  if (type === 'Model') {
-    console.log(currentVisualizedNode);
-  }
-
   let hasCurrentVisualizedNode = false;
   currentNodePath.forEach((path, i) => {
-    if (type === 'Folder') {
-      console.log(path, currentVisualizedNodePath[i]);
-    }
     if (path === currentVisualizedNodePath[i]) {
       hasCurrentVisualizedNode = true;
     } else {

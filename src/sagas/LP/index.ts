@@ -1,12 +1,20 @@
 import _, { find, cloneDeep, filter } from 'lodash';
-import { select, put, takeLatest, all, SagaReturnType, call } from 'redux-saga/effects';
+import { select, put, takeLatest, all, SagaReturnType, call, take, takeEvery } from 'redux-saga/effects';
 import { GLTF2Export, GLTFData } from '@babylonjs/serializers';
 import { RootState } from 'reducers';
-import { goToSpecificPoses, checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient, createAnimationGroupFromIngredient } from 'utils/RP';
+import {
+  goToSpecificPoses,
+  checkIsTargetMesh,
+  createAnimationIngredient,
+  removeAssetFromScene,
+  duplicateAnimationIngredient,
+  createAnimationGroupFromIngredient,
+  getRecurrentRotationQuaternion,
+} from 'utils/RP';
 import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth } from 'utils/LP/FileSystem';
-import { createAnimationIngredientFromMocapData, createBvhMap } from 'utils/LP/Retarget';
+import { createAnimationIngredientFromMocapData, createBvhMap, createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
 import { getFileExtension } from 'utils/common';
-import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
+import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes, getRandomStringKey } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -16,9 +24,10 @@ import * as globalUIActions from 'actions/Common/globalUI';
 import * as BABYLON from '@babylonjs/core';
 import { v4 as uuid } from 'uuid';
 import produce from 'immer';
-import { AnimationIngredient, PlaskBvhMap } from 'types/common';
+import { AnimationIngredient, PlaskBvhMap, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
 import * as TEXT from 'constants/Text';
 import { convertModel } from 'api';
+import fileUpload from './fileUpload';
 
 const deleteChild = (node: LP.Node[], ids: string[]) => {
   let memory: LP.Node[] = [];
@@ -292,7 +301,9 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
               joint.actionManager.registerAction(
                 // joint 클릭으로 bone 선택하기 위한 액션
                 new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, function* (event: BABYLON.ActionEvent) {
+                  console.log('click');
                   const targetTransformNode = bone.getTransformNode();
+                  console.log(targetTransformNode, 'targetTransformNode');
                   if (targetTransformNode) {
                     const sourceEvent: PointerEvent = event.sourceEvent;
                     if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
@@ -1018,5 +1029,6 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.EDIT_NODE_NAME, handleEditNodeName),
     takeLatest(lpNodeActions.EXPORT_ASSET, handleExportAsset),
     takeLatest(lpNodeActions.DELETE_MOTION, handleDeleteMotion),
+    takeEvery(lpNodeActions.FILE_UPLOAD, fileUpload),
   ]);
 }
