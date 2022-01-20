@@ -1,5 +1,6 @@
 import _, { find, cloneDeep, filter } from 'lodash';
-import { select, put, takeLatest, all, SagaReturnType, call, take, takeEvery } from 'redux-saga/effects';
+import { channel } from 'redux-saga';
+import { select, put, takeLatest, all, SagaReturnType, call, takeEvery, take } from 'redux-saga/effects';
 import { GLTF2Export, GLTFData } from '@babylonjs/serializers';
 import { RootState } from 'reducers';
 import {
@@ -212,6 +213,15 @@ function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirector
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
 }
 
+const clickJointChaneel = channel();
+
+export function* watchClickJointChaneel() {
+  while (true) {
+    const action: SagaReturnType<typeof selectingDataActions.ctrlKeySingleSelect> = yield take(clickJointChaneel);
+    yield put(action);
+  }
+}
+
 function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeNode>) {
   // 기존 asset visualize cancel -> multi-model 시에는 기존 asset도 유지
   const { plaskProject, selectingData, screenData }: RootState = yield select();
@@ -300,20 +310,18 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
               joint.actionManager = new BABYLON.ActionManager(scene);
               joint.actionManager.registerAction(
                 // joint 클릭으로 bone 선택하기 위한 액션
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, function* (event: BABYLON.ActionEvent) {
-                  console.log('click');
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
                   const targetTransformNode = bone.getTransformNode();
-                  console.log(targetTransformNode, 'targetTransformNode');
                   if (targetTransformNode) {
                     const sourceEvent: PointerEvent = event.sourceEvent;
                     if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                      yield put(
+                      clickJointChaneel.put(
                         selectingDataActions.ctrlKeySingleSelect({
                           target: targetTransformNode,
                         }),
                       );
                     } else {
-                      yield put(
+                      clickJointChaneel.put(
                         selectingDataActions.defaultSingleSelect({
                           target: targetTransformNode,
                         }),
@@ -1030,5 +1038,6 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.EXPORT_ASSET, handleExportAsset),
     takeLatest(lpNodeActions.DELETE_MOTION, handleDeleteMotion),
     takeEvery(lpNodeActions.FILE_UPLOAD, fileUpload),
+    watchClickJointChaneel(),
   ]);
 }
