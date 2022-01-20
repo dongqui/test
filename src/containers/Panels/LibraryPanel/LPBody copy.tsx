@@ -42,7 +42,7 @@ const LPBody: FunctionComponent<Props> = () => {
 
   return (
     // <HotKeys className={cx('wrapper')} handlers={handlers} allowChanges>
-    <div className={cx('inner')} onContextMenu={handleContextMenu} onClick={handleClick}>
+    <div className={cx('inner')} onContextMenu={handleContextMenu} onClickCapture={handleClick}>
       {rootPathNodes.map((node) => (
         <div className={cx('node-row')} key={node.id}>
           <ListNode node={node} />

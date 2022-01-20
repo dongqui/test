@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as globalUIActions from 'actions/Common/globalUI';
 
 interface Props {
   node: LP.Node;
@@ -52,6 +53,7 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleD
   const _handleClickNode = (e: React.MouseEvent) => {
     e.stopPropagation();
     dispatch(lpNodeActions.selectNode({ nodeId: id, assetId }));
+    dispatch(globalUIActions.closeContextMenu());
   };
 
   const _handleDragStart = (e: React.DragEvent) => {
