@@ -22,16 +22,6 @@ const useGizmoControl = () => {
   //   console.log('selectedTargets: ', selectedTargets);
   // }, [selectedTargets]);
 
-  // selectedTargets 기준으로 property tracks 필터링
-  const isMountRef = useRef(true);
-  useEffect(() => {
-    if (!isMountRef.current) {
-      dispatch(trackListActions.changeSelectedTargets());
-    } else {
-      isMountRef.current = false;
-    }
-  }, [dispatch, selectedTargets]);
-
   // gizmoManager 생성
   useEffect(() => {
     const baseScreen = screenList[0];
