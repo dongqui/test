@@ -11,7 +11,7 @@ import { v4 as uuid } from 'uuid';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { ExportModal } from 'containers/Panels/LibraryPanel/Parts';
-import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop, getFileExtension } from 'utils/common';
+import { filterAnimatableTransformNodes, forceClickAnimationPlayAndStop, getFileExtension, roundToFourth } from 'utils/common';
 import { createAnimationGroupFromIngredient, duplicateAnimationIngredient, goToSpecificPoses } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import { beforePaste, checkCreateDuplicates, checkPasteDuplicates, beforeRename, beforeMove } from 'utils/LP/FileSystem';
@@ -241,6 +241,8 @@ const ListNode: FunctionComponent<Props> = ({
 
             const jointTransformNodes: BABYLON.TransformNode[] = [];
 
+            const armatureScalingFactor = bones.find((bone) => bone.name === 'Armature') ? bones.find((bone) => bone.name === 'Armature')!.scaling.x : 0.01;
+
             // joints 생성 및 scene들에 추가
             bones.forEach((bone) => {
               if (
@@ -250,8 +252,9 @@ const ListNode: FunctionComponent<Props> = ({
                 // @TODO
                 !bone.name.toLowerCase().includes('__root__') // return -> 조건문으로 변경
               ) {
-                const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
+                const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: roundToFourth(0.03 / armatureScalingFactor) }, scene);
                 joint.id = `${assetId}//${bone.name}//joint`;
+                joint.state = armatureScalingFactor.toString();
                 joint.renderingGroupId = 2;
                 joint.attachToBone(bone, meshes[0]);
 

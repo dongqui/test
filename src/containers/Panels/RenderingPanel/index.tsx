@@ -702,6 +702,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
           joint.renderOutline = true;
           joint.outlineColor = BABYLON.Color3.White();
           joint.outlineWidth = 0.3;
+          // joint.outlineWidth = 30 * parseFloat(joint.state); // 연산 다시해야 함
         }
       }
     });
