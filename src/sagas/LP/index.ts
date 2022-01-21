@@ -3,19 +3,11 @@ import { channel } from 'redux-saga';
 import { select, put, takeLatest, all, SagaReturnType, call, takeEvery, take } from 'redux-saga/effects';
 import { GLTF2Export, GLTFData } from '@babylonjs/serializers';
 import { RootState } from 'reducers';
-import {
-  goToSpecificPoses,
-  checkIsTargetMesh,
-  createAnimationIngredient,
-  removeAssetFromScene,
-  duplicateAnimationIngredient,
-  createAnimationGroupFromIngredient,
-  getRecurrentRotationQuaternion,
-} from 'utils/RP';
+import { goToSpecificPoses, checkIsTargetMesh, createAnimationIngredient, removeAssetFromScene, duplicateAnimationIngredient, createAnimationGroupFromIngredient } from 'utils/RP';
 import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth } from 'utils/LP/FileSystem';
-import { createAnimationIngredientFromMocapData, createBvhMap, createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
+import { createAnimationIngredientFromMocapData, createBvhMap } from 'utils/LP/Retarget';
 import { getFileExtension } from 'utils/common';
-import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes, getRandomStringKey } from 'utils/common';
+import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -25,7 +17,7 @@ import * as globalUIActions from 'actions/Common/globalUI';
 import * as BABYLON from '@babylonjs/core';
 import { v4 as uuid } from 'uuid';
 import produce from 'immer';
-import { AnimationIngredient, PlaskBvhMap, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
+import { AnimationIngredient, PlaskBvhMap } from 'types/common';
 import * as TEXT from 'constants/Text';
 import { convertModel } from 'api';
 import fileUpload from './fileUpload';

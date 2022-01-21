@@ -1,4 +1,3 @@
-import { lpNode } from './../../reducers/LP/lpNode';
 import { RootState } from 'reducers';
 import { select, put, call } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
@@ -11,12 +10,11 @@ import * as animationDataActions from 'actions/animationDataAction';
 import * as BABYLON from '@babylonjs/core';
 import { convertModel } from 'api';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
-import { createAutoRetargetMap, createEmptyRetargetMap } from 'utils/LP/Retarget';
+import { createAutoRetargetMap, createEmptyRetargetMap, isRetargetError } from 'utils/LP/Retarget';
 import { getFileExtension, filterAnimatableTransformNodes, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient, getRecurrentRotationQuaternion } from 'utils/RP';
-import { WARNING_07 } from 'constants/Text';
+import { WARNING_07, WARNING_01 } from 'constants/Text';
 import { AnimationIngredient, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
-import LP from '../../../@types/Container/LP';
 
 async function getAssetContainer(file: File | string, extension: string, baseScene: BABYLON.Scene) {
   if (extension === 'fbx' && file instanceof File) {
@@ -193,6 +191,17 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
       }),
     );
     yield put(lpNodeActions.addNodes(nextNodes));
+
+    if (isRetargetError(retargetMap)) {
+      yield put(
+        globalUIActions.openModal('AlertModal', {
+          title: 'Warning',
+          message: WARNING_01.replace(/%s/, fileName),
+          confirmText: 'Close',
+          confirmColor: 'cancel',
+        }),
+      );
+    }
   } catch (e) {
     yield put(
       globalUIActions.openModal('AlertModal', {

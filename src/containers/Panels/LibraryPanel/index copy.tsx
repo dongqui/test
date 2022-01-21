@@ -31,7 +31,6 @@ const LibraryPanel: FunctionComponent = () => {
 
   const onNodeChange = useCallback(
     (files: File[] | string[]) => {
-      console.log(files);
       for (const file of files) {
         console.log(file);
         dispatch(
@@ -76,22 +75,6 @@ const LibraryPanel: FunctionComponent = () => {
       }
 
       onNodeChange(removedVideoFiles);
-      // .then((response) => {
-      //   // 자동리타겟팅에 실패한 파일 리스트
-      //   const failedFiles = response.trim().split(', ');
-
-      //   if (response && failedFiles.length > 0) {
-      //     const message = TEXT.WARNING_01.replace(/%s/, response.replace(/,\s*$/, '') + '.');
-
-      //     onModalOpen({
-      //       title: 'Warning',
-      //       message: message,
-      //       confirmText: 'Close',
-      //       confirmColor: 'cancel',
-      //       onConfirm: onModalClose,
-      //     });
-      //   }
-      // });
 
       if (videos.length > 0) {
         const videoBlobURL = URL.createObjectURL(videos[0]);
