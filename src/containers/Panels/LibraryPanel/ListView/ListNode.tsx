@@ -254,7 +254,7 @@ const ListNode: FunctionComponent<Props> = ({
               ) {
                 const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: roundToFourth(0.03 / armatureScalingFactor) }, scene);
                 joint.id = `${assetId}//${bone.name}//joint`;
-                joint.state = armatureScalingFactor.toString();
+                joint.state = roundToFourth(0.03 / armatureScalingFactor).toString(); // save joint's diameter as state
                 joint.renderingGroupId = 2;
                 joint.attachToBone(bone, meshes[0]);
 
