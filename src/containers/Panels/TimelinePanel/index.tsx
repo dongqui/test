@@ -17,7 +17,7 @@ const TimelinePanel = () => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
 
-  const currentVisualizedAssetId = useRef('');
+  const currentMotionId = useRef('');
 
   useEffect(() => {
     // viewport에 model이 있는 경우
@@ -25,15 +25,16 @@ const TimelinePanel = () => {
       const visualizedAnimationIngredients = _animationIngredients.filter(
         (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
       );
-      if (visualizedAnimationIngredients.length !== 0 && currentVisualizedAssetId.current !== visualizedAnimationIngredients[0].id) {
+      if (visualizedAnimationIngredients.length !== 0 && currentMotionId.current !== visualizedAnimationIngredients[0].id) {
         dispatch(trackListActions.initializeTrackList({ list: visualizedAnimationIngredients[0].layers, animationIngredientId: visualizedAnimationIngredients[0].id }));
-        currentVisualizedAssetId.current = visualizedAnimationIngredients[0].id;
+        dispatch(trackListActions.changeSelectedTargets());
+        currentMotionId.current = visualizedAnimationIngredients[0].id;
       }
     }
     // viewport에 model이 없는 경우
     else {
       dispatch(trackListActions.initializeTrackList({ list: [], animationIngredientId: '', clearAnimation: true }));
-      currentVisualizedAssetId.current = '';
+      currentMotionId.current = '';
     }
   }, [_animationIngredients, _visualizedAssetIds, dispatch]);
 
