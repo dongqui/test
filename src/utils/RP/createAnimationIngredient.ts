@@ -28,62 +28,41 @@ const createAnimationIngredient = (
   const layerId = `baseLayer//${getRandomStringKey()}`;
 
   const tracks: PlaskTrack[] = [];
-  // (animationGroup을 생성하기 위해 사용한) targetedAnimations를 순회하며 Property-depth의 트랙들을 구성합니다.
-  targetedAnimations.forEach((targetAnimation) => {
-    const { target, animation } = targetAnimation;
-    if (animation.targetProperty === 'position') {
-      // position 트랙들 전처리
-      tracks.push(
-        createPlaskTrack(
-          `${animation.name}`,
-          layerId,
-          target,
-          'position',
-          animation.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })), // integer frame 사용
-          isMocapAnimation,
-        ),
-      );
-    } else if (animation.targetProperty === 'rotationQuaternion') {
-      const quaternionTransformKeys = animation.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // integer frame 사용
 
-      const eulerTransformKeys: BABYLON.IAnimationKey[] = quaternionTransformKeys.map((transformKey) => {
-        const q: BABYLON.Quaternion = transformKey.value;
-        const e = q.toEulerAngles();
-        return { frame: transformKey.frame, value: e };
-      });
-
-      // rotationQuaternion 트랙들 전처리
-      tracks.push(createPlaskTrack(`${animation.name}`, layerId, target, 'rotationQuaternion', quaternionTransformKeys, isMocapAnimation));
-
-      // rotation 트랙들 전처리
-      tracks.push(createPlaskTrack(`${animation.name}`, layerId, target, 'rotation', eulerTransformKeys, isMocapAnimation));
-    } else if (animation.targetProperty === 'scaling') {
-      tracks.push(
-        createPlaskTrack(
-          `${animation.name}`,
-          layerId,
-          target,
-          'scaling',
-          animation.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })), // integer frame 사용
-          isMocapAnimation,
-        ),
-      );
-    }
-    // 전처리를 끝낸 source animation은 타겟의 애니메이션 목록에서 지워줍니다.
-    target.animations = target.animations.filter((animation: BABYLON.Animation) => animation !== animation);
-  });
-
-  // targets 중 animationGroup에 속하지 않는 경우에는 빈 트랙을 추가합니다.
+  // 1) track간 순서가 일정하도록 2) 하나의 property에 대해서만 키가 찍힌 애니메이션도 대응할 수 있도록
+  // 미리 빈 트랙들을 생성한 후 다시 채워넣는 방식을 사용
   // empty motion의 경우 targetedAnimations를 빈 채로 넘겨주어, targets들을 대상으로 하는 빈 트랙들만을 가지도록 구성합니다.
   targets.forEach((target) => {
-    // targetedAnimations에 속하는지 않는 경우에만
-    if (!targetedAnimations.find((targetedAnimation) => targetedAnimation.target.id === target.id)) {
-      tracks.push(createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|position`, layerId, target, 'position', [], isMocapAnimation));
-      tracks.push(createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|rotation`, layerId, target, 'rotation', [], isMocapAnimation));
-      // prettier-ignore
-      tracks.push(createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|rotationQuaternion`, layerId, target, 'rotationQuaternion', [], isMocapAnimation));
-      tracks.push(createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|scaling`, layerId, target, 'scaling', [], isMocapAnimation));
-    }
+    const positionTrack = createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|position`, layerId, target, 'position', [], isMocapAnimation);
+    const rotationTrack = createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|rotation`, layerId, target, 'rotation', [], isMocapAnimation);
+    // prettier-ignore
+    const rotationQuaternionTrack = createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|rotationQuaternion`, layerId, target, 'rotationQuaternion', [], isMocapAnimation)
+    const scalingTrack = createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|scaling`, layerId, target, 'scaling', [], isMocapAnimation);
+
+    targetedAnimations
+      .filter((targetAnimation) => targetAnimation.target.id === target.id)
+      .forEach(({ target: t, animation: a }) => {
+        if (a.targetProperty === 'position') {
+          positionTrack.transformKeys = a.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // integer frame 사용
+        } else if (a.targetProperty === 'rotationQuaternion') {
+          const quaternionTransformKeys = a.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // integer frame 사용
+          rotationQuaternionTrack.transformKeys = quaternionTransformKeys;
+
+          const eulerTransformKeys: BABYLON.IAnimationKey[] = quaternionTransformKeys.map((transformKey) => {
+            const q: BABYLON.Quaternion = transformKey.value;
+            const e = q.toEulerAngles();
+            return { frame: transformKey.frame, value: e };
+          });
+          rotationTrack.transformKeys = eulerTransformKeys;
+        } else if (a.targetProperty === 'scaling') {
+          scalingTrack.transformKeys = a.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // integer frame 사용
+        }
+      });
+
+    tracks.push(positionTrack);
+    tracks.push(rotationTrack);
+    tracks.push(rotationQuaternionTrack);
+    tracks.push(scalingTrack);
   });
 
   const animationIngredient = {
