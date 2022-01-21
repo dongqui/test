@@ -701,7 +701,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         if (joint) {
           joint.renderOutline = true;
           joint.outlineColor = BABYLON.Color3.White();
-          joint.outlineWidth = 0.3;
+          joint.outlineWidth = 0.3 * (parseFloat(joint.state) / 3); // set outline width according to joint's diameter
         }
       }
     });
