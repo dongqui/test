@@ -9,15 +9,15 @@ interface Props {
   isEditing?: boolean;
   name?: string;
   extension?: string;
-  handleEditName: (newName: string) => void;
-  handleCancelEdit: () => void;
+  onEditName: (newName: string) => void;
+  onCancelEdit: () => void;
 }
 
-const NodeName: FunctionComponent<Props> = ({ isEditing, name, handleEditName, handleCancelEdit, extension }) => {
+const NodeName: FunctionComponent<Props> = ({ isEditing, name, onEditName, onCancelEdit, extension }) => {
   const nameWithoutExtension = name?.replace(new RegExp(`.${extension}$`), '');
   const [inputValue, setInputValue] = useState(nameWithoutExtension || '');
 
-  const handleChange = useCallback(
+  const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       let currentValue = event.target.value;
 
@@ -37,22 +37,31 @@ const NodeName: FunctionComponent<Props> = ({ isEditing, name, handleEditName, h
     [inputValue],
   );
 
-  const onBlur = () => {
-    handleEditName(inputValue);
+  const handleInputBlur = () => {
+    onEditName(inputValue);
   };
 
-  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.code === 'Escape') {
-      handleCancelEdit();
+      onCancelEdit();
     } else if (event.code === 'Enter') {
-      handleEditName(inputValue);
+      onEditName(inputValue);
     }
   };
 
   if (isEditing) {
     return (
       <Fragment>
-        <BaseInput className={cx('input')} placeholder={name} value={inputValue} type="text" onChange={handleChange} onBlur={onBlur} onKeyDown={onKeyDown} autoFocus />
+        <BaseInput
+          className={cx('input')}
+          placeholder={name}
+          value={inputValue}
+          type="text"
+          onChange={handleInputChange}
+          onBlur={handleInputBlur}
+          onKeyDown={handleKeyDown}
+          autoFocus
+        />
       </Fragment>
     );
   }

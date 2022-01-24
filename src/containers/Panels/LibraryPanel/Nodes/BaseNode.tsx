@@ -1,5 +1,6 @@
-import React, { Fragment, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useDispatch } from 'react-redux';
+
 import { useSelector } from 'reducers';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -7,13 +8,13 @@ import * as globalUIActions from 'actions/Common/globalUI';
 
 interface Props {
   node: LP.Node;
-  handleContextMenu: React.MouseEventHandler;
-  handleDrop?: React.DragEventHandler;
-  handleEditName?: (newName: string) => void;
-  handleDragEnd?: React.DragEventHandler;
+  onContextMenu: React.MouseEventHandler;
+  onDrop?: React.DragEventHandler;
+  onEditName?: (newName: string) => void;
+  onDragEnd?: React.DragEventHandler;
 }
 
-const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleDragEnd }: Props) => {
+const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd }: Props) => {
   const { id, assetId, name, type, filePath, childrens, extension } = node;
   const dispatch = useDispatch();
   const [showChildren, setShowChildren] = useState(false);
@@ -50,13 +51,13 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleD
     : !showChildren && hasCurrentVisualizedNode);
   // -- 개선? --
 
-  const _handleClickNode = (e: React.MouseEvent) => {
+  const handleClickNode = (e: React.MouseEvent) => {
     e.stopPropagation();
     dispatch(lpNodeActions.selectNode({ nodeId: id, assetId }));
     dispatch(globalUIActions.closeContextMenu());
   };
 
-  const _handleDragStart = (e: React.DragEvent) => {
+  const handleDragStart = (e: React.DragEvent) => {
     e.stopPropagation();
     const draggedNode = nodes.find((node) => node.id === id);
     if (draggedNode) {
@@ -64,22 +65,22 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleD
     }
   };
 
-  const _handleEditName = (newName: string) => {
-    handleEditName ? handleEditName(newName) : dispatch(lpNodeActions.editNodeName({ newName, nodeId: id }));
+  const handleEditName = (newName: string) => {
+    onEditName ? onEditName(newName) : dispatch(lpNodeActions.editNodeName({ newName, nodeId: id }));
   };
 
-  const _handleClickArrowButton = (e: React.MouseEvent) => {
+  const handleArrowButtonClick = (e: React.MouseEvent) => {
     setShowChildren(!showChildren);
   };
 
-  const _handleCancelEdit = () => {
+  const handleCancelEdit = () => {
     dispatch(lpNodeActions.setEditingNodeId(null));
   };
 
-  const _handleContextMenu = (e: React.MouseEvent) => {
+  const handleContextMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    handleContextMenu(e);
+    onContextMenu(e);
   };
 
   return (
@@ -91,14 +92,14 @@ const BaseNode = ({ node, handleContextMenu, handleDrop, handleEditName, handleD
         isSelected={selectedId === id}
         isOpenVisualized={isOpenVisualized}
         isCloseVisualized={isCloseVisualized}
-        handleContextMenu={_handleContextMenu}
-        handleClickNode={_handleClickNode}
-        handleDragStart={_handleDragStart}
-        handleEditName={_handleEditName}
-        handleDrop={handleDrop}
-        handleDragEnd={handleDragEnd}
-        handleClickArrowButton={_handleClickArrowButton}
-        handleCancelEdit={_handleCancelEdit}
+        onContextMenu={handleContextMenu}
+        onClick={handleClickNode}
+        onDragStart={handleDragStart}
+        onEditName={handleEditName}
+        onDrop={onDrop}
+        onDragEnd={onDragEnd}
+        onArrowButtonClick={handleArrowButtonClick}
+        onCancelEdit={handleCancelEdit}
         isEditing={isEditing}
         extension={extension}
         showChildren={showChildren}

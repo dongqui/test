@@ -2,8 +2,8 @@ import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
-import produce from 'immer';
 import '@babylonjs/loaders/glTF';
+
 import { getFileExtension } from 'utils/common';
 import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -13,6 +13,7 @@ import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody copy';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -23,7 +24,6 @@ const LibraryPanel: FunctionComponent = () => {
   const _lpNode = useSelector((state) => state.lpNode.nodes);
   const _screenList = useSelector((state) => state.plaskProject.screenList);
 
-  const [view, setView] = useState<LP.View>('List');
   const [searchText, setSearchText] = useState('');
   const [searchResultNode, setSearchResultNode] = useState(_lpNode);
 
@@ -45,9 +45,9 @@ const LibraryPanel: FunctionComponent = () => {
   const handleDrop = useCallback(
     async (files: File[]) => {
       const videos = files.filter((file) => file.type.includes('video'));
-      const removedVideoFiles = files.filter((file) => !file.type.includes('video'));
+      const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
 
-      const isInvalidFormat = removedVideoFiles.some((file) => {
+      const isInvalidFormat = filesExceptVideo.some((file) => {
         const extension = getFileExtension(file.name).toLowerCase();
         const isModelFormat = extension === 'glb' || extension === 'fbx';
 
@@ -73,7 +73,7 @@ const LibraryPanel: FunctionComponent = () => {
         return;
       }
 
-      onNodeChange(removedVideoFiles);
+      onNodeChange(filesExceptVideo);
 
       if (videos.length > 0) {
         const videoBlobURL = URL.createObjectURL(videos[0]);
@@ -155,7 +155,7 @@ const LibraryPanel: FunctionComponent = () => {
           <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody view={view} lpNode={nodes} isPreventContextmenu={isPreventContextmenu} />
+          <LPBody lpNode={nodes} isPreventContextmenu={isPreventContextmenu} />
         </Box>
       </div>
     </div>

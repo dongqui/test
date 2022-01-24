@@ -1,4 +1,5 @@
 import { useDispatch } from 'react-redux';
+
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
@@ -36,7 +37,7 @@ const MotionNode = ({ node }: Props) => {
     );
   };
 
-  return <BaseNode node={node} handleContextMenu={handleContextMenu} handleDragEnd={handleDragEnd} />;
+  return <BaseNode node={node} onContextMenu={handleContextMenu} onDragEnd={handleDragEnd} />;
 };
 
 export default MotionNode;

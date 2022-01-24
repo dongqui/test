@@ -1,10 +1,10 @@
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
+
 import { isDroppedOnRP } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
-import React from 'react';
 
 interface Props {
   node: LP.Node;
@@ -58,7 +58,7 @@ const ModelNode = ({ node }: Props) => {
     dispatch(lpNodeActions.editNodeName({ newName: nameWithExtension, nodeId: id }));
   };
 
-  return <BaseNode node={node} handleContextMenu={handleContextMenu} handleDrop={handleDrop} handleEditName={handleEditName} handleDragEnd={handleDragEnd} />;
+  return <BaseNode node={node} onContextMenu={handleContextMenu} onDrop={handleDrop} onEditName={handleEditName} onDragEnd={handleDragEnd} />;
 };
 
 export default ModelNode;

@@ -22,7 +22,7 @@ const MocapNode = ({ node }: Props) => {
     );
   };
 
-  return <BaseNode node={node} handleContextMenu={handleContextMenu} />;
+  return <BaseNode node={node} onContextMenu={handleContextMenu} />;
 };
 
 export default MocapNode;

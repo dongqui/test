@@ -1,4 +1,5 @@
 import { useDispatch } from 'react-redux';
+
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
@@ -31,7 +32,7 @@ const FolderNode = ({ node }: Props) => {
     );
   };
 
-  return <BaseNode node={node} handleContextMenu={handleContextMenu} handleDrop={handleDrop} />;
+  return <BaseNode node={node} onContextMenu={handleContextMenu} onDrop={handleDrop} />;
 };
 
 export default FolderNode;
