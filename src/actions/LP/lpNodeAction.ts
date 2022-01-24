@@ -15,7 +15,7 @@ export const VISUALIZE_MOTION = 'node/VISUALIZE_MOTION' as const;
 export const SELECT_NODE = 'node/SELECT_NODE' as const;
 export const DROP_NODE_ON_FOLDER = 'node/DROP_NODE_ON_FOLDER' as const;
 export const DRAG_NODE_START = 'node/DRAG_NODE_START' as const;
-export const DROP_MOTION_ON_MODEL = 'node/DROP_MOTION_ON_MODEL' as const;
+export const DROP_MOCAP_ON_MODEL = 'node/DROP_MOCAP_ON_MODEL' as const;
 export const SET_EDITING_NODE_ID = 'node/SET_EDITING_NODE_ID' as const;
 export const EDIT_NODE_NAME = 'node/EDIT_NODE_NAME' as const;
 export const EXPORT_ASSET = 'node/EXPORT' as const;
@@ -76,7 +76,7 @@ interface DropNodeOnFolderParams {
   nodeId: string;
 }
 
-interface DropMotionOnModelParams {
+interface DropMocapOnModelParams {
   nodeId: string;
   filePath: string;
   assetId?: string;
@@ -203,8 +203,8 @@ export const dragNodeStart = (node: LP.Node) => ({
   },
 });
 
-export const dropMotionOnModel = (params: DropMotionOnModelParams) => ({
-  type: DROP_MOTION_ON_MODEL,
+export const dropMocapOnModel = (params: DropMocapOnModelParams) => ({
+  type: DROP_MOCAP_ON_MODEL,
   payload: {
     ...params,
   },
@@ -265,7 +265,7 @@ export type LPNodeAction =
   | ReturnType<typeof selectNode>
   | ReturnType<typeof dropNodeOnFolder>
   | ReturnType<typeof dragNodeStart>
-  | ReturnType<typeof dropMotionOnModel>
+  | ReturnType<typeof dropMocapOnModel>
   | ReturnType<typeof setEditingNodeId>
   | ReturnType<typeof editNodeName>
   | ReturnType<typeof exportAsset>

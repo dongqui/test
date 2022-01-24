@@ -32,10 +32,10 @@ const ModelNode = ({ node }: Props) => {
   };
 
   const handleDrop = () => {
-    if (draggedNode?.type !== 'Motion' || !draggedNode?.mocapData) return;
+    if (draggedNode?.type !== 'Mocap' || !draggedNode?.mocapData) return;
 
     dispatch(
-      lpNodeActions.dropMotionOnModel({
+      lpNodeActions.dropMocapOnModel({
         nodeId: id,
         filePath,
         assetId,

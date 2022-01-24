@@ -32,7 +32,6 @@ const LibraryPanel: FunctionComponent = () => {
   const onNodeChange = useCallback(
     (files: File[] | string[]) => {
       for (const file of files) {
-        console.log(file);
         dispatch(
           lpNodeActions.fileUpload({
             file,

@@ -86,22 +86,18 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
     <BaseContextMenu>
       <ContextMenuItem onClick={handleDelete}>Delete</ContextMenuItem>
       <ContextMenuItem onClick={handleEditName}>Edit name</ContextMenuItem>
-      {parentId !== '__root__' && (
-        <>
-          <ContextMenuItem onClick={handleDuplicate}>Duplicate</ContextMenuItem>
-          {/* <ContextMenuItem>Copy</ContextMenuItem>
-          <ContextMenuItem>Paste</ContextMenuItem> */}
-          <ContextMenuItem onClick={handleVisualize} disabled={isCurrentVisualizedNode}>
-            Visualization
-          </ContextMenuItem>
-          <ContextMenuItem onClick={handleCancelVisualization} disabled={!isCurrentVisualizedNode}>
-            Visualization cancel
-          </ContextMenuItem>
-          <ContextMenuItem onClick={handleExport} disabled={!isCurrentVisualizedNode}>
-            Export
-          </ContextMenuItem>
-        </>
-      )}
+      <ContextMenuItem onClick={handleDuplicate}>Duplicate</ContextMenuItem>
+      {/* <ContextMenuItem>Copy</ContextMenuItem>
+      <ContextMenuItem>Paste</ContextMenuItem> */}
+      <ContextMenuItem onClick={handleVisualize} disabled={isCurrentVisualizedNode}>
+        Visualization
+      </ContextMenuItem>
+      <ContextMenuItem onClick={handleCancelVisualization} disabled={!isCurrentVisualizedNode}>
+        Visualization cancel
+      </ContextMenuItem>
+      <ContextMenuItem onClick={handleExport} disabled={!isCurrentVisualizedNode}>
+        Export
+      </ContextMenuItem>
     </BaseContextMenu>
   );
 };

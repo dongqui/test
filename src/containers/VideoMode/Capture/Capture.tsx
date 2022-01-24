@@ -220,7 +220,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             filePath: '\\root',
             childrens: [],
             extension: '',
-            type: 'Motion',
+            type: 'Mocap',
             mocapData: response.data.result[0].trackData,
           };
 
@@ -247,7 +247,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               filePath: '\\root' + `\\${fileName}`,
               childrens: [],
               extension: '',
-              type: 'Motion',
+              type: 'Mocap',
               mocapData: item.trackData,
             };
             newMotionNodes.push(newMotionNode);

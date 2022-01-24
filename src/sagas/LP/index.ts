@@ -651,7 +651,7 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
 }
 
-function* handleDropMotionOnModel(action: ReturnType<typeof lpNodeActions.dropMotionOnModel>) {
+function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
   const { lpNode, plaskProject, animationData }: RootState = yield select();
   const { draggedNode, nodes } = lpNode;
   const { assetList } = plaskProject;
@@ -1025,7 +1025,7 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.DUPLICATE_MOTION, handleDuplicateMotion),
     takeLatest(lpNodeActions.VISUALIZE_MOTION, handleVisualizeMotion),
     takeLatest(lpNodeActions.DROP_NODE_ON_FOLDER, handleDropNodeOnFolder),
-    takeLatest(lpNodeActions.DROP_MOTION_ON_MODEL, handleDropMotionOnModel),
+    takeLatest(lpNodeActions.DROP_MOCAP_ON_MODEL, handleDropMocapOnModel),
     takeLatest(lpNodeActions.EDIT_NODE_NAME, handleEditNodeName),
     takeLatest(lpNodeActions.EXPORT_ASSET, handleExportAsset),
     takeLatest(lpNodeActions.DELETE_MOTION, handleDeleteMotion),

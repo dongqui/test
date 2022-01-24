@@ -35,7 +35,7 @@ interface Props {
   id: string;
   assetId?: string;
   parentId: string;
-  type: 'Folder' | 'Model' | 'Motion';
+  type: LP.NodeType;
   name: string;
   fileUrl?: string | File;
   filePath: string;
