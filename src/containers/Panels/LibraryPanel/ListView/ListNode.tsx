@@ -489,6 +489,7 @@ const ListNode: FunctionComponent<Props> = ({
           );
 
           handleVisualization();
+          forceClickAnimationPlayAndStop(50);
         }
       }
     }
