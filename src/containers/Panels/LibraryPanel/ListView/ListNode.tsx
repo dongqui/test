@@ -884,6 +884,11 @@ const ListNode: FunctionComponent<Props> = ({
                   if (isEmptyMotion) {
                     addEmptyMotion();
                     setIsVisualizeCompleted(true);
+
+                    const currentAsset = find(_assetList, { id: assetId });
+                    if (currentAsset) {
+                      goToSpecificPoses(currentAsset.initialPoses);
+                    }
                   } else {
                     const currentAsset = find(_assetList, { id: assetId });
 
