@@ -1718,6 +1718,7 @@ const ListNode: FunctionComponent<Props> = ({
                 );
 
                 handleVisualization();
+                forceClickAnimationPlayAndStop();
               }
 
               onModalClose();
