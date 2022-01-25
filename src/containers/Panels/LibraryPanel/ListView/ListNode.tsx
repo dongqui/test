@@ -1965,7 +1965,7 @@ const ListNode: FunctionComponent<Props> = ({
         if (isRPContains) {
           const parentModel = find(_lpNode, { id: parentId });
 
-          if (parentModel) {
+          if (parentModel && parentModel.type === 'Model') {
             const motions = filter(_animationIngredients, { assetId: parentModel.assetId });
 
             if (motions && parentModel.assetId) {
