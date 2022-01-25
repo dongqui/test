@@ -1334,10 +1334,11 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       const newAnimationGroup = createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], _fps, true);
 
       newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
+      newAnimationGroup.start().goToFrame(_startTimeIndex).pause();
       dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
 
       return () => {
-        newAnimationGroup.pause();
+        newAnimationGroup.stop();
       };
     }
   }, [_animationIngredients, _endTimeIndex, _fps, _screenList, _startTimeIndex, _visualizedAssetIds, dispatch]);
