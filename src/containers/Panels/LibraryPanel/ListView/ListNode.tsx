@@ -1496,6 +1496,7 @@ const ListNode: FunctionComponent<Props> = ({
 
           if (confirmed) {
             handleVisualization();
+            forceClickAnimationPlayAndStop(50);
 
             dispatch(
               cpActions.switchMode({
@@ -1624,6 +1625,7 @@ const ListNode: FunctionComponent<Props> = ({
                   );
 
                   handleVisualization();
+                  forceClickAnimationPlayAndStop(50);
                 }
 
                 return;
@@ -1719,7 +1721,7 @@ const ListNode: FunctionComponent<Props> = ({
                 );
 
                 handleVisualization();
-                forceClickAnimationPlayAndStop();
+                forceClickAnimationPlayAndStop(50);
               }
 
               onModalClose();
