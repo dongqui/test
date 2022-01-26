@@ -1,7 +1,4 @@
-import { setEditingNodeId } from './../../actions/LP/lpNodeAction';
 import { LPNodeAction } from 'actions/LP/lpNodeAction';
-import LP from '../../../@types/Container/LP';
-
 interface State {
   nodes: LP.Node[];
   visualizedfileUrl: string | File;

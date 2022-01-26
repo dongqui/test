@@ -13,6 +13,10 @@ const MotionNode = ({ node }: Props) => {
   const dispatch = useDispatch();
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!assetId) {
+      return;
+    }
+
     dispatch(lpNodeActions.selectNode({ nodeId: id, assetId }));
     dispatch(
       globalUIActions.openContextMenu('MotionContextMenu', e, {
@@ -26,7 +30,9 @@ const MotionNode = ({ node }: Props) => {
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
-    if (!assetId || !isDroppedOnRP(e)) return;
+    if (!assetId || !isDroppedOnRP(e)) {
+      return;
+    }
 
     dispatch(
       lpNodeActions.visualizeMotion({

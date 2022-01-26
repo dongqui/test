@@ -174,3 +174,8 @@ export type PlaskBvhMap = {
 };
 
 export type ContextMenuClickItemHandlerProps = any;
+
+export type SelectingData = {
+  selectableObjects: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+  selectedTargets: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+};
