@@ -8,9 +8,10 @@ interface Props {
   nodeId: string;
   extension: string;
   filePath: string;
+  parentId?: string;
 }
 
-const FolderContextMenu = ({ nodeId, extension, filePath }: Props) => {
+const FolderContextMenu = ({ nodeId, extension, filePath, parentId }: Props) => {
   const dispatch = useDispatch();
 
   const handleDelete = () => {
@@ -19,7 +20,7 @@ const FolderContextMenu = ({ nodeId, extension, filePath }: Props) => {
         title: 'Delete Folder',
         message: 'Are you sure? All files in the directory will be deleted.',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteNode({ nodeId }));
+          dispatch(lpNodeActions.deleteFolderOrMocap({ nodeId, parentId }));
         },
         onCancel: () => {},
       }),

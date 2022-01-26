@@ -15,11 +15,11 @@ const MocapContextMenu = ({ nodeId, parentId }: Props) => {
   const handleDelete = () => {
     dispatch(
       globalUIActions.openModal('ConfirmModal', {
-        title: 'Delete Folder',
+        title: 'Delete Mocap',
         // TODO: MOTION 삭제 메세지
         message: 'Are you sure? All files in the directory will be deleted.',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteMotion({ nodeId, parentId }));
+          dispatch(lpNodeActions.deleteFolderOrMocap({ nodeId, parentId }));
         },
         onCancel: () => {},
       }),

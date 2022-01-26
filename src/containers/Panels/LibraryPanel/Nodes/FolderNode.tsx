@@ -9,7 +9,7 @@ interface Props {
 }
 
 const FolderNode = ({ node }: Props) => {
-  const { id, filePath, extension } = node;
+  const { id, filePath, extension, parentId } = node;
   const dispatch = useDispatch();
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -19,9 +19,11 @@ const FolderNode = ({ node }: Props) => {
         nodeId: id,
         filePath,
         extension,
+        parentId,
       }),
     );
   };
+
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.stopPropagation();
     dispatch(

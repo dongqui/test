@@ -4,7 +4,7 @@ export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
 export const VISUALIZE = 'node/VISUALIZE' as const;
 export const CHANGE_CURRENT_PATH = 'node/CHANGE_CURRENT_PATH' as const;
 export const CHANGE_CLIPBOARD = 'node/CHANGE_CLIPBOARD' as const;
-export const DELETE_NODE = 'node/DELETE_NODE' as const;
+export const DELETE_FOLDER_OR_MOCAP = 'node/DELETE_FOLDER_OR_MOCAP' as const;
 export const COPY_NODE = 'node/COPY_NODE' as const;
 export const ADD_DIRECTORY = 'node/ADD_DIRECTORY' as const;
 export const VISUALIZE_NODE = 'node/VISUALIZE_NODE' as const;
@@ -22,6 +22,7 @@ export const EXPORT_ASSET = 'node/EXPORT' as const;
 export const DELETE_MOTION = 'node/DELETE_MOTION' as const;
 export const FILE_UPLOAD = 'node/FILE_UPLOAD' as const;
 export const ADD_NODES = 'node/ADD_NODES' as const;
+export const DELETE_MODEL = 'node/DELETE_MODEL' as const;
 
 interface ChangeNodeParams {
   nodes: LP.Node[];
@@ -35,15 +36,20 @@ interface ChangeClipboardParams {
   data: LP.Node[];
 }
 
-interface DeleteNodeParams {
+interface DeleteFolderOrMocapParams {
   nodeId: string;
-  selectAssetId?: string;
+  parentId?: string;
 }
-
 interface DeleteMotionParams {
   nodeId: string;
-  assetId?: string;
+  assetId: string;
   parentId: string;
+}
+
+interface DeleteModelParams {
+  nodeId: string;
+  assetId: string;
+  parentId?: string;
 }
 interface AddEmptyMotionParams {
   nodeId: string;
@@ -126,17 +132,17 @@ export const changeClipboard = (params: ChangeClipboardParams) => ({
   },
 });
 
-export const deleteNode = (params: DeleteNodeParams) => ({
-  type: DELETE_NODE,
+export const deleteFolderOrMocap = (params: DeleteFolderOrMocapParams) => ({
+  type: DELETE_FOLDER_OR_MOCAP,
   payload: {
     ...params,
   },
 });
 
-export const copyNode = (nodeId: string) => ({
-  type: DELETE_NODE,
+export const deleteModel = (params: DeleteModelParams) => ({
+  type: DELETE_MODEL,
   payload: {
-    id: nodeId,
+    ...params,
   },
 });
 
@@ -257,7 +263,9 @@ export type LPNodeAction =
   | ReturnType<typeof visualize>
   | ReturnType<typeof changeCurrentPath>
   | ReturnType<typeof changeClipboard>
-  | ReturnType<typeof deleteNode>
+  | ReturnType<typeof deleteFolderOrMocap>
+  | ReturnType<typeof deleteModel>
+  | ReturnType<typeof deleteMotion>
   | ReturnType<typeof changeNode>
   | ReturnType<typeof addDirectory>
   | ReturnType<typeof visualizeNode>
@@ -269,6 +277,5 @@ export type LPNodeAction =
   | ReturnType<typeof setEditingNodeId>
   | ReturnType<typeof editNodeName>
   | ReturnType<typeof exportAsset>
-  | ReturnType<typeof deleteMotion>
   | ReturnType<typeof fileUpload>
   | ReturnType<typeof addNodes>;
