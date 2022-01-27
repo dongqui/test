@@ -1,6 +1,6 @@
 .wrap {
-  display: grid;
-  grid-template-columns: 240px 1fr 280px;
+  display: flex;
+  justify-content: space-between;
   height: 100%;
 }
 
