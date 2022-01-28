@@ -147,39 +147,32 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
       retargetMapId: retargetMap.id,
     };
 
-    const nextNodes = produce(lpNode.nodes, (draft) => {
-      // 로드한 모델을 통해 LP 모델 노드 생성
-      const newModelNode: LP.Node = {
-        id: uuid(),
-        parentId: '__root__',
-        filePath: '\\root',
-        name: nodeName,
-        extension,
-        type: 'Model',
-        assetId: newAsset.id,
-        childrens: animationIngredientIds,
+    const newModelNode: LP.Node = {
+      id: uuid(),
+      parentId: '__root__',
+      filePath: '\\root',
+      name: nodeName,
+      extension,
+      type: 'Model',
+      assetId: newAsset.id,
+      childrens: animationIngredientIds,
+    };
+
+    // 로드한 모델의 모션을 통해 LP 모션 노드 생성
+    const newMotionNodes = animationIngredients.map((ingredient) => {
+      const motion: LP.Node = {
+        id: ingredient.id,
+        // parentId: ingredient.assetId,
+        parentId: newModelNode.id,
+        assetId: ingredient.assetId,
+        filePath: '\\root' + `\\${nodeName}`,
+        name: ingredient.name,
+        extension: '',
+        type: 'Motion',
+        childrens: [],
       };
 
-      draft.push(newModelNode);
-
-      // 로드한 모델의 모션을 통해 LP 모션 노드 생성
-      const newMotionNodes = animationIngredients.map((ingredient) => {
-        const motion: LP.Node = {
-          id: ingredient.id,
-          // parentId: ingredient.assetId,
-          parentId: newModelNode.id,
-          assetId: ingredient.assetId,
-          filePath: '\\root' + `\\${nodeName}`,
-          name: ingredient.name,
-          extension: '',
-          type: 'Motion',
-          childrens: [],
-        };
-
-        return motion;
-      });
-
-      draft.push(...newMotionNodes);
+      return motion;
     });
 
     yield put(plaskProjectActions.addAsset({ asset: newAsset }));
@@ -190,7 +183,7 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
         retargetMap,
       }),
     );
-    yield put(lpNodeActions.addNodes(nextNodes));
+    yield put(lpNodeActions.addNodes([newModelNode, ...newMotionNodes]));
 
     if (isRetargetError(retargetMap)) {
       yield put(
