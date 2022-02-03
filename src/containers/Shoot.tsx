@@ -2,7 +2,7 @@ import { debounce } from 'lodash';
 import { FunctionComponent, Fragment, useEffect, useState, useRef, useCallback, useMemo, SyntheticEvent } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
 import { UpperBar } from 'containers/UpperBar';
-import LibraryPanel from 'containers/Panels/LibraryPanel';
+import LibraryPanel from 'containers/Panels/LibraryPanel/index copy';
 import RenderingPanel from './Panels/RenderingPanel';
 import ControlPanel from './Panels/ControlPanel';
 import TimelinePanel from './Panels/TimelinePanel';
@@ -12,10 +12,11 @@ import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
-
 import HotKeyOrder from './HotKeyOrder';
 import classNames from 'classnames/bind';
 import styles from './Shoot.module.scss';
+import Modal from 'containers/Common/Modal/Modal';
+import ContextMenu from 'containers/Common/ContextMenu/ContextMenu';
 
 const cx = classNames.bind(styles);
 
@@ -299,6 +300,8 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
               </BaseModalProvider>
             </Box>
           </Box>
+          <Modal />
+          <ContextMenu />
         </Fragment>
       </ContextMenuProvider>
     </div>

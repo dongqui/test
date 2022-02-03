@@ -35,7 +35,7 @@ interface Props {
   id: string;
   assetId?: string;
   parentId: string;
-  type: 'Folder' | 'Model' | 'Motion';
+  type: LP.NodeType;
   name: string;
   fileUrl?: string | File;
   filePath: string;
@@ -79,7 +79,7 @@ const ListNode: FunctionComponent<Props> = ({
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
   const _plaskSkeletonViewers = useSelector((state) => state.screenData.plaskSkeletonViewers);
 
-  const _lpNode = useSelector((state) => state.lpNode.node);
+  const _lpNode = useSelector((state) => state.lpNode.nodes);
   const _lpClipboard = useSelector((state) => state.lpNode.clipboard);
 
   const lpCurrentPath = useSelector((state) => state.lpNode.currentPath);

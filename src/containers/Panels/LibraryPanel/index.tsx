@@ -29,7 +29,7 @@ const cx = classNames.bind(styles);
 
 const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
-  const _lpNode = useSelector((state) => state.lpNode.node);
+  const _lpNode = useSelector((state) => state.lpNode.nodes);
   const _screenList = useSelector((state) => state.plaskProject.screenList);
 
   const [view, setView] = useState<LP.View>('List');

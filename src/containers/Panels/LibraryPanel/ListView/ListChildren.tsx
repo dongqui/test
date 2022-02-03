@@ -14,7 +14,7 @@ interface Props {
 }
 
 const ListChildren: FunctionComponent<Props> = ({ items, onSelect, selectedId, onSetDragTarget, dragTarget, onCopy, onDelete }) => {
-  const _lpNode = useSelector((state) => state.lpNode.node);
+  const _lpNode = useSelector((state) => state.lpNode.nodes);
 
   const recursiveRender = useCallback(
     (id: string) => {
