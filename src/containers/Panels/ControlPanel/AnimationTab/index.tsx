@@ -8,7 +8,7 @@ import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPanel';
 import { useBaseModal } from 'new_components/Modal/BaseModal';
-import { AnimationIngredient, Nullable, PlaskPaletteColor, PlaskPaletteColorName, PlaskRotationType, PlaskTrack } from 'types/common';
+import { AnimationIngredient, Nullable, PlaskLayer, PlaskPaletteColor, PlaskPaletteColorName, PlaskRotationType, PlaskTrack } from 'types/common';
 import { useSelector } from 'reducers';
 import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay, forceClickAnimationPlayAndStop } from 'utils/common';
 import { checkIsTargetMesh } from 'utils/RP';
@@ -144,7 +144,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     } else if (_selectedTargets.length === 1) {
       const targetAssetId = _selectedTargets[0].id.split('//')[0];
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAssetId);
-      const targetTrack = targetAnimationIngredient?.tracks.find((track) => track.targetId === _selectedTargets[0].id && track.layerId === _seletedLayer)!;
+      const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer);
+      const targetTrack = targetLayer?.tracks.find((track) => track.targetId === _selectedTargets[0].id)!;
 
       setControlTrack(targetTrack);
     } else {
@@ -209,8 +210,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   useEffect(() => {
     if (selectedAssetId) {
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
-      if (targetAnimationIngredient) {
-        const hasFilteredTrack = Boolean(targetAnimationIngredient.tracks.find((track) => track.layerId === _seletedLayer && track.useFilter));
+      const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer);
+
+      if (targetLayer) {
+        const hasFilteredTrack = Boolean(targetLayer.tracks.find((track) => track.useFilter));
         if (hasFilteredTrack) {
           setIsFilterOn(true);
         } else {
@@ -290,7 +293,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (currentAnimationIngredient) {
             const newAnimationIngredient: AnimationIngredient = {
               ...currentAnimationIngredient,
-              tracks: currentAnimationIngredient.tracks.filter((track) => !track.targetId.includes('//controller')),
+              layers: currentAnimationIngredient.layers.map((layer) => ({ ...layer, tracks: layer.tracks.filter((track) => !track.targetId.includes('//controller')) })),
             };
 
             if (_playState === 'play') {
@@ -405,17 +408,18 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           // controller의 애니메이션 추가
           const currentAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAsset.id && animationIngredient.current);
           if (currentAnimationIngredient) {
-            const { tracks, layers } = currentAnimationIngredient;
+            const { layers } = currentAnimationIngredient;
+            const newLayers: PlaskLayer[] = [];
 
-            const newTracks: PlaskTrack[] = [];
+            layers.forEach((layer) => {
+              const newTracks: PlaskTrack[] = [];
 
-            controllers.forEach((controller) => {
-              // rotationQuaternion으로 회전법 바꾸는 처리
-              controller.rotate(BABYLON.Axis.X, 0);
+              controllers.forEach((controller) => {
+                // rotationQuaternion으로 회전법 바꾸는 처리
+                controller.rotate(BABYLON.Axis.X, 0);
 
-              // 대응하는 transformNode의 애니메이션을 사용해 controller의 애니메이션 생성 및 animationIngredient에 추가
-              layers.forEach((layer) => {
-                const transformNodeTracks = tracks.filter((track) => track.targetId === controller.id.replace('controller', 'transformNode') && track.layerId === layer.id);
+                // 대응하는 transformNode의 애니메이션을 사용해 controller의 애니메이션 생성 및 animationIngredient에 추가
+                const transformNodeTracks = layer.tracks.filter((track) => track.targetId === controller.id.replace('controller', 'transformNode') && track.layerId === layer.id);
                 transformNodeTracks.forEach((transformNodeTrack) => {
                   const newTrack: PlaskTrack = {
                     ...transformNodeTrack,
@@ -429,6 +433,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
                   newTracks.push(newTrack);
                 });
               });
+
+              newLayers.push({ ...layer, tracks: newTracks });
             });
 
             if (_playState === 'play') {
@@ -437,7 +443,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
               forceClickAnimationPlayAndStop();
             }
 
-            const newAnimationIngredient: AnimationIngredient = { ...currentAnimationIngredient, tracks: [...tracks, ...newTracks] };
+            const newAnimationIngredient: AnimationIngredient = { ...currentAnimationIngredient, layers: [...layers, ...newLayers] };
             dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
           }
         });
@@ -843,12 +849,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       onChangeEnd: useCallback(
         (inputValue: number) => {
           if (controlTrack) {
-            dispatch(animationDataActions.changeTrackFilterMinCutoff({ trackId: controlTrack.id, value: inputValue }));
+            dispatch(animationDataActions.changeTrackFilterMinCutoff({ layerId: _seletedLayer, trackId: controlTrack.id, value: inputValue }));
             // 새로운 animationGroup을 사용하기 위해, 일시정지 후 재생
             forceClickAnimationPauseAndPlay(_playState, _playDirection);
           }
         },
-        [_playDirection, _playState, controlTrack, dispatch],
+        [_playDirection, _playState, _seletedLayer, controlTrack, dispatch],
       ),
     },
     {
@@ -864,12 +870,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       onChangeEnd: useCallback(
         (inputValue: number) => {
           if (controlTrack) {
-            dispatch(animationDataActions.changeTrackFilterBeta({ trackId: controlTrack.id, value: inputValue }));
+            dispatch(animationDataActions.changeTrackFilterBeta({ layerId: _seletedLayer, trackId: controlTrack.id, value: inputValue }));
             // 새로운 animationGroup을 사용하기 위해, 일시정지 후 재생
             forceClickAnimationPauseAndPlay(_playState, _playDirection);
           }
         },
-        [_playDirection, _playState, controlTrack, dispatch],
+        [_playDirection, _playState, _seletedLayer, controlTrack, dispatch],
       ),
     },
   ];
