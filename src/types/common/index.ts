@@ -56,8 +56,13 @@ export interface AnimationIngredient {
   name: string;
   assetId: string;
   current: boolean;
-  tracks: PlaskTrack[];
   layers: PlaskLayer[];
+}
+
+export interface PlaskLayer {
+  id: string;
+  name: string;
+  tracks: PlaskTrack[];
 }
 
 export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling';
@@ -86,11 +91,6 @@ export interface BezierParams {
   x2: number;
   y1: number;
   y2: number;
-}
-
-export interface PlaskLayer {
-  id: string;
-  name: string;
 }
 
 export type RetargetSourceBoneType =
