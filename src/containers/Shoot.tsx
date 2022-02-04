@@ -1,8 +1,9 @@
 import { debounce } from 'lodash';
 import { FunctionComponent, Fragment, useEffect, useState, useRef, useCallback, useMemo, SyntheticEvent } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
+
 import { UpperBar } from 'containers/UpperBar';
-import LibraryPanel from 'containers/Panels/LibraryPanel/index copy';
+import LibraryPanel from 'containers/Panels/LibraryPanel';
 import RenderingPanel from './Panels/RenderingPanel';
 import ControlPanel from './Panels/ControlPanel';
 import TimelinePanel from './Panels/TimelinePanel';
@@ -13,10 +14,11 @@ import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
 import HotKeyOrder from './HotKeyOrder';
-import classNames from 'classnames/bind';
-import styles from './Shoot.module.scss';
 import Modal from 'containers/Common/Modal/Modal';
 import ContextMenu from 'containers/Common/ContextMenu/ContextMenu';
+
+import styles from './Shoot.module.scss';
+import classNames from 'classnames/bind';
 
 const cx = classNames.bind(styles);
 
