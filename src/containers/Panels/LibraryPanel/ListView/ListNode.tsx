@@ -1063,6 +1063,7 @@ const ListNode: FunctionComponent<Props> = ({
                       }),
                     );
                   }
+                  forceClickAnimationPlayAndStop(50);
                 },
                 children: [],
               },
