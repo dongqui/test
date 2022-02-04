@@ -8,8 +8,8 @@ import { getFileExtension } from 'utils/common';
 import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
+import * as globalUIActions from 'actions/Common/globalUI';
 import Box from 'components/Layout/Box';
-import { useBaseModal } from 'new_components/Modal/BaseModal';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
@@ -26,8 +26,6 @@ const LibraryPanel: FunctionComponent = () => {
 
   const [searchText, setSearchText] = useState('');
   const [searchResultNode, setSearchResultNode] = useState(_lpNode);
-
-  const { onModalOpen, onModalClose } = useBaseModal();
 
   const onNodeChange = useCallback(
     (files: File[] | string[]) => {
@@ -57,18 +55,25 @@ const LibraryPanel: FunctionComponent = () => {
       const isError = videos.length > 1;
 
       if (isError) {
-        onModalOpen({
-          title: 'Warning',
-          message: TEXT.WARNING_02,
-          confirmText: 'Close',
-          onConfirm: onModalClose,
-        });
+        dispatch(
+          globalUIActions.openModal('AlertModal', {
+            title: 'Warning',
+            message: TEXT.WARNING_02,
+            confirmText: 'Close',
+          }),
+        );
 
         return;
       }
 
       if (isInvalidFormat) {
-        onModalOpen({ title: 'Warning', message: TEXT.WARNING_03, confirmText: 'Close' });
+        dispatch(
+          globalUIActions.openModal('AlertModal', {
+            title: 'Warning',
+            message: TEXT.WARNING_03,
+            confirmText: 'Close',
+          }),
+        );
 
         return;
       }
@@ -78,25 +83,25 @@ const LibraryPanel: FunctionComponent = () => {
       if (videos.length > 0) {
         const videoBlobURL = URL.createObjectURL(videos[0]);
 
-        onModalOpen({
-          title: 'Extract',
-          message: TEXT.CONFIRM_01,
-          confirmText: 'Confirm',
-          cancelText: 'Cancel',
-          confirmColor: 'positive',
-          onConfirm: () => {
-            dispatch(
-              modeSelectActions.changeMode({
-                mode: 'videoMode',
-                videoURL: videoBlobURL,
-              }),
-            );
-          },
-          onCancel: () => onModalClose(),
-        });
+        dispatch(
+          globalUIActions.openModal('ConfirmModal', {
+            title: 'Extract',
+            message: TEXT.CONFIRM_01,
+            confirmText: 'Confirm',
+            cancelText: 'Cancel',
+            onConfirm: () => {
+              dispatch(
+                modeSelectActions.changeMode({
+                  mode: 'videoMode',
+                  videoURL: videoBlobURL,
+                }),
+              );
+            },
+          }),
+        );
       }
     },
-    [dispatch, onModalClose, onModalOpen, onNodeChange],
+    [dispatch, onNodeChange],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });

@@ -1,16 +1,18 @@
 import { FunctionComponent, useState, memo, Fragment, useEffect, useMemo, useCallback, useRef, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { isNull } from 'lodash';
+
 import { useSelector } from 'reducers';
 import { FilledButton } from 'components/Button';
 import { AnimationRangeInput, AnimationTitleToggle, DropdownWrapper, RetargetMapIndicator } from 'components/ControlPanel';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { RetargetSourceBoneType } from 'types/common';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import * as globalUIActions from 'actions/Common/globalUI';
 import { RETARGET_TARGET_BONE_NONE } from 'utils/const';
 import { checkIsTargetMesh } from 'utils/RP';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -22,7 +24,6 @@ interface Props {
 
 const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const dispatch = useDispatch();
-  const { onModalOpen, onModalClose } = useBaseModal();
 
   const isSelectedTargetBoneOption = useRef(false); // targetBone dropdown을 선택했을 경우에만 Assign 버튼이 활성화 되도록 체크
 
@@ -192,25 +193,22 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     if (currentSourceBoneName && currentTargetTransformNode) {
       const mappedTargetTransformNodeId = checkAlreadyMappedTargetBone(currentSourceBoneName);
       if (currentTargetTransformNode.name !== RETARGET_TARGET_BONE_NONE && mappedTargetTransformNodeId !== null && mappedTargetTransformNodeId !== RETARGET_TARGET_BONE_NONE) {
-        onModalOpen({
-          title: 'Change Mapping',
-          message: 'Are you sure you want to change an existing mapping?',
-          confirmText: 'Change',
-          onConfirm: () => {
-            onModalClose();
-            dispatchBoneMapping();
-          },
-          cancelText: 'Cancel',
-          onCancel: () => {
-            onModalClose();
-          },
-          confirmColor: 'positive',
-        });
+        dispatch(
+          globalUIActions.openModal('ConfirmModal', {
+            title: 'Change Mapping',
+            message: 'Are you sure you want to change an existing mapping?',
+            confirmText: 'Change',
+            onConfirm: () => {
+              dispatchBoneMapping();
+            },
+            cancelText: 'Cancel',
+          }),
+        );
       } else {
         dispatchBoneMapping();
       }
     }
-  }, [currentSourceBoneName, currentTargetTransformNode, checkAlreadyMappedTargetBone, onModalOpen, onModalClose, dispatchBoneMapping]);
+  }, [currentSourceBoneName, currentTargetTransformNode, checkAlreadyMappedTargetBone, dispatch, dispatchBoneMapping]);
 
   // 조절 된 hip space값 전달
   const dispatchChangedHipSpace = useCallback(
