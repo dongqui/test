@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { round } from 'lodash';
-import { AnimationIngredient, PlaskTrack } from 'types/common';
+import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
 import { getRandomStringKey } from 'utils/common';
 import createPlaskTrack from './createPlaskTrack';
 
@@ -65,13 +65,14 @@ const createAnimationIngredient = (
     tracks.push(scalingTrack);
   });
 
+  const baseLayer: PlaskLayer = { id: layerId, name: 'Base Layer', tracks };
+
   const animationIngredient = {
     id: getRandomStringKey(),
     name: animationIngredientName,
     assetId,
     current,
-    tracks,
-    layers: [{ id: layerId, name: 'Base Layer' }],
+    layers: [baseLayer],
   };
 
   return animationIngredient;
