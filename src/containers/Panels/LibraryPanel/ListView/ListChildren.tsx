@@ -5,15 +5,9 @@ import ListNode from './ListNode';
 
 interface Props {
   items: string[];
-  onSelect?: (id: string, assetId?: string, multiple?: boolean) => void;
-  selectedId: string[];
-  onSetDragTarget: (id: string, type: LP.NodeType, parentId: string) => void;
-  dragTarget?: { id: string; type: LP.NodeType; parentId: string };
-  onCopy: () => void;
-  onDelete: () => void;
 }
 
-const ListChildren: FunctionComponent<Props> = ({ items, onSelect, selectedId, onSetDragTarget, dragTarget, onCopy, onDelete }) => {
+const ListChildren: FunctionComponent<Props> = ({ items }) => {
   const _lpNode = useSelector((state) => state.lpNode.nodes);
 
   const recursiveRender = useCallback(
@@ -21,10 +15,10 @@ const ListChildren: FunctionComponent<Props> = ({ items, onSelect, selectedId, o
       const node = find(_lpNode, { id });
 
       if (node) {
-        return <ListNode onSelect={onSelect} selectedId={selectedId} onSetDragTarget={onSetDragTarget} dragTarget={dragTarget} onCopy={onCopy} onDelete={onDelete} {...node} />;
+        return <ListNode {...node} node={node} />;
       }
     },
-    [_lpNode, dragTarget, onCopy, onDelete, onSelect, onSetDragTarget, selectedId],
+    [_lpNode],
   );
 
   return (

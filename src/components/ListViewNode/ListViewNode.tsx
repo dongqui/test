@@ -4,7 +4,7 @@ import * as LPCONSTANTS from 'constants/LibraryPanel';
 import ArrowButton from './ArrowButton';
 import NodeIcon from './NodeIcon';
 import NodeName from './NodeName';
-import ListChildren from 'containers/Panels/LibraryPanel/ListView/ListChildren copy';
+import ListChildren from 'containers/Panels/LibraryPanel/ListView/ListChildren';
 
 import classNames from 'classnames/bind';
 import styles from './ListViewNode.module.scss';
