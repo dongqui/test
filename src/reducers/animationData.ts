@@ -36,12 +36,8 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
         return Object.assign({}, state, {
           animationIngredients: [
             ...state.animationIngredients.map((anim) => ({
-              id: anim.id,
-              name: anim.name,
-              assetId: anim.assetId,
+              ...anim,
               current: false,
-              tracks: anim.tracks,
-              layer: anim.layers,
             })),
             action.payload.animationIngredient,
           ],
@@ -94,7 +90,9 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
           if (animaitonIngredient.id === action.payload.animationIngredientId) {
             return {
               ...animaitonIngredient,
-              tracks: animaitonIngredient.tracks.map((track) => (track.layerId === action.payload.layerId ? { ...track, isIncluded: !track.isIncluded } : track)),
+              layers: animaitonIngredient.layers.map((layer) =>
+                layer.id === action.payload.layerId ? { ...layer, tracks: layer.tracks.map((track) => ({ ...track, isIncluded: !track.isIncluded })) } : layer,
+              ),
             };
           } else {
             return animaitonIngredient;
@@ -105,47 +103,57 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
     case 'animationDataAction/TURN_FILTER_ON': {
       return Object.assign({}, state, {
         animationIngredients: state.animationIngredients.map((animationIngredient) => {
-          return animationIngredient.id === action.payload.animationIngredientId
-            ? { ...animationIngredient, tracks: animationIngredient.tracks.map((track) => (track.layerId === action.payload.layerId ? { ...track, useFilter: true } : track)) }
-            : animationIngredient;
+          if (animationIngredient.id === action.payload.animationIngredientId) {
+            return {
+              ...animationIngredient,
+              layers: animationIngredient.layers.map((layer) =>
+                layer.id === action.payload.layerId ? { ...layer, tracks: layer.tracks.map((track) => ({ ...track, useFilter: true })) } : layer,
+              ),
+            };
+          } else {
+            return animationIngredient;
+          }
         }),
       });
     }
     case 'animationDataAction/TURN_FILTER_OFF': {
       return Object.assign({}, state, {
         animationIngredients: state.animationIngredients.map((animationIngredient) => {
-          return animationIngredient.id === action.payload.animationIngredientId
-            ? { ...animationIngredient, tracks: animationIngredient.tracks.map((track) => (track.layerId === action.payload.layerId ? { ...track, useFilter: false } : track)) }
-            : animationIngredient;
+          if (animationIngredient.id === action.payload.animationIngredientId) {
+            return {
+              ...animationIngredient,
+              layers: animationIngredient.layers.map((layer) =>
+                layer.id === action.payload.layerId ? { ...layer, tracks: layer.tracks.map((track) => ({ ...track, useFilter: false })) } : layer,
+              ),
+            };
+          } else {
+            return animationIngredient;
+          }
         }),
       });
     }
     case 'animationDataAction/CHANGE_TRACK_FILTER_BETA': {
       return Object.assign({}, state, {
-        animationIngredients: state.animationIngredients.map((animationIngredient) => {
-          if (animationIngredient.tracks.find((track) => track.id === action.payload.trackId)) {
-            return {
-              ...animationIngredient,
-              tracks: animationIngredient.tracks.map((track) => (track.id === action.payload.trackId ? { ...track, filterBeta: action.payload.value } : track)),
-            };
-          } else {
-            return animationIngredient;
-          }
-        }),
+        animationIngredients: state.animationIngredients.map((animationIngredient) => ({
+          ...animationIngredient,
+          layers: animationIngredient.layers.map((layer) =>
+            layer.id === action.payload.layerId
+              ? { ...layer, tracks: layer.tracks.map((track) => (track.id === action.payload.trackId ? { ...track, filterBeta: action.payload.value } : track)) }
+              : layer,
+          ),
+        })),
       });
     }
     case 'animationDataAction/CHANGE_TRACK_FILTER_MIN_CUTOFF': {
       return Object.assign({}, state, {
-        animationIngredients: state.animationIngredients.map((animationIngredient) => {
-          if (animationIngredient.tracks.find((track) => track.id === action.payload.trackId)) {
-            return {
-              ...animationIngredient,
-              tracks: animationIngredient.tracks.map((track) => (track.id === action.payload.trackId ? { ...track, filterMinCutoff: action.payload.value } : track)),
-            };
-          } else {
-            return animationIngredient;
-          }
-        }),
+        animationIngredients: state.animationIngredients.map((animationIngredient) => ({
+          ...animationIngredient,
+          layers: animationIngredient.layers.map((layer) =>
+            layer.id === action.payload.layerId
+              ? { ...layer, tracks: layer.tracks.map((track) => (track.id === action.payload.trackId ? { ...track, filterMinCutoff: action.payload.value } : track)) }
+              : layer,
+          ),
+        })),
       });
     }
     case 'animationDataAction/ASSIGN_BONE_MAPPING': {
