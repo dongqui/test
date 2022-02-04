@@ -179,3 +179,5 @@ export type SelectingData = {
   selectableObjects: Array<BABYLON.Mesh | BABYLON.TransformNode>;
   selectedTargets: Array<BABYLON.Mesh | BABYLON.TransformNode>;
 };
+
+export type ButtonColor = 'primary' | 'secondary' | 'error';
