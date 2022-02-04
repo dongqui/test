@@ -39,18 +39,11 @@ function findNewLayerTrackNumber(layerNumbers: number[]) {
   return layerNumbers[layerNumbers.length - 1] + 1;
 }
 
-function createNewLayerTrack(newLayerTrackNumber: number) {
-  const newLayerTrack: PlaskLayer = { id: getRandomStringKey(), name: `Layer ${newLayerTrackNumber}` };
-  return newLayerTrack;
-}
-
 function* worker() {
   const animationIngredientId = getAnimationIngredientId(yield select());
   const layerTrackList = getLayerTrackList(yield select());
   const layerTrackNumbers = filterLayerTrackNumbers(layerTrackList);
   const newLayerTrackNumber = findNewLayerTrackNumber(layerTrackNumbers);
-  const newLayerTrack = createNewLayerTrack(newLayerTrackNumber);
-  yield put(trackListActions.addLayerTrack(newLayerTrack));
 
   // RP New Layer Track 액션 호출 시 인자값 : { animationIngredientId, ...newLayerTrack }
   // 여기서부터 RP New Layer Track 액션 호출
@@ -58,20 +51,26 @@ function* worker() {
   const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === animationIngredientId);
   if (targetAnimationIngredient) {
     const newTracks: PlaskTrack[] = [];
-    const baseLayerTracks = targetAnimationIngredient.tracks.filter((track) => track.layerId.split('//')[0] === 'baseLayer');
-    baseLayerTracks.forEach((track) => {
-      newTracks.push(createPlaskTrack(track.name, newLayerTrack.id, track.target, track.property, [], track.isMocapAnimation));
-    });
-    // 빈 track들을 추가한 후 animationIngredient 업데이트
-    yield put(
-      animationDataActions.editAnimationIngredient({
-        animationIngredient: {
-          ...targetAnimationIngredient,
-          layers: [...targetAnimationIngredient.layers, newLayerTrack],
-          tracks: [...targetAnimationIngredient.tracks, ...newTracks],
-        },
-      }),
-    );
+    const baseLayer = targetAnimationIngredient.layers.find((layer) => layer.id.split('//')[0] === 'baseLayer');
+    if (baseLayer) {
+      const newLayerId = getRandomStringKey();
+      baseLayer.tracks.forEach((track) => {
+        newTracks.push(createPlaskTrack(track.name, newLayerId, track.target, track.property, [], track.isMocapAnimation));
+      });
+      const newLayer: PlaskLayer = { id: newLayerId, name: `Layer ${newLayerTrackNumber}`, tracks: newTracks };
+
+      yield put(trackListActions.addLayerTrack(newLayer));
+
+      // 빈 track들을 추가한 후 animationIngredient 업데이트
+      yield put(
+        animationDataActions.editAnimationIngredient({
+          animationIngredient: {
+            ...targetAnimationIngredient,
+            layers: [...targetAnimationIngredient.layers, newLayer],
+          },
+        }),
+      );
+    }
   }
 }
 

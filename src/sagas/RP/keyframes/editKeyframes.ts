@@ -40,97 +40,112 @@ function* worker() {
       };
 
       const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
-        const targetTracks = draft.tracks.filter((track) => targetTrackIds.includes(track.id));
+        const targetLayer = draft.layers.find((layer) => layer.id === _selectedLayer);
+        const otherLayers = draft.layers.filter((layer) => layer.id !== _selectedLayer);
 
-        targetTracks.forEach((targetTrack) => {
-          switch (targetTrack.property) {
-            case 'position': {
-              const { position } = targetTrack.target;
-              // 다른 layer들과 보간 연산해주기 위해, track의 target의 현재 property들을 복사
-              let newPosition = position.clone();
-              const otherLayerTracks = draft.tracks.filter(
-                (track) => track.targetId === targetTrack.targetId && track.property === 'position' && track.layerId !== targetTrack.layerId,
-              );
-              otherLayerTracks.forEach((otherLayerTrack) => {
-                const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
-                newPosition = newPosition.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex));
-              });
-              targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, _currentFrameIndex, newPosition);
+        if (targetLayer) {
+          const targetTracks = targetLayer.tracks.filter((track) => targetTrackIds.includes(track.id));
 
-              updatedPropertyKeyframes.transformKeys.push({
-                trackId: targetTrack.id,
-                to: _currentFrameIndex,
-                value: newPosition,
-              });
-              break;
-            }
-            case 'rotation': {
-              const { rotationQuaternion } = targetTrack.target;
-              const rotation = rotationQuaternion!.clone().toEulerAngles(); // quaternion 회전을 사용하기 때문에 단순 target.rotation 해면 (0, 0, 0)
-              let newRotation = rotation.clone();
-              const otherLayerTracks = draft.tracks.filter(
-                (track) => track.targetId === targetTrack.targetId && track.property === 'rotation' && track.layerId !== targetTrack.layerId,
-              );
-              otherLayerTracks.forEach((otherLayerTrack) => {
-                const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
-                newRotation = newRotation.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex));
-              });
-              targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, _currentFrameIndex, newRotation);
+          targetTracks.forEach((targetTrack) => {
+            switch (targetTrack.property) {
+              case 'position': {
+                const { position } = targetTrack.target;
+                // 다른 layer들과 보간 연산해주기 위해, track의 target의 현재 property들을 복사
+                let newPosition = position.clone();
 
-              updatedPropertyKeyframes.transformKeys.push({
-                trackId: targetTrack.id,
-                to: _currentFrameIndex,
-                value: newRotation,
-              });
+                otherLayers.forEach((otherLayer) => {
+                  const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === targetTrack.targetId && track.property === 'position');
 
-              // TP에서는 rotationQuaternion 트랙을 사용하지 않기 때문에 대응하는 트랙을 별도로 찾아서 함께 변경
-              const peerTrack = draft.tracks.find((track) => track.id === targetTrack.id.replace('//rotation', '//rotationQuaternion'));
-              if (peerTrack) {
-                let newRotationQuaternion = rotationQuaternion!.clone();
-                const otherLayerPeerTracks = draft.tracks.filter(
-                  (track) => track.targetId === peerTrack.targetId && track.property === 'rotationQuaternion' && track.layerId !== peerTrack.layerId,
-                );
-                otherLayerPeerTracks.forEach((otherLayerPeerTrack) => {
-                  // quaternion 연산은 직접 하지 않고 euler 변환 후 재변환
-                  const targetTransformKey = otherLayerPeerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
-                  newRotationQuaternion = newRotationQuaternion
-                    .clone()
-                    .toEulerAngles()
-                    .subtract(
-                      targetTransformKey
-                        ? targetTransformKey.value.toEulerAngles()
-                        : getInterpolatedQuaternion(otherLayerPeerTrack.transformKeys, _currentFrameIndex).toEulerAngles(),
-                    )
-                    .toQuaternion();
+                  if (otherLayerTrack) {
+                    const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
+                    newPosition = newPosition.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex));
+                  }
                 });
-                peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, _currentFrameIndex, newRotationQuaternion);
-              }
-              break;
-            }
-            case 'scaling': {
-              const { scaling } = targetTrack.target;
-              let newScaling = scaling.clone();
-              const otherLayerTracks = draft.tracks.filter(
-                (track) => track.targetId === targetTrack.targetId && track.property === 'scaling' && track.layerId !== targetTrack.layerId,
-              );
-              otherLayerTracks.forEach((otherLayerTrack) => {
-                const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
-                newScaling = newScaling.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex));
-              });
-              targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, _currentFrameIndex, newScaling);
 
-              updatedPropertyKeyframes.transformKeys.push({
-                trackId: targetTrack.id,
-                to: _currentFrameIndex,
-                value: newScaling,
-              });
-              break;
+                targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, _currentFrameIndex, newPosition);
+                updatedPropertyKeyframes.transformKeys.push({
+                  trackId: targetTrack.id,
+                  to: _currentFrameIndex,
+                  value: newPosition,
+                });
+                break;
+              }
+              case 'rotation': {
+                const { rotationQuaternion } = targetTrack.target;
+                const rotation = rotationQuaternion!.clone().toEulerAngles(); // quaternion 회전을 사용하기 때문에 단순 target.rotation 해면 (0, 0, 0)
+                let newRotation = rotation.clone();
+
+                otherLayers.forEach((otherLayer) => {
+                  const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === targetTrack.targetId && track.property === 'rotation');
+
+                  if (otherLayerTrack) {
+                    const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
+                    newRotation = newRotation.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex));
+                  }
+                });
+
+                targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, _currentFrameIndex, newRotation);
+                updatedPropertyKeyframes.transformKeys.push({
+                  trackId: targetTrack.id,
+                  to: _currentFrameIndex,
+                  value: newRotation,
+                });
+
+                // TP에서는 rotationQuaternion 트랙을 사용하지 않기 때문에 대응하는 트랙을 별도로 찾아서 함께 변경
+                const peerTrack = targetLayer.tracks.find((track) => track.id === targetTrack.id.replace('//rotation', '//rotationQuaternion'));
+                if (peerTrack) {
+                  let newRotationQuaternion = rotationQuaternion!.clone();
+
+                  otherLayers.forEach((otherLayer) => {
+                    const otherLayerPeerTrack = otherLayer.tracks.find((track) => track.targetId === peerTrack.targetId && track.property === 'rotationQuaternion');
+
+                    if (otherLayerPeerTrack) {
+                      // quaternion 연산은 직접 하지 않고 euler 변환 후 재변환
+                      const targetTransformKey = otherLayerPeerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
+                      newRotationQuaternion = newRotationQuaternion
+                        .clone()
+                        .toEulerAngles()
+                        .subtract(
+                          targetTransformKey
+                            ? targetTransformKey.value.toEulerAngles()
+                            : getInterpolatedQuaternion(otherLayerPeerTrack.transformKeys, _currentFrameIndex).toEulerAngles(),
+                        )
+                        .toQuaternion();
+                    }
+                  });
+
+                  peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, _currentFrameIndex, newRotationQuaternion);
+                }
+                break;
+              }
+              case 'scaling': {
+                const { scaling } = targetTrack.target;
+                let newScaling = scaling.clone();
+
+                otherLayers.forEach((otherLayer) => {
+                  const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === targetTrack.targetId && track.property === 'scaling');
+
+                  if (otherLayerTrack) {
+                    const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
+                    newScaling = newScaling.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex));
+                  }
+                });
+
+                targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, _currentFrameIndex, newScaling);
+
+                updatedPropertyKeyframes.transformKeys.push({
+                  trackId: targetTrack.id,
+                  to: _currentFrameIndex,
+                  value: newScaling,
+                });
+                break;
+              }
+              default: {
+                break;
+              }
             }
-            default: {
-              break;
-            }
-          }
-        });
+          });
+        }
       });
 
       yield put(
