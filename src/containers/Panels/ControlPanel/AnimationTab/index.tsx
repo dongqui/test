@@ -2,16 +2,19 @@ import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStat
 import * as BABYLON from '@babylonjs/core';
 import { isNull, isUndefined } from 'lodash';
 import { useDispatch } from 'react-redux';
+
 import AnimationInputWrapper from './AnimationInputWrapper';
 import AnimationFKWrapper from './AnimationFKWrapper';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import * as globalUIActions from 'actions/Common/globalUI';
+
 import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPanel';
-import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { AnimationIngredient, Nullable, PlaskPaletteColor, PlaskPaletteColorName, PlaskRotationType, PlaskTrack } from 'types/common';
 import { useSelector } from 'reducers';
 import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay, forceClickAnimationPlayAndStop } from 'utils/common';
 import { checkIsTargetMesh } from 'utils/RP';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -46,8 +49,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
 
   const dispatch = useDispatch();
-
-  const { onModalOpen, onModalClose, getConfirm } = useBaseModal();
 
   // 다중모델 설계 내에서 단일모델 상황을 가정하기 위함 (추후 다중모델 설계 자체를 단일모델 설계로 변경할 계획)
   const selectedAssetId = useMemo(() => _visualizedAssetIds[0], [_visualizedAssetIds]);
@@ -266,181 +267,199 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const handleControllerToggle = useCallback(async () => {
     if (selectedAssetId) {
       if (isControllerOn) {
-        const confirmedToDelete = await getConfirm({
-          title: 'Confirm',
-          message: 'Are you sure you want to delete controllers?',
-          confirmText: 'Confirm',
-          cancelText: 'Cancel',
-        });
-        if (confirmedToDelete) {
-          // switch off
-          setIsControllerOn(false);
+        dispatch(
+          globalUIActions.openModal('ConfirmModal', {
+            title: 'Confirm',
+            message: 'Are you sure you want to delete controllers?',
+            confirmText: 'Confirm',
+            cancelText: 'Cancel',
+            onConfirm: () => {
+              // switch off
+              setIsControllerOn(false);
 
-          // 컨트롤러 삭제
-          const targetControllers = _selectableObjects.filter((object) => object.id.includes(selectedAssetId) && checkIsTargetMesh(object));
-          targetControllers.forEach((targetController) => {
-            targetController.dispose();
-          });
+              // 컨트롤러 삭제
+              const targetControllers = _selectableObjects.filter((object) => object.id.includes(selectedAssetId) && checkIsTargetMesh(object));
+              targetControllers.forEach((targetController) => {
+                targetController.dispose();
+              });
 
-          // dragBox 선택 대상에서 제외
-          dispatch(selectingDataActions.removeSelectableControllers({ assetId: selectedAssetId }));
+              // dragBox 선택 대상에서 제외
+              dispatch(selectingDataActions.removeSelectableControllers({ assetId: selectedAssetId }));
 
-          // 컨트롤러 애니메이션 제거
-          const currentAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
-          if (currentAnimationIngredient) {
-            const newAnimationIngredient: AnimationIngredient = {
-              ...currentAnimationIngredient,
-              tracks: currentAnimationIngredient.tracks.filter((track) => !track.targetId.includes('//controller')),
-            };
+              // 컨트롤러 애니메이션 제거
+              const currentAnimationIngredient = _animationIngredients.find(
+                (animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current,
+              );
+              if (currentAnimationIngredient) {
+                const newAnimationIngredient: AnimationIngredient = {
+                  ...currentAnimationIngredient,
+                  tracks: currentAnimationIngredient.tracks.filter((track) => !track.targetId.includes('//controller')),
+                };
 
-            if (_playState === 'play') {
-              forceClickAnimationPauseAndPlay(_playState, _playDirection);
-            } else {
-              forceClickAnimationPlayAndStop();
-            }
+                if (_playState === 'play') {
+                  forceClickAnimationPauseAndPlay(_playState, _playDirection);
+                } else {
+                  forceClickAnimationPlayAndStop();
+                }
 
-            dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
-          }
-        }
+                dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+              }
+            },
+          }),
+        );
       } else {
         // switch on
         setIsControllerOn(true);
 
-        const targetAsset = _assetList.find((asset) => asset.id === selectedAssetId)!;
         const targetRetargetMap = _retargetMaps.find((retargetMap) => retargetMap.assetId === selectedAssetId);
         const targetTransformNodeIds = targetRetargetMap?.values.map((value) => value.targetTransformNodeId);
         // retargetMap이 없거나 완성되지 않은 경우
         if (!targetTransformNodeIds || targetTransformNodeIds.find((targetTransformNodeId) => isNull(targetTransformNodeId))) {
-          const confirmedToMove = await getConfirm({
-            title: 'Confirm',
-            message: 'Invalid retarget information. Will you finish mapping, first?',
-            confirmText: 'Confirm',
-            cancelText: 'Cancel',
-          });
-          if (confirmedToMove) {
-            // CP -> retarget tab으로 전환
-          }
+          dispatch(
+            globalUIActions.openModal('ConfirmModal', {
+              title: 'Confirm',
+              message: 'Invalid retarget information. Will you finish mapping, first?',
+              confirmText: 'Confirm',
+              cancelText: 'Cancel',
+              onConfirm: () => {
+                // CP -> retarget tab으로 전환
+              },
+            }),
+          );
+
           return;
         }
 
-        // 애니메이션 옮길지 말지
-        const confirmedToCopy = await getConfirm({
-          title: 'Confirm',
-          message: `Do you want to copy existing keyframes from bones to controllers?`,
-          confirmText: 'Confirm',
-          cancelText: 'Cancel',
-        });
+        const createController = (confirmedToCopy: boolean, targetTransformNodeIds: Nullable<string>[]) => {
+          const targetAsset = _assetList.find((asset) => asset.id === selectedAssetId)!;
 
-        _screenList.forEach((screen) => {
-          const controllers: BABYLON.Mesh[] = [];
-          const controllerMaterial = new BABYLON.StandardMaterial('controllerMaterial', screen.scene);
-          controllerMaterial.emissiveColor = BABYLON.Color3.FromHexString(PALETTE_COLORS[DEFAULT_CONTROLLER_COLOR]);
-          controllerMaterial.disableLighting = true;
+          _screenList.forEach((screen) => {
+            const controllers: BABYLON.Mesh[] = [];
+            const controllerMaterial = new BABYLON.StandardMaterial('controllerMaterial', screen.scene);
+            controllerMaterial.emissiveColor = BABYLON.Color3.FromHexString(PALETTE_COLORS[DEFAULT_CONTROLLER_COLOR]);
+            controllerMaterial.disableLighting = true;
 
-          // 컨트롤러 생성
-          targetAsset.bones.forEach((bone, idx) => {
-            const connectedTransformNode = bone.getTransformNode();
-            if (connectedTransformNode && targetTransformNodeIds.includes(connectedTransformNode.id)) {
-              const controller = BABYLON.MeshBuilder.CreateTorus(
-                `${bone.name}_controller`,
-                {
-                  diameter: 40,
-                  thickness: 0.2,
-                  tessellation: 64,
-                },
-                screen.scene,
-              );
-              controller.renderingGroupId = 3;
-              controller.id = `${targetAsset.id}//${bone.name}//controller`;
-              controller.material = controllerMaterial.clone('controllerMaterial');
+            // 컨트롤러 생성
+            targetAsset.bones.forEach((bone, idx) => {
+              const connectedTransformNode = bone.getTransformNode();
+              if (connectedTransformNode && targetTransformNodeIds.includes(connectedTransformNode.id)) {
+                const controller = BABYLON.MeshBuilder.CreateTorus(
+                  `${bone.name}_controller`,
+                  {
+                    diameter: 40,
+                    thickness: 0.2,
+                    tessellation: 64,
+                  },
+                  screen.scene,
+                );
+                controller.renderingGroupId = 3;
+                controller.id = `${targetAsset.id}//${bone.name}//controller`;
+                controller.material = controllerMaterial.clone('controllerMaterial');
 
-              if (controllers.length === 0) {
-                // controller들의 scale을 모델에 맞추기 위해, Armature bone을 hips controller의 parent로 설정
-                controller.setParent(bone.getParent());
-              }
-
-              // controller actionManager 생성 및 pick, hover action 등록
-              controller.actionManager = new BABYLON.ActionManager(screen.scene);
-              controller.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event) => {
-                  dispatch(selectingDataActions.defaultSingleSelect({ target: controller }));
-                }),
-              );
-
-              controller.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, (event) => {
-                  screen.scene.hoverCursor = 'pointer';
-                }),
-              );
-
-              controllers.push(controller);
-            }
-          });
-
-          // 컨트롤러 간 계층구조 생성
-          controllers.forEach((controller, idx) => {
-            const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => (visibilityOption.screenId = screen.id));
-            if (targetVisibilityOption) {
-              controller.isVisible = targetVisibilityOption.isControllerVisible;
-            }
-            const targetBone = targetAsset.bones.find((bone) => bone.id === controller.id.replace('controller', 'bone'));
-            if (targetBone && targetBone.children.length > 0) {
-              targetBone.children.forEach((childBone) => {
-                const childController = controllers.find((ctrl) => ctrl.id === childBone.id.replace('bone', 'controller'));
-                if (childController) {
-                  childController.setParent(controller);
+                if (controllers.length === 0) {
+                  // controller들의 scale을 모델에 맞추기 위해, Armature bone을 hips controller의 parent로 설정
+                  controller.setParent(bone.getParent());
                 }
-              });
-            }
-            if (targetBone) {
-              targetBone.computeWorldMatrix(true);
-              controller.scaling = new BABYLON.Vector3(1, 1, 1);
-              controller.position = targetBone.position;
-            }
-          });
 
-          // controller들 또한 dragBox로 선택 가능하도록
-          dispatch(selectingDataActions.addSelectableObjects({ objects: controllers }));
+                // controller actionManager 생성 및 pick, hover action 등록
+                controller.actionManager = new BABYLON.ActionManager(screen.scene);
+                controller.actionManager.registerAction(
+                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event) => {
+                    dispatch(selectingDataActions.defaultSingleSelect({ target: controller }));
+                  }),
+                );
 
-          // controller의 애니메이션 추가
-          const currentAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAsset.id && animationIngredient.current);
-          if (currentAnimationIngredient) {
-            const { tracks, layers } = currentAnimationIngredient;
+                controller.actionManager.registerAction(
+                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, (event) => {
+                    screen.scene.hoverCursor = 'pointer';
+                  }),
+                );
 
-            const newTracks: PlaskTrack[] = [];
-
-            controllers.forEach((controller) => {
-              // rotationQuaternion으로 회전법 바꾸는 처리
-              controller.rotate(BABYLON.Axis.X, 0);
-
-              // 대응하는 transformNode의 애니메이션을 사용해 controller의 애니메이션 생성 및 animationIngredient에 추가
-              layers.forEach((layer) => {
-                const transformNodeTracks = tracks.filter((track) => track.targetId === controller.id.replace('controller', 'transformNode') && track.layerId === layer.id);
-                transformNodeTracks.forEach((transformNodeTrack) => {
-                  const newTrack: PlaskTrack = {
-                    ...transformNodeTrack,
-                    id: `${layer.id}//${controller.id}//${transformNodeTrack.property}`,
-                    targetId: controller.id,
-                    target: controller,
-                    name: `${transformNodeTrack.name}|controller`,
-                    // confirmedToCopy 여부에 따라 controller에 animation keyframes 복사 혹은 빈 transformKeys
-                    transformKeys: confirmedToCopy ? [...transformNodeTrack.transformKeys] : [],
-                  };
-                  newTracks.push(newTrack);
-                });
-              });
+                controllers.push(controller);
+              }
             });
 
-            if (_playState === 'play') {
-              forceClickAnimationPauseAndPlay(_playState, _playDirection);
-            } else {
-              forceClickAnimationPlayAndStop();
-            }
+            // 컨트롤러 간 계층구조 생성
+            controllers.forEach((controller, idx) => {
+              const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => (visibilityOption.screenId = screen.id));
+              if (targetVisibilityOption) {
+                controller.isVisible = targetVisibilityOption.isControllerVisible;
+              }
+              const targetBone = targetAsset.bones.find((bone) => bone.id === controller.id.replace('controller', 'bone'));
+              if (targetBone && targetBone.children.length > 0) {
+                targetBone.children.forEach((childBone) => {
+                  const childController = controllers.find((ctrl) => ctrl.id === childBone.id.replace('bone', 'controller'));
+                  if (childController) {
+                    childController.setParent(controller);
+                  }
+                });
+              }
+              if (targetBone) {
+                targetBone.computeWorldMatrix(true);
+                controller.scaling = new BABYLON.Vector3(1, 1, 1);
+                controller.position = targetBone.position;
+              }
+            });
 
-            const newAnimationIngredient: AnimationIngredient = { ...currentAnimationIngredient, tracks: [...tracks, ...newTracks] };
-            dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
-          }
-        });
+            // controller들 또한 dragBox로 선택 가능하도록
+            dispatch(selectingDataActions.addSelectableObjects({ objects: controllers }));
+
+            // controller의 애니메이션 추가
+            const currentAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAsset.id && animationIngredient.current);
+            if (currentAnimationIngredient) {
+              const { tracks, layers } = currentAnimationIngredient;
+
+              const newTracks: PlaskTrack[] = [];
+
+              controllers.forEach((controller) => {
+                // rotationQuaternion으로 회전법 바꾸는 처리
+                controller.rotate(BABYLON.Axis.X, 0);
+
+                // 대응하는 transformNode의 애니메이션을 사용해 controller의 애니메이션 생성 및 animationIngredient에 추가
+                layers.forEach((layer) => {
+                  const transformNodeTracks = tracks.filter((track) => track.targetId === controller.id.replace('controller', 'transformNode') && track.layerId === layer.id);
+                  transformNodeTracks.forEach((transformNodeTrack) => {
+                    const newTrack: PlaskTrack = {
+                      ...transformNodeTrack,
+                      id: `${layer.id}//${controller.id}//${transformNodeTrack.property}`,
+                      targetId: controller.id,
+                      target: controller,
+                      name: `${transformNodeTrack.name}|controller`,
+                      // confirmedToCopy 여부에 따라 controller에 animation keyframes 복사 혹은 빈 transformKeys
+                      transformKeys: confirmedToCopy ? [...transformNodeTrack.transformKeys] : [],
+                    };
+                    newTracks.push(newTrack);
+                  });
+                });
+              });
+
+              if (_playState === 'play') {
+                forceClickAnimationPauseAndPlay(_playState, _playDirection);
+              } else {
+                forceClickAnimationPlayAndStop();
+              }
+
+              const newAnimationIngredient: AnimationIngredient = { ...currentAnimationIngredient, tracks: [...tracks, ...newTracks] };
+              dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+            }
+          });
+        };
+
+        // 애니메이션 옮길지 말지
+        dispatch(
+          globalUIActions.openModal('ConfirmModal', {
+            title: 'Confirm',
+            message: `Do you want to copy existing keyframes from bones to controllers?`,
+            confirmText: 'Confirm',
+            cancelText: 'Cancel',
+            onConfirm: () => {
+              createController(true, targetTransformNodeIds);
+            },
+            onCancel: () => {
+              createController(false, targetTransformNodeIds);
+            },
+          }),
+        );
       }
     }
   }, [
@@ -453,7 +472,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     _selectableObjects,
     _visibilityOptions,
     dispatch,
-    getConfirm,
     isControllerOn,
     selectedAssetId,
   ]);
