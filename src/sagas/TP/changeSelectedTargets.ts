@@ -56,10 +56,12 @@ function* filterPlaskTracks(layer: PlaskLayer) {
 
 function* worker() {
   const visualizedAnimationIngredients: AnimationIngredient[] = yield findVisualizedAnimationIngredients();
-  const selectedLayer: PlaskLayer = yield findSelectedLayer(visualizedAnimationIngredients[0]);
-  const filteredPlaskTracks: PlaskTrack[] = yield filterPlaskTracks(selectedLayer);
-  yield put(trackListActions.initializeTrackList({ list: filteredPlaskTracks }));
-  yield put(keyframesActions.initializeKeyframes({ list: filteredPlaskTracks }));
+  if (visualizedAnimationIngredients.length !== 0) {
+    const selectedLayer: PlaskLayer = yield findSelectedLayer(visualizedAnimationIngredients[0]);
+    const filteredPlaskTracks: PlaskTrack[] = yield filterPlaskTracks(selectedLayer);
+    yield put(trackListActions.initializeTrackList({ list: filteredPlaskTracks }));
+    yield put(keyframesActions.initializeKeyframes({ list: filteredPlaskTracks }));
+  }
 }
 
 // 키프레임 드래그 드랍 입력 감지
