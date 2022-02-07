@@ -6,6 +6,33 @@
   text-decoration: none;
 }
 
+@mixin basic-button-style() {
+  border-radius: 6px;
+  font-weight: 400;
+  transition: background-color 0.25s;
+
+  &.small {
+    min-width: 64px;
+    padding: 5px 16px;
+    font-size: 11px;
+  }
+
+  &.fullSize {
+    width: 100%;
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+    color: #bdbdbd;
+
+    &:hover {
+      background-color: #f5f5f5;
+      color: #bdbdbd;
+    }
+  }
+}
+
 @mixin reset-list-style() {
   margin: 0;
   padding: 0;

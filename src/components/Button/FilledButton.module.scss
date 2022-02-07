@@ -3,34 +3,7 @@
 
 .filled {
   @include reset-button-style();
-  border-radius: 6px;
-  font-weight: 400;
-  transition: background-color 0.25s;
-
-  &.fullSize {
-    width: 100%;
-  }
-
-  &.disabled {
-    cursor: not-allowed;
-    // background-color: #a7a7a7; // GRAY500
-    // color: #fff;
-    background-color: #f5f5f5;
-    color: #bdbdbd;
-
-    &:hover {
-      // color: #fff;
-      // background-color: #a7a7a7;
-      background-color: #f5f5f5;
-      color: #bdbdbd;
-    }
-  }
-}
-
-.small {
-  min-width: 64px;
-  padding: 6px 16px;
-  font-size: 14px;
+  @include basic-button-style();
 }
 
 .primary {
@@ -51,4 +24,9 @@
   &:hover {
     background-color: darken($color: #f5f5f5, $amount: 4%);
   }
+}
+
+.error {
+  background-color: var(--vivid-red);
+  color: var(--gray700);
 }
