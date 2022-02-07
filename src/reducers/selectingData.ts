@@ -1,11 +1,8 @@
-import * as BABYLON from '@babylonjs/core';
-import { SelectingDataAction } from 'actions/selectingDataAction';
 import { xorBy } from 'lodash';
+import { SelectingData } from './../types/common';
+import { SelectingDataAction } from 'actions/selectingDataAction';
 
-interface State {
-  selectableObjects: Array<BABYLON.Mesh | BABYLON.TransformNode>;
-  selectedTargets: Array<BABYLON.Mesh | BABYLON.TransformNode>;
-}
+type State = SelectingData;
 
 const defaultState: State = {
   selectableObjects: [],

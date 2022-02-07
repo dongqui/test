@@ -1,21 +1,23 @@
 import { debounce } from 'lodash';
 import { FunctionComponent, Fragment, useEffect, useState, useRef, useCallback, useMemo, SyntheticEvent } from 'react';
 import { ResizeCallbackData } from 'react-resizable';
+
 import { UpperBar } from 'containers/UpperBar';
 import LibraryPanel from 'containers/Panels/LibraryPanel';
 import RenderingPanel from './Panels/RenderingPanel';
 import ControlPanel from './Panels/ControlPanel';
 import TimelinePanel from './Panels/TimelinePanel';
-import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
 import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
-
 import HotKeyOrder from './HotKeyOrder';
-import classNames from 'classnames/bind';
+import Modal from 'containers/Common/Modal/Modal';
+import ContextMenu from 'containers/Common/ContextMenu/ContextMenu';
+
 import styles from './Shoot.module.scss';
+import classNames from 'classnames/bind';
 
 const cx = classNames.bind(styles);
 
@@ -276,17 +278,13 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
           </Box>
           <Box id="US" className={cx('upper-section')} {...boxProps.us}>
             <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
-              <BaseModalProvider>
-                <LibraryPanel />
-              </BaseModalProvider>
+              <LibraryPanel />
             </Box>
             <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
               <RenderingPanel />
             </Box>
             <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-              <BaseModalProvider>
-                <ControlPanel />
-              </BaseModalProvider>
+              <ControlPanel />
             </Box>
           </Box>
           <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
@@ -294,11 +292,11 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
               <MiddleBar />
             </Box>
             <Box id="TP" {...boxProps.tp}>
-              <BaseModalProvider>
-                <TimelinePanel />
-              </BaseModalProvider>
+              <TimelinePanel />
             </Box>
           </Box>
+          <Modal />
+          <ContextMenu />
         </Fragment>
       </ContextMenuProvider>
     </div>

@@ -10,6 +10,7 @@ import { animatingControls } from './animatingControls';
 import { modeSelection } from './modeSelection';
 import { keyframes } from './keyframes';
 import { trackList } from './trackList';
+import { globalUI } from './Common/globalUI';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
   modeSelection,
   keyframes,
   trackList,
+  globalUI,
 });
 
 // type 적용된 useSelector

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const getMousePosition = (e: React.MouseEvent<HTMLInputElement>) => {
+const getMousePosition = (e: React.MouseEvent) => {
   const pos = { x: 0, y: 0 };
 
   pos.x = e.clientX;

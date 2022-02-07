@@ -1,4 +1,7 @@
 import { FunctionComponent, memo, ButtonHTMLAttributes, MouseEvent, useCallback } from 'react';
+
+import { ButtonColor } from 'types/common';
+
 import classNames from 'classnames/bind';
 import styles from './FilledButton.module.scss';
 
@@ -6,7 +9,7 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   size?: 'small' | 'medium' | 'large';
-  color?: 'primary' | 'secondary';
+  color?: ButtonColor;
   text?: string;
   fullSize?: boolean;
 }

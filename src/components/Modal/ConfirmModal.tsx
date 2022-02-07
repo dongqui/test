@@ -1,7 +1,10 @@
 import { FunctionComponent } from 'react';
+
 import { BaseModal } from 'components/Modal';
-import { FilledButton } from 'components/Button';
+import { FilledButton, OutlineButton } from 'components/Button';
 import { Html } from 'components/Typography';
+import { ButtonColor } from 'types/common';
+
 import classnames from 'classnames/bind';
 import styles from './ConfirmModal.module.scss';
 
@@ -10,21 +13,31 @@ const cx = classnames.bind(styles);
 interface Props {
   title: string;
   message: string;
-  confirmText: string;
-  cancelText: string;
+  confirmText?: string;
+  cancelText?: string;
+  confirmButtonColor?: ButtonColor;
   onConfirm: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
   onClose: () => void;
 }
 
-const ConfirmModal: FunctionComponent<Props> = ({ onClose, title, message, confirmText, cancelText, onConfirm, onCancel }) => {
+const ConfirmModal: FunctionComponent<Props> = ({
+  onClose,
+  title,
+  message,
+  confirmButtonColor = 'primary',
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  onConfirm,
+  onCancel,
+}) => {
   const onClickConfirm = () => {
     onConfirm();
     onClose();
   };
 
   const onClickCancel = () => {
-    onCancel();
+    onCancel && onCancel();
     onClose();
   };
 
@@ -36,10 +49,10 @@ const ConfirmModal: FunctionComponent<Props> = ({ onClose, title, message, confi
           <Html content={message} />
         </div>
         <div className={cx('buttons')}>
-          <FilledButton className={cx('button-cancel')} onClick={onClickCancel} color="secondary" fullSize>
+          <OutlineButton onClick={onClickCancel} fullSize>
             {cancelText}
-          </FilledButton>
-          <FilledButton onClick={onClickConfirm} color="primary" fullSize>
+          </OutlineButton>
+          <FilledButton onClick={onClickConfirm} color={confirmButtonColor} fullSize>
             {confirmText}
           </FilledButton>
         </div>

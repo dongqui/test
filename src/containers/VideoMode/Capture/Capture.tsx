@@ -16,7 +16,9 @@ import axios, { Canceler } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import { BaseModal } from 'new_components/Modal';
+import { BaseModal } from 'components/Modal';
+import { PlaskMocapData } from 'types/common';
+
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
 
@@ -30,7 +32,7 @@ interface Props {
 export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) => {
   const dispatch = useDispatch();
 
-  const lpNode = useSelector((state) => state.lpNode.node);
+  const lpNode = useSelector((state) => state.lpNode.nodes);
   const { mode, videoURL } = useSelector((state) => state.modeSelection);
   const cameraListRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -198,7 +200,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
     const result = await axios({
       method: 'POST',
-      url: 'https://shootapi.myplask.com:443/mocap-upload-api-common',
+      url: 'https://shootapimain.myplask.com:6500/mocap-upload-api-common',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
       cancelToken: new axios.CancelToken((cancel) => {
@@ -206,20 +208,60 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       }),
     })
       .then((response) => {
-        const newMotionNode: LP.Node = {
-          id: uuidv4(),
-          parentId: '__root__',
-          name: fileName,
-          filePath: '\\root',
-          childrens: [],
-          extension: '',
-          type: 'Motion',
-          mocapData: response.data.result,
-        };
+        const mocapCount = response.data.result.length;
 
-        const nextNodes = produce(lpNode, (draft) => {
-          draft.push(newMotionNode);
-        });
+        let nextNodes: LP.Node[];
+
+        if (mocapCount === 1) {
+          const newMotionNode: LP.Node = {
+            id: uuidv4(),
+            parentId: '__root__',
+            name: fileName,
+            filePath: '\\root',
+            childrens: [],
+            extension: '',
+            type: 'Mocap',
+            mocapData: response.data.result[0].trackData,
+          };
+
+          nextNodes = produce(lpNode, (draft) => {
+            draft.push(newMotionNode);
+          });
+        } else {
+          const newFolderNode: LP.Node = {
+            id: uuidv4(),
+            parentId: '__root__',
+            filePath: '\\root',
+            name: fileName,
+            extension: '',
+            type: 'Folder',
+            childrens: [],
+          };
+
+          const newMotionNodes: LP.Node[] = [];
+          response.data.result.forEach((item: { motionNumber: number; trackData: PlaskMocapData }) => {
+            const newMotionNode: LP.Node = {
+              id: uuidv4(),
+              parentId: newFolderNode.id,
+              name: `${fileName}_${item.motionNumber}`,
+              filePath: '\\root' + `\\${fileName}`,
+              childrens: [],
+              extension: '',
+              type: 'Mocap',
+              mocapData: item.trackData,
+            };
+            newMotionNodes.push(newMotionNode);
+            newFolderNode.childrens.push(newMotionNode.id);
+          });
+
+          nextNodes = produce(lpNode, (draft) => {
+            draft.push(newFolderNode);
+
+            newMotionNodes.forEach((newMotionNode) => {
+              draft.push(newMotionNode);
+            });
+          });
+        }
 
         setReadyExtract(false);
         dispatch(lpNodeActions.changeNode({ nodes: nextNodes }));
@@ -507,7 +549,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         </Fragment>
       )}
       {readyExtract && (
-        <BaseModal isOpen={readyExtract}>
+        <BaseModal>
           <p className={cx('extract-name-paragraph')}>Enter the name of the motion to extract.</p>
           <input type="text" className={cx('extract-name-input')} placeholder="Exported motion" onChange={(e) => handleChange(e)} value={basicExtractName} />
           <div className={cx('extract-name-wrapper')}>
@@ -533,7 +575,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         </BaseModal>
       )}
       {turnStandbyPhase && (
-        <BaseModal isOpen={turnStandbyPhase}>
+        <BaseModal>
           <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
           <p className={cx('extract-name-paragraph')}>
             Your video will be <strong>deleted</strong> to take a new video.
@@ -554,7 +596,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         </BaseModal>
       )}
       {onExtract && (
-        <BaseModal isOpen={onExtract}>
+        <BaseModal>
           <div className={cx('loading-modal')}>
             <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
             <h4 className={cx('modal-heading', 'loading')}>Motions Extracting</h4>
@@ -573,7 +615,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         </BaseModal>
       )}
       {isExtractFailed && (
-        <BaseModal isOpen={isExtractFailed}>
+        <BaseModal>
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Extract Failed</h4>
             <p className={cx('extract-name-paragraph')}>
@@ -585,7 +627,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         </BaseModal>
       )}
       {isServerUpdating && (
-        <BaseModal isOpen={isServerUpdating}>
+        <BaseModal>
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Server update in progress.</h4>
             <p className={cx('extract-name-paragraph')}>Motion extraction is available after the time below. (2022-01-13, 01:00 AM ~ 04:00 AM, PST)</p>
@@ -594,7 +636,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         </BaseModal>
       )}
       {isTimeout && (
-        <BaseModal isOpen={isTimeout}>
+        <BaseModal>
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Caution</h4>
             <p className={cx('extract-name-paragraph')}>In this free version, you can only extract videos for less than 5 minutes long.</p>
