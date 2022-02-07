@@ -2,7 +2,7 @@ import { put, select, takeLatest } from 'redux-saga/effects';
 import * as trackListActions from 'actions/trackList';
 import * as keyframesActions from 'actions/keyframes';
 import { RootState } from 'reducers';
-import { AnimationIngredient, PlaskTrack } from 'types/common';
+import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
 
 function getAnimationIngredients(state: RootState) {
   return state.animationData.animationIngredients;
@@ -30,32 +30,34 @@ function* findVisualizedAnimationIngredients() {
   return visualizedAnimationIngredients;
 }
 
-// viewport에서 선택 된 bone/controller 필터링
-function* filterPlaskTracks(visualizedAnimationIngredient: AnimationIngredient) {
+// animationIngredient에서 선택 된 layer 찾기
+function* findSelectedLayer(visualizedAnimationIngredient: AnimationIngredient) {
+  const selectedLayerId = getSelectedLayer(yield select());
+  return visualizedAnimationIngredient.layers.find((layer) => layer.id === selectedLayerId);
+}
+
+function* filterPlaskTracks(layer: PlaskLayer) {
   const selectedTargets = getSelectedTargets(yield select());
-  const selectedLayer = getSelectedLayer(yield select());
   const filteredTracks: PlaskTrack[] = [];
 
-  for (let index = 0; index < selectedTargets.length; index += 1) {
-    const { id, name } = selectedTargets[index];
+  selectedTargets.forEach((plaskTrack) => {
+    const { id, name } = plaskTrack;
     if (name !== 'Armature') {
-      const tracks = visualizedAnimationIngredient.tracks;
-      const trackIndex = tracks.findIndex((track) => track.targetId === id && track.layerId === selectedLayer);
-      for (let propertyIndex = trackIndex; propertyIndex <= trackIndex + 3; propertyIndex += 1) {
-        const propertyTrack = tracks[propertyIndex];
-        if (propertyTrack.property !== 'rotationQuaternion') {
-          filteredTracks.push(propertyTrack);
-        }
+      const selectedTrackIndex = layer.tracks.findIndex((track) => track.targetId === id && track.layerId === layer.id);
+      for (let propertyTrackIndex = selectedTrackIndex; propertyTrackIndex <= selectedTrackIndex + 3; propertyTrackIndex += 1) {
+        const propertyTrack = layer.tracks[propertyTrackIndex];
+        if (propertyTrack.property !== 'rotationQuaternion') filteredTracks.push(propertyTrack);
       }
     }
-  }
+  });
 
   return filteredTracks;
 }
 
 function* worker() {
   const visualizedAnimationIngredients: AnimationIngredient[] = yield findVisualizedAnimationIngredients();
-  const filteredPlaskTracks: PlaskTrack[] = yield filterPlaskTracks(visualizedAnimationIngredients[0]);
+  const selectedLayer: PlaskLayer = yield findSelectedLayer(visualizedAnimationIngredients[0]);
+  const filteredPlaskTracks: PlaskTrack[] = yield filterPlaskTracks(selectedLayer);
   yield put(trackListActions.initializeTrackList({ list: filteredPlaskTracks }));
   yield put(keyframesActions.initializeKeyframes({ list: filteredPlaskTracks }));
 }
