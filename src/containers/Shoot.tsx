@@ -7,7 +7,6 @@ import LibraryPanel from 'containers/Panels/LibraryPanel';
 import RenderingPanel from './Panels/RenderingPanel';
 import ControlPanel from './Panels/ControlPanel';
 import TimelinePanel from './Panels/TimelinePanel';
-import { BaseModalProvider } from 'new_components/Modal/BaseModal';
 import { ContextMenuProvider } from 'new_components/ContextMenu/ContextMenu';
 import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
@@ -279,17 +278,13 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
           </Box>
           <Box id="US" className={cx('upper-section')} {...boxProps.us}>
             <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
-              <BaseModalProvider>
-                <LibraryPanel />
-              </BaseModalProvider>
+              <LibraryPanel />
             </Box>
             <Box id="RP" className={cx('rendering-panel')} {...boxProps.rp}>
               <RenderingPanel />
             </Box>
             <Box id="CP" className={cx('control-panel')} {...boxProps.cp}>
-              <BaseModalProvider>
-                <ControlPanel />
-              </BaseModalProvider>
+              <ControlPanel />
             </Box>
           </Box>
           <Box id="LS" className={cx('lower-section')} {...boxProps.ls}>
@@ -297,9 +292,7 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
               <MiddleBar />
             </Box>
             <Box id="TP" {...boxProps.tp}>
-              <BaseModalProvider>
-                <TimelinePanel />
-              </BaseModalProvider>
+              <TimelinePanel />
             </Box>
           </Box>
           <Modal />
