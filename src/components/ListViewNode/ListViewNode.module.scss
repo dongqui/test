@@ -1,4 +1,4 @@
-.wrapper {
+.container {
   width: 100%;
 }
 
@@ -32,18 +32,29 @@
   }
 }
 
-.icon-arrow {
+.wrapper {
+  display: flex;
+  align-items: stretch;
+  // width: calc(100% - 12px);
+  width: 100%;
+  border: 1px solid transparent;
+  padding-right: 7px;
+
+  &:hover {
+    border: 1px solid #0f88ff;
+  }
+}
+
+.contents {
   position: relative;
   display: flex;
-  width: 16px;
-  height: 24px;
+  align-items: stretch;
+  width: 100%;
+}
 
-  & > svg {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    margin: auto;
-    color: #fff;
-  }
+.column {
+  display: flex;
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: 7px;
 }

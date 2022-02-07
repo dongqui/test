@@ -172,3 +172,12 @@ export type BvhBoneType =
 export type PlaskBvhMap = {
   [bone in BvhBoneType]: Nullable<string>;
 };
+
+export type ContextMenuClickItemHandlerProps = any;
+
+export type SelectingData = {
+  selectableObjects: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+  selectedTargets: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+};
+
+export type ButtonColor = 'primary' | 'secondary' | 'error';

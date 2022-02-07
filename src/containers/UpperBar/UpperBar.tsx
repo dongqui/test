@@ -5,7 +5,7 @@ import { FilledButton, SegmentButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { changeMode } from 'actions/modeSelection';
 import { RootState, useSelector } from 'reducers';
-import { BaseModal } from 'new_components/Modal';
+import { BaseModal } from 'components/Modal';
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
 
@@ -134,7 +134,7 @@ const UpperBar: FunctionComponent<Props> = ({
         )}
       </div>
       {deleteModal && (
-        <BaseModal isOpen={deleteModal}>
+        <BaseModal>
           <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
           <p className={cx('extract-name-paragraph')}>
             Your video will be <strong>deleted</strong> to take a new video.

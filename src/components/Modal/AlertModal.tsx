@@ -8,17 +8,18 @@ import styles from './AlertModal.module.scss';
 const cx = classnames.bind(styles);
 
 interface Props {
-  closeModal: () => void;
+  onClose: () => void;
   onConfirm?: () => void;
   title: string;
   message: string;
   confirmText: string;
+  confirmColor?: string;
 }
 
-const AlertModal: FunctionComponent<Props> = ({ closeModal, title, onConfirm, message, confirmText = 'Confirm' }) => {
+const AlertModal: FunctionComponent<Props> = ({ onClose, title, onConfirm, message, confirmText = 'Confirm' }) => {
   const onClickButton = () => {
     onConfirm && onConfirm();
-    closeModal();
+    onClose();
   };
 
   return (

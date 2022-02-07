@@ -1,8 +1,7 @@
 import { find, filter } from 'lodash';
-import { FunctionComponent, memo, MutableRefObject, useState, useCallback, useRef } from 'react';
+import { FunctionComponent, memo, useState } from 'react';
 import { useSelector } from 'reducers';
-import { BasePortal } from 'components/Modal';
-import { Overlay } from 'components/Overlay';
+import { BaseModal } from 'components/Modal';
 import { BaseForm, BaseField } from 'components/Form';
 import { AnimationIngredient } from 'types/common';
 import Dropdown from './Dropdown';
@@ -12,32 +11,13 @@ import styles from './ExportModal.module.scss';
 const cx = classnames.bind(styles);
 
 interface Props {
+  onClose: () => void;
   motions: AnimationIngredient[];
   onConfirm: (data: any) => void;
-  onCancel: () => void;
-  onOutsideClose: () => void;
+  onCancel?: () => void;
 }
 
-const ExportModal: FunctionComponent<Props> = ({ motions, onConfirm, onCancel, onOutsideClose }) => {
-  const portalRef = useRef(document.getElementById('portal_modal')) as MutableRefObject<HTMLElement>;
-
-  const handleOutsideClose = useCallback(() => {
-    onOutsideClose();
-  }, [onOutsideClose]);
-
-  const handleCancel = useCallback(() => {
-    if (onCancel) {
-      onCancel();
-    }
-  }, [onCancel]);
-
-  const handleSubmit = useCallback(
-    (data: any) => {
-      onConfirm(data);
-    },
-    [onConfirm],
-  );
-
+const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, onCancel }) => {
   const baseMotionList =
     motions.length > 0
       ? [
@@ -86,6 +66,9 @@ const ExportModal: FunctionComponent<Props> = ({ motions, onConfirm, onCancel, o
     },
   });
 
+  const handleSubmit = (data: any) => {
+    onConfirm(data);
+  };
   const retargetMap = currentAsset && find(_retargetMaps, { assetId: currentAsset.id });
   const isErrorRetargetMap = retargetMap && retargetMap.values.some((value) => !value.targetTransformNodeId);
 
@@ -124,7 +107,7 @@ const ExportModal: FunctionComponent<Props> = ({ motions, onConfirm, onCancel, o
         ];
 
   return (
-    <BasePortal container={portalRef}>
+    <BaseModal>
       <BaseForm onSubmit={handleSubmit}>
         {(props) => {
           const { setFormValue } = props;
@@ -168,54 +151,51 @@ const ExportModal: FunctionComponent<Props> = ({ motions, onConfirm, onCancel, o
           };
 
           return (
-            <div className={cx('wrapper')}>
-              <div className={cx('inner')} tabIndex={0}>
-                <div className={cx('title')}>Export Setting</div>
-                <div className={cx('field')}>
-                  <div className={cx('row')}>
-                    <div className={cx('field-label')}>Motion:</div>
-                    <div className={cx('field-value')}>
-                      <BaseField<Field.DropdownProps>
-                        render={({ onChange, ...rest }) => <Dropdown onChange={(params) => handleMotionOnChange(onChange, params)} {...rest} />}
-                        control={props.control}
-                        value={values.motion}
-                        name="motion"
-                        list={motionList}
-                        initialValue={initialMotionValue}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className={cx('row')}>
-                    <div className={cx('field-label')}>Format:</div>
-                    <div className={cx('field-value')}>
-                      <BaseField<Field.DropdownProps>
-                        render={({ onChange, ...rest }) => <Dropdown onChange={(params) => handleFormatChange(onChange, params)} {...rest} />}
-                        control={props.control}
-                        value={values.format.value}
-                        name="format"
-                        list={formatList}
-                        initialValue={formatList[0]}
-                        required
-                      />
-                    </div>
+            <>
+              <div className={cx('title')}>Export Setting</div>
+              <div className={cx('field')}>
+                <div className={cx('row')}>
+                  <div className={cx('field-label')}>Motion:</div>
+                  <div className={cx('field-value')}>
+                    <BaseField<Field.DropdownProps>
+                      render={({ onChange, ...rest }) => <Dropdown onChange={(params) => handleMotionOnChange(onChange, params)} {...rest} />}
+                      control={props.control}
+                      value={values.motion}
+                      name="motion"
+                      list={motionList}
+                      initialValue={initialMotionValue}
+                      required
+                    />
                   </div>
                 </div>
-                <div className={cx('buttons')}>
-                  <button className={cx('button', 'cancel')} onClick={handleCancel}>
-                    Cancel
-                  </button>
-                  <button className={cx('button', 'positive')} type="submit">
-                    Export
-                  </button>
+                <div className={cx('row')}>
+                  <div className={cx('field-label')}>Format:</div>
+                  <div className={cx('field-value')}>
+                    <BaseField<Field.DropdownProps>
+                      render={({ onChange, ...rest }) => <Dropdown onChange={(params) => handleFormatChange(onChange, params)} {...rest} />}
+                      control={props.control}
+                      value={values.format.value}
+                      name="format"
+                      list={formatList}
+                      initialValue={formatList[0]}
+                      required
+                    />
+                  </div>
                 </div>
               </div>
-              <Overlay onClose={handleOutsideClose} />
-            </div>
+              <div className={cx('buttons')}>
+                <button className={cx('button', 'cancel')} onClick={onClose}>
+                  Cancel
+                </button>
+                <button className={cx('button', 'positive')} type="submit">
+                  Export
+                </button>
+              </div>
+            </>
           );
         }}
       </BaseForm>
-    </BasePortal>
+    </BaseModal>
   );
 };
 

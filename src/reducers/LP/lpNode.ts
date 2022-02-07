@@ -1,45 +1,73 @@
 import { LPNodeAction } from 'actions/LP/lpNodeAction';
-import { v4 as uuidv4 } from 'uuid';
-
 interface State {
-  node: LP.Node[];
+  nodes: LP.Node[];
   visualizedfileUrl: string | File;
   currentPath: string;
   currentPathId: string;
   clipboard: LP.Node[];
+  selectedId: string | null;
+  selectedAssetId: string | null;
+  draggedNode: LP.Node | null;
+  editingNodeId: null | string;
 }
 
 const defaultState: State = {
-  node: [],
+  nodes: [],
   visualizedfileUrl: '',
   currentPath: '\\root',
   currentPathId: '\\root',
   clipboard: [],
+  selectedId: null,
+  selectedAssetId: null,
+  draggedNode: null,
+  editingNodeId: null,
 };
 
 export const lpNode = (state = defaultState, action: LPNodeAction) => {
   switch (action.type) {
-    case 'mode/CHANGE_NODE': {
+    case 'node/CHANGE_NODE': {
       return Object.assign({}, state, {
-        node: action.payload.nodes,
+        nodes: action.payload.nodes,
       });
     }
-    case 'mode/VISUALIZE': {
+    case 'node/VISUALIZE': {
       return Object.assign({}, state, {
         visualizedfileUrl: action.payload,
       });
     }
-    case 'mode/CHANGE_CURRENT_PATH': {
+    case 'node/CHANGE_CURRENT_PATH': {
       return Object.assign({}, state, {
         currentPath: action.payload.currentPath,
-        currentPathId: action.payload.id,
+        cdrrentPathId: action.payload.id,
       });
     }
-    case 'mode/CHANGE_CLIPBOARD': {
+    case 'node/CHANGE_CLIPBOARD': {
       return Object.assign({}, state, {
         clipboard: action.payload.data,
       });
     }
+    case 'node/SELECT_NODE': {
+      return Object.assign({}, state, {
+        selectedId: action.payload.nodeId,
+        selectedAssetId: action.payload.assetId,
+      });
+    }
+    case 'node/DRAG_NODE_START': {
+      return Object.assign({}, state, {
+        draggedNode: action.payload.node,
+      });
+    }
+    case 'node/SET_EDITING_NODE_ID': {
+      return Object.assign({}, state, {
+        editingNodeId: action.payload.nodeId,
+      });
+    }
+    case 'node/ADD_NODES': {
+      return Object.assign({}, state, {
+        nodes: [...state.nodes, ...action.payload.nodes],
+      });
+    }
+
     default: {
       return state;
     }
