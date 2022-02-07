@@ -18,7 +18,7 @@ import {
 import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth, filterDeletedNode, createFolderNode } from 'utils/LP/FileSystem';
 import { createAnimationIngredientFromMocapData, createBvhMap } from 'utils/LP/Retarget';
 import { getFileExtension } from 'utils/common';
-import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
+import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes, roundToFourth } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -166,7 +166,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
           scene.addSkeleton(skeleton);
 
           const jointTransformNodes: BABYLON.TransformNode[] = [];
-
+          const armatureScalingFactor = bones.find((bone) => bone.name === 'Armature') ? bones.find((bone) => bone.name === 'Armature')!.scaling.x : 0.01;
           // joints 생성 및 scene들에 추가
           for (const bone of bones) {
             if (
@@ -178,6 +178,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
             ) {
               const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
               joint.id = `${assetId}//${bone.name}//joint`;
+              joint.state = roundToFourth(0.03 / armatureScalingFactor).toString();
               joint.renderingGroupId = 2;
               joint.attachToBone(bone, meshes[0]);
 
