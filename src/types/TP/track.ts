@@ -1,9 +1,6 @@
-import { PlaskLayer } from 'types/common';
 import { TrackIdentifier } from './index';
 
 export type InterpolationType = 'bezier' | 'constant' | 'linear' | 'none';
-
-export type PlaskLayerIdentifier = Pick<PlaskLayer, 'id' | 'name'>;
 
 export interface Track {
   /**

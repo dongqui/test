@@ -48,7 +48,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
             message: 'Are you sure you want to delete a animation layer?<br />This will delete all keyframes in this layer',
             confirmText: 'Delete',
             onConfirm: () => {
-              dispatch(trackListActions.clickDeleteLayerTrackButton({ id: trackId, name: trackName }));
+              dispatch(trackListActions.clickDeleteLayerTrackButton({ id: trackId }));
               onModalClose();
             },
             cancelText: 'Cancel',
