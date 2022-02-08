@@ -62,6 +62,7 @@ export interface AnimationIngredient {
 export interface PlaskLayer {
   id: string;
   name: string;
+  isIncluded: boolean;
   tracks: PlaskTrack[];
 }
 
@@ -82,7 +83,6 @@ export interface PlaskTrack {
   useFilter: boolean;
   filterBeta: number;
   filterMinCutoff: number;
-  isIncluded: boolean;
   isLocked: boolean;
 }
 

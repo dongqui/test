@@ -65,7 +65,7 @@ const createAnimationIngredient = (
     tracks.push(scalingTrack);
   });
 
-  const baseLayer: PlaskLayer = { id: layerId, name: 'Base Layer', tracks };
+  const baseLayer: PlaskLayer = { id: layerId, name: 'Base Layer', isIncluded: true, tracks };
 
   const animationIngredient = {
     id: getRandomStringKey(),

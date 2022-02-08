@@ -90,9 +90,7 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
           if (animaitonIngredient.id === action.payload.animationIngredientId) {
             return {
               ...animaitonIngredient,
-              layers: animaitonIngredient.layers.map((layer) =>
-                layer.id === action.payload.layerId ? { ...layer, tracks: layer.tracks.map((track) => ({ ...track, isIncluded: !track.isIncluded })) } : layer,
-              ),
+              layers: animaitonIngredient.layers.map((layer) => (layer.id === action.payload.layerId ? { ...layer, isIncluded: !layer.isIncluded } : layer)),
             };
           } else {
             return animaitonIngredient;

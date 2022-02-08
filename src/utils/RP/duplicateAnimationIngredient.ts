@@ -34,7 +34,7 @@ const duplicateAnimationIngredient = (animationIngredient: AnimationIngredient, 
       newTracks.push(newTrack);
     });
 
-    newLayers.push({ id: newLayerId, name: layer.name, tracks: newTracks });
+    newLayers.push({ id: newLayerId, name: layer.name, isIncluded: true, tracks: newTracks });
   });
 
   const newAnimationIngredient = {

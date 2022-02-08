@@ -57,7 +57,7 @@ function* worker() {
       baseLayer.tracks.forEach((track) => {
         newTracks.push(createPlaskTrack(track.name, newLayerId, track.target, track.property, [], track.isMocapAnimation));
       });
-      const newLayer: PlaskLayer = { id: newLayerId, name: `Layer ${newLayerTrackNumber}`, tracks: newTracks };
+      const newLayer: PlaskLayer = { id: newLayerId, name: `Layer ${newLayerTrackNumber}`, isIncluded: true, tracks: newTracks };
 
       yield put(trackListActions.addLayerTrack(newLayer));
 
