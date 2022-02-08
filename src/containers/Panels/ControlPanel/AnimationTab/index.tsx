@@ -20,17 +20,13 @@ interface Props {
 }
 
 const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
-  const _screenList = useSelector((state) => state.plaskProject.screenList);
-  const _assetList = useSelector((state) => state.plaskProject.assetList);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // selectedLayerId에 해당
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
-  const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _playDirection = useSelector((state) => state.animatingControls.playDirection);
-  const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
 
   const dispatch = useDispatch();
 
