@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 
-import { BaseContextMenu, ContextMenuItem } from 'components/Contextmenu';
+import { BaseContextMenu, ContextMenuItem } from 'components/ContextMenu';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 
