@@ -83,9 +83,9 @@ const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngred
   });
 
   Object.entries(transformKeysListForTargetId).forEach(([targetId, { target, positionTransformKeysList, rotationQuaternionTransformKeysList, scalingTransformKeysList }]) => {
-    const positionTotalTransformKeys = getTotalTransformKeys(positionTransformKeysList, false);
-    const rotationQuaternionTotalTransformKeys = getTotalTransformKeys(rotationQuaternionTransformKeysList, true);
-    const scalingTotalTransformKeys = getTotalTransformKeys(scalingTransformKeysList, false);
+    const positionTotalTransformKeys = getTotalTransformKeys(positionTransformKeysList, 'position');
+    const rotationQuaternionTotalTransformKeys = getTotalTransformKeys(rotationQuaternionTransformKeysList, 'rotationQuaternion');
+    const scalingTotalTransformKeys = getTotalTransformKeys(scalingTransformKeysList, 'scaling');
 
     const newPositionAnimation = new BABYLON.Animation(
       `${target.name}|position`,
