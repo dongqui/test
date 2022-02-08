@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux';
 import AnimationInputWrapper from './AnimationInputWrapper';
 import * as animationDataActions from 'actions/animationDataAction';
 import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPanel';
-import { Nullable, PlaskRotationType, PlaskTrack } from 'types/common';
+import { Nullable, PlaskLayer, PlaskRotationType, PlaskTrack } from 'types/common';
 import { useSelector } from 'reducers';
 import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } from 'utils/common';
 
@@ -30,10 +30,11 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   const dispatch = useDispatch();
 
-  // 다중모델 설계 내에서 단일모델 상황을 가정하기 위함 (추후 다중모델 설계 자체를 단일모델 설계로 변경할 계획)
+  // 다중모델 설계 내에서 단일모델 상황을 가정하기 위함 (추후 다중모델 설계 자체를 단일모델 설계로 변경할 계획 -> 확정된 게 없음..)
   const selectedAssetId = useMemo(() => _visualizedAssetIds[0], [_visualizedAssetIds]);
 
   const [controlTarget, setControlTarget] = useState<Nullable<BABYLON.TransformNode | BABYLON.Mesh>>(null);
+  const [controlLayer, setControlLayer] = useState<Nullable<PlaskLayer>>(null);
   const [controlTrack, setControlTrack] = useState<Nullable<PlaskTrack>>(null);
 
   // position value를 관리하는 useState
@@ -89,12 +90,14 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       setControlTrack(null);
     } else if (_selectedTargets.length === 1) {
       const targetAssetId = _selectedTargets[0].id.split('//')[0];
-      const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAssetId);
-      const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer);
-      const targetTrack = targetLayer?.tracks.find((track) => track.targetId === _selectedTargets[0].id)!;
+      const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAssetId && animationIngredient.current);
+      const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer)!;
+      const targetTrack = targetLayer.tracks.find((track) => track.targetId === _selectedTargets[0].id)!;
 
+      setControlLayer(targetLayer);
       setControlTrack(targetTrack);
     } else {
+      setControlLayer(null);
       setControlTrack(null);
     }
   }, [_animationIngredients, _selectedTargets, _seletedLayer]);
@@ -136,12 +139,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer);
 
       if (targetLayer) {
-        const hasFilteredTrack = Boolean(targetLayer.tracks.find((track) => track.useFilter));
-        if (hasFilteredTrack) {
-          setIsFilterOn(true);
-        } else {
-          setIsFilterOn(false);
-        }
+        const useFilter = targetLayer.useFilter;
+        setIsFilterOn(useFilter);
       } else {
         setIsFilterOn(false);
       }
@@ -152,14 +151,14 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   // 선택 대상에 따라 filter parameters 변경
   useEffect(() => {
-    if (controlTrack && controlTrack.useFilter) {
+    if (controlLayer && controlLayer.useFilter && controlTrack) {
       setFcValue(controlTrack.filterMinCutoff);
       setBetaValue(controlTrack.filterBeta);
     } else {
       setFcValue(10);
       setBetaValue(1);
     }
-  }, [controlTrack]);
+  }, [controlLayer, controlTrack]);
 
   // Transform section을 펼치거나 접을 수 있는 콜백
   const handleSpreadTransform = useCallback(() => {

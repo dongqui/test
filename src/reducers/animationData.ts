@@ -104,9 +104,7 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
           if (animationIngredient.id === action.payload.animationIngredientId) {
             return {
               ...animationIngredient,
-              layers: animationIngredient.layers.map((layer) =>
-                layer.id === action.payload.layerId ? { ...layer, tracks: layer.tracks.map((track) => ({ ...track, useFilter: true })) } : layer,
-              ),
+              layers: animationIngredient.layers.map((layer) => (layer.id === action.payload.layerId ? { ...layer, useFilter: true } : layer)),
             };
           } else {
             return animationIngredient;
@@ -120,9 +118,7 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
           if (animationIngredient.id === action.payload.animationIngredientId) {
             return {
               ...animationIngredient,
-              layers: animationIngredient.layers.map((layer) =>
-                layer.id === action.payload.layerId ? { ...layer, tracks: layer.tracks.map((track) => ({ ...track, useFilter: false })) } : layer,
-              ),
+              layers: animationIngredient.layers.map((layer) => (layer.id === action.payload.layerId ? { ...layer, useFilter: false } : layer)),
             };
           } else {
             return animationIngredient;

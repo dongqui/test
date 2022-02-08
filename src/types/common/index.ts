@@ -63,6 +63,7 @@ export interface PlaskLayer {
   id: string;
   name: string;
   isIncluded: boolean;
+  useFilter: boolean;
   tracks: PlaskTrack[];
 }
 
@@ -80,7 +81,6 @@ export interface PlaskTrack {
   interpolationType: 'linear' | 'bezier' | 'constant';
   bezierParams?: BezierParams;
   isMocapAnimation: boolean;
-  useFilter: boolean;
   filterBeta: number;
   filterMinCutoff: number;
   isLocked: boolean;

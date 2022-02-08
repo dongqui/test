@@ -10,9 +10,8 @@ import getTotalTransformKeys from './getTotalTransformKeys';
  *
  * @param animationIngredient - animationGroup을 생성할 재료
  * @param fps - 생성할 animationGroup의 fps
- * @param useFilter - 필터사용 여부
  */
-const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngredient, fps: number, useFilter: boolean): BABYLON.AnimationGroup => {
+const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngredient, fps: number): BABYLON.AnimationGroup => {
   const { name, layers } = animationIngredient;
 
   const newAnimationGroup = new BABYLON.AnimationGroup(name);
@@ -28,6 +27,8 @@ const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngred
 
   layers.forEach((layer) => {
     if (layer.isIncluded) {
+      const useFilter = layer.useFilter;
+
       layer.tracks.forEach((track) => {
         // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
         if (track.transformKeys.length > 0) {
@@ -37,12 +38,12 @@ const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngred
             if (track.property === 'position') {
               if (transformKeysListForTargetId[track.targetId]) {
                 transformKeysListForTargetId[track.targetId].positionTransformKeysList.push(
-                  useFilter && track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
+                  useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
                 );
               } else {
                 transformKeysListForTargetId[track.targetId] = {
                   target: track.target,
-                  positionTransformKeysList: [useFilter && track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
+                  positionTransformKeysList: [useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
                   rotationQuaternionTransformKeysList: [],
                   scalingTransformKeysList: [],
                 };
@@ -50,29 +51,27 @@ const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngred
             } else if (track.property === 'rotationQuaternion') {
               if (transformKeysListForTargetId[track.targetId]) {
                 transformKeysListForTargetId[track.targetId].rotationQuaternionTransformKeysList.push(
-                  useFilter && track.useFilter ? filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
+                  useFilter ? filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
                 );
               } else {
                 transformKeysListForTargetId[track.targetId] = {
                   target: track.target,
                   positionTransformKeysList: [],
-                  rotationQuaternionTransformKeysList: [
-                    useFilter && track.useFilter ? filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
-                  ],
+                  rotationQuaternionTransformKeysList: [useFilter ? filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
                   scalingTransformKeysList: [],
                 };
               }
             } else if (track.property === 'scaling') {
               if (transformKeysListForTargetId[track.targetId]) {
                 transformKeysListForTargetId[track.targetId].scalingTransformKeysList.push(
-                  useFilter && track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
+                  useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
                 );
               } else {
                 transformKeysListForTargetId[track.targetId] = {
                   target: track.target,
                   positionTransformKeysList: [],
                   rotationQuaternionTransformKeysList: [],
-                  scalingTransformKeysList: [useFilter && track.useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
+                  scalingTransformKeysList: [useFilter ? filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
                 };
               }
             }
