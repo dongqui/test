@@ -27,12 +27,13 @@ const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngred
   } = {};
 
   layers.forEach((layer) => {
-    layer.tracks.forEach((track) => {
-      // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
-      if (track.transformKeys.length > 0) {
-        if (track.property !== 'rotation') {
-          // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
-          if (track.isIncluded) {
+    if (layer.isIncluded) {
+      layer.tracks.forEach((track) => {
+        // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
+        if (track.transformKeys.length > 0) {
+          if (track.property !== 'rotation') {
+            // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
+
             if (track.property === 'position') {
               if (transformKeysListForTargetId[track.targetId]) {
                 transformKeysListForTargetId[track.targetId].positionTransformKeysList.push(
@@ -77,8 +78,8 @@ const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngred
             }
           }
         }
-      }
-    });
+      });
+    }
   });
 
   Object.entries(transformKeysListForTargetId).forEach(([targetId, { target, positionTransformKeysList, rotationQuaternionTransformKeysList, scalingTransformKeysList }]) => {
