@@ -1,4 +1,4 @@
-import { BaseContextMenu, ContextMenuItem } from 'components/Contextmenu';
+import { BaseContextMenu, ContextMenuItem } from 'components/ContextMenu';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
