@@ -2,10 +2,10 @@ import { useCallback, useMemo, useEffect, useRef, FunctionComponent } from 'reac
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 
+import * as globalUIActions from 'actions/Common/globalUI';
 import * as trackListActions from 'actions/trackList';
 import { LayerTrack } from 'types/TP/track';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
-import { useBaseModal } from 'new_components/Modal/BaseModal';
 import { IconWrapper, SvgPath } from 'components/Icon';
 
 import CaretButton from './CaretButton';
@@ -24,7 +24,6 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
   const boneTrackList = useSelector((state) => state.trackList.boneTrackList);
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
-  const { onModalOpen, onModalClose } = useBaseModal();
 
   // 컨텍스트 메뉴 리스트
   const contextMenuList = useMemo(
@@ -43,24 +42,22 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
         label: 'Delete Layer',
         disabled: trackName === 'Base Layer' || isSelected,
         onClick: () => {
-          onModalOpen({
-            title: 'Delete Layer',
-            message: 'Are you sure you want to delete a animation layer?<br />This will delete all keyframes in this layer',
-            confirmText: 'Delete',
-            onConfirm: () => {
-              dispatch(trackListActions.clickDeleteLayerTrackButton({ id: trackId, name: trackName }));
-              onModalClose();
-            },
-            cancelText: 'Cancel',
-            onCancel: () => {
-              onModalClose();
-            },
-            confirmColor: 'negative',
-          });
+          dispatch(
+            globalUIActions.openModal('ConfirmModal', {
+              title: 'Delete Layer',
+              message: 'Are you sure you want to delete a animation layer?<br />This will delete all keyframes in this layer',
+              confirmText: 'Delete',
+              onConfirm: () => {
+                dispatch(trackListActions.clickDeleteLayerTrackButton({ id: trackId, name: trackName }));
+              },
+              cancelText: 'Cancel',
+              // confirmColor: 'error',
+            }),
+          );
         },
       },
     ],
-    [dispatch, onModalOpen, onModalClose, isSelected, trackId, trackName],
+    [dispatch, isSelected, trackId, trackName],
   );
 
   // 트랙 클릭

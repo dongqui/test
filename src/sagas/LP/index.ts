@@ -18,7 +18,7 @@ import {
 import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth, filterDeletedNode, createFolderNode } from 'utils/LP/FileSystem';
 import { createAnimationIngredientFromMocapData, createBvhMap } from 'utils/LP/Retarget';
 import { getFileExtension } from 'utils/common';
-import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
+import { forceClickAnimationPlayAndStop, forceClickAnimationPauseAndPlay, filterAnimatableTransformNodes, roundToFourth } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -51,6 +51,7 @@ function* handleDeleteModel(action: ReturnType<typeof lpNodeActions.deleteModel>
   yield put(plaskProjectActions.removeAsset({ assetId }));
   yield put(animationDataActions.removeAsset({ assetId }));
   yield put(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+  forceClickAnimationPlayAndStop();
 }
 
 function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotion>) {
@@ -78,6 +79,7 @@ function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotio
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
   yield put(animationDataActions.removeAnimationIngredient({ animationIngredientId: targetAnimationIngredient.id }));
   yield put(plaskProjectActions.removeAnimationIngredient({ assetId: assetId, animationIngredientId: targetAnimationIngredient.id }));
+  forceClickAnimationPlayAndStop();
 }
 
 function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirectory>) {
@@ -166,7 +168,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
           scene.addSkeleton(skeleton);
 
           const jointTransformNodes: BABYLON.TransformNode[] = [];
-
+          const armatureScalingFactor = bones.find((bone) => bone.name === 'Armature') ? bones.find((bone) => bone.name === 'Armature')!.scaling.x : 0.01;
           // joints 생성 및 scene들에 추가
           for (const bone of bones) {
             if (
@@ -178,6 +180,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
             ) {
               const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
               joint.id = `${assetId}//${bone.name}//joint`;
+              joint.state = roundToFourth(0.03 / armatureScalingFactor).toString();
               joint.renderingGroupId = 2;
               joint.attachToBone(bone, meshes[0]);
 
@@ -228,6 +231,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
           });
         }
       }
+      forceClickAnimationPlayAndStop();
     }
   }
 }
@@ -334,6 +338,7 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
       }),
     );
   }
+  forceClickAnimationPlayAndStop();
 }
 
 function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicateMotion>) {
@@ -724,6 +729,7 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
       if (dropNode.assetId) {
         yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
         yield put(lpNodeActions.visualizeNode(dropNode.assetId));
+        forceClickAnimationPlayAndStop();
       }
 
       yield put(globalUIActions.closeModal());

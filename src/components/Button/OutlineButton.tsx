@@ -1,15 +1,13 @@
 import { FunctionComponent, memo, ButtonHTMLAttributes, MouseEvent, useCallback } from 'react';
-
-import { ButtonColor } from 'types/common';
-
 import classNames from 'classnames/bind';
-import styles from './FilledButton.module.scss';
+import styles from './OutlineButton.module.scss';
 
 const cx = classNames.bind(styles);
 
 interface BaseProps {
   size?: 'small' | 'medium' | 'large';
-  color?: ButtonColor;
+  bolderColor?: 'secondary';
+  textColor?: 'light';
   text?: string;
   fullSize?: boolean;
 }
@@ -17,12 +15,13 @@ interface BaseProps {
 export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const defaultProps: Partial<BaseProps> = {
-  color: 'primary',
+  bolderColor: 'secondary',
+  textColor: 'light',
   size: 'small',
 };
 
-const FilledButton: FunctionComponent<Props> = ({ size, text, color, fullSize, disabled, onClick, className, children, ...rest }) => {
-  const classes = cx('filled', className, size, color, {
+const OutlineButton: FunctionComponent<Props> = ({ size, text, fullSize, disabled, bolderColor, textColor, onClick, className, children, ...rest }) => {
+  const classes = cx('outline', className, size, `border-color-${bolderColor}`, `text-color-${textColor}`, {
     disabled,
     fullSize,
   });
@@ -43,6 +42,6 @@ const FilledButton: FunctionComponent<Props> = ({ size, text, color, fullSize, d
   );
 };
 
-FilledButton.defaultProps = defaultProps;
+OutlineButton.defaultProps = defaultProps;
 
-export default memo(FilledButton);
+export default memo(OutlineButton);
