@@ -1,5 +1,6 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
 import produce from 'immer';
+import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as keyframesActions from 'actions/keyframes';
 import { RootState } from 'reducers';
@@ -127,7 +128,24 @@ function* worker() {
 
                   if (otherLayerTrack) {
                     const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
-                    newScaling = newScaling.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex));
+                    if (targetTransformKey) {
+                      const {
+                        value: { x, y, z },
+                      } = targetTransformKey;
+                      newScaling = new BABYLON.Vector3(
+                        x === 0 ? newScaling.x : newScaling.x / x,
+                        y === 0 ? newScaling.y : newScaling.y / y,
+                        z === 0 ? newScaling.z : newScaling.z / z,
+                      );
+                    } else {
+                      const interpolatedVector = getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex);
+                      const { x, y, z } = interpolatedVector;
+                      newScaling = new BABYLON.Vector3(
+                        x === 0 ? newScaling.x : newScaling.x / x,
+                        y === 0 ? newScaling.y : newScaling.y / y,
+                        z === 0 ? newScaling.z : newScaling.z / z,
+                      );
+                    }
                   }
                 });
 
