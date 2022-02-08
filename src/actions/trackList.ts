@@ -1,6 +1,6 @@
 import { PlaskLayer, PlaskTrack } from 'types/common';
 import { TrackType } from 'types/TP';
-import { LayerTrack, BoneTrack, PropertyTrack, PlaskLayerIdentifier } from 'types/TP/track';
+import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
 
 export type TrackListAction =
   | ReturnType<typeof initializeTrackList>
@@ -76,31 +76,47 @@ export const clickAddLayerTrackButton = () => ({
 });
 
 // 레이어 트랙 추가
-export const addLayerTrack = (params: PlaskLayerIdentifier) => ({
+export interface AddLayerTrack {
+  id: string;
+  name: string;
+}
+export const addLayerTrack = (params: AddLayerTrack) => ({
   type: ADD_LAYER_TRACK,
   payload: { ...params },
 });
 
 // 레이어 트랙 삭제 버튼 클릭
-export const clickDeleteLayerTrackButton = (params: PlaskLayerIdentifier) => ({
+export interface ClickDeleteLayerTrackButton {
+  id: string;
+}
+export const clickDeleteLayerTrackButton = (params: ClickDeleteLayerTrackButton) => ({
   type: CLICK_DELETE_LAYER_TRACK_BUTTON,
   payload: { ...params },
 });
 
 // 레이어 트랙 삭제
-export const deleteLayerTrack = (params: PlaskLayerIdentifier) => ({
+export interface DeleteLayerTrack {
+  id: string;
+}
+export const deleteLayerTrack = (params: DeleteLayerTrack) => ({
   type: DELETE_LAYER_TRACK,
   payload: { ...params },
 });
 
 // mute/unmute 버튼 클릭
-export const clickLayerTrackMuteButton = (params: PlaskLayerIdentifier) => ({
+export interface ClickLayerTrackMuteButton {
+  id: string;
+}
+export const clickLayerTrackMuteButton = (params: ClickLayerTrackMuteButton) => ({
   type: CLICK_LAYER_TRACK_MUTE_BUTTON,
   payload: { ...params },
 });
 
 // 레이어 트랙 mute/unmute
-export const muteLayerTrack = (params: PlaskLayerIdentifier) => ({
+export interface MuteLayerTrack {
+  id: string;
+}
+export const muteLayerTrack = (params: MuteLayerTrack) => ({
   type: MUTE_LAYER_TRACK,
   payload: { ...params },
 });
