@@ -12,6 +12,19 @@ export type TrackListAction =
   | ReturnType<typeof muteLayerTrack>
   | ReturnType<typeof changeTrackScrollTop>;
 
+export const INITIALIZE_TRACK_LIST = 'trackList/INITIALIZE_TRACK_LIST' as const;
+export const CHANGE_SELECTED_TARGETS = 'trackList/CHANGE_SELECTED_TARGETS' as const;
+export const CLICK_CARET_BUTTON = 'trackList/CLICK_CARET_BUTTON' as const;
+export const CLICK_TRACK_BODY = 'trackList/CLICK_TRACK_BODY' as const;
+export const CLICK_INTERPOLATION_MODE = 'trackList/CLICK_INTERPOLATION_MODE' as const;
+export const CLICK_ADD_LAYER_TRACK_BUTTON = 'trackList/CLICK_ADD_LAYER_TRACK_BUTTON' as const;
+export const ADD_LAYER_TRACK = 'trackList/ADD_LAYER_TRACK' as const;
+export const CLICK_DELETE_LAYER_TRACK_BUTTON = 'trackList/CLICK_DELETE_LAYER_TRACK_BUTTON' as const;
+export const DELETE_LAYER_TRACK = 'trackList/DELETE_LAYER_TRACK' as const;
+export const CLICK_LAYER_TRACK_MUTE_BUTTON = 'trackList/CLICK_LAYER_TRACK_MUTE_BUTTON' as const;
+export const MUTE_LAYER_TRACK = 'trackList/MUTE_LAYER_TRACK' as const;
+export const CHANGE_TRACK_SCROLL_TOP = 'trackList/CHANGE_TRACK_SCROLL_TOP' as const;
+
 // 트랙 리스트 생성
 export interface InitializeTrackList {
   list: PlaskLayer[] | PlaskTrack[];
@@ -19,11 +32,11 @@ export interface InitializeTrackList {
   clearAnimation?: boolean;
 }
 export const initializeTrackList = (params: InitializeTrackList) => ({
-  type: 'trackList/INITIALIZE_TRACK_LIST' as const,
+  type: INITIALIZE_TRACK_LIST,
   payload: { ...params },
 });
 
-export const CHANGE_SELECTED_TARGETS = 'trackList/CHANGE_SELECTED_TARGETS' as const;
+//
 export const changeSelectedTargets = () => ({
   type: CHANGE_SELECTED_TARGETS,
 });
@@ -33,7 +46,7 @@ export type ClickLayerCaretButton = Pick<LayerTrack, 'isPointedDownCaret' | 'tra
 export type ClickBoneCaretButton = Pick<BoneTrack, 'isPointedDownCaret' | 'trackNumber' | 'trackType'>;
 export type ClickCaretButton = ClickLayerCaretButton | ClickBoneCaretButton;
 export const clickCaretButton = (params: ClickCaretButton) => ({
-  type: 'trackList/CLICK_CARET_BUTTON' as const,
+  type: CLICK_CARET_BUTTON,
   payload: { ...params },
 });
 
@@ -46,52 +59,65 @@ export type ClickLayerTrackBody = Pick<LayerTrack, 'trackId'> & ClickTrackBody;
 export type ClickBoneTrackBody = Pick<BoneTrack, 'trackNumber'> & ClickTrackBody;
 export type ClickPropertyTrackBody = Pick<PropertyTrack, 'trackNumber'> & ClickTrackBody;
 export const clickTrackBody = (params: ClickTrackBody) => ({
-  type: 'trackList/CLICK_TRACK_BODY' as const,
+  type: CLICK_TRACK_BODY,
   payload: { ...params },
 });
 
 // interpolation mode 버튼 클릭
 export type ClickInterpolationMode = Pick<PropertyTrack, 'interpolationType'>;
 export const clickInterpolationMode = (params: ClickInterpolationMode) => ({
-  type: 'trackList/CLICK_INTERPOLATION_MODE' as const,
+  type: CLICK_INTERPOLATION_MODE,
   payload: { ...params },
 });
 
 // 레이어 트랙 추가 버튼 클릭
-export const CLICK_ADD_LAYER_TRACK_BUTTON = 'trackList/CLICK_ADD_LAYER_TRACK_BUTTON' as const;
 export const clickAddLayerTrackButton = () => ({
   type: CLICK_ADD_LAYER_TRACK_BUTTON,
 });
 
 // 레이어 트랙 추가
-export const addLayerTrack = (params: PlaskLayer) => ({
-  type: 'trackList/ADD_LAYER_TRACK' as const,
+export interface AddLayerTrack {
+  id: string;
+  name: string;
+}
+export const addLayerTrack = (params: AddLayerTrack) => ({
+  type: ADD_LAYER_TRACK,
   payload: { ...params },
 });
 
 // 레이어 트랙 삭제 버튼 클릭
-export const CLICK_DELETE_LAYER_TRACK_BUTTON = 'trackList/CLICK_DELETE_LAYER_TRACK_BUTTON' as const;
-export const clickDeleteLayerTrackButton = (params: PlaskLayer) => ({
+export interface ClickDeleteLayerTrackButton {
+  id: string;
+}
+export const clickDeleteLayerTrackButton = (params: ClickDeleteLayerTrackButton) => ({
   type: CLICK_DELETE_LAYER_TRACK_BUTTON,
   payload: { ...params },
 });
 
 // 레이어 트랙 삭제
-export const deleteLayerTrack = (params: PlaskLayer) => ({
-  type: 'trackList/DELETE_LAYER_TRACK' as const,
+export interface DeleteLayerTrack {
+  id: string;
+}
+export const deleteLayerTrack = (params: DeleteLayerTrack) => ({
+  type: DELETE_LAYER_TRACK,
   payload: { ...params },
 });
 
 // mute/unmute 버튼 클릭
-export const CLICK_LAYER_TRACK_MUTE_BUTTON = 'trackList/CLICK_LAYER_TRACK_MUTE_BUTTON' as const;
-export const clickLayerTrackMuteButton = (params: PlaskLayer) => ({
+export interface ClickLayerTrackMuteButton {
+  id: string;
+}
+export const clickLayerTrackMuteButton = (params: ClickLayerTrackMuteButton) => ({
   type: CLICK_LAYER_TRACK_MUTE_BUTTON,
   payload: { ...params },
 });
 
 // 레이어 트랙 mute/unmute
-export const muteLayerTrack = (params: PlaskLayer) => ({
-  type: 'trackList/MUTE_LAYER_TRACK' as const,
+export interface MuteLayerTrack {
+  id: string;
+}
+export const muteLayerTrack = (params: MuteLayerTrack) => ({
+  type: MUTE_LAYER_TRACK,
   payload: { ...params },
 });
 
@@ -100,6 +126,6 @@ interface ChangeTrackScrollTop {
   scrollTop: number;
 }
 export const changeTrackScrollTop = (params: ChangeTrackScrollTop) => ({
-  type: 'trackList/CHANGE_TRACK_SCROLL_TOP' as const,
+  type: CHANGE_TRACK_SCROLL_TOP,
   payalod: { ...params },
 });

@@ -41,7 +41,7 @@ const createPlaskTrack = (name: string, layerId: string, target: any, property: 
     // useFilter: isMocapAnimation ? true : false, // mocap 결과물의 경우에만 기본으로 filter를 적용합니다.
     filterBeta,
     filterMinCutoff,
-    isIncluded: true,
+    // isIncluded: true,
     isLocked: false,
   };
 };

@@ -11,25 +11,30 @@ import { getRandomStringKey } from 'utils/common';
 const duplicateAnimationIngredient = (animationIngredient: AnimationIngredient, afterName: string): AnimationIngredient => {
   const layerIdMap: { [id in string]: string } = {};
 
-  const { name, assetId, tracks, layers } = animationIngredient;
+  const { name, assetId, layers } = animationIngredient;
 
   const newLayers: PlaskLayer[] = [];
-  const newTracks: PlaskTrack[] = [];
 
   layers.forEach((layer) => {
-    const newLayerId = layer.id.includes('baseLayer//') ? `baseLayer//${getRandomStringKey()}` : getRandomStringKey();
-    layerIdMap[layer.id] = newLayerId;
-    newLayers.push({ id: newLayerId, name: layer.name });
-  });
+    const isBaseLayer = layer.id.includes('baseLayer//');
 
-  tracks.forEach((track) => {
-    const newTrack: PlaskTrack = {
-      ...track,
-      id: `${layerIdMap[track.layerId]}//${track.targetId}//${track.property}`,
-      layerId: layerIdMap[track.layerId],
-      transformKeys: cloneDeep(track.transformKeys),
-    };
-    newTracks.push(newTrack);
+    const newLayerId = isBaseLayer ? `baseLayer//${getRandomStringKey()}` : getRandomStringKey();
+    layerIdMap[layer.id] = newLayerId;
+
+    const { tracks } = layer;
+    const newTracks: PlaskTrack[] = [];
+
+    tracks.forEach((track) => {
+      const newTrack: PlaskTrack = {
+        ...track,
+        id: `${layerIdMap[track.layerId]}//${track.targetId}//${track.property}`,
+        layerId: layerIdMap[track.layerId],
+        transformKeys: cloneDeep(track.transformKeys),
+      };
+      newTracks.push(newTrack);
+    });
+
+    newLayers.push({ id: newLayerId, name: layer.name, isIncluded: true, tracks: newTracks });
   });
 
   const newAnimationIngredient = {
@@ -37,7 +42,6 @@ const duplicateAnimationIngredient = (animationIngredient: AnimationIngredient, 
     name: afterName || name,
     assetId: assetId,
     current: false,
-    tracks: newTracks,
     layers: newLayers,
   };
 

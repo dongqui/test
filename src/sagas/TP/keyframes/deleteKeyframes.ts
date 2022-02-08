@@ -17,6 +17,10 @@ function getAnimationIngredients(state: RootState) {
   return state.animationData.animationIngredients;
 }
 
+function getSelectedLayer(state: RootState) {
+  return state.trackList.selectedLayer;
+}
+
 // 키프레임 삭제 비즈니스 로직
 function* worker() {
   const selectedPropertyKeyframes = getSelectedPropertyKeyframes(yield select());
@@ -26,30 +30,34 @@ function* worker() {
   // 이후부터 RP쪽 액션 호출 부분
   const { animationIngredientId: targetAnimationIngredientId, layerId: targetLayerId, transformKeys: targetTransformKeys } = updatedPropertyKeyframes;
   const animationIngredients = getAnimationIngredients(yield select());
+  const selectedLayer = getSelectedLayer(yield select());
   const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === targetAnimationIngredientId);
   if (targetAnimationIngredient) {
     const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
-      let targetTrack: WritableDraft<PlaskTrack> | undefined;
-      targetTransformKeys.forEach((targetTransformKey) => {
-        const { from, to, trackId, value } = targetTransformKey;
-        // 첫 track이거나 track 변경시 targetTrack 변경
-        if (isUndefined(targetTrack) || (targetTrack && targetTrack.id !== trackId)) {
-          targetTrack = draft.tracks.find((track) => track.id === trackId); // targetTrack 업데이트
-        }
-        if (targetTrack) {
-          // from key 삭제
-          targetTrack.transformKeys = targetTrack.transformKeys.filter((transformKey) => transformKey.frame !== targetTransformKey.from);
+      const targetLayer = draft.layers.find((layer) => layer.id === selectedLayer);
+      if (targetLayer) {
+        let targetTrack: WritableDraft<PlaskTrack> | undefined;
+        targetTransformKeys.forEach((targetTransformKey) => {
+          const { from, to, trackId, value } = targetTransformKey;
+          // 첫 track이거나 track 변경시 targetTrack 변경
+          if (isUndefined(targetTrack) || (targetTrack && targetTrack.id !== trackId)) {
+            targetTrack = targetLayer.tracks.find((track) => track.id === trackId); // targetTrack 업데이트
+          }
+          if (targetTrack) {
+            // from key 삭제
+            targetTrack.transformKeys = targetTrack.transformKeys.filter((transformKey) => transformKey.frame !== targetTransformKey.from);
 
-          // rotation track의 경우 rotationQuaternion track도 함께 변경해줘야 함
-          if (targetTrack.property === 'rotation') {
-            // peerTrack find 로직도 targetTrack과 비슷하게 변경가능할 듯
-            const peerTrack = draft.tracks.find((track) => track.id === targetTransformKey.trackId.replace('//rotation', '//rotationQuaternion'));
-            if (peerTrack) {
-              peerTrack.transformKeys = peerTrack.transformKeys.filter((transformKey) => transformKey.frame !== from);
+            // rotation track의 경우 rotationQuaternion track도 함께 변경해줘야 함
+            if (targetTrack.property === 'rotation') {
+              // peerTrack find 로직도 targetTrack과 비슷하게 변경가능할 듯
+              const peerTrack = targetLayer.tracks.find((track) => track.id === targetTransformKey.trackId.replace('//rotation', '//rotationQuaternion'));
+              if (peerTrack) {
+                peerTrack.transformKeys = peerTrack.transformKeys.filter((transformKey) => transformKey.frame !== from);
+              }
             }
           }
-        }
-      });
+        });
+      }
     });
     yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
   }
