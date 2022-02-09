@@ -1,0 +1,32 @@
+@import "styles/libraries/_mixins";
+
+@import "styles/libraries/_functions";
+
+.menu-item {
+  @include reset-list-style();
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-bottom: 4px;
+
+  &:last-child {
+    margin: 0;
+  }
+
+  &:hover {
+    background-color: #0f88ff;
+    color: #fff;
+  }
+
+  &:focus {
+    background-color: #0f88ff;
+    color: #fff;
+  }
+
+  &,
+  a {
+    font-size: 11px;
+    color: #d3d3d3;
+    text-decoration: none;
+  }
+}
