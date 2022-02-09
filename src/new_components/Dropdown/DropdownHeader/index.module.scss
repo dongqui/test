@@ -1,0 +1,20 @@
+@import "styles/libraries/_mixins";
+
+@import "styles/libraries/_functions";
+
+.header {
+  @include reset-button-style();
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 300;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 6px;
+  padding: 0;
+  margin: 0;
+
+  &.expanded {
+    background: #4f4f4f;
+  }
+}
