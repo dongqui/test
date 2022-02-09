@@ -1,0 +1,19 @@
+.menu {
+  position: absolute;
+  background-color: #202122;
+  min-width: 72px;
+  color: #a7a7a7;
+  padding: 6px;
+  margin: 4px 0 0;
+  max-height: 10rem;
+  border-radius: 6px;
+  border: 1px solid var(--gray300);
+  overflow: hidden;
+  z-index: 999;
+  letter-spacing: 1px;
+  overflow-y: scroll;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
