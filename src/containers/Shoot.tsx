@@ -105,6 +105,8 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
     [panelWidth.control],
   );
 
+  const screenVisibilityWrapper = document.querySelector('#screenVisibilityWrapper') as HTMLDivElement;
+
   const handleCPResizeStart = useCallback((_e: SyntheticEvent, _data: ResizeCallbackData) => {
     isResizingCP.current = true;
   }, []);
@@ -116,26 +118,35 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
         library: panelWidth.library,
         control: _data.size.width,
       });
+      if (screenVisibilityWrapper) {
+        screenVisibilityWrapper.style.marginRight = `${_data.size.width - 272}px`;
+      }
     },
-    [windowWidth, panelWidth.library],
+    [panelWidth.library, screenVisibilityWrapper, windowWidth],
   );
 
   const handleCPResizeStop = useCallback(
     (_e: SyntheticEvent, data: ResizeCallbackData) => {
       showCPWidth.current = windowWidth - (_e as any).clientX;
+      let marginRight: number;
       if (showCPWidth.current <= 140) {
         setPanelWidth({
           library: panelWidth.library,
           control: 32,
         });
+        marginRight = 32 - 272;
       } else {
         setPanelWidth({
           library: panelWidth.library,
           control: data.size.width,
         });
+        marginRight = data.size.width - 272;
+      }
+      if (screenVisibilityWrapper) {
+        screenVisibilityWrapper.style.marginRight = `${marginRight}px`;
       }
     },
-    [panelWidth.library, showCPWidth, windowWidth],
+    [panelWidth.library, screenVisibilityWrapper, windowWidth],
   );
 
   useEffect(() => {
@@ -170,6 +181,9 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
           });
         }
         isTargetingCP.current = false;
+        if (screenVisibilityWrapper) {
+          screenVisibilityWrapper.style.marginRight = `${panelWidth.control - 272}px`;
+        }
       }
     }, 200);
 
@@ -180,7 +194,7 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [panelWidth.library, windowWidth]);
+  }, [panelWidth.control, panelWidth.library, screenVisibilityWrapper, windowWidth]);
 
   useEffect(() => {
     const prevWindowHeight = sectionHeight.upperSection + sectionHeight.lowerSection + constants.height.up;

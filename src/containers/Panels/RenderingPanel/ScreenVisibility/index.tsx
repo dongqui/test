@@ -36,7 +36,7 @@ const ScreenVisibility: FunctionComponent<Props> = ({ itemList }) => {
   }, []);
 
   return (
-    <div className={cx('wrapper')} ref={wrapperRef}>
+    <div id="screenVisibilityWrapper" className={cx('wrapper')} ref={wrapperRef}>
       <div className={cx('header', { open: isOpen })}>
         <button type="button" className={cx('toggle-button')} onClick={handleToggleButtonClick}>
           <IconWrapper className={cx('eye')} icon={SvgPath.EyeOpenWhite} />
