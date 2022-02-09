@@ -1,32 +1,33 @@
+import { BaseContextMenu, ContextMenuItem } from 'components/ContextMenu';
 import { useDispatch } from 'react-redux';
-
-import { BaseContextMenu, ContextMenuItem } from 'components/Contextmenu';
 import { useSelector } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
+
 interface Props {
   nodeId: string;
-  parentId: string;
-  nodeName: string;
   assetId: string;
+  parentId: string;
   type: string;
+  nodeName: string;
+  childrens: string[];
 }
 
-const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props) => {
+const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childrens }: Props) => {
   const dispatch = useDispatch();
-  const { lpNode, plaskProject, animationData } = useSelector((state) => state);
+  const { animationData, lpNode, plaskProject } = useSelector((state) => state);
   const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
 
   const handleDelete = () => {
     dispatch(
       globalUIActions.openModal('ConfirmModal', {
-        title: 'Delete Folder',
-        // TODO: MOTION 삭제 메세지
+        title: 'Delete Model',
+        // TODO: 모델에 맞는 모달 메세지
         message: 'Are you sure? All files in the directory will be deleted.',
+        confirmButtonColor: 'error',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteMotion({ nodeId, parentId, assetId }));
+          dispatch(lpNodeActions.deleteModel({ nodeId, assetId, parentId }));
         },
-        onCancel: () => {},
       }),
     );
   };
@@ -35,29 +36,29 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
     dispatch(lpNodeActions.setEditingNodeId(nodeId));
   };
 
-  const handleDuplicate = () => {
-    dispatch(
-      lpNodeActions.duplicateMotion({
-        nodeId,
-        parentId,
-        nodeName,
-      }),
-    );
-  };
-
   const handleVisualize = () => {
-    dispatch(
-      lpNodeActions.visualizeMotion({
-        nodeId,
-        parentId,
-        assetId,
-      }),
-    );
+    const hasMotions = childrens.length !== 0;
+
+    if (!hasMotions) {
+      dispatch(lpNodeActions.addEmptyMotion({ nodeId, assetId }));
+    }
+    dispatch(lpNodeActions.visualizeNode(assetId));
   };
 
   const handleCancelVisualization = () => {
     if (assetId) {
       dispatch(lpNodeActions.cancelVisulization(assetId));
+    }
+  };
+
+  const handleAddEmptyMotion = () => {
+    if (assetId) {
+      dispatch(
+        lpNodeActions.addEmptyMotion({
+          nodeId,
+          assetId,
+        }),
+      );
     }
   };
 
@@ -87,15 +88,19 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
     <BaseContextMenu>
       <ContextMenuItem onClick={handleDelete}>Delete</ContextMenuItem>
       <ContextMenuItem onClick={handleEditName}>Edit name</ContextMenuItem>
-      <ContextMenuItem onClick={handleDuplicate}>Duplicate</ContextMenuItem>
-      {/* <ContextMenuItem>Copy</ContextMenuItem>
-      <ContextMenuItem>Paste</ContextMenuItem> */}
+      {/* <ContextMenuItem onClick={handleClickItem}>
+        Copy
+      </ContextMenuItem>
+      <ContextMenuItem onClick={handleClickItem}>
+        Paste
+      </ContextMenuItem> */}
       <ContextMenuItem onClick={handleVisualize} disabled={isCurrentVisualizedNode}>
         Visualization
       </ContextMenuItem>
       <ContextMenuItem onClick={handleCancelVisualization} disabled={!isCurrentVisualizedNode}>
         Visualization cancel
       </ContextMenuItem>
+      <ContextMenuItem onClick={handleAddEmptyMotion}>Add empty motion</ContextMenuItem>
       <ContextMenuItem onClick={handleExport} disabled={!isCurrentVisualizedNode}>
         Export
       </ContextMenuItem>
@@ -103,4 +108,4 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
   );
 };
 
-export default MotionContextMenu;
+export default ModelContextMenu;

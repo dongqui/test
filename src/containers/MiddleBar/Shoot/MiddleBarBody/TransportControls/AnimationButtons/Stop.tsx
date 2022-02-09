@@ -31,7 +31,7 @@ const Stop: FunctionComponent<Props> = (props) => {
 
   const handleStopButtonClick = useCallback(() => {
     if (_playState !== 'stop') {
-      if (_currentAnimationGroup && _currentAnimationGroup.isStarted) {
+      if (_currentAnimationGroup) {
         _currentAnimationGroup.goToFrame(_startTimeIndex).stop();
       }
       translateScrubber();

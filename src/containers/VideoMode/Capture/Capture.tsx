@@ -200,7 +200,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
     const result = await axios({
       method: 'POST',
-      url: 'https://shootapimain.myplask.com:6500/mocap-upload-api-common',
+      url: 'https://shootapi.myplask.com:6500/mocap-upload-api-common',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
       cancelToken: new axios.CancelToken((cancel) => {

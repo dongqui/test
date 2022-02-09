@@ -1,23 +1,22 @@
 import { useDispatch } from 'react-redux';
 
-import { BaseContextMenu, ContextMenuItem } from 'components/Contextmenu';
+import { BaseContextMenu, ContextMenuItem } from 'components/ContextMenu';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 
 interface Props {
   nodeId: string;
-  extension: string;
-  filePath: string;
-  parentId?: string;
+  parentId: string;
 }
 
-const FolderContextMenu = ({ nodeId, extension, filePath, parentId }: Props) => {
+const MocapContextMenu = ({ nodeId, parentId }: Props) => {
   const dispatch = useDispatch();
 
   const handleDelete = () => {
     dispatch(
       globalUIActions.openModal('ConfirmModal', {
-        title: 'Delete Folder',
+        title: 'Delete Mocap',
+        // TODO: MOTION 삭제 메세지
         message: 'Are you sure? All files in the directory will be deleted.',
         onConfirm: () => {
           dispatch(lpNodeActions.deleteFolderOrMocap({ nodeId, parentId }));
@@ -31,29 +30,12 @@ const FolderContextMenu = ({ nodeId, extension, filePath, parentId }: Props) => 
     dispatch(lpNodeActions.setEditingNodeId(nodeId));
   };
 
-  const handleNewDirectory = () => {
-    dispatch(
-      lpNodeActions.addDirectory({
-        nodeId,
-        extension,
-        filePath,
-      }),
-    );
-  };
-
   return (
     <BaseContextMenu>
       <ContextMenuItem onClick={handleDelete}>Delete</ContextMenuItem>
       <ContextMenuItem onClick={handleEditName}>Edit name</ContextMenuItem>
-      {/* <ContextMenuItem  onClick={}>
-        Copy
-      </ContextMenuItem>
-      <ContextMenuItem  onClick={}>
-        Paste
-      </ContextMenuItem> */}
-      <ContextMenuItem onClick={handleNewDirectory}>New directory</ContextMenuItem>
     </BaseContextMenu>
   );
 };
 
-export default FolderContextMenu;
+export default MocapContextMenu;
