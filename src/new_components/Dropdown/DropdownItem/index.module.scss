@@ -1,0 +1,39 @@
+@import "styles/libraries/_mixins";
+
+@import "styles/libraries/_functions";
+
+.menu-item {
+  @include reset-list-style();
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-bottom: 4px;
+
+  &:last-child {
+    margin: 0;
+  }
+
+  &,
+  a {
+    font-size: 11px;
+    color: var(--gray600);
+    text-decoration: none;
+  }
+
+  &:not(.disabled) {
+    &:hover {
+      background-color: var(--blue200);
+    }
+  }
+
+  &.disabled {
+    color: var(--gray500);
+  }
+
+  &.disabled:hover {
+    &,
+    a {
+      cursor: default;
+    }
+  }
+}
