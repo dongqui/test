@@ -816,7 +816,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
       const ingredients = motion === 'all' ? currentModelAnimationIngredients : filter(currentModelAnimationIngredients, { id: motion });
 
       ingredients.forEach((animationIngredient) => {
-        const animationGroup = createAnimationGroupFromIngredient(animationIngredient, fps, true);
+        const animationGroup = createAnimationGroupFromIngredient(animationIngredient, fps);
       });
     }
 
