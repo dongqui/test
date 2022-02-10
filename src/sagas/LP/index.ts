@@ -294,29 +294,26 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
       .map((filteredNode) => filteredNode.name);
 
     const check = checkCreateDuplicates('empty motion', currentPathNodeName);
-
     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
-
-    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, false);
+    const parentModel = find(cloneLPNode, { id: nodeId });
+    const animationIngredientCurrent = parentModel?.childrens.length === 0;
+    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
 
     const afterNodes = produce(cloneLPNode, (draft) => {
-      const parentModel = find(draft, { id: nodeId });
-      if (parentModel) {
-        parentModel.childrens.push(nextAnimationIngredient.id);
-        const motion: LP.Node = {
-          id: nextAnimationIngredient.id,
-          // parentId: nextAnimationIngredient.assetId,
-          assetId: assetId,
-          parentId: nodeId,
-          name: nextAnimationIngredient.name,
-          filePath: parentModel.filePath + `\\${parentModel.name}`,
-          childrens: [],
-          extension: '',
-          type: 'Motion',
-        };
+      parentModel?.childrens.push(nextAnimationIngredient.id);
+      const motion: LP.Node = {
+        id: nextAnimationIngredient.id,
+        // parentId: nextAnimationIngredient.assetId,
+        assetId: assetId,
+        parentId: nodeId,
+        name: nextAnimationIngredient.name,
+        filePath: parentModel?.filePath + `\\${parentModel?.name}`,
+        childrens: [],
+        extension: '',
+        type: 'Motion',
+      };
 
-        draft.push(motion);
-      }
+      draft.push(motion);
     });
 
     yield put(
