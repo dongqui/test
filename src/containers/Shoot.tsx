@@ -119,7 +119,7 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
         control: _data.size.width,
       });
       if (screenVisibilityWrapper) {
-        screenVisibilityWrapper.style.marginRight = `${_data.size.width - 272}px`;
+        screenVisibilityWrapper.style.marginRight = `${_data.size.width - 256}px`;
       }
     },
     [panelWidth.library, screenVisibilityWrapper, windowWidth],
@@ -134,13 +134,13 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
           library: panelWidth.library,
           control: 32,
         });
-        marginRight = 32 - 272;
+        marginRight = 32 - 256;
       } else {
         setPanelWidth({
           library: panelWidth.library,
           control: data.size.width,
         });
-        marginRight = data.size.width - 272;
+        marginRight = data.size.width - 256;
       }
       if (screenVisibilityWrapper) {
         screenVisibilityWrapper.style.marginRight = `${marginRight}px`;
@@ -182,7 +182,7 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
         }
         isTargetingCP.current = false;
         if (screenVisibilityWrapper) {
-          screenVisibilityWrapper.style.marginRight = `${panelWidth.control - 272}px`;
+          screenVisibilityWrapper.style.marginRight = `${panelWidth.control - 256}px`;
         }
       }
     }, 200);
