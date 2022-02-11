@@ -649,7 +649,6 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
             draggedNodeClone.assetId = mocapAnimationIngredient.assetId;
             draggedNodeClone.name = nodeName;
             draggedNodeClone.parentId = nodeId;
-            // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${draggedNodeClone.name}`;
             draggedNodeClone.filePath = filePath + `\\${nodeName}`;
             draggedNodeClone.type = 'Motion';
 
@@ -724,7 +723,6 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
           draggedNodeClone.assetId = mocapAnimationIngredient.assetId;
           draggedNodeClone.id = mocapAnimationIngredient.id;
           draggedNodeClone.parentId = nodeId;
-          // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${nodeName}`;
           draggedNodeClone.filePath = filePath + `\\${nodeName}`;
           draggedNodeClone.name = nodeName;
           draggedNodeClone.type = 'Motion';
