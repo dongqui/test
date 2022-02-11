@@ -18,7 +18,7 @@ import {
 import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth, filterDeletedNode, createFolderNode } from 'utils/LP/FileSystem';
 import { createAnimationIngredientFromMocapData, createBvhMap } from 'utils/LP/Retarget';
 import { getFileExtension } from 'utils/common';
-import { forceClickAnimationPlayAndStop, forceClickAnimationPauseAndPlay, filterAnimatableTransformNodes, roundToFourth } from 'utils/common';
+import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes, roundToFourth } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -737,10 +737,6 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
           draft.push({
             ...restObject,
           });
-
-          if (draggedNodeClone.childrens.length > 0) {
-            draggedNodeClone.childrens.map((child) => changeNodeDepthById(draft, child, draggedNodeClone));
-          }
         }
       });
 
