@@ -38,9 +38,10 @@ const LPBody: FunctionComponent<Props> = () => {
   };
 
   const handleDrop = () => {
-    if (!draggedNode || draggedNode?.parentId === '__root__') {
+    if (!draggedNode || draggedNode?.parentId === '__root__' || draggedNode.type === 'Motion') {
       return;
     }
+
     dispatch(lpNodeActions.dropNodeOnRoot());
   };
 
