@@ -23,6 +23,7 @@ export const DELETE_MOTION = 'node/DELETE_MOTION' as const;
 export const FILE_UPLOAD = 'node/FILE_UPLOAD' as const;
 export const ADD_NODES = 'node/ADD_NODES' as const;
 export const DELETE_MODEL = 'node/DELETE_MODEL' as const;
+export const DROP_NODE_ON_ROOT = 'node/DROP_NODE_ON_ROOT' as const;
 
 interface ChangeNodeParams {
   nodes: LP.Node[];
@@ -258,6 +259,11 @@ export const addNodes = (nodes: LP.Node[]) => ({
   },
 });
 
+export const dropNodeOnRoot = () => ({
+  type: DROP_NODE_ON_ROOT,
+  payload: {},
+});
+
 export type LPNodeAction =
   | ReturnType<typeof changeNode>
   | ReturnType<typeof visualize>
@@ -278,4 +284,5 @@ export type LPNodeAction =
   | ReturnType<typeof editNodeName>
   | ReturnType<typeof exportAsset>
   | ReturnType<typeof fileUpload>
-  | ReturnType<typeof addNodes>;
+  | ReturnType<typeof addNodes>
+  | ReturnType<typeof dropNodeOnRoot>;

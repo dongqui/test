@@ -538,6 +538,36 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
   yield put(lpNodeActions.setDraggedNode(null));
 }
 
+function* handleDropNodeOnRoot() {
+  const { lpNode }: RootState = yield select();
+  const { draggedNode, nodes } = lpNode;
+
+  if (!draggedNode) {
+    return;
+  }
+
+  const nextNodes = produce(nodes, (draft) => {
+    const _draggedNode = find(draft, { id: draggedNode.id });
+    if (!_draggedNode) {
+      return;
+    }
+
+    _draggedNode.parentId = '__root__';
+    _draggedNode.filePath = '\\root';
+
+    if (_draggedNode.childrens.length > 0) {
+      _draggedNode.childrens.map((child) => changeNodeDepthById(draft, child, _draggedNode));
+    }
+
+    const parentNode = find(draft, { id: draggedNode.parentId });
+    if (parentNode) {
+      parentNode.childrens = parentNode.childrens.filter((childId) => childId !== _draggedNode.id);
+    }
+  });
+
+  yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+}
+
 function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
   const { lpNode, plaskProject, animationData }: RootState = yield select();
   const { draggedNode, nodes } = lpNode;
@@ -920,6 +950,7 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.DELETE_MODEL, handleDeleteModel),
     takeLatest(lpNodeActions.DELETE_FOLDER_OR_MOCAP, handleDeleteFolderOrMocap),
     takeEvery(lpNodeActions.FILE_UPLOAD, fileUpload),
+    takeEvery(lpNodeActions.DROP_NODE_ON_ROOT, handleDropNodeOnRoot),
     watchClickJointChaneel(),
   ]);
 }
