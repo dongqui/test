@@ -11,7 +11,6 @@ const changeNodeDepthById = (nodes: LP.Node[], childId: string, parentNode: LP.N
   let memory: string[] = [];
 
   if (changeNode) {
-    changeNode.id = uuid();
     changeNode.parentId = parentNode.id;
     changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
 

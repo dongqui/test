@@ -517,9 +517,7 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
 
     const targetFolder = find(draft, { id: nodeId });
     if (targetFolder) {
-      draggedNodeClone.id = uuid();
       draggedNodeClone.parentId = nodeId;
-      // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${nodeName}`;
       draggedNodeClone.filePath = filePath + `\\${targetFolder.name}`;
       draggedNodeClone.name = nodeName;
 
@@ -663,10 +661,6 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
             draft.push({
               ...restObject,
             });
-
-            if (draggedNodeClone.childrens.length > 0) {
-              draggedNodeClone.childrens.map((child) => changeNodeDepthById(draft, child, draggedNodeClone));
-            }
           }
         });
 
