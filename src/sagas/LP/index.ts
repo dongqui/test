@@ -535,6 +535,7 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
   });
 
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+  yield put(lpNodeActions.setDraggedNode(null));
 }
 
 function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
@@ -750,6 +751,8 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
       }),
     );
   }
+
+  yield put(lpNodeActions.setDraggedNode(null));
 }
 
 function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeName>) {

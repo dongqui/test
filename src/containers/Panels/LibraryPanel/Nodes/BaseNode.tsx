@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { useSelector } from 'reducers';
@@ -61,7 +61,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd }: Props)
     e.stopPropagation();
     const draggedNode = nodes.find((node) => node.id === id);
     if (draggedNode) {
-      dispatch(lpNodeActions.dragNodeStart(draggedNode));
+      dispatch(lpNodeActions.setDraggedNode(draggedNode));
     }
   };
 
