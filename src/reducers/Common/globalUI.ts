@@ -4,11 +4,13 @@ import * as globalUIActions from 'actions/Common/globalUI';
 interface State {
   modal: Modal | null;
   contextMenu: ContextMenu | null;
+  isShowedOnboarding: boolean;
 }
 
 const defaultState: State = {
   modal: null,
   contextMenu: null,
+  isShowedOnboarding: false,
 };
 
 export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIActions) => {
@@ -35,6 +37,14 @@ export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIA
     case globalUIActions.CLOSE_CONTEXT_MENU:
       return Object.assign(state, {
         contextMenu: null,
+      });
+    case globalUIActions.OPEN_ONBOARDING:
+      return Object.assign({}, state, {
+        isShowedOnboarding: true,
+      });
+    case globalUIActions.CLOSE_ONBOARDING:
+      return Object.assign({}, state, {
+        isShowedOnboarding: false,
       });
     default:
       return state;
