@@ -93,10 +93,10 @@ const OnboardingModal: FunctionComponent<Props> = (props) => {
 
   // 리사이즈 시 온보딩 모달 위치 조정
   useEffect(() => {
-    const debouncedThing = debounce(translateOnboardingModal, 30);
-    window.addEventListener('resize', debouncedThing);
+    const debouncedModalTranslation = debounce(translateOnboardingModal, 30);
+    window.addEventListener('resize', debouncedModalTranslation);
     return () => {
-      window.removeEventListener('resize', debouncedThing);
+      window.removeEventListener('resize', debouncedModalTranslation);
     };
   }, [translateOnboardingModal]);
 
