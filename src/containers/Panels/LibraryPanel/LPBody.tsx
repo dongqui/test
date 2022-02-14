@@ -19,7 +19,7 @@ interface Props {
 
 const LPBody: FunctionComponent<Props> = () => {
   const dispatch = useDispatch();
-  const { nodes } = useSelector((state) => state.lpNode);
+  const { nodes, draggedNode } = useSelector((state) => state.lpNode);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,10 +37,18 @@ const LPBody: FunctionComponent<Props> = () => {
     dispatch(lpNodeActions.selectNode({ nodeId: null, assetId: null }));
   };
 
+  const handleDrop = () => {
+    if (!draggedNode || draggedNode?.parentId === '__root__' || draggedNode.type === 'Motion') {
+      return;
+    }
+
+    dispatch(lpNodeActions.dropNodeOnRoot());
+  };
+
   const rootPathNodes = nodes.filter((node) => node.parentId === '__root__');
 
   return (
-    <div className={cx('inner')} onContextMenu={handleContextMenu} onClickCapture={handleClick}>
+    <div className={cx('inner')} onContextMenu={handleContextMenu} onClickCapture={handleClick} onDrop={handleDrop}>
       {rootPathNodes.map((node) => (
         <div className={cx('node-row')} key={node.id}>
           <ListNode node={node} />
