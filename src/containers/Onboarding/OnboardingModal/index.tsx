@@ -63,7 +63,7 @@ const OnboardingModal: FunctionComponent<Props> = (props) => {
   }, [targetRef]);
 
   // 온보딩 모달 위치 이동
-  const translateOnboarindModal = useCallback(() => {
+  const translateOnboardingModal = useCallback(() => {
     const currentModalRef = modalRef.current;
     const targetCoordinates = getTargetCoordinates();
     if (currentModalRef && targetCoordinates) {
@@ -86,19 +86,19 @@ const OnboardingModal: FunctionComponent<Props> = (props) => {
   // 최초에 온보딩 모달을 target ref 주변에 알맞은 위치로 이동
   useEffect(() => {
     setTimeout(() => {
-      translateOnboarindModal();
+      translateOnboardingModal();
       setIsMoved(true);
     }, 0);
-  }, [translateOnboarindModal]);
+  }, [translateOnboardingModal]);
 
   // 리사이즈 시 온보딩 모달 위치 조정
   useEffect(() => {
-    const debouncedThing = debounce(translateOnboarindModal, 30);
+    const debouncedThing = debounce(translateOnboardingModal, 30);
     window.addEventListener('resize', debouncedThing);
     return () => {
       window.removeEventListener('resize', debouncedThing);
     };
-  }, [translateOnboarindModal]);
+  }, [translateOnboardingModal]);
 
   return (
     <OnboardingModalPortal>
