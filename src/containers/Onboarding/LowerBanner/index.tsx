@@ -16,7 +16,7 @@ const LowerBanner = () => {
   // 온보딩 쿠키 삽입
   const saveOnboardingCookie = useCallback(() => {
     const expires = new Date();
-    expires.setFullYear(2024, 12, 31);
+    expires.setFullYear(new Date().getFullYear() + 2);
     cookie.save('onboarding_1', 'onboarding_1', { path: '/', expires });
   }, []);
 
