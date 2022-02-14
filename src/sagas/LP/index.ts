@@ -294,29 +294,26 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
       .map((filteredNode) => filteredNode.name);
 
     const check = checkCreateDuplicates('empty motion', currentPathNodeName);
-
     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
-
-    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, false);
+    const parentModel = find(cloneLPNode, { id: nodeId });
+    const animationIngredientCurrent = parentModel?.childrens.length === 0;
+    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
 
     const afterNodes = produce(cloneLPNode, (draft) => {
-      const parentModel = find(draft, { id: nodeId });
-      if (parentModel) {
-        parentModel.childrens.push(nextAnimationIngredient.id);
-        const motion: LP.Node = {
-          id: nextAnimationIngredient.id,
-          // parentId: nextAnimationIngredient.assetId,
-          assetId: assetId,
-          parentId: nodeId,
-          name: nextAnimationIngredient.name,
-          filePath: parentModel.filePath + `\\${parentModel.name}`,
-          childrens: [],
-          extension: '',
-          type: 'Motion',
-        };
+      parentModel?.childrens.push(nextAnimationIngredient.id);
+      const motion: LP.Node = {
+        id: nextAnimationIngredient.id,
+        // parentId: nextAnimationIngredient.assetId,
+        assetId: assetId,
+        parentId: nodeId,
+        name: nextAnimationIngredient.name,
+        filePath: parentModel?.filePath + `\\${parentModel?.name}`,
+        childrens: [],
+        extension: '',
+        type: 'Motion',
+      };
 
-        draft.push(motion);
-      }
+      draft.push(motion);
     });
 
     yield put(
@@ -538,6 +535,7 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
   });
 
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+  yield put(lpNodeActions.setDraggedNode(null));
 }
 
 function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
@@ -753,6 +751,8 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
       }),
     );
   }
+
+  yield put(lpNodeActions.setDraggedNode(null));
 }
 
 function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeName>) {
@@ -802,6 +802,8 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
   const baseScreen = screenList[0];
   const baseScene = baseScreen.scene;
 
+  yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
+
   screenList.forEach(({ scene }) => {
     scene.animationGroups.forEach((animationGroup) => {
       animationGroup.stop();
@@ -816,7 +818,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
       const ingredients = motion === 'all' ? currentModelAnimationIngredients : filter(currentModelAnimationIngredients, { id: motion });
 
       ingredients.forEach((animationIngredient) => {
-        const animationGroup = createAnimationGroupFromIngredient(animationIngredient, fps, true);
+        const animationGroup = createAnimationGroupFromIngredient(animationIngredient, fps);
       });
     }
 
@@ -838,15 +840,13 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
     const glb: GLTFData = yield call([GLTF2Export, GLTF2Export.GLBAsync], baseScene, resultName, options);
     if (format === 'glb') {
       glb.downloadFiles();
-    }
-
-    if (format === 'fbx') {
+      yield put(globalUIActions.closeModal());
+    } else if (format === 'fbx' || format === 'fbx_unreal') {
       const fileName = Object.keys(glb.glTFFiles);
       const file = new File([glb.glTFFiles[fileName[0]]], resultName);
       file.path = resultName;
 
       try {
-        yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
         const fbxUrl: string = yield call(convertModel, file, 'fbx');
         const link = document.createElement('a');
         link.href = fbxUrl;
@@ -862,9 +862,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
           }),
         );
       }
-    }
-
-    if (format === 'bvh') {
+    } else if (format === 'bvh') {
       const asset = find(assetList, { id: assetId });
 
       if (asset) {

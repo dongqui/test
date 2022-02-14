@@ -1,4 +1,5 @@
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'reducers';
 
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -11,6 +12,7 @@ interface Props {
 const FolderNode = ({ node }: Props) => {
   const { id, filePath, extension, parentId } = node;
   const dispatch = useDispatch();
+  const { draggedNode } = useSelector((state) => state.lpNode);
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     dispatch(lpNodeActions.selectNode({ nodeId: id }));
@@ -25,13 +27,14 @@ const FolderNode = ({ node }: Props) => {
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    dispatch(
-      lpNodeActions.dropNodeOnFolder({
-        filePath,
-        nodeId: id,
-      }),
-    );
+    if (draggedNode) {
+      dispatch(
+        lpNodeActions.dropNodeOnFolder({
+          filePath,
+          nodeId: id,
+        }),
+      );
+    }
   };
 
   return <BaseNode node={node} onContextMenu={handleContextMenu} onDrop={handleDrop} />;

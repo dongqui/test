@@ -20,6 +20,10 @@ function getAnimationIngredients(state: RootState) {
   return state.animationData.animationIngredients;
 }
 
+function getSelectedLayer(state: RootState) {
+  return state.trackList.selectedLayer;
+}
+
 // 키프레임 드래그 드랍 입력 비즈니스 로직
 function* worker(params: ReturnType<typeof keyframesActions.enterKeyframeDragDropKey>) {
   const { timeDiff } = params.payload;
@@ -51,38 +55,46 @@ function* worker(params: ReturnType<typeof keyframesActions.enterKeyframeDragDro
     // 재정렬한 newUpdatedPropertyKeyframes를 사용해서 키프레임 업데이트
     const { animationIngredientId: targetAnimationIngredientId, layerId: targetLayerId, transformKeys: targetTransformKeys } = newUpdatedPropertyKeyframes;
     const animationIngredients = getAnimationIngredients(yield select());
+    const selectedLayer = getSelectedLayer(yield select());
     const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === targetAnimationIngredientId);
     if (targetAnimationIngredient) {
       const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
-        let targetTrack: WritableDraft<PlaskTrack> | undefined;
-        targetTransformKeys.forEach((targetTransformKey) => {
-          const { from, to, trackId, value } = targetTransformKey;
-          // 첫 track이거나 track 변경시 targetTrack 변경
-          if (isUndefined(targetTrack) || (targetTrack && targetTrack.id !== trackId)) {
-            targetTrack = draft.tracks.find((track) => track.id === trackId); // targetTrack 업데이트
-          }
-          if (targetTrack) {
-            // to key에 value 추가
-            const toInsertedTargetTrackTransformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, to, new BABYLON.Vector3(value.x, value.y, value.z));
-            // from key 삭제
-            const fromDeletedTargetTrackTransformKeys = toInsertedTargetTrackTransformKeys.filter((transformKey) => transformKey.frame !== from);
+        const targetLayer = draft.layers.find((layer) => layer.id === selectedLayer);
+        if (targetLayer) {
+          let targetTrack: WritableDraft<PlaskTrack> | undefined;
+          targetTransformKeys.forEach((targetTransformKey) => {
+            const { from, to, trackId, value } = targetTransformKey;
+            // 첫 track이거나 track 변경시 targetTrack 변경
+            if (isUndefined(targetTrack) || (targetTrack && targetTrack.id !== trackId)) {
+              targetTrack = targetLayer.tracks.find((track) => track.id === trackId); // targetTrack 업데이트
+            }
+            if (targetTrack) {
+              // to key에 value 추가
+              const toInsertedTargetTrackTransformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, to, new BABYLON.Vector3(value.x, value.y, value.z));
+              // from key 삭제
+              const fromDeletedTargetTrackTransformKeys = toInsertedTargetTrackTransformKeys.filter((transformKey) => transformKey.frame !== from);
 
-            targetTrack.transformKeys = fromDeletedTargetTrackTransformKeys;
+              targetTrack.transformKeys = fromDeletedTargetTrackTransformKeys;
 
-            // rotation track의 경우 rotationQuaternion track도 함께 변경
-            if (targetTrack.property === 'rotation') {
-              const peerTrack = draft.tracks.find((track) => track.id === trackId.replace('//rotation', '//rotationQuaternion'));
-              if (peerTrack) {
-                // to key에 value 추가
-                const toInsertedPeerTrackTransformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, to, new BABYLON.Vector3(value.x, value.y, value.z).toQuaternion());
-                // from key 삭제
-                const fromDeletedPeerTrackTransformKeys = toInsertedPeerTrackTransformKeys.filter((transformKey) => transformKey.frame !== from);
+              // rotation track의 경우 rotationQuaternion track도 함께 변경
+              if (targetTrack.property === 'rotation') {
+                const peerTrack = targetLayer.tracks.find((track) => track.id === trackId.replace('//rotation', '//rotationQuaternion'));
+                if (peerTrack) {
+                  // to key에 value 추가
+                  const toInsertedPeerTrackTransformKeys = getValueInsertedTransformKeys(
+                    peerTrack.transformKeys,
+                    to,
+                    new BABYLON.Vector3(value.x, value.y, value.z).toQuaternion(),
+                  );
+                  // from key 삭제
+                  const fromDeletedPeerTrackTransformKeys = toInsertedPeerTrackTransformKeys.filter((transformKey) => transformKey.frame !== from);
 
-                peerTrack.transformKeys = fromDeletedPeerTrackTransformKeys;
+                  peerTrack.transformKeys = fromDeletedPeerTrackTransformKeys;
+                }
               }
             }
-          }
-        });
+          });
+        }
       });
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
     }

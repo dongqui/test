@@ -24,7 +24,7 @@ const initializeTrackList = (state: TrackListState, payload: InitializeTrackList
     return stateUpdate.updateState(newValues);
   }
   if (payload.animationIngredientId) {
-    const newValues = service.visualizeAnimation(payload.list, payload.animationIngredientId);
+    const newValues = service.visualizeAnimation(payload.list as PlaskLayer[], payload.animationIngredientId);
     return stateUpdate.updateState(newValues);
   } else {
     const newValues = service.changeSelectedTargets(payload.list as PlaskTrack[]);

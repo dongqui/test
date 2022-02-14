@@ -4,57 +4,37 @@ import { isNull, isUndefined } from 'lodash';
 import { useDispatch } from 'react-redux';
 
 import AnimationInputWrapper from './AnimationInputWrapper';
-import AnimationFKWrapper from './AnimationFKWrapper';
 import * as animationDataActions from 'actions/animationDataAction';
-import * as selectingDataActions from 'actions/selectingDataAction';
-import * as globalUIActions from 'actions/Common/globalUI';
-
 import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPanel';
-import { AnimationIngredient, Nullable, PlaskPaletteColor, PlaskPaletteColorName, PlaskRotationType, PlaskTrack } from 'types/common';
+import { Nullable, PlaskLayer, PlaskRotationType, PlaskTrack } from 'types/common';
 import { useSelector } from 'reducers';
-import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay, forceClickAnimationPlayAndStop } from 'utils/common';
-import { checkIsTargetMesh } from 'utils/RP';
+import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } from 'utils/common';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const PALETTE_COLORS: { [color in PlaskPaletteColorName]: string } = {
-  red: '#FF6969',
-  orange: '#FC9B51',
-  yellow: '#FFDB56',
-  green: '#4FD675',
-  blue: '#61E4ED',
-  purple: '#D687F4',
-  pink: '#FF8CC9',
-};
-const DEFAULT_CONTROLLER_COLOR = 'yellow';
-
 interface Props {
   isAllActive: boolean;
 }
 
 const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
-  const _screenList = useSelector((state) => state.plaskProject.screenList);
-  const _assetList = useSelector((state) => state.plaskProject.assetList);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // selectedLayerId에 해당
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
-  const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _playDirection = useSelector((state) => state.animatingControls.playDirection);
-  const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
 
   const dispatch = useDispatch();
 
-  // 다중모델 설계 내에서 단일모델 상황을 가정하기 위함 (추후 다중모델 설계 자체를 단일모델 설계로 변경할 계획)
+  // 다중모델 설계 내에서 단일모델 상황을 가정하기 위함 (추후 다중모델 설계 자체를 단일모델 설계로 변경할 계획 -> 확정된 게 없음..)
   const selectedAssetId = useMemo(() => _visualizedAssetIds[0], [_visualizedAssetIds]);
 
   const [controlTarget, setControlTarget] = useState<Nullable<BABYLON.TransformNode | BABYLON.Mesh>>(null);
-  const [controlController, setControlController] = useState<Nullable<BABYLON.Mesh>>(null);
+  const [controlLayer, setControlLayer] = useState<Nullable<PlaskLayer>>(null);
   const [controlTrack, setControlTrack] = useState<Nullable<PlaskTrack>>(null);
 
   // position value를 관리하는 useState
@@ -78,22 +58,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [scaleY, setScaleY] = useState<number>(0);
   const [scaleZ, setScaleZ] = useState<number>(0);
 
-  // FK Controller value를 관리하는 useState
-  const [controllerX, setControllerX] = useState<number>(0);
-  const [controllerZ, setControllerZ] = useState<number>(0);
-  const [controllerColor, setControllerColor] = useState<PlaskPaletteColor>(PALETTE_COLORS[DEFAULT_CONTROLLER_COLOR] as PlaskPaletteColor);
-
   // section spread status
   const [isTransformSectionSpread, setIsTransformSectionSpread] = useState<boolean>(true);
-  const [isControllerSectionSpread, setIsControllerSectionSpread] = useState<boolean>(true);
   const [isFilterSectionSpread, setIsFilterSectionSpread] = useState<boolean>(true);
-  // const [isVisibilitySectionSpread, setIsVisibilitySectionSpread] = useState<boolean>(true);
 
   // transform section
   const [currentRotationType, setCurrentRotationType] = useState<PlaskRotationType>('euler');
-
-  // controller section
-  const [isControllerOn, setIsControllerOn] = useState<boolean>(false);
 
   // filter section
   const [isFilterOn, setIsFilterOn] = useState<boolean>(false);
@@ -114,41 +84,20 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [_selectableObjects, _selectedTargets]);
 
-  // controller section을 위한 control controller 선택
-  // 선택 대상이 transformNode인 경우 연결된 controller를 선택
-  useEffect(() => {
-    if (_selectedTargets.length === 0) {
-      // 선택되지 않은 경우
-      setControlController(null);
-    } else if (_selectedTargets.length === 1) {
-      // 단일대상 선택된 경우, 대상이 컨트롤러거나 연결된 컨트롤러가 있다면 control controller로 선택
-      if (checkIsTargetMesh(_selectedTargets[0])) {
-        setControlController(_selectedTargets[0]);
-      } else {
-        const connectedController = _selectableObjects.find((object) => object.id === _selectedTargets[0].id.replace('transformNode', 'controller'));
-        if (connectedController) {
-          setControlController(connectedController as BABYLON.Mesh);
-        } else {
-          setControlController(null);
-        }
-      }
-    } else {
-      // 다중대상 선택된 경우
-      setControlController(null);
-    }
-  }, [_selectableObjects, _selectedTargets]);
-
   // filter section을 위한 control track 선택
   useEffect(() => {
     if (_selectedTargets.length === 0) {
       setControlTrack(null);
     } else if (_selectedTargets.length === 1) {
       const targetAssetId = _selectedTargets[0].id.split('//')[0];
-      const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAssetId);
-      const targetTrack = targetAnimationIngredient?.tracks.find((track) => track.targetId === _selectedTargets[0].id && track.layerId === _seletedLayer)!;
+      const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAssetId && animationIngredient.current);
+      const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer)!;
+      const targetTrack = targetLayer.tracks.find((track) => track.targetId === _selectedTargets[0].id)!;
 
+      setControlLayer(targetLayer);
       setControlTrack(targetTrack);
     } else {
+      setControlLayer(null);
       setControlTrack(null);
     }
   }, [_animationIngredients, _selectedTargets, _seletedLayer]);
@@ -183,40 +132,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [controlTarget]);
 
-  // 선택 대상에 따라 controller toggle 변경
-  useEffect(() => {
-    if (selectedAssetId) {
-      if (_selectableObjects.find((object) => object.id.includes(selectedAssetId) && checkIsTargetMesh(object))) {
-        setIsControllerOn(true);
-      } else {
-        setIsControllerOn(false);
-      }
-    } else {
-      setIsControllerOn(false);
-    }
-  }, [_selectableObjects, selectedAssetId]);
-
-  // 선택 대상에 따라 controller properties 변경
-  useEffect(() => {
-    if (controlController) {
-      setControllerX(controlController.scaling.x);
-      setControllerZ(controlController.scaling.z);
-      // @ts-ignore
-      setControllerColor(controlController.material.emissiveColor.toHexString() as PlaskPaletteColor);
-    }
-  }, [controlController]);
-
   // 선택 대상에 따라 filter toggle 변경
   useEffect(() => {
     if (selectedAssetId) {
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
-      if (targetAnimationIngredient) {
-        const hasFilteredTrack = Boolean(targetAnimationIngredient.tracks.find((track) => track.layerId === _seletedLayer && track.useFilter));
-        if (hasFilteredTrack) {
-          setIsFilterOn(true);
-        } else {
-          setIsFilterOn(false);
-        }
+      const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer);
+
+      if (targetLayer) {
+        const useFilter = targetLayer.useFilter;
+        setIsFilterOn(useFilter);
       } else {
         setIsFilterOn(false);
       }
@@ -227,14 +151,14 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   // 선택 대상에 따라 filter parameters 변경
   useEffect(() => {
-    if (controlTrack && controlTrack.useFilter) {
+    if (controlLayer && controlLayer.useFilter && controlTrack) {
       setFcValue(controlTrack.filterMinCutoff);
       setBetaValue(controlTrack.filterBeta);
     } else {
       setFcValue(10);
       setBetaValue(1);
     }
-  }, [controlTrack]);
+  }, [controlLayer, controlTrack]);
 
   // Transform section을 펼치거나 접을 수 있는 콜백
   const handleSpreadTransform = useCallback(() => {
@@ -245,15 +169,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [isTransformSectionSpread]);
 
-  // Controller section읅 펼치거나 접을 수 있는 콜백
-  const handleSpreadController = useCallback(() => {
-    if (isControllerSectionSpread) {
-      setIsControllerSectionSpread(false);
-    } else {
-      setIsControllerSectionSpread(true);
-    }
-  }, [isControllerSectionSpread]);
-
   // Filter section읅 펼치거나 접을 수 있는 콜백
   const handleSpreadFilter = useCallback(() => {
     if (isFilterSectionSpread) {
@@ -262,231 +177,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       setIsFilterSectionSpread(true);
     }
   }, [isFilterSectionSpread]);
-
-  // Controller의 생성 / 삭제
-  const handleControllerToggle = useCallback(async () => {
-    if (selectedAssetId) {
-      if (isControllerOn) {
-        dispatch(
-          globalUIActions.openModal('ConfirmModal', {
-            title: 'Confirm',
-            message: 'Are you sure you want to delete controllers?',
-            confirmText: 'Confirm',
-            cancelText: 'Cancel',
-            onConfirm: () => {
-              // switch off
-              setIsControllerOn(false);
-
-              // 컨트롤러 삭제
-              const targetControllers = _selectableObjects.filter((object) => object.id.includes(selectedAssetId) && checkIsTargetMesh(object));
-              targetControllers.forEach((targetController) => {
-                targetController.dispose();
-              });
-
-              // dragBox 선택 대상에서 제외
-              dispatch(selectingDataActions.removeSelectableControllers({ assetId: selectedAssetId }));
-
-              // 컨트롤러 애니메이션 제거
-              const currentAnimationIngredient = _animationIngredients.find(
-                (animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current,
-              );
-              if (currentAnimationIngredient) {
-                const newAnimationIngredient: AnimationIngredient = {
-                  ...currentAnimationIngredient,
-                  tracks: currentAnimationIngredient.tracks.filter((track) => !track.targetId.includes('//controller')),
-                };
-
-                if (_playState === 'play') {
-                  forceClickAnimationPauseAndPlay(_playState, _playDirection);
-                } else {
-                  forceClickAnimationPlayAndStop();
-                }
-
-                dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
-              }
-            },
-          }),
-        );
-      } else {
-        // switch on
-        setIsControllerOn(true);
-
-        const targetRetargetMap = _retargetMaps.find((retargetMap) => retargetMap.assetId === selectedAssetId);
-        const targetTransformNodeIds = targetRetargetMap?.values.map((value) => value.targetTransformNodeId);
-        // retargetMap이 없거나 완성되지 않은 경우
-        if (!targetTransformNodeIds || targetTransformNodeIds.find((targetTransformNodeId) => isNull(targetTransformNodeId))) {
-          dispatch(
-            globalUIActions.openModal('ConfirmModal', {
-              title: 'Confirm',
-              message: 'Invalid retarget information. Will you finish mapping, first?',
-              confirmText: 'Confirm',
-              cancelText: 'Cancel',
-              onConfirm: () => {
-                // CP -> retarget tab으로 전환
-              },
-            }),
-          );
-
-          return;
-        }
-
-        const createController = (confirmedToCopy: boolean, targetTransformNodeIds: Nullable<string>[]) => {
-          const targetAsset = _assetList.find((asset) => asset.id === selectedAssetId)!;
-
-          _screenList.forEach((screen) => {
-            const controllers: BABYLON.Mesh[] = [];
-            const controllerMaterial = new BABYLON.StandardMaterial('controllerMaterial', screen.scene);
-            controllerMaterial.emissiveColor = BABYLON.Color3.FromHexString(PALETTE_COLORS[DEFAULT_CONTROLLER_COLOR]);
-            controllerMaterial.disableLighting = true;
-
-            // 컨트롤러 생성
-            targetAsset.bones.forEach((bone, idx) => {
-              const connectedTransformNode = bone.getTransformNode();
-              if (connectedTransformNode && targetTransformNodeIds.includes(connectedTransformNode.id)) {
-                const controller = BABYLON.MeshBuilder.CreateTorus(
-                  `${bone.name}_controller`,
-                  {
-                    diameter: 40,
-                    thickness: 0.2,
-                    tessellation: 64,
-                  },
-                  screen.scene,
-                );
-                controller.renderingGroupId = 3;
-                controller.id = `${targetAsset.id}//${bone.name}//controller`;
-                controller.material = controllerMaterial.clone('controllerMaterial');
-
-                if (controllers.length === 0) {
-                  // controller들의 scale을 모델에 맞추기 위해, Armature bone을 hips controller의 parent로 설정
-                  controller.setParent(bone.getParent());
-                }
-
-                // controller actionManager 생성 및 pick, hover action 등록
-                controller.actionManager = new BABYLON.ActionManager(screen.scene);
-                controller.actionManager.registerAction(
-                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event) => {
-                    dispatch(selectingDataActions.defaultSingleSelect({ target: controller }));
-                  }),
-                );
-
-                controller.actionManager.registerAction(
-                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, (event) => {
-                    screen.scene.hoverCursor = 'pointer';
-                  }),
-                );
-
-                controllers.push(controller);
-              }
-            });
-
-            // 컨트롤러 간 계층구조 생성
-            controllers.forEach((controller, idx) => {
-              const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => (visibilityOption.screenId = screen.id));
-              if (targetVisibilityOption) {
-                controller.isVisible = targetVisibilityOption.isControllerVisible;
-              }
-              const targetBone = targetAsset.bones.find((bone) => bone.id === controller.id.replace('controller', 'bone'));
-              if (targetBone && targetBone.children.length > 0) {
-                targetBone.children.forEach((childBone) => {
-                  const childController = controllers.find((ctrl) => ctrl.id === childBone.id.replace('bone', 'controller'));
-                  if (childController) {
-                    childController.setParent(controller);
-                  }
-                });
-              }
-              if (targetBone) {
-                targetBone.computeWorldMatrix(true);
-                controller.scaling = new BABYLON.Vector3(1, 1, 1);
-                controller.position = targetBone.position;
-              }
-            });
-
-            // controller들 또한 dragBox로 선택 가능하도록
-            dispatch(selectingDataActions.addSelectableObjects({ objects: controllers }));
-
-            // controller의 애니메이션 추가
-            const currentAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAsset.id && animationIngredient.current);
-            if (currentAnimationIngredient) {
-              const { tracks, layers } = currentAnimationIngredient;
-
-              const newTracks: PlaskTrack[] = [];
-
-              controllers.forEach((controller) => {
-                // rotationQuaternion으로 회전법 바꾸는 처리
-                controller.rotate(BABYLON.Axis.X, 0);
-
-                // 대응하는 transformNode의 애니메이션을 사용해 controller의 애니메이션 생성 및 animationIngredient에 추가
-                layers.forEach((layer) => {
-                  const transformNodeTracks = tracks.filter((track) => track.targetId === controller.id.replace('controller', 'transformNode') && track.layerId === layer.id);
-                  transformNodeTracks.forEach((transformNodeTrack) => {
-                    const newTrack: PlaskTrack = {
-                      ...transformNodeTrack,
-                      id: `${layer.id}//${controller.id}//${transformNodeTrack.property}`,
-                      targetId: controller.id,
-                      target: controller,
-                      name: `${transformNodeTrack.name}|controller`,
-                      // confirmedToCopy 여부에 따라 controller에 animation keyframes 복사 혹은 빈 transformKeys
-                      transformKeys: confirmedToCopy ? [...transformNodeTrack.transformKeys] : [],
-                    };
-                    newTracks.push(newTrack);
-                  });
-                });
-              });
-
-              if (_playState === 'play') {
-                forceClickAnimationPauseAndPlay(_playState, _playDirection);
-              } else {
-                forceClickAnimationPlayAndStop();
-              }
-
-              const newAnimationIngredient: AnimationIngredient = { ...currentAnimationIngredient, tracks: [...tracks, ...newTracks] };
-              dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
-            }
-          });
-        };
-
-        // 애니메이션 옮길지 말지
-        dispatch(
-          globalUIActions.openModal('ConfirmModal', {
-            title: 'Confirm',
-            message: `Do you want to copy existing keyframes from bones to controllers?`,
-            confirmText: 'Confirm',
-            cancelText: 'Cancel',
-            onConfirm: () => {
-              createController(true, targetTransformNodeIds);
-            },
-            onCancel: () => {
-              createController(false, targetTransformNodeIds);
-            },
-          }),
-        );
-      }
-    }
-  }, [
-    _animationIngredients,
-    _assetList,
-    _playDirection,
-    _playState,
-    _retargetMaps,
-    _screenList,
-    _selectableObjects,
-    _visibilityOptions,
-    dispatch,
-    isControllerOn,
-    selectedAssetId,
-  ]);
-
-  // Controller 색 변경
-  const handleSelectColor = useCallback(
-    (color: PlaskPaletteColor) => {
-      if (controlController) {
-        setControllerColor(color);
-        // @ts-ignore
-        controlController.material.emissiveColor = BABYLON.Color3.FromHexString(color);
-      }
-    },
-    [controlController],
-  );
 
   // Filter의 활성화 비활성화
   const handleFilterToggle = useCallback(() => {
@@ -806,47 +496,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     },
   ];
 
-  const fkControllerInputData = [
-    {
-      text: 'X',
-      handleBlur: useCallback(
-        (event: FocusEvent<HTMLInputElement>) => {
-          if (isNaN(parseFloat(event.target.value))) {
-            return;
-          }
-
-          if (controlController) {
-            setControllerX(parseFloat(event.target.value));
-            controlController.scaling.x = parseFloat(event.target.value);
-          }
-        },
-        [controlController],
-      ),
-      defaultValue: 1,
-      decimalDigit: 2,
-      currentValue: controllerX,
-    },
-    {
-      text: 'Z',
-      handleBlur: useCallback(
-        (event: FocusEvent<HTMLInputElement>) => {
-          if (isNaN(parseFloat(event.target.value))) {
-            return;
-          }
-
-          if (controlController) {
-            setControllerZ(parseFloat(event.target.value));
-            controlController.scaling.z = parseFloat(event.target.value);
-          }
-        },
-        [controlController],
-      ),
-      defaultValue: 1,
-      decimalDigit: 2,
-      currentValue: controllerZ,
-    },
-  ];
-
   const filterRangeData = [
     {
       text: 'Fcmin',
@@ -861,12 +510,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       onChangeEnd: useCallback(
         (inputValue: number) => {
           if (controlTrack) {
-            dispatch(animationDataActions.changeTrackFilterMinCutoff({ trackId: controlTrack.id, value: inputValue }));
+            dispatch(animationDataActions.changeTrackFilterMinCutoff({ layerId: _seletedLayer, trackId: controlTrack.id, value: inputValue }));
             // 새로운 animationGroup을 사용하기 위해, 일시정지 후 재생
             forceClickAnimationPauseAndPlay(_playState, _playDirection);
           }
         },
-        [_playDirection, _playState, controlTrack, dispatch],
+        [_playDirection, _playState, _seletedLayer, controlTrack, dispatch],
       ),
     },
     {
@@ -882,12 +531,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       onChangeEnd: useCallback(
         (inputValue: number) => {
           if (controlTrack) {
-            dispatch(animationDataActions.changeTrackFilterBeta({ trackId: controlTrack.id, value: inputValue }));
+            dispatch(animationDataActions.changeTrackFilterBeta({ layerId: _seletedLayer, trackId: controlTrack.id, value: inputValue }));
             // 새로운 animationGroup을 사용하기 위해, 일시정지 후 재생
             forceClickAnimationPauseAndPlay(_playState, _playDirection);
           }
         },
-        [_playDirection, _playState, controlTrack, dispatch],
+        [_playDirection, _playState, _seletedLayer, controlTrack, dispatch],
       ),
     },
   ];
@@ -896,12 +545,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     { text: 'euler', handleSelect: () => setCurrentRotationType('euler') },
     { text: 'quaternion', handleSelect: () => setCurrentRotationType('quaternion') },
   ];
-
-  // const buttonInfo = [
-  //   { text: 'Bone', handleBlur: () => {} },
-  //   { text: 'Mesh', handleBlur: () => {} },
-  //   { text: 'Controller', handleBlur: () => {} },
-  // ];
 
   return (
     <Fragment>
@@ -919,28 +562,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
         </div>
       </section>
-      {/* <section className={cx('fk-controller-section')}>
-        <AnimationTitleToggle
-          text="FK Controller"
-          isSpread={isControllerSectionSpread}
-          handleSpread={handleSpreadController}
-          isPowerOn={isControllerOn}
-          handleToggle={handleControllerToggle}
-          withSwitch={true}
-          checked={isControllerOn}
-          activeStatus={isAllActive && isControllerOn}
-          canToggle={!isUndefined(selectedAssetId)}
-        />
-        <div className={cx('container', { active: isControllerSectionSpread })}>
-          <AnimationFKWrapper
-            fkInfo={fkControllerInputData}
-            activeStatus={isAllActive && isControllerOn && !isNull(controlController)}
-            currentColor={controllerColor}
-            handleSelectColor={handleSelectColor}
-          />
-          {(!isAllActive || !isControllerOn || isNull(controlController)) && <div className={cx('inactive-overlay')}></div>}
-        </div>
-      </section> */}
       <section className={cx('filter-section')}>
         <AnimationTitleToggle
           text="Filter"
@@ -970,18 +591,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           {(!isAllActive || !isFilterOn || isNull(controlTrack)) && <div className={cx('inactive-overlay')}></div>}
         </div>
       </section>
-      {/**
-       * Visibility Section
-       * @alpha
-       * Visibility Section is not included on Plask v1.0
-       */}
-      {/* <section className={cx('visibility-section')}>
-        <AnimationTitleToggle text="Visibility" isSpread={isVisibilitySectionSpread} setIsSpread={setIsVisibilitySectionSpread} activeStatus={isAllActive} />
-        <div className={cx('container', { active: isVisibilitySectionSpread })}>
-          <AnimationButton buttonInfo={buttonInfo} activeStatus={isAllActive}></AnimationButton>
-          {!isAllActive && <div className={cx('inactive-overlay')}></div>}
-        </div>
-      </section> */}
     </Fragment>
   );
 };

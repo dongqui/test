@@ -27,7 +27,9 @@ const createAnimationIngredientFromMocapData = (
   const emptyAnimationIngredient = createAnimationIngredient(assetId, animationIngredientName, [], animatableTransformNodes, true, false);
 
   // cloneDeep을 사용해서 tracks를 newTracks로 갈음하려고 했으나, 시간비용이 너무 커서 tracks에 추가해주는 방식으로 사용
-  const { tracks } = emptyAnimationIngredient;
+  const baseLayer = emptyAnimationIngredient.layers[0];
+
+  const { tracks } = baseLayer;
   const { hipSpace } = retargetMap;
 
   // tracks가 아닌 mocapData를 iterate하는 방식으로 변경

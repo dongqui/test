@@ -1,0 +1,41 @@
+@import "styles/libraries/_mixins";
+
+.wrapper {
+  display: flex;
+  align-items: center;
+
+  span {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    color: #7a7a7a;
+
+    & > svg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+    }
+
+    &:hover {
+      background-color: var(--gray400);
+      color: var(--gray600);
+    }
+
+    &:active {
+      background-color: #0f88ff;
+      color: #fff;
+    }
+
+    &.selected {
+      background-color: #0f88ff;
+      color: #fff;
+    }
+
+    &:focus {
+      border: none;
+    }
+  }
+}
