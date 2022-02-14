@@ -15,7 +15,7 @@ const Onboarding = () => {
   return (
     <div className={cx('onboarding')}>
       <LowerBanner />
-      <div id="onboarding-modal-portal" />
+      <div id="onboarding-tooltip-portal" />
     </div>
   );
 };

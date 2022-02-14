@@ -1,6 +1,6 @@
 import { FunctionComponent, useCallback, useRef, ChangeEvent } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import OnboardingModal, { ImportFileOnboarding } from 'containers/Onboarding/OnboardingModal';
+import OnboardingTooltip, { ImportFileOnboarding } from 'containers/Onboarding/OnboardingTooltip';
 import classNames from 'classnames/bind';
 import styles from './LPHeader.module.scss';
 
@@ -29,9 +29,9 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
     <div className={cx('wrapper')}>
       <div className={cx('title')}>library</div>
       <div className={cx('explorer')}>
-        <OnboardingModal placement="right-start" targetRef={importButtonRef} content={<ImportFileOnboarding />}>
+        <OnboardingTooltip placement="right-start" targetRef={importButtonRef} content={<ImportFileOnboarding />}>
           <IconWrapper className={cx('icon')} icon={SvgPath.Plus} hasFrame={false} innerRef={importButtonRef} />
-        </OnboardingModal>
+        </OnboardingTooltip>
         <label htmlFor="file-explorer" />
         <input type="file" multiple id="file-explorer" onChange={handleChange} />
       </div>

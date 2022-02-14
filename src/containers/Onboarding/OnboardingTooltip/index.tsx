@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState, FunctionComponent, Fragment, RefObject, ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, FunctionComponent, Fragment, RefObject, ReactNode } from 'react';
 import { debounce } from 'lodash';
 
 import { useSelector } from 'reducers';
 
-import OnboardingModalPortal from './OnboardingModalPortal';
+import OnboardingTooltipPortal from './OnboardingTooltipPortal';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -12,7 +12,7 @@ const cx = classNames.bind(styles);
 
 interface Props {
   /**
-   * 툴팁 모달의 출력 방향
+   * 툴팁의 출력 방향
    * xxx-start: 말풍선 꼬리 기준으로 우측 부분, 하단 부분이 긴 말풍선
    * xxx-middle: 말풍선 꼬리가 가운데에 있는 말풍선
    * xxx-end: 말풍선 꼬리 기준으로 좌측 부분, 상단 부분이 긴 말풍선
@@ -32,20 +32,20 @@ interface Props {
     | 'right-end';
 
   /**
-   * tooltip modal이 가리키는 UI의 ref
+   * tooltip이 가리키는 UI의 ref
    */
   targetRef: RefObject<HTMLElement>;
 
   /**
-   * 온보딩 모달에 출력 될 내용
+   * 온보딩 툴팁에 출력 될 내용
    */
   content: ReactNode;
 }
 
-const OnboardingModal: FunctionComponent<Props> = (props) => {
+const OnboardingTooltip: FunctionComponent<Props> = (props) => {
   const { placement, targetRef, content } = props;
 
-  const modalRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   const [isMoved, setIsMoved] = useState(false);
 
@@ -63,20 +63,20 @@ const OnboardingModal: FunctionComponent<Props> = (props) => {
   }, [targetRef]);
 
   // 온보딩 모달 위치 이동
-  const translateOnboardingModal = useCallback(() => {
-    const currentModalRef = modalRef.current;
+  const translateOnboardingTooltip = useCallback(() => {
+    const currentTooltipRef = tooltipRef.current;
     const targetCoordinates = getTargetCoordinates();
-    if (currentModalRef && targetCoordinates) {
+    if (currentTooltipRef && targetCoordinates) {
       switch (placement) {
         case 'right-start': {
           const { rightTop, rightBottom } = targetCoordinates;
-          currentModalRef.style.transform = `translate(${rightTop.x + 10}px, ${(rightTop.y + rightBottom.y) / 2 - 20}px)`;
+          currentTooltipRef.style.transform = `translate(${rightTop.x + 10}px, ${(rightTop.y + rightBottom.y) / 2 - 20}px)`;
           break;
         }
         case 'bottom-end': {
           const { leftBottom, rightBottom } = targetCoordinates;
-          const x = rightBottom.x - currentModalRef.clientWidth;
-          currentModalRef.style.transform = `translate(${x}px, ${leftBottom.y + 10}px)`;
+          const x = rightBottom.x - currentTooltipRef.clientWidth;
+          currentTooltipRef.style.transform = `translate(${x}px, ${leftBottom.y + 10}px)`;
           break;
         }
       }
@@ -86,41 +86,41 @@ const OnboardingModal: FunctionComponent<Props> = (props) => {
   // 최초에 온보딩 모달을 target ref 주변에 알맞은 위치로 이동
   useEffect(() => {
     setTimeout(() => {
-      translateOnboardingModal();
+      translateOnboardingTooltip();
       setIsMoved(true);
     }, 0);
-  }, [translateOnboardingModal]);
+  }, [translateOnboardingTooltip]);
 
   // 리사이즈 시 온보딩 모달 위치 조정
   useEffect(() => {
-    const debouncedModalTranslation = debounce(translateOnboardingModal, 30);
-    window.addEventListener('resize', debouncedModalTranslation);
+    const debouncedTooltipTranslation = debounce(translateOnboardingTooltip, 30);
+    window.addEventListener('resize', debouncedTooltipTranslation);
     return () => {
-      window.removeEventListener('resize', debouncedModalTranslation);
+      window.removeEventListener('resize', debouncedTooltipTranslation);
     };
-  }, [translateOnboardingModal]);
+  }, [translateOnboardingTooltip]);
 
   return (
-    <OnboardingModalPortal>
-      <div className={cx('onboarding-modal', placement, { 'is-moved': isMoved })} ref={modalRef}>
+    <OnboardingTooltipPortal>
+      <div className={cx('onboarding-tooltip', placement, { 'is-moved': isMoved })} ref={tooltipRef}>
         {content}
       </div>
-    </OnboardingModalPortal>
+    </OnboardingTooltipPortal>
   );
 };
 
-const OnboardingModalOverlay: FunctionComponent<Props> = (props) => {
+const OnboardingTooltipOverlay: FunctionComponent<Props> = (props) => {
   const { children, ...others } = props;
   const isShowedOnboarding = useSelector((state) => state.globalUI.isShowedOnboarding);
 
   return (
     <Fragment>
-      {isShowedOnboarding && <OnboardingModal {...others} />}
+      {isShowedOnboarding && <OnboardingTooltip {...others} />}
       {children}
     </Fragment>
   );
 };
 
-export default OnboardingModalOverlay;
+export default OnboardingTooltipOverlay;
 export { default as ImportFileOnboarding } from './case/ImportFileOnboarding';
 export { default as VideoModeOnboarding } from './case/VideoModeOnboarding';
