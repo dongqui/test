@@ -10,7 +10,9 @@ const cx = classNames.bind(styles);
 const Onboarding = () => {
   const isShowedOnboarding = useSelector((state) => state.globalUI.isShowedOnboarding);
 
-  if (!isShowedOnboarding) return null;
+  if (!isShowedOnboarding) {
+    return null;
+  }
 
   return (
     <div className={cx('onboarding')}>
