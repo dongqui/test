@@ -477,15 +477,14 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
     return;
   }
 
-  const draggedNodeClone = cloneDeep(draggedNode);
-  let nodeName = draggedNodeClone.name;
+  let nodeName = draggedNode.name;
 
-  if (draggedNodeClone?.type === 'Folder' || draggedNodeClone?.type === 'Mocap') {
+  if (draggedNode?.type === 'Folder' || draggedNode?.type === 'Mocap') {
     const currentPathNodeName = nodes
       .filter((node) => {
         if (node.parentId === nodeId) {
-          const isMatch = draggedNodeClone.name.match(/ \(\d+\)$/g);
-          const tempName = draggedNodeClone.name.replace(/ \(\d+\)$/g, '');
+          const isMatch = draggedNode.name.match(/ \(\d+\)$/g);
+          const tempName = draggedNode.name.replace(/ \(\d+\)$/g, '');
           if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
             return true;
           }
@@ -495,14 +494,14 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
       .map((filteredNode) => filteredNode.name);
 
     nodeName = beforeMove({
-      name: draggedNodeClone.name,
+      name: draggedNode.name,
       comparisonNames: currentPathNodeName,
     });
   }
 
-  if (draggedNodeClone?.type === 'Model') {
-    const extension = getFileExtension(draggedNodeClone.name).toLowerCase();
-    const fileName = draggedNodeClone.name.split('.').slice(0, -1).join('.');
+  if (draggedNode?.type === 'Model') {
+    const extension = getFileExtension(draggedNode.name).toLowerCase();
+    const fileName = draggedNode.name.split('.').slice(0, -1).join('.');
 
     const currentPathNodeName = nodes.filter((node) => node.parentId === nodeId && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
@@ -512,23 +511,25 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
   }
 
   const nextNodes = produce(nodes, (draft) => {
-    const drragedNodeIndex = draft.findIndex((node) => node.id === draggedNode.id);
-    drragedNodeIndex !== -1 && draft.splice(drragedNodeIndex, 1);
-
+    const _draggedNode = find(draft, { id: draggedNode.id });
     const targetFolder = find(draft, { id: nodeId });
-    if (targetFolder) {
-      draggedNodeClone.parentId = nodeId;
-      draggedNodeClone.filePath = filePath + `\\${targetFolder.name}`;
-      draggedNodeClone.name = nodeName;
+    if (!_draggedNode || !targetFolder) {
+      return;
+    }
 
-      targetFolder.childrens.push(draggedNodeClone.id);
+    _draggedNode.parentId = nodeId;
+    _draggedNode.filePath = filePath + `\\${targetFolder.name}`;
+    _draggedNode.name = nodeName;
 
-      if (draggedNodeClone.childrens.length > 0) {
-        draggedNodeClone.childrens.map((child) => changeNodeDepthById(draft, child, draggedNodeClone));
-      }
+    targetFolder.childrens.push(_draggedNode.id);
 
-      // @TODO 하위 노드도 추가
-      draft.push(draggedNodeClone);
+    if (_draggedNode.childrens.length > 0) {
+      _draggedNode.childrens.map((child) => changeNodeDepthById(draft, child, _draggedNode));
+    }
+
+    const prevFolder = find(draft, { id: draggedNode.parentId });
+    if (prevFolder) {
+      prevFolder.childrens = prevFolder.childrens.filter((childId) => childId !== _draggedNode.id);
     }
   });
 
