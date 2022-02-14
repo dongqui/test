@@ -234,6 +234,7 @@ export const turnFilterOff = (params: TurnFilterOff) => ({
 });
 
 interface ChangeTrackFilterBeta {
+  layerId: string;
   trackId: string;
   value: number;
 }
@@ -246,6 +247,7 @@ export const changeTrackFilterBeta = (params: ChangeTrackFilterBeta) => ({
 });
 
 interface ChangeTrackFilterMinCutoff {
+  layerId: string;
   trackId: string;
   value: number;
 }

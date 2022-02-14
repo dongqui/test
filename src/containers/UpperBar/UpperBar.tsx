@@ -100,7 +100,6 @@ const UpperBar: FunctionComponent<Props> = ({
           </a>
         </Link>
       </div>
-      <div className={cx('middle-upper')}></div>
       <div className={cx('right-upper')}>
         <IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />
         <ChangeModeButton onSwitchAnimationMode={handleSwitchAnimationMode} onSwitchVideoMode={handleSwitchVideoMode} />

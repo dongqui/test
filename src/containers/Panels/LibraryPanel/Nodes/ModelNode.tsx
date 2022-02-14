@@ -32,7 +32,9 @@ const ModelNode = ({ node }: Props) => {
   };
 
   const handleDrop = () => {
-    if (draggedNode?.type !== 'Mocap' || !draggedNode?.mocapData) return;
+    if (draggedNode?.type !== 'Mocap' || !draggedNode?.mocapData) {
+      return;
+    }
 
     dispatch(
       lpNodeActions.dropMocapOnModel({
@@ -44,7 +46,9 @@ const ModelNode = ({ node }: Props) => {
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
-    if (!assetId || !isDroppedOnRP(e)) return;
+    if (!assetId || !isDroppedOnRP(e)) {
+      return;
+    }
 
     const hasMotions = childrens.length !== 0;
     if (!hasMotions) {

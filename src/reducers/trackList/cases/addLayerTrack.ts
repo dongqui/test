@@ -1,6 +1,6 @@
 import produce from 'immer';
 
-import { PlaskLayer } from 'types/common';
+import { AddLayerTrack } from 'actions/trackList';
 import { LayerTrack } from 'types/TP/track';
 import { TrackListState } from '../index';
 
@@ -14,7 +14,7 @@ function updateLayerTrackList(state: TrackListState, layerTrack: LayerTrack): La
   });
 }
 
-function setNewLayerTrack(newLayer: PlaskLayer): LayerTrack {
+function setNewLayerTrack(newLayer: AddLayerTrack): LayerTrack {
   return {
     isMuted: false,
     isPointedDownCaret: false,
@@ -26,7 +26,7 @@ function setNewLayerTrack(newLayer: PlaskLayer): LayerTrack {
   };
 }
 
-function addLayerTrack(state: TrackListState, payload: PlaskLayer) {
+function addLayerTrack(state: TrackListState, payload: AddLayerTrack) {
   const newLayerTrack = setNewLayerTrack(payload);
   const layerTrackList = updateLayerTrackList(state, newLayerTrack);
   return updateState(state, { layerTrackList });

@@ -26,7 +26,6 @@ function* worker({ payload }: ReturnType<typeof trackListActions.clickDeleteLaye
         animationIngredient: {
           ...targetAnimationIngredient,
           layers: targetAnimationIngredient.layers.filter((layer) => layer.id !== payload.id),
-          tracks: targetAnimationIngredient.tracks.filter((track) => track.layerId !== payload.id),
         },
       }),
     );
