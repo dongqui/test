@@ -1,4 +1,4 @@
-import LP from '../../../@types/Container/LP';
+import { ExportFormat } from 'types/common';
 
 export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
 export const VISUALIZE = 'node/VISUALIZE' as const;
@@ -99,7 +99,7 @@ interface ExportAssetParams {
   assetId: string;
   nodeName: string;
   motion: string;
-  format: 'fbx' | 'glb' | 'bvh';
+  format: ExportFormat;
 }
 
 interface FileUploadParams {
