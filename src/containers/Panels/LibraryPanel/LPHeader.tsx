@@ -1,5 +1,6 @@
-import { FunctionComponent, useCallback, ChangeEvent } from 'react';
+import { FunctionComponent, useCallback, useRef, ChangeEvent } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import OnboardingTooltip, { ImportFileOnboarding } from 'containers/Onboarding/OnboardingTooltip';
 import classNames from 'classnames/bind';
 import styles from './LPHeader.module.scss';
 
@@ -10,6 +11,8 @@ interface Props {
 }
 
 const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
+  const importButtonRef = useRef<HTMLSpanElement>(null);
+
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       if (e.target.files !== null) {
@@ -26,7 +29,9 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
     <div className={cx('wrapper')}>
       <div className={cx('title')}>library</div>
       <div className={cx('explorer')}>
-        <IconWrapper className={cx('icon')} icon={SvgPath.Plus} hasFrame={false} />
+        <OnboardingTooltip placement="right-start" targetRef={importButtonRef} content={<ImportFileOnboarding />}>
+          <IconWrapper className={cx('icon')} icon={SvgPath.Plus} hasFrame={false} innerRef={importButtonRef} />
+        </OnboardingTooltip>
         <label htmlFor="file-explorer" />
         <input type="file" multiple id="file-explorer" onChange={handleChange} />
       </div>

@@ -1,11 +1,15 @@
 import { FunctionComponent, useCallback, useState, Dispatch, RefObject, SetStateAction } from 'react';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
-import { FilledButton, SegmentButton } from 'components/Button';
-import { IconWrapper, SvgPath } from 'components/Icon';
+
 import { changeMode } from 'actions/modeSelection';
-import { RootState, useSelector } from 'reducers';
+import { FilledButton } from 'components/Button';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import { BaseModal } from 'components/Modal';
+import { RootState, useSelector } from 'reducers';
+
+import ChangeModeButton from './ModeChange';
+
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
 
@@ -63,29 +67,20 @@ const UpperBar: FunctionComponent<Props> = ({
     setCameraDropdownState && setCameraDropdownState(!cameraDropdownState);
   }, [cameraDropdownState, setCameraDropdownState]);
 
-  const modeList = [
-    {
-      key: 'animationMode',
-      value: SvgPath.TrackMode,
-      isSelected: mode === 'animationMode',
-      onClick: () => {
-        if (srcAddress || videoURL) {
-          setDeleteModal(true);
-        } else {
-          stopStream && stopStream();
-          dispatch(changeMode({ mode: 'animationMode' }));
-        }
-      },
-    },
-    {
-      key: 'videoMode',
-      value: SvgPath.Camera,
-      isSelected: mode === 'videoMode',
-      onClick: () => {
-        dispatch(changeMode({ mode: 'videoMode' }));
-      },
-    },
-  ];
+  // 애니메이션 모드 변경 버튼 클릭
+  const handleSwitchAnimationMode = useCallback(() => {
+    if (srcAddress || videoURL) {
+      setDeleteModal(true);
+    } else {
+      stopStream && stopStream();
+      dispatch(changeMode({ mode: 'animationMode' }));
+    }
+  }, [dispatch, srcAddress, stopStream, videoURL]);
+
+  // 비디오 모드 변경 버튼 클릭
+  const handleSwitchVideoMode = useCallback(() => {
+    dispatch(changeMode({ mode: 'videoMode' }));
+  }, [dispatch]);
 
   return (
     <div className={cx('wrap')}>
@@ -107,7 +102,7 @@ const UpperBar: FunctionComponent<Props> = ({
       </div>
       <div className={cx('right-upper')}>
         <IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />
-        <SegmentButton list={modeList} />
+        <ChangeModeButton onSwitchAnimationMode={handleSwitchAnimationMode} onSwitchVideoMode={handleSwitchVideoMode} />
         {standbyState && <div className={cx('segment-disable')}></div>}
         {mode === 'videoMode' && !recording && !recordOverTwice && (
           <div className={cx('device-select')} onClick={handleCameraDropdown}>
