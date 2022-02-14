@@ -480,7 +480,7 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
   const draggedNodeClone = cloneDeep(draggedNode);
   let nodeName = draggedNodeClone.name;
 
-  if (draggedNodeClone?.type === 'Folder') {
+  if (draggedNodeClone?.type === 'Folder' || draggedNodeClone?.type === 'Mocap') {
     const currentPathNodeName = nodes
       .filter((node) => {
         if (node.parentId === nodeId) {
@@ -543,6 +543,38 @@ function* handleDropNodeOnRoot() {
   if (!draggedNode) {
     return;
   }
+  let nodeName = draggedNode.name;
+
+  if (draggedNode?.type === 'Folder') {
+    const currentPathNodeName = nodes
+      .filter((node) => {
+        if (node.parentId === '__root__') {
+          const isMatch = draggedNode.name.match(/ \(\d+\)$/g);
+          const tempName = draggedNode.name.replace(/ \(\d+\)$/g, '');
+          if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+            return true;
+          }
+          return false;
+        }
+      })
+      .map((filteredNode) => filteredNode.name);
+
+    nodeName = beforeMove({
+      name: draggedNode.name,
+      comparisonNames: currentPathNodeName,
+    });
+  }
+
+  if (draggedNode?.type === 'Model') {
+    const extension = getFileExtension(draggedNode.name).toLowerCase();
+    const fileName = draggedNode.name.split('.').slice(0, -1).join('.');
+
+    const currentPathNodeName = nodes.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
+
+    const check = checkCreateDuplicates(`${fileName}`, currentPathNodeName);
+
+    nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
+  }
 
   const nextNodes = produce(nodes, (draft) => {
     const _draggedNode = find(draft, { id: draggedNode.id });
@@ -564,6 +596,7 @@ function* handleDropNodeOnRoot() {
   });
 
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+  yield put(lpNodeActions.setDraggedNode(null));
 }
 
 function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
