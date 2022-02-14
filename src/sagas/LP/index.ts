@@ -802,6 +802,8 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
   const baseScreen = screenList[0];
   const baseScene = baseScreen.scene;
 
+  yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
+
   screenList.forEach(({ scene }) => {
     scene.animationGroups.forEach((animationGroup) => {
       animationGroup.stop();
@@ -838,15 +840,13 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
     const glb: GLTFData = yield call([GLTF2Export, GLTF2Export.GLBAsync], baseScene, resultName, options);
     if (format === 'glb') {
       glb.downloadFiles();
-    }
-
-    if (format === 'fbx') {
+      yield put(globalUIActions.closeModal());
+    } else if (format === 'fbx' || format === 'fbx_unreal') {
       const fileName = Object.keys(glb.glTFFiles);
       const file = new File([glb.glTFFiles[fileName[0]]], resultName);
       file.path = resultName;
 
       try {
-        yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
         const fbxUrl: string = yield call(convertModel, file, 'fbx');
         const link = document.createElement('a');
         link.href = fbxUrl;
@@ -862,9 +862,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
           }),
         );
       }
-    }
-
-    if (format === 'bvh') {
+    } else if (format === 'bvh') {
       const asset = find(assetList, { id: assetId });
 
       if (asset) {

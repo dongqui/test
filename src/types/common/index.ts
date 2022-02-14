@@ -181,3 +181,5 @@ export type SelectingData = {
 };
 
 export type ButtonColor = 'primary' | 'secondary' | 'error';
+
+export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';
