@@ -65,7 +65,7 @@ const DragZoneModal: FunctionComponent<Props> = (props) => {
   };
 
   // Select Files 텍스트 클릭
-  const handleSelectFIlesClick = () => {
+  const handleSelectFilesClick = () => {
     if (fileExplorerRef.current) {
       fileExplorerRef.current.click();
     }
@@ -79,7 +79,7 @@ const DragZoneModal: FunctionComponent<Props> = (props) => {
 
   return (
     <BaseModal>
-      <div className={cx('title')}>{title}</div>
+      <h3 className={cx('title')}>{title}</h3>
       <div className={cx('content')}>
         <Html content={subTitle} />
         <div className={cx('drag-zone-wrapper')} {...getRootProps()}>
@@ -88,7 +88,7 @@ const DragZoneModal: FunctionComponent<Props> = (props) => {
           <div className={cx('select-files-wrapper')}>
             <span>Drag & Drop here</span>
             <span>or</span>
-            <strong onClick={handleSelectFIlesClick}>Select files</strong>
+            <strong onClick={handleSelectFilesClick}>Select files</strong>
             <input type="file" multiple ref={fileExplorerRef} onChange={handleInputFileChange} />
           </div>
         </div>
