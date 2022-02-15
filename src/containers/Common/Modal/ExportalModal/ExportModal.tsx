@@ -83,6 +83,11 @@ const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, on
             disabled: false,
           },
           {
+            value: 'fbx_unreal',
+            label: 'fbx (Unreal engine)',
+            disabled: false,
+          },
+          {
             value: 'glb',
             label: 'glb',
             disabled: false,
@@ -97,6 +102,11 @@ const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, on
           {
             value: 'fbx',
             label: 'fbx',
+            disabled: false,
+          },
+          {
+            value: 'fbx_unreal',
+            label: 'fbx (Unreal engine)',
             disabled: false,
           },
           {

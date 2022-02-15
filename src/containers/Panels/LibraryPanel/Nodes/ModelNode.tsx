@@ -5,6 +5,7 @@ import { isDroppedOnRP } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
+import React from 'react';
 
 interface Props {
   node: LP.Node;
@@ -31,11 +32,12 @@ const ModelNode = ({ node }: Props) => {
     );
   };
 
-  const handleDrop = () => {
+  const handleDrop = (e: React.DragEvent) => {
     if (draggedNode?.type !== 'Mocap' || !draggedNode?.mocapData) {
       return;
     }
 
+    e.stopPropagation();
     dispatch(
       lpNodeActions.dropMocapOnModel({
         nodeId: id,
