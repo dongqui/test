@@ -13,6 +13,7 @@ interface OpenModalReturnyType {
   payload: {
     name: Modal['name'];
     props?: unknown;
+    alias?: string;
   };
 }
 
@@ -25,17 +26,20 @@ interface OpenContextMenuReturnyType {
   };
 }
 
-export const openModal: OpenModalFn<OpenModalReturnyType> = (name, props) => ({
+export const openModal: OpenModalFn<OpenModalReturnyType> = (name, props, alias) => ({
   type: OPEN_MODAL,
   payload: {
     name,
     props,
+    alias,
   },
 });
 
-export const closeModal = () => ({
+export const closeModal = (alias?: Modal['alias'] | Modal['name']) => ({
   type: CLOSE_MODAL,
-  payload: {},
+  payload: {
+    alias,
+  },
 });
 
 export const openContextMenu: OpenContextMenuFn<OpenContextMenuReturnyType> = (name, event, props) => ({
