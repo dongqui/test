@@ -5,8 +5,13 @@ import { useSelector } from 'reducers';
 import * as Modals from './modals';
 import * as globalUIActions from 'actions/Common/globalUI';
 export interface Modal {
+  // 모달 이름(Modal Component file 이름)
   name: keyof typeof Modals;
+
+  // Modal Component로 전달한 props
   props?: Record<string, any>;
+
+  // 같은 이름의 모달을 복수로 사용시 alias 사용
   alias: string;
 }
 export interface ModalDefaultProps {
