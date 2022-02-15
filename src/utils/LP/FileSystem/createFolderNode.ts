@@ -8,7 +8,7 @@ function createFolderNode(nodeName: string, filePath: string, extension: string,
     name: nodeName,
     extension,
     type: 'Folder',
-    childrens: [],
+    childNodeIds: [],
   };
 }
 

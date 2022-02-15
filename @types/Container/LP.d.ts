@@ -15,7 +15,7 @@ declare namespace LP {
     name: string;
     fileUrl?: string | File;
     filePath: string;
-    childrens: string[];
+    childNodeIds: string[];
     extension: string;
     mocapData?: PlaskMocapData;
   }

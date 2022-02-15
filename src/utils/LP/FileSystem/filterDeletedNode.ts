@@ -11,8 +11,8 @@ const filterDeletedNodeAndChildren = (node: LP.Node[], ids: string[]) => {
       const searchedNode = find(node, { id: currentId });
 
       if (searchedNode) {
-        searchedNode.childrens.forEach((child) => {
-          afterNodes = afterNodes.filter((current) => !searchedNode.childrens.includes(current.id));
+        searchedNode.childNodeIds.forEach((child) => {
+          afterNodes = afterNodes.filter((current) => !searchedNode.childNodeIds.includes(current.id));
 
           memory = filterDeletedNodeAndChildren(afterNodes, [child]);
         });
@@ -31,7 +31,7 @@ function filterDeletedNode(nodes: LP.Node[], nodeId: string, parentId?: string) 
   const afterFilteredFromParentNode = produce(withoutDeletedNodeAndChildren, (draft) => {
     const parentNode = find(draft, { id: parentId });
     if (parentNode) {
-      parentNode.childrens = parentNode.childrens.filter((currentId) => currentId !== nodeId);
+      parentNode.childNodeIds = parentNode.childNodeIds.filter((currentId) => currentId !== nodeId);
     }
   });
 

@@ -155,7 +155,7 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
       extension,
       type: 'Model',
       assetId: newAsset.id,
-      childrens: animationIngredientIds,
+      childNodeIds: animationIngredientIds,
     };
 
     // 로드한 모델의 모션을 통해 LP 모션 노드 생성
@@ -169,7 +169,7 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
         name: ingredient.name,
         extension: '',
         type: 'Motion',
-        childrens: [],
+        childNodeIds: [],
       };
 
       return motion;
