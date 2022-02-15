@@ -2,6 +2,7 @@ import { FunctionComponent, useCallback, useState, Dispatch, RefObject, SetState
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 
+import * as commonActions from 'actions/Common/globalUI';
 import { changeMode } from 'actions/modeSelection';
 import { FilledButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -10,6 +11,7 @@ import { RootState, useSelector } from 'reducers';
 
 import ChangeModeButton from './ModeChange';
 
+import Dropdown from 'new_components/Dropdown';
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
 
@@ -32,6 +34,8 @@ interface Props {
   setCameraDropdownState?: Dispatch<SetStateAction<boolean>>;
   stopStream?: () => void;
 }
+
+type HelpDropdownItem = 'Onboarding' | 'Tutorial' | 'Manual' | 'Contact us';
 
 const UpperBar: FunctionComponent<Props> = ({
   sceneName,
@@ -82,6 +86,15 @@ const UpperBar: FunctionComponent<Props> = ({
     dispatch(changeMode({ mode: 'videoMode' }));
   }, [dispatch]);
 
+  const handleSelectDropdown = useCallback(
+    (menuItem: HelpDropdownItem) => {
+      if (menuItem === 'Onboarding') {
+        dispatch(commonActions.openOnboarding());
+      }
+    },
+    [dispatch],
+  );
+
   return (
     <div className={cx('wrap')}>
       <div className={cx('left-upper')}>
@@ -94,11 +107,34 @@ const UpperBar: FunctionComponent<Props> = ({
             <IconWrapper className={cx('icon-logo')} icon={SvgPath.Logo} />
           </a>
         </Link>
-        <Link href="mailto:support@plask.ai">
-          <a className={cx('icon-support-wrapper')}>
-            <IconWrapper className={cx('icon-support')} icon={SvgPath.Support} />
-          </a>
-        </Link>
+        <Dropdown>
+          <Dropdown.Header>
+            <div className={cx('support-icon-wrapper')}>
+              <IconWrapper icon={SvgPath.Support} />
+            </div>
+          </Dropdown.Header>
+          <Dropdown.Menu>
+            <Dropdown.Item menuItem="Onboarding" onClick={handleSelectDropdown} disabled={mode === 'videoMode'}>
+              Onboarding
+            </Dropdown.Item>
+            <Dropdown.Divider />
+            <Dropdown.Item menuItem="Tutorial" onClick={handleSelectDropdown}>
+              <a href="https://www.youtube.com/watch?v=6D_BadOL97c&list=PLvYxc99tMa7WKnQJETPKB_5niLXB2nGb5" target="_blank" rel="noreferrer">
+                Tutorial
+              </a>
+            </Dropdown.Item>
+            <Dropdown.Item menuItem="Manual" onClick={handleSelectDropdown}>
+              <a href="https://plasticmask.notion.site/User-guide-ac4bba1b75384c309e7a24e6542454ba" target="_blank" rel="noreferrer">
+                Manual
+              </a>
+            </Dropdown.Item>
+            <Dropdown.Item menuItem="Contact us" onClick={handleSelectDropdown}>
+              <a href="mailto:support@plask.ai" target="_blank" rel="noreferrer">
+                Contact us
+              </a>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
       </div>
       <div className={cx('right-upper')}>
         <IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />
