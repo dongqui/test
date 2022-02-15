@@ -20,7 +20,7 @@ export default function Modal() {
   const modals = useSelector((state) => state.globalUI.modals);
   const dispatch = useDispatch();
 
-  if (!modals.length) {
+  if (modals.length === 0) {
     return null;
   }
 
