@@ -12,10 +12,10 @@ interface Props {
   parentId: string;
   type: string;
   nodeName: string;
-  childrens: string[];
+  childNodeIds: string[];
 }
 
-const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childrens }: Props) => {
+const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNodeIds }: Props) => {
   const dispatch = useDispatch();
   const { animationData, lpNode, plaskProject } = useSelector((state) => state);
   const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
@@ -39,7 +39,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childrens
   };
 
   const handleVisualize = () => {
-    const hasMotions = childrens.length !== 0;
+    const hasMotions = childNodeIds.length !== 0;
 
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId, assetId }));

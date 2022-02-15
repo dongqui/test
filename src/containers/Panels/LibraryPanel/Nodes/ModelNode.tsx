@@ -12,7 +12,7 @@ interface Props {
 }
 
 const ModelNode = ({ node }: Props) => {
-  const { id, assetId, filePath, extension, name, parentId, type, childrens } = node;
+  const { id, assetId, filePath, extension, name, parentId, type, childNodeIds } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
 
@@ -27,7 +27,7 @@ const ModelNode = ({ node }: Props) => {
         nodeName: name,
         parentId,
         type,
-        childrens,
+        childNodeIds,
       }),
     );
   };
@@ -52,7 +52,7 @@ const ModelNode = ({ node }: Props) => {
       return;
     }
 
-    const hasMotions = childrens.length !== 0;
+    const hasMotions = childNodeIds.length !== 0;
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
     }

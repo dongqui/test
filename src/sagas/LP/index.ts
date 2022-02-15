@@ -105,7 +105,7 @@ function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirector
     const parent = find(draft, { id: nodeId });
     const newFolderNode = createFolderNode(nodeName, filePath, extension, parent?.id);
     if (parent) {
-      parent.childrens.push(newFolderNode.id);
+      parent.childNodeIds.push(newFolderNode.id);
     }
     draft.push(newFolderNode);
   });
@@ -296,11 +296,11 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
     const check = checkCreateDuplicates('empty motion', currentPathNodeName);
     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
     const parentModel = find(cloneLPNode, { id: nodeId });
-    const animationIngredientCurrent = parentModel?.childrens.length === 0;
+    const animationIngredientCurrent = parentModel?.childNodeIds.length === 0;
     const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
 
     const afterNodes = produce(cloneLPNode, (draft) => {
-      parentModel?.childrens.push(nextAnimationIngredient.id);
+      parentModel?.childNodeIds.push(nextAnimationIngredient.id);
       const motion: LP.Node = {
         id: nextAnimationIngredient.id,
         // parentId: nextAnimationIngredient.assetId,
@@ -308,7 +308,7 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
         parentId: nodeId,
         name: nextAnimationIngredient.name,
         filePath: parentModel?.filePath + `\\${parentModel?.name}`,
-        childrens: [],
+        childNodeIds: [],
         extension: '',
         type: 'Motion',
       };
@@ -372,7 +372,7 @@ function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicat
             parentId: draftParentModel.id,
             name: _nodeName,
             filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
-            childrens: [],
+            childNodeIds: [],
             extension: '',
             type: 'Motion',
           };
@@ -380,7 +380,7 @@ function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicat
           tempAnimationIngredient = animationIngredient;
           tempMotion = motion;
 
-          draftParentModel.childrens.push(motion.id);
+          draftParentModel.childNodeIds.push(motion.id);
           draft.push(motion);
         }
       }
@@ -463,7 +463,7 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
     return;
   }
 
-  const maxDepth = getNodeMaxDepth(draggedNode.childrens, 0, [], nodes) || 0;
+  const maxDepth = getNodeMaxDepth(draggedNode.childNodeIds, 0, [], nodes) || 0;
   const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
   if (currentPathDepth + maxDepth >= 6) {
@@ -521,15 +521,15 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
     _draggedNode.filePath = filePath + `\\${targetFolder.name}`;
     _draggedNode.name = nodeName;
 
-    targetFolder.childrens.push(_draggedNode.id);
+    targetFolder.childNodeIds.push(_draggedNode.id);
 
-    if (_draggedNode.childrens.length > 0) {
-      _draggedNode.childrens.map((child) => changeNodeDepthById(draft, child, _draggedNode));
+    if (_draggedNode.childNodeIds.length > 0) {
+      _draggedNode.childNodeIds.map((child) => changeNodeDepthById(draft, child, _draggedNode));
     }
 
     const prevFolder = find(draft, { id: draggedNode.parentId });
     if (prevFolder) {
-      prevFolder.childrens = prevFolder.childrens.filter((childId) => childId !== _draggedNode.id);
+      prevFolder.childNodeIds = prevFolder.childNodeIds.filter((childId) => childId !== _draggedNode.id);
     }
   });
 
@@ -586,13 +586,13 @@ function* handleDropNodeOnRoot() {
     _draggedNode.parentId = '__root__';
     _draggedNode.filePath = '\\root';
 
-    if (_draggedNode.childrens.length > 0) {
-      _draggedNode.childrens.map((child) => changeNodeDepthById(draft, child, _draggedNode));
+    if (_draggedNode.childNodeIds.length > 0) {
+      _draggedNode.childNodeIds.map((child) => changeNodeDepthById(draft, child, _draggedNode));
     }
 
     const parentNode = find(draft, { id: draggedNode.parentId });
     if (parentNode) {
-      parentNode.childrens = parentNode.childrens.filter((childId) => childId !== _draggedNode.id);
+      parentNode.childNodeIds = parentNode.childNodeIds.filter((childId) => childId !== _draggedNode.id);
     }
   });
 
@@ -686,7 +686,7 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
             draggedNodeClone.filePath = filePath + `\\${nodeName}`;
             draggedNodeClone.type = 'Motion';
 
-            targetNode.childrens.push(draggedNodeClone.id);
+            targetNode.childNodeIds.push(draggedNodeClone.id);
 
             const { mocapData, ...restObject } = draggedNodeClone;
 
@@ -761,7 +761,7 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
           draggedNodeClone.name = nodeName;
           draggedNodeClone.type = 'Motion';
 
-          targetNode.childrens.push(draggedNodeClone.id);
+          targetNode.childNodeIds.push(draggedNodeClone.id);
 
           const { mocapData, ...restObject } = draggedNodeClone;
 

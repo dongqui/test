@@ -21,7 +21,7 @@ interface Props {
   isEditing: boolean;
   showChildren?: boolean;
   extension?: string;
-  childrenNodeIds: string[];
+  childNodeIds: string[];
   onContextMenu: React.MouseEventHandler<HTMLDivElement>;
   onClick: React.MouseEventHandler<HTMLDivElement>;
   onArrowButtonClick?: React.MouseEventHandler<HTMLDivElement>;
@@ -36,7 +36,7 @@ const ListViewNode = ({
   depth,
   type,
   onContextMenu,
-  childrenNodeIds,
+  childNodeIds,
   nodeName,
   isOpenVisualized = false,
   isCloseVisualized = false,
@@ -72,7 +72,7 @@ const ListViewNode = ({
             </div>
           </div>
 
-          {showChildren && <ListChildren items={childrenNodeIds} />}
+          {showChildren && <ListChildren items={childNodeIds} />}
         </div>
       </div>
     </div>

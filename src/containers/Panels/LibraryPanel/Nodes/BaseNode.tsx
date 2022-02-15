@@ -15,7 +15,7 @@ interface Props {
 }
 
 const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd }: Props) => {
-  const { id, assetId, name, type, filePath, childrens, extension } = node;
+  const { id, assetId, name, type, filePath, childNodeIds, extension } = node;
   const dispatch = useDispatch();
   const [showChildren, setShowChildren] = useState(false);
 
@@ -103,7 +103,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd }: Props)
         isEditing={isEditing}
         extension={extension}
         showChildren={showChildren}
-        childrenNodeIds={childrens}
+        childNodeIds={childNodeIds}
       />
     </Fragment>
   );
