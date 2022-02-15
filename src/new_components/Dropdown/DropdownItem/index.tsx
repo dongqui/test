@@ -1,5 +1,4 @@
-import { useContext, FunctionComponent, useCallback, KeyboardEvent } from 'react';
-import { isEqual } from 'lodash';
+import React, { useContext, FunctionComponent, useCallback } from 'react';
 
 import { DropdownContext } from '../DropdownProvider';
 
@@ -19,26 +18,33 @@ const DropdownItem: FunctionComponent<Props> = (props) => {
 
   const [_, dispatch] = useContext(DropdownContext);
 
-  // 드랍다운 메뉴 클릭
-  const handleClickMenuItem = useCallback(() => {
-    if (!disabled) {
-      dispatch('changeIsOpenMenu', { isOpenMenu: false });
-      onClick(menuItem);
-    }
-  }, [disabled, menuItem, dispatch, onClick]);
-
-  // 엔터 입력 시 드랍다운 메뉴 클릭 이벤트 호출
-  const handleKeydownMenuItem = useCallback(
-    (event: KeyboardEvent<HTMLElement>) => {
-      if (!disabled && isEqual(event.key, 'Enter')) {
-        handleClickMenuItem();
+  // 클릭 이벤트 처리
+  const handleClickEvent = useCallback(
+    (eventTarget: Node) => {
+      const childNodeName = eventTarget.firstChild?.nodeName;
+      if (childNodeName === 'A') {
+        const anchorTag = eventTarget.firstChild as HTMLAnchorElement;
+        anchorTag.click();
+      } else {
+        onClick(menuItem);
       }
     },
-    [disabled, handleClickMenuItem],
+    [menuItem, onClick],
+  );
+
+  // 드랍다운 메뉴 클릭
+  const handleMenuItemClick = useCallback(
+    (event: React.MouseEvent<HTMLLIElement>) => {
+      if (!disabled) {
+        handleClickEvent(event.target as Node);
+        dispatch('changeIsOpenMenu', { isOpenMenu: false });
+      }
+    },
+    [disabled, dispatch, handleClickEvent],
   );
 
   return (
-    <li className={cx('menu-item', { disabled })} onClick={handleClickMenuItem} onKeyDown={handleKeydownMenuItem} role="menuitem">
+    <li className={cx('menu-item', { disabled })} onClick={handleMenuItemClick} role="menuitem">
       {children}
     </li>
   );
