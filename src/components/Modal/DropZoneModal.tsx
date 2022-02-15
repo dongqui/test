@@ -7,7 +7,7 @@ import { BaseModal } from 'components/Modal';
 import { Html } from 'components/Typography';
 
 import classnames from 'classnames/bind';
-import styles from './DragZoneModal.module.scss';
+import styles from './DropZoneModal.module.scss';
 
 const cx = classnames.bind(styles);
 
@@ -48,7 +48,7 @@ interface Props {
   onDrop: (files: File[]) => void;
 }
 
-const DragZoneModal: FunctionComponent<Props> = (props) => {
+const DropZoneModal: FunctionComponent<Props> = (props) => {
   const { cancelButtonText, title, subTitle, extensionMesaage, onCancel, onClose, onDrop } = props;
 
   const { getRootProps } = useDropzone({ onDrop });
@@ -82,7 +82,7 @@ const DragZoneModal: FunctionComponent<Props> = (props) => {
       <h3 className={cx('title')}>{title}</h3>
       <div className={cx('content')}>
         <Html content={subTitle} />
-        <div className={cx('drag-zone-wrapper')} {...getRootProps()}>
+        <div className={cx('drop-zone-wrapper')} {...getRootProps()}>
           <span>{extensionMesaage}</span>
           <IconWrapper className={cx('cloud-upload-icon')} icon={SvgPath.CloudUpload} hasFrame={false} />
           <div className={cx('select-files-wrapper')}>
@@ -100,4 +100,4 @@ const DragZoneModal: FunctionComponent<Props> = (props) => {
   );
 };
 
-export default DragZoneModal;
+export default DropZoneModal;

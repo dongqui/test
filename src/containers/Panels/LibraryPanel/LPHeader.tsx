@@ -21,7 +21,7 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
   // file import 버튼 클릭
   const handleFileImportButtonClick = useCallback(() => {
     dispatch(
-      globalUIActions.openModal('DragZoneModal', {
+      globalUIActions.openModal('DropZoneModal', {
         title: 'Import',
         subTitle: 'Import your 3D assets or source videos',
         extensionMesaage: '.fbx, .glb, .mp4, .mov, .avi, .webm supported',
