@@ -13,12 +13,12 @@ const Onboarding = () => {
   const isShowedOnboarding = useSelector((state) => state.globalUI.isShowedOnboarding);
   const [isShowedLowerBanner, setIsShowedLowerBanner] = useState(false);
 
-  // 3초 뒤에 하단 배너 출력
+  // 1초 뒤에 하단 배너 출력
   useEffect(() => {
     if (isShowedOnboarding) {
       setTimeout(() => {
         setIsShowedLowerBanner(true);
-      }, 3000);
+      }, 1000);
     } else {
       setIsShowedLowerBanner(false);
     }
