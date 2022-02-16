@@ -16,24 +16,26 @@
 .button-wrapper {
   margin-left: 40px;
 
-  button:first-child {
-    margin-right: 16px;
-  }
-
-  button.learn-more {
-    border: 1px solid var(--gray300);
-    border-radius: 6px;
-
-    a {
-      background-color: var(--gray100);
-      color: var(--gray700);
-      text-decoration: none;
+  button {
+    &:first-child {
+      margin-right: 16px;
     }
-  }
 
-  button.done {
-    border-radius: 6px;
-    background-color: var(--blue200);
-    color: var(--gray700);
+    &.learn-more {
+      border: 1px solid var(--gray300);
+      border-radius: 6px;
+
+      a {
+        background-color: var(--gray100);
+        color: var(--gray700);
+        text-decoration: none;
+      }
+    }
+
+    &.done {
+      border-radius: 6px;
+      background-color: var(--blue200);
+      color: var(--gray700);
+    }
   }
 }
