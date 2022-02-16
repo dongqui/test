@@ -9,17 +9,6 @@
   color: var(--gray700);
   opacity: 0;
 
-  h3 {
-    font-size: 14px;
-    margin: 0;
-    margin-bottom: 24px;
-  }
-
-  p {
-    font-size: 11px;
-    margin: 0;
-  }
-
   &.is-moved {
     opacity: 1;
   }

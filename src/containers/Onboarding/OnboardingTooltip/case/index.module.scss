@@ -1,0 +1,14 @@
+.title {
+  font-size: 16px;
+  margin: 0;
+  margin-bottom: 24px;
+}
+
+.body {
+  font-size: 14px;
+  margin: 0;
+
+  .highlight {
+    color: var(--blue200);
+  }
+}

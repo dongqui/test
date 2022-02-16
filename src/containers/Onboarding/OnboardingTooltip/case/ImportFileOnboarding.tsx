@@ -1,13 +1,17 @@
 import { Fragment } from 'react';
 
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
+const cx = classNames.bind(styles);
+
 const ImportFileOnboarding = () => {
   return (
     <Fragment>
-      <h3>Import files into the library</h3>
-      <p>
-        import your model or video files by clicking <br />
-        the button or simply dragging and dropping <br />
-        the files.
+      <h3 className={cx('title')}>Simply dragging and dropping the files on Library</h3>
+      <p className={cx('body')}>
+        Import your <span className={cx('highlight')}>model or video files</span> by clicking the button or <br />
+        simply dragging and dropping the files.
       </p>
     </Fragment>
   );
