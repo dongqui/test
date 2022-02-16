@@ -26,13 +26,13 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
 
   const { mode } = useSelector((state: RootState) => state.modeSelection);
 
-  // 접속 후 1초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
+  // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
   useEffect(() => {
     setTimeout(() => {
       if (!cookie.load('onboarding_1')) {
         dispatch(commonActions.openOnboarding());
       }
-    }, 1000);
+    }, 2000);
   }, [dispatch]);
 
   const classes = cx('wrapper', {
