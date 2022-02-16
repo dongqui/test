@@ -8,10 +8,10 @@ const cx = classNames.bind(styles);
 const ImportFileOnboarding = () => {
   return (
     <Fragment>
-      <h3 className={cx('title')}>Simply dragging and dropping the files on Library</h3>
+      <h3 className={cx('title')}>Import files into the library</h3>
       <p className={cx('body')}>
         Import your <span className={cx('highlight')}>model or video files</span> by clicking the button or <br />
-        simply dragging and dropping the files.
+        simply drag and drop them in the library.
       </p>
     </Fragment>
   );
