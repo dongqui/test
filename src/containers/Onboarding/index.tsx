@@ -18,7 +18,7 @@ const Onboarding = () => {
     if (isShowedOnboarding) {
       setTimeout(() => {
         setIsShowedLowerBanner(true);
-      }, 3000);
+      }, 1000);
     } else {
       setIsShowedLowerBanner(false);
     }
