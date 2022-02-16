@@ -1,31 +1,44 @@
-import React from 'react';
-import { useSelector } from 'reducers';
+import { Fragment } from 'react';
 import { useDispatch } from 'react-redux';
+
+import { useSelector } from 'reducers';
 import * as Modals from './modals';
 import * as globalUIActions from 'actions/Common/globalUI';
 export interface Modal {
+  // 모달 이름(Modal Component file 이름)
   name: keyof typeof Modals;
+
+  // Modal Component로 전달한 props
   props?: Record<string, any>;
+
+  // 같은 이름의 모달을 복수로 사용시 alias 사용
+  alias: string;
 }
 export interface ModalDefaultProps {
   onClose: () => void;
 }
 export interface OpenModalFn<ReturnType> {
-  <T extends Modal['name']>(name: T, props: Omit<React.ComponentProps<typeof Modals[T]>, keyof ModalDefaultProps>): ReturnType;
+  <T extends Modal['name']>(name: T, props: Omit<React.ComponentProps<typeof Modals[T]>, keyof ModalDefaultProps>, alias?: string): ReturnType;
 }
 
 export default function Modal() {
-  const modal = useSelector((state) => state.globalUI.modal);
+  const modals = useSelector((state) => state.globalUI.modals);
   const dispatch = useDispatch();
 
-  if (!modal) {
+  if (modals.length === 0) {
     return null;
   }
 
-  const handleClose = () => {
-    dispatch(globalUIActions.closeModal());
+  const handleClose = (modalAlias: string) => () => {
+    dispatch(globalUIActions.closeModal(modalAlias));
   };
 
-  const OpenedModal = Modals[modal.name];
-  return <OpenedModal onClose={handleClose} {...(modal.props as any)} />;
+  return (
+    <Fragment>
+      {modals.map((modal) => {
+        const Modal = Modals[modal.name];
+        return <Modal key={modal.alias} onClose={handleClose(modal.alias)} {...(modal.props as any)} />;
+      })}
+    </Fragment>
+  );
 }
