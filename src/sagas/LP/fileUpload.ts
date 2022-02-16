@@ -116,9 +116,9 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
   const fileName = rawFileName.split('.').slice(0, -1).join('.');
   const assetId = getRandomStringKey();
   try {
-    yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+    yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }, `loading_${fileName}`));
     const assetContainer: BABYLON.AssetContainer = yield call(getAssetContainer, file, extension, baseScene);
-    yield put(globalUIActions.closeModal());
+    yield put(globalUIActions.closeModal(`loading_${fileName}`));
 
     const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
 
