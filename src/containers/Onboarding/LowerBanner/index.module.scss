@@ -5,33 +5,37 @@
   display: flex;
   align-items: center;
   width: 100%;
-  height: 72px;
+  height: 104px;
   padding: 0 36px;
-  background-color: var(--gray100);
+  background-color: var(--gray200);
   color: var(--gray700);
+  border-top: 1px solid var(--gray400);
+  filter: drop-shadow(0 -8px 16px rgb(0 0 0 / 50%));
 }
 
 .button-wrapper {
   margin-left: 40px;
 
-  button:first-child {
-    margin-right: 16px;
+  button {
+    &:first-child {
+      margin-right: 16px;
+    }
+
+    &.learn-more {
+      border: 1px solid var(--gray300);
+      border-radius: 6px;
+
+      a {
+        background-color: var(--gray100);
+        color: var(--gray700);
+        text-decoration: none;
+      }
+    }
+
+    &.done {
+      border-radius: 6px;
+      background-color: var(--blue200);
+      color: var(--gray700);
+    }
   }
-}
-
-.learn-more {
-  border: 1px solid var(--gray300);
-  border-radius: 6px;
-
-  a {
-    background-color: var(--gray100);
-    color: var(--gray700);
-    text-decoration: none;
-  }
-}
-
-.done {
-  border-radius: 6px;
-  background-color: var(--blue200);
-  color: var(--gray700);
 }
