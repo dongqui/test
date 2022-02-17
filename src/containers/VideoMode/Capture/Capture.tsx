@@ -218,7 +218,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             parentId: '__root__',
             name: fileName,
             filePath: '\\root',
-            childrens: [],
+            childNodeIds: [],
             extension: '',
             type: 'Mocap',
             mocapData: response.data.result[0].trackData,
@@ -235,7 +235,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             name: fileName,
             extension: '',
             type: 'Folder',
-            childrens: [],
+            childNodeIds: [],
           };
 
           const newMotionNodes: LP.Node[] = [];
@@ -245,13 +245,13 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               parentId: newFolderNode.id,
               name: `${fileName}_${item.motionNumber}`,
               filePath: '\\root' + `\\${fileName}`,
-              childrens: [],
+              childNodeIds: [],
               extension: '',
               type: 'Mocap',
               mocapData: item.trackData,
             };
             newMotionNodes.push(newMotionNode);
-            newFolderNode.childrens.push(newMotionNode.id);
+            newFolderNode.childNodeIds.push(newMotionNode.id);
           });
 
           nextNodes = produce(lpNode, (draft) => {

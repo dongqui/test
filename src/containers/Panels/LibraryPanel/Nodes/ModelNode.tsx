@@ -5,13 +5,14 @@ import { isDroppedOnRP } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
+import React from 'react';
 
 interface Props {
   node: LP.Node;
 }
 
 const ModelNode = ({ node }: Props) => {
-  const { id, assetId, filePath, extension, name, parentId, type, childrens } = node;
+  const { id, assetId, filePath, extension, name, parentId, type, childNodeIds } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
 
@@ -26,14 +27,17 @@ const ModelNode = ({ node }: Props) => {
         nodeName: name,
         parentId,
         type,
-        childrens,
+        childNodeIds,
       }),
     );
   };
 
-  const handleDrop = () => {
-    if (draggedNode?.type !== 'Mocap' || !draggedNode?.mocapData) return;
+  const handleDrop = (e: React.DragEvent) => {
+    if (draggedNode?.type !== 'Mocap' || !draggedNode?.mocapData) {
+      return;
+    }
 
+    e.stopPropagation();
     dispatch(
       lpNodeActions.dropMocapOnModel({
         nodeId: id,
@@ -44,9 +48,11 @@ const ModelNode = ({ node }: Props) => {
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
-    if (!assetId || !isDroppedOnRP(e)) return;
+    if (!assetId || !isDroppedOnRP(e)) {
+      return;
+    }
 
-    const hasMotions = childrens.length !== 0;
+    const hasMotions = childNodeIds.length !== 0;
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
     }

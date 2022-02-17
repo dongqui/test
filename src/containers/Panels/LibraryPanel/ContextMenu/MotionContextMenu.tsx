@@ -2,6 +2,7 @@ import { useDispatch } from 'react-redux';
 
 import { BaseContextMenu, ContextMenuItem } from 'components/ContextMenu';
 import { useSelector } from 'reducers';
+import { ExportFormat } from 'types/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 interface Props {
@@ -67,7 +68,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
     const currentMotions = animationData.animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
     dispatch(
       globalUIActions.openModal('ExportModal', {
-        onConfirm: (data: { motion: string; format: 'fbx' | 'glb' | 'bvh' }) => {
+        onConfirm: (data: { motion: string; format: ExportFormat }) => {
           dispatch(
             lpNodeActions.exportAsset({
               ...data,

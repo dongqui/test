@@ -1,6 +1,6 @@
 .wrap {
-  display: grid;
-  grid-template-columns: 240px 1fr 280px;
+  display: flex;
+  justify-content: space-between;
   height: 100%;
 }
 
@@ -39,28 +39,6 @@
 }
 
 .icon-logo {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 16px;
-  height: 16px;
-}
-
-.icon-support-wrapper {
-  display: block;
-  position: relative;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  border: 1px solid var(--gray300);
-
-  &:hover {
-    border: 1px solid var(--gray500);
-  }
-}
-
-.icon-support {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -270,5 +248,25 @@
 
   & > strong {
     color: #fd6756;
+  }
+}
+
+.support-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #353739;
+  border-radius: 6px;
+
+  span,
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    border: 1px solid #7A7A7B;
   }
 }

@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { useSelector } from 'reducers';
@@ -15,11 +15,11 @@ interface Props {
 }
 
 const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd }: Props) => {
-  const { id, assetId, name, type, filePath, childrens, extension } = node;
+  const { id, assetId, name, type, filePath, childNodeIds, extension } = node;
   const dispatch = useDispatch();
   const [showChildren, setShowChildren] = useState(false);
 
-  const { selectedId, nodes, editingNodeId } = useSelector((state) => state.lpNode);
+  const { selectedId, nodes, editingNodeId, draggedNode } = useSelector((state) => state.lpNode);
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
   const { animationIngredients } = useSelector((state) => state.animationData);
 
@@ -61,7 +61,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd }: Props)
     e.stopPropagation();
     const draggedNode = nodes.find((node) => node.id === id);
     if (draggedNode) {
-      dispatch(lpNodeActions.dragNodeStart(draggedNode));
+      dispatch(lpNodeActions.setDraggedNode(draggedNode));
     }
   };
 
@@ -83,6 +83,15 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd }: Props)
     onContextMenu(e);
   };
 
+  const handleDrop = (e: React.DragEvent) => {
+    if (draggedNode?.id === node.id) {
+      e.stopPropagation();
+      return;
+    }
+
+    onDrop && onDrop(e);
+  };
+
   return (
     <Fragment>
       <ListViewNode
@@ -96,14 +105,14 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd }: Props)
         onClick={handleClickNode}
         onDragStart={handleDragStart}
         onEditName={handleEditName}
-        onDrop={onDrop}
+        onDrop={handleDrop}
         onDragEnd={onDragEnd}
         onArrowButtonClick={handleArrowButtonClick}
         onCancelEdit={handleCancelEdit}
         isEditing={isEditing}
         extension={extension}
         showChildren={showChildren}
-        childrenNodeIds={childrens}
+        childNodeIds={childNodeIds}
       />
     </Fragment>
   );

@@ -1,4 +1,8 @@
-import { FunctionComponent, useCallback, ChangeEvent } from 'react';
+import { FunctionComponent, useCallback, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+
+import * as globalUIActions from 'actions/Common/globalUI';
+import OnboardingTooltip, { ImportFileOnboarding } from 'containers/Onboarding/OnboardingTooltip';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
 import styles from './LPHeader.module.scss';
@@ -10,26 +14,29 @@ interface Props {
 }
 
 const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
-  const handleChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files !== null) {
-        const files = Array.from(e.target.files);
-        e.target.value = '';
+  const dispatch = useDispatch();
 
-        onLoad(files);
-      }
-    },
-    [onLoad],
-  );
+  const importButtonRef = useRef<HTMLSpanElement>(null);
+
+  // file import 버튼 클릭
+  const handleFileImportButtonClick = useCallback(() => {
+    dispatch(
+      globalUIActions.openModal('DropZoneModal', {
+        title: 'Import',
+        subTitle: 'Import your 3D assets or source videos',
+        extensionMesaage: '.fbx, .glb, .mp4, .mov, .avi, .webm supported',
+        cancelButtonText: 'Cancel',
+        onDrop: onLoad,
+      }),
+    );
+  }, [dispatch, onLoad]);
 
   return (
     <div className={cx('wrapper')}>
       <div className={cx('title')}>library</div>
-      <div className={cx('explorer')}>
-        <IconWrapper className={cx('icon')} icon={SvgPath.Plus} hasFrame={false} />
-        <label htmlFor="file-explorer" />
-        <input type="file" multiple id="file-explorer" onChange={handleChange} />
-      </div>
+      <OnboardingTooltip placement="right-start" targetRef={importButtonRef} content={<ImportFileOnboarding />}>
+        <IconWrapper className={cx('icon')} icon={SvgPath.Plus} hasFrame={false} innerRef={importButtonRef} onClick={handleFileImportButtonClick} />
+      </OnboardingTooltip>
     </div>
   );
 };

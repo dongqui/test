@@ -22,9 +22,9 @@ const MuteButton: FunctionComponent<Props> = (props) => {
   const _playState = useSelector((state) => state.animatingControls.playState);
 
   const handleMuteButtonClick = useCallback(() => {
-    dispatch(trackListActions.clickLayerTrackMuteButton({ id: trackId, name: trackName }));
+    dispatch(trackListActions.clickLayerTrackMuteButton({ id: trackId }));
     forceClickAnimationPauseAndPlay(_playState, _playDirection);
-  }, [_playDirection, _playState, trackId, trackName, dispatch]);
+  }, [_playDirection, _playState, trackId, dispatch]);
 
   return <IconWrapper className={cx('mute-icon')} icon={isMuted ? SvgPath.EyeClose : SvgPath.EyeOpen} onClick={handleMuteButtonClick} />;
 };

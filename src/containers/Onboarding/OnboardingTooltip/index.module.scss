@@ -1,0 +1,62 @@
+.onboarding-tooltip {
+  position: absolute;
+  width: fit-content;
+  padding: 28px 24px;
+  background-color: var(--gray200);
+  border: 1px solid var(--gray400);
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgb(0 0 0 / 25%);
+  color: var(--gray700);
+  opacity: 0;
+
+  &.is-moved {
+    opacity: 1;
+  }
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 6px 8px 6.5px;
+  }
+
+  &::before {
+    border-color: var(--gray400)transparent;
+  }
+
+  &::after {
+    border-color: var(--gray200)transparent;
+  }
+
+  &.right-start {
+    &::before,
+    &::after {
+      transform: rotate(-90deg);
+    }
+
+    &::before {
+      top: 13px;
+      left: -10px;
+    }
+
+    &::after {
+      top: 13px;
+      left: -8px;
+    }
+  }
+
+  &.bottom-end {
+    &::before {
+      top: -8px;
+      right: 8px;
+    }
+
+    &::after {
+      top: -7px;
+      right: 8px;
+    }
+  }
+}

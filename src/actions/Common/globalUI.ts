@@ -5,12 +5,15 @@ export const OPEN_MODAL = 'globalUI/OPEN_MODAL' as const;
 export const CLOSE_MODAL = 'globalUI/CLOSE_MODAL' as const;
 export const OPEN_CONTEXT_MENU = 'globalUI/OPEN_CONTEXT_MENU' as const;
 export const CLOSE_CONTEXT_MENU = 'globalUI/CLOSE_CONTEXT_MENU' as const;
+export const OPEN_ONBOARDING = 'globalUI/OPEN_ONBOARDING' as const;
+export const CLOSE_ONBOARDING = 'globalUI/CLOSE_ONBOARDING' as const;
 
 interface OpenModalReturnyType {
   type: 'globalUI/OPEN_MODAL';
   payload: {
     name: Modal['name'];
     props?: unknown;
+    alias?: string;
   };
 }
 
@@ -23,17 +26,20 @@ interface OpenContextMenuReturnyType {
   };
 }
 
-export const openModal: OpenModalFn<OpenModalReturnyType> = (name, props) => ({
+export const openModal: OpenModalFn<OpenModalReturnyType> = (name, props, alias) => ({
   type: OPEN_MODAL,
   payload: {
     name,
     props,
+    alias,
   },
 });
 
-export const closeModal = () => ({
+export const closeModal = (alias?: Modal['alias'] | Modal['name']) => ({
   type: CLOSE_MODAL,
-  payload: {},
+  payload: {
+    alias,
+  },
 });
 
 export const openContextMenu: OpenContextMenuFn<OpenContextMenuReturnyType> = (name, event, props) => ({
@@ -50,4 +56,17 @@ export const closeContextMenu = () => ({
   payload: {},
 });
 
-export type GlobalUIActions = ReturnType<typeof openModal> | ReturnType<typeof closeModal> | ReturnType<typeof openContextMenu> | ReturnType<typeof closeContextMenu>;
+export const openOnboarding = () => ({
+  type: OPEN_ONBOARDING,
+});
+export const closeOnboarding = () => ({
+  type: CLOSE_ONBOARDING,
+});
+
+export type GlobalUIActions =
+  | ReturnType<typeof openModal>
+  | ReturnType<typeof closeModal>
+  | ReturnType<typeof openContextMenu>
+  | ReturnType<typeof closeContextMenu>
+  | ReturnType<typeof openOnboarding>
+  | ReturnType<typeof closeOnboarding>;

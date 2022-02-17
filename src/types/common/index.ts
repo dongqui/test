@@ -56,8 +56,15 @@ export interface AnimationIngredient {
   name: string;
   assetId: string;
   current: boolean;
-  tracks: PlaskTrack[];
   layers: PlaskLayer[];
+}
+
+export interface PlaskLayer {
+  id: string;
+  name: string;
+  isIncluded: boolean;
+  useFilter: boolean;
+  tracks: PlaskTrack[];
 }
 
 export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling';
@@ -74,10 +81,8 @@ export interface PlaskTrack {
   interpolationType: 'linear' | 'bezier' | 'constant';
   bezierParams?: BezierParams;
   isMocapAnimation: boolean;
-  useFilter: boolean;
   filterBeta: number;
   filterMinCutoff: number;
-  isIncluded: boolean;
   isLocked: boolean;
 }
 
@@ -86,11 +91,6 @@ export interface BezierParams {
   x2: number;
   y1: number;
   y2: number;
-}
-
-export interface PlaskLayer {
-  id: string;
-  name: string;
 }
 
 export type RetargetSourceBoneType =
@@ -181,3 +181,5 @@ export type SelectingData = {
 };
 
 export type ButtonColor = 'primary' | 'secondary' | 'error';
+
+export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';

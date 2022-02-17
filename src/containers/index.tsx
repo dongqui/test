@@ -1,9 +1,15 @@
-import { FunctionComponent, memo } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from 'reducers';
+import { FunctionComponent, memo, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import cookie from 'react-cookies';
+
+import * as commonActions from 'actions/Common/globalUI';
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
 import { VideoMode } from 'containers/VideoMode';
+import { RootState, useSelector } from 'reducers';
+
+import Onboarding from './Onboarding';
 import Shoot from './Shoot';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -16,7 +22,18 @@ interface Props {
 }
 
 const Index: FunctionComponent<Props> = ({ browserType }) => {
+  const dispatch = useDispatch();
+
   const { mode } = useSelector((state: RootState) => state.modeSelection);
+
+  // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
+  useEffect(() => {
+    setTimeout(() => {
+      if (!cookie.load('onboarding_1')) {
+        dispatch(commonActions.openOnboarding());
+      }
+    }, 2000);
+  }, [dispatch]);
 
   const classes = cx('wrapper', {
     visible: mode === 'animationMode',
@@ -29,6 +46,7 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
         <Shoot className={classes} />
       </ResizeProvider>
       {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={browserType} />}
+      <Onboarding />
     </main>
   );
 };

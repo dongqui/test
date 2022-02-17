@@ -108,7 +108,7 @@ function getInitialPoses(transformNodes: BABYLON.TransformNode[], skeletons: BAB
 function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) {
   // TODO: file 복수 처리 -> action 줄이기
   const { lpNode, plaskProject }: RootState = yield select();
-  const { file } = action.payload;
+  const { file, showLoading } = action.payload;
 
   const baseScene = plaskProject.screenList[0].scene;
   const rawFileName = file instanceof File ? file.name : file;
@@ -116,10 +116,11 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
   const fileName = rawFileName.split('.').slice(0, -1).join('.');
   const assetId = getRandomStringKey();
   try {
-    yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
-    const assetContainer: BABYLON.AssetContainer = yield call(getAssetContainer, file, extension, baseScene);
-    yield put(globalUIActions.closeModal());
+    if (showLoading) {
+      yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }, `loading_${fileName}`));
+    }
 
+    const assetContainer: BABYLON.AssetContainer = yield call(getAssetContainer, file, extension, baseScene);
     const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
 
     if (!skeletons?.length || !skeletons[0].bones?.length || !meshes?.length) {
@@ -155,7 +156,7 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
       extension,
       type: 'Model',
       assetId: newAsset.id,
-      childrens: animationIngredientIds,
+      childNodeIds: animationIngredientIds,
     };
 
     // 로드한 모델의 모션을 통해 LP 모션 노드 생성
@@ -169,7 +170,7 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
         name: ingredient.name,
         extension: '',
         type: 'Motion',
-        childrens: [],
+        childNodeIds: [],
       };
 
       return motion;
@@ -194,6 +195,10 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
           confirmColor: 'cancel',
         }),
       );
+    }
+
+    if (showLoading) {
+      yield put(globalUIActions.closeModal(`loading_${fileName}`));
     }
   } catch (e) {
     yield put(

@@ -18,7 +18,7 @@ import {
 import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth, filterDeletedNode, createFolderNode } from 'utils/LP/FileSystem';
 import { createAnimationIngredientFromMocapData, createBvhMap } from 'utils/LP/Retarget';
 import { getFileExtension } from 'utils/common';
-import { forceClickAnimationPlayAndStop, forceClickAnimationPauseAndPlay, filterAnimatableTransformNodes, roundToFourth } from 'utils/common';
+import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes, roundToFourth } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -105,7 +105,7 @@ function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirector
     const parent = find(draft, { id: nodeId });
     const newFolderNode = createFolderNode(nodeName, filePath, extension, parent?.id);
     if (parent) {
-      parent.childrens.push(newFolderNode.id);
+      parent.childNodeIds.push(newFolderNode.id);
     }
     draft.push(newFolderNode);
   });
@@ -296,11 +296,11 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
     const check = checkCreateDuplicates('empty motion', currentPathNodeName);
     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
     const parentModel = find(cloneLPNode, { id: nodeId });
-    const animationIngredientCurrent = parentModel?.childrens.length === 0;
+    const animationIngredientCurrent = parentModel?.childNodeIds.length === 0;
     const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
 
     const afterNodes = produce(cloneLPNode, (draft) => {
-      parentModel?.childrens.push(nextAnimationIngredient.id);
+      parentModel?.childNodeIds.push(nextAnimationIngredient.id);
       const motion: LP.Node = {
         id: nextAnimationIngredient.id,
         // parentId: nextAnimationIngredient.assetId,
@@ -308,7 +308,7 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
         parentId: nodeId,
         name: nextAnimationIngredient.name,
         filePath: parentModel?.filePath + `\\${parentModel?.name}`,
-        childrens: [],
+        childNodeIds: [],
         extension: '',
         type: 'Motion',
       };
@@ -372,7 +372,7 @@ function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicat
             parentId: draftParentModel.id,
             name: _nodeName,
             filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
-            childrens: [],
+            childNodeIds: [],
             extension: '',
             type: 'Motion',
           };
@@ -380,7 +380,7 @@ function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicat
           tempAnimationIngredient = animationIngredient;
           tempMotion = motion;
 
-          draftParentModel.childrens.push(motion.id);
+          draftParentModel.childNodeIds.push(motion.id);
           draft.push(motion);
         }
       }
@@ -456,14 +456,19 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
   const { lpNode }: RootState = yield select();
   const { draggedNode, nodes } = lpNode;
   const { filePath, nodeId } = action.payload;
-
+  const targetFolder = find(nodes, { id: nodeId });
   // TODO(?) 동일한 이름이 있는지 확인
   // @TODO 없으면 비활성 처리 필요
-  if (!draggedNode || nodeId === draggedNode.id || (draggedNode?.type === 'Motion' && !draggedNode?.mocapData)) {
+  if (
+    !draggedNode ||
+    nodeId === draggedNode.id ||
+    (draggedNode?.type === 'Motion' && !draggedNode?.mocapData) ||
+    targetFolder?.childNodeIds.find((childNodeId) => childNodeId === draggedNode.id)
+  ) {
     return;
   }
 
-  const maxDepth = getNodeMaxDepth(draggedNode.childrens, 0, [], nodes) || 0;
+  const maxDepth = getNodeMaxDepth(draggedNode.childNodeIds, 0, [], nodes) || 0;
   const currentPathDepth = (filePath.match(/\\/g) || []).length;
 
   if (currentPathDepth + maxDepth >= 6) {
@@ -477,15 +482,14 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
     return;
   }
 
-  const draggedNodeClone = cloneDeep(draggedNode);
-  let nodeName = draggedNodeClone.name;
+  let nodeName = draggedNode.name;
 
-  if (draggedNodeClone?.type === 'Folder') {
+  if (draggedNode?.type === 'Folder' || draggedNode?.type === 'Mocap') {
     const currentPathNodeName = nodes
       .filter((node) => {
         if (node.parentId === nodeId) {
-          const isMatch = draggedNodeClone.name.match(/ \(\d+\)$/g);
-          const tempName = draggedNodeClone.name.replace(/ \(\d+\)$/g, '');
+          const isMatch = draggedNode.name.match(/ \(\d+\)$/g);
+          const tempName = draggedNode.name.replace(/ \(\d+\)$/g, '');
           if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
             return true;
           }
@@ -495,14 +499,14 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
       .map((filteredNode) => filteredNode.name);
 
     nodeName = beforeMove({
-      name: draggedNodeClone.name,
+      name: draggedNode.name,
       comparisonNames: currentPathNodeName,
     });
   }
 
-  if (draggedNodeClone?.type === 'Model') {
-    const extension = getFileExtension(draggedNodeClone.name).toLowerCase();
-    const fileName = draggedNodeClone.name.split('.').slice(0, -1).join('.');
+  if (draggedNode?.type === 'Model') {
+    const extension = getFileExtension(draggedNode.name).toLowerCase();
+    const fileName = draggedNode.name.split('.').slice(0, -1).join('.');
 
     const currentPathNodeName = nodes.filter((node) => node.parentId === nodeId && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
@@ -512,29 +516,93 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
   }
 
   const nextNodes = produce(nodes, (draft) => {
-    const drragedNodeIndex = draft.findIndex((node) => node.id === draggedNode.id);
-    drragedNodeIndex !== -1 && draft.splice(drragedNodeIndex, 1);
-
+    const _draggedNode = find(draft, { id: draggedNode.id });
     const targetFolder = find(draft, { id: nodeId });
-    if (targetFolder) {
-      draggedNodeClone.id = uuid();
-      draggedNodeClone.parentId = nodeId;
-      // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${nodeName}`;
-      draggedNodeClone.filePath = filePath + `\\${targetFolder.name}`;
-      draggedNodeClone.name = nodeName;
+    if (!_draggedNode || !targetFolder) {
+      return;
+    }
 
-      targetFolder.childrens.push(draggedNodeClone.id);
+    _draggedNode.parentId = nodeId;
+    _draggedNode.filePath = filePath + `\\${targetFolder.name}`;
+    _draggedNode.name = nodeName;
 
-      if (draggedNodeClone.childrens.length > 0) {
-        draggedNodeClone.childrens.map((child) => changeNodeDepthById(draft, child, draggedNodeClone));
-      }
+    targetFolder.childNodeIds.push(_draggedNode.id);
 
-      // @TODO 하위 노드도 추가
-      draft.push(draggedNodeClone);
+    if (_draggedNode.childNodeIds.length > 0) {
+      _draggedNode.childNodeIds.map((child) => changeNodeDepthById(draft, child, _draggedNode));
+    }
+
+    const prevFolder = find(draft, { id: draggedNode.parentId });
+    if (prevFolder) {
+      prevFolder.childNodeIds = prevFolder.childNodeIds.filter((childId) => childId !== _draggedNode.id);
     }
   });
 
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+  yield put(lpNodeActions.setDraggedNode(null));
+}
+
+function* handleDropNodeOnRoot() {
+  const { lpNode }: RootState = yield select();
+  const { draggedNode, nodes } = lpNode;
+
+  if (!draggedNode) {
+    return;
+  }
+  let nodeName = draggedNode.name;
+
+  if (draggedNode?.type === 'Folder') {
+    const currentPathNodeName = nodes
+      .filter((node) => {
+        if (node.parentId === '__root__') {
+          const isMatch = draggedNode.name.match(/ \(\d+\)$/g);
+          const tempName = draggedNode.name.replace(/ \(\d+\)$/g, '');
+          if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+            return true;
+          }
+          return false;
+        }
+      })
+      .map((filteredNode) => filteredNode.name);
+
+    nodeName = beforeMove({
+      name: draggedNode.name,
+      comparisonNames: currentPathNodeName,
+    });
+  }
+
+  if (draggedNode?.type === 'Model') {
+    const extension = getFileExtension(draggedNode.name).toLowerCase();
+    const fileName = draggedNode.name.split('.').slice(0, -1).join('.');
+
+    const currentPathNodeName = nodes.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
+
+    const check = checkCreateDuplicates(`${fileName}`, currentPathNodeName);
+
+    nodeName = check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
+  }
+
+  const nextNodes = produce(nodes, (draft) => {
+    const _draggedNode = find(draft, { id: draggedNode.id });
+    if (!_draggedNode) {
+      return;
+    }
+
+    _draggedNode.parentId = '__root__';
+    _draggedNode.filePath = '\\root';
+
+    if (_draggedNode.childNodeIds.length > 0) {
+      _draggedNode.childNodeIds.map((child) => changeNodeDepthById(draft, child, _draggedNode));
+    }
+
+    const parentNode = find(draft, { id: draggedNode.parentId });
+    if (parentNode) {
+      parentNode.childNodeIds = parentNode.childNodeIds.filter((childId) => childId !== _draggedNode.id);
+    }
+  });
+
+  yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+  yield put(lpNodeActions.setDraggedNode(null));
 }
 
 function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
@@ -620,11 +688,10 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
             draggedNodeClone.assetId = mocapAnimationIngredient.assetId;
             draggedNodeClone.name = nodeName;
             draggedNodeClone.parentId = nodeId;
-            // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${draggedNodeClone.name}`;
             draggedNodeClone.filePath = filePath + `\\${nodeName}`;
             draggedNodeClone.type = 'Motion';
 
-            targetNode.childrens.push(draggedNodeClone.id);
+            targetNode.childNodeIds.push(draggedNodeClone.id);
 
             const { mocapData, ...restObject } = draggedNodeClone;
 
@@ -632,10 +699,6 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
             draft.push({
               ...restObject,
             });
-
-            if (draggedNodeClone.childrens.length > 0) {
-              draggedNodeClone.childrens.map((child) => changeNodeDepthById(draft, child, draggedNodeClone));
-            }
           }
         });
 
@@ -699,12 +762,11 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
           draggedNodeClone.assetId = mocapAnimationIngredient.assetId;
           draggedNodeClone.id = mocapAnimationIngredient.id;
           draggedNodeClone.parentId = nodeId;
-          // draggedNodeClone.filePath = filePath + `\\${name}` + `\\${nodeName}`;
           draggedNodeClone.filePath = filePath + `\\${nodeName}`;
           draggedNodeClone.name = nodeName;
           draggedNodeClone.type = 'Motion';
 
-          targetNode.childrens.push(draggedNodeClone.id);
+          targetNode.childNodeIds.push(draggedNodeClone.id);
 
           const { mocapData, ...restObject } = draggedNodeClone;
 
@@ -712,10 +774,6 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
           draft.push({
             ...restObject,
           });
-
-          if (draggedNodeClone.childrens.length > 0) {
-            draggedNodeClone.childrens.map((child) => changeNodeDepthById(draft, child, draggedNodeClone));
-          }
         }
       });
 
@@ -750,6 +808,8 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
       }),
     );
   }
+
+  yield put(lpNodeActions.setDraggedNode(null));
 }
 
 function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeName>) {
@@ -799,6 +859,8 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
   const baseScreen = screenList[0];
   const baseScene = baseScreen.scene;
 
+  yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
+
   screenList.forEach(({ scene }) => {
     scene.animationGroups.forEach((animationGroup) => {
       animationGroup.stop();
@@ -813,7 +875,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
       const ingredients = motion === 'all' ? currentModelAnimationIngredients : filter(currentModelAnimationIngredients, { id: motion });
 
       ingredients.forEach((animationIngredient) => {
-        const animationGroup = createAnimationGroupFromIngredient(animationIngredient, fps, true);
+        const animationGroup = createAnimationGroupFromIngredient(animationIngredient, fps);
       });
     }
 
@@ -835,16 +897,14 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
     const glb: GLTFData = yield call([GLTF2Export, GLTF2Export.GLBAsync], baseScene, resultName, options);
     if (format === 'glb') {
       glb.downloadFiles();
-    }
-
-    if (format === 'fbx') {
+      yield put(globalUIActions.closeModal());
+    } else if (format === 'fbx' || format === 'fbx_unreal') {
       const fileName = Object.keys(glb.glTFFiles);
       const file = new File([glb.glTFFiles[fileName[0]]], resultName);
       file.path = resultName;
 
       try {
-        yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
-        const fbxUrl: string = yield call(convertModel, file, 'fbx');
+        const fbxUrl: string = yield call(convertModel, file, format);
         const link = document.createElement('a');
         link.href = fbxUrl;
         link.download = resultName;
@@ -859,9 +919,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
           }),
         );
       }
-    }
-
-    if (format === 'bvh') {
+    } else if (format === 'bvh') {
       const asset = find(assetList, { id: assetId });
 
       if (asset) {
@@ -919,6 +977,7 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.DELETE_MODEL, handleDeleteModel),
     takeLatest(lpNodeActions.DELETE_FOLDER_OR_MOCAP, handleDeleteFolderOrMocap),
     takeEvery(lpNodeActions.FILE_UPLOAD, fileUpload),
+    takeEvery(lpNodeActions.DROP_NODE_ON_ROOT, handleDropNodeOnRoot),
     watchClickJointChaneel(),
   ]);
 }

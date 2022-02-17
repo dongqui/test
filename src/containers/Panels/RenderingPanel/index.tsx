@@ -1331,7 +1331,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
     if (visualizedAnimationIngredients.length === 1) {
       // useFilter 실제로는 false로 주고, 재생시에만 true이도록 변경해야 함
-      const newAnimationGroup = createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], _fps, true);
+      const newAnimationGroup = createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], _fps);
 
       newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
 

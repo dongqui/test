@@ -1,4 +1,4 @@
-import LP from '../../../@types/Container/LP';
+import { ExportFormat } from 'types/common';
 
 export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
 export const VISUALIZE = 'node/VISUALIZE' as const;
@@ -14,7 +14,7 @@ export const DUPLICATE_MOTION = 'node/DUPLICATE_MOTION' as const;
 export const VISUALIZE_MOTION = 'node/VISUALIZE_MOTION' as const;
 export const SELECT_NODE = 'node/SELECT_NODE' as const;
 export const DROP_NODE_ON_FOLDER = 'node/DROP_NODE_ON_FOLDER' as const;
-export const DRAG_NODE_START = 'node/DRAG_NODE_START' as const;
+export const SET_DRAGGED_NODE = 'node/SET_DRAGGED_NODE' as const;
 export const DROP_MOCAP_ON_MODEL = 'node/DROP_MOCAP_ON_MODEL' as const;
 export const SET_EDITING_NODE_ID = 'node/SET_EDITING_NODE_ID' as const;
 export const EDIT_NODE_NAME = 'node/EDIT_NODE_NAME' as const;
@@ -23,6 +23,7 @@ export const DELETE_MOTION = 'node/DELETE_MOTION' as const;
 export const FILE_UPLOAD = 'node/FILE_UPLOAD' as const;
 export const ADD_NODES = 'node/ADD_NODES' as const;
 export const DELETE_MODEL = 'node/DELETE_MODEL' as const;
+export const DROP_NODE_ON_ROOT = 'node/DROP_NODE_ON_ROOT' as const;
 
 interface ChangeNodeParams {
   nodes: LP.Node[];
@@ -99,11 +100,12 @@ interface ExportAssetParams {
   assetId: string;
   nodeName: string;
   motion: string;
-  format: 'fbx' | 'glb' | 'bvh';
+  format: ExportFormat;
 }
 
 interface FileUploadParams {
   file: File | string;
+  showLoading: boolean;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
@@ -202,8 +204,8 @@ export const dropNodeOnFolder = (params: DropNodeOnFolderParams) => ({
   },
 });
 
-export const dragNodeStart = (node: LP.Node) => ({
-  type: DRAG_NODE_START,
+export const setDraggedNode = (node: LP.Node | null) => ({
+  type: SET_DRAGGED_NODE,
   payload: {
     node,
   },
@@ -258,6 +260,11 @@ export const addNodes = (nodes: LP.Node[]) => ({
   },
 });
 
+export const dropNodeOnRoot = () => ({
+  type: DROP_NODE_ON_ROOT,
+  payload: {},
+});
+
 export type LPNodeAction =
   | ReturnType<typeof changeNode>
   | ReturnType<typeof visualize>
@@ -272,10 +279,11 @@ export type LPNodeAction =
   | ReturnType<typeof addEmptyMotion>
   | ReturnType<typeof selectNode>
   | ReturnType<typeof dropNodeOnFolder>
-  | ReturnType<typeof dragNodeStart>
+  | ReturnType<typeof setDraggedNode>
   | ReturnType<typeof dropMocapOnModel>
   | ReturnType<typeof setEditingNodeId>
   | ReturnType<typeof editNodeName>
   | ReturnType<typeof exportAsset>
   | ReturnType<typeof fileUpload>
-  | ReturnType<typeof addNodes>;
+  | ReturnType<typeof addNodes>
+  | ReturnType<typeof dropNodeOnRoot>;

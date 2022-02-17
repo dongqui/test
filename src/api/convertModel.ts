@@ -1,7 +1,7 @@
 import requestApi from './requestApi';
-import { PlaskBvhMap } from 'types/common';
+import { PlaskBvhMap, ExportFormat } from 'types/common';
 
-const convertModel = async (file: File, extension: 'glb' | 'fbx' | 'bvh', map?: PlaskBvhMap) => {
+const convertModel = async (file: File, extension: ExportFormat, map?: PlaskBvhMap) => {
   try {
     const formData = new FormData();
 
