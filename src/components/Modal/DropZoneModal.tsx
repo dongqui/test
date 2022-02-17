@@ -51,7 +51,12 @@ interface Props {
 const DropZoneModal: FunctionComponent<Props> = (props) => {
   const { cancelButtonText, title, subTitle, extensionMesaage, onCancel, onClose, onDrop } = props;
 
-  const { getRootProps } = useDropzone({ onDrop });
+  const { getRootProps } = useDropzone({
+    onDrop: (files) => {
+      onDrop(files);
+      onClose();
+    },
+  });
 
   const fileExplorerRef = useRef<HTMLInputElement>(null);
 
@@ -61,6 +66,7 @@ const DropZoneModal: FunctionComponent<Props> = (props) => {
       const files = Array.from(e.target.files);
       e.target.value = '';
       onDrop(files);
+      onClose();
     }
   };
 
