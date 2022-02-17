@@ -28,11 +28,12 @@ const LibraryPanel: FunctionComponent = () => {
   const [searchResultNode, setSearchResultNode] = useState(_lpNode);
 
   const onNodeChange = useCallback(
-    (files: File[] | string[]) => {
+    (files: File[] | string[], showLoading: boolean = true) => {
       for (const file of files) {
         dispatch(
           lpNodeActions.fileUpload({
             file,
+            showLoading,
           }),
         );
       }
@@ -128,7 +129,7 @@ const LibraryPanel: FunctionComponent = () => {
       const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
 
       if (!isAlreadyExist && !isDefaultModelLoaded) {
-        onNodeChange(defaultModels);
+        onNodeChange(defaultModels, false);
         setIsDefaultModelLoaded(true);
       }
     }

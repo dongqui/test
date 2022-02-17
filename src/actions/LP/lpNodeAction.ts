@@ -105,6 +105,7 @@ interface ExportAssetParams {
 
 interface FileUploadParams {
   file: File | string;
+  showLoading: boolean;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
