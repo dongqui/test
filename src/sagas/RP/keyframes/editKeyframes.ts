@@ -42,7 +42,7 @@ function* worker() {
 
       const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
         const targetLayer = draft.layers.find((layer) => layer.id === _selectedLayer);
-        const otherLayers = draft.layers.filter((layer) => layer.id !== _selectedLayer);
+        const otherLayers = draft.layers.filter((layer) => layer.id !== _selectedLayer && layer.isIncluded);
 
         if (targetLayer) {
           const targetTracks = targetLayer.tracks.filter((track) => targetTrackIds.includes(track.id));
