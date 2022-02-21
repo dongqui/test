@@ -858,7 +858,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
 
   const baseScreen = screenList[0];
   const baseScene = baseScreen.scene;
-
+  //TODO: 로직 개선
   screenList.forEach(({ scene }) => {
     scene.animationGroups.forEach((animationGroup) => {
       animationGroup.stop();
