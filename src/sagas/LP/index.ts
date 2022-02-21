@@ -859,8 +859,6 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
   const baseScreen = screenList[0];
   const baseScene = baseScreen.scene;
 
-  yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
-
   screenList.forEach(({ scene }) => {
     scene.animationGroups.forEach((animationGroup) => {
       animationGroup.stop();
@@ -869,6 +867,8 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
   });
 
   if (baseScene.animationGroups.length === 0) {
+    yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
+
     if (motion !== 'none') {
       const currentModelAnimationIngredients = filter(animationIngredients, { assetId: assetId });
 
