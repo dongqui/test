@@ -1,8 +1,8 @@
 import * as BABYLON from '@babylonjs/core';
 import { PlaskView } from 'types/common';
 
-const defaultWidth = 100;
-const defaultHeight = 100;
+const defaultWidth = 500;
+const defaultHeight = 500;
 
 /**
  * 각 view의 바라보는 방향에 있는 ground를 생성합니다.
@@ -38,8 +38,8 @@ const createGround = (scene: BABYLON.Scene, useTexture: boolean, width: number, 
     // texture 반복과 관련한 설정입니다.
     emissiveTexture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
     emissiveTexture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-    emissiveTexture.uScale = 50;
-    emissiveTexture.vScale = 50;
+    emissiveTexture.uScale = 250;
+    emissiveTexture.vScale = 250;
     groundMaterial.emissiveTexture = emissiveTexture;
     groundMaterial.disableLighting = true;
   }

@@ -19,11 +19,11 @@ const createCamera = (scene: BABYLON.Scene, initialPosition?: BABYLON.Vector3) =
   arcRotateCamera.wheelPrecision = 50;
   arcRotateCamera.wheelDeltaPercentage = 0.05;
   arcRotateCamera.lowerRadiusLimit = 0.1;
-  arcRotateCamera.upperRadiusLimit = 20;
+  arcRotateCamera.upperRadiusLimit = 100;
   arcRotateCamera.pinchPrecision = 50;
   arcRotateCamera.panningAxis = new BABYLON.Vector3(1, 1, 0);
   arcRotateCamera.panningInertia = 0.5;
-  arcRotateCamera.panningDistanceLimit = 20;
+  arcRotateCamera.panningDistanceLimit = 100;
 
   // 기본 카메라 컨트롤을 삭제
   arcRotateCamera.inputs.remove(arcRotateCamera.inputs.attached.pointers);
