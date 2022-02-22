@@ -864,6 +864,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
       animationGroup.stop();
       scene.removeAnimationGroup(animationGroup);
     });
+    scene.animationGroups = [];
   });
 
   if (baseScene.animationGroups.length === 0) {
