@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { FunctionComponent, useRef, useEffect, useMemo, useState, useCallback } from 'react';
+import { FunctionComponent, useRef, useEffect, useMemo, useState, useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
@@ -12,22 +12,13 @@ import { useSelector } from 'reducers';
 import { Nullable, ScreenXY, PlaskView } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
-import {
-  checkIsObjectIn,
-  checkIsTargetMesh,
-  createAnimationGroupFromIngredient,
-  createCamera,
-  createDirectionalLight,
-  createGrounds,
-  createHemisphericLight,
-  filterQuaternion,
-  filterVector,
-  getTotalTransformKeys,
-} from 'utils/RP';
+import { checkIsObjectIn, checkIsTargetMesh, createAnimationGroupFromIngredient, filterQuaternion, filterVector, getTotalTransformKeys } from 'utils/RP';
 import ScreenVisibility from './ScreenVisibility';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { BabylonContext } from 'contexts/RP/BabylonContext';
+import { useObserved } from 'hooks/common/useObserved';
 
 const cx = classNames.bind(styles);
 
@@ -40,9 +31,7 @@ const DEFAULT_CAMERA_TARGET_ARRAY = [0, 0, 0];
 /**
  * types and interfaces
  */
-type PrevCameraProperties = {
-  [key: string]: BABYLON.Vector3 | null;
-};
+
 type GizmoMode = 'position' | 'rotation' | 'scale';
 
 interface Props {}
@@ -91,12 +80,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     [],
   );
 
-  /**
-   * orthographic to perspective 카메라 전환 시 사용하는 마지막 카메라 위치
-   */
-  const prevCameraPositions: PrevCameraProperties = useMemo(() => ({}), []);
-  const prevCameraTargets: PrevCameraProperties = useMemo(() => ({}), []);
-
   /****************************************************************************
    * 기존 useInitializeScene의 내용
    * Babylon Engine과 Scene을 생성하고 Camera, Ground 등 렌더링 엔진의 기본요소를 설정합니다.
@@ -105,39 +88,21 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   /**
    * scene 생성 및 기본 설정
    */
+  const { plaskEngine } = useContext(BabylonContext);
+
   useEffect(() => {
-    // scene이 준비됐을 때 호출할 콜백
-    const handleSceneReady = (scene: BABYLON.Scene) => {
-      scene.useRightHandedSystem = true;
-      scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.FromHexString('#202020'));
-
-      // scene에 기본요소를 생성합니다.
-      const grounds = createGrounds(scene, true);
-
-      const arcRotateCamera = createCamera(scene);
-
-      const hemisphericLight = createHemisphericLight(scene);
-
-      const directionalLight = createDirectionalLight(scene);
-    };
-
     if (renderingCanvas1.current) {
-      // matrix를 사용한 애니메이션 보간을 허용합니다.
-      BABYLON.Animation.AllowMatricesInterpolation = true;
-      const engine = new BABYLON.Engine(renderingCanvas1.current, true);
-      const innerScene = new BABYLON.Scene(engine);
-
-      prevCameraPositions[renderingCanvas1.current.id] = null;
-      prevCameraTargets[renderingCanvas1.current.id] = null;
+      // Initialize Plask engine
+      // ? Can we have several canvas/engine ?
+      plaskEngine.initialize(renderingCanvas1.current);
 
       // scene의 생성과 소멸에 대한 observable을 생성하고 콜백을 추가합니다.
-      innerScene.onReadyObservable.addOnce((scene) => {
-        handleSceneReady(scene);
+      plaskEngine.scene.onReadyObservable.addOnce(() => {
         // scene을 project reducer에 등록합니다.
         const newScreen = {
-          id: innerScene.uid,
+          id: plaskEngine.scene.uid,
           name: renderingCanvas1.current!.id.replace('renderingCanvas', 'scene'),
-          scene: innerScene,
+          scene: plaskEngine.scene,
           canvasId: renderingCanvas1.current!.id,
           hasShadow: true,
           hasGroundTexture: true,
@@ -146,88 +111,35 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         dispatch(screenDataActions.addScreen({ screenId: newScreen.id }));
       });
 
-      innerScene.onDisposeObservable.addOnce((scene) => {
-        // scene이 사라지면 창을 새로고침합니다.
-        // window.location.reload();
-      });
-
-      innerScene.onPointerObservable.add((pointerInfo) => {
-        const { pickInfo, type } = pointerInfo;
-        if (type === BABYLON.PointerEventTypes.POINTERWHEEL) {
-          const event = pointerInfo.event as WheelEvent & { wheelDelta: number };
-          // orthographic 모드에서의 카메라 줌
-          if (innerScene.activeCamera && innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-            const activeCamera = innerScene.activeCamera as BABYLON.ArcRotateCamera;
-            const canvas = innerScene.getEngine().getRenderingCanvas();
-
-            activeCamera.orthoTop! -= event.wheelDelta / 5000;
-            activeCamera.orthoBottom! += event.wheelDelta / 5000;
-            activeCamera.orthoLeft! += (event.wheelDelta / 5000) * (canvas!.width / canvas!.height);
-            activeCamera.orthoRight! -= (event.wheelDelta / 5000) * (canvas!.width / canvas!.height);
-          }
-        } else if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
-          const event = pointerInfo.event as PointerEvent;
-          // camera rotate 시 perspective 모드로 전환
-          if (event.button === 0 && event.altKey && innerScene.activeCamera && innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-            innerScene.activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
-
-            if (prevCameraPositions[renderingCanvas1.current!.id] && prevCameraTargets[renderingCanvas1.current!.id]) {
-              const activeCamera = innerScene.activeCamera as BABYLON.ArcRotateCamera;
-              activeCamera.setPosition(prevCameraPositions[renderingCanvas1.current!.id]!.clone() as BABYLON.Vector3);
-              activeCamera.setTarget(prevCameraTargets[renderingCanvas1.current!.id]!.clone() as BABYLON.Vector3);
-              prevCameraPositions[renderingCanvas1.current!.id] = null;
-              prevCameraTargets[renderingCanvas1.current!.id] = null;
-            }
-
-            const grounds = innerScene.getMeshesByTags('ground');
-            grounds.forEach((ground) => {
-              if (ground.id.split('//')[1] === 'top') {
-                ground.isVisible = true;
-              } else {
-                ground.isVisible = false;
-              }
-            });
-          }
-        }
-      });
-
-      // render loop
-      engine.runRenderLoop(() => {
-        innerScene.render();
-      });
+      // plaskEngine.scene.onDisposeObservable.addOnce((scene) => {
+      //   // scene이 사라지면 창을 새로고침합니다.
+      //   // window.location.reload();
+      // });
 
       // RP DOM은 반드시 존재하여 TS DAA 적용
       const targetNode = document.getElementById('RP')!;
       const config = { attributes: true };
 
       const handleEngineResize = () => {
-        engine.resize();
-
-        if (innerScene.activeCamera && innerScene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA && renderingCanvas1.current) {
-          const canvas = renderingCanvas1.current;
-
-          const orthoFactor = innerScene.activeCamera!.orthoTop as number;
-
-          innerScene.activeCamera!.orthoTop = orthoFactor;
-          innerScene.activeCamera!.orthoBottom = -orthoFactor;
-          innerScene.activeCamera!.orthoLeft = -orthoFactor * (canvas.width / canvas.height);
-          innerScene.activeCamera!.orthoRight = orthoFactor * (canvas.width / canvas.height);
-        }
+        plaskEngine.resize();
+        plaskEngine.cameraModule.prevPositions = {};
       };
 
       const resizeMutationObserver = new MutationObserver(handleEngineResize);
 
       resizeMutationObserver.observe(targetNode, config);
-
       return () => {
         // engine을 없앱니다.
-        engine.dispose();
-        dispatch(plaskProjectActions.removeScreen({ screenId: innerScene.uid }));
+        plaskEngine.dispose();
+        dispatch(plaskProjectActions.removeScreen({ screenId: plaskEngine.scene.uid }));
 
         resizeMutationObserver.disconnect();
       };
     }
-  }, [dispatch, prevCameraPositions, prevCameraTargets]);
+  }, [plaskEngine, dispatch]);
+
+  const prevCameraPositions = useObserved(plaskEngine.cameraModule.onPrevPositionsChanged, {})!;
+  const prevCameraTargets = useObserved(plaskEngine.cameraModule.onPrevTargetsChanged, {})!;
 
   /**
    * dragBox 사용
@@ -315,6 +227,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
    * camera navigation, viewport 전환 관련 단축키 설정
    */
   useEffect(() => {
+    console.log('updated state');
+
     const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
       camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
       camera.orthoTop = 2;
