@@ -818,9 +818,12 @@ function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeNam
   const { nodes } = lpNode;
 
   const targetNode = nodes.find((node) => node.id === nodeId);
-  if (!targetNode) return;
+  if (!targetNode) {
+    return;
+  }
 
-  const isDuplicatedName = nodes.some((node) => node !== targetNode && node.type === targetNode.type && node.name === newName);
+  const isDuplicatedName = nodes.some((node) => node.parentId === targetNode.parentId && node.id !== targetNode.id && node.type === targetNode.type && node.name === newName);
+
   if (isDuplicatedName) {
     yield put(
       globalUIActions.openModal('AlertModal', {
