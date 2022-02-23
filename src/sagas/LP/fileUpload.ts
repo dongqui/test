@@ -119,7 +119,6 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
     if (showLoading) {
       yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }, `loading_${fileName}`));
     }
-
     const assetContainer: BABYLON.AssetContainer = yield call(getAssetContainer, file, extension, baseScene);
     const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
 
@@ -196,10 +195,6 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
         }),
       );
     }
-
-    if (showLoading) {
-      yield put(globalUIActions.closeModal(`loading_${fileName}`));
-    }
   } catch (e) {
     yield put(
       globalUIActions.openModal('AlertModal', {
@@ -209,6 +204,10 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
         confirmColor: 'negative',
       }),
     );
+  } finally {
+    if (showLoading) {
+      yield put(globalUIActions.closeModal(`loading_${fileName}`));
+    }
   }
 }
 

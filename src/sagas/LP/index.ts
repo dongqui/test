@@ -904,6 +904,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
       file.path = resultName;
 
       try {
+        throw new Error();
         const fbxUrl: string = yield call(convertModel, file, format);
         const link = document.createElement('a');
         link.href = fbxUrl;
@@ -954,6 +955,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
       }
     }
 
+    yield put(globalUIActions.closeModal('LoadingModal'));
     if (targetSkeletonViewer) {
       const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === baseScreen.id);
       targetSkeletonViewer.skeletonViewer.isEnabled = targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true;
