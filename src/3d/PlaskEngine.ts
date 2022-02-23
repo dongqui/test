@@ -54,7 +54,7 @@ export class PlaskEngine {
   }
 
   public initialize(canvas: HTMLCanvasElement) {
-    console.log("Initializing plask engine...");
+    console.log('Initializing plask engine...');
     this._canvas = canvas;
     this._engine = new Engine(canvas);
     this._scene = new Scene(this._engine);
