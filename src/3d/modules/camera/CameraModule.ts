@@ -1,5 +1,5 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { ArcRotateCamera, Camera, Nullable, Observable, Vector3 } from '@babylonjs/core';
+import { ArcRotateCamera, Camera, Nullable, Observable, Vector3} from '@babylonjs/core';
 import { Module } from '../Module';
 
 type PrevCameraProperties = {
@@ -14,7 +14,6 @@ export class CameraModule extends Module {
   private _prevPositions: PrevCameraProperties = {};
   public set prevPositions(value: PrevCameraProperties) {
     this._prevPositions = value;
-    console.log('changed prev positions');
     this.onPrevPositionsChanged.notifyObservers(value);
   }
   public get prevPositions() {
@@ -45,5 +44,10 @@ export class CameraModule extends Module {
       this.prevPositions[this.plaskEngine.canvas.id] = null;
       this.prevTargets[this.plaskEngine.canvas.id] = null;
     }
+  }
+
+  public initialize() {
+    this.prevPositions[this.plaskEngine.canvas.id] = null;
+    this.prevTargets[this.plaskEngine.canvas.id] = null;
   }
 }

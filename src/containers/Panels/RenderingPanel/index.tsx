@@ -95,7 +95,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       // Initialize Plask engine
       // ? Can we have several canvas/engine ?
       plaskEngine.initialize(renderingCanvas1.current);
-
+      
       // scene의 생성과 소멸에 대한 observable을 생성하고 콜백을 추가합니다.
       plaskEngine.scene.onReadyObservable.addOnce(() => {
         // scene을 project reducer에 등록합니다.
@@ -119,10 +119,9 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       // RP DOM은 반드시 존재하여 TS DAA 적용
       const targetNode = document.getElementById('RP')!;
       const config = { attributes: true };
-
+      
       const handleEngineResize = () => {
         plaskEngine.resize();
-        plaskEngine.cameraModule.prevPositions = {};
       };
 
       const resizeMutationObserver = new MutationObserver(handleEngineResize);
@@ -138,8 +137,13 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     }
   }, [plaskEngine, dispatch]);
 
-  const prevCameraPositions = useObserved(plaskEngine.cameraModule.onPrevPositionsChanged, {})!;
-  const prevCameraTargets = useObserved(plaskEngine.cameraModule.onPrevTargetsChanged, {})!;
+  // Thes lines below are unnecessary, but I leave it so we can refer to the pattern
+  // TODO: to delete eventually
+  // const prevCameraPositions = useObserved(plaskEngine.cameraModule.onPrevPositionsChanged, plaskEngine.cameraModule.prevPositions)!;
+  // const prevCameraTargets = useObserved(plaskEngine.cameraModule.onPrevTargetsChanged, plaskEngine.cameraModule.prevTargets)!;
+
+  const prevCameraPositions = plaskEngine.cameraModule.prevPositions;
+  const prevCameraTargets = plaskEngine.cameraModule.prevTargets;
 
   /**
    * dragBox 사용
@@ -227,8 +231,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
    * camera navigation, viewport 전환 관련 단축키 설정
    */
   useEffect(() => {
-    console.log('updated state');
-
     const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
       camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
       camera.orthoTop = 2;

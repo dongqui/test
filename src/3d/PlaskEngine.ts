@@ -29,11 +29,12 @@ export class PlaskEngine {
 
   public dispose() {
     this._engine.dispose();
-    // ? this._scene.dispose();
+    this._scene.dispose();
 
     for (let module of this._modules) {
       module.dispose();
     }
+    this._modules.length = 0;
   }
 
   public get scene() {
@@ -53,6 +54,7 @@ export class PlaskEngine {
   }
 
   public initialize(canvas: HTMLCanvasElement) {
+    console.log("Initializing plask engine...");
     this._canvas = canvas;
     this._engine = new Engine(canvas);
     this._scene = new Scene(this._engine);
@@ -62,6 +64,10 @@ export class PlaskEngine {
     for (let module of this._modules) {
       module.initialize();
     }
+
+    this._engine.runRenderLoop(() => {
+      this._scene.render();
+    });
   }
 
   public resize() {
@@ -93,10 +99,6 @@ export class PlaskEngine {
     this._camera = createCamera(this.scene);
     this._hemiLight = createHemisphericLight(this.scene);
     this._dirLight = createDirectionalLight(this.scene);
-
-    this._engine.runRenderLoop(() => {
-      this._scene.render();
-    });
   }
 
   private _registerObservables() {
