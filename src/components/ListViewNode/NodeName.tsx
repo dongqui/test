@@ -14,7 +14,8 @@ interface Props {
 }
 
 const NodeName: FunctionComponent<Props> = ({ isEditing, name, onEditName, onCancelEdit, extension }) => {
-  const nameWithoutExtension = name?.replace(new RegExp(`.${extension}$`), '');
+  const nameWithoutExtension = extension ? name?.replace(new RegExp(`.${extension}$`), '') : name;
+  console.log(nameWithoutExtension, 2);
   const [inputValue, setInputValue] = useState(nameWithoutExtension || '');
 
   const handleInputChange = useCallback(
