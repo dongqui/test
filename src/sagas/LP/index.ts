@@ -718,14 +718,14 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
 
   // @TODO 없으면 비활성 처리 필요
   if (draggedNodeClone && dropNode && targetAsset && targetRetargetMap) {
-    yield put(
-      globalUIActions.openModal('LoadingModal', {
-        title: 'Waiting',
-        message: TEXT.WAITING_03,
-      }),
-    );
-
     try {
+      yield put(
+        globalUIActions.openModal('LoadingModal', {
+          title: 'Waiting',
+          message: TEXT.WAITING_03,
+        }),
+      );
+
       const mocapAnimationIngredient: SagaReturnType<typeof createAnimationIngredientFromMocapData> = yield call(
         createAnimationIngredientFromMocapData,
         dropNode.assetId!,
@@ -786,9 +786,18 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
         yield put(lpNodeActions.visualizeNode(dropNode.assetId));
         forceClickAnimationPlayAndStop();
       }
-
-      yield put(globalUIActions.closeModal());
-    } catch (error) {}
+    } catch (error) {
+      yield put(
+        globalUIActions.openModal('AlertModal', {
+          title: 'Warning',
+          message: TEXT.WARNING_07,
+          confirmText: 'Close',
+          confirmColor: 'negative',
+        }),
+      );
+    } finally {
+      yield put(globalUIActions.closeModal('LoadingModal'));
+    }
   } else {
     yield put(
       globalUIActions.openModal('ConfirmModal', {
@@ -818,9 +827,12 @@ function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeNam
   const { nodes } = lpNode;
 
   const targetNode = nodes.find((node) => node.id === nodeId);
-  if (!targetNode) return;
+  if (!targetNode) {
+    return;
+  }
 
-  const isDuplicatedName = nodes.some((node) => node !== targetNode && node.type === targetNode.type && node.name === newName);
+  const isDuplicatedName = nodes.some((node) => node.parentId === targetNode.parentId && node.id !== targetNode.id && node.type === targetNode.type && node.name === newName);
+
   if (isDuplicatedName) {
     yield put(
       globalUIActions.openModal('AlertModal', {
@@ -864,6 +876,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
       animationGroup.stop();
       scene.removeAnimationGroup(animationGroup);
     });
+    scene.animationGroups = [];
   });
 
   if (baseScene.animationGroups.length === 0) {
