@@ -25,7 +25,8 @@
   },
   "exclude": [
     "node_modules",
-    "_next"
+    "_next",
+    "cypress"
   ],
   "include": [
     "next-env.d.ts",
