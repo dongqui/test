@@ -14,6 +14,7 @@ interface BaseProps {
   spellCheck?: boolean;
   isChild?: boolean;
   theme?: 'dark' | 'light';
+  dataCy?: string;
 }
 
 type Props = BaseProps & Omit<Input.BaseInputProps, 'autoComplete' | 'spellCheck'>;
@@ -31,7 +32,27 @@ const defaultProps: Partial<Props> = {
 
 const BaseInput = forwardRef<HTMLInputElement, Props>(
   (
-    { type, className, mask, maskChar, disabled, invalid, arrow, fullSize, autoComplete, spellCheck, readOnly, isChild, theme, onBlur, onChange, onKeyUp, onKeyDown, ...rest },
+    {
+      dataCy,
+      type,
+      className,
+      mask,
+      maskChar,
+      disabled,
+      invalid,
+      arrow,
+      fullSize,
+      autoComplete,
+      spellCheck,
+      readOnly,
+      isChild,
+      theme,
+      onBlur,
+      onChange,
+      onKeyUp,
+      onKeyDown,
+      ...rest
+    },
     ref,
   ) => {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -101,6 +122,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
         autoComplete={autoComplete ? 'on' : 'off'}
         spellCheck={spellCheck ? 'true' : 'false'}
         readOnly={readOnly}
+        data-cy={dataCy}
         {...handlers}
         {...rest}
       />

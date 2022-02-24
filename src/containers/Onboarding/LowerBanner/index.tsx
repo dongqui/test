@@ -35,7 +35,7 @@ const LowerBanner = () => {
             Learn More
           </a>
         </TextButton>
-        <TextButton className={cx('done')} onClick={handleDoneButtonClick}>
+        <TextButton className={cx('done')} onClick={handleDoneButtonClick} dataCy="onboarding-done">
           Done
         </TextButton>
       </div>

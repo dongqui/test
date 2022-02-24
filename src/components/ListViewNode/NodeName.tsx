@@ -15,7 +15,6 @@ interface Props {
 
 const NodeName: FunctionComponent<Props> = ({ isEditing, name, onEditName, onCancelEdit, extension }) => {
   const nameWithoutExtension = extension ? name?.replace(new RegExp(`.${extension}$`), '') : name;
-  console.log(nameWithoutExtension, 2);
   const [inputValue, setInputValue] = useState(nameWithoutExtension || '');
 
   const handleInputChange = useCallback(
@@ -52,18 +51,17 @@ const NodeName: FunctionComponent<Props> = ({ isEditing, name, onEditName, onCan
 
   if (isEditing) {
     return (
-      <Fragment>
-        <BaseInput
-          className={cx('input')}
-          placeholder={name}
-          value={inputValue}
-          type="text"
-          onChange={handleInputChange}
-          onBlur={handleInputBlur}
-          onKeyDown={handleKeyDown}
-          autoFocus
-        />
-      </Fragment>
+      <BaseInput
+        className={cx('input')}
+        placeholder={name}
+        value={inputValue}
+        type="text"
+        onChange={handleInputChange}
+        onBlur={handleInputBlur}
+        onKeyDown={handleKeyDown}
+        autoFocus
+        dataCy="edit-node-name"
+      />
     );
   }
 

@@ -43,15 +43,21 @@ const FolderContextMenu = ({ nodeId, extension, filePath, parentId }: Props) => 
 
   return (
     <BaseContextMenu>
-      <ContextMenuItem onClick={handleDelete}>Delete</ContextMenuItem>
-      <ContextMenuItem onClick={handleEditName}>Edit name</ContextMenuItem>
+      <ContextMenuItem dataCy="contextmenu-delete" onClick={handleDelete}>
+        Delete
+      </ContextMenuItem>
+      <ContextMenuItem dataCy="contextmenu-edit-name" onClick={handleEditName}>
+        Edit name
+      </ContextMenuItem>
       {/* <ContextMenuItem  onClick={}>
         Copy
       </ContextMenuItem>
       <ContextMenuItem  onClick={}>
         Paste
       </ContextMenuItem> */}
-      <ContextMenuItem onClick={handleNewDirectory}>New directory</ContextMenuItem>
+      <ContextMenuItem dataCy="contextmenu-new-directory" onClick={handleNewDirectory}>
+        New directory
+      </ContextMenuItem>
     </BaseContextMenu>
   );
 };

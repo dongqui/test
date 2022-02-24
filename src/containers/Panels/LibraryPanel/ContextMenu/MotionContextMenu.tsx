@@ -86,8 +86,12 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
 
   return (
     <BaseContextMenu>
-      <ContextMenuItem onClick={handleDelete}>Delete</ContextMenuItem>
-      <ContextMenuItem onClick={handleEditName}>Edit name</ContextMenuItem>
+      <ContextMenuItem dataCy="contextmenu-delete" onClick={handleDelete}>
+        Delete
+      </ContextMenuItem>
+      <ContextMenuItem dataCy="contextmenu-edit-name" onClick={handleEditName}>
+        Edit name
+      </ContextMenuItem>
       <ContextMenuItem onClick={handleDuplicate}>Duplicate</ContextMenuItem>
       {/* <ContextMenuItem>Copy</ContextMenuItem>
       <ContextMenuItem>Paste</ContextMenuItem> */}
