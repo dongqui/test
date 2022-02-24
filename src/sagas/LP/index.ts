@@ -917,7 +917,6 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
       file.path = resultName;
 
       try {
-        throw new Error();
         const fbxUrl: string = yield call(convertModel, file, format);
         const link = document.createElement('a');
         link.href = fbxUrl;
