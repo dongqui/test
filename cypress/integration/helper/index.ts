@@ -17,14 +17,14 @@ export function visitAndGetMockData() {
     delete req.headers['if-none-match'];
     delete req.headers['if-modified-since'];
   }).as('zombie');
-  cy.intercept('/models/DyingYup.glb', (req) => {
+  cy.intercept('/models/Mannequin.glb', (req) => {
     delete req.headers['if-none-match'];
     delete req.headers['if-modified-since'];
-  }).as('dyingYup');
+  }).as('mannequin');
 
   cy.visit('/');
 
-  cy.wait(['@knight', '@vanguard', '@zombie', '@dyingYup'], { timeout: 30000 });
+  cy.wait(['@knight', '@vanguard', '@zombie', '@mannequin'], { timeout: 30000 });
 }
 
 export function waitForModelNodeRendering() {
@@ -50,7 +50,7 @@ export function editNodeName(cyElement: Cypress.Chainable<JQuery<HTMLElement>>, 
   cyElement.rightclick();
   cy.getByDataCy('contextmenu-edit-name').click();
   cy.getByDataCy('edit-node-name').as('input').should('exist');
-  cy.get('@input').type(newName);
+  cy.get('@input').clear().type(newName);
 }
 
 export function pasteFolderOn(cyElement: Cypress.Chainable<JQuery<HTMLElement>>) {
@@ -161,4 +161,20 @@ export function clickDropdown(dropdownName: string) {
 
 export function clickConfirmOnModal() {
   cy.getByDataCy('modal-confirm').click();
+}
+
+export function clickEmptyMotionOfFirstModel(motionAlias: string) {
+  cy.getByDataCy('lp-model').first().find(dataCy('lp-motion')).last().as(motionAlias).click();
+}
+
+export function getMotionsOfFirstModel() {
+  return cy.getByDataCy('lp-model').first().find(dataCy('lp-motion'));
+}
+
+export function getLastMotionofFirstModel() {
+  return cy.getByDataCy('lp-model').first().find(dataCy('lp-motion')).last();
+}
+
+export function handleOnboarding() {
+  return cy.getByDataCy('onboarding-done').click();
 }
