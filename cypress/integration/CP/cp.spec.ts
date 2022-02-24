@@ -14,7 +14,7 @@ import {
 import { skipOn } from '@cypress/skip-test';
 import * as BABYLON from '@babylonjs/core';
 
-describe('CP 테스트', () => {
+describe.skip('CP 테스트', () => {
   before(() => {
     visitAndGetMockData();
     waitForModelNodeRendering();

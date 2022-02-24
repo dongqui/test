@@ -11,7 +11,7 @@ import {
   waitForModelNodeRendering,
 } from '../helper';
 import { skipOn } from '@cypress/skip-test';
-describe('RP 테스트', () => {
+describe.skip('RP 테스트', () => {
   before(() => {
     visitAndGetMockData();
 

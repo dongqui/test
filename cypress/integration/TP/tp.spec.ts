@@ -12,7 +12,7 @@ import {
   compareRPSnapshot,
 } from '../helper';
 
-describe('TP 테스트', () => {
+describe.skip('TP 테스트', () => {
   before(() => {
     visitAndGetMockData();
 
