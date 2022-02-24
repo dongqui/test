@@ -13,7 +13,6 @@ import {
   clickArrowIconOf,
   dataCy,
   DEFAULT_FOLDER_NAME,
-  getNodeName,
   modelVisualization,
   compareRPSnapshot,
   clickEmptyMotionOfFirstModel,
@@ -30,13 +29,13 @@ describe('LP test', () => {
   });
 
   context('LP Body test', () => {
-    it('우클릭시에 ContextMenu가 보여집니다.', () => {
+    it('우클릭시에 ContextMenu가 보여짐', () => {
       cy.getByDataCy('lp-body').rightclick();
       cy.getByDataCyLike('contextmenu').should('exist');
       cy.getByDataCy('lp-body').click();
     });
 
-    it('우클릭 후 폴더를 생성합니다.', () => {
+    it('ContextMenu New directory 클릭으로 폴더 생성.', () => {
       cy.getByDataCy('lp-folder').should('have.length', 0);
       cy.getByDataCy('lp-body').rightclick();
       cy.getByDataCy('contextmenu-new-directory').click();
@@ -44,7 +43,7 @@ describe('LP test', () => {
       deleteNode(cy.get('@folder_0'));
     });
 
-    it('폴더 생성시에 중복되는 폴더명을 처리합니다.', () => {
+    it('폴더 생성시에 중복되는 폴더명을 처리', () => {
       createFolder();
       createFolder();
       createFolder();
@@ -84,7 +83,7 @@ describe('LP test', () => {
       deleteNode(cy.getByDataCy('lp-folder').first());
     });
 
-    it('delete 클릭시에 폴더 삭제', () => {
+    it('ContextMenu delete 클릭시에 폴더 삭제', () => {
       createFolder();
       cy.getByDataCy('lp-folder')
         .its('length')
@@ -94,7 +93,7 @@ describe('LP test', () => {
         });
     });
 
-    it('edit name 클릭 후 폴더 이름 enter key로 수정', () => {
+    it('ContextMenu edit name 클릭 후 폴더 이름 enter key로 수정', () => {
       const newName = 'editWithEnter';
       cy.getByDataCy('lp-folder').last().as('folder_edit_enter');
       editNodeName(cy.get('@folder_edit_enter'), newName);
@@ -102,7 +101,7 @@ describe('LP test', () => {
       cy.get('@folder_edit_enter').should('have.text', newName);
     });
 
-    it('edit name 클릭 후 폴더 이름 빈 공간 클릭으로 수정', () => {
+    it('ContextMenu edit name 클릭 후 폴더 이름 빈 공간 클릭으로 수정', () => {
       cy.getByDataCy('lp-folder').last().as('folder_edit_click');
       const newName = 'editWithClick';
       editNodeName(cy.get('@folder_edit_click'), newName);
@@ -159,7 +158,7 @@ describe('LP test', () => {
 
   context('LP Model test', () => {
     context('Model management test', () => {
-      it('model 삭제', () => {
+      it('ContextMenu delete 클릭시에 모델 삭제', () => {
         cy.getByDataCy('lp-model')
           .its('length')
           .then((modelCount) => {
@@ -168,7 +167,7 @@ describe('LP test', () => {
           });
       });
 
-      it('엔터로 모델 이름 수정', () => {
+      it('ContextMenu edit name 클릭 후 모델 이름 enter key로 수정', () => {
         const newName = 'editWithEnter';
         cy.getByDataCy('lp-model').last().as('model_name_edit_enter');
         editNodeName(cy.get('@model_name_edit_enter'), newName);
@@ -176,7 +175,7 @@ describe('LP test', () => {
         cy.get('@model_name_edit_enter').should('have.text', `${newName}.glb`);
       });
 
-      it('클릭으로 모델 이름 수정', () => {
+      it('ContextMenu edit name 클릭 후 모델 이름 빈 공간 클릭으로 수정', () => {
         const newName = 'editWithClick';
         cy.getByDataCy('lp-model').last().as('model_name_edit_click');
         editNodeName(cy.get('@model_name_edit_click'), newName);
@@ -203,12 +202,12 @@ describe('LP test', () => {
       // 2021.12.09 Knight.glb 이미지 스냅샷으로 test 중
 
       skipOn('headed', () => {
-        it('visualization', () => {
+        it('ContextMenu visualization 클릭으로 visualization', () => {
           modelVisualization(cy.getByDataCy('lp-model').first());
           compareRPSnapshot();
         });
 
-        it('visualization 해제', () => {
+        it('ContextMenu visualization cancel 클릭으로 visualization 해제', () => {
           cy.getByDataCy('lp-model').first().as('model_visualization_cancel');
           cy.get('@model_visualization_cancel').rightclick('top');
           cy.getByDataCy('contextmenu-visualization-cancel').click('top');
@@ -217,7 +216,7 @@ describe('LP test', () => {
       });
     });
 
-    it('empty motion 추가', () => {
+    it('ContextMenu Add Empty Motion 클릭으로 empty motion 추가', () => {
       cy.getByDataCy('lp-model').first().as('model_empty_motion');
       cy.get('@model_empty_motion').rightclick('top');
       cy.getByDataCy('contextmenu-add-empty-motion').click('top');
@@ -264,7 +263,7 @@ describe('LP test', () => {
       clickArrowIconOf(cy.get('@model'));
     });
 
-    it('모션 우클릭 후 edit name 클릭, 모션 이름 enter key로 수정', () => {
+    it('ContextMenu delete 클릭시에 모션 삭제', () => {
       const newName = 'editWithEnter';
       clickEmptyMotionOfFirstModel('motion-edit-enter');
       cy.get('@motion-edit-enter').rightclick();
@@ -273,7 +272,7 @@ describe('LP test', () => {
       cy.get('@motion-edit-enter').should('have.text', newName);
     });
 
-    it('모션 우클릭 후 edit name 클릭, 모션 이름 빈 공간 클릭으로 수정', () => {
+    it('ContextMenu edit name 클릭 후 모델 이름 enter key로 수정', () => {
       const newName = 'editWithClick';
       clickEmptyMotionOfFirstModel('motion-edit-click');
       cy.get('@motion-edit-click').rightclick();
@@ -282,7 +281,7 @@ describe('LP test', () => {
       cy.get('@motion-edit-click').should('have.text', newName);
     });
 
-    it('모션 우클릭 후 delete 클릭시 모션 삭제.', () => {
+    it('ContextMenu edit name 클릭 후 모델 이름 빈 공간 클릭으로 수정', () => {
       getMotionsOfFirstModel()
         .its('length')
         .then((motionCount) => {
