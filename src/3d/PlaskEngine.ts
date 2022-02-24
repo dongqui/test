@@ -16,6 +16,7 @@ import {
 import { createCamera, createDirectionalLight, createGrounds, createHemisphericLight } from 'utils/RP';
 import { CameraModule } from './modules/camera/CameraModule';
 import { Module } from './modules/Module';
+import { SelectorModule } from './modules/selector/SelectorModule';
 
 export class PlaskEngine {
   private _modules: Module[] = [];
@@ -46,6 +47,7 @@ export class PlaskEngine {
   }
 
   public cameraModule!: CameraModule;
+  public selectorModule!: SelectorModule;
 
   constructor() {
     // matrix를 사용한 애니메이션 보간을 허용합니다.
@@ -87,6 +89,7 @@ export class PlaskEngine {
 
   private _registerModules() {
     this._modules.push((this.cameraModule = new CameraModule(this)));
+    this._modules.push((this.selectorModule = new SelectorModule(this)));
   }
 
   private _onSceneReady() {

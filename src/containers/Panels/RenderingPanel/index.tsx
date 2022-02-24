@@ -12,7 +12,7 @@ import { useSelector } from 'reducers';
 import { Nullable, ScreenXY, PlaskView } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
-import { checkIsObjectIn, checkIsTargetMesh, createAnimationGroupFromIngredient, filterQuaternion, filterVector, getTotalTransformKeys } from 'utils/RP';
+import { checkIsTargetMesh, createAnimationGroupFromIngredient } from 'utils/RP';
 import ScreenVisibility from './ScreenVisibility';
 
 import classNames from 'classnames/bind';
@@ -150,82 +150,37 @@ const RenderingPanel: FunctionComponent<Props> = () => {
    */
   const rpDragBox = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const targetScreen = _screenList.find((screen) => screen.canvasId === renderingCanvas1.current?.id);
+    // Check with Kenny how we can handle these screens
+    // const targetScreen = _screenList.find((screen) => screen.canvasId === renderingCanvas1.current?.id);
 
-    if (targetScreen) {
-      const { scene } = targetScreen;
-      let startPointerPosition: Nullable<ScreenXY> = null;
+    // if (targetScreen) {
+    const dragBox = rpDragBox.current as HTMLDivElement;
+    const dragBoxDefaultStyle = 'background-color: gray; position: absolute; opacity: 0.3; pointer-events: none;';
+    dragBox.setAttribute('style', dragBoxDefaultStyle);
 
-      const dragBox = rpDragBox.current as HTMLDivElement;
-      const dragBoxDefaultStyle = 'background-color: gray; position: absolute; opacity: 0.3; pointer-events: none;';
+    // TODO : export logic inside a module
+    plaskEngine.selectorModule.selectableObjects = _selectableObjects;
+    // DragBox updated
+    const selectBoxUpdatedObserver = plaskEngine.selectorModule.onSelectBoxUpdated.add(({ min, max }) => {
+      dragBox.setAttribute('style', `${dragBoxDefaultStyle} left: ${min.x}px; top: ${min.y}px; width: ${max.x - min.x}px; height: ${max.y - min.y}px;`);
+    });
+
+    // DragBox end
+    const endSelectBoxObserver = plaskEngine.selectorModule.onEndSelectBox.add(({ type, objects }) => {
+      if (type === 'ctrlKey') {
+        dispatch(selectingDataActions.ctrlKeyMultiSelect({ targets: objects }));
+      } else {
+        dispatch(selectingDataActions.defaultMultiSelect({ targets: objects }));
+      }
       dragBox.setAttribute('style', dragBoxDefaultStyle);
+    });
 
-      const dragBoxObserver = scene.onPointerObservable.add((pointerInfo, eventState) => {
-        // pointer down event catched
-        switch (pointerInfo.type) {
-          case BABYLON.PointerEventTypes.POINTERDOWN: {
-            if (
-              pointerInfo?.event.button === 0 && // check if it it left click
-              !pointerInfo.event.altKey && // camera rotate 시에는 발생하지 않음
-              !pointerInfo.pickInfo!.hit // pickInfo always exist with pointer event
-            ) {
-              // set start point of the dragBox
-              startPointerPosition = {
-                x: scene.pointerX,
-                y: scene.pointerY,
-              };
-            }
-            break;
-          }
-          case BABYLON.PointerEventTypes.POINTERMOVE: {
-            if (startPointerPosition) {
-              const currentPointerPosition: Nullable<ScreenXY> = {
-                x: scene.pointerX,
-                y: scene.pointerY,
-              };
-
-              const minX = Math.min(startPointerPosition.x, currentPointerPosition.x);
-              const minY = Math.min(startPointerPosition.y, currentPointerPosition.y);
-              const maxX = Math.max(startPointerPosition.x, currentPointerPosition.x);
-              const maxY = Math.max(startPointerPosition.y, currentPointerPosition.y);
-
-              dragBox.setAttribute('style', `${dragBoxDefaultStyle} left: ${minX}px; top: ${minY}px; width: ${maxX - minX}px; height: ${maxY - minY}px;`);
-            }
-            break;
-          }
-          case BABYLON.PointerEventTypes.POINTERUP: {
-            if (startPointerPosition) {
-              const endPointerPosition: Nullable<ScreenXY> = {
-                x: scene.pointerX,
-                y: scene.pointerY,
-              };
-
-              const newSelectedTargets = _selectableObjects.filter((object) => checkIsObjectIn(startPointerPosition as ScreenXY, endPointerPosition, object, scene));
-
-              if (pointerInfo.event.ctrlKey || pointerInfo.event.metaKey) {
-                // ctrl 혹은 meta 키를 누른 채
-                dispatch(selectingDataActions.ctrlKeyMultiSelect({ targets: newSelectedTargets }));
-              } else {
-                // 키 누르지 않고
-                dispatch(selectingDataActions.defaultMultiSelect({ targets: newSelectedTargets }));
-              }
-
-              // initialize style and start point
-              startPointerPosition = null;
-              dragBox.setAttribute('style', dragBoxDefaultStyle);
-            }
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-      });
-      return () => {
-        scene.onPointerObservable.remove(dragBoxObserver);
-      };
-    }
-  }, [_screenList, _selectableObjects, dispatch]);
+    return () => {
+      plaskEngine.selectorModule.onSelectBoxUpdated.remove(selectBoxUpdatedObserver);
+      plaskEngine.selectorModule.onEndSelectBox.remove(endSelectBoxObserver);
+    };
+    // }
+  }, [/* _screenList, */ _selectableObjects, dispatch, plaskEngine]);
 
   /**
    * camera navigation, viewport 전환 관련 단축키 설정
