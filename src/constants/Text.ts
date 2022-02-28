@@ -4,6 +4,7 @@ export const WARNING_01: string = "Auto retargeting failed: %s <br />More functi
 export const WARNING_02: string = 'Upload one file at a time.';
 export const WARNING_03: string = 'Unsupported file format.';
 export const WARNING_07: string = 'Import failed: Should the problem recur, let us know via the chat window on our website.';
+export const WARNING_08: string = 'Visualization failed: Should the problem recur, let us know via the chat window on our website.';
 export const WRANING_12: string = 'You cannot create more than 6 subdirectories.';
 
 export const CONFIRM_01: string = 'Export motion from the video?';
