@@ -1,5 +1,5 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { Mesh, Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
+import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
@@ -8,7 +8,11 @@ export class SelectorModule extends Module {
   public onStartSelectBox: Observable<ScreenXY> = new Observable();
   public onSelectBoxUpdated: Observable<{ min: ScreenXY; max: ScreenXY }> = new Observable();
   public onEndSelectBox: Observable<{ type: 'ctrlKey' | 'default'; objects: any[] }> = new Observable();
-  public selectableObjects!: (Mesh | TransformNode)[];
+
+  public onSelectionChangeObservable: Observable<TransformNode[]> = new Observable();
+
+  public selectableObjects!: TransformNode[];
+  public selectedObjects: TransformNode[] = [];
 
   private _startPosition: Nullable<Vector2> = null;
   private _currentPosition: Vector2 = new Vector2();
@@ -16,6 +20,15 @@ export class SelectorModule extends Module {
 
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
+  }
+
+  public dispose() {
+    this.onStartSelectBox.clear();
+    this.onSelectBoxUpdated.clear();
+    this.onEndSelectBox.clear();
+    this.onSelectionChangeObservable.clear();
+
+    this.plaskEngine.scene.onPointerObservable.remove(this._pointerObserver);
   }
 
   public initialize() {
@@ -54,14 +67,15 @@ export class SelectorModule extends Module {
         }
         case PointerEventTypes.POINTERUP: {
           if (this._startPosition) {
-            const objects = this._select(this._startPosition, this._currentPosition);
-
+            const objects = this._boxSelect(this._startPosition, this._currentPosition);
             if (pointerInfo.event.ctrlKey || pointerInfo.event.metaKey) {
               // ctrl 혹은 meta 키를 누른 채
               this.onEndSelectBox.notifyObservers({ type: 'ctrlKey', objects });
+              this.select(objects);
             } else {
               // 키 누르지 않고
               this.onEndSelectBox.notifyObservers({ type: 'default', objects });
+              this.select(objects, true);
             }
 
             // initialize style and start point
@@ -76,17 +90,34 @@ export class SelectorModule extends Module {
     });
   }
 
-  private _select(startPointerPosition: Vector2, endPointerPosition: Vector2) {
+  /**
+   * Directly updates the current selection
+   * @param objects Array of objects to select
+   * @param reset Set to true to clear the current selection
+   */
+  public select(objects: TransformNode[], reset = false) {
+    if (reset) {
+      this.selectedObjects.length = 0;
+    }
+
+    for (let obj of objects) {
+      if (!this.selectedObjects.includes(obj)) {
+        this.selectedObjects.push(obj);
+      }
+    }
+    this.onSelectionChangeObservable.notifyObservers(this.selectedObjects);
+  }
+
+  /**
+   * Clears the current selection
+   */
+  public deselect() {
+    this.select([], true);
+  }
+
+  private _boxSelect(startPointerPosition: Vector2, endPointerPosition: Vector2) {
     const scene = this.plaskEngine.scene;
 
     return this.selectableObjects.filter((object) => checkIsObjectIn(startPointerPosition as ScreenXY, endPointerPosition as ScreenXY, object, scene));
-  }
-
-  public dispose() {
-    this.onStartSelectBox.clear();
-    this.onSelectBoxUpdated.clear();
-    this.onEndSelectBox.clear();
-
-    this.plaskEngine.scene.onPointerObservable.remove(this._pointerObserver);
   }
 }

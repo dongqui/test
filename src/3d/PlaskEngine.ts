@@ -15,8 +15,14 @@ import {
 } from '@babylonjs/core';
 import { createCamera, createDirectionalLight, createGrounds, createHemisphericLight } from 'utils/RP';
 import { CameraModule } from './modules/camera/CameraModule';
+import { GizmoModule } from './modules/gizmo/GizmoModule';
+import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
+
+type VisibilityOptions = {
+  isGizmoVisible: boolean;
+};
 
 export class PlaskEngine {
   private _modules: Module[] = [];
@@ -27,6 +33,10 @@ export class PlaskEngine {
   private _camera!: ArcRotateCamera;
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
+
+  public visibilityOptions: VisibilityOptions = {
+    isGizmoVisible: true,
+  };
 
   public dispose() {
     this._engine.dispose();
@@ -48,6 +58,8 @@ export class PlaskEngine {
 
   public cameraModule!: CameraModule;
   public selectorModule!: SelectorModule;
+  public gizmoModule!: GizmoModule;
+  public ikModule!: IKModule;
 
   constructor() {
     // matrix를 사용한 애니메이션 보간을 허용합니다.
@@ -60,7 +72,7 @@ export class PlaskEngine {
     this._canvas = canvas;
     this._engine = new Engine(canvas);
     this._scene = new Scene(this._engine);
-    this._scene.onReadyObservable.addOnce(() => this._onSceneReady());
+    this._onSceneReady();
     this._registerObservables();
 
     for (let module of this._modules) {
@@ -90,6 +102,8 @@ export class PlaskEngine {
   private _registerModules() {
     this._modules.push((this.cameraModule = new CameraModule(this)));
     this._modules.push((this.selectorModule = new SelectorModule(this)));
+    this._modules.push((this.gizmoModule = new GizmoModule(this)));
+    // this._modules.push((this.ikModule = new IKModule(this)));
   }
 
   private _onSceneReady() {
