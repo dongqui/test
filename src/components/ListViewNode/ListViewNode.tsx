@@ -30,6 +30,7 @@ interface Props {
   onDragEnd?: React.DragEventHandler<HTMLDivElement>;
   onEditName: (newName: string) => void;
   onCancelEdit: () => void;
+  dataCy?: string;
 }
 
 const ListViewNode = ({
@@ -51,6 +52,7 @@ const ListViewNode = ({
   onEditName,
   onCancelEdit,
   extension,
+  dataCy,
 }: Props) => {
   const classes = cx('inner', {
     'open-visualized': isOpenVisualized,
@@ -59,7 +61,7 @@ const ListViewNode = ({
   });
 
   return (
-    <div className={cx('container')} tabIndex={0} onClick={onClick} draggable onDrop={onDrop} onDrag={onDragStart} onDragEnd={onDragEnd}>
+    <div className={cx('container')} tabIndex={0} onClick={onClick} draggable onDrop={onDrop} onDragStart={onDragStart} onDragEnd={onDragEnd} data-cy={dataCy}>
       <div className={cx('outer')}>
         <div className={classes} id="inner">
           <div className={cx('wrapper')} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={LPCONSTANTS.DRAG_SELECTABLE} onContextMenu={onContextMenu}>

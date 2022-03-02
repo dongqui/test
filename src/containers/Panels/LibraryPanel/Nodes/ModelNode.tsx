@@ -64,7 +64,7 @@ const ModelNode = ({ node }: Props) => {
     dispatch(lpNodeActions.editNodeName({ newName: nameWithExtension, nodeId: id }));
   };
 
-  return <BaseNode node={node} onContextMenu={handleContextMenu} onDrop={handleDrop} onEditName={handleEditName} onDragEnd={handleDragEnd} />;
+  return <BaseNode dataCy="lp-model" node={node} onContextMenu={handleContextMenu} onDrop={handleDrop} onEditName={handleEditName} onDragEnd={handleDragEnd} />;
 };
 
 export default ModelNode;
