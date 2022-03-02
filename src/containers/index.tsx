@@ -26,14 +26,18 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
 
   const { mode } = useSelector((state: RootState) => state.modeSelection);
 
-  // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
-  useEffect(() => {
-    setTimeout(() => {
-      if (!cookie.load('onboarding_1')) {
-        dispatch(commonActions.openOnboarding());
-      }
-    }, 2000);
-  }, [dispatch]);
+  /**
+   * @ToDo
+   * 각 툴팁을 다 구현 후에 주석을 풀을 예정
+   */
+  // // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     if (!cookie.load('onboarding_1')) {
+  //       dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
+  //     }
+  //   }, 2000);
+  // }, [dispatch]);
 
   const classes = cx('wrapper', {
     visible: mode === 'animationMode',
@@ -46,7 +50,7 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
         <Shoot className={classes} />
       </ResizeProvider>
       {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={browserType} />}
-      <Onboarding />
+      {/* <Onboarding /> */}
     </main>
   );
 };
