@@ -15,7 +15,9 @@
     "build": "npm run build-src && npm run build-electron",
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
-    "clean": "rimraf dist main src/out out src/_next _next storybook-static"
+    "clean": "rimraf dist main src/out out src/_next _next storybook-static",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "dependencies": {
     "@babylonjs/core": "^5.0.0-alpha.61",
@@ -47,6 +49,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@cypress/skip-test": "^2.6.1",
     "@next/bundle-analyzer": "^10.0.5",
     "@storybook/addon-actions": "^6.1.15",
     "@storybook/addon-essentials": "^6.1.15",
@@ -73,6 +76,8 @@
     "@typescript-eslint/parser": "^4.14.0",
     "babel-plugin-inline-react-svg": "^2.0.1",
     "css-loader": "^5.0.1",
+    "cypress": "^9.5.0",
+    "cypress-plugin-snapshots": "^1.4.4",
     "duplicate-package-checker-webpack-plugin": "^3.0.0",
     "electron": "^11.0.1",
     "electron-builder": "^22.9.1",

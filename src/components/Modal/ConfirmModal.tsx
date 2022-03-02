@@ -52,7 +52,7 @@ const ConfirmModal: FunctionComponent<Props> = ({
           <OutlineButton onClick={onClickCancel} fullSize>
             {cancelText}
           </OutlineButton>
-          <FilledButton onClick={onClickConfirm} color={confirmButtonColor} fullSize>
+          <FilledButton onClick={onClickConfirm} color={confirmButtonColor} fullSize dataCy="modal-confirm">
             {confirmText}
           </FilledButton>
         </div>

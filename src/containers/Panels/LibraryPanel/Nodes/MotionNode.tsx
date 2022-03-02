@@ -43,7 +43,7 @@ const MotionNode = ({ node }: Props) => {
     );
   };
 
-  return <BaseNode node={node} onContextMenu={handleContextMenu} onDragEnd={handleDragEnd} />;
+  return <BaseNode node={node} onContextMenu={handleContextMenu} onDragEnd={handleDragEnd} dataCy="lp-motion" />;
 };
 
 export default MotionNode;

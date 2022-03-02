@@ -48,7 +48,7 @@ const LPBody: FunctionComponent<Props> = () => {
   const rootPathNodes = nodes.filter((node) => node.parentId === '__root__');
 
   return (
-    <div className={cx('inner')} onContextMenu={handleContextMenu} onClickCapture={handleClick} onDrop={handleDrop}>
+    <div className={cx('inner')} onContextMenu={handleContextMenu} onClickCapture={handleClick} onDrop={handleDrop} data-cy="lp-body">
       {rootPathNodes.map((node) => (
         <div className={cx('node-row')} key={node.id}>
           <ListNode node={node} />

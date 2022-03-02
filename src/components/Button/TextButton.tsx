@@ -9,6 +9,7 @@ interface BaseProps {
   color?: 'primary';
   text?: string;
   fullSize?: boolean;
+  dataCy?: string;
 }
 
 export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
@@ -18,14 +19,14 @@ const defaultProps: Partial<BaseProps> = {
   size: 'small',
 };
 
-const TextButton: FunctionComponent<Props> = ({ size, text, color, fullSize, disabled, className, children, ...rest }) => {
+const TextButton: FunctionComponent<Props> = ({ size, text, color, fullSize, disabled, className, children, dataCy, ...rest }) => {
   const classes = cx('text', className, size, color, {
     disabled,
     fullSize,
   });
 
   return (
-    <button className={classes} {...rest}>
+    <button className={classes} data-cy={dataCy} {...rest}>
       {text || children}
     </button>
   );
