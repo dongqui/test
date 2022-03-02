@@ -38,7 +38,7 @@ const FolderNode = ({ node }: Props) => {
     }
   };
 
-  return <BaseNode node={node} onContextMenu={handleContextMenu} onDrop={handleDrop} />;
+  return <BaseNode node={node} onContextMenu={handleContextMenu} onDrop={handleDrop} dataCy="lp-folder" />;
 };
 
 export default FolderNode;

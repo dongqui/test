@@ -7,9 +7,10 @@ const cx = classnames.bind(styles);
 interface Props extends Omit<React.HTMLAttributes<HTMLElement>, 'disabled' | 'onClick'> {
   disabled?: boolean;
   onClick: React.MouseEventHandler;
+  dataCy?: string;
 }
 
-const ContextMenuItem: FunctionComponent<Props> = ({ children, disabled = false, onClick, ...rest }) => {
+const ContextMenuItem: FunctionComponent<Props> = ({ dataCy, children, disabled = false, onClick, ...rest }) => {
   const _onClick = (e: React.MouseEvent) => {
     if (disabled) {
       e.preventDefault();
@@ -18,7 +19,7 @@ const ContextMenuItem: FunctionComponent<Props> = ({ children, disabled = false,
     }
   };
   return (
-    <div className={cx('item', { disabled })} onClick={_onClick} {...rest}>
+    <div className={cx('item', { disabled })} onClick={_onClick} {...rest} data-cy={dataCy}>
       {children}
     </div>
   );
