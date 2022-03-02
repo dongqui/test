@@ -1,10 +1,15 @@
 import { PlaskEngine } from '3d/PlaskEngine';
+import { PlaskState } from '3d/PlaskState';
 import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
 
-export class SelectorModule extends Module {
+type SelectorModuleState = {
+  selectedObjects: TransformNode[]
+};
+
+export class SelectorModule extends Module<SelectorModuleState> {
   public onStartSelectBox: Observable<ScreenXY> = new Observable();
   public onSelectBoxUpdated: Observable<{ min: ScreenXY; max: ScreenXY }> = new Observable();
   public onEndSelectBox: Observable<{ type: 'ctrlKey' | 'default'; objects: any[] }> = new Observable();
@@ -12,11 +17,17 @@ export class SelectorModule extends Module {
   public onSelectionChangeObservable: Observable<TransformNode[]> = new Observable();
 
   public selectableObjects!: TransformNode[];
-  public selectedObjects: TransformNode[] = [];
+  public get selectedObjects() {
+    return this.state.selectedObjects;
+  }
 
   private _startPosition: Nullable<Vector2> = null;
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+
+  public state = {
+    selectedObjects: [] as TransformNode[],
+  };
 
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
@@ -96,16 +107,23 @@ export class SelectorModule extends Module {
    * @param reset Set to true to clear the current selection
    */
   public select(objects: TransformNode[], reset = false) {
+    const selected = this.selectedObjects;
     if (reset) {
-      this.selectedObjects.length = 0;
+      selected.length = 0;
     }
 
     for (let obj of objects) {
-      if (!this.selectedObjects.includes(obj)) {
-        this.selectedObjects.push(obj);
+      if (!selected.includes(obj)) {
+        selected.push(obj);
       }
     }
-    this.onSelectionChangeObservable.notifyObservers(this.selectedObjects);
+    PlaskState.commit(this, { selectedObjects: selected });
+  }
+
+  public onStateChanged(diff: SelectorModuleState) {
+    if (diff.selectedObjects) {
+      this.onSelectionChangeObservable.notifyObservers(diff.selectedObjects);
+    }
   }
 
   /**

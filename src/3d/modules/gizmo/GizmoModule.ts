@@ -12,7 +12,9 @@ enum GizmoMode {
 type GizmoDragObserver = Nullable<Observer<{ delta: Vector3; dragPlanePoint: Vector3; dragPlaneNormal: Vector3; dragDistance: number; pointerId: number }>>;
 type GizmoDragStartObserver = Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
 
-export class GizmoModule extends Module {
+type GizmoModuleState = {}
+export class GizmoModule extends Module<GizmoModuleState> {
+  public state = {};
   private _gizmoManager!: GizmoManager;
   private _selectionChangeObserver: Nullable<Observer<TransformNode[]>> = null;
   private _currentGizmoMode: GizmoMode = GizmoMode.NONE;

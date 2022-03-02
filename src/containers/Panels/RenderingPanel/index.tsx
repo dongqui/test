@@ -19,6 +19,7 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { BabylonContext } from 'contexts/RP/BabylonContext';
 import { useObserved } from 'hooks/common/useObserved';
+import { PlaskState } from '3d/PlaskState';
 
 const cx = classNames.bind(styles);
 
@@ -183,22 +184,20 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   }, [/* _screenList, */ _selectableObjects, dispatch, plaskEngine]);
 
   // Updating selection from react
-  // ! TODO : The state shouldn't flow that way. _selectedTargets should belong to babylonjs
-  // useEffect(() => {
-  //   plaskEngine.selectorModule.select(_selectedTargets);
-  //   console.log('update');
-  // }, [plaskEngine, _selectedTargets]);
+  useEffect(() => {
+    PlaskState.commit(plaskEngine.selectorModule, { selectedObjects: _selectedTargets });
+  }, [_selectedTargets]);
 
-  // useEffect(() => {
-  //   const observer = plaskEngine.selectorModule.onSelectionChangeObservable.add((objects) => {
-  //     dispatch(selectingDataActions.defaultMultiSelect({ targets: objects }));
-  //   });
-  //   console.log('add observer');
+  useEffect(() => {
+    const observer = plaskEngine.selectorModule.onSelectionChangeObservable.add((objects) => {
+      dispatch(selectingDataActions.defaultMultiSelect({ targets: objects }));
+    });
+    console.log('add observer');
 
-  //   return () => {
-  //     plaskEngine.selectorModule.onSelectionChangeObservable.remove(observer);
-  //   };
-  // }, [plaskEngine, dispatch]);
+    return () => {
+      plaskEngine.selectorModule.onSelectionChangeObservable.remove(observer);
+    };
+  }, [plaskEngine, dispatch]);
 
   /**
    * camera navigation, viewport 전환 관련 단축키 설정
