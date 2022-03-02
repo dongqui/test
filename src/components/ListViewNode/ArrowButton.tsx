@@ -18,7 +18,7 @@ const ArrowButton = ({ isOpen, hidden, onArrowButtonClick }: Props) => {
   return (
     <Fragment>
       {shows && (
-        <div className={cx('wrapper')} onClick={onArrowButtonClick}>
+        <div className={cx('wrapper')} onClick={onArrowButtonClick} data-cy="arrow-icon">
           <IconWrapper className={cx('icon')} icon={icon} />
         </div>
       )}

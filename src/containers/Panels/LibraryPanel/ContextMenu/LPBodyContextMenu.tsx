@@ -23,7 +23,9 @@ const LPBodyContextMenu = ({ nodeId, extension, filePath }: Props) => {
 
   return (
     <BaseContextMenu>
-      <ContextMenuItem onClick={handleNewDirectory}>New directory</ContextMenuItem>
+      <ContextMenuItem dataCy="contextmenu-new-directory" onClick={handleNewDirectory}>
+        New directory
+      </ContextMenuItem>
     </BaseContextMenu>
   );
 };
