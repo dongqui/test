@@ -1,0 +1,17 @@
+.wrapper {
+  h3 {
+    font-size: 16px;
+    margin: 0;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.5em;
+
+    span {
+      color: var(--blue200);
+    }
+  }
+}
