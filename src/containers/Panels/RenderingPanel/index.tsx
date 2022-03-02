@@ -9,16 +9,15 @@ import * as screenDataActions from 'actions/screenDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as trackListActions from 'actions/trackList';
 import { useSelector } from 'reducers';
-import { Nullable, ScreenXY, PlaskView } from 'types/common';
+import { PlaskView } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import { checkIsTargetMesh, createAnimationGroupFromIngredient } from 'utils/RP';
+import { BabylonContext } from 'contexts/RP/BabylonContext';
 import ScreenVisibility from './ScreenVisibility';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
-import { useObserved } from 'hooks/common/useObserved';
 
 const cx = classNames.bind(styles);
 
