@@ -1,6 +1,7 @@
 import { AxisDragGizmo, AxisScaleGizmo, Color3, GizmoManager, Matrix, Mesh, Nullable, Observer, Quaternion, TransformNode, Vector3 } from '@babylonjs/core';
 import { checkIsTargetMesh } from 'utils/RP';
 import { Module } from '../Module';
+import { SelectorModule } from '../selector/SelectorModule';
 
 enum GizmoMode {
   POSITION,
@@ -12,11 +13,11 @@ enum GizmoMode {
 type GizmoDragObserver = Nullable<Observer<{ delta: Vector3; dragPlanePoint: Vector3; dragPlaneNormal: Vector3; dragDistance: number; pointerId: number }>>;
 type GizmoDragStartObserver = Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
 
-type GizmoModuleState = {}
+type GizmoModuleState = {};
 export class GizmoModule extends Module<GizmoModuleState> {
   public state = {};
   private _gizmoManager!: GizmoManager;
-  private _selectionChangeObserver: Nullable<Observer<TransformNode[]>> = null;
+  private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _currentGizmoMode: GizmoMode = GizmoMode.NONE;
   private _activeTargets: TransformNode[] = [];
   private _observers = {
@@ -52,7 +53,7 @@ export class GizmoModule extends Module<GizmoModuleState> {
     this._gizmoManager.positionGizmoEnabled = true; // position을 기본 모드로 설정
 
     // 선택효과 적용
-    this._selectionChangeObserver = this.plaskEngine.selectorModule.onSelectionChangeObservable.add((selectedTargets: TransformNode[]) => this._onSelectionChange(selectedTargets));
+    this._selectionChangeObserver = this.plaskEngine.selectorModule.onSelectionChangeObservable.add(({ payload }) => this._onSelectionChange(payload));
   }
 
   public dispose() {
@@ -132,18 +133,19 @@ export class GizmoModule extends Module<GizmoModuleState> {
 
   private _clearOutline() {
     // 선택효과 해제
-    const target = this._activeTargets[0];
-    if (!target) {
-      return;
-    }
-    if (checkIsTargetMesh(target)) {
-      // 컨트롤러
-      target.renderOutline = false;
-    } else {
-      // joint
-      const joint = target.getScene().getMeshByID(target.id.replace('transformNode', 'joint'));
-      if (joint) {
-        joint.renderOutline = false;
+    for (const target of this._activeTargets) {
+      if (!target) {
+        return;
+      }
+      if (checkIsTargetMesh(target)) {
+        // 컨트롤러
+        target.renderOutline = false;
+      } else {
+        // joint
+        const joint = target.getScene().getMeshByID(target.id.replace('transformNode', 'joint'));
+        if (joint) {
+          joint.renderOutline = false;
+        }
       }
     }
   }

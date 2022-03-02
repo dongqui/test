@@ -6,7 +6,8 @@ import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
 
 type SelectorModuleState = {
-  selectedObjects: TransformNode[]
+  selectableObjects: TransformNode[];
+  selectedTargets: TransformNode[];
 };
 
 export class SelectorModule extends Module<SelectorModuleState> {
@@ -14,11 +15,14 @@ export class SelectorModule extends Module<SelectorModuleState> {
   public onSelectBoxUpdated: Observable<{ min: ScreenXY; max: ScreenXY }> = new Observable();
   public onEndSelectBox: Observable<{ type: 'ctrlKey' | 'default'; objects: any[] }> = new Observable();
 
-  public onSelectionChangeObservable: Observable<TransformNode[]> = new Observable();
+  public onSelectionChangeObservable: Observable<{ payload: TransformNode[]; origin: string }> = new Observable();
 
-  public selectableObjects!: TransformNode[];
-  public get selectedObjects() {
-    return this.state.selectedObjects;
+  public get selectableObjects() {
+    return this.state.selectableObjects;
+  }
+
+  public get selectedTargets() {
+    return this.state.selectedTargets;
   }
 
   private _startPosition: Nullable<Vector2> = null;
@@ -26,8 +30,31 @@ export class SelectorModule extends Module<SelectorModuleState> {
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
   public state = {
-    selectedObjects: [] as TransformNode[],
+    selectableObjects: [] as TransformNode[],
+    selectedTargets: [] as TransformNode[],
   };
+
+  public mutations = [
+    {
+      actionTypes: [
+        'selectingDataAction/ADD_SELECTABLE_OBJECTS',
+        'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS',
+        'selectingDataAction/REMOVE_SELECTABLE_JOINTS',
+        'selectingDataAction/UNRENDER_ASSET',
+        'selectingDataAction/DEFAULT_SINGLE_SELECT',
+        'selectingDataAction/DEFAULT_MULTI_SELECT',
+        'selectingDataAction/CTRL_KEY_SINGLE_SELECT',
+        'selectingDataAction/CTRL_KEY_MULTI_SELECT',
+        'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS',
+        'selectingDataAction/RESET_SELECTED_TARGETS',
+      ],
+      callback: (action: any, state: any) => {
+        // TODO : find a way to make that generic
+        this.state.selectedTargets = state.selectingData.selectedTargets;
+        this.onSelectionChangeObservable.notifyObservers({ payload: this.state.selectedTargets, origin: 'ui' });
+      },
+    },
+  ];
 
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
@@ -107,7 +134,7 @@ export class SelectorModule extends Module<SelectorModuleState> {
    * @param reset Set to true to clear the current selection
    */
   public select(objects: TransformNode[], reset = false) {
-    const selected = this.selectedObjects;
+    const selected = this.selectedTargets;
     if (reset) {
       selected.length = 0;
     }
@@ -117,13 +144,8 @@ export class SelectorModule extends Module<SelectorModuleState> {
         selected.push(obj);
       }
     }
-    PlaskState.commit(this, { selectedObjects: selected });
-  }
 
-  public onStateChanged(diff: SelectorModuleState) {
-    if (diff.selectedObjects) {
-      this.onSelectionChangeObservable.notifyObservers(diff.selectedObjects);
-    }
+    this.onSelectionChangeObservable.notifyObservers({ payload: this.state.selectedTargets, origin: 'plask' });
   }
 
   /**

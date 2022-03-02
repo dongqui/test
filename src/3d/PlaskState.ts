@@ -1,37 +1,26 @@
-import { Entity } from "./entities/Entity";
-import { Module } from "./modules/Module";
+import { Entity } from './entities/Entity';
+import { Module } from './modules/Module';
+import { PlaskEngine } from './PlaskEngine';
 
+type PlaskGlobalState = {};
 class PlaskStateSingleton {
-  private _entities: {[id: string]: Entity} = {};
+  private _entities: { [id: string]: Entity } = {};
 
-  constructor() {
-
-  }
-
-  public persist(obj: Object) {
-
-  }
-
-  public action(id: string, field: string, value: any) {
-    if (!this._entities[id]) {
-      console.warn('Entity not found');
-      return;
-    }
-
-    (this._entities[id] as any)[field] = value;
-
-    // Notify redux that Plask internal state has changed
-  }
-
-  public addState(name: string, object: any) {
-
-  }
+  constructor() {}
+  public globalState = {} as PlaskGlobalState;
 
   public commit<S>(module: Module<S>, value: Partial<S>): S {
     // sync with redux store
     module.state = Object.assign({}, module.state, value);
     module.onStateChanged(value);
     return module.state;
+  }
+
+  public action(action: any, state: any) {
+    let engine;
+    if ((engine = PlaskEngine.GetInstance())) {
+      engine.dispatch(action, state);
+    }
   }
 }
 

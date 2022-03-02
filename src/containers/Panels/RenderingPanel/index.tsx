@@ -160,7 +160,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     dragBox.setAttribute('style', dragBoxDefaultStyle);
 
     // TODO : export logic inside a module
-    plaskEngine.selectorModule.selectableObjects = _selectableObjects;
+    plaskEngine.selectorModule.state.selectableObjects = _selectableObjects;
+
     // DragBox updated
     const selectBoxUpdatedObserver = plaskEngine.selectorModule.onSelectBoxUpdated.add(({ min, max }) => {
       dragBox.setAttribute('style', `${dragBoxDefaultStyle} left: ${min.x}px; top: ${min.y}px; width: ${max.x - min.x}px; height: ${max.y - min.y}px;`);
@@ -183,17 +184,13 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     // }
   }, [/* _screenList, */ _selectableObjects, dispatch, plaskEngine]);
 
-  // Updating selection from react
   useEffect(() => {
-    PlaskState.commit(plaskEngine.selectorModule, { selectedObjects: _selectedTargets });
-  }, [_selectedTargets]);
-
-  useEffect(() => {
-    const observer = plaskEngine.selectorModule.onSelectionChangeObservable.add((objects) => {
-      dispatch(selectingDataActions.defaultMultiSelect({ targets: objects }));
+    const observer = plaskEngine.selectorModule.onSelectionChangeObservable.add(({ payload, origin }) => {
+      if (origin === 'ui') {
+        return;
+      }
+      dispatch(selectingDataActions.defaultMultiSelect({ targets: payload }));
     });
-    console.log('add observer');
-
     return () => {
       plaskEngine.selectorModule.onSelectionChangeObservable.remove(observer);
     };

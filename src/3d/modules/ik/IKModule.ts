@@ -1,3 +1,6 @@
 import { Module } from '../Module';
 
-export class IKModule extends Module {}
+type IKModuleState = {};
+export class IKModule extends Module<IKModuleState> {
+  public state = {} as IKModuleState;
+}

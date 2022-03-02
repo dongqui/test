@@ -25,7 +25,7 @@ type VisibilityOptions = {
 };
 
 export class PlaskEngine {
-  private _modules: Module[] = [];
+  private _modules: Module<any>[] = [];
   private _engine!: Engine;
   private _scene!: Scene;
   private _canvas!: HTMLCanvasElement;
@@ -33,6 +33,11 @@ export class PlaskEngine {
   private _camera!: ArcRotateCamera;
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
+
+  public static Instance: PlaskEngine;
+  public static GetInstance() {
+    return PlaskEngine.Instance;
+  }
 
   public visibilityOptions: VisibilityOptions = {
     isGizmoVisible: true,
@@ -65,6 +70,7 @@ export class PlaskEngine {
     // matrix를 사용한 애니메이션 보간을 허용합니다.
     Animation.AllowMatricesInterpolation = true;
     this._registerModules();
+    PlaskEngine.Instance = this;
   }
 
   public initialize(canvas: HTMLCanvasElement) {
@@ -82,6 +88,16 @@ export class PlaskEngine {
     this._engine.runRenderLoop(() => {
       this._scene.render();
     });
+  }
+
+  public dispatch(action: any, state: any) {
+    for (let module of this._modules) {
+      for (let mutation of module.mutations) {
+        if (mutation.actionTypes.includes(action.type)) {
+          mutation.callback(action.type, state);
+        }
+      }
+    }
   }
 
   public resize() {
