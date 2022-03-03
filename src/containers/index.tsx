@@ -1,6 +1,5 @@
 import { FunctionComponent, memo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import cookie from 'react-cookies';
 
 import * as commonActions from 'actions/Common/globalUI';
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
@@ -33,7 +32,8 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
   // // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
   // useEffect(() => {
   //   setTimeout(() => {
-  //     if (!cookie.load('onboarding_1')) {
+  //     const localStorage = window.localStorage;
+  //     if (!localStorage.getItem('onboarding_1')) {
   //       dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
   //     }
   //   }, 2000);
