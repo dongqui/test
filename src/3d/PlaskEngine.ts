@@ -13,11 +13,14 @@ import {
   Scene,
   Vector3,
 } from '@babylonjs/core';
+import { PLASK_ENGINE_SYNC } from 'actions/plaskEngineAction';
+import { RootState } from 'reducers';
+import { Dispatch } from 'redux';
 import { createCamera, createDirectionalLight, createGrounds, createHemisphericLight } from 'utils/RP';
 import { CameraModule } from './modules/camera/CameraModule';
 import { GizmoModule } from './modules/gizmo/GizmoModule';
 import { IKModule } from './modules/ik/IKModule';
-import { Module } from './modules/Module';
+import { Module, ModuleState } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
 
 type VisibilityOptions = {
@@ -25,7 +28,7 @@ type VisibilityOptions = {
 };
 
 export class PlaskEngine {
-  private _modules: Module<any>[] = [];
+  private _modules: Module<ModuleState>[] = [];
   private _engine!: Engine;
   private _scene!: Scene;
   private _canvas!: HTMLCanvasElement;
@@ -33,6 +36,8 @@ export class PlaskEngine {
   private _camera!: ArcRotateCamera;
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
+
+  public _reduxDispatch!: Dispatch<any>;
 
   public static Instance: PlaskEngine;
   public static GetInstance() {
@@ -61,6 +66,10 @@ export class PlaskEngine {
     return this._canvas;
   }
 
+  public get modules() {
+    return this._modules;
+  }
+
   public cameraModule!: CameraModule;
   public selectorModule!: SelectorModule;
   public gizmoModule!: GizmoModule;
@@ -73,13 +82,14 @@ export class PlaskEngine {
     PlaskEngine.Instance = this;
   }
 
-  public initialize(canvas: HTMLCanvasElement) {
+  public initialize(canvas: HTMLCanvasElement, dispatch: Dispatch<any>) {
     console.log('Initializing plask engine...');
     this._canvas = canvas;
     this._engine = new Engine(canvas);
     this._scene = new Scene(this._engine);
     this._onSceneReady();
     this._registerObservables();
+    this._reduxDispatch = dispatch;
 
     for (let module of this._modules) {
       module.initialize();
@@ -91,6 +101,11 @@ export class PlaskEngine {
   }
 
   public dispatch(action: any, state: any) {
+    // Generic action
+    // console.log(action.type);
+    // console.log(action.payload);
+    this.state = state;
+
     for (let module of this._modules) {
       for (let mutation of module.mutations) {
         if (mutation.actionTypes.includes(action.type)) {
@@ -99,6 +114,8 @@ export class PlaskEngine {
       }
     }
   }
+
+  public state!: RootState;
 
   public resize() {
     this._engine.resize();

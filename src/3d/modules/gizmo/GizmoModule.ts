@@ -53,7 +53,7 @@ export class GizmoModule extends Module<GizmoModuleState> {
     this._gizmoManager.positionGizmoEnabled = true; // position을 기본 모드로 설정
 
     // 선택효과 적용
-    this._selectionChangeObserver = this.plaskEngine.selectorModule.onSelectionChangeObservable.add(({ payload }) => this._onSelectionChange(payload));
+    this._selectionChangeObserver = this.plaskEngine.selectorModule.onSelectionChangeObservable.add((objects) => this._onSelectionChange(objects));
   }
 
   public dispose() {

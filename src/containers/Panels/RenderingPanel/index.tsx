@@ -8,7 +8,7 @@ import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as screenDataActions from 'actions/screenDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as trackListActions from 'actions/trackList';
-import { useSelector } from 'reducers';
+import rootReducer, { useSelector } from 'reducers';
 import { Nullable, ScreenXY, PlaskView } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
@@ -20,6 +20,9 @@ import styles from './index.module.scss';
 import { BabylonContext } from 'contexts/RP/BabylonContext';
 import { useObserved } from 'hooks/common/useObserved';
 import { PlaskState } from '3d/PlaskState';
+import { plaskEngineSyncAction } from 'actions/plaskEngineAction';
+import { SelectorModule } from '3d/modules/selector/SelectorModule';
+import { ModuleState } from '3d/modules/Module';
 
 const cx = classNames.bind(styles);
 
@@ -91,11 +94,30 @@ const RenderingPanel: FunctionComponent<Props> = () => {
    */
   const { plaskEngine } = useContext(BabylonContext);
 
+  // // Mapping state
+  // const getNested = (obj: any, path: string) => {
+  //   return path.split('.').reduce((p, c) => (p && p[c]) || null, obj);
+  // };
+  // const setNested = (obj: any, path: string, value: any) => {
+  //   return path.split('.').reduce((o, p, i) => (o[p] = path.split('.').length === ++i ? value : o[p] || {}), obj);
+  // };
+
+  // const deps = [];
+  // for (const id in SelectorModule.STATE) {
+  //   const obj = (SelectorModule.STATE as ModuleState)[id];
+  //   const variable = useSelector((state) => getNested(state, obj.reduxPath));
+  //   deps.push(variable);
+  // }
+
+  // useCallback(() => {
+  //   SelectorModule.Callback();
+  // }, deps);
+
   useEffect(() => {
     if (renderingCanvas1.current) {
       // Initialize Plask engine
       // ? Can we have several canvas/engine ?
-      plaskEngine.initialize(renderingCanvas1.current);
+      plaskEngine.initialize(renderingCanvas1.current, dispatch);
 
       // scene의 생성과 소멸에 대한 observable을 생성하고 콜백을 추가합니다.
       plaskEngine.scene.onReadyObservable.addOnce(() => {
@@ -111,6 +133,16 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         dispatch(plaskProjectActions.addScreen({ screen: newScreen }));
         dispatch(screenDataActions.addScreen({ screenId: newScreen.id }));
       });
+
+      const modules = plaskEngine.modules;
+
+      // for (const module of modules) {
+      //   // Hook states
+      //   for (const field in module.state) {
+      //     const variable = useSelector((state) => getNested(state, module.state[field].reduxPath));
+      //     // module.state[field]._onChanged = () => dispatch(plaskEngineSyncAction(setNested({}, module.state[field].reduxPath, module.state[field].value)));
+      //   }
+      // }
 
       // plaskEngine.scene.onDisposeObservable.addOnce((scene) => {
       //   // scene이 사라지면 창을 새로고침합니다.
@@ -160,7 +192,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     dragBox.setAttribute('style', dragBoxDefaultStyle);
 
     // TODO : export logic inside a module
-    plaskEngine.selectorModule.state.selectableObjects = _selectableObjects;
+    plaskEngine.selectorModule.state.selectableObjects.value = _selectableObjects;
 
     // DragBox updated
     const selectBoxUpdatedObserver = plaskEngine.selectorModule.onSelectBoxUpdated.add(({ min, max }) => {
@@ -169,11 +201,11 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
     // DragBox end
     const endSelectBoxObserver = plaskEngine.selectorModule.onEndSelectBox.add(({ type, objects }) => {
-      if (type === 'ctrlKey') {
-        dispatch(selectingDataActions.ctrlKeyMultiSelect({ targets: objects }));
-      } else {
-        dispatch(selectingDataActions.defaultMultiSelect({ targets: objects }));
-      }
+      // if (type === 'ctrlKey') {
+      //   dispatch(selectingDataActions.ctrlKeyMultiSelect({ targets: objects }));
+      // } else {
+      //   dispatch(selectingDataActions.defaultMultiSelect({ targets: objects }));
+      // }
       dragBox.setAttribute('style', dragBoxDefaultStyle);
     });
 
@@ -184,17 +216,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     // }
   }, [/* _screenList, */ _selectableObjects, dispatch, plaskEngine]);
 
-  useEffect(() => {
-    const observer = plaskEngine.selectorModule.onSelectionChangeObservable.add(({ payload, origin }) => {
-      if (origin === 'ui') {
-        return;
-      }
-      dispatch(selectingDataActions.defaultMultiSelect({ targets: payload }));
-    });
-    return () => {
-      plaskEngine.selectorModule.onSelectionChangeObservable.remove(observer);
-    };
-  }, [plaskEngine, dispatch]);
+  // useEffect(() => {
+  //   const observer = plaskEngine.selectorModule.onSelectionChangeObservable.add((targets) => {
+  //     dispatch(selectingDataActions.defaultMultiSelect({ targets }));
+  //   });
+  //   return () => {
+  //     plaskEngine.selectorModule.onSelectionChangeObservable.remove(observer);
+  //   };
+  // }, [plaskEngine, dispatch]);
 
   /**
    * camera navigation, viewport 전환 관련 단축키 설정

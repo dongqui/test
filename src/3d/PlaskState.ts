@@ -1,5 +1,5 @@
 import { Entity } from './entities/Entity';
-import { Module } from './modules/Module';
+import { Module, ModuleState } from './modules/Module';
 import { PlaskEngine } from './PlaskEngine';
 
 type PlaskGlobalState = {};
@@ -9,7 +9,7 @@ class PlaskStateSingleton {
   constructor() {}
   public globalState = {} as PlaskGlobalState;
 
-  public commit<S>(module: Module<S>, value: Partial<S>): S {
+  public commit<S extends ModuleState>(module: Module<S>, value: Partial<S>): S {
     // sync with redux store
     module.state = Object.assign({}, module.state, value);
     module.onStateChanged(value);

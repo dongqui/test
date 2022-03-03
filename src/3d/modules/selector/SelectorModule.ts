@@ -1,38 +1,52 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { PlaskState } from '3d/PlaskState';
 import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
+import { defaultMultiSelect } from 'actions/selectingDataAction';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
 
-type SelectorModuleState = {
-  selectableObjects: TransformNode[];
-  selectedTargets: TransformNode[];
+const STATE = {
+  selectableObjects: {
+    value: [] as TransformNode[],
+    reduxPath: 'selectingData.selectableObjects',
+  },
+  selectedTargets: {
+    value: [] as TransformNode[],
+    reduxPath: 'selectingData.selectedTargets',
+  },
 };
+type SelectorModuleState = typeof STATE;
 
 export class SelectorModule extends Module<SelectorModuleState> {
+  public static Callback() {
+    console.log('State Changed !');
+  }
+  public static STATE = STATE;
   public onStartSelectBox: Observable<ScreenXY> = new Observable();
   public onSelectBoxUpdated: Observable<{ min: ScreenXY; max: ScreenXY }> = new Observable();
   public onEndSelectBox: Observable<{ type: 'ctrlKey' | 'default'; objects: any[] }> = new Observable();
 
-  public onSelectionChangeObservable: Observable<{ payload: TransformNode[]; origin: string }> = new Observable();
+  public onSelectionChangeObservable: Observable<TransformNode[]> = new Observable();
 
   public get selectableObjects() {
-    return this.state.selectableObjects;
+    return this.plaskEngine.state.selectingData.selectableObjects;
   }
 
+  // TODO : decorator !
   public get selectedTargets() {
-    return this.state.selectedTargets;
+    return this.plaskEngine.state.selectingData.selectedTargets;
+  }
+  public set selectedTargets(targets: TransformNode[]) {
+    console.log(targets)
+    this.plaskEngine._reduxDispatch(defaultMultiSelect({ targets }));
   }
 
   private _startPosition: Nullable<Vector2> = null;
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public state = {
-    selectableObjects: [] as TransformNode[],
-    selectedTargets: [] as TransformNode[],
-  };
+  public state = STATE;
 
   public mutations = [
     {
@@ -49,9 +63,8 @@ export class SelectorModule extends Module<SelectorModuleState> {
         'selectingDataAction/RESET_SELECTED_TARGETS',
       ],
       callback: (action: any, state: any) => {
-        // TODO : find a way to make that generic
-        this.state.selectedTargets = state.selectingData.selectedTargets;
-        this.onSelectionChangeObservable.notifyObservers({ payload: this.state.selectedTargets, origin: 'ui' });
+        console.log("targets updated")
+        this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
       },
     },
   ];
@@ -144,8 +157,7 @@ export class SelectorModule extends Module<SelectorModuleState> {
         selected.push(obj);
       }
     }
-
-    this.onSelectionChangeObservable.notifyObservers({ payload: this.state.selectedTargets, origin: 'plask' });
+    this.selectedTargets = objects;
   }
 
   /**
