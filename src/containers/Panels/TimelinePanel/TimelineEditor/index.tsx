@@ -258,8 +258,8 @@ const TimelineEditor = () => {
         setIsFocused(false);
       };
 
-      const isSafari = detectSafari();
-      if (isSafari) focusListener();
+      // const isSafari = detectSafari();
+      // if (isSafari) focusListener();
       currentRef?.addEventListener('focus', focusListener);
       currentRef?.addEventListener('blur', blurListener);
 

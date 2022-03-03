@@ -22,6 +22,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
   const dispatch = useDispatch();
   const trackItemRef = useRef<HTMLLIElement>(null);
   const boneTrackList = useSelector((state) => state.trackList.boneTrackList);
+  const isBaseLayer = useMemo(() => trackName === 'Base Layer', [trackName]);
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
@@ -40,7 +41,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
       },
       {
         label: 'Delete Layer',
-        disabled: trackName === 'Base Layer' || isSelected,
+        disabled: isBaseLayer || isSelected,
         onClick: () => {
           dispatch(
             globalUIActions.openModal('ConfirmModal', {
@@ -57,7 +58,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
         },
       },
     ],
-    [dispatch, isSelected, trackId, trackName],
+    [dispatch, isBaseLayer, isSelected, trackId],
   );
 
   // 트랙 클릭
@@ -97,7 +98,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
         <CaretButton isPointedDownCaret={isPointedDownCaret} trackId={trackId} trackType={trackType} />
         <IconWrapper className={cx('layer-icon')} icon={SvgPath.Layer} />
         <div className={cx('track-name')}>{trackName}</div>
-        <MuteButton trackName={trackName} isMuted={isMuted} trackId={trackId} />
+        {!isBaseLayer && <MuteButton trackName={trackName} isMuted={isMuted} trackId={trackId} />}
       </div>
       <ul>{isSelected && isPointedDownCaret && boneTrackList.map((boneTrack) => <BoneTrackItem key={boneTrack.trackName} {...boneTrack} />)}</ul>
     </li>
