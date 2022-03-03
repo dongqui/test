@@ -958,7 +958,6 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
           file.path = resultName;
 
           try {
-            yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
             const bvhUrl: string = yield call(convertModel, file, 'bvh', bvhMap);
             const link = document.createElement('a');
             link.href = bvhUrl;
