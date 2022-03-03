@@ -834,7 +834,7 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
 
 function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeName>) {
   const { newName, nodeId } = action.payload;
-  const { lpNode }: RootState = yield select();
+  const { lpNode, animationData }: RootState = yield select();
   const { nodes } = lpNode;
 
   const targetNode = nodes.find((node) => node.id === nodeId);
@@ -856,6 +856,19 @@ function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeNam
       }),
     );
   } else {
+    if (targetNode.type === 'Motion') {
+      const animationIngredient = animationData.animationIngredients.find((animationIngredient) => targetNode.id === animationIngredient.id);
+      if (!animationIngredient) {
+        // TODO: error
+        return;
+      }
+      yield put(
+        animationDataActions.editAnimationIngredient({
+          animationIngredient: Object.assign(animationIngredient, { name: newName }),
+        }),
+      );
+    }
+
     const nodesWithModifiedNode = nodes.map((node) =>
       node === targetNode
         ? {
