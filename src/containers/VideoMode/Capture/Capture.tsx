@@ -369,7 +369,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
     if (first.match(/[0-9]/g)) {
       setBasicExtractName(currentValue);
     } else {
-      currentValue = currentValue.replace(/[^A-Za-z0-9]/gi, '');
+      currentValue = currentValue.replace(/[^A-Za-z0-9-_]/gi, '');
       setBasicExtractName(currentValue);
     }
   }, []);
