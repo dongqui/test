@@ -5,15 +5,15 @@ import { createAnimationIngredient } from 'utils/RP';
 const DEFAULT_TIMEOUT = 3000;
 
 /**
- * mocap 결과물과 model을 결합해 대상 model에 결속된 animationIngredient를 생성합니다.
+ * create animationIngredient with model and mocap
  *
- * @param assetId - 대상 model(asset)의 id
- * @param animationIngredientName - 생성할 animationIngredient의 이름
- * @param retargetMap - source와 target을 연결한 데이터
- * @param initialPoses - 대상 model의 transformNode들의 초기 포즈
- * @param animatableTransformNodes - model의 transformNode들 중 animation에 사용가능한 대상들
- * @param mocapData - mocap 결과물
- * @param timeout -
+ * @param assetId - asset's id
+ * @param animationIngredientName - name of motion
+ * @param retargetMap - object mapping target bones to source bones
+ * @param initialPoses - initial pose of transformNodes included in the target asset
+ * @param animatableTransformNodes - animatable transformNodes of the target asset
+ * @param mocapData - mocap data extracted from video
+ * @param timeout - timeout in ms
  */
 const createAnimationIngredientFromMocapData = (
   assetId: string,
@@ -24,22 +24,22 @@ const createAnimationIngredientFromMocapData = (
   mocapData: PlaskMocapData,
   timeout?: number,
 ): Promise<AnimationIngredient> => {
+  // create empty animationIngredient and fill its tracks
   const emptyAnimationIngredient = createAnimationIngredient(assetId, animationIngredientName, [], animatableTransformNodes, true, false);
 
-  // cloneDeep을 사용해서 tracks를 newTracks로 갈음하려고 했으나, 시간비용이 너무 커서 tracks에 추가해주는 방식으로 사용
   const baseLayer = emptyAnimationIngredient.layers[0];
 
   const { tracks } = baseLayer;
   const { hipSpace } = retargetMap;
 
-  // tracks가 아닌 mocapData를 iterate하는 방식으로 변경
+  // iterate mocapData not tracks for efficiency
   mocapData.forEach((mocapDatum) => {
     const { boneName, property, transformKeys } = mocapDatum;
     const targetTransformNodeId = retargetMap.values.find((value) => value.sourceBoneName === boneName)?.targetTransformNodeId;
 
     if (targetTransformNodeId) {
       if (property === 'rotationQuaternion') {
-        // rotation 트랙과 rotationQuaternion 트랙 모두에 transformKeys 추가
+        // add transformKeys both rotation track and its peer rotationQuaternion track
         const targetRotationTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotation');
         const targetRotationQuaternionTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'rotationQuaternion');
         const targetInitialPose = initialPoses.find((initialPose) => initialPose.target.id === targetTransformNodeId)!;
@@ -61,18 +61,16 @@ const createAnimationIngredientFromMocapData = (
           });
         }
       } else if (property === 'position') {
-        // 해당하는 트랙에 trasnformKeys 추가
         const targetTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === property);
 
         if (targetTrack) {
           transformKeys.forEach((transformKey) => {
             const { frame, value } = transformKey;
             const newValue = value.map((v, idx) => (idx === 2 ? ((v * 100 - 106) * hipSpace) / 106 : (v * 100 * hipSpace) / 106));
-            targetTrack.transformKeys.push({ frame, value: BABYLON.Vector3.FromArray(newValue) }); // Armature가 1/100 되어있기 때문에, 모든 값에 100배를 더해 줌
+            targetTrack.transformKeys.push({ frame, value: BABYLON.Vector3.FromArray(newValue) }); // the root mesh is scaled down to 1/100, all transformKeys have to have 100 * value
           });
         }
       } else if (property === 'scaling') {
-        // 해당하는 트랙에 trasnformKeys 추가
         const targetTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === property);
 
         if (targetTrack) {

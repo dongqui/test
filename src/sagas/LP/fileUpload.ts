@@ -33,17 +33,17 @@ function preprocessAssetContainerData(assetId: string, assetContainer: BABYLON.A
   const { meshes, skeletons, transformNodes } = assetContainer;
 
   meshes.forEach((mesh) => {
-    // joint 클릭을 위해 mesh 클릭을 불가능하게 처리
+    // make meshes not-pickable for clicking joints
     mesh.isPickable = false;
   });
 
   skeletons[0].bones.forEach((bone) => {
-    // bone id를 unique한 id로 생성
+    // set bone's id with unique string using its name and the id of its' asset
     bone.id = `${assetId}//${bone.name}//bone`;
   });
 
   transformNodes.forEach((transformNode) => {
-    // transformNode id를 unique한 id로 생성
+    // set transformNode's id with unique string using its name and the id of its' asset
     transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
   });
 }
@@ -53,12 +53,13 @@ function getCustomAnimationIngredients(assetId: string, transformNodes: BABYLON.
   const animationIngredients: AnimationIngredient[] = [];
 
   animationGroups.forEach((animationGroup, idx) => {
-    // 모델 로드 시 animation 재생을 방지
+    // block auto play when loading assets
+    // @TODO need to find better ways to block
     animationGroup.pause();
 
     /**
-     * 모델이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
-     * 첫 번째 animationGroup을 current로 사용 (idx === 0)
+     * create our custom data(animationIngredient) with asset's animationGroups
+     * and set the first one as current animationIngredient
      */
     const animationIngredient = createAnimationIngredient(
       assetId,
@@ -106,7 +107,7 @@ function getInitialPoses(transformNodes: BABYLON.TransformNode[], skeletons: BAB
 }
 
 function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) {
-  // TODO: file 복수 처리 -> action 줄이기
+  // TODO: reduce # of actions by handle multi-files at one action
   const { lpNode, plaskProject }: RootState = yield select();
   const { file, showLoading } = action.payload;
 
@@ -158,7 +159,7 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
       childNodeIds: animationIngredientIds,
     };
 
-    // 로드한 모델의 모션을 통해 LP 모션 노드 생성
+    // create MotionNode in LP with animationIngredients included in loaded asset
     const newMotionNodes = animationIngredients.map((ingredient) => {
       const motion: LP.Node = {
         id: ingredient.id,

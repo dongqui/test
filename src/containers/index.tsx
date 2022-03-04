@@ -10,10 +10,11 @@ import { RootState, useSelector } from 'reducers';
 import Onboarding from './Onboarding';
 import Shoot from './Shoot';
 
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { BabylonProvider } from 'contexts/RP/BabylonContext';
 import { PlaskEngine } from '3d/PlaskEngine';
+
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -28,7 +29,8 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
 
   const { mode } = useSelector((state: RootState) => state.modeSelection);
 
-  // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
+  // Check onboarding-cookie after 2 sec.
+  // If it doesn't exist, onboarding-ui pops up
   useEffect(() => {
     setTimeout(() => {
       if (!cookie.load('onboarding_1')) {

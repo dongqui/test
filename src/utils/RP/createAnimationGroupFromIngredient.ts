@@ -5,11 +5,10 @@ import filterVector from './filterVector';
 import getTotalTransformKeys from './getTotalTransformKeys';
 
 /**
- * 자체데이터인 animationIngredient를 사용해 BABYLON 객체인 animationGroup을 생성해 반환합니다.
- * 필터 사용여부를 인자로 전달받는데, RP에서 생성할 때는 false, LP에서 export를 위해 생성할 때는 true를 줍니다. (트랙의 useFilter와는 별개)
+ * create BABYLON.AnimationGroup with our custom animation data(animationIngredient)
  *
- * @param animationIngredient - animationGroup을 생성할 재료
- * @param fps - 생성할 animationGroup의 fps
+ * @param animationIngredient
+ * @param fps - fps of the animationGroup
  */
 const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngredient, fps: number): BABYLON.AnimationGroup => {
   const { name, layers } = animationIngredient;
@@ -25,15 +24,17 @@ const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngred
     };
   } = {};
 
+  // should accumulate all the layers
   layers.forEach((layer) => {
     if (layer.isIncluded) {
       const useFilter = layer.useFilter;
 
       layer.tracks.forEach((track) => {
-        // 비어있는 트랙은 애니메이션 그룹 생성 시 사용하지 않음
+        // don't use emtpy track
         if (track.transformKeys.length > 0) {
           if (track.property !== 'rotation') {
-            // rotation track은 단순히 TP내 렌더링 역할만을 하며, 애니메이션 생성 시에는 rotationQuaternion track을 사용
+            // rotation track is only for the TimelinePanel
+            // we use rotationQuaternion track for creating animationGroup
 
             if (track.property === 'position') {
               if (transformKeysListForTargetId[track.targetId]) {
