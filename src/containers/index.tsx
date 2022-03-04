@@ -28,7 +28,8 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
 
   const { mode } = useSelector((state: RootState) => state.modeSelection);
 
-  // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
+  // Check onboarding-cookie after 2 sec.
+  // If it doesn't exist, onboarding-ui pops up
   useEffect(() => {
     setTimeout(() => {
       if (!cookie.load('onboarding_1')) {
