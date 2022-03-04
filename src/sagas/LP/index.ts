@@ -131,105 +131,116 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
   const { visibilityOptions } = screenData;
   const { assetId } = action.payload;
 
-  const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== action.payload.assetId;
-  if (isAnotherAssetVisualized) {
-    const prevAssetId = visualizedAssetIds[0];
-    removeAssetThingsFromScene(plaskProject, selectingData, prevAssetId);
+  try {
+    const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== action.payload.assetId;
+    if (isAnotherAssetVisualized) {
+      const prevAssetId = visualizedAssetIds[0];
+      removeAssetThingsFromScene(plaskProject, selectingData, prevAssetId);
+      yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
+    }
+    // visualize new asset
+    if (assetId && !visualizedAssetIds.includes(assetId)) {
+      const targetAsset = assetList.find((asset) => asset.id === assetId);
 
-    yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
-  }
-  // visualize new asset
-  if (assetId && !visualizedAssetIds.includes(assetId)) {
-    const targetAsset = assetList.find((asset) => asset.id === assetId);
+      if (targetAsset) {
+        const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
 
-    if (targetAsset) {
-      const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
+        // all scenes(screens) have to contain the same contents
+        // it means that certain model can be 1) not visualized in any scene or 2) visualized in every scene
+        for (const screen of screenList) {
+          const { id: screenId, scene } = screen;
+          const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === screenId);
 
-      // all scenes(screens) have to contain the same contents
-      // it means that certain model can be 1) not visualized in any scene or 2) visualized in every scene
-      for (const screen of screenList) {
-        const { id: screenId, scene } = screen;
-        const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === screenId);
-
-        if (scene.isReady()) {
-          meshes.forEach((mesh) => {
-            mesh.renderingGroupId = 1;
-            scene.addMesh(mesh);
-
-            if (targetVisibilityOption) {
-              mesh.isVisible = targetVisibilityOption.isMeshVisible;
-            }
-          });
-
-          geometries.forEach((geometry) => {
-            scene.addGeometry(geometry);
-          });
-
-          scene.addSkeleton(skeleton);
-
-          const jointTransformNodes: BABYLON.TransformNode[] = [];
-          const armatureScalingFactor = bones.find((bone) => bone.name === 'Armature') ? bones.find((bone) => bone.name === 'Armature')!.scaling.x : 0.01; // factor stores the root scale factor
-          // add joint to each bone and add it to the scene
-          for (const bone of bones) {
-            if (
-              !bone.name.toLowerCase().includes('scene') &&
-              !bone.name.toLowerCase().includes('camera') &&
-              !bone.name.toLowerCase().includes('light') &&
-              // @TODO
-              !bone.name.toLowerCase().includes('__root__')
-            ) {
-              const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
-              joint.id = `${assetId}//${bone.name}//joint`;
-              joint.state = roundToFourth(0.03 / armatureScalingFactor).toString();
-              joint.renderingGroupId = 2;
-              joint.attachToBone(bone, meshes[0]);
+          if (scene.isReady()) {
+            // add joint to each bone and add it to the scene
+            meshes.forEach((mesh) => {
+              mesh.renderingGroupId = 1;
+              scene.addMesh(mesh);
 
               if (targetVisibilityOption) {
-                joint.isVisible = targetVisibilityOption.isBoneVisible;
+                mesh.isVisible = targetVisibilityOption.isMeshVisible;
               }
+            });
 
-              const targetTransformNode = bone.getTransformNode();
-              if (targetTransformNode) {
-                jointTransformNodes.push(targetTransformNode);
-              }
+            geometries.forEach((geometry) => {
+              scene.addGeometry(geometry);
+            });
 
-              // create actionManagers to each joint
-              joint.actionManager = new BABYLON.ActionManager(scene);
-              joint.actionManager.registerAction(
-                // register action that enable for user to select transformNode by clicking joint
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
-                  const targetTransformNode = bone.getTransformNode();
-                  if (targetTransformNode) {
-                    const sourceEvent: PointerEvent = event.sourceEvent;
-                    if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                      clickJointChaneel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode }));
-                    } else {
-                      clickJointChaneel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode }));
+            scene.addSkeleton(skeleton);
+
+            const jointTransformNodes: BABYLON.TransformNode[] = [];
+            const armatureScalingFactor = bones.find((bone) => bone.name === 'Armature') ? bones.find((bone) => bone.name === 'Armature')!.scaling.x : 0.01;
+            // add joint to each bone and add it to the scene
+            for (const bone of bones) {
+              if (
+                !bone.name.toLowerCase().includes('scene') &&
+                !bone.name.toLowerCase().includes('camera') &&
+                !bone.name.toLowerCase().includes('light') &&
+                // @TODO
+                !bone.name.toLowerCase().includes('__root__') // return -> 조건문으로 변경
+              ) {
+                const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
+                joint.id = `${assetId}//${bone.name}//joint`;
+                joint.state = roundToFourth(0.03 / armatureScalingFactor).toString();
+                joint.renderingGroupId = 2;
+                joint.attachToBone(bone, meshes[0]);
+
+                if (targetVisibilityOption) {
+                  joint.isVisible = targetVisibilityOption.isBoneVisible;
+                }
+
+                const targetTransformNode = bone.getTransformNode();
+                if (targetTransformNode) {
+                  jointTransformNodes.push(targetTransformNode);
+                }
+
+                // create actionManagers to each joint
+                joint.actionManager = new BABYLON.ActionManager(scene);
+                joint.actionManager.registerAction(
+                  // register action that enable for user to select transformNode by clicking joint
+                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
+                    const targetTransformNode = bone.getTransformNode();
+                    if (targetTransformNode) {
+                      const sourceEvent: PointerEvent = event.sourceEvent;
+                      if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+                        clickJointChaneel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode }));
+                      } else {
+                        clickJointChaneel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode }));
+                      }
                     }
-                  }
-                }),
-              );
-              // change cursor with joint hover
-              joint.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
-                  scene.hoverCursor = 'pointer';
-                }),
-              );
+                  }),
+                );
+                // change cursor with joint hover
+                joint.actionManager.registerAction(
+                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+                    scene.hoverCursor = 'pointer';
+                  }),
+                );
+              }
             }
+
+            yield put(plaskProjectActions.renderAsset({ assetId }));
+            yield put(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes })); // make asset's objects selectable
+
+            transformNodes.forEach((transformNode) => {
+              scene.addTransformNode(transformNode);
+              // line for using quaternion as default rotation
+              transformNode.rotate(BABYLON.Axis.X, 0);
+            });
           }
-
-          yield put(plaskProjectActions.renderAsset({ assetId }));
-          yield put(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes })); // make asset's objects selectable
-
-          transformNodes.forEach((transformNode) => {
-            scene.addTransformNode(transformNode);
-            // line for using quaternion as default rotation
-            transformNode.rotate(BABYLON.Axis.X, 0);
-          });
         }
+        forceClickAnimationPlayAndStop();
       }
-      forceClickAnimationPlayAndStop();
     }
+  } catch (e) {
+    yield put(
+      globalUIActions.openModal('AlertModal', {
+        title: 'Warning',
+        message: TEXT.WARNING_08,
+        confirmText: 'Close',
+        confirmColor: 'negative',
+      }),
+    );
   }
 }
 
@@ -817,7 +828,7 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
 
 function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeName>) {
   const { newName, nodeId } = action.payload;
-  const { lpNode }: RootState = yield select();
+  const { lpNode, animationData }: RootState = yield select();
   const { nodes } = lpNode;
 
   const targetNode = nodes.find((node) => node.id === nodeId);
@@ -839,6 +850,19 @@ function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeNam
       }),
     );
   } else {
+    if (targetNode.type === 'Motion') {
+      const animationIngredient = animationData.animationIngredients.find((animationIngredient) => targetNode.id === animationIngredient.id);
+      if (!animationIngredient) {
+        // TODO: error
+        return;
+      }
+      yield put(
+        animationDataActions.editAnimationIngredient({
+          animationIngredient: Object.assign(animationIngredient, { name: newName }),
+        }),
+      );
+    }
+
     const nodesWithModifiedNode = nodes.map((node) =>
       node === targetNode
         ? {
@@ -941,7 +965,6 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
           file.path = resultName;
 
           try {
-            yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
             const bvhUrl: string = yield call(convertModel, file, 'bvh', bvhMap);
             const link = document.createElement('a');
             link.href = bvhUrl;
