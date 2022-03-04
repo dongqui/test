@@ -103,7 +103,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
       <ContextMenuItem dataCy="contextmenu-visualization" onClick={handleVisualize} disabled={isCurrentVisualizedNode}>
         Visualization
       </ContextMenuItem>
-      <ContextMenuItem onClick={handleCancelVisualization} disabled={!isCurrentVisualizedNode}>
+      <ContextMenuItem dataCy="contextmenu-visualization-cancel" onClick={handleCancelVisualization} disabled={!isCurrentVisualizedNode}>
         Visualization cancel
       </ContextMenuItem>
       <ContextMenuItem dataCy="contextmenu-add-empty-motion" onClick={handleAddEmptyMotion}>

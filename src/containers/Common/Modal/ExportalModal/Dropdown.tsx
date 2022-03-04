@@ -90,7 +90,7 @@ const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChan
             const classes = cx('item', { disabled: item.disabled });
 
             return (
-              <li data-cy={`dropdown-item-${item.label}`} className={classes} key={`${item.value}_${i}`} onClick={handleItemChange}>
+              <li data-cy={`dropdown-item-${item.value}`} className={classes} key={`${item.value}_${i}`} onClick={handleItemChange}>
                 <div className={cx('item-text')}>{item.label}</div>
               </li>
             );
