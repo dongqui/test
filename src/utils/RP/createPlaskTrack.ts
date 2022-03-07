@@ -3,15 +3,15 @@ import { PlaskProperty, PlaskTrack } from 'types/common';
 import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNION_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_MIN_CUTOFF } from 'utils/const';
 
 /**
- * AnimationIngredient를 구성하는 자체 데이터인 PlaskTrack을 생성합니다.
- * 생성 과정에서 모든 key의 frame을 소수점 넷째자리까지 반올림합니다.
+ * Create PlaskTrack which constitutes PlaskLayer.
+ * cf. AnimationIngredient > PlaskLayer > PlaskTrack
  *
- * @param name - track의 이름
- * @param layerId - track이 해당하는 layer의 id
- * @param target - track이 담은 애니메이션 데이터가 움직일 대상
- * @param property - track이 담은 애니메이션 데이터가 움직일 대상의 속성
- * @param transformKeys - frame과 value 쌍으로 이루어진 transformKey 배열
- * @param isMocapAnimation - mocap 결과물인지 여부
+ * @param name - track's name
+ * @param layerId - id of the layer where the track is included in
+ * @param target - track's target
+ * @param property - target's propery that the track will handle
+ * @param transformKeys - array of transformKeys (cf. each transformKey contains frame and value)
+ * @param isMocapAnimation - whether this track is from mocap data or not
  */
 const createPlaskTrack = (name: string, layerId: string, target: any, property: PlaskProperty, transformKeys: BABYLON.IAnimationKey[], isMocapAnimation: boolean): PlaskTrack => {
   let filterBeta = DEFAULT_BETA;
@@ -33,15 +33,12 @@ const createPlaskTrack = (name: string, layerId: string, target: any, property: 
     layerId,
     name,
     property,
-    target, // 이후 targetAnimation을 생성을 위해 참조를 유지합니다.
+    target,
     transformKeys,
     interpolationType: 'linear',
     isMocapAnimation,
-    // useFilter: false, // mocap 결과물의 경우에도 false 사용하도록 기획 변경 -> filter on/off는 layer depth에서 설정
-    // useFilter: isMocapAnimation ? true : false, // mocap 결과물의 경우에만 기본으로 filter를 적용합니다.
     filterBeta,
     filterMinCutoff,
-    // isIncluded: true,
     isLocked: false,
   };
 };

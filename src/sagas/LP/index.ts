@@ -50,7 +50,7 @@ function* handleDeleteModel(action: ReturnType<typeof lpNodeActions.deleteModel>
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
   yield put(plaskProjectActions.removeAsset({ assetId }));
   yield put(animationDataActions.removeAsset({ assetId }));
-  yield put(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+  yield put(selectingDataActions.unrenderAsset({ assetId }));
   forceClickAnimationPlayAndStop();
 }
 
@@ -71,7 +71,7 @@ function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotio
     removeAssetThingsFromScene(plaskProject, selectingData, assetId);
 
     yield put(plaskProjectActions.unrenderAsset({}));
-    yield put(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+    yield put(selectingDataActions.unrenderAsset({ assetId }));
   }
 
   const nextNodes = filterDeletedNode(lpNode.nodes, nodeId, parentId);
@@ -123,7 +123,9 @@ export function* watchClickJointChaneel() {
 }
 
 function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeNode>) {
-  // 기존 asset visualize cancel -> multi-model 시에는 기존 asset도 유지
+  // this callback is under assumption of sing model
+  // so when users visualize a model, if there is already another model visualized that model will be unvisualized.
+  // @TODO if Plask support multi-model, stuff should be changed to maintain ones which are already visualized.
   const { plaskProject, selectingData, screenData }: RootState = yield select();
   const { visualizedAssetIds, assetList, screenList } = plaskProject;
   const { visibilityOptions } = screenData;
@@ -134,23 +136,23 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
       removeAssetThingsFromScene(plaskProject, selectingData, prevAssetId);
-
-      yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+      yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
     }
-    // 새로운 asset visualize
+    // visualize new asset
     if (assetId && !visualizedAssetIds.includes(assetId)) {
       const targetAsset = assetList.find((asset) => asset.id === assetId);
 
       if (targetAsset) {
         const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
 
-        // add to scene과 remove from scene은 개별적이지 않고 일괄적으로 적용
+        // all scenes(screens) have to contain the same contents
+        // it means that certain model can be 1) not visualized in any scene or 2) visualized in every scene
         for (const screen of screenList) {
           const { id: screenId, scene } = screen;
           const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === screenId);
 
           if (scene.isReady()) {
-            // scene들에 mesh 추가
+            // add joint to each bone and add it to the scene
             meshes.forEach((mesh) => {
               mesh.renderingGroupId = 1;
               scene.addMesh(mesh);
@@ -160,17 +162,15 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
               }
             });
 
-            // scene들에 geometry 추가
             geometries.forEach((geometry) => {
               scene.addGeometry(geometry);
             });
 
-            // scene들에 skeleton 추가
             scene.addSkeleton(skeleton);
 
             const jointTransformNodes: BABYLON.TransformNode[] = [];
             const armatureScalingFactor = bones.find((bone) => bone.name === 'Armature') ? bones.find((bone) => bone.name === 'Armature')!.scaling.x : 0.01;
-            // joints 생성 및 scene들에 추가
+            // add joint to each bone and add it to the scene
             for (const bone of bones) {
               if (
                 !bone.name.toLowerCase().includes('scene') &&
@@ -179,9 +179,9 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
                 // @TODO
                 !bone.name.toLowerCase().includes('__root__') // return -> 조건문으로 변경
               ) {
-                const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: 3 }, scene);
+                const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: roundToFourth(0.03 / armatureScalingFactor) }, scene);
                 joint.id = `${assetId}//${bone.name}//joint`;
-                joint.state = roundToFourth(0.03 / armatureScalingFactor).toString();
+                joint.state = roundToFourth(0.03 / armatureScalingFactor).toString(); // save joint's diameter as state
                 joint.renderingGroupId = 2;
                 joint.attachToBone(bone, meshes[0]);
 
@@ -194,10 +194,10 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
                   jointTransformNodes.push(targetTransformNode);
                 }
 
-                // joint마다 actionManager 설정
+                // create actionManagers to each joint
                 joint.actionManager = new BABYLON.ActionManager(scene);
                 joint.actionManager.registerAction(
-                  // joint 클릭으로 bone 선택하기 위한 액션
+                  // register action that enable for user to select transformNode by clicking joint
                   new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
                     const targetTransformNode = bone.getTransformNode();
                     if (targetTransformNode) {
@@ -210,7 +210,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
                     }
                   }),
                 );
-                // joint hover 시 커서 모양 변경
+                // change cursor with joint hover
                 joint.actionManager.registerAction(
                   new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
                     scene.hoverCursor = 'pointer';
@@ -219,15 +219,12 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
               }
             }
 
-            // visualizedAssetIds에 추가
             yield put(plaskProjectActions.renderAsset({ assetId }));
-            // dragBox 선택 대상에 추가
-            yield put(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes }));
+            yield put(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes })); // make asset's objects selectable
 
-            // scene들에 애니메이션 적용을 위한 transformNode 추가
             transformNodes.forEach((transformNode) => {
               scene.addTransformNode(transformNode);
-              // quaternionRotation 애니메이션을 적용하기 위한 코드
+              // line for using quaternion as default rotation
               transformNode.rotate(BABYLON.Axis.X, 0);
             });
           }
@@ -260,7 +257,6 @@ function* handleCancelVisulization(action: ReturnType<typeof lpNodeActions.cance
   const targetAsset = assetList.find((asset) => asset.id === assetId);
   const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
   const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
-  // delete 대상이 render된 scene에서 대상의 요소들 remove
   if (targetAsset) {
     screenList
       .map((screen) => screen.scene)
@@ -268,10 +264,8 @@ function* handleCancelVisulization(action: ReturnType<typeof lpNodeActions.cance
         removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
       });
   }
-  // visualizedAssetList에서 제외
   yield put(plaskProjectActions.unrenderAsset({ assetId }));
-  // 선택 대상에서 제외
-  yield put(selectingDataActions.unrenderAsset({ assetId })); // transformNode 및 controller 삭제하는 로직과 꼬이지 않는지 테스트 필요
+  yield put(selectingDataActions.unrenderAsset({ assetId }));
 }
 
 function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotion>) {
@@ -286,10 +280,10 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
 
     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
     if (visualizedAssetIds.includes(assetId)) {
-      // visualize된 상태라면 controller를 포함할 수 있도록 selectableObjects에서 추가 + armature transformNode는 제외
+      // if target model is already visualized, include its controllers
       targets = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature'));
     } else {
-      // visualize하지 않았다면 bone들만 트랙에 포함하는 빈 모션 생성
+      // if target model is not visualized yet, include only transformNodes
       targets = animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
     }
 
@@ -468,8 +462,8 @@ function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNod
   const { draggedNode, nodes } = lpNode;
   const { filePath, nodeId } = action.payload;
   const targetFolder = find(nodes, { id: nodeId });
-  // TODO(?) 동일한 이름이 있는지 확인
-  // @TODO 없으면 비활성 처리 필요
+  // TODO(?) check if there is a node with the same name already
+  // @TODO if not, need to deactivate
   if (
     !draggedNode ||
     nodeId === draggedNode.id ||
@@ -631,7 +625,7 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
   const childrenList = nodes.filter((node) => node.parentId === nodeId);
   const isAlreadyExist = childrenList.some((children) => children.name === draggedNode?.name);
 
-  // dropNode(model)과 dragNode(motion)을 사용해서 animationIngredient를 생성
+  // create new animationIngredient using ModelNode and MotionNode
   const targetAsset = assetList.find((asset) => asset.id === dropNode?.assetId);
   const targetRetargetMap = retargetMaps.find((retargetMap) => retargetMap.assetId === dropNode?.assetId);
 
@@ -653,7 +647,7 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
     return;
   }
 
-  // 이름이 같은 모션이 이미 있는 경우
+  // if there is a node with the same name already
   if (dropNode && isAlreadyExist) {
     if (draggedNodeClone && dropNode && targetAsset && targetRetargetMap) {
       const currentPathNodeName = nodes
@@ -834,7 +828,7 @@ function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMoc
 
 function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeName>) {
   const { newName, nodeId } = action.payload;
-  const { lpNode }: RootState = yield select();
+  const { lpNode, animationData }: RootState = yield select();
   const { nodes } = lpNode;
 
   const targetNode = nodes.find((node) => node.id === nodeId);
@@ -856,6 +850,19 @@ function* handleEditNodeName(action: ReturnType<typeof lpNodeActions.editNodeNam
       }),
     );
   } else {
+    if (targetNode.type === 'Motion') {
+      const animationIngredient = animationData.animationIngredients.find((animationIngredient) => targetNode.id === animationIngredient.id);
+      if (!animationIngredient) {
+        // TODO: error
+        return;
+      }
+      yield put(
+        animationDataActions.editAnimationIngredient({
+          animationIngredient: Object.assign(animationIngredient, { name: newName }),
+        }),
+      );
+    }
+
     const nodesWithModifiedNode = nodes.map((node) =>
       node === targetNode
         ? {
@@ -881,7 +888,7 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
 
   const baseScreen = screenList[0];
   const baseScene = baseScreen.scene;
-  //TODO: 로직 개선
+  //TODO: should improve logic
   screenList.forEach(({ scene }) => {
     scene.animationGroups.forEach((animationGroup) => {
       animationGroup.stop();
@@ -958,7 +965,6 @@ function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>
           file.path = resultName;
 
           try {
-            yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
             const bvhUrl: string = yield call(convertModel, file, 'bvh', bvhMap);
             const link = document.createElement('a');
             link.href = bvhUrl;

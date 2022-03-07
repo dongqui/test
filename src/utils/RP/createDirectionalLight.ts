@@ -1,18 +1,18 @@
 import * as BABYLON from '@babylonjs/core';
 
-const defaultPosition = new BABYLON.Vector3(0, 10, 10);
-const defaultDirection = new BABYLON.Vector3(0, 1, 0);
+const defaultPositionArray = [0, 10, 10];
+const defaultDirectionArray = [0, 1, 0];
 
 /**
- * 광원에서 특정 방향으로 비추는 조명을 추가합니다.
+ * create directional light
  *
- * @param scene - 조명을 추가할 scene
- * @param position - 광원의 위치 default = (0, 10, 10)
- * @param direction - 조명의 방향 default = (0, 1, 0)
+ * @param scene - scene where the light will be added
+ * @param position - position of light origin
+ * @param direction - direction where the light is going
  */
 const createDirectionalLight = (scene: BABYLON.Scene, position?: BABYLON.Vector3, direction?: BABYLON.Vector3) => {
-  const directionalLight = new BABYLON.DirectionalLight('directionalLight', (direction = defaultDirection), scene);
-  directionalLight.position = position ?? defaultPosition;
+  const directionalLight = new BABYLON.DirectionalLight('directionalLight', (direction = BABYLON.Vector3.FromArray(defaultPositionArray)), scene);
+  directionalLight.position = position ?? BABYLON.Vector3.FromArray(defaultDirectionArray);
   directionalLight.intensity = 0.1;
 
   return directionalLight;

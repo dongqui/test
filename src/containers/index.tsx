@@ -1,10 +1,12 @@
-import { FunctionComponent, memo, useEffect } from 'react';
+import { FunctionComponent, memo, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import * as commonActions from 'actions/Common/globalUI';
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
 import { VideoMode } from 'containers/VideoMode';
 import { RootState, useSelector } from 'reducers';
+import { BabylonProvider } from 'contexts/RP/BabylonContext';
+import { PlaskEngine } from '3d/PlaskEngine';
 
 import Onboarding from './Onboarding';
 import Shoot from './Shoot';
@@ -39,6 +41,8 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
   //   }, 2000);
   // }, [dispatch]);
 
+  const [plaskEngine, setPlaskEngine] = useState(new PlaskEngine());
+
   const classes = cx('wrapper', {
     visible: mode === 'animationMode',
     hidden: mode === 'videoMode',
@@ -47,7 +51,9 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
   return (
     <main>
       <ResizeProvider>
-        <Shoot className={classes} />
+        <BabylonProvider plaskEngine={plaskEngine}>
+          <Shoot className={classes} />
+        </BabylonProvider>
       </ResizeProvider>
       {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={browserType} />}
       {/* <Onboarding /> */}

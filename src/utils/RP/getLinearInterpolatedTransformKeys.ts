@@ -2,16 +2,16 @@ import * as BABYLON from '@babylonjs/core';
 import { findIndex, findLastIndex } from 'lodash';
 
 /**
- * 전달받은 targetFrames을 기준으로, key를 가지지 않은 frame에 선형보간을 통해 계산한 값을 넣어줍니다.
- * layer간 transformKeys를 합치기 전 전처리 과정에서 사용할 수 있습니다.
+ * Modify transformKeys to have a key for at all target frames and ruturn the result
+ * (frame without key will be filled with a key containing linear interpolated value)
+ * Can be used before calculating sum between layers
  *
- * @param transformKeys - 선형 보간할 transformKeys
- * @param targetFrames - 기준 frames
- * @param isQuaternionTrack - 트랙이 quaternion인지 여부. value가 Vector3인지 Quaternion인지 구분하기 위함.
+ * @param transformKeys - target transformKeys
+ * @param targetFrames - target frames
+ * @param isQuaternionTrack - whether the track is for quaternion values or not (for vector values)
  */
 const getLinearInterpolatedTransformKeys = (transformKeys: BABYLON.IAnimationKey[], targetFrames: number[], isQuaternionTrack: boolean): BABYLON.IAnimationKey[] => {
   if (transformKeys.length === 0) {
-    // layer간 transformKeys를 합하는 연산에서 결과에 영향을 주지 않도록
     return targetFrames.map((targetFrame) => ({ frame: targetFrame, value: isQuaternionTrack ? BABYLON.Quaternion.Identity() : BABYLON.Vector3.Zero() }));
   } else {
     const newTransformKeys: BABYLON.IAnimationKey[] = [];
