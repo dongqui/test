@@ -1,12 +1,12 @@
 import { OpenModalFn, Modal } from 'containers/Common/Modal/Modal';
 import { OpenContextMenuFn, ContextMenu } from 'containers/Common/ContextMenu/ContextMenu';
+import { OnboardingStep } from 'containers/Onboarding';
 
 export const OPEN_MODAL = 'globalUI/OPEN_MODAL' as const;
 export const CLOSE_MODAL = 'globalUI/CLOSE_MODAL' as const;
 export const OPEN_CONTEXT_MENU = 'globalUI/OPEN_CONTEXT_MENU' as const;
 export const CLOSE_CONTEXT_MENU = 'globalUI/CLOSE_CONTEXT_MENU' as const;
-export const OPEN_ONBOARDING = 'globalUI/OPEN_ONBOARDING' as const;
-export const CLOSE_ONBOARDING = 'globalUI/CLOSE_ONBOARDING' as const;
+export const PROGRESS_ONBOARDING = 'globalUI/PROGRESS_ONBOARDING' as const;
 
 interface OpenModalReturnyType {
   type: 'globalUI/OPEN_MODAL';
@@ -24,6 +24,10 @@ interface OpenContextMenuReturnyType {
     event: React.MouseEvent;
     props?: unknown;
   };
+}
+
+interface ProgressOnboarding {
+  onboardingStep: OnboardingStep;
 }
 
 export const openModal: OpenModalFn<OpenModalReturnyType> = (name, props, alias) => ({
@@ -56,11 +60,13 @@ export const closeContextMenu = () => ({
   payload: {},
 });
 
-export const openOnboarding = () => ({
-  type: OPEN_ONBOARDING,
-});
-export const closeOnboarding = () => ({
-  type: CLOSE_ONBOARDING,
+/**
+ * 온보딩 진행
+ * @param onboardingStep - OnboardingStep
+ */
+export const progressOnboarding = (params: ProgressOnboarding) => ({
+  type: PROGRESS_ONBOARDING,
+  payload: { ...params },
 });
 
 export type GlobalUIActions =
@@ -68,5 +74,4 @@ export type GlobalUIActions =
   | ReturnType<typeof closeModal>
   | ReturnType<typeof openContextMenu>
   | ReturnType<typeof closeContextMenu>
-  | ReturnType<typeof openOnboarding>
-  | ReturnType<typeof closeOnboarding>;
+  | ReturnType<typeof progressOnboarding>;
