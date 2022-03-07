@@ -9,9 +9,10 @@ const cx = classnames.bind(styles);
 interface Props {
   children: ReactNode;
   handleOutsideClose?: () => void;
+  dataCy?: string;
 }
 
-const BaseModal: FunctionComponent<Props> = ({ handleOutsideClose, children }) => {
+const BaseModal: FunctionComponent<Props> = ({ handleOutsideClose, dataCy, children }) => {
   const portalRef = useRef(document.getElementById('portal_modal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -21,7 +22,7 @@ const BaseModal: FunctionComponent<Props> = ({ handleOutsideClose, children }) =
 
   return (
     <BasePortal container={portalRef}>
-      <div className={cx('wrapper')} ref={modalRef}>
+      <div data-cy={dataCy} className={cx('wrapper')} ref={modalRef}>
         <div className={cx('inner')} tabIndex={0}>
           {children}
         </div>
