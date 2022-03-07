@@ -49,7 +49,7 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
       }
     }
     case 'animationDataAction/ADD_ANIMATION_INGREDIENTS': {
-      // 단일 추가와는 달리 current에 대한 핸들링 해주지 않음 -> action 호출 시 인자로 넘겨주는 animationIngredients들의 current를 그대로 사용
+      // unlike case of adding single animation, we don't handle ingredients' current field
       return Object.assign({}, state, {
         animationIngredients: [...state.animationIngredients, ...action.payload.animationIngredients],
       });
@@ -158,11 +158,11 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
             return {
               ...retargetMap,
               values: retargetMap.values.map((retargetMapValue) => {
-                // 이전에 mapping 된 source bone과 assign 해제
+                // reset previous mapping
                 if (retargetMapValue.targetTransformNodeId === targetTransformNodeId && targetTransformNodeId !== RETARGET_TARGET_BONE_NONE) {
                   return { ...retargetMapValue, targetTransformNodeId: null };
                 }
-                // 새로운 source bone과 assign
+                // assign new mapping
                 else if (retargetMapValue.sourceBoneName === sourceBoneName) {
                   return { ...retargetMapValue, targetTransformNodeId: targetTransformNodeId };
                 } else {

@@ -1,7 +1,6 @@
-import { FunctionComponent, useRef } from 'react';
+import { FunctionComponent } from 'react';
 
 import { IconWrapper, SvgPath } from 'components/Icon';
-import OnboardingTooltip, { VideoModeOnboarding } from 'containers/Onboarding/OnboardingTooltip';
 import { useSelector } from 'reducers';
 
 import classNames from 'classnames/bind';
@@ -18,17 +17,13 @@ interface Props {
 const ChangeModeButton: FunctionComponent<Props> = (props) => {
   const { onSwitchAnimationMode, onSwitchVideoMode } = props;
 
-  const videoModeButtonRef = useRef<HTMLSpanElement>(null);
-
   const { mode } = useSelector((state) => state.modeSelection);
 
   return (
     <>
       <div className={cx('wrapper')}>
         <IconWrapper className={cx('icon', { selected: mode === 'animationMode' })} onClick={onSwitchAnimationMode} icon={SvgPath.TrackMode} />
-        <OnboardingTooltip placement="bottom-end" targetRef={videoModeButtonRef} content={<VideoModeOnboarding />}>
-          <IconWrapper className={cx('icon', { selected: mode === 'videoMode' })} innerRef={videoModeButtonRef} onClick={onSwitchVideoMode} icon={SvgPath.Camera} />
-        </OnboardingTooltip>
+        <IconWrapper className={cx('icon', { selected: mode === 'videoMode' })} onClick={onSwitchVideoMode} icon={SvgPath.Camera} />
       </div>
     </>
   );

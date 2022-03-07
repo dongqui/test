@@ -88,22 +88,28 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
 
   return (
     <BaseContextMenu>
-      <ContextMenuItem onClick={handleDelete}>Delete</ContextMenuItem>
-      <ContextMenuItem onClick={handleEditName}>Edit name</ContextMenuItem>
+      <ContextMenuItem dataCy="contextmenu-delete" onClick={handleDelete}>
+        Delete
+      </ContextMenuItem>
+      <ContextMenuItem dataCy="contextmenu-edit-name" onClick={handleEditName}>
+        Edit name
+      </ContextMenuItem>
       {/* <ContextMenuItem onClick={handleClickItem}>
         Copy
       </ContextMenuItem>
       <ContextMenuItem onClick={handleClickItem}>
         Paste
       </ContextMenuItem> */}
-      <ContextMenuItem onClick={handleVisualize} disabled={isCurrentVisualizedNode}>
+      <ContextMenuItem dataCy="contextmenu-visualization" onClick={handleVisualize} disabled={isCurrentVisualizedNode}>
         Visualization
       </ContextMenuItem>
-      <ContextMenuItem onClick={handleCancelVisualization} disabled={!isCurrentVisualizedNode}>
+      <ContextMenuItem dataCy="contextmenu-visualization-cancel" onClick={handleCancelVisualization} disabled={!isCurrentVisualizedNode}>
         Visualization cancel
       </ContextMenuItem>
-      <ContextMenuItem onClick={handleAddEmptyMotion}>Add empty motion</ContextMenuItem>
-      <ContextMenuItem onClick={handleExport} disabled={!isCurrentVisualizedNode}>
+      <ContextMenuItem dataCy="contextmenu-add-empty-motion" onClick={handleAddEmptyMotion}>
+        Add empty motion
+      </ContextMenuItem>
+      <ContextMenuItem dataCy="contextmenu-export" onClick={handleExport} disabled={!isCurrentVisualizedNode}>
         Export
       </ContextMenuItem>
     </BaseContextMenu>

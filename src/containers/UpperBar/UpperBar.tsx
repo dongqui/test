@@ -86,14 +86,14 @@ const UpperBar: FunctionComponent<Props> = ({
     dispatch(changeMode({ mode: 'videoMode' }));
   }, [dispatch]);
 
-  const handleSelectDropdown = useCallback(
-    (menuItem: HelpDropdownItem) => {
-      if (menuItem === 'Onboarding') {
-        dispatch(commonActions.openOnboarding());
-      }
-    },
-    [dispatch],
-  );
+  const handleSelectDropdown = useCallback((menuItem: HelpDropdownItem) => {
+    if (menuItem === 'Onboarding') {
+      /**
+       * @ToDO
+       */
+      // dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
+    }
+  }, []);
 
   return (
     <div className={cx('wrap')}>

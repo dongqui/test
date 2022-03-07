@@ -12,9 +12,10 @@ interface Props {
   onDrop?: React.DragEventHandler;
   onEditName?: (newName: string) => void;
   onDragEnd?: React.DragEventHandler;
+  dataCy?: string;
 }
 
-const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd }: Props) => {
+const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }: Props) => {
   const { id, assetId, name, type, filePath, childNodeIds, extension } = node;
   const dispatch = useDispatch();
   const [showChildren, setShowChildren] = useState(false);
@@ -113,6 +114,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd }: Props)
         extension={extension}
         showChildren={showChildren}
         childNodeIds={childNodeIds}
+        dataCy={dataCy}
       />
     </Fragment>
   );

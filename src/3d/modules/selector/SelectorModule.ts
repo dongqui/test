@@ -58,7 +58,7 @@ export class SelectorModule extends Module {
         case PointerEventTypes.POINTERDOWN: {
           if (
             pointerInfo?.event.button === 0 && // check if it is left click
-            !pointerInfo.event.altKey && // camera rotate 시에는 발생하지 않음
+            !pointerInfo.event.altKey && // pointer down with alt key pressed trigger camera rotation
             !pointerInfo.pickInfo!.hit // pickInfo always exist with pointer event
           ) {
             // set start point of the dragBox
@@ -88,11 +88,11 @@ export class SelectorModule extends Module {
           if (this._startPosition) {
             const objects = this._boxSelect(this._startPosition, this._currentPosition);
             if (pointerInfo.event.ctrlKey || pointerInfo.event.metaKey) {
-              // ctrl 혹은 meta 키를 누른 채
+              // Click with ctrl key or meta key pressed.
               this.onEndSelectBox.notifyObservers({ type: 'ctrlKey', objects });
               this.select(objects);
             } else {
-              // 키 누르지 않고
+              // Click without ctrl or meta.
               this.onEndSelectBox.notifyObservers({ type: 'default', objects });
               this.select(objects, true);
             }

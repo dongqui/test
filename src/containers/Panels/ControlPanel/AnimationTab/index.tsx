@@ -23,37 +23,38 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
-  const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // selectedLayerId에 해당
+  const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // === selectedLayerId (inappropriate naming)
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _playDirection = useSelector((state) => state.animatingControls.playDirection);
 
   const dispatch = useDispatch();
 
-  // 다중모델 설계 내에서 단일모델 상황을 가정하기 위함 (추후 다중모델 설계 자체를 단일모델 설계로 변경할 계획 -> 확정된 게 없음..)
+  // The current structure is under the assumption of multi-models, but Plask app itself only supports single-model.
+  // So, the next line is for making structure single-model like.
   const selectedAssetId = useMemo(() => _visualizedAssetIds[0], [_visualizedAssetIds]);
 
   const [controlTarget, setControlTarget] = useState<Nullable<BABYLON.TransformNode | BABYLON.Mesh>>(null);
   const [controlLayer, setControlLayer] = useState<Nullable<PlaskLayer>>(null);
   const [controlTrack, setControlTrack] = useState<Nullable<PlaskTrack>>(null);
 
-  // position value를 관리하는 useState
+  // useState for position value
   const [positionX, setPositionX] = useState<number>(0);
   const [positionY, setPositionY] = useState<number>(0);
   const [positionZ, setPositionZ] = useState<number>(0);
 
-  // euler value를 관리하는 useState
+  // useState for euler value
   const [eulerX, setEulerX] = useState<number>(0);
   const [eulerY, setEulerY] = useState<number>(0);
   const [eulerZ, setEulerZ] = useState<number>(0);
 
-  // quarternion value를 관리하는 useState
+  // useState for quaternion value
   const [quarternionW, setQuarternionW] = useState<number>(1);
   const [quarternionX, setQuarternionX] = useState<number>(0);
   const [quarternionY, setQuarternionY] = useState<number>(0);
   const [quarternionZ, setQuarternionZ] = useState<number>(0);
 
-  // sclae value를 관리하는 useState
+  // useState for scaling value
   const [scaleX, setScaleX] = useState<number>(0);
   const [scaleY, setScaleY] = useState<number>(0);
   const [scaleZ, setScaleZ] = useState<number>(0);
@@ -70,21 +71,21 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [fcValue, setFcValue] = useState<number>(10);
   const [betaValue, setBetaValue] = useState<number>(1);
 
-  // transform section을 위한 control target 선택
+  // select control target according to the selected target
   useEffect(() => {
     if (_selectedTargets.length === 0) {
-      // 선택되지 않은 경우
+      // case nothing is selected
       setControlTarget(null);
     } else if (_selectedTargets.length === 1) {
-      // 단일대상 선택된 경우
+      // case single target is selected
       setControlTarget(_selectedTargets[0]);
     } else {
-      // 다중대상 선택된 경우
+      // case multi targets are selected
       setControlTarget(null);
     }
   }, [_selectableObjects, _selectedTargets]);
 
-  // filter section을 위한 control track 선택
+  // select control track according to the selected target
   useEffect(() => {
     if (_selectedTargets.length === 0) {
       setControlTrack(null);
@@ -102,7 +103,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [_animationIngredients, _selectedTargets, _seletedLayer]);
 
-  // transform section 변경
+  // set states related to target's properties when target's matrix is updated
   useEffect(() => {
     if (controlTarget) {
       const matrixUpdateObservable = controlTarget.onAfterWorldMatrixUpdateObservable.add((target) => {
@@ -132,7 +133,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [controlTarget]);
 
-  // 선택 대상에 따라 filter toggle 변경
+  // change filter on/off according to the selected layer
   useEffect(() => {
     if (selectedAssetId) {
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
@@ -149,7 +150,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [_animationIngredients, _seletedLayer, selectedAssetId]);
 
-  // 선택 대상에 따라 filter parameters 변경
+  // change filter parameters according to the selected track
   useEffect(() => {
     if (controlLayer && controlLayer.useFilter && controlTrack) {
       setFcValue(controlTrack.filterMinCutoff);
@@ -160,7 +161,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [controlLayer, controlTrack]);
 
-  // Transform section을 펼치거나 접을 수 있는 콜백
+  // callback to spread/fold transform section
   const handleSpreadTransform = useCallback(() => {
     if (isTransformSectionSpread) {
       setIsTransformSectionSpread(false);
@@ -169,7 +170,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [isTransformSectionSpread]);
 
-  // Filter section읅 펼치거나 접을 수 있는 콜백
+  // callback to spread/fold filter section
   const handleSpreadFilter = useCallback(() => {
     if (isFilterSectionSpread) {
       setIsFilterSectionSpread(false);
@@ -178,7 +179,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [isFilterSectionSpread]);
 
-  // Filter의 활성화 비활성화
+  // callback to power filter on/off
   const handleFilterToggle = useCallback(() => {
     if (selectedAssetId) {
       if (isFilterOn) {
@@ -511,7 +512,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         (inputValue: number) => {
           if (controlTrack) {
             dispatch(animationDataActions.changeTrackFilterMinCutoff({ layerId: _seletedLayer, trackId: controlTrack.id, value: inputValue }));
-            // 새로운 animationGroup을 사용하기 위해, 일시정지 후 재생
+            // @TODO anti-pattern
+            // to use new animationGroup, click pause and play button
             forceClickAnimationPauseAndPlay(_playState, _playDirection);
           }
         },
@@ -532,7 +534,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         (inputValue: number) => {
           if (controlTrack) {
             dispatch(animationDataActions.changeTrackFilterBeta({ layerId: _seletedLayer, trackId: controlTrack.id, value: inputValue }));
-            // 새로운 animationGroup을 사용하기 위해, 일시정지 후 재생
+            // @TODO anti-pattern
+            // to use new animationGroup, click pause and play button
             forceClickAnimationPauseAndPlay(_playState, _playDirection);
           }
         },

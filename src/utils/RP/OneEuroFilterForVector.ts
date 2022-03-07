@@ -2,7 +2,7 @@ import * as BABYLON from '@babylonjs/core';
 import { isNull } from 'lodash';
 
 /**
- * vector transformKeys를 보정하기 위한 OneEuro 필터 클래스
+ * OneEuroFilter for vector transformKeys
  */
 export default class OneEuroFilterForVector {
   private minCutoff: number = 1.0;

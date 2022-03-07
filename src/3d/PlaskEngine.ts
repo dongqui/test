@@ -97,7 +97,7 @@ export class PlaskEngine {
   public ikModule!: IKModule;
 
   constructor() {
-    // matrix를 사용한 애니메이션 보간을 허용합니다.
+    // allow animation interpolation using matrix
     Animation.AllowMatricesInterpolation = true;
     this._registerModules();
     PlaskEngine.Instance = this;
@@ -161,11 +161,11 @@ export class PlaskEngine {
   }
 
   private _onSceneReady() {
-    // scene이 준비됐을 때 호출할 콜백
+    // callback to call when scene is ready
     this.scene.useRightHandedSystem = true;
     this.scene.clearColor = Color4.FromColor3(Color3.FromHexString('#202020'));
 
-    // scene에 기본요소를 생성합니다.
+    // add default elements to the scene
     this._grounds = createGrounds(this.scene, true);
     this._camera = createCamera(this.scene);
     this._hemiLight = createHemisphericLight(this.scene);
@@ -180,7 +180,7 @@ export class PlaskEngine {
     const { pickInfo, type } = pointerInfo;
     if (type === PointerEventTypes.POINTERWHEEL) {
       const event = pointerInfo.event as WheelEvent & { wheelDelta: number };
-      // orthographic 모드에서의 카메라 줌
+      // set up zooming camera in Orthographic mode
       if (this.scene.activeCamera && this.scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
         const activeCamera = this.scene.activeCamera as ArcRotateCamera;
         const canvas = this.scene.getEngine().getRenderingCanvas();
@@ -192,7 +192,7 @@ export class PlaskEngine {
       }
     } else if (type === PointerEventTypes.POINTERDOWN) {
       const event = pointerInfo.event as PointerEvent;
-      // camera rotate 시 perspective 모드로 전환
+      // return to perspective mode when camera is rotated
       if (event.button === 0 && event.altKey && this.scene.activeCamera && this.scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
         this.cameraModule.toPerspective();
 

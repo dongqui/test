@@ -2,12 +2,12 @@ import * as BABYLON from '@babylonjs/core';
 import { ScreenXY } from 'types/common';
 
 /**
- * 대상 vector가 드래그 박스 범위 내에 속하는 지 판단합니다.
+ * check if the vector is in the dragBox's range
  *
- * @param start - 드래그 박스 생성 시작 시의 포인터 위치
- * @param end - 드래그를 끝냈을 때의 포인터 위치
- * @param vector - 판단 대상 vector
- * @param scene - dragBox와 pointer가 속하는 scene
+ * @param start - start pointer position
+ * @param end - end pointer position
+ * @param vector - target vector
+ * @param scene - scene which contains the dragBox and the pointer
  */
 const checkIsVectorIn = (start: ScreenXY, end: ScreenXY, vector: BABYLON.Vector3, scene: BABYLON.Scene) => {
   const vectorScreenPosition = BABYLON.Vector3.Project(

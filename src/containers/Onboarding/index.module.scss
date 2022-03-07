@@ -1,4 +1,4 @@
-.onboarding {
+.background {
   position: fixed;
   top: 0;
   left: 0;
@@ -7,6 +7,14 @@
   z-index: 1000;
 }
 
-#onboarding-tooltip-portal {
-  position: relative;
+.tooltip {
+  position: fixed;
+  width: fit-content;
+  padding: 28px 24px;
+  background-color: var(--gray200);
+  border: 1px solid var(--gray400);
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgb(0 0 0 / 25%);
+  color: var(--gray700);
+  z-index: 1001;
 }
