@@ -1,8 +1,9 @@
-import { PlaskState } from '3d/PlaskState';
+import { PlaskEngine } from '3d/PlaskEngine';
 import { Middleware } from 'redux';
 
 export const plaskStateSync: Middleware = (store) => (next) => (action) => {
-  let result = next(action);
-  PlaskState.action(action, store.getState());
+  const previousState = store.getState();
+  const result = next(action);
+  PlaskEngine.GetInstance()?.dispatch(action, store.getState(), previousState);
   return result;
 };

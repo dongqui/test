@@ -18,11 +18,6 @@ import ScreenVisibility from './ScreenVisibility';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { BabylonContext } from 'contexts/RP/BabylonContext';
-import { useObserved } from 'hooks/common/useObserved';
-import { PlaskState } from '3d/PlaskState';
-import { plaskEngineSyncAction } from 'actions/plaskEngineAction';
-import { SelectorModule } from '3d/modules/selector/SelectorModule';
-import { ModuleState } from '3d/modules/Module';
 
 const cx = classNames.bind(styles);
 
@@ -190,9 +185,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     const dragBox = rpDragBox.current as HTMLDivElement;
     const dragBoxDefaultStyle = 'background-color: gray; position: absolute; opacity: 0.3; pointer-events: none;';
     dragBox.setAttribute('style', dragBoxDefaultStyle);
-
-    // TODO : export logic inside a module
-    plaskEngine.selectorModule.state.selectableObjects.value = _selectableObjects;
 
     // DragBox updated
     const selectBoxUpdatedObserver = plaskEngine.selectorModule.onSelectBoxUpdated.add(({ min, max }) => {

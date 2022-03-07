@@ -13,8 +13,7 @@ enum GizmoMode {
 type GizmoDragObserver = Nullable<Observer<{ delta: Vector3; dragPlanePoint: Vector3; dragPlaneNormal: Vector3; dragDistance: number; pointerId: number }>>;
 type GizmoDragStartObserver = Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
 
-type GizmoModuleState = {};
-export class GizmoModule extends Module<GizmoModuleState> {
+export class GizmoModule extends Module {
   public state = {};
   private _gizmoManager!: GizmoManager;
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;

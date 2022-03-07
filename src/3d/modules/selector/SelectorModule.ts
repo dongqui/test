@@ -1,28 +1,11 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { PlaskState } from '3d/PlaskState';
 import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
 import { defaultMultiSelect } from 'actions/selectingDataAction';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
 
-const STATE = {
-  selectableObjects: {
-    value: [] as TransformNode[],
-    reduxPath: 'selectingData.selectableObjects',
-  },
-  selectedTargets: {
-    value: [] as TransformNode[],
-    reduxPath: 'selectingData.selectedTargets',
-  },
-};
-type SelectorModuleState = typeof STATE;
-
-export class SelectorModule extends Module<SelectorModuleState> {
-  public static Callback() {
-    console.log('State Changed !');
-  }
-  public static STATE = STATE;
+export class SelectorModule extends Module {
   public onStartSelectBox: Observable<ScreenXY> = new Observable();
   public onSelectBoxUpdated: Observable<{ min: ScreenXY; max: ScreenXY }> = new Observable();
   public onEndSelectBox: Observable<{ type: 'ctrlKey' | 'default'; objects: any[] }> = new Observable();
@@ -33,41 +16,26 @@ export class SelectorModule extends Module<SelectorModuleState> {
     return this.plaskEngine.state.selectingData.selectableObjects;
   }
 
-  // TODO : decorator !
+  // TODO : decorator ?
   public get selectedTargets() {
     return this.plaskEngine.state.selectingData.selectedTargets;
   }
   public set selectedTargets(targets: TransformNode[]) {
-    console.log(targets)
-    this.plaskEngine._reduxDispatch(defaultMultiSelect({ targets }));
+    this.plaskEngine.reduxDispatch(defaultMultiSelect({ targets }));
   }
 
   private _startPosition: Nullable<Vector2> = null;
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public state = STATE;
-
-  public mutations = [
-    {
-      actionTypes: [
-        'selectingDataAction/ADD_SELECTABLE_OBJECTS',
-        'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS',
-        'selectingDataAction/REMOVE_SELECTABLE_JOINTS',
-        'selectingDataAction/UNRENDER_ASSET',
-        'selectingDataAction/DEFAULT_SINGLE_SELECT',
-        'selectingDataAction/DEFAULT_MULTI_SELECT',
-        'selectingDataAction/CTRL_KEY_SINGLE_SELECT',
-        'selectingDataAction/CTRL_KEY_MULTI_SELECT',
-        'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS',
-        'selectingDataAction/RESET_SELECTED_TARGETS',
-      ],
-      callback: (action: any, state: any) => {
-        console.log("targets updated")
-        this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
-      },
-    },
-  ];
+  public reduxObservedStates = ['selectingData'];
+  public onStateChanged(stateKey: string, key: string) {
+    if (key === 'selectedTargets') {
+      this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
+    } else if (key === 'selectableObjects') {
+      console.log(this.selectableObjects);
+    }
+  }
 
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);

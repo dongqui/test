@@ -6,8 +6,7 @@ type PrevCameraProperties = {
   [key: string]: Nullable<Vector3>;
 };
 
-type CameraModuleState = {};
-export class CameraModule extends Module<CameraModuleState> {
+export class CameraModule extends Module {
   public state = {};
   /**
    * orthographic to perspective 카메라 전환 시 사용하는 마지막 카메라 위치

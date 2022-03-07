@@ -13,22 +13,43 @@ import {
   Scene,
   Vector3,
 } from '@babylonjs/core';
-import { PLASK_ENGINE_SYNC } from 'actions/plaskEngineAction';
 import { RootState } from 'reducers';
 import { Dispatch } from 'redux';
 import { createCamera, createDirectionalLight, createGrounds, createHemisphericLight } from 'utils/RP';
 import { CameraModule } from './modules/camera/CameraModule';
 import { GizmoModule } from './modules/gizmo/GizmoModule';
 import { IKModule } from './modules/ik/IKModule';
-import { Module, ModuleState } from './modules/Module';
+import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
+const primitives = ['string', 'number', 'boolean', 'symbol'];
+function hasKey(obj: any, key: any) {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+function stateDiff(a: any, b: any) {
+  if (a === b) {
+    return [];
+  }
+
+  const result = [];
+  const [aKeys, bKeys] = [Object.keys(a), Object.keys(b)];
+  for (let i = 0; i < bKeys.length; i++) {
+    let key = bKeys[i];
+    if (!hasKey(a, key) || a[key] !== b[key]) {
+      result.push(key);
+    }
+  }
+
+  return result;
+}
+
 export class PlaskEngine {
-  private _modules: Module<ModuleState>[] = [];
+  private _modules: Module[] = [];
   private _engine!: Engine;
   private _scene!: Scene;
   private _canvas!: HTMLCanvasElement;
@@ -37,7 +58,7 @@ export class PlaskEngine {
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
 
-  public _reduxDispatch!: Dispatch<any>;
+  public reduxDispatch!: Dispatch<any>;
 
   public static Instance: PlaskEngine;
   public static GetInstance() {
@@ -89,7 +110,7 @@ export class PlaskEngine {
     this._scene = new Scene(this._engine);
     this._onSceneReady();
     this._registerObservables();
-    this._reduxDispatch = dispatch;
+    this.reduxDispatch = dispatch;
 
     for (let module of this._modules) {
       module.initialize();
@@ -100,16 +121,16 @@ export class PlaskEngine {
     });
   }
 
-  public dispatch(action: any, state: any) {
-    // Generic action
-    // console.log(action.type);
-    // console.log(action.payload);
+  public dispatch(action: any, state: any, previousState: any) {
     this.state = state;
 
-    for (let module of this._modules) {
-      for (let mutation of module.mutations) {
-        if (mutation.actionTypes.includes(action.type)) {
-          mutation.callback(action.type, state);
+    for (const module of this._modules) {
+      for (const stateKey of module.reduxObservedStates) {
+        const diff = stateDiff(state[stateKey], previousState[stateKey]);
+        if (diff.length) {
+          for (const key of diff) {
+            module.onStateChanged(stateKey, key);
+          }
         }
       }
     }
