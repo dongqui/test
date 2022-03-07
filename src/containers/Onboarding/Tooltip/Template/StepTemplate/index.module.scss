@@ -11,14 +11,14 @@
 }
 
 .start-template {
+  @include buttons;
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
-
-  @include buttons;
 }
 
 .progress-template {
+  @include buttons;
   display: flex;
   justify-content: space-between;
   margin-top: 16px;
@@ -27,6 +27,4 @@
     font-size: 12px;
     color: var(--gray500);
   }
-
-  @include buttons;
 }
