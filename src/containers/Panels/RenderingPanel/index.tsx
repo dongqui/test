@@ -187,11 +187,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     const dragBoxDefaultStyle = 'background-color: gray; position: absolute; opacity: 0.3; pointer-events: none;';
     dragBox.setAttribute('style', dragBoxDefaultStyle);
 
-    // DragBox updated
-    const selectBoxUpdatedObserver = plaskEngine.selectorModule.onSelectBoxUpdated.add(({ min, max }) => {
-      dragBox.setAttribute('style', `${dragBoxDefaultStyle} left: ${min.x}px; top: ${min.y}px; width: ${max.x - min.x}px; height: ${max.y - min.y}px;`);
-    });
-
     // DragBox end
     const endSelectBoxObserver = plaskEngine.selectorModule.onEndSelectBox.add(({ type, objects }) => {
       // if (type === 'ctrlKey') {
@@ -207,22 +202,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       const selectBoxUpdatedObserver = plaskEngine.selectorModule.onSelectBoxUpdated.add(({ min, max }) => {
         dragBox.setAttribute('style', `${dragBoxDefaultStyle} left: ${min.x}px; top: ${min.y}px; width: ${max.x - min.x}px; height: ${max.y - min.y}px;`);
       });
-
-      // DragBox end
-      const endSelectBoxObserver = plaskEngine.selectorModule.onEndSelectBox.add(({ type, objects }) => {
-        if (type === 'ctrlKey') {
-          dispatch(selectingDataActions.ctrlKeyMultiSelect({ targets: objects }));
-        } else {
-          dispatch(selectingDataActions.defaultMultiSelect({ targets: objects }));
-        }
-        dragBox.setAttribute('style', dragBoxDefaultStyle);
-      });
-
-      return () => {
-        plaskEngine.selectorModule.onSelectBoxUpdated.remove(selectBoxUpdatedObserver);
-        plaskEngine.selectorModule.onEndSelectBox.remove(endSelectBoxObserver);
-      };
-    }
+    });
   }, [_screenList, _selectableObjects, dispatch, plaskEngine]);
 
   // useEffect(() => {
@@ -578,7 +558,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const [currentGizmoCoordinate, setCurrentGizmoCoordinate] = useState<'world' | 'local'>('local');
 
   /**
-  * select property tracks in TimelinePanel(TP) according to the selected targets in RenderingPanel(RP)
+   * select property tracks in TimelinePanel(TP) according to the selected targets in RenderingPanel(RP)
    */
   const isMountRef = useRef(true);
   useEffect(() => {
