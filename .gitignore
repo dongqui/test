@@ -45,3 +45,7 @@ storybook-static
 .env
 
 tsconfig.tsbuildinfo
+
+# cypress
+cypress/downloads
+cypress/videos

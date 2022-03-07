@@ -1,6 +1,5 @@
 import { FunctionComponent, memo, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import cookie from 'react-cookies';
 
 import * as commonActions from 'actions/Common/globalUI';
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
@@ -28,15 +27,19 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
 
   const { mode } = useSelector((state: RootState) => state.modeSelection);
 
-  // Check onboarding-cookie after 2 sec.
-  // If it doesn't exist, onboarding-ui pops up
-  useEffect(() => {
-    setTimeout(() => {
-      if (!cookie.load('onboarding_1')) {
-        dispatch(commonActions.openOnboarding());
-      }
-    }, 2000);
-  }, [dispatch]);
+  /**
+   * @ToDo
+   * 각 툴팁을 다 구현 후에 주석을 풀을 예정
+   */
+  // // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     const localStorage = window.localStorage;
+  //     if (!localStorage.getItem('onboarding_1')) {
+  //       dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
+  //     }
+  //   }, 2000);
+  // }, [dispatch]);
 
   const [plaskEngine, setPlaskEngine] = useState(new PlaskEngine());
 
@@ -53,7 +56,7 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
         </BabylonProvider>
       </ResizeProvider>
       {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={browserType} />}
-      <Onboarding />
+      {/* <Onboarding /> */}
     </main>
   );
 };

@@ -13,14 +13,12 @@ interface Props {
 
 const LoadingModal: FunctionComponent<Props> = ({ title, message }) => {
   return (
-    <Fragment>
-      <BaseModal>
-        <div className={cx('title')}>{title}</div>
-        <div className={cx('content')}>
-          <Html content={message} />
-        </div>
-      </BaseModal>
-    </Fragment>
+    <BaseModal dataCy="loading-modal">
+      <div className={cx('title')}>{title}</div>
+      <div className={cx('content')}>
+        <Html content={message} />
+      </div>
+    </BaseModal>
   );
 };
 

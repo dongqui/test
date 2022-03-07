@@ -17,7 +17,7 @@
     "dist": "npm run build && electron-builder",
     "clean": "rimraf dist main src/out out src/_next _next storybook-static",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run --browser chrome"
   },
   "dependencies": {
     "@babylonjs/core": "^5.0.0-alpha.61",
