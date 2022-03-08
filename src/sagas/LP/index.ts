@@ -114,11 +114,11 @@ function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirector
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
 }
 
-const clickJointChaneel = channel();
+const clickJointChannel = channel();
 
-export function* watchClickJointChaneel() {
+export function* watchClickJointChannel() {
   while (true) {
-    const action: SagaReturnType<typeof selectingDataActions.ctrlKeySingleSelect> = yield take(clickJointChaneel);
+    const action: SagaReturnType<typeof selectingDataActions.ctrlKeySingleSelect | typeof selectingDataActions.defaultSingleSelect> = yield take(clickJointChannel);
     yield put(action);
   }
 }
@@ -193,9 +193,9 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
                   if (targetTransformNode) {
                     const sourceEvent: PointerEvent = event.sourceEvent;
                     if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                      clickJointChaneel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode }));
+                      clickJointChannel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode }));
                     } else {
-                      clickJointChaneel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode }));
+                      clickJointChannel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode }));
                     }
                   }
                 }),
@@ -992,6 +992,6 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.DELETE_FOLDER_OR_MOCAP, handleDeleteFolderOrMocap),
     takeEvery(lpNodeActions.FILE_UPLOAD, fileUpload),
     takeEvery(lpNodeActions.DROP_NODE_ON_ROOT, handleDropNodeOnRoot),
-    watchClickJointChaneel(),
+    watchClickJointChannel(),
   ]);
 }
