@@ -1,9 +1,9 @@
-.hover-image {
-  position: fixed !important;
-  inset: auto !important;
-  top: 176px !important;
-  min-width: 240px !important;
-  min-height: 52px !important;
-  margin: 0 !important;
-  z-index: 1000 !important;
+.example-image {
+  position: fixed;
+  top: 178px;
+  left: -1px;
+  width: 240px;
+  height: 48px;
+  z-index: 1000;
+  background-image: url("/images/onboarding3.svg");
 }

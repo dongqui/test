@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { useEffect, Fragment, useRef } from 'react';
 
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
@@ -45,7 +44,7 @@ const ApplyMotion = () => {
         </p>
         <Arrow placement="left-start" />
       </StepTemplate>
-      <Image src="/images/onboarding3.png" alt="onboarding3.png" width={1280} height={960} className={cx('hover-image')} />
+      <div className={cx('example-image')} />
     </Fragment>
   );
 };
