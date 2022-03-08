@@ -8,10 +8,11 @@ type PrevCameraProperties = {
 
 export class CameraModule extends Module {
   /**
-   * orthographic to perspective 카메라 전환 시 사용하는 마지막 카메라 위치
+   * The latest position of camera in Perspective mode, when user change the mode to Orthographic mode.
+   * Needed to preserve the latest state of the camera.
    */
-  public onPrevPositionsChanged: Observable<PrevCameraProperties> = new Observable();
   private _prevPositions: PrevCameraProperties = {};
+  public onPrevPositionsChanged: Observable<PrevCameraProperties> = new Observable();
   public set prevPositions(value: PrevCameraProperties) {
     this._prevPositions = value;
     this.onPrevPositionsChanged.notifyObservers(value);
@@ -20,8 +21,12 @@ export class CameraModule extends Module {
     return this._prevPositions;
   }
 
-  public onPrevTargetsChanged: Observable<PrevCameraProperties> = new Observable();
+  /**
+   * The latest target of camera in Perspective mode, when user change the mode to Orthographic mode.
+   * Needed to preserve the latest state of the camera.
+   */
   private _prevTargets: PrevCameraProperties = {};
+  public onPrevTargetsChanged: Observable<PrevCameraProperties> = new Observable();
   public set prevTargets(value: PrevCameraProperties) {
     this._prevTargets = value;
     this.onPrevTargetsChanged.notifyObservers(value);

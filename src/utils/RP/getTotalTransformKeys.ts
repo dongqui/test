@@ -5,9 +5,9 @@ import getLinearInterpolatedTransformKeys from './getLinearInterpolatedTransform
 import getUnionFrames from './getUnionFrames';
 
 /**
- * Position에 해당하는 Vector3 값들로 이루어진, 길이가 정해지지 않은 배열을 받아 총합을 반환합니다.
+ *  return sum of position values in the give array
  *
- * @param values - 총합을 구할 Vector3(position) 배열
+ * @param values - target position array
  */
 const getPositionSum = (values: BABYLON.Vector3[]) => {
   let sum = BABYLON.Vector3.Zero();
@@ -19,10 +19,11 @@ const getPositionSum = (values: BABYLON.Vector3[]) => {
 };
 
 /**
- * Quaternion 값들로 이루어진, 길이가 정해지지 않은 배열을 받아 총합을 반환합니다.
+ * return sum of quaternion values in the give array
+ * compute sum through converting quaternion to eulers
  * 이때 Euler로 변환하여 연산 후 다시 재변환하는 과정을 거칩니다.
  *
- * @param values 총합을 구할 Quaternion 배열
+ * @param values target quaternion array
  */
 const getRotationQuaternionSum = (values: BABYLON.Quaternion[]) => {
   let sum = BABYLON.Quaternion.Identity();
@@ -35,9 +36,9 @@ const getRotationQuaternionSum = (values: BABYLON.Quaternion[]) => {
 };
 
 /**
- * Scaling에 해당하는 Vector3 값들로 이루어진, 길이가 정해지지 않은 배열을 받아 총곱을 반환합니다.
+ * return total multiplication of scaling values in the give array
  *
- * @param values 총곱을 구할 Vector3(scaling) 배열
+ * @param values target scaling array
  */
 const getScalingSum = (values: BABYLON.Vector3[]) => {
   let sum = new BABYLON.Vector3(1, 1, 1);
@@ -49,10 +50,10 @@ const getScalingSum = (values: BABYLON.Vector3[]) => {
 };
 
 /**
- * transformKeys들을 배열로 받아서 하나의 합친 후 transformKeys로 반환
+ * return transfomKeys with total values of given transformKeys list
  *
- * @param transformKeysList - 합치는 대상이 되는 transformKeys들을 담은 배열
- * @param property - 합치는 트랙의 속성 종류
+ * @param transformKeysList - target transformKeys list (array of arrays of transformKey)
+ * @param property - property of target track
  */
 const getTotalTransformKeys = (transformKeysList: Array<BABYLON.IAnimationKey[]>, property: Omit<PlaskProperty, 'rotation'>) => {
   const unionFrames = getUnionFrames(transformKeysList);

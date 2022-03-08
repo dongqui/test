@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, useRef } from 'react';
+import { FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -17,8 +17,6 @@ interface Props {
 const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
   const dispatch = useDispatch();
 
-  const importButtonRef = useRef<HTMLSpanElement>(null);
-
   // file import 버튼 클릭
   const handleFileImportButtonClick = useCallback(() => {
     dispatch(
@@ -35,7 +33,7 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
   return (
     <div className={cx('wrapper')}>
       <div className={cx('title')}>library</div>
-      <IconWrapper className={cx('icon')} id={ONBOARDING_ID.IMPORT_FILE} icon={SvgPath.Plus} hasFrame={false} innerRef={importButtonRef} onClick={handleFileImportButtonClick} />
+      <IconWrapper className={cx('icon')} id={ONBOARDING_ID.IMPORT_FILE} icon={SvgPath.Plus} hasFrame={false} onClick={handleFileImportButtonClick} />
     </div>
   );
 };

@@ -19,6 +19,9 @@ import {
   getMotionsOfFirstModel,
   getLastMotionofFirstModel,
   handleOnboarding,
+  exportModelorMotion,
+  isExportedFileDownloaded,
+  convertAndExport,
 } from '../helper';
 
 describe('LP test', () => {
@@ -222,35 +225,47 @@ describe('LP test', () => {
       cy.getByDataCy('contextmenu-add-empty-motion').click('top');
       clickArrowIconOf(cy.get('@model_empty_motion'));
       cy.get('@model_empty_motion').find(dataCy('lp-motion')).last().should('have.text', 'empty motion');
+      clickArrowIconOf(cy.get('@model_empty_motion'));
     });
 
-    context.skip('Export test', () => {
-      before(() => {
-        modelVisualization(cy.getByDataCy('lp-model').first());
+    context('Export test', () => {
+      afterEach(() => {
+        // clear onboarding UI
+        visitAndGetMockData();
+        waitForModelNodeRendering();
+        handleOnboarding();
       });
 
       it('Export glb', () => {
-        cy.getByDataCy('lp-model').first().as('model_export_glb');
-        cy.get('@model_export_glb').rightclick('top');
-        cy.getByDataCy('contextmenu-export').click('top');
-
-        cy.get('@model_export_glb')
-          .invoke('text')
-          .then((modelName) => {
-            const downloadsFolder = Cypress.config('downloadsFolder');
-            cy.task('existsSync', `${downloadsFolder}/${modelName}`).then((isFileExist) => {
-              expect(isFileExist).to.be.true;
-            });
-          });
+        modelVisualization(cy.getByDataCy('lp-model').first().as('model_export'));
+        exportModelorMotion(cy.get('@model_export'), 'glb');
+        // give the file time to download
+        cy.wait(5000);
+        isExportedFileDownloaded(cy.get('@model_export'), 'glb');
       });
 
       it('Export fbx', () => {
-        cy.getByDataCy('lp-model').first().as('model_export_fbx');
-        cy.get('@model_export_fbx').rightclick('top');
-        cy.getByDataCy('contextmenu-export-fbx').click('top');
-        cy.getByDataCy('modal').should('exist');
+        modelVisualization(cy.getByDataCy('lp-model').first().as('model_export'));
+        convertAndExport('fbx');
 
-        // TODO: file 받아졌는지 확인, intercept post 500 error 왜...!!
+        cy.wait('@converter', { timeout: 180000 });
+        isExportedFileDownloaded(cy.get('@model_export'), 'fbx');
+      });
+
+      it('Export fbx_unreal', () => {
+        modelVisualization(cy.getByDataCy('lp-model').first().as('model_export'));
+        convertAndExport('fbx_unreal');
+
+        cy.wait('@converter', { timeout: 180000 });
+        isExportedFileDownloaded(cy.get('@model_export'), 'fbx');
+      });
+
+      it('Export bvh', () => {
+        modelVisualization(cy.getByDataCy('lp-model').first().as('model_export'));
+        convertAndExport('bvh');
+
+        cy.wait('@converter', { timeout: 180000 });
+        isExportedFileDownloaded(cy.get('@model_export'), 'bvh');
       });
     });
   });

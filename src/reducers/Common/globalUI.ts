@@ -1,7 +1,7 @@
 import { Modal } from 'containers/Common/Modal/Modal';
 import { ContextMenu } from 'containers/Common/ContextMenu/ContextMenu';
-import * as globalUIActions from 'actions/Common/globalUI';
 import { OnboardingStep } from 'containers/Onboarding';
+import * as globalUIActions from 'actions/Common/globalUI';
 
 interface State {
   modals: Modal[];

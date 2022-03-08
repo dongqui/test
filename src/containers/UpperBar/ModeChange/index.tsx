@@ -1,4 +1,4 @@
-import { FunctionComponent, useRef } from 'react';
+import { FunctionComponent } from 'react';
 
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
@@ -18,21 +18,13 @@ interface Props {
 const ChangeModeButton: FunctionComponent<Props> = (props) => {
   const { onSwitchAnimationMode, onSwitchVideoMode } = props;
 
-  const videoModeButtonRef = useRef<HTMLSpanElement>(null);
-
   const { mode } = useSelector((state) => state.modeSelection);
 
   return (
     <>
       <div className={cx('wrapper')}>
         <IconWrapper className={cx('icon', { selected: mode === 'animationMode' })} onClick={onSwitchAnimationMode} icon={SvgPath.TrackMode} />
-        <IconWrapper
-          className={cx('icon', { selected: mode === 'videoMode' })}
-          id={ONBOARDING_ID.VIDEO_MODE}
-          innerRef={videoModeButtonRef}
-          onClick={onSwitchVideoMode}
-          icon={SvgPath.Camera}
-        />
+        <IconWrapper className={cx('icon', { selected: mode === 'videoMode' })} id={ONBOARDING_ID.VIDEO_MODE} onClick={onSwitchVideoMode} icon={SvgPath.Camera} />
       </div>
     </>
   );

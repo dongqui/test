@@ -59,12 +59,12 @@ const createEmptyBvhMap = (): PlaskBvhMap => {
 };
 
 /**
- * BVH export 시에 서버에 함께 넘겨줄 BVH map을 담은 Promise를 생성합니다.
- * BVH bone에 대한 value가 null인 경우가 하나 이상이거나, 제한시간을 넘기면 실패로 처리합니다.
+ * create BVH map for exporting as BVH format
+ * if any value for BVH bone is null or after timeout, return failure
  *
- * @param bones - 대상 asset의 bones
- * @param retargetMap - 대상 asset의 완성된 retargetMap (완성되지 않은 경우에 대한 처리는 본 함수 호출 이전에 분기 처리 필요)
- * @param timeout - 제한시간
+ * @param bones - asset's bones
+ * @param retargetMap -asset's completed retargetMap
+ * @param timeout - timeout in ms
  */
 const createBvhMap = (bones: BABYLON.Bone[], retargetMap: PlaskRetargetMap, timeout?: number): Promise<PlaskBvhMap> => {
   const bvhMap = createEmptyBvhMap();

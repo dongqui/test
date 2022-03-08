@@ -24,7 +24,7 @@ function getCurrentFrameIndex(state: RootState) {
 }
 
 function* worker() {
-  const _selectedLayer = getSelectedLayer(yield select()); // 이름 selectedLayerId로 변경 필요(redux 내)
+  const _selectedLayer = getSelectedLayer(yield select()); // === selectedLayerId (inappropriate )
   const _propertyTrackList = getPropertyTrackList(yield select());
   const _animationIngredients = getAnimationIngredients(yield select());
   const _currentFrameIndex = getCurrentFrameIndex(yield select());
@@ -51,7 +51,7 @@ function* worker() {
             switch (targetTrack.property) {
               case 'position': {
                 const { position } = targetTrack.target;
-                // 다른 layer들과 보간 연산해주기 위해, track의 target의 현재 property들을 복사
+                // clone position before computing layer interpolation
                 let newPosition = position.clone();
 
                 otherLayers.forEach((otherLayer) => {
@@ -73,7 +73,7 @@ function* worker() {
               }
               case 'rotation': {
                 const { rotationQuaternion } = targetTrack.target;
-                const rotation = rotationQuaternion!.clone().toEulerAngles(); // quaternion 회전을 사용하기 때문에 단순 target.rotation 해면 (0, 0, 0)
+                const rotation = rotationQuaternion!.clone().toEulerAngles(); // can't use rotation directly, because we use quaternion for rotation the rotation value is always Vector3.Zero()
                 let newRotation = rotation.clone();
 
                 otherLayers.forEach((otherLayer) => {
@@ -92,7 +92,7 @@ function* worker() {
                   value: newRotation,
                 });
 
-                // TP에서는 rotationQuaternion 트랙을 사용하지 않기 때문에 대응하는 트랙을 별도로 찾아서 함께 변경
+                // because TimelinePanel only use rotation tracks, we have to find peer rotationQuaternion tracks
                 const peerTrack = targetLayer.tracks.find((track) => track.id === targetTrack.id.replace('//rotation', '//rotationQuaternion'));
                 if (peerTrack) {
                   let newRotationQuaternion = rotationQuaternion!.clone();
@@ -101,7 +101,9 @@ function* worker() {
                     const otherLayerPeerTrack = otherLayer.tracks.find((track) => track.targetId === peerTrack.targetId && track.property === 'rotationQuaternion');
 
                     if (otherLayerPeerTrack) {
-                      // quaternion 연산은 직접 하지 않고 euler 변환 후 재변환
+                      // @TODO - have to improve the way we compute rotation, because some different euler values mean the same rotation.
+                      // e.g. Vector3(PI, 0, PI) and Vector3(0, PI, 0)
+                      // now we compute euler value, by computing quaternion values and convert the result into euler value
                       const targetTransformKey = otherLayerPeerTrack.transformKeys.find((key) => key.frame === _currentFrameIndex);
                       newRotationQuaternion = newRotationQuaternion
                         .clone()
@@ -172,7 +174,6 @@ function* worker() {
         }),
       );
 
-      // TP saga 붙이는 곳(찰찰)
       yield put(keyframesActions.addKeyframes(updatedPropertyKeyframes));
     }
   }

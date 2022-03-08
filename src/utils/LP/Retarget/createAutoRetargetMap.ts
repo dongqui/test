@@ -4,7 +4,7 @@ import { PlaskRetargetMap, RetargetSourceBoneType } from 'types/common';
 import createEmptyRetargetMap from './createEmptyRetargetMap';
 
 const DEFAULT_TIMEOUT = 3000;
-const MAX_ITERATE_COUNT = 20; // 잘못된 bone 구조의 model에 의해 while문을 빠져나오지 못하는 경우를 막기 위한 최대 반복 횟수
+const MAX_ITERATE_COUNT = 20; // max count of iteration for prevent from infinite loop inside of the while statement due to wrong bone structure
 
 const SOURCE_BONES = {
   hips: { key: 0, searchKeywords: ['hips', 'pelvis'] },
@@ -34,20 +34,21 @@ const SOURCE_BONES = {
 };
 
 /**
- * 기존 mapping api의 결과물과 같은 구조(sourceBone과 targetBone의 연결)의 데이터를 만들어냅니다
+ * create object mapping source bones to target bones
  *
- * @param bones - targetBone으로 사용될 bone들
+ * @param bones - target bones
  */
 const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
   const retargetMap: { [boneName in RetargetSourceBoneType]?: BABYLON.Bone } = {};
 
-  // hips, spine2 찾기
-  // children 3개 이상 가진 bone들을 candidate bone으로 보고 검사
+  // find hips, spine2
+  // filter bones with more than 2 children
   const candidateBones = bones.filter((bone) => bone.children.length > 2);
 
   candidateBones.forEach((candidateBone) => {
-    // candidate Bone의 childrenBones 중 leg 혹은 arm의 searchKeyword를 포함하는 이름을 가진 child 개수를 확인하고
-    // 2개 이상이라면 각각 spine2, hips로 결정
+    // check each candidate if it has child with name containing 'leg' or 'arm'
+    // candidata with more than 1 child with name containing 'leg' -> spine2
+    // candidata with more than 1 child with name containing 'arm' -> hips
     const childrenBones = candidateBone.children;
 
     let legCounts = 0;
@@ -73,21 +74,19 @@ const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
     });
 
     if (armCounts >= 2) {
-      // spine2 결정
       retargetMap.spine2 = candidateBone;
     }
   });
 
-  // hips, spine2에서 뻗어나가는 방향들로 각각 맞는 bone을 mapping
+  // map bones from hips and spine2
   [
-    ['hips', 'spine', 'UpLeg'], // 하체
-    ['spine2', 'neck', 'Shoulder'], // 상체
+    ['hips', 'spine', 'UpLeg'], // lower body
+    ['spine2', 'neck', 'Shoulder'], // upper body
   ].forEach(([keyBoneName, middleBoneName, pairBoneName]) => {
     const keyBone = retargetMap[keyBoneName as RetargetSourceBoneType];
 
     if (keyBone) {
-      // keyBone을 parent로 가지는 bone들을 childrenBones로 지정하고, 각각을 리타게팅 맵에 추가
-      // 실제 bone의 index는 1씩 작음
+      // add children bones of keyBone to retargetMap
       const childrenBones = keyBone.children;
 
       childrenBones.forEach((childBone) => {
@@ -101,7 +100,7 @@ const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
       });
     }
 
-    // leg, arm chain에 속하는 bone들 mapping
+    // maaping from leg and arm chain
     ['left', 'right'].forEach((direction) => {
       // leg mapping
       const legChain = [];
@@ -169,16 +168,16 @@ const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
 };
 
 /**
- * model(asset)에 대한 자동 리타겟맵 생성합니다.
+ * create asset's retargetMap automatically
  *
- * @param assetId - 대상 model asset의 id
- * @param bones - 대상 model의 bone들
- * @param timeout - 실패 기준이 되는 제한시간
+ * @param assetId - asset's id
+ * @param bones - asset's bones to use as target bones
+ * @param timeout - timeout in ms
  */
 const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?: number): Promise<PlaskRetargetMap> => {
   const retargetMap = createEmptyRetargetMap(assetId);
 
-  // innerRetargetMap을 사용해서 retargetMap.values를 업데이트
+  // updates retargetMap.values
   if (bones && bones.length > 0) {
     const innerRetargetMap = getInnerRetargetMap(bones);
     const newValues = cloneDeep(retargetMap.values);
@@ -196,10 +195,10 @@ const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?:
   }
 
   return new Promise((resolve, reject) => {
-    // auto retarget에 성공하면 생성한 retargetMap을 반환
+    // return retargetMap when auto retarget completed
     resolve(retargetMap);
 
-    // timeout을 넘어서면 실패를 반환
+    // return failure after timeout
     setTimeout(() => {
       reject('Timeout: Auto retargeting has failed');
     }, timeout ?? DEFAULT_TIMEOUT);
