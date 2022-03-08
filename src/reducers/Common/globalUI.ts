@@ -1,16 +1,18 @@
 import { Modal } from 'containers/Common/Modal/Modal';
 import { ContextMenu } from 'containers/Common/ContextMenu/ContextMenu';
 import * as globalUIActions from 'actions/Common/globalUI';
+import { OnboardingStep } from 'containers/Onboarding';
+
 interface State {
   modals: Modal[];
   contextMenu: ContextMenu | null;
-  isShowedOnboarding: boolean;
+  onboardingStep: OnboardingStep;
 }
 
 const defaultState: State = {
   modals: [],
   contextMenu: null,
-  isShowedOnboarding: false,
+  onboardingStep: null,
 };
 
 export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIActions) => {
@@ -42,13 +44,9 @@ export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIA
       return Object.assign(state, {
         contextMenu: null,
       });
-    case globalUIActions.OPEN_ONBOARDING:
-      return Object.assign({}, state, {
-        isShowedOnboarding: true,
-      });
-    case globalUIActions.CLOSE_ONBOARDING:
-      return Object.assign({}, state, {
-        isShowedOnboarding: false,
+    case globalUIActions.PROGRESS_ONBOARDING:
+      return Object.assign(state, {
+        onboardingStep: action.payload.onboardingStep,
       });
     default:
       return state;
