@@ -44,7 +44,7 @@ const addJointSpheres = (bones: Bone[], mesh: AbstractMesh, scene: Scene, assetI
         longestBoneLength = distanceFromParent;
       }
     });
-    const sphereBaseSize = 0.5;
+    const sphereBaseSize = 0.4;
     const sphere = MeshBuilder.CreateSphere(`${bone.name}_joint`, { segments: 20, diameter: sphereBaseSize, updatable: true }, scene);
     sphere.id = `${assetId}//${bone.name}//joint`;
     sphere.renderingGroupId = 2;
@@ -63,17 +63,10 @@ const addJointSpheres = (bones: Bone[], mesh: AbstractMesh, scene: Scene, assetI
   });
 
   const sphereScaleUnit = 15;
-  const shpereFactor = 0.9;
 
   sphereBoneGroups.forEach(([sphere, bone]) => {
     const scale = 1 / (sphereScaleUnit / longestBoneLength);
-    let stepsOut = 0;
-    let b = bone;
-    while (b.getParent() && b.getParent()?.getIndex() !== -1) {
-      stepsOut += 1;
-      b = b.getParent() as Bone;
-    }
-    sphere.scaling.scaleInPlace(scale * Math.pow(shpereFactor, stepsOut));
+    sphere.scaling.scaleInPlace(scale);
 
     sphere.actionManager = new ActionManager(scene);
     sphere.actionManager.registerAction(
