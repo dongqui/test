@@ -2,8 +2,9 @@ import { FunctionComponent, useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 
 import * as globalUIActions from 'actions/Common/globalUI';
-import OnboardingTooltip, { ImportFileOnboarding } from 'containers/Onboarding/OnboardingTooltip';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
+
 import classNames from 'classnames/bind';
 import styles from './LPHeader.module.scss';
 
@@ -34,9 +35,7 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
   return (
     <div className={cx('wrapper')}>
       <div className={cx('title')}>library</div>
-      <OnboardingTooltip placement="right-start" targetRef={importButtonRef} content={<ImportFileOnboarding />}>
-        <IconWrapper className={cx('icon')} icon={SvgPath.Plus} hasFrame={false} innerRef={importButtonRef} onClick={handleFileImportButtonClick} />
-      </OnboardingTooltip>
+      <IconWrapper className={cx('icon')} id={ONBOARDING_ID.IMPORT_FILE} icon={SvgPath.Plus} hasFrame={false} innerRef={importButtonRef} onClick={handleFileImportButtonClick} />
     </div>
   );
 };
