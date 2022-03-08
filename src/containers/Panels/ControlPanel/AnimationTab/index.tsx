@@ -78,7 +78,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       setControlTarget(null);
     } else if (_selectedTargets.length === 1) {
       // case single target is selected
-      setControlTarget(_selectedTargets[0]);
+      setControlTarget(_selectedTargets[0].reference);
     } else {
       // case multi targets are selected
       setControlTarget(null);

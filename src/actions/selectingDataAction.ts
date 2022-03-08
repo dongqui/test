@@ -1,3 +1,4 @@
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import * as BABYLON from '@babylonjs/core';
 
 export type SelectingDataAction =
@@ -27,7 +28,7 @@ const SELECT_ALL_SELECTABLE_OBJECTS = 'selectingDataAction/SELECT_ALL_SELECTABLE
 const RESET_SELECTED_TARGETS = 'selectingDataAction/RESET_SELECTED_TARGETS' as const;
 
 interface AddSelectableObjects {
-  objects: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+  objects: Array<PlaskTransformNode>;
 }
 
 interface RemoveSelectableControllers {
@@ -43,19 +44,19 @@ interface UnrenderAsset {
 }
 
 interface DefaultSingleSelect {
-  target: BABYLON.Mesh | BABYLON.TransformNode;
+  target: PlaskTransformNode;
 }
 
 interface DefaultMultiSelect {
-  targets: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+  targets: Array<PlaskTransformNode>;
 }
 
 interface CtrlKeySingleSelect {
-  target: BABYLON.Mesh | BABYLON.TransformNode;
+  target: PlaskTransformNode;
 }
 
 interface CtrlKeyMultiSelect {
-  targets: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+  targets: Array<PlaskTransformNode>;
 }
 
 /**

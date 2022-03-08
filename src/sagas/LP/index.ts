@@ -2,7 +2,7 @@ import { find, cloneDeep, filter } from 'lodash';
 import { channel } from 'redux-saga';
 import { select, put, takeLatest, all, SagaReturnType, call, takeEvery, take } from 'redux-saga/effects';
 import { GLTF2Export, GLTFData } from '@babylonjs/serializers';
-import { v4 as uuid } from 'uuid';
+import { v4 as uuid, v4 } from 'uuid';
 import produce from 'immer';
 
 import { RootState } from 'reducers';
@@ -31,6 +31,8 @@ import { AnimationIngredient, PlaskBvhMap } from 'types/common';
 import * as TEXT from 'constants/Text';
 import { convertModel } from 'api';
 import fileUpload from './fileUpload';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { PlaskEngine } from '3d/PlaskEngine';
 
 function* handleDeleteFolderOrMocap(action: ReturnType<typeof lpNodeActions.deleteFolderOrMocap>) {
   const { nodeId, parentId } = action.payload;
@@ -178,6 +180,12 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
                 !bone.name.toLowerCase().includes('__root__'),
             );
             const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as BABYLON.TransformNode[];
+            const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
+              const ptn = new PlaskTransformNode(transformNode);
+              transformNode.metadata.__plaskEntityId = ptn.entityId;
+              return ptn;
+            });
+
             const sphereBoneGroups = addJointSpheres(jointBones, meshes[0], scene, assetId);
             sphereBoneGroups.forEach(([jointSphere, bone]) => {
               if (targetVisibilityOption) {
@@ -192,10 +200,15 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
                   const targetTransformNode = bone.getTransformNode();
                   if (targetTransformNode) {
                     const sourceEvent: PointerEvent = event.sourceEvent;
+                    const engine = PlaskEngine.GetInstance()!;
                     if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                      clickJointChannel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode }));
+                      clickJointChannel.put(
+                        selectingDataActions.ctrlKeySingleSelect({ target: engine.getEntity(targetTransformNode.metadata.__plaskEntityId) as PlaskTransformNode }),
+                      );
                     } else {
-                      clickJointChannel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode }));
+                      clickJointChannel.put(
+                        selectingDataActions.defaultSingleSelect({ target: engine.getEntity(targetTransformNode.metadata.__plaskEntityId) as PlaskTransformNode }),
+                      );
                     }
                   }
                 }),
@@ -203,7 +216,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
             });
 
             yield put(plaskProjectActions.renderAsset({ assetId }));
-            yield put(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes })); // make asset's objects selectable
+            yield put(selectingDataActions.addSelectableObjects({ objects: plaskTransformNodes })); // make asset's objects selectable
 
             transformNodes.forEach((transformNode) => {
               scene.addTransformNode(transformNode);
@@ -238,13 +251,13 @@ function* handleCancelVisulization(action: ReturnType<typeof lpNodeActions.cance
   }
 
   const targetAsset = assetList.find((asset) => asset.id === assetId);
-  const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
-  const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+  const targetJoint = selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'joint');
+  const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'controller');
   if (targetAsset) {
     screenList
       .map((screen) => screen.scene)
       .forEach((scene) => {
-        removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+        removeAssetFromScene(scene, targetAsset, targetJoint, targetControllers);
       });
   }
   yield put(plaskProjectActions.unrenderAsset({ assetId }));
@@ -264,7 +277,8 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
     if (visualizedAssetIds.includes(assetId)) {
       // if target model is already visualized, include its controllers
-      targets = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature'));
+      const entities = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature'));
+      targets = entities.map((entity) => entity.reference);
     } else {
       // if target model is not visualized yet, include only transformNodes
       targets = animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);

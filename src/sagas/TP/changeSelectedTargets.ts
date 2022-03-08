@@ -41,7 +41,7 @@ function* filterPlaskTracks(layer: PlaskLayer) {
   const filteredTracks: PlaskTrack[] = [];
 
   selectedTargets.forEach((plaskTrack) => {
-    const { id, name } = plaskTrack;
+    const { id, name } = plaskTrack.reference;
     if (name !== 'Armature') {
       const selectedTrackIndex = layer.tracks.findIndex((track) => track.targetId === id && track.layerId === layer.id);
       for (let propertyTrackIndex = selectedTrackIndex; propertyTrackIndex <= selectedTrackIndex + 3; propertyTrackIndex += 1) {

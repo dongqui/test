@@ -40,9 +40,9 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [canAssign, setCanAssign] = useState(false);
 
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
-  const multipleBoneSelected = useMemo(() => _selectedTargets.filter((target) => !checkIsTargetMesh(target)).length > 1, [_selectedTargets]);
+  const multipleBoneSelected = useMemo(() => _selectedTargets.filter((target) => !checkIsTargetMesh(target.reference)).length > 1, [_selectedTargets]);
   const visualizedRetargetMap = useMemo(() => _retargetMaps.find((retargetMap) => retargetMap.assetId === _visualizedAssetIds[0]), [_retargetMaps, _visualizedAssetIds]); // 단일 모델
-  const visualizedTransformNodes = useMemo(() => _selectableObjects.filter((object) => !checkIsTargetMesh(object) && !object.name.toLowerCase().includes('armature')), [
+  const visualizedTransformNodes = useMemo(() => _selectableObjects.filter((object) => !checkIsTargetMesh(object.reference) && !object.name.toLowerCase().includes('armature')), [
     _selectableObjects,
   ]);
 
@@ -90,7 +90,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   // rp 선택에 의한 targetTransformNode 변경
   useEffect(() => {
     if (_selectedTargets.length === 1) {
-      if (!checkIsTargetMesh(_selectedTargets[0]) && !_selectedTargets[0].name.toLowerCase().includes('armature')) {
+      if (!checkIsTargetMesh(_selectedTargets[0].reference) && !_selectedTargets[0].name.toLowerCase().includes('armature')) {
         setCurrentTargetTransformNode({ id: _selectedTargets[0].id, name: _selectedTargets[0].name });
         isSelectedTargetBoneOption.current = true;
       }

@@ -1,3 +1,4 @@
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
 import { defaultMultiSelect } from 'actions/selectingDataAction';
@@ -18,10 +19,12 @@ export class SelectorModule extends Module {
 
   // TODO : decorator ?
   public get selectedTargets() {
-    return this.plaskEngine.state.selectingData.selectedTargets;
+    return this.plaskEngine.state.selectingData.selectedTargets.map((entity) => entity.reference);
   }
   public set selectedTargets(targets: TransformNode[]) {
-    this.plaskEngine.dispatch(defaultMultiSelect({ targets }));
+    this.plaskEngine.dispatch(
+      defaultMultiSelect({ targets: targets.map((transformNode) => this.plaskEngine.getEntity(transformNode.metadata.__plaskEntityId)) as PlaskTransformNode[] }),
+    );
   }
 
   private _startPosition: Nullable<Vector2> = null;
@@ -139,6 +142,8 @@ export class SelectorModule extends Module {
   private _boxSelect(startPointerPosition: Vector2, endPointerPosition: Vector2) {
     const scene = this.plaskEngine.scene;
 
-    return this.selectableObjects.filter((object) => checkIsObjectIn(startPointerPosition as ScreenXY, endPointerPosition as ScreenXY, object, scene));
+    return this.selectableObjects
+      .filter((object) => checkIsObjectIn(startPointerPosition as ScreenXY, endPointerPosition as ScreenXY, object.reference, scene))
+      .map((object) => object.reference);
   }
 }

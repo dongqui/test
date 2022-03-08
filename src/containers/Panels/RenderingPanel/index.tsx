@@ -1230,7 +1230,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 if (visualizedAsset) {
                   const { id: assetId, meshes, skeleton } = visualizedAsset;
                   // joints
-                  const transformNodes = _selectableObjects.filter((object) => !checkIsTargetMesh(object) && object.id.includes(assetId)) as BABYLON.TransformNode[];
+                  const transformNodes = _selectableObjects.filter((object) => object.type === 'joint' && object.id.includes(assetId)).map((entity) => entity.reference);
                   transformNodes.forEach((transformNode) => {
                     const joint = targetScreen.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
                     if (joint) {
@@ -1249,7 +1249,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 if (visualizedAsset) {
                   const { id: assetId, meshes, skeleton } = visualizedAsset;
                   // joints
-                  const transformNodes = _selectableObjects.filter((object) => !checkIsTargetMesh(object) && object.id.includes(assetId)) as BABYLON.TransformNode[];
+                  const transformNodes = _selectableObjects.filter((object) => object.type === 'joint' && object.id.includes(assetId)).map((entity) => entity.reference);
                   transformNodes.forEach((transformNode) => {
                     const joint = targetScreen.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
                     if (joint) {

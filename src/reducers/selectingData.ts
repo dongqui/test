@@ -19,20 +19,20 @@ export const selectingData = (state = defaultState, action: SelectingDataAction)
     }
     case 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS': {
       return Object.assign({}, state, {
-        selectableObjects: state.selectableObjects.filter((object) => !(object.getClassName() === 'Mesh' && object.id.includes(action.payload.assetId))),
-        selectedTargets: state.selectedTargets.filter((target) => !(target.getClassName() === 'Mesh' && target.id.includes(action.payload.assetId))),
+        selectableObjects: state.selectableObjects.filter((object) => !(object.type === 'controller' && object.assetId.includes(action.payload.assetId))),
+        selectedTargets: state.selectedTargets.filter((target) => !(target.type === 'controller' && target.assetId.includes(action.payload.assetId))),
       });
     }
     case 'selectingDataAction/REMOVE_SELECTABLE_JOINTS': {
       return Object.assign({}, state, {
-        selectableObjects: state.selectableObjects.filter((object) => !(object.getClassName() === 'TransformNode' && object.id.includes(action.payload.assetId))),
-        selectedTargets: state.selectedTargets.filter((target) => !(target.getClassName() === 'TransformNode' && target.id.includes(action.payload.assetId))),
+        selectableObjects: state.selectableObjects.filter((object) => !(object.type === 'joint' && object.assetId.includes(action.payload.assetId))),
+        selectedTargets: state.selectedTargets.filter((target) => !(target.type === 'joint' && target.assetId.includes(action.payload.assetId))),
       });
     }
     case 'selectingDataAction/UNRENDER_ASSET': {
       return Object.assign({}, state, {
-        selectableObjects: state.selectableObjects.filter((object) => !object.id.includes(action.payload.assetId)),
-        selectedTargets: state.selectedTargets.filter((target) => !target.id.includes(action.payload.assetId)),
+        selectableObjects: state.selectableObjects.filter((object) => !object.assetId.includes(action.payload.assetId)),
+        selectedTargets: state.selectedTargets.filter((target) => !target.assetId.includes(action.payload.assetId)),
       });
     }
     case 'selectingDataAction/DEFAULT_SINGLE_SELECT': {

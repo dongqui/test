@@ -17,6 +17,8 @@ import { RootState } from 'reducers';
 import { Dispatch } from 'redux';
 import { stateDiff } from 'utils/common';
 import { createCamera, createDirectionalLight, createGrounds, createHemisphericLight } from 'utils/RP';
+import { PlaskEntity } from './entities/PlaskEntity';
+import { PlaskTransformNode } from './entities/PlaskTransformNode';
 import { CameraModule } from './modules/camera/CameraModule';
 import { GizmoModule } from './modules/gizmo/GizmoModule';
 import { IKModule } from './modules/ik/IKModule';
@@ -36,6 +38,7 @@ export class PlaskEngine {
   private _camera!: ArcRotateCamera;
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
+  private _entities: { [id: string]: PlaskEntity } = {};
 
   public dispatch!: Dispatch<any>;
 
@@ -126,6 +129,42 @@ export class PlaskEngine {
    * Redux state
    */
   public state!: RootState;
+
+  /**
+   * Main function to associate serialized entities to references on the 3D scene
+   * @param entity
+   */
+  public getReference(entity: PlaskEntity) {
+    let reference: any = null;
+    switch (entity.name) {
+      case 'TransformNode':
+        const typedEntity = entity as PlaskTransformNode;
+        if (typedEntity.type === 'joint') {
+          reference = this.scene.getTransformNodeById(typedEntity.id);
+        } else if (typedEntity.type === 'controller') {
+          reference = this.scene.getMeshById(typedEntity.id);
+        }
+        break;
+      default:
+        break;
+    }
+    return reference;
+  }
+
+  public getEntity(id: string) {
+    if (!this._entities[id]) {
+      throw new Error('Cannot find entity');
+    }
+
+    return this._entities[id];
+  }
+
+  public addEntity(entity: PlaskEntity) {
+    if (this._entities[entity.entityId]) {
+      console.warn('Entity already exists, overwritten');
+    }
+    this._entities[entity.entityId] = entity;
+  }
 
   public resize() {
     this._engine.resize();

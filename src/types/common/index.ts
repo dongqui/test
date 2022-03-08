@@ -1,3 +1,4 @@
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import * as BABYLON from '@babylonjs/core';
 
 export type Nullable<T> = T | null;
@@ -176,8 +177,8 @@ export type PlaskBvhMap = {
 export type ContextMenuClickItemHandlerProps = any;
 
 export type SelectingData = {
-  selectableObjects: Array<BABYLON.Mesh | BABYLON.TransformNode>;
-  selectedTargets: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+  selectableObjects: Array<PlaskTransformNode>;
+  selectedTargets: Array<PlaskTransformNode>;
 };
 
 export type ButtonColor = 'primary' | 'secondary' | 'error';
