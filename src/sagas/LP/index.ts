@@ -14,11 +14,12 @@ import {
   duplicateAnimationIngredient,
   createAnimationGroupFromIngredient,
   removeAssetThingsFromScene,
+  addJointSpheres,
 } from 'utils/RP';
 import { checkCreateDuplicates, checkPasteDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth, filterDeletedNode, createFolderNode } from 'utils/LP/FileSystem';
 import { createAnimationIngredientFromMocapData, createBvhMap } from 'utils/LP/Retarget';
 import { getFileExtension } from 'utils/common';
-import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes, roundToFourth } from 'utils/common';
+import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -113,11 +114,11 @@ function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirector
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
 }
 
-const clickJointChaneel = channel();
+const clickJointChannel = channel();
 
-export function* watchClickJointChaneel() {
+export function* watchClickJointChannel() {
   while (true) {
-    const action: SagaReturnType<typeof selectingDataActions.ctrlKeySingleSelect> = yield take(clickJointChaneel);
+    const action: SagaReturnType<typeof selectingDataActions.ctrlKeySingleSelect | typeof selectingDataActions.defaultSingleSelect> = yield take(clickJointChannel);
     yield put(action);
   }
 }
@@ -168,56 +169,38 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
 
             scene.addSkeleton(skeleton);
 
-            const jointTransformNodes: BABYLON.TransformNode[] = [];
-            const armatureScalingFactor = bones.find((bone) => bone.name === 'Armature') ? bones.find((bone) => bone.name === 'Armature')!.scaling.x : 0.01;
-            // add joint to each bone and add it to the scene
-            for (const bone of bones) {
-              if (
+            // // add joint to each bone and add it to the scene
+            const jointBones = bones.filter(
+              (bone) =>
                 !bone.name.toLowerCase().includes('scene') &&
                 !bone.name.toLowerCase().includes('camera') &&
                 !bone.name.toLowerCase().includes('light') &&
-                // @TODO
-                !bone.name.toLowerCase().includes('__root__') // return -> 조건문으로 변경
-              ) {
-                const joint = BABYLON.MeshBuilder.CreateSphere(`${bone.name}_joint`, { diameter: roundToFourth(0.03 / armatureScalingFactor) }, scene);
-                joint.id = `${assetId}//${bone.name}//joint`;
-                joint.state = roundToFourth(0.03 / armatureScalingFactor).toString(); // save joint's diameter as state
-                joint.renderingGroupId = 2;
-                joint.attachToBone(bone, meshes[0]);
-
-                if (targetVisibilityOption) {
-                  joint.isVisible = targetVisibilityOption.isBoneVisible;
-                }
-
-                const targetTransformNode = bone.getTransformNode();
-                if (targetTransformNode) {
-                  jointTransformNodes.push(targetTransformNode);
-                }
-
-                // create actionManagers to each joint
-                joint.actionManager = new BABYLON.ActionManager(scene);
-                joint.actionManager.registerAction(
-                  // register action that enable for user to select transformNode by clicking joint
-                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
-                    const targetTransformNode = bone.getTransformNode();
-                    if (targetTransformNode) {
-                      const sourceEvent: PointerEvent = event.sourceEvent;
-                      if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                        clickJointChaneel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode }));
-                      } else {
-                        clickJointChaneel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode }));
-                      }
-                    }
-                  }),
-                );
-                // change cursor with joint hover
-                joint.actionManager.registerAction(
-                  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
-                    scene.hoverCursor = 'pointer';
-                  }),
-                );
+                !bone.name.toLowerCase().includes('__root__'),
+            );
+            const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as BABYLON.TransformNode[];
+            const sphereBoneGroups = addJointSpheres(jointBones, meshes[0], scene, assetId);
+            sphereBoneGroups.forEach(([jointSphere, bone]) => {
+              if (targetVisibilityOption) {
+                jointSphere.isVisible = targetVisibilityOption.isBoneVisible;
               }
-            }
+              if (!jointSphere.actionManager) {
+                jointSphere.actionManager = new BABYLON.ActionManager(scene);
+              }
+              jointSphere.actionManager.registerAction(
+                // register action that enable for user to select transformNode by clicking joint
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
+                  const targetTransformNode = bone.getTransformNode();
+                  if (targetTransformNode) {
+                    const sourceEvent: PointerEvent = event.sourceEvent;
+                    if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+                      clickJointChannel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode }));
+                    } else {
+                      clickJointChannel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode }));
+                    }
+                  }
+                }),
+              );
+            });
 
             yield put(plaskProjectActions.renderAsset({ assetId }));
             yield put(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes })); // make asset's objects selectable
@@ -1009,6 +992,6 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.DELETE_FOLDER_OR_MOCAP, handleDeleteFolderOrMocap),
     takeEvery(lpNodeActions.FILE_UPLOAD, fileUpload),
     takeEvery(lpNodeActions.DROP_NODE_ON_ROOT, handleDropNodeOnRoot),
-    watchClickJointChaneel(),
+    watchClickJointChannel(),
   ]);
 }
