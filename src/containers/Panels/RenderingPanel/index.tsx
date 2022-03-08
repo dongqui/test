@@ -162,7 +162,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     return () => {
       plaskEngine.selectorModule.onEndSelectBox.remove(endSelectBoxObserver);
       plaskEngine.selectorModule.onSelectBoxUpdated.remove(selectBoxUpdatedObserver);
-    }
+    };
   }, [_screenList, dispatch, plaskEngine]);
 
   /**

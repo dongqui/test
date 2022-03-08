@@ -7,7 +7,6 @@ type PrevCameraProperties = {
 };
 
 export class CameraModule extends Module {
-  public state = {};
   /**
    * The latest position of camera in Perspective mode, when user change the mode to Orthographic mode.
    * Needed to preserve the latest state of the camera.

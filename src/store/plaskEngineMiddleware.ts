@@ -4,6 +4,6 @@ import { Middleware } from 'redux';
 export const plaskStateSync: Middleware = (store) => (next) => (action) => {
   const previousState = store.getState();
   const result = next(action);
-  PlaskEngine.GetInstance()?.dispatch(action, store.getState(), previousState);
+  PlaskEngine.GetInstance()?.onStateChanged(action, store.getState(), previousState);
   return result;
 };

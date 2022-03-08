@@ -10,3 +10,4 @@ export { default as filterAnimatableTransformNodes } from './filterAnimatableTra
 export { default as convertToDegree } from './convertToDegree';
 export { default as convertToRadian } from './convertToRadian';
 export { default as cloneItemsWithProps } from './cloneItemsWithProps';
+export { default as stateDiff } from './stateDiff';

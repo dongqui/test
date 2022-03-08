@@ -21,7 +21,7 @@ export class SelectorModule extends Module {
     return this.plaskEngine.state.selectingData.selectedTargets;
   }
   public set selectedTargets(targets: TransformNode[]) {
-    this.plaskEngine.reduxDispatch(defaultMultiSelect({ targets }));
+    this.plaskEngine.dispatch(defaultMultiSelect({ targets }));
   }
 
   private _startPosition: Nullable<Vector2> = null;
@@ -33,7 +33,8 @@ export class SelectorModule extends Module {
     if (key === 'selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
     } else if (key === 'selectableObjects') {
-      console.log(this.selectableObjects);
+      // pass
+      // console.log(this.selectableObjects);
     }
   }
 

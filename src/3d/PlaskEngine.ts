@@ -15,6 +15,7 @@ import {
 } from '@babylonjs/core';
 import { RootState } from 'reducers';
 import { Dispatch } from 'redux';
+import { stateDiff } from 'utils/common';
 import { createCamera, createDirectionalLight, createGrounds, createHemisphericLight } from 'utils/RP';
 import { CameraModule } from './modules/camera/CameraModule';
 import { GizmoModule } from './modules/gizmo/GizmoModule';
@@ -26,28 +27,6 @@ type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
-const primitives = ['string', 'number', 'boolean', 'symbol'];
-function hasKey(obj: any, key: any) {
-  return Object.prototype.hasOwnProperty.call(obj, key);
-}
-
-function stateDiff(a: any, b: any) {
-  if (a === b) {
-    return [];
-  }
-
-  const result = [];
-  const [aKeys, bKeys] = [Object.keys(a), Object.keys(b)];
-  for (let i = 0; i < bKeys.length; i++) {
-    let key = bKeys[i];
-    if (!hasKey(a, key) || a[key] !== b[key]) {
-      result.push(key);
-    }
-  }
-
-  return result;
-}
-
 export class PlaskEngine {
   private _modules: Module[] = [];
   private _engine!: Engine;
@@ -58,7 +37,7 @@ export class PlaskEngine {
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
 
-  public reduxDispatch!: Dispatch<any>;
+  public dispatch!: Dispatch<any>;
 
   public static Instance: PlaskEngine;
   public static GetInstance() {
@@ -110,7 +89,7 @@ export class PlaskEngine {
     this._scene = new Scene(this._engine);
     this._onSceneReady();
     this._registerObservables();
-    this.reduxDispatch = dispatch;
+    this.dispatch = dispatch;
 
     for (let module of this._modules) {
       module.initialize();
@@ -121,7 +100,14 @@ export class PlaskEngine {
     });
   }
 
-  public dispatch(action: any, state: any, previousState: any) {
+  /**
+   * Dispatches state changes from redux to modules
+   * @hidden
+   * @param action
+   * @param state
+   * @param previousState
+   */
+  public onStateChanged(action: any, state: any, previousState: any) {
     this.state = state;
 
     for (const module of this._modules) {
@@ -136,6 +122,9 @@ export class PlaskEngine {
     }
   }
 
+  /**
+   * Redux state
+   */
   public state!: RootState;
 
   public resize() {
