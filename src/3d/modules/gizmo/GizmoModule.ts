@@ -49,10 +49,10 @@ export class GizmoModule extends Module {
   public initialize() {
     this._gizmoManager = new GizmoManager(this.plaskEngine.scene);
     this._gizmoManager.usePointerToAttachGizmos = false;
-    this._gizmoManager.positionGizmoEnabled = true; // position을 기본 모드로 설정
+    this._gizmoManager.positionGizmoEnabled = true; // position
 
-    // 선택효과 적용
     this._selectionChangeObserver = this.plaskEngine.selectorModule.onSelectionChangeObservable.add((objects) => this._onSelectionChange(objects));
+    // TODO : visibilityOptions (plaskEngine)
   }
 
   public dispose() {
@@ -131,13 +131,12 @@ export class GizmoModule extends Module {
   }
 
   private _clearOutline() {
-    // 선택효과 해제
     for (const target of this._activeTargets) {
       if (!target) {
         return;
       }
       if (checkIsTargetMesh(target)) {
-        // 컨트롤러
+        // controller
         target.renderOutline = false;
       } else {
         // joint
@@ -152,7 +151,7 @@ export class GizmoModule extends Module {
   private _setOutline(selectedTargets: TransformNode[]) {
     selectedTargets.forEach((target) => {
       if (checkIsTargetMesh(target)) {
-        // 컨트롤러
+        // controller
         target.renderOutline = true;
         target.outlineColor = Color3.White();
         target.outlineWidth = 0.1;
@@ -170,12 +169,12 @@ export class GizmoModule extends Module {
 
   private _attachGizmo(selectedTargets: TransformNode[]) {
     if (selectedTargets.length === 0) {
-      // 선택 해제 시
+      // Deselection
       this._gizmoManager.attachToNode(null);
     } else if (selectedTargets.length === 1) {
-      // 단일선택 모드일 때의 gizmo 조작
+      // Single selection
       switch (this._currentGizmoMode) {
-        // 현재 모드에 맞는 gizmo 선택
+        // Enable gizmo for the current mode
         case GizmoMode.POSITION: {
           this._gizmoManager.positionGizmoEnabled = true;
           break;
@@ -195,15 +194,13 @@ export class GizmoModule extends Module {
 
       if (this.plaskEngine.visibilityOptions.isGizmoVisible) {
         if (!checkIsTargetMesh(selectedTargets[0])) {
-          // transformNode 단일 선택 시
+          // transformNode single selection
           this._gizmoManager.attachToNode(selectedTargets[0]);
         } else {
-          // controller 단일 선택 시
+          // controller single selection
           this._gizmoManager.attachToMesh(selectedTargets[0] as Mesh);
-
           const linkedTransformNode = selectedTargets[0].getScene().getTransformNodeById(selectedTargets[0].id.replace('controller', 'transformNode'));
 
-          // controller 부착 시의 gizmo control customize
           if (linkedTransformNode) {
             if (this._gizmoManager.positionGizmoEnabled && this._currentGizmoMode === GizmoMode.POSITION) {
               this._addPositionObservables(linkedTransformNode);
@@ -218,8 +215,8 @@ export class GizmoModule extends Module {
         this._gizmoManager.attachToNode(null);
       }
     } else {
-      // 다중선택 모드일 때의 gizmo 조작
-      this._gizmoManager.attachToNode(null); // R&D 후 gizmo control 변경 필요
+      // Multi selection
+      this._gizmoManager.attachToNode(null); // R&D no multi selection for now
     }
   }
 

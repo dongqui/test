@@ -86,28 +86,9 @@ const RenderingPanel: FunctionComponent<Props> = () => {
    *****************************************************************************/
 
   /**
-   * create scece and add default settings
+   * create scene and add default settings
    */
   const { plaskEngine } = useContext(BabylonContext);
-
-  // // Mapping state
-  // const getNested = (obj: any, path: string) => {
-  //   return path.split('.').reduce((p, c) => (p && p[c]) || null, obj);
-  // };
-  // const setNested = (obj: any, path: string, value: any) => {
-  //   return path.split('.').reduce((o, p, i) => (o[p] = path.split('.').length === ++i ? value : o[p] || {}), obj);
-  // };
-
-  // const deps = [];
-  // for (const id in SelectorModule.STATE) {
-  //   const obj = (SelectorModule.STATE as ModuleState)[id];
-  //   const variable = useSelector((state) => getNested(state, obj.reduxPath));
-  //   deps.push(variable);
-  // }
-
-  // useCallback(() => {
-  //   SelectorModule.Callback();
-  // }, deps);
 
   useEffect(() => {
     if (renderingCanvas1.current) {
@@ -130,16 +111,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         dispatch(plaskProjectActions.addScreen({ screen: newScreen }));
         dispatch(screenDataActions.addScreen({ screenId: newScreen.id }));
       });
-
-      const modules = plaskEngine.modules;
-
-      // for (const module of modules) {
-      //   // Hook states
-      //   for (const field in module.state) {
-      //     const variable = useSelector((state) => getNested(state, module.state[field].reduxPath));
-      //     // module.state[field]._onChanged = () => dispatch(plaskEngineSyncAction(setNested({}, module.state[field].reduxPath, module.state[field].value)));
-      //   }
-      // }
 
       // plaskEngine.scene.onDisposeObservable.addOnce((scene) => {
       //   // reload window when scene is disposed -> only used in dev environment for better DX
@@ -166,11 +137,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     }
   }, [plaskEngine, dispatch]);
 
-  // Thes lines below are unnecessary, but I leave it so we can refer to the pattern
-  // TODO: to delete eventually
-  // const prevCameraPositions = useObserved(plaskEngine.cameraModule.onPrevPositionsChanged, plaskEngine.cameraModule.prevPositions)!;
-  // const prevCameraTargets = useObserved(plaskEngine.cameraModule.onPrevTargetsChanged, plaskEngine.cameraModule.prevTargets)!;
-
   const prevCameraPositions = plaskEngine.cameraModule.prevPositions;
   const prevCameraTargets = plaskEngine.cameraModule.prevTargets;
 
@@ -179,40 +145,25 @@ const RenderingPanel: FunctionComponent<Props> = () => {
    */
   const rpDragBox = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // Check with Kenny how we can handle these screens -> @kenny use the first screen cause we only support only one canvas now
-    const targetScreen = _screenList[0];
-
-    // if (targetScreen) {
     const dragBox = rpDragBox.current as HTMLDivElement;
     const dragBoxDefaultStyle = 'background-color: gray; position: absolute; opacity: 0.3; pointer-events: none;';
     dragBox.setAttribute('style', dragBoxDefaultStyle);
 
     // DragBox end
     const endSelectBoxObserver = plaskEngine.selectorModule.onEndSelectBox.add(({ type, objects }) => {
-      // if (type === 'ctrlKey') {
-      //   dispatch(selectingDataActions.ctrlKeyMultiSelect({ targets: objects }));
-      // } else {
-      //   dispatch(selectingDataActions.defaultMultiSelect({ targets: objects }));
-      // }
       dragBox.setAttribute('style', dragBoxDefaultStyle);
-
-      // TODO : export logic inside a module
-      // plaskEngine.selectorModule.selectableObjects = _selectableObjects;
-      // DragBox updated
-      const selectBoxUpdatedObserver = plaskEngine.selectorModule.onSelectBoxUpdated.add(({ min, max }) => {
-        dragBox.setAttribute('style', `${dragBoxDefaultStyle} left: ${min.x}px; top: ${min.y}px; width: ${max.x - min.x}px; height: ${max.y - min.y}px;`);
-      });
     });
-  }, [_screenList, _selectableObjects, dispatch, plaskEngine]);
 
-  // useEffect(() => {
-  //   const observer = plaskEngine.selectorModule.onSelectionChangeObservable.add((targets) => {
-  //     dispatch(selectingDataActions.defaultMultiSelect({ targets }));
-  //   });
-  //   return () => {
-  //     plaskEngine.selectorModule.onSelectionChangeObservable.remove(observer);
-  //   };
-  // }, [plaskEngine, dispatch]);
+    // DragBox updated
+    const selectBoxUpdatedObserver = plaskEngine.selectorModule.onSelectBoxUpdated.add(({ min, max }) => {
+      dragBox.setAttribute('style', `${dragBoxDefaultStyle} left: ${min.x}px; top: ${min.y}px; width: ${max.x - min.x}px; height: ${max.y - min.y}px;`);
+    });
+
+    return () => {
+      plaskEngine.selectorModule.onEndSelectBox.remove(endSelectBoxObserver);
+      plaskEngine.selectorModule.onSelectBoxUpdated.remove(selectBoxUpdatedObserver);
+    }
+  }, [_screenList, dispatch, plaskEngine]);
 
   /**
    * shortcuts related to camera navigation, viewport changes
@@ -568,14 +519,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       isMountRef.current = false;
     }
   }, [dispatch, _selectedTargets]);
-
-  /**
-   * attach gizmo to the selected target (only support single target now)
-   * (including selecting effects and custom cursor)
-   */
-  useEffect(() => {
-    // Here was Gizmo code, keeping this for the referencies to see where we should hook it (_selectedTargets)
-  }, [_screenList, _selectedTargets, _visibilityOptions, currentGizmoMode, gizmoManager]);
 
   /**
    * change gizmo's coordinate according to currnetGizmoCoordinate state
