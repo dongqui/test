@@ -11,7 +11,7 @@ const cx = classNames.bind(styles);
 const DoneButton = () => {
   const dispatch = useDispatch();
 
-  // 온보딩 쿠키 삽입
+  // 온보딩 로컬 스토리지 삽입
   const setOnboardingLocalStorage = () => {
     const localStorage = window.localStorage;
     localStorage.setItem('onboarding_1', 'onboarding_1');
