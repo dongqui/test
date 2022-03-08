@@ -8,10 +8,14 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {}
+interface Props {
+  autoClose?: boolean;
+
+  onClose?: (params?: any) => void;
+}
 
 const DropdownMenu: FunctionComponent<Props> = (props) => {
-  const { children } = props;
+  const { autoClose, children, onClose } = props;
 
   const dropdownMenuRef = useRef<HTMLUListElement>(null);
   const [_, dispatch] = useContext(DropdownContext);
@@ -24,8 +28,9 @@ const DropdownMenu: FunctionComponent<Props> = (props) => {
       const handleOutSideClick = (event: MouseEvent) => {
         const target = event.target as Node;
         const isContains = currentRef.contains(target);
-        if (!isContains) {
+        if (!isContains && autoClose) {
           dispatch('changeIsOpenMenu', { isOpenMenu: false });
+          onClose && onClose();
         }
       };
 
@@ -36,8 +41,9 @@ const DropdownMenu: FunctionComponent<Props> = (props) => {
       };
 
       const handleKeyDown = (event: KeyboardEvent) => {
-        if (isEqual(event.key, 'Escape')) {
+        if (isEqual(event.key, 'Escape' && autoClose)) {
           dispatch('changeIsOpenMenu', { isOpenMenu: false });
+          onClose && onClose();
         }
 
         if (isEqual(event.key, 'Enter')) {
@@ -55,7 +61,7 @@ const DropdownMenu: FunctionComponent<Props> = (props) => {
         window.removeEventListener('keydown', handleKeyDown);
       };
     }
-  }, [dispatch]);
+  }, [autoClose, dispatch, onClose]);
 
   return (
     <ul className={cx('menu')} role="menu" ref={dropdownMenuRef}>
@@ -65,12 +71,12 @@ const DropdownMenu: FunctionComponent<Props> = (props) => {
 };
 
 const DropdownMenuWrapper: FunctionComponent<Props> = (props) => {
-  const { children } = props;
+  const { children, ...rest } = props;
 
   const [{ isOpenMenu }] = useContext(DropdownContext);
 
   // isOpenMenu가 true인 경우에만 DropdownMenu와 children을 출력. false인 경우에는 출력 된 컴포넌트 소멸
-  return <Fragment>{isOpenMenu && <DropdownMenu>{children}</DropdownMenu>}</Fragment>;
+  return <Fragment>{isOpenMenu && <DropdownMenu {...rest}>{children}</DropdownMenu>}</Fragment>;
 };
 
 export default DropdownMenuWrapper;
