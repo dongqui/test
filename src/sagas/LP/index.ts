@@ -182,7 +182,6 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
             const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as BABYLON.TransformNode[];
             const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
               const ptn = new PlaskTransformNode(transformNode);
-              transformNode.metadata.__plaskEntityId = ptn.entityId;
               return ptn;
             });
 
@@ -203,11 +202,11 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
                     const engine = PlaskEngine.GetInstance()!;
                     if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
                       clickJointChannel.put(
-                        selectingDataActions.ctrlKeySingleSelect({ target: engine.getEntity(targetTransformNode.metadata.__plaskEntityId) as PlaskTransformNode }),
+                        selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() }),
                       );
                     } else {
                       clickJointChannel.put(
-                        selectingDataActions.defaultSingleSelect({ target: engine.getEntity(targetTransformNode.metadata.__plaskEntityId) as PlaskTransformNode }),
+                        selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() }),
                       );
                     }
                   }

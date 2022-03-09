@@ -19,20 +19,20 @@ export const selectingData = (state = defaultState, action: SelectingDataAction)
     }
     case 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS': {
       return Object.assign({}, state, {
-        selectableObjects: state.selectableObjects.filter((object) => !(object.type === 'controller' && object.assetId.includes(action.payload.assetId))),
-        selectedTargets: state.selectedTargets.filter((target) => !(target.type === 'controller' && target.assetId.includes(action.payload.assetId))),
+        selectableObjects: state.selectableObjects.filter((object) => !(object.type === 'controller' && object.id.includes(action.payload.assetId))),
+        selectedTargets: state.selectedTargets.filter((target) => !(target.type === 'controller' && target.id.includes(action.payload.assetId))),
       });
     }
     case 'selectingDataAction/REMOVE_SELECTABLE_JOINTS': {
       return Object.assign({}, state, {
-        selectableObjects: state.selectableObjects.filter((object) => !(object.type === 'joint' && object.assetId.includes(action.payload.assetId))),
-        selectedTargets: state.selectedTargets.filter((target) => !(target.type === 'joint' && target.assetId.includes(action.payload.assetId))),
+        selectableObjects: state.selectableObjects.filter((object) => !(object.type === 'joint' && object.id.includes(action.payload.assetId))),
+        selectedTargets: state.selectedTargets.filter((target) => !(target.type === 'joint' && target.id.includes(action.payload.assetId))),
       });
     }
     case 'selectingDataAction/UNRENDER_ASSET': {
       return Object.assign({}, state, {
-        selectableObjects: state.selectableObjects.filter((object) => !object.assetId.includes(action.payload.assetId)),
-        selectedTargets: state.selectedTargets.filter((target) => !target.assetId.includes(action.payload.assetId)),
+        selectableObjects: state.selectableObjects.filter((object) => !object.id.includes(action.payload.assetId)),
+        selectedTargets: state.selectedTargets.filter((target) => !target.id.includes(action.payload.assetId)),
       });
     }
     case 'selectingDataAction/DEFAULT_SINGLE_SELECT': {

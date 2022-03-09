@@ -1,5 +1,6 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { v4 } from 'uuid';
+import "./Augmentations";
 
 export class PlaskEntity {
   constructor() {

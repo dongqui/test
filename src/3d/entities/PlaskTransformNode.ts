@@ -23,8 +23,9 @@ export class PlaskTransformNode extends PlaskEntity {
       }
 
       this.id = transformNode.id;
-      // TODO
-      this.assetId = transformNode.id;
+
+      // Caching entity id for a faster referencing
+      transformNode.metadata.__plaskEntityId = this.entityId;
     }
   }
   public transformNodeId: string = '';
@@ -45,21 +46,15 @@ export class PlaskTransformNode extends PlaskEntity {
         throw new Error('Trying to access a uninitialized reference.');
       }
       this._reference = engine.getReference(this) as TransformNode;
-
+      
       if (!this._reference) {
         throw new Error('Could not find reference in the scene');
       }
+
+      // Caching entity id for faster referencing
+      this._reference.metadata.__plaskEntityId = this.entityId;
     }
 
     return this._reference;
   }
-
-  // public getTransformNode(scene: Scene) {
-  //   let node = scene.getTransformNodeById(this.transformNodeId);
-  //   if (!node) {
-  //     node = scene.getMeshById(this.transformNodeId);
-  //   }
-
-  //   return node;
-  // }
 }

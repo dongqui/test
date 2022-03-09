@@ -151,12 +151,28 @@ export class PlaskEngine {
     return reference;
   }
 
-  public getEntity(id: string) {
+  /**
+   * Gets an entity by its id
+   * @param id 
+   * @returns 
+   */
+  public getEntity(id: string): PlaskEntity {
     if (!this._entities[id]) {
       throw new Error('Cannot find entity');
     }
 
     return this._entities[id];
+  }
+
+  public getEntitiesByPredicate(predicate: (entity: PlaskEntity) => boolean): PlaskEntity[] {
+    const result = [];
+    for (const entityId in this._entities) {
+      if (predicate(this._entities[entityId])) {
+        result.push(this._entities[entityId])
+      }
+    }
+
+    return result;
   }
 
   public addEntity(entity: PlaskEntity) {

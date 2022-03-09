@@ -162,7 +162,7 @@ export class SelectorModule extends Module {
     const scene = this.plaskEngine.scene;
 
     return this.selectableObjects
-      .filter((object) => checkIsObjectIn(startPointerPosition as ScreenXY, endPointerPosition as ScreenXY, object.reference, scene))
-      .map((object) => object.reference);
+      .map((object) => object.reference)
+      .filter((object) => checkIsObjectIn(startPointerPosition as ScreenXY, endPointerPosition as ScreenXY, object, scene));
   }
 }
