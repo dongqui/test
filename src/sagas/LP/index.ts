@@ -182,6 +182,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
             const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as BABYLON.TransformNode[];
             const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
               const ptn = new PlaskTransformNode(transformNode);
+              PlaskEngine.GetInstance().registerEntity(ptn);
               return ptn;
             });
 
@@ -201,13 +202,9 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
                     const sourceEvent: PointerEvent = event.sourceEvent;
                     const engine = PlaskEngine.GetInstance()!;
                     if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                      clickJointChannel.put(
-                        selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() }),
-                      );
+                      clickJointChannel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() }));
                     } else {
-                      clickJointChannel.put(
-                        selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() }),
-                      );
+                      clickJointChannel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() }));
                     }
                   }
                 }),

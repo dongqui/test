@@ -1,15 +1,20 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { v4 } from 'uuid';
-import "./Augmentations";
+import './Augmentations';
 
 export class PlaskEntity {
-  constructor() {
-    if (PlaskEngine.GetInstance()) {
-      PlaskEngine.GetInstance().addEntity(this);
-    }
+  constructor(existingEntity?: PlaskEntity) {
+    this.entityId = existingEntity ? existingEntity.entityId : v4();
+    this.name = existingEntity ? existingEntity.name : 'GenericEntity';
   }
-  public entityId = v4();
-  public name = 'GenericEntity';
+  public entityId: string;
+  public name: string;
+
+  public clone() {
+    const newEntity = new PlaskEntity(this);
+
+    return newEntity;
+  }
   // public serialize() {
   //   // TODO
   // }

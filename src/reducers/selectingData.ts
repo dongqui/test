@@ -1,6 +1,7 @@
 import { xorBy } from 'lodash';
 import { SelectingData } from './../types/common';
 import { SelectingDataAction } from 'actions/selectingDataAction';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
 type State = SelectingData;
 
@@ -73,6 +74,22 @@ export const selectingData = (state = defaultState, action: SelectingDataAction)
     case 'selectingDataAction/RESET_SELECTED_TARGETS': {
       return Object.assign({}, state, {
         selectedTargets: [],
+      });
+    }
+    default: {
+      return state;
+    }
+  }
+};
+
+const defaultUndoableState = {
+  selectedTargets: [] as PlaskTransformNode[],
+};
+export const undoableSelectingData = (state = defaultUndoableState, action: SelectingDataAction) => {
+  switch (action.type) {
+    case 'selectingDataAction/MOVE_SELECTED_TARGETS': {
+      return Object.assign({}, state, {
+        selectedTargets: action.payload.targets,
       });
     }
     default: {

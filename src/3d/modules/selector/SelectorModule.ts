@@ -22,17 +22,22 @@ export class SelectorModule extends Module {
     return this.plaskEngine.state.selectingData.selectedTargets.map((entity) => entity.reference);
   }
   public set selectedTargets(targets: TransformNode[]) {
-    this.plaskEngine.dispatch(
-      defaultMultiSelect({ targets: targets.map((transformNode) => this.plaskEngine.getEntity(transformNode.metadata.__plaskEntityId)) as PlaskTransformNode[] }),
-    );
+    this.plaskEngine.dispatch(defaultMultiSelect({ targets: targets.map((transformNode) => transformNode.getPlaskEntity()) }));
   }
 
   private _startPosition: Nullable<Vector2> = null;
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public reduxObservedStates = ['selectingData'];
+  public reduxObservedStates = ['selectingData', 'undoableSelectingData'];
   public onStateChanged(stateKey: string, key: string) {
+    if (stateKey === 'undoableSelectingData') {
+      for (const entity of this.plaskEngine.state.undoableSelectingData.present.selectedTargets) {
+        entity.markDirty();
+      }
+      return;
+    }
+
     if (key === 'selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
     } else if (key === 'selectableObjects') {

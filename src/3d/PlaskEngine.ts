@@ -7,6 +7,8 @@ import {
   DirectionalLight,
   Engine,
   HemisphericLight,
+  KeyboardEventTypes,
+  KeyboardInfo,
   Mesh,
   PointerEventTypes,
   PointerInfo,
@@ -24,6 +26,7 @@ import { GizmoModule } from './modules/gizmo/GizmoModule';
 import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
+import { ActionCreators } from 'redux-undo';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
@@ -153,8 +156,8 @@ export class PlaskEngine {
 
   /**
    * Gets an entity by its id
-   * @param id 
-   * @returns 
+   * @param id
+   * @returns
    */
   public getEntity(id: string): PlaskEntity {
     if (!this._entities[id]) {
@@ -168,17 +171,14 @@ export class PlaskEngine {
     const result = [];
     for (const entityId in this._entities) {
       if (predicate(this._entities[entityId])) {
-        result.push(this._entities[entityId])
+        result.push(this._entities[entityId]);
       }
     }
 
     return result;
   }
 
-  public addEntity(entity: PlaskEntity) {
-    if (this._entities[entity.entityId]) {
-      console.warn('Entity already exists, overwritten');
-    }
+  public registerEntity(entity: PlaskEntity) {
     this._entities[entity.entityId] = entity;
   }
 
@@ -195,6 +195,15 @@ export class PlaskEngine {
       this._scene.activeCamera!.orthoLeft = -orthoFactor * (canvas.width / canvas.height);
       this._scene.activeCamera!.orthoRight = orthoFactor * (canvas.width / canvas.height);
     }
+  }
+
+  // TODO : MOVE TO REACT PART
+  public undo() {
+    this.dispatch(ActionCreators.undo());
+  }
+
+  public redo() {
+    this.dispatch(ActionCreators.redo());
   }
 
   private _registerModules() {
@@ -218,6 +227,24 @@ export class PlaskEngine {
 
   private _registerObservables() {
     this.scene.onPointerObservable.add((pointerInfo) => this._onPointer(pointerInfo));
+    this.scene.onKeyboardObservable.add((keyboardInfo) => this._onKeyboard(keyboardInfo));
+  }
+
+  private _onKeyboard(keyboardInfo: KeyboardInfo) {
+    if (keyboardInfo.type === KeyboardEventTypes.KEYDOWN) {
+      switch (keyboardInfo.event.key) {
+        case 'z':
+          if (keyboardInfo.event.ctrlKey) {
+            this.undo();
+          }
+          break;
+        case 'y':
+          if (keyboardInfo.event.ctrlKey) {
+            this.redo();
+          }
+          break;
+      }
+    }
   }
 
   private _onPointer(pointerInfo: PointerInfo) {

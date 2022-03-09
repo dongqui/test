@@ -11,7 +11,8 @@ export type SelectingDataAction =
   | ReturnType<typeof ctrlKeySingleSelect>
   | ReturnType<typeof ctrlKeyMultiSelect>
   | ReturnType<typeof selectAllSelectableObjects>
-  | ReturnType<typeof resetSelectedTargets>;
+  | ReturnType<typeof resetSelectedTargets>
+  | ReturnType<typeof moveSelectedTargets>;
 
 const ADD_SELECTABLE_OBJECTS = 'selectingDataAction/ADD_SELECTABLE_OBJECTS' as const;
 const REMOVE_SELECTABLE_CONTROLLERS = 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS' as const;
@@ -26,6 +27,7 @@ const CTRL_KEY_MULTI_SELECT = 'selectingDataAction/CTRL_KEY_MULTI_SELECT' as con
 
 const SELECT_ALL_SELECTABLE_OBJECTS = 'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS' as const;
 const RESET_SELECTED_TARGETS = 'selectingDataAction/RESET_SELECTED_TARGETS' as const;
+const MOVE_SELECTED_TARGETS = 'selectingDataAction/MOVE_SELECTED_TARGETS' as const;
 
 interface AddSelectableObjects {
   objects: Array<PlaskTransformNode>;
@@ -56,6 +58,10 @@ interface CtrlKeySingleSelect {
 }
 
 interface CtrlKeyMultiSelect {
+  targets: Array<PlaskTransformNode>;
+}
+
+interface UpdateSelectedTargets {
   targets: Array<PlaskTransformNode>;
 }
 
@@ -166,6 +172,16 @@ export const ctrlKeyMultiSelect = (params: CtrlKeyMultiSelect) => ({
  */
 export const selectAllSelectableObjects = () => ({
   type: SELECT_ALL_SELECTABLE_OBJECTS,
+});
+
+/**
+ * Moves the selected targets. Undoable
+ */
+export const moveSelectedTargets = (params: UpdateSelectedTargets) => ({
+  type: MOVE_SELECTED_TARGETS,
+  payload: {
+    ...params,
+  },
 });
 
 /**
