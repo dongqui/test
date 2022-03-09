@@ -39,6 +39,7 @@ declare global {
       getByClassLike(value: string): Chainable<JQuery<HTMLElement>>;
       toMatchImageSnapshot(config: any): Chainable<JQuery<HTMLElement>>;
       getStoreState(state?: string): Chainable<any>;
+      dropFile(fileName: string);
     }
   }
 }
