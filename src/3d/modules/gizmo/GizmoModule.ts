@@ -161,7 +161,7 @@ export class GizmoModule extends Module {
         if (joint) {
           joint.renderOutline = true;
           joint.outlineColor = Color3.White();
-          joint.outlineWidth = 0.3 * (parseFloat(joint.state) / 3); // set outline width according to joint's diameter
+          joint.outlineWidth = 0.03; // set outline width according to joint's diameter
         }
       }
     });

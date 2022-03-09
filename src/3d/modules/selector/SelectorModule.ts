@@ -72,6 +72,7 @@ export class SelectorModule extends Module {
             });
 
             this._startPosition = new Vector2(scene.pointerX, scene.pointerY);
+            this._currentPosition.copyFromFloats(scene.pointerX, scene.pointerY);
           }
           break;
         }
@@ -94,11 +95,11 @@ export class SelectorModule extends Module {
             if (pointerInfo.event.ctrlKey || pointerInfo.event.metaKey) {
               // Click with ctrl key or meta key pressed.
               this.onEndSelectBox.notifyObservers({ type: 'ctrlKey', objects });
-              this.select(objects);
+              this.xorSelect(objects);
             } else {
               // Click without ctrl or meta.
               this.onEndSelectBox.notifyObservers({ type: 'default', objects });
-              this.select(objects, true);
+              this.select(objects);
             }
 
             // initialize style and start point
@@ -116,13 +117,9 @@ export class SelectorModule extends Module {
   /**
    * Directly updates the current selection
    * @param objects Array of objects to select
-   * @param reset Set to true to clear the current selection
    */
-  public select(objects: TransformNode[], reset = false) {
-    const selected = this.selectedTargets;
-    if (reset) {
-      selected.length = 0;
-    }
+  public select(objects: TransformNode[]) {
+    const selected: TransformNode[] = [];
 
     for (let obj of objects) {
       if (!selected.includes(obj)) {
@@ -133,10 +130,32 @@ export class SelectorModule extends Module {
   }
 
   /**
+   * Selects objects that are not already selected. Deselects objects that are. (XOR operation)
+   * @param objects Array of objects to xor-select
+   */
+  public xorSelect(objects: TransformNode[]) {
+    const selected = [];
+
+    for (let obj of objects) {
+      if (!this.selectedTargets.includes(obj)) {
+        selected.push(obj);
+      }
+    }
+
+    for (let obj of this.selectedTargets) {
+      if (!objects.includes(obj)) {
+        selected.push(obj);
+      }
+    }
+
+    this.selectedTargets = selected;
+  }
+
+  /**
    * Clears the current selection
    */
   public deselect() {
-    this.select([], true);
+    this.select([]);
   }
 
   private _boxSelect(startPointerPosition: Vector2, endPointerPosition: Vector2) {
