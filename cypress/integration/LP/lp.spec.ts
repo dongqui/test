@@ -22,13 +22,16 @@ import {
   exportModelorMotion,
   isExportedFileDownloaded,
   convertAndExport,
+  importFileByDragAndDrop,
+  FIXTURES_FBX_FILE_NAME,
+  FIXTURES_GLB_FILE_NAME,
 } from '../helper';
 
 describe('LP test', () => {
   before(() => {
     visitAndGetMockData();
     waitForModelNodeRendering();
-    handleOnboarding();
+    // handleOnboarding();
   });
 
   context('LP Body test', () => {
@@ -233,7 +236,7 @@ describe('LP test', () => {
         // clear onboarding UI
         visitAndGetMockData();
         waitForModelNodeRendering();
-        handleOnboarding();
+        // handleOnboarding();
       });
 
       it('Export glb', () => {
@@ -266,6 +269,20 @@ describe('LP test', () => {
 
         cy.wait('@converter', { timeout: 180000 });
         isExportedFileDownloaded(cy.get('@model_export'), 'bvh');
+      });
+    });
+
+    context('Import test', () => {
+      it('Import glb', () => {
+        importFileByDragAndDrop(FIXTURES_GLB_FILE_NAME);
+        cy.contains(FIXTURES_GLB_FILE_NAME, { timeout: 5000 });
+      });
+
+      it('Import fbx', () => {
+        cy.intercept('/api/converter/model', (req) => {}).as('converter');
+        importFileByDragAndDrop(FIXTURES_FBX_FILE_NAME);
+        cy.wait('@converter', { timeout: 180000 });
+        cy.contains(FIXTURES_FBX_FILE_NAME, { timeout: 5000 });
       });
     });
   });

@@ -86,7 +86,9 @@ async function _createRetargetMap(assetId: string, skeletons: BABYLON.Skeleton[]
 }
 
 function getNodeName(nodes: LP.Node[], fileName: string, extension: string) {
-  const currentPathNodeNames = nodes.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
+  const currentPathNodeNames = nodes
+    .filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`) && node.extension === extension)
+    .map((filteredNode) => filteredNode.name);
   const check = checkCreateDuplicates(`${fileName}`, currentPathNodeNames);
 
   return check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
