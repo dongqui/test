@@ -4,6 +4,7 @@ import AnimationTab from './AnimationTab';
 import RetargetTab from './RetargetTab';
 import * as cpActions from 'actions/CP/cpModeSelection';
 import { useSelector } from 'reducers';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -29,7 +30,7 @@ const ControlPanel: FunctionComponent = () => {
   return (
     <div className={cx('wrapper')}>
       <div className={cx('mode-select')}>
-        <button className={cx({ active: _cpMode === 'Animation' })} onClick={() => handleModeChange('Animation')}>
+        <button className={cx({ active: _cpMode === 'Animation' })} id={ONBOARDING_ID.PROPERTY_SET} onClick={() => handleModeChange('Animation')}>
           Animation
         </button>
         <button className={cx({ active: _cpMode === 'Retargeting' })} onClick={() => handleModeChange('Retargeting')}>

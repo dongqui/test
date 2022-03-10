@@ -6,14 +6,12 @@ import * as globalUIActions from 'actions/Common/globalUI';
 interface State {
   modals: Modal[];
   contextMenu: ContextMenu | null;
-  isShowedOnboarding: boolean;
   onboardingStep: OnboardingStep;
 }
 
 const defaultState: State = {
   modals: [],
   contextMenu: null,
-  isShowedOnboarding: false,
   onboardingStep: null,
 };
 

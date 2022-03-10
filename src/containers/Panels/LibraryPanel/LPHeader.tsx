@@ -3,6 +3,8 @@ import { useDispatch } from 'react-redux';
 
 import * as globalUIActions from 'actions/Common/globalUI';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
+
 import classNames from 'classnames/bind';
 import styles from './LPHeader.module.scss';
 
@@ -31,7 +33,7 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
   return (
     <div className={cx('wrapper')}>
       <div className={cx('title')}>library</div>
-      <IconWrapper className={cx('icon')} icon={SvgPath.Plus} hasFrame={false} onClick={handleFileImportButtonClick} />
+      <IconWrapper className={cx('icon')} id={ONBOARDING_ID.IMPORT_FILE} icon={SvgPath.Plus} hasFrame={false} onClick={handleFileImportButtonClick} />
     </div>
   );
 };

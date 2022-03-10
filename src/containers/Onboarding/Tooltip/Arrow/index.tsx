@@ -30,7 +30,7 @@ interface Props {
 const Arrow: FunctionComponent<Props> = (props) => {
   const { placement } = props;
 
-  return <div className={cx(placement)} />;
+  return <div className={cx('arrow', placement)} />;
 };
 
 export default Arrow;

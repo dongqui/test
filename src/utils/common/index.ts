@@ -11,3 +11,4 @@ export { default as convertToDegree } from './convertToDegree';
 export { default as convertToRadian } from './convertToRadian';
 export { default as cloneItemsWithProps } from './cloneItemsWithProps';
 export { default as stateDiff } from './stateDiff';
+export { default as getTargetCoordinates } from './getTargetCoordinates';
