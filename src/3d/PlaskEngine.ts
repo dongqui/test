@@ -121,7 +121,7 @@ export class PlaskEngine {
         const diff = stateDiff(state[stateKey], previousState[stateKey]);
         if (diff.length) {
           for (const key of diff) {
-            module.onStateChanged(stateKey, key);
+            module.onStateChanged(stateKey, key, previousState[stateKey][key]);
           }
         }
       }

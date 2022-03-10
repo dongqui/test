@@ -1,7 +1,7 @@
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
-import { defaultMultiSelect } from 'actions/selectingDataAction';
+import { defaultMultiSelect, moveSelectedTargets } from 'actions/selectingDataAction';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
@@ -30,10 +30,15 @@ export class SelectorModule extends Module {
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
   public reduxObservedStates = ['selectingData', 'undoableSelectingData'];
-  public onStateChanged(stateKey: string, key: string) {
+  public onStateChanged(stateKey: string, key: string, previousState: typeof this.plaskEngine.state.undoableSelectingData.present) {
     if (stateKey === 'undoableSelectingData') {
-      for (const entity of this.plaskEngine.state.undoableSelectingData.present.selectedTargets) {
-        entity.markDirty();
+      if (key === 'present') {
+        for (const entityId in this.plaskEngine.state.undoableSelectingData.present) {
+          if (previousState[entityId] !== this.plaskEngine.state.undoableSelectingData.present[entityId]) {
+            this.plaskEngine.state.undoableSelectingData.present[entityId].markDirty();
+            console.log(entityId + ' dirty');
+          }
+        }
       }
       return;
     }
@@ -41,8 +46,8 @@ export class SelectorModule extends Module {
     if (key === 'selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
     } else if (key === 'selectableObjects') {
-      // pass
-      // console.log(this.selectableObjects);
+      // Init positions
+      this.plaskEngine.dispatch(moveSelectedTargets({ targets: this.plaskEngine.state.selectingData.selectableObjects.map((selectableObject) => selectableObject.clone()) }));
     }
   }
 

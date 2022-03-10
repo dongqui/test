@@ -73,8 +73,8 @@ export class PlaskTransformNode extends PlaskEntity {
   public clone() {
     const transformNode = this.reference;
     const newEntity = new PlaskTransformNode(this.reference);
-    newEntity._setTransformNode(transformNode);
     newEntity.entityId = this.entityId;
+    newEntity._setTransformNode(transformNode);
 
     return newEntity;
   }

@@ -200,7 +200,6 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
                   const targetTransformNode = bone.getTransformNode();
                   if (targetTransformNode) {
                     const sourceEvent: PointerEvent = event.sourceEvent;
-                    const engine = PlaskEngine.GetInstance()!;
                     if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
                       clickJointChannel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() }));
                     } else {
@@ -212,13 +211,12 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
             });
 
             yield put(plaskProjectActions.renderAsset({ assetId }));
-            yield put(selectingDataActions.addSelectableObjects({ objects: plaskTransformNodes })); // make asset's objects selectable
-
             transformNodes.forEach((transformNode) => {
               scene.addTransformNode(transformNode);
               // line for using quaternion as default rotation
               transformNode.rotate(BABYLON.Axis.X, 0);
             });
+            yield put(selectingDataActions.addSelectableObjects({ objects: plaskTransformNodes })); // make asset's objects selectable
           }
         }
         forceClickAnimationPlayAndStop();

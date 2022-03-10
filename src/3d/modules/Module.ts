@@ -5,6 +5,6 @@ export abstract class Module {
   public initialize() {}
   public dispose() {}
 
-  public onStateChanged(stateKey: string, key: string) {}
+  public onStateChanged(stateKey: string, key: string, previousState: any) {}
   public reduxObservedStates: string[] = [];
 }

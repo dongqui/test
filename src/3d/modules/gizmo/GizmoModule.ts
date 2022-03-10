@@ -11,7 +11,12 @@ enum GizmoMode {
   NONE,
 }
 
-type GizmoDragObserver = Nullable<Observer<{ delta: Vector3; dragPlanePoint: Vector3; dragPlaneNormal: Vector3; dragDistance: number; pointerId: number }>>;
+type GizmoDragObserver = Nullable<
+  Observer<{
+    dragPlanePoint: Vector3;
+    pointerId: number;
+  }>
+>;
 type GizmoDragStartObserver = Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
 
 export class GizmoModule extends Module {
@@ -82,9 +87,9 @@ export class GizmoModule extends Module {
       if (this._gizmoManager.gizmos.positionGizmo) {
         let { xGizmo, yGizmo, zGizmo } = this._gizmoManager.gizmos.positionGizmo;
 
-        xGizmo.dragBehavior.onDragObservable.remove(this._observers.dragEnd.position.x);
-        yGizmo.dragBehavior.onDragObservable.remove(this._observers.dragEnd.position.y);
-        zGizmo.dragBehavior.onDragObservable.remove(this._observers.dragEnd.position.z);
+        xGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.position.x);
+        yGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.position.y);
+        zGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.position.z);
 
         this._observers.dragEnd.position.x = null;
         this._observers.dragEnd.position.y = null;
@@ -97,9 +102,9 @@ export class GizmoModule extends Module {
       if (this._gizmoManager.gizmos.rotationGizmo) {
         let { xGizmo, yGizmo, zGizmo } = this._gizmoManager.gizmos.rotationGizmo;
 
-        xGizmo.dragBehavior.onDragObservable.remove(this._observers.dragEnd.rotation.x);
-        yGizmo.dragBehavior.onDragObservable.remove(this._observers.dragEnd.rotation.y);
-        zGizmo.dragBehavior.onDragObservable.remove(this._observers.dragEnd.rotation.z);
+        xGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.rotation.x);
+        yGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.rotation.y);
+        zGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.rotation.z);
 
         xGizmo.dragBehavior.onDragStartObservable.remove(this._observers.dragStart.rotation.x);
         yGizmo.dragBehavior.onDragStartObservable.remove(this._observers.dragStart.rotation.y);
@@ -120,9 +125,9 @@ export class GizmoModule extends Module {
       if (this._gizmoManager.gizmos.scaleGizmo) {
         let { xGizmo, yGizmo, zGizmo } = this._gizmoManager.gizmos.scaleGizmo;
 
-        xGizmo.dragBehavior.onDragObservable.remove(this._observers.dragEnd.scale.x);
-        yGizmo.dragBehavior.onDragObservable.remove(this._observers.dragEnd.scale.y);
-        zGizmo.dragBehavior.onDragObservable.remove(this._observers.dragEnd.scale.z);
+        xGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.scale.x);
+        yGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.scale.y);
+        zGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.scale.z);
 
         this._observers.dragEnd.scale.x = null;
         this._observers.dragEnd.scale.y = null;
@@ -245,9 +250,9 @@ export class GizmoModule extends Module {
 
     const { xGizmo, yGizmo, zGizmo } = this._gizmoManager.gizmos.scaleGizmo!;
 
-    this._observers.dragEnd.scale.x = addScaleDragObservable(linkedTransformNode, xGizmo);
-    this._observers.dragEnd.scale.y = addScaleDragObservable(linkedTransformNode, yGizmo);
-    this._observers.dragEnd.scale.z = addScaleDragObservable(linkedTransformNode, zGizmo);
+    // this._observers.dragEnd.scale.x = addScaleDragObservable(linkedTransformNode, xGizmo);
+    // this._observers.dragEnd.scale.y = addScaleDragObservable(linkedTransformNode, yGizmo);
+    // this._observers.dragEnd.scale.z = addScaleDragObservable(linkedTransformNode, zGizmo);
   }
 
   private _addRotationObservables(linkedTransformNode: TransformNode) {
@@ -506,9 +511,9 @@ export class GizmoModule extends Module {
       },
     );
 
-    this._observers.dragEnd.rotation.x = xRotationDragObservable;
-    this._observers.dragEnd.rotation.y = yRotationDragObservable;
-    this._observers.dragEnd.rotation.z = zRotationDragObservable;
+    // this._observers.dragEnd.rotation.x = xRotationDragObservable;
+    // this._observers.dragEnd.rotation.y = yRotationDragObservable;
+    // this._observers.dragEnd.rotation.z = zRotationDragObservable;
 
     this._observers.dragStart.rotation.x = xRotationDragStartObservable;
     this._observers.dragStart.rotation.y = yRotationDragStartObservable;

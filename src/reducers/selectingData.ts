@@ -82,15 +82,15 @@ export const selectingData = (state = defaultState, action: SelectingDataAction)
   }
 };
 
-const defaultUndoableState = {
-  selectedTargets: [] as PlaskTransformNode[],
-};
+const defaultUndoableState = {} as { [key: string]: PlaskTransformNode };
 export const undoableSelectingData = (state = defaultUndoableState, action: SelectingDataAction) => {
   switch (action.type) {
-    case 'selectingDataAction/MOVE_SELECTED_TARGETS': {
-      return Object.assign({}, state, {
-        selectedTargets: action.payload.targets,
-      });
+    case 'selectingDataAction/UPDATE_SELECTED_TARGETS': {
+      const obj = {} as { [key: string]: PlaskTransformNode };
+      for (const entity of action.payload.targets) {
+        obj[entity.entityId] = entity;
+      }
+      return Object.assign({}, state, obj);
     }
     default: {
       return state;
