@@ -1,5 +1,6 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { Mesh, Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
+import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
+import { defaultMultiSelect } from 'actions/selectingDataAction';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
@@ -8,14 +9,46 @@ export class SelectorModule extends Module {
   public onStartSelectBox: Observable<ScreenXY> = new Observable();
   public onSelectBoxUpdated: Observable<{ min: ScreenXY; max: ScreenXY }> = new Observable();
   public onEndSelectBox: Observable<{ type: 'ctrlKey' | 'default'; objects: any[] }> = new Observable();
-  public selectableObjects!: (Mesh | TransformNode)[];
+
+  public onSelectionChangeObservable: Observable<TransformNode[]> = new Observable();
+
+  public get selectableObjects() {
+    return this.plaskEngine.state.selectingData.selectableObjects;
+  }
+
+  // TODO : decorator ?
+  public get selectedTargets() {
+    return this.plaskEngine.state.selectingData.selectedTargets;
+  }
+  public set selectedTargets(targets: TransformNode[]) {
+    this.plaskEngine.dispatch(defaultMultiSelect({ targets }));
+  }
 
   private _startPosition: Nullable<Vector2> = null;
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
+  public reduxObservedStates = ['selectingData'];
+  public onStateChanged(stateKey: string, key: string) {
+    if (key === 'selectedTargets') {
+      this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
+    } else if (key === 'selectableObjects') {
+      // pass
+      // console.log(this.selectableObjects);
+    }
+  }
+
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
+  }
+
+  public dispose() {
+    this.onStartSelectBox.clear();
+    this.onSelectBoxUpdated.clear();
+    this.onEndSelectBox.clear();
+    this.onSelectionChangeObservable.clear();
+
+    this.plaskEngine.scene.onPointerObservable.remove(this._pointerObserver);
   }
 
   public initialize() {
@@ -36,6 +69,7 @@ export class SelectorModule extends Module {
             });
 
             this._startPosition = new Vector2(scene.pointerX, scene.pointerY);
+            this._currentPosition.copyFromFloats(scene.pointerX, scene.pointerY);
           }
           break;
         }
@@ -54,14 +88,15 @@ export class SelectorModule extends Module {
         }
         case PointerEventTypes.POINTERUP: {
           if (this._startPosition) {
-            const objects = this._select(this._startPosition, this._currentPosition);
-
+            const objects = this._boxSelect(this._startPosition, this._currentPosition);
             if (pointerInfo.event.ctrlKey || pointerInfo.event.metaKey) {
               // Click with ctrl key or meta key pressed.
               this.onEndSelectBox.notifyObservers({ type: 'ctrlKey', objects });
+              this.xorSelect(objects);
             } else {
               // Click without ctrl or meta.
               this.onEndSelectBox.notifyObservers({ type: 'default', objects });
+              this.select(objects);
             }
 
             // initialize style and start point
@@ -76,17 +111,53 @@ export class SelectorModule extends Module {
     });
   }
 
-  private _select(startPointerPosition: Vector2, endPointerPosition: Vector2) {
+  /**
+   * Directly updates the current selection
+   * @param objects Array of objects to select
+   */
+  public select(objects: TransformNode[]) {
+    const selected: TransformNode[] = [];
+
+    for (let obj of objects) {
+      if (!selected.includes(obj)) {
+        selected.push(obj);
+      }
+    }
+    this.selectedTargets = objects;
+  }
+
+  /**
+   * Selects objects that are not already selected. Deselects objects that are. (XOR operation)
+   * @param objects Array of objects to xor-select
+   */
+  public xorSelect(objects: TransformNode[]) {
+    const selected = [];
+
+    for (let obj of objects) {
+      if (!this.selectedTargets.includes(obj)) {
+        selected.push(obj);
+      }
+    }
+
+    for (let obj of this.selectedTargets) {
+      if (!objects.includes(obj)) {
+        selected.push(obj);
+      }
+    }
+
+    this.selectedTargets = selected;
+  }
+
+  /**
+   * Clears the current selection
+   */
+  public deselect() {
+    this.select([]);
+  }
+
+  private _boxSelect(startPointerPosition: Vector2, endPointerPosition: Vector2) {
     const scene = this.plaskEngine.scene;
 
     return this.selectableObjects.filter((object) => checkIsObjectIn(startPointerPosition as ScreenXY, endPointerPosition as ScreenXY, object, scene));
-  }
-
-  public dispose() {
-    this.onStartSelectBox.clear();
-    this.onSelectBoxUpdated.clear();
-    this.onEndSelectBox.clear();
-
-    this.plaskEngine.scene.onPointerObservable.remove(this._pointerObserver);
   }
 }
