@@ -20,6 +20,7 @@ const ResetOnboarding = () => {
 
   const closeResetOnboarding = () => {
     dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
+    document.getElementById(ONBOARDING_ID.HELP_BUTTON)?.click();
   };
 
   useEffect(() => {
