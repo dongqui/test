@@ -3,6 +3,8 @@ type ModelFormat = 'fbx' | 'glb' | 'bvh' | 'fbx_unreal';
 export const DEFAULT_FOLDER_NAME = 'Untitled';
 export const DEFAULT_TEST_MODEL_COUNT = 4;
 export const RETARGET_SOURCE_COUNT = 24;
+export const FIXTURES_FBX_FILE_NAME = 'Dying.fbx';
+export const FIXTURES_GLB_FILE_NAME = 'Dying.glb';
 
 export function waitLoadingDefaultModel() {
   cy.wait(['@knight', '@vanguard', '@zombie', '@mannequin'], { timeout: 10000 });
@@ -221,4 +223,9 @@ export function isExportedFileDownloaded($node_el: Cypress.Chainable<JQuery<HTML
       expect(isFileExist).to.be.true;
     });
   });
+}
+
+export function importFileByDragAndDrop(fileName: string) {
+  cy.getByDataCy('lp-body').trigger('dragenter');
+  cy.getByDataCy('lp-body').dropFile(fileName);
 }
