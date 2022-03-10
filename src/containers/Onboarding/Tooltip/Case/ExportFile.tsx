@@ -23,8 +23,8 @@ const ExportFile = () => {
       <StepTemplate step={6} ref={tooltipRef}>
         <h3>File export</h3>
         <p>
-          After work is done. <br />
-          You can <span>extract files</span> by right-clicking on them.
+          When you have completed your work, you can <br />
+          <span>extract files</span> by right-clicking on them.
         </p>
         <Arrow placement="left-start" />
       </StepTemplate>

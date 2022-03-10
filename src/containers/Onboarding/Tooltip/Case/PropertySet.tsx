@@ -20,7 +20,7 @@ const PropertySet = () => {
 
   return (
     <StepTemplate step={4} ref={tooltipRef}>
-      <h3>animation and retarget set</h3>
+      <h3>Animation and retarget set</h3>
       <p>
         You can edit the detailed <span>settings of the model.</span>
       </p>

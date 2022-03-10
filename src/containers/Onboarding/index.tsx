@@ -5,6 +5,7 @@ import * as commonActions from 'actions/Common/globalUI';
 import { useSelector } from 'reducers';
 
 import { ApplyMotion, ExportFile, ImportFile, EditKeyframe, PropertySet, ResetOnboarding, RunOnboarding, VideoMode } from './Tooltip';
+import { ONBOARDING_ID } from './id';
 import Background from './Background';
 
 /**
@@ -56,11 +57,15 @@ const Onboarding = () => {
   useEffect(() => {
     if (onboardingStep === 999) {
       timeoutId.current = window.setTimeout(() => {
+        document.getElementById(ONBOARDING_ID.HELP_BUTTON)?.click();
         dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
       }, 4000);
     } else {
       clearTimeout(timeoutId.current);
     }
+    return () => {
+      clearTimeout(timeoutId.current);
+    };
   }, [onboardingStep, dispatch]);
 
   return (
