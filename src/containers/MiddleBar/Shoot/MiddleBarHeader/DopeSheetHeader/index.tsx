@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import * as trackListActions from 'actions/trackList';
 import { useSelector } from 'reducers';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -22,7 +23,7 @@ const DopeSheetHeader = () => {
 
   return (
     <div className={cx('dope-sheet-header')}>
-      <span>Layers</span>
+      <span id={ONBOARDING_ID.EDIT_KEYFRAME}>Layers</span>
       <IconWrapper icon={SvgPath.Plus} className={cx('plus')} onClick={handleAddLayerTrackButton} />
     </div>
   );

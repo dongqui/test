@@ -1,11 +1,9 @@
-import { Fragment, FunctionComponent } from 'react';
+import React, { forwardRef, Fragment, FunctionComponent } from 'react';
 
 import { OnboardingStep } from 'containers/Onboarding';
 
 import BaseTemplate from '../BaseTemplate';
-import CancelButton from './Buttons/CancelButton';
-import DoneButton from './Buttons/DoneButton';
-import NextButton from './Buttons/NextButton';
+import { CancelButton, DoneButton, NextButton } from './Buttons';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -23,8 +21,8 @@ const StartTemplate = () => {
     <div className={cx('start-template')}>
       <div className={cx('buttons')}>
         <Fragment>
-          <CancelButton text="No Thanks" />
-          <NextButton step={0} text="Show Me Around" />
+          <CancelButton text="No thanks" />
+          <NextButton step={0} text="Show me around" />
         </Fragment>
       </div>
     </div>
@@ -53,15 +51,17 @@ const ProgressTemplate: FunctionComponent<Props> = (props) => {
   );
 };
 
-const StepTemplate: FunctionComponent<Props> = (props) => {
+const StepTemplate = forwardRef<HTMLDivElement, Props & { children: React.ReactNode }>((props, ref) => {
   const { children, step } = props;
 
   return (
-    <BaseTemplate>
+    <BaseTemplate ref={ref}>
       {children}
       {step === 0 ? <StartTemplate /> : <ProgressTemplate step={step} />}
     </BaseTemplate>
   );
-};
+});
+
+StepTemplate.displayName = 'StepTemplate';
 
 export default StepTemplate;

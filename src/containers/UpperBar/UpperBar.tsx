@@ -7,6 +7,7 @@ import { changeMode } from 'actions/modeSelection';
 import { FilledButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { BaseModal } from 'components/Modal';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import { RootState, useSelector } from 'reducers';
 
 import ChangeModeButton from './ModeChange';
@@ -57,6 +58,7 @@ const UpperBar: FunctionComponent<Props> = ({
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
   const { mode } = useSelector((state: RootState) => state.modeSelection);
   const { videoURL } = useSelector((state: RootState) => state.modeSelection);
+  const onboardingStep = useSelector((state: RootState) => state.globalUI.onboardingStep);
 
   const handleChangeMode = useCallback(() => {
     setSrcAddress && setSrcAddress('');
@@ -86,14 +88,18 @@ const UpperBar: FunctionComponent<Props> = ({
     dispatch(changeMode({ mode: 'videoMode' }));
   }, [dispatch]);
 
-  const handleSelectDropdown = useCallback((menuItem: HelpDropdownItem) => {
-    if (menuItem === 'Onboarding') {
-      /**
-       * @ToDO
-       */
-      // dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
-    }
-  }, []);
+  const handleSelectDropdown = useCallback(
+    (menuItem: HelpDropdownItem) => {
+      if (menuItem === 'Onboarding') {
+        dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
+      }
+    },
+    [dispatch],
+  );
+
+  const handleDropdownClose = useCallback(() => {
+    dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
+  }, [dispatch]);
 
   return (
     <div className={cx('wrap')}>
@@ -108,12 +114,12 @@ const UpperBar: FunctionComponent<Props> = ({
           </a>
         </Link>
         <Dropdown>
-          <Dropdown.Header>
-            <div className={cx('support-icon-wrapper')}>
+          <Dropdown.Header onClose={handleDropdownClose}>
+            <div className={cx('support-icon-wrapper')} id={ONBOARDING_ID.HELP_BUTTON}>
               <IconWrapper icon={SvgPath.Support} />
             </div>
           </Dropdown.Header>
-          <Dropdown.Menu>
+          <Dropdown.Menu autoClose={onboardingStep !== 999}>
             <Dropdown.Item menuItem="Onboarding" onClick={handleSelectDropdown} disabled={mode === 'videoMode'}>
               Onboarding
             </Dropdown.Item>

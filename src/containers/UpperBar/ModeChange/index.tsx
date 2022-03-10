@@ -1,6 +1,7 @@
 import { FunctionComponent } from 'react';
 
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import { useSelector } from 'reducers';
 
 import classNames from 'classnames/bind';
@@ -23,7 +24,7 @@ const ChangeModeButton: FunctionComponent<Props> = (props) => {
     <>
       <div className={cx('wrapper')}>
         <IconWrapper className={cx('icon', { selected: mode === 'animationMode' })} onClick={onSwitchAnimationMode} icon={SvgPath.TrackMode} />
-        <IconWrapper className={cx('icon', { selected: mode === 'videoMode' })} onClick={onSwitchVideoMode} icon={SvgPath.Camera} />
+        <IconWrapper className={cx('icon', { selected: mode === 'videoMode' })} id={ONBOARDING_ID.VIDEO_MODE} onClick={onSwitchVideoMode} icon={SvgPath.Camera} />
       </div>
     </>
   );
