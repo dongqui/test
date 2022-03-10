@@ -21,8 +21,8 @@ const StartTemplate = () => {
     <div className={cx('start-template')}>
       <div className={cx('buttons')}>
         <Fragment>
-          <CancelButton text="No Thanks" />
-          <NextButton step={0} text="Show Me Around" />
+          <CancelButton text="No thanks" />
+          <NextButton step={0} text="Show me around" />
         </Fragment>
       </div>
     </div>
