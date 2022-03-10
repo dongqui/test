@@ -6,7 +6,7 @@ const RunOnboarding = () => {
 
   useEffect(() => {
     if (tooltipRef.current) {
-      tooltipRef.current.style.cssText = `bottom:24px; right:24px;`;
+      tooltipRef.current.style.cssText = `top:46px; left:44px;`;
     }
   }, [tooltipRef]);
 
