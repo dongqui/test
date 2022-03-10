@@ -4,6 +4,7 @@ import { useSelector } from 'reducers';
 
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import ListNode from './ListView/ListNode';
 
 import classNames from 'classnames/bind';
@@ -49,6 +50,8 @@ const LPBody: FunctionComponent<Props> = () => {
 
   return (
     <div className={cx('inner')} onContextMenu={handleContextMenu} onClickCapture={handleClick} onDrop={handleDrop} data-cy="lp-body">
+      <div className={cx('onboarding-export-file-target')} id={ONBOARDING_ID.EXPORT_FILE} />
+      <div className={cx('onboarding-apply-motion-target')} id={ONBOARDING_ID.APPLY_MOTION} />
       {rootPathNodes.map((node) => (
         <div className={cx('node-row')} key={node.id}>
           <ListNode node={node} />

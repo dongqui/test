@@ -1,0 +1,208 @@
+.arrow {
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 6px 8px 6.5px;
+  }
+
+  &::before {
+    border-color: var(--gray400)transparent;
+  }
+
+  &::after {
+    border-color: var(--gray200)transparent;
+  }
+}
+
+.top-start {
+  &::before,
+  &::after {
+    left: 12px;
+  }
+
+  &::before {
+    top: -9px;
+  }
+
+  &::after {
+    top: -8px;
+  }
+}
+
+.top-middle {
+  &::before,
+  &::after {
+    left: 50%;
+  }
+
+  &::before {
+    top: -9px;
+  }
+
+  &::after {
+    top: -8px;
+  }
+}
+
+.top-end {
+  &::before,
+  &::after {
+    right: 12px;
+  }
+
+  &::before {
+    top: -9px;
+  }
+
+  &::after {
+    top: -8px;
+  }
+}
+
+.bottom-start {
+  &::before,
+  &::after {
+    transform: rotate(180deg);
+    left: 12px;
+  }
+
+  &::before {
+    bottom: -9px;
+  }
+
+  &::after {
+    bottom: -7px;
+  }
+}
+
+.bottom-middle {
+  &::before,
+  &::after {
+    transform: rotate(180deg);
+    left: 50%;
+  }
+
+  &::before {
+    bottom: -9px;
+  }
+
+  &::after {
+    bottom: -7px;
+  }
+}
+
+.bottom-end {
+  &::before,
+  &::after {
+    transform: rotate(180deg);
+    right: 12px;
+  }
+
+  &::before {
+    bottom: -9px;
+  }
+
+  &::after {
+    bottom: -7px;
+  }
+}
+
+.left-start {
+  &::before,
+  &::after {
+    top: 20px;
+    transform: rotate(-90deg);
+  }
+
+  &::before {
+    left: -10px;
+  }
+
+  &::after {
+    left: -8px;
+  }
+}
+
+.left-middle {
+  &::before,
+  &::after {
+    top: 50%;
+    transform: rotate(-90deg);
+  }
+
+  &::before {
+    left: -10px;
+  }
+
+  &::after {
+    left: -8px;
+  }
+}
+
+.left-end {
+  &::before,
+  &::after {
+    bottom: 20px;
+    transform: rotate(-90deg);
+  }
+
+  &::before {
+    left: -10px;
+  }
+
+  &::after {
+    left: -8px;
+  }
+}
+
+.right-start {
+  &::before,
+  &::after {
+    transform: rotate(90deg);
+    top: 20px;
+  }
+
+  &::before {
+    right: -10px;
+  }
+
+  &::after {
+    right: -8px;
+  }
+}
+
+.right-middle {
+  &::before,
+  &::after {
+    transform: rotate(90deg);
+    top: 50%;
+  }
+
+  &::before {
+    right: -10px;
+  }
+
+  &::after {
+    right: -8px;
+  }
+}
+
+.right-end {
+  &::before,
+  &::after {
+    transform: rotate(90deg);
+    bottom: 20px;
+  }
+
+  &::before {
+    right: -10px;
+  }
+
+  &::after {
+    right: -8px;
+  }
+}

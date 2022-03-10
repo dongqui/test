@@ -1,11 +1,11 @@
-import { Fragment } from 'react';
+import { useEffect, useRef, Fragment } from 'react';
+import { useDispatch } from 'react-redux';
 
+import * as commonActions from 'actions/Common/globalUI';
 import { useSelector } from 'reducers';
 
-import { ApplyMotion, ExportFile, ImportFile, Keyframes, PropertySet, ResetOnboarding, RunOnboarding, VideoMode } from './Tooltip';
-
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
+import { ApplyMotion, ExportFile, ImportFile, EditKeyframe, PropertySet, ResetOnboarding, RunOnboarding, VideoMode } from './Tooltip';
+import Background from './Background';
 
 /**
  * 0: 온보딩 시작 단계
@@ -16,10 +16,10 @@ import styles from './index.module.scss';
  */
 export type OnboardingStep = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 999 | null;
 
-const cx = classNames.bind(styles);
-
 const Onboarding = () => {
+  const dispatch = useDispatch();
   const onboardingStep = useSelector((state) => state.globalUI.onboardingStep);
+  const timeoutId = useRef(0);
 
   const TooltipCase = () => {
     switch (onboardingStep) {
@@ -39,7 +39,7 @@ const Onboarding = () => {
         return <PropertySet />;
       }
       case 5: {
-        return <Keyframes />;
+        return <EditKeyframe />;
       }
       case 6: {
         return <ExportFile />;
@@ -53,16 +53,20 @@ const Onboarding = () => {
     }
   };
 
-  if (onboardingStep === null) {
-    return null;
-  }
+  useEffect(() => {
+    if (onboardingStep === 999) {
+      timeoutId.current = window.setTimeout(() => {
+        dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
+      }, 4000);
+    } else {
+      clearTimeout(timeoutId.current);
+    }
+  }, [onboardingStep, dispatch]);
 
   return (
     <Fragment>
-      <div className={cx('tooltip')}>
-        <TooltipCase />
-      </div>
-      <div className={cx('background')} />
+      <TooltipCase />
+      {onboardingStep !== 999 && <Background />}
     </Fragment>
   );
 };

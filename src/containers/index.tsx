@@ -26,20 +26,17 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
   const dispatch = useDispatch();
 
   const { mode } = useSelector((state: RootState) => state.modeSelection);
+  const onboardingStep = useSelector((state) => state.globalUI.onboardingStep);
 
-  /**
-   * @ToDo
-   * 각 툴팁을 다 구현 후에 주석을 풀을 예정
-   */
-  // // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     const localStorage = window.localStorage;
-  //     if (!localStorage.getItem('onboarding_1')) {
-  //       dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
-  //     }
-  //   }, 2000);
-  // }, [dispatch]);
+  // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
+  useEffect(() => {
+    setTimeout(() => {
+      const localStorage = window.localStorage;
+      if (!localStorage.getItem('onboarding_1')) {
+        dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
+      }
+    }, 2000);
+  }, [dispatch]);
 
   const [plaskEngine, setPlaskEngine] = useState(new PlaskEngine());
 
@@ -56,7 +53,7 @@ const Index: FunctionComponent<Props> = ({ browserType }) => {
         </BabylonProvider>
       </ResizeProvider>
       {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={browserType} />}
-      {/* <Onboarding /> */}
+      {onboardingStep !== null && <Onboarding />}
     </main>
   );
 };
