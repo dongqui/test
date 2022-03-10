@@ -18,7 +18,14 @@ const CancelButton: FunctionComponent<Props> = (props) => {
 
   const dispatch = useDispatch();
 
+  // 온보딩 로컬 스토리지 삽입
+  const setOnboardingLocalStorage = () => {
+    const localStorage = window.localStorage;
+    localStorage.setItem('onboarding_1', 'onboarding_1');
+  };
+
   const handleDoneButtonClick = () => {
+    setOnboardingLocalStorage();
     dispatch(globalUIActions.progressOnboarding({ onboardingStep: 999 }));
   };
 
