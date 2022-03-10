@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import * as commonActions from 'actions/Common/globalUI';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { getTargetCoordinates } from 'utils/common';
 
 import BaseTemplate from '../Template/BaseTemplate';
 import Arrow from '../Arrow';
@@ -16,17 +17,6 @@ const cx = classNames.bind(styles);
 const ResetOnboarding = () => {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
-
-  const getTargetCoordinates = (targetElement: HTMLElement | null) => {
-    if (targetElement) {
-      const { x, y, width, height } = targetElement.getBoundingClientRect();
-      const leftTop = { x, y };
-      const rightTop = { x: x + width, y };
-      const leftBottom = { x, y: y + height };
-      const rightBottom = { x: x + width, y: y + height };
-      return { leftTop, rightTop, leftBottom, rightBottom };
-    }
-  };
 
   const closeResetOnboarding = () => {
     dispatch(commonActions.progressOnboarding({ onboardingStep: null }));

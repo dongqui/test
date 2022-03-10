@@ -21,16 +21,6 @@ const Onboarding = () => {
   const onboardingStep = useSelector((state) => state.globalUI.onboardingStep);
   const timeoutId = useRef(0);
 
-  useEffect(() => {
-    if (onboardingStep === 999) {
-      timeoutId.current = window.setTimeout(() => {
-        dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
-      }, 4000);
-    } else {
-      clearTimeout(timeoutId.current);
-    }
-  }, [onboardingStep, dispatch]);
-
   const TooltipCase = () => {
     switch (onboardingStep) {
       case 0: {
@@ -62,6 +52,16 @@ const Onboarding = () => {
       }
     }
   };
+
+  useEffect(() => {
+    if (onboardingStep === 999) {
+      timeoutId.current = window.setTimeout(() => {
+        dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
+      }, 4000);
+    } else {
+      clearTimeout(timeoutId.current);
+    }
+  }, [onboardingStep, dispatch]);
 
   return (
     <Fragment>

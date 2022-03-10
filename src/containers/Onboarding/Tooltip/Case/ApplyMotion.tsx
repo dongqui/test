@@ -1,6 +1,7 @@
 import { useEffect, Fragment, useRef } from 'react';
 
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
+import { getTargetCoordinates } from 'utils/common';
 
 import StepTemplate from '../Template/StepTemplate';
 import Arrow from '../Arrow';
@@ -12,17 +13,6 @@ const cx = classNames.bind(styles);
 
 const ApplyMotion = () => {
   const tooltipRef = useRef<HTMLDivElement>(null);
-
-  const getTargetCoordinates = (targetElement: HTMLElement | null) => {
-    if (targetElement) {
-      const { x, y, width, height } = targetElement.getBoundingClientRect();
-      const leftTop = { x, y };
-      const rightTop = { x: x + width, y };
-      const leftBottom = { x, y: y + height };
-      const rightBottom = { x: x + width, y: y + height };
-      return { leftTop, rightTop, leftBottom, rightBottom };
-    }
-  };
 
   useEffect(() => {
     const targetElement = document.getElementById(ONBOARDING_ID.APPLY_MOTION);
