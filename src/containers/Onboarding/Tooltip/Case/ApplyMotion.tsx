@@ -28,8 +28,7 @@ const ApplyMotion = () => {
       <StepTemplate step={3} ref={tooltipRef}>
         <h3>Apply motion</h3>
         <p>
-          After the guide is finished, <br />
-          Try applying <span>the sample mocap to the model</span> by dragging <br />
+          Try <span>applying the mocap </span>to the model by dragging <br />
           and dropping it.
         </p>
         <Arrow placement="left-start" />
