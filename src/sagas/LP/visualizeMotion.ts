@@ -1,0 +1,51 @@
+import { find, filter } from 'lodash';
+import { select, put } from 'redux-saga/effects';
+
+import { RootState } from 'reducers';
+import { goToSpecificPoses } from 'utils/RP';
+import { forceClickAnimationPlayAndStop } from 'utils/common';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as animationDataActions from 'actions/animationDataAction';
+
+export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualizeMotion>) {
+  const { plaskProject, animationData, lpNode }: RootState = yield select();
+  const { animationIngredients } = animationData;
+  const { screenList, assetList } = plaskProject;
+  const { assetId, nodeId, parentId } = action.payload;
+
+  if (!assetId) {
+    return;
+  }
+
+  screenList.forEach(({ scene }) => {
+    scene.animationGroups.forEach((animationGroup) => {
+      animationGroup.stop();
+      scene.removeAnimationGroup(animationGroup);
+    });
+  });
+
+  const parentModel = find(lpNode.nodes, { id: parentId });
+  // TODO 선언적으로 수정
+  if (parentModel) {
+    const motions = filter(animationIngredients, { assetId: parentModel.assetId });
+    if (motions && parentModel.assetId) {
+      const selectedMotion = find(motions, { id: nodeId });
+      if (selectedMotion) {
+        const currentAsset = assetList.find((asset) => asset.id === parentModel.assetId);
+        if (currentAsset) {
+          goToSpecificPoses(currentAsset.initialPoses);
+        }
+
+        yield put(
+          animationDataActions.changeCurrentAnimationIngredient({
+            assetId: parentModel.assetId,
+            animationIngredientId: selectedMotion.id,
+          }),
+        );
+      }
+    }
+  }
+
+  yield put(lpNodeActions.visualizeNode(assetId));
+  forceClickAnimationPlayAndStop(50);
+}
