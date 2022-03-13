@@ -29,29 +29,32 @@ export class SelectorModule extends Module {
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public reduxObservedStates = ['selectingData', 'undoableSelectingData'];
-  public onStateChanged(stateKey: string, key: string, previousState: any) {
-    if (stateKey === 'undoableSelectingData') {
-      if (key === 'present') {
-        for (const entityId in this.plaskEngine.state.undoableSelectingData.present) {
-          if (previousState[entityId] !== this.plaskEngine.state.undoableSelectingData.present[entityId]) {
-            this.plaskEngine.state.undoableSelectingData.present[entityId].markDirty();
-          }
+  public reduxObservedStates = ['selectingData.present.selectedTargets', 'selectingData.present.selectableObjects', 'undoableSelectingData.present'];
+  public onStateChanged(key: string, previousState: any) {
+    if (key === 'undoableSelectingData.present') {
+      for (const entityId in this.plaskEngine.state.undoableSelectingData.present) {
+        if (previousState[entityId] !== this.plaskEngine.state.undoableSelectingData.present[entityId]) {
+          console.log('position change detected');
+          this.plaskEngine.state.undoableSelectingData.present[entityId].markDirty();
         }
       }
       return;
     }
 
-    if (stateKey === 'selectingData') {
-      if (key === 'present' && this.selectedTargets !== previousState.selectedTargets) {
-        this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
-      } 
-      if (key === 'present' && this.selectableObjects !== previousState.selectableObjects) {
+    if (key === 'selectingData.present.selectedTargets') {
+      this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
+      console.log('selection change detected');
+      return;
+    }
+
+    if (key === 'selectingData.present.selectableObjects') {
+      if (this.selectableObjects !== previousState.selectableObjects) {
         // Init positions
         this.plaskEngine.dispatch(
           moveSelectedTargets({ targets: this.plaskEngine.state.selectingData.present.selectableObjects.map((selectableObject) => selectableObject.clone()) }),
         );
       }
+      return;
     }
   }
 

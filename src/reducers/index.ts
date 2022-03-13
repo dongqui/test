@@ -11,7 +11,6 @@ import { modeSelection } from './modeSelection';
 import { keyframes } from './keyframes';
 import { trackList } from './trackList';
 import { globalUI } from './Common/globalUI';
-import undoable from 'redux-undo';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -27,7 +26,7 @@ const rootReducer = combineReducers({
   keyframes,
   trackList,
   globalUI,
-  undoableSelectingData: undoable(undoableSelectingData),
+  undoableSelectingData: undoableSelectingData,
 });
 
 // type 적용된 useSelector

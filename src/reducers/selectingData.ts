@@ -2,7 +2,7 @@ import { xorBy } from 'lodash';
 import { SelectingData } from './../types/common';
 import { SelectingDataAction } from 'actions/selectingDataAction';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import undoable, { excludeAction } from 'redux-undo';
+import undoable, { excludeAction, includeAction } from 'redux-undo';
 
 type State = SelectingData;
 
@@ -84,12 +84,15 @@ export const selectingData = undoable(
     }
   },
   {
-    filter: excludeAction([
-      'selectingDataAction/ADD_SELECTABLE_OBJECTS',
-      'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS',
-      'selectingDataAction/REMOVE_SELECTABLE_JOINTS',
-      'selectingDataAction/UNRENDER_ASSET',
+    filter: includeAction([
+      'selectingDataAction/DEFAULT_SINGLE_SELECT',
+      'selectingDataAction/DEFAULT_MULTI_SELECT',
+      'selectingDataAction/CTRL_KEY_SINGLE_SELECT',
+      'selectingDataAction/CTRL_KEY_MULTI_SELECT',
+      'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS',
+      'selectingDataAction/RESET_SELECTED_TARGETS',
     ]),
+    syncFilter: true,
   },
 );
 
@@ -142,17 +145,23 @@ export const selectingData = undoable(
 // }
 
 const defaultUndoableState = {} as { [key: string]: PlaskTransformNode };
-export const undoableSelectingData = (state = defaultUndoableState, action: SelectingDataAction) => {
-  switch (action.type) {
-    case 'selectingDataAction/UPDATE_SELECTED_TARGETS': {
-      const obj = {} as { [key: string]: PlaskTransformNode };
-      for (const entity of action.payload.targets) {
-        obj[entity.entityId] = entity;
+export const undoableSelectingData = undoable(
+  (state = defaultUndoableState, action: SelectingDataAction) => {
+    switch (action.type) {
+      case 'selectingDataAction/UPDATE_SELECTED_TARGETS': {
+        const obj = {} as { [key: string]: PlaskTransformNode };
+        for (const entity of action.payload.targets) {
+          obj[entity.entityId] = entity;
+        }
+        return Object.assign({}, state, obj);
       }
-      return Object.assign({}, state, obj);
+      default: {
+        return state;
+      }
     }
-    default: {
-      return state;
-    }
-  }
-};
+  },
+  {
+    filter: includeAction(['selectingDataAction/UPDATE_SELECTED_TARGETS']),
+    syncFilter: true,
+  },
+);

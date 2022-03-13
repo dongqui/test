@@ -118,11 +118,21 @@ export class PlaskEngine {
 
     for (const module of this._modules) {
       for (const stateKey of module.reduxObservedStates) {
-        const diff = stateDiff(state[stateKey], previousState[stateKey]);
-        if (diff.length) {
-          for (const key of diff) {
-            module.onStateChanged(stateKey, key, previousState[stateKey][key]);
+        const path = stateKey.split('.');
+        let nestedState = state;
+        let previousNestedState = previousState;
+        try {
+          for (const field of path) {
+            nestedState = nestedState[field];
+            previousNestedState = previousNestedState[field];
           }
+        } catch (e) {
+          console.warn('Wrong state path : ' + stateKey);
+          continue;
+        }
+
+        if (nestedState !== previousNestedState) {
+          module.onStateChanged(stateKey, previousNestedState);
         }
       }
     }
