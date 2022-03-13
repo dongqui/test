@@ -46,7 +46,7 @@ function* handleDeleteModel(action: ReturnType<typeof lpNodeActions.deleteModel>
   const { nodeId, assetId, parentId } = action.payload;
   const { lpNode, plaskProject, selectingData }: RootState = yield select();
 
-  removeAssetThingsFromScene(plaskProject, selectingData, assetId);
+  removeAssetThingsFromScene(plaskProject, selectingData.present, assetId);
 
   const nextNodes = filterDeletedNode(lpNode.nodes, nodeId, parentId);
 
@@ -71,7 +71,7 @@ function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotio
 
   const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(assetId);
   if (isVisualizedAsset) {
-    removeAssetThingsFromScene(plaskProject, selectingData, assetId);
+    removeAssetThingsFromScene(plaskProject, selectingData.present, assetId);
 
     yield put(plaskProjectActions.unrenderAsset({}));
     yield put(selectingDataActions.unrenderAsset({ assetId }));
@@ -138,7 +138,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== action.payload.assetId;
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
-      removeAssetThingsFromScene(plaskProject, selectingData, prevAssetId);
+      removeAssetThingsFromScene(plaskProject, selectingData.present, prevAssetId);
       yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
     }
     // visualize new asset
@@ -237,7 +237,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
 function* handleCancelVisulization(action: ReturnType<typeof lpNodeActions.cancelVisulization>) {
   const { plaskProject, selectingData }: RootState = yield select();
   const { visualizedAssetIds, assetList, screenList } = plaskProject;
-  const { selectableObjects } = selectingData;
+  const { selectableObjects } = selectingData.present;
   const { assetId } = action.payload;
 
   if (!assetId || !visualizedAssetIds.includes(assetId)) {
@@ -262,7 +262,7 @@ function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyM
   const { plaskProject, selectingData, animationData, lpNode }: RootState = yield select();
   const { animationTransformNodes } = animationData;
   const { visualizedAssetIds } = plaskProject;
-  const { selectableObjects } = selectingData;
+  const { selectableObjects } = selectingData.present;
   const { assetId, nodeId } = action.payload;
 
   if (assetId) {
