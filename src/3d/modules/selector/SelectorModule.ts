@@ -14,12 +14,12 @@ export class SelectorModule extends Module {
   public onSelectionChangeObservable: Observable<TransformNode[]> = new Observable();
 
   public get selectableObjects() {
-    return this.plaskEngine.state.selectingData.present.selectableObjects;
+    return this.plaskEngine.state.undoableState.present.selectingData.selectableObjects;
   }
 
   // TODO : decorator ?
   public get selectedTargets() {
-    return this.plaskEngine.state.selectingData.present.selectedTargets.map((entity) => entity.reference);
+    return this.plaskEngine.state.undoableState.present.selectingData.selectedTargets.map((entity) => entity.reference);
   }
   public set selectedTargets(targets: TransformNode[]) {
     this.plaskEngine.dispatch(defaultMultiSelect({ targets: targets.map((transformNode) => transformNode.getPlaskEntity()) }));
@@ -29,29 +29,33 @@ export class SelectorModule extends Module {
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public reduxObservedStates = ['selectingData.present.selectedTargets', 'selectingData.present.selectableObjects', 'undoableSelectingData.present'];
+  public reduxObservedStates = [
+    'undoableState.present.selectingData.selectedTargets',
+    'undoableState.present.selectingData.selectableObjects',
+    'undoableState.present.undoableSelectingData',
+  ];
   public onStateChanged(key: string, previousState: any) {
-    if (key === 'undoableSelectingData.present') {
-      for (const entityId in this.plaskEngine.state.undoableSelectingData.present) {
-        if (previousState[entityId] !== this.plaskEngine.state.undoableSelectingData.present[entityId]) {
+    if (key === 'undoableState.present.undoableSelectingData') {
+      for (const entityId in this.plaskEngine.state.undoableState.present.undoableSelectingData) {
+        if (previousState[entityId] !== this.plaskEngine.state.undoableState.present.undoableSelectingData[entityId]) {
           console.log('position change detected');
-          this.plaskEngine.state.undoableSelectingData.present[entityId].markDirty();
+          this.plaskEngine.state.undoableState.present.undoableSelectingData[entityId].markDirty();
         }
       }
       return;
     }
 
-    if (key === 'selectingData.present.selectedTargets') {
+    if (key === 'undoableState.present.selectingData.selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
       console.log('selection change detected');
       return;
     }
 
-    if (key === 'selectingData.present.selectableObjects') {
+    if (key === 'undoableState.present.selectingData.selectableObjects') {
       if (this.selectableObjects !== previousState.selectableObjects) {
         // Init positions
         this.plaskEngine.dispatch(
-          moveSelectedTargets({ targets: this.plaskEngine.state.selectingData.present.selectableObjects.map((selectableObject) => selectableObject.clone()) }),
+          moveSelectedTargets({ targets: this.plaskEngine.state.undoableState.present.selectingData.selectableObjects.map((selectableObject) => selectableObject.clone()) }),
         );
       }
       return;

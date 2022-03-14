@@ -44,9 +44,9 @@ function* handleDeleteFolderOrMocap(action: ReturnType<typeof lpNodeActions.dele
 
 function* handleDeleteModel(action: ReturnType<typeof lpNodeActions.deleteModel>) {
   const { nodeId, assetId, parentId } = action.payload;
-  const { lpNode, plaskProject, selectingData }: RootState = yield select();
+  const { lpNode, plaskProject, undoableState }: RootState = yield select();
 
-  removeAssetThingsFromScene(plaskProject, selectingData.present, assetId);
+  removeAssetThingsFromScene(plaskProject, undoableState.present.selectingData, assetId);
 
   const nextNodes = filterDeletedNode(lpNode.nodes, nodeId, parentId);
 
@@ -58,7 +58,7 @@ function* handleDeleteModel(action: ReturnType<typeof lpNodeActions.deleteModel>
 }
 
 function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotion>) {
-  const { lpNode, plaskProject, animationData, selectingData }: RootState = yield select();
+  const { lpNode, plaskProject, animationData, undoableState }: RootState = yield select();
   const { nodeId, assetId, parentId } = action.payload;
 
   const targetMotion = find(lpNode.nodes, { id: nodeId });
@@ -71,7 +71,7 @@ function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotio
 
   const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(assetId);
   if (isVisualizedAsset) {
-    removeAssetThingsFromScene(plaskProject, selectingData.present, assetId);
+    removeAssetThingsFromScene(plaskProject, undoableState.present.selectingData, assetId);
 
     yield put(plaskProjectActions.unrenderAsset({}));
     yield put(selectingDataActions.unrenderAsset({ assetId }));
@@ -129,7 +129,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
   // this callback is under assumption of sing model
   // so when users visualize a model, if there is already another model visualized that model will be unvisualized.
   // @TODO if Plask support multi-model, stuff should be changed to maintain ones which are already visualized.
-  const { plaskProject, selectingData, screenData }: RootState = yield select();
+  const { plaskProject, undoableState, screenData }: RootState = yield select();
   const { visualizedAssetIds, assetList, screenList } = plaskProject;
   const { visibilityOptions } = screenData;
   const { assetId } = action.payload;
@@ -138,7 +138,7 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== action.payload.assetId;
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
-      removeAssetThingsFromScene(plaskProject, selectingData.present, prevAssetId);
+      removeAssetThingsFromScene(plaskProject, undoableState.present.selectingData, prevAssetId);
       yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
     }
     // visualize new asset
@@ -235,9 +235,9 @@ function* handleVisualizeNode(action: ReturnType<typeof lpNodeActions.visualizeN
 }
 
 function* handleCancelVisulization(action: ReturnType<typeof lpNodeActions.cancelVisulization>) {
-  const { plaskProject, selectingData }: RootState = yield select();
+  const { plaskProject, undoableState }: RootState = yield select();
   const { visualizedAssetIds, assetList, screenList } = plaskProject;
-  const { selectableObjects } = selectingData.present;
+  const { selectableObjects } = undoableState.present.selectingData;
   const { assetId } = action.payload;
 
   if (!assetId || !visualizedAssetIds.includes(assetId)) {
@@ -259,10 +259,10 @@ function* handleCancelVisulization(action: ReturnType<typeof lpNodeActions.cance
 }
 
 function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotion>) {
-  const { plaskProject, selectingData, animationData, lpNode }: RootState = yield select();
+  const { plaskProject, undoableState, animationData, lpNode }: RootState = yield select();
   const { animationTransformNodes } = animationData;
   const { visualizedAssetIds } = plaskProject;
-  const { selectableObjects } = selectingData.present;
+  const { selectableObjects } = undoableState.present.selectingData;
   const { assetId, nodeId } = action.payload;
 
   if (assetId) {

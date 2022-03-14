@@ -3,7 +3,7 @@ import { TypedUseSelectorHook, useSelector as useReduxSelector } from 'react-red
 import { lpNode } from './LP/lpNode';
 import { cpModeSelection } from './CP/cpModeSelection';
 import { plaskProject } from './plaskProject';
-import { selectingData, undoableSelectingData } from './selectingData';
+import { allSelectingData, selectingData, undoableSelectingData } from './selectingData';
 import { animationData } from './animationData';
 import { screenData } from './screenData';
 import { animatingControls } from './animatingControls';
@@ -18,7 +18,7 @@ const rootReducer = combineReducers({
   lpNode,
   cpModeSelection,
   plaskProject,
-  selectingData,
+  undoableState: allSelectingData,
   animationData,
   screenData,
   animatingControls,
@@ -26,7 +26,6 @@ const rootReducer = combineReducers({
   keyframes,
   trackList,
   globalUI,
-  undoableSelectingData: undoableSelectingData,
 });
 
 // type 적용된 useSelector
