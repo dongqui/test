@@ -49,3 +49,4 @@ tsconfig.tsbuildinfo
 # cypress
 cypress/downloads
 cypress/videos
+cypress/screenshots
