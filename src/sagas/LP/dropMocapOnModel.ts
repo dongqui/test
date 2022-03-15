@@ -47,7 +47,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         message: TEXT.CONFIRM_04,
         onConfirm: function* () {
           if (assetId) {
-            yield put(lpNodeActions.visualizeNode(assetId));
+            yield put(lpNodeActions.visualizeModel(assetId));
             yield put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },
@@ -122,7 +122,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
 
         if (dropNode.assetId) {
           yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
-          yield put(lpNodeActions.visualizeNode(dropNode.assetId));
+          yield put(lpNodeActions.visualizeModel(dropNode.assetId));
         }
 
         return;
@@ -197,7 +197,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
 
       if (dropNode.assetId) {
         yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
-        yield put(lpNodeActions.visualizeNode(dropNode.assetId));
+        yield put(lpNodeActions.visualizeModel(dropNode.assetId));
         forceClickAnimationPlayAndStop();
       }
     } catch (error) {
@@ -221,7 +221,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         cancelText: 'Cancel',
         onConfirm: function* () {
           if (dropNode?.assetId) {
-            yield put(lpNodeActions.visualizeNode(dropNode.assetId));
+            yield put(lpNodeActions.visualizeModel(dropNode.assetId));
             yield put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },
