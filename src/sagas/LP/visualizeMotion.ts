@@ -46,6 +46,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     }
   }
 
-  yield put(lpNodeActions.visualizeNode(assetId));
+  yield put(lpNodeActions.visualizeModel(assetId));
   forceClickAnimationPlayAndStop(50);
 }

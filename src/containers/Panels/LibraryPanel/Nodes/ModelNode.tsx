@@ -56,7 +56,7 @@ const ModelNode = ({ node }: Props) => {
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
     }
-    dispatch(lpNodeActions.visualizeNode(assetId));
+    dispatch(lpNodeActions.visualizeModel(assetId));
   };
 
   const handleEditName = (newName: string) => {

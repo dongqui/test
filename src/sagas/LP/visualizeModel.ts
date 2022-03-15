@@ -20,7 +20,7 @@ export function* watchClickJointChannel() {
   }
 }
 
-export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.visualizeNode>) {
+export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.visualizeModel>) {
   // this callback is under assumption of sing model
   // so when users visualize a model, if there is already another model visualized that model will be unvisualized.
   // @TODO if Plask support multi-model, stuff should be changed to maintain ones which are already visualized.

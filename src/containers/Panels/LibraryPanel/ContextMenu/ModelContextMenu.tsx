@@ -44,7 +44,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId, assetId }));
     }
-    dispatch(lpNodeActions.visualizeNode(assetId));
+    dispatch(lpNodeActions.visualizeModel(assetId));
   };
 
   const handleCancelVisualization = () => {
