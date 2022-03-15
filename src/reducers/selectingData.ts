@@ -163,5 +163,6 @@ export const allSelectingData = undoable(
       'selectingDataAction/RESET_SELECTED_TARGETS',
       'selectingDataAction/UPDATE_SELECTED_TARGETS',
     ]),
+    ignoreInitialState: true,
   },
 );

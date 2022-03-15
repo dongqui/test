@@ -22,7 +22,28 @@ export class SelectorModule extends Module {
     return this.plaskEngine.state.undoableState.present.selectingData.selectedTargets.map((entity) => entity.reference);
   }
   public set selectedTargets(targets: TransformNode[]) {
-    this.plaskEngine.dispatch(defaultMultiSelect({ targets: targets.map((transformNode) => transformNode.getPlaskEntity()) }));
+    // Only fire an update if selection differs
+    // TODO : helpers
+    const currentTargets = this.selectedTargets;
+    let differs = targets.length !== currentTargets.length;
+    if (!differs) {
+      const targetsClone = targets.slice();
+      for (const target of currentTargets) {
+        const index = targetsClone.indexOf(target);
+        if (index === -1) {
+          differs = true;
+          break;
+        } else {
+          targetsClone.splice(index, 1);
+        }
+      }
+
+      differs = !!targetsClone.length;
+    }
+
+    if (differs) {
+      this.plaskEngine.dispatch(defaultMultiSelect({ targets: targets.map((transformNode) => transformNode.getPlaskEntity()) }));
+    }
   }
 
   private _startPosition: Nullable<Vector2> = null;
@@ -38,7 +59,6 @@ export class SelectorModule extends Module {
     if (key === 'undoableState.present.undoableSelectingData') {
       for (const entityId in this.plaskEngine.state.undoableState.present.undoableSelectingData) {
         if (previousState[entityId] !== this.plaskEngine.state.undoableState.present.undoableSelectingData[entityId]) {
-          console.log('position change detected');
           this.plaskEngine.state.undoableState.present.undoableSelectingData[entityId].markDirty();
         }
       }
@@ -47,7 +67,6 @@ export class SelectorModule extends Module {
 
     if (key === 'undoableState.present.selectingData.selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
-      console.log('selection change detected');
       return;
     }
 
