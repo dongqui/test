@@ -1,5 +1,7 @@
-import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import { takeLatest, all, takeEvery } from 'redux-saga/effects';
+import { getType } from 'typesafe-actions';
+
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import handleAddDirectory from './addDirectory';
 import { handleVisualizeModel, watchClickJointChannel } from './visualizeModel';
 import handleVisualizeMotion from './visualizeMotion';
@@ -18,21 +20,21 @@ import handleDropNodeOnRoot from './dropNodeOnRoot';
 
 export default function* LPSaga() {
   yield all([
-    takeLatest(lpNodeActions.ADD_DIRECTORY, handleAddDirectory),
-    takeLatest(lpNodeActions.VISUALIZE_NODE, handleVisualizeModel),
-    takeLatest(lpNodeActions.CANCEL_VISUALIZATION, handleCancelVisulization),
-    takeLatest(lpNodeActions.ADD_EMPTY_MOTION, handleAddEmptyMotion),
-    takeLatest(lpNodeActions.DUPLICATE_MOTION, handleDuplicateMotion),
-    takeLatest(lpNodeActions.VISUALIZE_MOTION, handleVisualizeMotion),
-    takeLatest(lpNodeActions.DROP_NODE_ON_FOLDER, handleDropNodeOnFolder),
-    takeLatest(lpNodeActions.DROP_MOCAP_ON_MODEL, handleDropMocapOnModel),
-    takeLatest(lpNodeActions.EDIT_NODE_NAME, handleEditNodeName),
-    takeLatest(lpNodeActions.EXPORT_ASSET, handleExportAsset),
-    takeLatest(lpNodeActions.DELETE_MOTION, handleDeleteMotion),
-    takeLatest(lpNodeActions.DELETE_MODEL, handleDeleteModel),
-    takeLatest(lpNodeActions.DELETE_FOLDER_OR_MOCAP, handleDeleteFolderOrMocap),
-    takeEvery(lpNodeActions.FILE_UPLOAD, handleFileUpload),
-    takeEvery(lpNodeActions.DROP_NODE_ON_ROOT, handleDropNodeOnRoot),
+    takeLatest(getType(lpNodeActions.addDirectory), handleAddDirectory),
+    takeLatest(getType(lpNodeActions.visualizeModel), handleVisualizeModel),
+    takeLatest(getType(lpNodeActions.cancelVisulization), handleCancelVisulization),
+    takeLatest(getType(lpNodeActions.addEmptyMotion), handleAddEmptyMotion),
+    takeLatest(getType(lpNodeActions.duplicateMotion), handleDuplicateMotion),
+    takeLatest(getType(lpNodeActions.visualizeMotion), handleVisualizeMotion),
+    takeLatest(getType(lpNodeActions.dropNodeOnFolder), handleDropNodeOnFolder),
+    takeLatest(getType(lpNodeActions.dropMocapOnModel), handleDropMocapOnModel),
+    takeLatest(getType(lpNodeActions.editNodeName), handleEditNodeName),
+    takeLatest(getType(lpNodeActions.exportAsset), handleExportAsset),
+    takeLatest(getType(lpNodeActions.deleteMotion), handleDeleteMotion),
+    takeLatest(getType(lpNodeActions.deleteModel), handleDeleteModel),
+    takeLatest(getType(lpNodeActions.deleteFolderOrMocap), handleDeleteFolderOrMocap),
+    takeEvery(getType(lpNodeActions.fileUpload), handleFileUpload),
+    takeEvery(getType(lpNodeActions.dropNodeOnRoot), handleDropNodeOnRoot),
     watchClickJointChannel(),
   ]);
 }
