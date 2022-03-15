@@ -184,7 +184,7 @@ export function getLastMotionofFirstModel() {
 }
 
 export function handleOnboarding() {
-  return cy.getByDataCy('onboarding-done').click();
+  window.localStorage.setItem('onboarding_1', 'onboarding_1');
 }
 
 export function exportModelorMotion($node_el: Cypress.Chainable<JQuery<HTMLElement>>, format: ModelFormat) {

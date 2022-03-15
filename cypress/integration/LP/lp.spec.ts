@@ -30,8 +30,8 @@ import {
 describe('LP test', () => {
   before(() => {
     visitAndGetMockData();
+    handleOnboarding();
     waitForModelNodeRendering();
-    // handleOnboarding();
   });
 
   context('LP Body test', () => {
@@ -232,11 +232,12 @@ describe('LP test', () => {
     });
 
     context('Export test', () => {
+      beforeEach(() => {
+        handleOnboarding();
+      });
       afterEach(() => {
-        // clear onboarding UI
         visitAndGetMockData();
         waitForModelNodeRendering();
-        // handleOnboarding();
       });
 
       it('Export glb', () => {
