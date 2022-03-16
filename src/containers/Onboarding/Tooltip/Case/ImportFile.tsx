@@ -23,8 +23,8 @@ const ImportFile = () => {
       <StepTemplate step={1} ref={tooltipRef}>
         <h3>Import files into the library</h3>
         <p>
-          Import your <span>model or video files</span> by clicking the button or <br />
-          simply drag and drop them in the library.
+          Import your <span>model or video files</span> by clicking the button <br />
+          or simply drag and drop them in the library.
         </p>
         <Arrow placement="left-start" />
       </StepTemplate>
