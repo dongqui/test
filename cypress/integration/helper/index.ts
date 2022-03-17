@@ -1,6 +1,14 @@
+type ModelFormat = 'fbx' | 'glb' | 'bvh' | 'fbx_unreal';
+
 export const DEFAULT_FOLDER_NAME = 'Untitled';
 export const DEFAULT_TEST_MODEL_COUNT = 4;
 export const RETARGET_SOURCE_COUNT = 24;
+export const FIXTURES_FBX_FILE_NAME = 'Dying.fbx';
+export const FIXTURES_GLB_FILE_NAME = 'Dying.glb';
+
+export function waitLoadingDefaultModel() {
+  cy.wait(['@knight', '@vanguard', '@zombie', '@mannequin'], { timeout: 10000 });
+}
 
 export function visitAndGetMockData() {
   cy.intercept('/models/Knight.glb', (req) => {
@@ -24,7 +32,7 @@ export function visitAndGetMockData() {
 
   cy.visit('/');
 
-  cy.wait(['@knight', '@vanguard', '@zombie', '@mannequin'], { timeout: 30000 });
+  waitLoadingDefaultModel();
 }
 
 export function waitForModelNodeRendering() {
@@ -176,5 +184,48 @@ export function getLastMotionofFirstModel() {
 }
 
 export function handleOnboarding() {
-  return cy.getByDataCy('onboarding-done').click();
+  window.localStorage.setItem('onboarding_1', 'onboarding_1');
+}
+
+export function exportModelorMotion($node_el: Cypress.Chainable<JQuery<HTMLElement>>, format: ModelFormat) {
+  $node_el.rightclick();
+  cy.getByDataCy('contextmenu-export').click();
+  cy.getByDataCy('dropdown-format-btn').click();
+  cy.getByDataCy(`dropdown-item-${format}`).click();
+  cy.getByDataCy('modal-confirm').click();
+}
+
+export function convertAndExport(format: 'fbx' | 'fbx_unreal' | 'bvh') {
+  //ISSUE: Click 'a' tag for download
+  //https://github.com/cypress-io/cypress/issues/14857
+
+  cy.window()
+    .document()
+    .then(function (doc) {
+      cy.intercept('/api/converter/model', (req) => {
+        req.reply((res) => {
+          setTimeout(function () {
+            doc.location.reload();
+          }, 5000);
+        });
+      }).as('converter');
+
+      exportModelorMotion(cy.get('@model_export'), format);
+    });
+}
+
+export function isExportedFileDownloaded($node_el: Cypress.Chainable<JQuery<HTMLElement>>, format: ModelFormat) {
+  $node_el.invoke('text').then((modelName) => {
+    const modelNameWithExtension = [...modelName.split('.').slice(0, -1), format].join('.');
+
+    const downloadsFolder = Cypress.config('downloadsFolder');
+    cy.task('existsSync', `${downloadsFolder}/${modelNameWithExtension}`, { timeout: 10000 }).then((isFileExist) => {
+      expect(isFileExist).to.be.true;
+    });
+  });
+}
+
+export function importFileByDragAndDrop(fileName: string) {
+  cy.getByDataCy('lp-body').trigger('dragenter');
+  cy.getByDataCy('lp-body').dropFile(fileName);
 }

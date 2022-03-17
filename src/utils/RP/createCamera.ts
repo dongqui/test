@@ -4,10 +4,10 @@ import PlaskArcRotateCameraPointersInput from './PlaskArcRotateCameraPointersInp
 const DEFAULT_CAMERA_POSITION_ARRAY = [0, 6, 10];
 
 /**
- * 축을 중심으로 회전하는 카메라를 커스텀 컨트롤을 적용한 상태로 생성합니다.
+ * Create ArcRotateCamera with custom controls applied.
  *
- * @param scene - 카메라 및 카메라 컨트롤을 추가할 scene
- * @param initialPosition - 카메라의 초기 위치 default = (0, 6, 10)
+ * @param scene - scene where the camera and camera controls will be added
+ * @param initialPosition - camera's initial position
  */
 const createCamera = (scene: BABYLON.Scene, initialPosition?: BABYLON.Vector3) => {
   const arcRotateCamera = new BABYLON.ArcRotateCamera('arcRotateCamera', 0, 6, 10, BABYLON.Vector3.Zero(), scene);
@@ -25,11 +25,10 @@ const createCamera = (scene: BABYLON.Scene, initialPosition?: BABYLON.Vector3) =
   arcRotateCamera.panningInertia = 0.5;
   arcRotateCamera.panningDistanceLimit = 100;
 
-  // 기본 카메라 컨트롤을 삭제
+  // remove default camera controls
   arcRotateCamera.inputs.remove(arcRotateCamera.inputs.attached.pointers);
-  // 커스텀한 카메라 컨트롤을 적용
+  // add custom camera controls
   arcRotateCamera.inputs.add(new PlaskArcRotateCameraPointersInput());
-  // arcRotateCamera._panningMouseButton = 2; // panningMouseButton 기본이 2라서 주석 처리
 
   return arcRotateCamera;
 };

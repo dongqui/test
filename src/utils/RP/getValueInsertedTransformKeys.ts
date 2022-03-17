@@ -1,33 +1,32 @@
 import * as BABYLON from '@babylonjs/core';
 
 /**
- * transformKeys를 받아 특정 시점에 value를 삽입한 후 다시 반환합니다.
+ * return transformKeys where new key is inserted to the target frame
  *
- * @param transformKeys - value를 삽입할 transformKeys
- * @param targetFrame - value를 삽입할 시점(frame)
- * @param value - 삽입할 값
+ * @param transformKeys - target transformKeys
+ * @param targetFrame - target frame
+ * @param value - target value
  */
 const getValueInsertedTransformKeys = (transformKeys: BABYLON.IAnimationKey[], targetFrame: number, value: BABYLON.Vector3 | BABYLON.Quaternion): BABYLON.IAnimationKey[] => {
   if (transformKeys.find((key) => key.frame === targetFrame)) {
-    // targetFrame에 위치한 key가 있을 때, 해당 값만 교체해서 return
+    // if a key already exist at the target frame, return after replacing the value at that frame
     return transformKeys.map((key) => (key.frame === targetFrame ? { frame: key.frame, value } : key));
   } else {
-    // targetFrame에 위치한 key가 없을 때
+    // case where there isn't any key at the target frame
     if (transformKeys.length === 0) {
-      // 빈 배열일 때는 키 추가해서 return
+      // case empty array -> just add key
       return [{ frame: targetFrame, value }];
     } else {
-      // 배열에 key가 한 개 이상 존재할 때, 해당 위치에 넣어서 return
+      // case array with a key or keys, insert key at the target frame
       if (transformKeys[0].frame > targetFrame) {
-        // 첫번째 key의 frame보다 targetFrame이 이전일 때
+        // case targetFrame < firstKey.frame
         return [{ frame: targetFrame, value }, ...transformKeys];
       } else if (transformKeys[transformKeys.length - 1].frame < targetFrame) {
-        // 마지막 key의 frame보다 targetFrame이 이후일 때
+        // case lastKey.frame < targetFrame
         return [...transformKeys, { frame: targetFrame, value }];
       } else {
-        // 위의 조건 두개에 의해 keyframe이 1개인 경우는 제거되므로,
-        // keyframe이 2개 이상이고 그 사이에 targetFrame이 들어가는 경우로 조건이 좁혀짐
-        // targetFrame보다 커지는 frame을 기준으로 기존 transformKeys를 나눈 후 사이에 새로운 값을 집어넣음
+        // case firstKey.frame < targetframe < lastKey.frame
+        // cf) by the elimination, there are more than 1 key
         let idx = 0;
         for (; idx < transformKeys.length; idx += 1) {
           if (transformKeys[idx].frame > targetFrame) {

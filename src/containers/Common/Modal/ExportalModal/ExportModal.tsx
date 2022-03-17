@@ -168,7 +168,7 @@ const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, on
                   <div className={cx('field-label')}>Motion:</div>
                   <div className={cx('field-value')}>
                     <BaseField<Field.DropdownProps>
-                      render={({ onChange, ...rest }) => <Dropdown onChange={(params) => handleMotionOnChange(onChange, params)} {...rest} />}
+                      render={({ onChange, ...rest }) => <Dropdown name="motion" onChange={(params) => handleMotionOnChange(onChange, params)} {...rest} />}
                       control={props.control}
                       value={values.motion}
                       name="motion"
@@ -182,7 +182,7 @@ const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, on
                   <div className={cx('field-label')}>Format:</div>
                   <div className={cx('field-value')}>
                     <BaseField<Field.DropdownProps>
-                      render={({ onChange, ...rest }) => <Dropdown onChange={(params) => handleFormatChange(onChange, params)} {...rest} />}
+                      render={({ onChange, ...rest }) => <Dropdown name="format" onChange={(params) => handleFormatChange(onChange, params)} {...rest} />}
                       control={props.control}
                       value={values.format.value}
                       name="format"
@@ -197,7 +197,7 @@ const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, on
                 <button className={cx('button', 'cancel')} onClick={onClose}>
                   Cancel
                 </button>
-                <button className={cx('button', 'positive')} type="submit">
+                <button data-cy="modal-confirm" className={cx('button', 'positive')} type="submit">
                   Export
                 </button>
               </div>

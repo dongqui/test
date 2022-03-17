@@ -1,38 +1,78 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, Fragment } from 'react';
+import { useDispatch } from 'react-redux';
 
+import * as commonActions from 'actions/Common/globalUI';
 import { useSelector } from 'reducers';
 
-import LowerBanner from './LowerBanner';
+import { ApplyMotion, ExportFile, ImportFile, EditKeyframe, PropertySet, ResetOnboarding, RunOnboarding, VideoMode } from './Tooltip';
+import { ONBOARDING_ID } from './id';
+import Background from './Background';
 
-import styles from './index.module.scss';
-import classNames from 'classnames/bind';
-
-const cx = classNames.bind(styles);
+/**
+ * 0: 온보딩 시작 단계
+ * 1~n: 온보딩 각 단계
+ * 999: 온보딩 마지막 단계(n+1값으로 하게 되면 온보딩 단계가 늘어날 때 마다 값을 변경해야 됨. 그래서 static하게 999으로 지정)
+ * null: 온보딩 미출력
+ * @default null null인 경우 온보딩 미출력
+ */
+export type OnboardingStep = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 999 | null;
 
 const Onboarding = () => {
-  const isShowedOnboarding = useSelector((state) => state.globalUI.isShowedOnboarding);
-  const [isShowedLowerBanner, setIsShowedLowerBanner] = useState(false);
+  const dispatch = useDispatch();
+  const onboardingStep = useSelector((state) => state.globalUI.onboardingStep);
+  const timeoutId = useRef(0);
 
-  // 1초 뒤에 하단 배너 출력
-  useEffect(() => {
-    if (isShowedOnboarding) {
-      setTimeout(() => {
-        setIsShowedLowerBanner(true);
-      }, 1000);
-    } else {
-      setIsShowedLowerBanner(false);
+  const TooltipCase = () => {
+    switch (onboardingStep) {
+      case 0: {
+        return <RunOnboarding />;
+      }
+      case 1: {
+        return <ImportFile />;
+      }
+      case 2: {
+        return <VideoMode />;
+      }
+      case 3: {
+        return <ApplyMotion />;
+      }
+      case 4: {
+        return <PropertySet />;
+      }
+      case 5: {
+        return <EditKeyframe />;
+      }
+      case 6: {
+        return <ExportFile />;
+      }
+      case 999: {
+        return <ResetOnboarding />;
+      }
+      default: {
+        return null;
+      }
     }
-  }, [isShowedOnboarding]);
+  };
 
-  if (!isShowedOnboarding) {
-    return null;
-  }
+  useEffect(() => {
+    if (onboardingStep === 999) {
+      timeoutId.current = window.setTimeout(() => {
+        document.getElementById(ONBOARDING_ID.HELP_BUTTON)?.click();
+        dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
+      }, 4000);
+    } else {
+      clearTimeout(timeoutId.current);
+    }
+    return () => {
+      clearTimeout(timeoutId.current);
+    };
+  }, [onboardingStep, dispatch]);
 
   return (
-    <div className={cx('onboarding')}>
-      {isShowedLowerBanner && <LowerBanner />}
-      <div id="onboarding-tooltip-portal" />
-    </div>
+    <Fragment>
+      <TooltipCase />
+      {onboardingStep !== 999 && <Background />}
+    </Fragment>
   );
 };
 

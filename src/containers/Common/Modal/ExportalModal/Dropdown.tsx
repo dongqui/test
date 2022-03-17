@@ -20,9 +20,10 @@ interface Props {
   };
   onChange: (value: string) => void;
   value: string;
+  name?: string;
 }
 
-const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChange, value }, ref) => {
+const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChange, value, name }, ref) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -70,7 +71,7 @@ const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChan
   return (
     <div className={cx('wrapper')}>
       <div className={cx('header')} ref={ref} onClick={handleToggle}>
-        <button className={cx('button')} type="button" onClick={handleToggle}>
+        <button data-cy={`dropdown-${name}-btn`} className={cx('button')} type="button" onClick={handleToggle}>
           <div className={cx('text')}>{values.label}</div>
           <IconWrapper className={cx('arrow')} icon={SvgPath.EmptyDownArrow} hasFrame={false} />
         </button>
@@ -89,7 +90,7 @@ const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChan
             const classes = cx('item', { disabled: item.disabled });
 
             return (
-              <li className={classes} key={`${item.value}_${i}`} onClick={handleItemChange}>
+              <li data-cy={`dropdown-item-${item.value}`} className={classes} key={`${item.value}_${i}`} onClick={handleItemChange}>
                 <div className={cx('item-text')}>{item.label}</div>
               </li>
             );

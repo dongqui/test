@@ -8,17 +8,22 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {}
+interface Props {
+  onClose?: (params?: any) => void;
+}
 
 const DropdownHeader: FunctionComponent<Props> = (props) => {
-  const { children } = props;
+  const { children, onClose } = props;
 
   const [{ isOpenMenu }, dispatch] = useContext(DropdownContext);
 
   // 드랍다운 헤더 클릭
   const handleClickDropdownHeader = useCallback(() => {
     dispatch('changeIsOpenMenu', { isOpenMenu: !isOpenMenu });
-  }, [isOpenMenu, dispatch]);
+    if (isOpenMenu && onClose) {
+      onClose();
+    }
+  }, [isOpenMenu, dispatch, onClose]);
 
   return (
     <button className={cx('header', { expanded: isOpenMenu })} type="button" onClick={handleClickDropdownHeader}>

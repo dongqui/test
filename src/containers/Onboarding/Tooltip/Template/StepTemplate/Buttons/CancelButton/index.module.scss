@@ -1,0 +1,9 @@
+.cancel {
+  background-color: transparent;
+  border: 1px solid var(--gray300);
+
+  &:hover {
+    background-color: transparent;
+    border: 1px solid var(--gray500);
+  }
+}

@@ -59,10 +59,10 @@ interface CtrlKeyMultiSelect {
 }
 
 /**
- * 드래그박스를 통해 선택여부를 판단할 대상들에 controller 혹은 joint들을 포함시킵니다.
- * joint의 경우 해당 모델의 visualize 시점에, controller의 경우 컨트롤러 생성 시점에 추가합니다.
+ * Make objects selectable with the RP dragBox(add objects to selectable objects).
+ * TransformNodes are added when their model is visualized and controllers are added when they are created.
  *
- * @param objects - 판단 대상들에 포함시킬 controller 혹은 joint들
+ * @param objects - objects to make selectable
  */
 export const addSelectableObjects = (params: AddSelectableObjects) => ({
   type: ADD_SELECTABLE_OBJECTS,
@@ -72,11 +72,9 @@ export const addSelectableObjects = (params: AddSelectableObjects) => ({
 });
 
 /**
- * 드래그박스를 통해 선택여부를 판단할 대상들에서 특정 asset의 controller들을 제외합니다.
- * 이떄, 이미 선택되어 있다면 선택을 해제합니다.
- * asset unrender 혹은 controller 삭제 시에 제외합니다.
+ * Make controllers unselectable with the RP dragBox(remove controllers from selectable objects).
  *
- * @param assetId - 판단 대상에서 제외할 controller들의 asset의 id
+ * @param assetId - asset's id whose controllers will be removed from the selectable objects
  */
 export const removeSelectableControllers = (params: RemoveSelectableControllers) => ({
   type: REMOVE_SELECTABLE_CONTROLLERS,
@@ -86,11 +84,9 @@ export const removeSelectableControllers = (params: RemoveSelectableControllers)
 });
 
 /**
- * 드래그박스를 통해 선택여부를 판단할 대상들에서 특정 asset의 joint들을 제외합니다.
- * 이떄, 이미 선택되어 있다면 선택을 해제합니다.
- * asset unrender시에 제외합니다.
+ * Make transformNodes unselectable with the RP dragBox(remove transformNodes from selectable objects).
  *
- * @param assetId - 판단 대상에서 제외할 joint들의 asset의 id
+ * @param assetId - asset's id whose transformNodes will be removed from the selectable objects
  */
 export const removeSelectableJoints = (params: RemoveSelectableJoints) => ({
   type: REMOVE_SELECTABLE_JOINTS,
@@ -100,9 +96,9 @@ export const removeSelectableJoints = (params: RemoveSelectableJoints) => ({
 });
 
 /**
- * 특정 asset을 unrender시에 호출하며, 해당 asset의 controller와 transformNode를 모두 선택 대상에서 제외합니다.
+ * Make controlloers and transformNodes unselectable with the RP dragBox(remove objects from selectable objects).
  *
- * @param assetId - unrender 대상 asset
+ * @param assetId - asset's id whose controllers and transformNodes will be removed from the selectable objects
  */
 export const unrenderAsset = (params: UnrenderAsset) => ({
   type: UNRENDER_ASSET,
@@ -112,11 +108,10 @@ export const unrenderAsset = (params: UnrenderAsset) => ({
 });
 
 /**
- * 단일 대상을 기본 클릭하는 경우.
- * saga를 통해 해당 대상이 현재 selectedTargets와 동일한지를 체크합니다.
- * 동일한 경우 state를 변경하지 않고, 동일하지 않은 경우 기존 선택을 해제하고 단일 선택모드로 본 대상을 선택합니다.
+ * Select single target(controller or transformNode).
+ * Select only if the target is not currently selected.
  *
- * @param target - 선택 대상
+ * @param target
  */
 export const defaultSingleSelect = (params: DefaultSingleSelect) => ({
   type: DEFAULT_SINGLE_SELECT,
@@ -126,9 +121,10 @@ export const defaultSingleSelect = (params: DefaultSingleSelect) => ({
 });
 
 /**
- * 다수의 대상을 기본 클릭(드래그)하는 경우. 기존 선택을 해제하고 다중 선택모드로 본 대상들을 선택합니다.
+ * Select multi targets.
+ * Reset current selected targets and select new ones.
  *
- * @param targets - 선택 대상들
+ * @param targets
  */
 export const defaultMultiSelect = (params: DefaultMultiSelect) => ({
   type: DEFAULT_MULTI_SELECT,
@@ -138,11 +134,10 @@ export const defaultMultiSelect = (params: DefaultMultiSelect) => ({
 });
 
 /**
- * 단일 대상을 Ctri(혹은 Meta)키와 함께 클릭하는 경우.
- * saga를 통해 해당 대상이 현재 selectedTargets에 포함되어 있는지를 체크합니다.
- * 이미 포함되어 있는 경우 본 대상을 선택 해제하고, 포함되어 있지 않는 경우 다중 선택모드로 본 대상을 추가 선택합니다.
+ * 1) If clicking currently selected target, exclude that one from the selected.
+ * 2) If clicking not selected target, include that one to the selected.
  *
- * @param target - 선택 대상
+ * @param target
  */
 export const ctrlKeySingleSelect = (params: CtrlKeySingleSelect) => ({
   type: CTRL_KEY_SINGLE_SELECT,
@@ -152,10 +147,11 @@ export const ctrlKeySingleSelect = (params: CtrlKeySingleSelect) => ({
 });
 
 /**
- * 다중 대상을 Ctrl(혹은 Meta)키와 함께 클릭하는 경우.
- * 본 대상들 중 이미 선택된 대상은 선택 해제하고, 포함되어 있지 않은 대상들은 다중 선택모드로 선택에 추가합니다.
+ * ctrlKeySingleSelect happens to multi targets.
+ * 1) If clicking currently selected target, exclude that one from the selected.
+ * 2) If clicking not selected target, include that one to the selected.
  *
- * @param targets - 선택 대상들
+ * @param targets
  */
 export const ctrlKeyMultiSelect = (params: CtrlKeyMultiSelect) => ({
   type: CTRL_KEY_MULTI_SELECT,
@@ -165,14 +161,14 @@ export const ctrlKeyMultiSelect = (params: CtrlKeyMultiSelect) => ({
 });
 
 /**
- * 모든 선택 가능한 대상을 선택합니다.
+ * Select all selectable objects.
  */
 export const selectAllSelectableObjects = () => ({
   type: SELECT_ALL_SELECTABLE_OBJECTS,
 });
 
 /**
- * 모든 선택을 해제합니다.
+ * Make all selected objects unselected
  */
 export const resetSelectedTargets = () => ({
   type: RESET_SELECTED_TARGETS,

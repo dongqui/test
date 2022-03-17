@@ -13,10 +13,19 @@ import {
   Scene,
   Vector3,
 } from '@babylonjs/core';
+import { RootState } from 'reducers';
+import { Dispatch } from 'redux';
+import { stateDiff } from 'utils/common';
 import { createCamera, createDirectionalLight, createGrounds, createHemisphericLight } from 'utils/RP';
 import { CameraModule } from './modules/camera/CameraModule';
+import { GizmoModule } from './modules/gizmo/GizmoModule';
+import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
+
+type VisibilityOptions = {
+  isGizmoVisible: boolean;
+};
 
 export class PlaskEngine {
   private _modules: Module[] = [];
@@ -27,6 +36,17 @@ export class PlaskEngine {
   private _camera!: ArcRotateCamera;
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
+
+  public dispatch!: Dispatch<any>;
+
+  public static Instance: PlaskEngine;
+  public static GetInstance() {
+    return PlaskEngine.Instance;
+  }
+
+  public visibilityOptions: VisibilityOptions = {
+    isGizmoVisible: true,
+  };
 
   public dispose() {
     this._engine.dispose();
@@ -46,22 +66,30 @@ export class PlaskEngine {
     return this._canvas;
   }
 
-  public cameraModule!: CameraModule;
-  public selectorModule!: SelectorModule;
-
-  constructor() {
-    // matrix를 사용한 애니메이션 보간을 허용합니다.
-    Animation.AllowMatricesInterpolation = true;
-    this._registerModules();
+  public get modules() {
+    return this._modules;
   }
 
-  public initialize(canvas: HTMLCanvasElement) {
+  public cameraModule!: CameraModule;
+  public selectorModule!: SelectorModule;
+  public gizmoModule!: GizmoModule;
+  public ikModule!: IKModule;
+
+  constructor() {
+    // allow animation interpolation using matrix
+    Animation.AllowMatricesInterpolation = true;
+    this._registerModules();
+    PlaskEngine.Instance = this;
+  }
+
+  public initialize(canvas: HTMLCanvasElement, dispatch: Dispatch<any>) {
     console.log('Initializing plask engine...');
     this._canvas = canvas;
     this._engine = new Engine(canvas);
     this._scene = new Scene(this._engine);
-    this._scene.onReadyObservable.addOnce(() => this._onSceneReady());
+    this._onSceneReady();
     this._registerObservables();
+    this.dispatch = dispatch;
 
     for (let module of this._modules) {
       module.initialize();
@@ -71,6 +99,33 @@ export class PlaskEngine {
       this._scene.render();
     });
   }
+
+  /**
+   * Dispatches state changes from redux to modules
+   * @hidden
+   * @param action
+   * @param state
+   * @param previousState
+   */
+  public onStateChanged(action: any, state: any, previousState: any) {
+    this.state = state;
+
+    for (const module of this._modules) {
+      for (const stateKey of module.reduxObservedStates) {
+        const diff = stateDiff(state[stateKey], previousState[stateKey]);
+        if (diff.length) {
+          for (const key of diff) {
+            module.onStateChanged(stateKey, key);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Redux state
+   */
+  public state!: RootState;
 
   public resize() {
     this._engine.resize();
@@ -90,14 +145,16 @@ export class PlaskEngine {
   private _registerModules() {
     this._modules.push((this.cameraModule = new CameraModule(this)));
     this._modules.push((this.selectorModule = new SelectorModule(this)));
+    this._modules.push((this.gizmoModule = new GizmoModule(this)));
+    // this._modules.push((this.ikModule = new IKModule(this)));
   }
 
   private _onSceneReady() {
-    // scene이 준비됐을 때 호출할 콜백
+    // callback to call when scene is ready
     this.scene.useRightHandedSystem = true;
     this.scene.clearColor = Color4.FromColor3(Color3.FromHexString('#202020'));
 
-    // scene에 기본요소를 생성합니다.
+    // add default elements to the scene
     this._grounds = createGrounds(this.scene, true);
     this._camera = createCamera(this.scene);
     this._hemiLight = createHemisphericLight(this.scene);
@@ -112,7 +169,7 @@ export class PlaskEngine {
     const { pickInfo, type } = pointerInfo;
     if (type === PointerEventTypes.POINTERWHEEL) {
       const event = pointerInfo.event as WheelEvent & { wheelDelta: number };
-      // orthographic 모드에서의 카메라 줌
+      // set up zooming camera in Orthographic mode
       if (this.scene.activeCamera && this.scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
         const activeCamera = this.scene.activeCamera as ArcRotateCamera;
         const canvas = this.scene.getEngine().getRenderingCanvas();
@@ -124,7 +181,7 @@ export class PlaskEngine {
       }
     } else if (type === PointerEventTypes.POINTERDOWN) {
       const event = pointerInfo.event as PointerEvent;
-      // camera rotate 시 perspective 모드로 전환
+      // return to perspective mode when camera is rotated
       if (event.button === 0 && event.altKey && this.scene.activeCamera && this.scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
         this.cameraModule.toPerspective();
 

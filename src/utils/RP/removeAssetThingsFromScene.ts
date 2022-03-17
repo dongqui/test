@@ -8,7 +8,6 @@ function removeAssetThingsFromScene(plaskProject: PlaskProject, selectingData: S
   const targetJointTransformNodes = selectingData.selectableObjects.filter((object) => object.id.includes(selectAssetId) && !checkIsTargetMesh(object));
   const targetControllers = selectingData.selectableObjects.filter((object) => object.id.includes(selectAssetId) && checkIsTargetMesh(object));
 
-  // delete 대상이 render된 scene에서 대상의 요소들 remove
   if (targetAsset) {
     plaskProject.screenList
       .map((screen) => screen.scene)

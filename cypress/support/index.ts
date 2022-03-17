@@ -34,3 +34,29 @@ Cypress.Commands.add('getByClassLike', (className) => {
 Cypress.Commands.add('getStoreState', (state?: string) => {
   return state ? cy.window().its('store').invoke('getState').its(state) : cy.window().its('store').invoke('getState');
 });
+
+Cypress.Commands.add(
+  'dropFile',
+  {
+    prevSubject: 'element',
+  },
+  (subject: JQuery<HTMLElement>, fileName: string) => {
+    Cypress.log({
+      name: 'dropFile',
+    });
+    return cy
+      .fixture(fileName, 'base64')
+      .then(Cypress.Blob.base64StringToBlob)
+      .then((blob) => {
+        return cy.window().then((win) => {
+          const file = new win.File([blob], fileName);
+          const dataTransfer = new win.DataTransfer();
+          dataTransfer.items.add(file);
+
+          return cy.wrap(subject).trigger('drop', {
+            dataTransfer,
+          });
+        });
+      });
+  },
+);

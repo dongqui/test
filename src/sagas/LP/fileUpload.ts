@@ -1,7 +1,6 @@
 import { RootState } from 'reducers';
 import { select, put, call } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
-import produce from 'immer';
 
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -16,97 +15,8 @@ import { createAnimationIngredient, getRecurrentRotationQuaternion } from 'utils
 import { WARNING_07, WARNING_01 } from 'constants/Text';
 import { AnimationIngredient, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
 
-async function getAssetContainer(file: File | string, extension: string, baseScene: BABYLON.Scene) {
-  if (extension === 'fbx' && file instanceof File) {
-    const fileUrl: string = await convertModel(file, 'glb');
-    return await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
-  } else if (extension === 'glb') {
-    return file instanceof File
-      ? await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', file, baseScene)
-      : await BABYLON.SceneLoader.LoadAssetContainerAsync(`/models/${file}`, '', baseScene);
-  }
-
-  throw new Error('Load asset container failed');
-}
-
-function preprocessAssetContainerData(assetId: string, assetContainer: BABYLON.AssetContainer) {
-  const { meshes, skeletons, transformNodes } = assetContainer;
-
-  meshes.forEach((mesh) => {
-    // joint 클릭을 위해 mesh 클릭을 불가능하게 처리
-    mesh.isPickable = false;
-  });
-
-  skeletons[0].bones.forEach((bone) => {
-    // bone id를 unique한 id로 생성
-    bone.id = `${assetId}//${bone.name}//bone`;
-  });
-
-  transformNodes.forEach((transformNode) => {
-    // transformNode id를 unique한 id로 생성
-    transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
-  });
-}
-
-function getCustomAnimationIngredients(assetId: string, transformNodes: BABYLON.TransformNode[], animationGroups: BABYLON.AnimationGroup[]) {
-  const animationIngredientIds: string[] = [];
-  const animationIngredients: AnimationIngredient[] = [];
-
-  animationGroups.forEach((animationGroup, idx) => {
-    // 모델 로드 시 animation 재생을 방지
-    animationGroup.pause();
-
-    /**
-     * 모델이 가진 animationGroups를 통해 자체적인 애니메이션 데이터인 animationIngredients를 생성
-     * 첫 번째 animationGroup을 current로 사용 (idx === 0)
-     */
-    const animationIngredient = createAnimationIngredient(
-      assetId,
-      animationGroup.name,
-      animationGroup.targetedAnimations,
-      filterAnimatableTransformNodes(transformNodes),
-      false,
-      idx === 0,
-    );
-
-    animationIngredientIds.push(animationIngredient.id);
-    animationIngredients.push(animationIngredient);
-  });
-
-  return { animationIngredientIds, animationIngredients };
-}
-
-async function _createRetargetMap(assetId: string, skeletons: BABYLON.Skeleton[]) {
-  try {
-    return await createAutoRetargetMap(assetId, skeletons[0]?.bones, 3000);
-  } catch (e) {
-    return createEmptyRetargetMap(assetId);
-  }
-}
-
-function getNodeName(nodes: LP.Node[], fileName: string, extension: string) {
-  const currentPathNodeNames = nodes.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
-  const check = checkCreateDuplicates(`${fileName}`, currentPathNodeNames);
-
-  return check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
-}
-
-function getInitialPoses(transformNodes: BABYLON.TransformNode[], skeletons: BABYLON.Skeleton[]) {
-  return filterAnimatableTransformNodes(transformNodes).map((transformNode) => {
-    const bone = skeletons[0].bones.find((bone) => bone.id === transformNode.id.replace('//transformNode', '//bone'))!;
-
-    return {
-      target: transformNode,
-      position: transformNode.position.clone(),
-      rotationQuaternion: transformNode.rotationQuaternion ? transformNode.rotationQuaternion.clone() : transformNode.rotation.clone().toQuaternion(),
-      recurrentRotationQuaternion: bone ? getRecurrentRotationQuaternion(bone) : null,
-      scaling: transformNode.scaling.clone(),
-    };
-  });
-}
-
-function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) {
-  // TODO: file 복수 처리 -> action 줄이기
+export default function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) {
+  // TODO: reduce # of actions by handle multi-files at one action
   const { lpNode, plaskProject }: RootState = yield select();
   const { file, showLoading } = action.payload;
 
@@ -158,7 +68,7 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
       childNodeIds: animationIngredientIds,
     };
 
-    // 로드한 모델의 모션을 통해 LP 모션 노드 생성
+    // create MotionNode in LP with animationIngredients included in loaded asset
     const newMotionNodes = animationIngredients.map((ingredient) => {
       const motion: LP.Node = {
         id: ingredient.id,
@@ -211,4 +121,94 @@ function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) 
   }
 }
 
-export default handleFileUpload;
+async function getAssetContainer(file: File | string, extension: string, baseScene: BABYLON.Scene) {
+  if (extension === 'fbx' && file instanceof File) {
+    const fileUrl: string = await convertModel(file, 'glb');
+    return await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
+  } else if (extension === 'glb') {
+    return file instanceof File
+      ? await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', file, baseScene)
+      : await BABYLON.SceneLoader.LoadAssetContainerAsync(`/models/${file}`, '', baseScene);
+  }
+
+  throw new Error('Load asset container failed');
+}
+
+function preprocessAssetContainerData(assetId: string, assetContainer: BABYLON.AssetContainer) {
+  const { meshes, skeletons, transformNodes } = assetContainer;
+
+  meshes.forEach((mesh) => {
+    // make meshes not-pickable for clicking joints
+    mesh.isPickable = false;
+  });
+
+  skeletons[0].bones.forEach((bone) => {
+    // set bone's id with unique string using its name and the id of its' asset
+    bone.id = `${assetId}//${bone.name}//bone`;
+  });
+
+  transformNodes.forEach((transformNode) => {
+    // set transformNode's id with unique string using its name and the id of its' asset
+    transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
+  });
+}
+
+function getCustomAnimationIngredients(assetId: string, transformNodes: BABYLON.TransformNode[], animationGroups: BABYLON.AnimationGroup[]) {
+  const animationIngredientIds: string[] = [];
+  const animationIngredients: AnimationIngredient[] = [];
+
+  animationGroups.forEach((animationGroup, idx) => {
+    // block auto play when loading assets
+    // @TODO need to find better ways to block
+    animationGroup.pause();
+
+    /**
+     * create our custom data(animationIngredient) with asset's animationGroups
+     * and set the first one as current animationIngredient
+     */
+    const animationIngredient = createAnimationIngredient(
+      assetId,
+      animationGroup.name,
+      animationGroup.targetedAnimations,
+      filterAnimatableTransformNodes(transformNodes),
+      false,
+      idx === 0,
+    );
+
+    animationIngredientIds.push(animationIngredient.id);
+    animationIngredients.push(animationIngredient);
+  });
+
+  return { animationIngredientIds, animationIngredients };
+}
+
+async function _createRetargetMap(assetId: string, skeletons: BABYLON.Skeleton[]) {
+  try {
+    return await createAutoRetargetMap(assetId, skeletons[0]?.bones, 3000);
+  } catch (e) {
+    return createEmptyRetargetMap(assetId);
+  }
+}
+
+function getNodeName(nodes: LP.Node[], fileName: string, extension: string) {
+  const currentPathNodeNames = nodes
+    .filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`) && node.extension === extension)
+    .map((filteredNode) => filteredNode.name);
+  const check = checkCreateDuplicates(`${fileName}`, currentPathNodeNames);
+
+  return check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
+}
+
+function getInitialPoses(transformNodes: BABYLON.TransformNode[], skeletons: BABYLON.Skeleton[]) {
+  return filterAnimatableTransformNodes(transformNodes).map((transformNode) => {
+    const bone = skeletons[0].bones.find((bone) => bone.id === transformNode.id.replace('//transformNode', '//bone'))!;
+
+    return {
+      target: transformNode,
+      position: transformNode.position.clone(),
+      rotationQuaternion: transformNode.rotationQuaternion ? transformNode.rotationQuaternion.clone() : transformNode.rotation.clone().toQuaternion(),
+      recurrentRotationQuaternion: bone ? getRecurrentRotationQuaternion(bone) : null,
+      scaling: transformNode.scaling.clone(),
+    };
+  });
+}

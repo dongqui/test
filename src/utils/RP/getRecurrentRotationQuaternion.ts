@@ -1,9 +1,10 @@
 import * as BABYLON from '@babylonjs/core';
 
 /**
- * parent bone을 재귀적으로 탐색하여 rotationQuaternion을 누적 계산한 quaternion 값을 구하여 반환합니다.
+ * Return the quaternion value which is get by multiplying ancestral bones' rotations recurrently
+ * cf) the result is same as the absolute rotation quaternion value
  *
- * @param bone - 대상 bone
+ * @param bone - target bone
  */
 const getRecurrentRotationQuaternion = (bone: BABYLON.Bone) => {
   let target = bone;

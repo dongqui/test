@@ -3,13 +3,13 @@ import { ScreenXY } from 'types/common';
 import { checkIsVectorIn } from './';
 
 /**
- * 대상 controller가 드래그 박스 범위에 속하는 지 판단합니다.
- * controller의 boundingBox의 모서리들을 바탕으로 생성한 9개 점들을 판단 기준으로 사용합니다.
+ * check if target controller is in dragBox's range
+ * check inner 9 points of contoller's boundingBox
  *
- * @param start - 드래그 박스 생성 시작 시의 포인터 위치
- * @param end - 드래그를 끝냈을 때의 포인터 위치
- * @param mesh - 판단 대상 컨트롤러
- * @param scene - dragBox와 pointer가 속하는 scene
+ * @param start - start pointer position
+ * @param end - end pointer position
+ * @param mesh - target controller
+ * @param scene - scene which has the dragBox and the pointer
  */
 const checkIsControllerIn = (start: ScreenXY, end: ScreenXY, mesh: BABYLON.Mesh, scene: BABYLON.Scene) => {
   mesh.computeWorldMatrix(true);
