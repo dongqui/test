@@ -6,7 +6,7 @@ function createFolderNode(nodeName: string, filePath: string, parentId?: string)
     parentId: parentId || '__root__',
     filePath: parentId ? filePath + `\\${nodeName}` : '\\root',
     name: nodeName,
-    extension,
+    extension: '',
     type: 'Folder',
     childNodeIds: [],
   };

@@ -10,7 +10,7 @@ interface Props {
 }
 
 const FolderNode = ({ node }: Props) => {
-  const { id, filePath, extension, parentId } = node;
+  const { id, filePath, parentId } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
 
@@ -20,7 +20,6 @@ const FolderNode = ({ node }: Props) => {
       globalUIActions.openContextMenu('FolderContextMenu', e, {
         nodeId: id,
         filePath,
-        extension,
         parentId,
       }),
     );

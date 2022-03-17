@@ -19,7 +19,6 @@ interface AddEmptyMotionParams {
 interface AddDirectoryParams {
   nodeId: string;
   filePath: string;
-  extension: string;
 }
 interface DuplicateMotionParams {
   parentId: string;

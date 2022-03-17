@@ -6,12 +6,11 @@ import * as globalUIActions from 'actions/Common/globalUI';
 
 interface Props {
   nodeId: string;
-  extension: string;
   filePath: string;
   parentId?: string;
 }
 
-const FolderContextMenu = ({ nodeId, extension, filePath, parentId }: Props) => {
+const FolderContextMenu = ({ nodeId, filePath, parentId }: Props) => {
   const dispatch = useDispatch();
 
   const handleDelete = () => {
@@ -35,7 +34,6 @@ const FolderContextMenu = ({ nodeId, extension, filePath, parentId }: Props) => 
     dispatch(
       lpNodeActions.addDirectory({
         nodeId,
-        extension,
         filePath,
       }),
     );

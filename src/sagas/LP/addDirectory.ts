@@ -8,7 +8,7 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 
 export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirectory>) {
   const { lpNode }: RootState = yield select();
-  const { nodeId, filePath, extension } = action.payload;
+  const { nodeId, filePath } = action.payload;
 
   const currentPathNodeName = lpNode.nodes
     .filter((node) => {
@@ -29,7 +29,7 @@ export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActi
 
   const nextNodes = produce(lpNode.nodes, (draft) => {
     const parent = find(draft, { id: nodeId });
-    const newFolderNode = createFolderNode(nodeName, filePath, extension, parent?.id);
+    const newFolderNode = createFolderNode(nodeName, filePath, parent?.id);
     if (parent) {
       parent.childNodeIds.push(newFolderNode.id);
     }
