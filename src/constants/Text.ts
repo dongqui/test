@@ -7,7 +7,7 @@ export const WARNING_07: string = 'Import failed: Should the problem recur, let 
 export const WARNING_08: string = 'Visualization failed: Should the problem recur, let us know via the chat window on our website.';
 export const WRANING_12: string = 'You cannot create more than 6 subdirectories.';
 
-export const CONFIRM_01: string = 'Export motion from the video?';
+export const CONFIRM_01: string = 'Extract mocap from the video?';
 export const CONFIRM_04: string = 'Finish retargeting first to proceed.';
 export const CONFIRM_05: string = '%s already exists.<br />Do you want to overwrite it?';
 
