@@ -1,7 +1,7 @@
-import { ExportFormat } from 'types/common';
-import { createAction } from 'typesafe-actions';
-import LP from '../../../@types/Container/LP';
+import { createAction, createAsyncAction } from 'typesafe-actions';
 
+import { ExportFormat } from 'types/common';
+import { CreateFolderOrMocapParams } from 'api/LP';
 interface DeleteModelParams {
   nodeId: string;
   assetId: string;
@@ -93,3 +93,10 @@ export const deleteMotion = createAction('node/DELETE_MOTION', (params: DeleteMo
 export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadParams) => ({ ...params }))();
 export const addNodes = createAction('node/ADD_NODES', (nodes: LP.Node[]) => ({ nodes }))();
 export const dropNodeOnRoot = createAction('node/DROP_NODE_ON_ROOT')();
+
+export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<string, { nodes: LP.Node[] }, Error>();
+export const createFolderOrMocapAsync = createAsyncAction('node/POST_FOLRDER_OR_MOCAP_REQUEST', 'node/POST_FOLRDER_OR_MOCAP_REQUEST', 'node/POST_FOLRDER_OR_MOCAP_REQUEST')<
+  CreateFolderOrMocapParams,
+  LP.Node,
+  Error
+>();

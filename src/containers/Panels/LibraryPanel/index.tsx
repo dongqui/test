@@ -110,6 +110,10 @@ const LibraryPanel: FunctionComponent = () => {
   const [isSceneReady, setIsSceneReady] = useState(false);
 
   useEffect(() => {
+    dispatch(lpNodeActions.getNodesAsync.request('q0j0y8dzoq9xmv7gn4n526ger3lkp1m6'));
+  }, [dispatch]);
+
+  useEffect(() => {
     const isSceneExist = _screenList.length > 0 && _screenList[0].scene;
     if (isSceneExist) {
       const scene = _screenList[0].scene;

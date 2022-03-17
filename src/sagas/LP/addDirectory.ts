@@ -25,6 +25,8 @@ export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActi
 
   const nodeName = check === '0' ? 'Untitled' : `Untitled (${check})`;
 
+  lpNodeActions.createFolderOrMocapAsync;
+
   const nextNodes = produce(lpNode.nodes, (draft) => {
     const parent = find(draft, { id: nodeId });
     const newFolderNode = createFolderNode(nodeName, filePath, extension, parent?.id);

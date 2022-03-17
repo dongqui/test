@@ -1,4 +1,4 @@
-import { ActionType } from 'typesafe-actions';
+import { ActionType, getType } from 'typesafe-actions';
 
 import * as LPNodeActions from 'actions/LP/lpNodeAction';
 interface State {
@@ -51,7 +51,11 @@ export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeAct
         nodes: [...state.nodes, ...action.payload.nodes],
       });
     }
-
+    case getType(LPNodeActions.getNodesAsync.success): {
+      return Object.assign({}, state, {
+        nodes: action.payload.nodes,
+      });
+    }
     default: {
       return state;
     }
