@@ -110,7 +110,7 @@ const LibraryPanel: FunctionComponent = () => {
   const [isSceneReady, setIsSceneReady] = useState(false);
 
   useEffect(() => {
-    dispatch(lpNodeActions.getNodesAsync.request('q0j0y8dzoq9xmv7gn4n526ger3lkp1m6'));
+    dispatch(lpNodeActions.getNodesAsync.request());
   }, [dispatch]);
 
   useEffect(() => {

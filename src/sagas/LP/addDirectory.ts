@@ -1,16 +1,14 @@
 import { find } from 'lodash';
-import { select, put } from 'redux-saga/effects';
-import produce from 'immer';
+import { select, call, put } from 'redux-saga/effects';
 
 import { RootState } from 'reducers';
 import { checkCreateDuplicates, createFolderNode } from 'utils/LP/FileSystem';
+import { CreateFolderOrMocapResponse, CreateFolderOrMocapBodyData } from 'types/LP';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as api from 'api';
 
-export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirectory>) {
-  const { lpNode }: RootState = yield select();
-  const { nodeId, filePath } = action.payload;
-
-  const currentPathNodeName = lpNode.nodes
+function generateFolderName(nodes: LP.Node[], nodeId: string) {
+  const currentPathNodeName = nodes
     .filter((node) => {
       if (node.parentId === nodeId) {
         if (node.name.includes('Untitled')) {
@@ -25,16 +23,24 @@ export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActi
 
   const nodeName = check === '0' ? 'Untitled' : `Untitled (${check})`;
 
-  lpNodeActions.createFolderOrMocapAsync;
+  return nodeName;
+}
 
-  const nextNodes = produce(lpNode.nodes, (draft) => {
-    const parent = find(draft, { id: nodeId });
-    const newFolderNode = createFolderNode(nodeName, filePath, parent?.id);
-    if (parent) {
-      parent.childNodeIds.push(newFolderNode.id);
-    }
-    draft.push(newFolderNode);
-  });
+export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirectoryAsdync.request>) {
+  const { lpNode }: RootState = yield select();
+  const { nodeId, filePath } = action.payload;
 
-  yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+  try {
+    const parentNode = find(lpNode.nodes, { id: nodeId });
+    const data: CreateFolderOrMocapBodyData = {
+      name: generateFolderName(lpNode.nodes, nodeId),
+      type: 'FOLDER',
+      data: [],
+    };
+
+    const res: CreateFolderOrMocapResponse = yield call(api.createFolderOrMocap, lpNode.sceneId, data, parentNode?.id);
+    yield put(lpNodeActions.addDirectoryAsdync.success(createFolderNode(res.name, filePath, res.parentUid)));
+  } catch (e) {
+    // yield put(lpNodeActions.addDirectoryAsdync.failure(e));
+  }
 }

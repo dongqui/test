@@ -12,7 +12,7 @@ const LPBodyContextMenu = ({ nodeId, filePath }: Props) => {
 
   const handleNewDirectory = () => {
     dispatch(
-      lpNodeActions.addDirectory({
+      lpNodeActions.addDirectoryAsdync.request({
         nodeId,
         filePath,
       }),

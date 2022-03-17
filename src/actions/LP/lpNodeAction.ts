@@ -1,7 +1,6 @@
 import { createAction, createAsyncAction } from 'typesafe-actions';
 
 import { ExportFormat } from 'types/common';
-import { CreateFolderOrMocapParams } from 'api/LP';
 interface DeleteModelParams {
   nodeId: string;
   assetId: string;
@@ -75,7 +74,6 @@ interface FileUploadParams {
 export const changeNode = createAction('node/CHANGE_NODE', ({ nodes }: { nodes: LP.Node[] }) => ({ nodes }))();
 export const deleteFolderOrMocap = createAction('node/DELETE_FOLDER_OR_MOCAP', (params: DeleteFolderOrMocapParams) => ({ ...params }))();
 export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
-export const addDirectory = createAction('node/ADD_DIRECTORY', (params: AddDirectoryParams) => ({ ...params }))();
 export const visualizeModel = createAction('node/VISUALIZE_MODEL', (assetId: string) => ({ assetId }))();
 export const cancelVisulization = createAction('node/CANCEL_VISUALIZATION', (assetId: string) => ({ assetId }))();
 export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: AddEmptyMotionParams) => ({ ...params }))();
@@ -93,9 +91,5 @@ export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadPa
 export const addNodes = createAction('node/ADD_NODES', (nodes: LP.Node[]) => ({ nodes }))();
 export const dropNodeOnRoot = createAction('node/DROP_NODE_ON_ROOT')();
 
-export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<string, { nodes: LP.Node[] }, Error>();
-export const createFolderOrMocapAsync = createAsyncAction('node/POST_FOLRDER_OR_MOCAP_REQUEST', 'node/POST_FOLRDER_OR_MOCAP_REQUEST', 'node/POST_FOLRDER_OR_MOCAP_REQUEST')<
-  CreateFolderOrMocapParams,
-  LP.Node,
-  Error
->();
+export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<undefined, { nodes: LP.Node[] }, Error>();
+export const addDirectoryAsdync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
