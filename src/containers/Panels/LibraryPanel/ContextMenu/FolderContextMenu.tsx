@@ -32,7 +32,7 @@ const FolderContextMenu = ({ nodeId, filePath, parentId }: Props) => {
 
   const handleNewDirectory = () => {
     dispatch(
-      lpNodeActions.addDirectoryAsdync.request({
+      lpNodeActions.addDirectoryAsync.request({
         nodeId,
         filePath,
       }),

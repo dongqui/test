@@ -21,7 +21,7 @@ import getNodes from './getNodes';
 
 export default function* LPSaga() {
   yield all([
-    takeLatest(getType(lpNodeActions.addDirectoryAsdync.request), handleAddDirectory),
+    takeLatest(getType(lpNodeActions.addDirectoryAsync.request), handleAddDirectory),
     takeLatest(getType(lpNodeActions.visualizeModel), handleVisualizeModel),
     takeLatest(getType(lpNodeActions.cancelVisulization), handleCancelVisulization),
     takeLatest(getType(lpNodeActions.addEmptyMotion), handleAddEmptyMotion),
