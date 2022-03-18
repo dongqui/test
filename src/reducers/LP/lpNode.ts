@@ -58,6 +58,11 @@ export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeAct
     }
     case getType(LPNodeActions.getNodesAsync.success): {
       return Object.assign({}, state, {
+        nodes: action.payload.nodes,
+      });
+    }
+    case getType(LPNodeActions.addDirectoryAsdync.success): {
+      return Object.assign({}, state, {
         nodes: [...state.nodes, action.payload],
       });
     }

@@ -1,6 +1,6 @@
 export interface CreateFolderOrMocapResponse {
   uid: string;
-  type: 'MOCAP' | 'FOLDER';
+  type: 'MOCAP' | 'DIRECTORY';
   name: string;
   isDeleted: boolean;
   createdAt: string;
@@ -14,6 +14,6 @@ export interface CreateFolderOrMocapResponse {
 
 export interface CreateFolderOrMocapBodyData {
   name: string;
-  type: 'FOLDER' | 'MOCAP';
+  type: 'DIRECTORY' | 'MOCAP';
   data: string[];
 }

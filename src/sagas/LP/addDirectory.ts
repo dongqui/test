@@ -34,7 +34,7 @@ export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActi
     const parentNode = find(lpNode.nodes, { id: nodeId });
     const data: CreateFolderOrMocapBodyData = {
       name: generateFolderName(lpNode.nodes, nodeId),
-      type: 'FOLDER',
+      type: 'DIRECTORY',
       data: [],
     };
 
