@@ -17,10 +17,11 @@ import handleDeleteModel from './deleteModel';
 import handleDeleteFolderOrMocap from './deleteFolderOrMocap';
 import handleFileUpload from './fileUpload';
 import handleDropNodeOnRoot from './dropNodeOnRoot';
+import getNodes from './getNodes';
 
 export default function* LPSaga() {
   yield all([
-    takeLatest(getType(lpNodeActions.addDirectory), handleAddDirectory),
+    takeLatest(getType(lpNodeActions.addDirectoryAsync.request), handleAddDirectory),
     takeLatest(getType(lpNodeActions.visualizeModel), handleVisualizeModel),
     takeLatest(getType(lpNodeActions.cancelVisulization), handleCancelVisulization),
     takeLatest(getType(lpNodeActions.addEmptyMotion), handleAddEmptyMotion),
@@ -35,6 +36,7 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.deleteFolderOrMocap), handleDeleteFolderOrMocap),
     takeEvery(getType(lpNodeActions.fileUpload), handleFileUpload),
     takeEvery(getType(lpNodeActions.dropNodeOnRoot), handleDropNodeOnRoot),
+    takeEvery(getType(lpNodeActions.getNodesAsync.request), getNodes),
     watchClickJointChannel(),
   ]);
 }

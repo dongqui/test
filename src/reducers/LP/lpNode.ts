@@ -1,4 +1,6 @@
-import { ActionType } from 'typesafe-actions';
+import { Scene } from '@babylonjs/core';
+import { ActionType, getType } from 'typesafe-actions';
+
 
 import * as LPNodeActions from 'actions/LP/lpNodeAction';
 interface State {
@@ -10,6 +12,7 @@ interface State {
   selectedAssetId: string | null;
   draggedNode: LP.Node | null;
   editingNodeId: null | string;
+  sceneId: string;
 }
 
 const defaultState: State = {
@@ -21,6 +24,9 @@ const defaultState: State = {
   selectedAssetId: null,
   draggedNode: null,
   editingNodeId: null,
+
+  // For test
+  sceneId: 'q0j0y8dzoq9xmv7gn4n526ger3lkp1m6',
 };
 
 export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeActions>) => {
@@ -51,7 +57,16 @@ export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeAct
         nodes: [...state.nodes, ...action.payload.nodes],
       });
     }
-
+    case getType(LPNodeActions.getNodesAsync.success): {
+      return Object.assign({}, state, {
+        nodes: action.payload.nodes,
+      });
+    }
+    case getType(LPNodeActions.addDirectoryAsync.success): {
+      return Object.assign({}, state, {
+        nodes: [...state.nodes, action.payload],
+      });
+    }
     default: {
       return state;
     }

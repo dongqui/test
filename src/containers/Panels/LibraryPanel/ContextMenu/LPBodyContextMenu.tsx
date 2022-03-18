@@ -4,18 +4,16 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 
 interface Props {
   nodeId: string;
-  extension: string;
   filePath: string;
 }
 
-const LPBodyContextMenu = ({ nodeId, extension, filePath }: Props) => {
+const LPBodyContextMenu = ({ nodeId, filePath }: Props) => {
   const dispatch = useDispatch();
 
   const handleNewDirectory = () => {
     dispatch(
-      lpNodeActions.addDirectory({
+      lpNodeActions.addDirectoryAsync.request({
         nodeId,
-        extension,
         filePath,
       }),
     );
