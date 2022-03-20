@@ -3,7 +3,7 @@ import { TypedUseSelectorHook, useSelector as useReduxSelector } from 'react-red
 import { lpNode } from './LP/lpNode';
 import { cpModeSelection } from './CP/cpModeSelection';
 import { plaskProject } from './plaskProject';
-import { allSelectingData, selectingData, undoableSelectingData } from './selectingData';
+import { allSelectingData } from './selectingData';
 import { animationData } from './animationData';
 import { screenData } from './screenData';
 import { animatingControls } from './animatingControls';

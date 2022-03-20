@@ -50,16 +50,12 @@ export class SelectorModule extends Module {
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public reduxObservedStates = [
-    'undoableState.present.selectingData.selectedTargets',
-    'undoableState.present.selectingData.selectableObjects',
-    'undoableState.present.undoableSelectingData',
-  ];
+  public reduxObservedStates = ['undoableState.present.selectingData.selectedTargets', 'undoableState.present.selectingData.selectableObjects', 'undoableState.present.transforms'];
   public onStateChanged(key: string, previousState: any) {
-    if (key === 'undoableState.present.undoableSelectingData') {
-      for (const entityId in this.plaskEngine.state.undoableState.present.undoableSelectingData) {
-        if (previousState[entityId] !== this.plaskEngine.state.undoableState.present.undoableSelectingData[entityId]) {
-          this.plaskEngine.state.undoableState.present.undoableSelectingData[entityId].markDirty();
+    if (key === 'undoableState.present.transforms') {
+      for (const entityId in this.plaskEngine.state.undoableState.present.transforms) {
+        if (previousState[entityId] !== this.plaskEngine.state.undoableState.present.transforms[entityId]) {
+          this.plaskEngine.state.undoableState.present.transforms[entityId].markDirty();
         }
       }
       return;
