@@ -1036,25 +1036,25 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@babylonjs/core@5.0.0-alpha.61", "@babylonjs/core@^5.0.0-alpha.61":
+"@babylonjs/core@5.0.0-alpha.61":
   version "5.0.0-alpha.61"
-  resolved "https://registry.npmjs.org/@babylonjs/core/-/core-5.0.0-alpha.61.tgz"
+  resolved "https://registry.yarnpkg.com/@babylonjs/core/-/core-5.0.0-alpha.61.tgz#e2d8f2a2ebd68d71611216ca9681a3ecb26dd787"
   integrity sha512-iBVcpWxPajVWScrPKukewYre6OhXEF/DrqeKRGnY9DgoKtAe6z0DY+BjWuOHGdaipYJvxux34RvldSeyXIxkqg==
   dependencies:
     tslib "^2.3.1"
 
-"@babylonjs/loaders@^5.0.0-alpha.61":
+"@babylonjs/loaders@5.0.0-alpha.61":
   version "5.0.0-alpha.61"
-  resolved "https://registry.npmjs.org/@babylonjs/loaders/-/loaders-5.0.0-alpha.61.tgz"
+  resolved "https://registry.yarnpkg.com/@babylonjs/loaders/-/loaders-5.0.0-alpha.61.tgz#cd1acfd2438de21ad982633662a1dd2fa65c7793"
   integrity sha512-2rGn7H4cJqDhYckLCEdn1TLvdkTtFD+UnsDHfUF4SvdzHhtrWY2hkiDJpCEZmCALhAYQP+SE97mOv+dpRYnnJw==
   dependencies:
     "@babylonjs/core" "5.0.0-alpha.61"
     babylonjs-gltf2interface "5.0.0-alpha.61"
     tslib "^2.3.1"
 
-"@babylonjs/serializers@^5.0.0-alpha.61":
+"@babylonjs/serializers@5.0.0-alpha.61":
   version "5.0.0-alpha.61"
-  resolved "https://registry.npmjs.org/@babylonjs/serializers/-/serializers-5.0.0-alpha.61.tgz"
+  resolved "https://registry.yarnpkg.com/@babylonjs/serializers/-/serializers-5.0.0-alpha.61.tgz#e0e4183d13819dbe69832a334c4da6ca6f62fe86"
   integrity sha512-8il061x+ub4BJs6bCYswZmpYcqCSlr2u5+8l27oVOyTEnBYrOt/cmu1dvtnACl7OOSRWSZKhVmCXlNEteH7qYg==
   dependencies:
     "@babylonjs/core" "5.0.0-alpha.61"
@@ -4351,7 +4351,7 @@ babel-plugin-transform-undefined-to-void@^6.9.4:
 
 babylonjs-gltf2interface@5.0.0-alpha.61:
   version "5.0.0-alpha.61"
-  resolved "https://registry.npmjs.org/babylonjs-gltf2interface/-/babylonjs-gltf2interface-5.0.0-alpha.61.tgz"
+  resolved "https://registry.yarnpkg.com/babylonjs-gltf2interface/-/babylonjs-gltf2interface-5.0.0-alpha.61.tgz#650a9a5e232e0f74f95f6e8c6e5eb296ea88a090"
   integrity sha512-5uN2/ORzhEyXovliWUTs+Fjx85MBD2w150KLEVbJFL8q6Yc8/inPomTrG3N+j+/msZ3Z92qjid3EFT3qLILoIg==
 
 backo2@1.0.2:

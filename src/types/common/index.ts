@@ -1,6 +1,17 @@
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import * as BABYLON from '@babylonjs/core';
 
+export enum GizmoMode {
+  POSITION,
+  ROTATION,
+  SCALE,
+}
+
+export enum GizmoSpace {
+  WORLD,
+  LOCAL,
+}
+
 export type Nullable<T> = T | null;
 
 export type ScreenXY = { x: number; y: number };

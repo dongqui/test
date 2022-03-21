@@ -9,7 +9,7 @@ import * as screenDataActions from 'actions/screenDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as trackListActions from 'actions/trackList';
 import { useSelector } from 'reducers';
-import { PlaskView } from 'types/common';
+import { GizmoMode, GizmoSpace, PlaskView } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import { checkIsTargetMesh, createAnimationGroupFromIngredient } from 'utils/RP';
@@ -26,12 +26,6 @@ const cx = classNames.bind(styles);
  */
 const DEFAULT_CAMERA_POSITION_ARRAY = [0, 6, 10];
 const DEFAULT_CAMERA_TARGET_ARRAY = [0, 0, 0];
-
-/**
- * types and interfaces
- */
-
-type GizmoMode = 'position' | 'rotation' | 'scale';
 
 interface Props {}
 
@@ -501,13 +495,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     };
   }, [dispatch, multiKeyController]);
 
-  /******************************************************************************
-   * About GizmoControls
-   *****************************************************************************/
-  const [gizmoManager, setGizmoManager] = useState<BABYLON.GizmoManager>();
-  const [currentGizmoMode, setCurrentGizmoMode] = useState<GizmoMode>('position');
-  const [currentGizmoCoordinate, setCurrentGizmoCoordinate] = useState<'world' | 'local'>('local');
-
   /**
    * select property tracks in TimelinePanel(TP) according to the selected targets in RenderingPanel(RP)
    */
@@ -521,162 +508,37 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   }, [dispatch, _selectedTargets]);
 
   /**
-   * change gizmo's coordinate according to currnetGizmoCoordinate state
-   */
-  useEffect(() => {
-    if (gizmoManager) {
-      if (currentGizmoMode === 'position') {
-        gizmoManager.gizmos.positionGizmo!.updateGizmoPositionToMatchAttachedMesh = currentGizmoCoordinate === 'local';
-        gizmoManager.gizmos.positionGizmo!.updateGizmoRotationToMatchAttachedMesh = currentGizmoCoordinate === 'local';
-      } else if (currentGizmoMode === 'rotation') {
-        gizmoManager.gizmos.rotationGizmo!.updateGizmoPositionToMatchAttachedMesh = currentGizmoCoordinate === 'local';
-        gizmoManager.gizmos.rotationGizmo!.updateGizmoRotationToMatchAttachedMesh = currentGizmoCoordinate === 'local';
-      }
-    }
-  }, [currentGizmoCoordinate, currentGizmoMode, gizmoManager]);
-
-  /**
    * shortcuts related to the gizmoManager
    */
   useEffect(() => {
-    if (gizmoManager) {
-      const handleKeyDown = (event: KeyboardEvent) => {
-        // shortcuts don't work while user is type in input elements
-        const target = event.target as Element;
-        if (target.tagName.toLowerCase() === 'input') {
-          return;
-        }
-
-        switch (event.key) {
-          case 'w':
-          case 'W':
-          case 'ㅈ': {
-            setCurrentGizmoMode('position');
-            gizmoManager.positionGizmoEnabled = true;
-            gizmoManager.rotationGizmoEnabled = false;
-            gizmoManager.scaleGizmoEnabled = false;
-            break;
-          }
-          case 'e':
-          case 'E':
-          case 'ㄷ': {
-            setCurrentGizmoMode('rotation');
-            gizmoManager.positionGizmoEnabled = false;
-            gizmoManager.rotationGizmoEnabled = true;
-            gizmoManager.scaleGizmoEnabled = false;
-            break;
-          }
-          case 'r':
-          case 'R':
-          case 'ㄱ': {
-            setCurrentGizmoMode('scale');
-            gizmoManager.positionGizmoEnabled = false;
-            gizmoManager.rotationGizmoEnabled = false;
-            gizmoManager.scaleGizmoEnabled = true;
-            break;
-          }
-          case 'Escape': {
-            gizmoManager.attachToNode(null);
-            dispatch(selectingDataActions.resetSelectedTargets());
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-      };
-
-      document.addEventListener('keydown', handleKeyDown);
-
-      let isDragging = false;
-
-      const isTargetGizmoMesh = (target: BABYLON.AbstractMesh) => {
-        // position gizmo mesh
-        if (target.id.toLowerCase() === 'cylinder') {
-          return true;
-        }
-
-        // rotation gizmo mesh
-        if (target.id.toLowerCase() === 'ignore') {
-          return true;
-        }
-
-        // scale gizmo mesh
-        if (target.id.toLowerCase().includes('posmesh')) {
-          return true;
-        }
-        // not gizmo mesh
-        return false;
-      };
-
-      // apply custom cursors
-      const pointerObservable = gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.add((event) => {
-        if (event.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-          if (event.pickInfo?.hit && event.pickInfo.pickedMesh && isTargetGizmoMesh(event.pickInfo.pickedMesh)) {
-            isDragging = true;
-          }
-        } else if (event.type === BABYLON.PointerEventTypes.POINTERUP) {
-          isDragging = false;
-        } else if (event.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-          if (isDragging) {
-            // cursors are not changed to default while user is dragging
-            if (currentGizmoMode === 'position') {
-              if (gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorPosition.png") 12 12, auto') {
-                gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorPosition.png") 12 12, auto';
-              }
-            } else if (currentGizmoMode === 'rotation') {
-              if (gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorRotation.png") 12 12, auto') {
-                gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorRotation.png") 12 12, auto';
-              }
-            } else if (currentGizmoMode === 'scale') {
-              if (gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorScale.png") 12 12, auto') {
-                gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorScale.png") 12 12, auto';
-              }
-            }
-          } else {
-            // check if the mouse is around the pickable mesh
-            // if so, apply custom cursors
-            if (event.pickInfo?.hit && event.pickInfo.pickedMesh && isTargetGizmoMesh(event.pickInfo.pickedMesh)) {
-              if (currentGizmoMode === 'position') {
-                if (gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorPosition.png") 12 12, auto') {
-                  gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorPosition.png") 12 12, auto';
-                }
-              } else if (currentGizmoMode === 'rotation') {
-                if (gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorRotation.png") 12 12, auto') {
-                  gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorRotation.png") 12 12, auto';
-                }
-              } else if (currentGizmoMode === 'scale') {
-                if (gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorScale.png") 12 12, auto') {
-                  gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorScale.png") 12 12, auto';
-                }
-              }
-            } else {
-              gizmoManager.utilityLayer.originalScene.defaultCursor = 'default';
-            }
-          }
-        }
-      });
-
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-
-        gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.remove(pointerObservable);
-      };
-    }
-  }, [currentGizmoMode, dispatch, gizmoManager]);
-
-  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // input 입력 중에는 적용되지 않도록 수정
+      // shortcuts don't work while user is type in input elements
       const target = event.target as Element;
       if (target.tagName.toLowerCase() === 'input') {
         return;
       }
 
       switch (event.key) {
-        case '`':
-        case '₩': {
-          setCurrentGizmoCoordinate((prev) => (prev === 'world' ? 'local' : 'world'));
+        case 'w':
+        case 'W':
+        case 'ㅈ': {
+          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+          break;
+        }
+        case 'e':
+        case 'E':
+        case 'ㄷ': {
+          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
+          break;
+        }
+        case 'r':
+        case 'R':
+        case 'ㄱ': {
+          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
+          break;
+        }
+        case 'Escape': {
+          dispatch(selectingDataActions.resetSelectedTargets());
           break;
         }
         default: {
@@ -690,7 +552,34 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [dispatch, plaskEngine.gizmoModule]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // input 입력 중에는 적용되지 않도록 수정
+      const target = event.target as Element;
+      if (target.tagName.toLowerCase() === 'input') {
+        return;
+      }
+
+      switch (event.key) {
+        case '`':
+        case '₩': {
+          plaskEngine.gizmoModule.changeGizmoSpace(plaskEngine.gizmoModule.currentGizmoSpace === GizmoSpace.LOCAL ? GizmoSpace.WORLD : GizmoSpace.LOCAL);
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [plaskEngine.gizmoModule]);
 
   /******************************************************************************
    * Animation related codes
@@ -731,62 +620,49 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     () => [
       {
         label: 'Position',
-        disabled: currentGizmoMode === 'position',
+        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.POSITION,
         onClick: () => {
-          if (gizmoManager) {
-            setCurrentGizmoMode('position');
-            gizmoManager.positionGizmoEnabled = true;
-            gizmoManager.rotationGizmoEnabled = false;
-            gizmoManager.scaleGizmoEnabled = false;
-          }
+          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
         },
       },
       {
         label: 'Rotation',
-        disabled: currentGizmoMode === 'rotation',
+        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.ROTATION,
         onClick: () => {
-          if (gizmoManager) {
-            setCurrentGizmoMode('rotation');
-            gizmoManager.positionGizmoEnabled = false;
-            gizmoManager.rotationGizmoEnabled = true;
-            gizmoManager.scaleGizmoEnabled = false;
-          }
+          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
         },
       },
       {
         label: 'Scale',
-        disabled: currentGizmoMode === 'scale',
+        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.SCALE,
         onClick: () => {
-          if (gizmoManager) {
-            setCurrentGizmoMode('scale');
-            gizmoManager.positionGizmoEnabled = false;
-            gizmoManager.rotationGizmoEnabled = false;
-            gizmoManager.scaleGizmoEnabled = true;
-          }
+          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
         },
       },
     ],
-    [currentGizmoMode, gizmoManager],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [plaskEngine.gizmoModule.currentGizmoMode],
   );
 
   const orientChildren = useMemo(
     () => [
       {
         label: 'World',
-        disabled: currentGizmoCoordinate === 'world',
+        disabled: plaskEngine.gizmoModule.currentGizmoSpace === GizmoSpace.WORLD,
         onClick: () => {
-          setCurrentGizmoCoordinate('world');
+          plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.WORLD);
         },
       },
       {
         label: 'Local',
-        disabled: currentGizmoCoordinate === 'local',
+        disabled: plaskEngine.gizmoModule.currentGizmoSpace === GizmoSpace.LOCAL,
         onClick: () => {
-          setCurrentGizmoCoordinate('local');
+          plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.LOCAL);
         },
       },
     ],
-    [currentGizmoCoordinate],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [plaskEngine.gizmoModule.currentGizmoSpace],
   );
 
   const contextMenuList = useMemo(

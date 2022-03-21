@@ -14,7 +14,8 @@ const RunOnboarding = () => {
     <StepTemplate step={0} ref={tooltipRef}>
       <h3>Are you ready for a quick tour of Plask?</h3>
       <p>
-        Walk through <span>Plask&apos;s unique </span> editor and animating features.
+        Walk through <span>Plask&apos;s unique </span> editor and animating <br />
+        features.
       </p>
     </StepTemplate>
   );

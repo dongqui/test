@@ -37,7 +37,9 @@ const ResetOnboarding = () => {
     <BaseTemplate ref={tooltipRef}>
       <div>
         <h3>Reset Onboarding</h3>
-        <p>You can watch onboarding again at any time here.</p>
+        <p>
+          You can watch onboarding <span> again</span> at any time here.
+        </p>
         <Arrow placement="left-start" />
         <IconWrapper className={cx('close')} icon={SvgPath.Close} onClick={closeResetOnboarding} />
       </div>

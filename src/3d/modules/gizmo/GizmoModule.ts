@@ -1,15 +1,9 @@
-import { AxisDragGizmo, AxisScaleGizmo, Color3, GizmoManager, Matrix, Mesh, Nullable, Observer, Quaternion, TransformNode, Vector3 } from '@babylonjs/core';
+import { AbstractMesh, AxisDragGizmo, Color3, GizmoManager, Nullable, Observer, PointerEventTypes, TransformNode, Vector3 } from '@babylonjs/core';
 import { updateTransform } from 'actions/selectingDataAction';
+import { GizmoMode, GizmoSpace } from 'types/common';
 import { checkIsTargetMesh } from 'utils/RP';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
-
-enum GizmoMode {
-  POSITION,
-  ROTATION,
-  SCALE,
-  NONE,
-}
 
 type GizmoDragObserver = Nullable<
   Observer<{
@@ -23,7 +17,9 @@ export class GizmoModule extends Module {
   public state = {};
   private _gizmoManager!: GizmoManager;
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
-  private _currentGizmoMode: GizmoMode = GizmoMode.NONE;
+  private _currentGizmoMode: GizmoMode = GizmoMode.POSITION;
+  private _currentGizmoSpace: GizmoSpace = GizmoSpace.LOCAL;
+  private _isDraggingGizmo = false;
   private _activeTargets: TransformNode[] = [];
   private _observers = {
     dragEnd: {
@@ -55,14 +51,19 @@ export class GizmoModule extends Module {
   public initialize() {
     this._gizmoManager = new GizmoManager(this.plaskEngine.scene);
     this._gizmoManager.usePointerToAttachGizmos = false;
+    this._currentGizmoMode = GizmoMode.POSITION;
     this._gizmoManager.positionGizmoEnabled = true; // position
+    this._gizmoManager.rotationGizmoEnabled = false;
+    this._gizmoManager.scaleGizmoEnabled = false;
 
     this._selectionChangeObserver = this.plaskEngine.selectorModule.onSelectionChangeObservable.add((objects) => this._onSelectionChange(objects));
+    this._gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.add((event) => this._changePointerIcon(event));
     // TODO : visibilityOptions (plaskEngine)
   }
 
   public dispose() {
     this.plaskEngine.selectorModule.onSelectionChangeObservable.remove(this._selectionChangeObserver);
+    this._gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.clear();
     this._gizmoManager.dispose();
   }
 
@@ -79,6 +80,119 @@ export class GizmoModule extends Module {
 
     this._setOutline(this._activeTargets);
     this._attachGizmo(this._activeTargets);
+  }
+
+  public changeGizmoSpace(space: GizmoSpace) {
+    if (this._currentGizmoMode === GizmoMode.POSITION) {
+      this._gizmoManager.gizmos.positionGizmo!.updateGizmoPositionToMatchAttachedMesh = space === GizmoSpace.LOCAL;
+      this._gizmoManager.gizmos.positionGizmo!.updateGizmoRotationToMatchAttachedMesh = space === GizmoSpace.LOCAL;
+    } else if (this._currentGizmoMode === GizmoMode.ROTATION) {
+      this._gizmoManager.gizmos.rotationGizmo!.updateGizmoPositionToMatchAttachedMesh = space === GizmoSpace.LOCAL;
+      this._gizmoManager.gizmos.rotationGizmo!.updateGizmoRotationToMatchAttachedMesh = space === GizmoSpace.LOCAL;
+    }
+    this._currentGizmoSpace = space;
+  }
+
+  public changeGizmoMode(mode: GizmoMode) {
+    switch (mode) {
+      // Enable gizmo for the current mode
+      case GizmoMode.POSITION: {
+        this._gizmoManager.positionGizmoEnabled = true;
+        this._gizmoManager.rotationGizmoEnabled = false;
+        this._gizmoManager.scaleGizmoEnabled = false;
+        break;
+      }
+      case GizmoMode.ROTATION: {
+        this._gizmoManager.positionGizmoEnabled = false;
+        this._gizmoManager.rotationGizmoEnabled = true;
+        this._gizmoManager.scaleGizmoEnabled = false;
+        break;
+      }
+      case GizmoMode.SCALE: {
+        this._gizmoManager.positionGizmoEnabled = false;
+        this._gizmoManager.rotationGizmoEnabled = false;
+        this._gizmoManager.scaleGizmoEnabled = true;
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+    this._currentGizmoMode = mode;
+  }
+
+  public get currentGizmoSpace() {
+    return this._currentGizmoSpace;
+  }
+
+  public get currentGizmoMode() {
+    return this._currentGizmoMode;
+  }
+
+  private _isTargetGizmoMesh = (target: AbstractMesh) => {
+    // position gizmo mesh
+    if (target.id.toLowerCase() === 'cylinder') {
+      return true;
+    }
+    // rotation gizmo mesh
+    if (target.id.toLowerCase() === 'ignore') {
+      return true;
+    }
+    // scale gizmo mesh
+    if (target.id.toLowerCase().includes('posmesh')) {
+      return true;
+    }
+    // not gizmo mesh
+    return false;
+  };
+
+  private _changePointerIcon(event: any) {
+    if (this._gizmoManager) {
+      if (event.type === PointerEventTypes.POINTERDOWN) {
+        if (event.pickInfo?.hit && event.pickInfo.pickedMesh && this._isTargetGizmoMesh(event.pickInfo.pickedMesh)) {
+          this._isDraggingGizmo = true;
+        }
+      } else if (event.type === PointerEventTypes.POINTERUP) {
+        this._isDraggingGizmo = false;
+      } else if (event.type === PointerEventTypes.POINTERMOVE) {
+        if (this._isDraggingGizmo) {
+          // cursors are not changed to default while user is dragging
+          if (this._currentGizmoMode === GizmoMode.POSITION) {
+            if (this._gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorPosition.png") 12 12, auto') {
+              this._gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorPosition.png") 12 12, auto';
+            }
+          } else if (this._currentGizmoMode === GizmoMode.ROTATION) {
+            if (this._gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorRotation.png") 12 12, auto') {
+              this._gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorRotation.png") 12 12, auto';
+            }
+          } else if (this._currentGizmoMode === GizmoMode.SCALE) {
+            if (this._gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorScale.png") 12 12, auto') {
+              this._gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorScale.png") 12 12, auto';
+            }
+          }
+        } else {
+          // check if the mouse is around the pickable mesh
+          // if so, apply custom cursors
+          if (event.pickInfo?.hit && event.pickInfo.pickedMesh && this._isTargetGizmoMesh(event.pickInfo.pickedMesh)) {
+            if (this._currentGizmoMode === GizmoMode.POSITION) {
+              if (this._gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorPosition.png") 12 12, auto') {
+                this._gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorPosition.png") 12 12, auto';
+              }
+            } else if (this._currentGizmoMode === GizmoMode.ROTATION) {
+              if (this._gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorRotation.png") 12 12, auto') {
+                this._gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorRotation.png") 12 12, auto';
+              }
+            } else if (this._currentGizmoMode === GizmoMode.SCALE) {
+              if (this._gizmoManager.utilityLayer.originalScene.defaultCursor !== 'url("images/cursorScale.png") 12 12, auto') {
+                this._gizmoManager.utilityLayer.originalScene.defaultCursor = 'url("images/cursorScale.png") 12 12, auto';
+              }
+            }
+          } else {
+            this._gizmoManager.utilityLayer.originalScene.defaultCursor = 'default';
+          }
+        }
+      }
+    }
   }
 
   private _clearObservers() {
@@ -183,13 +297,23 @@ export class GizmoModule extends Module {
         // Enable gizmo for the current mode
         case GizmoMode.POSITION: {
           this._gizmoManager.positionGizmoEnabled = true;
+          this._gizmoManager.rotationGizmoEnabled = false;
+          this._gizmoManager.scaleGizmoEnabled = false;
+          this._gizmoManager.gizmos.positionGizmo!.updateGizmoPositionToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
+          this._gizmoManager.gizmos.positionGizmo!.updateGizmoRotationToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
           break;
         }
         case GizmoMode.ROTATION: {
+          this._gizmoManager.positionGizmoEnabled = false;
           this._gizmoManager.rotationGizmoEnabled = true;
+          this._gizmoManager.scaleGizmoEnabled = false;
+          this._gizmoManager.gizmos.rotationGizmo!.updateGizmoPositionToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
+          this._gizmoManager.gizmos.rotationGizmo!.updateGizmoRotationToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
           break;
         }
         case GizmoMode.SCALE: {
+          this._gizmoManager.positionGizmoEnabled = false;
+          this._gizmoManager.rotationGizmoEnabled = false;
           this._gizmoManager.scaleGizmoEnabled = true;
           break;
         }
@@ -204,19 +328,7 @@ export class GizmoModule extends Module {
           this._gizmoManager.attachToNode(selectedTargets[0]);
           this._addPositionObservables(selectedTargets[0]);
         } else {
-          // controller single selection
-          this._gizmoManager.attachToMesh(selectedTargets[0] as Mesh);
-          const linkedTransformNode = selectedTargets[0].getScene().getTransformNodeById(selectedTargets[0].id.replace('controller', 'transformNode'));
-
-          if (linkedTransformNode) {
-            if (this._gizmoManager.positionGizmoEnabled && this._currentGizmoMode === GizmoMode.POSITION) {
-              this._addPositionObservables(linkedTransformNode);
-            } else if (this._gizmoManager.rotationGizmoEnabled && this._currentGizmoMode === GizmoMode.ROTATION) {
-              this._addRotationObservables(linkedTransformNode);
-            } else if (this._gizmoManager.scaleGizmoEnabled && this._currentGizmoMode === GizmoMode.SCALE) {
-              this._addScaleObservables(linkedTransformNode);
-            }
-          }
+          this._gizmoManager.attachToMesh(selectedTargets[0]);
         }
       } else {
         this._gizmoManager.attachToNode(null);
@@ -239,284 +351,5 @@ export class GizmoModule extends Module {
     this._observers.dragEnd.position.x = addPositionDragEndObservable(linkedTransformNode, xGizmo);
     this._observers.dragEnd.position.y = addPositionDragEndObservable(linkedTransformNode, yGizmo);
     this._observers.dragEnd.position.z = addPositionDragEndObservable(linkedTransformNode, zGizmo);
-  }
-
-  private _addScaleObservables(linkedTransformNode: TransformNode) {
-    const addScaleDragObservable = (target: TransformNode, gizmo: AxisScaleGizmo) => {
-      return gizmo.dragBehavior.onDragObservable.add(({ delta }) => {
-        target.scaling = new Vector3(target.scaling.x + delta.x, target.scaling.y + delta.y, target.scaling.z + delta.z);
-      });
-    };
-
-    const { xGizmo, yGizmo, zGizmo } = this._gizmoManager.gizmos.scaleGizmo!;
-
-    // this._observers.dragEnd.scale.x = addScaleDragObservable(linkedTransformNode, xGizmo);
-    // this._observers.dragEnd.scale.y = addScaleDragObservable(linkedTransformNode, yGizmo);
-    // this._observers.dragEnd.scale.z = addScaleDragObservable(linkedTransformNode, zGizmo);
-  }
-
-  private _addRotationObservables(linkedTransformNode: TransformNode) {
-    const lastDragPosition = new Vector3();
-    const rotationMatrix = new Matrix();
-    const planeNormalTowardsCamera = new Vector3();
-    let localPlaneNormalTowardsCamera = new Vector3();
-    let currentSnapDragDistance = 0;
-    const tmpMatrix = new Matrix();
-    const amountToRotate = new Quaternion();
-
-    const xRotationDragStartObservable = this._gizmoManager.gizmos.rotationGizmo!.xGizmo.dragBehavior.onDragStartObservable.add(({ dragPlanePoint, pointerId }) => {
-      // set drag start point as lastDragPosition
-      lastDragPosition.copyFrom(dragPlanePoint);
-    });
-
-    const xRotationDragObservable = this._gizmoManager.gizmos.rotationGizmo!.xGizmo.dragBehavior.onDragObservable.add(({ dragPlanePoint, dragDistance }) => {
-      // decompose the world matrix of the linkedTransformNode
-      const nodeScale = new Vector3(1, 1, 1);
-      const nodeQuaternion = new Quaternion(0, 0, 0, 1);
-      const nodeTranslation = new Vector3(0, 0, 0);
-      linkedTransformNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
-
-      const newVector = dragPlanePoint.subtract(nodeTranslation).normalize();
-      const originalVector = lastDragPosition.subtract(nodeTranslation).normalize();
-
-      const cross = Vector3.Cross(newVector, originalVector);
-      const dot = Vector3.Dot(newVector, originalVector);
-
-      // cross.length() can be the reason of the bug
-      let angle = Math.atan2(cross.length(), dot);
-
-      const planeNormal = new Vector3(1, 0, 0);
-      planeNormalTowardsCamera.copyFrom(planeNormal);
-      localPlaneNormalTowardsCamera.copyFrom(planeNormal);
-      if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.updateGizmoRotationToMatchAttachedMesh) {
-        nodeQuaternion.toRotationMatrix(rotationMatrix);
-        localPlaneNormalTowardsCamera = Vector3.TransformCoordinates(planeNormalTowardsCamera, rotationMatrix);
-      }
-
-      // Flip up vector depending on which side the camera is on
-      let cameraFlipped = false;
-      if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.gizmoLayer.utilityLayerScene.activeCamera) {
-        var camVec = this._gizmoManager.gizmos.rotationGizmo!.xGizmo.gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation);
-        if (Vector3.Dot(camVec, localPlaneNormalTowardsCamera) > 0) {
-          planeNormalTowardsCamera.scaleInPlace(-1);
-          localPlaneNormalTowardsCamera.scaleInPlace(-1);
-          cameraFlipped = true;
-        }
-      }
-      var halfCircleSide = Vector3.Dot(localPlaneNormalTowardsCamera, cross) > 0.0;
-      if (halfCircleSide) {
-        angle = -angle;
-      }
-      if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance !== 0) {
-        currentSnapDragDistance += angle;
-        if (Math.abs(currentSnapDragDistance) > this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance) {
-          let dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance);
-          if (currentSnapDragDistance < 0) {
-            dragSteps *= -1;
-          }
-          currentSnapDragDistance = currentSnapDragDistance % this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance;
-          angle = this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance * dragSteps;
-        } else {
-          angle = 0;
-        }
-      }
-
-      dragDistance += cameraFlipped ? -angle : angle;
-
-      const quaternionCoefficient = Math.sin(angle / 2);
-      amountToRotate.set(
-        planeNormalTowardsCamera.x * quaternionCoefficient,
-        planeNormalTowardsCamera.y * quaternionCoefficient,
-        planeNormalTowardsCamera.z * quaternionCoefficient,
-        Math.cos(angle / 2),
-      );
-
-      if (tmpMatrix.determinant() > 0) {
-        const tmpVector = new Vector3();
-        amountToRotate.toEulerAnglesToRef(tmpVector);
-        Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
-      }
-      if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.updateGizmoRotationToMatchAttachedMesh) {
-        nodeQuaternion.multiplyToRef(amountToRotate, nodeQuaternion);
-      } else {
-        amountToRotate.multiplyToRef(nodeQuaternion, nodeQuaternion);
-      }
-      linkedTransformNode.addRotation(2 * amountToRotate.x, 2 * amountToRotate.y, 2 * amountToRotate.z);
-      lastDragPosition.copyFrom(dragPlanePoint);
-    });
-
-    const yRotationDragStartObservable = this._gizmoManager.gizmos.rotationGizmo!.yGizmo.dragBehavior.onDragStartObservable.add(({ dragPlanePoint, pointerId }) => {
-      // set drag start point as lastDragPosition
-      lastDragPosition.copyFrom(dragPlanePoint);
-    });
-
-    const yRotationDragObservable = this._gizmoManager.gizmos.rotationGizmo!.yGizmo.dragBehavior.onDragObservable.add(
-      ({ delta, dragPlanePoint, dragPlaneNormal, dragDistance, pointerId }) => {
-        // decompose the world matrix of the linkedTransformNode
-        const nodeScale = new Vector3(1, 1, 1);
-        const nodeQuaternion = new Quaternion(0, 0, 0, 1);
-        const nodeTranslation = new Vector3(0, 0, 0);
-        linkedTransformNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
-
-        const newVector = dragPlanePoint.subtract(nodeTranslation).normalize();
-        const originalVector = lastDragPosition.subtract(nodeTranslation).normalize();
-
-        const cross = Vector3.Cross(newVector, originalVector);
-        const dot = Vector3.Dot(newVector, originalVector);
-
-        // cross.length() can be the reason of the bug
-        let angle = Math.atan2(cross.length(), dot);
-
-        const planeNormal = new Vector3(0, 1, 0);
-        planeNormalTowardsCamera.copyFrom(planeNormal);
-        localPlaneNormalTowardsCamera.copyFrom(planeNormal);
-        if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.updateGizmoRotationToMatchAttachedMesh) {
-          nodeQuaternion.toRotationMatrix(rotationMatrix);
-          localPlaneNormalTowardsCamera = Vector3.TransformCoordinates(planeNormalTowardsCamera, rotationMatrix);
-        }
-
-        // Flip up vector depending on which side the camera is on
-        let cameraFlipped = false;
-        if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.gizmoLayer.utilityLayerScene.activeCamera) {
-          var camVec = this._gizmoManager.gizmos.rotationGizmo!.xGizmo.gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation);
-          if (Vector3.Dot(camVec, localPlaneNormalTowardsCamera) > 0) {
-            planeNormalTowardsCamera.scaleInPlace(-1);
-            localPlaneNormalTowardsCamera.scaleInPlace(-1);
-            cameraFlipped = true;
-          }
-        }
-        var halfCircleSide = Vector3.Dot(localPlaneNormalTowardsCamera, cross) > 0.0;
-        if (halfCircleSide) {
-          angle = -angle;
-        }
-        if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance !== 0) {
-          currentSnapDragDistance += angle;
-          if (Math.abs(currentSnapDragDistance) > this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance) {
-            let dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance);
-            if (currentSnapDragDistance < 0) {
-              dragSteps *= -1;
-            }
-            currentSnapDragDistance = currentSnapDragDistance % this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance;
-            angle = this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance * dragSteps;
-          } else {
-            angle = 0;
-          }
-        }
-
-        dragDistance += cameraFlipped ? -angle : angle;
-
-        const quaternionCoefficient = Math.sin(angle / 2);
-        amountToRotate.set(
-          planeNormalTowardsCamera.x * quaternionCoefficient,
-          planeNormalTowardsCamera.y * quaternionCoefficient,
-          planeNormalTowardsCamera.z * quaternionCoefficient,
-          Math.cos(angle / 2),
-        );
-
-        if (tmpMatrix.determinant() > 0) {
-          const tmpVector = new Vector3();
-          amountToRotate.toEulerAnglesToRef(tmpVector);
-          Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
-        }
-        if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.updateGizmoRotationToMatchAttachedMesh) {
-          nodeQuaternion.multiplyToRef(amountToRotate, nodeQuaternion);
-        } else {
-          amountToRotate.multiplyToRef(nodeQuaternion, nodeQuaternion);
-        }
-        linkedTransformNode.addRotation(2 * amountToRotate.x, 2 * amountToRotate.y, 2 * amountToRotate.z);
-        lastDragPosition.copyFrom(dragPlanePoint);
-      },
-    );
-
-    const zRotationDragStartObservable = this._gizmoManager.gizmos.rotationGizmo!.zGizmo.dragBehavior.onDragStartObservable.add(({ dragPlanePoint, pointerId }) => {
-      // set drag start point as lastDragPosition
-      lastDragPosition.copyFrom(dragPlanePoint);
-    });
-
-    const zRotationDragObservable = this._gizmoManager.gizmos.rotationGizmo!.zGizmo.dragBehavior.onDragObservable.add(
-      ({ delta, dragPlanePoint, dragPlaneNormal, dragDistance, pointerId }) => {
-        // decompose the world matrix of the linkedTransformNode
-        const nodeScale = new Vector3(1, 1, 1);
-        const nodeQuaternion = new Quaternion(0, 0, 0, 1);
-        const nodeTranslation = new Vector3(0, 0, 0);
-        linkedTransformNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
-
-        const newVector = dragPlanePoint.subtract(nodeTranslation).normalize();
-        const originalVector = lastDragPosition.subtract(nodeTranslation).normalize();
-
-        const cross = Vector3.Cross(newVector, originalVector);
-        const dot = Vector3.Dot(newVector, originalVector);
-
-        // cross.length() can be the reason of the bug
-        let angle = Math.atan2(cross.length(), dot);
-
-        const planeNormal = new Vector3(0, 0, 1);
-        planeNormalTowardsCamera.copyFrom(planeNormal);
-        localPlaneNormalTowardsCamera.copyFrom(planeNormal);
-        if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.updateGizmoRotationToMatchAttachedMesh) {
-          nodeQuaternion.toRotationMatrix(rotationMatrix);
-          localPlaneNormalTowardsCamera = Vector3.TransformCoordinates(planeNormalTowardsCamera, rotationMatrix);
-        }
-
-        // Flip up vector depending on which side the camera is on
-        let cameraFlipped = false;
-        if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.gizmoLayer.utilityLayerScene.activeCamera) {
-          var camVec = this._gizmoManager.gizmos.rotationGizmo!.xGizmo.gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation);
-          if (Vector3.Dot(camVec, localPlaneNormalTowardsCamera) > 0) {
-            planeNormalTowardsCamera.scaleInPlace(-1);
-            localPlaneNormalTowardsCamera.scaleInPlace(-1);
-            cameraFlipped = true;
-          }
-        }
-        var halfCircleSide = Vector3.Dot(localPlaneNormalTowardsCamera, cross) > 0.0;
-        if (halfCircleSide) {
-          angle = -angle;
-        }
-        if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance !== 0) {
-          currentSnapDragDistance += angle;
-          if (Math.abs(currentSnapDragDistance) > this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance) {
-            let dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance);
-            if (currentSnapDragDistance < 0) {
-              dragSteps *= -1;
-            }
-            currentSnapDragDistance = currentSnapDragDistance % this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance;
-            angle = this._gizmoManager.gizmos.rotationGizmo!.xGizmo.snapDistance * dragSteps;
-          } else {
-            angle = 0;
-          }
-        }
-
-        dragDistance += cameraFlipped ? -angle : angle;
-
-        const quaternionCoefficient = Math.sin(angle / 2);
-        amountToRotate.set(
-          planeNormalTowardsCamera.x * quaternionCoefficient,
-          planeNormalTowardsCamera.y * quaternionCoefficient,
-          planeNormalTowardsCamera.z * quaternionCoefficient,
-          Math.cos(angle / 2),
-        );
-
-        if (tmpMatrix.determinant() > 0) {
-          const tmpVector = new Vector3();
-          amountToRotate.toEulerAnglesToRef(tmpVector);
-          Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
-        }
-        if (this._gizmoManager.gizmos.rotationGizmo!.xGizmo.updateGizmoRotationToMatchAttachedMesh) {
-          nodeQuaternion.multiplyToRef(amountToRotate, nodeQuaternion);
-        } else {
-          amountToRotate.multiplyToRef(nodeQuaternion, nodeQuaternion);
-        }
-        linkedTransformNode.addRotation(2 * amountToRotate.x, 2 * amountToRotate.y, 2 * amountToRotate.z);
-        lastDragPosition.copyFrom(dragPlanePoint);
-      },
-    );
-
-    // this._observers.dragEnd.rotation.x = xRotationDragObservable;
-    // this._observers.dragEnd.rotation.y = yRotationDragObservable;
-    // this._observers.dragEnd.rotation.z = zRotationDragObservable;
-
-    this._observers.dragStart.rotation.x = xRotationDragStartObservable;
-    this._observers.dragStart.rotation.y = yRotationDragStartObservable;
-    this._observers.dragStart.rotation.z = zRotationDragStartObservable;
   }
 }

@@ -23,8 +23,8 @@ const VideoMode = () => {
       <StepTemplate step={2} ref={tooltipRef}>
         <h3>Shift to the video mode</h3>
         <p>
-          Directly records a video with your webcam to <span>extract</span> <br />
-          <span>the motion data.</span>
+          Directly record a video with your webcam to <span>extract</span> <br />
+          <span>the mocap data.</span>
         </p>
         <Arrow placement="top-end" />
       </StepTemplate>
