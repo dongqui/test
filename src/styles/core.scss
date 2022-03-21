@@ -4,6 +4,32 @@
 @import "styles/timeline/_curve";
 
 :root {
+  --black: #000;
+  --grey010: #181a1b;
+  --grey012: #1d1f20;
+  --grey016: #27292b;
+  --grey020: #303336;
+  --grey030: #494d50;
+  --grey040: #61666b;
+  --grey050: #798086;
+  --gray060: #94999e;
+  --gray070: #afb2b6;
+  --gray080: #c9cccf;
+  --gray090: #e4e5e7;
+  --gray090: #e4e5e7;
+  --white: #fff;
+  --blue055: #258CF4;
+  --orange055: #F47F25;
+  --red055: #D74247;
+  --green045: #34B273;
+  --blue055-opacity01: rgba(37, 140, 244, 0.1);
+  --grey060-opacity01: rgba(148, 153, 158, 0.1);
+  --grey060-opacity02: rgba(148, 153, 158, 0.2);
+  --red055-opacity01: rgba(215, 66, 71, 0.1);
+  --green045-opacity01: rgba(52, 178, 115, 0.1);
+
+
+  // old
   --gray100: #121313;
   --gray200: #202122;
   --gray300: #353739;
