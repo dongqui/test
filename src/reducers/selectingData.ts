@@ -87,7 +87,7 @@ export const selectingData = (state: State = defaultState, action: SelectingData
 const defaultUndoableState = {} as { [key: string]: PlaskTransformNode };
 export const transforms = (state: { [key: string]: PlaskTransformNode } = defaultUndoableState, action: SelectingDataAction) => {
   switch (action.type) {
-    case 'selectingDataAction/UPDATE_SELECTED_TARGETS': {
+    case 'transformAction/UPDATE_TRANSFORM': {
       const obj = {} as { [key: string]: PlaskTransformNode };
       for (const entity of action.payload.targets) {
         obj[entity.entityId] = entity;
@@ -100,7 +100,7 @@ export const transforms = (state: { [key: string]: PlaskTransformNode } = defaul
   }
 };
 
-export const allSelectingData = undoable(
+export const undoableSelectingData = undoable(
   combineReducers({
     selectingData,
     transforms,
@@ -113,7 +113,7 @@ export const allSelectingData = undoable(
       'selectingDataAction/CTRL_KEY_MULTI_SELECT',
       'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS',
       'selectingDataAction/RESET_SELECTED_TARGETS',
-      'selectingDataAction/UPDATE_SELECTED_TARGETS',
+      'transformAction/UPDATE_TRANSFORM',
     ]),
     ignoreInitialState: true,
   },

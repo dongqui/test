@@ -26,7 +26,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
   // this callback is under assumption of sing model
   // so when users visualize a model, if there is already another model visualized that model will be unvisualized.
   // @TODO if Plask support multi-model, stuff should be changed to maintain ones which are already visualized.
-  const { plaskProject, undoableState, screenData }: RootState = yield select();
+  const { plaskProject, selectingData: undoableState, screenData }: RootState = yield select();
   const { visualizedAssetIds, assetList, screenList } = plaskProject;
   const { visibilityOptions } = screenData;
   const { assetId } = action.payload;

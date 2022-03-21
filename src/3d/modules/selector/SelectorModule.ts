@@ -1,7 +1,7 @@
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
-import { defaultMultiSelect, moveSelectedTargets } from 'actions/selectingDataAction';
+import { defaultMultiSelect, updateTransform } from 'actions/selectingDataAction';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
@@ -14,12 +14,12 @@ export class SelectorModule extends Module {
   public onSelectionChangeObservable: Observable<TransformNode[]> = new Observable();
 
   public get selectableObjects() {
-    return this.plaskEngine.state.undoableState.present.selectingData.selectableObjects;
+    return this.plaskEngine.state.selectingData.present.selectingData.selectableObjects;
   }
 
   // TODO : decorator ?
   public get selectedTargets() {
-    return this.plaskEngine.state.undoableState.present.selectingData.selectedTargets.map((entity) => entity.reference);
+    return this.plaskEngine.state.selectingData.present.selectingData.selectedTargets.map((entity) => entity.reference);
   }
   public set selectedTargets(targets: TransformNode[]) {
     // Only fire an update if selection differs
@@ -50,27 +50,27 @@ export class SelectorModule extends Module {
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public reduxObservedStates = ['undoableState.present.selectingData.selectedTargets', 'undoableState.present.selectingData.selectableObjects', 'undoableState.present.transforms'];
+  public reduxObservedStates = ['selectingData.present.selectingData.selectedTargets', 'selectingData.present.selectingData.selectableObjects', 'selectingData.present.transforms'];
   public onStateChanged(key: string, previousState: any) {
-    if (key === 'undoableState.present.transforms') {
-      for (const entityId in this.plaskEngine.state.undoableState.present.transforms) {
-        if (previousState[entityId] !== this.plaskEngine.state.undoableState.present.transforms[entityId]) {
-          this.plaskEngine.state.undoableState.present.transforms[entityId].markDirty();
+    if (key === 'selectingData.present.transforms') {
+      for (const entityId in this.plaskEngine.state.selectingData.present.transforms) {
+        if (previousState[entityId] !== this.plaskEngine.state.selectingData.present.transforms[entityId]) {
+          this.plaskEngine.state.selectingData.present.transforms[entityId].markDirty();
         }
       }
       return;
     }
 
-    if (key === 'undoableState.present.selectingData.selectedTargets') {
+    if (key === 'selectingData.present.selectingData.selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
       return;
     }
 
-    if (key === 'undoableState.present.selectingData.selectableObjects') {
+    if (key === 'selectingData.present.selectingData.selectableObjects') {
       if (this.selectableObjects !== previousState.selectableObjects) {
         // Init positions
         this.plaskEngine.dispatch(
-          moveSelectedTargets({ targets: this.plaskEngine.state.undoableState.present.selectingData.selectableObjects.map((selectableObject) => selectableObject.clone()) }),
+          updateTransform({ targets: this.plaskEngine.state.selectingData.present.selectingData.selectableObjects.map((selectableObject) => selectableObject.clone()) }),
         );
       }
       return;

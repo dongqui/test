@@ -11,7 +11,7 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 
 export default function* handleDeleteModel(action: ReturnType<typeof lpNodeActions.deleteModel>) {
   const { nodeId, assetId, parentId } = action.payload;
-  const { lpNode, plaskProject, undoableState }: RootState = yield select();
+  const { lpNode, plaskProject, selectingData: undoableState }: RootState = yield select();
 
   removeAssetThingsFromScene(plaskProject, undoableState.present.selectingData, assetId);
 

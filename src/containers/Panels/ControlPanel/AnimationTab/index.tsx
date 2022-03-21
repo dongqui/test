@@ -21,8 +21,8 @@ interface Props {
 
 const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
-  const _selectableObjects = useSelector((state) => state.undoableState.present.selectingData.selectableObjects);
-  const _selectedTargets = useSelector((state) => state.undoableState.present.selectingData.selectedTargets);
+  const _selectableObjects = useSelector((state) => state.selectingData.present.selectingData.selectableObjects);
+  const _selectedTargets = useSelector((state) => state.selectingData.present.selectingData.selectedTargets);
   const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // === selectedLayerId (inappropriate naming)
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _playState = useSelector((state) => state.animatingControls.playState);

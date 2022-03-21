@@ -12,7 +12,7 @@ import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 
 export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotion>) {
-  const { plaskProject, undoableState, animationData, lpNode }: RootState = yield select();
+  const { plaskProject, selectingData: undoableState, animationData, lpNode }: RootState = yield select();
   const { animationTransformNodes } = animationData;
   const { visualizedAssetIds } = plaskProject;
   const { selectableObjects } = undoableState.present.selectingData;

@@ -1,5 +1,5 @@
 import { AxisDragGizmo, AxisScaleGizmo, Color3, GizmoManager, Matrix, Mesh, Nullable, Observer, Quaternion, TransformNode, Vector3 } from '@babylonjs/core';
-import { moveSelectedTargets } from 'actions/selectingDataAction';
+import { updateTransform } from 'actions/selectingDataAction';
 import { checkIsTargetMesh } from 'utils/RP';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
@@ -231,7 +231,7 @@ export class GizmoModule extends Module {
     const addPositionDragEndObservable = (target: TransformNode, gizmo: AxisDragGizmo) => {
       return gizmo.dragBehavior.onDragEndObservable.add(() => {
         target.position.toArray(target.getPlaskEntity().position);
-        this.plaskEngine.dispatch(moveSelectedTargets({ targets: [target.getPlaskEntity().clone()] }));
+        this.plaskEngine.dispatch(updateTransform({ targets: [target.getPlaskEntity().clone()] }));
       });
     };
 

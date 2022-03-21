@@ -11,7 +11,7 @@ import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 
 export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotion>) {
-  const { lpNode, plaskProject, animationData, undoableState }: RootState = yield select();
+  const { lpNode, plaskProject, animationData, selectingData: undoableState }: RootState = yield select();
   const { nodeId, assetId, parentId } = action.payload;
 
   const targetMotion = find(lpNode.nodes, { id: nodeId });

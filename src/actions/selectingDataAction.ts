@@ -12,7 +12,7 @@ export type SelectingDataAction =
   | ReturnType<typeof ctrlKeyMultiSelect>
   | ReturnType<typeof selectAllSelectableObjects>
   | ReturnType<typeof resetSelectedTargets>
-  | ReturnType<typeof moveSelectedTargets>;
+  | ReturnType<typeof updateTransform>;
 
 const ADD_SELECTABLE_OBJECTS = 'selectingDataAction/ADD_SELECTABLE_OBJECTS' as const;
 const REMOVE_SELECTABLE_CONTROLLERS = 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS' as const;
@@ -177,8 +177,8 @@ export const selectAllSelectableObjects = () => ({
 /**
  * Moves the selected targets. Undoable
  */
-export const moveSelectedTargets = (params: UpdateSelectedTargets) => ({
-  type: UPDATE_SELECTED_TARGETS,
+export const updateTransform = (params: UpdateSelectedTargets) => ({
+  type: UPDATE_TRANSFORM,
   payload: {
     ...params,
   },

@@ -13,7 +13,7 @@ function getVisualizedAssetIds(state: RootState) {
 }
 
 function getSelectedTargets(state: RootState) {
-  return state.undoableState.present.selectingData.selectedTargets;
+  return state.selectingData.present.selectingData.selectedTargets;
 }
 
 function getSelectedLayer(state: RootState) {

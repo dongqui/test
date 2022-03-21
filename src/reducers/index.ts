@@ -3,7 +3,7 @@ import { TypedUseSelectorHook, useSelector as useReduxSelector } from 'react-red
 import { lpNode } from './LP/lpNode';
 import { cpModeSelection } from './CP/cpModeSelection';
 import { plaskProject } from './plaskProject';
-import { allSelectingData } from './selectingData';
+import { undoableSelectingData } from './selectingData';
 import { animationData } from './animationData';
 import { screenData } from './screenData';
 import { animatingControls } from './animatingControls';
@@ -18,7 +18,7 @@ const rootReducer = combineReducers({
   lpNode,
   cpModeSelection,
   plaskProject,
-  undoableState: allSelectingData,
+  selectingData: undoableSelectingData,
   animationData,
   screenData,
   animatingControls,
