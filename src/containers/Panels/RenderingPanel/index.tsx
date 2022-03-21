@@ -43,8 +43,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _screenList = useSelector((state) => state.plaskProject.screenList);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _fps = useSelector((state) => state.plaskProject.fps);
-  const _selectableObjects = useSelector((state) => state.selectingData.present.selectingData.selectableObjects);
-  const _selectedTargets = useSelector((state) => state.selectingData.present.selectingData.selectedTargets);
+  const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
+  const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);

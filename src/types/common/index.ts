@@ -179,6 +179,7 @@ export type ContextMenuClickItemHandlerProps = any;
 export type SelectingData = {
   selectableObjects: Array<PlaskTransformNode>;
   selectedTargets: Array<PlaskTransformNode>;
+  allObjectsMap: { [key: string]: PlaskTransformNode };
 };
 
 export type ButtonColor = 'primary' | 'secondary' | 'error';

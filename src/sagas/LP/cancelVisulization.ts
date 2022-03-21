@@ -8,9 +8,9 @@ import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 
 export default function* handleCancelVisulization(action: ReturnType<typeof lpNodeActions.cancelVisulization>) {
-  const { plaskProject, selectingData: undoableState }: RootState = yield select();
+  const { plaskProject, selectingData }: RootState = yield select();
   const { visualizedAssetIds, assetList, screenList } = plaskProject;
-  const { selectableObjects } = undoableState.present.selectingData;
+  const { selectableObjects } = selectingData.present;
   const { assetId } = action.payload;
 
   if (!assetId || !visualizedAssetIds.includes(assetId)) {
