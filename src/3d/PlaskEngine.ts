@@ -216,6 +216,10 @@ export class PlaskEngine {
     this.dispatch(ActionCreators.redo());
   }
 
+  public clearHistory() {
+    this.dispatch(ActionCreators.clearHistory());
+  }
+
   private _registerModules() {
     this._modules.push((this.cameraModule = new CameraModule(this)));
     this._modules.push((this.selectorModule = new SelectorModule(this)));

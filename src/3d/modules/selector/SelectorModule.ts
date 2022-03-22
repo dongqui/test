@@ -68,6 +68,9 @@ export class SelectorModule extends Module {
 
     if (key === 'selectingData.present.selectableObjects') {
       if (this.selectableObjects !== previousState.selectableObjects) {
+        // TODO : we clear history here because we don't handle undoing/redoing a model change.
+        // It should be removed once we handle that
+        this.plaskEngine.clearHistory();
         // Init positions
         this.plaskEngine.dispatch(updateTransform({ targets: this.plaskEngine.state.selectingData.present.selectableObjects.map((selectableObject) => selectableObject.clone()) }));
       }
