@@ -278,17 +278,8 @@ export class PlaskEngine {
     } else if (type === PointerEventTypes.POINTERDOWN) {
       const event = pointerInfo.event as PointerEvent;
       // return to perspective mode when camera is rotated
-      if (event.button === 0 && event.altKey && this.scene.activeCamera && this.scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+      if (event.button === 0 && event.altKey) {
         this.cameraModule.toPerspective();
-
-        const grounds = this.scene.getMeshesByTags('ground');
-        grounds.forEach((ground) => {
-          if (ground.id.split('//')[1] === 'top') {
-            ground.isVisible = true;
-          } else {
-            ground.isVisible = false;
-          }
-        });
       }
     }
   }

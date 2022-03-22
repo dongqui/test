@@ -163,23 +163,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
    * shortcuts related to camera navigation, viewport changes
    */
   useEffect(() => {
-    const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
-      camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-      camera.orthoTop = 2;
-      camera.orthoBottom = -2;
-      camera.orthoLeft = -2 * (canvas.width / canvas.height);
-      camera.orthoRight = 2 * (canvas.width / canvas.height);
-
-      const grounds = scene.getMeshesByTags('ground');
-      grounds.forEach((ground) => {
-        if (ground.id.split('//')[1] === view) {
-          ground.isVisible = true;
-        } else {
-          ground.isVisible = false;
-        }
-      });
-    };
-
     const handleKeyDown = (event: KeyboardEvent) => {
       // shortcuts don't work while user is typing on input elements
       const target = event.target as Element;
@@ -192,11 +175,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
         const focusedScene = focusedPlaskScreen?.scene;
 
-        if (focusedScene && focusedScene.activeCamera) {
-          const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
-          const { position, target } = activeCamera;
-          let distance: number;
-
+        if (focusedScene) {
           switch (event.key) {
             case 'v':
             case 'V':
@@ -208,41 +187,17 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             case 't':
             case 'T':
             case 'ㅅ': // t (top)
-              switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'top');
-
-              if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-              }
-
-              distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
-              activeCamera.setPosition(new BABYLON.Vector3(target.x, distance + 10, target.z));
+              plaskEngine.cameraModule.toOrthographic('top');
               break;
             case 'b':
             case 'B':
             case 'ㅠ': // b (bottom)
-              switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'bottom');
-
-              if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-              }
-
-              distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
-              activeCamera.setPosition(new BABYLON.Vector3(target.x, -(distance + 10), target.z));
+              plaskEngine.cameraModule.toOrthographic('bottom');
               break;
             case 'l':
             case 'L':
             case 'ㅣ': // l (left)
-              switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'left');
-
-              if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-              }
-
-              distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
-              activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), target.y, target.z));
+              plaskEngine.cameraModule.toOrthographic('left');
               break;
             case 'r':
             case 'R':
@@ -251,15 +206,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 multiKeyController[event.key].pressed = true;
               }
               if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'right');
-
-                if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                  prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                  prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                }
-
-                distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
-                activeCamera.setPosition(new BABYLON.Vector3(distance + 10, target.y, target.z));
+                plaskEngine.cameraModule.toOrthographic('right');
               }
 
               break;
@@ -270,15 +217,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 multiKeyController[event.key].pressed = true;
               }
               if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'front');
-
-                if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                  prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                  prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                }
-
-                distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
-                activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, distance + 10));
+                plaskEngine.cameraModule.toOrthographic('front');
               }
               break;
             case 'k':
@@ -290,15 +229,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
               if (multiKeyController[event.key].pressed) {
                 // k with v
                 if (multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) {
-                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
-
-                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                  }
-
-                  distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
-                  activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
+                  plaskEngine.cameraModule.toOrthographic('back');
                 }
               }
               break;
