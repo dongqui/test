@@ -1,29 +1,24 @@
-
-@import 'styles/libraries/_mixins';
+@import "styles/libraries/_colors";
+@import "styles/libraries/_mixins";
 
 .outline {
   @include reset-button-style();
   @include basic-button-style();
   background-color: inherit;
-  border: 1px solid;
 }
 
 .border-color {
-  &-secondary {
-    border-color: var(--gray400);
+  &-default {
+    border: 1px solid $outline;
 
     &:hover {
-      border-color: var(--gray500);
+      border: 1px solid $overlayHover;
     }
   }
 }
 
 .text-color {
   &-light {
-    color: var(--gray700);
-
-    &:hover {
-      color: var(--gray800);
-    }
+    color: $contentActive;
   }
 }

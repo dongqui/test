@@ -193,6 +193,6 @@ export type SelectingData = {
   allObjectsMap: { [key: string]: PlaskTransformNode };
 };
 
-export type ButtonColor = 'primary' | 'secondary' | 'error';
+export type ButtonColor = 'primary' | 'secondary' | 'negative';
 
 export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';

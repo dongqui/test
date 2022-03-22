@@ -1,32 +1,21 @@
-
-@import 'styles/libraries/_mixins';
+@import "styles/libraries/_colors";
+@import "styles/libraries/_mixins";
 
 .filled {
   @include reset-button-style();
   @include basic-button-style();
+  color: $contentActive;
+
+  &:focus,
+  &:hover {
+    background-color: $overlayHover;
+  }
 }
 
 .primary {
-  background-color: #0f88ff;
-  color: #fff;
-
-  &:focus,
-  &:hover {
-    background-color: lighten($color:  #0f88ff, $amount: 4%);
-  }
+  background-color: $primary;
 }
 
-.secondary {
-  background-color: #f5f5f5;
-  color: #565656;
-
-  &:focus,
-  &:hover {
-    background-color: darken($color: #f5f5f5, $amount: 4%);
-  }
-}
-
-.error {
-  background-color: var(--vivid-red);
-  color: var(--gray700);
+.negative {
+  background-color: $negative;
 }
