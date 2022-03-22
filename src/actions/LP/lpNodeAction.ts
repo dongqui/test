@@ -8,11 +8,6 @@ interface DeleteModelParams {
   assetId: string;
   parentId?: string;
 }
-
-interface DeleteFolderOrMocapParams {
-  nodeId: string;
-  parentId?: string;
-}
 interface AddEmptyMotionParams {
   nodeId: string;
   assetId: string;
@@ -73,8 +68,12 @@ interface FileUploadParams {
   showLoading: boolean;
 }
 
+interface DeleteFolderOrMocapReceiveParam {
+  type: 'delete';
+  scenesLibraryId: string;
+}
+
 export const changeNode = createAction('node/CHANGE_NODE', ({ nodes }: { nodes: LP.Node[] }) => ({ nodes }))();
-export const deleteFolderOrMocap = createAction('node/DELETE_FOLDER_OR_MOCAP', (params: DeleteFolderOrMocapParams) => ({ ...params }))();
 export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
 export const visualizeModel = createAction('node/VISUALIZE_MODEL', (assetId: string) => ({ assetId }))();
 export const cancelVisulization = createAction('node/CANCEL_VISUALIZATION', (assetId: string) => ({ assetId }))();
@@ -96,10 +95,11 @@ export const dropNodeOnRoot = createAction('node/DROP_NODE_ON_ROOT')();
 export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<undefined, { nodes: LP.Node[] }, Error>();
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
 
+// export const deleteFolderOrMocap = createAction('node/DELETE_FOLDER_OR_MOCAP', (params: DeleteFolderOrMocapParams) => ({ ...params }))();
 export const deleteFolderOrMocapSocket = createSocketActions(
   'node/DELETE_FOLRDER_OR_MOCAP_REQUEST',
   'node/DELETE_FOLRDER_OR_MOCAP_SEND',
   'node/DELETE_FOLRDER_OR_MOCAP_RECEIVE',
   'node/DELETE_FOLRDER_OR_MOCAP_UPDATE',
   'node/DELETE_FOLRDER_OR_MOCAP_FAILURE',
-)<undefined, string, string, string, string>();
+)<string, string, DeleteFolderOrMocapReceiveParam, LP.Node[], string>();

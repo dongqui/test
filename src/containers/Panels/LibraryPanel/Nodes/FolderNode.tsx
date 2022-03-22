@@ -20,7 +20,6 @@ const FolderNode = ({ node }: Props) => {
       globalUIActions.openContextMenu('FolderContextMenu', e, {
         nodeId: id,
         filePath,
-        parentId,
       }),
     );
   };

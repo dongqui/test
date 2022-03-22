@@ -1,7 +1,6 @@
 import { Scene } from '@babylonjs/core';
 import { ActionType, getType } from 'typesafe-actions';
 
-
 import * as LPNodeActions from 'actions/LP/lpNodeAction';
 interface State {
   nodes: LP.Node[];
@@ -65,6 +64,11 @@ export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeAct
     case getType(LPNodeActions.addDirectoryAsync.success): {
       return Object.assign({}, state, {
         nodes: [...state.nodes, action.payload],
+      });
+    }
+    case getType(LPNodeActions.deleteFolderOrMocapSocket.update): {
+      return Object.assign({}, state, {
+        nodes: action.payload,
       });
     }
     default: {

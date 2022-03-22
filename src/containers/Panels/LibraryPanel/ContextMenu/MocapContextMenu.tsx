@@ -6,10 +6,9 @@ import * as globalUIActions from 'actions/Common/globalUI';
 
 interface Props {
   nodeId: string;
-  parentId: string;
 }
 
-const MocapContextMenu = ({ nodeId, parentId }: Props) => {
+const MocapContextMenu = ({ nodeId }: Props) => {
   const dispatch = useDispatch();
 
   const handleDelete = () => {
@@ -19,7 +18,7 @@ const MocapContextMenu = ({ nodeId, parentId }: Props) => {
         // TODO: MOTION 삭제 메세지
         message: 'Are you sure? All files in the directory will be deleted.',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteFolderOrMocap({ nodeId, parentId }));
+          dispatch(lpNodeActions.deleteFolderOrMocapSocket.request(nodeId));
         },
         onCancel: () => {},
       }),

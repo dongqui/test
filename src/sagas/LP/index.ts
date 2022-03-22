@@ -14,7 +14,7 @@ import handleEditNodeName from './editNodeName';
 import handleExportAsset from './exportAsset';
 import handleDeleteMotion from './deleteMotion';
 import handleDeleteModel from './deleteModel';
-import handleDeleteFolderOrMocap from './deleteFolderOrMocap';
+import waitDeleteFolderOrMocapSocketActions from './deleteFolderOrMocap';
 import handleFileUpload from './fileUpload';
 import handleDropNodeOnRoot from './dropNodeOnRoot';
 import getNodes from './getNodes';
@@ -33,10 +33,11 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.exportAsset), handleExportAsset),
     takeLatest(getType(lpNodeActions.deleteMotion), handleDeleteMotion),
     takeLatest(getType(lpNodeActions.deleteModel), handleDeleteModel),
-    takeLatest(getType(lpNodeActions.deleteFolderOrMocap), handleDeleteFolderOrMocap),
+    // takeLatest(getType(lpNodeActions.deleteFolderOrMocap), handleDeleteFolderOrMocap),
     takeEvery(getType(lpNodeActions.fileUpload), handleFileUpload),
     takeEvery(getType(lpNodeActions.dropNodeOnRoot), handleDropNodeOnRoot),
     takeEvery(getType(lpNodeActions.getNodesAsync.request), getNodes),
     watchClickJointChannel(),
+    waitDeleteFolderOrMocapSocketActions(),
   ]);
 }
