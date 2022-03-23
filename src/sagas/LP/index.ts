@@ -10,7 +10,7 @@ import handleAddEmptyMotion from './addEmptyMotion';
 import handleDuplicateMotion from './duplicateMotion';
 import waitdropNodeOnFolderOrRootSocketActions from './dropNodeOnFolderOrRoot';
 import handleDropMocapOnModel from './dropMocapOnModel';
-import handleEditNodeName from './editNodeName';
+import waiteditNodeNameSocketActions from './editNodeName';
 import handleExportAsset from './exportAsset';
 import handleDeleteMotion from './deleteMotion';
 import waitDeleteModelSocketActions from './deleteModel';
@@ -27,7 +27,7 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.visualizeMotion), handleVisualizeMotion),
     // takeLatest(getType(lpNodeActions.dropNodeOnFolder), handleDropNodeOnFolder),
     takeLatest(getType(lpNodeActions.dropMocapOnModel), handleDropMocapOnModel),
-    takeLatest(getType(lpNodeActions.editNodeName), handleEditNodeName),
+    // takeLatest(getType(lpNodeActions.editNodeName), handleEditNodeName),
     takeLatest(getType(lpNodeActions.exportAsset), handleExportAsset),
     takeLatest(getType(lpNodeActions.deleteMotion), handleDeleteMotion),
     // takeLatest(getType(lpNodeActions.deleteModel), handleDeleteModel),
@@ -39,5 +39,6 @@ export default function* LPSaga() {
     waitDeleteFolderOrMocapSocketActions(),
     waitDeleteModelSocketActions(),
     waitdropNodeOnFolderOrRootSocketActions(),
+    waiteditNodeNameSocketActions(),
   ]);
 }
