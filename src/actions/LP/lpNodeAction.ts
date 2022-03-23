@@ -1,6 +1,7 @@
 import { createAction, createAsyncAction } from 'typesafe-actions';
 
 import { ExportFormat } from 'types/common';
+import { createSocketActions } from '../helper';
 
 interface DeleteModelParams {
   nodeId: string;
@@ -94,3 +95,11 @@ export const dropNodeOnRoot = createAction('node/DROP_NODE_ON_ROOT')();
 
 export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<undefined, { nodes: LP.Node[] }, Error>();
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
+
+export const deleteFolderOrMocapSocket = createSocketActions(
+  'node/DELETE_FOLRDER_OR_MOCAP_REQUEST',
+  'node/DELETE_FOLRDER_OR_MOCAP_SEND',
+  'node/DELETE_FOLRDER_OR_MOCAP_RECEIVE',
+  'node/DELETE_FOLRDER_OR_MOCAP_UPDATE',
+  'node/DELETE_FOLRDER_OR_MOCAP_FAILURE',
+)<undefined, string, string, string, string>();

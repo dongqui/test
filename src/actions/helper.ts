@@ -1,21 +1,20 @@
 import { TypeConstant, createAction } from 'typesafe-actions';
 
-// temporal type for example;
-interface SocketIOEvent {}
-
-export function createSocketActions<RequestActionParam, SendActionParam, ReceiveActionParam, FailureActionParam, UpdateActionParam>(
-  TRequestActionType: TypeConstant,
-  TSendActionType: TypeConstant,
-  TReceiveActionType: TypeConstant,
-  TFailureActionType: TypeConstant,
-  TUpdateActionType: TypeConstant,
-) {
-  return {
-    request: createAction(TRequestActionType)<RequestActionParam>(),
-    send: createAction(TSendActionType)<SendActionParam>(),
-    receive: createAction(TReceiveActionType)<ReceiveActionParam, SocketIOEvent>(),
-    failure: createAction(TFailureActionType)<FailureActionParam>(),
-    update: createAction(TUpdateActionType)<UpdateActionParam>(),
+export function createSocketActions<
+  TRequestType extends TypeConstant,
+  TSendType extends TypeConstant,
+  TReceiveType extends TypeConstant,
+  TUpdateType extends TypeConstant,
+  TFailureType extends TypeConstant
+>(TRequestActionType: TRequestType, TSendActionType: TSendType, TReceiveActionType: TReceiveType, TUpdateActionType: TUpdateType, TFailureActionType: TFailureType) {
+  return function <RequestActionParam, SendActionParam, ReceiveActionParam, UpdateActionParam, FailureActionParam>() {
+    return {
+      request: createAction(TRequestActionType)<RequestActionParam>(),
+      send: createAction(TSendActionType)<SendActionParam>(),
+      receive: createAction(TReceiveActionType)<ReceiveActionParam>(),
+      update: createAction(TUpdateActionType)<UpdateActionParam>(),
+      failure: createAction(TFailureActionType)<FailureActionParam>(),
+    };
   };
 }
 
@@ -28,13 +27,13 @@ interface UpdateFolderReceiveParam {}
 interface UpdateFolderFailureParam {}
 interface UpdateFolderUpdateParam {}
 
-const updateFolderSocketActions = createSocketActions<UpdateFolderRequestParam, UpdateFolderSendParam, UpdateFolderReceiveParam, UpdateFolderFailureParam, UpdateFolderUpdateParam>(
+const updateFolderSocketActions = createSocketActions(
   'node/UPDATE_FOLDER_SOCKET_REQUEST',
   'node/UPDATE_FOLDER_SOCKET_SEND',
   'node/UPDATE_FOLDER_SOCKET_RECEIVE',
   'node/UPDATE_FOLDER_SOCKET_UPDATE',
   'node/UPDATE_FOLDER_SOCKET_FAILURE',
-);
+)<UpdateFolderRequestParam, UpdateFolderSendParam, UpdateFolderReceiveParam, UpdateFolderFailureParam, UpdateFolderUpdateParam>();
 
 // src/sagas/LP/updateFolder ---------------------------------------------------------------------------------------------------------
 function* updateFolderRequest(action: ReturnType<typeof updateFolderSocketActions.request>) {
