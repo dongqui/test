@@ -42,7 +42,7 @@ const LPBody: FunctionComponent<Props> = () => {
       return;
     }
 
-    dispatch(lpNodeActions.dropNodeOnRoot());
+    dispatch(lpNodeActions.dropNodeOnFolderOrRootSocket.request(''));
   };
 
   const rootPathNodes = nodes.filter((node) => !node.parentId);

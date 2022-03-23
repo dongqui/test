@@ -8,7 +8,7 @@ import handleVisualizeMotion from './visualizeMotion';
 import handleCancelVisulization from './cancelVisulization';
 import handleAddEmptyMotion from './addEmptyMotion';
 import handleDuplicateMotion from './duplicateMotion';
-import waitDropNodeOnFolderSocketActions from './dropNodeOnFolder';
+import waitdropNodeOnFolderOrRootSocketActions from './dropNodeOnFolderOrRoot';
 import handleDropMocapOnModel from './dropMocapOnModel';
 import handleEditNodeName from './editNodeName';
 import handleExportAsset from './exportAsset';
@@ -16,7 +16,6 @@ import handleDeleteMotion from './deleteMotion';
 import waitDeleteModelSocketActions from './deleteModel';
 import waitDeleteFolderOrMocapSocketActions from './deleteFolderOrMocap';
 import handleFileUpload from './fileUpload';
-import handleDropNodeOnRoot from './dropNodeOnRoot';
 import getNodes from './getNodes';
 
 export default function* LPSaga() {
@@ -34,12 +33,11 @@ export default function* LPSaga() {
     // takeLatest(getType(lpNodeActions.deleteModel), handleDeleteModel),
     // takeLatest(getType(lpNodeActions.deleteFolderOrMocap), handleDeleteFolderOrMocap),
     takeEvery(getType(lpNodeActions.fileUpload), handleFileUpload),
-    takeEvery(getType(lpNodeActions.dropNodeOnRoot), handleDropNodeOnRoot),
     takeEvery(getType(lpNodeActions.getNodesAsync.request), getNodes),
     takeLatest(getType(lpNodeActions.addDirectoryAsync.request), handleAddDirectory),
     watchClickJointChannel(),
     waitDeleteFolderOrMocapSocketActions(),
     waitDeleteModelSocketActions(),
-    waitDropNodeOnFolderSocketActions(),
+    waitdropNodeOnFolderOrRootSocketActions(),
   ]);
 }

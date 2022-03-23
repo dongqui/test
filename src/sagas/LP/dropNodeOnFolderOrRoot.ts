@@ -9,18 +9,18 @@ import { getFileExtension } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 
-// export default function* handleDropNodeOnFolder(action: ReturnType<typeof lpNodeActions.dropNodeOnFolder>) {
+// export default function* handledropNodeOnFolderOrRoot(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderOrRoot>) {
 //   const { lpNode }: RootState = yield select();
 //   const { draggedNode, nodes } = lpNode;
 //   const { filePath, nodeId } = action.payload;
-//   const targetFolder = find(nodes, { id: nodeId });
+//   const targetDirectory = find(nodes, { id: nodeId });
 //   // TODO(?) check if there is a node with the same name already
 //   // @TODO if not, need to deactivate
 //   if (
 //     !draggedNode ||
 //     nodeId === draggedNode.id ||
 //     (draggedNode?.type === 'Motion' && !draggedNode?.mocapData) ||
-//     targetFolder?.childNodeIds.find((childNodeId) => childNodeId === draggedNode.id)
+//     targetDirectory?.childNodeIds.find((childNodeId) => childNodeId === draggedNode.id)
 //   ) {
 //     return;
 //   }
@@ -74,16 +74,16 @@ import * as globalUIActions from 'actions/Common/globalUI';
 
 //   const nextNodes = produce(nodes, (draft) => {
 //     const _draggedNode = find(draft, { id: draggedNode.id });
-//     const targetFolder = find(draft, { id: nodeId });
-//     if (!_draggedNode || !targetFolder) {
+//     const targetDirectory = find(draft, { id: nodeId });
+//     if (!_draggedNode || !targetDirectory) {
 //       return;
 //     }
 
 //     _draggedNode.parentId = nodeId;
-//     _draggedNode.filePath = filePath + `\\${targetFolder.name}`;
+//     _draggedNode.filePath = filePath + `\\${targetDirectory.name}`;
 //     _draggedNode.name = nodeName;
 
-//     targetFolder.childNodeIds.push(_draggedNode.id);
+//     targetDirectory.childNodeIds.push(_draggedNode.id);
 
 //     if (_draggedNode.childNodeIds.length > 0) {
 //       _draggedNode.childNodeIds.map((child) => changeNodeDepthById(draft, child, _draggedNode));
@@ -99,18 +99,19 @@ import * as globalUIActions from 'actions/Common/globalUI';
 //   yield put(lpNodeActions.setDraggedNode(null));
 // }
 
-function* handleDropNodeOnFolderRequest(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderSocket.request>) {
+function* handledropNodeOnFolderOrRootRequest(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderOrRootSocket.request>) {
   const { lpNode }: RootState = yield select();
   const { draggedNode, nodes } = lpNode;
-  const folderId = action.payload;
-  const targetFolder = find(nodes, { id: folderId });
-  // TODO(?) check if there is a node with the same name already
-  // @TODO if not, need to deactivate
+  const directoryId = action.payload;
+  const targetDirectory = find(nodes, { id: directoryId });
+
+  const isRootOrAlreadyContainedInFolder = !directoryId || targetDirectory?.childNodeIds.find((childNodeId) => childNodeId === draggedNode?.id);
   if (
     !draggedNode ||
-    folderId === draggedNode.id ||
+    directoryId === draggedNode.id ||
     (draggedNode?.type === 'Motion' && !draggedNode?.mocapData) ||
-    targetFolder?.childNodeIds.find((childNodeId) => childNodeId === draggedNode.id)
+    targetDirectory?.childNodeIds.find((childNodeId) => childNodeId === draggedNode.id) ||
+    isRootOrAlreadyContainedInFolder
   ) {
     yield put(lpNodeActions.setDraggedNode(null));
     return;
@@ -128,13 +129,13 @@ function* handleDropNodeOnFolderRequest(action: ReturnType<typeof lpNodeActions.
       }),
     );
   } else {
-    yield put(lpNodeActions.dropNodeOnFolderSocket.send({ nodeId: draggedNode.id, parentId: targetFolder?.id || '' }));
+    yield put(lpNodeActions.dropNodeOnFolderOrRootSocket.send({ nodeId: draggedNode.id, parentId: directoryId }));
   }
 
   yield put(lpNodeActions.setDraggedNode(null));
 }
 
-function* handleDropNodeOnFolderSend(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderSocket.send>) {
+function* handledropNodeOnFolderOrRootSend(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderOrRootSocket.send>) {
   // TODO: 중복네임 처리??
   // Socket.emit('library', {
   //   type: 'move',
@@ -145,17 +146,17 @@ function* handleDropNodeOnFolderSend(action: ReturnType<typeof lpNodeActions.dro
   // });
 }
 
-function* handleDropNodeOnFolderReceive(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderSocket.receive>) {
+function* handledropNodeOnFolderOrRootReceive(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderOrRootSocket.receive>) {
   const { lpNode }: RootState = yield select();
   const { parentScenesLibraryId, scenesLibraryIds } = action.payload.data;
 
   const nextNodes = produce(lpNode.nodes, (draft) => {
-    const targetFolder = find(draft, { id: parentScenesLibraryId });
+    const targetDirectory = find(draft, { id: parentScenesLibraryId });
 
     for (const nodeId of scenesLibraryIds) {
       const _draggedNode = find(draft, { id: nodeId });
       const prevParentId = _draggedNode?.parentId;
-      if (!_draggedNode || !targetFolder) {
+      if (!_draggedNode || !targetDirectory) {
         return;
       }
 
@@ -164,7 +165,7 @@ function* handleDropNodeOnFolderReceive(action: ReturnType<typeof lpNodeActions.
       // TODO: 중복 네임 관련 규정
       // _draggedNode.name = nodeName;
 
-      targetFolder.childNodeIds.push(_draggedNode.id);
+      targetDirectory.childNodeIds.push(_draggedNode.id);
 
       if (_draggedNode.childNodeIds.length > 0) {
         _draggedNode.childNodeIds.map((child) => changeNodeDepthById(draft, child, _draggedNode));
@@ -177,13 +178,13 @@ function* handleDropNodeOnFolderReceive(action: ReturnType<typeof lpNodeActions.
     }
   });
 
-  yield put(lpNodeActions.dropNodeOnFolderSocket.update(nextNodes));
+  yield put(lpNodeActions.dropNodeOnFolderOrRootSocket.update(nextNodes));
 }
 
-export default function* waitDropNodeOnFolderSocketActions() {
+export default function* waitdropNodeOnFolderOrRootSocketActions() {
   yield all([
-    takeLatest(getType(lpNodeActions.dropNodeOnFolderSocket.request), handleDropNodeOnFolderRequest),
-    takeLatest(getType(lpNodeActions.dropNodeOnFolderSocket.send), handleDropNodeOnFolderSend),
-    takeLatest(getType(lpNodeActions.dropNodeOnFolderSocket.receive), handleDropNodeOnFolderReceive),
+    takeLatest(getType(lpNodeActions.dropNodeOnFolderOrRootSocket.request), handledropNodeOnFolderOrRootRequest),
+    takeLatest(getType(lpNodeActions.dropNodeOnFolderOrRootSocket.send), handledropNodeOnFolderOrRootSend),
+    takeLatest(getType(lpNodeActions.dropNodeOnFolderOrRootSocket.receive), handledropNodeOnFolderOrRootReceive),
   ]);
 }

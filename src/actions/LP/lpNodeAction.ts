@@ -33,7 +33,7 @@ interface SelectNodeParams {
   assetId?: string | null;
 }
 
-interface DropNodeOnFolderParams {
+interface dropNodeOnFolderOrRootParams {
   filePath: string;
   nodeId: string;
 }
@@ -73,12 +73,12 @@ interface DeleteLibraryReceiveParam {
   scenesLibraryId: string;
 }
 
-interface DropNodeOnFolderSendParam {
+interface DropNodeOnFolderOrRootSendParam {
   nodeId: string;
   parentId: string;
 }
 
-interface DropNodeOnFolderReceiveParam {
+interface DropNodeOnFolderOrRootReceiveParam {
   type: 'move';
   data: {
     scenesLibraryIds: string[];
@@ -101,7 +101,6 @@ export const exportAsset = createAction('node/EXPORT', (params: ExportAssetParam
 export const deleteMotion = createAction('node/DELETE_MOTION', (params: DeleteMotionParams) => ({ ...params }))();
 export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadParams) => ({ ...params }))();
 export const addNodes = createAction('node/ADD_NODES', (nodes: LP.Node[]) => ({ nodes }))();
-export const dropNodeOnRoot = createAction('node/DROP_NODE_ON_ROOT')();
 
 export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<undefined, { nodes: LP.Node[] }, Error>();
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
@@ -124,11 +123,11 @@ export const deleteModelSocket = createSocketActions(
   'node/DELETE_MODEL_FAILURE',
 )<string, string, DeleteLibraryReceiveParam, LP.Node[], string>();
 
-export const dropNodeOnFolder = createAction('node/DROP_NODE_ON_FOLDER', (params: DropNodeOnFolderParams) => ({ ...params }))();
-export const dropNodeOnFolderSocket = createSocketActions(
-  'node/DROP_NODE_ON_FOLDER_REQUEST',
-  'node/DROP_NODE_ON_FOLDER_SEND',
-  'node/DROP_NODE_ON_FOLDER_RECEIVE',
-  'node/DROP_NODE_ON_FOLDER_UPDATE',
-  'node/DROP_NODE_ON_FOLDER_FAILURE',
-)<string, DropNodeOnFolderSendParam, DropNodeOnFolderReceiveParam, LP.Node[], string>();
+export const dropNodeOnFolderOrRoot = createAction('node/DROP_NODE_ON_FOLDER', (params: dropNodeOnFolderOrRootParams) => ({ ...params }))();
+export const dropNodeOnFolderOrRootSocket = createSocketActions(
+  'node/DROP_NODE_ON_FOLDER_OR_ROOT_REQUEST',
+  'node/DROP_NODE_ON_FOLDER_OR_ROOT_SEND',
+  'node/DROP_NODE_ON_FOLDER_OR_ROOT_RECEIVE',
+  'node/DROP_NODE_ON_FOLDER_OR_ROOT_UPDATE',
+  'node/DROP_NODE_ON_FOLDER_OR_ROOT_FAILURE',
+)<string, DropNodeOnFolderOrRootSendParam, DropNodeOnFolderOrRootReceiveParam, LP.Node[], string>();
