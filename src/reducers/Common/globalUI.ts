@@ -12,13 +12,13 @@ interface State {
 const defaultState: State = {
   modals: [],
   contextMenu: null,
-  onboardingStep: null,
+  onboardingStep: 0,
 };
 
 export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIActions) => {
   switch (action.type) {
     case globalUIActions.OPEN_MODAL:
-      return Object.assign(state, {
+      return Object.assign({}, state, {
         modals: [
           ...state.modals,
           {
@@ -29,11 +29,11 @@ export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIA
         ],
       });
     case globalUIActions.CLOSE_MODAL:
-      return Object.assign(state, {
+      return Object.assign({}, state, {
         modals: action.payload.alias ? state.modals.filter((modal) => action.payload.alias !== modal.alias) : [],
       });
     case globalUIActions.OPEN_CONTEXT_MENU:
-      return Object.assign(state, {
+      return Object.assign({}, state, {
         contextMenu: {
           name: action.payload.name,
           event: action.payload.event,
@@ -41,11 +41,11 @@ export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIA
         },
       });
     case globalUIActions.CLOSE_CONTEXT_MENU:
-      return Object.assign(state, {
+      return Object.assign({}, state, {
         contextMenu: null,
       });
     case globalUIActions.PROGRESS_ONBOARDING:
-      return Object.assign(state, {
+      return Object.assign({}, state, {
         onboardingStep: action.payload.onboardingStep,
       });
     default:
