@@ -31,9 +31,20 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 // }
 
 function* handleDeleteModelRequest(action: ReturnType<typeof lpNodeActions.deleteModelSocket.request>) {
-  const nodeId = action.payload;
+  const { lpNode, plaskProject, selectingData }: RootState = yield select();
+  const targetModel = _.find(lpNode.nodes, { id: action.payload });
 
-  yield put(lpNodeActions.deleteModelSocket.send(nodeId));
+  if (!targetModel?.assetId) {
+    return;
+  }
+
+  removeAssetThingsFromScene(plaskProject, selectingData, targetModel.assetId);
+  yield put(plaskProjectActions.removeAsset({ assetId: targetModel?.assetId }));
+  yield put(animationDataActions.removeAsset({ assetId: targetModel?.assetId }));
+  yield put(selectingDataActions.unrenderAsset({ assetId: targetModel?.assetId }));
+  yield put(lpNodeActions.deleteModelSocket.send(action.payload));
+
+  forceClickAnimationPlayAndStop();
 }
 
 function* handleDeleteModelSend(action: ReturnType<typeof lpNodeActions.deleteModelSocket.send>) {
@@ -44,22 +55,16 @@ function* handleDeleteModelSend(action: ReturnType<typeof lpNodeActions.deleteMo
 }
 
 function* handleDeleteModelReceive(action: ReturnType<typeof lpNodeActions.deleteModelSocket.receive>) {
-  const { lpNode, plaskProject, selectingData }: RootState = yield select();
+  const { lpNode }: RootState = yield select();
   const targetModel = _.find(lpNode.nodes, { id: action.payload.scenesLibraryId });
 
   if (!targetModel?.assetId) {
     return;
   }
-  removeAssetThingsFromScene(plaskProject, selectingData, targetModel.assetId);
 
   const nextNodes = filterDeletedNode(lpNode.nodes, targetModel);
 
-  yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
-  yield put(plaskProjectActions.removeAsset({ assetId: targetModel?.assetId }));
-  yield put(animationDataActions.removeAsset({ assetId: targetModel?.assetId }));
-  yield put(selectingDataActions.unrenderAsset({ assetId: targetModel?.assetId }));
-
-  forceClickAnimationPlayAndStop();
+  yield put(lpNodeActions.deleteModelSocket.update(nextNodes));
 }
 
 export default function* waitDeleteModelSocketActions() {
