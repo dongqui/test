@@ -1,5 +1,7 @@
+@import "styles/libraries/_colors";
+
 .separator {
   height: 1px;
   margin: 6px;
-  background-color: #4f4f4f;
+  background-color: $outline;
 }
