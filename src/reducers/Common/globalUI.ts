@@ -12,7 +12,7 @@ interface State {
 const defaultState: State = {
   modals: [],
   contextMenu: null,
-  onboardingStep: 0,
+  onboardingStep: null,
 };
 
 export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIActions) => {
