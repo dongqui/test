@@ -21,12 +21,6 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-/**
- * consts
- */
-const DEFAULT_CAMERA_POSITION_ARRAY = [0, 6, 10];
-const DEFAULT_CAMERA_TARGET_ARRAY = [0, 0, 0];
-
 interface Props {}
 
 const RenderingPanel: FunctionComponent<Props> = () => {
@@ -236,72 +230,12 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             case 'p':
             case 'P':
             case 'ㅔ': // p (perspective)
-              if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-                const prevCameraPosition = prevCameraPositions[focusedCanvas.id]?.clone();
-                const prevCameraTarget = prevCameraTargets[focusedCanvas.id]?.clone();
-                if (prevCameraPosition && prevCameraTarget) {
-                  activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
-                  activeCamera.setPosition(prevCameraPosition);
-                  activeCamera.setTarget(prevCameraTarget);
-
-                  prevCameraPositions[focusedCanvas.id] = null;
-                  prevCameraTargets[focusedCanvas.id] = null;
-                }
-
-                const grounds = focusedScene.getMeshesByTags('ground');
-                grounds.forEach((ground) => {
-                  if (ground.id.split('//')[1] === 'top') {
-                    ground.isVisible = true;
-                  } else {
-                    ground.isVisible = false;
-                  }
-                });
-              }
+              plaskEngine.cameraModule.toPerspective();
               break;
             case 'h':
             case 'H':
             case 'ㅗ': // h (camera reset)
-              if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-                const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-                activeCamera.orthoTop = 2;
-                activeCamera.orthoBottom = -2;
-                activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
-                activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
-
-                const grounds = focusedScene.getMeshesByTags('ground');
-                const visibleGround = grounds.find((ground) => ground.isVisible);
-                if (visibleGround) {
-                  const currentView = visibleGround.id.split('//')[1];
-                  const defaultPosition = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY);
-                  const defaultTarget = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY);
-
-                  let distance: number;
-
-                  if (currentView === 'front') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, defaultPosition.z), new BABYLON.Vector3(0, 0, defaultTarget.z));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, defaultTarget.y, distance + 10));
-                  } else if (currentView === 'back') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, defaultPosition.z), new BABYLON.Vector3(0, 0, defaultTarget.z));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, defaultTarget.y, -(distance + 10)));
-                  } else if (currentView === 'top') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, defaultPosition.y, 0), new BABYLON.Vector3(0, defaultTarget.y, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, distance + 10, defaultTarget.z));
-                  } else if (currentView === 'bottom') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, defaultPosition.y, 0), new BABYLON.Vector3(0, defaultTarget.y, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, -(distance + 10), defaultTarget.z));
-                  } else if (currentView === 'left') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(defaultPosition.x, 0, 0), new BABYLON.Vector3(defaultTarget.x, 0, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), defaultTarget.y, defaultTarget.z));
-                  } else if (currentView === 'right') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(defaultPosition.x, 0, 0), new BABYLON.Vector3(defaultTarget.x, 0, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(distance + 10, defaultTarget.y, defaultTarget.z));
-                  }
-                  activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
-                }
-              } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-                activeCamera.setPosition(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY));
-                activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
-              }
+              plaskEngine.cameraModule.resetView();
               break;
             case 'a':
             case 'A':
@@ -355,7 +289,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [_screenList, dispatch, multiKeyController, prevCameraPositions, prevCameraTargets]);
+  }, [_screenList, dispatch, multiKeyController, plaskEngine]);
 
   /**
    * shortcuts related to editing keyframes

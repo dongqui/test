@@ -7,6 +7,9 @@ type PrevCameraProperties = {
   [key: string]: Nullable<Vector3>;
 };
 
+const DEFAULT_CAMERA_POSITION_ARRAY = [0, 6, 10];
+const DEFAULT_CAMERA_TARGET_ARRAY = [0, 0, 0];
+
 export class CameraModule extends Module {
   /**
    * The latest position of camera in Perspective mode, when user change the mode to Orthographic mode.
@@ -94,13 +97,42 @@ export class CameraModule extends Module {
       this.prevPositions[canvas.id] = camera.position.clone();
       this.prevTargets[canvas.id] = camera.target.clone();
     }
-
-    this._setOrthoPosition(view, camera);
+    const { position, target } = camera;
+    this._setOrthoPosition(view, camera, position, target);
   }
 
-  private _setOrthoPosition(view: PlaskView, camera: ArcRotateCamera) {
-    const defaultRadius = 10;
-    const { position, target } = camera;
+  public resetView() {
+    const camera = this.plaskEngine.scene.activeCamera as ArcRotateCamera;
+    const canvas = this.plaskEngine.canvas;
+    const scene = this.plaskEngine.scene;
+
+    if (!camera) {
+      return;
+    }
+
+    const defaultPosition = Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY);
+    const defaultTarget = Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY);
+    if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+      camera.orthoTop = 2;
+      camera.orthoBottom = -2;
+      camera.orthoLeft = -2 * (canvas.width / canvas.height);
+      camera.orthoRight = 2 * (canvas.width / canvas.height);
+
+      const grounds = scene.getMeshesByTags('ground');
+      const visibleGround = grounds.find((ground) => ground.isVisible);
+      if (visibleGround) {
+        const currentView = visibleGround.id.split('//')[1] as PlaskView;
+
+        this._setOrthoPosition(currentView, camera, defaultPosition, defaultTarget);
+        camera.setTarget(defaultTarget);
+      }
+    } else if (camera.mode === Camera.PERSPECTIVE_CAMERA) {
+      camera.setPosition(defaultPosition);
+      camera.setTarget(defaultTarget);
+    }
+  }
+
+  private _setOrthoPosition(view: PlaskView, camera: ArcRotateCamera, position: Vector3, target: Vector3, defaultRadius = 10) {
     let distance;
 
     switch (view) {
