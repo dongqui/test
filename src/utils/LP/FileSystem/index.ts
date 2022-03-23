@@ -9,3 +9,4 @@ export { default as changeNodeDepthById } from './changeNodeDepthById';
 export { default as isDroppedOnRP } from './isDroppedOnRP';
 export { default as filterDeletedNode } from './filterDeletedNode';
 export { default as createFolderNode } from './createFolderNode';
+export { default as getCurrentPathDepth } from './getCurrentPathDepth';

@@ -66,6 +66,8 @@ export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeAct
         nodes: [...state.nodes, action.payload],
       });
     }
+    case getType(LPNodeActions.deleteModelSocket.update):
+    case getType(LPNodeActions.deleteFolderOrMocapSocket.update):
     case getType(LPNodeActions.deleteFolderOrMocapSocket.update): {
       return Object.assign({}, state, {
         nodes: action.payload,
