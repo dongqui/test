@@ -27,7 +27,7 @@ const LPBody: FunctionComponent<Props> = () => {
     dispatch(lpNodeActions.selectNode({ nodeId: null, assetId: null }));
     dispatch(
       globalUIActions.openContextMenu('LPBodyContextMenu', e, {
-        nodeId: '__root__',
+        nodeId: '',
         filePath: '\\root',
       }),
     );
@@ -38,14 +38,14 @@ const LPBody: FunctionComponent<Props> = () => {
   };
 
   const handleDrop = () => {
-    if (!draggedNode || draggedNode?.parentId === '__root__' || draggedNode.type === 'Motion') {
+    if (!draggedNode?.parentId || draggedNode.type === 'Motion') {
       return;
     }
 
     dispatch(lpNodeActions.dropNodeOnRoot());
   };
 
-  const rootPathNodes = nodes.filter((node) => node.parentId === '__root__');
+  const rootPathNodes = nodes.filter((node) => !node.parentId);
 
   return (
     <div className={cx('inner')} onContextMenu={handleContextMenu} onClickCapture={handleClick} onDrop={handleDrop} data-cy="lp-body">

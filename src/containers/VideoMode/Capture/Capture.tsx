@@ -215,7 +215,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         if (mocapCount === 1) {
           const newMotionNode: LP.Node = {
             id: uuidv4(),
-            parentId: '__root__',
+            parentId: '',
             name: fileName,
             filePath: '\\root',
             childNodeIds: [],
@@ -230,7 +230,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         } else {
           const newFolderNode: LP.Node = {
             id: uuidv4(),
-            parentId: '__root__',
+            parentId: '',
             filePath: '\\root',
             name: fileName,
             extension: '',
