@@ -10,9 +10,11 @@ import {
   KeyboardEventTypes,
   KeyboardInfo,
   Mesh,
+  Observable,
   PointerEventTypes,
   PointerInfo,
   Scene,
+  Vector2,
   Vector3,
 } from '@babylonjs/core';
 import { RootState } from 'reducers';
@@ -49,6 +51,11 @@ export class PlaskEngine {
   public static GetInstance() {
     return PlaskEngine.Instance;
   }
+
+  /**
+   * Called on context menu open request
+   */
+  public onContextMenuOpenObservable: Observable<Vector2> = new Observable();
 
   public visibilityOptions: VisibilityOptions = {
     isGizmoVisible: true,
@@ -280,6 +287,16 @@ export class PlaskEngine {
       // return to perspective mode when camera is rotated
       if (event.button === 0 && event.altKey) {
         this.cameraModule.toPerspective();
+      }
+    }
+
+    // Context menu request
+    if (pointerInfo.event.button === 2 && !pointerInfo.event.altKey) {
+      switch (pointerInfo.type) {
+        case PointerEventTypes.POINTERDOWN: {
+          this.onContextMenuOpenObservable.notifyObservers(new Vector2(this.scene.pointerY, this.scene.pointerX));
+          break;
+        }
       }
     }
   }
