@@ -68,13 +68,12 @@ interface FileUploadParams {
   showLoading: boolean;
 }
 
-interface DeleteFolderOrMocapReceiveParam {
+interface DeleteLibraryReceiveParam {
   type: 'delete';
   scenesLibraryId: string;
 }
 
 export const changeNode = createAction('node/CHANGE_NODE', ({ nodes }: { nodes: LP.Node[] }) => ({ nodes }))();
-export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
 export const visualizeModel = createAction('node/VISUALIZE_MODEL', (assetId: string) => ({ assetId }))();
 export const cancelVisulization = createAction('node/CANCEL_VISUALIZATION', (assetId: string) => ({ assetId }))();
 export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: AddEmptyMotionParams) => ({ ...params }))();
@@ -102,4 +101,13 @@ export const deleteFolderOrMocapSocket = createSocketActions(
   'node/DELETE_FOLRDER_OR_MOCAP_RECEIVE',
   'node/DELETE_FOLRDER_OR_MOCAP_UPDATE',
   'node/DELETE_FOLRDER_OR_MOCAP_FAILURE',
-)<string, string, DeleteFolderOrMocapReceiveParam, LP.Node[], string>();
+)<string, string, DeleteLibraryReceiveParam, LP.Node[], string>();
+
+export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
+export const deleteModelSocket = createSocketActions(
+  'node/DELETE_MODEL_REQUEST',
+  'node/DELETE_MODEL_SEND',
+  'node/DELETE_MODEL_RECEIVE',
+  'node/DELETE_MODEL_UPDATE',
+  'node/DELETE_MODEL_FAILURE',
+)<string, string, DeleteLibraryReceiveParam, LP.Node[], string>();
