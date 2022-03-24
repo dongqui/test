@@ -640,75 +640,26 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   // use skeletonViewer only for debugging purpose
   useEffect(() => {
     const targetScreen = _screenList[0];
-    const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-    if (targetScreen && visualizedAsset) {
-      const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === targetScreen.id);
-      const { skeleton, meshes } = visualizedAsset;
-      const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], targetScreen.scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
-      skeletonViewer.mesh.id = `${visualizedAsset.id}//skeletonViewer`;
-      if (targetVisibilityOption) {
-        skeletonViewer.isEnabled = targetVisibilityOption.isBoneVisible;
-      }
-      dispatch(screenDataActions.addSkeletonViewer({ screenId: targetScreen.id, skeletonViewer: skeletonViewer }));
+    if (targetScreen) {
+      // TODO : babylon non-persistent entity, shouldn't be in the state (kept for now for compatibility)
+      dispatch(screenDataActions.addSkeletonViewer({ screenId: targetScreen.id, skeletonViewer: plaskEngine.visibilityLayers.skeletonViewer! }));
 
       return () => {
-        skeletonViewer.dispose();
         dispatch(screenDataActions.removeSkeletonViewer({ screenId: targetScreen.id }));
       };
     }
-  }, [_assetList, _screenList, _visibilityOptions, _visualizedAssetIds, dispatch]);
+  }, [_screenList, _visualizedAssetIds, dispatch, plaskEngine]);
 
   const screenVisibilityItemList: ScreenVisivilityItem[] = useMemo(() => {
     const targetScreen = _screenList[0];
     if (targetScreen) {
       const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === targetScreen.id);
-      const targetSkeletonViewer = _plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === targetScreen.id)?.skeletonViewer;
 
       return [
         {
           value: 'Bone',
           onSelect: () => {
-            if (targetVisibilityOption) {
-              if (targetVisibilityOption.isBoneVisible) {
-                const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-                if (visualizedAsset) {
-                  const { id: assetId, meshes, skeleton } = visualizedAsset;
-                  // joints
-                  const transformNodes = _selectableObjects.filter((object) => object.type === 'joint' && object.id.includes(assetId)).map((entity) => entity.reference);
-                  transformNodes.forEach((transformNode) => {
-                    const joint = targetScreen.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
-                    if (joint) {
-                      joint.isVisible = false;
-                    }
-                  });
-                  // skeletonView
-                  if (targetSkeletonViewer) {
-                    targetSkeletonViewer.isEnabled = false;
-                  }
-                }
-
-                dispatch(screenDataActions.setBoneVisibility({ screenId: targetScreen.id, value: false }));
-              } else {
-                const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-                if (visualizedAsset) {
-                  const { id: assetId, meshes, skeleton } = visualizedAsset;
-                  // joints
-                  const transformNodes = _selectableObjects.filter((object) => object.type === 'joint' && object.id.includes(assetId)).map((entity) => entity.reference);
-                  transformNodes.forEach((transformNode) => {
-                    const joint = targetScreen.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
-                    if (joint) {
-                      joint.isVisible = true;
-                    }
-                  });
-                  // skeletonView
-                  if (targetSkeletonViewer) {
-                    targetSkeletonViewer.isEnabled = true;
-                  }
-                }
-
-                dispatch(screenDataActions.setBoneVisibility({ screenId: targetScreen.id, value: true }));
-              }
-            }
+            plaskEngine.visibilityLayers.toggleVisibility('Bone');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true,
           active: targetVisibilityOption && !targetVisibilityOption.isMeshVisible ? false : true,
@@ -716,31 +667,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Mesh',
           onSelect: () => {
-            if (targetVisibilityOption) {
-              if (targetVisibilityOption.isMeshVisible) {
-                const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-                if (visualizedAsset) {
-                  visualizedAsset.meshes.forEach((mesh) => {
-                    if (mesh.getScene().uid === targetScreen.id) {
-                      mesh.isVisible = false;
-                    }
-                  });
-                }
-
-                dispatch(screenDataActions.setMeshVisibility({ screenId: targetScreen.id, value: false }));
-              } else {
-                const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-                if (visualizedAsset) {
-                  visualizedAsset.meshes.forEach((mesh) => {
-                    if (mesh.getScene().uid === targetScreen.id) {
-                      mesh.isVisible = true;
-                    }
-                  });
-                }
-
-                dispatch(screenDataActions.setMeshVisibility({ screenId: targetScreen.id, value: true }));
-              }
-            }
+            plaskEngine.visibilityLayers.toggleVisibility('Mesh');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isMeshVisible : true,
           active: targetVisibilityOption && !targetVisibilityOption.isBoneVisible ? false : true,
@@ -748,13 +675,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Gizmo',
           onSelect: () => {
-            if (targetVisibilityOption) {
-              if (targetVisibilityOption.isGizmoVisible) {
-                dispatch(screenDataActions.setGizmoVisibility({ screenId: targetScreen.id, value: false }));
-              } else {
-                dispatch(screenDataActions.setGizmoVisibility({ screenId: targetScreen.id, value: true }));
-              }
-            }
+            plaskEngine.visibilityLayers.toggleVisibility('Gizmo');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isGizmoVisible : true,
           active: true,
@@ -763,7 +684,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     } else {
       return [];
     }
-  }, [_assetList, _plaskSkeletonViewers, _screenList, _selectableObjects, _visibilityOptions, _visualizedAssetIds, dispatch]);
+  }, [_visibilityOptions, _screenList, plaskEngine]);
 
   return (
     <div className={cx('wrapper')}>

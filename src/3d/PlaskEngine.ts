@@ -29,6 +29,7 @@ import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
+import { VisibilityLayersModule } from './modules/visibilityLayers/visibilityLayersModule';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
@@ -57,10 +58,6 @@ export class PlaskEngine {
    */
   public onContextMenuOpenObservable: Observable<Vector2> = new Observable();
 
-  public visibilityOptions: VisibilityOptions = {
-    isGizmoVisible: true,
-  };
-
   public dispose() {
     this._engine.dispose();
     this._scene.dispose();
@@ -86,6 +83,7 @@ export class PlaskEngine {
   public cameraModule!: CameraModule;
   public selectorModule!: SelectorModule;
   public gizmoModule!: GizmoModule;
+  public visibilityLayers!: VisibilityLayersModule;
   public ikModule!: IKModule;
 
   constructor() {
@@ -199,6 +197,10 @@ export class PlaskEngine {
     this._entities[entity.entityId] = entity;
   }
 
+  public get currentScreenId() {
+    return this.state.plaskProject.screenList[0].id;
+  }
+
   public resize() {
     this._engine.resize();
 
@@ -231,6 +233,7 @@ export class PlaskEngine {
     this._modules.push((this.cameraModule = new CameraModule(this)));
     this._modules.push((this.selectorModule = new SelectorModule(this)));
     this._modules.push((this.gizmoModule = new GizmoModule(this)));
+    this._modules.push((this.visibilityLayers = new VisibilityLayersModule(this)));
     // this._modules.push((this.ikModule = new IKModule(this)));
   }
 
