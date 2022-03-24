@@ -32,6 +32,8 @@ type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
+const FEATURE_HISTORY = false;
+
 export class PlaskEngine {
   private _modules: Module[] = [];
   private _engine!: Engine;
@@ -209,11 +211,15 @@ export class PlaskEngine {
 
   // TODO : MOVE TO REACT PART
   public undo() {
-    this.dispatch(ActionCreators.undo());
+    if (FEATURE_HISTORY) {
+      this.dispatch(ActionCreators.undo());
+    }
   }
 
   public redo() {
-    this.dispatch(ActionCreators.redo());
+    if (FEATURE_HISTORY) {
+      this.dispatch(ActionCreators.redo());
+    }
   }
 
   public clearHistory() {
