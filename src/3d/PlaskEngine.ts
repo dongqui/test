@@ -254,15 +254,20 @@ export class PlaskEngine {
     if (keyboardInfo.type === KeyboardEventTypes.KEYDOWN) {
       switch (keyboardInfo.event.key) {
         case 'z':
-          if (keyboardInfo.event.ctrlKey) {
-            this.undo();
+        case 'Z':
+        case 'ㅋ': {
+          if (keyboardInfo.event.ctrlKey || keyboardInfo.event.metaKey) {
+            if (keyboardInfo.event.shiftKey) {
+              this.redo();
+            } else {
+              this.undo();
+            }
           }
           break;
-        case 'y':
-          if (keyboardInfo.event.ctrlKey) {
-            this.redo();
-          }
+        }
+        default: {
           break;
+        }
       }
     }
   }
