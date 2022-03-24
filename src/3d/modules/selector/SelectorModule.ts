@@ -1,6 +1,7 @@
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
-import { defaultMultiSelect } from 'actions/selectingDataAction';
+import { defaultMultiSelect, updateTransform } from 'actions/selectingDataAction';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
@@ -13,28 +14,67 @@ export class SelectorModule extends Module {
   public onSelectionChangeObservable: Observable<TransformNode[]> = new Observable();
 
   public get selectableObjects() {
-    return this.plaskEngine.state.selectingData.selectableObjects;
+    return this.plaskEngine.state.selectingData.present.selectableObjects;
   }
 
   // TODO : decorator ?
   public get selectedTargets() {
-    return this.plaskEngine.state.selectingData.selectedTargets;
+    return this.plaskEngine.state.selectingData.present.selectedTargets.map((entity) => entity.reference);
   }
   public set selectedTargets(targets: TransformNode[]) {
-    this.plaskEngine.dispatch(defaultMultiSelect({ targets }));
+    // Only fire an update if selection differs
+    // TODO : helpers
+    const currentTargets = this.selectedTargets;
+    let differs = targets.length !== currentTargets.length;
+    if (!differs) {
+      const targetsClone = targets.slice();
+      for (const target of currentTargets) {
+        const index = targetsClone.indexOf(target);
+        if (index === -1) {
+          differs = true;
+          break;
+        } else {
+          targetsClone.splice(index, 1);
+        }
+      }
+
+      differs = !!targetsClone.length;
+    }
+
+    if (differs) {
+      this.plaskEngine.dispatch(defaultMultiSelect({ targets: targets.map((transformNode) => transformNode.getPlaskEntity()) }));
+    }
   }
 
   private _startPosition: Nullable<Vector2> = null;
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public reduxObservedStates = ['selectingData'];
-  public onStateChanged(stateKey: string, key: string) {
-    if (key === 'selectedTargets') {
+  public reduxObservedStates = ['selectingData.present.selectedTargets', 'selectingData.present.selectableObjects', 'selectingData.present.allObjectsMap'];
+  public onStateChanged(key: string, previousState: any) {
+    if (key === 'selectingData.present.allObjectsMap') {
+      for (const entityId in this.plaskEngine.state.selectingData.present.allObjectsMap) {
+        if (previousState[entityId] !== this.plaskEngine.state.selectingData.present.allObjectsMap[entityId]) {
+          this.plaskEngine.state.selectingData.present.allObjectsMap[entityId].markDirty();
+        }
+      }
+      return;
+    }
+
+    if (key === 'selectingData.present.selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
-    } else if (key === 'selectableObjects') {
-      // pass
-      // console.log(this.selectableObjects);
+      return;
+    }
+
+    if (key === 'selectingData.present.selectableObjects') {
+      if (this.selectableObjects !== previousState.selectableObjects) {
+        // TODO : we clear history here because we don't handle undoing/redoing a model change.
+        // It should be removed once we handle that
+        this.plaskEngine.clearHistory();
+        // Init positions
+        this.plaskEngine.dispatch(updateTransform({ targets: this.plaskEngine.state.selectingData.present.selectableObjects.map((selectableObject) => selectableObject.clone()) }));
+      }
+      return;
     }
   }
 
@@ -158,6 +198,8 @@ export class SelectorModule extends Module {
   private _boxSelect(startPointerPosition: Vector2, endPointerPosition: Vector2) {
     const scene = this.plaskEngine.scene;
 
-    return this.selectableObjects.filter((object) => checkIsObjectIn(startPointerPosition as ScreenXY, endPointerPosition as ScreenXY, object, scene));
+    return this.selectableObjects
+      .map((object) => object.reference)
+      .filter((object) => checkIsObjectIn(startPointerPosition as ScreenXY, endPointerPosition as ScreenXY, object, scene));
   }
 }

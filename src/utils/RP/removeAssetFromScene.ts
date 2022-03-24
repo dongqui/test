@@ -1,7 +1,8 @@
-import * as BABYLON from '@babylonjs/core';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { Mesh, Scene } from '@babylonjs/core';
 import { PlaskAsset } from 'types/common';
 
-const removeAssetFromScene = (scene: BABYLON.Scene, asset: PlaskAsset, jointTransformNodes: BABYLON.TransformNode[], controllers: BABYLON.Mesh[]) => {
+const removeAssetFromScene = (scene: Scene, asset: PlaskAsset, joints: PlaskTransformNode[], controllers: PlaskTransformNode[]) => {
   const { id: assetId, meshes, geometries, skeleton, transformNodes } = asset;
 
   meshes.forEach((mesh) => {
@@ -23,15 +24,15 @@ const removeAssetFromScene = (scene: BABYLON.Scene, asset: PlaskAsset, jointTran
     }
   }
 
-  jointTransformNodes.forEach((jointTransformNode) => {
-    const joint = scene.getMeshByID(jointTransformNode.id.replace('transformNode', 'joint'));
-    if (joint) {
-      scene.removeMesh(joint);
+  joints.forEach((joint) => {
+    const mesh = scene.getMeshByID(joint.id.replace('transformNode', 'joint'));
+    if (mesh) {
+      scene.removeMesh(mesh);
     }
   });
 
   controllers.forEach((controller) => {
-    scene.removeMesh(controller as BABYLON.Mesh);
+    scene.removeMesh(controller.reference as Mesh);
   });
 
   transformNodes.forEach((transformNode) => {
