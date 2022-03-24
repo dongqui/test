@@ -1,3 +1,5 @@
+@import "styles/libraries/_colors";
+
 .wrapper {
   position: relative;
   display: flex;
@@ -5,7 +7,7 @@
   height: 24px;
   margin-right: 4px;
   color: #7a7a7b;
-  background-color: #353739;
+  background-color: $contentBG_base;
   border-radius: 6px;
 
   & > p {
@@ -55,10 +57,10 @@
     }
 
     & > input {
-      color: #fff;
+      color: var(--white);
 
       &::placeholder {
-        color: #fff;
+        color: var(--white);
       }
     }
   }
@@ -75,8 +77,8 @@
   left: 16px;
   width: 70%;
   height: 100%;
-  color: #7a7a7b;
-  background-color: #353739;
+  color: $contentInactive;
+  background-color: $contentBG_base;
   border-radius: 6px;
   overflow: hidden;
   white-space: nowrap;
