@@ -129,7 +129,7 @@ function* handleEditNodeNameReceive(action: ReturnType<typeof lpNodeActions.edit
   yield put(lpNodeActions.editNodeNameSocket.update(nextNodes));
 }
 
-export default function* watcheditNodeNameSocketActions() {
+export default function* watchEditNodeNameSocketActions() {
   yield all([
     takeLatest(getType(lpNodeActions.editNodeNameSocket.request), handleEditNodeNameRequest),
     takeLatest(getType(lpNodeActions.editNodeNameSocket.send), handleEditNodeNameSend),
