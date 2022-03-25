@@ -1,3 +1,4 @@
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import * as BABYLON from '@babylonjs/core';
 
 export type SelectingDataAction =
@@ -10,7 +11,8 @@ export type SelectingDataAction =
   | ReturnType<typeof ctrlKeySingleSelect>
   | ReturnType<typeof ctrlKeyMultiSelect>
   | ReturnType<typeof selectAllSelectableObjects>
-  | ReturnType<typeof resetSelectedTargets>;
+  | ReturnType<typeof resetSelectedTargets>
+  | ReturnType<typeof updateTransform>;
 
 const ADD_SELECTABLE_OBJECTS = 'selectingDataAction/ADD_SELECTABLE_OBJECTS' as const;
 const REMOVE_SELECTABLE_CONTROLLERS = 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS' as const;
@@ -25,9 +27,10 @@ const CTRL_KEY_MULTI_SELECT = 'selectingDataAction/CTRL_KEY_MULTI_SELECT' as con
 
 const SELECT_ALL_SELECTABLE_OBJECTS = 'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS' as const;
 const RESET_SELECTED_TARGETS = 'selectingDataAction/RESET_SELECTED_TARGETS' as const;
+const UPDATE_TRANSFORM = 'selectingDataAction/UPDATE_TRANSFORM' as const;
 
 interface AddSelectableObjects {
-  objects: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+  objects: Array<PlaskTransformNode>;
 }
 
 interface RemoveSelectableControllers {
@@ -43,19 +46,23 @@ interface UnrenderAsset {
 }
 
 interface DefaultSingleSelect {
-  target: BABYLON.Mesh | BABYLON.TransformNode;
+  target: PlaskTransformNode;
 }
 
 interface DefaultMultiSelect {
-  targets: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+  targets: Array<PlaskTransformNode>;
 }
 
 interface CtrlKeySingleSelect {
-  target: BABYLON.Mesh | BABYLON.TransformNode;
+  target: PlaskTransformNode;
 }
 
 interface CtrlKeyMultiSelect {
-  targets: Array<BABYLON.Mesh | BABYLON.TransformNode>;
+  targets: Array<PlaskTransformNode>;
+}
+
+interface UpdateSelectedTargets {
+  targets: Array<PlaskTransformNode>;
 }
 
 /**
@@ -165,6 +172,16 @@ export const ctrlKeyMultiSelect = (params: CtrlKeyMultiSelect) => ({
  */
 export const selectAllSelectableObjects = () => ({
   type: SELECT_ALL_SELECTABLE_OBJECTS,
+});
+
+/**
+ * Moves the selected targets. Undoable
+ */
+export const updateTransform = (params: UpdateSelectedTargets) => ({
+  type: UPDATE_TRANSFORM,
+  payload: {
+    ...params,
+  },
 });
 
 /**

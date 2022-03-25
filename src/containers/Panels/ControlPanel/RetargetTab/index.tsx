@@ -29,8 +29,8 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
-  const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
-  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
+  const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
+  const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
 
   const [isMappingSectionSpread, setIsMappingSectionSpread] = useState<boolean>(true);
   const [currentSourceBoneName, setCurrentSourceBoneName] = useState<RetargetSourceBoneType>();
@@ -40,9 +40,9 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [canAssign, setCanAssign] = useState(false);
 
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
-  const multipleBoneSelected = useMemo(() => _selectedTargets.filter((target) => !checkIsTargetMesh(target)).length > 1, [_selectedTargets]);
+  const multipleBoneSelected = useMemo(() => _selectedTargets.filter((target) => target.type === 'joint').length > 1, [_selectedTargets]);
   const visualizedRetargetMap = useMemo(() => _retargetMaps.find((retargetMap) => retargetMap.assetId === _visualizedAssetIds[0]), [_retargetMaps, _visualizedAssetIds]); // 단일 모델
-  const visualizedTransformNodes = useMemo(() => _selectableObjects.filter((object) => !checkIsTargetMesh(object) && !object.name.toLowerCase().includes('armature')), [
+  const visualizedTransformNodes = useMemo(() => _selectableObjects.filter((object) => object.type === 'joint' && !object.name.toLowerCase().includes('armature')), [
     _selectableObjects,
   ]);
 
@@ -90,7 +90,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   // rp 선택에 의한 targetTransformNode 변경
   useEffect(() => {
     if (_selectedTargets.length === 1) {
-      if (!checkIsTargetMesh(_selectedTargets[0]) && !_selectedTargets[0].name.toLowerCase().includes('armature')) {
+      if (!checkIsTargetMesh(_selectedTargets[0].reference) && !_selectedTargets[0].name.toLowerCase().includes('armature')) {
         setCurrentTargetTransformNode({ id: _selectedTargets[0].id, name: _selectedTargets[0].name });
         isSelectedTargetBoneOption.current = true;
       }

@@ -37,8 +37,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _screenList = useSelector((state) => state.plaskProject.screenList);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _fps = useSelector((state) => state.plaskProject.fps);
-  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
-  const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
+  const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
+  const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
@@ -1106,7 +1106,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 if (visualizedAsset) {
                   const { id: assetId, meshes, skeleton } = visualizedAsset;
                   // joints
-                  const transformNodes = _selectableObjects.filter((object) => !checkIsTargetMesh(object) && object.id.includes(assetId)) as BABYLON.TransformNode[];
+                  const transformNodes = _selectableObjects.filter((object) => object.type === 'joint' && object.id.includes(assetId)).map((entity) => entity.reference);
                   transformNodes.forEach((transformNode) => {
                     const joint = targetScreen.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
                     if (joint) {
@@ -1125,7 +1125,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 if (visualizedAsset) {
                   const { id: assetId, meshes, skeleton } = visualizedAsset;
                   // joints
-                  const transformNodes = _selectableObjects.filter((object) => !checkIsTargetMesh(object) && object.id.includes(assetId)) as BABYLON.TransformNode[];
+                  const transformNodes = _selectableObjects.filter((object) => object.type === 'joint' && object.id.includes(assetId)).map((entity) => entity.reference);
                   transformNodes.forEach((transformNode) => {
                     const joint = targetScreen.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
                     if (joint) {

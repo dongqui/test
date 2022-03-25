@@ -21,8 +21,8 @@ interface Props {
 
 const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
-  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
-  const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
+  const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
+  const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
   const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // === selectedLayerId (inappropriate naming)
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _playState = useSelector((state) => state.animatingControls.playState);
@@ -78,7 +78,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       setControlTarget(null);
     } else if (_selectedTargets.length === 1) {
       // case single target is selected
-      setControlTarget(_selectedTargets[0]);
+      setControlTarget(_selectedTargets[0].reference);
     } else {
       // case multi targets are selected
       setControlTarget(null);
