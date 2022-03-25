@@ -19,7 +19,7 @@ export default function* handleDropNodeOnRoot() {
   if (draggedNode?.type === 'Folder') {
     const currentPathNodeName = nodes
       .filter((node) => {
-        if (node.parentId === '__root__') {
+        if (node.parentId === '') {
           const isMatch = draggedNode.name.match(/ \(\d+\)$/g);
           const tempName = draggedNode.name.replace(/ \(\d+\)$/g, '');
           if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
@@ -40,7 +40,7 @@ export default function* handleDropNodeOnRoot() {
     const extension = getFileExtension(draggedNode.name).toLowerCase();
     const fileName = draggedNode.name.split('.').slice(0, -1).join('.');
 
-    const currentPathNodeName = nodes.filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
+    const currentPathNodeName = nodes.filter((node) => !node.parentId && node.name.includes(`${fileName}`)).map((filteredNode) => filteredNode.name);
 
     const check = checkCreateDuplicates(`${fileName}`, currentPathNodeName);
 
@@ -53,7 +53,7 @@ export default function* handleDropNodeOnRoot() {
       return;
     }
 
-    _draggedNode.parentId = '__root__';
+    _draggedNode.parentId = '';
     _draggedNode.filePath = '\\root';
 
     if (_draggedNode.childNodeIds.length > 0) {

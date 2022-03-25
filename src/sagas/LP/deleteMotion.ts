@@ -30,7 +30,7 @@ export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActi
     yield put(selectingDataActions.unrenderAsset({ assetId }));
   }
 
-  const nextNodes = filterDeletedNode(lpNode.nodes, nodeId, parentId);
+  const nextNodes = filterDeletedNode(lpNode.nodes, targetMotion);
 
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
   yield put(animationDataActions.removeAnimationIngredient({ animationIngredientId: targetAnimationIngredient.id }));

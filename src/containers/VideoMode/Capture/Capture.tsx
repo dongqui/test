@@ -215,7 +215,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         if (mocapCount === 1) {
           const newMotionNode: LP.Node = {
             id: uuidv4(),
-            parentId: '__root__',
+            parentId: '',
             name: fileName,
             filePath: '\\root',
             childNodeIds: [],
@@ -230,7 +230,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         } else {
           const newFolderNode: LP.Node = {
             id: uuidv4(),
-            parentId: '__root__',
+            parentId: '',
             filePath: '\\root',
             name: fileName,
             extension: '',
@@ -550,8 +550,8 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       )}
       {readyExtract && (
         <BaseModal>
-          <p className={cx('extract-name-paragraph')}>Enter the name of the motion to extract.</p>
-          <input type="text" className={cx('extract-name-input')} placeholder="Exported motion" onChange={(e) => handleChange(e)} value={basicExtractName} />
+          <p className={cx('extract-name-paragraph')}>Enter the name of the mocap to extract.</p>
+          <input type="text" className={cx('extract-name-input')} placeholder="Extracted mocap" onChange={(e) => handleChange(e)} value={basicExtractName} />
           <div className={cx('extract-name-wrapper')}>
             <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setReadyExtract(false)}></FilledButton>
             <FilledButton
@@ -560,7 +560,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               onClick={() =>
                 handleExtractMotion({
                   id: uuidv4(),
-                  fileName: basicExtractName === '' ? 'Exported motion' : basicExtractName,
+                  fileName: basicExtractName === '' ? 'Extracted mocap' : basicExtractName,
                   type: browserType === 'safari' ? 'mp4' : 'webm',
                   start: start,
                   end: end,
@@ -599,7 +599,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         <BaseModal>
           <div className={cx('loading-modal')}>
             <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
-            <h4 className={cx('modal-heading', 'loading')}>Motions Extracting</h4>
+            <h4 className={cx('modal-heading', 'loading')}>Extracting mocap</h4>
             <p className={cx('extract-name-paragraph', 'loading')}>
               It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}
             </p>
@@ -619,7 +619,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Extract Failed</h4>
             <p className={cx('extract-name-paragraph')}>
-              Motion export<strong> failed</strong>.<br />
+              Mocap export<strong> failed</strong>.<br />
               The uploaded video doesn't meet the motion capture requirement
             </p>
             <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)}></FilledButton>
@@ -630,7 +630,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         <BaseModal>
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Server update in progress.</h4>
-            <p className={cx('extract-name-paragraph')}>Motion extraction is available after the time below. (2022-01-13, 01:00 AM ~ 04:00 AM, PST)</p>
+            <p className={cx('extract-name-paragraph')}>Mocap extraction is available after the time below. (2022-01-13, 01:00 AM ~ 04:00 AM, PST)</p>
             <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsServerUpdating(false)}></FilledButton>
           </div>
         </BaseModal>
