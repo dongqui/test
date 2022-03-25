@@ -55,6 +55,18 @@
   --pastel-teal: #61e4ed;
   --pastel-purple: #d687f4;
   --pastel-pink: #ff8cc9;
+  --font-size-1: 0.9rem;
+  --font-size-2: 1rem;
+  --font-size-3: 1.1rem;
+  --font-size-4: 1.2rem;
+  --font-size-5: 1.4rem;
+  --font-size-6: 1.6rem;
+  --font-size-7: 1.8rem;
+  --font-size-8: 2.4rem;
+  --font-size-9: 3.6rem;
+  --font-size-10: 4.8rem;
+  --font-size-11: 6.4rem;
+  --font-size-12: 7.2rem;
 }
 
 *,
@@ -71,6 +83,7 @@
 html {
   width: 100%;
   height: 100%;
+  font-size: 10px;
 }
 
 body,
