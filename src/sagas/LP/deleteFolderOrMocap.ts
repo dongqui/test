@@ -30,7 +30,7 @@ function* handleDeleteFolderOrMocapReceive(action: ReturnType<typeof lpNodeActio
   yield put(lpNodeActions.deleteFolderOrMocapSocket.update(nextNodes));
 }
 
-export default function* waitDeleteFolderOrMocapSocketActions() {
+export default function* watchDeleteFolderOrMocapSocketActions() {
   yield all([
     takeLatest(getType(lpNodeActions.deleteFolderOrMocapSocket.request), handleDeleteFolderOrMocapRequest),
     takeLatest(getType(lpNodeActions.deleteFolderOrMocapSocket.send), handleDeleteFolderOrMocapSend),

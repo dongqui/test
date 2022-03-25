@@ -181,7 +181,7 @@ function* handledropNodeOnFolderOrRootReceive(action: ReturnType<typeof lpNodeAc
   yield put(lpNodeActions.dropNodeOnFolderOrRootSocket.update(nextNodes));
 }
 
-export default function* waitdropNodeOnFolderOrRootSocketActions() {
+export default function* watchdropNodeOnFolderOrRootSocketActions() {
   yield all([
     takeLatest(getType(lpNodeActions.dropNodeOnFolderOrRootSocket.request), handledropNodeOnFolderOrRootRequest),
     takeLatest(getType(lpNodeActions.dropNodeOnFolderOrRootSocket.send), handledropNodeOnFolderOrRootSend),

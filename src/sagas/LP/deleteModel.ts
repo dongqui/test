@@ -67,7 +67,7 @@ function* handleDeleteModelReceive(action: ReturnType<typeof lpNodeActions.delet
   yield put(lpNodeActions.deleteModelSocket.update(nextNodes));
 }
 
-export default function* waitDeleteModelSocketActions() {
+export default function* watchDeleteModelSocketActions() {
   yield all([
     takeLatest(getType(lpNodeActions.deleteModelSocket.request), handleDeleteModelRequest),
     takeLatest(getType(lpNodeActions.deleteModelSocket.send), handleDeleteModelSend),
