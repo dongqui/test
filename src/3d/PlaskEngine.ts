@@ -308,7 +308,7 @@ export class PlaskEngine {
     if (pointerInfo.event.button === 2 && !pointerInfo.event.altKey) {
       switch (pointerInfo.type) {
         case PointerEventTypes.POINTERDOWN: {
-          this.onContextMenuOpenObservable.notifyObservers(new Vector2(this.scene.pointerY, this.scene.pointerX));
+          this.onContextMenuOpenObservable.notifyObservers(new Vector2(this.scene.pointerX, this.scene.pointerY));
           break;
         }
       }
