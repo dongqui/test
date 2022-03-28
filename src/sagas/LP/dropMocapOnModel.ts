@@ -65,7 +65,7 @@ export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.
 
   const isErrorRetargetMap = targetRetargetMap && targetRetargetMap.values.some((value) => !value.targetTransformNodeId);
 
-  if (!isErrorRetargetMap || !draggedNode?.mocapData) {
+  if (isErrorRetargetMap || !draggedNode?.mocapData) {
     yield put(
       globalUIActions.openModal('ConfirmModal', {
         title: 'Confirm',

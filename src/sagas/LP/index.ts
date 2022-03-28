@@ -9,10 +9,10 @@ import handleCancelVisulization from './cancelVisulization';
 import handleAddEmptyMotion from './addEmptyMotion';
 import handleDuplicateMotion from './duplicateMotion';
 import watchDropNodeOnFolderOrRootSocketActions from './dropNodeOnFolderOrRoot';
-import handleDropMocapOnModel from './dropMocapOnModel';
+// import { watchConfirmOnError, handleDropMocapOnModel } from './dropMocapOnModel';
 import watchEditNodeNameSocketActions from './editNodeName';
 import handleExportAsset from './exportAsset';
-import handleDeleteMotion from './deleteMotion';
+import watchDeleteMotionSocketActions from './deleteMotion';
 import watchDeleteModelSocketActions from './deleteModel';
 import watchDeleteFolderOrMocapSocketActions from './deleteFolderOrMocap';
 import handleFileUpload from './fileUpload';
@@ -26,19 +26,21 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.duplicateMotion), handleDuplicateMotion),
     takeLatest(getType(lpNodeActions.visualizeMotion), handleVisualizeMotion),
     // takeLatest(getType(lpNodeActions.dropNodeOnFolder), handleDropNodeOnFolder),
-    takeLatest(getType(lpNodeActions.dropMocapOnModel), handleDropMocapOnModel),
+    // takeLatest(getType(lpNodeActions.dropMocapOnModel), handleDropMocapOnModel),
     // takeLatest(getType(lpNodeActions.editNodeName), handleEditNodeName),
     takeLatest(getType(lpNodeActions.exportAsset), handleExportAsset),
-    takeLatest(getType(lpNodeActions.deleteMotion), handleDeleteMotion),
+    // takeLatest(getType(lpNodeActions.deleteMotion), handleDeleteMotion),
     // takeLatest(getType(lpNodeActions.deleteModel), handleDeleteModel),
     // takeLatest(getType(lpNodeActions.deleteFolderOrMocap), handleDeleteFolderOrMocap),
     takeEvery(getType(lpNodeActions.fileUpload), handleFileUpload),
     takeEvery(getType(lpNodeActions.getNodesAsync.request), getNodes),
     takeLatest(getType(lpNodeActions.addDirectoryAsync.request), handleAddDirectory),
     watchClickJointChannel(),
+    // watchConfirmOnError(),
     watchDeleteFolderOrMocapSocketActions(),
     watchDeleteModelSocketActions(),
     watchDropNodeOnFolderOrRootSocketActions(),
     watchEditNodeNameSocketActions(),
+    watchDeleteMotionSocketActions(),
   ]);
 }
