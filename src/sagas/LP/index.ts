@@ -8,7 +8,7 @@ import handleVisualizeMotion from './visualizeMotion';
 import handleCancelVisulization from './cancelVisulization';
 import handleAddEmptyMotion from './addEmptyMotion';
 import handleDuplicateMotion from './duplicateMotion';
-import watchDropNodeOnFolderOrRootSocketActions from './dropNodeOnFolderOrRoot';
+import watchMoveNodeSocketActions from './moveNode';
 // import { watchConfirmOnError, handleDropMocapOnModel } from './dropMocapOnModel';
 import watchEditNodeNameSocketActions from './editNodeName';
 import handleExportAsset from './exportAsset';
@@ -39,7 +39,7 @@ export default function* LPSaga() {
     // watchConfirmOnError(),
     watchDeleteFolderOrMocapSocketActions(),
     watchDeleteModelSocketActions(),
-    watchDropNodeOnFolderOrRootSocketActions(),
+    watchMoveNodeSocketActions(),
     watchEditNodeNameSocketActions(),
     watchDeleteMotionSocketActions(),
   ]);
