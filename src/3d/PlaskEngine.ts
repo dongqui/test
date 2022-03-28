@@ -29,7 +29,7 @@ import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
-import { VisibilityLayersModule } from './modules/visibilityLayers/visibilityLayersModule';
+import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
