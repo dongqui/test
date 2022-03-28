@@ -1,23 +1,41 @@
-import { find, cloneDeep, filter } from 'lodash';
-import { select, put, takeLatest, all, SagaReturnType, call, takeEvery } from 'redux-saga/effects';
-import { GLTF2Export, GLTFData } from '@babylonjs/serializers';
+import { find, cloneDeep } from 'lodash';
+import { select, put, SagaReturnType, call } from 'redux-saga/effects';
 import produce from 'immer';
 
 import { RootState } from 'reducers';
-import { createAnimationGroupFromIngredient } from 'utils/RP';
 import { beforeMove } from 'utils/LP/FileSystem';
-import { createAnimationIngredientFromMocapData, createBvhMap } from 'utils/LP/Retarget';
+import { createAnimationIngredientFromMocapData } from 'utils/LP/Retarget';
 import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as cpActions from 'actions/CP/cpModeSelection';
 import * as globalUIActions from 'actions/Common/globalUI';
-import * as BABYLON from '@babylonjs/core';
-import { PlaskBvhMap } from 'types/common';
 import * as TEXT from 'constants/Text';
-import { convertModel } from 'api';
-import fileUpload from './fileUpload';
+
+function handleDuplicateName(nodes: LP.Node[], mocapName: string, modelId: string): string {
+  const currentPathNodeName = nodes
+    .filter((node) => {
+      if (node.parentId === modelId) {
+        const isMatch = mocapName.match(/ \(\d+\)$/g);
+        const tempName = mocapName.replace(/ \(\d+\)$/g, '');
+
+        // if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
+        if (tempName === node.name || node.name.includes(`${tempName} `)) {
+          return true;
+        }
+        return false;
+      }
+    })
+    .map((filteredNode) => filteredNode.name);
+
+  const nodeName = beforeMove({
+    name: mocapName,
+    comparisonNames: currentPathNodeName,
+  });
+
+  return nodeName;
+}
 
 export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
   const { lpNode, plaskProject, animationData }: RootState = yield select();
@@ -26,13 +44,10 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
   const { retargetMaps } = animationData;
   const { nodeId, filePath, assetId } = action.payload;
 
-  const draggedNodeClone = cloneDeep(draggedNode);
   /**
    * @TODO 리타겟 및 하위로 모션 추가
    */
   const dropNode = find(nodes, { id: nodeId });
-  const childrenList = nodes.filter((node) => node.parentId === nodeId);
-  const isAlreadyExist = childrenList.some((children) => children.name === draggedNode?.name);
 
   // create new animationIngredient using ModelNode and MotionNode
   const targetAsset = assetList.find((asset) => asset.id === dropNode?.assetId);
@@ -56,82 +71,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
     return;
   }
 
-  // if there is a node with the same name already
-  if (dropNode && isAlreadyExist) {
-    if (draggedNodeClone && dropNode && targetAsset && targetRetargetMap) {
-      const currentPathNodeName = nodes
-        .filter((node) => {
-          if (node.parentId === nodeId) {
-            const isMatch = draggedNodeClone.name.match(/ \(\d+\)$/g);
-            const tempName = draggedNodeClone.name.replace(/ \(\d+\)$/g, '');
-
-            // if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
-            if (tempName === node.name || node.name.includes(`${tempName} `)) {
-              return true;
-            }
-            return false;
-          }
-        })
-        .map((filteredNode) => filteredNode.name);
-
-      const nodeName = beforeMove({
-        name: draggedNodeClone.name,
-        comparisonNames: currentPathNodeName,
-      });
-
-      try {
-        const mocapAnimationIngredient: SagaReturnType<typeof createAnimationIngredientFromMocapData> = yield call(
-          createAnimationIngredientFromMocapData,
-          dropNode.assetId!,
-          nodeName,
-          targetRetargetMap,
-          targetAsset.initialPoses,
-          filterAnimatableTransformNodes(targetAsset.transformNodes),
-          draggedNode?.mocapData,
-          3000,
-        );
-
-        // 이름 중첩은 존재할 수 없기 때문에 첫 요소를 찾아내도 무방
-        // const filterNodes = nodes.filter((node) => node.id !== duplicatedTarget[0].id);
-
-        const nextNodes = produce(nodes, (draft) => {
-          const targetNode = find(draft, { id: nodeId });
-
-          if (targetNode) {
-            draggedNodeClone.id = mocapAnimationIngredient.id;
-            draggedNodeClone.assetId = mocapAnimationIngredient.assetId;
-            draggedNodeClone.name = nodeName;
-            draggedNodeClone.parentId = nodeId;
-            draggedNodeClone.filePath = filePath + `\\${nodeName}`;
-            draggedNodeClone.type = 'Motion';
-
-            targetNode.childNodeIds.push(draggedNodeClone.id);
-
-            const { mocapData, ...restObject } = draggedNodeClone;
-
-            // @TODO 하위 노드도 추가
-            draft.push({
-              ...restObject,
-            });
-          }
-        });
-
-        yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
-        yield put(animationDataActions.addAnimationIngredient({ animationIngredient: mocapAnimationIngredient }));
-        yield put(plaskProjectActions.addAnimationIngredient({ assetId: dropNode.assetId!, animationIngredientId: mocapAnimationIngredient.id }));
-
-        if (dropNode.assetId) {
-          yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
-          yield put(lpNodeActions.visualizeModel(dropNode.assetId));
-        }
-
-        return;
-      } catch (error) {}
-    }
-  }
-
-  // @TODO 없으면 비활성 처리 필요
-  if (draggedNodeClone && dropNode && targetAsset && targetRetargetMap) {
+  if (draggedNode && dropNode && targetAsset && targetRetargetMap) {
     try {
       yield put(
         globalUIActions.openModal('LoadingModal', {
@@ -140,6 +80,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         }),
       );
 
+      const nodeName = handleDuplicateName(lpNode.nodes, draggedNode.name, nodeId);
       const mocapAnimationIngredient: SagaReturnType<typeof createAnimationIngredientFromMocapData> = yield call(
         createAnimationIngredientFromMocapData,
         dropNode.assetId!,
@@ -150,39 +91,21 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         draggedNode.mocapData,
         3000,
       );
-
-      const currentPathNodeName = nodes
-        .filter((node) => {
-          if (node.parentId === nodeId) {
-            const isMatch = draggedNodeClone.name.match(/ \(\d+\)$/g);
-            const tempName = draggedNodeClone.name.replace(/ \(\d+\)$/g, '');
-            if (tempName === node.name || (isMatch !== null && node.name.includes(`${tempName} `))) {
-              return true;
-            }
-            return false;
-          }
-        })
-        .map((filteredNode) => filteredNode.name);
-
-      const nodeName = beforeMove({
-        name: draggedNodeClone.name,
-        comparisonNames: currentPathNodeName,
-      });
-
+      const clonedMocap = cloneDeep(draggedNode);
       const nextNodes = produce(nodes, (draft) => {
-        const targetNode = find(draft, { id: nodeId });
+        const targetModel = find(draft, { id: nodeId });
 
-        if (targetNode) {
-          draggedNodeClone.assetId = mocapAnimationIngredient.assetId;
-          draggedNodeClone.id = mocapAnimationIngredient.id;
-          draggedNodeClone.parentId = nodeId;
-          draggedNodeClone.filePath = filePath + `\\${nodeName}`;
-          draggedNodeClone.name = nodeName;
-          draggedNodeClone.type = 'Motion';
+        if (targetModel) {
+          clonedMocap.assetId = mocapAnimationIngredient.assetId;
+          clonedMocap.id = mocapAnimationIngredient.id;
+          clonedMocap.parentId = nodeId;
+          clonedMocap.filePath = filePath + `\\${nodeName}`;
+          clonedMocap.name = nodeName;
+          clonedMocap.type = 'Motion';
 
-          targetNode.childNodeIds.push(draggedNodeClone.id);
+          targetModel.childNodeIds.push(clonedMocap.id);
 
-          const { mocapData, ...restObject } = draggedNodeClone;
+          const { mocapData, ...restObject } = clonedMocap;
 
           // @TODO 하위 노드도 추가
           draft.push({
