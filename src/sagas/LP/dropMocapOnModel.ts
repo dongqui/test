@@ -1,5 +1,6 @@
 import { find, cloneDeep } from 'lodash';
-import { select, put, SagaReturnType, call } from 'redux-saga/effects';
+import { select, put, SagaReturnType, call, take } from 'redux-saga/effects';
+import { channel } from 'redux-saga';
 import produce from 'immer';
 
 import { RootState } from 'reducers';
@@ -37,7 +38,16 @@ function handleDuplicateName(nodes: LP.Node[], mocapName: string, modelId: strin
   return nodeName;
 }
 
-export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
+const handleConfirmOnError = channel();
+
+export function* watchConfirmOnError() {
+  while (true) {
+    const action: SagaReturnType<typeof lpNodeActions.visualizeModel | typeof cpActions.switchMode> = yield take(handleConfirmOnError);
+    yield put(action);
+  }
+}
+
+export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
   const { lpNode, plaskProject, animationData }: RootState = yield select();
   const { draggedNode, nodes } = lpNode;
   const { assetList } = plaskProject;
@@ -55,15 +65,15 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
 
   const isErrorRetargetMap = targetRetargetMap && targetRetargetMap.values.some((value) => !value.targetTransformNodeId);
 
-  if (isErrorRetargetMap || !draggedNode?.mocapData) {
+  if (!isErrorRetargetMap || !draggedNode?.mocapData) {
     yield put(
       globalUIActions.openModal('ConfirmModal', {
         title: 'Confirm',
         message: TEXT.CONFIRM_04,
-        onConfirm: function* () {
+        onConfirm: function () {
           if (assetId) {
-            yield put(lpNodeActions.visualizeModel(assetId));
-            yield put(cpActions.switchMode({ mode: 'Retargeting' }));
+            handleConfirmOnError.put(lpNodeActions.visualizeModel(assetId));
+            handleConfirmOnError.put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },
       }),
@@ -144,12 +154,9 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         cancelText: 'Cancel',
         onConfirm: function* () {
           if (dropNode?.assetId) {
-            yield put(lpNodeActions.visualizeModel(dropNode.assetId));
-            yield put(cpActions.switchMode({ mode: 'Retargeting' }));
+            handleConfirmOnError.put(lpNodeActions.visualizeModel(dropNode.assetId));
+            handleConfirmOnError.put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
-        },
-        onCancel: function* () {
-          yield put(globalUIActions.closeModal());
         },
       }),
     );
