@@ -35,6 +35,8 @@ type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
+const FEATURE_HISTORY = false;
+
 export class PlaskEngine {
   private _modules: Module[] = [];
   private _engine!: Engine;
@@ -218,11 +220,15 @@ export class PlaskEngine {
 
   // TODO : MOVE TO REACT PART
   public undo() {
-    this.dispatch(ActionCreators.undo());
+    if (FEATURE_HISTORY) {
+      this.dispatch(ActionCreators.undo());
+    }
   }
 
   public redo() {
-    this.dispatch(ActionCreators.redo());
+    if (FEATURE_HISTORY) {
+      this.dispatch(ActionCreators.redo());
+    }
   }
 
   public clearHistory() {
@@ -258,15 +264,20 @@ export class PlaskEngine {
     if (keyboardInfo.type === KeyboardEventTypes.KEYDOWN) {
       switch (keyboardInfo.event.key) {
         case 'z':
-          if (keyboardInfo.event.ctrlKey) {
-            this.undo();
+        case 'Z':
+        case 'ㅋ': {
+          if (keyboardInfo.event.ctrlKey || keyboardInfo.event.metaKey) {
+            if (keyboardInfo.event.shiftKey) {
+              this.redo();
+            } else {
+              this.undo();
+            }
           }
           break;
-        case 'y':
-          if (keyboardInfo.event.ctrlKey) {
-            this.redo();
-          }
+        }
+        default: {
           break;
+        }
       }
     }
   }

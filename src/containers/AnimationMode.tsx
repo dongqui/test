@@ -16,8 +16,13 @@ import HotKeyOrder from './HotKeyOrder';
 import Modal from 'containers/Common/Modal/Modal';
 import ContextMenu from 'containers/Common/ContextMenu/ContextMenu';
 
-import styles from './Shoot.module.scss';
+import styles from './AnimationMode.module.scss';
 import classNames from 'classnames/bind';
+
+import Onboarding from './Onboarding';
+import { useSelector } from 'reducers';
+import * as commonActions from 'actions/Common/globalUI';
+import { useDispatch } from 'react-redux';
 
 const cx = classNames.bind(styles);
 
@@ -25,7 +30,9 @@ interface Props {
   className?: string;
 }
 
-const Shoot: FunctionComponent<Props> = ({ className }) => {
+const AnimationMode: FunctionComponent<Props> = ({ className }) => {
+  const dispatch = useDispatch();
+
   // Panel, Bar의 width, height 값. 없는 경우 100%
   const constants = useMemo(
     () => ({
@@ -282,6 +289,19 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
     } as BoxProps,
   };
 
+  // const onboardingStep = useSelector((state) => state.onboarding.onboardingStep);
+  const onboardingStep = useSelector((state) => state.globalUI.onboardingStep);
+
+  // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
+  useEffect(() => {
+    setTimeout(() => {
+      const localStorage = window.localStorage;
+      if (!localStorage.getItem('onboarding_1')) {
+        dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
+      }
+    }, 2000);
+  }, [dispatch]);
+
   return (
     // <HotKeyOrder className={className}>
     <div className={className}>
@@ -313,8 +333,9 @@ const Shoot: FunctionComponent<Props> = ({ className }) => {
           <ContextMenu />
         </Fragment>
       </ContextMenuProvider>
+      {onboardingStep !== null && <Onboarding />}
     </div>
   );
 };
 
-export default Shoot;
+export default AnimationMode;
