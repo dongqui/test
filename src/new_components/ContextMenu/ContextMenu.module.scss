@@ -5,8 +5,8 @@
   border-radius: 8px;
   border: 1px solid $outline;
   padding: 4px;
-  background-color: $BG_elevated;
-  color: $contentActive;
+  background-color: $bg-elevated;
+  color: $content-active;
   font-size: 11px;
   min-width: 144px;
   position: absolute;
@@ -14,7 +14,7 @@
 
 .inner {
   &.disabled {
-    color: $contentInactive;
+    color: $content-inactive;
   }
 
   &.invisible {
@@ -62,7 +62,7 @@
   padding: 4px;
   border-radius: 8px;
   border: 1px solid $outline;
-  background-color: $BG_elevated;
+  background-color: $bg-elevated;
 
   .sub-item {
     padding: 6px 12px;
@@ -70,7 +70,7 @@
     white-space: nowrap;
 
     &.disabled {
-      color: $contentInactive;
+      color: $content-inactive;
     }
 
     &:not(.disabled) {

@@ -4,11 +4,11 @@
 .filled {
   @include reset-button-style();
   @include basic-button-style();
-  color: $contentActive;
+  color: $content-active;
 
   &:focus,
   &:hover {
-    background-color: $overlayHover;
+    background-color: $overlay-hover;
   }
 }
 

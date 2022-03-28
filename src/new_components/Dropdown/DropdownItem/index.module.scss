@@ -8,7 +8,7 @@
   cursor: pointer;
   border-radius: 6px;
   margin-bottom: 4px;
-  color: $contentActive;
+  color: $content-active;
 
   &:last-child {
     margin: 0;
@@ -17,7 +17,7 @@
   &,
   a {
     font-size: 11px;
-    color: $contentActive;
+    color: $content-active;
     text-decoration: none;
   }
 
@@ -28,7 +28,7 @@
   }
 
   &.disabled {
-    color: $contentInactive;
+    color: $content-inactive;
   }
 
   &.disabled:hover {

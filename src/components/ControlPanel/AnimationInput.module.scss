@@ -7,7 +7,7 @@
   height: 24px;
   margin-right: 4px;
   color: #7a7a7b;
-  background-color: $contentBG_base;
+  background-color: $content-bg-base;
   border-radius: 6px;
 
   & > p {
@@ -77,8 +77,8 @@
   left: 16px;
   width: 70%;
   height: 100%;
-  color: $contentInactive;
-  background-color: $contentBG_base;
+  color: $content-inactive;
+  background-color: $content-bg-base;
   border-radius: 6px;
   overflow: hidden;
   white-space: nowrap;

@@ -12,13 +12,13 @@
     border: 1px solid $outline;
 
     &:hover {
-      border: 1px solid $overlayHover;
+      border: 1px solid $overlay-hover;
     }
   }
 }
 
 .text-color {
   &-light {
-    color: $contentActive;
+    color: $content-active;
   }
 }
