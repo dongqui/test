@@ -6,17 +6,23 @@
   justify-content: center;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   width: 100%;
   height: 100vh;
+  padding: 0 16px;
 }
 
 .headline {
   color: #fff;
-  font-size: 64px;
+  font-size: 36px;
   line-height: 1.1;
   margin-bottom: 32px;
   font-weight: 700;
-  text-align: center;
+  word-break: keep-all;
+
+  @include media(">xs") {
+    font-size: 64px;
+  }
 }
 
 .paragraph {
