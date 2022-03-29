@@ -16,6 +16,7 @@ import watchDeleteMotionSocketActions from './deleteMotion';
 import watchDeleteModelSocketActions from './deleteModel';
 import watchDeleteFolderOrMocapSocketActions from './deleteFolderOrMocap';
 import handleFileUpload from './fileUpload';
+import handleAddModel from './addModel';
 import getNodes from './getNodes';
 
 export default function* LPSaga() {
@@ -35,6 +36,7 @@ export default function* LPSaga() {
     takeEvery(getType(lpNodeActions.fileUpload), handleFileUpload),
     takeEvery(getType(lpNodeActions.getNodesAsync.request), getNodes),
     takeLatest(getType(lpNodeActions.addDirectoryAsync.request), handleAddDirectory),
+    takeLatest(getType(lpNodeActions.addModelAsync.request), handleAddModel),
     watchClickJointChannel(),
     // watchConfirmOnError(),
     watchDeleteFolderOrMocapSocketActions(),

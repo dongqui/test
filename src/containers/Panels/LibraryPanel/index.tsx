@@ -27,20 +27,6 @@ const LibraryPanel: FunctionComponent = () => {
   const [searchText, setSearchText] = useState('');
   const [searchResultNode, setSearchResultNode] = useState(_lpNode);
 
-  const onNodeChange = useCallback(
-    (files: File[] | string[], showLoading: boolean = true) => {
-      for (const file of files) {
-        dispatch(
-          lpNodeActions.fileUpload({
-            file,
-            showLoading,
-          }),
-        );
-      }
-    },
-    [dispatch],
-  );
-
   const handleDrop = useCallback(
     async (files: File[]) => {
       const videos = files.filter((file) => file.type.includes('video'));
@@ -79,7 +65,9 @@ const LibraryPanel: FunctionComponent = () => {
         return;
       }
 
-      onNodeChange(filesExceptVideo);
+      for (const file of filesExceptVideo) {
+        dispatch(lpNodeActions.addModelAsync.request(file));
+      }
 
       if (videos.length > 0) {
         const videoBlobURL = URL.createObjectURL(videos[0]);
@@ -102,7 +90,7 @@ const LibraryPanel: FunctionComponent = () => {
         );
       }
     },
-    [dispatch, onNodeChange],
+    [dispatch],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
@@ -133,11 +121,18 @@ const LibraryPanel: FunctionComponent = () => {
       const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
 
       if (!isAlreadyExist && !isDefaultModelLoaded) {
-        onNodeChange(defaultModels, false);
+        for (const model of defaultModels) {
+          dispatch(
+            lpNodeActions.fileUpload({
+              file: model,
+              showLoading: false,
+            }),
+          );
+        }
         setIsDefaultModelLoaded(true);
       }
     }
-  }, [_lpNode, isDefaultModelLoaded, isSceneReady, onNodeChange]);
+  }, [_lpNode, isDefaultModelLoaded, isSceneReady, dispatch]);
 
   const handleSearch = useCallback(
     (text: string) => {

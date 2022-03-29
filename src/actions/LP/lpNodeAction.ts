@@ -117,6 +117,7 @@ export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadPa
 
 export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<undefined, { nodes: LP.Node[] }, Error>();
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
+export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, LP.Node[], Error>();
 
 // export const deleteFolderOrMocap = createAction('node/DELETE_FOLDER_OR_MOCAP', (params: DeleteFolderOrMocapParams) => ({ ...params }))();
 export const deleteFolderOrMocapSocket = createSocketActions(
