@@ -38,7 +38,7 @@ function* handleDeleteModelRequest(action: ReturnType<typeof lpNodeActions.delet
     return;
   }
 
-  removeAssetThingsFromScene(plaskProject, selectingData, targetModel.assetId);
+  removeAssetThingsFromScene(plaskProject, selectingData.present, targetModel.assetId);
   yield put(plaskProjectActions.removeAsset({ assetId: targetModel?.assetId }));
   yield put(animationDataActions.removeAsset({ assetId: targetModel?.assetId }));
   yield put(selectingDataActions.unrenderAsset({ assetId: targetModel?.assetId }));
