@@ -22,8 +22,8 @@ const EditKeyframe = () => {
     <StepTemplate step={5} ref={tooltipRef}>
       <h3>Edit Keyframe</h3>
       <p>
-        Apply the mocap extracted from the video to the character <br />
-        <span>keyframes in detail.</span>
+        You can <span>edit the keyframe</span> that applied mocap in <br />
+        the timeline.
       </p>
       <Arrow placement="bottom-start" />
     </StepTemplate>
