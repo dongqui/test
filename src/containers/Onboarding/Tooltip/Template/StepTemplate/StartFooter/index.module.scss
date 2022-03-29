@@ -1,0 +1,15 @@
+.start-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+
+  .buttons {
+    display: flex;
+
+    button {
+      &:first-child {
+        margin-right: 8px;
+      }
+    }
+  }
+}
