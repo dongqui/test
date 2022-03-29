@@ -10,7 +10,7 @@ type State = SelectingData;
 const defaultState: State = {
   selectableObjects: [],
   selectedTargets: [],
-  allObjectsMap: {},
+  allEntitiesMap: {},
 };
 
 // saga를 사용한 리팩토링은 추후에 진행할 계획입니다.
@@ -85,7 +85,7 @@ export const selectingData = undoable(
         for (const entity of action.payload.targets) {
           obj[entity.entityId] = entity;
         }
-        return Object.assign({}, state, { allObjectsMap: { ...state.allObjectsMap, ...obj } });
+        return Object.assign({}, state, { allEntitiesMap: { ...state.allEntitiesMap, ...obj } });
       }
       default: {
         return state;

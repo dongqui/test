@@ -2,19 +2,21 @@ import { PlaskEngine } from '3d/PlaskEngine';
 import { v4 } from 'uuid';
 import './Augmentations';
 
-export class PlaskEntity {
-  constructor(existingEntity?: PlaskEntity) {
-    this.entityId = existingEntity ? existingEntity.entityId : v4();
-    this.name = existingEntity ? existingEntity.name : 'GenericEntity';
+export abstract class PlaskEntity {
+  constructor(entityId?: string) {
+    this.entityId = entityId || v4();
+    this.name = 'GenericEntity';
   }
-  public entityId: string;
-  public name: string;
+  /**
+   * These should never change
+   */
+  public readonly entityId: string;
+  public readonly name: string;
 
-  public clone() {
-    const newEntity = new PlaskEntity(this);
+  public abstract copyFrom(other: PlaskEntity): PlaskEntity;
+  public abstract unserialize(): void;
+  public abstract clone(): PlaskEntity;
 
-    return newEntity;
-  }
   // public serialize() {
   //   // TODO
   // }

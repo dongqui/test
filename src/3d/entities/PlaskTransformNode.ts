@@ -4,8 +4,8 @@ import { PlaskEntity } from './PlaskEntity';
 
 export type PlaskTransformNodeType = 'controller' | 'joint' | 'unknwown';
 export class PlaskTransformNode extends PlaskEntity {
-  constructor(transformNode?: TransformNode) {
-    super();
+  constructor(transformNode?: TransformNode, entityId?: string) {
+    super(entityId);
     if (transformNode) {
       this._setTransformNode(transformNode);
     }
@@ -15,7 +15,6 @@ export class PlaskTransformNode extends PlaskEntity {
   public rotation: number[] = [];
   public scaling: number[] = [];
   public type: PlaskTransformNodeType = 'unknwown';
-  public assetId: string = '';
   public name = 'TransformNode';
   public id: string = '';
   private _reference: Nullable<TransformNode> = null;
@@ -59,7 +58,20 @@ export class PlaskTransformNode extends PlaskEntity {
     this.id = transformNode.id;
   }
 
-  public markDirty() {
+  public copyFrom(other: PlaskTransformNode): PlaskTransformNode {
+    this.position = other.position.slice();
+    this.rotation = other.rotation.slice();
+    this.scaling = other.scaling.slice();
+
+    this.type = other.type;
+    this.id = other.id;
+
+    this._reference = other._reference;
+
+    return this;
+  }
+
+  public unserialize() {
     this.reference.position.copyFromFloats(this.position[0], this.position[1], this.position[2]);
     if (this.rotation.length === 3) {
       this.reference.rotation.copyFromFloats(this.rotation[0], this.rotation[1], this.rotation[2]);
@@ -72,8 +84,7 @@ export class PlaskTransformNode extends PlaskEntity {
 
   public clone() {
     const transformNode = this.reference;
-    const newEntity = new PlaskTransformNode(this.reference);
-    newEntity.entityId = this.entityId;
+    const newEntity = new PlaskTransformNode(this.reference, this.entityId);
     newEntity._setTransformNode(transformNode);
 
     return newEntity;
