@@ -1,8 +1,16 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Quaternion, TransformNode } from '@babylonjs/core';
-import { PlaskEntity } from './PlaskEntity';
+import { PlaskEntity, PlaskEntitySpec } from './PlaskEntity';
 
 export type PlaskTransformNodeType = 'controller' | 'joint' | 'unknwown';
+export interface PlaskTransformNodeSpec extends PlaskEntitySpec {
+  position: number[];
+  rotation: number[];
+  scaling: number[];
+  type: PlaskTransformNodeType;
+  className: 'PlaskTransformNode';
+  id: string;
+}
 export class PlaskTransformNode extends PlaskEntity {
   constructor(transformNode?: TransformNode, entityId?: string) {
     super(entityId);
@@ -15,7 +23,8 @@ export class PlaskTransformNode extends PlaskEntity {
   public rotation: number[] = [];
   public scaling: number[] = [];
   public type: PlaskTransformNodeType = 'unknwown';
-  public name = 'TransformNode';
+  public className = 'PlaskTransformNode';
+
   public id: string = '';
   private _reference: Nullable<TransformNode> = null;
 
@@ -58,7 +67,7 @@ export class PlaskTransformNode extends PlaskEntity {
     this.id = transformNode.id;
   }
 
-  public copyFrom(other: PlaskTransformNode): PlaskTransformNode {
+  public copyFrom(other: PlaskTransformNode | PlaskTransformNodeSpec): PlaskTransformNode {
     this.position = other.position.slice();
     this.rotation = other.rotation.slice();
     this.scaling = other.scaling.slice();
@@ -66,9 +75,24 @@ export class PlaskTransformNode extends PlaskEntity {
     this.type = other.type;
     this.id = other.id;
 
-    this._reference = other._reference;
+    if ((other as PlaskTransformNode)._reference) {
+      this._reference = (other as PlaskTransformNode)._reference;
+    }
 
     return this;
+  }
+
+  public serialize() {
+    const obj = super.serialize();
+
+    return {
+      position: this.position,
+      rotation: this.rotation,
+      scaling: this.scaling,
+      type: this.type,
+      id: this.id,
+      ...obj,
+    };
   }
 
   public unserialize() {
@@ -80,13 +104,20 @@ export class PlaskTransformNode extends PlaskEntity {
       this.reference.rotationQuaternion.copyFromFloats(this.rotation[0], this.rotation[1], this.rotation[2], this.rotation[3]);
     }
     this.reference.scaling.copyFromFloats(this.scaling[0], this.scaling[1], this.scaling[2]);
+    this.reference.id;
   }
 
   public clone() {
-    const transformNode = this.reference;
-    const newEntity = new PlaskTransformNode(this.reference, this.entityId);
-    newEntity._setTransformNode(transformNode);
+    const newEntity = new PlaskTransformNode(undefined, this.entityId);
+    newEntity.copyFrom(this);
 
     return newEntity;
+  }
+
+  public static Parse(spec: PlaskTransformNodeSpec): PlaskTransformNode {
+    const entity = new PlaskTransformNode(undefined, spec.entityId);
+    entity.copyFrom(spec);
+
+    return entity;
   }
 }

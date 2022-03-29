@@ -27,7 +27,8 @@ import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
-import { EntityStore } from './entities/EntityStore';
+import { EntityStore, PlaskSpec } from './entities/EntityStore';
+import { updateTransform } from 'actions/selectingDataAction';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
@@ -221,6 +222,16 @@ export class PlaskEngine {
     if (FEATURE_HISTORY) {
       this.dispatch(ActionCreators.redo());
     }
+  }
+
+  public save() {
+    return JSON.stringify(this._entityStore.serializeAll());
+  }
+
+  public load(json: string) {
+    this._entityStore.unserialize(JSON.parse(json) as PlaskSpec);
+    // TODO : update entity action
+    // this.dispatch(updateTransform({ targets: this._entityStore.entities }))
   }
 
   public clearHistory() {

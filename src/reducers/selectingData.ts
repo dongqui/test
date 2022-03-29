@@ -80,7 +80,8 @@ export const selectingData = undoable(
           selectedTargets: [],
         });
       }
-      case 'selectingDataAction/UPDATE_TRANSFORM': {
+      // TODO : this should move in a special "allEntities state", that is the only source of data for babylon's scene (can be serialized to)
+      case 'selectingDataAction/UPDATE_ENTITY': {
         const obj = {} as { [key: string]: PlaskTransformNode };
         for (const entity of action.payload.targets) {
           obj[entity.entityId] = entity;
@@ -100,7 +101,7 @@ export const selectingData = undoable(
       'selectingDataAction/CTRL_KEY_MULTI_SELECT',
       'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS',
       'selectingDataAction/RESET_SELECTED_TARGETS',
-      'selectingDataAction/UPDATE_TRANSFORM',
+      'selectingDataAction/UPDATE_ENTITY',
     ]),
     ignoreInitialState: true,
   },

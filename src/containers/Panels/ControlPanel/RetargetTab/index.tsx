@@ -42,7 +42,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
   const multipleBoneSelected = useMemo(() => _selectedTargets.filter((target) => target.type === 'joint').length > 1, [_selectedTargets]);
   const visualizedRetargetMap = useMemo(() => _retargetMaps.find((retargetMap) => retargetMap.assetId === _visualizedAssetIds[0]), [_retargetMaps, _visualizedAssetIds]); // 단일 모델
-  const visualizedTransformNodes = useMemo(() => _selectableObjects.filter((object) => object.type === 'joint' && !object.name.toLowerCase().includes('armature')), [
+  const visualizedTransformNodes = useMemo(() => _selectableObjects.filter((object) => object.type === 'joint' && !object.reference.name.toLowerCase().includes('armature')), [
     _selectableObjects,
   ]);
 
@@ -90,8 +90,8 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   // rp 선택에 의한 targetTransformNode 변경
   useEffect(() => {
     if (_selectedTargets.length === 1) {
-      if (!checkIsTargetMesh(_selectedTargets[0].reference) && !_selectedTargets[0].name.toLowerCase().includes('armature')) {
-        setCurrentTargetTransformNode({ id: _selectedTargets[0].id, name: _selectedTargets[0].name });
+      if (!checkIsTargetMesh(_selectedTargets[0].reference) && !_selectedTargets[0].reference.name.toLowerCase().includes('armature')) {
+        setCurrentTargetTransformNode({ id: _selectedTargets[0].id, name: _selectedTargets[0].reference.name });
         isSelectedTargetBoneOption.current = true;
       }
     } else if (_selectedTargets.length === 0) {
@@ -140,7 +140,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     } else if (mappedTargetTransformNodeId !== null) {
       const transformNode = visualizedTransformNodes.find((visualizedTransformNode) => visualizedTransformNode.id === mappedTargetTransformNodeId);
       if (transformNode) {
-        setCurrentTargetTransformNode({ id: transformNode.id, name: transformNode.name });
+        setCurrentTargetTransformNode({ id: transformNode.reference.id, name: transformNode.reference.name });
         dispatch(selectingDataActions.defaultSingleSelect({ target: transformNode }));
       }
     }
@@ -165,7 +165,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
       },
     };
     const transformNodeMenu = visualizedTransformNodes.map((transformNode) => ({
-      text: transformNode.name,
+      text: transformNode.reference.name,
       handleSelect: () => {
         dispatch(selectingDataActions.defaultSingleSelect({ target: transformNode }));
         isSelectedTargetBoneOption.current = true;

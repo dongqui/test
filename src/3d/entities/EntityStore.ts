@@ -1,11 +1,22 @@
-import { Scene } from '@babylonjs/core';
-import { PlaskEntity } from './PlaskEntity';
-import { PlaskTransformNode } from './PlaskTransformNode';
+import { Nullable, Scene } from '@babylonjs/core';
+import { PlaskEntity, PlaskEntitySpec } from './PlaskEntity';
+import { PlaskTransformNode, PlaskTransformNodeSpec } from './PlaskTransformNode';
+
+// TODO : move this
+export type PlaskSpec = {
+  [key: string]: PlaskEntitySpec;
+};
 
 export class EntityStore {
   private _entities: { [id: string]: PlaskEntity } = {};
+  public get entities() {
+    return this._entities;
+  }
 
-  constructor(public scene: Scene) {}
+  constructor(public scene: Scene) {
+    // TODO : remove debug
+    (window as any).debugSerialize = () => console.log(this.serializeAll());
+  }
 
   /**
    * Main function to associate serialized entities to references on the 3D scene
@@ -13,8 +24,8 @@ export class EntityStore {
    */
   public getReference(entity: PlaskEntity) {
     let reference: any = null;
-    switch (entity.name) {
-      case 'TransformNode':
+    switch (entity.className) {
+      case 'PlaskTransformNode':
         const typedEntity = entity as PlaskTransformNode;
         if (typedEntity.type === 'joint') {
           reference = this.scene.getTransformNodeById(typedEntity.id);
@@ -61,11 +72,27 @@ export class EntityStore {
     }
   }
 
-  public serialize() {
-    // pass
+  public serializeAll() {
+    // ! This requires that ALL our entities are serializable
+    const result = {} as { [key: string]: PlaskEntitySpec };
+    return JSON.stringify(Object.keys(this.entities).map((key) => (result[key] = this.entities[key].serialize())));
   }
 
-  public unserialize() {
-    // pass
+  public unserialize(spec: PlaskSpec) {
+    for (const key in spec) {
+      const entitySpec = spec[key];
+      let entity: Nullable<PlaskEntity> = null;
+      switch (entitySpec.className) {
+        case 'PlaskTransformNode':
+          entity = PlaskTransformNode.Parse(entitySpec as PlaskTransformNodeSpec);
+          break;
+        default:
+          console.warn('unknown entity spec, file version may differ from app version');
+          break;
+      }
+      if (entity) {
+        this.registerEntity(entity);
+      }
+    }
   }
 }
