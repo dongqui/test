@@ -10,7 +10,7 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 export default function* handleCancelVisulization(action: ReturnType<typeof lpNodeActions.cancelVisulization>) {
   const { plaskProject, selectingData }: RootState = yield select();
   const { visualizedAssetIds, assetList, screenList } = plaskProject;
-  const { selectableObjects } = selectingData;
+  const { selectableObjects } = selectingData.present;
   const { assetId } = action.payload;
 
   if (!assetId || !visualizedAssetIds.includes(assetId)) {
@@ -18,13 +18,13 @@ export default function* handleCancelVisulization(action: ReturnType<typeof lpNo
   }
 
   const targetAsset = assetList.find((asset) => asset.id === assetId);
-  const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && !checkIsTargetMesh(object));
-  const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && checkIsTargetMesh(object));
+  const targetJointTransformNodes = selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'joint');
+  const targetControllers = selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'controller');
   if (targetAsset) {
     screenList
       .map((screen) => screen.scene)
       .forEach((scene) => {
-        removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers as BABYLON.Mesh[]);
+        removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers);
       });
   }
   yield put(plaskProjectActions.unrenderAsset({ assetId }));

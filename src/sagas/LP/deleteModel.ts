@@ -13,7 +13,7 @@ export default function* handleDeleteModel(action: ReturnType<typeof lpNodeActio
   const { nodeId, assetId, parentId } = action.payload;
   const { lpNode, plaskProject, selectingData }: RootState = yield select();
 
-  removeAssetThingsFromScene(plaskProject, selectingData, assetId);
+  removeAssetThingsFromScene(plaskProject, selectingData.present, assetId);
 
   const nextNodes = filterDeletedNode(lpNode.nodes, nodeId, parentId);
 
