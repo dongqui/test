@@ -59,7 +59,7 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
 
     const newModelNode: LP.Node = {
       id: uuid(),
-      parentId: '__root__',
+      parentId: '',
       filePath: '\\root',
       name: nodeName,
       extension,
@@ -192,7 +192,7 @@ async function _createRetargetMap(assetId: string, skeletons: BABYLON.Skeleton[]
 
 function getNodeName(nodes: LP.Node[], fileName: string, extension: string) {
   const currentPathNodeNames = nodes
-    .filter((node) => node.parentId === '__root__' && node.name.includes(`${fileName}`) && node.extension === extension)
+    .filter((node) => node.parentId === '' && node.name.includes(`${fileName}`) && node.extension === extension)
     .map((filteredNode) => filteredNode.name);
   const check = checkCreateDuplicates(`${fileName}`, currentPathNodeNames);
 

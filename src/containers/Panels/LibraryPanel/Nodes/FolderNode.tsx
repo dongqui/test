@@ -20,7 +20,6 @@ const FolderNode = ({ node }: Props) => {
       globalUIActions.openContextMenu('FolderContextMenu', e, {
         nodeId: id,
         filePath,
-        parentId,
       }),
     );
   };
@@ -29,7 +28,7 @@ const FolderNode = ({ node }: Props) => {
     if (draggedNode) {
       e.stopPropagation();
       dispatch(
-        lpNodeActions.dropNodeOnFolder({
+        lpNodeActions.dropNodeOnFolderOrRoot({
           filePath,
           nodeId: id,
         }),

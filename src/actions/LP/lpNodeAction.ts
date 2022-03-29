@@ -8,11 +8,6 @@ interface DeleteModelParams {
   assetId: string;
   parentId?: string;
 }
-
-interface DeleteFolderOrMocapParams {
-  nodeId: string;
-  parentId?: string;
-}
 interface AddEmptyMotionParams {
   nodeId: string;
   assetId: string;
@@ -38,7 +33,7 @@ interface SelectNodeParams {
   assetId?: string | null;
 }
 
-interface DropNodeOnFolderParams {
+interface dropNodeOnFolderOrRootParams {
   filePath: string;
   nodeId: string;
 }
@@ -73,33 +68,83 @@ interface FileUploadParams {
   showLoading: boolean;
 }
 
+interface DeleteLibraryReceiveParam {
+  type: 'delete';
+  scenesLibraryId: string;
+}
+
+interface DropNodeOnFolderOrRootSendParam {
+  nodeId: string;
+  parentId: string;
+}
+
+interface DropNodeOnFolderOrRootReceiveParam {
+  type: 'move';
+  data: {
+    scenesLibraryIds: string[];
+    parentScenesLibraryId: string;
+  };
+}
+
+interface EditNodeNameReceiveParam {
+  type: 'update';
+  scenesLibraryId: string;
+  data: {
+    name: string;
+  };
+}
+
 export const changeNode = createAction('node/CHANGE_NODE', ({ nodes }: { nodes: LP.Node[] }) => ({ nodes }))();
-export const deleteFolderOrMocap = createAction('node/DELETE_FOLDER_OR_MOCAP', (params: DeleteFolderOrMocapParams) => ({ ...params }))();
-export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
 export const visualizeModel = createAction('node/VISUALIZE_MODEL', (assetId: string) => ({ assetId }))();
 export const cancelVisulization = createAction('node/CANCEL_VISUALIZATION', (assetId: string) => ({ assetId }))();
-export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: AddEmptyMotionParams) => ({ ...params }))();
-export const duplicateMotion = createAction('node/DUPLICATE_MOTION', (params: DuplicateMotionParams) => ({ ...params }))();
 export const visualizeMotion = createAction('node/VISUALIZE_MOTION', (params: VisualizeMotionParams) => ({ ...params }))();
 export const selectNode = createAction('node/SELECT_NODE', (params: SelectNodeParams) => ({ ...params }))();
-export const dropNodeOnFolder = createAction('node/DROP_NODE_ON_FOLDER', (params: DropNodeOnFolderParams) => ({ ...params }))();
 export const setDraggedNode = createAction('node/SET_DRAGGED_NODE', (node: LP.Node | null) => ({ node }))();
-export const dropMocapOnModel = createAction('node/DROP_MOCAP_ON_MODEL', (params: DropMocapOnModelParams) => ({ ...params }))();
 export const setEditingNodeId = createAction('node/SET_EDITING_NODE_ID', (nodeId: string | null) => ({ nodeId }))();
-export const editNodeName = createAction('node/EDIT_NODE_NAME', (params: EditNodeNameParams) => ({ ...params }))();
+export const addNodes = createAction('node/ADD_NODES', (nodes: LP.Node[]) => ({ nodes }))();
+
+export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: AddEmptyMotionParams) => ({ ...params }))();
+export const duplicateMotion = createAction('node/DUPLICATE_MOTION', (params: DuplicateMotionParams) => ({ ...params }))();
+export const dropMocapOnModel = createAction('node/DROP_MOCAP_ON_MODEL', (params: DropMocapOnModelParams) => ({ ...params }))();
 export const exportAsset = createAction('node/EXPORT', (params: ExportAssetParams) => ({ ...params }))();
 export const deleteMotion = createAction('node/DELETE_MOTION', (params: DeleteMotionParams) => ({ ...params }))();
 export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadParams) => ({ ...params }))();
-export const addNodes = createAction('node/ADD_NODES', (nodes: LP.Node[]) => ({ nodes }))();
-export const dropNodeOnRoot = createAction('node/DROP_NODE_ON_ROOT')();
 
 export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<undefined, { nodes: LP.Node[] }, Error>();
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
 
+// export const deleteFolderOrMocap = createAction('node/DELETE_FOLDER_OR_MOCAP', (params: DeleteFolderOrMocapParams) => ({ ...params }))();
 export const deleteFolderOrMocapSocket = createSocketActions(
   'node/DELETE_FOLRDER_OR_MOCAP_REQUEST',
   'node/DELETE_FOLRDER_OR_MOCAP_SEND',
   'node/DELETE_FOLRDER_OR_MOCAP_RECEIVE',
   'node/DELETE_FOLRDER_OR_MOCAP_UPDATE',
   'node/DELETE_FOLRDER_OR_MOCAP_FAILURE',
-)<undefined, string, string, string, string>();
+)<string, string, DeleteLibraryReceiveParam, LP.Node[], string>();
+
+export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
+export const deleteModelSocket = createSocketActions(
+  'node/DELETE_MODEL_REQUEST',
+  'node/DELETE_MODEL_SEND',
+  'node/DELETE_MODEL_RECEIVE',
+  'node/DELETE_MODEL_UPDATE',
+  'node/DELETE_MODEL_FAILURE',
+)<string, string, DeleteLibraryReceiveParam, LP.Node[], string>();
+
+export const dropNodeOnFolderOrRoot = createAction('node/DROP_NODE_ON_FOLDER', (params: dropNodeOnFolderOrRootParams) => ({ ...params }))();
+export const dropNodeOnFolderOrRootSocket = createSocketActions(
+  'node/DROP_NODE_ON_FOLDER_OR_ROOT_REQUEST',
+  'node/DROP_NODE_ON_FOLDER_OR_ROOT_SEND',
+  'node/DROP_NODE_ON_FOLDER_OR_ROOT_RECEIVE',
+  'node/DROP_NODE_ON_FOLDER_OR_ROOT_UPDATE',
+  'node/DROP_NODE_ON_FOLDER_OR_ROOT_FAILURE',
+)<string, DropNodeOnFolderOrRootSendParam, DropNodeOnFolderOrRootReceiveParam, LP.Node[], string>();
+
+export const editNodeName = createAction('node/EDIT_NODE_NAME', (params: EditNodeNameParams) => ({ ...params }))();
+export const editNodeNameSocket = createSocketActions(
+  'node/UPDATE_NODE_NAME_REQUEST',
+  'node/UPDATE_NODE_NAME_SEND',
+  'node/UPDATE_NODE_NAME_RECEIVE',
+  'node/UPDATE_NODE_NAME_UPDATE',
+  'node/UPDATE_NODE_NAME_FAILURE',
+)<EditNodeNameParams, EditNodeNameParams, EditNodeNameReceiveParam, LP.Node[], string>();
