@@ -17,6 +17,7 @@ import LPBody from './LPBody';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
+import ImportErrorModal from 'containers/Common/Modal/ImportErrorModal';
 const cx = classNames.bind(styles);
 
 const LibraryPanel: FunctionComponent = () => {
