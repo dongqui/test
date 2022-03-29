@@ -9,16 +9,20 @@ interface Props {
 }
 
 const Authentication = ({ statusCode, message }: Props) => {
+  console.log(statusCode, message);
+  // 401.1 -> invalid token
+  // 401.2 -> 토큰만료
+  // 400.99 -> 400 ->
   return (
-    <div>
-      <div>Oops!</div>
-      <div>The page does not exist</div>
-      <div>The lionk you followed may be broken or the page may have been removed.</div>
-      <div>
-        <div>
-          <button>Go Back</button>
-          <button>Go Home</button>
-        </div>
+    <div className={cx('wrapper')}>
+      <div className={cx('headline')}>
+        Oops! <br />
+        The page does not exist
+      </div>
+      <div className={cx('paragraph')}>The lionk you followed may be broken or the page may have been removed.</div>
+      <div className={cx('button-group')}>
+        <button>Go Back</button>
+        <button>Go Home</button>
       </div>
     </div>
   );
