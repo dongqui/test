@@ -34,7 +34,7 @@ type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
-const FEATURE_HISTORY = true;
+const FEATURE_HISTORY = false;
 
 export class PlaskEngine {
   private _modules: Module[] = [];
@@ -185,15 +185,6 @@ export class PlaskEngine {
   }
 
   /**
-   * Gets the Babylon.js structure associated with this entity (if any)
-   * TODO : this method should be on the entity itself
-   * @param entity
-   */
-  public getReference(entity: PlaskEntity) {
-    return this._entityStore.getReference(entity);
-  }
-
-  /**
    * Retrieves an entity with its entity id
    * @param entityId
    * @returns
@@ -229,7 +220,7 @@ export class PlaskEngine {
   }
 
   public load(json: string) {
-    this._entityStore.unserialize(JSON.parse(json) as PlaskSpec);
+    this._entityStore.unserializeAll(JSON.parse(json) as PlaskSpec);
     // TODO : update entity action
     // this.dispatch(updateTransform({ targets: this._entityStore.entities }))
   }

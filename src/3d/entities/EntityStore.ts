@@ -19,27 +19,6 @@ export class EntityStore {
   }
 
   /**
-   * Main function to associate serialized entities to references on the 3D scene
-   * @param entity
-   */
-  public getReference(entity: PlaskEntity) {
-    let reference: any = null;
-    switch (entity.className) {
-      case 'PlaskTransformNode':
-        const typedEntity = entity as PlaskTransformNode;
-        if (typedEntity.type === 'joint') {
-          reference = this.scene.getTransformNodeById(typedEntity.id);
-        } else if (typedEntity.type === 'controller') {
-          reference = this.scene.getMeshById(typedEntity.id);
-        }
-        break;
-      default:
-        break;
-    }
-    return reference;
-  }
-
-  /**
    * Gets an entity by its id
    * @param id
    * @returns
@@ -66,7 +45,6 @@ export class EntityStore {
   public registerEntity(entity: PlaskEntity) {
     if (this._entities[entity.entityId]) {
       this._entities[entity.entityId].copyFrom(entity);
-      this._entities[entity.entityId].unserialize();
     } else {
       this._entities[entity.entityId] = entity;
     }
@@ -78,13 +56,13 @@ export class EntityStore {
     return JSON.stringify(Object.keys(this.entities).map((key) => (result[key] = this.entities[key].serialize())));
   }
 
-  public unserialize(spec: PlaskSpec) {
+  public unserializeAll(spec: PlaskSpec) {
     for (const key in spec) {
       const entitySpec = spec[key];
       let entity: Nullable<PlaskEntity> = null;
       switch (entitySpec.className) {
         case 'PlaskTransformNode':
-          entity = PlaskTransformNode.Parse(entitySpec as PlaskTransformNodeSpec);
+          entity = PlaskTransformNode.Unserialize(entitySpec as PlaskTransformNodeSpec);
           break;
         default:
           console.warn('unknown entity spec, file version may differ from app version');
