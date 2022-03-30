@@ -30,3 +30,25 @@ export async function createFolderOrMocap(sceneId: string, data: CreateFolderOrM
 
   return response.data;
 }
+
+export async function addModel(sceneId: string, file: File, parentId?: string) {
+  const formData = new FormData();
+
+  formData.append('file', file);
+  if (parentId) {
+    formData.append('parentId', parentId);
+  }
+
+  const response = await requestApi({
+    method: 'POST',
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    url: `/library/${sceneId}/model`,
+    data: formData,
+    headers: {
+      authorization: TEST_TOKEN,
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return response.data;
+}

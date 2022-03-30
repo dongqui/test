@@ -17,3 +17,16 @@ export interface CreateFolderOrMocapBodyData {
   type: 'DIRECTORY' | 'MOCAP';
   data: string[];
 }
+
+export interface AddModelResponse {
+  assetsUid: string;
+  createdAt: string;
+  isDeleted: boolean;
+  modelUrl: string;
+  name: string;
+  parentUid: string;
+  scenesUid: string;
+  type: 'MODEL';
+  uid: string;
+  updatedAt: string;
+}

@@ -66,6 +66,7 @@ export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeAct
         nodes: [...state.nodes, action.payload],
       });
     }
+    case getType(LPNodeActions.addModelAsync.success):
     case getType(LPNodeActions.editNodeNameSocket.update):
     case getType(LPNodeActions.deleteModelSocket.update):
     case getType(LPNodeActions.deleteFolderOrMocapSocket.update):

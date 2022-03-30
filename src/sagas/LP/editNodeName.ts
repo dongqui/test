@@ -84,20 +84,30 @@ function* handleEditNodeNameRequest(action: ReturnType<typeof lpNodeActions.edit
       }),
     );
   } else {
-    lpNodeActions.editNodeNameSocket.send({ nodeId, newName });
+    lpNodeActions.editNodeNameSocket.send({ nodeId, newName, type: targetNode.type });
   }
 
   yield put(lpNodeActions.setEditingNodeId(null));
 }
 
 function* handleEditNodeNameSend(action: ReturnType<typeof lpNodeActions.editNodeNameSocket.send>) {
-  // Socket.emit('library', {
-  //   type: 'update',
-  //   scenesLibraryId: action.payload.nodeId,
-  //   data: {
-  //     name: action.payload.newName,
-  //   },
-  // });
+  if (action.payload.type === 'Motion') {
+    // Socket.emit('animation', {
+    //   type: 'rename',
+    //   data: {
+    //     animationId: action.payload.nodeId,
+    //     name: action.payload.newName,
+    //   },
+    // });
+  } else {
+    // Socket.emit('library', {
+    //   type: 'update',
+    //   scenesLibraryId: action.payload.nodeId,
+    //   data: {
+    //     name: action.payload.newName,
+    //   },
+    // });
+  }
 }
 
 function* handleEditNodeNameReceive(action: ReturnType<typeof lpNodeActions.editNodeNameSocket.receive>) {

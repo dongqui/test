@@ -99,7 +99,7 @@ import * as globalUIActions from 'actions/Common/globalUI';
 //   yield put(lpNodeActions.setDraggedNode(null));
 // }
 
-function* handledropNodeOnFolderOrRootRequest(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderOrRootSocket.request>) {
+function* handledropNodeOnFolderOrRootRequest(action: ReturnType<typeof lpNodeActions.moveNodeSocket.request>) {
   const { lpNode }: RootState = yield select();
   const { draggedNode, nodes } = lpNode;
   const directoryId = action.payload;
@@ -129,13 +129,13 @@ function* handledropNodeOnFolderOrRootRequest(action: ReturnType<typeof lpNodeAc
       }),
     );
   } else {
-    yield put(lpNodeActions.dropNodeOnFolderOrRootSocket.send({ nodeId: draggedNode.id, parentId: directoryId }));
+    yield put(lpNodeActions.moveNodeSocket.send({ nodeId: draggedNode.id, parentId: directoryId }));
   }
 
   yield put(lpNodeActions.setDraggedNode(null));
 }
 
-function* handledropNodeOnFolderOrRootSend(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderOrRootSocket.send>) {
+function* handledropNodeOnFolderOrRootSend(action: ReturnType<typeof lpNodeActions.moveNodeSocket.send>) {
   // TODO: 중복네임 처리??
   // Socket.emit('library', {
   //   type: 'move',
@@ -146,7 +146,7 @@ function* handledropNodeOnFolderOrRootSend(action: ReturnType<typeof lpNodeActio
   // });
 }
 
-function* handledropNodeOnFolderOrRootReceive(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderOrRootSocket.receive>) {
+function* handledropNodeOnFolderOrRootReceive(action: ReturnType<typeof lpNodeActions.moveNodeSocket.receive>) {
   const { lpNode }: RootState = yield select();
   const { parentScenesLibraryId, scenesLibraryIds } = action.payload.data;
 
@@ -178,13 +178,13 @@ function* handledropNodeOnFolderOrRootReceive(action: ReturnType<typeof lpNodeAc
     }
   });
 
-  yield put(lpNodeActions.dropNodeOnFolderOrRootSocket.update(nextNodes));
+  yield put(lpNodeActions.moveNodeSocket.update(nextNodes));
 }
 
-export default function* watchDropNodeOnFolderOrRootSocketActions() {
+export default function* watchMoveNodeSocketActions() {
   yield all([
-    takeLatest(getType(lpNodeActions.dropNodeOnFolderOrRootSocket.request), handledropNodeOnFolderOrRootRequest),
-    takeLatest(getType(lpNodeActions.dropNodeOnFolderOrRootSocket.send), handledropNodeOnFolderOrRootSend),
-    takeLatest(getType(lpNodeActions.dropNodeOnFolderOrRootSocket.receive), handledropNodeOnFolderOrRootReceive),
+    takeLatest(getType(lpNodeActions.moveNodeSocket.request), handledropNodeOnFolderOrRootRequest),
+    takeLatest(getType(lpNodeActions.moveNodeSocket.send), handledropNodeOnFolderOrRootSend),
+    takeLatest(getType(lpNodeActions.moveNodeSocket.receive), handledropNodeOnFolderOrRootReceive),
   ]);
 }
