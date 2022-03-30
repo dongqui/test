@@ -1,0 +1,43 @@
+.container {
+  background-color: var(--gray200-BG);
+  max-width: 410px;
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h6 {
+      padding: 0;
+      margin: 0;
+      color: var(--gray700);
+      font-style: normal;
+      font-weight: 700;
+      font-size: 16px;
+    }
+  }
+
+  .body {
+    margin-top: 16px;
+
+    div {
+      font-style: normal;
+      font-weight: 300;
+      font-size: 14px;
+      line-height: 21px;
+      color: #afb3b6;
+
+      b {
+        font-weight: 600;
+      }
+    }
+  }
+
+  footer {
+    margin-top: 16px;
+
+    button {
+      float: right;
+    }
+  }
+}

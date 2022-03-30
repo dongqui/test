@@ -12,3 +12,8 @@ export const CONFIRM_04: string = 'Finish retargeting first to proceed.';
 export const CONFIRM_05: string = '%s already exists.<br />Do you want to overwrite it?';
 
 export const DUPLICATE_01: string = "There's already a file with the same name.";
+
+export const IMPORT_ERROR_NO_BONE = 'There is <b>no bone</b> in your file. Bone and mesh are required.';
+export const IMPORT_ERROR_NO_MESH = 'There is <b>no mesh</b> in your file. Mesh and bone are required.';
+export const IMPORT_ERROR_INVALID_FORMAT = 'There are <b>no supported</b> files. Only glb, fbx formats are supported.';
+export const IMPORT_ERROR_UNKNODW = 'There was an <b>unknown problem</b>. Please try again.<br>If the problem occurs again, please let us know through the website chat window.';
