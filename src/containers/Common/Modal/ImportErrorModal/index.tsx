@@ -12,14 +12,13 @@ interface Props {
   message: string;
 }
 
-const _message = 'There is <b>no skeleton in the file</b>, so it cannot be added.<br>Should the problem recur, let us know via the chat window on our website.';
-export default function ImportErrorModal({ onClose, fileName, message = _message }: Props) {
+export default function ImportErrorModal({ onClose, fileName, message }: Props) {
   const cx = classnames.bind(styles);
   return (
     <BaseModal>
       <div className={cx('container')}>
         <header>
-          <h6>Failed to {fileName}</h6>
+          <h6>Failed to import {fileName}</h6>
           <IconWrapper icon={SvgPath['ErrorWarning']} />
         </header>
         <div className={cx('body')}>

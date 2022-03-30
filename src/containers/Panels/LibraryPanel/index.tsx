@@ -47,13 +47,6 @@ const LibraryPanel: FunctionComponent = () => {
       const videos = files.filter((file) => file.type.includes('video'));
       const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
 
-      const isInvalidFormat = filesExceptVideo.some((file) => {
-        const extension = getFileExtension(file.name).toLowerCase();
-        const isModelFormat = extension === 'glb' || extension === 'fbx';
-
-        return !isModelFormat;
-      });
-
       const isError = videos.length > 1;
 
       if (isError) {
@@ -61,18 +54,6 @@ const LibraryPanel: FunctionComponent = () => {
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
             message: TEXT.WARNING_02,
-            confirmText: 'Close',
-          }),
-        );
-
-        return;
-      }
-
-      if (isInvalidFormat) {
-        dispatch(
-          globalUIActions.openModal('AlertModal', {
-            title: 'Warning',
-            message: TEXT.WARNING_03,
             confirmText: 'Close',
           }),
         );

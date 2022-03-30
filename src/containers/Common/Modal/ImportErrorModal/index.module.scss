@@ -1,5 +1,6 @@
 .container {
   background-color: var(--gray200-BG);
+  max-width: 410px;
 
   header {
     display: flex;
@@ -23,10 +24,11 @@
       font-style: normal;
       font-weight: 300;
       font-size: 14px;
-      line-height: 150%;
+      line-height: 21px;
       color: var(--gray600);
 
       b {
+        font-weight: 600;
         color: #d74247;
       }
     }
