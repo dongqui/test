@@ -7,6 +7,7 @@ import classnames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classnames.bind(styles);
+
 interface Props {
   onClose: () => void;
   message: string;
