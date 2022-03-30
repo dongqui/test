@@ -6,13 +6,13 @@ import { Html } from 'components/Typography';
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
 
+const cx = classnames.bind(styles);
 interface Props {
   onClose: () => void;
   message: string;
 }
 
 export default function ImportErrorModal({ onClose, message }: Props) {
-  const cx = classnames.bind(styles);
   return (
     <BaseModal>
       <div className={cx('container')}>

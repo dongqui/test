@@ -114,7 +114,6 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
       );
     }
   } catch (e) {
-    console.log(e);
     const isClassifiedError = e instanceof NoBoneImportError || e instanceof NoMeshImportError || e instanceof InvalidFormatImportError;
     yield put(
       globalUIActions.openModal(
