@@ -10,9 +10,11 @@ import {
   KeyboardEventTypes,
   KeyboardInfo,
   Mesh,
+  Observable,
   PointerEventTypes,
   PointerInfo,
   Scene,
+  Vector2,
   Vector3,
 } from '@babylonjs/core';
 import { RootState } from 'reducers';
@@ -27,6 +29,7 @@ import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
+import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
@@ -52,9 +55,10 @@ export class PlaskEngine {
     return PlaskEngine.Instance;
   }
 
-  public visibilityOptions: VisibilityOptions = {
-    isGizmoVisible: true,
-  };
+  /**
+   * Called on context menu open request
+   */
+  public onContextMenuOpenObservable: Observable<Vector2> = new Observable();
 
   public dispose() {
     this._engine.dispose();
@@ -81,6 +85,7 @@ export class PlaskEngine {
   public cameraModule!: CameraModule;
   public selectorModule!: SelectorModule;
   public gizmoModule!: GizmoModule;
+  public visibilityLayers!: VisibilityLayersModule;
   public ikModule!: IKModule;
 
   constructor() {
@@ -194,6 +199,10 @@ export class PlaskEngine {
     this._entities[entity.entityId] = entity;
   }
 
+  public get currentScreenId() {
+    return this.state.plaskProject.screenList[0].id;
+  }
+
   public resize() {
     this._engine.resize();
 
@@ -230,6 +239,7 @@ export class PlaskEngine {
     this._modules.push((this.cameraModule = new CameraModule(this)));
     this._modules.push((this.selectorModule = new SelectorModule(this)));
     this._modules.push((this.gizmoModule = new GizmoModule(this)));
+    this._modules.push((this.visibilityLayers = new VisibilityLayersModule(this)));
     // this._modules.push((this.ikModule = new IKModule(this)));
   }
 
@@ -289,17 +299,18 @@ export class PlaskEngine {
     } else if (type === PointerEventTypes.POINTERDOWN) {
       const event = pointerInfo.event as PointerEvent;
       // return to perspective mode when camera is rotated
-      if (event.button === 0 && event.altKey && this.scene.activeCamera && this.scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+      if (event.button === 0 && event.altKey) {
         this.cameraModule.toPerspective();
+      }
+    }
 
-        const grounds = this.scene.getMeshesByTags('ground');
-        grounds.forEach((ground) => {
-          if (ground.id.split('//')[1] === 'top') {
-            ground.isVisible = true;
-          } else {
-            ground.isVisible = false;
-          }
-        });
+    // Context menu request
+    if (pointerInfo.event.button === 2 && !pointerInfo.event.altKey) {
+      switch (pointerInfo.type) {
+        case PointerEventTypes.POINTERDOWN: {
+          this.onContextMenuOpenObservable.notifyObservers(new Vector2(this.scene.pointerX, this.scene.pointerY));
+          break;
+        }
       }
     }
   }

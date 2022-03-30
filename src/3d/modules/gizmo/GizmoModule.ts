@@ -58,7 +58,6 @@ export class GizmoModule extends Module {
 
     this._selectionChangeObserver = this.plaskEngine.selectorModule.onSelectionChangeObservable.add((objects) => this._onSelectionChange(objects));
     this._gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.add((event) => this._changePointerIcon(event));
-    // TODO : visibilityOptions (plaskEngine)
   }
 
   public dispose() {
@@ -119,6 +118,11 @@ export class GizmoModule extends Module {
       }
     }
     this._currentGizmoMode = mode;
+  }
+
+  public updateVisibility() {
+    // Refresh attachment
+    this._attachGizmo(this._activeTargets);
   }
 
   public get currentGizmoSpace() {
@@ -322,7 +326,7 @@ export class GizmoModule extends Module {
         }
       }
 
-      if (this.plaskEngine.visibilityOptions.isGizmoVisible) {
+      if (this.plaskEngine.visibilityLayers.visibilityOptions.isGizmoVisible) {
         if (!checkIsTargetMesh(selectedTargets[0])) {
           // transformNode single selection
           this._gizmoManager.attachToNode(selectedTargets[0]);
