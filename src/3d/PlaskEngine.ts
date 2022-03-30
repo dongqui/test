@@ -207,6 +207,10 @@ export class PlaskEngine {
     return this._entityStore.getEntitiesByPredicate(predicate);
   }
 
+  public get currentScreenId() {
+    return this.state.plaskProject.screenList[0].id;
+  }
+
   // TODO : MOVE TO REACT PART
   public undo() {
     if (FEATURE_HISTORY) {
