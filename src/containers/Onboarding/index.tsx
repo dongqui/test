@@ -13,7 +13,7 @@ import Background from './Background';
  * 1~n: 온보딩 각 단계
  * 999: 온보딩 마지막 단계(n+1값으로 하게 되면 온보딩 단계가 늘어날 때 마다 값을 변경해야 됨. 그래서 static하게 999으로 지정)
  * null: 온보딩 미출력
- * @default null null인 경우 온보딩 미출력
+ * @default null null인 경우 온보딩 미출력 함
  */
 export type OnboardingStep = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 999 | null;
 

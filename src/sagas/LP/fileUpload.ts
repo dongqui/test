@@ -12,8 +12,9 @@ import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createAutoRetargetMap, createEmptyRetargetMap, isRetargetError } from 'utils/LP/Retarget';
 import { getFileExtension, filterAnimatableTransformNodes, getRandomStringKey } from 'utils/common';
 import { createAnimationIngredient, getRecurrentRotationQuaternion } from 'utils/RP';
-import { WARNING_07, WARNING_01 } from 'constants/Text';
+import { IMPORT_ERROR_UNKNODW, WARNING_01, IMPORT_ERROR_NO_BONE, IMPORT_ERROR_NO_MESH, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import { AnimationIngredient, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
+import { NoBoneImportError, NoMeshImportError, InvalidFormatImportError } from 'errors';
 
 export default function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) {
   // TODO: reduce # of actions by handle multi-files at one action
@@ -26,14 +27,21 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
   const fileName = rawFileName.split('.').slice(0, -1).join('.');
   const assetId = getRandomStringKey();
   try {
+    if (extension !== 'glb' && extension !== 'fbx') {
+      throw new InvalidFormatImportError(IMPORT_ERROR_INVALID_FORMAT);
+    }
+
     if (showLoading) {
       yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }, `loading_${fileName}`));
     }
     const assetContainer: BABYLON.AssetContainer = yield call(getAssetContainer, file, extension, baseScene);
     const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
 
-    if (!skeletons?.length || !skeletons[0].bones?.length || !meshes?.length) {
-      throw new Error('Load asset container failed');
+    if (!skeletons?.length || !skeletons[0].bones?.length) {
+      throw new NoBoneImportError(IMPORT_ERROR_NO_BONE);
+    }
+    if (!meshes?.length) {
+      throw new NoMeshImportError(IMPORT_ERROR_NO_MESH);
     }
 
     preprocessAssetContainerData(assetId, assetContainer);
@@ -106,13 +114,15 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
       );
     }
   } catch (e) {
+    const isClassifiedError = e instanceof NoBoneImportError || e instanceof NoMeshImportError || e instanceof InvalidFormatImportError;
     yield put(
-      globalUIActions.openModal('AlertModal', {
-        title: 'Warning',
-        message: WARNING_07,
-        confirmText: 'Close',
-        confirmColor: 'negative',
-      }),
+      globalUIActions.openModal(
+        'ImportErrorModal',
+        {
+          message: isClassifiedError ? e.message : IMPORT_ERROR_UNKNODW,
+        },
+        `import_error_${rawFileName}`,
+      ),
     );
   } finally {
     if (showLoading) {
@@ -130,8 +140,6 @@ async function getAssetContainer(file: File | string, extension: string, baseSce
       ? await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', file, baseScene)
       : await BABYLON.SceneLoader.LoadAssetContainerAsync(`/models/${file}`, '', baseScene);
   }
-
-  throw new Error('Load asset container failed');
 }
 
 function preprocessAssetContainerData(assetId: string, assetContainer: BABYLON.AssetContainer) {
