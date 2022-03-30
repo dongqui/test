@@ -8,17 +8,16 @@ import styles from './index.module.scss';
 
 interface Props {
   onClose: () => void;
-  fileName: string;
   message: string;
 }
 
-export default function ImportErrorModal({ onClose, fileName, message }: Props) {
+export default function ImportErrorModal({ onClose, message }: Props) {
   const cx = classnames.bind(styles);
   return (
     <BaseModal>
       <div className={cx('container')}>
         <header>
-          <h6>Failed to import {fileName}</h6>
+          <h6>Import failed</h6>
           <IconWrapper icon={SvgPath['ErrorWarning']} />
         </header>
         <div className={cx('body')}>

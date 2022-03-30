@@ -13,8 +13,7 @@ export const CONFIRM_05: string = '%s already exists.<br />Do you want to overwr
 
 export const DUPLICATE_01: string = "There's already a file with the same name.";
 
-export const IMPORT_ERROR_NO_BONE = '[Warning] Import failed: There is <b>no bone in your file</b>.<br> Bone and mesh are required.';
-export const IMPORT_ERROR_NO_MESH = '[Warning] Import failed: There is <b>no mesh in your file</b>.<br> Mesh and bone are required.';
-export const IMPORT_ERROR_INVALID_FORMAT = '[Warning] Import failed: There are <b>no supported files</b>.<br> Only glb, fbx formats are supported.';
-export const IMPORT_ERROR_UNKNODW =
-  '[Warning] Import failed: There was an unknown problem. Please try again. If the problem occurs again, please let us know through the website chat window.';
+export const IMPORT_ERROR_NO_BONE = 'There is <b>no bone</b> in your file. Bone and mesh are required.';
+export const IMPORT_ERROR_NO_MESH = 'There is <b>no mesh</b> in your file. Mesh and bone are required.';
+export const IMPORT_ERROR_INVALID_FORMAT = 'There are <b>no supported</b> files. Only glb, fbx formats are supported.';
+export const IMPORT_ERROR_UNKNODW = 'There was an <b>unknown problem</b>. Please try again.<br>If the problem occurs again, please let us know through the website chat window.';
