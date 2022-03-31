@@ -10,11 +10,14 @@ import {
   KeyboardEventTypes,
   KeyboardInfo,
   Mesh,
+  Observable,
   PointerEventTypes,
   PointerInfo,
   Scene,
   Vector3,
 } from '@babylonjs/core';
+// import '@babylonjs/inspector';
+
 import { RootState } from 'reducers';
 import { Dispatch } from 'redux';
 import { stateDiff } from 'utils/common';
@@ -64,6 +67,8 @@ export class PlaskEngine {
       module.dispose();
     }
     this._modules.length = 0;
+
+    this.onPickObservable.clear();
   }
 
   public get scene() {
@@ -82,6 +87,9 @@ export class PlaskEngine {
   public selectorModule!: SelectorModule;
   public gizmoModule!: GizmoModule;
   public ikModule!: IKModule;
+
+  // OBSERVABLES
+  public onPickObservable: Observable<Mesh> = new Observable();
 
   constructor() {
     // allow animation interpolation using matrix
@@ -103,9 +111,20 @@ export class PlaskEngine {
       module.initialize();
     }
 
+    let last = new Date();
     this._engine.runRenderLoop(() => {
       this._scene.render();
+
+      const current = new Date();
+      this.tick(current.getTime() - last.getTime());
+      last = current;
     });
+  }
+
+  public tick(elapsed: number) {
+    for (const module of this._modules) {
+      module.tick(elapsed);
+    }
   }
 
   /**
@@ -230,7 +249,7 @@ export class PlaskEngine {
     this._modules.push((this.cameraModule = new CameraModule(this)));
     this._modules.push((this.selectorModule = new SelectorModule(this)));
     this._modules.push((this.gizmoModule = new GizmoModule(this)));
-    // this._modules.push((this.ikModule = new IKModule(this)));
+    this._modules.push((this.ikModule = new IKModule(this)));
   }
 
   private _onSceneReady() {
@@ -300,6 +319,10 @@ export class PlaskEngine {
             ground.isVisible = false;
           }
         });
+      }
+
+      if (pickInfo && pickInfo.hit) {
+        this.onPickObservable.notifyObservers(pickInfo.pickedMesh as Mesh);
       }
     }
   }

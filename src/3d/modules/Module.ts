@@ -24,4 +24,10 @@ export abstract class Module {
    * For example : `path.to.state` will watch changes on `this.plaskEngine.state[path][to][state]`
    */
   public reduxObservedStates: string[] = [];
+
+  /**
+   * Called at the end of each render loop
+   * @param elapsed Time elapsed in this tick
+   */
+  public tick(elapsed: number) {}
 }
