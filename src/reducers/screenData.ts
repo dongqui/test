@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { SkeletonViewer } from '@babylonjs/core';
 import { ScreenDataAction } from 'actions/screenDataAction';
 
 interface VisibilityOption {
@@ -13,7 +13,7 @@ interface VisibilityOption {
 
 interface PlaskSkeletonViewer {
   screenId: string;
-  skeletonViewer: BABYLON.SkeletonViewer;
+  skeletonViewer: SkeletonViewer;
 }
 
 type State = {

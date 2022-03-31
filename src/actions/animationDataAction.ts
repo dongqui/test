@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { TransformNode } from '@babylonjs/core';
 import { AnimationIngredient, PlaskRetargetMap, RetargetSourceBoneType } from 'types/common';
 
 export type AnimationDataAction =
@@ -40,7 +40,7 @@ const ASSIGN_BONE_MAPPING = 'animationDataAction/ASSIGN_BONE_MAPPING' as const;
 const CHANGE_HIP_SPACE = 'animationDataAction/CHANGE_HIP_SPACE' as const;
 
 interface AddAsset {
-  transformNodes: BABYLON.TransformNode[];
+  transformNodes: TransformNode[];
   animationIngredients: AnimationIngredient[];
   retargetMap: PlaskRetargetMap;
 }

@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { Bone } from '@babylonjs/core';
 import { cloneDeep } from 'lodash';
 import { PlaskRetargetMap, RetargetSourceBoneType } from 'types/common';
 import createEmptyRetargetMap from './createEmptyRetargetMap';
@@ -38,8 +38,8 @@ const SOURCE_BONES = {
  *
  * @param bones - target bones
  */
-const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
-  const retargetMap: { [boneName in RetargetSourceBoneType]?: BABYLON.Bone } = {};
+const getInnerRetargetMap = (bones: Bone[]) => {
+  const retargetMap: { [boneName in RetargetSourceBoneType]?: Bone } = {};
 
   // find hips, spine2
   // filter bones with more than 2 children
@@ -145,7 +145,7 @@ const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
     const spineEndBone = retargetMap['spine2'];
 
     if (spineStartBone && spineEndBone) {
-      let prevSpineBone: BABYLON.Bone | undefined = spineStartBone;
+      let prevSpineBone: Bone | undefined = spineStartBone;
       let spineIterateCount = 0;
       while (spineIterateCount < MAX_ITERATE_COUNT && prevSpineBone && prevSpineBone !== spineEndBone) {
         prevSpineBone = prevSpineBone.children.find((child) => child.name.toLowerCase().includes('spine'));
@@ -174,7 +174,7 @@ const getInnerRetargetMap = (bones: BABYLON.Bone[]) => {
  * @param bones - asset's bones to use as target bones
  * @param timeout - timeout in ms
  */
-const createAutoRetargetMap = (assetId: string, bones: BABYLON.Bone[], timeout?: number): Promise<PlaskRetargetMap> => {
+const createAutoRetargetMap = (assetId: string, bones: Bone[], timeout?: number): Promise<PlaskRetargetMap> => {
   const retargetMap = createEmptyRetargetMap(assetId);
 
   // updates retargetMap.values

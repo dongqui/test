@@ -7,9 +7,9 @@ import { createAnimationGroupFromIngredient } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
-import * as BABYLON from '@babylonjs/core';
 import { PlaskBvhMap } from 'types/common';
 import { convertModel } from 'api';
+import { Node } from '@babylonjs/core';
 
 export default function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>) {
   const { lpNode, plaskProject, animationData, screenData }: RootState = yield select();
@@ -49,7 +49,7 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
     }
 
     const options = {
-      shouldExportNode: (node: BABYLON.Node) => {
+      shouldExportNode: (node: Node) => {
         return !node.name.includes('joint') && !node.name.includes('ground') && !node.name.includes('scene') && !node.id.includes('joint');
       },
     };

@@ -1,5 +1,4 @@
 import { select, put } from 'redux-saga/effects';
-import * as BABYLON from '@babylonjs/core';
 
 import { RootState } from 'reducers';
 import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';

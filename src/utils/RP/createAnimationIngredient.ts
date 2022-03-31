@@ -1,11 +1,11 @@
-import * as BABYLON from '@babylonjs/core';
+import { IAnimationKey, Mesh, Quaternion, TargetedAnimation, TransformNode } from '@babylonjs/core';
 import { round } from 'lodash';
 import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
 import { getRandomStringKey } from 'utils/common';
 import createPlaskTrack from './createPlaskTrack';
 
 /**
- * create our custom animation data(animationIngredient) from BABYLON.AnimationGroup
+ * create our custom animation data(animationIngredient) from AnimationGroup
  *
  * @param assetId - asset's id
  * @param animationIngredientName - name of the motion
@@ -17,8 +17,8 @@ import createPlaskTrack from './createPlaskTrack';
 const createAnimationIngredient = (
   assetId: string,
   animationIngredientName: string,
-  targetedAnimations: BABYLON.TargetedAnimation[],
-  targets: (BABYLON.TransformNode | BABYLON.Mesh)[],
+  targetedAnimations: TargetedAnimation[],
+  targets: (TransformNode | Mesh)[],
   isMocapAnimation: boolean,
   current: boolean,
 ): AnimationIngredient => {
@@ -45,8 +45,8 @@ const createAnimationIngredient = (
           const quaternionTransformKeys = a.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // use integer frame
           rotationQuaternionTrack.transformKeys = quaternionTransformKeys;
 
-          const eulerTransformKeys: BABYLON.IAnimationKey[] = quaternionTransformKeys.map((transformKey) => {
-            const q: BABYLON.Quaternion = transformKey.value;
+          const eulerTransformKeys: IAnimationKey[] = quaternionTransformKeys.map((transformKey) => {
+            const q: Quaternion = transformKey.value;
             const e = q.toEulerAngles();
             return { frame: transformKey.frame, value: e };
           });

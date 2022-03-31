@@ -8,10 +8,10 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
-import * as BABYLON from '@babylonjs/core';
 import * as TEXT from 'constants/Text';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { PlaskEngine } from '3d/PlaskEngine';
+import { ActionEvent, ActionManager, Axis, ExecuteCodeAction, TransformNode } from '@babylonjs/core';
 
 const clickJointChannel = channel();
 
@@ -79,10 +79,10 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             transformNodes.forEach((transformNode) => {
               scene.addTransformNode(transformNode);
               // line for using quaternion as default rotation
-              transformNode.rotate(BABYLON.Axis.X, 0);
+              transformNode.rotate(Axis.X, 0);
             });
 
-            const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as BABYLON.TransformNode[];
+            const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as TransformNode[];
             const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
               const ptn = new PlaskTransformNode(transformNode);
               PlaskEngine.GetInstance().registerEntity(ptn);
@@ -94,11 +94,11 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
                 jointSphere.isVisible = targetVisibilityOption.isBoneVisible;
               }
               if (!jointSphere.actionManager) {
-                jointSphere.actionManager = new BABYLON.ActionManager(scene);
+                jointSphere.actionManager = new ActionManager(scene);
               }
               jointSphere.actionManager.registerAction(
                 // register action that enable for user to select transformNode by clicking joint
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (event: BABYLON.ActionEvent) => {
+                new ExecuteCodeAction(ActionManager.OnPickDownTrigger, (event: ActionEvent) => {
                   const targetTransformNode = bone.getTransformNode();
                   if (targetTransformNode) {
                     const sourceEvent: PointerEvent = event.sourceEvent;

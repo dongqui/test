@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { IAnimationKey } from '@babylonjs/core';
 import OneEuroFilterForVector from './OneEuroFilterForVector';
 
 /**
@@ -9,7 +9,7 @@ import OneEuroFilterForVector from './OneEuroFilterForVector';
  * @param minCutoff - filter minCutoff value
  * @param beta - filter beta value
  */
-const filterVector = (transformKeys: BABYLON.IAnimationKey[], minCutoff: number, beta: number): BABYLON.IAnimationKey[] => {
+const filterVector = (transformKeys: IAnimationKey[], minCutoff: number, beta: number): IAnimationKey[] => {
   const oneEuroFilterVector = new OneEuroFilterForVector(minCutoff, beta);
   const filteredTransformKeys = transformKeys.map((transformKey) => ({
     frame: transformKey.frame,

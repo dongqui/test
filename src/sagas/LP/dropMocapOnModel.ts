@@ -13,7 +13,6 @@ import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as cpActions from 'actions/CP/cpModeSelection';
 import * as globalUIActions from 'actions/Common/globalUI';
-import * as BABYLON from '@babylonjs/core';
 import { PlaskBvhMap } from 'types/common';
 import * as TEXT from 'constants/Text';
 import { convertModel } from 'api';

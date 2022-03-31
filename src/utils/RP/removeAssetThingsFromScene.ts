@@ -1,5 +1,3 @@
-import * as BABYLON from '@babylonjs/core';
-
 import { PlaskProject, SelectingData } from 'types/common';
 import { checkIsTargetMesh, removeAssetFromScene } from 'utils/RP';
 
