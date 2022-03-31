@@ -11,14 +11,15 @@ const cx = classnames.bind(styles);
 interface Props {
   onClose: () => void;
   message: string;
+  fileName: string;
 }
 
-export default function ImportErrorModal({ onClose, message }: Props) {
+export default function ImportErrorModal({ onClose, message, fileName }: Props) {
   return (
     <BaseModal>
       <div className={cx('container')}>
         <header>
-          <h6>Import failed</h6>
+          <h6>Failed to import {fileName}</h6>
           <IconWrapper icon={SvgPath['ErrorWarning']} />
         </header>
         <div className={cx('body')}>
