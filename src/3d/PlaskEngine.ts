@@ -32,6 +32,7 @@ import { ActionCreators } from 'redux-undo';
 import { EntityStore, PlaskSpec } from './entities/EntityStore';
 import { updateTransform } from 'actions/selectingDataAction';
 import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
+import { AssetModule } from './modules/asset/AssetModule';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
@@ -88,6 +89,7 @@ export class PlaskEngine {
   public gizmoModule!: GizmoModule;
   public visibilityLayers!: VisibilityLayersModule;
   public ikModule!: IKModule;
+  public assetModule!: AssetModule;
 
   private _entityStore!: EntityStore;
 
@@ -243,6 +245,7 @@ export class PlaskEngine {
     this._modules.push((this.selectorModule = new SelectorModule(this)));
     this._modules.push((this.gizmoModule = new GizmoModule(this)));
     this._modules.push((this.visibilityLayers = new VisibilityLayersModule(this)));
+    this._modules.push((this.assetModule = new AssetModule(this)));
     // this._modules.push((this.ikModule = new IKModule(this)));
   }
 

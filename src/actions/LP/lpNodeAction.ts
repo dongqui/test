@@ -1,3 +1,4 @@
+import { PlaskEngine } from '3d/PlaskEngine';
 import { ExportFormat } from 'types/common';
 
 export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
@@ -106,6 +107,7 @@ interface ExportAssetParams {
 interface FileUploadParams {
   file: File | string;
   showLoading: boolean;
+  plaskEngine: PlaskEngine;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
