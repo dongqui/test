@@ -10,6 +10,8 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as BABYLON from '@babylonjs/core';
 import * as TEXT from 'constants/Text';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { PlaskEngine } from '3d/PlaskEngine';
 
 const clickJointChannel = channel();
 
@@ -33,7 +35,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== action.payload.assetId;
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
-      removeAssetThingsFromScene(plaskProject, selectingData, prevAssetId);
+      removeAssetThingsFromScene(plaskProject, selectingData.present, prevAssetId);
       yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
     }
     // visualize new asset
@@ -75,6 +77,11 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
                 !bone.name.toLowerCase().includes('__root__'),
             );
             const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as BABYLON.TransformNode[];
+            const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
+              const ptn = new PlaskTransformNode(transformNode);
+              PlaskEngine.GetInstance().registerEntity(ptn);
+              return ptn;
+            });
             const sphereBoneGroups = addJointSpheres(jointBones, meshes[0], scene, assetId);
             sphereBoneGroups.forEach(([jointSphere, bone]) => {
               if (targetVisibilityOption) {
@@ -90,23 +97,22 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
                   if (targetTransformNode) {
                     const sourceEvent: PointerEvent = event.sourceEvent;
                     if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                      clickJointChannel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode }));
+                      clickJointChannel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() }));
                     } else {
-                      clickJointChannel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode }));
+                      clickJointChannel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() }));
                     }
                   }
                 }),
               );
             });
-
-            yield put(plaskProjectActions.renderAsset({ assetId }));
-            yield put(selectingDataActions.addSelectableObjects({ objects: jointTransformNodes })); // make asset's objects selectable
-
             transformNodes.forEach((transformNode) => {
               scene.addTransformNode(transformNode);
               // line for using quaternion as default rotation
               transformNode.rotate(BABYLON.Axis.X, 0);
             });
+
+            yield put(plaskProjectActions.renderAsset({ assetId }));
+            yield put(selectingDataActions.addSelectableObjects({ objects: plaskTransformNodes })); // make asset's objects selectable
           }
         }
         forceClickAnimationPlayAndStop();

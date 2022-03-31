@@ -7,25 +7,35 @@ import {
   DirectionalLight,
   Engine,
   HemisphericLight,
+  KeyboardEventTypes,
+  KeyboardInfo,
   Mesh,
+  Observable,
   PointerEventTypes,
   PointerInfo,
   Scene,
+  Vector2,
   Vector3,
 } from '@babylonjs/core';
 import { RootState } from 'reducers';
 import { Dispatch } from 'redux';
 import { stateDiff } from 'utils/common';
 import { createCamera, createDirectionalLight, createGrounds, createHemisphericLight } from 'utils/RP';
+import { PlaskEntity } from './entities/PlaskEntity';
+import { PlaskTransformNode } from './entities/PlaskTransformNode';
 import { CameraModule } from './modules/camera/CameraModule';
 import { GizmoModule } from './modules/gizmo/GizmoModule';
 import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
+import { ActionCreators } from 'redux-undo';
+import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
+
+const FEATURE_HISTORY = false;
 
 export class PlaskEngine {
   private _modules: Module[] = [];
@@ -36,6 +46,7 @@ export class PlaskEngine {
   private _camera!: ArcRotateCamera;
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
+  private _entities: { [id: string]: PlaskEntity } = {};
 
   public dispatch!: Dispatch<any>;
 
@@ -44,9 +55,10 @@ export class PlaskEngine {
     return PlaskEngine.Instance;
   }
 
-  public visibilityOptions: VisibilityOptions = {
-    isGizmoVisible: true,
-  };
+  /**
+   * Called on context menu open request
+   */
+  public onContextMenuOpenObservable: Observable<Vector2> = new Observable();
 
   public dispose() {
     this._engine.dispose();
@@ -73,6 +85,7 @@ export class PlaskEngine {
   public cameraModule!: CameraModule;
   public selectorModule!: SelectorModule;
   public gizmoModule!: GizmoModule;
+  public visibilityLayers!: VisibilityLayersModule;
   public ikModule!: IKModule;
 
   constructor() {
@@ -112,11 +125,21 @@ export class PlaskEngine {
 
     for (const module of this._modules) {
       for (const stateKey of module.reduxObservedStates) {
-        const diff = stateDiff(state[stateKey], previousState[stateKey]);
-        if (diff.length) {
-          for (const key of diff) {
-            module.onStateChanged(stateKey, key);
+        const path = stateKey.split('.');
+        let nestedState = state;
+        let previousNestedState = previousState;
+        try {
+          for (const field of path) {
+            nestedState = nestedState[field];
+            previousNestedState = previousNestedState[field];
           }
+        } catch (e) {
+          console.warn('Wrong state path : ' + stateKey);
+          continue;
+        }
+
+        if (nestedState !== previousNestedState) {
+          module.onStateChanged(stateKey, previousNestedState);
         }
       }
     }
@@ -126,6 +149,59 @@ export class PlaskEngine {
    * Redux state
    */
   public state!: RootState;
+
+  /**
+   * Main function to associate serialized entities to references on the 3D scene
+   * @param entity
+   */
+  public getReference(entity: PlaskEntity) {
+    let reference: any = null;
+    switch (entity.name) {
+      case 'TransformNode':
+        const typedEntity = entity as PlaskTransformNode;
+        if (typedEntity.type === 'joint') {
+          reference = this.scene.getTransformNodeById(typedEntity.id);
+        } else if (typedEntity.type === 'controller') {
+          reference = this.scene.getMeshById(typedEntity.id);
+        }
+        break;
+      default:
+        break;
+    }
+    return reference;
+  }
+
+  /**
+   * Gets an entity by its id
+   * @param id
+   * @returns
+   */
+  public getEntity(id: string): PlaskEntity {
+    if (!this._entities[id]) {
+      throw new Error('Cannot find entity');
+    }
+
+    return this._entities[id];
+  }
+
+  public getEntitiesByPredicate(predicate: (entity: PlaskEntity) => boolean): PlaskEntity[] {
+    const result = [];
+    for (const entityId in this._entities) {
+      if (predicate(this._entities[entityId])) {
+        result.push(this._entities[entityId]);
+      }
+    }
+
+    return result;
+  }
+
+  public registerEntity(entity: PlaskEntity) {
+    this._entities[entity.entityId] = entity;
+  }
+
+  public get currentScreenId() {
+    return this.state.plaskProject.screenList[0].id;
+  }
 
   public resize() {
     this._engine.resize();
@@ -142,10 +218,28 @@ export class PlaskEngine {
     }
   }
 
+  // TODO : MOVE TO REACT PART
+  public undo() {
+    if (FEATURE_HISTORY) {
+      this.dispatch(ActionCreators.undo());
+    }
+  }
+
+  public redo() {
+    if (FEATURE_HISTORY) {
+      this.dispatch(ActionCreators.redo());
+    }
+  }
+
+  public clearHistory() {
+    this.dispatch(ActionCreators.clearHistory());
+  }
+
   private _registerModules() {
     this._modules.push((this.cameraModule = new CameraModule(this)));
     this._modules.push((this.selectorModule = new SelectorModule(this)));
     this._modules.push((this.gizmoModule = new GizmoModule(this)));
+    this._modules.push((this.visibilityLayers = new VisibilityLayersModule(this)));
     // this._modules.push((this.ikModule = new IKModule(this)));
   }
 
@@ -163,6 +257,29 @@ export class PlaskEngine {
 
   private _registerObservables() {
     this.scene.onPointerObservable.add((pointerInfo) => this._onPointer(pointerInfo));
+    this.scene.onKeyboardObservable.add((keyboardInfo) => this._onKeyboard(keyboardInfo));
+  }
+
+  private _onKeyboard(keyboardInfo: KeyboardInfo) {
+    if (keyboardInfo.type === KeyboardEventTypes.KEYDOWN) {
+      switch (keyboardInfo.event.key) {
+        case 'z':
+        case 'Z':
+        case 'ㅋ': {
+          if (keyboardInfo.event.ctrlKey || keyboardInfo.event.metaKey) {
+            if (keyboardInfo.event.shiftKey) {
+              this.redo();
+            } else {
+              this.undo();
+            }
+          }
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    }
   }
 
   private _onPointer(pointerInfo: PointerInfo) {
@@ -182,17 +299,18 @@ export class PlaskEngine {
     } else if (type === PointerEventTypes.POINTERDOWN) {
       const event = pointerInfo.event as PointerEvent;
       // return to perspective mode when camera is rotated
-      if (event.button === 0 && event.altKey && this.scene.activeCamera && this.scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+      if (event.button === 0 && event.altKey) {
         this.cameraModule.toPerspective();
+      }
+    }
 
-        const grounds = this.scene.getMeshesByTags('ground');
-        grounds.forEach((ground) => {
-          if (ground.id.split('//')[1] === 'top') {
-            ground.isVisible = true;
-          } else {
-            ground.isVisible = false;
-          }
-        });
+    // Context menu request
+    if (pointerInfo.event.button === 2 && !pointerInfo.event.altKey) {
+      switch (pointerInfo.type) {
+        case PointerEventTypes.POINTERDOWN: {
+          this.onContextMenuOpenObservable.notifyObservers(new Vector2(this.scene.pointerX, this.scene.pointerY));
+          break;
+        }
       }
     }
   }

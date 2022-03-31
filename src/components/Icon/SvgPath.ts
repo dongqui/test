@@ -60,6 +60,7 @@ import Warning from './svg/Warning.svg';
 import Logo from './New_svg/Logo.svg';
 import Support from './New_svg/Support.svg';
 import CloudUpload from './svg/CloudUpload.svg';
+import ErrorWarning from './svg/ErrorWarning.svg';
 
 type Icon =
   | 'Close'
@@ -119,7 +120,8 @@ type Icon =
   | 'Warning'
   | 'Logo'
   | 'Support'
-  | 'CloudUpload';
+  | 'CloudUpload'
+  | 'ErrorWarning';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -184,6 +186,7 @@ const images: Images = {
   Logo,
   Support,
   CloudUpload,
+  ErrorWarning,
 };
 
 export default images;

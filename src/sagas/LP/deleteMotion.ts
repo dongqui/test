@@ -24,7 +24,7 @@ export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActi
 
   const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(assetId);
   if (isVisualizedAsset) {
-    removeAssetThingsFromScene(plaskProject, selectingData, assetId);
+    removeAssetThingsFromScene(plaskProject, selectingData.present, assetId);
 
     yield put(plaskProjectActions.unrenderAsset({}));
     yield put(selectingDataActions.unrenderAsset({ assetId }));
