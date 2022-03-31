@@ -49,7 +49,7 @@ export class IKModule extends Module {
     }
   }
 
-  private _createIKControllerMesh(params: BoneIKParams, bone: Bone, body: AbstractMesh) {
+  private _createIKControllerMesh(params: BoneIKParams, bone: Bone, transformNode: TransformNode) {
     // Creating IK Target Meshes
     // TODO : make that generic (for now really name dependent)
     const scene = this.plaskEngine.scene;
@@ -69,10 +69,10 @@ export class IKModule extends Module {
     (control.material as StandardMaterial).emissiveColor = Color3.Teal();
     (control.material as StandardMaterial).specularColor = Color3.Teal();
 
-    bone.getPositionToRef(Space.WORLD, body, control.position);
-    control.rotationQuaternion = params.name.includes('Hand')
-      ? scene.getTransformNodeByName(params.name)!.absoluteRotationQuaternion
-      : (scene.getTransformNodeByName(params.name)!.parent! as Mesh).absoluteRotationQuaternion;
+    bone.getPositionToRef(Space.WORLD, transformNode, control.position);
+    // control.rotationQuaternion = params.name.includes('Hand')
+    //   ? scene.getTransformNodeByName(params.name)!.absoluteRotationQuaternion
+    //   : (scene.getTransformNodeByName(params.name)!.parent! as Mesh).absoluteRotationQuaternion;
 
     return control;
   }
@@ -114,9 +114,8 @@ export class IKModule extends Module {
       // Storing Bones Initial Position
       elem.initialPosition = transformNode.absolutePosition.clone();
 
-      const controller = this._createIKControllerMesh(elem, bone, body);
+      const controller = this._createIKControllerMesh(elem, bone, transformNode);
       this._ikControllerMeshes.push(controller);
-      controller.position.copyFrom(elem.initialPosition);
 
       // if is Limbs
       if (elem.name.includes('Foot') || elem.name.includes('Hand')) {
