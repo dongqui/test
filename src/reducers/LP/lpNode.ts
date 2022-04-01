@@ -56,16 +56,12 @@ export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeAct
         nodes: [...state.nodes, ...action.payload.nodes],
       });
     }
-    case getType(LPNodeActions.getNodesAsync.success): {
-      return Object.assign({}, state, {
-        nodes: action.payload.nodes,
-      });
-    }
     case getType(LPNodeActions.addDirectoryAsync.success): {
       return Object.assign({}, state, {
         nodes: [...state.nodes, action.payload],
       });
     }
+    case getType(LPNodeActions.getNodesAsync.success):
     case getType(LPNodeActions.addModelAsync.success):
     case getType(LPNodeActions.editNodeNameSocket.update):
     case getType(LPNodeActions.deleteModelSocket.update):

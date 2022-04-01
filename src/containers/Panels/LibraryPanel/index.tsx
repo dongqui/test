@@ -4,7 +4,6 @@ import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
 
-import { getFileExtension } from 'utils/common';
 import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
@@ -17,7 +16,6 @@ import LPBody from './LPBody';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
-import ImportErrorModal from 'containers/Common/Modal/ImportErrorModal';
 const cx = classNames.bind(styles);
 
 const LibraryPanel: FunctionComponent = () => {
@@ -96,25 +94,25 @@ const LibraryPanel: FunctionComponent = () => {
 
   const [isDefaultModelLoaded, setIsDefaultModelLoaded] = useState(false);
 
-  useEffect(() => {
-    if (isSceneReady) {
-      const defaultModels = ['Mannequin.glb', 'Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
+  // useEffect(() => {
+  //   if (isSceneReady) {
+  //     const defaultModels = ['Mannequin.glb', 'Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
 
-      const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
+  //     const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
 
-      if (!isAlreadyExist && !isDefaultModelLoaded) {
-        for (const model of defaultModels) {
-          dispatch(
-            lpNodeActions.fileUpload({
-              file: model,
-              showLoading: false,
-            }),
-          );
-        }
-        setIsDefaultModelLoaded(true);
-      }
-    }
-  }, [_lpNode, isDefaultModelLoaded, isSceneReady, dispatch]);
+  //     if (!isAlreadyExist && !isDefaultModelLoaded) {
+  //       for (const model of defaultModels) {
+  //         dispatch(
+  //           lpNodeActions.fileUpload({
+  //             file: model,
+  //             showLoading: false,
+  //           }),
+  //         );
+  //       }
+  //       setIsDefaultModelLoaded(true);
+  //     }
+  //   }
+  // }, [_lpNode, isDefaultModelLoaded, isSceneReady, dispatch]);
 
   const handleSearch = useCallback(
     (text: string) => {
