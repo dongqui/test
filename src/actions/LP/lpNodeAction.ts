@@ -103,6 +103,11 @@ interface DeleteMotionReceiveParam {
   };
 }
 
+interface DeleteFolderOrMocapSendParams {
+  type: 'delete';
+  scenesLibraryId: string;
+}
+
 export const changeNode = createAction('node/CHANGE_NODE', ({ nodes }: { nodes: LP.Node[] }) => ({ nodes }))();
 export const visualizeModel = createAction('node/VISUALIZE_MODEL', (assetId: string) => ({ assetId }))();
 export const cancelVisulization = createAction('node/CANCEL_VISUALIZATION', (assetId: string) => ({ assetId }))();
@@ -128,7 +133,7 @@ export const deleteFolderOrMocapSocket = createSocketActions(
   'node/DELETE_FOLRDER_OR_MOCAP_RECEIVE',
   'node/DELETE_FOLRDER_OR_MOCAP_UPDATE',
   'node/DELETE_FOLRDER_OR_MOCAP_FAILURE',
-)<string, string, DeleteLibraryReceiveParam, LP.Node[], string>();
+)<string, DeleteFolderOrMocapSendParams, DeleteLibraryReceiveParam, LP.Node[], string>();
 
 export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
 export const deleteModelSocket = createSocketActions(

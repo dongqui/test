@@ -8,14 +8,12 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 
 function* handleDeleteFolderOrMocapRequest(action: ReturnType<typeof lpNodeActions.deleteFolderOrMocapSocket.request>) {
   const nodeId = action.payload;
-  yield put(lpNodeActions.deleteFolderOrMocapSocket.send(nodeId));
-}
-
-function* handleDeleteFolderOrMocapSend(action: ReturnType<typeof lpNodeActions.deleteFolderOrMocapSocket.send>) {
-  // Socket.emit('library', {
-  //   type: 'delete',
-  //   scenesLibraryId: action.payload,
-  // })
+  yield put(
+    lpNodeActions.deleteFolderOrMocapSocket.send({
+      type: 'delete',
+      scenesLibraryId: nodeId,
+    }),
+  );
 }
 
 function* handleDeleteFolderOrMocapReceive(action: ReturnType<typeof lpNodeActions.deleteFolderOrMocapSocket.receive>) {
@@ -33,7 +31,6 @@ function* handleDeleteFolderOrMocapReceive(action: ReturnType<typeof lpNodeActio
 export default function* watchDeleteFolderOrMocapSocketActions() {
   yield all([
     takeLatest(getType(lpNodeActions.deleteFolderOrMocapSocket.request), handleDeleteFolderOrMocapRequest),
-    takeLatest(getType(lpNodeActions.deleteFolderOrMocapSocket.send), handleDeleteFolderOrMocapSend),
     takeLatest(getType(lpNodeActions.deleteFolderOrMocapSocket.receive), handleDeleteFolderOrMocapReceive),
   ]);
 }
