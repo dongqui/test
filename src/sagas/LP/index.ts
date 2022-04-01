@@ -42,7 +42,7 @@ export default function* LPSaga() {
     watchDeleteFolderOrMocapSocketActions(),
     watchDeleteModelSocketActions(),
     watchMoveNodeSocketActions(),
-    watchEditNodeNameSocketActions(),
     watchDeleteMotionSocketActions(),
+    watchEditNodeNameSocketActions(),
   ]);
 }

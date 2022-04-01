@@ -4,6 +4,8 @@ import { io, Socket } from 'socket.io-client';
 import { PayloadActionCreator } from 'typesafe-actions';
 
 import * as socketActions from 'actions/Common/socket';
+import * as lpActions from 'actions/LP/lpNodeAction';
+import { execPath } from 'process';
 
 const TEMP_SCENE_ID = 'q0j0y8dzoq9xmv7gn4n526ger3lkp1m6';
 const TEMP_TOKEN =
@@ -29,7 +31,9 @@ function createSocketIO(action: ReturnType<typeof socketActions.connectSocket.re
   });
   return new Promise((resolve) => {
     socket.connect();
-    resolve(socket);
+    socket.on('connect', function () {
+      resolve(socket);
+    });
   });
 }
 
@@ -54,6 +58,7 @@ function createEventChannel(socket: Socket) {
           break;
         }
         case 'update': {
+          console.log(payload, '@');
           // emit(receiveFoo(payload));
           break;
         }
@@ -107,7 +112,7 @@ function createEventChannel(socket: Socket) {
 
     socket.on('library', libraryEvent);
     socket.on('animation', animationEvent);
-
+    socket.on('exception', (payload) => console.log(payload));
     return () => {
       socket.off('library', libraryEvent);
       socket.off('animation', animationEvent);
@@ -118,6 +123,7 @@ function createEventChannel(socket: Socket) {
 function* sendSocketEmit(socket: Socket, event: 'animation' | 'library', action: PayloadActionCreator<string, any>) {
   while (true) {
     const { payload } = yield take(action);
+    console.log(payload, event);
     socket.emit(event, payload);
   }
 }
@@ -127,6 +133,7 @@ function* receiveEventChannel(socket: Socket) {
   while (true) {
     try {
       const action: ChannelTakeEffect<any> = yield take(eventChannel);
+      console.log(action);
       yield put(action);
     } catch (error) {
       console.error('receiveEventChannel error=', error);
@@ -145,6 +152,7 @@ function* handleIO(socket: Socket) {
    * ex) yield sendSocketEmit(socket, "library", libraryActions.renameModel.send);
    * ex) yield sendSocketEmit(socket, "library", libraryActions.deleteModel.send);
    */
+  yield sendSocketEmit(socket, 'library', lpActions.editNodeNameSocket.send);
 }
 
 function* connectSocket(action: ReturnType<typeof socketActions.connectSocket.request>) {

@@ -67,7 +67,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
   };
 
   const handleEditName = (newName: string) => {
-    onEditName ? onEditName(newName) : dispatch(lpNodeActions.editNodeName({ newName, nodeId: id }));
+    onEditName ? onEditName(newName) : dispatch(lpNodeActions.editNodeNameSocket.request({ newName, nodeId: id }));
   };
 
   const handleArrowButtonClick = (e: React.MouseEvent) => {

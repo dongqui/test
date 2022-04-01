@@ -61,7 +61,7 @@ import * as TEXT from 'constants/Text';
 //   yield put(lpNodeActions.setEditingNodeId(null));
 // }
 
-function* handleEditNodeNameRequest(action: ReturnType<typeof lpNodeActions.editNodeNameSocket.request>) {
+export function* handleEditNodeNameRequest(action: ReturnType<typeof lpNodeActions.editNodeNameSocket.request>) {
   const { newName, nodeId } = action.payload;
   const { lpNode }: RootState = yield select();
   const { nodes } = lpNode;
@@ -84,33 +84,21 @@ function* handleEditNodeNameRequest(action: ReturnType<typeof lpNodeActions.edit
       }),
     );
   } else {
-    lpNodeActions.editNodeNameSocket.send({ nodeId, newName, type: targetNode.type });
+    yield put(
+      lpNodeActions.editNodeNameSocket.send({
+        type: 'update',
+        data: {
+          scenesLibraryId: nodeId,
+          name: newName,
+        },
+      }),
+    );
   }
 
   yield put(lpNodeActions.setEditingNodeId(null));
 }
 
-function* handleEditNodeNameSend(action: ReturnType<typeof lpNodeActions.editNodeNameSocket.send>) {
-  if (action.payload.type === 'Motion') {
-    // Socket.emit('animation', {
-    //   type: 'rename',
-    //   data: {
-    //     animationId: action.payload.nodeId,
-    //     name: action.payload.newName,
-    //   },
-    // });
-  } else {
-    // Socket.emit('library', {
-    //   type: 'update',
-    //   scenesLibraryId: action.payload.nodeId,
-    //   data: {
-    //     name: action.payload.newName,
-    //   },
-    // });
-  }
-}
-
-function* handleEditNodeNameReceive(action: ReturnType<typeof lpNodeActions.editNodeNameSocket.receive>) {
+export function* handleEditNodeNameReceive(action: ReturnType<typeof lpNodeActions.editNodeNameSocket.receive>) {
   const { lpNode, animationData }: RootState = yield select();
   const { scenesLibraryId, data } = action.payload;
   const targetNode = _.find(lpNode.nodes, { id: scenesLibraryId });
@@ -142,7 +130,6 @@ function* handleEditNodeNameReceive(action: ReturnType<typeof lpNodeActions.edit
 export default function* watchEditNodeNameSocketActions() {
   yield all([
     takeLatest(getType(lpNodeActions.editNodeNameSocket.request), handleEditNodeNameRequest),
-    takeLatest(getType(lpNodeActions.editNodeNameSocket.send), handleEditNodeNameSend),
     takeLatest(getType(lpNodeActions.editNodeNameSocket.receive), handleEditNodeNameReceive),
   ]);
 }

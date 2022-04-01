@@ -50,9 +50,11 @@ interface EditNodeNameRequestParams {
 }
 
 interface EditNodeNameSendParams {
-  nodeId: string;
-  newName: string;
-  type: string;
+  type: 'update' | 'rename';
+  data: {
+    scenesLibraryId: string;
+    name: string;
+  };
 }
 
 interface ExportAssetParams {
@@ -115,7 +117,7 @@ export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: Add
 export const duplicateMotion = createAction('node/DUPLICATE_MOTION', (params: DuplicateMotionParams) => ({ ...params }))();
 export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadParams) => ({ ...params }))();
 
-export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<undefined, { nodes: LP.Node[] }, Error>();
+export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<undefined, LP.Node[], Error>();
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
 export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, LP.Node[], Error>();
 
