@@ -120,6 +120,7 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
         'ImportErrorModal',
         {
           message: isClassifiedError ? e.message : IMPORT_ERROR_UNKNODW,
+          fileName: rawFileName,
         },
         `import_error_${rawFileName}`,
       ),
