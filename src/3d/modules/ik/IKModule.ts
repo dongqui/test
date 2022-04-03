@@ -70,9 +70,9 @@ export class IKModule extends Module {
     (control.material as StandardMaterial).specularColor = Color3.Teal();
 
     bone.getPositionToRef(Space.WORLD, transformNode, control.position);
-    // control.rotationQuaternion = params.name.includes('Hand')
-    //   ? scene.getTransformNodeByName(params.name)!.absoluteRotationQuaternion
-    //   : (scene.getTransformNodeByName(params.name)!.parent! as Mesh).absoluteRotationQuaternion;
+    control.rotationQuaternion = params.name.includes('Hand')
+      ? scene.getTransformNodeByName(params.name)!.absoluteRotationQuaternion
+      : (scene.getTransformNodeByName(params.name)!.parent! as Mesh).absoluteRotationQuaternion;
 
     return control;
   }
@@ -120,9 +120,9 @@ export class IKModule extends Module {
       // if is Limbs
       if (elem.name.includes('Foot') || elem.name.includes('Hand')) {
         // Creating IK Controllers
-        const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex() - 1], {
+        const ikCtrl = new BoneIKController(transformNode, bone, {
           targetMesh: controller,
-          poleAngle: elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
+          poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
         });
         ikControllers.push(ikCtrl);
       }
