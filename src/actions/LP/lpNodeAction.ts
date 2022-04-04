@@ -51,8 +51,8 @@ interface EditNodeNameRequestParams {
 
 interface EditNodeNameSendParams {
   type: 'update' | 'rename';
+  scenesLibraryId: string;
   data: {
-    scenesLibraryId: string;
     name: string;
   };
 }
