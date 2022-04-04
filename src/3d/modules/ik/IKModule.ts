@@ -20,6 +20,17 @@ export class IKModule extends Module {
     return this.plaskEngine.selectorModule.allTransformNodes;
   }
 
+  public get retargetMap() {
+    const assetId = this.plaskEngine.state.plaskProject.visualizedAssetIds[0];
+    const map = this.plaskEngine.state.animationData.retargetMaps.find((elt) => elt.assetId === assetId);
+
+    if (map) {
+      return map;
+    }
+
+    return null;
+  }
+
   public dispose() {
     this.plaskEngine.selectorModule.onSelectionChangeObservable.remove(this._selectionChangeObserver);
   }
@@ -70,9 +81,13 @@ export class IKModule extends Module {
     (control.material as StandardMaterial).specularColor = Color3.Teal();
 
     bone.getPositionToRef(Space.WORLD, transformNode, control.position);
-    control.rotationQuaternion = params.name.includes('Hand')
-      ? scene.getTransformNodeByName(params.name)!.absoluteRotationQuaternion
-      : (scene.getTransformNodeByName(params.name)!.parent! as Mesh).absoluteRotationQuaternion;
+    control.rotationQuaternion = transformNode.absoluteRotationQuaternion;
+
+    // TODO : make this a child class instead of storing in metadata
+    // Or make a map that link ikctrlmesh / bone / transformNode
+    control.metadata = control.metadata || {};
+    control.metadata.__transformNode = transformNode;
+    control.metadata.__bone = bone;
 
     return control;
   }
@@ -98,13 +113,25 @@ export class IKModule extends Module {
     // Creating IK controls for Limbs and Torso elements
     bonesSelection.forEach((elem) => {
       // Finding Bone
-      const bone = skeleton.bones.find((bone) => bone.name.includes(elem.name));
+      if (!this.retargetMap) {
+        console.warn('Cannot find retarget map');
+        return;
+      }
+      const retargetValue = this.retargetMap.values.find((elt) => elt.sourceBoneName.includes(elem.name));
+      if (!retargetValue) {
+        console.warn('Cannot find bone name, check boneSelection');
+        return;
+      }
+      console.log(this.retargetMap);
+
+      const boneName = retargetValue.sourceBoneName;
+      const transformNode = this.plaskEngine.scene.getTransformNodeById(retargetValue.targetTransformNodeId!);
+      const bone = skeleton.bones.find((bone) => bone.getTransformNode() === transformNode);
 
       if (!bone) {
         console.warn(`Cannot insert IK controller on bone ${elem.name} : bone not found`);
         return;
       }
-      const transformNode = scene.getTransformNodeByName(elem.name);
 
       if (!transformNode) {
         console.warn(`Cannot insert IK controller on bone ${elem.name} : associated transformNode not found`);
@@ -165,10 +192,8 @@ export class IKModule extends Module {
         pickedIkCtrl.outlineColor = Color3.White();
         pickedIkCtrl.outlineWidth = 0.01;
 
-        // bonesSelectionElem = bonesSelection.find((elem) => elem.name.slice(9) == pickedMesh.name.slice(5)) || null;
-        // TODO : associate bone/ikcontroller in the map
-        pickedBone = scene.getBoneByName(pickedMesh.name.slice(5))!.name;
-        pickedTrans = scene.getTransformNodeByName(pickedMesh.name.slice(5));
+        pickedBone = pickedIkCtrl.metadata.__bone;
+        pickedTrans = pickedIkCtrl.metadata.__transformNode;
 
         gizmoManager.attachToMesh(pickedMesh);
       }
