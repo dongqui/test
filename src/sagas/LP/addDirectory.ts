@@ -39,7 +39,7 @@ export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActi
     };
 
     const res: RequestNodeResponse = yield call(api.createFolderOrMocap, lpNode.sceneId, data, parentNode?.id);
-    yield put(lpNodeActions.addDirectoryAsync.success(createFolderNode(res.name, filePath, res.parentUid)));
+    yield put(lpNodeActions.addDirectoryAsync.success(createFolderNode(res.uid, res.name, filePath, res.parentUid)));
   } catch (e) {
     // yield put(lpNodeActions.addDirectoryAsync.failure(e));
   }
