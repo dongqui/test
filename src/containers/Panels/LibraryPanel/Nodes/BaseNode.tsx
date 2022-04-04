@@ -2,6 +2,7 @@ import React, { Fragment, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { useSelector } from 'reducers';
+import { getFilePathDepth } from 'utils/LP/FileSystem';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -25,8 +26,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
   const { animationIngredients } = useSelector((state) => state.animationData);
 
   const isEditing = editingNodeId === id;
-  const depth = (filePath.match(/\\/g) || []).length;
-
+  const depth = getFilePathDepth(nodes, node);
   // -- 개선? --
   const currentVisualizedNode = nodes.find((node) => visualizedAssetIds.includes(node.assetId || ''));
   const currentVisualizedMotion = animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current);
