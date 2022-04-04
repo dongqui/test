@@ -8,12 +8,10 @@ import { Authentication } from 'containers/Error';
 
 import Plask from './Plask';
 
-export type Procedure = 'service' | 'token' | 'success' | 'denied';
-
 interface Props {
   browserType: string;
   error: {
-    statusCode: number;
+    statusCode: 401.1 | 401.2 | 400 | 400.7;
     message: string;
     timestamp: string;
     path: string;

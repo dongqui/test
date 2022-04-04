@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { LinkedButton } from 'components/Button';
 
 import styles from './Authentication.module.scss';
@@ -6,16 +7,25 @@ import classNames from 'classnames/bind';
 const cx = classNames.bind(styles);
 
 interface Props {
-  statusCode: number;
+  /**
+   * Possible error cases when accessing the app from the homepage
+   * 401.1 - Invalid token
+   * 401.2 - Expired token
+   * 400   - No permission scene
+   * 400.7 - Invalid scene uid
+   */
+  statusCode: 401.1 | 401.2 | 400 | 400.7;
   message: string;
 }
 
 const Authentication = ({ statusCode, message }: Props) => {
   console.log(statusCode, message);
-  // 401.1 -> Invalid token
-  // 401.2 -> Expired Token
-  // 400.99 -> 400 -> No Permission Scene
-  // 400.7 -> Invalid scenes uid
+  const isRedirectSignin = statusCode === 401.1 || statusCode === 401.2;
+
+  if (isRedirectSignin) {
+    window.location.href = 'https://plask.ai/signin';
+    return <Fragment></Fragment>;
+  }
 
   return (
     <div className={cx('wrapper')}>
