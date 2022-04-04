@@ -15,7 +15,8 @@ const Authentication = ({ statusCode, message }: Props) => {
   // 401.1 -> Invalid token
   // 401.2 -> Expired Token
   // 400.99 -> 400 -> No Permission Scene
-  // ? -> Invalid scene id
+  // 400.7 -> Invalid scenes uid
+
   return (
     <div className={cx('wrapper')}>
       <div className={cx('headline')}>
@@ -27,7 +28,7 @@ const Authentication = ({ statusCode, message }: Props) => {
         <LinkedButton href="javascript:window.history.back();" variant="filled" size="large">
           Go Back
         </LinkedButton>
-        <LinkedButton href="https://plask.ai" variant="outlined" size="large">
+        <LinkedButton href="https://plask.ai/signin" variant="outlined" size="large">
           Home
         </LinkedButton>
       </div>
