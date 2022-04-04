@@ -27,12 +27,7 @@ const FolderNode = ({ node }: Props) => {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     if (draggedNode) {
       e.stopPropagation();
-      dispatch(
-        lpNodeActions.dropNodeOnFolderOrRoot({
-          filePath,
-          nodeId: id,
-        }),
-      );
+      dispatch(lpNodeActions.moveNodeSocket.request(id));
     }
   };
 

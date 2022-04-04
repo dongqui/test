@@ -4,12 +4,12 @@ import produce from 'immer';
 import { getType } from 'typesafe-actions';
 
 import { RootState } from 'reducers';
-import { checkCreateDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth, getCurrentPathDepth } from 'utils/LP/FileSystem';
+import { checkCreateDuplicates, beforeMove, changeNodeDepthById, getNodeMaxDepth, getFilePathDepth } from 'utils/LP/FileSystem';
 import { getFileExtension } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 
-// export default function* handledropNodeOnFolderOrRoot(action: ReturnType<typeof lpNodeActions.dropNodeOnFolderOrRoot>) {
+// export default function* handleMoveNode(action: ReturnType<typeof lpNodeActions.MoveNode>) {
 //   const { lpNode }: RootState = yield select();
 //   const { draggedNode, nodes } = lpNode;
 //   const { filePath, nodeId } = action.payload;
@@ -99,26 +99,19 @@ import * as globalUIActions from 'actions/Common/globalUI';
 //   yield put(lpNodeActions.setDraggedNode(null));
 // }
 
-function* handledropNodeOnFolderOrRootRequest(action: ReturnType<typeof lpNodeActions.moveNodeSocket.request>) {
+function* handleMoveNodeRequest(action: ReturnType<typeof lpNodeActions.moveNodeSocket.request>) {
   const { lpNode }: RootState = yield select();
   const { draggedNode, nodes } = lpNode;
   const directoryId = action.payload;
-  const targetDirectory = find(nodes, { id: directoryId });
 
-  const isRootOrAlreadyContainedInFolder = !directoryId || targetDirectory?.childNodeIds.find((childNodeId) => childNodeId === draggedNode?.id);
-  if (
-    !draggedNode ||
-    directoryId === draggedNode.id ||
-    (draggedNode?.type === 'Motion' && !draggedNode?.mocapData) ||
-    targetDirectory?.childNodeIds.find((childNodeId) => childNodeId === draggedNode.id) ||
-    isRootOrAlreadyContainedInFolder
-  ) {
+  const isAlreadyContainedInThePath = draggedNode?.parentId === directoryId;
+  if (!draggedNode || directoryId === draggedNode.id || (draggedNode?.type === 'Motion' && !draggedNode?.mocapData) || isAlreadyContainedInThePath) {
     yield put(lpNodeActions.setDraggedNode(null));
     return;
   }
 
   const maxDepth = getNodeMaxDepth(draggedNode.childNodeIds, 0, [], nodes) || 0;
-  const currentPathDepth = getCurrentPathDepth(draggedNode);
+  const currentPathDepth = getFilePathDepth(nodes, draggedNode);
 
   if (currentPathDepth + maxDepth >= 6) {
     yield put(
@@ -129,34 +122,31 @@ function* handledropNodeOnFolderOrRootRequest(action: ReturnType<typeof lpNodeAc
       }),
     );
   } else {
-    yield put(lpNodeActions.moveNodeSocket.send({ nodeId: draggedNode.id, parentId: directoryId }));
+    yield put(
+      lpNodeActions.moveNodeSocket.send({
+        type: 'move',
+        data: {
+          scenesLibraryIds: [draggedNode.id],
+          parentScenesLibraryId: directoryId,
+        },
+      }),
+    );
   }
 
   yield put(lpNodeActions.setDraggedNode(null));
 }
 
-function* handledropNodeOnFolderOrRootSend(action: ReturnType<typeof lpNodeActions.moveNodeSocket.send>) {
-  // TODO: 중복네임 처리??
-  // Socket.emit('library', {
-  //   type: 'move',
-  //   data: {
-  //     scenesLibraryIds: [action.payload],
-  //     parentScenesLibraryId: 'q8o5knz97pw01jgo5el24yrxv6m83qwx',
-  //   },
-  // });
-}
-
-function* handledropNodeOnFolderOrRootReceive(action: ReturnType<typeof lpNodeActions.moveNodeSocket.receive>) {
+function* handleMoveNodeReceive(action: ReturnType<typeof lpNodeActions.moveNodeSocket.receive>) {
   const { lpNode }: RootState = yield select();
   const { parentScenesLibraryId, scenesLibraryIds } = action.payload.data;
 
   const nextNodes = produce(lpNode.nodes, (draft) => {
-    const targetDirectory = find(draft, { id: parentScenesLibraryId });
+    const targetDirectory = find(draft, { id: parentScenesLibraryId }) || '';
 
     for (const nodeId of scenesLibraryIds) {
       const _draggedNode = find(draft, { id: nodeId });
       const prevParentId = _draggedNode?.parentId;
-      if (!_draggedNode || !targetDirectory) {
+      if (!_draggedNode) {
         return;
       }
 
@@ -164,8 +154,9 @@ function* handledropNodeOnFolderOrRootReceive(action: ReturnType<typeof lpNodeAc
 
       // TODO: 중복 네임 관련 규정
       // _draggedNode.name = nodeName;
-
-      targetDirectory.childNodeIds.push(_draggedNode.id);
+      if (targetDirectory) {
+        targetDirectory.childNodeIds.push(_draggedNode.id);
+      }
 
       if (_draggedNode.childNodeIds.length > 0) {
         _draggedNode.childNodeIds.map((child) => changeNodeDepthById(draft, child, _draggedNode));
@@ -182,9 +173,5 @@ function* handledropNodeOnFolderOrRootReceive(action: ReturnType<typeof lpNodeAc
 }
 
 export default function* watchMoveNodeSocketActions() {
-  yield all([
-    takeLatest(getType(lpNodeActions.moveNodeSocket.request), handledropNodeOnFolderOrRootRequest),
-    takeLatest(getType(lpNodeActions.moveNodeSocket.send), handledropNodeOnFolderOrRootSend),
-    takeLatest(getType(lpNodeActions.moveNodeSocket.receive), handledropNodeOnFolderOrRootReceive),
-  ]);
+  yield all([takeLatest(getType(lpNodeActions.moveNodeSocket.request), handleMoveNodeRequest), takeLatest(getType(lpNodeActions.moveNodeSocket.receive), handleMoveNodeReceive)]);
 }

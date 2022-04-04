@@ -87,8 +87,8 @@ export function* handleEditNodeNameRequest(action: ReturnType<typeof lpNodeActio
     yield put(
       lpNodeActions.editNodeNameSocket.send({
         type: 'update',
+        scenesLibraryId: nodeId,
         data: {
-          scenesLibraryId: nodeId,
           name: newName,
         },
       }),
