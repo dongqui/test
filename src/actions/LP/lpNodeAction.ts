@@ -71,14 +71,17 @@ interface FileUploadParams {
   showLoading: boolean;
 }
 
-interface DeleteLibraryReceiveParam {
+interface DeleteNodeReceiveParam {
   type: 'delete';
   scenesLibraryId: string;
 }
 
 interface MoveNodeSendParam {
-  nodeId: string;
-  parentId: string;
+  type: 'move';
+  data: {
+    scenesLibraryIds: string[];
+    parentScenesLibraryId: string;
+  };
 }
 
 interface MoveNodeReceiveParam {
@@ -103,7 +106,7 @@ interface DeleteMotionReceiveParam {
   };
 }
 
-interface DeleteFolderOrMocapSendParams {
+interface DeleteNodeSendParams {
   type: 'delete';
   scenesLibraryId: string;
 }
@@ -127,13 +130,13 @@ export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 
 export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, LP.Node[], Error>();
 
 // export const deleteFolderOrMocap = createAction('node/DELETE_FOLDER_OR_MOCAP', (params: DeleteFolderOrMocapParams) => ({ ...params }))();
-export const deleteFolderOrMocapSocket = createSocketActions(
-  'node/DELETE_FOLRDER_OR_MOCAP_REQUEST',
-  'node/DELETE_FOLRDER_OR_MOCAP_SEND',
-  'node/DELETE_FOLRDER_OR_MOCAP_RECEIVE',
-  'node/DELETE_FOLRDER_OR_MOCAP_UPDATE',
-  'node/DELETE_FOLRDER_OR_MOCAP_FAILURE',
-)<string, DeleteFolderOrMocapSendParams, DeleteLibraryReceiveParam, LP.Node[], string>();
+export const deleteNodeSocket = createSocketActions(
+  'node/DELETE_NODE_REQUEST',
+  'node/DELETE_NODE_SEND',
+  'node/DELETE_NODE_RECEIVE',
+  'node/DELETE_NODE_UPDATE',
+  'node/DELETE_NODE_FAILURE',
+)<string, DeleteNodeSendParams, DeleteNodeReceiveParam, LP.Node[], string>();
 
 export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
 export const deleteModelSocket = createSocketActions(
@@ -142,7 +145,7 @@ export const deleteModelSocket = createSocketActions(
   'node/DELETE_MODEL_RECEIVE',
   'node/DELETE_MODEL_UPDATE',
   'node/DELETE_MODEL_FAILURE',
-)<string, string, DeleteLibraryReceiveParam, LP.Node[], string>();
+)<string, DeleteNodeSendParams, DeleteNodeReceiveParam, LP.Node[], string>();
 
 export const dropNodeOnFolderOrRoot = createAction('node/MOVE_NODE', (params: MoveNodeParams) => ({ ...params }))();
 export const moveNodeSocket = createSocketActions(
