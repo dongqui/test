@@ -5,6 +5,8 @@ import { useSelector } from 'reducers';
 import { ExportFormat } from 'types/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
+import { useContext } from 'react';
+import { BabylonContext } from 'contexts/RP/BabylonContext';
 interface Props {
   nodeId: string;
   parentId: string;
@@ -17,6 +19,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
   const dispatch = useDispatch();
   const { lpNode, plaskProject, animationData } = useSelector((state) => state);
   const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
+  const { plaskEngine } = useContext(BabylonContext);
 
   const handleDelete = () => {
     dispatch(
@@ -76,6 +79,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
               nodeName,
               assetId,
               type,
+              plaskEngine,
             }),
           );
         },

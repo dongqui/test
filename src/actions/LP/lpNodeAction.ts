@@ -102,6 +102,7 @@ interface ExportAssetParams {
   nodeName: string;
   motion: string;
   format: ExportFormat;
+  plaskEngine: PlaskEngine;
 }
 
 interface FileUploadParams {
