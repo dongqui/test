@@ -1,5 +1,6 @@
+import { editNodeName, editNodeNameSocket, moveNodeSocket } from './../actions/LP/lpNodeAction';
 import { eventChannel, EventChannel } from 'redux-saga';
-import { call, fork, put, take, takeLatest, ChannelTakeEffect } from 'redux-saga/effects';
+import { call, fork, put, take, takeLatest, ChannelTakeEffect, all } from 'redux-saga/effects';
 import { io, Socket } from 'socket.io-client';
 import { PayloadActionCreator } from 'typesafe-actions';
 
@@ -29,26 +30,31 @@ function createSocketIO(action: ReturnType<typeof socketActions.connectSocket.re
   });
   return new Promise((resolve) => {
     socket.connect();
-    resolve(socket);
+    socket.on('connect', function () {
+      console.log('connected');
+      resolve(socket);
+    });
   });
 }
 
+type LibraryEventPayload = ReturnType<
+  typeof lpActions.deleteFolderOrMocapSocket.receive | typeof lpActions.editNodeNameSocket.receive | typeof lpActions.moveNodeSocket.receive
+>['payload'];
 function createEventChannel(socket: Socket) {
   return eventChannel((emit) => {
-    const libraryEvent = (payload: { type: LibraryEventType }) => {
+    const libraryEvent = (payload: LibraryEventPayload) => {
       switch (payload.type) {
-        case 'apply-mocap-to-model': {
-          // emit(receiveFoo(payload));
-          break;
-        }
+        // case 'apply-mocap-to-model': {
+        //   break;
+        // }
         case 'delete': {
-          // emit(receiveFoo(payload));
+          emit(lpActions.deleteFolderOrMocapSocket.receive(payload));
           break;
         }
-        case 'modify-retarget-map': {
-          // emit(receiveFoo(payload));
-          break;
-        }
+        // case 'modify-retarget-map': {
+        //   // emit(receiveFoo(payload));
+        //   break;
+        // }
         case 'move': {
           // emit(receiveFoo(payload));
           break;
@@ -135,16 +141,13 @@ function* receiveEventChannel(socket: Socket) {
 }
 
 function* handleIO(socket: Socket) {
-  yield fork(receiveEventChannel, socket);
-  /**
-   * yield sendSocketEmit(socket, event, action);
-   * send action을 이 함수에서 하나씩 추가하면 됨.
-   *
-   * ex) yield sendSocketEmit(socket, "animation", trackListActions.addLayerTrack.send);
-   * ex) yield sendSocketEmit(socket, "animation", trackListActions.deleteLayerTrack.send);
-   * ex) yield sendSocketEmit(socket, "library", libraryActions.renameModel.send);
-   * ex) yield sendSocketEmit(socket, "library", libraryActions.deleteModel.send);
-   */
+  yield all([
+    receiveEventChannel(socket),
+
+    // sendSocketEmit
+    sendSocketEmit(socket, 'library', lpActions.deleteFolderOrMocapSocket.send),
+    sendSocketEmit(socket, 'library', lpActions.editNodeNameSocket.send),
+  ]);
 }
 
 function* connectSocket(action: ReturnType<typeof socketActions.connectSocket.request>) {
