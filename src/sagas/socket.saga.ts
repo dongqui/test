@@ -1,4 +1,3 @@
-import { editNodeName, editNodeNameSocket, moveNodeSocket } from './../actions/LP/lpNodeAction';
 import { eventChannel, EventChannel } from 'redux-saga';
 import { call, fork, put, take, takeLatest, ChannelTakeEffect, all } from 'redux-saga/effects';
 import { io, Socket } from 'socket.io-client';
@@ -39,9 +38,7 @@ function createSocketIO(action: ReturnType<typeof socketActions.connectSocket.re
   });
 }
 
-type LibraryEventPayload = ReturnType<
-  typeof lpActions.deleteFolderOrMocapSocket.receive | typeof lpActions.editNodeNameSocket.receive | typeof lpActions.moveNodeSocket.receive
->['payload'];
+type LibraryEventPayload = ReturnType<typeof lpActions.deleteNodeSocket.receive | typeof lpActions.editNodeNameSocket.receive | typeof lpActions.moveNodeSocket.receive>['payload'];
 function createEventChannel(socket: Socket) {
   return eventChannel((emit) => {
     const libraryEvent = (payload: LibraryEventPayload) => {
@@ -50,7 +47,7 @@ function createEventChannel(socket: Socket) {
         //   break;
         // }
         case 'delete': {
-          emit(lpActions.deleteFolderOrMocapSocket.receive(payload));
+          emit(lpActions.deleteNodeSocket.receive(payload));
           break;
         }
         // case 'modify-retarget-map': {
@@ -58,11 +55,10 @@ function createEventChannel(socket: Socket) {
         //   break;
         // }
         case 'move': {
-          // emit(receiveFoo(payload));
+          emit(lpActions.moveNodeSocket.receive(payload));
           break;
         }
         case 'update': {
-          console.log(payload, '@');
           // emit(receiveFoo(payload));
           break;
         }
@@ -127,7 +123,6 @@ function createEventChannel(socket: Socket) {
 function* sendSocketEmit(socket: Socket, event: 'animation' | 'library', action: PayloadActionCreator<string, any>) {
   while (true) {
     const { payload } = yield take(action);
-    console.log(payload, event);
     socket.emit(event, payload);
   }
 }
@@ -149,8 +144,9 @@ function* handleIO(socket: Socket) {
     receiveEventChannel(socket),
 
     // sendSocketEmit
-    sendSocketEmit(socket, 'library', lpActions.deleteFolderOrMocapSocket.send),
+    sendSocketEmit(socket, 'library', lpActions.deleteNodeSocket.send),
     sendSocketEmit(socket, 'library', lpActions.editNodeNameSocket.send),
+    sendSocketEmit(socket, 'library', lpActions.moveNodeSocket.send),
   ]);
 }
 

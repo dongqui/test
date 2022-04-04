@@ -18,7 +18,7 @@ const FolderContextMenu = ({ nodeId, filePath }: Props) => {
         title: 'Delete Folder',
         message: 'Are you sure? All files in the directory will be deleted.',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteFolderOrMocapSocket.request(nodeId));
+          dispatch(lpNodeActions.deleteNodeSocket.request(nodeId));
         },
         onCancel: () => {},
       }),
