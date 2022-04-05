@@ -1,4 +1,20 @@
-import { TransformNode, BoneIKController, Color3, GizmoManager, Mesh, MeshBuilder, Nullable, Space, StandardMaterial, Vector3, AbstractMesh } from '@babylonjs/core';
+import {
+  TransformNode,
+  BoneIKController,
+  Color3,
+  GizmoManager,
+  Mesh,
+  MeshBuilder,
+  Nullable,
+  Space,
+  StandardMaterial,
+  Vector3,
+  AbstractMesh,
+  Quaternion,
+  Tools,
+  Matrix,
+  Skeleton,
+} from '@babylonjs/core';
 import { Bone } from '@babylonjs/core/Bones/bone';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
@@ -97,8 +113,75 @@ export class IKModule extends Module {
     const scene = this.plaskEngine.scene;
 
     // TODO : retrieve skeleton and body
-    const body = scene.getMeshByName('Body') as Mesh; // store body mesh
+    //const body = scene.getMeshByName('Body') as Mesh; // store body mesh
+    const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
     const skeleton = scene.skeletons[0]; // store skeleton
+
+    if (skeleton.name === 'Armature') {
+      // This show Mannequin model Matrix
+      const mannequin = [
+        { name: 'leftArm' },
+        { name: 'leftForeArm' },
+        { name: 'leftHand' },
+        { name: 'leftUpLeg' },
+        { name: 'leftLeg' },
+        { name: 'leftFoot' },
+        { name: 'rightArm' },
+        { name: 'rightForeArm' },
+        { name: 'rightHand' },
+        { name: 'rightUpLeg' },
+        { name: 'rightLeg' },
+        { name: 'rightFoot' },
+      ];
+
+      mannequin.forEach((elem) => {
+        let pos = new Vector3();
+        let rot = new Quaternion();
+        let sca = new Vector3();
+        let mtx = new Matrix();
+
+        // let bn = scene.getBoneByName(elem.name);
+        // bn?.getWorldMatrix().decompose(sca, rot, pos);
+        // console.table(elem.name, rot);
+
+        let tr = scene.getTransformNodeByName(elem.name) || undefined;
+        tr?.getWorldMatrix().decompose(sca, rot, pos);
+        //tr?.getPoseMatrix().decompose(sca, rot, pos);
+        console.table(elem.name, rot);
+      });
+    } else if (skeleton.name === 'Xbot') {
+      // This show Xbot model Matrix
+      const xbot = [
+        { name: 'LeftArm' },
+        { name: 'LeftForeArm' },
+        { name: 'LeftHand' },
+        { name: 'LeftUpLeg' },
+        { name: 'LeftLeg' },
+        { name: 'LeftFoot' },
+        { name: 'RightArm' },
+        { name: 'RightForeArm' },
+        { name: 'RightHand' },
+        { name: 'RightUpLeg' },
+        { name: 'RightLeg' },
+        { name: 'RightFoot' },
+      ];
+
+      xbot.forEach((elem) => {
+        let pos = new Vector3();
+        let rot = new Quaternion();
+        let sca = new Vector3();
+        let mtx = new Matrix();
+
+        // let bn = scene.getBoneByName('mixamorig:' + elem.name);
+        // bn?.getWorldMatrix().decompose(sca, rot, pos);
+        // console.table(elem.name, rot);
+
+        let tr = scene.getTransformNodeByName('mixamorig:' + elem.name) || undefined;
+        tr?.getWorldMatrix().decompose(sca, rot, pos);
+        //tr?.getPoseMatrix().decompose(sca, rot, pos);
+        console.table(elem.name, rot);
+      });
+    }
 
     // Defining bones to be used in IK
     const bonesSelection = [
@@ -122,11 +205,13 @@ export class IKModule extends Module {
         console.warn('Cannot find bone name, check boneSelection');
         return;
       }
-      console.log(this.retargetMap);
+      //console.log(this.retargetMap);
 
       const boneName = retargetValue.sourceBoneName;
       const transformNode = this.plaskEngine.scene.getTransformNodeById(retargetValue.targetTransformNodeId!);
       const bone = skeleton.bones.find((bone) => bone.getTransformNode() === transformNode);
+
+      //console.log(transformNode, bone);
 
       if (!bone) {
         console.warn(`Cannot insert IK controller on bone ${elem.name} : bone not found`);
@@ -144,15 +229,28 @@ export class IKModule extends Module {
       const controller = this._createIKControllerMesh(elem, bone, transformNode);
       this._ikControllerMeshes.push(controller);
 
-      // if is Limbs
-      if (elem.name.includes('Foot') || elem.name.includes('Hand')) {
-        // Creating IK Controllers
-        const ikCtrl = new BoneIKController(transformNode, bone, {
-          targetMesh: controller,
-          poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
-        });
-        ikControllers.push(ikCtrl);
+      // To correctly apply Pole Angle in Xbot model
+      function polAng(skl: Skeleton, name: string) {
+        if (skl.name === 'Xbot') {
+          if (name.includes('Hand')) return 0;
+          else if (name.includes('Left')) return Math.PI / 2;
+          else return -Math.PI / 2;
+        } else {
+          return Math.PI;
+        }
       }
+
+      // if is Limbs
+      //if (elem.name.includes('Foot') || elem.name.includes('Hand')) {
+      // Creating IK Controllers
+      //const ikCtrl = new BoneIKController(transformNode, bone, {
+      const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex()], {
+        targetMesh: controller,
+        //poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
+        poleAngle: polAng(skeleton, elem.name),
+      });
+      ikControllers.push(ikCtrl);
+      //}
     });
 
     // Starting IK movement
