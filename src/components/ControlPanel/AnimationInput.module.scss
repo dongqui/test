@@ -6,15 +6,15 @@
   align-items: center;
   height: 24px;
   margin-right: 4px;
-  color: #7a7a7b;
-  background-color: $content-bg-base;
+  color: $content-active;
+  background-color: $contentbg-base;
   border-radius: 6px;
 
   & > p {
     margin-left: 8px;
     font-size: 11px;
     line-height: 13px;
-    color: #4f4f4f;
+    color: $content-inactive;
   }
 
   & > input {
@@ -24,10 +24,10 @@
     width: 70%;
     border: none;
     background-color: transparent;
-    color: #4f4f4f;
+    color: $content-inactive;
 
     &::placeholder {
-      color: #4f4f4f;
+      color: $content-inactive;
     }
 
     &:focus {
@@ -53,14 +53,14 @@
 
   &.able {
     & > p {
-      color: #7a7a7b;
+      color: $contentbg-base;
     }
 
     & > input {
-      color: var(--white);
+      color: $content-active;
 
       &::placeholder {
-        color: var(--white);
+        color: $content-active;
       }
     }
   }
@@ -78,7 +78,7 @@
   width: 70%;
   height: 100%;
   color: $content-inactive;
-  background-color: $content-bg-base;
+  background-color: $contentbg-base;
   border-radius: 6px;
   overflow: hidden;
   white-space: nowrap;
