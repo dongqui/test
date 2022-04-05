@@ -26,7 +26,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
         title: 'Delete Model',
         // TODO: 모델에 맞는 모달 메세지
         message: 'Are you sure? All files in the directory will be deleted.',
-        confirmButtonColor: 'error',
+        confirmButtonColor: 'negative',
         onConfirm: () => {
           dispatch(lpNodeActions.deleteNodeSocket.request(nodeId));
         },

@@ -1,5 +1,5 @@
-@import 'styles/libraries/_responsive';
-@import 'styles/libraries/_mixins';
+@import "styles/libraries/_responsive";
+@import "styles/libraries/_mixins";
 
 .wrapper {
   position: fixed;
@@ -16,8 +16,8 @@
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgb(255 255 255 / 20%);
+  box-shadow: 0 0 12px rgb(0 0 0 / 25%);
   padding: 28px 24px;
   min-width: 256px;
   max-width: 60%;

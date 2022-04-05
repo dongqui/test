@@ -2,7 +2,7 @@ import React, { Fragment, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { useSelector } from 'reducers';
-import { getFilePathDepth } from 'utils/LP/FileSystem';
+import { getFilePathDepth, getDescendantNodes } from 'utils/LP/FileSystem';
 import ListViewNode from 'components/ListViewNode/ListViewNode';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -21,36 +21,19 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
   const dispatch = useDispatch();
   const [showChildren, setShowChildren] = useState(false);
 
-  const { selectedId, nodes, editingNodeId, draggedNode } = useSelector((state) => state.lpNode);
+  const { selectedId, nodes, editingNodeId, draggedNode, selectedNodeDescendants } = useSelector((state) => state.lpNode);
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
   const { animationIngredients } = useSelector((state) => state.animationData);
 
   const isEditing = editingNodeId === id;
   const depth = getFilePathDepth(nodes, node);
-  // -- 개선? --
+  const isParentSelected = selectedNodeDescendants.some((node) => id === node.id);
+
+  // TODO: visualized node 상태관리
   const currentVisualizedNode = nodes.find((node) => visualizedAssetIds.includes(node.assetId || ''));
-  const currentVisualizedMotion = animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current);
-
-  const currentVisualizedNodePath = (currentVisualizedNode?.filePath + `\\${currentVisualizedNode?.name}`).split('\\').filter((text) => !!text);
-  const currentNodePath = (filePath + `\\${name}`).split('\\').filter((text) => !!text);
-
-  let hasCurrentVisualizedNode = false;
-  currentNodePath.forEach((path, i) => {
-    if (path === currentVisualizedNodePath[i]) {
-      hasCurrentVisualizedNode = true;
-    } else {
-      hasCurrentVisualizedNode = false;
-    }
-  });
-
-  const isOpenVisualized = showChildren && hasCurrentVisualizedNode;
-
-  const isCloseVisualized = !!(type === 'Motion'
-    ? assetId && currentVisualizedMotion[0]?.assetId === assetId && currentVisualizedMotion[0]?.name === name
-    : type === 'Model'
-    ? !showChildren && assetId && visualizedAssetIds.includes(assetId)
-    : !showChildren && hasCurrentVisualizedNode);
-  // -- 개선? --
+  const currentVisualizedMotion = animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current)[0];
+  const closedAndHasVisualizedDescendant = getDescendantNodes(nodes, id).some((node) => node?.id === currentVisualizedMotion?.id) && !showChildren;
+  const isVisualizedUICondition = currentVisualizedMotion?.id === id || closedAndHasVisualizedDescendant;
 
   const handleClickNode = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -71,6 +54,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
   };
 
   const handleArrowButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setShowChildren(!showChildren);
   };
 
@@ -100,8 +84,8 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
         type={type}
         nodeName={name}
         isSelected={selectedId === id}
-        isOpenVisualized={isOpenVisualized}
-        isCloseVisualized={isCloseVisualized}
+        isVisualizedUICondition={isVisualizedUICondition}
+        isParentSelected={isParentSelected}
         onContextMenu={handleContextMenu}
         onClick={handleClickNode}
         onDragStart={handleDragStart}

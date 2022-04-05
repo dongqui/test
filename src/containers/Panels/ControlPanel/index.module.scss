@@ -1,3 +1,5 @@
+@import "styles/libraries/_colors";
+
 @mixin common-panel {
   display: flex;
   height: auto;
@@ -18,7 +20,7 @@
 }
 
 .mode-select {
-  box-shadow: inset 0 -1px 0 #000;
+  box-shadow: inset 0 -1px 0 $outline;
   padding-left: 4px;
 
   & > button {
