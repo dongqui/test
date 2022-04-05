@@ -12,6 +12,7 @@ import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } fro
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { updateTransform } from 'actions/selectingDataAction';
 
 const cx = classNames.bind(styles);
 
@@ -214,9 +215,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setPositionX(parseFloat(event.target.value));
             controlTarget.position.x = parseFloat(event.target.value);
+            dispatch(updateTransform({ targets: [controlTarget.getPlaskEntity().clone()] }));
           }
         },
-        [controlTarget],
+        [controlTarget, dispatch],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.x : 0), [controlTarget]),
       decimalDigit: 4,
@@ -233,9 +235,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setPositionY(parseFloat(event.target.value));
             controlTarget.position.y = parseFloat(event.target.value);
+            dispatch(updateTransform({ targets: [controlTarget.getPlaskEntity().clone()] }));
           }
         },
-        [controlTarget],
+        [controlTarget, dispatch],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.y : 0), [controlTarget]),
       decimalDigit: 4,
@@ -252,9 +255,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setPositionZ(parseFloat(event.target.value));
             controlTarget.position.z = parseFloat(event.target.value);
+            dispatch(updateTransform({ targets: [controlTarget.getPlaskEntity().clone()] }));
           }
         },
-        [controlTarget],
+        [controlTarget, dispatch],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.z : 0), [controlTarget]),
       decimalDigit: 4,

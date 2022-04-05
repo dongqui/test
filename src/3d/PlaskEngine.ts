@@ -35,7 +35,7 @@ type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
-const FEATURE_HISTORY = false;
+const FEATURE_HISTORY = true;
 
 export class PlaskEngine {
   private _modules: Module[] = [];
