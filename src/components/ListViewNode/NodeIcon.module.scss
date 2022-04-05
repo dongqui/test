@@ -1,3 +1,5 @@
+@import "styles/libraries/_colors";
+
 .icon {
   position: relative;
   display: flex;
@@ -5,14 +7,21 @@
   flex-grow: 0;
   width: 16px;
   height: 24px;
+  color: #fff;
 
-  & > svg {
+  &:not(.selected) {
+    &.visualized {
+      color: $primary;
+    }
+  }
+
+  svg {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     height: 14px;
     margin: auto;
-    color: #fff;
+    color: inherit;
   }
 }

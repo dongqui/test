@@ -49,7 +49,7 @@ const LPBody: FunctionComponent<Props> = () => {
   const rootPathNodes = nodes.filter((node) => node.parentId === '__root__');
 
   return (
-    <div className={cx('inner')} onContextMenu={handleContextMenu} onClickCapture={handleClick} onDrop={handleDrop} data-cy="lp-body">
+    <div className={cx('inner')} onContextMenu={handleContextMenu} onClick={handleClick} onDrop={handleDrop} data-cy="lp-body">
       <div className={cx('onboarding-export-file-target')} id={ONBOARDING_ID.EXPORT_FILE} />
       <div className={cx('onboarding-apply-motion-target')} id={ONBOARDING_ID.APPLY_MOTION} />
       {rootPathNodes.map((node) => (

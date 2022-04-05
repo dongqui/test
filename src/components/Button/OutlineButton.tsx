@@ -6,7 +6,7 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   size?: 'small' | 'medium' | 'large';
-  bolderColor?: 'secondary';
+  bolderColor?: 'default';
   textColor?: 'light';
   text?: string;
   fullSize?: boolean;
@@ -15,7 +15,7 @@ interface BaseProps {
 export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const defaultProps: Partial<BaseProps> = {
-  bolderColor: 'secondary',
+  bolderColor: 'default',
   textColor: 'light',
   size: 'small',
 };
