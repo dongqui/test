@@ -1,9 +1,15 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { AssetContainer, Node, Scene, SceneLoader, SkeletonViewer } from '@babylonjs/core';
-import { GLTF2Export, GLTFData } from '@babylonjs/serializers';
+import { ActionEvent, ActionManager, AssetContainer, Axis, ExecuteCodeAction, Node, Scene, SceneLoader, SkeletonViewer, TransformNode } from '@babylonjs/core';
+import { GLTF2Export } from '@babylonjs/serializers';
 import { convertModel } from 'api';
 import { PlaskScreen } from 'types/common';
+import { addJointSpheres, removeAssetFromScene } from 'utils/RP';
 import { Module } from '../Module';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
+import * as selectingDataActions from 'actions/selectingDataAction';
+import { forceClickAnimationPlayAndStop } from 'utils/common';
+import { Channel } from 'redux-saga';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
 const EXPORT_OPTIONS = {
   shouldExportNode: (node: Node) => {
@@ -54,6 +60,20 @@ export class AssetModule extends Module {
     });
   }
 
+  public clearAssetFromScene(assetId: string) {
+    const targetAsset = this.assetList.find((asset) => asset.id === assetId);
+    const targetJointTransformNodes = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'joint');
+    const targetControllers = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'controller');
+
+    if (targetAsset) {
+      this.screenList
+        .map((screen) => screen.scene)
+        .forEach((scene) => {
+          removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers);
+        });
+    }
+  }
+
   public powerSkeletonViewer(skeletonViewer: SkeletonViewer) {
     skeletonViewer.isEnabled = true;
   }
@@ -66,9 +86,101 @@ export class AssetModule extends Module {
     return await GLTF2Export.GLBAsync(scene, name, EXPORT_OPTIONS);
   }
 
-  public visualizeModel() {}
+  public visualizeModel(assetId: string, clickJointChannel: Channel<unknown>) {
+    const targetAsset = this.assetList.find((asset) => asset.id === assetId);
 
-  public unvisualizeModel() {}
+    if (targetAsset) {
+      const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
+
+      // all scenes(screens) have to contain the same contents
+      // it means that certain model can be 1) not visualized in any scene or 2) visualized in every scene
+      for (const screen of this.screenList) {
+        const { id: screenId, scene } = screen;
+        const targetVisibilityOption = this.visibilityOptions.find((visibilityOption) => visibilityOption.screenId === screenId);
+
+        if (scene.isReady()) {
+          // add joint to each bone and add it to the scene
+          meshes.forEach((mesh) => {
+            mesh.renderingGroupId = 1;
+            scene.addMesh(mesh);
+
+            if (targetVisibilityOption) {
+              mesh.isVisible = targetVisibilityOption.isMeshVisible;
+            }
+          });
+
+          geometries.forEach((geometry) => {
+            scene.addGeometry(geometry);
+          });
+
+          scene.addSkeleton(skeleton);
+
+          // // add joint to each bone and add it to the scene
+          const jointBones = bones.filter(
+            (bone) =>
+              !bone.name.toLowerCase().includes('scene') &&
+              !bone.name.toLowerCase().includes('camera') &&
+              !bone.name.toLowerCase().includes('light') &&
+              !bone.name.toLowerCase().includes('__root__'),
+          );
+          transformNodes.forEach((transformNode) => {
+            scene.addTransformNode(transformNode);
+            // line for using quaternion as default rotation
+            transformNode.rotate(Axis.X, 0);
+          });
+
+          const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as TransformNode[];
+          const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
+            const ptn = new PlaskTransformNode(transformNode);
+            PlaskEngine.GetInstance().registerEntity(ptn);
+            return ptn;
+          });
+          const sphereBoneGroups = addJointSpheres(jointBones, meshes[0], scene, assetId);
+          sphereBoneGroups.forEach(([jointSphere, bone]) => {
+            if (targetVisibilityOption) {
+              jointSphere.isVisible = targetVisibilityOption.isBoneVisible;
+            }
+            if (!jointSphere.actionManager) {
+              jointSphere.actionManager = new ActionManager(scene);
+            }
+            jointSphere.actionManager.registerAction(
+              // register action that enable for user to select transformNode by clicking joint
+              new ExecuteCodeAction(ActionManager.OnPickDownTrigger, (event: ActionEvent) => {
+                const targetTransformNode = bone.getTransformNode();
+                if (targetTransformNode) {
+                  const sourceEvent: PointerEvent = event.sourceEvent;
+                  if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+                    clickJointChannel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() }));
+                  } else {
+                    clickJointChannel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() }));
+                  }
+                }
+              }),
+            );
+          });
+
+          this.plaskEngine.dispatch(plaskProjectActions.renderAsset({ assetId }));
+          this.plaskEngine.dispatch(selectingDataActions.addSelectableObjects({ objects: plaskTransformNodes }));
+        }
+      }
+      forceClickAnimationPlayAndStop();
+    }
+  }
+
+  public unvisualizeModel(assetId: string) {
+    const targetAsset = this.assetList.find((asset) => asset.id === assetId);
+    const targetJointTransformNodes = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'joint');
+    const targetControllers = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'controller');
+    if (targetAsset) {
+      this.screenList
+        .map((screen) => screen.scene)
+        .forEach((scene) => {
+          removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers);
+        });
+    }
+    this.plaskEngine.dispatch(plaskProjectActions.unrenderAsset({ assetId }));
+    this.plaskEngine.dispatch(selectingDataActions.unrenderAsset({ assetId }));
+  }
 
   public initialize() {}
 
@@ -80,5 +192,13 @@ export class AssetModule extends Module {
   }
   public get screenList() {
     return this.plaskEngine.state.plaskProject.screenList;
+  }
+
+  public get selectableObjects() {
+    return this.plaskEngine.state.selectingData.present.selectableObjects;
+  }
+
+  public get visibilityOptions() {
+    return this.plaskEngine.state.screenData.visibilityOptions;
   }
 }

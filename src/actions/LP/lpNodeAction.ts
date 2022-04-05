@@ -46,12 +46,14 @@ interface DeleteMotionParams {
   nodeId: string;
   assetId: string;
   parentId: string;
+  plaskEngine: PlaskEngine;
 }
 
 interface DeleteModelParams {
   nodeId: string;
   assetId: string;
   parentId?: string;
+  plaskEngine: PlaskEngine;
 }
 interface AddEmptyMotionParams {
   nodeId: string;
@@ -61,6 +63,11 @@ interface AddDirectoryParams {
   nodeId: string;
   filePath: string;
   extension: string;
+}
+
+interface VisualizeNodeParams {
+  assetId: string;
+  plaskEngine: PlaskEngine;
 }
 interface DuplicateMotionParams {
   parentId: string;
@@ -72,6 +79,12 @@ interface VisualizeMotionParams {
   parentId: string;
   assetId?: string;
   nodeId: string;
+  plaskEngine: PlaskEngine;
+}
+
+interface CancelVisualizationParams {
+  assetId: string;
+  plaskEngine: PlaskEngine;
 }
 
 interface SelectNodeParams {
@@ -88,6 +101,7 @@ interface DropMocapOnModelParams {
   nodeId: string;
   filePath: string;
   assetId?: string;
+  plaskEngine: PlaskEngine;
 }
 
 interface EditNodeNameParams {
@@ -158,17 +172,17 @@ export const addDirectory = (params: AddDirectoryParams) => ({
   },
 });
 
-export const visualizeNode = (assetId: string) => ({
+export const visualizeNode = (params: VisualizeNodeParams) => ({
   type: VISUALIZE_NODE,
   payload: {
-    assetId,
+    ...params,
   },
 });
 
-export const cancelVisulization = (assetId: string) => ({
+export const cancelVisulization = (params: CancelVisualizationParams) => ({
   type: CANCEL_VISUALIZATION,
   payload: {
-    assetId,
+    ...params,
   },
 });
 

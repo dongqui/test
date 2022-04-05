@@ -13,17 +13,14 @@ import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as cpActions from 'actions/CP/cpModeSelection';
 import * as globalUIActions from 'actions/Common/globalUI';
-import { PlaskBvhMap } from 'types/common';
 import * as TEXT from 'constants/Text';
-import { convertModel } from 'api';
-import fileUpload from './fileUpload';
 
 export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
   const { lpNode, plaskProject, animationData }: RootState = yield select();
   const { draggedNode, nodes } = lpNode;
   const { assetList } = plaskProject;
   const { retargetMaps } = animationData;
-  const { nodeId, filePath, assetId } = action.payload;
+  const { nodeId, filePath, assetId, plaskEngine } = action.payload;
 
   const draggedNodeClone = cloneDeep(draggedNode);
   /**
@@ -46,7 +43,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         message: TEXT.CONFIRM_04,
         onConfirm: function* () {
           if (assetId) {
-            yield put(lpNodeActions.visualizeNode(assetId));
+            yield put(lpNodeActions.visualizeNode({ assetId, plaskEngine }));
             yield put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },
@@ -121,7 +118,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
 
         if (dropNode.assetId) {
           yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
-          yield put(lpNodeActions.visualizeNode(dropNode.assetId));
+          yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine }));
         }
 
         return;
@@ -196,7 +193,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
 
       if (dropNode.assetId) {
         yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
-        yield put(lpNodeActions.visualizeNode(dropNode.assetId));
+        yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine }));
         forceClickAnimationPlayAndStop();
       }
     } catch (error) {
@@ -220,7 +217,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         cancelText: 'Cancel',
         onConfirm: function* () {
           if (dropNode?.assetId) {
-            yield put(lpNodeActions.visualizeNode(dropNode.assetId));
+            yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine }));
             yield put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },

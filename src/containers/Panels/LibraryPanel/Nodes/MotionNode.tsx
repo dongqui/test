@@ -4,6 +4,8 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
 import { isDroppedOnRP } from 'utils/LP/FileSystem';
+import { useContext } from 'react';
+import { BabylonContext } from 'contexts/RP/BabylonContext';
 interface Props {
   node: LP.Node;
 }
@@ -11,6 +13,7 @@ interface Props {
 const MotionNode = ({ node }: Props) => {
   const { id, assetId, name, parentId, type } = node;
   const dispatch = useDispatch();
+  const { plaskEngine } = useContext(BabylonContext);
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!assetId) {
@@ -39,6 +42,7 @@ const MotionNode = ({ node }: Props) => {
         nodeId: id,
         parentId,
         assetId,
+        plaskEngine,
       }),
     );
   };
