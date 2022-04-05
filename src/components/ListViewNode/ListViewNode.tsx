@@ -16,8 +16,7 @@ interface Props {
   type: LP.NodeType;
   nodeName: string;
   isSelected: boolean;
-  isOpenVisualized?: boolean;
-  isCloseVisualized?: boolean;
+  isVisualizedUICondition: boolean;
   isEditing: boolean;
   isParentSelected: boolean;
   showChildren?: boolean;
@@ -40,8 +39,7 @@ const ListViewNode = ({
   onContextMenu,
   childNodeIds,
   nodeName,
-  isOpenVisualized = false,
-  isCloseVisualized = false,
+  isVisualizedUICondition,
   isEditing,
   isSelected,
   isParentSelected,
@@ -56,10 +54,7 @@ const ListViewNode = ({
   extension,
   dataCy,
 }: Props) => {
-  console.log(isParentSelected);
   const classes = cx('inner', {
-    'open-visualized': isOpenVisualized,
-    'close-visualized': isCloseVisualized,
     selected: isSelected,
     'parent-selected': isParentSelected,
   });
@@ -72,7 +67,7 @@ const ListViewNode = ({
             <div className={cx('column')} />
             <ArrowButton isOpen={showChildren} hidden={type === 'Motion' || type === 'Mocap'} onArrowButtonClick={onArrowButtonClick} />
             <div className={cx('contents')}>
-              <NodeIcon icon={type} />
+              <NodeIcon icon={type} isVisualizedUICondition={isVisualizedUICondition} isSelected={isSelected} />
               <div className={cx('column')} />
               <NodeName isEditing={isEditing} name={nodeName} onEditName={onEditName} onCancelEdit={onCancelEdit} extension={extension} />
             </div>
