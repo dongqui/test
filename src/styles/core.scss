@@ -4,14 +4,40 @@
 @import "styles/timeline/_curve";
 
 :root {
-  --gray100: #121313;
-  --gray200: #202122;
-  --gray300: #353739;
-  --gray400: #4f4f4f;
-  --gray500: #7a7a7b;
-  --gray600: #d3d3d3;
-  --gray700: #f4f4f4;
-  --gray800: #fff;
+  --black: #000;
+  --grey010: #181a1b;
+  --grey012: #1d1f20;
+  --grey016: #27292b;
+  --grey020: #303336;
+  --grey030: #494d50;
+  --grey040: #61666b;
+  --grey050: #798086;
+  --grey060: #94999e;
+  --grey070: #afb2b6;
+  --grey080: #c9cccf;
+  --grey090: #e4e5e7;
+  --white: #fff;
+  --blue016: #1F2933;
+  --blue055: #258CF4;
+  --orange055: #F47F25;
+  --red055: #D74247;
+  --green045: #34B273;
+  --blue055-opacity01: rgba(37, 140, 244, 0.1);
+  --grey060-opacity01: rgba(148, 153, 158, 0.1);
+  --grey060-opacity02: rgba(148, 153, 158, 0.2);
+  --red055-opacity01: rgba(215, 66, 71, 0.1);
+  --green045-opacity01: rgba(52, 178, 115, 0.1);
+
+
+  // old
+  --grey100: #121313;
+  --grey200: #202122;
+  --grey300: #353739;
+  --grey400: #4f4f4f;
+  --grey500: #7a7a7b;
+  --grey600: #d3d3d3;
+  --grey700: #f4f4f4;
+  --grey800: #fff;
   --blue100: #1d364e;
   --blue200: #0f88ff;
   --blue300: #3fa0ff;
@@ -29,6 +55,18 @@
   --pastel-teal: #61e4ed;
   --pastel-purple: #d687f4;
   --pastel-pink: #ff8cc9;
+  --font-size-1: 0.9rem;
+  --font-size-2: 1rem;
+  --font-size-3: 1.1rem;
+  --font-size-4: 1.2rem;
+  --font-size-5: 1.4rem;
+  --font-size-6: 1.6rem;
+  --font-size-7: 1.8rem;
+  --font-size-8: 2.4rem;
+  --font-size-9: 3.6rem;
+  --font-size-10: 4.8rem;
+  --font-size-11: 6.4rem;
+  --font-size-12: 7.2rem;
 }
 
 *,
@@ -45,6 +83,7 @@
 html {
   width: 100%;
   height: 100%;
+  font-size: 10px;
 }
 
 body,

@@ -1,5 +1,5 @@
 @import "styles/libraries/_mixins";
-
+@import "styles/libraries/_colors";
 @import "styles/libraries/_functions";
 
 .menu-item {
@@ -8,6 +8,7 @@
   cursor: pointer;
   border-radius: 6px;
   margin-bottom: 4px;
+  color: $content-active;
 
   &:last-child {
     margin: 0;
@@ -16,18 +17,18 @@
   &,
   a {
     font-size: 11px;
-    color: var(--gray600);
+    color: $content-active;
     text-decoration: none;
   }
 
   &:not(.disabled) {
     &:hover {
-      background-color: var(--blue200);
+      background-color: $primary;
     }
   }
 
   &.disabled {
-    color: var(--gray500);
+    color: $content-inactive;
   }
 
   &.disabled:hover {
