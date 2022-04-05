@@ -1,5 +1,5 @@
+@import "styles/libraries/_typography";
 @import "styles/libraries/_colors";
-
 @mixin common-panel {
   display: flex;
   height: auto;
@@ -29,8 +29,7 @@
     cursor: pointer;
     color: #7a7a7b;
     margin: 8px;
-    font-size: 12px;
-    font-weight: 700;
+    font: $header-title;
     line-height: 15px;
 
     &.active {
