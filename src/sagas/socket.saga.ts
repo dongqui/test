@@ -1,3 +1,4 @@
+import { editNodeNameSocket } from './../actions/LP/lpNodeAction';
 import { eventChannel, EventChannel } from 'redux-saga';
 import { call, fork, put, take, takeLatest, ChannelTakeEffect, all } from 'redux-saga/effects';
 import { io, Socket } from 'socket.io-client';
@@ -58,10 +59,8 @@ function createEventChannel(socket: Socket) {
           emit(lpActions.moveNodeSocket.receive(payload));
           break;
         }
-        case 'update': {
-          // emit(receiveFoo(payload));
-          break;
-        }
+        case 'update-name':
+          emit(lpActions.editNodeNameSocket.receive(payload));
       }
     };
 

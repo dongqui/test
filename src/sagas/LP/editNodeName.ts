@@ -86,7 +86,7 @@ export function* handleEditNodeNameRequest(action: ReturnType<typeof lpNodeActio
   } else {
     yield put(
       lpNodeActions.editNodeNameSocket.send({
-        type: 'update',
+        type: 'update-name',
         scenesLibraryId: nodeId,
         data: {
           name: newName,
@@ -101,6 +101,7 @@ export function* handleEditNodeNameRequest(action: ReturnType<typeof lpNodeActio
 export function* handleEditNodeNameReceive(action: ReturnType<typeof lpNodeActions.editNodeNameSocket.receive>) {
   const { lpNode, animationData }: RootState = yield select();
   const { scenesLibraryId, data } = action.payload;
+
   const targetNode = _.find(lpNode.nodes, { id: scenesLibraryId });
   if (!targetNode) {
     return;
