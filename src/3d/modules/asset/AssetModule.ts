@@ -11,6 +11,9 @@ import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { Channel } from 'redux-saga';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
+/**
+ * Options used to export scene to a .glb format file.
+ */
 const EXPORT_OPTIONS = {
   shouldExportNode: (node: Node) => {
     return !node.name.includes('joint') && !node.name.includes('ground') && !node.name.includes('scene') && !node.id.includes('joint');
@@ -22,6 +25,9 @@ export class AssetModule extends Module {
     super(plaskEngine);
   }
 
+  /**
+   * Load the given file(.glb or .fbx) and return AssetContainer in Promise.
+   */
   public async getAssetContainer(file: File | string, extension: string, baseScene: Scene): Promise<AssetContainer | undefined> {
     if (extension === 'fbx' && file instanceof File) {
       const fileUrl: string = await convertModel(file, 'glb');
@@ -33,6 +39,9 @@ export class AssetModule extends Module {
     }
   }
 
+  /**
+   * Preprocess objects in assetContaienr including updating objects' ids.
+   */
   public preprocessAssetContainerData(assetId: string, assetContainer: AssetContainer) {
     const { meshes, skeletons, transformNodes } = assetContainer;
     meshes.forEach((mesh) => {
@@ -49,6 +58,9 @@ export class AssetModule extends Module {
     });
   }
 
+  /**
+   * Stop all animationGroups in the project and clear them.
+   */
   //TODO: should improve logic
   public clearAnimationGroups(screens: PlaskScreen[]) {
     screens.forEach(({ scene }) => {
@@ -60,6 +72,9 @@ export class AssetModule extends Module {
     });
   }
 
+  /**
+   * Clear a asset and its helper objects from all the scenes.
+   */
   public clearAssetFromScene(assetId: string) {
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);
     const targetJointTransformNodes = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'joint');
@@ -74,18 +89,36 @@ export class AssetModule extends Module {
     }
   }
 
-  public powerSkeletonViewer(skeletonViewer: SkeletonViewer) {
-    skeletonViewer.isEnabled = true;
+  /**
+   * Turn skeletonViewer on in all screens.
+   */
+  public powerSkeletonViewer(screenId: string) {
+    const targetSkeletonViewer = this.plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === screenId);
+    if (targetSkeletonViewer) {
+      targetSkeletonViewer.skeletonViewer.isEnabled = true;
+    }
   }
 
-  public unPowerSkeletonViewer(skeletonViewer: SkeletonViewer) {
-    skeletonViewer.isEnabled = false;
+  /**
+   * Turn skeletonViewer off in all screens.
+   */
+  public unpowerSkeletonViewer(screenId: string) {
+    const targetSkeletonViewer = this.plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === screenId);
+    if (targetSkeletonViewer) {
+      targetSkeletonViewer.skeletonViewer.isEnabled = false;
+    }
   }
 
+  /**
+   * Export the given scene to a .glb format file.
+   */
   public async sceneToGlb(scene: Scene, name: string) {
     return await GLTF2Export.GLBAsync(scene, name, EXPORT_OPTIONS);
   }
 
+  /**
+   * Visualize a model from all the screens.
+   */
   public visualizeModel(assetId: string, clickJointChannel: Channel<unknown>) {
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);
 
@@ -167,6 +200,9 @@ export class AssetModule extends Module {
     }
   }
 
+  /**
+   * Unvisualize a model from all the screens.
+   */
   public unvisualizeModel(assetId: string) {
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);
     const targetJointTransformNodes = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'joint');
@@ -200,5 +236,9 @@ export class AssetModule extends Module {
 
   public get visibilityOptions() {
     return this.plaskEngine.state.screenData.visibilityOptions;
+  }
+
+  public get plaskSkeletonViewers() {
+    return this.plaskEngine.state.screenData.plaskSkeletonViewers;
   }
 }
