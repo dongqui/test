@@ -37,10 +37,7 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
       });
     }
 
-    const targetSkeletonViewer = plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === baseScreen.id);
-    if (targetSkeletonViewer) {
-      plaskEngine.assetModule.unPowerSkeletonViewer(targetSkeletonViewer.skeletonViewer);
-    }
+    plaskEngine.assetModule.unpowerSkeletonViewer(baseScreen.id);
 
     const parentAsset = find(nodes, { id: parentId });
 
@@ -106,17 +103,12 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
     }
 
     yield put(globalUIActions.closeModal('LoadingModal'));
-    if (targetSkeletonViewer) {
-      const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === baseScreen.id);
-      if (targetVisibilityOption) {
-        if (targetVisibilityOption.isBoneVisible) {
-          plaskEngine.assetModule.powerSkeletonViewer(targetSkeletonViewer.skeletonViewer);
-        } else {
-          plaskEngine.assetModule.unPowerSkeletonViewer(targetSkeletonViewer.skeletonViewer);
-        }
-      } else {
-        plaskEngine.assetModule.powerSkeletonViewer(targetSkeletonViewer.skeletonViewer);
-      }
+
+    const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === baseScreen.id);
+    if (targetVisibilityOption && !targetVisibilityOption.isBoneVisible) {
+      plaskEngine.assetModule.unpowerSkeletonViewer(baseScreen.id);
+    } else {
+      plaskEngine.assetModule.powerSkeletonViewer(baseScreen.id);
     }
   }
 
