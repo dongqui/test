@@ -24,7 +24,9 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
     let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
     if (visualizedAssetIds.includes(assetId)) {
       // if target model is already visualized, include its controllers
-      targets = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature')).map((object) => object.reference);
+      targets = selectableObjects
+        .filter((object) => object.id.split('//')[0] === assetId && !object.reference.name.toLowerCase().includes('armature'))
+        .map((object) => object.reference);
     } else {
       // if target model is not visualized yet, include only transformNodes
       targets = animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);

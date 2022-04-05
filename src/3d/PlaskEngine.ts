@@ -29,6 +29,8 @@ import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
+import { EntityStore, PlaskSpec } from './entities/EntityStore';
+import { updateTransform } from 'actions/selectingDataAction';
 import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 
 type VisibilityOptions = {
@@ -46,7 +48,6 @@ export class PlaskEngine {
   private _camera!: ArcRotateCamera;
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
-  private _entities: { [id: string]: PlaskEntity } = {};
 
   public dispatch!: Dispatch<any>;
 
@@ -88,6 +89,8 @@ export class PlaskEngine {
   public visibilityLayers!: VisibilityLayersModule;
   public ikModule!: IKModule;
 
+  private _entityStore!: EntityStore;
+
   constructor() {
     // allow animation interpolation using matrix
     Animation.AllowMatricesInterpolation = true;
@@ -100,6 +103,7 @@ export class PlaskEngine {
     this._canvas = canvas;
     this._engine = new Engine(canvas);
     this._scene = new Scene(this._engine);
+    this._entityStore = new EntityStore(this._scene);
     this._onSceneReady();
     this._registerObservables();
     this.dispatch = dispatch;
@@ -120,14 +124,14 @@ export class PlaskEngine {
    * @param state
    * @param previousState
    */
-  public onStateChanged(action: any, state: any, previousState: any) {
+  public onStateChanged(action: any, state: RootState, previousState: RootState) {
     this.state = state;
 
     for (const module of this._modules) {
       for (const stateKey of module.reduxObservedStates) {
         const path = stateKey.split('.');
-        let nestedState = state;
-        let previousNestedState = previousState;
+        let nestedState = state as any;
+        let previousNestedState = previousState as any;
         try {
           for (const field of path) {
             nestedState = nestedState[field];
@@ -143,65 +147,20 @@ export class PlaskEngine {
         }
       }
     }
+
+    // Entities update
+    for (const entityId in this.state.selectingData.present.allEntitiesMap) {
+      if (this.state.selectingData.present.allEntitiesMap[entityId] !== previousState.selectingData.present.allEntitiesMap[entityId]) {
+        // Entity is dirty
+        this._entityStore.registerEntity(this.state.selectingData.present.allEntitiesMap[entityId]);
+      }
+    }
   }
 
   /**
    * Redux state
    */
   public state!: RootState;
-
-  /**
-   * Main function to associate serialized entities to references on the 3D scene
-   * @param entity
-   */
-  public getReference(entity: PlaskEntity) {
-    let reference: any = null;
-    switch (entity.name) {
-      case 'TransformNode':
-        const typedEntity = entity as PlaskTransformNode;
-        if (typedEntity.type === 'joint') {
-          reference = this.scene.getTransformNodeById(typedEntity.id);
-        } else if (typedEntity.type === 'controller') {
-          reference = this.scene.getMeshById(typedEntity.id);
-        }
-        break;
-      default:
-        break;
-    }
-    return reference;
-  }
-
-  /**
-   * Gets an entity by its id
-   * @param id
-   * @returns
-   */
-  public getEntity(id: string): PlaskEntity {
-    if (!this._entities[id]) {
-      throw new Error('Cannot find entity');
-    }
-
-    return this._entities[id];
-  }
-
-  public getEntitiesByPredicate(predicate: (entity: PlaskEntity) => boolean): PlaskEntity[] {
-    const result = [];
-    for (const entityId in this._entities) {
-      if (predicate(this._entities[entityId])) {
-        result.push(this._entities[entityId]);
-      }
-    }
-
-    return result;
-  }
-
-  public registerEntity(entity: PlaskEntity) {
-    this._entities[entity.entityId] = entity;
-  }
-
-  public get currentScreenId() {
-    return this.state.plaskProject.screenList[0].id;
-  }
 
   public resize() {
     this._engine.resize();
@@ -218,6 +177,40 @@ export class PlaskEngine {
     }
   }
 
+  /**
+   * Entity accessors
+   */
+
+  /**
+   * Registers an entity
+   * @param entity
+   */
+  public registerEntity(entity: PlaskEntity) {
+    this._entityStore.registerEntity(entity);
+  }
+
+  /**
+   * Retrieves an entity with its entity id
+   * @param entityId
+   * @returns
+   */
+  public getEntity(entityId: string): PlaskEntity {
+    return this._entityStore.getEntity(entityId);
+  }
+
+  /**
+   * Retrieves entities that make the predicate truthy
+   * @param predicate
+   * @returns
+   */
+  public getEntitiesByPredicate(predicate: (entity: PlaskEntity) => boolean): PlaskEntity[] {
+    return this._entityStore.getEntitiesByPredicate(predicate);
+  }
+
+  public get currentScreenId() {
+    return this.state.plaskProject.screenList[0].id;
+  }
+
   // TODO : MOVE TO REACT PART
   public undo() {
     if (FEATURE_HISTORY) {
@@ -229,6 +222,16 @@ export class PlaskEngine {
     if (FEATURE_HISTORY) {
       this.dispatch(ActionCreators.redo());
     }
+  }
+
+  public save() {
+    return JSON.stringify(this._entityStore.serializeAll());
+  }
+
+  public load(json: string) {
+    this._entityStore.unserializeAll(JSON.parse(json) as PlaskSpec);
+    // TODO : update entity action
+    // this.dispatch(updateTransform({ targets: this._entityStore.entities }))
   }
 
   public clearHistory() {

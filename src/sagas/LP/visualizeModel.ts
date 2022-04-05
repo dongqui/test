@@ -76,6 +76,12 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
                 !bone.name.toLowerCase().includes('light') &&
                 !bone.name.toLowerCase().includes('__root__'),
             );
+            transformNodes.forEach((transformNode) => {
+              scene.addTransformNode(transformNode);
+              // line for using quaternion as default rotation
+              transformNode.rotate(BABYLON.Axis.X, 0);
+            });
+
             const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as BABYLON.TransformNode[];
             const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
               const ptn = new PlaskTransformNode(transformNode);
@@ -104,11 +110,6 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
                   }
                 }),
               );
-            });
-            transformNodes.forEach((transformNode) => {
-              scene.addTransformNode(transformNode);
-              // line for using quaternion as default rotation
-              transformNode.rotate(BABYLON.Axis.X, 0);
             });
 
             yield put(plaskProjectActions.renderAsset({ assetId }));

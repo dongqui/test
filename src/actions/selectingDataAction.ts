@@ -27,7 +27,7 @@ const CTRL_KEY_MULTI_SELECT = 'selectingDataAction/CTRL_KEY_MULTI_SELECT' as con
 
 const SELECT_ALL_SELECTABLE_OBJECTS = 'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS' as const;
 const RESET_SELECTED_TARGETS = 'selectingDataAction/RESET_SELECTED_TARGETS' as const;
-const UPDATE_TRANSFORM = 'selectingDataAction/UPDATE_TRANSFORM' as const;
+const UPDATE_TRANSFORM = 'selectingDataAction/UPDATE_ENTITY' as const;
 
 interface AddSelectableObjects {
   objects: Array<PlaskTransformNode>;
