@@ -19,7 +19,6 @@ interface Props {
 }
 
 const Authentication = ({ statusCode, message }: Props) => {
-  console.log(statusCode, message);
   const isRedirectSignin = statusCode === 401.1 || statusCode === 401.2;
 
   if (isRedirectSignin) {
