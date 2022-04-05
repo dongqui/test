@@ -19,6 +19,7 @@ interface Props {
   isOpenVisualized?: boolean;
   isCloseVisualized?: boolean;
   isEditing: boolean;
+  isParentSelected: boolean;
   showChildren?: boolean;
   extension?: string;
   childNodeIds: string[];
@@ -43,6 +44,7 @@ const ListViewNode = ({
   isCloseVisualized = false,
   isEditing,
   isSelected,
+  isParentSelected,
   onClick,
   onArrowButtonClick,
   showChildren = false,
@@ -54,10 +56,12 @@ const ListViewNode = ({
   extension,
   dataCy,
 }: Props) => {
+  console.log(isParentSelected);
   const classes = cx('inner', {
     'open-visualized': isOpenVisualized,
     'close-visualized': isCloseVisualized,
     selected: isSelected,
+    'parent-selected': isParentSelected,
   });
 
   return (

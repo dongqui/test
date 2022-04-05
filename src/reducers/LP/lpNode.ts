@@ -1,4 +1,5 @@
 import { LPNodeAction } from 'actions/LP/lpNodeAction';
+import { getDescendantNodes } from 'utils/LP/FileSystem';
 interface State {
   nodes: LP.Node[];
   visualizedfileUrl: string | File;
@@ -6,6 +7,7 @@ interface State {
   currentPathId: string;
   clipboard: LP.Node[];
   selectedId: string | null;
+  selectedNodeDescendants: LP.Node[];
   selectedAssetId: string | null;
   draggedNode: LP.Node | null;
   editingNodeId: null | string;
@@ -18,6 +20,7 @@ const defaultState: State = {
   currentPathId: '\\root',
   clipboard: [],
   selectedId: null,
+  selectedNodeDescendants: [],
   selectedAssetId: null,
   draggedNode: null,
   editingNodeId: null,
@@ -50,6 +53,7 @@ export const lpNode = (state = defaultState, action: LPNodeAction) => {
       return Object.assign({}, state, {
         selectedId: action.payload.nodeId,
         selectedAssetId: action.payload.assetId,
+        selectedNodeDescendants: getDescendantNodes(state.nodes, action.payload.nodeId || ''),
       });
     }
     case 'node/SET_DRAGGED_NODE': {

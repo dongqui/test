@@ -21,12 +21,13 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
   const dispatch = useDispatch();
   const [showChildren, setShowChildren] = useState(false);
 
-  const { selectedId, nodes, editingNodeId, draggedNode } = useSelector((state) => state.lpNode);
+  const { selectedId, nodes, editingNodeId, draggedNode, selectedNodeDescendants } = useSelector((state) => state.lpNode);
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
   const { animationIngredients } = useSelector((state) => state.animationData);
 
   const isEditing = editingNodeId === id;
   const depth = getFilePathDepth(nodes, node);
+  const isParentSelected = selectedNodeDescendants.some((node) => id === node.id);
   // -- 개선? --
   const currentVisualizedNode = nodes.find((node) => visualizedAssetIds.includes(node.assetId || ''));
   const currentVisualizedMotion = animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current);
@@ -102,6 +103,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
         isSelected={selectedId === id}
         isOpenVisualized={isOpenVisualized}
         isCloseVisualized={isCloseVisualized}
+        isParentSelected={isParentSelected}
         onContextMenu={handleContextMenu}
         onClick={handleClickNode}
         onDragStart={handleDragStart}
