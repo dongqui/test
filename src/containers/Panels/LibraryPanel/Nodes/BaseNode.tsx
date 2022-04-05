@@ -72,6 +72,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
   };
 
   const handleArrowButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setShowChildren(!showChildren);
   };
 
