@@ -1,13 +1,25 @@
 import { GetServerSideProps } from 'next';
 import dynamic from 'next/dynamic';
 import requestApi from 'api/requestApi';
-import { redirect } from 'utils/system';
 
 const DynamicWithNoSSR = dynamic(() => import('containers/index'), { ssr: false });
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { query } = context;
   const { token, sceneUid } = query;
+
+  /**
+   * Disable the homepage authentication API for the convenience of development when access the app
+   */
+  if (process.env.NODE_ENV !== 'production') {
+    return {
+      props: {
+        loaded: true,
+        data: [],
+        error: false,
+      },
+    };
+  }
 
   /**
    * Possible error cases when accessing the app from the homepage
