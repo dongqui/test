@@ -143,7 +143,7 @@ const UpperBar: FunctionComponent<Props> = ({
         </Dropdown>
       </div>
       <div className={cx('right-upper')}>
-        <IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />
+        {/*<IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />*/}
         <ChangeModeButton onSwitchAnimationMode={handleSwitchAnimationMode} onSwitchVideoMode={handleSwitchVideoMode} />
         {standbyState && <div className={cx('segment-disable')} />}
         {mode === 'videoMode' && !recording && !recordOverTwice && (
