@@ -82,7 +82,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
     handleChangeCamera,
     stopStream,
   } = useMediaStream({
-    ref: videoRef,
+    videoRef: videoRef,
     start: start,
     end: end,
     canvasRef: canvasRef,
@@ -137,20 +137,24 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
   const handleTimeline = useCallback(
     (e) => {
-      videoRef.current!.currentTime = e.target.value;
-      if (e.target.value < start) {
-        videoRef.current!.currentTime = start;
-      } else if (e.target.value > end) {
-        videoRef.current!.currentTime = end;
+      if (videoRef.current) {
+        videoRef.current.currentTime = e.target.value;
+        if (e.target.value < start) {
+          videoRef.current.currentTime = start;
+        } else if (e.target.value > end) {
+          videoRef.current.currentTime = end;
+        }
       }
     },
-    [start, end],
+    [start, end, videoRef],
   );
 
   const handleCurrentTime = useCallback(() => {
-    setCurrentVideoTime(videoRef.current!.currentTime);
-    setIndicatorPosition((videoRef.current!.currentTime / videoRef.current!.duration) * 100);
-  }, []);
+    if (videoRef.current) {
+      setCurrentVideoTime(videoRef.current.currentTime);
+      setIndicatorPosition((videoRef.current.currentTime / videoRef.current.duration) * 100);
+    }
+  }, [videoRef]);
 
   const convertBlobToFile = useCallback(async ({ url, type, fileName }) => {
     const response = await fetch(url);
@@ -283,45 +287,47 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
   const handleDeleteRecord = useCallback(
     (e) => {
-      if (videoRef.current!.src) {
+      if (videoRef.current && videoRef.current.src) {
         setTurnStandbyPhase(true);
       } else {
         startRecordingDelay();
       }
     },
-    [startRecordingDelay, stopRecording],
+    [startRecordingDelay, stopRecording, videoRef],
   );
 
   // 단축키 이벤트의 연속발생을 위한 keydown 이벤트(버튼을 누르고 있다면 연속으로 프레임이 넘어가야함)
   const handleHotkeys = useCallback(
     (e: KeyboardEvent) => {
-      const currentTime = videoRef.current!.currentTime;
+      if (videoRef.current) {
+        const currentTime = videoRef.current.currentTime;
 
-      if (!videoRef.current!.src) {
-        return;
-      }
-      if (!turnStandbyPhase && !readyExtract && !onExtract) {
-        if (e.key === 's') {
-          if (currentTime >= end) {
-            return;
-          } else if (currentTime <= end && currentTime > end - 0.1) {
-            videoRef.current!.currentTime = end;
-          } else if (currentTime < end) {
-            videoRef.current!.currentTime += 0.1;
-          }
-        } else if (e.key === 'a') {
-          if (currentTime <= start) {
-            return;
-          } else if (currentTime >= start && currentTime < start + 0.1) {
-            videoRef.current!.currentTime = start;
-          } else if (currentTime > start) {
-            videoRef.current!.currentTime -= 0.1;
-          }
-        } else if (e.key === ' ') {
-          if (videoRef.current!.paused) {
-            playRecording();
-          } else {
-            pauseRecording();
+        if (!videoRef.current.src) {
+          return;
+        }
+        if (!turnStandbyPhase && !readyExtract && !onExtract) {
+          if (e.key === 's') {
+            if (currentTime >= end) {
+              return;
+            } else if (currentTime <= end && currentTime > end - 0.1) {
+              videoRef.current.currentTime = end;
+            } else if (currentTime < end) {
+              videoRef.current.currentTime += 0.1;
+            }
+          } else if (e.key === 'a') {
+            if (currentTime <= start) {
+              return;
+            } else if (currentTime >= start && currentTime < start + 0.1) {
+              videoRef.current.currentTime = start;
+            } else if (currentTime > start) {
+              videoRef.current.currentTime -= 0.1;
+            }
+          } else if (e.key === ' ') {
+            if (videoRef.current.paused) {
+              playRecording();
+            } else {
+              pauseRecording();
+            }
           }
         }
       }
@@ -334,16 +340,18 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       // e.preventDefault();
       if (isIndicatorClicked) {
         setIndicatorPosition(indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100);
-        if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100 < start) {
-          videoRef.current!.currentTime = start;
-        } else if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100 > end) {
-          videoRef.current!.currentTime = end;
-        } else {
-          videoRef.current!.currentTime = ((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100;
+        if (videoRef.current) {
+          if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current.duration) / 100 < start) {
+            videoRef.current.currentTime = start;
+          } else if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current.duration) / 100 > end) {
+            videoRef.current.currentTime = end;
+          } else {
+            videoRef.current.currentTime = ((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current.duration) / 100;
+          }
         }
       }
     },
-    [prevX, isIndicatorClicked],
+    [prevX, isIndicatorClicked, videoRef],
   );
 
   const handleMouseUp = useCallback((e) => {
@@ -402,17 +410,17 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   // LP에서 비디오가 넘어올 경우를 위한 분기
   useEffect(() => {
     if (videoURL) {
-      videoRef.current!.src = videoURL;
+      if (videoRef.current) videoRef.current.src = videoURL;
       handleMetaData();
       setRecordOverTwice(true);
     }
-  }, []);
+  }, [videoRef]);
 
   useEffect(() => {
-    if (currentVideoTime >= end - 0.25 && recordState && playState) {
-      videoRef.current!.currentTime = start;
+    if (currentVideoTime >= end - 0.25 && recordState && playState && videoRef.current) {
+      videoRef.current.currentTime = start;
     }
-  }, [currentVideoTime, end]);
+  }, [currentVideoTime, end, videoRef]);
 
   const playBox = [
     { id: 'startRecording', icon: SvgPath.VideoRecord, fn: stopRecording },
@@ -448,7 +456,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         <canvas className={cx('thumbnail-canvas')} ref={canvasRef} />
         <video
           ref={videoRef}
-          className={cx('video', { mirror: videoRef.current && !videoRef.current!.src })}
+          className={cx('video', { mirror: videoRef.current && !videoRef.current.src })}
           {...videoOptions}
           onTimeUpdate={handleCurrentTime}
           onEnded={handleVideoEnd}
@@ -519,7 +527,11 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <div
             className={cx('thumbnail-wrap')}
             onMouseUp={handleMouseUp}
-            onMouseMove={(e) => handleMouseMove(e, thumbnailWrapRef.current!.getBoundingClientRect().width - 32)}
+            onMouseMove={(e) => {
+              if (thumbnailWrapRef.current) {
+                handleMouseMove(e, thumbnailWrapRef.current.getBoundingClientRect().width - 32);
+              }
+            }}
             ref={thumbnailWrapRef}
           >
             <CropSlider
@@ -567,8 +579,8 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                   end: end,
                   startTime: start,
                   endTime: end,
-                  url: videoRef.current!.src,
-                  duration: videoRef.current!.duration,
+                  url: videoRef.current && videoRef.current.src,
+                  duration: videoRef.current && videoRef.current.duration,
                 })
               }
             />
@@ -590,8 +602,10 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               onClick={() => {
                 startRecordingDelay();
                 setTurnStandbyPhase(false);
-                URL.revokeObjectURL(videoRef.current!.src);
-                videoRef.current!.removeAttribute('src');
+                if (videoRef.current) {
+                  URL.revokeObjectURL(videoRef.current.src);
+                  videoRef.current.removeAttribute('src');
+                }
               }}
             />
           </div>

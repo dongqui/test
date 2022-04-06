@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'reducers';
 
 interface Props {
-  ref: RefObject<HTMLVideoElement>;
+  videoRef: RefObject<HTMLVideoElement>;
   canvasRef: RefObject<HTMLCanvasElement>;
   recording: boolean;
   currentDeviceId: string;
@@ -28,7 +28,7 @@ interface Props {
 
 const useMediaStream = (props: Props) => {
   const {
-    ref,
+    videoRef,
     canvasRef,
     recording,
     currentDeviceId,
@@ -66,40 +66,40 @@ const useMediaStream = (props: Props) => {
   const mediaStreamInitialize = useCallback(
     async (constraint = { video: true }) => {
       await navigator.mediaDevices.getUserMedia(constraint).then((stream) => {
-        ref.current!.srcObject = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
         setCurrentStream(stream);
       });
 
       await handleCameraList();
     },
-    [ref, handleCameraList],
+    [videoRef, handleCameraList],
   );
 
   const stopStream = useCallback(() => {
-    if (currentStream && ref.current && ref.current.srcObject) {
+    if (currentStream && videoRef.current && videoRef.current.srcObject) {
       const tracks = currentStream.getTracks();
-      const stream = ref.current.srcObject as MediaStream;
+      const stream = videoRef.current.srcObject as MediaStream;
       const tracks2 = stream.getTracks();
 
       tracks.forEach((track) => track.stop());
       tracks2.forEach((track: any) => {
         track.stop();
       });
-      ref.current.srcObject = null;
+      videoRef.current.srcObject = null;
     }
-  }, [currentStream, ref]);
+  }, [currentStream, videoRef]);
 
   const handleScreenshot = useCallback(() => {
-    if (canvasRef.current && ref.current) {
-      canvasRef.current.width = ref.current.videoWidth;
-      canvasRef.current.height = ref.current.videoHeight;
+    if (canvasRef.current && videoRef.current) {
+      canvasRef.current.width = videoRef.current.videoWidth;
+      canvasRef.current.height = videoRef.current.videoHeight;
 
       const canvasContext = canvasRef.current.getContext('2d');
-      if (canvasContext) canvasContext.drawImage(ref.current as CanvasImageSource, 0, 0);
+      if (canvasContext) canvasContext.drawImage(videoRef.current as CanvasImageSource, 0, 0);
 
       return canvasRef.current.toDataURL('image/webp');
     }
-  }, [canvasRef, ref]);
+  }, [canvasRef, videoRef]);
 
   const handleMetaData = useCallback(() => {
     let count = 0;
@@ -107,33 +107,37 @@ const useMediaStream = (props: Props) => {
     let dividedDuration: number = 0;
 
     const checkDuration = setInterval(() => {
-      if (ref.current!.duration !== Infinity) {
-        ref.current!.pause();
-        ref.current!.currentTime = 0;
-        clearInterval(checkDuration);
-        dividedDuration = ref.current!.duration / 20;
-        setDuration(ref.current!.duration);
+      if (videoRef.current) {
+        if (videoRef.current.duration !== Infinity) {
+          videoRef.current.pause();
+          videoRef.current.currentTime = 0;
+          clearInterval(checkDuration);
+          dividedDuration = videoRef.current.duration / 20;
+          setDuration(videoRef.current.duration);
 
-        const setScreenshot = setInterval(() => {
-          if (count < 20) {
-            count++;
-            const thumbnailScreenShot = handleScreenshot();
-            // handleScreenshot 함수에서 screenshot을 찍은 경우에만 thumbnail로 추가
-            if (thumbnailScreenShot) thumbnailList.push(thumbnailScreenShot);
-            // thumbnailList = [...thumbnailList, handleScreenshot()];
-            ref.current!.currentTime += dividedDuration;
-          } else {
-            ref.current!.currentTime = 0;
-            setThumbnailList(thumbnailList);
-            setRecordState(true);
-            clearInterval(setScreenshot);
-          }
-        }, 150);
-      } else {
-        ref.current!.currentTime += 1e101;
+          const setScreenshot = setInterval(() => {
+            if (videoRef.current) {
+              if (count < 20) {
+                count++;
+                const thumbnailScreenShot = handleScreenshot();
+                // handleScreenshot 함수에서 screenshot을 찍은 경우에만 thumbnail로 추가
+                if (thumbnailScreenShot) thumbnailList.push(thumbnailScreenShot);
+                // thumbnailList = [...thumbnailList, handleScreenshot()];
+                videoRef.current.currentTime += dividedDuration;
+              } else {
+                videoRef.current.currentTime = 0;
+                setThumbnailList(thumbnailList);
+                setRecordState(true);
+                clearInterval(setScreenshot);
+              }
+            }
+          }, 150);
+        } else {
+          videoRef.current.currentTime += 1e101;
+        }
       }
     }, 500);
-  }, [ref, handleScreenshot, setThumbnailList, setDuration, setRecordState]);
+  }, [videoRef, handleScreenshot, setThumbnailList, setDuration, setRecordState]);
 
   const startRecording = useCallback(() => {
     if (recorderData && recorderData.state === 'recording') {
@@ -160,8 +164,8 @@ const useMediaStream = (props: Props) => {
         let video_local = URL.createObjectURL(new Blob(blobs, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
         stopStream();
         setSrcAddress(video_local);
-        if (ref.current) {
-          ref.current!.src = video_local;
+        if (videoRef.current) {
+          videoRef.current.src = video_local;
         }
       };
 
@@ -175,7 +179,7 @@ const useMediaStream = (props: Props) => {
     // mediaStreamInitialize,
     // constraintList,
     browserType,
-    ref,
+    videoRef,
     stopStream,
     setThumbnailList,
     setSrcAddress,
@@ -209,32 +213,32 @@ const useMediaStream = (props: Props) => {
   );
 
   const playRecording = useCallback(() => {
-    if (ref.current!.currentTime >= end) {
+    if (videoRef.current && videoRef.current.currentTime >= end) {
       return;
     }
-    if (ref) {
+    if (videoRef.current) {
       setPlayState(true);
-      ref.current!.play();
+      videoRef.current.play();
     }
-  }, [ref, setPlayState, end]);
+  }, [videoRef, setPlayState, end]);
 
   const pauseRecording = useCallback(() => {
-    if (ref) {
+    if (videoRef.current) {
       setPlayState(false);
-      ref.current!.pause();
+      videoRef.current.pause();
     }
-  }, [ref, setPlayState]);
+  }, [videoRef, setPlayState]);
 
   /**
    * 녹화 영상 및 import 한 영상을 정지(재생을 멈추고 currentTime을 0으로 변경)
    */
   const stopVideo = useCallback(() => {
-    if (ref.current) {
+    if (videoRef.current) {
       setPlayState(false);
-      ref.current.pause();
-      ref.current.currentTime = start;
+      videoRef.current.pause();
+      videoRef.current.currentTime = start;
     }
-  }, [setPlayState, ref, start]);
+  }, [setPlayState, videoRef, start]);
 
   const startRecordingDelay = useCallback(() => {
     let sec = 4;
@@ -248,8 +252,10 @@ const useMediaStream = (props: Props) => {
         mediaStreamInitialize({ video: { deviceId: { exact: currentDeviceId } } });
       }
       setConstraint({ video: { deviceId: { exact: currentDeviceId } } });
-      ref.current!.srcObject = currentStream as MediaStream;
-      ref.current!.src = '';
+      if (videoRef.current) {
+        videoRef.current.srcObject = currentStream as MediaStream;
+        videoRef.current.src = '';
+      }
       setRecordState(false);
       setRecordOverTwice(false);
     } else {
@@ -274,7 +280,7 @@ const useMediaStream = (props: Props) => {
       setTimer(5);
     }
   }, [
-    ref,
+    videoRef,
     videoURL,
     currentStream,
     recordOverTwice,

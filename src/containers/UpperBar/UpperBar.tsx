@@ -62,7 +62,7 @@ const UpperBar: FunctionComponent<Props> = ({
 
   const handleChangeMode = useCallback(() => {
     setSrcAddress && setSrcAddress('');
-    videoRef && (videoRef.current!.src = '');
+    videoRef && videoRef.current && (videoRef.current.src = '');
     dispatch(changeMode({ videoURL: '' }));
     setDeleteModal(false);
     stopStream && stopStream();
