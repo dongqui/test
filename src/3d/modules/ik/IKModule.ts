@@ -23,6 +23,7 @@ type BoneIKParams = {
   name: string;
   controllerSize: number;
   initialPosition: Vector3;
+  poleAngle: number;
 };
 export class IKModule extends Module {
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
@@ -97,7 +98,11 @@ export class IKModule extends Module {
     (control.material as StandardMaterial).specularColor = Color3.Teal();
 
     bone.getPositionToRef(Space.WORLD, transformNode, control.position);
-    control.rotationQuaternion = transformNode.absoluteRotationQuaternion;
+    //control.rotationQuaternion = transformNode.absoluteRotationQuaternion;
+    // eslint-disable-next-line prettier/prettier
+    control.rotationQuaternion = params.name.includes('Hand')
+    ? transformNode.absoluteRotationQuaternion
+    : transformNode.parent.absoluteRotationQuaternion;
 
     // TODO : make this a child class instead of storing in metadata
     // Or make a map that link ikctrlmesh / bone / transformNode
@@ -116,7 +121,7 @@ export class IKModule extends Module {
     //const body = scene.getMeshByName('Body') as Mesh; // store body mesh
     const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
     const skeleton = scene.skeletons[0]; // store skeleton
-
+    /*
     if (skeleton.name === 'Armature') {
       // This show Mannequin model Matrix
       const mannequin = [
@@ -140,14 +145,38 @@ export class IKModule extends Module {
         let sca = new Vector3();
         let mtx = new Matrix();
 
-        // let bn = scene.getBoneByName(elem.name);
-        // bn?.getWorldMatrix().decompose(sca, rot, pos);
-        // console.table(elem.name, rot);
-
         let tr = scene.getTransformNodeByName(elem.name) || undefined;
-        tr?.getWorldMatrix().decompose(sca, rot, pos);
+        let bn = scene.getBoneByName(elem.name);
+
+        //console.log(bn?.getRotation(2, tr));
+        //console.log(bn?.getDirection(new Vector3(0, 0, 1), tr));
+
+        console.log(bn?.getRotationQuaternion(0, tr));
+        console.log(bn?.getBaseMatrix());
+        //bn?.setAxisAngle(new Vector3(0, 0, 1), 2 * Math.PI, 0, tr);
+        //bn?.setRotation(new Vector3(0, 0, -180), 2, tr);
+        //bn?.setRotationQuaternion(new Quaternion(0, 0, -Math.PI), 2, tr);
+        //bn?.setYawPitchRoll(0, 0, -Math.PI, 0, tr);
+
+        console.log(bn?.getRotationQuaternion(0, tr));
+
+        //bn?.computeWorldMatrix(true);
+        //bn?.computeAbsoluteTransforms();
+        //bn?.getWorldMatrix().decompose(sca, rot, pos);
+        //console.table(elem.name, rot);
+
+        //console.log(tr?.rotationQuaternion);
+        //tr?.addRotation(0, 0, -180);
+        //console.log(tr?.rotationQuaternion);
+
+        //tr?.setDirection(new Vector3(0, 0, 1), undefined, undefined, -Math.PI);
+        //tr?.rotate(new Vector3(0, 0, 1), -180);
+
+        //tr?.computeWorldMatrix(true);
+
+        //tr?.getWorldMatrix().decompose(sca, rot, pos);
         //tr?.getPoseMatrix().decompose(sca, rot, pos);
-        console.table(elem.name, rot);
+        //console.table(elem.name, rot);
       });
     } else if (skeleton.name === 'Xbot') {
       // This show Xbot model Matrix
@@ -172,23 +201,25 @@ export class IKModule extends Module {
         let sca = new Vector3();
         let mtx = new Matrix();
 
-        // let bn = scene.getBoneByName('mixamorig:' + elem.name);
+        let bn = scene.getBoneByName('mixamorig:' + elem.name);
         // bn?.getWorldMatrix().decompose(sca, rot, pos);
         // console.table(elem.name, rot);
 
         let tr = scene.getTransformNodeByName('mixamorig:' + elem.name) || undefined;
-        tr?.getWorldMatrix().decompose(sca, rot, pos);
+        //tr?.getWorldMatrix().decompose(sca, rot, pos);
         //tr?.getPoseMatrix().decompose(sca, rot, pos);
-        console.table(elem.name, rot);
+        //console.table(elem.name, rot);
+
+        console.log(bn?.getRotation(2, tr));
       });
     }
-
+    */
     // Defining bones to be used in IK
     const bonesSelection = [
-      { name: 'rightFoot', controllerSize: 0.2, initialPosition: new Vector3(0, 0, 0) },
-      { name: 'leftFoot', controllerSize: 0.2, initialPosition: new Vector3(0, 0, 0) },
-      { name: 'rightHand', controllerSize: 0.15, initialPosition: new Vector3(0, 0, 0) },
-      { name: 'leftHand', controllerSize: 0.15, initialPosition: new Vector3(0, 0, 0) }, //,
+      { name: 'rightFoot', controllerSize: 0.2, initialPosition: new Vector3(0, 0, 0), poleAngle: -Math.PI / 2 },
+      { name: 'leftFoot', controllerSize: 0.2, initialPosition: new Vector3(0, 0, 0), poleAngle: Math.PI / 2 },
+      { name: 'rightHand', controllerSize: 0.15, initialPosition: new Vector3(0, 0, 0), poleAngle: 0 },
+      { name: 'leftHand', controllerSize: 0.15, initialPosition: new Vector3(0, 0, 0), poleAngle: 0 },
     ] as BoneIKParams[];
 
     let activeIkControllers: BoneIKController[] = this._activeIkControllers;
@@ -229,25 +260,15 @@ export class IKModule extends Module {
       const controller = this._createIKControllerMesh(elem, bone, transformNode);
       this._ikControllerMeshes.push(controller);
 
-      // To correctly apply Pole Angle in Xbot model
-      function polAng(skl: Skeleton, name: string) {
-        if (skl.name === 'Xbot') {
-          if (name.includes('Hand')) return 0;
-          else if (name.includes('Left')) return Math.PI / 2;
-          else return -Math.PI / 2;
-        } else {
-          return Math.PI;
-        }
-      }
-
       // if is Limbs
       //if (elem.name.includes('Foot') || elem.name.includes('Hand')) {
       // Creating IK Controllers
       //const ikCtrl = new BoneIKController(transformNode, bone, {
       const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex()], {
+        //const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex() - 1], {
         targetMesh: controller,
         //poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
-        poleAngle: polAng(skeleton, elem.name),
+        poleAngle: elem.poleAngle,
       });
       ikControllers.push(ikCtrl);
       //}
