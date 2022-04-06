@@ -229,10 +229,10 @@ const useMediaStream = (props: Props) => {
    * 녹화 영상 및 import 한 영상을 정지(재생을 멈추고 currentTime을 0으로 변경)
    */
   const stopVideo = useCallback(() => {
-    if (ref) {
+    if (ref.current) {
       setPlayState(false);
-      ref.current!.pause();
-      ref.current!.currentTime = start;
+      ref.current.pause();
+      ref.current.currentTime = start;
     }
   }, [setPlayState, ref, start]);
 
