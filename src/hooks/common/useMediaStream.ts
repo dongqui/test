@@ -10,7 +10,7 @@ interface Props {
   recordOverTwice: boolean;
   start: number;
   end: number;
-  setThumbnailList: Dispatch<SetStateAction<never[]>>;
+  setThumbnailList: Dispatch<SetStateAction<string[]>>;
   setDuration: Dispatch<SetStateAction<number>>;
   setPlayState: Dispatch<SetStateAction<boolean>>;
   setRecordState: Dispatch<SetStateAction<boolean>>;
@@ -76,34 +76,34 @@ const useMediaStream = (props: Props) => {
   );
 
   const stopStream = useCallback(() => {
-    if (currentStream && ref.current && ref.current!.srcObject) {
+    if (currentStream && ref.current && ref.current.srcObject) {
       const tracks = currentStream.getTracks();
-      const stream = ref.current!.srcObject as MediaStream;
+      const stream = ref.current.srcObject as MediaStream;
       const tracks2 = stream.getTracks();
 
       tracks.forEach((track) => track.stop());
       tracks2.forEach((track: any) => {
         track.stop();
       });
-      ref.current!.srcObject = null;
+      ref.current.srcObject = null;
     }
   }, [currentStream, ref]);
 
   const handleScreenshot = useCallback(() => {
-    if (canvasRef && ref) {
-      canvasRef.current!.width = ref.current!.videoWidth;
-      canvasRef.current!.height = ref.current!.videoHeight;
+    if (canvasRef.current && ref.current) {
+      canvasRef.current.width = ref.current.videoWidth;
+      canvasRef.current.height = ref.current.videoHeight;
 
-      const canvasContext = canvasRef.current!.getContext('2d');
-      canvasContext!.drawImage(ref.current as CanvasImageSource, 0, 0);
+      const canvasContext = canvasRef.current.getContext('2d');
+      if (canvasContext) canvasContext.drawImage(ref.current as CanvasImageSource, 0, 0);
 
-      return canvasRef.current?.toDataURL('image/webp');
+      return canvasRef.current.toDataURL('image/webp');
     }
   }, [canvasRef, ref]);
 
   const handleMetaData = useCallback(() => {
     let count = 0;
-    let thumbnailList: any = [];
+    let thumbnailList: string[] = [];
     let dividedDuration: number = 0;
 
     const checkDuration = setInterval(() => {
@@ -117,7 +117,10 @@ const useMediaStream = (props: Props) => {
         const setScreenshot = setInterval(() => {
           if (count < 20) {
             count++;
-            thumbnailList = [...thumbnailList, handleScreenshot()];
+            const thumbnailScreenShot = handleScreenshot();
+            // handleScreenshot 함수에서 screenshot을 찍은 경우에만 thumbnail로 추가
+            if (thumbnailScreenShot) thumbnailList.push(thumbnailScreenShot);
+            // thumbnailList = [...thumbnailList, handleScreenshot()];
             ref.current!.currentTime += dividedDuration;
           } else {
             ref.current!.currentTime = 0;
