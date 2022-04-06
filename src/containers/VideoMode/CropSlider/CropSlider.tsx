@@ -105,8 +105,8 @@ export const CropSlider: FunctionComponent<Props> = ({
       <input id="left" type="range" min={start} max={end} step={0.001} value={startValue} onChange={handleSlider} className={cx('thumb', 'thumb-left')} />
       <input id="right" type="range" min={start} max={end} step={0.001} value={endValue} onChange={handleSlider} className={cx('thumb', 'thumb-right')} />
       <div className={cx('slider')}>
-        <div className={cx('slider-track')}></div>
-        <div ref={cropRef} className={cx('slider-range')}></div>
+        <div className={cx('slider-track')} />
+        <div ref={cropRef} className={cx('slider-range')} />
         <span
           className={cx('slider-time-indicator', 'no-select')}
           onMouseDown={handleMouseDown}
