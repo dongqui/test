@@ -50,10 +50,10 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
   const [indicatorPosition, setIndicatorPosition] = useState<number>(0);
   const [playState, setPlayState] = useState<boolean>(false);
-  const [recordState, setRecordState] = useState<boolean>(false);
-  const [recording, setRecording] = useState<boolean>(false);
-  const [standbyState, setStandbyState] = useState<boolean>(false);
-  const [recordOverTwice, setRecordOverTwice] = useState<boolean>(false);
+  const [recordState, setRecordState] = useState<boolean>(false); // 영상의 thumbnail이 생성되었는지 여부를 확인하는 flag
+  const [recording, setRecording] = useState<boolean>(false); // 녹화를 하기 전 standby 상태와 녹화 중 상태를 나타내는 flag
+  const [standbyState, setStandbyState] = useState<boolean>(false); // standby 상태를 나타내는 flag
+  const [recordOverTwice, setRecordOverTwice] = useState<boolean>(false); // 비디오가 존재하는지 여부를 확인하는 flag
   const [cameraDropdownState, setCameraDropdownState] = useState<boolean>(false);
   const [readyExtract, setReadyExtract] = useState<boolean>(false);
   const [basicExtractName, setBasicExtractName] = useState<string>('');
@@ -548,6 +548,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           </div>
         </Fragment>
       )}
+      {/*Extract Motion 버튼을 누르고 난 후 뜨는 Modal*/}
       {readyExtract && (
         <BaseModal>
           <p className={cx('extract-name-paragraph')}>Enter the name of the mocap to extract.</p>
@@ -574,6 +575,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           </div>
         </BaseModal>
       )}
+      {/*영상이 이미 있는 상태에서 다시 녹화를 누를 경우 뜨는 Modal*/}
       {turnStandbyPhase && (
         <BaseModal>
           <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
@@ -595,6 +597,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           </div>
         </BaseModal>
       )}
+      {/*Extract Motion이 진행되는 중에 뜨는 Modal*/}
       {onExtract && (
         <BaseModal>
           <div className={cx('loading-modal')}>
