@@ -9,19 +9,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { token, sceneUid } = query;
 
   /**
-   * Disable the homepage authentication API for the convenience of development when access the app
-   */
-  if (process.env.NODE_ENV !== 'production') {
-    return {
-      props: {
-        loaded: true,
-        data: [],
-        error: false,
-      },
-    };
-  }
-
-  /**
    * Possible error cases when accessing the app from the homepage
    * 401.1 - Invalid token
    * 401.2 - Expired token

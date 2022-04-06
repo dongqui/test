@@ -21,9 +21,14 @@ interface Props {
 const Authentication = ({ statusCode, message }: Props) => {
   const isRedirectSignin = statusCode === 401.1 || statusCode === 401.2;
 
-  if (isRedirectSignin) {
-    window.location.href = 'https://plask.ai/signin';
-    return <Fragment></Fragment>;
+  /**
+   * Disable redirect in case of authentication error for development convenience
+   */
+  if (process.env.NODE_ENV === 'production') {
+    if (isRedirectSignin) {
+      window.location.href = 'https://plask.ai/signin';
+      return <Fragment></Fragment>;
+    }
   }
 
   return (
