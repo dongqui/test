@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { Bone } from '@babylonjs/core';
 import { isNull } from 'lodash';
 import { BvhBoneType, PlaskBvhMap, PlaskRetargetMap, RetargetSourceBoneType } from 'types/common';
 
@@ -66,7 +66,7 @@ const createEmptyBvhMap = (): PlaskBvhMap => {
  * @param retargetMap -asset's completed retargetMap
  * @param timeout - timeout in ms
  */
-const createBvhMap = (bones: BABYLON.Bone[], retargetMap: PlaskRetargetMap, timeout?: number): Promise<PlaskBvhMap> => {
+const createBvhMap = (bones: Bone[], retargetMap: PlaskRetargetMap, timeout?: number): Promise<PlaskBvhMap> => {
   const bvhMap = createEmptyBvhMap();
 
   Object.keys(bvhMap).forEach((bvhBone) => {

@@ -5,7 +5,8 @@ import { isDroppedOnRP } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
-import React from 'react';
+import React, { useContext } from 'react';
+import { BabylonContext } from 'contexts/RP/BabylonContext';
 
 interface Props {
   node: LP.Node;
@@ -15,6 +16,7 @@ const ModelNode = ({ node }: Props) => {
   const { id, assetId, filePath, extension, name, parentId, type, childNodeIds } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
+  const { plaskEngine } = useContext(BabylonContext);
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!assetId) return;
@@ -43,6 +45,7 @@ const ModelNode = ({ node }: Props) => {
         nodeId: id,
         filePath,
         assetId,
+        plaskEngine,
       }),
     );
   };
@@ -56,7 +59,7 @@ const ModelNode = ({ node }: Props) => {
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
     }
-    dispatch(lpNodeActions.visualizeNode(assetId));
+    dispatch(lpNodeActions.visualizeNode({ assetId, plaskEngine }));
   };
 
   const handleEditName = (newName: string) => {

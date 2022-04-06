@@ -1,5 +1,4 @@
 import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
-import * as BABYLON from '@babylonjs/core';
 import { isNull, isUndefined } from 'lodash';
 import { useDispatch } from 'react-redux';
 
@@ -9,6 +8,7 @@ import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPan
 import { Nullable, PlaskLayer, PlaskRotationType, PlaskTrack } from 'types/common';
 import { useSelector } from 'reducers';
 import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } from 'utils/common';
+import { Mesh, TransformNode } from '@babylonjs/core';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -34,7 +34,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   // So, the next line is for making structure single-model like.
   const selectedAssetId = useMemo(() => _visualizedAssetIds[0], [_visualizedAssetIds]);
 
-  const [controlTarget, setControlTarget] = useState<Nullable<BABYLON.TransformNode | BABYLON.Mesh>>(null);
+  const [controlTarget, setControlTarget] = useState<Nullable<TransformNode | Mesh>>(null);
   const [controlLayer, setControlLayer] = useState<Nullable<PlaskLayer>>(null);
   const [controlTrack, setControlTrack] = useState<Nullable<PlaskTrack>>(null);
 

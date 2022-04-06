@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { IAnimationKey, Quaternion, Vector3 } from '@babylonjs/core';
 import { findIndex, findLastIndex } from 'lodash';
 
 /**
@@ -10,11 +10,11 @@ import { findIndex, findLastIndex } from 'lodash';
  * @param targetFrames - target frames
  * @param isQuaternionTrack - whether the track is for quaternion values or not (for vector values)
  */
-const getLinearInterpolatedTransformKeys = (transformKeys: BABYLON.IAnimationKey[], targetFrames: number[], isQuaternionTrack: boolean): BABYLON.IAnimationKey[] => {
+const getLinearInterpolatedTransformKeys = (transformKeys: IAnimationKey[], targetFrames: number[], isQuaternionTrack: boolean): IAnimationKey[] => {
   if (transformKeys.length === 0) {
-    return targetFrames.map((targetFrame) => ({ frame: targetFrame, value: isQuaternionTrack ? BABYLON.Quaternion.Identity() : BABYLON.Vector3.Zero() }));
+    return targetFrames.map((targetFrame) => ({ frame: targetFrame, value: isQuaternionTrack ? Quaternion.Identity() : Vector3.Zero() }));
   } else {
-    const newTransformKeys: BABYLON.IAnimationKey[] = [];
+    const newTransformKeys: IAnimationKey[] = [];
 
     targetFrames.forEach((targetFrame, idx) => {
       if (targetFrame < transformKeys[0].frame) {

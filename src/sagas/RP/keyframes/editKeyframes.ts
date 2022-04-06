@@ -1,11 +1,11 @@
 import { put, select, takeLatest } from 'redux-saga/effects';
 import produce from 'immer';
-import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as keyframesActions from 'actions/keyframes';
 import { RootState } from 'reducers';
 import { getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
+import { Vector3 } from '@babylonjs/core';
 
 function getSelectedLayer(state: RootState) {
   return state.trackList.selectedLayer;
@@ -134,19 +134,11 @@ function* worker() {
                       const {
                         value: { x, y, z },
                       } = targetTransformKey;
-                      newScaling = new BABYLON.Vector3(
-                        x === 0 ? newScaling.x : newScaling.x / x,
-                        y === 0 ? newScaling.y : newScaling.y / y,
-                        z === 0 ? newScaling.z : newScaling.z / z,
-                      );
+                      newScaling = new Vector3(x === 0 ? newScaling.x : newScaling.x / x, y === 0 ? newScaling.y : newScaling.y / y, z === 0 ? newScaling.z : newScaling.z / z);
                     } else {
                       const interpolatedVector = getInterpolatedVector(otherLayerTrack.transformKeys, _currentFrameIndex);
                       const { x, y, z } = interpolatedVector;
-                      newScaling = new BABYLON.Vector3(
-                        x === 0 ? newScaling.x : newScaling.x / x,
-                        y === 0 ? newScaling.y : newScaling.y / y,
-                        z === 0 ? newScaling.z : newScaling.z / z,
-                      );
+                      newScaling = new Vector3(x === 0 ? newScaling.x : newScaling.x / x, y === 0 ? newScaling.y : newScaling.y / y, z === 0 ? newScaling.z : newScaling.z / z);
                     }
                   }
                 });

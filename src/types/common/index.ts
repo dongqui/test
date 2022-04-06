@@ -1,5 +1,6 @@
+import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import * as BABYLON from '@babylonjs/core';
+import { AbstractMesh, Bone, Geometry, IAnimationKey, Mesh, Quaternion, Scene, Skeleton, TransformNode, Vector3 } from '@babylonjs/core';
 
 export enum GizmoMode {
   POSITION,
@@ -35,30 +36,30 @@ export interface PlaskProject {
 
 export interface PlaskScreen {
   id: string;
-  scene: BABYLON.Scene;
+  scene: Scene;
   canvasId: string;
   hasShadow: boolean;
   hasGroundTexture: boolean;
 }
 
 export type PlaskPose = {
-  target: BABYLON.TransformNode;
-  position: BABYLON.Vector3;
-  rotationQuaternion: BABYLON.Quaternion;
-  recurrentRotationQuaternion: BABYLON.Quaternion | null;
-  scaling: BABYLON.Vector3;
+  target: TransformNode;
+  position: Vector3;
+  rotationQuaternion: Quaternion;
+  recurrentRotationQuaternion: Quaternion | null;
+  scaling: Vector3;
 };
 
 export interface PlaskAsset {
   id: string;
   name: string;
   extension: string;
-  meshes: BABYLON.AbstractMesh[];
+  meshes: AbstractMesh[];
   initialPoses: PlaskPose[];
-  geometries: BABYLON.Geometry[];
-  skeleton: BABYLON.Skeleton;
-  bones: BABYLON.Bone[];
-  transformNodes: BABYLON.TransformNode[];
+  geometries: Geometry[];
+  skeleton: Skeleton;
+  bones: Bone[];
+  transformNodes: TransformNode[];
   animationIngredientIds: string[];
   retargetMapId: string;
 }
@@ -88,8 +89,8 @@ export interface PlaskTrack {
   layerId: string;
   name: string;
   property: PlaskProperty;
-  target: BABYLON.TransformNode | BABYLON.Mesh;
-  transformKeys: BABYLON.IAnimationKey[];
+  target: TransformNode | Mesh;
+  transformKeys: IAnimationKey[];
   interpolationType: 'linear' | 'bezier' | 'constant';
   bezierParams?: BezierParams;
   isMocapAnimation: boolean;
@@ -190,7 +191,7 @@ export type ContextMenuClickItemHandlerProps = any;
 export type SelectingData = {
   selectableObjects: Array<PlaskTransformNode>;
   selectedTargets: Array<PlaskTransformNode>;
-  allObjectsMap: { [key: string]: PlaskTransformNode };
+  allEntitiesMap: { [key: string]: PlaskEntity };
 };
 
 export type ButtonColor = 'primary' | 'secondary' | 'negative';

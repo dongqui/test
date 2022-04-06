@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { IAnimationKey } from '@babylonjs/core';
 import { union } from 'lodash';
 
 /**
@@ -6,7 +6,7 @@ import { union } from 'lodash';
  *
  * @param transformKeysList - target transformKeys list (array of arrays of transformKey)
  */
-const getUnionFrames = (transformKeysList: Array<BABYLON.IAnimationKey[]>) => {
+const getUnionFrames = (transformKeysList: Array<IAnimationKey[]>) => {
   const targetFrames: Array<number[]> = [];
 
   transformKeysList.forEach((transformKeys) => {

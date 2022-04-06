@@ -1,4 +1,3 @@
-import * as BABYLON from '@babylonjs/core';
 import { call, put, select, takeLatest } from 'redux-saga/effects';
 import produce from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
@@ -11,6 +10,7 @@ import { RootState } from 'reducers';
 import { getValueInsertedTransformKeys } from 'utils/RP';
 
 import setUpdatedPropertyKeyframes from './setUpdatedPropertyKeyframes';
+import { Vector3 } from '@babylonjs/core';
 
 function getSelectedPropertyKeyframes(state: RootState) {
   return state.keyframes.selectedPropertyKeyframes;
@@ -67,7 +67,7 @@ function* worker(params: ReturnType<typeof keyframesActions.enterKeyframeDragDro
             }
             if (targetTrack) {
               // add value to 'to' key
-              const toInsertedTargetTrackTransformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, to, new BABYLON.Vector3(value.x, value.y, value.z));
+              const toInsertedTargetTrackTransformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, to, new Vector3(value.x, value.y, value.z));
               // remove 'from' key
               const fromDeletedTargetTrackTransformKeys = toInsertedTargetTrackTransformKeys.filter((transformKey) => transformKey.frame !== from);
 
@@ -78,11 +78,7 @@ function* worker(params: ReturnType<typeof keyframesActions.enterKeyframeDragDro
                 const peerTrack = targetLayer.tracks.find((track) => track.id === trackId.replace('//rotation', '//rotationQuaternion'));
                 if (peerTrack) {
                   // add value to 'to' key
-                  const toInsertedPeerTrackTransformKeys = getValueInsertedTransformKeys(
-                    peerTrack.transformKeys,
-                    to,
-                    new BABYLON.Vector3(value.x, value.y, value.z).toQuaternion(),
-                  );
+                  const toInsertedPeerTrackTransformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, to, new Vector3(value.x, value.y, value.z).toQuaternion());
                   // remove 'from' key
                   const fromDeletedPeerTrackTransformKeys = toInsertedPeerTrackTransformKeys.filter((transformKey) => transformKey.frame !== from);
 

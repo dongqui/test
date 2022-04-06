@@ -28,5 +28,3 @@ export { default as getValueInsertedTransformKeys } from './getValueInsertedTran
 export { default as getUnionFrames } from './getUnionFrames';
 export { default as getLinearInterpolatedTransformKeys } from './getLinearInterpolatedTransformKeys';
 export { default as getTotalTransformKeys } from './getTotalTransformKeys';
-
-export { default as removeAssetThingsFromScene } from './removeAssetThingsFromScene';
