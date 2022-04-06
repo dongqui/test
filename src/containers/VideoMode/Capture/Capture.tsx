@@ -43,7 +43,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
   const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [currentDevice, setCurrentDevice] = useState<string>('');
-  const [currnetDeviceId, setCurrentDeviceId] = useState<string>('');
+  const [currentDeviceId, setCurrentDeviceId] = useState<string>('');
   const [srcAddress, setSrcAddress] = useState<string>('');
   const [thumbnailList, setThumbnailList] = useState([]);
   const [duration, setDuration] = useState<number>(0);
@@ -87,7 +87,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
     end: end,
     canvasRef: canvasRef,
     recording: recording,
-    currentDeviceId: currnetDeviceId,
+    currentDeviceId: currentDeviceId,
     recordOverTwice: recordOverTwice,
     setThumbnailList: setThumbnailList,
     setDuration: setDuration,
@@ -445,7 +445,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         />
       </Box>
       <div className={cx('video-wrap')}>
-        <canvas className={cx('thumbnail-canvas')} ref={canvasRef}></canvas>
+        <canvas className={cx('thumbnail-canvas')} ref={canvasRef} />
         <video
           ref={videoRef}
           className={cx('video', { mirror: videoRef.current && !videoRef.current!.src })}
@@ -463,7 +463,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         {!currentDevice && !videoURL && (
           <div className={cx('countdown-overlay')}>
             <div className={cx('notification-wrapper')}>
-              <IconWrapper className={cx('camera-icon')} icon={SvgPath.NoCamera}></IconWrapper>
+              <IconWrapper className={cx('camera-icon')} icon={SvgPath.NoCamera} />
               <p className={cx('no-camera-notification')}>There is No Connected Camera</p>
             </div>
           </div>
@@ -503,7 +503,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                 />
               );
             })}
-            {!recordState && <div className={cx('disable-control')}></div>}
+            {!recordState && <div className={cx('disable-control')} />}
           </div>
           {/* api 연동 */}
           {recordState && <FilledButton className={cx('extract-button')} text="Extract Motion" onClick={() => setReadyExtract(true)} />}
@@ -553,7 +553,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <p className={cx('extract-name-paragraph')}>Enter the name of the mocap to extract.</p>
           <input type="text" className={cx('extract-name-input')} placeholder="Extracted mocap" onChange={(e) => handleChange(e)} value={basicExtractName} />
           <div className={cx('extract-name-wrapper')}>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setReadyExtract(false)}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setReadyExtract(false)} />
             <FilledButton
               text="Ok"
               className={cx('extract-button')}
@@ -570,7 +570,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                   duration: videoRef.current!.duration,
                 })
               }
-            ></FilledButton>
+            />
           </div>
         </BaseModal>
       )}
@@ -581,7 +581,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             Your video will be <strong>deleted</strong> to take a new video.
           </p>
           <div className={cx('extract-name-wrapper')}>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setTurnStandbyPhase(false)}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setTurnStandbyPhase(false)} />
             <FilledButton
               text="Delete"
               className={cx('extract-button')}
@@ -591,14 +591,14 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                 URL.revokeObjectURL(videoRef.current!.src);
                 videoRef.current!.removeAttribute('src');
               }}
-            ></FilledButton>
+            />
           </div>
         </BaseModal>
       )}
       {onExtract && (
         <BaseModal>
           <div className={cx('loading-modal')}>
-            <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
+            <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner} />
             <h4 className={cx('modal-heading', 'loading')}>Extracting mocap</h4>
             <p className={cx('extract-name-paragraph', 'loading')}>
               It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}
@@ -610,7 +610,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                 setOnExtract(false);
                 cancelTokenSource.current && cancelTokenSource.current();
               }}
-            ></FilledButton>
+            />
           </div>
         </BaseModal>
       )}
@@ -622,7 +622,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               Mocap export<strong> failed</strong>.<br />
               The uploaded video doesn't meet the motion capture requirement
             </p>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)} />
           </div>
         </BaseModal>
       )}
@@ -631,7 +631,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Server update in progress.</h4>
             <p className={cx('extract-name-paragraph')}>Mocap extraction is available after the time below. (2022-01-13, 01:00 AM ~ 04:00 AM, PST)</p>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsServerUpdating(false)}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsServerUpdating(false)} />
           </div>
         </BaseModal>
       )}
@@ -640,7 +640,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Caution</h4>
             <p className={cx('extract-name-paragraph')}>In this free version, you can only extract videos for less than 5 minutes long.</p>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsTimeout(false)}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsTimeout(false)} />
           </div>
         </BaseModal>
       )}
