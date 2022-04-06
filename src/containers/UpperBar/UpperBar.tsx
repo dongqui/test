@@ -163,7 +163,7 @@ const UpperBar: FunctionComponent<Props> = ({
             <div>Select a Camera</div>
             {deviceList &&
               deviceList.map((device, idx) => (
-                <li key={idx} className={cx('device-select-dropdown')} data-value>
+                <li key={idx} className={cx('device-select-dropdown')}>
                   {currentDevice === device.label && <IconWrapper className={cx('device-select-check')} icon={SvgPath.Check} />}
                   <div className={cx('device-label')}>{device.label}</div>
                   <div className={cx('button-overlay')} id={device.deviceId} onClick={handleChangeCamera} />
