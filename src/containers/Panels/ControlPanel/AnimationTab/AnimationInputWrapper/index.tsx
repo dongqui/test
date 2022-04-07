@@ -9,7 +9,7 @@ const cx = classNames.bind(styles);
 
 export type InputInfo = {
   text: string;
-  currentValue?: number;
+  currentValue?: string;
   defaultValue?: number;
   decimalDigit?: number;
   handleBlur: (event: FocusEvent<HTMLInputElement>) => void;
@@ -51,7 +51,7 @@ const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle
             <AnimationInput
               key={`${inputTitle}${idx}`}
               activeStatus={activeStatus}
-              currentValue={info.currentValue}
+              currentValue={info.currentValue ? +info.currentValue : 0}
               inactiveMessage={inactiveMessage}
               text={info.text}
               defaultValue={info.defaultValue}
