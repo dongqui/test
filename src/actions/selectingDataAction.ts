@@ -1,3 +1,4 @@
+import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import * as BABYLON from '@babylonjs/core';
 
@@ -12,7 +13,7 @@ export type SelectingDataAction =
   | ReturnType<typeof ctrlKeyMultiSelect>
   | ReturnType<typeof selectAllSelectableObjects>
   | ReturnType<typeof resetSelectedTargets>
-  | ReturnType<typeof updateTransform>;
+  | ReturnType<typeof updateEntity>;
 
 const ADD_SELECTABLE_OBJECTS = 'selectingDataAction/ADD_SELECTABLE_OBJECTS' as const;
 const REMOVE_SELECTABLE_CONTROLLERS = 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS' as const;
@@ -27,7 +28,7 @@ const CTRL_KEY_MULTI_SELECT = 'selectingDataAction/CTRL_KEY_MULTI_SELECT' as con
 
 const SELECT_ALL_SELECTABLE_OBJECTS = 'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS' as const;
 const RESET_SELECTED_TARGETS = 'selectingDataAction/RESET_SELECTED_TARGETS' as const;
-const UPDATE_TRANSFORM = 'selectingDataAction/UPDATE_ENTITY' as const;
+const UPDATE_ENTITY = 'selectingDataAction/UPDATE_ENTITY' as const;
 
 interface AddSelectableObjects {
   objects: Array<PlaskTransformNode>;
@@ -62,7 +63,7 @@ interface CtrlKeyMultiSelect {
 }
 
 interface UpdateSelectedTargets {
-  targets: Array<PlaskTransformNode>;
+  targets: Array<PlaskEntity>;
 }
 
 /**
@@ -177,8 +178,8 @@ export const selectAllSelectableObjects = () => ({
 /**
  * Moves the selected targets. Undoable
  */
-export const updateTransform = (params: UpdateSelectedTargets) => ({
-  type: UPDATE_TRANSFORM,
+export const updateEntity = (params: UpdateSelectedTargets) => ({
+  type: UPDATE_ENTITY,
   payload: {
     ...params,
   },

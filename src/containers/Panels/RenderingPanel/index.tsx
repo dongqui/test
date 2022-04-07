@@ -250,6 +250,25 @@ const RenderingPanel: FunctionComponent<Props> = () => {
           }
         }
       }
+
+      // Keyboard events that don't require a canvas focus
+      switch (event.key) {
+        case 'z':
+        case 'Z':
+        case 'ㅋ': {
+          if (event.ctrlKey || event.metaKey) {
+            if (event.shiftKey) {
+              plaskEngine.redo();
+            } else {
+              plaskEngine.undo();
+            }
+          }
+          event.preventDefault();
+          break;
+        }
+        default:
+          break;
+      }
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
