@@ -1,8 +1,10 @@
+@import "styles/libraries/_colors";
+
 .keyframe {
   cursor: pointer;
-  stroke: #fb8226;
+  stroke: $secondary;
 
   &.clicked {
-    stroke: #fff;
+    stroke: $content-active;
   }
 }
