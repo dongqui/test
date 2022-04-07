@@ -1,3 +1,5 @@
+@import "styles/libraries/_colors";
+
 .slider {
   position: relative;
   width: 100%;
@@ -17,25 +19,25 @@
 
 .slider-range {
   height: 100%;
-  box-shadow: inset 0 0 0 2px #fb8226;
+  box-shadow: inset 0 0 0 2px $secondary;
   z-index: 2;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     width: 100vw;
     height: 100%;
     left: -100vw;
-    background-color: rgba(18, 19, 19, 0.2);
+    background-color: rgb(18 19 19 / 20%);
   }
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     width: 100vw;
     height: 100%;
     right: -100vw;
-    background-color: rgba(18, 19, 19, 0.2);
+    background-color: rgb(18 19 19 / 20%);
   }
 }
 
@@ -57,7 +59,7 @@
 
 .thumb,
 .thumb::-webkit-slider-thumb {
-  -webkit-appearance: none;
+  appearance: none;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -127,9 +129,9 @@
 
 .no-select {
   -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+  user-select: none;
+  user-select: none;
+  user-select: none;
+  user-select: none;
   user-select: none;
 }

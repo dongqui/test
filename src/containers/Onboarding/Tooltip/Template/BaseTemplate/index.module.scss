@@ -1,12 +1,14 @@
+@import "styles/libraries/_colors";
+
 .tooltip {
   position: fixed;
   min-width: 440px;
   padding: 28px 24px;
-  background-color: var(--gray200);
-  border: 1px solid var(--gray400);
+  background-color: $bg-elevated;
+  border: 1px solid $outline;
   border-radius: 10px;
   box-shadow: 0 0 12px rgb(0 0 0 / 25%);
-  color: var(--gray700);
+  color: $content-active;
   z-index: 1001;
 
   .body {
@@ -23,7 +25,7 @@
       line-height: 1.5em;
 
       span {
-        color: #f47f25;
+        color: $secondary;
         font-weight: 600;
       }
     }
@@ -45,7 +47,7 @@
     }
 
     &:hover {
-      background-color: var(--gray300);
+      background-color: $overlay-hover;
     }
   }
 }

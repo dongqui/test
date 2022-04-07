@@ -1,5 +1,6 @@
 @import "styles/libraries/_responsive";
 @import "styles/libraries/_mixins";
+@import "styles/libraries/_colors";
 
 .wrapper {
   position: relative;
@@ -22,8 +23,8 @@
   height: 24px;
   font-size: 11px;
   padding: 5.5px 8px;
-  background-color: var(--gray300);
-  color: var(--gray700);
+  background-color: $contentbg-base;
+  color: $content-active;
 }
 
 .text {
@@ -48,8 +49,8 @@
   transform: translate3d(0, 24px, 0);
   z-index: 1;
   width: 100%;
-  background-color: var(--gray200);
-  outline: 1px solid var(--gray400);
+  background-color: $bg-elevated;
+  outline: 1px solid $outline;
   border-radius: 6px;
   padding: 4px;
 
@@ -59,16 +60,16 @@
     border-radius: 6px;
     font-size: 11px;
     padding: 5.5px 8px;
-    color: var(--gray700);
+    color: $content-active;
 
     &:not(.disabled) {
       &:hover {
-        background-color: #0f88ff;
+        background-color: $primary;
       }
     }
 
     &.disabled {
-      color: #7a7a7b;
+      color: $content-inactive;
     }
 
     .item-text {
