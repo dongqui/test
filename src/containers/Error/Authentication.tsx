@@ -42,7 +42,7 @@ const Authentication = ({ statusCode, message }: Props) => {
         <LinkedButton href="javascript:window.history.back();" variant="filled" size="large">
           Go Back
         </LinkedButton>
-        <LinkedButton href="https://plask.ai/signin" variant="outlined" size="large">
+        <LinkedButton href={`${process.env.NEXT_PUBLIC_HOMEPAGE_URL}/signin`} variant="outlined" size="large">
           Home
         </LinkedButton>
       </div>
