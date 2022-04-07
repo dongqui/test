@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   TransformNode,
   BoneIKController,
@@ -14,8 +15,16 @@ import {
   Tools,
   Matrix,
   Skeleton,
+  Scalar,
 } from '@babylonjs/core';
 import { Bone } from '@babylonjs/core/Bones/bone';
+import { 
+  AdvancedDynamicTexture,
+  StackPanel,
+  Control,
+  TextBlock,
+  Slider,
+} from '@babylonjs/gui';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
 
@@ -32,6 +41,7 @@ export class IKModule extends Module {
   private _ikControllerMeshes: Mesh[] = [];
   private _activeIkControllers: BoneIKController[] = [];
   private _gizmoManager!: GizmoManager;
+  private _advancedTexture!: AdvancedDynamicTexture;
 
   private get _allTransformNodes() {
     return this.plaskEngine.selectorModule.allTransformNodes;
@@ -57,6 +67,7 @@ export class IKModule extends Module {
     this._gizmoManager = new GizmoManager(this.plaskEngine.scene);
     this._gizmoManager.usePointerToAttachGizmos = false;
     this._gizmoManager.positionGizmoEnabled = true; // position
+    this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
   }
 
   public tick(elapsed: number) {
@@ -98,6 +109,7 @@ export class IKModule extends Module {
     (control.material as StandardMaterial).specularColor = Color3.Teal();
 
     bone.getPositionToRef(Space.WORLD, transformNode, control.position);
+    params.initialPosition = control.position;
     //control.rotationQuaternion = transformNode.absoluteRotationQuaternion;
     // eslint-disable-next-line prettier/prettier
     control.rotationQuaternion = params.name.includes('Hand')
@@ -111,6 +123,194 @@ export class IKModule extends Module {
     control.metadata.__bone = bone;
 
     return control;
+  }
+
+  private _createGUIElement(pickedIkCtrl: Nullable<Mesh> = null) {
+
+    const advancedTexture = this._advancedTexture;
+
+    const activeIKControllers = this._activeIkControllers;
+
+    // IK PANELS ///////////////////////////////////////////////////////////////////
+    const slidePanel = new StackPanel();
+    slidePanel.width = "220px";
+    slidePanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    slidePanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+    advancedTexture.addControl(slidePanel);
+    //slidePanel.isVisible = false;
+
+    const header_Title = new TextBlock();
+    header_Title.text = "IK ADJUSTS";
+    header_Title.height = "30px";
+    header_Title.color = "white";
+    slidePanel.addControl(header_Title); 
+
+    // Pole Angles Title
+    const header_PoleAngle = new TextBlock();
+    header_PoleAngle.text = "Pole Angle: 90 deg";
+    header_PoleAngle.height = "30px";
+    header_PoleAngle.color = "white";
+    slidePanel.addControl(header_PoleAngle); 
+
+    const slider_PoleAngle = new Slider();
+    slider_PoleAngle.minimum = -Math.PI/2;
+    slider_PoleAngle.maximum = Math.PI/2;
+    slider_PoleAngle.value = 0;
+    slider_PoleAngle.height = "20px";
+    slider_PoleAngle.width = "200px";
+    slider_PoleAngle.background = "teal";
+    slider_PoleAngle.onValueChangedObservable.add(function(value) {
+        header_PoleAngle.text = "Pole Angle: " + (Tools.ToDegrees(value) | 0) + " deg";
+
+        if (pickedIkCtrl) {
+            /*
+            IK_keyframes.forEach(key => {
+                // Evaluate if there is a keyframe at actual timeline position
+                if (key[0] == slider_Keyframe.value.toFixed(0)){                                
+                    key.forEach((val, idx, arr) => {
+                        if (arr[idx] == pickedIkCtrl.name){
+                            // Update Keyframe
+                            arr[idx+6] = value;
+
+                            // Update IK Control
+                            ikCtrls.find(ctrl => ctrl.targetMesh == pickedIkCtrl).poleAngle = value;
+                            ikCtrls.find(ctrl => ctrl.targetMesh == pickedIkCtrl).update();
+                        }
+                    });
+                }
+            })
+            */
+           let ikController = activeIKControllers.find((ctrl) => ctrl.targetMesh === pickedIkCtrl);
+
+           if (ikController)
+            ikController.poleAngle = value;
+        }
+    });
+    slidePanel.addControl(slider_PoleAngle);
+
+    // Blend Title
+    const header_Blend = new TextBlock();
+    header_Blend.text = "Blend: 1";
+    header_Blend.height = "30px";
+    header_Blend.color = "white";
+    slidePanel.addControl(header_Blend); 
+
+    // Blend Slider
+    const slider_Blend = new Slider();
+    slider_Blend.minimum = 0;
+    slider_Blend.maximum = 1;
+    slider_Blend.value = 1;
+    slider_Blend.height = "20px";
+    slider_Blend.width = "200px";
+    //slider_Blend.isVisible = false;
+    slider_Blend.background = "teal";
+    slider_Blend.onValueChangedObservable.add(function(value) {
+        header_Blend.text = "FK / IK Blend: " + value.toFixed(1);
+
+        // Evaluate if a IK Controller is selected
+        if (pickedIkCtrl) {
+          /*
+          IK_keyframes.forEach(key => {
+              // Evaluate if there is a keyframe at actual timeline position
+              if (key[0] == slider_Keyframe.value.toFixed(0)){
+                  key.forEach((val, idx, arr) => {
+                      if (arr[idx] == pickedIkCtrl.name){
+                          console.log(idx);
+                          
+                          // Update Keyframe
+                          arr[idx+5] = value;
+
+                          // Blend between FK (original) position and IK position
+                          pickedIkCtrl.absolutePosition.x = 
+                              Scalar.Lerp(
+                                  arr[idx+4].x,
+                                  arr[idx+1].x,
+                                  value
+                          );
+                          pickedIkCtrl.absolutePosition.y = 
+                              Scalar.Lerp(
+                                  arr[idx+4].y,
+                                  arr[idx+1].y,
+                                  value
+                          );
+                          pickedIkCtrl.absolutePosition.z = 
+                              Scalar.Lerp(
+                                  arr[idx+4].z,
+                                  arr[idx+1].z,
+                                  value
+                          );                        
+                          // Update IK Control
+                          ikCtrls.find(ctrl => ctrl.targetMesh == pickedIkCtrl).update();                        
+                          // Blend between TEAL and WHITE colors
+                          pickedIkCtrl.material.emissiveColor.r =
+                              Scalar.Lerp(
+                                  Color3.White().r,
+                                  Color3.Teal().r,
+                                  value
+                          );
+                          pickedIkCtrl.material.emissiveColor.g =
+                              Scalar.Lerp(
+                                  Color3.White().g,
+                                  Color3.Teal().g,
+                                  value
+                          );
+                          pickedIkCtrl.material.emissiveColor.b =
+                              Scalar.Lerp(
+                                  Color3.White().b,
+                                  Color3.Teal().b,
+                                  value
+                          );
+                      }
+                  });
+              }
+          });
+          */
+         /*
+          // Blend between FK (original) position and IK position
+          pickedIkCtrl.absolutePosition.x = 
+              Scalar.Lerp(
+                  arr[idx+4].x,
+                  arr[idx+1].x,
+                  value
+          );
+          pickedIkCtrl.absolutePosition.y = 
+              Scalar.Lerp(
+                  arr[idx+4].y,
+                  arr[idx+1].y,
+                  value
+          );
+          pickedIkCtrl.absolutePosition.z = 
+              Scalar.Lerp(
+                  arr[idx+4].z,
+                  arr[idx+1].z,
+                  value
+          );                        
+          // Update IK Control
+          activeIKControllers.find((ctrl) => ctrl.targetMesh === pickedIkCtrl)?.update();
+
+          // Blend between TEAL and WHITE colors
+          pickedIkCtrl.material.emissiveColor.r =
+              Scalar.Lerp(
+                  Color3.White().r,
+                  Color3.Teal().r,
+                  value
+          );
+          pickedIkCtrl.material.emissiveColor.g =
+              Scalar.Lerp(
+                  Color3.White().g,
+                  Color3.Teal().g,
+                  value
+          );
+          pickedIkCtrl.material.emissiveColor.b =
+              Scalar.Lerp(
+                  Color3.White().b,
+                  Color3.Teal().b,
+                  value
+          );
+          */
+        }
+    });
+    slidePanel.addControl(slider_Blend);
   }
 
   private _playgroundCode() {
@@ -260,6 +460,8 @@ export class IKModule extends Module {
       const controller = this._createIKControllerMesh(elem, bone, transformNode);
       this._ikControllerMeshes.push(controller);
 
+      console.log(elem);
+
       // if is Limbs
       //if (elem.name.includes('Foot') || elem.name.includes('Hand')) {
       // Creating IK Controllers
@@ -317,5 +519,7 @@ export class IKModule extends Module {
         gizmoManager.attachToMesh(pickedMesh);
       }
     });
+
+    this._createGUIElement(pickedIkCtrl);
   }
 }
