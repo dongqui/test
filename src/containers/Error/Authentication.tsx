@@ -26,8 +26,10 @@ const Authentication = ({ statusCode, message }: Props) => {
    */
   if (process.env.NODE_ENV === 'production') {
     if (isRedirectSignin) {
-      window.location.href = 'https://plask.ai/signin';
-      return <Fragment></Fragment>;
+      if (process.env.NEXT_PUBLIC_HOMEPAGE_URL) {
+        window.location.href = process.env.NEXT_PUBLIC_HOMEPAGE_URL;
+        return <Fragment></Fragment>;
+      }
     }
   }
 
