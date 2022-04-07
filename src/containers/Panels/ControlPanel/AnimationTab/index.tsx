@@ -227,7 +227,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: positionX,
+      currentValue: `${positionX}`,
     },
     {
       text: 'Y',
@@ -248,7 +248,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.y : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: positionY,
+      currentValue: `${positionY}`,
     },
     {
       text: 'Z',
@@ -269,7 +269,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.z : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: positionZ,
+      currentValue: `${positionZ}`,
     },
   ];
 
@@ -305,7 +305,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         }
       }, [controlTarget]),
       decimalDigit: 4,
-      currentValue: eulerX,
+      currentValue: `${eulerX}`,
     },
     {
       text: 'Y',
@@ -338,7 +338,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         }
       }, [controlTarget]),
       decimalDigit: 4,
-      currentValue: eulerY,
+      currentValue: `${eulerY}`,
     },
     {
       text: 'Z',
@@ -371,7 +371,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         }
       }, [controlTarget]),
       decimalDigit: 4,
-      currentValue: eulerZ,
+      currentValue: `${eulerZ}`,
     },
   ];
 
@@ -395,7 +395,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.w : 1), [controlTarget]),
       decimalDigit: 4,
-      currentValue: quarternionW,
+      currentValue: `${quarternionW}`,
     },
     {
       text: 'X',
@@ -416,7 +416,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: quarternionX,
+      currentValue: `${quarternionX}`,
     },
     {
       text: 'Y',
@@ -437,7 +437,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.y : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: quarternionY,
+      currentValue: `${quarternionY}`,
     },
     {
       text: 'Z',
@@ -458,7 +458,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.z : 0), [controlTarget]),
       decimalDigit: 4,
-      currnetValue: quarternionZ,
+      currnetValue: `${quarternionZ}`,
     },
   ];
 
@@ -482,7 +482,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: scaleX,
+      currentValue: `${scaleX}`,
     },
     {
       text: 'Y',
@@ -503,7 +503,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: scaleY,
+      currentValue: `${scaleY}`,
     },
     {
       text: 'Z',
@@ -524,7 +524,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: scaleZ,
+      currentValue: `${scaleZ}`,
     },
   ];
 
