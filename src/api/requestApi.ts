@@ -39,7 +39,7 @@ const requestApi = async (payload: Payload) => {
   // const needsProxy = !isServer && notEqualHost;
   // const endpoint = url;
 
-  // const baseURL = needsProxy ? '/api' : base || process.env.NEXT_PUBLIC_BACKEND_URL;
+  // const baseURL = needsProxy ? '/api' : base || process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
   /**
    * @todo 현재 timeout 미지정. length * 7-8s 예상 중
@@ -47,7 +47,7 @@ const requestApi = async (payload: Payload) => {
   const options = {
     ...rest,
     headers,
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: url,
     // timeout: 15000,
   };
