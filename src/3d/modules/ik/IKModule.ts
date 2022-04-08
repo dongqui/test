@@ -67,7 +67,7 @@ export class IKModule extends Module {
     this._gizmoManager = new GizmoManager(this.plaskEngine.scene);
     this._gizmoManager.usePointerToAttachGizmos = false;
     this._gizmoManager.positionGizmoEnabled = true; // position
-    this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
+    this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI', undefined, this.plaskEngine.scene);
   }
 
   public tick(elapsed: number) {
@@ -114,7 +114,7 @@ export class IKModule extends Module {
     // eslint-disable-next-line prettier/prettier
     control.rotationQuaternion = params.name.includes('Hand')
     ? transformNode.absoluteRotationQuaternion
-    : transformNode.parent.absoluteRotationQuaternion;
+    : (transformNode.parent as Mesh).absoluteRotationQuaternion;
 
     // TODO : make this a child class instead of storing in metadata
     // Or make a map that link ikctrlmesh / bone / transformNode
