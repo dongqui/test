@@ -1,0 +1,105 @@
+@import "styles/libraries/_mixins";
+
+@mixin button-size-large() {
+  width: 156px;
+  height: 56px;
+}
+
+@mixin button-size-medium() {
+  width: 79px;
+  height: 40px;
+}
+
+@mixin button-size-small() {
+  width: 63px;
+  height: 32px;
+}
+
+.filled {
+  @include reset-button-style();
+  @include basic-button-style();
+
+  &.large {
+    @include button-size-large();
+  }
+
+  &.medium {
+    @include button-size-medium();
+  }
+
+  &.small {
+    @include button-size-small();
+  }
+
+  &.primary {
+    background-color: #fff;
+    color: var(--gray100);
+
+    &:focus,
+    &:hover {
+      background-color: var(--gray600);
+      color: var(--gray100);
+    }
+  }
+
+  &.secondary {
+    background-color: #0f88ff;
+    color: #fff;
+
+    &:focus,
+    &:hover {
+      background-color: lighten($color:  #0f88ff, $amount: 4%);
+    }
+  }
+
+  &.error {
+    background-color: var(--vivid-red);
+    color: var(--gray700);
+  }
+}
+
+.outlined {
+  @include reset-button-style();
+  @include basic-button-style();
+
+  &.large {
+    @include button-size-large();
+  }
+
+  &.medium {
+    @include button-size-medium();
+  }
+
+  &.small {
+    @include button-size-small();
+  }
+
+  &.primary {
+    border: 1px solid var(--gray500);
+    background-color: transparent;
+    color: var(--gray600);
+
+    &:focus,
+    &:hover {
+      border: 1px solid var(--gray800);
+      color: var(--gray800);
+    }
+  }
+
+  &.secondary {
+    border: 1px solid var(--blue200);
+    background-color: transparent;
+    color: var(--gray700);
+
+    &:focus,
+    &:hover {
+      border: 1px solid var(--blue300);
+      color: var(--gray800);
+    }
+  }
+
+  &.error {
+    background-color: var(--vivid-red);
+    color: var(--gray700);
+  }
+}

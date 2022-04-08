@@ -35,11 +35,11 @@ const requestApi = async (payload: Payload) => {
   const appHostname = parseUrl(process.env.APP_URL as string).hostname;
   const apiHostname = parseUrl(process.env.API_URL as string).hostname;
 
-  const notEqualHost = appHostname !== apiHostname;
-  const needsProxy = !isServer && notEqualHost;
-  const endpoint = url;
+  // const notEqualHost = appHostname !== apiHostname;
+  // const needsProxy = !isServer && notEqualHost;
+  // const endpoint = url;
 
-  const baseURL = needsProxy ? '/api' : base || process.env.API_URL;
+  // const baseURL = needsProxy ? '/api' : base || process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
   /**
    * @todo 현재 timeout 미지정. length * 7-8s 예상 중
@@ -47,8 +47,8 @@ const requestApi = async (payload: Payload) => {
   const options = {
     ...rest,
     headers,
-    baseURL,
-    url: endpoint,
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    url: url,
     // timeout: 15000,
   };
 
@@ -56,13 +56,13 @@ const requestApi = async (payload: Payload) => {
   options.headers['Accept'] = 'application/json';
   options.headers['Content-Type'] = 'application/json; charset=utf-8';
 
-  if (isServer) {
-    const token = Cookie.load('token');
+  // if (isServer) {
+  //   const token = Cookie.load('token');
 
-    if (token) {
-      options.headers['Cookie'] = `token=${token}`;
-    }
-  }
+  //   if (token) {
+  //     options.headers['Cookie'] = `token=${token}`;
+  //   }
+  // }
 
   try {
     const response = await axios(options);

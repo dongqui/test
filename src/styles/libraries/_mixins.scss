@@ -9,7 +9,7 @@
 @mixin basic-button-style() {
   border-radius: 6px;
   font-weight: 400;
-  transition: background-color 0.25s;
+  transition: background-color 0.25s, border 0.25s;
 
   &.small {
     min-width: 64px;
@@ -46,7 +46,7 @@
 @mixin ellipsis($lineCount, $lineHeight) {
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
+  display: box;
   -webkit-line-clamp: $lineCount;
   -webkit-box-orient: vertical;
   word-wrap: break-word;
