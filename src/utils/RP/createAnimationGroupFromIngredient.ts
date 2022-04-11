@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { Animation, AnimationGroup, IAnimationKey, Mesh, TransformNode } from '@babylonjs/core';
 import { AnimationIngredient } from 'types/common';
 import filterQuaternion from './filterQuaternion';
 import filterVector from './filterVector';
@@ -10,17 +10,17 @@ import getTotalTransformKeys from './getTotalTransformKeys';
  * @param animationIngredient
  * @param fps - fps of the animationGroup
  */
-const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngredient, fps: number): BABYLON.AnimationGroup => {
+const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngredient, fps: number): AnimationGroup => {
   const { name, layers } = animationIngredient;
 
-  const newAnimationGroup = new BABYLON.AnimationGroup(name);
+  const newAnimationGroup = new AnimationGroup(name);
 
   const transformKeysListForTargetId: {
     [id in string]: {
-      target: BABYLON.Mesh | BABYLON.TransformNode;
-      positionTransformKeysList: Array<BABYLON.IAnimationKey[]>;
-      rotationQuaternionTransformKeysList: Array<BABYLON.IAnimationKey[]>;
-      scalingTransformKeysList: Array<BABYLON.IAnimationKey[]>;
+      target: Mesh | TransformNode;
+      positionTransformKeysList: Array<IAnimationKey[]>;
+      rotationQuaternionTransformKeysList: Array<IAnimationKey[]>;
+      scalingTransformKeysList: Array<IAnimationKey[]>;
     };
   } = {};
 
@@ -87,31 +87,25 @@ const createAnimationGroupFromIngredient = (animationIngredient: AnimationIngred
     const rotationQuaternionTotalTransformKeys = getTotalTransformKeys(rotationQuaternionTransformKeysList, 'rotationQuaternion');
     const scalingTotalTransformKeys = getTotalTransformKeys(scalingTransformKeysList, 'scaling');
 
-    const newPositionAnimation = new BABYLON.Animation(
-      `${target.name}|position`,
-      'position',
-      fps,
-      BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-      BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
-    );
+    const newPositionAnimation = new Animation(`${target.name}|position`, 'position', fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
     newPositionAnimation.setKeys(positionTotalTransformKeys);
 
-    const newRotationQuaternionAnimation = new BABYLON.Animation(
+    const newRotationQuaternionAnimation = new Animation(
       `${target.name}|rotationQuaternion`,
       'rotationQuaternion',
       fps,
-      BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
-      BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+      Animation.ANIMATIONTYPE_QUATERNION,
+      Animation.ANIMATIONLOOPMODE_CYCLE,
     );
     newRotationQuaternionAnimation.setKeys(rotationQuaternionTotalTransformKeys);
 
     // prettier-ignore
-    const newScalingAnimation = new BABYLON.Animation(
+    const newScalingAnimation = new Animation(
       `${target.name}|scaling`,
       'scaling',
       fps,
-      BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-      BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+      Animation.ANIMATIONTYPE_VECTOR3,
+      Animation.ANIMATIONLOOPMODE_CYCLE,
     );
     newScalingAnimation.setKeys(scalingTotalTransformKeys);
 

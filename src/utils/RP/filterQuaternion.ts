@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { IAnimationKey } from '@babylonjs/core';
 import OneEuroFilterForQuaternion from './OneEuroFilterForQuaternion';
 
 /**
@@ -9,7 +9,7 @@ import OneEuroFilterForQuaternion from './OneEuroFilterForQuaternion';
  * @param minCutoff - filter minCutoff value
  * @param beta - filter beta value
  */
-const filterQuaternion = (transformKeys: BABYLON.IAnimationKey[], minCutoff: number, beta: number): BABYLON.IAnimationKey[] => {
+const filterQuaternion = (transformKeys: IAnimationKey[], minCutoff: number, beta: number): IAnimationKey[] => {
   const oneEuroFilterQuaternion = new OneEuroFilterForQuaternion(minCutoff, beta);
   const filteredTransformKeys = transformKeys.map((transformKey) => ({
     frame: transformKey.frame,

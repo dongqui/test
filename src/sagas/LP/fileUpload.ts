@@ -6,7 +6,6 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
-import * as BABYLON from '@babylonjs/core';
 import { convertModel } from 'api';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createAutoRetargetMap, createEmptyRetargetMap, isRetargetError } from 'utils/LP/Retarget';
@@ -15,11 +14,13 @@ import { createAnimationIngredient, getRecurrentRotationQuaternion } from 'utils
 import { IMPORT_ERROR_UNKNODW, WARNING_01, IMPORT_ERROR_NO_BONE, IMPORT_ERROR_NO_MESH, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import { AnimationIngredient, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
 import { NoBoneImportError, NoMeshImportError, InvalidFormatImportError } from 'errors';
+import { PlaskEngine } from '3d/PlaskEngine';
+import { AnimationGroup, AssetContainer, Scene, Skeleton, TransformNode } from '@babylonjs/core';
 
 export default function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) {
   // TODO: reduce # of actions by handle multi-files at one action
   const { lpNode, plaskProject }: RootState = yield select();
-  const { file, showLoading } = action.payload;
+  const { file, showLoading, plaskEngine } = action.payload;
 
   const baseScene = plaskProject.screenList[0].scene;
   const rawFileName = file instanceof File ? file.name : file;
@@ -34,84 +35,86 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
     if (showLoading) {
       yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }, `loading_${fileName}`));
     }
-    const assetContainer: BABYLON.AssetContainer = yield call(getAssetContainer, file, extension, baseScene);
-    const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
+    const assetContainer: AssetContainer = yield call(getAssetContainer, file, extension, baseScene, plaskEngine);
+    if (assetContainer) {
+      const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
 
-    if (!skeletons?.length || !skeletons[0].bones?.length) {
-      throw new NoBoneImportError(IMPORT_ERROR_NO_BONE);
-    }
-    if (!meshes?.length) {
-      throw new NoMeshImportError(IMPORT_ERROR_NO_MESH);
-    }
+      if (!skeletons?.length || !skeletons[0].bones?.length) {
+        throw new NoBoneImportError(IMPORT_ERROR_NO_BONE);
+      }
+      if (!meshes?.length) {
+        throw new NoMeshImportError(IMPORT_ERROR_NO_MESH);
+      }
 
-    preprocessAssetContainerData(assetId, assetContainer);
+      preprocessAssetContainerData(assetId, assetContainer, plaskEngine);
 
-    const { animationIngredientIds, animationIngredients } = getCustomAnimationIngredients(assetId, transformNodes, animationGroups);
-    const retargetMap: PlaskRetargetMap = yield call(_createRetargetMap, assetId, skeletons);
-    const nodeName = getNodeName(lpNode.nodes, fileName, extension);
-    const initialPoses: PlaskPose[] = getInitialPoses(transformNodes, skeletons);
+      const { animationIngredientIds, animationIngredients } = getCustomAnimationIngredients(assetId, transformNodes, animationGroups);
+      const retargetMap: PlaskRetargetMap = yield call(_createRetargetMap, assetId, skeletons);
+      const nodeName = getNodeName(lpNode.nodes, fileName, extension);
+      const initialPoses: PlaskPose[] = getInitialPoses(transformNodes, skeletons);
 
-    const newAsset: PlaskAsset = {
-      id: assetId,
-      name: nodeName,
-      extension,
-      meshes,
-      initialPoses,
-      geometries,
-      skeleton: skeletons[0] ?? null,
-      bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
-      transformNodes,
-      animationIngredientIds,
-      retargetMapId: retargetMap.id,
-    };
-
-    const newModelNode: LP.Node = {
-      id: uuid(),
-      parentId: '__root__',
-      filePath: '\\root',
-      name: nodeName,
-      extension,
-      type: 'Model',
-      assetId: newAsset.id,
-      childNodeIds: animationIngredientIds,
-    };
-
-    // create MotionNode in LP with animationIngredients included in loaded asset
-    const newMotionNodes = animationIngredients.map((ingredient) => {
-      const motion: LP.Node = {
-        id: ingredient.id,
-        // parentId: ingredient.assetId,
-        parentId: newModelNode.id,
-        assetId: ingredient.assetId,
-        filePath: '\\root' + `\\${nodeName}`,
-        name: ingredient.name,
-        extension: '',
-        type: 'Motion',
-        childNodeIds: [],
+      const newAsset: PlaskAsset = {
+        id: assetId,
+        name: nodeName,
+        extension,
+        meshes,
+        initialPoses,
+        geometries,
+        skeleton: skeletons[0] ?? null,
+        bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
+        transformNodes,
+        animationIngredientIds,
+        retargetMapId: retargetMap.id,
       };
 
-      return motion;
-    });
+      const newModelNode: LP.Node = {
+        id: uuid(),
+        parentId: '__root__',
+        filePath: '\\root',
+        name: nodeName,
+        extension,
+        type: 'Model',
+        assetId: newAsset.id,
+        childNodeIds: animationIngredientIds,
+      };
 
-    yield put(plaskProjectActions.addAsset({ asset: newAsset }));
-    yield put(
-      animationDataActions.addAsset({
-        transformNodes: filterAnimatableTransformNodes(transformNodes),
-        animationIngredients,
-        retargetMap,
-      }),
-    );
-    yield put(lpNodeActions.addNodes([newModelNode, ...newMotionNodes]));
+      // create MotionNode in LP with animationIngredients included in loaded asset
+      const newMotionNodes = animationIngredients.map((ingredient) => {
+        const motion: LP.Node = {
+          id: ingredient.id,
+          // parentId: ingredient.assetId,
+          parentId: newModelNode.id,
+          assetId: ingredient.assetId,
+          filePath: '\\root' + `\\${nodeName}`,
+          name: ingredient.name,
+          extension: '',
+          type: 'Motion',
+          childNodeIds: [],
+        };
 
-    if (isRetargetError(retargetMap)) {
+        return motion;
+      });
+
+      yield put(plaskProjectActions.addAsset({ asset: newAsset }));
       yield put(
-        globalUIActions.openModal('AlertModal', {
-          title: 'Warning',
-          message: WARNING_01.replace(/%s/, fileName),
-          confirmText: 'Close',
-          confirmColor: 'cancel',
+        animationDataActions.addAsset({
+          transformNodes: filterAnimatableTransformNodes(transformNodes),
+          animationIngredients,
+          retargetMap,
         }),
       );
+      yield put(lpNodeActions.addNodes([newModelNode, ...newMotionNodes]));
+
+      if (isRetargetError(retargetMap)) {
+        yield put(
+          globalUIActions.openModal('AlertModal', {
+            title: 'Warning',
+            message: WARNING_01.replace(/%s/, fileName),
+            confirmText: 'Close',
+            confirmColor: 'cancel',
+          }),
+        );
+      }
     }
   } catch (e) {
     const isClassifiedError = e instanceof NoBoneImportError || e instanceof NoMeshImportError || e instanceof InvalidFormatImportError;
@@ -132,37 +135,15 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
   }
 }
 
-async function getAssetContainer(file: File | string, extension: string, baseScene: BABYLON.Scene) {
-  if (extension === 'fbx' && file instanceof File) {
-    const fileUrl: string = await convertModel(file, 'glb');
-    return await BABYLON.SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
-  } else if (extension === 'glb') {
-    return file instanceof File
-      ? await BABYLON.SceneLoader.LoadAssetContainerAsync('file:', file, baseScene)
-      : await BABYLON.SceneLoader.LoadAssetContainerAsync(`/models/${file}`, '', baseScene);
-  }
+async function getAssetContainer(file: File | string, extension: string, baseScene: Scene, plaskEngine: PlaskEngine) {
+  return await plaskEngine.assetModule.getAssetContainer(file, extension, baseScene);
 }
 
-function preprocessAssetContainerData(assetId: string, assetContainer: BABYLON.AssetContainer) {
-  const { meshes, skeletons, transformNodes } = assetContainer;
-
-  meshes.forEach((mesh) => {
-    // make meshes not-pickable for clicking joints
-    mesh.isPickable = false;
-  });
-
-  skeletons[0].bones.forEach((bone) => {
-    // set bone's id with unique string using its name and the id of its' asset
-    bone.id = `${assetId}//${bone.name}//bone`;
-  });
-
-  transformNodes.forEach((transformNode) => {
-    // set transformNode's id with unique string using its name and the id of its' asset
-    transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
-  });
+function preprocessAssetContainerData(assetId: string, assetContainer: AssetContainer, plaskEngine: PlaskEngine) {
+  plaskEngine.assetModule.preprocessAssetContainerData(assetId, assetContainer);
 }
 
-function getCustomAnimationIngredients(assetId: string, transformNodes: BABYLON.TransformNode[], animationGroups: BABYLON.AnimationGroup[]) {
+function getCustomAnimationIngredients(assetId: string, transformNodes: TransformNode[], animationGroups: AnimationGroup[]) {
   const animationIngredientIds: string[] = [];
   const animationIngredients: AnimationIngredient[] = [];
 
@@ -191,7 +172,7 @@ function getCustomAnimationIngredients(assetId: string, transformNodes: BABYLON.
   return { animationIngredientIds, animationIngredients };
 }
 
-async function _createRetargetMap(assetId: string, skeletons: BABYLON.Skeleton[]) {
+async function _createRetargetMap(assetId: string, skeletons: Skeleton[]) {
   try {
     return await createAutoRetargetMap(assetId, skeletons[0]?.bones, 3000);
   } catch (e) {
@@ -208,7 +189,7 @@ function getNodeName(nodes: LP.Node[], fileName: string, extension: string) {
   return check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
 }
 
-function getInitialPoses(transformNodes: BABYLON.TransformNode[], skeletons: BABYLON.Skeleton[]) {
+function getInitialPoses(transformNodes: TransformNode[], skeletons: Skeleton[]) {
   return filterAnimatableTransformNodes(transformNodes).map((transformNode) => {
     const bone = skeletons[0].bones.find((bone) => bone.id === transformNode.id.replace('//transformNode', '//bone'))!;
 

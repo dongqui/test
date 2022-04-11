@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { IAnimationKey, Quaternion, Vector3 } from '@babylonjs/core';
 import { zipWith } from 'lodash';
 import { PlaskProperty } from 'types/common';
 import getLinearInterpolatedTransformKeys from './getLinearInterpolatedTransformKeys';
@@ -9,8 +9,8 @@ import getUnionFrames from './getUnionFrames';
  *
  * @param values - target position array
  */
-const getPositionSum = (values: BABYLON.Vector3[]) => {
-  let sum = BABYLON.Vector3.Zero();
+const getPositionSum = (values: Vector3[]) => {
+  let sum = Vector3.Zero();
   values.forEach((value) => {
     sum = sum.add(value.clone());
   });
@@ -25,8 +25,8 @@ const getPositionSum = (values: BABYLON.Vector3[]) => {
  *
  * @param values target quaternion array
  */
-const getRotationQuaternionSum = (values: BABYLON.Quaternion[]) => {
-  let sum = BABYLON.Quaternion.Identity();
+const getRotationQuaternionSum = (values: Quaternion[]) => {
+  let sum = Quaternion.Identity();
   values.forEach((value) => {
     const e = value.clone().toEulerAngles();
     sum = sum.clone().toEulerAngles().add(e).toQuaternion();
@@ -40,10 +40,10 @@ const getRotationQuaternionSum = (values: BABYLON.Quaternion[]) => {
  *
  * @param values target scaling array
  */
-const getScalingSum = (values: BABYLON.Vector3[]) => {
-  let sum = new BABYLON.Vector3(1, 1, 1);
+const getScalingSum = (values: Vector3[]) => {
+  let sum = new Vector3(1, 1, 1);
   values.forEach((value) => {
-    sum = new BABYLON.Vector3(sum.x * value.x, sum.y * value.y, sum.z * value.z);
+    sum = new Vector3(sum.x * value.x, sum.y * value.y, sum.z * value.z);
   });
 
   return sum;
@@ -55,14 +55,14 @@ const getScalingSum = (values: BABYLON.Vector3[]) => {
  * @param transformKeysList - target transformKeys list (array of arrays of transformKey)
  * @param property - property of target track
  */
-const getTotalTransformKeys = (transformKeysList: Array<BABYLON.IAnimationKey[]>, property: Omit<PlaskProperty, 'rotation'>) => {
+const getTotalTransformKeys = (transformKeysList: Array<IAnimationKey[]>, property: Omit<PlaskProperty, 'rotation'>) => {
   const unionFrames = getUnionFrames(transformKeysList);
   const linearInterpolatedTransformKeysList = transformKeysList.map((transformKeys) =>
     getLinearInterpolatedTransformKeys(transformKeys, unionFrames, property === 'rotationQuaternion'),
   );
 
   const totalTransformKeys = zipWith(...linearInterpolatedTransformKeysList, (...transformKeys) => {
-    let value: BABYLON.Vector3 | BABYLON.Quaternion;
+    let value: Vector3 | Quaternion;
     if (property === 'position') {
       value = getPositionSum(transformKeys.map((key) => key.value));
     } else if (property === 'rotationQuaternion') {

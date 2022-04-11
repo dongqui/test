@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { DirectionalLight, Scene, Vector3 } from '@babylonjs/core';
 
 const defaultPositionArray = [0, 10, 10];
 const defaultDirectionArray = [0, 1, 0];
@@ -10,9 +10,9 @@ const defaultDirectionArray = [0, 1, 0];
  * @param position - position of light origin
  * @param direction - direction where the light is going
  */
-const createDirectionalLight = (scene: BABYLON.Scene, position?: BABYLON.Vector3, direction?: BABYLON.Vector3) => {
-  const directionalLight = new BABYLON.DirectionalLight('directionalLight', (direction = BABYLON.Vector3.FromArray(defaultPositionArray)), scene);
-  directionalLight.position = position ?? BABYLON.Vector3.FromArray(defaultDirectionArray);
+const createDirectionalLight = (scene: Scene, position?: Vector3, direction?: Vector3) => {
+  const directionalLight = new DirectionalLight('directionalLight', (direction = Vector3.FromArray(defaultPositionArray)), scene);
+  directionalLight.position = position ?? Vector3.FromArray(defaultDirectionArray);
   directionalLight.intensity = 0.1;
 
   return directionalLight;

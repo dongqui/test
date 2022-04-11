@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { IAnimationKey } from '@babylonjs/core';
 import { PlaskProperty, PlaskTrack } from 'types/common';
 import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNION_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_MIN_CUTOFF } from 'utils/const';
 
@@ -13,7 +13,7 @@ import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNI
  * @param transformKeys - array of transformKeys (cf. each transformKey contains frame and value)
  * @param isMocapAnimation - whether this track is from mocap data or not
  */
-const createPlaskTrack = (name: string, layerId: string, target: any, property: PlaskProperty, transformKeys: BABYLON.IAnimationKey[], isMocapAnimation: boolean): PlaskTrack => {
+const createPlaskTrack = (name: string, layerId: string, target: any, property: PlaskProperty, transformKeys: IAnimationKey[], isMocapAnimation: boolean): PlaskTrack => {
   let filterBeta = DEFAULT_BETA;
   let filterMinCutoff = DEFAULT_MIN_CUTOFF;
 

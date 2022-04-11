@@ -1,3 +1,5 @@
+@import "styles/libraries/_colors";
+
 .container {
   width: 100%;
 }
@@ -15,20 +17,12 @@
   flex-direction: column;
   width: 100%;
 
-  &.open-visualized {
-    background-color: var(--blue100);
-  }
-
-  &.close-visualized {
-    background-color: var(--blue200);
-  }
-
   &.selected {
-    background-color: var(--gray400);
+    background-color: $primary;
+  }
 
-    div[id="inner"] {
-      background-color: var(--gray400);
-    }
+  &.parent-selected {
+    background-color: var(--blue016);
   }
 }
 

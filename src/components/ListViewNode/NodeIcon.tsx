@@ -7,10 +7,17 @@ const cx = classNames.bind(styles);
 
 interface Props {
   icon: LP.NodeType;
+  isVisualizedUICondition: boolean;
+  isSelected: boolean;
 }
 
-const NodeIcon: FunctionComponent<Props> = ({ icon }) => {
-  return <IconWrapper icon={SvgPath[icon]} className={cx('icon')} />;
+const NodeIcon: FunctionComponent<Props> = ({ icon, isVisualizedUICondition, isSelected }) => {
+  const classes = cx('icon', {
+    visualized: isVisualizedUICondition,
+    selected: isSelected,
+  });
+
+  return <IconWrapper icon={SvgPath[icon]} className={classes} />;
 };
 
 export default memo(NodeIcon);

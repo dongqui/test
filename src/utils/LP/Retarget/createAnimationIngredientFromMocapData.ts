@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { Quaternion, TransformNode, Vector3 } from '@babylonjs/core';
 import { AnimationIngredient, PlaskMocapData, PlaskPose, PlaskRetargetMap } from 'types/common';
 import { createAnimationIngredient } from 'utils/RP';
 
@@ -20,7 +20,7 @@ const createAnimationIngredientFromMocapData = (
   animationIngredientName: string,
   retargetMap: PlaskRetargetMap,
   initialPoses: PlaskPose[],
-  animatableTransformNodes: BABYLON.TransformNode[],
+  animatableTransformNodes: TransformNode[],
   mocapData: PlaskMocapData,
   timeout?: number,
 ): Promise<AnimationIngredient> => {
@@ -48,10 +48,10 @@ const createAnimationIngredientFromMocapData = (
           transformKeys.forEach((transformKey) => {
             const { frame, value } = transformKey;
 
-            const targetQ = BABYLON.Quaternion.FromArray(value);
+            const targetQ = Quaternion.FromArray(value);
             const initialLocalQ = targetInitialPose.rotationQuaternion.clone();
             const recurrentQ = targetInitialPose.recurrentRotationQuaternion!.clone();
-            const inversedRecurrentQ = BABYLON.Quaternion.Inverse(recurrentQ.clone());
+            const inversedRecurrentQ = Quaternion.Inverse(recurrentQ.clone());
 
             const q = initialLocalQ.multiply(inversedRecurrentQ).multiply(targetQ).multiply(recurrentQ);
             const e = q.toEulerAngles();
@@ -67,7 +67,7 @@ const createAnimationIngredientFromMocapData = (
           transformKeys.forEach((transformKey) => {
             const { frame, value } = transformKey;
             const newValue = value.map((v, idx) => (idx === 2 ? ((v * 100 - 106) * hipSpace) / 106 : (v * 100 * hipSpace) / 106));
-            targetTrack.transformKeys.push({ frame, value: BABYLON.Vector3.FromArray(newValue) }); // the root mesh is scaled down to 1/100, all transformKeys have to have 100 * value
+            targetTrack.transformKeys.push({ frame, value: Vector3.FromArray(newValue) }); // the root mesh is scaled down to 1/100, all transformKeys have to have 100 * value
           });
         }
       } else if (property === 'scaling') {
@@ -76,7 +76,7 @@ const createAnimationIngredientFromMocapData = (
         if (targetTrack) {
           transformKeys.forEach((transformKey) => {
             const { frame, value } = transformKey;
-            targetTrack.transformKeys.push({ frame, value: BABYLON.Vector3.FromArray(value) });
+            targetTrack.transformKeys.push({ frame, value: Vector3.FromArray(value) });
           });
         }
       }

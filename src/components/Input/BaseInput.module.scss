@@ -1,13 +1,15 @@
+@import "styles/libraries/_colors";
+
 
 .dark {
   background: none;
-  caret-color: #fff;
-  color: #fff;
+  caret-color: $content-active;
+  color: $content-active;
 
   &:-webkit-autofill,
   &:-webkit-autofill:hover,
   &:-webkit-autofill:focus {
-    box-shadow: 0 0 0 1000px #fff inset;
+    box-shadow: 0 0 0 1000px $content-active inset;
   }
 
   &.disabled {
@@ -19,7 +21,7 @@
   }
 
   &.invalid {
-    color: var(--vivid-red);
+    color: $negative;
   }
 }
 
@@ -31,7 +33,7 @@
   &:-webkit-autofill,
   &:-webkit-autofill:hover,
   &:-webkit-autofill:focus {
-    box-shadow: 0 0 0 1000px var(--gray200)inset;
+    box-shadow: 0 0 0 1000px var(--gray200) inset;
   }
 
   &.disabled {
@@ -43,7 +45,7 @@
   }
 
   &.invalid {
-    color: var(--vivid-red);
+    color: $negative;
   }
 }
 

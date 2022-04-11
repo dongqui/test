@@ -1,4 +1,3 @@
-import * as BABYLON from '@babylonjs/core';
 import { FunctionComponent, useRef, useEffect, useMemo, useState, useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';

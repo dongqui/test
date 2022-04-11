@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { HemisphericLight, Scene, Vector3 } from '@babylonjs/core';
 
 const defaultReflectionDirectionArray = [0, 1, 1];
 
@@ -8,8 +8,8 @@ const defaultReflectionDirectionArray = [0, 1, 1];
  * @param scene - scene where the light will be added
  * @param reflectionDirection - the direcion where the light is reflected to (default = (0, 1, 1))
  */
-const createHemisphericLight = (scene: BABYLON.Scene, reflectionDirection?: BABYLON.Vector3) => {
-  const hemisphericLight = new BABYLON.HemisphericLight('hemisphericLight', (reflectionDirection = BABYLON.Vector3.FromArray(defaultReflectionDirectionArray)), scene);
+const createHemisphericLight = (scene: Scene, reflectionDirection?: Vector3) => {
+  const hemisphericLight = new HemisphericLight('hemisphericLight', (reflectionDirection = Vector3.FromArray(defaultReflectionDirectionArray)), scene);
   hemisphericLight.intensity = 0.9;
 
   return hemisphericLight;

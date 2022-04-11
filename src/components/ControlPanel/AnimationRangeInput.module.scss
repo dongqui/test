@@ -1,16 +1,18 @@
+@import "styles/libraries/_colors";
+
 .wrapper {
   display: grid;
   grid-template-columns: 64px 1fr;
 
   & > p {
-    color: #4f4f4f;
+    color: $content-inactive;
     font-size: 11px;
     line-height: 13px;
   }
 
   &.able {
     & > p {
-      color: #d3d3d3;
+      color: $content-active;
     }
   }
 }
@@ -23,7 +25,7 @@
   :first-child[type=range] {
     width: 66%;
     height: 2px;
-    background-color: #4f4f4f;
+    background-color: $contentbg-base;
     appearance: none;
     background-size: 50% 100%;
     background-repeat: no-repeat;
@@ -39,7 +41,7 @@
     width: 12px;
     height: 12px;
     border-radius: 6px;
-    background-color: #4f4f4f;
+    background-color: $contentbg-base;
     margin-top: -5px;
     cursor: pointer;
   }
@@ -55,7 +57,7 @@
     height: 24px;
     padding-left: 8px;
     border-radius: 6px;
-    background-color: #353739;
+    background-color: $contentbg-base;
     color: #4f4f4f;
     font-size: 11px;
     line-height: 13px;
@@ -87,19 +89,19 @@
 
   &.able {
     :first-child[type=range] {
-      background-color: #353739;
-      background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #353739), color-stop(100%, #0f88ff));
+      background-color: $contentbg-base;
+      background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, $contentbg-base), color-stop(100%, $primary));
     }
 
     :first-child[type=range]::-webkit-slider-thumb {
-      background-color: #0f88ff;
+      background-color: $primary;
     }
 
     :nth-child(2) {
-      color: #fff;
+      color: $content-active;
 
       &::placeholder {
-        color: #fff;
+        color: $content-active;
       }
     }
   }
