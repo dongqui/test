@@ -14,27 +14,14 @@ import * as animatingControlsActions from 'actions/animatingControlsAction';
 export class AnimationModule extends Module {
   private _currentAnimationGroup: Nullable<AnimationGroup>;
 
-  public reduxObservedStates = [
-    'animationData.animationIngredients',
-    'animatingControls.playState',
-    'animatingControls.playDirection',
-    'animatingControls.playSpeed',
-    'animatingControls.startTimeIndex',
-    'animatingControls.endTimeIndex',
-    'animatingControls.currentTimeIndex',
-    'plaskProject.visualizedAssetIds',
-  ];
+  public reduxObservedStates = ['animationData.animationIngredients', 'plaskProject.visualizedAssetIds', 'animatingControls.startTimeIndex', 'animatingControls.endTimeIndex'];
   public onAnimationDataChangeObservable: Observable<{ animationIngredients: AnimationIngredient[]; visualizedAssetIds: string[]; startTimeIndex: number; endTimeIndex: number }>;
-  public onAnimationControlsChangeObservable: Observable<
-    { type: 'playState'; value: PlayState } | { type: 'playDirection'; value: PlayDirection } | { type: 'playSpeed' | 'currentTimeIndex'; value: number }
-  >;
 
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
 
     this._currentAnimationGroup = null;
     this.onAnimationDataChangeObservable = new Observable();
-    this.onAnimationControlsChangeObservable = new Observable();
   }
 
   /**
@@ -60,8 +47,6 @@ export class AnimationModule extends Module {
         this.plaskEngine.dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
       }
     });
-
-    this.onAnimationControlsChangeObservable.add(({ type, value }) => {});
   }
 
   /**
@@ -69,7 +54,6 @@ export class AnimationModule extends Module {
    */
   public dispose() {
     this.onAnimationDataChangeObservable.clear();
-    this.onAnimationControlsChangeObservable.clear();
   }
 
   /**
@@ -549,6 +533,84 @@ export class AnimationModule extends Module {
     return total;
   }
 
+  /**
+   * Change play speed of the current animationGroup
+   * @param key - play speed to apply
+   */
+  public changePlaySpeed(key: string) {
+    if (this._currentAnimationGroup && this._currentAnimationGroup.isPlaying) {
+      if (this._currentAnimationGroup.speedRatio < 0) {
+        this._currentAnimationGroup.speedRatio = -1 * parseFloat(key);
+      } else {
+        this._currentAnimationGroup.speedRatio = parseFloat(key);
+      }
+    }
+  }
+
+  /**
+   * Play forward current animationGroup
+   */
+  public playCurrentAnimationGroup() {
+    if (this._currentAnimationGroup) {
+      if (this._currentAnimationGroup.isPlaying && this._currentAnimationGroup.speedRatio < 0) {
+        this._currentAnimationGroup.speedRatio = this.playSpeed;
+      } else if (this._currentAnimationGroup.isStarted) {
+        this._currentAnimationGroup.speedRatio = this.playSpeed;
+        this._currentAnimationGroup.play().goToFrame(this.currentTimeIndex);
+      } else {
+        this._currentAnimationGroup.start(true, this.playSpeed, this.startTimeIndex, this.endTimeIndex).goToFrame(this.currentTimeIndex - this.startTimeIndex);
+      }
+    }
+  }
+
+  /**
+   * Play backward current animationGroup
+   */
+  public rewindCurrentAnimationGroup() {
+    if (this._currentAnimationGroup) {
+      if (this._currentAnimationGroup.isPlaying && this._currentAnimationGroup.speedRatio >= 0) {
+        this._currentAnimationGroup.speedRatio = -1 * this.playSpeed;
+      } else if (this._currentAnimationGroup.isStarted) {
+        this._currentAnimationGroup.speedRatio = -1 * this.playSpeed;
+        this._currentAnimationGroup.play().goToFrame(this.currentTimeIndex);
+      } else {
+        this._currentAnimationGroup.start(true, -1 * this.playSpeed, this.startTimeIndex, this.endTimeIndex).goToFrame(this.currentTimeIndex - this.startTimeIndex);
+      }
+    }
+  }
+
+  /**
+   * Pause current animationGroup
+   */
+  public pauseCurrentAnimationGroup() {
+    if (this._currentAnimationGroup && this._currentAnimationGroup.isPlaying) {
+      this._currentAnimationGroup.pause();
+    }
+  }
+
+  /**
+   * Stop current animationGroup
+   */
+  public stopCurrentAnimationGroup() {
+    if (this._currentAnimationGroup) {
+      this._currentAnimationGroup.goToFrame(this.startTimeIndex).stop();
+    }
+  }
+
+  /**
+   * Move current animationGroup to specific timeIndex(frame)
+   * @param targetTimeIndex - target frame(index)
+   */
+  public moveCurrentAnimationGroup(targetTimeIndex: number) {
+    if (this._currentAnimationGroup) {
+      if (this._currentAnimationGroup.isStarted) {
+        this._currentAnimationGroup.goToFrame(targetTimeIndex);
+      } else {
+        this._currentAnimationGroup.start(true, this.playSpeed, this.startTimeIndex, this.endTimeIndex).pause().goToFrame(targetTimeIndex);
+      }
+    }
+  }
+
   public onStateChanged(key: string, previousState: any): void {
     switch (key) {
       case 'animationData.animationIngredients': {
@@ -585,22 +647,6 @@ export class AnimationModule extends Module {
           startTimeIndex: this.startTimeIndex,
           endTimeIndex: this.endTimeIndex,
         });
-        break;
-      }
-      case 'animatingControls.playState': {
-        this.onAnimationControlsChangeObservable.notifyObservers({ type: 'playState', value: this.playState });
-        break;
-      }
-      case 'animatingControls.playDirection': {
-        this.onAnimationControlsChangeObservable.notifyObservers({ type: 'playDirection', value: this.playDirection });
-        break;
-      }
-      case 'animatingControls.playSpeed': {
-        this.onAnimationControlsChangeObservable.notifyObservers({ type: 'playSpeed', value: this.playSpeed });
-        break;
-      }
-      case 'animatingControls.currentTimeIndex': {
-        this.onAnimationControlsChangeObservable.notifyObservers({ type: 'currentTimeIndex', value: this.currentTimeIndex });
         break;
       }
       default: {
