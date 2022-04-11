@@ -33,6 +33,7 @@ import { EntityStore, PlaskSpec } from './entities/EntityStore';
 import { updateTransform } from 'actions/selectingDataAction';
 import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 import { AssetModule } from './modules/asset/AssetModule';
+import { AnimationModule } from './modules/animation/AnimationModule';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
@@ -90,6 +91,7 @@ export class PlaskEngine {
   public visibilityLayers!: VisibilityLayersModule;
   public ikModule!: IKModule;
   public assetModule!: AssetModule;
+  public animationModule!: AnimationModule;
 
   private _entityStore!: EntityStore;
 
@@ -247,6 +249,7 @@ export class PlaskEngine {
     this._modules.push((this.visibilityLayers = new VisibilityLayersModule(this)));
     this._modules.push((this.assetModule = new AssetModule(this)));
     // this._modules.push((this.ikModule = new IKModule(this)));
+    this._modules.push((this.animationModule = new AnimationModule(this)));
   }
 
   private _onSceneReady() {

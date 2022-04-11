@@ -45,7 +45,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
     const hasMotions = childNodeIds.length !== 0;
 
     if (!hasMotions) {
-      dispatch(lpNodeActions.addEmptyMotion({ nodeId, assetId }));
+      dispatch(lpNodeActions.addEmptyMotion({ nodeId, assetId, plaskEngine }));
     }
     dispatch(lpNodeActions.visualizeNode({ assetId, plaskEngine }));
   };
@@ -62,6 +62,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
         lpNodeActions.addEmptyMotion({
           nodeId,
           assetId,
+          plaskEngine,
         }),
       );
     }

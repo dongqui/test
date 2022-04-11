@@ -2,7 +2,6 @@ import { find, filter } from 'lodash';
 import { select, put, call } from 'redux-saga/effects';
 
 import { RootState } from 'reducers';
-import { createAnimationGroupFromIngredient } from 'utils/RP';
 import { createBvhMap } from 'utils/LP/Retarget';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -33,7 +32,7 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
       const ingredients = motion === 'all' ? currentModelAnimationIngredients : filter(currentModelAnimationIngredients, { id: motion });
 
       ingredients.forEach((animationIngredient) => {
-        const animationGroup = createAnimationGroupFromIngredient(animationIngredient, fps);
+        const animationGroup = plaskEngine.animationModule.createAnimationGroupFromIngredient(animationIngredient, fps);
       });
     }
 
