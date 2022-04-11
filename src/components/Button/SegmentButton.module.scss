@@ -1,5 +1,5 @@
-
-@import 'styles/libraries/_mixins';
+@import "styles/libraries/_mixins";
+@import "styles/libraries/_colors";
 
 .segment-group {
   display: flex;
@@ -37,13 +37,13 @@
   }
 
   &:active {
-    background-color: #0f88ff;
-    color: #fff;
+    background-color: $primary;
+    color: $content-active;
   }
 
   &.selected {
-    background-color: #0f88ff;
-    color: #fff;
+    background-color: $primary;
+    color: $content-active;
   }
 
   &:focus {
