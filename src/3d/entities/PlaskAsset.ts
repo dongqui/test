@@ -19,4 +19,8 @@ export class PlaskAsset extends PlaskEntity {
 
     return this;
   }
+
+  public async onUpdate() {
+    // TODO : Launch saga to import model here
+  }
 }

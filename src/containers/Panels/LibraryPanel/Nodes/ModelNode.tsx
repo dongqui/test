@@ -59,6 +59,7 @@ const ModelNode = ({ node }: Props) => {
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
     }
+    // TODO : replace with an engine call, add a callback to the payload ? so we can async await and know when the saga is done
     dispatch(lpNodeActions.visualizeNode({ assetId, plaskEngine }));
   };
 

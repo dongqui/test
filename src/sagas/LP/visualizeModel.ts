@@ -35,6 +35,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
     if (assetId && !visualizedAssetIds.includes(assetId)) {
       plaskEngine.assetModule.visualizeModel(assetId, clickJointChannel);
     }
+    // TODO : here we can tell the callback that we are done with loading
   } catch (e) {
     yield put(
       globalUIActions.openModal('AlertModal', {

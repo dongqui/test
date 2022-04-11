@@ -106,9 +106,9 @@ export class PlaskTransformNode extends PlaskEntity {
     return this;
   }
 
-  public onUpdate() {
+  public async onUpdate() {
     // We must sync with babylon when a transformNode already exists
-      this.toTransformNode();
+    this.toTransformNode();
   }
 
   public serialize() {

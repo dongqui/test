@@ -47,6 +47,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId, assetId }));
     }
+    // TODO : replace with an engine call, add a callback to the payload ? so we can async await and know when the saga is done
     dispatch(lpNodeActions.visualizeNode({ assetId, plaskEngine }));
   };
 
