@@ -1,12 +1,9 @@
 import { find, cloneDeep, filter } from 'lodash';
 import { select, put, takeLatest, all, SagaReturnType, call, takeEvery } from 'redux-saga/effects';
-import { GLTF2Export, GLTFData } from '@babylonjs/serializers';
 import produce from 'immer';
 
 import { RootState } from 'reducers';
-import { createAnimationGroupFromIngredient } from 'utils/RP';
 import { beforeMove } from 'utils/LP/FileSystem';
-import { createAnimationIngredientFromMocapData, createBvhMap } from 'utils/LP/Retarget';
 import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
@@ -76,8 +73,8 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
       });
 
       try {
-        const mocapAnimationIngredient: SagaReturnType<typeof createAnimationIngredientFromMocapData> = yield call(
-          createAnimationIngredientFromMocapData,
+        const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
+          plaskEngine.animationModule.createAnimationIngredientFromMocapData,
           dropNode.assetId!,
           nodeName,
           targetRetargetMap,
@@ -136,8 +133,8 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         }),
       );
 
-      const mocapAnimationIngredient: SagaReturnType<typeof createAnimationIngredientFromMocapData> = yield call(
-        createAnimationIngredientFromMocapData,
+      const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
+        plaskEngine.animationModule.createAnimationIngredientFromMocapData,
         dropNode.assetId!,
         draggedNode.name,
         targetRetargetMap,

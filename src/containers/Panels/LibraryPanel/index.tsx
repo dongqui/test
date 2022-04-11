@@ -13,12 +13,10 @@ import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
+import { BabylonContext } from 'contexts/RP/BabylonContext';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-
-import ImportErrorModal from 'containers/Common/Modal/ImportErrorModal';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
 
 const cx = classNames.bind(styles);
 
