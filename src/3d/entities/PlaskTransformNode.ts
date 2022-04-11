@@ -101,12 +101,14 @@ export class PlaskTransformNode extends PlaskEntity {
         // This is not strictly necessary, but it fills the cache with a known value
         this._reference = otherPtn._reference;
       }
-
-      // When we copy from a PlaskTransformNode, we assume that the corresponding Babylon reference exists and is to be updated
-      this.toTransformNode();
     }
 
     return this;
+  }
+
+  public onUpdate() {
+    // We must sync with babylon when a transformNode already exists
+      this.toTransformNode();
   }
 
   public serialize() {

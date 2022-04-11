@@ -126,7 +126,7 @@ export class PlaskEngine {
    * @param state
    * @param previousState
    */
-  public onStateChanged(action: any, state: RootState, previousState: RootState) {
+  public async onStateChanged(action: any, state: RootState, previousState: RootState) {
     this.state = state;
 
     for (const module of this._modules) {
@@ -150,11 +150,18 @@ export class PlaskEngine {
       }
     }
 
+    // TODO : make it a static prop
+    const entityOrder = ['PlaskAsset', 'PlaskTransformNode'];
+
     // Entities update
-    for (const entityId in this.state.selectingData.present.allEntitiesMap) {
-      if (this.state.selectingData.present.allEntitiesMap[entityId] !== previousState.selectingData.present.allEntitiesMap[entityId]) {
-        // Entity is dirty
-        this._entityStore.registerEntity(this.state.selectingData.present.allEntitiesMap[entityId]);
+    for (const entityClass of entityOrder) {
+      for (const entityId in this.state.selectingData.present.allEntitiesMap) {
+        const currentEntity = this.state.selectingData.present.allEntitiesMap[entityId];
+        const previousEntity = previousState.selectingData.present.allEntitiesMap[entityId];
+        if (currentEntity.className === entityClass && currentEntity !== previousEntity) {
+          // Entity is dirty
+          await this._entityStore.registerEntity(this.state.selectingData.present.allEntitiesMap[entityId]);
+        }
       }
     }
   }
