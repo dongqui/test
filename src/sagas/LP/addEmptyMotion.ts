@@ -3,7 +3,6 @@ import { select, put } from 'redux-saga/effects';
 import produce from 'immer';
 
 import { RootState } from 'reducers';
-import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -16,7 +15,7 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
   const { animationTransformNodes } = animationData;
   const { visualizedAssetIds } = plaskProject;
   const { selectableObjects } = selectingData.present;
-  const { assetId, nodeId } = action.payload;
+  const { assetId, nodeId, plaskEngine } = action.payload;
 
   if (assetId) {
     const cloneLPNode = cloneDeep(lpNode.nodes);
@@ -47,7 +46,7 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
     const parentModel = find(cloneLPNode, { id: nodeId });
     const animationIngredientCurrent = parentModel?.childNodeIds.length === 0;
-    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
+    const nextAnimationIngredient = plaskEngine.animationModule.createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
 
     const afterNodes = produce(cloneLPNode, (draft) => {
       parentModel?.childNodeIds.push(nextAnimationIngredient.id);

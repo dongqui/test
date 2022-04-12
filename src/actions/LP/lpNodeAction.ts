@@ -58,6 +58,7 @@ interface DeleteModelParams {
 interface AddEmptyMotionParams {
   nodeId: string;
   assetId: string;
+  plaskEngine: PlaskEngine;
 }
 interface AddDirectoryParams {
   nodeId: string;

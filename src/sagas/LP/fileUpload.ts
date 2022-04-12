@@ -6,11 +6,10 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
-import { convertModel } from 'api';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createAutoRetargetMap, createEmptyRetargetMap, isRetargetError } from 'utils/LP/Retarget';
 import { getFileExtension, filterAnimatableTransformNodes, getRandomStringKey } from 'utils/common';
-import { createAnimationIngredient, getRecurrentRotationQuaternion } from 'utils/RP';
+import { getRecurrentRotationQuaternion } from 'utils/RP';
 import { IMPORT_ERROR_UNKNODW, WARNING_01, IMPORT_ERROR_NO_BONE, IMPORT_ERROR_NO_MESH, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import { AnimationIngredient, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
 import { NoBoneImportError, NoMeshImportError, InvalidFormatImportError } from 'errors';
@@ -48,7 +47,7 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
 
       preprocessAssetContainerData(assetId, assetContainer, plaskEngine);
 
-      const { animationIngredientIds, animationIngredients } = getCustomAnimationIngredients(assetId, transformNodes, animationGroups);
+      const { animationIngredientIds, animationIngredients } = getCustomAnimationIngredients(assetId, transformNodes, animationGroups, plaskEngine);
       const retargetMap: PlaskRetargetMap = yield call(_createRetargetMap, assetId, skeletons);
       const nodeName = getNodeName(lpNode.nodes, fileName, extension);
       const initialPoses: PlaskPose[] = getInitialPoses(transformNodes, skeletons);
@@ -143,7 +142,7 @@ function preprocessAssetContainerData(assetId: string, assetContainer: AssetCont
   plaskEngine.assetModule.preprocessAssetContainerData(assetId, assetContainer);
 }
 
-function getCustomAnimationIngredients(assetId: string, transformNodes: TransformNode[], animationGroups: AnimationGroup[]) {
+function getCustomAnimationIngredients(assetId: string, transformNodes: TransformNode[], animationGroups: AnimationGroup[], plaskEngine: PlaskEngine) {
   const animationIngredientIds: string[] = [];
   const animationIngredients: AnimationIngredient[] = [];
 
@@ -156,7 +155,7 @@ function getCustomAnimationIngredients(assetId: string, transformNodes: Transfor
      * create our custom data(animationIngredient) with asset's animationGroups
      * and set the first one as current animationIngredient
      */
-    const animationIngredient = createAnimationIngredient(
+    const animationIngredient = plaskEngine.animationModule.createAnimationIngredient(
       assetId,
       animationGroup.name,
       animationGroup.targetedAnimations,
