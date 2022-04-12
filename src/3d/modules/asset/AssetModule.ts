@@ -193,7 +193,10 @@ export class AssetModule extends Module {
             );
           });
 
+          // This only sets state.visualizedAssetIds
           this.plaskEngine.dispatch(plaskProjectActions.renderAsset({ assetId }));
+          // This appends PlaskTransformNodes to state.selectableObjects
+          // TODO : move that out of this function
           this.plaskEngine.dispatch(selectingDataActions.addSelectableObjects({ objects: plaskTransformNodes }));
         }
       }
@@ -227,11 +230,11 @@ export class AssetModule extends Module {
     let currentVisualizedAsset = visualizedAssets[0] as PlaskAsset;
     if (!currentVisualizedAsset) {
       currentVisualizedAsset = new PlaskAsset();
-      currentVisualizedAsset.assetId = assetId;
     } else {
       currentVisualizedAsset = currentVisualizedAsset.clone();
     }
-    this.plaskEngine.registerEntity(currentVisualizedAsset);
+    currentVisualizedAsset.assetId = assetId;
+    // this.plaskEngine.registerEntity(currentVisualizedAsset);
     // TODO : should this be inside registerEntity ?
     this.plaskEngine.dispatch(selectingDataActions.updateEntity({ targets: [currentVisualizedAsset] }));
   }

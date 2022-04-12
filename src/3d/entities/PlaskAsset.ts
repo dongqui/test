@@ -10,7 +10,7 @@ export class PlaskAsset extends PlaskEntity {
   public className: string = 'PlaskAsset';
   public assetId: string = '';
   public clone() {
-    const newAsset = new PlaskAsset();
+    const newAsset = new PlaskAsset(this.entityId);
     newAsset.assetId = this.assetId;
 
     return newAsset;
