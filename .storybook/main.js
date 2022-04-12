@@ -1,24 +1,33 @@
 const path = require('path');
 
 module.exports = {
-  webpackFinal: async (config, { configType }) => {
-    config.resolve.modules = [
-      path.resolve(__dirname, '..', 'src'),
-      'node_modules',
-    ],
-    config.module.rules.push({
-      test: /\.scss$/,
-      use: ['style-loader', 'css-loader', 'sass-loader'],
-      include: path.resolve(__dirname, '..', 'src'),
-    });
-    return config;
+  core: {
+    builder: "webpack5",
   },
-  "stories": [
-    "../src/docs/**/**/*.stories.mdx",
-    "../src/docs/**/**/*.stories.@(js|jsx|ts|tsx)"
+  stories: [
+    "../src/**/*.stories.@(js|jsx|ts|tsx)"
   ],
-  "addons": [
+  addons: [
     "@storybook/addon-links",
-    "@storybook/addon-essentials"
-  ]
+    "@storybook/addon-essentials",
+    "@storybook/addon-interactions",
+    {
+      name: '@storybook/preset-scss',
+      options: {
+        cssLoaderOptions: {
+          modules: {
+            auto: true,
+            localIdentName: '[name]__[local]--[hash:base64:5]',
+          },
+        },
+        sassLoaderOptions: {
+          sassOptions: {
+            includePaths: [path.join(__dirname, '../src')],
+          }          
+        },
+      }
+    },
+  ],
+  framework: "@storybook/react",
+  staticDirs: [path.join(__dirname, '../public')],
 }
