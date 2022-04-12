@@ -1,3 +1,5 @@
+import { PlaskEngine } from '3d/PlaskEngine';
+import { visualizeNode } from 'actions/LP/lpNodeAction';
 import { PlaskEntity, PlaskEntitySpec } from './PlaskEntity';
 
 export interface PlaskAssetSpec extends PlaskEntitySpec {
@@ -21,6 +23,18 @@ export class PlaskAsset extends PlaskEntity {
   }
 
   public async onUpdate() {
-    // TODO : Launch saga to import model here
+    const engine = PlaskEngine.GetInstance();
+
+    return new Promise<void>((resolve, reject) => {
+      engine.dispatch(visualizeNode({ assetId: this.assetId, plaskEngine: engine, onSuccess: () => resolve() }));
+    });
+  }
+
+  public async onInitialize() {
+    const engine = PlaskEngine.GetInstance();
+
+    return new Promise<void>((resolve, reject) => {
+      engine.dispatch(visualizeNode({ assetId: this.assetId, plaskEngine: engine, onSuccess: () => resolve() }));
+    });
   }
 }

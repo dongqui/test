@@ -1,11 +1,17 @@
 import { PlaskEngine } from '3d/PlaskEngine';
+import { Quaternion } from '@babylonjs/core/Maths/math.vector';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { PlaskEntity } from './PlaskEntity';
 import { PlaskTransformNode } from './PlaskTransformNode';
 
 declare module '@babylonjs/core' {
   export interface TransformNode {
     getPlaskEntity(): PlaskTransformNode;
+  }
+}
+
+declare module '@babylonjs/core/Maths/math.vector' {
+  export interface Quaternion {
+    toArray(array: number[]): void;
   }
 }
 
@@ -24,4 +30,11 @@ TransformNode.prototype.getPlaskEntity = function () {
   }
 
   return result[0] as PlaskTransformNode;
+};
+
+Quaternion.prototype.toArray = function (array: number[]) {
+  array[0] = this.x;
+  array[1] = this.y;
+  array[2] = this.z;
+  array[3] = this.w;
 };

@@ -10,6 +10,7 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { Channel } from 'redux-saga';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { PlaskAsset } from '3d/entities/PlaskAsset';
 
 /**
  * Options used to export scene to a .glb format file.
@@ -165,7 +166,7 @@ export class AssetModule extends Module {
           const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as TransformNode[];
           const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
             const ptn = new PlaskTransformNode(transformNode);
-            PlaskEngine.GetInstance().registerEntity(ptn);
+            this.plaskEngine.registerEntity(ptn);
             return ptn;
           });
           const sphereBoneGroups = addJointSpheres(jointBones, meshes[0], scene, assetId);
@@ -218,7 +219,28 @@ export class AssetModule extends Module {
     this.plaskEngine.dispatch(selectingDataActions.unrenderAsset({ assetId }));
   }
 
+  public visualizeAsset(assetId: string) {
+    const visualizedAssets = this.plaskEngine.getEntitiesByPredicate(
+      (entity) => entity.className == 'PlaskAsset' && (entity as PlaskAsset).assetId === this.currentVisualizedAssetId,
+    );
+
+    let currentVisualizedAsset = visualizedAssets[0] as PlaskAsset;
+    if (!currentVisualizedAsset) {
+      currentVisualizedAsset = new PlaskAsset();
+      currentVisualizedAsset.assetId = assetId;
+    } else {
+      currentVisualizedAsset = currentVisualizedAsset.clone();
+    }
+    this.plaskEngine.registerEntity(currentVisualizedAsset);
+    // TODO : should this be inside registerEntity ?
+    this.plaskEngine.dispatch(selectingDataActions.updateEntity({ targets: [currentVisualizedAsset] }));
+  }
+
   public initialize() {}
+
+  public get currentVisualizedAssetId() {
+    return this.visualizedAssetIds[0];
+  }
 
   public get visualizedAssetIds() {
     return this.plaskEngine.state.plaskProject.visualizedAssetIds;

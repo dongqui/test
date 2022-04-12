@@ -30,7 +30,7 @@ import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
 import { EntityStore, PlaskSpec } from './entities/EntityStore';
-import { updateTransform } from 'actions/selectingDataAction';
+import { updateEntity } from 'actions/selectingDataAction';
 import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 import { AssetModule } from './modules/asset/AssetModule';
 import { AnimationModule } from './modules/animation/AnimationModule';
@@ -39,7 +39,7 @@ type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
-const FEATURE_HISTORY = false;
+const FEATURE_HISTORY = true;
 
 export class PlaskEngine {
   private _modules: Module[] = [];
@@ -218,6 +218,19 @@ export class PlaskEngine {
     return this._entityStore.getEntitiesByPredicate(predicate);
   }
 
+  /**
+   * Signals an user action on a set of entities
+   * This will add an history action, and update the state of the project
+   * @param entities Updated entities
+   */
+  public userAction(entities: PlaskEntity[]) {
+    console.log(
+      'Entities updated ',
+      entities.map((entity) => entity.clone()),
+    );
+    this.dispatch(updateEntity({ targets: entities.map((entity) => entity.clone()) }));
+  }
+
   public get currentScreenId() {
     return this.state.plaskProject.screenList[0].id;
   }
@@ -277,20 +290,10 @@ export class PlaskEngine {
   }
 
   private _onKeyboard(keyboardInfo: KeyboardInfo) {
+    // This method is only called when the canvas in focused
+    // App-wide keyboard events are processed in the renderingPanel react component
     if (keyboardInfo.type === KeyboardEventTypes.KEYDOWN) {
       switch (keyboardInfo.event.key) {
-        case 'z':
-        case 'Z':
-        case 'ㅋ': {
-          if (keyboardInfo.event.ctrlKey || keyboardInfo.event.metaKey) {
-            if (keyboardInfo.event.shiftKey) {
-              this.redo();
-            } else {
-              this.undo();
-            }
-          }
-          break;
-        }
         default: {
           break;
         }

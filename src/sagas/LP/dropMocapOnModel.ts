@@ -40,7 +40,8 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         message: TEXT.CONFIRM_04,
         onConfirm: function* () {
           if (assetId) {
-            yield put(lpNodeActions.visualizeNode({ assetId, plaskEngine }));
+            // TODO : will it work with PlaskAsset ?
+            yield put(lpNodeActions.visualizeNode({ assetId, plaskEngine, onSuccess: () => {} }));
             yield put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },
@@ -115,7 +116,8 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
 
         if (dropNode.assetId) {
           yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
-          yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine }));
+
+          yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine, onSuccess: () => {} }));
         }
 
         return;
@@ -190,7 +192,8 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
 
       if (dropNode.assetId) {
         yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
-        yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine }));
+        // TODO : will it work with PlaskAsset ?
+        yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine, onSuccess: () => {} }));
         forceClickAnimationPlayAndStop();
       }
     } catch (error) {
@@ -214,7 +217,8 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         cancelText: 'Cancel',
         onConfirm: function* () {
           if (dropNode?.assetId) {
-            yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine }));
+            // TODO : will it work with PlaskAsset ?
+            yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine, onSuccess: () => {} }));
             yield put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },

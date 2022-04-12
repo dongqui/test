@@ -69,6 +69,7 @@ interface AddDirectoryParams {
 interface VisualizeNodeParams {
   assetId: string;
   plaskEngine: PlaskEngine;
+  onSuccess: () => void;
 }
 interface DuplicateMotionParams {
   parentId: string;
