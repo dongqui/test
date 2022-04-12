@@ -9,212 +9,212 @@
 */
 
 @font-face {
-  font-family: 'Noto Sans KR';
+  font-family: "Noto Sans KR";
   font-weight: 100;
   font-display: fallback;
   src:
-    url('/fonts/NotoSansKR/woff2/NotoSansKR-Thin.woff2')format('woff2'),
-    url('/fonts/NotoSansKR/woff/NotoSansKR-Thin.woff')format('woff'),
-    url('/fonts/NotoSansKR/ttf/NotoSansKR-Thin.ttf')format('truetype'),
-    url('/fonts/NotoSansKR/otf/NotoSansKR-Thin.otf')format('opentype');
+    url("https://app.plask.ai/fonts/NotoSansKR/woff2/NotoSansKR-Thin.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/NotoSansKR/woff/NotoSansKR-Thin.woff")format("woff"),
+    url("https://app.plask.ai/fonts/NotoSansKR/ttf/NotoSansKR-Thin.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/NotoSansKR/otf/NotoSansKR-Thin.otf")format("opentype");
 }
 
 @font-face {
-  font-family: 'Noto Sans KR';
+  font-family: "Noto Sans KR";
   font-weight: 200;
   font-display: fallback;
   src:
-    url('/fonts/NotoSansKR/woff2/NotoSansKR-Light.woff2')format('woff2'),
-    url('/fonts/NotoSansKR/woff/NotoSansKR-Light.woff')format('woff'),
-    url('/fonts/NotoSansKR/ttf/NotoSansKR-Light.ttf')format('truetype'),
-    url('/fonts/NotoSansKR/otf/NotoSansKR-Light.otf')format('opentype');
+    url("https://app.plask.ai/fonts/NotoSansKR/woff2/NotoSansKR-Light.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/NotoSansKR/woff/NotoSansKR-Light.woff")format("woff"),
+    url("https://app.plask.ai/fonts/NotoSansKR/ttf/NotoSansKR-Light.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/NotoSansKR/otf/NotoSansKR-Light.otf")format("opentype");
 }
 
 @font-face {
-  font-family: 'Noto Sans KR';
+  font-family: "Noto Sans KR";
   font-weight: 300;
   font-display: fallback;
   src:
-    url('/fonts/NotoSansKR/woff2/NotoSansKR-Light.woff2')format('woff2'),
-    url('/fonts/NotoSansKR/woff/NotoSansKR-Light.woff')format('woff'),
-    url('/fonts/NotoSansKR/ttf/NotoSansKR-Light.ttf')format('truetype'),
-    url('/fonts/NotoSansKR/otf/NotoSansKR-Light.otf')format('opentype');
+    url("https://app.plask.ai/fonts/NotoSansKR/woff2/NotoSansKR-Light.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/NotoSansKR/woff/NotoSansKR-Light.woff")format("woff"),
+    url("https://app.plask.ai/fonts/NotoSansKR/ttf/NotoSansKR-Light.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/NotoSansKR/otf/NotoSansKR-Light.otf")format("opentype");
 }
 
 @font-face {
-  font-family: 'Noto Sans KR';
+  font-family: "Noto Sans KR";
   font-weight: 400;
   font-display: fallback;
   src:
-    url('/fonts/NotoSansKR/woff2/NotoSansKR-Regular.woff2')format('woff2'),
-    url('/fonts/NotoSansKR/woff/NotoSansKR-Regular.woff')format('woff'),
-    url('/fonts/NotoSansKR/ttf/NotoSansKR-Regular.ttf')format('truetype'),
-    url('/fonts/NotoSansKR/otf/NotoSansKR-Regular.otf')format('opentype');
+    url("https://app.plask.ai/fonts/NotoSansKR/woff2/NotoSansKR-Regular.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/NotoSansKR/woff/NotoSansKR-Regular.woff")format("woff"),
+    url("https://app.plask.ai/fonts/NotoSansKR/ttf/NotoSansKR-Regular.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/NotoSansKR/otf/NotoSansKR-Regular.otf")format("opentype");
 }
 
 @font-face {
-  font-family: 'Noto Sans KR';
+  font-family: "Noto Sans KR";
   font-weight: 500;
   font-display: fallback;
   src:
-    url('/fonts/NotoSansKR/woff2/NotoSansKR-Medium.woff2')format('woff2'),
-    url('/fonts/NotoSansKR/woff/NotoSansKR-Medium.woff')format('woff'),
-    url('/fonts/NotoSansKR/ttf/NotoSansKR-Medium.ttf')format('truetype'),
-    url('/fonts/NotoSansKR/otf/NotoSansKR-Medium.otf')format('opentype');
+    url("https://app.plask.ai/fonts/NotoSansKR/woff2/NotoSansKR-Medium.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/NotoSansKR/woff/NotoSansKR-Medium.woff")format("woff"),
+    url("https://app.plask.ai/fonts/NotoSansKR/ttf/NotoSansKR-Medium.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/NotoSansKR/otf/NotoSansKR-Medium.otf")format("opentype");
 }
 
 @font-face {
-  font-family: 'Noto Sans KR';
+  font-family: "Noto Sans KR";
   font-weight: 600;
   font-display: fallback;
   src:
-    url('/fonts/NotoSansKR/woff2/NotoSansKR-Medium.woff2')format('woff2'),
-    url('/fonts/NotoSansKR/woff/NotoSansKR-Medium.woff')format('woff'),
-    url('/fonts/NotoSansKR/ttf/NotoSansKR-Medium.ttf')format('truetype'),
-    url('/fonts/NotoSansKR/otf/NotoSansKR-Medium.otf')format('opentype');
+    url("https://app.plask.ai/fonts/NotoSansKR/woff2/NotoSansKR-Medium.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/NotoSansKR/woff/NotoSansKR-Medium.woff")format("woff"),
+    url("https://app.plask.ai/fonts/NotoSansKR/ttf/NotoSansKR-Medium.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/NotoSansKR/otf/NotoSansKR-Medium.otf")format("opentype");
 }
 
 @font-face {
-  font-family: 'Noto Sans KR';
+  font-family: "Noto Sans KR";
   font-weight: 700;
   font-display: fallback;
   src:
-    url('/fonts/NotoSansKR/woff2/NotoSansKR-Bold.woff2')format('woff2'),
-    url('/fonts/NotoSansKR/woff/NotoSansKR-Bold.woff')format('woff'),
-    url('/fonts/NotoSansKR/ttf/NotoSansKR-Bold.ttf')format('truetype'),
-    url('/fonts/NotoSansKR/otf/NotoSansKR-Bold.otf')format('opentype');
+    url("https://app.plask.ai/fonts/NotoSansKR/woff2/NotoSansKR-Bold.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/NotoSansKR/woff/NotoSansKR-Bold.woff")format("woff"),
+    url("https://app.plask.ai/fonts/NotoSansKR/ttf/NotoSansKR-Bold.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/NotoSansKR/otf/NotoSansKR-Bold.otf")format("opentype");
 }
 
 @font-face {
-  font-family: 'Noto Sans KR';
+  font-family: "Noto Sans KR";
   font-weight: 800;
   font-display: fallback;
   src:
-    url('/fonts/NotoSansKR/woff2/NotoSansKR-Bold.woff2')format('woff2'),
-    url('/fonts/NotoSansKR/woff/NotoSansKR-Bold.woff')format('woff'),
-    url('/fonts/NotoSansKR/ttf/NotoSansKR-Bold.ttf')format('truetype'),
-    url('/fonts/NotoSansKR/otf/NotoSansKR-Bold.otf')format('opentype');
+    url("https://app.plask.ai/fonts/NotoSansKR/woff2/NotoSansKR-Bold.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/NotoSansKR/woff/NotoSansKR-Bold.woff")format("woff"),
+    url("https://app.plask.ai/fonts/NotoSansKR/ttf/NotoSansKR-Bold.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/NotoSansKR/otf/NotoSansKR-Bold.otf")format("opentype");
 }
 
 @font-face {
-  font-family: 'Noto Sans KR';
+  font-family: "Noto Sans KR";
   font-weight: 900;
   font-display: fallback;
   src:
-    url('/fonts/NotoSansKR/woff2/NotoSansKR-Black.woff2')format('woff2'),
-    url('/fonts/NotoSansKR/woff/NotoSansKR-Black.woff')format('woff'),
-    url('/fonts/NotoSansKR/otf/NotoSansKR-Black.ttf')format('truetype'),
-    url('/fonts/NotoSansKR/otf/NotoSansKR-Black.otf')format('opentype');
+    url("https://app.plask.ai/fonts/NotoSansKR/woff2/NotoSansKR-Black.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/NotoSansKR/woff/NotoSansKR-Black.woff")format("woff"),
+    url("https://app.plask.ai/fonts/NotoSansKR/otf/NotoSansKR-Black.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/NotoSansKR/otf/NotoSansKR-Black.otf")format("opentype");
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   font-weight: 100;
   font-display: fallback;
   src:
-    url('/fonts/Inter/woff2/Inter-Light.woff2')format('woff2'),
-    url('/fonts/Inter/woff/Inter-Light.woff')format('woff'),
-    url('/fonts/Inter/ttf/Inter-Light.ttf')format('truetype'),
-    url('/fonts/Inter/otf/Inter-Light.otf')format('opentype');
+    url("https://app.plask.ai/fonts/Inter/woff2/Inter-Light.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/Inter/woff/Inter-Light.woff")format("woff"),
+    url("https://app.plask.ai/fonts/Inter/ttf/Inter-Light.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/Inter/otf/Inter-Light.otf")format("opentype");
   unicode-range: U+0041-005A, U+0061-007A, U+0030-0039;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   font-weight: 200;
   font-display: fallback;
   src:
-    url('/fonts/Inter/woff2/Inter-Light.woff2')format('woff2'),
-    url('/fonts/Inter/woff/Inter-Light.woff')format('woff'),
-    url('/fonts/Inter/ttf/Inter-Light.ttf')format('truetype'),
-    url('/fonts/Inter/otf/Inter-Light.otf')format('opentype');
+    url("https://app.plask.ai/fonts/Inter/woff2/Inter-Light.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/Inter/woff/Inter-Light.woff")format("woff"),
+    url("https://app.plask.ai/fonts/Inter/ttf/Inter-Light.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/Inter/otf/Inter-Light.otf")format("opentype");
   unicode-range: U+0041-005A, U+0061-007A, U+0030-0039;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   font-weight: 300;
   font-display: fallback;
   src:
-    url('/fonts/Inter/woff2/Inter-Light.woff2')format('woff2'),
-    url('/fonts/Inter/woff/Inter-Light.woff')format('woff'),
-    url('/fonts/Inter/ttf/Inter-Light.ttf')format('truetype'),
-    url('/fonts/Inter/otf/Inter-Light.otf')format('opentype');
+    url("https://app.plask.ai/fonts/Inter/woff2/Inter-Light.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/Inter/woff/Inter-Light.woff")format("woff"),
+    url("https://app.plask.ai/fonts/Inter/ttf/Inter-Light.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/Inter/otf/Inter-Light.otf")format("opentype");
   unicode-range: U+0041-005A, U+0061-007A, U+0030-0039;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   font-weight: 400;
   font-display: fallback;
   src:
-    url('/fonts/Inter/woff2/Inter-Regular.woff2')format('woff2'),
-    url('/fonts/Inter/woff/Inter-Regular.woff')format('woff'),
-    url('/fonts/Inter/ttf/Inter-Regular.ttf')format('truetype'),
-    url('/fonts/Inter/otf/Inter-Regular.otf')format('opentype');
+    url("https://app.plask.ai/fonts/Inter/woff2/Inter-Regular.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/Inter/woff/Inter-Regular.woff")format("woff"),
+    url("https://app.plask.ai/fonts/Inter/ttf/Inter-Regular.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/Inter/otf/Inter-Regular.otf")format("opentype");
   unicode-range: U+0041-005A, U+0061-007A, U+0030-0039;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   font-weight: 500;
   font-display: fallback;
   src:
-    url('/fonts/Inter/woff2/Inter-Medium.woff2')format('woff2'),
-    url('/fonts/Inter/woff/Inter-Medium.woff')format('woff'),
-    url('/fonts/Inter/ttf/Inter-Medium.ttf')format('truetype'),
-    url('/fonts/Inter/otf/Inter-Medium.otf')format('opentype');
+    url("https://app.plask.ai/fonts/Inter/woff2/Inter-Medium.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/Inter/woff/Inter-Medium.woff")format("woff"),
+    url("https://app.plask.ai/fonts/Inter/ttf/Inter-Medium.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/Inter/otf/Inter-Medium.otf")format("opentype");
   unicode-range: U+0041-005A, U+0061-007A, U+0030-0039;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   font-weight: 600;
   font-display: fallback;
   src:
-    url('/fonts/Inter/woff2/Inter-Medium.woff2')format('woff2'),
-    url('/fonts/Inter/woff/Inter-Medium.woff')format('woff'),
-    url('/fonts/Inter/ttf/Inter-Medium.ttf')format('truetype'),
-    url('/fonts/Inter/otf/Inter-Medium.otf')format('opentype');
+    url("https://app.plask.ai/fonts/Inter/woff2/Inter-Medium.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/Inter/woff/Inter-Medium.woff")format("woff"),
+    url("https://app.plask.ai/fonts/Inter/ttf/Inter-Medium.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/Inter/otf/Inter-Medium.otf")format("opentype");
   unicode-range: U+0041-005A, U+0061-007A, U+0030-0039;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   font-weight: 700;
   font-display: fallback;
   src:
-    url('/fonts/Inter/woff2/Inter-Bold.woff2')format('woff2'),
-    url('/fonts/Inter/woff/Inter-Bold.woff')format('woff'),
-    url('/fonts/Inter/ttf/Inter-Bold.ttf')format('truetype'),
-    url('/fonts/Inter/otf/Inter-Bold.otf')format('opentype');
+    url("https://app.plask.ai/fonts/Inter/woff2/Inter-Bold.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/Inter/woff/Inter-Bold.woff")format("woff"),
+    url("https://app.plask.ai/fonts/Inter/ttf/Inter-Bold.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/Inter/otf/Inter-Bold.otf")format("opentype");
   unicode-range: U+0041-005A, U+0061-007A, U+0030-0039;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   font-weight: 800;
   font-display: fallback;
   src:
-    url('/fonts/Inter/woff2/Inter-Bold.woff2')format('woff2'),
-    url('/fonts/Inter/woff/Inter-Bold.woff')format('woff'),
-    url('/fonts/Inter/ttf/Inter-Bold.ttf')format('truetype'),
-    url('/fonts/Inter/otf/Inter-Bold.ttf')format('opentype');
+    url("https://app.plask.ai/fonts/Inter/woff2/Inter-Bold.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/Inter/woff/Inter-Bold.woff")format("woff"),
+    url("https://app.plask.ai/fonts/Inter/ttf/Inter-Bold.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/Inter/otf/Inter-Bold.ttf")format("opentype");
   unicode-range: U+0041-005A, U+0061-007A, U+0030-0039;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   font-weight: 900;
   font-display: fallback;
   src:
-    url('/fonts/Inter/woff2/Inter-Bold.woff2')format('woff2'),
-    url('/fonts/Inter/woff/Inter-Bold.woff')format('woff'),
-    url('/fonts/Inter/ttf/Inter-Bold.ttf')format('truetype'),
-    url('/fonts/Inter/otf/Inter-Bold.otf')format('opentype');
+    url("https://app.plask.ai/fonts/Inter/woff2/Inter-Bold.woff2")format("woff2"),
+    url("https://app.plask.ai/fonts/Inter/woff/Inter-Bold.woff")format("woff"),
+    url("https://app.plask.ai/fonts/Inter/ttf/Inter-Bold.ttf")format("truetype"),
+    url("https://app.plask.ai/fonts/Inter/otf/Inter-Bold.otf")format("opentype");
   unicode-range: U+0041-005A, U+0061-007A, U+0030-0039;
 }
 
 * {
-  font-family: 'Inter', 'Noto Sans KR', Arial, sans-serif;
+  font-family: "Inter", "Noto Sans KR", Arial, sans-serif;
 }
